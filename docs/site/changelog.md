@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/translation` (путей 21), `flang/foreign` (путей 13), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/translation` (путей 24), `flang/foreign` (путей 17), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,25 +33,126 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `daf89c5c9` от 11 октября 2026. Шагов ствола 3743, из них вливаний 1212; коммитов в истории 8747.
+Дерево на коммите `a59116aed` от 14 октября 2026. Шагов ствола 3894, из них вливаний 1212; коммитов в истории 8898.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 121085 | −17986 | −10287 |
-| Программ на flang | 800 | +135 | +239 |
-| Объявлений `тотальная функция` | 13940 | +677 | −110 |
-| Объявлений `функция` | 3088 | +53 | +646 |
-| Объявлений `теорема` | 353 | +22 | +69 |
+| Эталон компилятора на flang | 122842 | −17986 | −8530 |
+| Программ на flang | 870 | +135 | +309 |
+| Объявлений `тотальная функция` | 14252 | +677 | +202 |
+| Объявлений `функция` | 3206 | +53 | +764 |
+| Объявлений `теорема` | 355 | +22 | +71 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | +8 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
 
+## 14 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): point the Homebrew tap at 0.7.27 (`a59116aed`)
+- chore(release): the Homebrew formula knows the 0.7.27 archive hash (`02ed83418`)
+- chore(release): version 0.7.27 and its release notes (`36ad75826`)
+- fix(probe): build the tree shell beside the seed runtime header (`dba067b5b`)
+- test(probes): the batch six binary meets the probes it was printed for (`c85424b50`)
+- chore(seed): print batch six with the record lines broken (`181ba1f7f`)
+
+Ещё 9 правок языка снаружи не меняют.
+
+## 13 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- style(compiler): long record lines break inside parentheses (`970a79ddc`)
+- chore(marks): the marks and visible counts follow batch six (`e8d189e5b`)
+- fix(proof): the checker ceiling counts adr-0092 and adr-0105 (`81eeb0974`)
+- test(probes): name the strict program in English words only (`29fce0840`)
+- test(probes): strict and ct-laws ask the ledger for the judged grids (`bad36f38c`)
+- feat(ledger): the judges hand their grids to the ledger (`de7d11c3d`)
+- chore(ledgers): the inventory and file-name words know the wrapped goals (`c75acd986`)
+- test(checker): a wrapped postcondition and goal with a kernel record (`2fe1287a8`)
+- test(checker): the chain of eighteen wraps its goal over five lines (`59f742938`)
+- refactor(lexer): the bracket step after a sign is its own function (`c688cd5e1`)
+- test(proof): a probe of line continuation inside parentheses (`44c4995af`)
+- feat(checker): both checkers read a goal across lines to its close (`62fad868f`)
+- feat(lexer): a line with an open parenthesis continues to its close (`ca2700ac7`)
+- feat(checker): the second checker replays the exact integer ring (`3c2e5d26d`)
+- fix(proof): the checker ceiling counts adr-0103 from dev (`1ac46f4f7`)
+
+Ещё 18 правок языка снаружи не меняют.
+
+## 12 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- refactor(emit): plan printing fits the line and nesting limits (`42b29f1c3`)
+- feat(emit): a plan prints into c, go, rust and python (`fafad7b91`)
+- test(probes): network probe set with forged certificates (`a57fe8cc3`)
+- feat(io): https by the printed language tls client, udp datagrams (`9f6d89c9d`)
+- style(probe): probe lines stay under 120 characters (`4d46f9abb`)
+- fix(emit): the host hands the entry table to every target (`89cdacce7`)
+- feat(types): declared types hold at the runner of every target (`774f1fb8e`)
+- refactor(proof): the literal order joins the strict branch by a choice (`a89f12243`)
+- chore(proof): kernel lines fit the lint limit and the ledgers follow (`a3c3233ad`)
+- feat(proof): the kernel reads the branch condition and compares literals (`891d5aa61`)
+- test(proof): the probe of seventy calls waits for the printed word (`b0159e3f4`)
+- feat(checker): the second checker replays a rewrite by a postcondition (`018d5f5e4`)
+- test(proof): probe programs carry their subject text and name themselves (`3d420715b`)
+- refactor(kernel): the postcondition rule keeps its function in the key (`bda278138`)
+- test(probes): the measure probe programs carry ledger words (`2ef5ae90a`)
+- docs(adr): adr-0093 names the descent term and the final runs (`0fe217fe6`)
+- refactor(kernel): the measure rules read a descent term within the lint (`b291149a9`)
+- fix(lean): the mer ban lemma carries the ban name the ledger reads (`7fd0e0259`)
+- test(probes): the measure probe names the rebased runs and the seed (`642bbc45e`)
+- test(checker): a forged declared-measure descent is refused (`f1aaa0aa2`)
+- test(probes): declared-measure-descent holds the four measure forms (`b9a69e23b`)
+- feat(kernel): the declared measure is proved by its descent or refused (`74e450f9e`)
+- test(probes): strict and ct-laws follow the seed of batch five (`5f3f1ccd5`)
+- chore(seed): reprint the seed from print batch five (`bdb5f9d9a`)
+- fix(lean): the ring lemmas of adr 0095 build under lean 4.34 (`b0a3e82fd`)
+- fix(messages): the language code and home path fit their buffers (`b2b7e3c8e`)
+- fix(messages): the language origin fits its buffer under lto (`75017a507`)
+- build(seed): the seed shell learns the message catalog (`83ece6028`)
+- fix(probes): the language probe writes its .flangrc into a temp dir (`34a7a9b44`)
+- fix(messages): the catalog guard and the probe pass the tree guards (`e9c256064`)
+- feat(messages): flang check answers in the language of the settings (`d3d032e70`)
+- feat(checker): both checkers replay restricted citations and hypotheses (`d9ed9d855`)
+
+Ещё 25 правок языка снаружи не меняют.
+
 ## 11 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- test(proof): the record of the eighteen-call chain replays under Perep2 (`e9171d730`)
+- test(proof): probes and checker family for rewriting by a postcondition (`eb3068041`)
+- feat(kernel): a proved equality postcondition rewrites its call (Perep2) (`bc33bbf99`)
+- docs(adr): 0097 the checker ceiling follows its rules, guard in ci (`cd5e2e3c4`)
+- chore(rules): anchors and counts follow the merged kernel (`9eb2292e1`)
+- chore(rules): the ledger digest follows the merged rule rows (`e2668d37e`)
+- fix(kernel): the monomial joins are total, as their caller requires (`5d9a72d74`)
+- chore(ledger): anchors follow the split ring line, ring rows counted (`8a730f44d`)
+- refactor(kernel): keep the ring lines under the width limit (`5a30ce749`)
+- test(probes): ring probe proves eight laws and refuses with a cause (`1877571f3`)
+- docs(rules): ledger rows and lean lemmas for the exact ring family (`eb4ca4740`)
+- feat(checker): replay the exact ring rule by expanding both sides (`c44c18bea`)
+- feat(kernel): ring laws over the exact integer as one polynomial rule (`e7e88215f`)
+- feat(proof): refuse a wrong named witness, probe quantifiers in formulas (`bfc329256`)
+- refactor(rules): the segment sum rule is Kol5; Kol2-Kol4 are the ring (`05a93c1c6`)
+- feat(kernel): a literal sum over the nonnegative segment closes by Kol2 (`3c654dcec`)
+- fix(ct): the courts share types and defer to the kernel monoid court (`0da8ba93c`)
+- test(ct): probe set ct-laws tells the law court from silence (`78704a8f3`)
+- fix(ct): court helpers no longer shadow parser and ledger names (`a145818ce`)
+- feat(ct): the binary judges every declared law of the category surface (`d23c71fe8`)
+- feat(checker): the second checker reads the record format of 11 october (`cd7e677b4`)
+- feat(checker): the forged copy goes to both checkers, both refuse (`93cd43ccc`)
+- fix(lean): not-a-number equals itself in the model, as in the language (`3b8c95ade`)
+- chore(seed): reprint the seed from the batch after the import fix (`1395fd150`)
+- test(probes): the two step modules carry English file names (`14a95c859`)
+- test(probes): import-helper-binding holds the issue 349 and 350 programs (`61ad7f6f5`)
+- fix(link): an imported helper binds in its own module or link refuses (`7f80382d4`)
 - feat(ct): monoidal routes, maybe as monoid, kleisli arrows (`8c21827b0`)
 - test(ct): two adjunctions and yoneda are judged on the grid (`fe6a8507b`)
 - test(ct): product, coproduct and pullback are declared cones in flang/ct (`683ad13f4`)
@@ -63,7 +164,7 @@
 - chore(seed): reprint the seed by its own printer (print 2) (`4dfbb7ffb`)
 - test(probes): greeting is replayed by the checker and the counts follow (`2be924621`)
 
-Ещё 69 правок языка снаружи не меняют.
+Ещё 88 правок языка снаружи не меняют.
 
 ## 9 октября 2026
 

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "daf89c5c901bd425b9e45b636610718a8e404a4c",
-  "головаКоротко": "daf89c5c9",
-  "головаДата": "2026-10-11",
-  "шаговСтвола": 3743,
-  "всегоКоммитов": 8747,
+  "голова": "a59116aed7438ce96c153a1b5324d61adb40b330",
+  "головаКоротко": "a59116aed",
+  "головаДата": "2026-10-14",
+  "шаговСтвола": 3894,
+  "всегоКоммитов": 8898,
   "измерители": [
     {
       "ключ": "js",
@@ -49,22 +49,22 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 121085,
-    "programm": 800,
-    "totalnyh": 13940,
-    "obychnyh": 3088,
-    "teorem": 353,
+    "bliznec": 122842,
+    "programm": 870,
+    "totalnyh": 14252,
+    "obychnyh": 3206,
+    "teorem": 355,
     "proverok": 3,
     "zametok": 0
   },
   "неизвестныеКорни": [
     {
       "корень": "flang/translation",
-      "путей": 21
+      "путей": 24
     },
     {
       "корень": "flang/foreign",
-      "путей": 13
+      "путей": 17
     },
     {
       "корень": "flang/experimental",
@@ -79,11 +79,18 @@
       "путей": 1
     },
     {
+      "корень": "flang/messages",
+      "путей": 1
+    },
+    {
       "корень": "flangtutor",
       "путей": 1
     }
   ],
   "дни": [
+    "2026-10-14",
+    "2026-10-13",
+    "2026-10-12",
     "2026-10-11",
     "2026-10-09",
     "2026-10-08",
@@ -40779,8 +40786,346 @@
   ],
   "прямые": [
     {
+      "дата": "2026-10-14",
+      "записи": [
+        {
+          "текст": "chore(release): point the Homebrew tap at 0.7.27",
+          "коммит": "a59116aed"
+        },
+        {
+          "текст": "chore(release): the Homebrew formula knows the 0.7.27 archive hash",
+          "коммит": "02ed83418"
+        },
+        {
+          "текст": "chore(release): version 0.7.27 and its release notes",
+          "коммит": "36ad75826"
+        },
+        {
+          "текст": "fix(probe): build the tree shell beside the seed runtime header",
+          "коммит": "dba067b5b"
+        },
+        {
+          "текст": "test(probes): the batch six binary meets the probes it was printed for",
+          "коммит": "c85424b50"
+        },
+        {
+          "текст": "chore(seed): print batch six with the record lines broken",
+          "коммит": "181ba1f7f"
+        }
+      ],
+      "скрыто": 9
+    },
+    {
+      "дата": "2026-10-13",
+      "записи": [
+        {
+          "текст": "style(compiler): long record lines break inside parentheses",
+          "коммит": "970a79ddc"
+        },
+        {
+          "текст": "chore(marks): the marks and visible counts follow batch six",
+          "коммит": "e8d189e5b"
+        },
+        {
+          "текст": "fix(proof): the checker ceiling counts adr-0092 and adr-0105",
+          "коммит": "81eeb0974"
+        },
+        {
+          "текст": "test(probes): name the strict program in English words only",
+          "коммит": "29fce0840"
+        },
+        {
+          "текст": "test(probes): strict and ct-laws ask the ledger for the judged grids",
+          "коммит": "bad36f38c"
+        },
+        {
+          "текст": "feat(ledger): the judges hand their grids to the ledger",
+          "коммит": "de7d11c3d"
+        },
+        {
+          "текст": "chore(ledgers): the inventory and file-name words know the wrapped goals",
+          "коммит": "c75acd986"
+        },
+        {
+          "текст": "test(checker): a wrapped postcondition and goal with a kernel record",
+          "коммит": "2fe1287a8"
+        },
+        {
+          "текст": "test(checker): the chain of eighteen wraps its goal over five lines",
+          "коммит": "59f742938"
+        },
+        {
+          "текст": "refactor(lexer): the bracket step after a sign is its own function",
+          "коммит": "c688cd5e1"
+        },
+        {
+          "текст": "test(proof): a probe of line continuation inside parentheses",
+          "коммит": "44c4995af"
+        },
+        {
+          "текст": "feat(checker): both checkers read a goal across lines to its close",
+          "коммит": "62fad868f"
+        },
+        {
+          "текст": "feat(lexer): a line with an open parenthesis continues to its close",
+          "коммит": "ca2700ac7"
+        },
+        {
+          "текст": "feat(checker): the second checker replays the exact integer ring",
+          "коммит": "3c2e5d26d"
+        },
+        {
+          "текст": "fix(proof): the checker ceiling counts adr-0103 from dev",
+          "коммит": "1ac46f4f7"
+        }
+      ],
+      "скрыто": 18
+    },
+    {
+      "дата": "2026-10-12",
+      "записи": [
+        {
+          "текст": "refactor(emit): plan printing fits the line and nesting limits",
+          "коммит": "42b29f1c3"
+        },
+        {
+          "текст": "feat(emit): a plan prints into c, go, rust and python",
+          "коммит": "fafad7b91"
+        },
+        {
+          "текст": "test(probes): network probe set with forged certificates",
+          "коммит": "a57fe8cc3"
+        },
+        {
+          "текст": "feat(io): https by the printed language tls client, udp datagrams",
+          "коммит": "9f6d89c9d"
+        },
+        {
+          "текст": "style(probe): probe lines stay under 120 characters",
+          "коммит": "4d46f9abb"
+        },
+        {
+          "текст": "fix(emit): the host hands the entry table to every target",
+          "коммит": "89cdacce7"
+        },
+        {
+          "текст": "feat(types): declared types hold at the runner of every target",
+          "коммит": "774f1fb8e"
+        },
+        {
+          "текст": "refactor(proof): the literal order joins the strict branch by a choice",
+          "коммит": "a89f12243"
+        },
+        {
+          "текст": "chore(proof): kernel lines fit the lint limit and the ledgers follow",
+          "коммит": "a3c3233ad"
+        },
+        {
+          "текст": "feat(proof): the kernel reads the branch condition and compares literals",
+          "коммит": "891d5aa61"
+        },
+        {
+          "текст": "test(proof): the probe of seventy calls waits for the printed word",
+          "коммит": "b0159e3f4"
+        },
+        {
+          "текст": "feat(checker): the second checker replays a rewrite by a postcondition",
+          "коммит": "018d5f5e4"
+        },
+        {
+          "текст": "test(proof): probe programs carry their subject text and name themselves",
+          "коммит": "3d420715b"
+        },
+        {
+          "текст": "refactor(kernel): the postcondition rule keeps its function in the key",
+          "коммит": "bda278138"
+        },
+        {
+          "текст": "test(probes): the measure probe programs carry ledger words",
+          "коммит": "2ef5ae90a"
+        },
+        {
+          "текст": "docs(adr): adr-0093 names the descent term and the final runs",
+          "коммит": "0fe217fe6"
+        },
+        {
+          "текст": "refactor(kernel): the measure rules read a descent term within the lint",
+          "коммит": "b291149a9"
+        },
+        {
+          "текст": "fix(lean): the mer ban lemma carries the ban name the ledger reads",
+          "коммит": "7fd0e0259"
+        },
+        {
+          "текст": "test(probes): the measure probe names the rebased runs and the seed",
+          "коммит": "642bbc45e"
+        },
+        {
+          "текст": "test(checker): a forged declared-measure descent is refused",
+          "коммит": "f1aaa0aa2"
+        },
+        {
+          "текст": "test(probes): declared-measure-descent holds the four measure forms",
+          "коммит": "b9a69e23b"
+        },
+        {
+          "текст": "feat(kernel): the declared measure is proved by its descent or refused",
+          "коммит": "74e450f9e"
+        },
+        {
+          "текст": "test(probes): strict and ct-laws follow the seed of batch five",
+          "коммит": "5f3f1ccd5"
+        },
+        {
+          "текст": "chore(seed): reprint the seed from print batch five",
+          "коммит": "bdb5f9d9a"
+        },
+        {
+          "текст": "fix(lean): the ring lemmas of adr 0095 build under lean 4.34",
+          "коммит": "b0a3e82fd"
+        },
+        {
+          "текст": "fix(messages): the language code and home path fit their buffers",
+          "коммит": "b2b7e3c8e"
+        },
+        {
+          "текст": "fix(messages): the language origin fits its buffer under lto",
+          "коммит": "75017a507"
+        },
+        {
+          "текст": "build(seed): the seed shell learns the message catalog",
+          "коммит": "83ece6028"
+        },
+        {
+          "текст": "fix(probes): the language probe writes its .flangrc into a temp dir",
+          "коммит": "34a7a9b44"
+        },
+        {
+          "текст": "fix(messages): the catalog guard and the probe pass the tree guards",
+          "коммит": "e9c256064"
+        },
+        {
+          "текст": "feat(messages): flang check answers in the language of the settings",
+          "коммит": "d3d032e70"
+        },
+        {
+          "текст": "feat(checker): both checkers replay restricted citations and hypotheses",
+          "коммит": "d9ed9d855"
+        }
+      ],
+      "скрыто": 25
+    },
+    {
       "дата": "2026-10-11",
       "записи": [
+        {
+          "текст": "test(proof): the record of the eighteen-call chain replays under Perep2",
+          "коммит": "e9171d730"
+        },
+        {
+          "текст": "test(proof): probes and checker family for rewriting by a postcondition",
+          "коммит": "eb3068041"
+        },
+        {
+          "текст": "feat(kernel): a proved equality postcondition rewrites its call (Perep2)",
+          "коммит": "bc33bbf99"
+        },
+        {
+          "текст": "docs(adr): 0097 the checker ceiling follows its rules, guard in ci",
+          "коммит": "cd5e2e3c4"
+        },
+        {
+          "текст": "chore(rules): anchors and counts follow the merged kernel",
+          "коммит": "9eb2292e1"
+        },
+        {
+          "текст": "chore(rules): the ledger digest follows the merged rule rows",
+          "коммит": "e2668d37e"
+        },
+        {
+          "текст": "fix(kernel): the monomial joins are total, as their caller requires",
+          "коммит": "5d9a72d74"
+        },
+        {
+          "текст": "chore(ledger): anchors follow the split ring line, ring rows counted",
+          "коммит": "8a730f44d"
+        },
+        {
+          "текст": "refactor(kernel): keep the ring lines under the width limit",
+          "коммит": "5a30ce749"
+        },
+        {
+          "текст": "test(probes): ring probe proves eight laws and refuses with a cause",
+          "коммит": "1877571f3"
+        },
+        {
+          "текст": "docs(rules): ledger rows and lean lemmas for the exact ring family",
+          "коммит": "eb4ca4740"
+        },
+        {
+          "текст": "feat(checker): replay the exact ring rule by expanding both sides",
+          "коммит": "c44c18bea"
+        },
+        {
+          "текст": "feat(kernel): ring laws over the exact integer as one polynomial rule",
+          "коммит": "e7e88215f"
+        },
+        {
+          "текст": "feat(proof): refuse a wrong named witness, probe quantifiers in formulas",
+          "коммит": "bfc329256"
+        },
+        {
+          "текст": "refactor(rules): the segment sum rule is Kol5; Kol2-Kol4 are the ring",
+          "коммит": "05a93c1c6"
+        },
+        {
+          "текст": "feat(kernel): a literal sum over the nonnegative segment closes by Kol2",
+          "коммит": "3c654dcec"
+        },
+        {
+          "текст": "fix(ct): the courts share types and defer to the kernel monoid court",
+          "коммит": "0da8ba93c"
+        },
+        {
+          "текст": "test(ct): probe set ct-laws tells the law court from silence",
+          "коммит": "78704a8f3"
+        },
+        {
+          "текст": "fix(ct): court helpers no longer shadow parser and ledger names",
+          "коммит": "a145818ce"
+        },
+        {
+          "текст": "feat(ct): the binary judges every declared law of the category surface",
+          "коммит": "d23c71fe8"
+        },
+        {
+          "текст": "feat(checker): the second checker reads the record format of 11 october",
+          "коммит": "cd7e677b4"
+        },
+        {
+          "текст": "feat(checker): the forged copy goes to both checkers, both refuse",
+          "коммит": "93cd43ccc"
+        },
+        {
+          "текст": "fix(lean): not-a-number equals itself in the model, as in the language",
+          "коммит": "3b8c95ade"
+        },
+        {
+          "текст": "chore(seed): reprint the seed from the batch after the import fix",
+          "коммит": "1395fd150"
+        },
+        {
+          "текст": "test(probes): the two step modules carry English file names",
+          "коммит": "14a95c859"
+        },
+        {
+          "текст": "test(probes): import-helper-binding holds the issue 349 and 350 programs",
+          "коммит": "61ad7f6f5"
+        },
+        {
+          "текст": "fix(link): an imported helper binds in its own module or link refuses",
+          "коммит": "7f80382d4"
+        },
         {
           "текст": "feat(ct): monoidal routes, maybe as monoid, kleisli arrows",
           "коммит": "8c21827b0"
@@ -40822,7 +41167,7 @@
           "коммит": "2be924621"
         }
       ],
-      "скрыто": 69
+      "скрыто": 88
     },
     {
       "дата": "2026-10-09",

@@ -2,13 +2,362 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.26",
-  "latest": "0.7.26",
+  "declared": "0.7.27",
+  "latest": "0.7.27",
   "unclassified": [
     "flang/experimental",
-    "flang/foreign"
+    "flang/foreign",
+    "flang/messages"
   ],
   "releases": [
+    {
+      "version": "0.7.27",
+      "tag": "v0.7.27",
+      "date": "2026-10-14",
+      "human": "14 октября 2026",
+      "commit": "a59116a",
+      "title": "Печать партий 5 и 6: кольцо точного целого у двух сличителей, мера и постусловия в ядре, TLS вшит в двоичный, формулы с кванторами и LaTeX",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): point the Homebrew tap at 0.7.27",
+          "commit": "a59116a"
+        },
+        {
+          "text": "chore(release): the Homebrew formula knows the 0.7.27 archive hash",
+          "commit": "02ed834"
+        },
+        {
+          "text": "chore(release): version 0.7.27 and its release notes",
+          "commit": "36ad758"
+        },
+        {
+          "text": "fix(probe): build the tree shell beside the seed runtime header",
+          "commit": "dba067b"
+        },
+        {
+          "text": "test(probes): the batch six binary meets the probes it was printed for",
+          "commit": "c85424b"
+        },
+        {
+          "text": "chore(seed): print batch six with the record lines broken",
+          "commit": "181ba1f"
+        },
+        {
+          "text": "style(compiler): long record lines break inside parentheses",
+          "commit": "970a79d"
+        },
+        {
+          "text": "chore(marks): the marks and visible counts follow batch six",
+          "commit": "e8d189e"
+        },
+        {
+          "text": "fix(proof): the checker ceiling counts adr-0092 and adr-0105",
+          "commit": "81eeb09"
+        },
+        {
+          "text": "test(probes): name the strict program in English words only",
+          "commit": "29fce08"
+        },
+        {
+          "text": "test(probes): strict and ct-laws ask the ledger for the judged grids",
+          "commit": "bad36f3"
+        },
+        {
+          "text": "feat(ledger): the judges hand their grids to the ledger",
+          "commit": "de7d11c"
+        },
+        {
+          "text": "refactor(emit): plan printing fits the line and nesting limits",
+          "commit": "42b29f1"
+        },
+        {
+          "text": "feat(emit): a plan prints into c, go, rust and python",
+          "commit": "fafad7b"
+        },
+        {
+          "text": "test(probes): network probe set with forged certificates",
+          "commit": "a57fe8c"
+        },
+        {
+          "text": "feat(io): https by the printed language tls client, udp datagrams",
+          "commit": "9f6d89c"
+        },
+        {
+          "text": "style(probe): probe lines stay under 120 characters",
+          "commit": "4d46f9a"
+        },
+        {
+          "text": "fix(emit): the host hands the entry table to every target",
+          "commit": "89cdacc"
+        },
+        {
+          "text": "feat(types): declared types hold at the runner of every target",
+          "commit": "774f1fb"
+        },
+        {
+          "text": "refactor(proof): the literal order joins the strict branch by a choice",
+          "commit": "a89f122"
+        },
+        {
+          "text": "chore(proof): kernel lines fit the lint limit and the ledgers follow",
+          "commit": "a3c3233"
+        },
+        {
+          "text": "feat(proof): the kernel reads the branch condition and compares literals",
+          "commit": "891d5aa"
+        },
+        {
+          "text": "chore(ledgers): the inventory and file-name words know the wrapped goals",
+          "commit": "c75acd9"
+        },
+        {
+          "text": "test(checker): a wrapped postcondition and goal with a kernel record",
+          "commit": "2fe1287"
+        },
+        {
+          "text": "test(checker): the chain of eighteen wraps its goal over five lines",
+          "commit": "59f7429"
+        },
+        {
+          "text": "refactor(lexer): the bracket step after a sign is its own function",
+          "commit": "c688cd5"
+        },
+        {
+          "text": "test(proof): a probe of line continuation inside parentheses",
+          "commit": "44c4995"
+        },
+        {
+          "text": "feat(checker): both checkers read a goal across lines to its close",
+          "commit": "62fad86"
+        },
+        {
+          "text": "feat(lexer): a line with an open parenthesis continues to its close",
+          "commit": "ca2700a"
+        },
+        {
+          "text": "test(proof): the probe of seventy calls waits for the printed word",
+          "commit": "b0159e3"
+        },
+        {
+          "text": "feat(checker): the second checker replays a rewrite by a postcondition",
+          "commit": "018d5f5"
+        },
+        {
+          "text": "test(proof): probe programs carry their subject text and name themselves",
+          "commit": "3d42071"
+        },
+        {
+          "text": "refactor(kernel): the postcondition rule keeps its function in the key",
+          "commit": "bda2781"
+        },
+        {
+          "text": "test(proof): the record of the eighteen-call chain replays under Perep2",
+          "commit": "e9171d7"
+        },
+        {
+          "text": "test(proof): probes and checker family for rewriting by a postcondition",
+          "commit": "eb30680"
+        },
+        {
+          "text": "feat(kernel): a proved equality postcondition rewrites its call (Perep2)",
+          "commit": "bc33bbf"
+        },
+        {
+          "text": "test(probes): the measure probe programs carry ledger words",
+          "commit": "2ef5ae9"
+        },
+        {
+          "text": "docs(adr): adr-0093 names the descent term and the final runs",
+          "commit": "0fe217f"
+        },
+        {
+          "text": "refactor(kernel): the measure rules read a descent term within the lint",
+          "commit": "b291149"
+        },
+        {
+          "text": "fix(lean): the mer ban lemma carries the ban name the ledger reads",
+          "commit": "7fd0e02"
+        },
+        {
+          "text": "test(probes): the measure probe names the rebased runs and the seed",
+          "commit": "642bbc4"
+        },
+        {
+          "text": "test(checker): a forged declared-measure descent is refused",
+          "commit": "f1aaa0a"
+        },
+        {
+          "text": "test(probes): declared-measure-descent holds the four measure forms",
+          "commit": "b9a69e2"
+        },
+        {
+          "text": "feat(kernel): the declared measure is proved by its descent or refused",
+          "commit": "74e450f"
+        },
+        {
+          "text": "feat(checker): the second checker replays the exact integer ring",
+          "commit": "3c2e5d2"
+        },
+        {
+          "text": "fix(proof): the checker ceiling counts adr-0103 from dev",
+          "commit": "1ac46f4"
+        },
+        {
+          "text": "test(probes): strict and ct-laws follow the seed of batch five",
+          "commit": "5f3f1cc"
+        },
+        {
+          "text": "chore(seed): reprint the seed from print batch five",
+          "commit": "bdb5f9d"
+        },
+        {
+          "text": "fix(lean): the ring lemmas of adr 0095 build under lean 4.34",
+          "commit": "b0a3e82"
+        },
+        {
+          "text": "docs(adr): 0097 the checker ceiling follows its rules, guard in ci",
+          "commit": "cd5e2e3"
+        },
+        {
+          "text": "chore(rules): anchors and counts follow the merged kernel",
+          "commit": "9eb2292"
+        },
+        {
+          "text": "chore(rules): the ledger digest follows the merged rule rows",
+          "commit": "e2668d3"
+        },
+        {
+          "text": "fix(kernel): the monomial joins are total, as their caller requires",
+          "commit": "5d9a72d"
+        },
+        {
+          "text": "chore(ledger): anchors follow the split ring line, ring rows counted",
+          "commit": "8a730f4"
+        },
+        {
+          "text": "refactor(kernel): keep the ring lines under the width limit",
+          "commit": "5a30ce7"
+        },
+        {
+          "text": "test(probes): ring probe proves eight laws and refuses with a cause",
+          "commit": "1877571"
+        },
+        {
+          "text": "docs(rules): ledger rows and lean lemmas for the exact ring family",
+          "commit": "eb4ca47"
+        },
+        {
+          "text": "feat(checker): replay the exact ring rule by expanding both sides",
+          "commit": "c44c18b"
+        },
+        {
+          "text": "feat(kernel): ring laws over the exact integer as one polynomial rule",
+          "commit": "e7e8821"
+        },
+        {
+          "text": "feat(proof): refuse a wrong named witness, probe quantifiers in formulas",
+          "commit": "bfc3292"
+        },
+        {
+          "text": "refactor(rules): the segment sum rule is Kol5; Kol2-Kol4 are the ring",
+          "commit": "05a93c1"
+        },
+        {
+          "text": "feat(kernel): a literal sum over the nonnegative segment closes by Kol2",
+          "commit": "3c654dc"
+        },
+        {
+          "text": "fix(ct): the courts share types and defer to the kernel monoid court",
+          "commit": "0da8ba9"
+        },
+        {
+          "text": "test(ct): probe set ct-laws tells the law court from silence",
+          "commit": "78704a8"
+        },
+        {
+          "text": "fix(ct): court helpers no longer shadow parser and ledger names",
+          "commit": "a145818"
+        },
+        {
+          "text": "feat(ct): the binary judges every declared law of the category surface",
+          "commit": "d23c71f"
+        },
+        {
+          "text": "fix(messages): the language code and home path fit their buffers",
+          "commit": "b2b7e3c"
+        },
+        {
+          "text": "fix(messages): the language origin fits its buffer under lto",
+          "commit": "75017a5"
+        },
+        {
+          "text": "build(seed): the seed shell learns the message catalog",
+          "commit": "83ece60"
+        },
+        {
+          "text": "fix(probes): the language probe writes its .flangrc into a temp dir",
+          "commit": "34a7a9b"
+        },
+        {
+          "text": "fix(messages): the catalog guard and the probe pass the tree guards",
+          "commit": "e9c2560"
+        },
+        {
+          "text": "feat(messages): flang check answers in the language of the settings",
+          "commit": "d3d032e"
+        },
+        {
+          "text": "feat(translation): the matcher replays the measure guard by its shape",
+          "commit": "1c0fec0"
+        },
+        {
+          "text": "feat(checker): both checkers replay restricted citations and hypotheses",
+          "commit": "d9ed9d8"
+        },
+        {
+          "text": "feat(checker): the second checker reads the record format of 11 october",
+          "commit": "cd7e677"
+        },
+        {
+          "text": "feat(checker): the forged copy goes to both checkers, both refuse",
+          "commit": "93cd43c"
+        },
+        {
+          "text": "fix(lean): not-a-number equals itself in the model, as in the language",
+          "commit": "3b8c95a"
+        },
+        {
+          "text": "chore(seed): reprint the seed from the batch after the import fix",
+          "commit": "1395fd1"
+        },
+        {
+          "text": "test(probes): the two step modules carry English file names",
+          "commit": "14a95c8"
+        },
+        {
+          "text": "test(probes): import-helper-binding holds the issue 349 and 350 programs",
+          "commit": "61ad7f6"
+        },
+        {
+          "text": "fix(link): an imported helper binds in its own module or link refuses",
+          "commit": "7f80382"
+        },
+        {
+          "text": "feat(ct): monoidal routes, maybe as monoid, kleisli arrows",
+          "commit": "8c21827"
+        },
+        {
+          "text": "test(ct): two adjunctions and yoneda are judged on the grid",
+          "commit": "fe6a850"
+        },
+        {
+          "text": "test(ct): product, coproduct and pullback are declared cones in flang/ct",
+          "commit": "683ad13"
+        }
+      ],
+      "hidden": 129
+    },
     {
       "version": "0.7.26",
       "tag": "v0.7.26",
@@ -12900,19 +13249,6 @@
     }
   ],
   "unreleased": {
-    "entries": [
-      {
-        "text": "feat(ct): monoidal routes, maybe as monoid, kleisli arrows",
-        "commit": "8c21827"
-      },
-      {
-        "text": "test(ct): two adjunctions and yoneda are judged on the grid",
-        "commit": "fe6a850"
-      },
-      {
-        "text": "test(ct): product, coproduct and pullback are declared cones in flang/ct",
-        "commit": "683ad13"
-      }
-    ]
+    "entries": []
   }
 }

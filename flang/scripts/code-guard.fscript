@@ -259,13 +259,7 @@
         "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md"] и «почему» равным [
         "не код отказа, а ключ препроцессора из решения ADR-0067 §4: матрица выпуска передаёт тройку в двоичный ",
         "как -DFLANG_TARGET, и третья строка --version печатает её. Решение предложено, работа 7959 не начата, ",
-        "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"]),
-      (запись «Отсрочка» с «код» равным "FLANG_FROM_SOURCE" и «род» равным "обещан" и «где» равным [
-        "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md",
-        "docs/tasks/1710-asdf-and-homebrew-take-the-prebuilt-binary-and-fall-back-to-source.md"] и «почему» равным [
-        "не код отказа, а хвост переменной среды ASDF_FLANG_FROM_SOURCE из решения ADR-0067 §6: человек просит плагин ",
-        "asdf собрать из архива C, а не взять готовый двоичный. Плагин сегодня собирает из архива всегда и переменной ",
-        "не читает; работа 1710 не начата. Появится в packaging/asdf — снять запись"])
+        "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"])
     ]
   [
     (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
@@ -318,21 +312,15 @@
       "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md"] и «почему» равным [
       "не код отказа, а ключ препроцессора из решения ADR-0067 §4: матрица выпуска передаёт тройку в двоичный ",
       "как -DFLANG_TARGET, и третья строка --version печатает её. Решение предложено, работа 7959 не начата, ",
-      "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"]),
-    (запись «Отсрочка» с «код» равным "FLANG_FROM_SOURCE" и «род» равным "обещан" и «где» равным [
-      "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md",
-      "docs/tasks/1710-asdf-and-homebrew-take-the-prebuilt-binary-and-fall-back-to-source.md"] и «почему» равным [
-      "не код отказа, а хвост переменной среды ASDF_FLANG_FROM_SOURCE из решения ADR-0067 §6: человек просит плагин ",
-      "asdf собрать из архива C, а не взять готовый двоичный. Плагин сегодня собирает из архива всегда и переменной ",
-      "не читает; работа 1710 не начата. Появится в packaging/asdf — снять запись"])
+      "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"])
   ]
 
 тотальная функция «Отсроченные имена»
   возвращает список строки
-  пример «Восемь имён»
+  пример «Семь имён»
     ожидается ["FLANG_NODE_DEAD", "FLANG_ZAMER", "FLANG_PROBE_MAX_DEPTH",
       "FLANG_SLOVO_PUSTOTA", "FLANG_IO_UNSUPPORTED", "FLANG_SELF_EVAL_UNSUPPORTED",
-      "FLANG_TARGET", "FLANG_FROM_SOURCE"]
+      "FLANG_TARGET"]
   отобразить («Объявлено, не сделано») как отсрочка → (отсрочка.«код»)
 
 тотальная функция «Файл места»

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Сборка и установка.
+# Установка: готовая сборка раскладывается как есть, архив C собирается.
+#
+# Что лежит в каталоге загрузки, решил bin/download: готовая сборка несёт
+# bin/flang (раскладка установки), архив C — Makefile и исходники. Пробы после
+# установки одни на обе дороги: они спрашивают результат, а не путь к нему.
 #
 # Флаги сборки не смягчаются: -Werror -pedantic — часть контракта бэкенда,
 # напечатанный код обязан собираться без единого предупреждения. Ослабить их
@@ -12,90 +16,112 @@ set -euo pipefail
 : "${ASDF_DOWNLOAD_PATH:?}"
 
 if [ "$ASDF_INSTALL_TYPE" != "version" ]; then
-  echo "плагин ставит только выпущенные версии: из ветки собрать нельзя," >&2
-  echo "потому что в репозитории компилятор лежит исходником на самом flang," >&2
-  echo "и чтобы получить из него первый бинарник, нужен Node." >&2
+  echo "плагин ставит только выпущенные версии (asdf install flang <версия>)." >&2
+  echo "Ветку собирают из клона: git clone https://github.com/digitable-lol/flang" >&2
+  echo "и make -C flang/bootstrap — нужны только cc и make." >&2
   exit 1
 fi
 
-build="$(mktemp -d)"
-trap 'rm -rf "$build"' EXIT
-cp -R "${ASDF_DOWNLOAD_PATH}/." "$build"
-
-jobs="${ASDF_CONCURRENCY:-1}"
-make -C "$build" -j "$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
-
-# У программы одно имя — `flang`, и с 0.5.1 его даёт уже сама сборка: `make`
-# кладёт рядом `flang`, а не `flang_cli`. Прежнее имя принимается тоже, потому
-# что архив релиза несёт СВОЙ Makefile: плагин обязан ставить и архив, собранный
-# до переименования.
-# Имя переменной английское, а не русское: POSIX-shell берёт в имена только
-# латиницу и подчёркивание, и `собрано=…` он читает как команду. Поймано прогоном.
-built="${build}/flang"
-[ -x "$built" ] || built="${build}/flang_cli"
-
-mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
-install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
-
-# Проводник по языку — тем же условием, что и в формуле Homebrew: плагин ставит
-# И СТАРЫЕ выпуски, а до 0.7.17 архив проводника не нёс. Найдено владельцем:
-# проводник жил только в дереве, до поставки не доезжал ни одним путём. Уроки
-# кладутся ОТДЕЛЬНЫМ каталогом, а не под share/flang: и проба формулы, и проверка
-# ниже требуют, чтобы каталогов под share/flang было ровно столько, сколько целей
-# печати, и шестой покрасил бы обе установки.
-if [ -x "${build}/flangtutor" ]; then
-  install -m 0755 "${build}/flangtutor" "${ASDF_INSTALL_PATH}/bin/flangtutor"
-  if [ -d "${build}/tutor" ]; then
-    mkdir -p "${ASDF_INSTALL_PATH}/share/flang-tutor"
-    cp -R "${build}"/tutor/* "${ASDF_INSTALL_PATH}/share/flang-tutor/"
-    find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type f -exec chmod 0644 {} +
-    find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type d -exec chmod 0755 {} +
-  fi
+if [ -x "${ASDF_DOWNLOAD_PATH}/bin/flang" ]; then
+  prebuilt=yes
+else
+  prebuilt=no
 fi
-# Библиотека зовётся по имени модуля компилятора, а имя это менялось: до 0.5.2
-# модуль звался «Компилятор flang» и печать давала `libkompilyator_flang.a`,
-# с 0.5.2 он «Compiler flang» и печать даёт `libcompiler_flang.a` (транслит в
-# имени файла — нарушение docs/guide/naming.ru.md, и чинился он в имени модуля).
-# Плагин ставит выпущенные версии, а среди них есть и те и другие, поэтому
-# берётся ЛЮБОЙ архив, какой собрал make: имя ищется, а не пишется.
-# Заголовки ставятся звёздочкой и потому переименования не заметили вовсе.
-for archive in "${build}"/lib*.a; do
-  [ -f "$archive" ] || continue
-  install -m 0644 "$archive" "${ASDF_INSTALL_PATH}/lib/"
-done
-install -m 0644 "${build}"/*.h "${ASDF_INSTALL_PATH}/include/"
 
-# ИСХОДНИКИ РАНТАЙМА ВСЕХ ДЕВЯТИ ЦЕЛЕЙ — без них `flang emit --target <цель>` не
-# работает у поставившего вовсе. Печать кладёт файлы рантайма в вывод ДОСЛОВНО,
-# то есть читает их с диска, и ищет в `share/flang/<цель>` рядом с бинарником
-# (`emit_runtime_dir` в flang/src/emit/c/flang_repl.c).
-#
-# ДО 5 СЕНТЯБРЯ 2026 СТАВИЛАСЬ ОДНА ЦЕЛЬ ИЗ ДЕВЯТИ: плагин клал `runtime-c` в
-# `share/flang/c`, и `--target js`, `--target go` и шесть остальных отвечали
-# поставившему «не найдены исходники рантайма», хотя обещаны и в `man`, и в
-# обоих README, и в справке двоичного (задача 7261).
-#
-# Верхние файлы архива для этого НЕ ГОДЯТСЯ, хотя имена те же: наверху лежат
-# напечатанные копии — с шапкой «Сгенерировано flang» в первой строке, — и
-# печать их отвергает по делу. Рукописные оригиналы едут каталогом
-# `runtime/<цель>/`; имя названо в scripts/release/release-in-c.fscript.
-#
-# КОПИРУЕТСЯ КОРЕНЬ ЦЕЛИКОМ, А НЕ ПОЦЕЛЬНО: у восьми целей поиск рантайма
-# смотрит в каталог ЦЕЛИ (`share/flang/go`), а у `cpp` — в КОРЕНЬ
-# `share/flang`, потому что три файла из четырёх он берёт из `c/`, и только
-# своё «лицо» `cpp/flang_cpp.hpp` — из `cpp/` (задача 8460).
-#
-# Оба условия — не осторожность, а совместимость: плагин ставит и выпущенные
-# версии, а в архивах 0.5.3—0.7.11 лежит `runtime-c` с одной целью, в архивах до
-# 0.5.3 нет и его.
-if [ -d "${build}/runtime" ]; then
-  mkdir -p "${ASDF_INSTALL_PATH}/share/flang"
-  cp -R "${build}"/runtime/* "${ASDF_INSTALL_PATH}/share/flang/"
-  find "${ASDF_INSTALL_PATH}/share/flang" -type f -exec chmod 0644 {} +
-  find "${ASDF_INSTALL_PATH}/share/flang" -type d -exec chmod 0755 {} +
-elif [ -d "${build}/runtime-c" ]; then
-  mkdir -p "${ASDF_INSTALL_PATH}/share/flang/c"
-  install -m 0644 "${build}"/runtime-c/* "${ASDF_INSTALL_PATH}/share/flang/c/"
+if [ "$prebuilt" = yes ]; then
+  # Готовая сборка: bin, share (рантаймы целей, уроки, man), на macOS ещё lib
+  # и include — та же раскладка, что кладёт сборка ниже.
+  for dir in bin share lib include; do
+    if [ -d "${ASDF_DOWNLOAD_PATH}/${dir}" ]; then
+      mkdir -p "${ASDF_INSTALL_PATH}/${dir}"
+      cp -R "${ASDF_DOWNLOAD_PATH}/${dir}/." "${ASDF_INSTALL_PATH}/${dir}/"
+    fi
+  done
+  # Цели печати обещаны все, если сборка несёт share/flang.
+  all_targets=no
+  [ -d "${ASDF_DOWNLOAD_PATH}/share/flang" ] && all_targets=yes
+else
+  build="$(mktemp -d)"
+  trap 'rm -rf "$build"' EXIT
+  cp -R "${ASDF_DOWNLOAD_PATH}/." "$build"
+
+  jobs="${ASDF_CONCURRENCY:-1}"
+  make -C "$build" -j "$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
+
+  # У программы одно имя — `flang`, и с 0.5.1 его даёт уже сама сборка: `make`
+  # кладёт рядом `flang`, а не `flang_cli`. Прежнее имя принимается тоже, потому
+  # что архив релиза несёт СВОЙ Makefile: плагин обязан ставить и архив, собранный
+  # до переименования.
+  # Имя переменной английское, а не русское: POSIX-shell берёт в имена только
+  # латиницу и подчёркивание, и `собрано=…` он читает как команду. Поймано прогоном.
+  built="${build}/flang"
+  [ -x "$built" ] || built="${build}/flang_cli"
+
+  mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
+  install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
+
+  # Проводник по языку — тем же условием, что и в формуле Homebrew: плагин ставит
+  # И СТАРЫЕ выпуски, а до 0.7.17 архив проводника не нёс. Найдено владельцем:
+  # проводник жил только в дереве, до поставки не доезжал ни одним путём. Уроки
+  # кладутся ОТДЕЛЬНЫМ каталогом, а не под share/flang: и проба формулы, и проверка
+  # ниже требуют, чтобы каталогов под share/flang было ровно столько, сколько целей
+  # печати, и шестой покрасил бы обе установки.
+  if [ -x "${build}/flangtutor" ]; then
+    install -m 0755 "${build}/flangtutor" "${ASDF_INSTALL_PATH}/bin/flangtutor"
+    if [ -d "${build}/tutor" ]; then
+      mkdir -p "${ASDF_INSTALL_PATH}/share/flang-tutor"
+      cp -R "${build}"/tutor/* "${ASDF_INSTALL_PATH}/share/flang-tutor/"
+      find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type f -exec chmod 0644 {} +
+      find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type d -exec chmod 0755 {} +
+    fi
+  fi
+  # Библиотека зовётся по имени модуля компилятора, а имя это менялось: до 0.5.2
+  # модуль звался «Компилятор flang» и печать давала `libkompilyator_flang.a`,
+  # с 0.5.2 он «Compiler flang» и печать даёт `libcompiler_flang.a` (транслит в
+  # имени файла — нарушение docs/guide/naming.ru.md, и чинился он в имени модуля).
+  # Плагин ставит выпущенные версии, а среди них есть и те и другие, поэтому
+  # берётся ЛЮБОЙ архив, какой собрал make: имя ищется, а не пишется.
+  # Заголовки ставятся звёздочкой и потому переименования не заметили вовсе.
+  for archive in "${build}"/lib*.a; do
+    [ -f "$archive" ] || continue
+    install -m 0644 "$archive" "${ASDF_INSTALL_PATH}/lib/"
+  done
+  install -m 0644 "${build}"/*.h "${ASDF_INSTALL_PATH}/include/"
+
+  # ИСХОДНИКИ РАНТАЙМА ВСЕХ ДЕВЯТИ ЦЕЛЕЙ — без них `flang emit --target <цель>` не
+  # работает у поставившего вовсе. Печать кладёт файлы рантайма в вывод ДОСЛОВНО,
+  # то есть читает их с диска, и ищет в `share/flang/<цель>` рядом с бинарником
+  # (`emit_runtime_dir` в flang/src/emit/c/flang_repl.c).
+  #
+  # ДО 5 СЕНТЯБРЯ 2026 СТАВИЛАСЬ ОДНА ЦЕЛЬ ИЗ ДЕВЯТИ: плагин клал `runtime-c` в
+  # `share/flang/c`, и `--target js`, `--target go` и шесть остальных отвечали
+  # поставившему «не найдены исходники рантайма», хотя обещаны и в `man`, и в
+  # обоих README, и в справке двоичного (задача 7261).
+  #
+  # Верхние файлы архива для этого НЕ ГОДЯТСЯ, хотя имена те же: наверху лежат
+  # напечатанные копии — с шапкой «Сгенерировано flang» в первой строке, — и
+  # печать их отвергает по делу. Рукописные оригиналы едут каталогом
+  # `runtime/<цель>/`; имя названо в scripts/release/release-in-c.fscript.
+  #
+  # КОПИРУЕТСЯ КОРЕНЬ ЦЕЛИКОМ, А НЕ ПОЦЕЛЬНО: у восьми целей поиск рантайма
+  # смотрит в каталог ЦЕЛИ (`share/flang/go`), а у `cpp` — в КОРЕНЬ
+  # `share/flang`, потому что три файла из четырёх он берёт из `c/`, и только
+  # своё «лицо» `cpp/flang_cpp.hpp` — из `cpp/` (задача 8460).
+  #
+  # Оба условия — не осторожность, а совместимость: плагин ставит и выпущенные
+  # версии, а в архивах 0.5.3—0.7.11 лежит `runtime-c` с одной целью, в архивах до
+  # 0.5.3 нет и его.
+  if [ -d "${build}/runtime" ]; then
+    mkdir -p "${ASDF_INSTALL_PATH}/share/flang"
+    cp -R "${build}"/runtime/* "${ASDF_INSTALL_PATH}/share/flang/"
+    find "${ASDF_INSTALL_PATH}/share/flang" -type f -exec chmod 0644 {} +
+    find "${ASDF_INSTALL_PATH}/share/flang" -type d -exec chmod 0755 {} +
+  elif [ -d "${build}/runtime-c" ]; then
+    mkdir -p "${ASDF_INSTALL_PATH}/share/flang/c"
+    install -m 0644 "${build}"/runtime-c/* "${ASDF_INSTALL_PATH}/share/flang/c/"
+  fi
+  all_targets=no
+  [ -d "${build}/runtime" ] && all_targets=yes
 fi
 
 # Проверяем не «запустился», а «понял язык»: подаём модуль и требуем, чтобы
@@ -179,7 +205,7 @@ if [ -d "${ASDF_INSTALL_PATH}/share/flang/c" ]; then
   #
   # Имена переменных латиницей — по той же причине, что и `built` выше: русское
   # имя оболочка читает командой, а не присваиванием.
-  if [ -d "${build}/runtime" ]; then
+  if [ "$all_targets" = yes ]; then
     targets="$("${ASDF_INSTALL_PATH}/bin/flang" --help | grep -- '--target' | tr ' ' '\n' | grep '|' | tr '|' ' ')"
     n_targets="$(printf '%s\n' $targets | grep -c .)"
     # ДЛИНА СПИСКА ПРОВЕРЯЕТСЯ ДО ЦИКЛА: справка, из которой ничего не

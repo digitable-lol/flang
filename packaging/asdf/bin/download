@@ -1,27 +1,86 @@
 #!/usr/bin/env bash
-# Скачивание релизного архива: компилятор, уже напечатанный в C99.
+# Скачивание выпуска: готовая сборка под эту машину, а если её нет — архив C.
 #
-# В архиве нет ни Node, ни самого flang — только C99 и Makefile. Поэтому
-# плагину не нужен ни один тулчейн, кроме компилятора C, который в системе есть
-# всегда. То же обещание даёт формула Homebrew и держит его тем же способом.
+# С 0.7.29 выпуск несёт готовые сборки flang-package-<версия>-<ось>-<арх>.tar.gz
+# (linux-x86_64, linux-aarch64, macos-arm64, macos-x86_64) и файл SHA256SUMS.
+# Плагин берёт сборку под свою машину и сверяет её хеш — компилятор C тогда
+# не нужен вовсе. Архив C (flang-<версия>-c.tar.gz, собирает bin/install)
+# берётся в трёх названных случаях, и каждый печатается:
+#   - у выпуска нет SHA256SUMS: выпуски до 0.7.29;
+#   - SHA256SUMS не называет сборки под эту ось и архитектуру;
+#   - человек попросил сам: ASDF_FLANG_FROM_SOURCE=1.
+# Хеш не сошёлся — это ОТКАЗ, а не откат: подменённый файл не ставится никак.
+#
+# Имена переменных латиницей: оболочка не берёт кириллицу в имена.
 set -euo pipefail
 
 : "${ASDF_INSTALL_VERSION:?не задана версия}"
 : "${ASDF_DOWNLOAD_PATH:?не задан каталог загрузки}"
 
 version="$ASDF_INSTALL_VERSION"
-archive="flang-${version}-c.tar.gz"
-url="https://github.com/digitable-lol/flang/releases/download/v${version}/${archive}"
+# Адрес подменяется для пробы без сети (file://-каталог с теми же файлами).
+release_url="${ASDF_FLANG_RELEASE_URL:-https://github.com/digitable-lol/flang/releases/download/v${version}}"
 
 mkdir -p "$ASDF_DOWNLOAD_PATH"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-echo "flang ${version}: скачиваю ${archive}"
-if ! curl -fsSL -o "${tmp}/${archive}" "$url"; then
-  echo "не удалось скачать ${url}" >&2
-  echo "версии, которые можно поставить, показывает 'asdf list-all flang'" >&2
-  exit 1
+from_source() {
+  echo "flang ${version}: $1 — беру архив C и соберу его (нужны cc и make)"
+  local archive="flang-${version}-c.tar.gz"
+  if ! curl -fsSL -o "${tmp}/${archive}" "${release_url}/${archive}"; then
+    echo "не удалось скачать ${release_url}/${archive}" >&2
+    echo "версии, которые можно поставить, показывает 'asdf list-all flang'" >&2
+    exit 1
+  fi
+  tar -xzf "${tmp}/${archive}" -C "$ASDF_DOWNLOAD_PATH"
+  exit 0
+}
+
+if [ "${ASDF_FLANG_FROM_SOURCE:-}" = 1 ]; then
+  from_source "сборка из исходников попрошена (ASDF_FLANG_FROM_SOURCE=1)"
 fi
 
-tar -xzf "${tmp}/${archive}" -C "$ASDF_DOWNLOAD_PATH"
+os=""
+case "$(uname -s)" in
+  Linux) os=linux ;;
+  Darwin) os=macos ;;
+esac
+arch=""
+case "$(uname -m)" in
+  x86_64 | amd64) arch=x86_64 ;;
+  aarch64 | arm64) if [ "$os" = macos ]; then arch=arm64; else arch=aarch64; fi ;;
+esac
+if [ -z "$os" ] || [ -z "$arch" ]; then
+  from_source "готовой сборки под $(uname -s) $(uname -m) нет"
+fi
+
+if ! curl -fsSL -o "${tmp}/SHA256SUMS" "${release_url}/SHA256SUMS" 2>/dev/null; then
+  from_source "у выпуска ${version} нет готовых сборок (они начинаются с 0.7.29)"
+fi
+
+name="flang-package-${version}-${os}-${arch}"
+expected="$(awk -v f="${name}.tar.gz" '$2 == f || $2 == "*" f { print $1 }' "${tmp}/SHA256SUMS" | head -1)"
+if [ -z "$expected" ]; then
+  from_source "в выпуске ${version} нет сборки ${os}-${arch}"
+fi
+
+echo "flang ${version}: скачиваю готовую сборку ${name}.tar.gz"
+if ! curl -fsSL -o "${tmp}/${name}.tar.gz" "${release_url}/${name}.tar.gz"; then
+  echo "SHA256SUMS называет ${name}.tar.gz, а скачать его не удалось: ${release_url}/${name}.tar.gz" >&2
+  exit 1
+fi
+if command -v sha256sum >/dev/null 2>&1; then
+  actual="$(sha256sum "${tmp}/${name}.tar.gz" | cut -d' ' -f1)"
+else
+  actual="$(shasum -a 256 "${tmp}/${name}.tar.gz" | cut -d' ' -f1)"
+fi
+if [ "$actual" != "$expected" ]; then
+  echo "хеш ${name}.tar.gz не сошёлся: SHA256SUMS ждёт ${expected}, скачано ${actual}" >&2
+  echo "файл повреждён или подменён — ставить его нельзя, и сборкой из исходников это не обходится" >&2
+  exit 1
+fi
+echo "хеш сошёлся: ${actual}"
+
+tar -xzf "${tmp}/${name}.tar.gz" -C "$tmp"
+cp -R "${tmp}/${name}/." "$ASDF_DOWNLOAD_PATH/"

@@ -1,0 +1,52 @@
+# deb and rpm packages of flang, built from a prebuilt Linux tarball.
+#
+#   cd <unpacked flang-package-VERSION-linux-x86_64>
+#   PKG_VERSION=0.7.29 PKG_ARCH=amd64 \
+#     nfpm package --config <tree>/packaging/nfpm.yaml --packager deb --target <out>/
+#
+# Sources are relative to the current directory (nfpm does not expand
+# variables in them), hence the cd.
+# PKG_ARCH is the Go name of the CPU (amd64, arm64); nfpm turns it into the
+# deb and rpm names itself (amd64/x86_64, arm64/aarch64). The binary looks for
+# its runtimes in ../share/flang next to itself, so /usr/bin/flang finds
+# /usr/share/flang.
+name: flang-package
+arch: ${PKG_ARCH}
+platform: linux
+version: ${PKG_VERSION}
+section: devel
+priority: optional
+maintainer: the-homeless-god <zimtir@mail.ru>
+vendor: digitable
+homepage: https://github.com/digitable-lol/flang
+license: BSD-2-Clause
+description: |-
+  Verifiable programming language
+  flang checks types, termination and examples of every function and prints
+  the program into C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir,
+  Python and C#. The command is `flang`; LLVM Flang (Fortran) uses the same
+  name, so do not install both into /usr/bin.
+contents:
+  - src: ./bin/flang
+    dst: /usr/bin/flang
+    file_info:
+      mode: 0755
+  - src: ./bin/flangtutor
+    dst: /usr/bin/flangtutor
+    file_info:
+      mode: 0755
+  - src: ./share/flang
+    dst: /usr/share/flang
+    type: tree
+  - src: ./share/flang-tutor
+    dst: /usr/share/flang-tutor
+    type: tree
+  - src: ./share/man/man1/flang.1
+    dst: /usr/share/man/man1/flang.1
+  - src: ./LICENSE
+    dst: /usr/share/doc/flang-package/copyright
+overrides:
+  rpm:
+    # Fedora's LLVM Flang package is named flang and owns /usr/bin/flang too.
+    conflicts:
+      - flang

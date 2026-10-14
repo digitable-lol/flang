@@ -72,6 +72,11 @@ jobs:
   release:
     name: release
     runs-on: ubuntu-latest
+    # The C archive name goes to the jobs below: they build the prebuilt
+    # tarballs from that very archive, so a prebuilt build and a source build
+    # (brew, asdf) compile the same C99.
+    outputs:
+      archive: ${{ steps.archive.outputs.arhiv }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -285,7 +290,19 @@ jobs:
       # подлинником молча, и работа `brew` была красна с 0.7.9. Путь архива
       # действие кладёт в `$ARHIV` — им пользуются три шага ниже.
       - name: Build release archive
+        id: archive
         uses: ./.github/actions/release-archive
+
+      # Handed to the prebuilt jobs at once, before the checks below: on a
+      # manual run between releases the formula hash check is red by design
+      # (the header of this file), and the prebuilt builds are still wanted.
+      - name: Keep release archive for prebuilt builds
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: c-archive
+          path: ${{ steps.archive.outputs.arhiv }}
+          if-no-files-found: error
+          retention-days: 7
 
       # ЧТО В АРХИВЕ ЛЕЖИТ, ПРОВЕРЯЕТСЯ ЗДЕСЬ, А НЕ У ПОСТАВИВШЕГО.
       #
@@ -443,3 +460,207 @@ jobs:
         # `node --test flang/test/*.test.mjs`. npm не делал здесь ничего, кроме
         # подстановки строки из `package.json`.
         run: bootstrap/flang run-script tests
+
+  # ── PREBUILT BUILDS ───────────────────────────────────────────────────────
+  #
+  # Four tarballs flang-package-<version>-<os>-<arch>.tar.gz, each built on its
+  # own runner from the C archive of the job above and run there before it is
+  # kept. The package is named flang-package because `flang` is taken by LLVM
+  # Flang in homebrew/core and in the AUR; the command stays `flang`.
+  #
+  # Linux: Alpine (musl) in a container, linked statically, so one binary runs
+  # on any distribution of that CPU. It is then run on the Ubuntu host,
+  # outside the container: a binary that needed the container's libc would
+  # fail right there. macOS: the flags of the Homebrew formula on the native
+  # runner; macos-15-intel stands for x86_64 because macos-13 was retired on
+  # 4 December 2025 (ADR-0067, section 1.5).
+  #
+  # A manual run builds and checks everything and publishes nothing: the
+  # upload step below runs only on a tag.
+  prebuilt:
+    name: prebuilt (${{ matrix.os }}-${{ matrix.arch }})
+    needs: release
+    if: ${{ !cancelled() && needs.release.outputs.archive != '' }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: linux, arch: x86_64, runner: ubuntu-24.04 }
+          - { os: linux, arch: aarch64, runner: ubuntu-24.04-arm }
+          - { os: macos, arch: arm64, runner: macos-14 }
+          - { os: macos, arch: x86_64, runner: macos-15-intel }
+    env:
+      ARCHIVE: ${{ needs.release.outputs.archive }}
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: c-archive
+          path: input
+
+      - name: Build tarball (Linux, static, musl)
+        if: matrix.os == 'linux'
+        run: |
+          set -eu
+          docker run --rm -v "$PWD:/w" -w /w alpine:3.20 sh -c \
+            "apk add --no-cache build-base tar >/dev/null && sh packaging/prebuilt/build-tarball.sh input/$(basename "$ARCHIVE") linux ${{ matrix.arch }} output/prebuilt"
+          sudo chown -R "$(id -u):$(id -g)" output
+
+      - name: Build tarball (macOS)
+        if: matrix.os == 'macos'
+        run: sh packaging/prebuilt/build-tarball.sh "input/$(basename "$ARCHIVE")" macos ${{ matrix.arch }} output/prebuilt
+
+      - name: Run prebuilt flang
+        run: |
+          set -eu
+          version="$(basename "$ARCHIVE")"; version="${version#flang-}"; version="${version%-c.tar.gz}"
+          tarball="output/prebuilt/flang-package-$version-${{ matrix.os }}-${{ matrix.arch }}.tar.gz"
+          ls -l "$tarball"
+          mkdir -p probe
+          tar -xzf "$tarball" -C probe
+          dir="probe/flang-package-$version-${{ matrix.os }}-${{ matrix.arch }}"
+          file "$dir/bin/flang"
+          if [ "${{ matrix.os }}" = linux ]; then
+            if ! file "$dir/bin/flang" | grep -q 'statically linked'; then
+              echo "::error::the Linux binary is not static; it would depend on the libc of the machine"
+              exit 1
+            fi
+          else
+            otool -L "$dir/bin/flang"
+          fi
+          "$dir/bin/flang" --version
+          sh packaging/prebuilt/smoke.sh "$dir" "$version"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: prebuilt-${{ matrix.os }}-${{ matrix.arch }}
+          path: output/prebuilt/*.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  # deb and rpm from the two Linux tarballs, one SHA256SUMS for every asset of
+  # the release (the C archive included), the Homebrew formula and the AUR
+  # PKGBUILD filled with those checksums. The manifests are kept as a workflow
+  # artifact: they go into digitable-lol/homebrew-tap and the AUR by hand.
+  packages:
+    name: packages
+    needs: [release, prebuilt]
+    if: ${{ !cancelled() && needs.prebuilt.result == 'success' }}
+    runs-on: ubuntu-24.04
+    env:
+      ARCHIVE: ${{ needs.release.outputs.archive }}
+      NFPM_VERSION: "2.47.0"
+      NFPM_SHA256: 0660ca602b2d2d2ae4781a06c692b3eeb9d437ffea05b831d76e41f4a3188783
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Install nfpm
+        run: |
+          set -eu
+          curl -fsSL -o nfpm.tar.gz "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz"
+          echo "${NFPM_SHA256}  nfpm.tar.gz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/nfpm"
+          tar -xzf nfpm.tar.gz -C "$RUNNER_TEMP/nfpm" nfpm
+          rm nfpm.tar.gz
+          "$RUNNER_TEMP/nfpm/nfpm" --version | grep -i '^GitVersion'
+
+      - name: Build deb and rpm
+        run: |
+          set -eu
+          version="$(basename "$ARCHIVE")"; version="${version#flang-}"; version="${version%-c.tar.gz}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          for pair in x86_64:amd64 aarch64:arm64; do
+            arch="${pair%%:*}"; goarch="${pair##*:}"
+            work="$RUNNER_TEMP/pkg-$arch"
+            mkdir -p "$work"
+            tar -xzf "assets/flang-package-$version-linux-$arch.tar.gz" -C "$work"
+            for packager in deb rpm; do
+              (cd "$work/flang-package-$version-linux-$arch" && \
+                PKG_VERSION="$version" PKG_ARCH="$goarch" "$RUNNER_TEMP/nfpm/nfpm" package \
+                  --config "$GITHUB_WORKSPACE/packaging/nfpm.yaml" --packager "$packager" --target "$GITHUB_WORKSPACE/assets/")
+            done
+          done
+          ls -l assets
+
+      - name: Install the deb and run flang
+        run: |
+          set -eu
+          sudo dpkg -i "assets/flang-package_${VERSION}_amd64.deb"
+          dpkg -L flang-package | grep -c . 
+          /usr/bin/flang --version
+          sh packaging/prebuilt/smoke.sh /usr "$VERSION"
+
+      - name: Write SHA256SUMS
+        run: |
+          set -eu
+          cd assets
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Fill package manifests
+        run: sh packaging/prebuilt/manifests.sh "$VERSION" assets/SHA256SUMS manifests
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-assets
+          path: assets/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: package-manifests
+          path: manifests/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+
+      # Only on a tag, and only when the release job went through: that job
+      # created the release and uploaded the C archive itself, so it is not
+      # uploaded twice here.
+      - name: Upload prebuilt builds
+        if: startsWith(github.ref, 'refs/tags/v') && needs.release.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          cd assets
+          gh release upload "$GITHUB_REF_NAME" flang-package* SHA256SUMS --clobber
+          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
+
+  # The filled formula installed by brew from the assets of this run, before
+  # anything reaches the tap: install, `brew test`, and the old name `flang`
+  # resolved through Aliases/flang.
+  homebrew:
+    name: homebrew (flang-package)
+    needs: packages
+    if: ${{ !cancelled() && needs.packages.result == 'success' }}
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-assets
+          path: assets
+      - name: Install the formula from this run
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_FROM_API: "1"
+        run: |
+          set -eu
+          version="$(sed -n 's/.*flang-package-\(.*\)-macos-arm64\.tar\.gz$/\1/p' assets/SHA256SUMS)"
+          sh packaging/prebuilt/manifests.sh "$version" assets/SHA256SUMS formula "file://$PWD/assets"
+          brew tap-new --no-git local/flangtest
+          tap="$(brew --repository)/Library/Taps/local/homebrew-flangtest"
+          cp formula/flang-package.rb "$tap/Formula/"
+          mkdir -p "$tap/Aliases"
+          ln -s ../Formula/flang-package.rb "$tap/Aliases/flang"
+          brew install local/flangtest/flang-package
+          brew test local/flangtest/flang-package
+          "$(brew --prefix)/bin/flang" --version
+          brew info local/flangtest/flang | head -1

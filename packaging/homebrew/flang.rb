@@ -2,7 +2,7 @@ class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
   url "https://github.com/digitable-lol/flang/releases/download/v0.7.27/flang-0.7.27-c.tar.gz"
-  sha256 "d2823991db36b564da2c9ddff411dd947f200d4573e2f58ca0cfe76566987a71"
+  sha256 "bccfbb20a18cf78f5d3d3862e1d08e5d8c41e91655066484a9f40ed00cc7cbf3"
   license "BSD-2-Clause"
   version "0.7.27"
 

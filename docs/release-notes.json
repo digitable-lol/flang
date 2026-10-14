@@ -12,7 +12,7 @@
         ],
         "изменилось": [
           "**Файл с категориями, где все законы проверены, проходит `check` с кодом 0.** Раньше любой такой файл получал код 2 с припиской, что устройство категорий не проверяется. Из 25 примеров в `flang/ct` с кодом 0 теперь проходят 16, было 7. Остальные 9 получают код 2 и называют закон, который не удалось проверить.",
-          "**`check --proof` по стандартной библиотеке стал немного быстрее.** Ядро берёт доказанные свойства только у тех функций, которые встречаются в доказываемом утверждении. На 55 файлах `flang/stdlib` суммарное время 5773 с у 0.7.27 и 5518 с теперь; результаты проверки те же."
+          "**`check --proof` по стандартной библиотеке стал немного быстрее.** Ядро берёт доказанные свойства только у тех функций, которые встречаются в доказываемом утверждении. На 55 файлах `flang/stdlib` суммарное время 5773 с у 0.7.27 и 5518 с теперь, то есть на 4 % меньше; результаты проверки те же."
         ],
         "сломалось": [
           "**Неверный пример в блоке `закон` теперь роняет `test` и `check` с кодом 1.** Исправьте ожидаемое значение в примере или саму функцию: сообщение называет оба значения.",
@@ -29,7 +29,7 @@
         ],
         "изменилось": [
           "**A file with categories whose laws were all checked passes `check` with exit code 0.** Before, every such file got code 2 with a note that category structure is not checked. Of the 25 examples in `flang/ct`, 16 now pass with code 0, up from 7. The other 9 get code 2 and name the law that could not be checked.",
-          "**`check --proof` over the standard library is a little faster.** The kernel takes proved properties only from the functions that appear in the statement being proved. Over the 55 files of `flang/stdlib` the total time is 5773 s on 0.7.27 and 5518 s now, with the same results."
+          "**`check --proof` over the standard library is a little faster.** The kernel takes proved properties only from the functions that appear in the statement being proved. Over the 55 files of `flang/stdlib` the total time is 5773 s on 0.7.27 and 5518 s now, 4 % less, with the same results."
         ],
         "сломалось": [
           "**A wrong example in a `закон` block now fails `test` and `check` with exit code 1.** Fix the expected value in the example or the function itself; the message names both values.",

@@ -533,10 +533,20 @@ jobs:
           "$dir/bin/flang" --version
           sh packaging/prebuilt/smoke.sh "$dir" "$version"
 
+      # The hash is taken here, on the runner that built and ran the tarball;
+      # the packages job checks every tarball against it before SHA256SUMS.
+      - name: Hash the tarball on its runner
+        run: |
+          set -eu
+          cd output/prebuilt
+          for f in flang-package-*.tar.gz; do shasum -a 256 "$f" > "$f.sha256"; cat "$f.sha256"; done
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: prebuilt-${{ matrix.os }}-${{ matrix.arch }}
-          path: output/prebuilt/*.tar.gz
+          path: |
+            output/prebuilt/*.tar.gz
+            output/prebuilt/*.tar.gz.sha256
           if-no-files-found: error
           retention-days: 7
 
@@ -559,6 +569,27 @@ jobs:
         with:
           path: assets
           merge-multiple: true
+
+      # Each tarball must be the bytes its runner hashed. The probe after it
+      # flips one byte of a copy and requires the same check to fail: a check
+      # that passes a forged file is not a check.
+      - name: Check prebuilt checksums
+        run: |
+          set -eu
+          cd assets
+          ls flang-package-*.tar.gz.sha256 >/dev/null
+          for f in flang-package-*.tar.gz.sha256; do sha256sum -c "$f"; done
+          forged="$RUNNER_TEMP/forged"
+          mkdir -p "$forged"
+          one="$(ls flang-package-*.tar.gz | head -1)"
+          cp "$one" "$one.sha256" "$forged/"
+          printf 'x' | dd of="$forged/$one" bs=1 seek=1000 conv=notrunc status=none
+          if (cd "$forged" && sha256sum -c "$one.sha256" >/dev/null 2>&1); then
+            echo "::error::a tarball with one changed byte passed the checksum check"
+            exit 1
+          fi
+          echo "forgery probe: a changed byte in $one is caught"
+          rm -f flang-package-*.tar.gz.sha256
 
       - name: Install nfpm
         run: |

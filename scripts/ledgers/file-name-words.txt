@@ -739,6 +739,7 @@ have
 having
 head
 header
+headers
 headings
 headroom
 heartbeat

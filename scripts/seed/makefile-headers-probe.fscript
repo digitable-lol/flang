@@ -1,0 +1,612 @@
+модуль «Makefile headers probe»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Inclusion»
+  «file»: строка
+  «included»: строка
+
+объект «Variant»
+  «name»: строка
+  «makefile»: строка
+
+тотальная функция «Seed directory»
+  принимает passed: список строки
+  возвращает строка
+  пример «Without arguments the seed of the tree is asked»
+    дано passed равно пустой список
+    ожидается "../../bootstrap"
+  пример «An absolute directory is asked as it is»
+    дано passed равно ["/srv/tmp/seed"]
+    ожидается "/srv/tmp/seed"
+  пример «A relative directory is counted from the root»
+    дано passed равно ["bootstrap"]
+    ожидается "../../bootstrap"
+  разбор passed
+    случай пусто
+      то "../../bootstrap"
+    случай голова и хвост
+      то если голова начинается с "/" то голова иначе соединить ["../../", голова] по ""
+
+тотальная функция «Directory»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Seed directory» от («Given of» от "arguments" и answers)
+
+тотальная функция «Is pair»
+  принимает line: строка
+  возвращает признак
+  (длина (разделить line по "\t")) равен 2
+
+тотальная функция «Inclusion of»
+  принимает line: строка
+  возвращает «Inclusion»
+  пусть fields равно (разделить line по "\t")
+  запись «Inclusion» с «file» равным (элемент 1 в fields) и «included» равным (элемент 2 в fields)
+
+тотальная функция «Inclusions»
+  принимает text: строка
+  возвращает список «Inclusion»
+  обеспечивает «no more inclusions than lines» (длина результат) не больше (длина («Lines» от text))
+  пример «Each line names the including file and the included one»
+    дано text равно "flang_repl.c\ttls_client.c\ntls_client.c\ttls_client.h\n"
+    ожидается [запись «Inclusion» с «file» равным "flang_repl.c" и «included» равным "tls_client.c",
+      запись «Inclusion» с «file» равным "tls_client.c" и «included» равным "tls_client.h"]
+  пример «A line without two fields is not an inclusion»
+    дано text равно "broken\n"
+    ожидается пустой список
+  отобразить (отфильтровать («Lines» от text) где line → «Is pair» от line) как line → «Inclusion of» от line
+
+тотальная функция «Added once»
+  принимает kept: список строки, name: строка
+  возвращает список строки
+  обеспечивает «the name is kept» результат содержит name
+  пример «A new name is added at the end»
+    дано kept равно ["a.h"]
+    дано name равно "b.h"
+    ожидается ["a.h", "b.h"]
+  пример «A known name is not repeated»
+    дано kept равно ["a.h"]
+    дано name равно "a.h"
+    ожидается ["a.h"]
+  если kept содержит name то kept иначе добавить name к kept
+
+тотальная функция «All added»
+  принимает kept: список строки, names: список строки
+  возвращает список строки
+  свёртка names начиная с kept как more и name → «Added once» от more и name
+
+тотальная функция «Is from»
+  принимает inclusion: «Inclusion», file: строка, present: список строки
+  возвращает признак
+  ((inclusion.«file») равен file) и притом (present содержит (inclusion.«included»))
+
+тотальная функция «Included by»
+  принимает file: строка, inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  пример «Only files lying beside count»
+    дано file равно "flang_cli.c"
+    дано inclusions равно [запись «Inclusion» с «file» равным "flang_cli.c" и «included» равным "flang_runtime.h",
+      запись «Inclusion» с «file» равным "flang_cli.c" и «included» равным "flang_conc.h"]
+    дано present равно ["flang_cli.c", "flang_runtime.h"]
+    ожидается ["flang_runtime.h"]
+  пусть own равно (отфильтровать inclusions где inclusion → «Is from» от inclusion и file и present)
+  отобразить own как inclusion → inclusion.«included»
+
+тотальная функция «Step from»
+  принимает kept: список строки, file: строка, inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  «All added» от kept и («Included by» от file и inclusions и present)
+
+тотальная функция «One step»
+  принимает reached: список строки, inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  свёртка reached начиная с reached как kept и file → «Step from» от kept и file и inclusions и present
+
+тотальная функция «Closure»
+  принимает source: строка, inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  пример «The shell reaches the client header through the client source»
+    дано source равно "flang_repl.c"
+    дано inclusions равно [запись «Inclusion» с «file» равным "flang_repl.c" и «included» равным "flang_runtime.h",
+      запись «Inclusion» с «file» равным "flang_repl.c" и «included» равным "tls_client.c",
+      запись «Inclusion» с «file» равным "tls_client.c" и «included» равным "tls_client.h",
+      запись «Inclusion» с «file» равным "tls_client.h" и «included» равным "flang_runtime.h"]
+    дано present равно ["flang_repl.c", "flang_runtime.h", "tls_client.c", "tls_client.h"]
+    ожидается ["flang_runtime.h", "tls_client.c", "tls_client.h"]
+  пусть reached равно (свёртка present начиная с [source] как so и fuel → «One step» от so и inclusions и present)
+  отфильтровать reached где name → не (name равен source)
+
+тотальная функция «Is included»
+  принимает name: строка, inclusions: список «Inclusion»
+  возвращает признак
+  (длина (отфильтровать inclusions где inclusion → (inclusion.«included») равен name)) больше 0
+
+тотальная функция «Is compiled»
+  принимает name: строка, inclusions: список «Inclusion»
+  возвращает признак
+  («Ends with» от name и ".c") и притом (не («Is included» от name и inclusions))
+
+тотальная функция «Compiled sources»
+  принимает inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  пример «A source included by another one is not compiled on its own»
+    дано inclusions равно [запись «Inclusion» с «file» равным "flang_repl.c" и «included» равным "tls_client.c"]
+    дано present равно ["Makefile", "flang_repl.c", "tls_client.c", "tls_client.h"]
+    ожидается ["flang_repl.c"]
+  отфильтровать present где name → «Is compiled» от name и inclusions
+
+тотальная функция «Kept if present»
+  принимает kept: список строки, inclusion: «Inclusion», present: список строки
+  возвращает список строки
+  если present содержит (inclusion.«included»)
+    то «Added once» от kept и (inclusion.«included»)
+    иначе kept
+
+тотальная функция «Asked files»
+  принимает inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  пример «Every file lying beside that someone includes is asked once»
+    дано inclusions равно [запись «Inclusion» с «file» равным "a.c" и «included» равным "x.h",
+      запись «Inclusion» с «file» равным "b.c" и «included» равным "x.h",
+      запись «Inclusion» с «file» равным "b.c" и «included» равным "gone.h"]
+    дано present равно ["a.c", "b.c", "x.h"]
+    ожидается ["x.h"]
+  свёртка inclusions начиная с (пустой список) как kept и inclusion → «Kept if present» от kept и inclusion и present
+
+тотальная функция «Renamed»
+  принимает file: строка, ending: строка
+  возвращает строка
+  пример «The object is named after its source»
+    дано file равно "flang_cli.c"
+    дано ending равно ".o"
+    ожидается "flang_cli.o"
+  если (длина file) больше 2
+    то соединить [(подстрока file с 1 по ((длина file) минус 2)), ending] по ""
+    иначе file
+
+тотальная функция «Object of»
+  принимает source: строка
+  возвращает строка
+  «Renamed» от source и ".o"
+
+тотальная функция «Source of»
+  принимает built: строка
+  возвращает строка
+  «Renamed» от built и ".c"
+
+тотальная функция «Wanted»
+  принимает asked: строка, inclusions: список «Inclusion», present: список строки
+  возвращает список строки
+  пусть sources равно («Compiled sources» от inclusions и present)
+  пусть including равно (отфильтровать sources где source → («Closure» от source и inclusions и present) содержит asked)
+  отобразить including как source → «Object of» от source
+
+тотальная функция «Rebuilt in»
+  принимает line: строка
+  возвращает строка
+  «Word» от 1 и (элемент 2 в (разделить line по " -c -o "))
+
+тотальная функция «Rebuilt objects»
+  принимает output: строка
+  возвращает список строки
+  пример «Only compiled objects are named»
+    дано output равно "make: Entering directory '/w'\ncc -O2 -c -o a.o a.c\nar rcs liba.a a.o\n"
+    ожидается ["a.o"]
+  пусть compiling равно (отфильтровать («Lines» от output) где line → line содержит " -c -o ")
+  «All added» от (пустой список) и (отобразить compiling как line → «Rebuilt in» от line)
+
+тотальная функция «Without»
+  принимает names: список строки, taken: список строки
+  возвращает список строки
+  пример «What the second list has is taken away»
+    дано names равно ["a.o", "b.o"]
+    дано taken равно ["b.o"]
+    ожидается ["a.o"]
+  отфильтровать names где name → не (taken содержит name)
+
+тотальная функция «Make question»
+  принимает copy: строка, asked: строка
+  возвращает строка
+  пример «A question is named by the copy and the file»
+    дано copy равно "missing"
+    дано asked равно "flang_runtime.h"
+    ожидается "make missing flang_runtime.h"
+  соединить ["make ", copy, " ", asked] по ""
+
+тотальная функция «Place of»
+  принимает copy: строка, answers: список «Answer»
+  возвращает строка
+  соединить [(«Made of» от "work" и answers), "/", copy] по ""
+
+тотальная функция «Present»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Listed of» от "present" и answers
+
+тотальная функция «Found inclusions»
+  принимает answers: список «Answer»
+  возвращает список «Inclusion»
+  «Inclusions» от («Output of» от "includes" и answers)
+
+тотальная функция «Asked of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Asked files» от («Found inclusions» от answers) и («Present» от answers)
+
+тотальная функция «Compiled of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Compiled sources» от («Found inclusions» от answers) и («Present» от answers)
+
+тотальная функция «Rebuilt by»
+  принимает copy: строка, asked: строка, answers: список «Answer»
+  возвращает список строки
+  «Rebuilt objects» от («Output of» от («Make question» от copy и asked) и answers)
+
+тотальная функция «Is rule head»
+  принимает line: строка, head: строка
+  возвращает признак
+  пусть odd равно ((head содержит " ") или (head содержит "=")) или ((head содержит "$") или (пусто head))
+  пусть aside равно ((line начинается с "\t") или (line начинается с "#")) или (line начинается с ".")
+  (line содержит ":") и притом (не (odd или aside))
+
+тотальная функция «Target of line»
+  принимает kept: список строки, line: строка
+  возвращает список строки
+  пусть head равно (элемент 1 в (разделить line по ":"))
+  если не («Is rule head» от line и head)
+    то kept
+    иначе если ["all", "clean", "install", "uninstall"] содержит head
+      то kept
+      иначе «Added once» от kept и head
+
+тотальная функция «Targets»
+  принимает makefile: строка
+  возвращает список строки
+  пример «Rule targets are named, the phony ones are not»
+    дано makefile равно "CC ?= cc\nall: flang\nflang: a.o\n\t$(CC) -o $@ a.o\nclean:\n\trm a.o\na.o: a.c\n.PHONY: all\n"
+    ожидается ["flang", "a.o"]
+  свёртка («Lines» от makefile) начиная с (пустой список) как kept и line → «Target of line» от kept и line
+
+тотальная функция «Lines back»
+  принимает lines: список строки
+  возвращает строка
+  соединить (отобразить lines как line → соединить [line, "\n"] по "") по ""
+
+тотальная функция «Without lines of»
+  принимает makefile: строка, target: строка
+  возвращает строка
+  пример «The rule of one object is dropped»
+    дано makefile равно "a.o: a.c a.h\nb.o: b.c b.h\n"
+    дано target равно "a.o:"
+    ожидается "b.o: b.c b.h\n"
+  «Lines back» от (отфильтровать («Lines» от makefile) где line → не (line начинается с target))
+
+тотальная функция «Line with»
+  принимает line: строка, target: строка, header: строка
+  возвращает строка
+  если line начинается с target то соединить [line, " ", header] по "" иначе line
+
+тотальная функция «With header added»
+  принимает makefile: строка, target: строка, header: строка
+  возвращает строка
+  пример «A foreign header is added to one rule»
+    дано makefile равно "a.o: a.c a.h\nb.o: b.c b.h\n"
+    дано target равно "b.o:"
+    дано header равно "a.h"
+    ожидается "a.o: a.c a.h\nb.o: b.c b.h a.h\n"
+  «Lines back» от (отобразить («Lines» от makefile) как line → «Line with» от line и target и header)
+
+тотальная функция «Forged missing»
+  возвращает строка
+  "missing"
+
+тотальная функция «Forged extra»
+  возвращает строка
+  "extra"
+
+тотальная функция «Variant of»
+  принимает name: строка, makefile: строка
+  возвращает «Variant»
+  запись «Variant» с «name» равным name и «makefile» равным makefile
+
+тотальная функция «Variants»
+  принимает mode: строка, makefile: строка
+  возвращает список «Variant»
+  пример «The check asks the printed Makefile as it is»
+    дано mode равно "check"
+    дано makefile равно "a.o: a.c a.h\n"
+    ожидается [запись «Variant» с «name» равным "printed" и «makefile» равным "a.o: a.c a.h\n"]
+  пусть missing равно («Without lines of» от makefile и "compiler_flang.o:")
+  пусть extra равно («With header added» от makefile и "flang_cli.o:" и "compiler_flang.h")
+  если mode равен "forgery"
+    то [(«Variant of» от («Forged missing») и missing), («Variant of» от («Forged extra») и extra)]
+    иначе [(«Variant of» от "printed" и makefile)]
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Word» от 1 и (соединить («Given of» от "mode" и answers) по " ")
+
+тотальная функция «Variants of»
+  принимает answers: список «Answer»
+  возвращает список «Variant»
+  «Variants» от («Mode» от answers) и («Output of» от "makefile" и answers)
+
+тотальная функция «Setup script»
+  возвращает строка
+  соединить ["set -e; place=$1; text=$2; shift 2; mkdir -p \"$place\"; place=$(cd \"$place\" && pwd); ",
+    "cd \"$0\"; for f in *.c *.h; do [ -f \"$f\" ] || continue; : > \"$place/$f\"; done; ",
+    "cd \"$place\"; touch -t 200001010000 *.c *.h; printf '%s' \"$text\" > Makefile; ",
+    "for o in \"$@\"; do : > \"$o\"; done; [ $# -eq 0 ] || touch -t 200001020000 \"$@\""] по ""
+
+тотальная функция «Objects to fake»
+  принимает copy: «Variant», answers: список «Answer»
+  возвращает список строки
+  пусть fakes равно (отобразить («Compiled of» от answers) как source → «Object of» от source)
+  «All added» от («Targets» от (copy.«makefile»)) и fakes
+
+тотальная функция «Setup question»
+  принимает copy: «Variant», answers: список «Answer»
+  возвращает «Question»
+  пусть place равно («Place of» от (copy.«name») и answers)
+  пусть head равно ["-c", («Setup script»), («Directory» от answers), place, (copy.«makefile»)]
+  пусть arguments равно («Соединить списки» от head и («Objects to fake» от copy и answers))
+  «Run» от (соединить ["setup ", (copy.«name»)] по "") и "sh" и arguments
+
+тотальная функция «Make run»
+  принимает copy: «Variant», asked: строка, answers: список «Answer»
+  возвращает «Question»
+  пусть place равно («Place of» от (copy.«name») и answers)
+  «Run» от («Make question» от (copy.«name») и asked) и "make" и ["-n", "-W", asked, "-C", place]
+
+тотальная функция «Variant questions»
+  принимает copy: «Variant», answers: список «Answer»
+  возвращает список «Question»
+  пусть makes равно (отобразить («Asked of» от answers) как asked → «Make run» от copy и asked и answers)
+  приписать («Setup question» от copy и answers) к makes
+
+тотальная функция «Includes script»
+  возвращает строка
+  соединить ["cd \"$0\" && for f in *.c *.h; do [ -f \"$f\" ] || continue; ",
+    "sed -n 's/^[[:space:]]*#[[:space:]]*include[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p' \"$f\" | ",
+    "while IFS= read -r i; do printf '%s\\t%s\\n' \"$f\" \"$i\"; done; done"] по ""
+
+тотальная функция «Work pattern»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/makefile-headers."] по ""
+
+тотальная функция «Survey»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  [(«Temporary directory» от "work" и («Work pattern» от answers)),
+    («List» от "present" и («Directory» от answers)),
+    («Run» от "includes" и "sh" и ["-c", («Includes script»), («Directory» от answers)]),
+    («Read» от "makefile" и (соединить [(«Directory» от answers), "/Makefile"] по ""))]
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Made of» от "work" и answers)
+    то пустой список
+    иначе [(«Run» от "cleanup" и "rm" и ["-rf", («Made of» от "work" и answers)])]
+
+тотальная функция «Questions of variants»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Gathered» от (отобразить («Variants of» от answers) как copy → «Variant questions» от copy и answers)
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 0) или (stages больше 3)
+    то пустой список
+    иначе элемент (4 минус stages) в [
+      [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP")],
+      («Survey» от answers),
+      («Questions of variants» от answers),
+      («Cleanup» от answers)]
+
+тотальная функция «Missing line»
+  принимает built: строка, asked: строка
+  возвращает строка
+  пример «A missing rebuild names the object and the file»
+    дано built равно "a.o"
+    дано asked равно "x.h"
+    ожидается "НЕ ПЕРЕСОБИРАЕТСЯ: a.o — a.c включает x.h (сам или через другой файл), а make -n -W x.h его не зовёт"
+  соединить ["НЕ ПЕРЕСОБИРАЕТСЯ: ", built, " — ", («Source of» от built), " включает ", asked,
+    " (сам или через другой файл), а make -n -W ", asked, " его не зовёт"] по ""
+
+тотальная функция «Extra line»
+  принимает built: строка, asked: строка
+  возвращает строка
+  пример «An extra rebuild names the object and the file»
+    дано built равно "b.o"
+    дано asked равно "x.h"
+    ожидается "ЛИШНЯЯ ПЕРЕСБОРКА: b.o — make -n -W x.h его зовёт, а b.c x.h не включает"
+  соединить ["ЛИШНЯЯ ПЕРЕСБОРКА: ", built, " — make -n -W ", asked, " его зовёт, а ",
+    («Source of» от built), " ", asked, " не включает"] по ""
+
+тотальная функция «Troubles at»
+  принимает copy: строка, asked: строка, answers: список «Answer»
+  возвращает список строки
+  пусть wanted равно («Wanted» от asked и («Found inclusions» от answers) и («Present» от answers))
+  пусть rebuilt равно («Rebuilt by» от copy и asked и answers)
+  пусть missing равно (отобразить («Without» от wanted и rebuilt) как built → «Missing line» от built и asked)
+  пусть extra равно (отобразить («Without» от rebuilt и wanted) как built → «Extra line» от built и asked)
+  «Соединить списки» от missing и extra
+
+тотальная функция «Troubles of»
+  принимает copy: строка, answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от (отобразить («Asked of» от answers) как asked → «Troubles at» от copy и asked и answers)
+
+тотальная функция «Make failed»
+  принимает copy: строка, asked: строка, answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от («Make question» от copy и asked) и answers) равен 0)
+
+тотальная функция «Make failure»
+  принимает copy: строка, asked: строка, answers: список «Answer»
+  возвращает строка
+  пусть question равно («Make question» от copy и asked)
+  соединить ["make -n -W ", asked, " ответил кодом ", (к строке («Exit code of» от question и answers)), ": ",
+    («First line» от («Errors of» от question и answers))] по ""
+
+тотальная функция «Failures of»
+  принимает copy: строка, answers: список «Answer»
+  возвращает список строки
+  пусть setup равно (соединить ["setup ", copy] по "")
+  пусть failed равно (отфильтровать («Asked of» от answers) где asked → «Make failed» от copy и asked и answers)
+  пусть why равно («First line» от («Errors of» от setup и answers))
+  если («Exit code of» от setup и answers) равен 0
+    то отобразить failed как asked → «Make failure» от copy и asked и answers
+    иначе [(соединить ["копия «", copy, "» не заведена: ", why] по "")]
+
+тотальная функция «Failed with»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от name и answers) равен 0)
+
+тотальная функция «Ground failures»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть directory равно («Directory» от answers)
+  «Chosen» от [
+    («When» от (пусто («Made of» от "work" и answers)) и ["временный каталог не заведён"]),
+    («When» от ((длина («Present» от answers)) равен 0) и [(соединить ["не прочитан каталог ", directory] по "")]),
+    («When» от («Failed with» от "makefile" и answers) и [(соединить ["нет Makefile в ", directory] по "")]),
+    («When» от («Failed with» от "includes" и answers) и ["включения не прочитаны"]),
+    («When» от ((длина («Asked of» от answers)) равен 0) и ["ни один исходник не включает файла рядом"]),
+    («When» от ((длина («Compiled of» от answers)) равен 0) и ["в каталоге нет исходника C"])] и пустой список
+
+тотальная функция «Map line»
+  принимает asked: строка, answers: список «Answer»
+  возвращает строка
+  соединить ["  ", asked, " → ", (соединить («Rebuilt by» от "printed" и asked и answers) по " ")] по ""
+
+тотальная функция «Advice»
+  возвращает список строки
+  обеспечивает «three lines of advice» (длина результат) равен 3
+  ["Makefile печатает «Зависимости заголовков Makefile» в flang/self/emit-c.flang; в семя — перепечаткой.",
+   "Пока зависимости нет, смена файла не пересобирает объектный: новое линкуется со старым.",
+   "Обходной путь до перепечатки: make -C bootstrap -B."]
+
+тотальная функция «Not checked»
+  принимает failures: список строки
+  возвращает «Продолжение»
+  пусть message равно (соединить (приписать "НЕ ПРОВЕРЕНО:" к failures) по "\n")
+  вариант «Не проверено» с код равным "FLANG_MAKEFILE_HEADERS_NOT_CHECKED" и сообщение равным message
+
+тотальная функция «Check refusal»
+  принимает troubles: список строки, answers: список «Answer»
+  возвращает «Продолжение»
+  пусть head равно (соединить ["Makefile в ", («Directory» от answers), " не знает включённых файлов:"] по "")
+  пусть message равно (соединить («Gathered words» от [[head], troubles, [""], («Advice»)]) по "\n")
+  вариант «Провал» с код равным "FLANG_MAKEFILE_HEADERS_MISSING" и сообщение равным message
+
+тотальная функция «Check approval»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть head равно (соединить ["Makefile в ", («Directory» от answers), " знает каждый включённый файл; ",
+    "make -n -W пересобирает ровно тех, кто его включает:"] по "")
+  пусть shown равно (отобразить («Asked of» от answers) как asked → «Map line» от asked и answers)
+  вариант «Конец работы» с значение равным (соединить (приписать head к shown) по "\n")
+
+тотальная функция «Check verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть failures равно («Соединить списки» от («Ground failures» от answers) и («Failures of» от "printed" и answers))
+  пусть troubles равно («Troubles of» от "printed" и answers)
+  «Chosen» от [
+    («When» от ((длина failures) больше 0) и («Not checked» от failures)),
+    («When» от ((длина troubles) больше 0) и («Check refusal» от troubles и answers))] и («Check approval» от answers)
+
+тотальная функция «Caught lines»
+  принимает troubles: список строки, beginning: строка
+  возвращает список строки
+  пример «The forgery is caught when its object is named»
+    дано troubles равно ["НЕ ПЕРЕСОБИРАЕТСЯ: a.o — a.c включает x.h", "ЛИШНЯЯ ПЕРЕСБОРКА: b.o — b.c"]
+    дано beginning равно "НЕ ПЕРЕСОБИРАЕТСЯ: a.o "
+    ожидается ["НЕ ПЕРЕСОБИРАЕТСЯ: a.o — a.c включает x.h"]
+  отфильтровать troubles где line → line начинается с beginning
+
+тотальная функция «Missed»
+  принимает what: строка
+  возвращает «Продолжение»
+  пусть message равно (соединить ["ПОДЛОГ НЕ ПОЙМАН: ", what] по "")
+  вариант «Провал» с код равным "FLANG_MAKEFILE_HEADERS_FORGERY_MISSED" и сообщение равным message
+
+тотальная функция «Forgery failures»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Gathered words» от [(«Ground failures» от answers),
+    («Failures of» от («Forged missing») и answers),
+    («Failures of» от («Forged extra») и answers)]
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть failures равно («Forgery failures» от answers)
+  пусть lost равно («Troubles of» от («Forged missing») и answers)
+  пусть added равно («Troubles of» от («Forged extra») и answers)
+  пусть missing равно («Caught lines» от lost и "НЕ ПЕРЕСОБИРАЕТСЯ: compiler_flang.o ")
+  пусть extra равно («Caught lines» от added и "ЛИШНЯЯ ПЕРЕСБОРКА: flang_cli.o ")
+  пусть report равно («Gathered words» от [["подлог 1: из копии Makefile убрана строка compiler_flang.o"], missing,
+    ["подлог 2: к flang_cli.o приписан compiler_flang.h"], extra])
+  «Chosen» от [
+    («When» от ((длина failures) больше 0) и («Not checked» от failures)),
+    («When» от ((длина missing) равен 0) и («Missed» от "убрана строка compiler_flang.o, а он не назван")),
+    («When» от ((длина extra) равен 0) и («Missed» от "к flang_cli.o приписан чужой заголовок, а он не назван"))] и (
+    вариант «Конец работы» с значение равным (соединить report по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если («Mode» от answers) равен "forgery"
+    то «Forgery verdict» от answers
+    иначе «Check verdict» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 4 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check"
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Begin in mode» от "forgery"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

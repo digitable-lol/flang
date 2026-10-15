@@ -286,6 +286,23 @@ jobs:
       - name: Probe binary origin
         run: bootstrap/flang io scripts/seed/binary-origin.fscript --plan Forgery --timeout 300000
 
+      # Напечатанный Makefile обязан знать каждый файл, который исходник включает
+      # (задача 7182). Без этого смена заголовка не пересобирает объектный файл, и
+      # новый компилятор линкуется со старым рантаймом. Проба спрашивает
+      # `make -n -W <файл>` на копии семени с поддельными объектными файлами —
+      # компилировать ничего не нужно, обе работы идут секунды. Второй шаг —
+      # подлоги: из копии Makefile убрана строка compiler_flang.o, а к flang_cli.o
+      # приписан чужой заголовок; оба обязаны быть названы.
+      - name: Check printed Makefile headers
+        run: bootstrap/flang io scripts/seed/makefile-headers-probe.fscript --plan Check --timeout 300000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
+      - name: Probe printed Makefile headers
+        run: bootstrap/flang io scripts/seed/makefile-headers-probe.fscript --plan Forgery --timeout 300000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
       # Собралось — ещё не значит работает. Проверяется то, что человек наберёт
       # первым, и настоящий файл дерева, а не выдуманный.
       #
@@ -862,11 +879,13 @@ jobs:
   # объявлено напечатанным, и предок ли тот коммит HEAD. Отставание при этом не
   # прячется — оно печатается ЧИСЛОМ на каждом прогоне.
   #
-  # Ни двоичного, ни Node, ни `npm ci` работе не нужно: sh, find, awk, sha256sum.
+  # Сверке отпечатка ни двоичного, ни Node, ни `npm ci` не нужно: sh, find, awk,
+  # sha256sum. Двоичный нужен только пробе отказа ниже (задача 8570), и он из
+  # кеша работы `build`; без кеша сборка — минуты, отсюда timeout-minutes: 30.
   semya:
     name: seed-fingerprint
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       # ПОЧЕМУ ВСЯ ИСТОРИЯ, А НЕ ОДИН КОММИТ.
       #
@@ -917,6 +936,35 @@ jobs:
       - name: Check seed inputs
         continue-on-error: true
         run: sh scripts/bootstrap-reprint.sh --bystro
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
+      # Отказ `--bystro` называет цену последнего дошедшего захода печати, и
+      # число берётся из docs/reprint-ledger.tsv, а не вписано в рецепт (задача
+      # 8570: рецепт называл 8 ч 34 мин, когда ведомость давно говорила 1 ч 28
+      # мин). Проба заводит копию дерева (git worktree), правит в ней вход
+      # печати и спрашивает отказ: число в нём обязано совпасть с ведомостью.
+      # Подлоги: дописанная строка ведомости обязана сменить число в отказе, а
+      # MAX_STEPS ниже MEASURED_COST — дать отказ кодом 2. Плану нужен двоичный;
+      # он берётся из того же кеша, что у работы `build`, и собирается, если
+      # кеша нет.
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Check reprint refusal
+        run: bootstrap/flang io scripts/seed/reprint-refusal-probe.fscript --plan Check --timeout 600000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Probe reprint refusal
+        run: bootstrap/flang io scripts/seed/reprint-refusal-probe.fscript --plan Forgery --timeout 600000
         env:
           FLANG_TMP: ${{ runner.temp }}
 

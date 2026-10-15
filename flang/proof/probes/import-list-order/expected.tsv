@@ -1,12 +1,12 @@
-program	surface	code	word	ЭТО ФОТОГРАФИЯ ДЕФЕКТА задачи 1113, А НЕ КОНТРАКТ	снято с bootstrap/flang 0.7.24 4 октября 2026	строки wide-first и direct-wide-first отвечают код 0 там, где тот же файл в одиночку отказан — это и есть дефект	закрытие 1113 ОБЯЗАНО покраснить эту таблицу: её тогда перемеряют, а не правят под зелёный
+program	surface	code	word	КОНТРАКТ задачи 1113: ответ не зависит от порядка строк «использует»	снято со связывания из исходника flang/self/link.flang 15 октября 2026 (толкователь над исходником, двоичный 0.7.28)	семя, напечатанное до этой правки, на строках narrow, narrow-first, wide-first и direct-* краснеет, пока его не перепечатают
 source.flang	check	0	замечаний нет
 wide.flang	check	0	замечаний нет
-narrow.flang	check	1	FLANG_UNKNOWN_NAME, строка 6, столбец 3: имя «Второе слово» не связано
-narrow-first.flang	check	1	FLANG_UNKNOWN_NAME, строка 6, столбец 3: имя «Второе слово» не связано
-wide-first.flang	check	0	замечаний нет
+narrow.flang	check	1	narrow.flang: имя «Второе слово» не входит в список «только»
+narrow-first.flang	check	1	narrow.flang: имя «Второе слово» не входит в список «только»
+wide-first.flang	check	1	narrow.flang: имя «Второе слово» не входит в список «только»
 narrow-first.flang	run	3	не доказано
-wide-first.flang	run	0	"два"
-direct-narrow-first.flang	check	1	FLANG_UNKNOWN_NAME, строка 7, столбец 3: имя «Второе слово» не связано
-direct-wide-first.flang	check	0	замечаний нет
+wide-first.flang	run	3	не доказано
+direct-narrow-first.flang	check	1	direct-narrow-first.flang: имя «Второе слово» не входит в список «только»
+direct-wide-first.flang	check	1	direct-wide-first.flang: имя «Второе слово» не входит в список «только»
 direct-narrow-first.flang	run	3	не доказано
-direct-wide-first.flang	run	0	"два"
+direct-wide-first.flang	run	3	не доказано

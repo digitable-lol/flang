@@ -1,10 +1,10 @@
 ---
 номер: 7182
 заголовок: Ни одна проба не краснеет, если напечатанный Makefile снова перестанет знать заголовки
-статус: свободна
+статус: в работе — проба `makefile-headers:check` стоит в CI и красна на семени 0.7.28 по делу: `flang_repl.o` не знает `tls_client.c` и `tls_client.h`; печатник починен в `flang/self/emit-c.flang`, на копии семени с починенным Makefile проба зелена; подлоги (`makefile-headers:forgery`, шаг CI с убранной строкой `compiler_flang.o`) названы; зелёной на семени проба станет перепечаткой
 приоритет: P1
-исполнитель: —
-ветка: —
+исполнитель: reprint-recipe
+ветка: a/reprint-cost-and-makefile-probe
 команда: первая
 карта: Цена самосборки
 рядом: —
@@ -87,3 +87,37 @@ Makefile нет вовсе (постусловие `«без процессов 
 Makefile без строки `compiler_flang.o: … flang_runtime.h`. Проба, которая краснеет
 сегодня: шаг 3 — ни одного файла с такой проверкой в `scripts/seed`, `scripts/guards`
 и `.github`.
+
+## Ход работы (15 октября 2026)
+
+Проба — `scripts/seed/makefile-headers-probe.fscript`, ярлыки
+`makefile-headers:check` и `makefile-headers:forgery`, зов — работа `build` в
+`.github/workflows/binary.yml`. Она читает `#include "…"` каждого файла семени,
+строит транзитивное замыкание по файлам, лежащим рядом, и на копии семени с
+пустыми исходниками и поддельными объектными файлами спрашивает
+`make -n -W <файл>` о каждом включённом файле. Пересобраться обязаны ровно те
+объектные файлы, чьи исходники файл включают, — ни больше, ни меньше.
+Компилировать ничего не нужно: прогон — секунды.
+
+- Семя 0.7.28 как есть — код 1:
+  `НЕ ПЕРЕСОБИРАЕТСЯ: flang_repl.o — flang_repl.c включает tls_client.c (сам или
+  через другой файл), а make -n -W tls_client.c его не зовёт`, и то же для
+  `tls_client.h`. Клиент TLS печатается отдельной печатью и включается оболочкой
+  через `__has_include`, а печатник Makefile о нём не знал.
+- Починка печатника: `«Клиент TLS оболочки в Makefile»` в
+  `flang/self/emit-c.flang` дописывает
+  `flang_repl.o: $(wildcard tls_client.c tls_client.h)` — есть файлы, есть и
+  зависимость; нет — нет. На копии семени с этой строкой проба — код 0:
+  `compiler_flang.h → compiler_flang.o`,
+  `flang_runtime.h → flang_runtime.o compiler_flang.o flang_cli.o flang_repl.o`,
+  `tls_client.c → flang_repl.o`, `tls_client.h → flang_repl.o`.
+- Подлог (`makefile-headers:forgery`): без строки `compiler_flang.o:` названо
+  `НЕ ПЕРЕСОБИРАЕТСЯ: compiler_flang.o` для `compiler_flang.h` и
+  `flang_runtime.h`; код 0.
+- Отрицательный контроль: `compiler_flang.h`, приписанный к `flang_cli.o`, —
+  `ЛИШНЯЯ ПЕРЕСБОРКА: flang_cli.o`; на честной копии `compiler_flang.h`
+  пересобирает только `compiler_flang.o`.
+
+Не сделано: проба зелена на копии, а не на семени. Зелёной на `bootstrap/` её
+делает перепечатка, которая унесёт правку печатника в `bootstrap/Makefile`.
+

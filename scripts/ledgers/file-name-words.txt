@@ -260,6 +260,7 @@ check
 checked
 checker
 checking
+checkout
 checks
 checksum
 cherry
@@ -745,6 +746,7 @@ heavy
 height
 held
 help
+helper
 hid
 hidden
 hide
@@ -1277,6 +1279,7 @@ press
 presses
 previous
 price
+prices
 principle
 print
 printed

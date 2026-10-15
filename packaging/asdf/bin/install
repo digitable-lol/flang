@@ -8,6 +8,12 @@
 # Флаги сборки не смягчаются: -Werror -pedantic — часть контракта бэкенда,
 # напечатанный код обязан собираться без единого предупреждения. Ослабить их
 # здесь значило бы скрыть от себя же, что печать испортилась.
+#
+# Флаги берутся из Makefile архива (флаги семени, с -flto), а не задаются
+# здесь без -flto, как было до 0.7.29: gcc 13 (Ubuntu 24.04) и gcc 15 без
+# -flto останавливаются на -Wformat-truncation в flang_repl.c, и откат на
+# архив C на Linux не собирался вовсе (снято 15 октября 2026 на 0.7.28 в
+# ubuntu:24.04). С -flto та же сборка проходит; -Werror остаётся.
 set -euo pipefail
 
 : "${ASDF_INSTALL_TYPE:?}"
@@ -46,7 +52,7 @@ else
   cp -R "${ASDF_DOWNLOAD_PATH}/." "$build"
 
   jobs="${ASDF_CONCURRENCY:-1}"
-  make -C "$build" -j "$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
+  make -C "$build" -j "$jobs"
 
   # У программы одно имя — `flang`, и с 0.5.1 его даёт уже сама сборка: `make`
   # кладёт рядом `flang`, а не `flang_cli`. Прежнее имя принимается тоже, потому

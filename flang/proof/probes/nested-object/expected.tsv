@@ -1,0 +1,4 @@
+program	judge	code	word
+nested-object.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_PARSE строка 5 столбец 3: старое слово, программу из него не составить
+nested-structure.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_PARSE строка 5 столбец 3: старое слово, программу из него не составить
+separate-object.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	замечаний 0

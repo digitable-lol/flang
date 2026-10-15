@@ -739,7 +739,10 @@ jobs:
               ASDF_FLANG_FROM_SOURCE=1 bash packaging/asdf/bin/download
             ASDF_INSTALL_TYPE=version ASDF_INSTALL_VERSION="$version" ASDF_INSTALL_PATH="$root/asdf-src" \
               ASDF_DOWNLOAD_PATH="$root/asdf-src-dl" ASDF_CONCURRENCY=3 bash packaging/asdf/bin/install
-            printf 'brew\t%s\n' "$(brew --prefix)/bin/flang" >> packaging/install-parity.txt
+            # The Cellar path, not the bin/ symlink: flang names paths next to its
+            # own real location in its answers, and the instrument replaces
+            # the directory it was given.
+            printf 'brew\t%s\n' "$(brew --cellar)/flang-package/$version/bin/flang" >> packaging/install-parity.txt
             printf 'asdf-source\t%s\n' "$root/asdf-src/bin/flang" >> packaging/install-parity.txt
           fi
           cat packaging/install-parity.txt

@@ -1910,3 +1910,6 @@ cb114d9274c6044db2efbcc3923352d6|0|×|×|×|3|flang/proof/probes/ct-laws/program
 c218b0c6b08465319ece2a61e3598862|1|×|×|×|2|flang/proof/checker/tests/families/nested-quantifier/exists-under-for-all-inside-conjunction.flang
 7d10df9d9c1f5160df1ea5f9e2970291|1|×|×|×|0|flang/proof/checker/tests/families/nested-quantifier/false-goal-under-conjunction.flang
 3f9a447c2d5585803d05051024560eb2|1|×|×|×|0|flang/proof/checker/tests/families/existence/named-witness-is-wrong.flang
+f0632f8d7fb82fc97ba9d4a6a5b5953e|9|9|0|0|0|flang/ct/russian/pregroup.flang
+c75f1c900166044486d4cb1384de7327|2|2|0|0|0|flang/ct/russian/parse.flang
+6b510c73bb13638a1502750d76684454|7|×|×|×|4|flang/ct/russian/category.flang

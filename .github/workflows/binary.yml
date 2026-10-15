@@ -294,12 +294,20 @@ jobs:
       # подлоги: из копии Makefile убрана строка compiler_flang.o, а к flang_cli.o
       # приписан чужой заголовок; оба обязаны быть названы.
       - name: Check printed Makefile headers
-        run: bootstrap/flang io scripts/seed/makefile-headers-probe.fscript --plan Check --timeout 300000
+        run: bootstrap/flang run-script makefile-headers:forgery && bootstrap/flang run-script makefile-headers:check
         env:
           FLANG_TMP: ${{ runner.temp }}
-
-      - name: Probe printed Makefile headers
-        run: bootstrap/flang io scripts/seed/makefile-headers-probe.fscript --plan Forgery --timeout 300000
+      - name: Probe Makefile headers check by a seed without the compiler_flang.o rule
+        run: |
+          forged="$RUNNER_TEMP/forged-seed"
+          mkdir -p "$forged"
+          cp bootstrap/*.c bootstrap/*.h "$forged"/
+          grep -v '^compiler_flang.o:' bootstrap/Makefile > "$forged/Makefile"
+          if bootstrap/flang run-script makefile-headers:check "$forged" > "$RUNNER_TEMP/forged.out" 2>&1; then
+            echo "the check stayed green on a Makefile without the compiler_flang.o rule" >&2
+            exit 1
+          fi
+          grep -q 'НЕ ПЕРЕСОБИРАЕТСЯ: compiler_flang.o' "$RUNNER_TEMP/forged.out" || { cat "$RUNNER_TEMP/forged.out"; exit 1; }
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -960,11 +968,19 @@ jobs:
         if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       - name: Check reprint refusal
-        run: bootstrap/flang io scripts/seed/reprint-refusal-probe.fscript --plan Check --timeout 600000
+        run: bootstrap/flang run-script reprint-refusal:forgery && bootstrap/flang run-script reprint-refusal:check
         env:
           FLANG_TMP: ${{ runner.temp }}
-      - name: Probe reprint refusal
-        run: bootstrap/flang io scripts/seed/reprint-refusal-probe.fscript --plan Forgery --timeout 600000
+      - name: Probe reprint refusal check by a cost written into the recipe
+        run: |
+          sed 's|$(last_landed_cost "$ROOT/docs/reprint-ledger.tsv")|8 ч 34 мин|' scripts/bootstrap-reprint.sh > "$RUNNER_TEMP/recipe.sh"
+          cp "$RUNNER_TEMP/recipe.sh" scripts/bootstrap-reprint.sh
+          if bootstrap/flang run-script reprint-refusal:check; then
+            git checkout -- scripts/bootstrap-reprint.sh
+            echo "the check stayed green on a refusal with a written-in cost" >&2
+            exit 1
+          fi
+          git checkout -- scripts/bootstrap-reprint.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 

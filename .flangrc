@@ -181,6 +181,7 @@ script.cli-commands:check = bootstrap/flang io scripts/guards/cli-commands-guard
 script.darwin:check = bootstrap/flang io scripts/guards/darwin-guard.fscript --на-веру
 script.homebrew-formula:check = bootstrap/flang io scripts/guards/homebrew-formula-guard.fscript --на-веру
 script.asdf-plugin:check = bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan 'Плагин asdf не отстал от дерева'
+script.install-parity:check = bootstrap/flang io packaging/install-parity.flang --plan 'Сверка' --на-веру --timeout 3600000
 script.asdf-plugin:forgery = bootstrap/flang io scripts/guards/asdf-plugin-guard.fscript --plan 'Подлог'
 script.delivery:check = bootstrap/flang io scripts/guards/delivery-guard.flang --plan 'Состав поставки сходится с деревом'
 script.skills-page:check = bootstrap/flang io scripts/guards/skills-follow-the-page.flang --plan Check

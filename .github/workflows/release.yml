@@ -633,34 +633,90 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" flang-package* SHA256SUMS --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
 
-  # The filled formula installed by brew from the assets of this run, before
-  # anything reaches the tap: install, `brew test`, and the old name `flang`
-  # resolved through Aliases/flang.
-  homebrew:
-    name: homebrew (flang-package)
+  # Every channel installed from the assets of this run, then compared by the
+  # parity instrument (packaging/install-parity.flang, `install-parity:check`):
+  # 60 calls, the first install is the reference, every other one must
+  # answer each call with the same code, stdout and stderr. A different
+  # `--version` is named apart as "not the same binary".
+  #   Linux: tarball, install.sh, deb (dpkg), rpm (unpacked by rpm2cpio),
+  #          asdf (prebuilt).
+  #   macOS: tarball, install.sh, brew (the filled formula in a local tap,
+  #          plus `brew test` and the old name `flang` through Aliases/flang),
+  #          asdf (prebuilt), asdf (ASDF_FLANG_FROM_SOURCE=1, the C archive).
+  # The instrument itself runs on the prebuilt binary: no seed build needed.
+  install-parity:
+    name: install-parity (${{ matrix.os }})
     needs: packages
     if: ${{ !cancelled() && needs.packages.result == 'success' }}
-    runs-on: macos-14
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: linux, arch: x86_64, runner: ubuntu-24.04 }
+          - { os: macos, arch: arm64, runner: macos-14 }
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_FROM_API: "1"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-assets
           path: assets
-      - name: Install the formula from this run
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-          HOMEBREW_NO_INSTALL_FROM_API: "1"
+
+      - name: Install every channel
         run: |
           set -eu
-          version="$(sed -n 's/.*flang-package-\(.*\)-macos-arm64\.tar\.gz$/\1/p' assets/SHA256SUMS)"
-          sh packaging/prebuilt/manifests.sh "$version" assets/SHA256SUMS formula "file://$PWD/assets"
-          brew tap-new --no-git local/flangtest
-          tap="$(brew --repository)/Library/Taps/local/homebrew-flangtest"
-          cp formula/flang-package.rb "$tap/Formula/"
-          mkdir -p "$tap/Aliases"
-          ln -s ../Formula/flang-package.rb "$tap/Aliases/flang"
-          brew install local/flangtest/flang-package
-          brew test local/flangtest/flang-package
-          "$(brew --prefix)/bin/flang" --version
-          brew info local/flangtest/flang | head -1
+          assets="$PWD/assets"
+          version="$(sed -n 's/.*flang-package-\(.*\)-${{ matrix.os }}-${{ matrix.arch }}\.tar\.gz$/\1/p' assets/SHA256SUMS)"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          root="$RUNNER_TEMP/installs"
+          mkdir -p "$root/tarball" "$root/work"
+          tar -xzf "assets/flang-package-$version-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" -C "$root/tarball"
+          tarball="$root/tarball/flang-package-$version-${{ matrix.os }}-${{ matrix.arch }}/bin/flang"
+          FLANG_VERSION="$version" FLANG_DOWNLOAD_URL="file://$assets" PREFIX="$root/install-sh" sh install.sh
+          ASDF_INSTALL_VERSION="$version" ASDF_DOWNLOAD_PATH="$root/asdf-dl" ASDF_FLANG_RELEASE_URL="file://$assets" \
+            bash packaging/asdf/bin/download
+          ASDF_INSTALL_TYPE=version ASDF_INSTALL_VERSION="$version" ASDF_INSTALL_PATH="$root/asdf" \
+            ASDF_DOWNLOAD_PATH="$root/asdf-dl" bash packaging/asdf/bin/install
+          {
+            echo "$PWD"
+            echo "$root/work"
+            printf 'tarball\t%s\n' "$tarball"
+            printf 'install-sh\t%s\n' "$root/install-sh/bin/flang"
+            printf 'asdf\t%s\n' "$root/asdf/bin/flang"
+          } > packaging/install-parity.txt
+          if [ "${{ matrix.os }}" = linux ]; then
+            sudo dpkg -i "assets/flang-package_${version}_amd64.deb"
+            mkdir -p "$root/rpm"
+            (cd "$root/rpm" && rpm2cpio "$assets/flang-package-${version}-1.x86_64.rpm" | cpio -idm --quiet)
+            printf 'deb\t%s\n' /usr/bin/flang >> packaging/install-parity.txt
+            printf 'rpm\t%s\n' "$root/rpm/usr/bin/flang" >> packaging/install-parity.txt
+          else
+            sh packaging/prebuilt/manifests.sh "$version" assets/SHA256SUMS "$root/formula" "file://$assets"
+            brew tap-new --no-git local/flangtest
+            tap="$(brew --repository)/Library/Taps/local/homebrew-flangtest"
+            cp "$root/formula/flang-package.rb" "$tap/Formula/"
+            mkdir -p "$tap/Aliases"
+            ln -s ../Formula/flang-package.rb "$tap/Aliases/flang"
+            brew install local/flangtest/flang-package
+            brew test local/flangtest/flang-package
+            brew info local/flangtest/flang | head -1
+            ASDF_INSTALL_VERSION="$version" ASDF_DOWNLOAD_PATH="$root/asdf-src-dl" ASDF_FLANG_RELEASE_URL="file://$assets" \
+              ASDF_FLANG_FROM_SOURCE=1 bash packaging/asdf/bin/download
+            ASDF_INSTALL_TYPE=version ASDF_INSTALL_VERSION="$version" ASDF_INSTALL_PATH="$root/asdf-src" \
+              ASDF_DOWNLOAD_PATH="$root/asdf-src-dl" ASDF_CONCURRENCY=3 bash packaging/asdf/bin/install
+            printf 'brew\t%s\n' "$(brew --prefix)/bin/flang" >> packaging/install-parity.txt
+            printf 'asdf-source\t%s\n' "$root/asdf-src/bin/flang" >> packaging/install-parity.txt
+          fi
+          cat packaging/install-parity.txt
+          echo "FLANG=$tarball" >> "$GITHUB_ENV"
+
+      - name: Compare the installs
+        run: |
+          set -eu
+          # bootstrap/flang is not in the checkout (it is a build product); the
+          # prebuilt binary of this run takes its place to run the instrument.
+          ln -sf "$FLANG" bootstrap/flang
+          bootstrap/flang run-script install-parity:check

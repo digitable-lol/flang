@@ -161,3 +161,6 @@ flang/self/bootstrap/collision-probe.flang
 # читает `fspec/guard.flang` на каждой проверке каталога, и без них она не идёт.
 fspec/clarifications.txt
 /.flang-cache/
+
+# Settings of the install parity run, written by CI (release.yml, install-parity).
+packaging/install-parity.txt

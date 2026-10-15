@@ -1342,7 +1342,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|452|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|456|291|8|107|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|663|551|30|78|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|144|88|4|50|0|flang/self/emit-elixir.flang
@@ -1631,6 +1631,7 @@ a98d9e712b2f955014f8cbb920a0249c|36|36|0|0|0|scripts/release/bump-version.fscrip
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/release/path-without-node.fscript
 a0738ba8b035da99fa3ecc7c0f7d6f39|32|30|2|0|0|scripts/release/release-in-c.fscript
 55039b46f2e76c84ceab33604185618c|8|7|1|0|0|scripts/seed/bootstrap-point-by-binary.fscript
+db31494881cf584b97db52db42409f8f|3|3|0|0|0|scripts/seed/makefile-headers-probe.fscript
 8904a075824162e91c466ab52d01d502|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
 8c533af5ebe420fe7a9b8a1a9ef35ccf|9|9|0|0|0|scripts/seed/print-progress.fscript
 6bec7ed819a851590422857589b315ec|10|7|3|0|0|scripts/seed/reprint-freshness.fscript

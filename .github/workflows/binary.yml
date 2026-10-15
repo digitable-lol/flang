@@ -2008,6 +2008,12 @@ jobs:
         # with an older binary the set must diverge (negative control through FLANG_BIN).
         run: bootstrap/flang io flang/proof/probes/ct-laws/run.fscript --plan Binary --timeout 900000
 
+      - name: Check the russian pregroup grammar on its probe sentences
+        # ADR-0109: 71 sentences, each answered by flang run on flang/ct/russian/parse.flang.
+        run: bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
+        env:
+          LC_ALL: C.UTF-8
+
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 

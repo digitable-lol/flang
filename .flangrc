@@ -69,6 +69,7 @@ script.kernel-memo:probe = bootstrap/flang io flang/proof/probes/kernel-memo/run
 script.ru-morphology:probe = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Binary
 script.ru-morphology:forgery = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Forgery
 script.ru-morphology:snap = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Snap
+script.russian-grammar:probe = bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
 script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-demo.fscript --plan Demo --timeout 600000
 script.ring-rules:probe = bootstrap/flang io flang/proof/probes/ring-laws/run.fscript --plan Binary --max-steps 4000000000 --timeout 1800000
 script.randomness:probe = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Binary

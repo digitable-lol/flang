@@ -721,7 +721,7 @@ jobs:
           if [ "${{ matrix.os }}" = linux ]; then
             sudo dpkg -i "assets/flang-package_${version}_amd64.deb"
             mkdir -p "$root/rpm"
-            (cd "$root/rpm" && rpm2cpio "$assets/flang-package-${version}-1.x86_64.rpm" | cpio -idm --quiet)
+            (cd "$root/rpm" && rpm2cpio "$assets/flang-package-${version}-1.x86_64.rpm" | cpio -idm --quiet --no-absolute-filenames)
             printf 'deb\t%s\n' /usr/bin/flang >> packaging/install-parity.txt
             printf 'rpm\t%s\n' "$root/rpm/usr/bin/flang" >> packaging/install-parity.txt
           else
@@ -733,7 +733,8 @@ jobs:
             ln -s ../Formula/flang-package.rb "$tap/Aliases/flang"
             brew install local/flangtest/flang-package
             brew test local/flangtest/flang-package
-            brew info local/flangtest/flang | head -1
+            brew info local/flangtest/flang > "$root/brew-info.txt"
+            head -1 "$root/brew-info.txt"
             ASDF_INSTALL_VERSION="$version" ASDF_DOWNLOAD_PATH="$root/asdf-src-dl" ASDF_FLANG_RELEASE_URL="file://$assets" \
               ASDF_FLANG_FROM_SOURCE=1 bash packaging/asdf/bin/download
             ASDF_INSTALL_TYPE=version ASDF_INSTALL_VERSION="$version" ASDF_INSTALL_PATH="$root/asdf-src" \

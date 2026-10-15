@@ -751,3 +751,22 @@ jobs:
           # prebuilt binary of this run takes its place to run the instrument.
           ln -sf "$FLANG" bootstrap/flang
           bootstrap/flang run-script install-parity:check
+
+      # The instrument must go red when one install is damaged: here the
+      # install.sh copy loses share/flang/js, and the run must fail on the
+      # `emit --target js` call. An instrument that stays green on this is
+      # indistinguishable from one that is switched off.
+      - name: Probe the instrument with a damaged install
+        run: |
+          set -eu
+          root="$RUNNER_TEMP/installs"
+          rm -rf "$root/install-sh/share/flang/js" "$root/work-probe"
+          mkdir -p "$root/work-probe"
+          {
+            echo "$PWD"
+            echo "$root/work-probe"
+            printf 'tarball\t%s\n' "$FLANG"
+            printf 'install-sh-without-js\t%s\n' "$root/install-sh/bin/flang"
+          } > packaging/install-parity.txt
+          if bootstrap/flang run-script install-parity:check; then exit 1; fi
+          echo "the instrument went red on the damaged install, as it must"

@@ -381,6 +381,11 @@ FLANG_PROPERTY: нарушено свойство «результат мень�
 | `FLANG_TRANSFORM_COMPONENT` | у преобразования нет компоненты |
 | `FLANG_TRANSFORM_NOT_TOTAL` | преобразование определено не на всех объектах |
 | `FLANG_TRANSFORM_NOT_NATURAL` | квадрат естественности не коммутирует |
+| `FLANG_BIFUNCTOR_OBJECT_TWICE` | бифунктор отображает одну пару объектов дважды |
+| `FLANG_BIFUNCTOR_OBJECT_MISSING` | пара стрелок отображена, а у пары их концов образа нет |
+| `FLANG_BIFUNCTOR_ARROW_MISMATCH` | образ пары стрелок не объявлен или ведёт не между образами концов |
+| `FLANG_BIFUNCTOR_IDENTITY` | пара единиц отображена в стрелку, которая не единица |
+| `FLANG_BIFUNCTOR_COMPOSITION` | пара композиций отображена не в композицию образов частей |
 | `FLANG_ISO_NOT_INVERSE` | две стрелки не обратны друг другу |
 | `FLANG_EMBED_SHAPE` | вложение объявлено неверно |
 | `FLANG_EMBED_NOT_INJECTIVE` | вложение переводит разные значения в одно |

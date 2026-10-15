@@ -59,22 +59,46 @@ def «сортСтрок» (v : List String) : List String := v.mergeSort (fun a
 def «печатьМногочлена» (p : «Многочлен») : String :=
   " + ".intercalate («сортСтрок» (p.map (fun m => " ".intercalate m)))
 
-partial def «многочленКольца» (s : «Исх») («свои» : List String) («чья» : String) (t0 : String) : Except String «Многочлен» := do
+/-- ADR-0121: лист `«Ф» от д1 и … и дN` — вызов функции этого исходника с плоским
+    телом и ровно N входами — раскрывается подстановкой доводов вместо входов разом
+    (через заглушки) и снова идёт в многочлен: развёртка тела — равенство по
+    определению, а не новое правило. -/
+def «развернутьЛистКольца» (s : «Исх») (t : String) : Option String :=
+  let f := «ёлочка» t 1
+  if f = "" || !t.startsWith s!"«{f}» от " then none else
+  match s.«блокС» f with
+  | none => none
+  | some (a, b) =>
+    let body := s.«телоРазбора» a b
+    let ps := s.«именаДоводовФункции» f
+    let args := «сверху» ((t.drop s!"«{f}» от ".length).toString) "и"
+    if body = "" || ps.isEmpty || ps.length ≠ args.length then none else
+    let marked := ((List.range ps.length).zip ps).foldl (fun acc (i, p) => «вместо» acc p s!"ЗАГЛУШКАДОВОДА{i}") body
+    some (((List.range args.length).zip args).foldl (fun acc (i, x) => «вместо» acc s!"ЗАГЛУШКАДОВОДА{i}" («т» («обрезать» x))) marked)
+
+partial def «многочленКольца» (s : «Исх») («свои» : List String) («чья» : String) (t0 : String) («гл» : Nat := 0) : Except String «Многочлен» := do
   let t := «безОбёрток» t0
+  if t.startsWith "«" && (t.splitOn "» от ").length > 1 && «гл» < 64 then
+    if let some r := «развернутьЛистКольца» s t then
+      return (← «многочленКольца» s «свои» «чья» r («гл» + 1))
   let «сл» := «сверху» t "плюс"
   let «мн» := «сверху» t "умножить на"
   if «сл».length > 1 && «мн».length > 1 then
     throw s!"в ⟨{t}⟩ «плюс» и «умножить на» стоят рядом без скобок"
   if «сл».length > 1 then
     let mut acc : «Многочлен» := []
-    for x in «сл» do acc := acc ++ (← «многочленКольца» s «свои» «чья» x)
+    for x in «сл» do acc := acc ++ (← «многочленКольца» s «свои» «чья» x «гл»)
     return acc
   if «мн».length > 1 then
     let mut acc : «Многочлен» := [[]]
     for x in «мн» do
-      let p ← «многочленКольца» s «свои» «чья» x
+      let p ← «многочленКольца» s «свои» «чья» x «гл»
       acc := acc.flatMap (fun a => p.map (fun b => «сортСтрок» (a ++ b)))
     return acc
+  -- Литерал канона прямо в цели (закон моноида с `единица []`, ADR-0121): `[]` —
+  -- ноль, `[1]` — единица, как у сверщика на C.
+  if t = "[]" || t = "[ ]" then return []
+  if t = "[1]" || t = "[ 1 ]" then return [[]]
   if t.startsWith "«" && t.endsWith "»" && (t.splitOn "«").length = 2 && (t.splitOn "»").length = 2 then
     match «литералКанона» s («голо» t) with
     | some .«ноль» => return []

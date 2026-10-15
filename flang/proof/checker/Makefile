@@ -3,7 +3,7 @@ CFLAGS ?= -std=c99 -Wall -Wextra -Werror -pedantic -O2
 LEAN ?= lean
 LEANC ?= leanc
 OUT ?= second/out
-SECOND = Exploration Surfaces Source Terms Totality Moves Evaluator Body Node Sections Premises Theorem Ring Checker
+SECOND = Exploration Surfaces Source Terms Totality Moves Evaluator Body Node Sections Premises Theorem Ring Laws Checker
 MODULES = Binary64:Binary64 Model:Модель Rules:Правила Term:Терм Record:Запись Acceptance:Приёмка Consistency:Состоятельность RecordReader:RecordReader
 all: сверщик
 сверщик: checker.c

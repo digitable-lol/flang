@@ -10544,6 +10544,7 @@ typedef struct {
   long laws_grid;
   long laws_assumed;
   int checker;
+  long law_claims_proved;
 } proof_tally;
 
 /*
@@ -10625,8 +10626,18 @@ static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
   if (!proof_object_at(json, bytes, "laws", &from, &to)) {
     return false;
   }
-  return proof_int_at(json, from, to, "grid", &out->laws_grid) &&
-         proof_int_at(json, from, to, "assumed", &out->laws_assumed);
+  if (!proof_int_at(json, from, to, "grid", &out->laws_grid) ||
+      !proof_int_at(json, from, to, "assumed", &out->laws_assumed)) {
+    return false;
+  }
+  /* ЗАКОНЫ УТВЕРЖДЕНИЯМИ (ADR-0121) — своя доля рядом с «claims», в приговор не
+     входят; их доказанные переигрывает сверщик вместе с прочими, и счёт
+     «проиграно X из Y» обязан их знать. Поля нет — законов нет, это не беда. */
+  out->law_claims_proved = 0;
+  if (proof_object_at(json, bytes, "lawClaims", &from, &to)) {
+    return proof_int_at(json, from, to, "proved", &out->law_claims_proved);
+  }
+  return true;
 }
 
 static int proof_verdict(const proof_tally *t, bool strict) {
@@ -11153,6 +11164,14 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
      *
      * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
      * ровно как спрашивает `check`.
+     *
+     * ПЕРВЫЙ ДОВОД — ПРОВЕРЕННАЯ ПРОГРАММА, КАК У `check`, а не сырая связанная
+     * (ADR-0121, §6). Судья категорий считает законы, вызывая функции равенства,
+     * и на сырой связанной их не находил: на девяти файлах `flang/ct`, где `check`
+     * отвечал «посчитано на сетке» и кодом 0, `check --proof` отвечал «НЕ
+     * СЧИТАЛИСЬ — категория …» и кодом 2 (замер 15 октября 2026, двоичный 0.7.28
+     * против того же двоичного с этой строкой: `grp-clock-shifts`, `order-shipment`,
+     * `set-product`, `vect-plane` — 2 → 0).
      */
     kept_program = program;
     kept = has_program;
@@ -11162,7 +11181,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       const char *say = NULL;
       size_t say_bytes = 0;
       bool unjudged = false;
-      obstacle_args[0] = linked.tag == FL_NOTHING ? program : linked;
+      obstacle_args[0] = program;
       obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
       if (repl_call("Устройство категорий не сверялось", obstacle_args, 2, &obstacle) == FL_OK
           && val_text(obstacle, &say, &say_bytes) && say_bytes > 0) {
@@ -11275,7 +11294,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       code = 2;
     } else {
       tally.checker = val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)
-                          ? proof_say_independent(path, utf8, bytes, tally.proved, paths.count > 1)
+                          ? proof_say_independent(path, utf8, bytes, tally.proved + tally.law_claims_proved, paths.count > 1)
                           : -1;
       code = proof_verdict(&tally, strict);
       proof_say_verdict(path, &tally, code, strict);

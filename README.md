@@ -23,19 +23,78 @@ that carried each claim. What this does not mean:
 
 ## Install
 
-```bash
-brew install digitable-lol/tap/flang
+Prebuilt builds ship with every release from 0.7.29 on: Linux x86_64 and aarch64 (static, any
+distribution), macOS arm64 and x86_64. The package is called **flang-package**; the command it
+installs is `flang`.
 
+> **Name clash with LLVM Flang.** LLVM's Fortran compiler also installs a command named `flang`
+> (it is the `flang` formula in Homebrew and the `flang` package in the AUR). If both are installed,
+> whichever comes first on `PATH` wins. Check with `flang --version`: ours prints `flang <version>`
+> on the first line. Fix it by putting the directory of this install first on `PATH`, or call it by
+> its full path (for example `~/.local/bin/flang`).
+
+### Linux and macOS: one line
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh
+```
+
+Picks the build for your system, checks it against the release's `SHA256SUMS` and installs it into
+`~/.local` without `sudo`. Pin a version with `FLANG_VERSION=0.7.29`, choose a place with
+`PREFIX=/opt/flang` (both are environment variables of `sh`).
+
+### macOS and Linux: Homebrew
+
+```bash
+brew install digitable-lol/tap/flang-package
+```
+
+`brew install digitable-lol/tap/flang` keeps working: it is an alias of the same formula.
+
+### Any system with asdf
+
+```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
 asdf install flang latest
 asdf set -u flang latest
-
-git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap -j4
-sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
-Homebrew, asdf, or a clone: each builds the compiler from its C99 sources with `cc` and `make`.
+The plugin downloads the prebuilt build and checks its checksum. Releases before 0.7.29, or
+`ASDF_FLANG_FROM_SOURCE=1`, build from the C sources instead (needs `cc` and `make`).
+
+### Debian, Ubuntu (deb) and Fedora, openSUSE (rpm)
+
+Download the package for your CPU from the [latest release](https://github.com/digitable-lol/flang/releases/latest)
+and install it:
+
+```bash
+sudo apt install ./flang-package_<version>_amd64.deb     # or _arm64.deb
+sudo dnf install ./flang-package-<version>-1.x86_64.rpm   # or .aarch64.rpm
+```
+
+The rpm conflicts with Fedora's `flang` package (LLVM Flang): both own `/usr/bin/flang`.
+
+### Arch Linux (AUR)
+
+`packaging/aur/` holds the `PKGBUILD` of **flang-package-bin**. It is not published on the AUR yet;
+to build it locally, fill it with the release's `SHA256SUMS` (`sh packaging/prebuilt/manifests.sh`) and run
+`makepkg -si`.
+
+### From source
+
+```bash
+git clone https://github.com/digitable-lol/flang && cd flang
+make -C bootstrap -j4                  # about 6 minutes
+make -C bootstrap install PREFIX=$HOME/.local
+```
+
+Needs only a C99 compiler and `make`. This install has no `share/flang`, so `flang emit` cannot find
+the runtimes of the target languages; the prebuilt builds have them.
+
+### Windows
+
+Use WSL and the Linux one-liner above. A native Windows build is in the works.
+
 `flang --version` prints the version. More: [Installing](https://digitable-lol.github.io/flang/en/install.html).
 
 ## A first program

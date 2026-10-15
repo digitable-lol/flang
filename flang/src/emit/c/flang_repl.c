@@ -12960,6 +12960,72 @@ static void run_cost_say(fl_value result, double started) {
           run_clock() - started);
 }
 
+/*
+ * БЕДА РАЗБОРА, СВЯЗЫВАНИЯ ИЛИ ТИПОВ — НЕ НЕДОКАЗАННОСТЬ (задача 2761).
+ *
+ * Согласие `--на-веру` дано на одно: запустить программу, чьи утверждения не
+ * доказаны. До этой правки оно снимало всё: «Запуск исходников» под признаком
+ * «на веру» звал «Прогон связанного», не глядя на диагностики связывания, и
+ * программа с FLANG_DUPLICATE_NAME запускалась — ответ давала та из двух
+ * одноимённых функций, которую связывание положило первой. `flang test` и
+ * `flang emit` на том же файле отказывали кодом 1.
+ *
+ * Поэтому перед запуском, при любом ключе, хозяин связывает программу и
+ * сверяет типы — те же два шага и в том же порядке, что у `check`
+ * (`repl_check_sources`). Беда хоть в одном — запуска нет, код 1, беды
+ * напечатаны так же, как у `check`. Типы сверяются только у связанной без бед:
+ * у программы, которая не связалась, они повторили бы ту же беду неизвестными
+ * именами.
+ *
+ * Завершаемость и ядро здесь не судятся: это и есть доказанность, на которую
+ * человек дал согласие.
+ *
+ * Связанная программа отдаётся вызывающему: под согласием запуск идёт по ней
+ * («Прогон связанного»), и второй раз связывать не нужно — на больших
+ * программах связывание дороже всего остального.
+ */
+static bool run_checked(fl_value sources, const char *full, const char *path, size_t files,
+                        fl_value *program) {
+  repl_bads bads;
+  fl_value pair[2];
+  fl_value linked = fl_nothing();
+  fl_value typed = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  size_t index = 0;
+  bool ok = true;
+  bads_init(&bads);
+  pair[0] = sources;
+  pair[1] = repl_value_say(full);
+  if (repl_call("Связать исходники", pair, 2, &linked) != FL_OK ||
+      !val_field(linked, "программа", program)) {
+    bads_say(&bads, "компилятор не связал программу");
+  } else {
+    if (val_field(linked, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+      for (index = 0; index < diagnostics.as.list.count; index += 1) {
+        bads_take(&bads, diagnostics.as.list.items[index]);
+      }
+    }
+    if (bads.count == 0) {
+      if (repl_call("Проверить типы", program, 1, &typed) != FL_OK) {
+        bads_say(&bads, "проверка типов прекращена");
+      } else if (val_field(typed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+        for (index = 0; index < diagnostics.as.list.count; index += 1) {
+          bads_take(&bads, diagnostics.as.list.items[index]);
+        }
+      }
+    }
+  }
+  if (bads.count > 0) {
+    check_print_bads(&bads, path, files);
+    msg_printf(stderr, "run.not-checked",
+               "%s: не запущено — программа не прошла проверку разбора, связывания и типов; согласие на недоказанное эту проверку не снимает\n",
+               path);
+    ok = false;
+  }
+  bads_free(&bads);
+  return ok;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
@@ -12969,6 +13035,8 @@ static int run_file(int argc, char **argv) {
   fl_value args[7];
   fl_value bound = fl_nothing();
   fl_value field = fl_nothing();
+  fl_value linked = fl_nothing();
+  bool ran = false;
   char buffer[4096];
   const char *path = NULL;
   const char *name = NULL;
@@ -13105,6 +13173,8 @@ static int run_file(int argc, char **argv) {
   if (!run_args(given, &bound)) {
     fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
     code = 2;
+  } else if (!run_checked(sources, full, path, paths.count, &linked)) {
+    code = 1;
   } else {
     args[0] = sources;
     args[1] = repl_value_say(full);
@@ -13116,8 +13186,26 @@ static int run_file(int argc, char **argv) {
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
-    if (!verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL,
-                      &said)) {
+    if (how.mode == UNPROVEN_ALLOW) {
+      /* Согласие дано, и проверка выше прошла: вердикт не считается, запуск
+         идёт по уже связанной программе — так же, как «Запуск исходников»
+         под признаком «на веру», только без второго связывания. */
+      fl_value direct[5];
+      direct[0] = linked;
+      direct[1] = args[2];
+      direct[2] = args[3];
+      direct[3] = args[4];
+      direct[4] = args[5];
+      verdict_print(NULL, 0, true, &how);
+      ran = repl_call("Прогон связанного", direct, 5, &result) == FL_OK;
+      if (!ran) {
+        code = 1;
+      }
+    } else {
+      ran = verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL,
+                         &said);
+    }
+    if (!ran) {
       /*
        * Недоказанная программа без согласия: строка сказана, код — ядра. А
        * дальше идёт то, чего в строке нет и не было: ИМЕНА недоказанных

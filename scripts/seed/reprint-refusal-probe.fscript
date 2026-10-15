@@ -1,0 +1,289 @@
+модуль «Reprint refusal probe»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Root»
+  возвращает строка
+  "../.."
+
+тотальная функция «Cost line»
+  возвращает строка
+  "Цена последнего дошедшего захода — "
+
+тотальная функция «Forged seconds»
+  возвращает число
+  3723
+
+тотальная функция «Forged row»
+  возвращает строка
+  "2026-12-31\tпечать\tдошла\t3723\t1.0\t1\t8000000000000\tподлог пробы reprint-refusal-probe\n"
+
+тотальная функция «Duration»
+  принимает seconds: число
+  возвращает строка
+  пример «Minutes are rounded to the nearest»
+    дано seconds равно 20566
+    ожидается "5 ч 43 мин"
+  пример «The forged row»
+    дано seconds равно 3723
+    ожидается "1 ч 2 мин"
+  пример «Half a minute rounds up»
+    дано seconds равно 30
+    ожидается "0 ч 1 мин"
+  пусть minutes равно ((seconds плюс 30) минус ((seconds плюс 30) остаток от 60)) делить на 60
+  пусть hours равно (minutes минус (minutes остаток от 60)) делить на 60
+  соединить [(к строке hours), " ч ", (к строке (minutes остаток от 60)), " мин"] по ""
+
+тотальная функция «Is digits»
+  принимает text: строка
+  возвращает признак
+  пример «Seconds are digits»
+    дано text равно "20566"
+    ожидается да
+  пример «A blank field is not»
+    дано text равно ""
+    ожидается нет
+  «Digits» от text
+
+тотальная функция «Is landed print»
+  принимает fields: список строки
+  возвращает признак
+  если (длина fields) меньше 4
+    то нет
+    иначе ((элемент 2 в fields) равен "печать") и притом (((элемент 3 в fields) равен "дошла") и притом (
+      «Is digits» от (элемент 4 в fields)))
+
+тотальная функция «Landed seconds»
+  принимает line: строка, kept: строка
+  возвращает строка
+  пусть fields равно (разделить line по "\t")
+  если «Is landed print» от fields
+    то элемент 4 в fields
+    иначе kept
+
+тотальная функция «Last landed»
+  принимает ledger: строка
+  возвращает строка
+  пример «The last landed print wins, a removed one does not count»
+    дано ledger равно "a\tпечать\tдошла\t5283\nb\tпечать\tдошла\t20566\nc\tпечать\tснята\t100\n"
+    ожидается "20566"
+  пример «A ledger without a landed print gives nothing»
+    дано ledger равно "дата\tчто\tитог\tсекунд\n2026-08-22\tсверка\tдошла\t1198\n"
+    ожидается ""
+  свёртка («Lines» от ledger) начиная с "" как kept и line → «Landed seconds» от line и kept
+
+тотальная функция «Wanted cost»
+  принимает ledger: строка
+  возвращает строка
+  пример «The ledger names the cost»
+    дано ledger равно "2026-10-14\tпечать\tдошла\t20566\n"
+    ожидается "Цена последнего дошедшего захода — 5 ч 43 мин"
+  соединить [(«Cost line»), («Duration» от (к числу («Last landed» от ledger)))] по ""
+
+тотальная функция «Tree script»
+  возвращает строка
+  соединить ["set -e; git -C \"$0\" worktree add --detach -q \"$1/tree\" HEAD; ",
+    "cp \"$0/scripts/bootstrap-reprint.sh\" \"$1/tree/scripts/bootstrap-reprint.sh\"; ",
+    "cp \"$0/docs/reprint-ledger.tsv\" \"$1/tree/docs/reprint-ledger.tsv\"; ",
+    "printf '\\n' >> \"$1/tree/flang/self/lexer.flang\""] по ""
+
+тотальная функция «As is script»
+  возвращает строка
+  "cd \"$0/tree\" && sh scripts/bootstrap-reprint.sh --bystro"
+
+тотальная функция «Forged ledger script»
+  возвращает строка
+  "cd \"$0/tree\" && printf '%s' \"$1\" >> docs/reprint-ledger.tsv && sh scripts/bootstrap-reprint.sh --bystro"
+
+тотальная функция «Forged ceiling script»
+  возвращает строка
+  соединить ["cd \"$0/tree\" && sed 's/^MAX_STEPS=.*/MAX_STEPS=1/' scripts/bootstrap-reprint.sh ",
+    "> scripts/forged-ceiling.sh && sh scripts/forged-ceiling.sh --bystro"] по ""
+
+тотальная функция «Cleanup script»
+  возвращает строка
+  "git -C \"$0\" worktree remove --force \"$1/tree\" 2>/dev/null; rm -rf \"$1\"; git -C \"$0\" worktree prune"
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Is forgery»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Given of» от "mode" и answers) содержит "forgery"
+
+тотальная функция «Shell»
+  принимает name: строка, script: строка, rest: список строки
+  возвращает «Question»
+  «Run» от name и "sh" и (приписать "-c" к (приписать script к rest))
+
+тотальная функция «Probes»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть work равно («Work» от answers)
+  если «Is forgery» от answers
+    то [(«Shell» от "forged ledger" и («Forged ledger script») и [work, («Forged row»)]),
+      («Shell» от "forged ceiling" и («Forged ceiling script») и [work])]
+    иначе [(«Shell» от "as is" и («As is script») и [work])]
+
+тотальная функция «Work questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе приписать («Shell» от "tree" и («Tree script») и [(«Root»), («Work» от answers)]) к («Probes» от answers)
+
+тотальная функция «Cleanup»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Shell» от "cleanup" и («Cleanup script») и [(«Root»), («Work» от answers)])]
+
+тотальная функция «Work pattern»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/reprint-refusal."] по ""
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  если (stages меньше 0) или (stages больше 3)
+    то пустой список
+    иначе элемент (4 минус stages) в [
+      [(«Environment» от "temporary" и "FLANG_TMP"), («Read from» от "ledger" и («Root») и "docs/reprint-ledger.tsv")],
+      [(«Temporary directory» от "work" и («Work pattern» от answers))],
+      («Work questions» от answers),
+      («Cleanup» от answers)]
+
+тотальная функция «Failed with»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  не ((«Exit code of» от name и answers) равен 0)
+
+тотальная функция «Ground failures»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть tree равно (соединить ["копия дерева не заведена: ", («First line» от («Errors of» от "tree" и answers))] по "")
+  «Chosen» от [
+    («When» от (пусто («Work» от answers)) и ["временный каталог не заведён"]),
+    («When» от («Failed with» от "ledger" и answers) и ["не прочитана docs/reprint-ledger.tsv"]),
+    («When» от (пусто («Last landed» от («Output of» от "ledger" и answers))) и [
+      "в docs/reprint-ledger.tsv нет строки «печать дошла» — сверять отказ не с чем"]),
+    («When» от («Failed with» от "tree" и answers) и [tree])] и пустой список
+
+тотальная функция «Cost said»
+  принимает refusal: строка
+  возвращает строка
+  пример «The cost line is found in the refusal»
+    дано refusal равно "ЭТО ОТКАЗ.\nЦена последнего дошедшего захода — 5 ч 43 мин (ведомость).\n"
+    ожидается "Цена последнего дошедшего захода — 5 ч 43 мин (ведомость)."
+  свёртка («Lines» от refusal) начиная с "" как found и line → если line начинается с («Cost line») то line иначе found
+
+тотальная функция «Or none»
+  принимает said: строка
+  возвращает строка
+  если пусто said то "(строки о цене нет)" иначе said
+
+тотальная функция «Not checked»
+  принимает failures: список строки
+  возвращает «Продолжение»
+  пусть message равно (соединить (приписать "НЕ ПРОВЕРЕНО:" к failures) по "\n")
+  вариант «Не проверено» с код равным "FLANG_REPRINT_REFUSAL_NOT_CHECKED" и сообщение равным message
+
+тотальная функция «Failed»
+  принимает code: строка, lines: список строки
+  возвращает «Продолжение»
+  вариант «Провал» с код равным code и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Check verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть failures равно («Ground failures» от answers)
+  пусть said равно («Cost said» от («Errors of» от "as is" и answers))
+  пусть wanted равно («Wanted cost» от («Output of» от "ledger" и answers))
+  пусть status равно (к строке («Exit code of» от "as is" и answers))
+  пусть silent равно [(соединить ["--bystro на копии с правленым входом печати ответил кодом ", status,
+    ", а не отказом с кодом 1"] по "")]
+  пусть stale равно ["отказ называет не ту цену, что ведомость:",
+    (соединить ["  отказ:     ", («Or none» от said)] по ""),
+    (соединить ["  ведомость: ", wanted] по "")]
+  «Chosen» от [
+    («When» от ((длина failures) больше 0) и («Not checked» от failures)),
+    («When» от (не (status равен "1")) и («Failed» от "FLANG_REPRINT_REFUSAL_SILENT" и silent)),
+    («When» от (не (said начинается с wanted)) и («Failed» от "FLANG_REPRINT_REFUSAL_STALE_COST" и stale))] и (
+    вариант «Конец работы» с значение равным (соединить ["отказ --bystro называет цену по ведомости:", said] по "\n"))
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть failures равно («Ground failures» от answers)
+  пусть said равно («Cost said» от («Errors of» от "forged ledger" и answers))
+  пусть forged равно (соединить [(«Cost line»), («Duration» от («Forged seconds»))] по "")
+  пусть ceiling равно («Errors of» от "forged ceiling" и answers)
+  пусть ledger_code равно («Exit code of» от "forged ledger" и answers)
+  пусть ceiling_code равно («Exit code of» от "forged ceiling" и answers)
+  пусть ledger_caught равно (ledger_code равен 1) и притом (said начинается с forged)
+  пусть ceiling_caught равно (ceiling_code равен 2) и притом (ceiling содержит "MAX_STEPS=1 ниже измеренной цены")
+  пусть ledger_missed равно [(соединить ["ПОДЛОГ НЕ ПОЙМАН: дописана строка «печать дошла» на 3723 с, а отказ (код ",
+    (к строке ledger_code), ") говорит:"] по ""), («Or none» от said), (соединить ["ждали: ", forged] по "")]
+  пусть ceiling_missed равно [(соединить ["ПОДЛОГ НЕ ПОЙМАН: MAX_STEPS=1 ниже MEASURED_COST, а рецепт ответил кодом ",
+    (к строке ceiling_code), ", не 2"] по ""), («First line» от ceiling)]
+  пусть report равно ["подлог 1: в ведомость дописана строка «печать дошла» на 3723 с — отказ сменил цену:", said,
+    "подлог 2: MAX_STEPS=1 ниже MEASURED_COST — рецепт отказал кодом 2:", («First line» от ceiling)]
+  «Chosen» от [
+    («When» от ((длина failures) больше 0) и («Not checked» от failures)),
+    («When» от (не ledger_caught) и («Failed» от "FLANG_REPRINT_REFUSAL_FORGERY_MISSED" и ledger_missed)),
+    («When» от (не ceiling_caught) и («Failed» от "FLANG_REPRINT_REFUSAL_FORGERY_MISSED" и ceiling_missed))] и (
+    вариант «Конец работы» с значение равным (соединить report по "\n"))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  если «Is forgery» от answers
+    то «Forgery verdict» от answers
+    иначе «Check verdict» от answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 4 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin check»
+  возвращает «Inquiry»
+  «Begin in mode» от "check"
+
+тотальная функция «Begin forgery»
+  возвращает «Inquiry»
+  «Begin in mode» от "forgery"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

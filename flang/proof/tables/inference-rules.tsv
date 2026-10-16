@@ -85,12 +85,17 @@ name	family	kind	kernel-rule	anchor	status
 Яр1	Разв	rule	—	proof-kernel.flang:5579 «Ярлык применения»	code-narrower
 Разв3	Разв	rule	—	proof-kernel.flang:1343 «Развернуть подстановкой»	code
 К↑	Разв	rule	—	proof-kernel.flang:874 «Поле известного значения»	code
-Инд1	Инд	rule	—	proof-kernel.flang:1012 «Имя конструктора образца»	code
+Разв4	Разв	rule	—	proof-kernel.flang:1078 «Разбор по приписанному»	code
+Разв5	Разв	rule	—	proof-kernel.flang:1051 «Разбор внутрь»	code
+Разв6	Разв	rule	—	proof-kernel.flang:1062 «Сжатый разбор»	code
+Разв✗	Разв	ban	—	proof-kernel.flang:1268 «Связь из значения»	code
+Инд1	Инд	rule	—	proof-kernel.flang:1123 «Имя конструктора образца»	code
 Инд2	Инд	rule	—	proof-kernel.flang:5662 «Свёртка по пустому»	not-in-adr
 Инд3	Инд	rule	—	proof-kernel.flang:5695 «Свёртка по звену»	not-in-adr
 Инд4	Инд	rule	—	proof-kernel.flang:6007 «Строка под разложением»	not-in-adr
 Инд5	Инд	rule	—	proof-kernel.flang:6162 «Отрезок даёт принцип утверждению»	code
 Инд6	Инд	rule	—	proof-kernel.flang:6228 «Сумма перебирается»	code
+Инд7	Инд	rule	—	proof-kernel.flang:1205 «Разбор по любому»	code
 Т1	Т	rule	цель есть допущение	proof-kernel.flang:4656 «Есть допущением»	code-narrower
 Т2	Т	rule	цель есть допущение	proof-kernel.flang:4663 «Есть допущением с переименованием»	code
 Р1	Р	rule	разбор цели по условию	proof-kernel.flang:4217 «Ветвлением»	code

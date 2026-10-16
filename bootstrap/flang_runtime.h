@@ -1026,10 +1026,6 @@ fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out,
                        fl_error *error);
 fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
                             fl_error *error);
-fl_status fl_b_convert_to_number(fl_ctx *ctx, fl_value value, fl_value *out,
-                                 fl_error *error);
-fl_status fl_b_convert_to_natural(fl_ctx *ctx, fl_value value, fl_value *out,
-                                  fl_error *error);
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right,
                          fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix,

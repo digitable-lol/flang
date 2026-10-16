@@ -4338,15 +4338,7 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count,
  * У списка сверяется ПАРА «начало и длина»: один и тот же массив, взятый
  * разной длины, — разные списки, и длина проверяется первой.
  */
-static bool fl_exact_neighbour_equal(fl_value number, fl_value digits);
-
 bool fl_equal(fl_value left, fl_value right) {
-  if (left.tag == FL_NUMBER && right.tag == FL_LIST) {
-    return fl_exact_neighbour_equal(left, right);
-  }
-  if (left.tag == FL_LIST && right.tag == FL_NUMBER) {
-    return fl_exact_neighbour_equal(right, left);
-  }
   if (fl_is_scalar(left) || fl_is_scalar(right)) {
     if (!fl_is_scalar(left) || !fl_is_scalar(right) || left.tag != right.tag) {
       return false;
@@ -4640,55 +4632,6 @@ static size_t fl_exact_settle(const double *columns, size_t count,
     out[index] = low;
   }
   return fl_exact_trim(out, count + fl_exact_small_digits(carry, out + count));
-}
-
-static bool fl_natural_number(double value) {
-  return value >= 0.0 && value <= 9007199254740991.0 && value == floor(value);
-}
-
-static bool fl_exact_neighbour_equal(fl_value number, fl_value digits) {
-  double small[3];
-  size_t count;
-  size_t index;
-  if (!fl_natural_number(number.as.number) || !fl_exact_digits(digits)) {
-    return false;
-  }
-  count = fl_exact_small_digits(number.as.number + 0.0, small);
-  if (count != digits.as.list.count) {
-    return false;
-  }
-  for (index = 0; index < count; index++) {
-    if (digits.as.list.items[index].as.number != small[index]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static fl_status fl_exact_neighbour(fl_ctx *ctx, fl_value *value,
-                                    fl_value other, fl_error *error) {
-  double small[3];
-  size_t count;
-  size_t index;
-  fl_value *items = NULL;
-  if (value->tag != FL_NUMBER || other.tag != FL_LIST ||
-      !fl_natural_number(value->as.number) || !fl_exact_digits(other)) {
-    return FL_OK;
-  }
-  count = fl_exact_small_digits(value->as.number + 0.0, small);
-  FL_TRY(fl_list_alloc(ctx, count, &items, error));
-  for (index = 0; index < count; index++) {
-    items[index] = fl_number(small[index]);
-  }
-  *value = fl_list(items, count);
-  return FL_OK;
-}
-
-static fl_status fl_exact_pair(fl_ctx *ctx, fl_value *left, fl_value *right,
-                               fl_error *error) {
-  fl_value original = *left;
-  FL_TRY(fl_exact_neighbour(ctx, left, *right, error));
-  return fl_exact_neighbour(ctx, right, original, error);
 }
 
 typedef struct {
@@ -5063,7 +5006,6 @@ static fl_status fl_frac_compare(fl_ctx *ctx, fl_value left, fl_value right,
 static fl_status fl_exact_order(fl_ctx *ctx, fl_value left, fl_value right,
                                 bool *exact, int *out, fl_error *error) {
   *exact = true;
-  FL_TRY(fl_exact_pair(ctx, &left, &right, error));
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_compare(ctx, left, right, out, error);
   }
@@ -5072,58 +5014,6 @@ static fl_status fl_exact_order(fl_ctx *ctx, fl_value left, fl_value right,
   }
   *exact = false;
   return fl_order(ctx, left, right, error);
-}
-
-fl_status fl_b_convert_to_number(fl_ctx *ctx, fl_value value, fl_value *out,
-                                 fl_error *error) {
-  fl_nat whole;
-  double place = 1.0;
-  double sum = 0.0;
-  size_t index;
-  if (value.tag == FL_NUMBER) {
-    *out = value;
-    return FL_OK;
-  }
-  if (!fl_exact_digits(value)) {
-    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
-                   "«перевод в число»: аргумент должен быть натуральным или "
-                   "числом, получено %s",
-                   fl_type_name(ctx, value));
-  }
-  FL_TRY(fl_nat_canon(ctx, value, &whole, error));
-  if (whole.n > 3 || (whole.n == 3 && whole.d[2] >= 512.0)) {
-    return fl_fail(ctx, error, FL_CODE_PROPERTY,
-                   "«перевод в число»: натуральное больше 9007199254740991 в "
-                   "число без потери не переводится");
-  }
-  for (index = 0; index < whole.n; index++) {
-    sum += whole.d[index] * place;
-    place *= FL_EXACT_BASE;
-  }
-  *out = fl_number(sum);
-  return FL_OK;
-}
-
-fl_status fl_b_convert_to_natural(fl_ctx *ctx, fl_value value, fl_value *out,
-                                  fl_error *error) {
-  fl_nat whole;
-  if (fl_exact_digits(value)) {
-    FL_TRY(fl_nat_canon(ctx, value, &whole, error));
-    return fl_nat_value(ctx, whole, out, error);
-  }
-  if (value.tag != FL_NUMBER) {
-    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
-                   "«перевод в натуральное»: аргумент должен быть натуральным "
-                   "или числом, получено %s",
-                   fl_type_name(ctx, value));
-  }
-  if (!fl_natural_number(value.as.number)) {
-    return fl_fail(ctx, error, FL_CODE_PROPERTY,
-                   "«перевод в натуральное»: нужно целое число от 0 до "
-                   "9007199254740991");
-  }
-  *out = value;
-  return fl_exact_neighbour(ctx, out, fl_list(NULL, 0), error);
 }
 
 fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
@@ -5145,7 +5035,6 @@ fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
 
 fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
-  FL_TRY(fl_exact_pair(ctx, &left, &right, error));
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_add(ctx, left, right, out, error);
   }
@@ -5159,7 +5048,6 @@ fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
-  FL_TRY(fl_exact_pair(ctx, &left, &right, error));
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_sub(ctx, left, right, out, error);
   }
@@ -5173,7 +5061,6 @@ fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
-  FL_TRY(fl_exact_pair(ctx, &left, &right, error));
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_mul(ctx, left, right, out, error);
   }
@@ -5197,7 +5084,6 @@ fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
-  FL_TRY(fl_exact_pair(ctx, &left, &right, error));
   if (fl_exact_digits(left) && fl_exact_digits(right)) {
     return fl_exact_mod(ctx, left, right, out, error);
   }

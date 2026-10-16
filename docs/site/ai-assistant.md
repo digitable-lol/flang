@@ -174,7 +174,7 @@ The most useful thing the service gives an assistant is not `доказано` b
 named falsehood. The promise below looks obviously true, and the author's
 example under it is honest:
 
-```flang
+```flang refused
 модуль «Срок»
 
 тотальная функция «Дней осталось»
@@ -238,7 +238,7 @@ One program, four deliberate mistakes: a word reserved by the language used as a
 parameter name, two type mismatches, and a semantic one — the function returns
 zero instead of the length of the list.
 
-```flang
+```flang refused
 модуль «Отчёт»
 
 тотальная функция «Строк в списке»
@@ -315,7 +315,7 @@ The most expensive mistake when wiring it up. The service receives `source` —
 text, and nothing but text. It has no file, and the text has an import line in
 it:
 
-```flang
+```flang fragment
 модуль «Сертификат»
   использует «X.509» из "../../flang/stdlib/x509.flang"
 ```

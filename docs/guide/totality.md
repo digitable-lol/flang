@@ -22,7 +22,7 @@ them.
 
 ## The first refusal you will see
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Обратный отсчёт»
@@ -151,13 +151,36 @@ flang test docs/examples/measure/binary-search.flang
 docs/examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
 ```
 
-## `убывает` is checked at run time, not at build time
+## `убывает`: proved, refused, or checked at run time
 
-The first two ways the compiler proves. The third it does not: a declared measure
-is taken on the author's word and turned into a check inside the generated code.
-A program that plainly never finishes shows it:
+The first two ways the compiler proves. For the third it reads every recursive
+call by the shape of its argument and gives one of three answers.
+
+**Proved.** A measure declared on a `неотрицательное` parameter, and a call that
+passes that parameter minus a constant: the type gives the floor and the ceiling,
+and the step is exact. No check is left in the generated code:
 
 ```flang
+модуль «Проба»
+
+тотальная функция «Через два»
+  принимает н: неотрицательное
+  возвращает число
+  убывает н
+  если н не больше 1
+    то н
+    иначе «Через два» от (н минус 2)
+```
+
+```
+  «Через два»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 2; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
+```
+
+**Refused.** A call that cannot lower the measure — the name itself, `н плюс 1`,
+`(3 умножить на н) плюс 1` — is refused at `check` time, naming the call and the
+argument:
+
+```flang refused
 модуль «Проба»
 
 тотальная функция «Вечность»
@@ -165,6 +188,25 @@ A program that plainly never finishes shows it:
   возвращает число
   убывает н
   «Вечность» от (н плюс 1)
+```
+
+```
+FLANG_NOT_TOTAL в файле nt7.flang, строка 7, столбец 3: тотальная функция «Вечность»: мера «н» на вызове «Вечность» не убывает — аргумент «н» плюс 1 не меньше меры при любом её неотрицательном значении (Мер✗: само имя, сумма с неотрицательным литералом, произведение на литерал не меньше единицы). Спуск этим вызовом не доказуем, и сторож при работе отказал бы на первом же таком витке; перепишите вызов или меру
+```
+
+**Checked at run time.** Everything else is taken on the author's word and
+turned into a check inside the generated code. The build passes:
+
+```flang
+модуль «Проба»
+
+тотальная функция «Сближение»
+  принимает низ: число, верх: число
+  возвращает число
+  убывает верх минус низ
+  если верх не больше низ
+    то низ
+    иначе «Сближение» от (низ плюс 2) и верх
 ```
 
 ```bash
@@ -176,18 +218,18 @@ flang check nt6.flang
 nt6.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-The build passes. The run does not:
+The run does not. From `0` to `5` in steps of two the measure goes 5, 3, 1, −1,
+and the check stops it:
 
 ```bash
-flang run nt6.flang --function "Вечность" --args '{"н": 1}'
+flang run nt6.flang --function "Сближение" --args '{"низ": 0, "верх": 5}'
 ```
 
 ```
-FLANG_MEASURE: тотальная функция «Вечность»: мера на вызове «Вечность» — «н» — не убыла. Завершение доказано тем, что она строго убывает; равенство цепочку не обрывает, а значит этот вызов может не кончиться никогда
+FLANG_MEASURE: тотальная функция «Сближение»: мера на вызове «Сближение» — «верх» минус «низ» — ушла ниже нуля. Мера обязана оставаться неотрицательной: иначе цепочка уходит в минус бесконечность и убывание ничего не доказывает. Чаще всего это выбор меры, а не ошибка вызова — мере, которая на последнем витке становится −1, обычно не хватает «плюс 1»
 ```
 
-The proof report says so in as many words — what is proven and what is checked as
-it goes:
+The proof report says which answer each function got:
 
 ```bash
 flang check nt6.flang --proof
@@ -195,7 +237,7 @@ flang check nt6.flang --proof
 
 ```
 чем несётся обещание «тотальная»:
-  «Вечность»  доказано объявленной мерой: убывает «н»; мера объявлена автором, сторож считает её на каждом витке — 1 место
+  «Сближение»  доказано объявленной мерой: убывает «верх» минус «низ»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
 
 итог:
   функций 1: тотальных 1, обычных 0
@@ -204,17 +246,9 @@ flang check nt6.flang --proof
 ```
 
 The practical rule: if termination has to be proven rather than watched, use the
-first or the second way. The `сторожей в рантайме` line of the report counts the
-places in your program that are not proven all the way.
-
-This is what the printed seed answers today. In the compiler sources (ADR-0093,
-not yet reprinted into the seed) the kernel reads every such place by the form of
-the argument and gives one of three answers: a call that passes `н минус К` for
-a measure declared on a `неотрицательное` parameter is proved (rule Мер1) and
-gets no guard; a call that cannot lower the measure — `н` itself, `н плюс 1`,
-`(3 умножить на н) плюс 1` — is refused at `check` time (rule Мер✗), naming the
-call and the argument; everything else keeps the guard, and the report says so in
-words: «спуск ядром не выведен — на веру».
+first or the second way, or a measure on a `неотрицательное` parameter with a
+constant step. The `сторожей в рантайме` line of the report counts the places in
+your program that are not proven all the way.
 
 ## Counting up is not a measure
 

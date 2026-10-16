@@ -61,7 +61,7 @@ claim and the link breaks — visibly, by a run rather than by reading.
 
 The link to a spec written earlier is the `использует` line:
 
-```flang
+```flang fragment
 модуль «Спека 3: наценка за срочность»
   использует «Спека 2: промо» из "./02-promo.flang"
 ```

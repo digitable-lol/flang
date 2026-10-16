@@ -50,7 +50,7 @@ The module checks fine on its own. The module that imports it fails.
   («Двойка» от н) плюс 1
 ```
 
-```flang
+```flang refused
 // ввоз.flang
 модуль «Ввоз»
 использует «Ядро» только «Учтено»
@@ -131,7 +131,7 @@ Fix unknown names first.
 The most common surprise. The guarantee looks obviously true, and the prover
 answers with a counterexample.
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Прибавить один»
@@ -165,7 +165,7 @@ NaN.
 | `FLANG_LEX` | the lexer could not read a token: an unclosed quote, an unexpected character | close the quote, remove the character |
 | `FLANG_PARSE` | the tokens are fine, the construct is not | look at the line and column: usually a missing `иначе` branch, or a keyword used as a name |
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Удвоить»
@@ -198,7 +198,7 @@ FLANG_LEX в файле lex.flang, строка 5, столбец 3: не зак
 | `FLANG_IMPORT_AMBIGUOUS` | one name comes from two modules | narrow the import with `только` |
 | `FLANG_IMPORT_NAME` | the `только` list names something the module does not declare | compare the list with the module's declarations |
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Удвоить»
@@ -264,7 +264,7 @@ FLANG_EXAMPLE: пример «Двойка» функции «Удвоить»: 
 | `FLANG_MEMORY` | out of memory | make the data smaller |
 | `FLANG_STOPPED` | the run was stopped from outside | run it again |
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Считать»
@@ -319,7 +319,7 @@ Preconditions (`требует`), guarantees (`обеспечивает`) and th
 | `FLANG_INITIAL_FAILURE` | no induction rule could be built for the type | check that the type is declared with variants |
 | `FLANG_UNCOVERED_FAILURE` | an error case is not handled by the pattern match | add a case for the error |
 
-```flang
+```flang refused
 модуль «Проба»
 
 тотальная функция «Удвоить»

@@ -21,7 +21,7 @@ Such a statement cannot be computed on a grid at all; it can only be proved.
 | corpus run with a "proved / not" table | `bootstrap/flang run-script category-proofs:check` | prints the table and compares it with `corpus.tsv` |
 | `теорема` with a `для всякой категории …` context | this page | specified; the binary compiler does not accept it yet |
 | path equality resolver in the kernel | `flang/self/category-paths.flang` | stage 1 |
-| step replay by the C checker and Lean soundness lemmas | `flang/proof/checker/checker.c`, `flang/ct/proofs/lean/Moves.lean` | stage 1 |
+| step replay by both checkers and Lean soundness lemmas | `flang/proof/checker/checker.c`, `flang/proof/checker/second/Category.lean`, `flang/proof/lean/CategoryPaths.lean` | stage 1 |
 
 ## Example
 
@@ -141,9 +141,9 @@ hypotheses.
 
 | part | checked by |
 |---|---|
-| surface parsing and term types | the kernel; the C checker repeats it from the source |
-| normal form and substitution | the kernel; the C checker repeats it from the record |
-| soundness of each law | a Lean lemma in `flang/ct/proofs/lean/Moves.lean`: an accepted step has equal interpretations in **every** category |
+| surface parsing and term types | the kernel; the C checker and the second checker in Lean repeat it from the source |
+| normal form and substitution | the kernel; both checkers repeat it from the record |
+| soundness of each law | a Lean lemma in `flang/proof/lean/CategoryPaths.lean`: an accepted step has equal interpretations in **every** category |
 | the category model `Category.lean` | read by eye: 117 lines of textbook definitions |
 
 The record block, one per theorem about categories:

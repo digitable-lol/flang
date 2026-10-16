@@ -1,0 +1,580 @@
+модуль «Category proofs»
+
+объект «Item»
+  «name»: строка
+  «area»: строка
+  «stage»: строка
+  «expected»: строка
+
+объект «Outcome»
+  «item»: «Item»
+  «flang»: строка
+  «lean»: строка
+
+объект «Rule»
+  «code»: число
+  «word»: строка
+
+объект «Walk»
+  «programs»: список строки
+  «script»: строка
+  «item»: «Item»
+  «rest»: список «Item»
+  «done»: список «Outcome»
+
+объект «Walk cell»
+  «index»: число
+  «found»: строка
+
+тип «Step»
+  вариант «Start»
+  вариант «Awaiting corpus»
+  вариант «Awaiting listing» содержит «items»: список «Item»
+  вариант «Awaiting flang» содержит «walk»: «Walk»
+  вариант «Awaiting lean» содержит «walk»: «Walk», «flang»: строка
+
+тотальная функция «Mismatch code»
+  возвращает строка
+  пример «a mismatch carries the code of the corpus»
+    ожидается "FLANG_CATEGORY_PROOFS"
+  "FLANG_CATEGORY_PROOFS"
+
+тотальная функция «Blind code»
+  возвращает строка
+  пример «blindness carries its own code»
+    ожидается "FLANG_CATEGORY_PROOFS_CANNOT_LOOK"
+  "FLANG_CATEGORY_PROOFS_CANNOT_LOOK"
+
+тотальная функция «Cell step»
+  принимает «acc»: «Walk cell», «c»: строка, «number»: число
+  возвращает «Walk cell»
+  пример «the wanted cell is kept»
+    дано «acc» равно запись «Walk cell» с «index» равным 0 и «found» равным ""
+    дано «c» равно "a"
+    дано «number» равно 1
+    ожидается запись «Walk cell» с «index» равным 1 и «found» равным "a"
+  пример «another cell is passed by»
+    дано «acc» равно запись «Walk cell» с «index» равным 0 и «found» равным ""
+    дано «c» равно "a"
+    дано «number» равно 2
+    ожидается запись «Walk cell» с «index» равным 1 и «found» равным ""
+  пусть «index» равно ((«acc».«index») плюс 1)
+  (запись «Walk cell» с «index» равным «index»
+    и «found» равным (если «index» равен «number» то «c» иначе («acc».«found»)))
+
+тотальная функция «Cell»
+  принимает «cells»: список строки, «number»: число
+  возвращает строка
+  пример «the second cell»
+    дано «cells» равно ["a", "functors", "1", "none"]
+    дано «number» равно 2
+    ожидается "functors"
+  пример «a cell past the row is empty»
+    дано «cells» равно ["a"]
+    дано «number» равно 3
+    ожидается ""
+  (свёртка «cells» начиная с (запись «Walk cell» с «index» равным 0 и «found» равным "") как «acc» и «c»
+    → («Cell step» от «acc» и «c» и «number»)).«found»
+
+тотальная функция «Item of row»
+  принимает «cells»: список строки
+  возвращает «Item»
+  пример «a row of the corpus becomes an item»
+    дано «cells» равно ["a", "functors", "1", "none", "functoriality"]
+    ожидается (запись «Item» с «name» равным "a" и «area» равным "functors"
+      и «stage» равным "1" и «expected» равным "none")
+  (запись «Item» с «name» равным («Cell» от «cells» и 1) и «area» равным («Cell» от «cells» и 2)
+    и «stage» равным («Cell» от «cells» и 3) и «expected» равным («Cell» от «cells» и 4))
+
+тотальная функция «Items»
+  принимает «text»: строка
+  возвращает список «Item»
+  пример «the header is dropped and blank lines are skipped»
+    дано «text» равно "name\tarea\tstage\texpected\tmoves\na\tfunctors\t1\tnone\tfunctoriality\n"
+    ожидается [(запись «Item» с «name» равным "a" и «area» равным "functors"
+      и «stage» равным "1" и «expected» равным "none")]
+  пусть «lines» равно (отфильтровать (разделить «text» по "\n") где «line» → не («line» равен ""))
+  разбор «lines»
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отобразить хвост как «line» → («Item of row» от (разделить «line» по "\t"))
+
+тотальная функция «Program»
+  принимает «name»: строка
+  возвращает строка
+  пример «the program carries the name of the theorem»
+    дано «name» равно "a"
+    ожидается "a.flang"
+  соединить [«name», ".flang"] по ""
+
+тотальная функция «Flang script»
+  возвращает строка
+  пример «the binary checks the program with its proofs and only the code is kept»
+    ожидается "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+  "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+
+тотальная функция «Lean script lines»
+  возвращает список строки
+  пример «build the model, copy the theorem through an edit, check it; sorry refuses and an idle edit accepts»
+    ожидается [
+      "d=$(mktemp -d \"${FLANG_TMP:-/srv/tmp}/category-proofs.XXXXXX\") || exit 3",
+      "L=\"${LEAN:-lean}\"",
+      "LEAN_PATH=\"$d\" \"$L\" -o \"$d/Category.olean\" lean/Category.lean >\"$d/model\" 2>&1",
+      "if [ $? -ne 0 ]; then rm -rf \"$d\"; exit 4; fi",
+      "sed \"$1\" \"lean/$0.lean\" >\"$d/theorem.lean\"",
+      "if [ -n \"$1\" ] && cmp -s \"lean/$0.lean\" \"$d/theorem.lean\"; then rm -rf \"$d\"; exit 0; fi",
+      "LEAN_PATH=\"$d\" \"$L\" \"$d/theorem.lean\" >\"$d/out\" 2>&1",
+      "c=$?",
+      "grep -q sorry \"$d/out\" \"$d/theorem.lean\" && c=5",
+      "rm -rf \"$d\"",
+      "exit $c"]
+  [
+    "d=$(mktemp -d \"${FLANG_TMP:-/srv/tmp}/category-proofs.XXXXXX\") || exit 3",
+    "L=\"${LEAN:-lean}\"",
+    "LEAN_PATH=\"$d\" \"$L\" -o \"$d/Category.olean\" lean/Category.lean >\"$d/model\" 2>&1",
+    "if [ $? -ne 0 ]; then rm -rf \"$d\"; exit 4; fi",
+    "sed \"$1\" \"lean/$0.lean\" >\"$d/theorem.lean\"",
+    "if [ -n \"$1\" ] && cmp -s \"lean/$0.lean\" \"$d/theorem.lean\"; then rm -rf \"$d\"; exit 0; fi",
+    "LEAN_PATH=\"$d\" \"$L\" \"$d/theorem.lean\" >\"$d/out\" 2>&1",
+    "c=$?",
+    "grep -q sorry \"$d/out\" \"$d/theorem.lean\" && c=5",
+    "rm -rf \"$d\"",
+    "exit $c"]
+
+тотальная функция «Joined script»
+  принимает «lines»: список строки
+  возвращает строка
+  пример «one command per line»
+    дано «lines» равно ["a", "b"]
+    ожидается "a\nb"
+  соединить «lines» по "\n"
+
+тотальная функция «Lean run»
+  принимает «script»: строка, «name»: строка, «edit»: строка
+  возвращает «Поручение»
+  пример «an honest run copies the theorem unchanged»
+    дано «script» равно "s"
+    дано «name» равно "a"
+    дано «edit» равно ""
+    ожидается (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "s", "a", ""])
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", «script», «name», «edit»]
+
+тотальная функция «Run»
+  принимает «script»: строка, «argument»: строка
+  возвращает «Поручение»
+  пример «a script runs under sh with one argument»
+    дано «script» равно "test -f \"$0\""
+    дано «argument» равно "corpus.tsv"
+    ожидается (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "test -f \"$0\"", "corpus.tsv"])
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", «script», «argument»]
+
+тотальная функция «Exit code»
+  принимает «answer»: «Отклик»
+  возвращает число
+  пример «a finished process gives its code»
+    дано «answer» равно вариант «Процесс завершён» с код равным 3 и вывод равным "" и ошибки равным ""
+    ожидается 3
+  пример «anything else counts as a refusal»
+    дано «answer» равно вариант «Пока ничего»
+    ожидается 1
+  разбор «answer»
+    случай вариант «Процесс завершён» с код как «code» и вывод как «out» и ошибки как «err»
+      то «code»
+    случай любое
+      то 1
+
+тотальная функция «Lean rules»
+  возвращает список «Rule»
+  пример «three named codes»
+    ожидается [(запись «Rule» с «code» равным 0 и «word» равным "accepted"),
+      (запись «Rule» с «code» равным 127 и «word» равным "missing"),
+      (запись «Rule» с «code» равным 5 и «word» равным "sorry")]
+  [(запись «Rule» с «code» равным 0 и «word» равным "accepted"),
+    (запись «Rule» с «code» равным 127 и «word» равным "missing"),
+    (запись «Rule» с «code» равным 5 и «word» равным "sorry")]
+
+тотальная функция «Flang rules»
+  возвращает список «Rule»
+  пример «only zero means proved»
+    ожидается [(запись «Rule» с «code» равным 0 и «word» равным "proved")]
+  [(запись «Rule» с «code» равным 0 и «word» равным "proved")]
+
+тотальная функция «Word by rules»
+  принимает «rules»: список «Rule», «code»: число, «otherwise»: строка
+  возвращает строка
+  пример «a named code gives its word»
+    дано «rules» равно [(запись «Rule» с «code» равным 0 и «word» равным "accepted")]
+    дано «code» равно 0
+    дано «otherwise» равно "refused"
+    ожидается "accepted"
+  пример «an unnamed code gives the fallback»
+    дано «rules» равно [(запись «Rule» с «code» равным 0 и «word» равным "accepted")]
+    дано «code» равно 1
+    дано «otherwise» равно "refused"
+    ожидается "refused"
+  разбор (отфильтровать «rules» где «r» → ((«r».«code») равен «code»))
+    случай пусто
+      то «otherwise»
+    случай голова и хвост
+      то голова.«word»
+
+тотальная функция «Line»
+  принимает «outcome»: «Outcome»
+  возвращает строка
+  пример «one line per theorem»
+    дано «outcome» равно (запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")
+    ожидается "a\tfunctors\tstage 1\tflang none\tLean accepted"
+  пусть «item» равно («outcome».«item»)
+  соединить [(«item».«name»), "\t", («item».«area»), "\tstage ", («item».«stage»), "\tflang ", («outcome».«flang»),
+    "\tLean ", («outcome».«lean»)] по ""
+
+тотальная функция «Count»
+  принимает «outcomes»: список «Outcome», «flang»: строка, «lean»: строка
+  возвращает строка
+  пример «outcomes with both words are counted»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    дано «flang» равно ""
+    дано «lean» равно "accepted"
+    ожидается "1"
+  к строке (длина (отфильтровать «outcomes» где «o» → ((((«o».«flang») равен «flang») или («flang» равен ""))
+    и притом (((«o».«lean») равен «lean») или («lean» равен "")))))
+
+тотальная функция «Summary»
+  принимает «outcomes»: список «Outcome»
+  возвращает строка
+  пример «the summary names both provers»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    ожидается "theorems 1; Lean accepted 1; flang proved 0"
+  соединить ["theorems ", (к строке (длина «outcomes»)), "; Lean accepted ", («Count» от «outcomes» и "" и "accepted"),
+    "; flang proved ", («Count» от «outcomes» и "proved" и "")] по ""
+
+тотальная функция «Complaints»
+  принимает «outcomes»: список «Outcome»
+  возвращает список строки
+  пример «a flang answer other than the expected one is a complaint»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "proved")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    ожидается ["a: flang expected proved, found none"]
+  пример «a lean refusal is a complaint»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "refused")]
+    ожидается ["a: Lean refused"]
+  пусть «moved» равно (отфильтровать «outcomes» где «o» → не ((«o».«flang») равен ((«o».«item»).«expected»)))
+  пусть «flang» равно (отобразить «moved» как «o» → соединить [((«o».«item»).«name»), ": flang expected ",
+    ((«o».«item»).«expected»), ", found ", («o».«flang»)] по "")
+  пусть «refusing» равно (отфильтровать «outcomes» где «o» → не ((«o».«lean») равен "accepted"))
+  пусть «lean» равно (отобразить «refusing» как «o» → соединить [((«o».«item»).«name»), ": Lean ", («o».«lean»)] по "")
+  свёртка «lean» начиная с «flang» как «acc» и «c» → добавить «c» к «acc»
+
+тотальная функция «Table»
+  принимает «outcomes»: список «Outcome»
+  возвращает строка
+  пример «the table is the lines and the summary»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    ожидается "a\tfunctors\tstage 1\tflang none\tLean accepted\ntheorems 1; Lean accepted 1; flang proved 0"
+  соединить (добавить («Summary» от «outcomes») к (отобразить «outcomes» как «o» → («Line» от «o»))) по "\n"
+
+тотальная функция «Finish»
+  принимает «outcomes»: список «Outcome»
+  возвращает «Продолжение»
+  пример «agreement ends the plan with the table»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tfunctors\tstage 1\tflang none\tLean accepted\ntheorems 1; Lean accepted 1; flang proved 0")
+  разбор («Complaints» от «outcomes»)
+    случай пусто
+      то вариант «Конец работы» с значение равным («Table» от «outcomes»)
+    случай голова и хвост
+      то (вариант «Провал» с код равным («Mismatch code»)
+        и сообщение равным (соединить [(«Table» от «outcomes»), "mismatches with corpus.tsv:",
+          (соединить («Complaints» от «outcomes») по "\n  · ")] по "\n  · "))
+
+тотальная функция «Blind»
+  принимает «message»: строка
+  возвращает «Продолжение»
+  пример «blindness is not a mismatch»
+    дано «message» равно "corpus.tsv has no rows"
+    ожидается (вариант «Не проверено» с код равным "FLANG_CATEGORY_PROOFS_CANNOT_LOOK"
+      и сообщение равным "category proofs: corpus.tsv has no rows")
+  (вариант «Не проверено» с код равным («Blind code»)
+    и сообщение равным (соединить ["category proofs: ", «message»] по ""))
+
+тотальная функция «Ask lean»
+  принимает «walk»: «Walk», «flang»: строка
+  возвращает «Продолжение»
+  пример «the lean version is checked against the model»
+    дано «walk» равно (запись «Walk» с «programs» равным пустой список и «script» равным "s" и «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «flang» равно "none"
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "s", "a", ""])
+      и потом равным (вариант «Awaiting lean» с «walk» равным
+        (запись «Walk» с «programs» равным пустой список и «script» равным "s" и «item» равным
+          (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+          и «rest» равным пустой список и «done» равным пустой список)
+        и «flang» равным "none"))
+  (вариант «Сделать» с поручение равным («Lean run» от («walk».«script») и ((«walk».«item»).«name») и "")
+    и потом равным (вариант «Awaiting lean» с «walk» равным «walk» и «flang» равным «flang»))
+
+тотальная функция «Ask flang»
+  принимает «walk»: «Walk»
+  возвращает «Продолжение»
+  пример «a theorem with a program is checked by the binary first»
+    дано «walk» равно (запись «Walk» с «programs» равным ["a.flang"] и «script» равным "s" и «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «rest» равным пустой список и «done» равным пустой список)
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+        "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1", "programs/a.flang"])
+      и потом равным (вариант «Awaiting flang» с «walk» равным
+        (запись «Walk» с «programs» равным ["a.flang"] и «script» равным "s" и «item» равным
+          (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+          и «rest» равным пустой список и «done» равным пустой список)))
+  пример «a theorem without a program goes straight to lean»
+    дано «walk» равно (запись «Walk» с «programs» равным пустой список и «script» равным "s" и «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «rest» равным пустой список и «done» равным пустой список)
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "s", "a", ""])
+      и потом равным (вариант «Awaiting lean» с «walk» равным
+        (запись «Walk» с «programs» равным пустой список и «script» равным "s" и «item» равным
+          (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+          и «rest» равным пустой список и «done» равным пустой список)
+        и «flang» равным "none"))
+  пусть «program» равно («Program» от ((«walk».«item»).«name»))
+  разбор (отфильтровать («walk».«programs») где «p» → «p» равен «program»)
+    случай пусто
+      то «Ask lean» от «walk» и "none"
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Run» от («Flang script») и (соединить ["programs/", «program»] по ""))
+        и потом равным (вариант «Awaiting flang» с «walk» равным «walk»))
+
+тотальная функция «Next item»
+  принимает «programs»: список строки, «queue»: список «Item», «done»: список «Outcome»
+  возвращает «Продолжение»
+  пример «an empty queue finishes the plan»
+    дано «programs» равно пустой список
+    дано «queue» равно пустой список
+    дано «done» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «flang» равным "none" и «lean» равным "accepted")]
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tfunctors\tstage 1\tflang none\tLean accepted\ntheorems 1; Lean accepted 1; flang proved 0")
+  разбор «queue»
+    случай пусто
+      то «Finish» от «done»
+    случай голова и хвост
+      то «Ask flang» от (запись «Walk» с «programs» равным «programs»
+        и «script» равным («Joined script» от («Lean script lines»))
+        и «item» равным голова и «rest» равным хвост и «done» равным «done»)
+
+тотальная функция «After lean»
+  принимает «walk»: «Walk», «flang»: строка, «code»: число
+  возвращает «Продолжение»
+  пример «the last theorem ends the plan»
+    дано «walk» равно (запись «Walk» с «programs» равным пустой список и «script» равным "s" и «item» равным
+      (запись «Item» с «name» равным "a" и «area» равным "functors" и «stage» равным "1" и «expected» равным "none")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «flang» равно "none"
+    дано «code» равно 0
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tfunctors\tstage 1\tflang none\tLean accepted\ntheorems 1; Lean accepted 1; flang proved 0")
+  пусть «outcome» равно (запись «Outcome» с «item» равным («walk».«item») и «flang» равным «flang»
+    и «lean» равным («Word by rules» от («Lean rules») и «code» и "refused"))
+  «Next item» от («walk».«programs») и («walk».«rest») и (добавить «outcome» к («walk».«done»))
+
+тотальная функция «After listing»
+  принимает «items»: список «Item», «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «a missing programs directory means no programs yet»
+    дано «items» равно пустой список
+    дано «answer» равно вариант «Пока ничего»
+    ожидается (вариант «Конец работы» с значение равным "theorems 0; Lean accepted 0; flang proved 0")
+  пример «listed programs are carried along»
+    дано «items» равно пустой список
+    дано «answer» равно вариант «Перечислено» с имена равным ["a.flang"]
+    ожидается (вариант «Конец работы» с значение равным "theorems 0; Lean accepted 0; flang proved 0")
+  разбор «answer»
+    случай вариант «Перечислено» с имена как «names»
+      то «Next item» от «names» и «items» и пустой список
+    случай любое
+      то «Next item» от пустой список и «items» и пустой список
+
+тотальная функция «After corpus»
+  принимает «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «an empty corpus is blindness»
+    дано «answer» равно вариант «Прочитано» с содержимое равным "name\tarea\tstage\texpected\tmoves\n"
+    ожидается (вариант «Не проверено» с код равным "FLANG_CATEGORY_PROOFS_CANNOT_LOOK"
+      и сообщение равным "category proofs: corpus.tsv has no rows")
+  пример «an unread corpus is blindness»
+    дано «answer» равно вариант «Пока ничего»
+    ожидается (вариант «Не проверено» с код равным "FLANG_CATEGORY_PROOFS_CANNOT_LOOK"
+      и сообщение равным "category proofs: corpus.tsv was not read")
+  разбор «answer»
+    случай вариант «Прочитано» с содержимое как «text»
+      то разбор («Items» от «text»)
+        случай пусто
+          то «Blind» от "corpus.tsv has no rows"
+        случай голова и хвост
+          то (вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "programs")
+            и потом равным (вариант «Awaiting listing» с «items» равным («Items» от «text»)))
+    случай любое
+      то «Blind» от "corpus.tsv was not read"
+
+тотальная функция «Begin»
+  возвращает «Step»
+  пример «the plan starts at the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Advance»
+  принимает «step»: «Step», «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «the first move reads the corpus»
+    дано «step» равно вариант «Start»
+    дано «answer» равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "corpus.tsv")
+      и потом равным (вариант «Awaiting corpus»))
+  разбор «step»
+    случай вариант «Start»
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "corpus.tsv")
+        и потом равным (вариант «Awaiting corpus»))
+    случай вариант «Awaiting corpus»
+      то «After corpus» от «answer»
+    случай вариант «Awaiting listing» с «items» как «items»
+      то «After listing» от «items» и «answer»
+    случай вариант «Awaiting flang» с «walk» как «walk»
+      то «Ask lean» от «walk» и («Word by rules» от («Flang rules») и («Exit code» от «answer») и "not proved")
+    случай вариант «Awaiting lean» с «walk» как «walk» и «flang» как «flang»
+      то «After lean» от «walk» и «flang» и («Exit code» от «answer»)
+
+план «Table»
+  состояние «Step»
+  начинает с «Begin»
+  обрабатывает «Advance»
+
+объект «Forgery»
+  «name»: строка
+  «edit»: строка
+
+тип «Names» это список строки
+
+тип «Forgery step»
+  вариант «Forgery start»
+  вариант «Awaiting forgery» содержит «script»: строка, «trial»: «Forgery», «left»: список «Forgery», «silent»: «Names»
+
+тотальная функция «Forgeries»
+  возвращает список «Forgery»
+  пример «three corruptions of three proofs»
+    ожидается [(запись «Forgery» с «name» равным "inverse-is-unique" и «edit» равным "s/(C.comp_id g).symm/sorry/"),
+      (запись «Forgery» с «name» равным "monos-compose" и «edit» равным "s/← C.assoc, ← C.assoc, w/C.assoc, w/"),
+      (запись «Forgery» с «name» равным "vertical-composition"
+        и «edit» равным "s/β.natural, D.assoc, α.natural/α.natural, D.assoc, β.natural/")]
+  [(запись «Forgery» с «name» равным "inverse-is-unique" и «edit» равным "s/(C.comp_id g).symm/sorry/"),
+    (запись «Forgery» с «name» равным "monos-compose" и «edit» равным "s/← C.assoc, ← C.assoc, w/C.assoc, w/"),
+    (запись «Forgery» с «name» равным "vertical-composition"
+      и «edit» равным "s/β.natural, D.assoc, α.natural/α.natural, D.assoc, β.natural/")]
+
+тотальная функция «Ask forgery»
+  принимает «script»: строка, «trial»: «Forgery», «left»: список «Forgery», «silent»: список строки
+  возвращает «Продолжение»
+  пример «a corrupted copy goes to lean»
+    дано «script» равно "s"
+    дано «trial» равно запись «Forgery» с «name» равным "a" и «edit» равным "s/x/y/"
+    дано «left» равно пустой список
+    дано «silent» равно пустой список
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "s", "a", "s/x/y/"])
+      и потом равным (вариант «Awaiting forgery» с «script» равным "s"
+        и «trial» равным (запись «Forgery» с «name» равным "a" и «edit» равным "s/x/y/")
+        и «left» равным пустой список и «silent» равным пустой список))
+  (вариант «Сделать» с поручение равным («Lean run» от «script» и («trial».«name») и («trial».«edit»))
+    и потом равным (вариант «Awaiting forgery» с «script» равным «script» и «trial» равным «trial»
+      и «left» равным «left» и «silent» равным «silent»))
+
+тотальная функция «Forgery verdict»
+  принимает «silent»: список строки
+  возвращает «Продолжение»
+  пример «every corruption refused»
+    дано «silent» равно пустой список
+    ожидается (вариант «Конец работы» с значение равным "category proofs: every corruption is refused by Lean")
+  пример «an accepted corruption is a red probe»
+    дано «silent» равно ["a"]
+    ожидается (вариант «Провал» с код равным "FLANG_CATEGORY_PROOFS"
+      и сообщение равным "category proofs: Lean accepted a corrupted proof: a")
+  разбор «silent»
+    случай пусто
+      то вариант «Конец работы» с значение равным "category proofs: every corruption is refused by Lean"
+    случай голова и хвост
+      то (вариант «Провал» с код равным («Mismatch code»)
+        и сообщение равным (соединить ["category proofs: Lean accepted a corrupted proof: ",
+          (соединить «silent» по ", ")] по ""))
+
+тотальная функция «Next forgery»
+  принимает «script»: строка, «left»: список «Forgery», «silent»: список строки
+  возвращает «Продолжение»
+  пример «no corruption left ends the probe»
+    дано «script» равно "s"
+    дано «left» равно пустой список
+    дано «silent» равно пустой список
+    ожидается (вариант «Конец работы» с значение равным "category proofs: every corruption is refused by Lean")
+  разбор «left»
+    случай пусто
+      то «Forgery verdict» от «silent»
+    случай голова и хвост
+      то «Ask forgery» от «script» и (голова) и (хвост) и «silent»
+
+тотальная функция «Forgery begin»
+  возвращает «Forgery step»
+  пример «the probe starts at the start»
+    ожидается вариант «Forgery start»
+  вариант «Forgery start»
+
+тотальная функция «Forgery advance»
+  принимает «step»: «Forgery step», «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «an accepted corruption is remembered and the probe ends red»
+    дано «step» равно (вариант «Awaiting forgery» с «script» равным "s"
+      и «trial» равным (запись «Forgery» с «name» равным "a" и «edit» равным "s/x/y/")
+      и «left» равным пустой список и «silent» равным пустой список)
+    дано «answer» равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается (вариант «Провал» с код равным "FLANG_CATEGORY_PROOFS"
+      и сообщение равным "category proofs: Lean accepted a corrupted proof: a")
+  разбор «step»
+    случай вариант «Forgery start»
+      то «Next forgery» от («Joined script» от («Lean script lines»)) и («Forgeries») и пустой список
+    случай вариант «Awaiting forgery» с «script» как «sc» и «trial» как «cur» и «left» как «le» и «silent» как «si»
+      то «After forgery» от «sc» и «cur» и «le» и «si» и («Exit code» от «answer»)
+
+тотальная функция «After forgery»
+  принимает «script»: строка, «trial»: «Forgery», «left»: список «Forgery», «silent»: список строки, «code»: число
+  возвращает «Продолжение»
+  пример «a refused corruption is forgotten»
+    дано «script» равно "s"
+    дано «trial» равно запись «Forgery» с «name» равным "a" и «edit» равным "s/x/y/"
+    дано «left» равно пустой список
+    дано «silent» равно пустой список
+    дано «code» равно 1
+    ожидается (вариант «Конец работы» с значение равным "category proofs: every corruption is refused by Lean")
+  «Next forgery» от «script» и «left» и (если «code» равен 0 то (добавить («trial».«name») к «silent») иначе «silent»)
+
+план «Forgery»
+  состояние «Forgery step»
+  начинает с «Forgery begin»
+  обрабатывает «Forgery advance»

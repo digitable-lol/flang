@@ -20,7 +20,7 @@ Such a statement cannot be computed on a grid at all; it can only be proved.
 | category model for Lean without mathlib | `flang/ct/proofs/lean/Category.lean` | 117 lines, Lean 4 core only |
 | corpus run with a "proved / not" table | `bootstrap/flang run-script category-proofs:check` | prints the table and compares it with `corpus.tsv` |
 | `теорема` with a `для всякой категории …` context | this page | specified; the binary compiler does not accept it yet |
-| path equality resolver in the kernel | `flang/self/category-proofs.flang` | stage 1 |
+| path equality resolver in the kernel | `flang/self/category-paths.flang` | stage 1 |
 | step replay by the C checker and Lean soundness lemmas | `flang/proof/checker/checker.c`, `flang/ct/proofs/lean/Moves.lean` | stage 1 |
 
 ## Example
@@ -109,7 +109,7 @@ The last two are **exactly one** substitution.
 
 ## The path equality resolver
 
-The kernel module `flang/self/category-proofs.flang` («Category proofs») is
+The kernel module `flang/self/category-paths.flang` («Category path resolver») is
 connected to the kernel in one place, «Обязательства» in
 `flang/self/obligations.flang`: a theorem about categories becomes an obligation
 of kind `category` whose verdict the module sets. No other kernel function uses

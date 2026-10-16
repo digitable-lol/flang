@@ -18,7 +18,7 @@
 | модель категорий для Lean без mathlib | `flang/ct/proofs/lean/Category.lean` | 117 строк, только ядро Lean 4 |
 | прогон корпуса с таблицей «доказано / нет» | `bootstrap/flang run-script category-proofs:check` | печатает таблицу; сверяет её с `corpus.tsv` |
 | поверхность `теорема` с контекстом `для всякой категории …` | эта страница | описана; двоичный компилятор её пока не принимает |
-| разрешитель равенств путей в ядре | `flang/self/category-proofs.flang` | этап 1 |
+| разрешитель равенств путей в ядре | `flang/self/category-paths.flang` | этап 1 |
 | проигрыш шагов сверщиком на C и леммы состоятельности на Lean | `flang/proof/checker/checker.c`, `flang/ct/proofs/lean/Moves.lean` | этап 1 |
 
 ## Пример
@@ -151,7 +151,7 @@
 
 ## Разрешитель равенств путей
 
-Модуль ядра `flang/self/category-proofs.flang` («Category proofs»). К ядру он
+Модуль ядра `flang/self/category-paths.flang` («Category path resolver»). К ядру он
 подключён в одном месте — в «Обязательства» (`flang/self/obligations.flang`):
 теорема о категориях даёт обязательство вида `category`, и его вердикт ставит
 модуль. Ни одна другая функция ядра модулем не пользуется, и модуль не зовёт

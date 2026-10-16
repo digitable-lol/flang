@@ -1,0 +1,781 @@
+модуль «Behavior»
+  использует «Rules» из "rules.fscript"
+  использует «Inquiry» из "inquiry.fscript"
+  использует «Reading» из "reading.fscript"
+  использует «Behavior table» из "behavior-table.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Version»
+  «key»: строка
+  «label»: строка
+  «source»: строка
+  «shape»: «Shape»
+  «inputs»: «Inputs»
+  «probe»: строка
+
+объект «Job»
+  «path»: строка
+  «versions»: список «Version»
+
+тотальная функция «Root»
+  возвращает строка
+  ".."
+
+тотальная функция «Usage lines»
+  возвращает список строки
+  пример «How to call the table»
+    ожидается ["звать: bootstrap/flang run-script behavior <файл> «Функция» [--json] [--limit N]",
+      "  [--против <ревизия> | <прежний файл>] [--прежнее-имя «Функция»]"]
+  ["звать: bootstrap/flang run-script behavior <файл> «Функция» [--json] [--limit N]",
+    "  [--против <ревизия> | <прежний файл>] [--прежнее-имя «Функция»]"]
+
+тотальная функция «Usage»
+  возвращает строка
+  соединить («Usage lines») по "\n"
+
+тотальная функция «Valued flags»
+  возвращает список строки
+  пример «Flags that take the next argument»
+    ожидается ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя"]
+  ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя"]
+
+тотальная функция «Option»
+  принимает arguments: список строки, names: список строки
+  возвращает строка
+  пример «The value after the flag»
+    дано arguments равно ["отчёт.flang", "Ф", "--против", "HEAD~1"]
+    дано names равно ["--against", "--против"]
+    ожидается "HEAD~1"
+  пример «No flag gives nothing»
+    дано arguments равно ["отчёт.flang", "Ф"]
+    дано names равно ["--against", "--против"]
+    ожидается ""
+  (свёртка arguments начиная с (запись «Parameter» с «name» равным "" и «type» равным "") как found и word →
+    «Chosen» от [(«When» от ((found.«name») равен "taking") и (запись «Parameter» с «name» равным "done"
+      и «type» равным word)),
+      («When» от (((found.«name») равен "") и притом (не (пусто (отфильтровать names где flag → flag равен word))))
+        и (запись «Parameter» с «name» равным "taking" и «type» равным ""))] и found).«type»
+
+тотальная функция «Has flag»
+  принимает arguments: список строки, flag: строка
+  возвращает признак
+  пример «The flag is there»
+    дано arguments равно ["отчёт.flang", "--json"]
+    дано flag равно "--json"
+    ожидается да
+  не (пусто (отфильтровать arguments где word → word равен flag))
+
+тотальная функция «Positionals»
+  принимает arguments: список строки
+  возвращает список строки
+  пример «Flags and their values are not positional»
+    дано arguments равно ["отчёт.flang", "--limit", "9", "Ф", "--json", "прежний.flang"]
+    ожидается ["отчёт.flang", "Ф", "прежний.flang"]
+  «Lines» от ((свёртка arguments начиная с (запись «Parameter» с «name» равным "" и «type» равным "") как kept
+    и word →
+    «Chosen» от [(«When» от ((kept.«name») равен "skip") и (запись «Parameter» с «name» равным ""
+      и «type» равным (kept.«type»))),
+      («When» от (не (пусто (отфильтровать («Valued flags») где flag → flag равен word))) и
+        (запись «Parameter» с «name» равным "skip" и «type» равным (kept.«type»))),
+      («When» от (word начинается с "--") и kept)]
+      и (запись «Parameter» с «name» равным "" и «type» равным (соединить [(kept.«type»), word, "\n"] по ""))).«type»)
+
+тотальная функция «Limit»
+  принимает arguments: список строки
+  возвращает число
+  пример «The default limit»
+    дано arguments равно пустой список
+    ожидается 256
+  пример «A given limit»
+    дано arguments равно ["--limit", "4"]
+    ожидается 4
+  пусть written равно («Option» от arguments и ["--limit", "--предел"])
+  если «Digits» от written то к числу written иначе («Default limit»)
+
+тотальная функция «Absolute»
+  принимает directory: строка, path: строка
+  возвращает строка
+  пример «A relative path joins the directory»
+    дано directory равно "/srv/flang"
+    дано path равно "docs/отчёт.flang"
+    ожидается "/srv/flang/docs/отчёт.flang"
+  пример «An absolute path stays»
+    дано directory равно "/srv/flang"
+    дано path равно "/tmp/отчёт.flang"
+    ожидается "/tmp/отчёт.flang"
+  если path начинается с "/" то path иначе (соединить [directory, "/", path] по "")
+
+тотальная функция «Directory of»
+  принимает path: строка
+  возвращает строка
+  пример «The directory of a file»
+    дано path равно "/srv/flang/docs/отчёт.flang"
+    ожидается "/srv/flang/docs"
+  пусть parts равно (разделить path по "/")
+  соединить (свёртка parts начиная с (пустой список) как kept
+    и part → если (длина kept) меньше ((длина parts) минус 1) то (добавить part к kept) иначе kept) по "/"
+
+тотальная функция «Base of»
+  принимает path: строка
+  возвращает строка
+  пример «The name of a file»
+    дано path равно "/srv/flang/docs/отчёт.flang"
+    ожидается "отчёт.flang"
+  свёртка (разделить path по "/") начиная с "" как last и part → part
+
+тотальная функция «Probe path»
+  принимает path: строка, key: строка
+  возвращает строка
+  пример «The probe lies next to its source»
+    дано path равно "/srv/flang/docs/отчёт.flang"
+    дано key равно "new"
+    ожидается "/srv/flang/docs/.behavior-probe-new-отчёт.flang"
+  соединить [(«Directory of» от path), "/.behavior-probe-", key, "-", («Base of» от path)] по ""
+
+тотальная функция «Version made»
+  принимает key: строка, tag: строка, text: строка, name: строка, other: строка, twin: строка, path: строка, cap: число
+  возвращает «Version»
+  пусть shape равно («Shape of» от text и name)
+  пусть theirs равно («Shape of» от other и twin)
+  (запись «Version» с «key» равным key и «label» равным tag и «source» равным text и «shape» равным shape
+    и «inputs» равным («Inputs of» от text и shape и («Borrowed givens» от shape и theirs) и cap)
+    и «probe» равным («Probe path» от path и key))
+
+тотальная функция «Mode»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от (соединить («Given of» от "mode" и answers) по "\n")
+
+объект «Joining»
+  «open»: признак
+  «done»: список строки
+  «current»: строка
+
+тотальная функция «Joining step»
+  принимает joining: «Joining», word: строка
+  возвращает «Joining»
+  пример «A word inside guillemets joins the open name»
+    дано joining равно запись «Joining» с «open» равным да и «done» равным ["а.flang"] и «current» равным "«Можно"
+    дано word равно "читать»"
+    ожидается запись «Joining» с «open» равным нет и «done» равным ["а.flang", "«Можно читать»"] и «current» равным ""
+  пусть closes равно («Ends with» от word и "»")
+  пусть joined равно (соединить [(joining.«current»), " ", word] по "")
+  («Chosen» от [(«When» от ((joining.«open») и притом closes) и (запись «Joining» с «open» равным нет
+    и «done» равным (добавить joined к (joining.«done»)) и «current» равным "")),
+    («When» от (joining.«open») и (запись «Joining» с «open» равным да и «done» равным (joining.«done»)
+      и «current» равным joined)),
+    («When» от ((word начинается с "«") и притом (не closes)) и (запись «Joining» с «open» равным да
+      и «done» равным (joining.«done») и «current» равным word))]
+    и (запись «Joining» с «open» равным нет и «done» равным (добавить word к (joining.«done»)) и «current» равным ""))
+
+тотальная функция «Rejoined»
+  принимает words: список строки
+  возвращает список строки
+  пример «A name in guillemets cut at spaces is whole again»
+    дано words равно ["а.flang", "«Можно", "читать", "отчёт»", "--json"]
+    ожидается ["а.flang", "«Можно читать отчёт»", "--json"]
+  пусть joined равно (свёртка words начиная с (запись «Joining» с «open» равным нет и «done» равным (пустой список)
+    и «current» равным "") как joining и word → «Joining step» от joining и word)
+  если joined.«open» то (добавить (joined.«current») к (joined.«done»)) иначе (joined.«done»)
+
+тотальная функция «Arguments of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Rejoined» от («Given of» от "arguments" и answers)
+
+тотальная функция «Root path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «First line» от («Output of» от "root" и answers)
+
+тотальная функция «Argument at»
+  принимает position: число, answers: список «Answer»
+  возвращает строка
+  пусть words равно («Positionals» от («Arguments of» от answers))
+  если (position меньше 1) или (position больше (длина words)) то "" иначе (элемент position в words)
+
+тотальная функция «Against»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Option» от («Arguments of» от answers) и ["--against", «Revision flag»]
+
+тотальная функция «Revision flag»
+  возвращает строка
+  пример «The Russian spelling of the flag»
+    ожидается "--против"
+  "--против"
+
+тотальная функция «Target path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Absolute» от («Setting of» от "pwd" и («Root path» от answers) и answers) и («Argument at» от 1 и answers)
+
+тотальная функция «Former path»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Absolute» от («Setting of» от "pwd" и («Root path» от answers) и answers) и («Argument at» от 3 и answers)
+
+тотальная функция «Compared»
+  принимает answers: список «Answer»
+  возвращает признак
+  (не (пусто («Against» от answers))) или (не (пусто («Argument at» от 3 и answers)))
+
+тотальная функция «Former name»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть named равно («Option» от («Arguments of» от answers) и ["--old-name", "--прежнее-имя"])
+  если пусто named то («Argument at» от 2 и answers) иначе named
+
+тотальная функция «Former label»
+  принимает answers: список «Answer»
+  возвращает строка
+  если пусто («Against» от answers)
+    то «Argument at» от 3 и answers
+    иначе соединить [(«Argument at» от 1 и answers), " @ ", («Against» от answers)] по ""
+
+тотальная функция «Table job»
+  принимает answers: список «Answer»
+  возвращает «Job»
+  пусть limit равно («Limit» от («Arguments of» от answers))
+  пусть path равно («Target path» от answers)
+  пусть name равно («Argument at» от 2 и answers)
+  пусть newer равно («Output of» от "new" и answers)
+  пусть older равно («Output of» от "old" и answers)
+  пусть former равно («Former name» от answers)
+  пусть label равно («Argument at» от 1 и answers)
+  если «Compared» от answers
+    то запись «Job» с «path» равным label и «versions» равным [
+      («Version made» от "old" и («Former label» от answers) и older и former и newer и name и path и limit),
+      («Version made» от "new" и label и newer и name и older и former и path и limit)]
+    иначе запись «Job» с «path» равным label и «versions» равным [(«Version made» от "new" и label и newer и name
+      и newer и name и path и limit)]
+
+тотальная функция «Review base»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Argument at» от 1 и answers
+
+тотальная функция «Changed paths»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от "changed" и answers)
+
+тотальная функция «Review cap»
+  возвращает число
+  пример «Twelve rules at most per review»
+    ожидается 12
+  12
+
+тотальная функция «Changed rules»
+  принимает path: строка, older: строка, newer: строка
+  возвращает список строки
+  пример «A rule whose text changed»
+    дано path равно "п.flang"
+    дано older равно "модуль «М»\n\nфункция «Ф»\n  возвращает признак\n  обеспечивает «к» да\n  да\n"
+    дано newer равно "модуль «М»\n\nфункция «Ф»\n  возвращает признак\n  обеспечивает «к» да\n  нет\n"
+    ожидается ["Ф"]
+  (отфильтровать («Function names» от newer) где name →
+    («Is rule» от newer и («Shape of» от newer и name)) и притом (((«Shape of» от older и name).«found») и притом
+      (не ((«Trimmed block» от ((«Shape of» от older
+        и name).«block»)) равен («Trimmed block» от ((«Shape of» от newer и name).«block»))))))
+
+объект «Rule place»
+  «path»: строка
+  «name»: строка
+
+тотальная функция «Rule places»
+  принимает answers: список «Answer»
+  возвращает список «Rule place»
+  (свёртка («Changed paths» от answers) начиная с (пустой список) как found и path →
+    (свёртка («Changed rules» от path и («Output of» от (соединить ["old:", path] по "") и answers)
+      и («Output of» от (соединить ["new:", path] по "") и answers))
+      начиная с found как grown и name → добавить (запись «Rule place» с «path» равным path
+        и «name» равным name) к grown))
+
+тотальная функция «Review jobs»
+  принимает answers: список «Answer»
+  возвращает список «Job»
+  пусть root равно («Root path» от answers)
+  (свёртка («Rule places» от answers) начиная с (пустой список) как made и place →
+    если (длина made) не меньше («Review cap») то made иначе (добавить («Review job» от answers и root и place
+      и (к строке (длина made))) к made))
+
+тотальная функция «Review job»
+  принимает answers: список «Answer», root: строка, place: «Rule place», number: строка
+  возвращает «Job»
+  пусть older равно («Output of» от (соединить ["old:", (place.«path»)] по "") и answers)
+  пусть newer равно («Output of» от (соединить ["new:", (place.«path»)] по "") и answers)
+  пусть path равно (соединить [root, "/", (place.«path»)] по "")
+  пусть name равно (place.«name»)
+  пусть limit равно («Default limit»)
+  запись «Job» с «path» равным (place.«path») и «versions» равным [
+    («Version made» от (соединить ["r", number, "-old"] по "") и (соединить [(place.«path»), " @ ",
+      («Review base» от answers)] по "") и older и name и newer и name и path и limit),
+    («Version made» от (соединить ["r", number, "-new"] по "") и (place.«path») и newer и name и older и name и path
+      и limit)]
+
+тип «Kind»
+  вариант «Table kind»
+  вариант «Review kind»
+  вариант «Probes kind»
+
+тотальная функция «Kind of»
+  принимает answers: список «Answer»
+  возвращает «Kind»
+  пример «A plan without a mode builds a table»
+    дано answers равно пустой список
+    ожидается вариант «Table kind»
+  («Chosen» от [(«When» от ((«Mode» от answers) равен "review") и (вариант «Review kind»)),
+    («When» от ((«Mode» от answers) равен "probes") и (вариант «Probes kind»))] и (вариант «Table kind»))
+
+тотальная функция «Jobs»
+  принимает answers: список «Answer»
+  возвращает список «Job»
+  разбор («Kind of» от answers)
+    случай «Table kind»
+      то [(«Table job» от answers)]
+    случай «Review kind»
+      то «Review jobs» от answers
+    случай «Probes kind»
+      то «Probe jobs» от answers
+
+тотальная функция «Versions»
+  принимает answers: список «Answer»
+  возвращает список «Version»
+  свёртка («Jobs» от answers) начиная с (пустой список) как all и job → «Соединить списки» от all и (job.«versions»)
+
+тотальная функция «Probing»
+  принимает answers: список «Answer»
+  возвращает список «Version»
+  отфильтровать («Versions» от answers) где version → пусто ((version.«inputs»).«problem»)
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "pwd" и "PWD"), («Run from» от "root" и («Root») и "pwd" и ["-P"])]
+
+тотальная функция «Sources»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть path равно («Target path» от answers)
+  пусть formerly равно (если пусто («Against» от answers)
+    то [(«Read» от "old" и («Former path» от answers))]
+    иначе [(«Run from» от "old" и («Directory of» от path) и "git" и ["show", (соединить [(«Against» от answers),
+      ":./", («Base of» от path)] по "")])])
+  «Chosen» от [(«When» от (((«Mode» от answers) равен "table") и притом (пусто («Argument at» от 2 и answers)))
+    и (пустой список)),
+    («When» от ((«Mode» от answers) равен "table") и («Соединить списки» от [(«Read» от "new" и path)]
+      и (если «Compared» от answers то formerly иначе (пустой список)))),
+    («When» от (((«Mode» от answers) равен "review") и притом (не (пусто («Review base» от answers)))) и [
+      («Run from» от "changed" и («Root») и "git" и ["diff", "--name-only", "--diff-filter=M",
+        (соединить [(«Review base» от answers), "...HEAD"] по ""), "--", "*.flang", "*.fscript"]),
+      («Run from» от "log" и («Root») и "git" и ["log", "--format=%B", (соединить [(«Review base» от answers),
+        "..HEAD"] по "")])]),
+    («When» от ((«Mode» от answers) равен "probes") и («Probe questions» от answers))] и (пустой список)
+
+тотальная функция «Changed sources»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  если («Mode» от answers) равен "review"
+    то («Gathered questions» от (отобразить («Changed paths» от answers) как path → «Source pair» от answers и path))
+    иначе пустой список
+
+тотальная функция «Gathered questions»
+  принимает parts: список список «Question»
+  возвращает список «Question»
+  пример «No parts ask nothing»
+    дано parts равно пустой список
+    ожидается пустой список
+  свёртка parts начиная с (пустой список) как asked и part → «Соединить списки» от asked и part
+
+тотальная функция «Source pair»
+  принимает answers: список «Answer», path: строка
+  возвращает список «Question»
+  [(«Read» от (соединить ["new:", path] по "") и (соединить [(«Root path» от answers), "/", path] по "")),
+    («Run from» от (соединить ["old:", path] по "") и («Root») и "git" и ["show",
+      (соединить [(«Review base» от answers), ":", path] по "")])]
+
+тотальная функция «Probe writes»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  (отобразить («Probing» от answers) как version → «Write» от (соединить ["write:", (version.«key»)] по "")
+    и (version.«probe»)
+    и («Probe source» от (version.«source») и (version.«shape») и ((version.«inputs»).«rows»)))
+
+тотальная функция «Probe call»
+  принимает name: строка, probe: строка, called: строка
+  возвращает «Question»
+  пример «The binary evaluates the appended function»
+    дано name равно "run:new"
+    дано probe равно "/srv/.behavior-probe-new-а.flang"
+    дано called равно "Behavior probe"
+    ожидается (запись «Question» с «name» равным "run:new"
+      и «order» равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+      "cd \"$0\" && exec \"$@\"", "..", "bootstrap/flang", "run", "/srv/.behavior-probe-new-а.flang", "--function",
+      "«Behavior probe»", "--на-веру"]))
+  («Run from» от name и («Root») и "bootstrap/flang" и ["run", probe, "--function", («In guillemets» от called),
+    "--на-веру"])
+
+тотальная функция «Probe runs»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  (свёртка («Probing» от answers) начиная с (пустой список) как asked и version → «Соединить списки» от asked и
+    («Соединить списки» от [(«Probe call» от (соединить ["run:", (version.«key»)] по "") и (version.«probe»)
+      и («Probe name»))]
+      и (если пусто ((version.«shape»).«requires») то (пустой список) иначе [(«Probe call» от (соединить ["gate:",
+        (version.«key»)] по "") и (version.«probe») и («Gate name»))])))
+
+тотальная функция «Probe removals»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Probing» от answers) как version → «Remove» от (соединить ["remove:",
+    (version.«key»)] по "") и (version.«probe»)
+
+тип «Step»
+  вариант «Setup step»
+  вариант «Sources step»
+  вариант «Changed step»
+  вариант «Write step»
+  вариант «Run step»
+  вариант «Remove step»
+  вариант «Idle step»
+
+тотальная функция «Step of»
+  принимает stages: число
+  возвращает «Step»
+  пример «The first stage sets up»
+    дано stages равно 6
+    ожидается вариант «Setup step»
+  пример «Past the last stage there is nothing to ask»
+    дано stages равно 0
+    ожидается вариант «Idle step»
+  («Chosen» от [(«When» от (stages равен 6) и (вариант «Setup step»)), («When» от (stages равен 5)
+    и (вариант «Sources step»)),
+    («When» от (stages равен 4) и (вариант «Changed step»)), («When» от (stages равен 3) и (вариант «Write step»)),
+    («When» от (stages равен 2) и (вариант «Run step»)), («When» от (stages равен 1) и (вариант «Remove step»))]
+      и (вариант «Idle step»))
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  разбор («Step of» от stages)
+    случай «Setup step»
+      то «Setup»
+    случай «Sources step»
+      то «Sources» от answers
+    случай «Changed step»
+      то «Changed sources» от answers
+    случай «Write step»
+      то «Probe writes» от answers
+    случай «Run step»
+      то «Probe runs» от answers
+    случай «Remove step»
+      то «Probe removals» от answers
+    случай «Idle step»
+      то пустой список
+
+тотальная функция «Failure words»
+  принимает errors: строка
+  возвращает строка
+  пример «The line after the trust notice»
+    дано errors равно "на веру: доказанность не считалась\nFLANG_TYPE: не тот тип\n"
+    ожидается "FLANG_TYPE: не тот тип"
+  «First line» от (соединить (отфильтровать («Lines» от errors) где line → не (line начинается с "на веру")) по "\n")
+
+тотальная функция «Version table»
+  принимает version: «Version», answers: список «Answer»
+  возвращает «Table»
+  пусть ran равно (соединить ["run:", (version.«key»)] по "")
+  пусть gated равно (соединить ["gate:", (version.«key»)] по "")
+  пусть failed равно («Answered» от ran и answers) и притом (не ((«Exit code of» от ran и answers) равен 0))
+  пусть outcomes равно (отобразить («Json items» от («Output of» от ran
+    и answers)) как piece → «Outcome words» от piece)
+  («Table of» от (version.«label») и (version.«shape») и (version.«inputs») и («Gated» от outcomes
+    и («Json items» от («Output of» от gated и answers)))
+    и (если failed то («Failure words» от («Errors of» от ran и answers)) иначе ""))
+
+объект «Probe case»
+  «name»: строка
+  «file»: строка
+  «function»: строка
+  «former»: строка
+  «former function»: строка
+  «limit»: число
+  «expected»: список строки
+  «words»: строка
+
+тотальная функция «Example»
+  принимает name: строка
+  возвращает строка
+  пример «A file of the guide»
+    дано name равно "discount.flang"
+    ожидается "docs/examples/behavior/discount.flang"
+  соединить ["docs/examples/behavior/", name] по ""
+
+тотальная функция «Probe files»
+  возвращает список строки
+  пример «Four files of the guide»
+    ожидается (["report-access-before.flang", "report-access-after.flang", "report-access-refactored.flang",
+      "discount.flang"])
+  ["report-access-before.flang", "report-access-after.flang", "report-access-refactored.flang", "discount.flang"]
+
+тотальная функция «Probe cases»
+  возвращает список «Probe case»
+  обеспечивает «six probes» (длина результат) равен 6
+  [(запись «Probe case» с «name» равным "refactoring" и «file» равным "report-access-refactored.flang"
+    и «function» равным "Читает ли отчёт"
+      и «former» равным "report-access-before.flang" и «former function» равным "Можно читать отчёт"
+        и «limit» равным 256
+      и «expected» равным ["flipped:[],appeared:[],vanished:[],same:8"]
+      и «words» равным "переименование и новое тело при том же поведении дают пустой дифф"),
+   (запись «Probe case» с «name» равным "flip" и «file» равным "report-access-after.flang"
+     и «function» равным "Можно читать отчёт"
+      и «former» равным "report-access-before.flang" и «former function» равным "Можно читать отчёт"
+        и «limit» равным 256
+      и «expected» равным ["{input:роль = Заблокированный, архивный = нет,before:нет,after:да}", "same:5"]
+      и «words» равным "согласованная правка кода и постусловия видна перевернувшимися строками"),
+   (запись «Probe case» с «name» равным "complete" и «file» равным "report-access-before.flang"
+     и «function» равным "Можно читать отчёт"
+      и «former» равным "" и «former function» равным "" и «limit» равным 256
+        и «expected» равным ["complete:true,rows:8"]
+      и «words» равным "роль и признак перебраны целиком: восемь строк, таблица полная"),
+   (запись «Probe case» с «name» равным "number" и «file» равным "discount.flang"
+     и «function» равным "Скидка положена"
+      и «former» равным "" и «former function» равным "" и «limit» равным 256 и «expected» равным ["complete:false"]
+      и «words» равным "число на входе даёт выборку, а не полную таблицу"),
+   (запись «Probe case» с «name» равным "forgery" и «file» равным "discount.flang"
+     и «function» равным "Скидка по виду"
+      и «former» равным "" и «former function» равным "" и «limit» равным 256 и «expected» равным ["complete:false"]
+      и «words» равным "число внутри варианта не делает таблицу полной"),
+   (запись «Probe case» с «name» равным "limit" и «file» равным "report-access-before.flang"
+     и «function» равным "Можно читать отчёт"
+      и «former» равным "" и «former function» равным "" и «limit» равным 4
+        и «expected» равным ["строк было бы 8 при пределе 4"]
+      и «words» равным "предел строк назван числом, таблица не урезана молча")]
+
+тотальная функция «Probe questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  отобразить («Probe files») как name → «Read» от (соединить ["file:",
+    name] по "") и (соединить [(«Root path» от answers), "/", («Example» от name)] по "")
+
+тотальная функция «Probe job»
+  принимает probe: «Probe case», answers: список «Answer»
+  возвращает «Job»
+  пусть path равно (соединить [(«Root path» от answers), "/", («Example» от (probe.«file»))] по "")
+  пусть newer равно («Output of» от (соединить ["file:", (probe.«file»)] по "") и answers)
+  пусть older равно («Output of» от (соединить ["file:", (probe.«former»)] по "") и answers)
+  пусть key равно (соединить ["p-", (probe.«name»)] по "")
+  если пусто (probe.«former»)
+    то запись «Job» с «path» равным (probe.«name») и «versions» равным [(«Version made» от key
+      и («Example» от (probe.«file»)) и newer и (probe.«function») и newer
+      и (probe.«function») и path и (probe.«limit»))]
+    иначе запись «Job» с «path» равным (probe.«name») и «versions» равным [
+      («Version made» от (соединить [key, "-old"] по "") и («Example» от (probe.«former»)) и older
+        и (probe.«former function») и newer и (probe.«function») и path и (probe.«limit»)),
+      («Version made» от (соединить [key, "-new"] по "") и («Example» от (probe.«file»)) и newer и (probe.«function»)
+        и older и (probe.«former function») и path и (probe.«limit»))]
+
+тотальная функция «Probe jobs»
+  принимает answers: список «Answer»
+  возвращает список «Job»
+  отобразить («Probe cases») как probe → «Probe job» от probe и answers
+
+тотальная функция «Job json»
+  принимает job: «Job», answers: список «Answer»
+  возвращает строка
+  пусть tables равно (отобразить (job.«versions») как version → «Version table» от version и answers)
+  если (длина tables) равен 1
+    то «Table json» от («Table at» от tables и 1)
+    иначе «Change json» от («Compare» от («Table at» от tables и 1) и («Table at» от tables и 2))
+
+тотальная функция «Probe holds»
+  принимает probe: «Probe case», answers: список «Answer»
+  возвращает признак
+  пусть said равно («Job json» от («Probe job» от probe и answers) и answers)
+  пусть plain равно (соединить (разделить said по "\"") по "")
+  пусто (отфильтровать (probe.«expected») где hoped → не (plain содержит hoped))
+
+тотальная функция «Probes verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть lines равно (отобразить («Probe cases») как probe →
+    соединить [(если «Probe holds» от probe и answers то "  верно    " иначе "  НЕВЕРНО  "), (probe.«name»), ": ",
+      (probe.«words»)] по "")
+  пусть wrong равно (отфильтровать («Probe cases») где probe → не («Probe holds» от probe и answers))
+  пусть told равно (отобразить wrong как probe → соединить [(probe.«name»), ": ",
+    («Job json» от («Probe job» от probe и answers) и answers)] по "")
+  пусть text равно (соединить («Соединить списки» от (приписать "пробы таблицы поведения" к lines) и told) по "\n")
+  если пусто wrong
+    то вариант «Конец работы» с значение равным text
+    иначе вариант «Провал» с код равным "FLANG_BEHAVIOR_PROBE" и сообщение равным text
+
+тотальная функция «Table verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть tables равно (отобразить («Versions» от answers) как version → «Version table» от version и answers)
+  пусть json равно («Has flag» от («Arguments of» от answers) и "--json")
+  («Chosen» от [(«When» от (пусто («Argument at» от 2 и answers))
+    и (вариант «Провал» с код равным "FLANG_BEHAVIOR_USAGE" и сообщение равным («Usage»))),
+    («When» от (не ((«Exit code of» от "new" и answers) равен 0))
+      и (вариант «Провал» с код равным "FLANG_BEHAVIOR_SOURCE" и сообщение равным
+      (соединить ["файл не прочитан: ", («Argument at» от 1 и answers), " — ", («Errors of» от "new"
+        и answers)] по ""))),
+    («When» от ((«Compared» от answers) и притом (не ((«Exit code of» от "old" и answers) равен 0)))
+      и (вариант «Провал» с код равным "FLANG_BEHAVIOR_SOURCE" и сообщение равным
+      (соединить ["прежняя версия не прочитана: ", («Former label» от answers), " — ", («Errors of» от "old"
+        и answers)] по ""))),
+    («When» от ((длина tables) равен 1) и (вариант «Конец работы» с значение равным
+      (если json то («Table json» от («Table at» от tables
+        и 1)) иначе (соединить («Table lines» от («Table at» от tables и 1)) по "\n")))),
+    («When» от ((длина tables) равен 2)
+      и (вариант «Конец работы» с значение равным (если json то («Change json» от («Compare» от («Table at» от tables
+      и 1) и («Table at» от tables и 2)))
+      иначе (соединить («Change lines» от («Compare» от («Table at» от tables и 1) и («Table at» от tables
+        и 2))) по "\n"))))]
+    и (вариант «Провал» с код равным "FLANG_BEHAVIOR_USAGE" и сообщение равным («Usage»)))
+
+тотальная функция «Acknowledged»
+  принимает log: строка
+  возвращает список строки
+  пример «A trailer names the file whose rules change on purpose»
+    дано log равно "feat(access): owners read archived reports\n\nBehavior-change: docs/a.flang\n"
+    ожидается ["docs/a.flang"]
+  (отобразить (отфильтровать («Lines» от log) где line → line начинается с "Behavior-change: ")
+    как line → «Without blanks» от («After» от "Behavior-change: " и line))
+
+тотальная функция «Job change»
+  принимает job: «Job», answers: список «Answer»
+  возвращает «Change»
+  «Compare» от («Version table» от (элемент 1 в (job.«versions»))
+    и answers) и («Version table» от (элемент 2 в (job.«versions»)) и answers)
+
+тотальная функция «Flipped»
+  принимает change: «Change»
+  возвращает признак
+  (не (пусто (change.«flipped»))) или (не (пусто (change.«vanished»)))
+
+тотальная функция «Review verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть jobs равно («Review jobs» от answers)
+  пусть marked равно («Acknowledged» от («Output of» от "log" и answers))
+  пусть unmarked равно (отфильтровать jobs где job → («Flipped» от («Job change» от job и answers))
+    и притом (пусто (отфильтровать marked где path → path равен (job.«path»))))
+  пусть heading равно (соединить ["поведение правил против ", («Review base» от answers),
+    ": правил с изменённым текстом ", (к строке (длина («Rule places» от answers))),
+    ", просчитано ", (к строке (длина jobs))] по "")
+  пусть body равно (свёртка jobs начиная с [heading] как told и job → «Соединить списки» от told
+    и (приписать "" к («Change lines» от («Job change» от job и answers))))
+  пусть text равно (если «Has flag» от («Arguments of» от answers) и "--markdown"
+    то соединить ["### Таблица поведения правил", "", "```text", (соединить body по "\n"), "```"] по "\n"
+    иначе соединить body по "\n")
+  «Chosen» от [(«When» от (пусто («Review base» от answers)) и (вариант «Провал» с код равным "FLANG_BEHAVIOR_USAGE"
+    и сообщение равным
+      "звать: bootstrap/flang run-script behavior:review <база> [--markdown]")),
+    («When» от (не ((«Exit code of» от "changed" и answers) равен 0))
+      и (вариант «Провал» с код равным "FLANG_BEHAVIOR_SOURCE" и сообщение равным
+      (соединить ["список изменённых файлов не получен: ", («Errors of» от "changed" и answers)] по ""))),
+    («When» от (не (пусто unmarked)) и (вариант «Провал» с код равным "FLANG_BEHAVIOR_FLIPPED"
+      и сообщение равным (соединить [text, "",
+      (соединить ["ПОВЕДЕНИЕ ПЕРЕВЕРНУЛОСЬ без отметки в файлах: ",
+        (соединить (отобразить unmarked как job → job.«path») по ", ")] по ""),
+      "Посмотрите перевернувшиеся строки выше. Если перемена задумана, допишите в сообщение коммита строку",
+      "Behavior-change: <путь файла> — по одной на файл."] по "\n")))] и (вариант
+        «Конец работы» с значение равным text)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Kind of» от answers)
+    случай «Table kind»
+      то «Table verdict» от answers
+    случай «Review kind»
+      то «Review verdict» от answers
+    случай «Probes kind»
+      то «Probes verdict» от answers
+
+тотальная функция «Said»
+  принимает continuation: «Продолжение»
+  возвращает строка
+  пример «A finished plan says its text»
+    дано continuation равно вариант «Конец работы» с значение равным "таблица"
+    ожидается "таблица"
+  пример «A plan that gave up says its message»
+    дано continuation равно вариант «Провал» с код равным "FLANG_BEHAVIOR_USAGE" и сообщение равным "звать так"
+    ожидается "звать так"
+  разбор continuation
+    случай вариант «Конец работы» с значение как text
+      то text
+    случай вариант «Провал» с код как code и сообщение как text
+      то text
+    случай любое
+      то ""
+
+тотальная функция «Closing»
+  принимает continuation: «Продолжение»
+  возвращает «Продолжение»
+  пример «A finished plan leaves a short word, the text is already printed»
+    дано continuation равно вариант «Конец работы» с значение равным "таблица"
+    ожидается вариант «Конец работы» с значение равным "напечатано в поток вывода"
+  разбор continuation
+    случай вариант «Конец работы» с значение как text
+      то вариант «Конец работы» с значение равным "напечатано в поток вывода"
+    случай любое
+      то continuation
+
+тотальная функция «Finish»
+  принимает stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  если «Answered» от "print" и answers
+    то «Closing» от («Verdict» от answers)
+    иначе «Ask» от («Write» от "print" и "/dev/stdout" и (соединить [(«Said» от («Verdict» от answers)),
+      "\n"] по "")) и (пустой список) и stages и answers
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Finish» от stages и answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin in mode»
+  принимает mode: строка
+  возвращает «Inquiry»
+  запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 7 и «answers» равным [
+    запись «Answer» с «name» равным "mode" и «reply» равным (вариант «Доводы» с доводы равным [mode])]
+
+тотальная функция «Begin table»
+  возвращает «Inquiry»
+  «Begin in mode» от "table"
+
+тотальная функция «Begin review»
+  возвращает «Inquiry»
+  «Begin in mode» от "review"
+
+тотальная функция «Begin probes»
+  возвращает «Inquiry»
+  «Begin in mode» от "probes"
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Behavior»
+  состояние «Inquiry»
+  начинает с «Begin table»
+  обрабатывает «Next»
+
+план «Review»
+  состояние «Inquiry»
+  начинает с «Begin review»
+  обрабатывает «Next»
+
+план «Probes»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next»

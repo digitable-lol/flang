@@ -900,6 +900,9 @@ theorem «sum up to is non-negative»
 | `next claim by justification` | an intermediate fact; later steps can use it |
 | `therefore proved` | the end |
 
+How to tell that a theorem is needed and how to bring it to «доказано» is on the
+page [Proving by hand](manual-proofs.html).
+
 A theorem does not need induction; a short one is a single justification:
 
 ```flang

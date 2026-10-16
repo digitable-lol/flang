@@ -256,6 +256,8 @@ listed in `man flang`, section ДИАГНОСТИКА.
 
 ## Where to go next
 
+- [Proving by hand](manual-proofs.html) — three techniques for when the kernel did
+  not prove a postcondition by itself, with programs before and after
 - [Tutorial](tutorial.html) — from a first function to a claim the kernel accepts
 - [What is proved and what is not](what-is-proved.html) — the kernel's three
   answers and what stands behind them

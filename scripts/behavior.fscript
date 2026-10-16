@@ -36,8 +36,8 @@
 тотальная функция «Valued flags»
   возвращает список строки
   пример «Flags that take the next argument»
-    ожидается ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя"]
-  ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя"]
+    ожидается ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя", "--out", "--в-файл"]
+  ["--limit", "--предел", "--against", "--против", "--old-name", "--прежнее-имя", "--out", "--в-файл"]
 
 тотальная функция «Option»
   принимает arguments: список строки, names: список строки
@@ -711,25 +711,21 @@
     случай любое
       то ""
 
-тотальная функция «Closing»
-  принимает continuation: «Продолжение»
-  возвращает «Продолжение»
-  пример «A finished plan leaves a short word, the text is already printed»
-    дано continuation равно вариант «Конец работы» с значение равным "таблица"
-    ожидается вариант «Конец работы» с значение равным "напечатано в поток вывода"
-  разбор continuation
-    случай вариант «Конец работы» с значение как text
-      то вариант «Конец работы» с значение равным "напечатано в поток вывода"
-    случай любое
-      то continuation
+тотальная функция «Print path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть out равно («Option» от («Arguments of» от answers) и ["--out", "--в-файл"])
+  если пусто out то "/dev/stdout" иначе («Absolute» от («Setting of» от "pwd" и («Root path» от answers) и answers)
+    и out)
 
 тотальная функция «Finish»
   принимает stages: число, answers: список «Answer»
   возвращает «Продолжение»
   если «Answered» от "print" и answers
-    то «Closing» от («Verdict» от answers)
-    иначе «Ask» от («Write» от "print" и "/dev/stdout" и (соединить [(«Said» от («Verdict» от answers)),
-      "\n"] по "")) и (пустой список) и stages и answers
+    то «Verdict» от answers
+    иначе («Ask» от («Write» от "print" и («Print path» от answers) и (соединить [(«Said» от («Verdict» от answers)),
+      "\n"] по ""))
+      и (пустой список) и stages и answers)
 
 тотальная функция «Proceed»
   принимает queue: список «Question», stages: число, answers: список «Answer»

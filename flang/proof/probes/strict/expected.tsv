@@ -22,7 +22,7 @@ refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство
 refuted.flang	--proof --строго	1	FLANG_PROPERTY: нарушено свойство
 checker-says-no.flang	--proof	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ
 checker-says-no.flang	--proof --строго	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ
-tripling-helper.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+imported-module.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 checker-says-no-with-import.flang	--proof	0	сверщик не сошёлся с записью (код 1; файлу с ввозом
 checker-says-no-with-import.flang	--proof --строго	0	ДОКАЗАНО
 honest.flang	--строго	2	осмыслен только рядом с «--proof»

@@ -58,7 +58,10 @@ asdf set -u flang latest
 
 The plugin downloads the prebuilt build and checks its checksum. Releases before
 0.7.29, or an install with `ASDF_FLANG_FROM_SOURCE=1`, build from the C sources
-instead, which needs `cc` and `make`. After installing, the plugin probes the
+instead, which needs `cc` and `make`. The version directory gets `bin/flang`,
+`lib/libcompiler_flang.a`, the headers in `include/`, the runtime sources of
+every emit target under `share/flang/<target>/` and the standard library under
+`share/flang/stdlib/`. After installing, the plugin probes the
 result: `flang --version` must name the requested version. The third line is
 `asdf set`, not `asdf global`: `global` and `local` were removed in asdf 0.16.0.
 The same plugin works with mise:
@@ -103,10 +106,12 @@ make: Leaving directory '…/bootstrap'
 
 The version is whatever the clone holds, not the latest release. There is no
 `man` page on this path: `flang.1` ships only in the release archive. There is no
-`share/flang/` with the runtime sources of the emit targets either, so
-`flang emit` from such an install asks for their directory:
-`--runtime <clone>/flang/src/emit/c`, or the variable `FLANG_RUNTIME_DIR` — one
-directory per target.
+`share/flang/` either: neither the runtime sources of the emit targets nor the
+standard library. `flang emit` from such an install asks for the runtime
+directory: `--runtime <clone>/flang/src/emit/c`, or the variable
+`FLANG_RUNTIME_DIR` — one directory per target. The search order of the library
+and the variables that point the binary at the clone are in
+[the guide](../guide/installed-library.md).
 
 If the machine has no `make`, one `cc` call is enough:
 

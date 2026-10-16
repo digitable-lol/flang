@@ -88,8 +88,9 @@ make -C bootstrap -j4                  # about 6 minutes
 make -C bootstrap install PREFIX=$HOME/.local
 ```
 
-Needs only a C99 compiler and `make`. This install has no `share/flang`, so `flang emit` cannot find
-the runtimes of the target languages; the prebuilt builds have them.
+Needs only a C99 compiler and `make`. This install has no `share/flang`, so outside the clone it finds
+neither the standard library nor the runtimes of the target languages; the prebuilt builds have both
+([where flang looks](docs/guide/installed-library.md)).
 
 ### Windows
 

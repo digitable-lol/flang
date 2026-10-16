@@ -150,6 +150,7 @@ script.proofs:count-20 = bootstrap/flang run-script seed:freshness --what proofs
 script.word:occupancy = bootstrap/flang io flang/scripts/word-occupancy.fscript --plan 'Занятость слова' --timeout 1200000
 script.word:occupancy:check = bootstrap/flang io scripts/guards/occupancy-check.fscript --timeout 600000
 script.links:check = bootstrap/flang io scripts/guards/link-guard.fscript --на-веру
+script.docs:examples = bootstrap/flang io scripts/site/page-examples.fscript --timeout 900000
 script.tasks:check = bootstrap/flang io flang/scripts/tasks.fscript --plan 'Задачник цел' --max-steps 200000000 --на-веру
 script.inventory:languages = bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись дерева по языкам' --max-steps 50000000 --на-веру
 script.inventory:check = bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись сходится с документом' --max-steps 50000000 --на-веру

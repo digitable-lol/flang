@@ -111,7 +111,7 @@ all seven are fixed in the theorem itself. None of them touch the language.
 
 Here it is in full. A function and a theorem whose names drifted apart:
 
-```flang
+```flang refused
 модуль «Проба»
 
 тип «Светофор»

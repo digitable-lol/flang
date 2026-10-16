@@ -122,6 +122,7 @@ the `--args` section.
 with −3 it answers, with exit code 1:
 
 ```
+доказано: утверждений 0
 FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне неотрицательное
 ```
 
@@ -135,13 +136,15 @@ The prover tries to show that the postcondition holds for every input, not
 only for the 2 from the example. For this program the report says:
 
 ```
+…
 чем несётся обещание «тотальная»:
   «Twice»  доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
-
+…
 что высказано и чем это несётся:
   постусловие «the doubled value is at least the original» функции «Twice» — доказано по
   объявленным типам аргументов: цель сведена правилом «порядок по построению» — утверждение
   обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+…
 ```
 
 The first part: `«Twice»` terminates because it has no recursion and calls only
@@ -179,9 +182,9 @@ flang test <файл>
 
 How to read it:
 
-- The first line: the postcondition is proved, so no runtime check for it goes
-  into the C code.
-- The second: six files were written to `./output`.
+- The first two lines: the postcondition is proved, so no runtime check for it
+  goes into the C code.
+- The third: six files were written to `./output`.
 - The last lines: `emit` does not run the unit tests. Run `flang test` for that.
 
 The output directory is created for you. The generated code builds with plain
@@ -192,11 +195,13 @@ make -C ./output
 ```
 
 ```
+make: Entering directory '…/output'
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_runtime.o flang_runtime.c
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o hello.o hello.c
 ar rcs libhello.a flang_runtime.o hello.o
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_cli.o flang_cli.c
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o hello.o -lm -lpthread
+make: Leaving directory '…/output'
 ```
 
 No warnings under `-Wall -Wextra -Werror -pedantic`.
@@ -208,6 +213,8 @@ generation fails, exit code 1:
 ```
 FLANG_CLI: имена «Double» и «зарезервировано в целевом языке: double» дают один идентификатор «double» — переименуйте одно из них в модели
 flang emit: печать отменена — программа не проходит проверку, замечаний 1.
+Разбор, типы, завершаемость и ядро доказательств смотрит «flang check» этого же
+бинарника: он назовёт то же самое и полнее.
 ```
 
 The message names both sides of the clash (`double` is a C keyword). Rename the
@@ -223,6 +230,7 @@ flang emit hello.flang --target rust --out ./output-rust
 ```
 
 ```
+…
 напечатано файлов 7, байт …, в ./output-rust
 …
 собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>

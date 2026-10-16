@@ -265,6 +265,7 @@ $ echo $?
 | `FLANG_TYPE_PARAM` | a type parameter is declared twice, has no name, or is named like a built-in or declared type | rename the parameter |
 | `FLANG_APPLY` | the call does not fit: wrong number of arguments, or the callee is not a function | compare the call with the signature |
 | `FLANG_BUILTIN_ARGS` | a built-in operation got the wrong number of arguments | check the operation's description |
+| `FLANG_OVERFLOW` | an operation on a fixed-width word (`u8` … `i64`) does not fit the type, or divides by zero | write `с переполнением` where wrapping is meant, or widen the type |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | the pattern match does not cover every case | add the missing `случай` |
 | `FLANG_MATCH_UNREACHABLE` | a case is covered by an earlier one and never runs | remove it or move it up |
 | `FLANG_EXAMPLE` | a unit test failed: the value differs from the expected one | fix the body or the expected value |

@@ -26,9 +26,11 @@ check.no-ledger	{file}: не проверено — ведомость не пе
 check.place-without-file	место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов {files}, а диагностика компилятора имени файла не несёт	the place is given as a line and a column but without a file: {files} files were checked together with imports, and the compiler's diagnostics do not carry a file name
 proof.verdict	{file}: {verdict} — утверждений {claims}: доказано {proved}, условно {conditional}, сетка {grid}, объявлено, не доказано {declared}, отвергнуто {refused}, нарушено {violated}; законов на сетке {laws-grid}, на веру {laws-trusted} — код возврата {code}	{file}: {verdict} — claims {claims}: proved {proved}, conditionally {conditional}, grid {grid}, declared but not proved {declared}, refused {refused}, violated {violated}; laws on a grid {laws-grid}, on trust {laws-trusted} — exit code {code}
 {verdict}	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО	VERIFIED ON ITS OWN
-{verdict}	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)	VERIFIED WITH A SUPPORT THAT WAS NOT JUDGED (to ask: --strict)
+{verdict}	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ	NOT PROVED — THE SUPPORT WAS NOT JUDGED
+{verdict}	НЕ ПРОВЕРЕНО — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ	NOT VERIFIED — THE CHECKER DID NOT REPLAY THE RECORD WITHOUT THE RECORDS OF IMPORTED MODULES
 {verdict}	НЕ ПРОВЕРЕНО	NOT VERIFIED
 {verdict}	НЕ СОШЛОСЬ	DID NOT HOLD
+{verdict}	НЕ СОШЛОСЬ СО СВЕРЩИКОМ	THE CHECKER DID NOT AGREE
 {verdict}	ОПРОВЕРГНУТО	REFUTED
 {verdict}	ДОКАЗАНО	PROVED
 proof.no-checker	{file}: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет ({checker}; собрать: make -C flang/proof/checker либо назвать FLANG_CHECKER): все {proved} доказанных стоят на слове ядра	{file}: NOT INDEPENDENTLY VERIFIED — no checker ({checker}; build it with make -C flang/proof/checker or name one in FLANG_CHECKER): all {proved} proved claims rest on the kernel's word

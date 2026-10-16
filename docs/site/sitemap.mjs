@@ -245,6 +245,8 @@ export const РАЗДЕЛЫ = [
     страницы: [
       { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
       { адрес: 'totality.html', имя: 'Что даёт признак «тотальная»', из: 'docs/guide/totality.ru.md' },
+      { адрес: 'cost.html', имя: 'Цена функции до прогона', из: 'docs/guide/cost.ru.md' },
+      { адрес: 'c-into-flang.html', имя: 'Код на C в flang', из: 'docs/guide/c-into-flang.ru.md' },
       /* СТРАНИЦА ЛЕЖАЛА В `docs/site/` С ОБЕИМИ РЕДАКЦИЯМИ, НО В КАРТЕ НЕ
          СТОЯЛА — адреса у неё не было, и ссылки на неё с других страниц
          сборка звала битыми (2026-09-08, при переносе `docs/examples/host-boundary/README.md`).

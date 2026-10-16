@@ -20,7 +20,7 @@
 `bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery` (зелен на целом читателе, красен на
 порченом), `bootstrap/flang check scripts/settings-file.flang --proof`.
 **Новые задачи:** [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md),
-[8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md),
+8161 ([ADR-0102](0102-the-compiler-answers-in-the-language-of-the-settings.md)),
 [7203](../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md).
 
 ---
@@ -370,8 +370,8 @@ zsh  -c 'FLANG_ЯЗЫК=ru'   → код 0
 
 * [5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md) —
   сам двоичный читает `.flangrc` и ключ `--язык`/`--lang`;
-* [8161](../tasks/8161-messages-live-in-the-binary-so-a-new-language-costs-a-reprint.md) —
-  сообщения переезжают в таблицу рядом с двоичным;
+* 8161 — сообщения лежат в таблице рядом с двоичным
+  ([ADR-0102](0102-the-compiler-answers-in-the-language-of-the-settings.md));
 * [7203](../tasks/7203-guards-anchor-on-the-russian-prose-of-the-output.md) —
   проверки перестают опираться на русскую прозу вывода.
 

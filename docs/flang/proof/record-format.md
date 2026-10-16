@@ -518,7 +518,7 @@
 
 ### 3.10. Блок вывода
 
-Форма, правила и их переигрывание — [блок «вывод»](../../design/proof-object-blok-vyvoda.md)
+Форма, правила и их переигрывание — [блок «вывод»](../../adr/0022-a-type-fact-travels-as-a-derivation.md)
 и модель `flang/proof/lean/Record.lean`. Строки, которые выдаёт печать:
 
 ```

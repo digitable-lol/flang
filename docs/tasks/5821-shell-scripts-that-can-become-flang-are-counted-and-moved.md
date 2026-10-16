@@ -38,9 +38,8 @@ $ git ls-files | grep -c '\.sh$'
 37
 ```
 
-Версия: flang 0.7.25, прогон 11 октября 2026. `scripts/guards/hand-written-lists.sh` с
-прошлого замера перенесён на план `scripts/guards/hand-written-lists.fscript`
-(коммит `964aab0c3`) — укладом, описанным выше.
+Версия: flang 0.7.25, прогон 11 октября 2026. Перепись рукописных перечней ведёт план
+`scripts/guards/hand-written-lists.fscript`, оболочки у неё нет.
 
 Что делать с каждым:
 

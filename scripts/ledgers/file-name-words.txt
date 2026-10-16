@@ -967,6 +967,7 @@ makes
 man
 manifest
 manpage
+manual
 many
 map
 mark

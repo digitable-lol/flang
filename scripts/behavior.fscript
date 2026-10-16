@@ -253,7 +253,8 @@
 тотальная функция «Review base»
   принимает answers: список «Answer»
   возвращает строка
-  «Argument at» от 1 и answers
+  пусть named равно («Argument at» от 1 и answers)
+  если пусто named то («First line» от («Output of» от "trunk" и answers)) иначе named
 
 тотальная функция «Changed paths»
   принимает answers: список «Answer»
@@ -351,7 +352,8 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  [(«Arguments» от "arguments"), («Environment» от "pwd" и "PWD"), («Run from» от "root" и («Root») и "pwd" и ["-P"])]
+  [(«Arguments» от "arguments"), («Environment» от "pwd" и "PWD"), («Run from» от "root" и («Root») и "pwd" и ["-P"]),
+    («Run from» от "trunk" и («Root») и "git" и ["for-each-ref", "--format=%(refname:short)", "refs/remotes/*/dev"])]
 
 тотальная функция «Sources»
   принимает answers: список «Answer»
@@ -671,7 +673,8 @@
     иначе соединить body по "\n")
   «Chosen» от [(«When» от (пусто («Review base» от answers)) и (вариант «Провал» с код равным "FLANG_BEHAVIOR_USAGE"
     и сообщение равным
-      "звать: bootstrap/flang run-script behavior:review <база> [--markdown]")),
+      (соединить ["звать: bootstrap/flang run-script behavior:review [<база>] [--markdown] [--out <файл>];",
+        " без базы — ветка dev удалённого"] по ""))),
     («When» от (не ((«Exit code of» от "changed" и answers) равен 0))
       и (вариант «Провал» с код равным "FLANG_BEHAVIOR_SOURCE" и сообщение равным
       (соединить ["список изменённых файлов не получен: ", («Errors of» от "changed" и answers)] по ""))),

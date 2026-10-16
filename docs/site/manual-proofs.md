@@ -10,7 +10,7 @@ passes `flang check`, and the reports under them are compiler output.
 
 `flang check` without keys says nothing about postconditions: an unproved
 postcondition is not an error, it is checked at run time after every return.
-Ask for the ledger:
+Ask for the proof report:
 
 ```bash
 flang check file.flang --proof

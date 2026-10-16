@@ -127,7 +127,7 @@ prints a plan into these four targets only after the seed is reprinted.
 
 **The compiler answers in English only in part.** With `language = en` in
 `.flangrc` (or `FLANG_LANG=en`), `flang check` prints the location, the summary
-and the proof ledger in English and the text of a refusal from the catalog
+and the proof report in English and the text of a refusal from the catalog
 `flang/messages/catalog.tsv`: 13 of 129 codes have an English template
 (`bootstrap/flang run-script messages:check`, 12 October 2026). A refusal without
 a template and the kernel's explanation after the colon stay in Russian; the

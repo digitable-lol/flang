@@ -129,5 +129,5 @@ where the claim is false and `flang run` named the violated property on it.
 The kernel proves none of the obligations inside a loop: it attaches induction to `разбор`,
 and a loop's helper function is a branch and a declared measure. The grid judges them.
 
-Related: [flang on foreign code](foreign-code.ru.md) (in Russian) · [Requirements and
-specifications](business-requirements.ru.md) (in Russian)
+Related: [flang on foreign code](foreign-code.md) · [Requirements and
+specifications](business-requirements.md)

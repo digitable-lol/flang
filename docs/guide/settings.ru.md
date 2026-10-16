@@ -19,7 +19,7 @@ surface = ru
 color = auto
 page = ru
 
-version = 0.7.23
+version = 0.7.28
 name = @digitable-lol/flang
 license = BSD-2-Clause
 repository = https://github.com/digitable-lol/flang
@@ -43,11 +43,10 @@ lint = refuse
 
 ## Файл со старыми ключами
 
-До выпуска 0.7.22 включительно ключи и слова были русскими. Такой файл
-читается по-прежнему, и на каждую старую запись читатель отвечает одной
-строкой — какой английской её заменить:
+Файл с русскими ключами и словами читается, и на каждую такую запись
+читатель отвечает одной строкой — какой английской её заменить:
 
-| было | стало |
+| русский ключ | английский ключ |
 | --- | --- |
 | `язык` | `language` |
 | `поверхность` | `surface` |
@@ -107,14 +106,14 @@ bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 Три нижних ключа задают пределы линтера; что именно считается, рассказывает
 раздел `lint` [справочника команд](../site/cli.ru.md#lint).
 
-**Что из этого работает сегодня.** Сам двоичный читает из файла ключ
+**Что из этого работает.** Сам двоичный читает из файла ключ
 `unproven`, ключи профиля — `profile`, `modules`, `profile.<имя>` — и три ключа линтера.
 Ключ `language` (и переменную `FLANG_LANG`, она старше файла) читает
-`flang check` — с перепечатки семени после
-[ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md):
+`flang check`
+([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
 код `FLANG_*` остаётся прежним, текст берётся из каталога
-`flang/messages/catalog.tsv`. Английский шаблон есть у 13 кодов из 129
-(`bootstrap/flang run-script messages:check`, 12 октября 2026), остальные
+`flang/messages/catalog.tsv`. Английский шаблон есть у 13 кодов из 144
+(счёт печатает `bootstrap/flang run-script messages:check`), остальные
 отвечают по-русски — задача
 [2510](../tasks/2510-most-compiler-messages-have-no-english-template.md).
 Прочие команды отвечают по-русски всегда — задача

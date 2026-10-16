@@ -248,7 +248,7 @@ if [ -d "${ASDF_INSTALL_PATH}/share/flang/c" ]; then
         exit 1
       fi
     done
-    legli=$(find "${ASDF_INSTALL_PATH}/share/flang" -mindepth 1 -maxdepth 1 -type d | wc -l)
+    legli=$(find "${ASDF_INSTALL_PATH}/share/flang" -mindepth 1 -maxdepth 1 -type d ! -name stdlib | wc -l)
     if [ "$legli" -ne "$n_targets" ]; then
       echo "в share/flang легло каталогов целей: ${legli}, а печать обещает ${n_targets}" >&2
       rm -rf "$probe_dir"

@@ -53,10 +53,11 @@ class FlangPackage < Formula
     assert_match "flang #{version}", shell_output("#{bin}/flang --version")
     (testpath/"probe.flang").write <<~FLANG
       модуль «Проба»
+        использует «Lists» только «Соединить списки»
 
       тотальная функция «Два»
-        возвращает число
-        2
+        возвращает список строки
+        «Соединить списки» от ["а"] и ["б"]
     FLANG
     system bin/"flang", "check", "probe.flang"
     system bin/"flang", "emit", "probe.flang", "--target", "c", "--out", "out"

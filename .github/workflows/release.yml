@@ -666,7 +666,7 @@ jobs:
 
   # Every channel installed from the assets of this run, then compared by the
   # parity instrument (packaging/install-parity.flang, `install-parity:check`):
-  # 60 calls, the first install is the reference, every other one must
+  # 63 calls, the first install is the reference, every other one must
   # answer each call with the same code, stdout and stderr. A different
   # `--version` is named apart as "not the same binary".
   #   Linux: tarball, install.sh, deb (dpkg), rpm (unpacked by rpm2cpio),
@@ -774,3 +774,18 @@ jobs:
           } > packaging/install-parity.txt
           if bootstrap/flang run-script install-parity:check; then exit 1; fi
           echo "the instrument went red on the damaged install, as it must"
+
+      - name: Probe the instrument with installs that all lack the library
+        run: |
+          set -eu
+          root="$RUNNER_TEMP/installs"
+          rm -rf "$root/install-sh/share/flang/stdlib" "$root/work-probe"
+          mkdir -p "$root/work-probe"
+          {
+            echo "$PWD"
+            echo "$root/work-probe"
+            printf 'install-sh-without-library\t%s\n' "$root/install-sh/bin/flang"
+            printf 'install-sh-without-library-again\t%s\n' "$root/install-sh/bin/flang"
+          } > packaging/install-parity.txt
+          if bootstrap/flang run-script install-parity:check; then exit 1; fi
+          echo "the instrument refused installs without share/flang/stdlib, as it must"

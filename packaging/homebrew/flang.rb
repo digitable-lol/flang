@@ -108,6 +108,20 @@ class Flang < Formula
     цели.each do |цель|
       assert_predicate share/"flang/#{цель}", :directory?
     end
-    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) }
+    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) && File.basename(путь) != "stdlib" }
+
+    return unless (share/"flang/stdlib").directory?
+
+    (testpath/"библиотека.flang").write(<<~FLANG)
+      модуль «С библиотекой»
+        использует «Lists» только «Соединить списки»
+
+      тотальная функция «Два»
+        возвращает список строки
+        «Соединить списки» от ["а"] и ["б"]
+    FLANG
+    assert_match "проверено", shell_output("#{bin}/flang check библиотека.flang")
+    shell_output("#{bin}/flang emit библиотека.flang --target c --out печать-библиотеки 2>&1")
+    assert_predicate testpath/"печать-библиотеки/flang_runtime.c", :exist?
   end
 end

@@ -147,7 +147,7 @@ only for the 2 from the example. For this program the report says:
 The first part: `«Twice»` terminates because it has no recursion and calls only
 functions that terminate. The second part: the postcondition is proved from the
 parameter type alone — `n` is non-negative, so `n plus n` is at least `n`. You
-did not have to write a proof. The last line of the report ends with
+did not have to write a proof. The summary line of the report ends with
 `код возврата 0` (exit code 0).
 
 A postcondition can end up in one of three states:
@@ -170,7 +170,6 @@ flang emit hello.flang --target c --out ./output
 проверок при работе снято 1: постусловие доказано ядром обо всех входах и
 проверено примерами функции — в напечатанный код оно не едет.
 напечатано файлов 6, байт …, в ./output
-аргументы напечатанной программы по типам не проверяются: это ограничение двоичного flang, полная проверка есть в версии для Node
 проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.
 ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших
 программах он в предел шагов этого бинарника не укладывается — свяжи с ними
@@ -183,9 +182,6 @@ How to read it:
 - The first line: the postcondition is proved, so no runtime check for it goes
   into the C code.
 - The second: six files were written to `./output`.
-- The third mentions "a version for Node". That message is outdated: there is no
-  Node version, and the arguments of the generated program are not
-  type-checked anywhere.
 - The last lines: `emit` does not run the unit tests. Run `flang test` for that.
 
 The output directory is created for you. The generated code builds with plain

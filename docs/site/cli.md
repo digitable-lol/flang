@@ -113,11 +113,17 @@ Every flag also has a Cyrillic spelling, given in brackets.
 | `--depth-limit N` (`--предел-глубины`) | raise the call-depth limit for this run. Not the same as `--max-depth` of `emit`, which is written into the generated program |
 | `--memory-limit N` (`--предел-памяти`) | memory limit, see above; exit `5` at the limit |
 
-Exit codes: `0` — no remarks; `1` — the program did not pass; `2` — the program
-contains declarations the binary does not check at all (category declarations,
-processes, supervision), and it names them; `3` — with `--proof`, a guarantee
-is not proved (with `--strict`, anything short of "all proved"); `4` — with
-`--fast`.
+Exit codes: `0` — no remarks; `1` — the program did not pass, or with `--proof`
+a guarantee is violated; `2` — the program contains declarations the binary does not check at all
+(category declarations, processes, supervision), and it names them; `3` — with
+`--proof`, a guarantee is not proved, including a guarantee checked only on
+examples (`сетка N`), a law checked only on a grid and a guarantee proved under
+an unproved premise, and a file without imports whose proof record the
+independent checker did not accept (`НЕ СОШЛОСЬ СО СВЕРЩИКОМ`); with `--strict`,
+also a file with no guarantees at all; `4` — with `--fast`. The checker line comes before the verdict line. On a file
+with imports the checker gets no records of the imported modules; its
+disagreement there is named `НЕЗАВИСИМО НЕ ПРОВЕРЕНО` and does not change the
+code ([ADR-0115](../adr/0115-the-exit-code-of-a-proof-check-names-what-was-proved.md)).
 
 ```bash
 $ flang check привет.flang
@@ -206,9 +212,10 @@ examples happen to pass:
   н плюс н
 ```
 
-`flang check сетка.flang` and `flang check сетка.flang --proof` both exit `0`;
-the report says `сетка 1` — one guarantee checked only on examples — and
-`ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ`. With `--strict` the exit code is `3`.
+`flang check сетка.flang` exits `0`: it does not judge proofs. `flang check
+сетка.flang --proof` exits `3`: the report says `сетка 1` — one guarantee checked
+only on examples — and `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ`. With `--strict` the code
+is `3` as well.
 `flang run` refuses to compute it (see [run](#run)), and with `--trust` at
 `н = 100` it fails the postcondition:
 

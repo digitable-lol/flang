@@ -246,6 +246,7 @@ static fl_status fl_conc_clone(fl_ctx *ctx, fl_value value, fl_value *out,
   case FL_NOTHING:
   case FL_NUMBER:
   case FL_FLAG:
+  case FL_WORD:
     *out = value;
     break;
   case FL_STRING: {

@@ -55,7 +55,7 @@ Exit code: 0 — the kernel accepted the translation (whether it is proved or
 | a flang type | `∀ т : строка,` | same | `\forall \text{т} : \text{строка},` | `для всех «т»: строка` |
 | such that | `∀ y ∈ ℤ \| y > x,` | same | `\mid` | `таких что (…)` |
 | there is | `∃ m, P` | `exists m, P` | `\exists m,\ P` | `есть такой «m», что (P)` |
-| with a witness | `∃ m := a, P` | same | `\exists m := a,\ P` | `есть такой «m», а именно «a», что (P)` |
+| with a named value | `∃ m := a, P` | same | `\exists m := a,\ P` | `есть такой «m», а именно «a», что (P)` |
 | and, or, not | `∧ ∨ ¬` | `/\ \/ ~`, `and or not` | `\land \lor \lnot` | `и притом`, `или`, `не` |
 | implies | `→` | `->`, `=>` | `\to`, `\implies` | `если A то B иначе да` |
 | iff | `↔` | `<->` | `\leftrightarrow`, `\iff` | `A равен B` |

@@ -134,6 +134,40 @@ of non-negative numbers is at least the largest of them"), which calls
 `«Шаг суммы»`; line 564 is the body of `«Уникальные»`. `only` left all of them
 out. The same file with a plain `uses «Lists»` passes with exit code 0.
 
+Where the imported function needs nothing but itself, `only` is safe. Two files
+side by side:
+
+```flang
+module «Counting core»
+
+total function «Double»
+  accepts n: number
+  returns number
+  example «two»
+    given n equals 2
+    expected 4
+  n times 2
+
+total function «Triple»
+  accepts n: number
+  returns number
+  example «two»
+    given n equals 2
+    expected 6
+  n times 3
+```
+
+```flang
+module «Counting»
+  uses «Counting core» only «Double»
+
+total function «Four»
+  returns number
+  example «two doubled»
+    expected 4
+  «Double» of 2
+```
+
 There is no path in `uses`: **a module is found by name**. The name is what
 stands on the first line of the file in `module «Lists»`; the file name and its
 directory play no part, and a module moved to another directory keeps being
@@ -427,6 +461,93 @@ Put exact types on **parameters and record fields**: that is where the prover
 and the termination check use them. Declare the return as `number` when the
 body does arithmetic.
 
+### Exact numbers without a ceiling: `exact integer` and `exact fraction`
+
+`exact integer` is a non-negative integer of any length, `exact fraction` is a
+non-negative fraction of two such integers. Arithmetic on them loses no digit,
+and addition is associative — always, not almost.
+
+An exact integer literal is a list of digits, lowest first, in base 4 194 304
+(2²²): `[7]` is seven, `[0, 1]` is 4 194 304, `[]` is zero. A fraction is a pair
+of such lists, numerator over denominator: `[[1], [3]]` is one third, `[[], [1]]`
+is zero. There is no decimal notation for the literal.
+
+```flang
+module «Exact numbers»
+
+note "The digits of an exact integer go lowest first in base 4194304"
+
+total function «Sum»
+  accepts a: exact integer, b: exact integer
+  returns exact integer
+  example «a carry into the next digit»
+    given a equals [4194303]
+    given b equals [1]
+    expected [0, 1]
+  example «two to the fifty-third plus one»
+    given a equals [0, 0, 512]
+    given b equals [1]
+    expected [1, 0, 512]
+  a plus b
+
+total function «Sum of fractions»
+  accepts a: exact fraction, b: exact fraction
+  returns exact fraction
+  example «a tenth and a fifth»
+    given a equals [[1], [10]]
+    given b equals [[1], [5]]
+    expected [[3], [10]]
+  a plus b
+
+total function «Zero fraction»
+  returns exact fraction
+  [[], [1]]
+
+total function «Share»
+  accepts part: exact fraction, whole: exact fraction
+  returns exact fraction
+  requires «whole is not zero» whole is greater than «Zero fraction»
+  example «a third over two fifths»
+    given part equals [[1], [3]]
+    given whole equals [[2], [5]]
+    expected [[5], [6]]
+  part divided by whole
+
+total function «Whole units»
+  accepts fraction: exact fraction
+  returns exact integer
+  example «seven halves are three»
+    given fraction equals [[7], [2]]
+    expected [3]
+  example «a third is zero»
+    given fraction equals [[1], [3]]
+    expected []
+  integer part fraction
+```
+
+| What | How it is written |
+| --- | --- |
+| operations on `exact integer` | `plus`, `minus`, `times`, the remainder, comparisons; no division |
+| operations on `exact fraction` | `plus`, `minus`, `times`, `divided by`, comparisons; no remainder |
+| fraction → integer | `integer part f` — the quotient without the remainder |
+| integer → fraction | the literal `[[n], [1]]` |
+
+Limits:
+
+- exact numbers do not mix with `number`: `a plus 1` over an `exact integer` is
+  refused with `FLANG_TYPE: «add»: точное целое и число не смешиваются, нужен названный перевод`;
+- there are no values below zero: `[1] minus [2]` at run time is `FLANG_PROPERTY`,
+  never a silent zero; division by a zero fraction is `FLANG_PROPERTY` too;
+- a fraction literal must be reduced: `[[2], [4]]` is refused by the type check
+  with «дробь не сокращена»;
+- a literal becomes an exact number only where the type is given: a parameter,
+  `returns`, an argument. In the comparison `whole is greater than [[], [1]]` it
+  stays a list, which is why the zero in the example above is a function,
+  «Zero fraction».
+
+The whole design is in the [Language specification](../spec.html), section
+«Типы» (in Russian).
+
 ### List
 
 `list Type` — homogeneous. The literal is `[1, 2, 3]`, the empty one is
@@ -530,6 +651,7 @@ arrow: `number → number`.
 | record field | `value.field` |
 | arithmetic | `plus`, `minus`, `times`, `divided by`, `modulo`, `percent of` |
 | comparison | `equals`, `is not equal to`, `is greater than`, `is less than`, `is at most`, `is at least` |
+| a record field by word | `field «x» at value`, `field «x» from value` |
 | logic | `not`, `and also`, `or` |
 | literals | `12`, `"text"`, `true`, `false`, `null`, `[1, 2]` |
 
@@ -704,6 +826,85 @@ total function «Initial»
 Limit: indexes start at one, and ranges include both ends. An index outside the
 list stops the computation with an error. Everything else is a library
 function; which one solves which task is on [Operations](operations.html).
+
+### Characters, fingerprints and logic
+
+```flang
+module «Character by character»
+
+total function «Shift a letter»
+  accepts letter: string
+  returns string
+  example «a becomes b»
+    given letter equals "a"
+    expected "b"
+  character by code ((character code letter) plus 1)
+
+total function «Fingerprint»
+  accepts text: string
+  returns string
+  example «fingerprint of the empty string»
+    given text equals ""
+    expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  hash256 text
+
+total function «Word is usable»
+  accepts word: string
+  returns flag
+  example «a plain word is usable»
+    given word equals "house"
+    expected yes
+  example «an empty one is not»
+    given word equals ""
+    expected no
+  ((length word) is not equal to 0) and also (not (word contains " "))
+
+total function «Words»
+  accepts text: string
+  returns list of string
+  example «two words»
+    given text equals "one two"
+    expected ["one", "two"]
+  split text by " "
+
+total function «Nothing»
+  accepts text: string
+  returns null
+  example «the value of emptiness»
+    given text equals "a"
+    expected null
+  null
+```
+
+`character code` and `character by code` turn a character into its code point
+and back, `hash256` gives the SHA-256 of a string as a hex string, and
+`list of string` is the same as `list string`, and `null` is the type whose
+only value is `null`. A record field can also be taken by
+word:
+
+```flang
+module «Field by word»
+
+object «Point»
+  «x»: number
+  «y»: number
+
+total function «Abscissa»
+  accepts point: «Point»
+  returns number
+  example «the first coordinate»
+    given point equals record «Point» with «x» equal to 3 and «y» equal to 4
+    expected 3
+  field «x» at point
+
+total function «Ordinate»
+  accepts point: «Point»
+  returns number
+  example «the second coordinate»
+    given point equals record «Point» with «x» equal to 3 and «y» equal to 4
+    expected 4
+  field «y» from point
+```
 
 ## Functions as values
 
@@ -1150,6 +1351,233 @@ chain «process an order»
 | `functor` / `bifunctor` | a link between categories |
 | `monoid` / `carrier` / `operation` / `identity` / `inverse element` | a structure with its own laws |
 
+### A whole program: category, isomorphism, functor
+
+```flang
+module «Orders and payments»
+
+object «Order»
+  amount is number
+  cancelled is number
+
+object «Payment»
+  cents is number
+  refunded is number
+
+object «Receipt»
+  cents is number
+  refunded is number
+
+total function «Cancel order»
+  accepts order: «Order»
+  returns «Order»
+  example «a plain order is cancelled»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Order» with amount equal to 500 and cancelled equal to 1
+  record «Order» with amount equal to order.amount and cancelled equal to 1
+
+total function «Refund payment»
+  accepts payment: «Payment»
+  returns «Payment»
+  example «a plain payment is refunded»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 1
+  record «Payment» with cents equal to payment.cents and refunded equal to 1
+
+total function «Payment for order»
+  accepts order: «Order»
+  returns «Payment»
+  example «units become cents»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to (order.amount times 100) and refunded equal to order.cancelled
+
+total function «Receipt for payment»
+  accepts payment: «Payment»
+  returns «Receipt»
+  example «cents go into the receipt»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Receipt» with cents equal to 50000 and refunded equal to 0
+  record «Receipt» with cents equal to payment.cents and refunded equal to payment.refunded
+
+total function «Payment for receipt»
+  accepts receipt: «Receipt»
+  returns «Payment»
+  example «cents come back into the payment»
+    given receipt equals record «Receipt» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to receipt.cents and refunded equal to receipt.refunded
+
+morphism «issue» from «Payment» to «Receipt»
+  gives «Receipt for payment»
+
+morphism «by receipt» from «Receipt» to «Payment»
+  gives «Payment for receipt»
+
+morphism «cancel order» from «Order» to «Order»
+  gives «Cancel order»
+
+morphism «refund payment» from «Payment» to «Payment»
+  gives «Refund payment»
+
+identity «Order»
+identity «Payment»
+
+category «Orders»
+  morphism «cancel order»
+
+category «Payments»
+  morphism «refund payment»
+
+isomorphism «Payment and receipt» from «Payment» to «Receipt»
+  forward morphism «issue»
+  inverse morphism «by receipt»
+
+functor «Order to payment» from «Orders» to «Payments»
+  object «Order» maps to «Payment» gives «Payment for order»
+  morphism «cancel order» maps to morphism «refund payment»
+```
+
+`identity «X»` declares the identity arrow of an object, `category` lists its
+arrows, `isomorphism` names a pair of arrows there and back, and `functor` carries
+the objects and arrows of one category into another. The check answers with exit
+code 2: the functor and the isomorphism are counted on the values of the
+examples, and the laws of a category without a declared equality
+(`object «X» gives «X are equal»`) were not counted, and the output says so in
+words.
+
+A part of an object and the common part of two objects are declared with
+`embedding` and `intersection`:
+
+```flang
+module «Order circles»
+
+object «Order»
+  number is number
+  urgency is number
+
+object «Urgent»
+  number is number
+
+object «Paid»
+  number is number
+
+total function «Urgent order»
+  accepts urgent: «Urgent»
+  returns «Order»
+  example «the first»
+    given urgent equals record «Urgent» with number equal to 1
+    expected record «Order» with number equal to 1 and urgency equal to 1
+  example «the second»
+    given urgent equals record «Urgent» with number equal to 2
+    expected record «Order» with number equal to 2 and urgency equal to 1
+  record «Order» with number equal to urgent.number and urgency equal to 1
+
+total function «Paid order»
+  accepts paid: «Paid»
+  returns «Order»
+  example «the second»
+    given paid equals record «Paid» with number equal to 2
+    expected record «Order» with number equal to 2 and urgency equal to 1
+  record «Order» with number equal to paid.number and urgency equal to 1
+
+embedding «Urgent among orders» from «Urgent» to «Order» gives «Urgent order»
+embedding «Paid among orders» from «Paid» to «Order» gives «Paid order»
+
+intersection «Urgent and paid» from «Urgent» and «Paid» to «Order»
+```
+
+### Monoids and folding in chunks
+
+```flang
+module «Monoids»
+
+total function «Add exact»
+  accepts a: exact integer, b: exact integer
+  returns exact integer
+  example «a carry into the next digit»
+    given a equals [4194303]
+    given b equals [1]
+    expected [0, 1]
+  a plus b
+
+total function «Exact zero»
+  returns exact integer
+  []
+
+monoid «Exact sum»
+  carrier exact integer
+  operation «Add exact»
+  identity []
+
+total function «Total»
+  accepts sums: list exact integer
+  returns exact integer
+  example «three terms»
+    given sums equals [[1], [2], [3]]
+    expected [6]
+  fold sums starting with «Exact zero» as acc and x → «Add exact» of acc and x
+
+total function «Add numbers»
+  accepts a: number, b: number
+  returns number
+  example «two and three»
+    given a equals 2
+    given b equals 3
+    expected 5
+  a plus b
+
+total function «Opposite»
+  accepts a: number
+  returns number
+  example «three»
+    given a equals 3
+    expected -3
+  0 minus a
+
+monoid «Number sum»
+  carrier number
+  operation «Add numbers»
+  identity 0
+  inverse element «Opposite»
+
+property «коммутативность»
+  carrier number
+  operation «Add numbers»
+
+total function «Squares»
+  accepts numbers: list number
+  returns list number
+  example «three numbers»
+    given numbers equals [1, 2, 3]
+    expected [1, 4, 9]
+  map numbers as x → x times x
+```
+
+`monoid` names a `carrier`, an `operation` and its `identity`. The kernel tries
+to prove associativity and both identity laws over the carrier, and `flang check`
+says what came out:
+
+```
+моноид «Exact sum»: сочетательность и единица доказаны ядром — свёртка операцией «Add exact» считается кусками на всех потоках
+моноид «Number sum»: сочетательность и единица ядром НЕ доказаны — свёртка операцией «Add numbers» идёт по порядку на одном потоке
+```
+
+When the laws are proved, a fold whose body is exactly a call of the operation on
+the accumulator and the element is computed in chunks on several threads in the
+generated code. Over `number` associativity is false, and such a fold runs in
+order. A `map` whose body calls only total functions is generated the same way;
+the generated code splits the list into chunks once the first elements show that
+the work is long. Which targets compute in chunks and which in order is on
+[Parallel map and the monoid fold](https://github.com/digitable-lol/flang/blob/main/docs/flang/concurrency/parallel-map-and-monoid-fold.md)
+(in Russian). `inverse element «F»` declares a monoid with an inverse, and
+`property` declares a law of one operation (`коммутативность`,
+`идемпотентность` and other names fixed by the language, spelled in Russian in
+every file). The binary compiler counts such laws on a grid of values and says
+so: `ПОСЧИТАНО НА СЕТКЕ, не доказано`. Limit: a property with an unknown name is not
+checked at all, and `flang check` says nothing about it — an English name such as
+`«commutativity»` is unknown, so write the Russian name exactly.
+
 ### What the compiler checks and what it does not
 
 **Checked: the laws of a category, on a finite set of values.** If a category
@@ -1338,7 +1766,63 @@ run «two additions»
 | `process «P» strategy «…»` | what to do on a failure |
 | `failure threshold N within M … else «…»` | the window and the fallback strategy |
 | `run «name»` / `seed` / `given` / `expected` | a test of a concurrent program: messages in, expected state out |
-| `seed from N to M` | the same test over a range of message orderings |
+| `seed of N through M` | the same test over a range of message orderings |
+
+A handler without the word `total` must name a step budget, and a process with
+such a handler must stand under supervision: an exhausted budget is a failure,
+and someone has to take it. The mailbox is bounded with `with mailbox`:
+
+```flang
+module «Counter with limits»
+
+object «Count»
+  «total»: number
+
+object «Reply»
+  «состояние»: «Count»
+  «действия»: list «Действие»
+
+type «Command»
+  variant «add» contains «amount»: number
+
+process «Counter»
+  state «Count»
+  starts with «empty count»
+  accepts «Command» with mailbox 4 messages
+  handles «counter step» with budget 2000 steps
+
+supervision «Bookkeeping»
+  process «Counter» strategy «перезапустить»
+  failure threshold 3 within 5000 milliseconds else «передать выше»
+
+total function «empty count»
+  returns «Count»
+  record «Count» with «total» equal to 0
+
+function «counter step»
+  accepts current: «Count», message: «Command»
+  returns «Reply»
+  example «adding changes the state and sends nothing»
+    given current equals (record «Count» with «total» equal to 1)
+    given message equals (variant «add» with «amount» equal to 2)
+    expected (record «Reply» with «состояние» equal to (record «Count» with «total» equal to 3) and «действия» equal to [])
+  match message
+    case variant «add» with «amount» as amount
+      let updated equals (record «Count» with «total» equal to (current.«total» plus amount))
+      record «Reply» with «состояние» equal to updated and «действия» equal to []
+
+run «two additions»
+  seed of 1 through 3
+  given «Counter» accepts (variant «add» with «amount» equal to 2)
+  given «Counter» accepts (variant «add» with «amount» equal to 3)
+  expected «Counter» equals (record «Count» with «total» equal to 5)
+```
+
+Limit: `flang check` and `flang test` parse and check a `run` block but do not
+execute it — the binary compiler has no scheduler. `flang test` on such a file
+exits with code 3 and prints `блоков «прогон» 1, исполнено 0`. The scheduler is
+generated together with the code of the `c`, `elixir`, `js` and `ts` targets —
+see [Processes](processes.html).
 
 Limit: the reply fields (`состояние`, `действия`) and the type `«Действие»` are
 fixed names of the process model, and they are spelled in Russian in every file.

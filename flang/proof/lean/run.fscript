@@ -50,19 +50,19 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Sixteen files in the order of their imports»
+  пример «Seventeen files in the order of their imports»
     ожидается [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
       ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
       ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
       ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
       ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-      ["Semantics/Json", "Semantics/Json"]]
+      ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"]]
   [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
     ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
     ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
     ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
     ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-    ["Semantics/Json", "Semantics/Json"]]
+    ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки

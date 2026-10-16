@@ -17,8 +17,8 @@
 
 ```
 grep -ac 'оценка витков' flang/proof/checker/checker.c flang/self/proof-record.flang
-grep -am1 'принцип' flang/proof/checker/tests/families/carrier/name-natural.record
-grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/name-natural.record
+grep -am1 'принцип' flang/proof/checker/tests/families/carrier/name-nat.record
+grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/name-nat.record
 ```
 
 ## Что происходит
@@ -26,7 +26,7 @@ grep -ac 'оценка витков' flang/proof/checker/tests/families/carrier/
 ```
 flang/proof/checker/checker.c:0
 flang/self/proof-record.flang:0
-  принцип тип «натуральное» по «н» носитель segment база 1 шаг 1
+  принцип тип «нат» по «н» носитель segment база 1 шаг 1
 0
 ```
 
@@ -64,7 +64,7 @@ ADR-0033 §4–§5 (`docs/adr/0033-termination-is-not-a-bound-on-steps.md`):
 
 ## Когда задача сделана
 
-Запись пробы `flang/proof/checker/tests/families/carrier/name-natural.flang`
+Запись пробы `flang/proof/checker/tests/families/carrier/name-nat.flang`
 содержит строку с многочленом; проверяющая программа отвечает кодом 0 и называет
 узел перепроверенным; запись с заниженным многочленом отвергается кодом 1.
 Перед кодом снят замер: сколько функций получают оценку сегодня и скольким её

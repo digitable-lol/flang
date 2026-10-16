@@ -453,11 +453,11 @@ P	Цел2: пример даёт дробное «дано»	flang/proof/checker
 P	Пред1: опора на строку целости вместо строки потолка	flang/proof/checker/tests/families/inference/repr-call.flang	flang/proof/checker/tests/families/inference/repr-call.record	-	s/обязательство вход «первое» ⟨первое не больше 9007199254740991⟩ строка 4/обязательство вход «первое» ⟨первое : цел⟩ строка 4/	-	-	1	-	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── семья «носитель» (задача 6203, ADR-0026 Ш0): носитель читается с объявления типа ──	-	-	-	-	-	-	-	-	-	-
-C	носитель: имя «натуральное» — честная, прежде код 3	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/carrier/name-natural.record	-	-	-	-	0	-	-	-
+C	носитель: имя «нат» — честная, прежде код 3	flang/proof/checker/tests/families/carrier/name-nat.flang	flang/proof/checker/tests/families/carrier/name-nat.record	-	-	-	-	0	-	-	-
 C	носитель: псевдоним «Возраст» к отрезку — честная	flang/proof/checker/tests/families/carrier/alias-segment.flang	flang/proof/checker/tests/families/carrier/alias-segment.record	-	-	-	-	0	-	-	-
 P	носитель: ложь о типе — запись говорит «неотрицательное», довод объявлен числом (П1б)	flang/proof/checker/tests/families/carrier/number-segment.flang	flang/proof/checker/tests/families/carrier/corrupt/number-segment-lie-about-the-type.record	-	-	-	-	1	-	-	-
-P	носитель: слово вне трёх (П2)	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/carrier/name-natural.record	-	s/носитель segment/носитель record/	-	-	1	-	-	-
-P	носитель: «algebra» над отрезком — из объявления не следует	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/carrier/name-natural.record	-	s/носитель segment/носитель algebra/	-	-	1	-	-	-
+P	носитель: слово вне трёх (П2)	flang/proof/checker/tests/families/carrier/name-nat.flang	flang/proof/checker/tests/families/carrier/name-nat.record	-	s/носитель segment/носитель record/	-	-	1	-	-	-
+P	носитель: «algebra» над отрезком — из объявления не следует	flang/proof/checker/tests/families/carrier/name-nat.flang	flang/proof/checker/tests/families/carrier/name-nat.record	-	s/носитель segment/носитель algebra/	-	-	1	-	-	-
 P	носитель: «segment» над «число» (П1, набор)	flang/proof/checker/tests/families/carrier/number-segment.flang	flang/proof/checker/tests/records/corpus/poddelka-nositel-chislo-segment.record	-	-	-	-	1	принципа индукции по нему нет	-	-
 P	носитель: «segment» над псевдонимом к «число» (З2, набор)	flang/proof/checker/tests/families/carrier/alias-not-a-segment.flang	flang/proof/checker/tests/records/corpus/poddelka-nositel-psevdonim-ne-otrezok.record	-	-	-	-	1	-	-	-
 say		-	-	-	-	-	-	-	-	-	-
@@ -465,7 +465,7 @@ say	── семья «объявление» (задача 6203, ADR-0026 Ш2)
 C	объявление: сумма «Стопка» под algebra и встроенный список под fold (эталон B)	flang/proof/examples/body-forms.flang	flang/proof/checker/tests/families/declaration/body-forms.record	-	-	-	-	0	-	-	-
 C	объявление: встроенный список под algebra (эталон B)	flang/proof/examples/corpus-length.flang	flang/proof/checker/tests/families/declaration/corpus-length.record	-	-	-	-	0	-	-	-
 C	объявление: встроенный отрезок, дно и потолок (эталон B)	flang/proof/examples/segment.flang	flang/proof/checker/tests/families/declaration/segment.record	-	-	-	-	0	-	-	-
-C	объявление: синоним отрезка «натуральное» (рукотворная)	flang/proof/checker/tests/families/carrier/name-natural.flang	flang/proof/checker/tests/families/declaration/name-natural.record	-	-	-	-	0	-	-	-
+C	объявление: синоним отрезка «нат» (рукотворная)	flang/proof/checker/tests/families/carrier/name-nat.flang	flang/proof/checker/tests/families/declaration/name-nat.record	-	-	-	-	0	-	-	-
 C	объявление: псевдоним «Возраст» к отрезку (рукотворная)	flang/proof/checker/tests/families/carrier/alias-segment.flang	flang/proof/checker/tests/families/declaration/alias-segment.record	-	-	-	-	0	-	-	-
 C	носитель: «для всех л» при «л: список числа» — принцип с объявления встроенного списка (печать семени 0ce948bfd, 6203 «как понять» п.1)	flang/proof/checker/tests/families/carrier/list-of-numbers.flang	flang/proof/checker/tests/families/carrier/list-of-numbers.record	-	-	-	-	0	-	-	-
 P	объявление: чужое имя варианта	flang/proof/examples/body-forms.flang	flang/proof/checker/tests/families/declaration/corrupt/p01-foreign-variant-name.record	-	-	-	-	1	«Пласт» вместо «Слой»	-	-

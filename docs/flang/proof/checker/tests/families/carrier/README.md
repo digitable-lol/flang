@@ -19,7 +19,7 @@
 
 | файл | класс | код | что стережёт |
 |---|---|---:|---|
-| `name-natural.{flang,record}` | честная | 0 | `if-over-a-segment` с заменой `неотрицательное` → `натуральное`: синоним имени отрезка |
+| `name-nat.{flang,record}` | честная | 0 | `if-over-a-segment` с заменой `неотрицательное` → `нат`: синоним имени отрезка |
 | `alias-segment.{flang,record}` | честная | 0 | `тип «Возраст» это неотрицательное` под `segment` |
 | `number-segment.flang` + `flang/proof/checker/tests/records/corpus/poddelka-nositel-chislo-segment.record` | подделка (набор, «лжёт-запись») | 1 | `segment` над доводом `число` — П1 |
 | `alias-not-a-segment.flang` + `flang/proof/checker/tests/records/corpus/poddelka-nositel-psevdonim-ne-otrezok.record` | подделка (набор, «лжёт-запись») | 1 | `segment` над `тип «Мера» это число` — З2 |

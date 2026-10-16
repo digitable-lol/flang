@@ -1446,6 +1446,96 @@ examples, and the laws of a category without a declared equality
 (`object «X» gives «X are equal»`) were not counted, and the output says so in
 words.
 
+### Field images and a bifunctor
+
+Under an object line of a functor you can name which field of the image each
+field goes to: `field «a» maps to field «b»`. A `bifunctor` is a functor of two
+arguments: the `objects` line carries a pair of objects to one object, and the
+`morphisms` line carries a pair of arrows to one arrow.
+
+```flang
+module «Order pairs»
+
+object «Order»
+  amount is number
+  cancelled is number
+
+object «Payment»
+  cents is number
+  refunded is number
+
+object «Order pair»
+  first is «Order»
+  second is «Order»
+
+total function «Cancel order»
+  accepts order: «Order»
+  returns «Order»
+  example «an ordinary order is cancelled»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Order» with amount equal to 500 and cancelled equal to 1
+  record «Order» with amount equal to order.amount and cancelled equal to 1
+
+total function «Refund payment»
+  accepts payment: «Payment»
+  returns «Payment»
+  example «an ordinary payment is refunded»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 1
+  record «Payment» with cents equal to payment.cents and refunded equal to 1
+
+total function «Cancel both»
+  accepts pair: «Order pair»
+  returns «Order pair»
+  example «both orders are cancelled»
+    given pair equals record «Order pair» with first equal to (record «Order» with amount equal to 500 and cancelled equal to 0) and second equal to (record «Order» with amount equal to 300 and cancelled equal to 0)
+    expected record «Order pair» with first equal to (record «Order» with amount equal to 500 and cancelled equal to 1) and second equal to (record «Order» with amount equal to 300 and cancelled equal to 1)
+  record «Order pair» with first equal to («Cancel order» of pair.first) and second equal to («Cancel order» of pair.second)
+
+total function «Payment for order»
+  accepts order: «Order»
+  returns «Payment»
+  example «roubles become kopecks»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to (order.amount times 100) and refunded equal to order.cancelled
+
+morphism «cancel order» from «Order» to «Order»
+  gives «Cancel order»
+
+morphism «refund payment» from «Payment» to «Payment»
+  gives «Refund payment»
+
+morphism «cancel both» from «Order pair» to «Order pair»
+  gives «Cancel both»
+
+identity «Order»
+identity «Payment»
+identity «Order pair»
+
+category «Orders»
+  morphism «cancel order»
+  morphism «cancel both»
+
+category «Payments»
+  morphism «refund payment»
+
+functor «Order to payment» from «Orders» to «Payments»
+  object «Order» maps to «Payment» gives «Payment for order»
+    field «amount» maps to field «cents»
+    field «cancelled» maps to field «refunded»
+  morphism «cancel order» maps to morphism «refund payment»
+
+bifunctor «Pair» from «Orders» and «Orders» to «Orders»
+  objects «Order» and «Order» map to «Order pair»
+  morphisms «cancel order» and «cancel order» map to morphism «cancel both»
+```
+
+The check answers with exit code 2 and names `bifunctors` among the declarations
+the binary compiler does not judge: the bifunctor is parsed, but its laws are not
+counted. Field image lines are parsed but not matched against the fields of the
+objects.
+
 A part of an object and the common part of two objects are declared with
 `embedding` and `intersection`:
 
@@ -1839,8 +1929,6 @@ listed here so you know where they belong.
 | Word | Where it belongs | Where it is described |
 | --- | --- | --- |
 | `embedding`, `intersection` | categories: a part of an object and the common part of two | [Categories and functors](../spec-cat.html) |
-| `objects`, `morphisms` | bifunctor: a pair of objects and a pair of arrows | the same |
-| `maps to`, `maps to field`, `maps to morphism` | the lines of a functor | the same |
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
 | `plan` | side effects (file, network, processes): declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
 | `date`, `money` | older keywords: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |

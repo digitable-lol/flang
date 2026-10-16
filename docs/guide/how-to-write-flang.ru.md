@@ -85,7 +85,7 @@
 нужно](single-source.ru.md)) — не пиши тесты рядом руками. Перечень, который
 дерево умеет вывести само, не набирают руками: за такими рукописными перечнями
 следит опись расхождений `scripts/ledgers/hand-written-lists-ledger.tsv` (сверяет
-`sh scripts/guards/hand-written-lists.sh --check`). Прежде чем набрать список — спроси,
+`bootstrap/flang run-script hand-written-lists:check`). Прежде чем набрать список — спроси,
 не выводится ли он из дерева.
 
 ## Тотальность и `убывает`
@@ -228,6 +228,6 @@ bootstrap/flang run файл.flang --function «Имя» --args '{"н": 5}'
 - `flang check` на файле — код 0;
 - новых комментариев не прибавилось (`bootstrap/flang io scripts/guards/no-comments-guard.fscript --plan Проверка`);
 - имена проходят `flang/scripts/name-guard.mjs`;
-- рукописных перечней не завёл (`sh scripts/guards/hand-written-lists.sh --check`);
+- рукописных перечней не завёл (`bootstrap/flang run-script hand-written-lists:check`);
 - инварианты стоят термами (`обеспечивает`/`пример`), а замеры и доводы — в
   `docs/`/`docs/tasks/`, не в исходнике.

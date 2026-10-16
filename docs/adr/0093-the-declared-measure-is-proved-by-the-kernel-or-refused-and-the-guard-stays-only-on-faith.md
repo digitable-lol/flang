@@ -4,7 +4,7 @@
 **Дата:** 11 октября 2026.
 **Основание:** задача 2680; строка «доказанное завершение при объявленной мере»
 таблицы «Чего не хватает — и чего это стоит» в `docs/road-to-1-0.md`.
-**Рядом:** [ADR-0075](0075-a-free-statement-gets-segment-induction-a-strict-integer-floor-tightens-by-one-and-a-finite-sum-is-enumerated.md) —
+**Рядом:** [ADR-0075](0075-a-free-statement-gets-segment-induction-integer-tightening-and-enumeration.md) —
 спуск по отрезку, взятый формой принципа; задачи 2905, 2971, 1313.
 
 ---

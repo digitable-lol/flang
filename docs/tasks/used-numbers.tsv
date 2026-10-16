@@ -429,3 +429,4 @@ number	state	title
 1313	done	The independent checker has a second implementation written apart in another language
 8161	done	Messages live in the binary so a new language costs a reprint
 1412	done	Ring rules only for the exact integer
+6480	done	Broken links in docs are repaired by instrument

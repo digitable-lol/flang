@@ -3,7 +3,7 @@
 This page specifies how flang states and checks a theorem about **every**
 category: "for every category C, all functors F and G from C to D and every
 natural transformation η from F to G, …". The decision and its reasons are in
-[ADR-0121](../adr/0121-abstract-category-theorems-are-checked-as-path-equalities.md).
+[ADR-0130](../adr/0130-abstract-category-theorems-are-checked-as-path-equalities.md).
 The Russian page [category-proofs.ru.md](category-proofs.ru.md) is the same
 specification with the same examples.
 

@@ -147,7 +147,7 @@ Every `FLANG_…` code and how to fix it: [Diagnostics reference](diagnostics.ht
 $ flang check привет.flang --fast
 модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
 ПРОВЕРЕНО: связывание имён и повторы объявлений, типы, исчерпываемость разбора,
-           завершаемость (в том числе взаимная рекурсия по компонентам), процессы.
+           завершаемость (в том числе взаимная рекурсия по компонентам), процессы, планы.
 НЕ СМОТРЕЛИ НА ЭТОМ ПРОГОНЕ: ядро доказательств — обязательств 0, теорем 0;
            законы категории на сетке; прогон примеров — примеров 1.
            И это не «нарушений нет»: про них не сказано ничего — ни хорошего, ни плохого.
@@ -298,7 +298,7 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit of the program being evaluated (the binary's own limit is `--depth-limit`) |
 | `--memory-limit N` | memory limit; exit `5` at the limit |
-| `--cost` (`--цена`) | after the value, one line to the error stream: evaluator steps, the peak memory of the process in bytes and the seconds of the run — `цена прогона: шагов 13, пик памяти 13352960 байт, секунд 0.009739` |
+| `--cost` (`--цена`) | after the value, one line to the error stream: evaluator steps, the peak memory of the process in bytes and the seconds of the run — `цена прогона: шагов 6, пик памяти 13443072 байт, секунд 0.005997` |
 | `--trust` (`--на-веру`) | run even if guarantees are not proved; the proofs are not checked at all, and a line says so |
 | `--unproven WORD` (`--недоказанное`) | what to do when guarantees are not proved: `refuse` — do not run (the default), `warn` — say so and run, `allow` — the same as `--trust`. Cyrillic values: `отказ`, `предупреждение`, `разрешение` |
 
@@ -317,7 +317,7 @@ $ flang run привет.flang --function «Удвоить» --args '{"н":21}'
 ```
 
 To allow unproved programs for good, set the `unproven` key in `.flangrc`
-([settings guide, Russian](https://github.com/digitable-lol/flang/blob/main/docs/guide/settings.ru.md#что-делать-с-недоказанным)):
+([settings guide](https://github.com/digitable-lol/flang/blob/main/docs/guide/settings.md#what-to-do-with-an-unproved-program)):
 `unproven = warn`. A command-line flag beats the `FLANG_UNPROVEN` environment
 variable, which beats `.flangrc`, which beats the default `refuse`. The line
 printed before the value names what allowed the run: the flag, or the setting
@@ -666,7 +666,7 @@ $ echo $?
 3
 $ flang io scripts/shortcut-collector.fscript --plan Целость
 доказано: утверждений 9
-{"plan":"Целость","result":"коротких команд 150; …
+{"plan":"Целость","result":"коротких команд 217; …
 $ echo $?
 0
 ```
@@ -881,7 +881,7 @@ With a `flang.package` next to it, the package is built:
 $ cat flang.package
 {"имя": "Привет", "версия": "1.0.0"}
 
-$ flang package привет.flang | head -c 160
+$ flang package привет.flang | head -c 400
 {"схема":2,"имя":"Привет","версия":"1.0.0","вход":"./привет.flang","модули":[{"имя":"Привет","путь":"./привет.flang","функций":1,"адрес":"2bc2186046bc075d03953d3ff11c333835b8561a724dc526bb95c91730fe0699","исходник":"module «Привет»\n\ntotal function «Удвоить»\n  accepts н: number\n  returns number\n  examp
 ```
 

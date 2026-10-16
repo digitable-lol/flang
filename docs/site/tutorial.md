@@ -109,7 +109,7 @@ Put a condition inside to get, for example, the maximum:
 `как акк и элемент → акк плюс элемент`, the compiler answers:
 
 ```
-FLANG_PARSE в файле ch2.flang, строка 9, столбец 68: не разобрана конструкция: неожиданное '
+FLANG_PARSE в файле ch2.flang, строка 8, столбец 68: не разобрана конструкция: неожиданное '
 '
 ```
 
@@ -127,7 +127,7 @@ concepts.
 The three functions of this chapter (sum, maximum, sum of squares) in one file:
 
 ```
-модуль «Свёртки»: функций 3, из них с доказанным завершением 3; типов 0
+модуль «Учебник»: функций 3, из них с доказанным завершением 3; типов 0
 ch2.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ch2.flang: примеров 3, прошло 3, не прошло 0
 ```
@@ -183,11 +183,7 @@ it. This function does not always terminate:
 `flang check` rejects it and says what is missing:
 
 ```
-FLANG_NOT_TOTAL в файле krutit.flang, строка 8, столбец 11: тотальная функция
-«Крутить»: рекурсивный вызов «Крутить» не убывает — аргумент 1 («н» sub 1)
-уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида
-«если н не больше 0». Передавайте часть аргумента: хвост списка из образца
-«голова и хвост», поле варианта из образца, поле записи или элемент коллекции
+FLANG_NOT_TOTAL в файле krutit.flang, строка 7, столбец 11: тотальная функция «Крутить»: рекурсивный вызов «Крутить» не убывает — аргумент 1 («н» sub 1) уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида «если н не больше 0». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
 ```
 
 The compiler is right: with −1 the function never stops, because negative
@@ -217,9 +213,7 @@ Now `flang check` answers «замечаний нет» (no remarks), and
 `flang check --proof` says how termination was proved:
 
 ```
-«Сумма до»  доказано постоянным шагом: аргумент 1 («н») убывает на постоянный
-шаг и ограничен снизу; на IEEE-754 шаг не всегда меняет число, поэтому сторож,
-1 место
+«Сумма до»  доказано постоянным шагом: аргумент 1 («н») убывает на постоянный шаг и ограничен снизу; на IEEE-754 шаг не всегда меняет число, поэтому сторож, 1 место
 ```
 
 `сторож, 1 место` means one runtime check stays in the program. `число` is a
@@ -281,8 +275,7 @@ and matched like this:
 A forgotten variant is an error at check time, not a surprise at run time:
 
 ```
-FLANG_MATCH_NOT_EXHAUSTIVE в файле cveta.flang, строка 10, столбец 3:
-разбор «Цвет» не покрывает «зелёный»
+FLANG_MATCH_NOT_EXHAUSTIVE в файле cveta.flang, строка 10, столбец 3: разбор «Цвет» не покрывает «зелёный»
 ```
 
 A variant can carry data: `вариант «балл» содержит «сколько»: число`, and the
@@ -292,7 +285,7 @@ case takes it out: `случай вариант «балл» с «сколько
 0. The check must pass again:
 
 ```
-модуль «Оценки»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Учебник»: функций 1, из них с доказанным завершением 1; типов 1
 ch5.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -301,23 +294,26 @@ caught before the program runs.
 
 ## Chapter 6. From "checked on examples" to "proved"
 
-A postcondition is written with `обеспечивает`. Add one to `«Сумма до»`:
+A postcondition is written with `обеспечивает`. Add one to `«Сумма до»` from
+chapter 4 (parameter `число`):
 
 ```
   обеспечивает «сумма до неотрицательна» результат не меньше 0
 ```
 
-On its own it is not proved. The proof report says what it rests on:
+On its own it is not proved. The proof report (`flang check --proof`) says
+what it rests on:
 
 ```
-постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение
-(примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано
-только их число. Это не доказательство — теоремы при
-утверждении нет
+постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
 ```
 
 `сетка 1 значение` means: checked only on one example, like a unit test; there
 is no proof. There are two ways to get a proof.
+
+If the parameter is declared `неотрицательное`, as in exercise 3, the report
+says «доказано индукцией по «неотрицательное»» right away: that type itself
+gives induction over the range `[0, 2⁵³−1]`.
 
 **Way one: induction over a type with variants.** Write a `теорема` (theorem)
 and close each variant by pointing at the example that covers it:
@@ -341,10 +337,7 @@ and close each variant by pointing at the example that covers it:
 with these names.) The report:
 
 ```
-постусловие «балл не меньше трёх» функции «Балл оценки» — доказано индукцией
-по «Оценка»: база 3 случая, шаг при допущении на частях (0 случаев) —
-утверждение обо ВСЕХ входах типа «Оценка», а не о
-написанных
+постусловие «балл не меньше трёх» функции «Балл оценки» — доказано индукцией по «Оценка»: база 3 случая, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Оценка», а не о написанных
 ```
 
 Proved for every value of the type, not only for the examples.
@@ -380,18 +373,13 @@ compiler names the counterexample: `число` also contains NaN, which is neit
 above nor below zero:
 
 ```
-FLANG_BOUND_ON_NAN в файле ch6.flang, строка 6, столбец 3: постусловие «двойная
-норма неотрицательна» функции «Двойная норма» ЛОЖНО, и контрпример назван: …
+FLANG_BOUND_ON_NAN в файле ch6.flang, строка 5, столбец 3: постусловие «двойная норма неотрицательна» функции «Двойная норма» ЛОЖНО, и контрпример назван: …
 ```
 
 Second, it rejects the theorem, because there is no assumption left to use:
 
 ```
-FLANG_PROOF_INDUCTION_STEP в файле ch6.flang, строка 12, столбец 3: шаг 1,
-теорема «двойная норма неотрицательна»: «по предположению» стоит вне индукции,
-а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция
-по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем.
-к этому месту не известно ничего, кроме гипотез «дано»
+FLANG_PROOF_INDUCTION_STEP в файле ch6.flang, строка 11, столбец 3: шаг 1, теорема «двойная норма неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем. к этому месту не известно ничего, кроме гипотез «дано»
 ```
 
 A theorem that rests on nothing is not accepted.

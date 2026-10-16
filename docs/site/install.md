@@ -96,7 +96,9 @@ Lays down `bin/flang`, `lib/libcompiler_flang.a` and the headers in `include/`,
 and says where:
 
 ```
+…
 поставлено: /usr/local/bin/flang — проверьте: flang --version
+make: Leaving directory '…/bootstrap'
 ```
 
 The version is whatever the clone holds, not the latest release. There is no
@@ -138,6 +140,7 @@ flang --version
 
 ```
 flang {{выпуск.версия}}
+оболочка …: правит строку (стрелки, слова, история, Tab), цвет digitable
 ```
 
 Put this in `hello.flang`:
@@ -168,6 +171,7 @@ flang repl
 ```
 flang {{выпуск.версия}} — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.
 Объявление заканчивается пустой строкой, выражение вычисляется сразу.
+оболочка …: строку правит сама (Tab — дополнение, «.помощь» — клавиши)
 » 2 plus 2
 4
 ```

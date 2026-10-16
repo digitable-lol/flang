@@ -124,6 +124,7 @@ became
 because
 becomes
 before
+behavior
 behaviour
 behind
 belongs

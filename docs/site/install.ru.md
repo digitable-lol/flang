@@ -5,46 +5,75 @@
 
 | Путь | Что ставит | Что нужно на машине |
 | --- | --- | --- |
-| [Homebrew](#homebrew) | `flang`, библиотеку, заголовки, `man flang` | `brew`, `cc`, `make` |
-| [asdf](#asdf) | `flang` рядом с другими версиями | `asdf`, `cc`, `make` |
+| [Одной строкой](#одной-строкой) | готовую сборку в `~/.local` без `sudo` | `curl` или `wget`, `sha256sum` или `shasum` |
+| [Homebrew](#homebrew) | `flang`, библиотеку, заголовки, `man flang` | `brew` |
+| [asdf](#asdf) | `flang` рядом с другими версиями | `asdf` |
+| [deb и rpm](#deb-и-rpm) | пакет системы | `apt` или `dnf` |
 | [Из исходников](#из-исходников) | `flang` из клона | `git`, `cc`, `make` |
 
-Все три дают ОДИН И ТОТ ЖЕ двоичный файл. Печать во все {{цели.словом}}
-целей, проверки, доказательства и языковой сервер (`flang lsp --stdio`) есть на
-каждом пути — выбирайте по тому, что уже стоит на машине.
+Готовые сборки лежат в каждом выпуске начиная с 0.7.29: Linux x86_64 и aarch64
+(статически, на любом дистрибутиве), macOS arm64 и x86_64. Пакет называется
+**flang-package**, команда, которую он ставит, — `flang`. Печать во все
+{{цели.словом}} целей, проверки, доказательства и языковой сервер
+(`flang lsp --stdio`) есть в каждой готовой сборке.
+
+**Имя занято LLVM Flang.** Компилятор Фортрана из LLVM тоже ставит команду
+`flang` (формула `flang` в Homebrew, пакет `flang` в AUR и Fedora). Если стоят
+оба, побеждает тот, что раньше на `PATH`. Проверка — `flang --version`: наш
+отвечает первой строкой `flang <версия>`. Лечится порядком каталогов в `PATH`
+или полным путём к команде в каталоге установки.
+
+## Одной строкой
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh
+```
+
+Сценарий выбирает сборку под систему и процессор, скачивает её вместе с
+`SHA256SUMS` выпуска, отказывается продолжать при несовпадении суммы и ставит
+`bin/`, `share/` (на macOS ещё `lib/` и `include/`) в `~/.local`. Версию
+закрепляет `FLANG_VERSION=0.7.29`, каталог — `PREFIX=/opt/flang`; обе — переменные
+среды `sh`. Под Windows сценарий отвечает отказом и советует WSL.
 
 ## Homebrew
 
 ```bash
-brew install digitable-lol/tap/flang
+brew install digitable-lol/tap/flang-package
 ```
 
-Ставит `flang`, `libcompiler_flang.a`, два заголовка и страницу `man flang` —
+`brew install digitable-lol/tap/flang` тоже работает: это другое имя той же
+формулы. Ставит `flang`, `libcompiler_flang.a`, заголовки и страницу `man flang` —
 раздаёт их репозиторий
-[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap). Node не нужен:
-в архиве релиза лежит готовый C99.
+[`homebrew-tap`](https://github.com/digitable-lol/homebrew-tap).
 
 ## asdf
 
 ```bash
 asdf plugin add flang https://github.com/digitable-lol/asdf-flang.git
-asdf install flang {{выпуск.версия}}
-asdf set -u flang {{выпуск.версия}}
+asdf install flang latest
+asdf set -u flang latest
 ```
 
-Ставит в каталог версии `bin/flang`, `lib/libcompiler_flang.a`, заголовки в
-`include/` и исходники рантайма каждой цели печати в `share/flang/<цель>/` — без
-них `flang emit` нечего класть в вывод. Плагин собирает архив выпуска `cc` и
-`make`, а потом щупает собранное: `flang --version` обязан назвать запрошенную
-версию, а если в архиве есть рантайм — `flang emit` обязан напечатать в каждую
-цель, которую двоичный называет сам. Ставятся только выпущенные версии:
-`asdf install flang ref:main` откажет намеренно: плагин ставит только архивы
-выпусков. Причина, которую он при этом печатает — «нужен Node», — устарела:
-реализации на Node нет, и клон любой ветки собирается `make -C bootstrap`, как
-в разделе ниже.
-Третья строка — `asdf set`, а не `asdf global`: `global` и `local` удалены в
-asdf 0.16.0. Тот же плагин понимает mise:
-`mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
+Плагин скачивает готовую сборку и сверяет её сумму. Выпуски до 0.7.29, а также
+установка с `ASDF_FLANG_FROM_SOURCE=1` собираются из исходников C — для этого
+нужны `cc` и `make`. После установки плагин щупает поставленное:
+`flang --version` обязан назвать запрошенную версию. Третья строка — `asdf set`,
+а не `asdf global`: `global` и `local` удалены в asdf 0.16.0. Тот же плагин
+понимает mise: `mise plugin add flang https://github.com/digitable-lol/asdf-flang.git`.
+
+## deb и rpm
+
+Скачайте пакет под свой процессор из
+[последнего выпуска](https://github.com/digitable-lol/flang/releases/latest) и
+поставьте:
+
+```bash
+sudo apt install ./flang-package_<версия>_amd64.deb     # или _arm64.deb
+sudo dnf install ./flang-package-<версия>-1.x86_64.rpm   # или .aarch64.rpm
+```
+
+rpm конфликтует с пакетом `flang` из Fedora (LLVM Flang): оба владеют
+`/usr/bin/flang`.
 
 Плагин живёт в своём репозитории,
 [`asdf-flang`](https://github.com/digitable-lol/asdf-flang); это дерево держит
@@ -60,15 +89,18 @@ make -C bootstrap -j4
 sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```
 
-Кладёт четыре файла — `bin/flang`, `lib/libcompiler_flang.a`,
-`include/flang_runtime.h`, `include/compiler_flang.h` — и говорит куда:
+Кладёт `bin/flang`, `lib/libcompiler_flang.a` и заголовки в `include/` — и
+говорит куда:
 
 ```
 поставлено: /usr/local/bin/flang — проверьте: flang --version
 ```
 
 Версия будет та, что в клоне, а не последняя выпущенная. Страницы `man` на этом
-пути нет: `flang.1` приезжает только в архиве релиза.
+пути нет: `flang.1` приезжает только в архиве релиза. Нет и `share/flang/` с
+исходниками рантайма целей печати, поэтому `flang emit` из такой установки
+просит назвать их каталог: `--runtime <клон>/flang/src/emit/c` или та же
+переменная `FLANG_RUNTIME_DIR` — по каталогу на цель.
 
 Если `make` на машине нет, хватает одного вызова `cc`:
 
@@ -145,13 +177,15 @@ libcompiler_flang.a`, двоичный файл поставлен, а библ�
 
 | Путь | Команда |
 | --- | --- |
-| Homebrew | `brew uninstall flang` |
-| asdf | `asdf uninstall flang {{выпуск.версия}}`, затем `asdf plugin remove flang` |
+| Одной строкой | команду удаления сценарий печатает последней строкой: `rm -rf` по списку поставленных файлов |
+| Homebrew | `brew uninstall flang-package` |
+| asdf | `asdf uninstall flang <версия>`, затем `asdf plugin remove flang` |
+| deb, rpm | `sudo apt remove flang-package`, `sudo dnf remove flang-package` |
 | Из исходников | `make -C bootstrap uninstall` — с тем же `PREFIX=…`, с каким ставили |
 
 `make -C bootstrap uninstall` снимает `bin/flang`, библиотеку и страницу man, но
-ОСТАВЛЯЕТ два заголовка в `include/` — удалите их руками, если каталог должен
-остаться пустым.
+ОСТАВЛЯЕТ заголовки в `include/` (`compiler_flang.h`, `flang_runtime.h`,
+`tls_client.h`) — удалите их руками, если каталог должен остаться пустым.
 
 ## Построено на flang
 

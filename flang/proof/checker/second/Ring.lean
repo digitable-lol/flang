@@ -32,6 +32,9 @@ def «безОбёрток» (t : String) : String := Id.run do
     u := «т» v
   return u
 
+def «естьСвязывательКольца» (t : String) : Bool :=
+  ["пусть ", "разбор ", "свёртка ", "отобразить ", "отфильтровать ", "случай "].any (fun w => t.startsWith w || (t.splitOn s!" {w}").length > 1)
+
 /-- Тип имени `x`: строка записи `для всех «x» ⟨Т⟩` либо `принимает` функции `чья`. -/
 def «типЛистаКольца» (s : «Исх») («свои» : List String) («чья» x : String) : Option String :=
   let «кв» := «свои».find? (fun l => l.startsWith s!"для всех «{x}» ⟨")
@@ -51,6 +54,21 @@ def «литералКанона» (s : «Исх») (f : String) : Option «Ли
   | ["[1]"] => some .«единица»
   | _ => none
 
+def «раскрытьВызовКольца» (s : «Исх») (t : String) : Option String :=
+  let u := «безОбёрток» t
+  let «г» := «ёлочка» u 1
+  let «нач» := s!"«{«г»}» от "
+  if «г» = "" || !u.startsWith «нач» then none else
+  let «арги» := («сверху» («обрезать» (u.«сн» «нач».length)) "и").map «ужатьТ»
+  let «пар» := s.«подпись» «г»
+  let «стр» := (s.«внутри» «г»).map (fun i => s.«строка» i) |>.filter (· ≠ "")
+  match «стр».filter (fun l => !(«словаКонтракта».any (l.startsWith ·))) with
+  | [«тело»] =>
+    if «арги».length ≠ «пар».length || «естьСвязывательКольца» «тело» || (s!" {«тело»} ".splitOn " если ").length > 1 then none else
+    let «помечено» := ((List.range «пар».length).zip «пар»).foldl (fun acc (i, p) => «вместо» acc («голо» p.1) s!"‹{i}›") («т» «тело»)
+    some (((List.range «арги».length).zip «арги»).foldl (fun acc (i, a) => «вместо» acc s!"‹{i}›" a) «помечено»)
+  | _ => none
+
 /-- Многочлен: список одночленов, одночлен — отсортированный список имён. -/
 abbrev «Многочлен» := List (List String)
 
@@ -59,7 +77,7 @@ def «сортСтрок» (v : List String) : List String := v.mergeSort (fun a
 def «печатьМногочлена» (p : «Многочлен») : String :=
   " + ".intercalate («сортСтрок» (p.map (fun m => " ".intercalate m)))
 
-partial def «многочленКольца» (s : «Исх») («свои» : List String) («чья» : String) (t0 : String) : Except String «Многочлен» := do
+partial def «многочленКольца» (s : «Исх») («свои» : List String) («чья» : String) (t0 : String) («глубина» : Nat := 0) : Except String «Многочлен» := do
   let t := «безОбёрток» t0
   let «сл» := «сверху» t "плюс"
   let «мн» := «сверху» t "умножить на"
@@ -67,12 +85,12 @@ partial def «многочленКольца» (s : «Исх») («свои» : 
     throw s!"в ⟨{t}⟩ «плюс» и «умножить на» стоят рядом без скобок"
   if «сл».length > 1 then
     let mut acc : «Многочлен» := []
-    for x in «сл» do acc := acc ++ (← «многочленКольца» s «свои» «чья» x)
+    for x in «сл» do acc := acc ++ (← «многочленКольца» s «свои» «чья» x «глубина»)
     return acc
   if «мн».length > 1 then
     let mut acc : «Многочлен» := [[]]
     for x in «мн» do
-      let p ← «многочленКольца» s «свои» «чья» x
+      let p ← «многочленКольца» s «свои» «чья» x «глубина»
       acc := acc.flatMap (fun a => p.map (fun b => «сортСтрок» (a ++ b)))
     return acc
   if t.startsWith "«" && t.endsWith "»" && (t.splitOn "«").length = 2 && (t.splitOn "»").length = 2 then
@@ -80,6 +98,11 @@ partial def «многочленКольца» (s : «Исх») («свои» : 
     | some .«ноль» => return []
     | some .«единица» => return [[]]
     | _ => throw s!"лист ⟨{t}⟩ — не нульместная функция «точное целое» с телом [] или [1]"
+  if t = "[]" || t = "[ ]" then return []
+  if t = "[1]" || t = "[ 1 ]" then return [[]]
+  if «глубина» < 16 then
+    if let some «р» := «раскрытьВызовКольца» s t then
+      return (← «многочленКольца» s «свои» «чья» «р» («глубина» + 1))
   if (t.splitOn " ").length > 1 || t = "" then
     throw s!"лист ⟨{t}⟩ — не имя и не литерал канона"
   match «типЛистаКольца» s «свои» «чья» t with

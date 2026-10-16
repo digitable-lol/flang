@@ -9692,6 +9692,8 @@ typedef struct {
   long violated;
   long laws_grid;
   long laws_assumed;
+  int checker;
+  bool imports;
 } proof_tally;
 
 /*
@@ -9777,84 +9779,16 @@ static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
          proof_int_at(json, from, to, "assumed", &out->laws_assumed);
 }
 
-/*
- * ПРИГОВОР ВЕДОМОСТИ СЛОВАРЁМ ДЕРЕВА, и он тот же, что у чекера записи
- * (`flang/proof/checker/README.md`) и у `check --быстро` выше:
- *
- *   0  ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — доказанного хватило, ничего не осталось
- *      высказанным без доказательства;
- *   4  ПРОВЕРЕНО С ОПОРОЙ — доказано, но часть держится не на доказательстве:
- *      сетка значений автора («это НЕ доказательство» — слова самой ведомости)
- *      или вывод, опёршийся на недоказанную посылку;
- *   3  НЕ ПРОВЕРЕНО — есть высказанное без доказательства: «объявлено, не
- *      доказано», отвергнутое ядром или принятое на веру. Противоречия не
- *      найдено, но и проверено не всё, и непроверенное названо числом;
- *   1  НЕ СОШЛОСЬ — найден контрпример, ведомость пишет НАРУШЕНО.
- *
- * ── ПОЧЕМУ СЕТКА ПО УМОЛЧАНИЮ ОСТАЁТСЯ НУЛЁМ, А ЗА КЛЮЧОМ ─────────────────
- * Замер по дереву, а не вкус. Из 64 файлов, у которых ведомость печатается
- * (корпус `flang/proof`, карта умений, `flang/stdlib`), «объявлено, не
- * доказано» стоит у ЧЕТЫРЁХ, а сетка — у ВОСЕМНАДЦАТИ; в самой библиотеке
- * сетка есть у 21 файла из 23 — то есть почти у каждого. Молчащий ноль на
- * «объявлено, не доказано» — ложь про четыре файла, и её надо убрать сразу.
- * Ненулевой код на сетке — правда, но правда, которая красит библиотеку
- * целиком, и её надо ввозить отдельным заходом, а не заодно.
- *
- * Ключ `--строго` и есть этот отдельный заход: он спрашивает «доказано ли
- * САМО, без опоры», и без него ответ прежний — 0. Сама опора названа СТРОКОЙ
- * в обоих случаях, поэтому умолчание молчаливым не остаётся: человек и
- * инструмент видят «сетка N» и тогда, когда код нулевой.
- *
- * Старшинство сверху вниз: названное противоречие важнее названного пробела,
- * а названный пробел важнее названной опоры.
- *
- * ── ЧЕТЫРЕ ИСХОДА ПОД `--строго` (задача 5502, пункт 5 внешнего аудита) ────
- * Аудит требует различать «доказано», «опровергнуто», «не удалось доказать» и
- * «не поддерживается» и запрещает успех без независимой проверки ВСЕХ
- * обязательств. Исходов под ключом ровно четыре, и НОВЫХ ЧИСЕЛ НЕ ЗАВЕДЕНО НИ
- * ОДНОГО: ADR-0010 §2 обещает четыре кода, ADR-0045 §4 тем же доводом отказался
- * заводить пятое число для `run`.
- *
- *   ДОКАЗАНО             0  у КАЖДОГО утверждения вердикт «доказано»
- *   ОПРОВЕРГНУТО         1  найден контрпример: «нарушено» ≥ 1
- *   НЕ УДАЛОСЬ ДОКАЗАТЬ  3  противоречия нет, доказано не всё: «объявлено, не
- *                           доказано», «отвергнуто», закон на веру, сетка,
- *                           «условно», закон на сетке
- *   НЕ ПОДДЕРЖИВАЕТСЯ    2  объявлено то, чего прибор не судит вовсе; ветка
- *                           стоит ВЫШЕ этого приговора, в `proof_file`
- *
- * ЧТО ИМЕННО ПОМЕНЯЛОСЬ ОДНИМ ЗНАКОМ: сетка под `--строго` уезжает с 4 на 3.
- * Код 4 остаётся за `--быстро` и значит ровно одно — «часть проверок не
- * запускалась»; сетка же не «не запускали», а «запускали и не доказали», и это
- * исход 3. В умолчании не меняется ни знака: без ключа сетка по-прежнему ноль,
- * и названа она СТРОКОЙ, как и была.
- *
- * ДЫРА, РАДИ КОТОРОЙ ПРАВКА (прогон 19 сентября 2026). Программа с ЛОЖНЫМ
- * постусловием `результат не больше 100` при теле `н плюс н` и парой строк
- * `пример` получала ноль от `check`, от `check --proof` и от независимого
- * сверщика разом, а `run --на-веру` на н = 100 печатал FLANG_PROPERTY и код 1.
- * Ноль ПОКУПАЛСЯ примером: тот же файл без `пример` давал 3. Слова у приборов
- * были честные, код возврата — нет, и сборочный сценарий, читающий `$?`,
- * пропускал ложь. Проба — `flang/proof/probes/strict/`.
- *
- * СЕТЬ ПОД НУЛЁМ, и она не про сегодняшние разряды. Перечисленные `if`-ы —
- * закрытый список ведомости НА СЕГОДНЯ; заведись в ней завтра новый разряд, он
- * не попал бы ни в один из них, и успех приехал бы МОЛЧА — ровно та порода
- * беды, ради которой ключ и заведён. Поэтому под `--строго` ноль требует ещё и
- * равенства «доказано == всего»: неизвестный разряд ловится без имени.
- */
 static int proof_verdict(const proof_tally *t, bool strict) {
-  if (t->violated > 0) {
+  const bool leaning = t->grid > 0 || t->conditional > 0 || t->laws_grid > 0;
+  if (t->violated > 0 || (t->checker == 1 && !t->imports)) {
     return 1;
   }
-  if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
+  if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0 || leaning || t->checker == 1) {
     return 3;
   }
   if (!strict) {
     return 0;
-  }
-  if (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0) {
-    return 3;
   }
   if (t->total == 0) {
     return 3;
@@ -9869,36 +9803,36 @@ static const char *proof_strict_gap(const proof_tally *t) {
   if (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0) {
     return "НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ";
   }
+  if (t->checker == 1) {
+    return "НЕ УДАЛОСЬ ДОКАЗАТЬ — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ";
+  }
   if (t->total == 0) {
     return "НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ";
   }
   return "НЕ УДАЛОСЬ ДОКАЗАТЬ — РАЗРЯД ВЕДОМОСТИ ЭТОМУ ПРИБОРУ НЕ ИЗВЕСТЕН";
 }
 
-/*
- * Приговор — В ПОТОК ОШИБОК, и по тому же доводу, что и всё прочее не-JSON:
- * `flang check --proof --json` разбирают машиной, и строка русских слов посреди
- * JSON сломала бы разбор. Печатается ВСЕГДА, в том числе при нуле: человек,
- * читающий зелёный ответ, обязан видеть, чем этот зелёный заслужен.
- *
- * СЛОВА УМОЛЧАНИЯ НЕ ТРОНУТЫ НИ БУКВОЙ (задача 5502): их читают руководства,
- * страницы сайта и чужие сценарии, и менять их заодно с кодом значило бы
- * ломать два договора вместо одного. Под `--строго` печатается ИМЯ ИСХОДА из
- * четырёх, а рядом с «НЕ УДАЛОСЬ ДОКАЗАТЬ» — чем именно не удалось: пробелом
- * («объявлено, не доказано») или опорой («сетка»). Старшинство то же, что у
- * приговора: пробел важнее опоры, и на программе, где есть ОБА, называется
- * пробел — код при этом 3, а не 4, и проба на это стоит отдельная.
- *
- * Ветки `code == 4` здесь нет: приговор её больше не ставит, а «--быстро» до
- * этой печати не доходит вовсе (ведомости у него нет). Мёртвая ветка читалась
- * бы как «исход возможен», а он невозможен.
- */
+static const char *proof_default_gap(const proof_tally *t) {
+  if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
+    return "НЕ ПРОВЕРЕНО";
+  }
+  if (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0) {
+    return "НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ";
+  }
+  return "НЕ ПРОВЕРЕНО — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ";
+}
+
+static const char *proof_refuted_word(const proof_tally *t, bool strict) {
+  if (t->violated > 0) {
+    return strict ? "ОПРОВЕРГНУТО" : "НЕ СОШЛОСЬ";
+  }
+  return "НЕ СОШЛОСЬ СО СВЕРЩИКОМ";
+}
+
 static void proof_say_verdict(const char *path, const proof_tally *t, int code, bool strict) {
-  const bool leaning = t->grid > 0 || t->conditional > 0 || t->laws_grid > 0;
-  const char *word = code == 1   ? (strict ? "ОПРОВЕРГНУТО" : "НЕ СОШЛОСЬ")
-                     : code == 3 ? (strict ? proof_strict_gap(t) : "НЕ ПРОВЕРЕНО")
+  const char *word = code == 1   ? proof_refuted_word(t, strict)
+                     : code == 3 ? (strict ? proof_strict_gap(t) : proof_default_gap(t))
                      : strict    ? "ДОКАЗАНО"
-                     : leaning   ? "ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго)"
                                  : "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО";
   msg_printf(stderr, "proof.verdict",
           "%s: %s — утверждений %ld: доказано %ld, условно %ld, сетка %ld, объявлено, не доказано %ld, "
@@ -10114,16 +10048,20 @@ static char *proof_checker_path(void) {
 }
 
 #ifdef __wasi__
-static void proof_say_independent(const char *path, const char *record, size_t bytes, long proved) {
+static int proof_say_independent(const char *path, const char *record, size_t bytes, long proved, bool imports) {
   (void)record;
   (void)bytes;
+  (void)imports;
   fprintf(stderr,
           "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО этим модулем — в WebAssembly нет процессов, и сверщика отсюда не запустить: все %ld доказанных стоят на слове ядра, пока запись (--записать) не сверит сверщик, собранный отдельным модулем\n",
           path, proved);
+  return -1;
 }
 #else
-static void proof_say_independent(const char *path, const char *record, size_t bytes, long proved) {
+static int proof_say_independent(const char *path, const char *record, size_t bytes, long proved, bool imports) {
   char *checker = proof_checker_path();
+  const char *reason = NULL;
+  int said = -1;
   const char *place = getenv("FLANG_TMP");
   char *pattern = NULL;
   repl_buf answer;
@@ -10138,7 +10076,7 @@ static void proof_say_independent(const char *path, const char *record, size_t b
             "; собрать: make -C flang/proof/checker либо назвать FLANG_CHECKER): все %ld доказанных стоят на слове ядра\n",
             path, checker == NULL ? "путь к нему не найден" : checker, proved);
     free(checker);
-    return;
+    return -1;
   }
   pattern = repl_join(place != NULL && place[0] != '\0' ? place : "/tmp", "flang-record.XXXXXX");
   fd = mkstemp(pattern);
@@ -10150,7 +10088,7 @@ static void proof_say_independent(const char *path, const char *record, size_t b
     }
     free(pattern);
     free(checker);
-    return;
+    return -1;
   }
   close(fd);
   buf_init(&answer);
@@ -10199,21 +10137,29 @@ static void proof_say_independent(const char *path, const char *record, size_t b
       scan += 1;
     }
   }
+  reason = strstr(answer.data, "\nНЕ СОШЛОСЬ: ");
   if (!WIFEXITED(status) || WEXITSTATUS(status) == 2 || WEXITSTATUS(status) == 127) {
     fprintf(stderr, "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик %s не отработал: все %ld доказанных стоят на слове ядра\n",
             path, checker, proved);
-  } else if (WEXITSTATUS(status) == 1) {
+  } else if (WEXITSTATUS(status) == 1 && imports) {
+    said = 1;
     fprintf(stderr,
             "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик не сошёлся с записью (код 1; файлу с ввозом сверщику нужны"
             " записи ввезённых модулей ключом --зависимость): все %ld доказанных стоят на слове ядра\n",
             path, proved);
+  } else if (WEXITSTATUS(status) == 1) {
+    said = 1;
+    fprintf(stderr, "%s: НЕ СОШЛОСЬ СО СВЕРЩИКОМ — запись доказательства противоречит исходнику, ввоза у файла нет: %.*s\n",
+            path, reason == NULL ? 0 : (int)strcspn(reason + 1, "\n"), reason == NULL ? "" : reason + 1);
   } else {
+    said = WEXITSTATUS(status);
     msg_printf(stderr, "proof.checker-replayed",
             "%s: независимо, сверщиком, проиграно %ld из %ld доказанных; на слове ядра %ld — код сверщика %d\n",
             path, checked, proved, proved - checked, WEXITSTATUS(status));
   }
   buf_free(&answer);
   free(checker);
+  return said;
 }
 #endif
 
@@ -10467,11 +10413,12 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
             stderr);
       code = 2;
     } else {
+      tally.imports = paths.count > 1;
+      tally.checker = val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)
+                          ? proof_say_independent(path, utf8, bytes, tally.proved, tally.imports)
+                          : -1;
       code = proof_verdict(&tally, strict);
       proof_say_verdict(path, &tally, code, strict);
-      if (!json && val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
-        proof_say_independent(path, utf8, bytes, tally.proved);
-      }
     }
     /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
        ведомость читает человек, а запись читает сверщик, и смешать их в одной

@@ -3547,3 +3547,20 @@ theorem «Мер-запрет» (c n k : Int) (hc : 1 ≤ c) (h0 : 0 ≤ n) (hk 
 
 theorem «Мер-запрет-без-неотрицательности-ложна» : ∃ (c n k : Int), 1 ≤ c ∧ 0 ≤ k ∧ c * n + k < n :=
   ⟨3, -5, 1, by decide, by decide, by decide⟩
+
+theorem «ПолЗ1» {α : Type} (pre post : List (String × α)) (n : String) (v : α)
+    (h : ∀ q ∈ pre, q.1 ≠ n) :
+    List.lookup n (pre ++ (n, v) :: post) = some v := by
+  induction pre with
+  | nil => simp
+  | cons q t ih =>
+    obtain ⟨a, b⟩ := q
+    have hq : a ≠ n := h (a, b) (List.mem_cons_self ..)
+    have ht : ∀ r ∈ t, r.1 ≠ n := fun r hr => h r (List.mem_cons_of_mem _ hr)
+    have hb : (n == a) = false := by simp; exact fun e => hq e.symm
+    simp only [List.cons_append, List.lookup, hb]
+    exact ih ht
+
+theorem «ПолЗ1-повтор-ложна» : ∃ (n : String) (v w : Nat),
+    v ≠ w ∧ List.lookup n [(n, v), (n, w)] ≠ some w :=
+  ⟨"а", 1, 2, by decide, by simp [List.lookup]⟩

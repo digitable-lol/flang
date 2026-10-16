@@ -254,6 +254,16 @@ theorem «ветвьСчёта-верно» {s : «ТермЧ»} {a e : String} 
     obtain ⟨rfl, hk⟩ := h
     simp only [«оценить», «имя-накопителя-знач» w x e acc v hae]
     exact «Н5» _ _ _ (by simp [«неотр»]; omega) hacc
+  · rename_i x l
+    have hx : x = a := by simpa using h
+    subst hx
+    simp only [«оценить», «имя-накопителя-знач» w x e acc v hae]
+    exact «Н5» _ _ _ hacc (by simp [«неотр»])
+  · rename_i l x
+    have hx : x = a := by simpa using h
+    subst hx
+    simp only [«оценить», «имя-накопителя-знач» w x e acc v hae]
+    exact «Н5» _ _ _ (by simp [«неотр»]) hacc
   · cases h
 
 theorem «шагСчёта-верно» {s : «ТермЧ»} {a e : String} (hae : a ≠ e) (h : «шагСчёта» s a = true) :
@@ -2062,9 +2072,9 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     rw [«порядок?-факт» hp1] at q1
     rw [«порядок?-факт» hp2] at q2
     exact «Д5-терм» _ l r a b ha hb hab («слева» _ _ q1) («справа» _ _ q2)
-  | «О8» x y c ho hp hf =>
+  | «О8» l y c ho hp hf =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
-    rw [«порядок?-факт» hf]; exact «О8-терм» _ _ y c
+    rw [«порядок?-факт» hf]; exact «О8-терм» _ l y c
   | «О9» x a e s ho hp hf hae hs =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
     rw [«порядок?-факт» hf]; exact «О9-терм» _ x a e s hae hs («списки-в-окружении» u)

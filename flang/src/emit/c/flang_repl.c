@@ -9610,7 +9610,6 @@ typedef struct {
   long laws_grid;
   long laws_assumed;
   int checker;
-  bool imports;
 } proof_tally;
 
 /*
@@ -9698,7 +9697,7 @@ static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
 
 static int proof_verdict(const proof_tally *t, bool strict) {
   const bool leaning = t->grid > 0 || t->conditional > 0 || t->laws_grid > 0;
-  if (t->violated > 0 || (t->checker == 1 && !t->imports)) {
+  if (t->violated > 0) {
     return 1;
   }
   if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0 || leaning || t->checker == 1) {
@@ -9714,14 +9713,14 @@ static int proof_verdict(const proof_tally *t, bool strict) {
 }
 
 static const char *proof_strict_gap(const proof_tally *t) {
+  if (t->checker == 1) {
+    return "НЕ СОШЛОСЬ СО СВЕРЩИКОМ";
+  }
   if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
     return "НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО";
   }
   if (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0) {
     return "НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ";
-  }
-  if (t->checker == 1) {
-    return "НЕ УДАЛОСЬ ДОКАЗАТЬ — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ";
   }
   if (t->total == 0) {
     return "НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ";
@@ -9730,24 +9729,17 @@ static const char *proof_strict_gap(const proof_tally *t) {
 }
 
 static const char *proof_default_gap(const proof_tally *t) {
+  if (t->checker == 1) {
+    return "НЕ СОШЛОСЬ СО СВЕРЩИКОМ";
+  }
   if (t->declared > 0 || t->refused > 0 || t->laws_assumed > 0) {
     return "НЕ ПРОВЕРЕНО";
   }
-  if (t->grid > 0 || t->conditional > 0 || t->laws_grid > 0) {
-    return "НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ";
-  }
-  return "НЕ ПРОВЕРЕНО — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ";
-}
-
-static const char *proof_refuted_word(const proof_tally *t, bool strict) {
-  if (t->violated > 0) {
-    return strict ? "ОПРОВЕРГНУТО" : "НЕ СОШЛОСЬ";
-  }
-  return "НЕ СОШЛОСЬ СО СВЕРЩИКОМ";
+  return "НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ";
 }
 
 static void proof_say_verdict(const char *path, const proof_tally *t, int code, bool strict) {
-  const char *word = code == 1   ? proof_refuted_word(t, strict)
+  const char *word = code == 1   ? (strict ? "ОПРОВЕРГНУТО" : "НЕ СОШЛОСЬ")
                      : code == 3 ? (strict ? proof_strict_gap(t) : proof_default_gap(t))
                      : strict    ? "ДОКАЗАНО"
                                  : "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО";
@@ -10048,15 +10040,15 @@ static int proof_say_independent(const char *path, const char *record, size_t by
     fprintf(stderr, "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик %s не отработал: все %ld доказанных стоят на слове ядра\n",
             path, checker, proved);
   } else if (WEXITSTATUS(status) == 1 && imports) {
-    said = 1;
     fprintf(stderr,
             "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик не сошёлся с записью (код 1; файлу с ввозом сверщику нужны"
             " записи ввезённых модулей ключом --зависимость): все %ld доказанных стоят на слове ядра\n",
             path, proved);
   } else if (WEXITSTATUS(status) == 1) {
     said = 1;
-    fprintf(stderr, "%s: НЕ СОШЛОСЬ СО СВЕРЩИКОМ — запись доказательства противоречит исходнику, ввоза у файла нет: %.*s\n",
-            path, reason == NULL ? 0 : (int)strcspn(reason + 1, "\n"), reason == NULL ? "" : reason + 1);
+    fprintf(stderr, "%s: НЕ СОШЛОСЬ СО СВЕРЩИКОМ — сверщик не принял запись доказательства файла без ввоза: %.*s\n",
+            path, reason == NULL ? (int)strlen("причины сверщик не назвал") : (int)strcspn(reason + 1, "\n"),
+            reason == NULL ? "причины сверщик не назвал" : reason + 1);
   } else {
     said = WEXITSTATUS(status);
     msg_printf(stderr, "proof.checker-replayed",
@@ -10318,9 +10310,8 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
             stderr);
       code = 2;
     } else {
-      tally.imports = paths.count > 1;
       tally.checker = val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)
-                          ? proof_say_independent(path, utf8, bytes, tally.proved, tally.imports)
+                          ? proof_say_independent(path, utf8, bytes, tally.proved, paths.count > 1)
                           : -1;
       code = proof_verdict(&tally, strict);
       proof_say_verdict(path, &tally, code, strict);

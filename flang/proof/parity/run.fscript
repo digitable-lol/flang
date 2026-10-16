@@ -1,0 +1,543 @@
+модуль «Lean parity»
+
+объект «Item»
+  «name»: строка
+  «lean»: строка
+  «expected»: строка
+  «gap»: строка
+
+объект «Outcome»
+  «item»: «Item»
+  «flang»: строка
+  «prover»: строка
+
+объект «Walk»
+  «names»: список строки
+  «item»: «Item»
+  «rest»: список «Item»
+  «done»: список «Outcome»
+
+тип «Step»
+  вариант «Start»
+  вариант «Awaiting corpus»
+  вариант «Awaiting listing» содержит «items»: список «Item»
+  вариант «Awaiting auto» содержит «walk»: «Walk»
+  вариант «Awaiting by hand» содержит «walk»: «Walk»
+  вариант «Awaiting lean» содержит «walk»: «Walk», «flang»: строка
+
+тотальная функция «Mismatch code»
+  возвращает строка
+  пример «a mismatch carries the code of the set»
+    ожидается "FLANG_PROBE_LEAN_PARITY"
+  "FLANG_PROBE_LEAN_PARITY"
+
+тотальная функция «Blind code»
+  возвращает строка
+  пример «blindness carries its own code»
+    ожидается "FLANG_PROBE_LEAN_PARITY_CANNOT_LOOK"
+  "FLANG_PROBE_LEAN_PARITY_CANNOT_LOOK"
+
+тотальная функция «Cell»
+  принимает «cells»: список строки, «number»: число
+  возвращает строка
+  пример «the second cell»
+    дано «cells» равно ["a", "nat", "rfl", "auto", "-"]
+    дано «number» равно 2
+    ожидается "nat"
+  пример «a cell past the row is empty»
+    дано «cells» равно ["a"]
+    дано «number» равно 3
+    ожидается ""
+  если ((«number» не меньше 1) и притом («number» не больше (длина «cells»)))
+    то элемент «number» в «cells»
+    иначе ""
+
+тотальная функция «Item of row»
+  принимает «cells»: список строки
+  возвращает «Item»
+  пример «a row of the corpus becomes an item»
+    дано «cells» равно ["a", "nat", "rfl", "auto", "-"]
+    ожидается (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+      и «expected» равным "auto" и «gap» равным "-")
+  пусть «name» равно («Cell» от «cells» и 1)
+  пусть «lean» равно («Cell» от «cells» и 3)
+  пусть «expected» равно («Cell» от «cells» и 4)
+  (запись «Item» с «name» равным «name» и «lean» равным «lean» и «expected» равным «expected»
+    и «gap» равным («Cell» от «cells» и 5))
+
+тотальная функция «Items»
+  принимает «text»: строка
+  возвращает список «Item»
+  пример «the header is dropped and blank lines are skipped»
+    дано «text» равно "name\tarea\tlean\texpected\tgap\na\tnat\trfl\tauto\t-\n"
+    ожидается [(запись «Item» с «name» равным "a" и «lean» равным "rfl"
+      и «expected» равным "auto" и «gap» равным "-")]
+  пусть «lines» равно (отфильтровать (разделить «text» по "\n") где «line» → не («line» равен ""))
+  разбор «lines»
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то отобразить хвост как «line» → («Item of row» от (разделить «line» по "\t"))
+
+тотальная функция «Program»
+  принимает «name»: строка, «suffix»: строка
+  возвращает строка
+  пример «the automatic program is the name itself»
+    дано «name» равно "a"
+    дано «suffix» равно ""
+    ожидается "a.flang"
+  пример «the program with hand steps carries the suffix»
+    дано «name» равно "a"
+    дано «suffix» равно "-by-hand"
+    ожидается "a-by-hand.flang"
+  соединить [«name», «suffix», ".flang"] по ""
+
+тотальная функция «Flang script»
+  возвращает строка
+  пример «the binary checks the program in strict mode and only the code is kept»
+    ожидается "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+  "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+
+тотальная функция «Lean script»
+  возвращает строка
+  пример «lean is taken from the environment or from the path»
+    ожидается "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+  "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+
+тотальная функция «Run»
+  принимает «script»: строка, «path»: строка
+  возвращает «Поручение»
+  пример «a script runs under sh with the path as its argument»
+    дано «script» равно "test -f \"$0\""
+    дано «path» равно "corpus.tsv"
+    ожидается (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "test -f \"$0\"", "corpus.tsv"])
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", «script», «path»]
+
+тотальная функция «Exit code»
+  принимает «answer»: «Отклик»
+  возвращает число
+  пример «a finished process gives its code»
+    дано «answer» равно вариант «Процесс завершён» с код равным 3 и вывод равным "" и ошибки равным ""
+    ожидается 3
+  пример «anything else counts as a refusal»
+    дано «answer» равно вариант «Пока ничего»
+    ожидается 1
+  разбор «answer»
+    случай вариант «Процесс завершён» с код как «code» и вывод как «out» и ошибки как «err»
+      то «code»
+    случай любое
+      то 1
+
+тотальная функция «Lean word»
+  принимает «code»: число
+  возвращает строка
+  пример «zero means lean accepted the file»
+    дано «code» равно 0
+    ожидается "принято"
+  пример «127 means there is no lean on this machine»
+    дано «code» равно 127
+    ожидается "не найден"
+  пример «any other code is a refusal»
+    дано «code» равно 1
+    ожидается "отказ"
+  если «code» равен 0
+    то "принято"
+    иначе (если «code» равен 127 то "не найден" иначе "отказ")
+
+тотальная функция «Flang word»
+  принимает «class»: строка
+  возвращает строка
+  пример «automatic»
+    дано «class» равно "auto"
+    ожидается "автоматически"
+  пример «with hand steps»
+    дано «class» равно "by-hand"
+    ожидается "вручную"
+  пример «not provable today»
+    дано «class» равно "none"
+    ожидается "никак"
+  если «class» равен "auto"
+    то "автоматически"
+    иначе (если «class» равен "by-hand" то "вручную" иначе "никак")
+
+тотальная функция «Line»
+  принимает «outcome»: «Outcome»
+  возвращает строка
+  пример «one line per item»
+    дано «outcome» равно (запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")
+    ожидается "a\tавтоматически\tLean принято (rfl)\t-"
+  пусть «item» равно («outcome».«item»)
+  пусть «head» равно (соединить [(«item».«name»), "\t", («Flang word» от («outcome».«flang»))] по "")
+  соединить [«head», "\tLean ", («outcome».«prover»), " (", («item».«lean»), ")\t", («item».«gap»)] по ""
+
+тотальная функция «Count»
+  принимает «outcomes»: список «Outcome», «class»: строка
+  возвращает число
+  пример «outcomes of one class are counted»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    дано «class» равно "none"
+    ожидается 0
+  длина (отфильтровать «outcomes» где «o» → ((«o».«flang») равен «class»))
+
+тотальная функция «Lean accepted»
+  принимает «outcomes»: список «Outcome»
+  возвращает число
+  пример «accepted lean files are counted»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается 1
+  длина (отфильтровать «outcomes» где «o» → ((«o».«prover») равен "принято"))
+
+тотальная функция «Count of»
+  принимает «outcomes»: список «Outcome», «class»: строка
+  возвращает строка
+  пример «a count is printed as a word»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    дано «class» равно "auto"
+    ожидается "1"
+  к строке («Count» от «outcomes» и «class»)
+
+тотальная функция «Summary»
+  принимает «outcomes»: список «Outcome»
+  возвращает строка
+  пример «the summary names three classes of flang and the lean count»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается "автоматически 1, вручную 0, никак 0 из 1; Lean 1 из 1"
+  пусть «total» равно (к строке (длина «outcomes»))
+  пусть «auto» равно («Count of» от «outcomes» и "auto")
+  пусть «hand» равно («Count of» от «outcomes» и "by-hand")
+  пусть «none» равно («Count of» от «outcomes» и "none")
+  пусть «lean» равно (к строке («Lean accepted» от «outcomes»))
+  пусть «flang» равно (соединить ["автоматически ", «auto», ", вручную ", «hand», ", никак ", «none»] по "")
+  соединить [«flang», " из ", «total», "; Lean ", «lean», " из ", «total»] по ""
+
+тотальная функция «Class complaint»
+  принимает «o»: «Outcome»
+  возвращает строка
+  пример «the complaint names the expected and the found class»
+    дано «o» равно (запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "none" и «gap» равным "x")
+      и «flang» равным "auto" и «prover» равным "принято")
+    ожидается "a: ждали none, вышло auto"
+  соединить [((«o».«item»).«name»), ": ждали ", ((«o».«item»).«expected»), ", вышло ", («o».«flang»)] по ""
+
+тотальная функция «Complaints»
+  принимает «outcomes»: список «Outcome»
+  возвращает список строки
+  пример «a class other than the expected one is a complaint»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "none" и «gap» равным "x")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается ["a: ждали none, вышло auto"]
+  пример «a lean refusal is a complaint»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "отказ")]
+    ожидается ["a: Lean отказал"]
+  пусть «moved» равно (отфильтровать «outcomes» где «o» → не ((«o».«flang») равен ((«o».«item»).«expected»)))
+  пусть «classes» равно (отобразить «moved» как «o» → («Class complaint» от «o»))
+  пусть «refusing» равно (отфильтровать «outcomes» где «o» → ((«o».«prover») равен "отказ"))
+  пусть «refused» равно (отобразить «refusing» как «o» → соединить [((«o».«item»).«name»), ": Lean отказал"] по "")
+  свёртка «refused» начиная с «classes» как «acc» и «c» → добавить «c» к «acc»
+
+тотальная функция «Table»
+  принимает «outcomes»: список «Outcome»
+  возвращает строка
+  пример «the table is the lines and the summary»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается "a\tавтоматически\tLean принято (rfl)\t-\nавтоматически 1, вручную 0, никак 0 из 1; Lean 1 из 1"
+  соединить (добавить («Summary» от «outcomes») к (отобразить «outcomes» как «o» → («Line» от «o»))) по "\n"
+
+тотальная функция «Failure»
+  принимает «table»: строка, «complaints»: список строки
+  возвращает строка
+  пример «the table comes first, then each complaint on its own line»
+    дано «table» равно "T"
+    дано «complaints» равно ["a: ждали none, вышло auto"]
+    ожидается "T\n  · расхождения с corpus.tsv:\n  · a: ждали none, вышло auto"
+  соединить [«table», "расхождения с corpus.tsv:", (соединить «complaints» по "\n  · ")] по "\n  · "
+
+тотальная функция «Finish»
+  принимает «outcomes»: список «Outcome»
+  возвращает «Продолжение»
+  пример «agreement ends the plan with the table»
+    дано «outcomes» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tавтоматически\tLean принято (rfl)\t-\nавтоматически 1, вручную 0, никак 0 из 1; Lean 1 из 1")
+  разбор («Complaints» от «outcomes»)
+    случай пусто
+      то вариант «Конец работы» с значение равным («Table» от «outcomes»)
+    случай голова и хвост
+      то (вариант «Провал» с код равным («Mismatch code»)
+        и сообщение равным («Failure» от («Table» от «outcomes») и («Complaints» от «outcomes»)))
+
+тотальная функция «Blind»
+  принимает «message»: строка
+  возвращает «Продолжение»
+  пример «blindness is not a mismatch»
+    дано «message» равно "corpus.tsv is empty"
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_LEAN_PARITY_CANNOT_LOOK"
+      и сообщение равным "lean-parity: corpus.tsv is empty")
+  вариант «Не проверено» с код равным («Blind code») и сообщение равным (соединить ["lean-parity: ", «message»] по "")
+
+тотальная функция «Ask auto»
+  принимает «walk»: «Walk»
+  возвращает «Продолжение»
+  пример «the automatic program is checked first»
+    дано «walk» равно (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «rest» равным пустой список и «done» равным пустой список)
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
+        ["-c"
+        "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+        "programs/a.flang"])
+      и потом равным (вариант «Awaiting auto» с «walk» равным
+        (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+          (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+            и «expected» равным "auto" и «gap» равным "-")
+          и «rest» равным пустой список и «done» равным пустой список)))
+  пусть «program» равно (соединить ["programs/", («Program» от ((«walk».«item»).«name») и "")] по "")
+  (вариант «Сделать» с поручение равным («Run» от («Flang script») и «program»)
+    и потом равным (вариант «Awaiting auto» с «walk» равным «walk»))
+
+тотальная функция «Ask by hand»
+  принимает «walk»: «Walk»
+  возвращает «Продолжение»
+  пример «the program with hand steps is checked second»
+    дано «walk» равно (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «rest» равным пустой список и «done» равным пустой список)
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
+        ["-c"
+        "\"${FLANG_BIN:-../../../bootstrap/flang}\" check \"$0\" --proof --strict >/dev/null 2>&1"
+        "programs/a-by-hand.flang"])
+      и потом равным (вариант «Awaiting by hand» с «walk» равным
+        (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+          (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+            и «expected» равным "auto" и «gap» равным "-")
+          и «rest» равным пустой список и «done» равным пустой список)))
+  пусть «program» равно (соединить ["programs/", («Program» от ((«walk».«item»).«name») и "-by-hand")] по "")
+  (вариант «Сделать» с поручение равным («Run» от («Flang script») и «program»)
+    и потом равным (вариант «Awaiting by hand» с «walk» равным «walk»))
+
+тотальная функция «Ask lean»
+  принимает «walk»: «Walk», «flang»: строка
+  возвращает «Продолжение»
+  пример «after flang the lean twin is checked»
+    дано «walk» равно (запись «Walk» с «names» равным пустой список и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «flang» равно "auto"
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
+        ["-c"
+        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "lean/a.lean"])
+      и потом равным (вариант «Awaiting lean» с «walk» равным
+        (запись «Walk» с «names» равным пустой список и «item» равным
+          (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+            и «expected» равным "auto" и «gap» равным "-")
+          и «rest» равным пустой список и «done» равным пустой список)
+        и «flang» равным "auto"))
+  пусть «path» равно (соединить ["lean/", ((«walk».«item»).«name»), ".lean"] по "")
+  (вариант «Сделать» с поручение равным («Run» от («Lean script») и «path»)
+    и потом равным (вариант «Awaiting lean» с «walk» равным «walk» и «flang» равным «flang»))
+
+тотальная функция «Next item»
+  принимает «names»: список строки, «queue»: список «Item», «done»: список «Outcome»
+  возвращает «Продолжение»
+  пример «an empty queue finishes the plan»
+    дано «names» равно пустой список
+    дано «queue» равно пустой список
+    дано «done» равно [(запись «Outcome» с «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «flang» равным "auto" и «prover» равным "принято")]
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tавтоматически\tLean принято (rfl)\t-\nавтоматически 1, вручную 0, никак 0 из 1; Lean 1 из 1")
+  разбор «queue»
+    случай пусто
+      то «Finish» от «done»
+    случай голова и хвост
+      то («Ask auto» от
+        (запись «Walk» с «names» равным «names» и «item» равным голова и «rest» равным хвост и «done» равным «done»))
+
+тотальная функция «After auto»
+  принимает «walk»: «Walk», «code»: число
+  возвращает «Продолжение»
+  пример «a failed program without hand steps goes straight to lean as not provable»
+    дано «walk» равно (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "none" и «gap» равным "x")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «code» равно 3
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
+        ["-c"
+        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "lean/a.lean"])
+      и потом равным (вариант «Awaiting lean» с «walk» равным
+        (запись «Walk» с «names» равным ["a.flang"] и «item» равным
+          (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+            и «expected» равным "none" и «gap» равным "x")
+          и «rest» равным пустой список и «done» равным пустой список)
+        и «flang» равным "none"))
+  пусть «hand» равно («Program» от ((«walk».«item»).«name») и "-by-hand")
+  если «code» равен 0
+    то «Ask lean» от «walk» и "auto"
+    иначе (если («walk».«names») содержит «hand» то «Ask by hand» от «walk» иначе «Ask lean» от «walk» и "none")
+
+тотальная функция «After by hand»
+  принимает «walk»: «Walk», «code»: число
+  возвращает «Продолжение»
+  пример «hand steps accepted»
+    дано «walk» равно (запись «Walk» с «names» равным пустой список и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "by-hand" и «gap» равным "-")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «code» равно 0
+    ожидается (вариант «Сделать» с поручение равным
+      (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
+        ["-c"
+        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "lean/a.lean"])
+      и потом равным (вариант «Awaiting lean» с «walk» равным
+        (запись «Walk» с «names» равным пустой список и «item» равным
+          (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+            и «expected» равным "by-hand" и «gap» равным "-")
+          и «rest» равным пустой список и «done» равным пустой список)
+        и «flang» равным "by-hand"))
+  «Ask lean» от «walk» и (если «code» равен 0 то "by-hand" иначе "none")
+
+тотальная функция «After lean»
+  принимает «walk»: «Walk», «flang»: строка, «code»: число
+  возвращает «Продолжение»
+  пример «the last item ends the plan»
+    дано «walk» равно (запись «Walk» с «names» равным пустой список и «item» равным
+      (запись «Item» с «name» равным "a" и «lean» равным "rfl"
+        и «expected» равным "auto" и «gap» равным "-")
+      и «rest» равным пустой список и «done» равным пустой список)
+    дано «flang» равно "auto"
+    дано «code» равно 0
+    ожидается (вариант «Конец работы» с значение равным
+      "a\tавтоматически\tLean принято (rfl)\t-\nавтоматически 1, вручную 0, никак 0 из 1; Lean 1 из 1")
+  пусть «outcome» равно (запись «Outcome» с «item» равным («walk».«item») и «flang» равным «flang»
+    и «prover» равным («Lean word» от «code»))
+  «Next item» от («walk».«names») и («walk».«rest») и (добавить «outcome» к («walk».«done»))
+
+тотальная функция «Missing»
+  принимает «names»: список строки, «items»: список «Item»
+  возвращает список строки
+  пример «an item without its program is named»
+    дано «names» равно ["b.flang"]
+    дано «items» равно [(запись «Item» с «name» равным "a" и «lean» равным "rfl"
+      и «expected» равным "auto" и «gap» равным "-")]
+    ожидается ["a.flang"]
+  отфильтровать (отобразить «items» как «i» → («Program» от («i».«name») и "")) где «p» → не («names» содержит «p»)
+
+тотальная функция «After listing»
+  принимает «items»: список «Item», «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «a failed listing is blindness»
+    дано «items» равно пустой список
+    дано «answer» равно вариант «Пока ничего»
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_LEAN_PARITY_CANNOT_LOOK"
+      и сообщение равным "lean-parity: the programs directory was not listed")
+  пример «a program named in the corpus and absent from the directory is a mismatch»
+    дано «items» равно [(запись «Item» с «name» равным "a" и «lean» равным "rfl"
+      и «expected» равным "auto" и «gap» равным "-")]
+    дано «answer» равно вариант «Перечислено» с имена равным ["b.flang"]
+    ожидается (вариант «Провал» с код равным "FLANG_PROBE_LEAN_PARITY"
+      и сообщение равным "lean-parity: corpus.tsv names programs that are not in programs/: a.flang")
+  разбор «answer»
+    случай вариант «Перечислено» с имена как «names»
+      то разбор («Missing» от «names» и «items»)
+        случай пусто
+          то «Next item» от «names» и «items» и пустой список
+        случай голова и хвост
+          то (вариант «Провал» с код равным («Mismatch code») и сообщение равным
+            (соединить ["lean-parity: corpus.tsv names programs that are not in programs/: "
+              (соединить («Missing» от «names» и «items») по ", ")] по ""))
+    случай любое
+      то «Blind» от "the programs directory was not listed"
+
+тотальная функция «After corpus»
+  принимает «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «an empty corpus is blindness»
+    дано «answer» равно вариант «Прочитано» с содержимое равным "name\tarea\tlean\texpected\tgap\n"
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_LEAN_PARITY_CANNOT_LOOK"
+      и сообщение равным "lean-parity: corpus.tsv has no rows")
+  разбор «answer»
+    случай вариант «Прочитано» с содержимое как «text»
+      то разбор («Items» от «text»)
+        случай пусто
+          то «Blind» от "corpus.tsv has no rows"
+        случай голова и хвост
+          то (вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "programs")
+            и потом равным (вариант «Awaiting listing» с «items» равным («Items» от «text»)))
+    случай любое
+      то «Blind» от "corpus.tsv was not read"
+
+тотальная функция «Begin»
+  возвращает «Step»
+  пример «the plan starts at the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Advance»
+  принимает «step»: «Step», «answer»: «Отклик»
+  возвращает «Продолжение»
+  пример «the first move reads the corpus»
+    дано «step» равно вариант «Start»
+    дано «answer» равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "corpus.tsv")
+      и потом равным (вариант «Awaiting corpus»))
+  разбор «step»
+    случай вариант «Start»
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "corpus.tsv")
+        и потом равным (вариант «Awaiting corpus»))
+    случай вариант «Awaiting corpus»
+      то «After corpus» от «answer»
+    случай вариант «Awaiting listing» с «items» как «items»
+      то «After listing» от «items» и «answer»
+    случай вариант «Awaiting auto» с «walk» как «walk»
+      то «After auto» от «walk» и («Exit code» от «answer»)
+    случай вариант «Awaiting by hand» с «walk» как «walk»
+      то «After by hand» от «walk» и («Exit code» от «answer»)
+    случай вариант «Awaiting lean» с «walk» как «walk» и «flang» как «flang»
+      то «After lean» от «walk» и «flang» и («Exit code» от «answer»)
+
+план «Parity»
+  состояние «Step»
+  начинает с «Begin»
+  обрабатывает «Advance»

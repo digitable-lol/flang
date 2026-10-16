@@ -14,6 +14,7 @@ accessor
 account
 accumulates
 accumulating
+accumulator
 across
 action
 actions
@@ -59,6 +60,7 @@ answers
 any
 apart
 app
+append
 appended
 application
 applying
@@ -208,6 +210,7 @@ caller
 callers
 calls
 can
+cancel
 cancels
 candidate
 cannot
@@ -308,6 +311,7 @@ compile
 compiler
 compilers
 compose
+composition
 computation
 computed
 conc
@@ -506,6 +510,7 @@ element
 elementary
 eleven
 elided
+elimination
 else
 embedding
 emit
@@ -524,6 +529,7 @@ ends
 enforced
 english
 entry
+enumeration
 environment
 environments
 equal
@@ -715,6 +721,7 @@ guide
 guillemets
 half
 halves
+halving
 hand
 handler
 handlers
@@ -809,6 +816,7 @@ integrality
 intermediate
 interpreter
 into
+introduction
 invalid
 invariant
 invented
@@ -980,6 +988,7 @@ matching
 material
 math
 mathematics
+maximum
 may
 maybe
 md5
@@ -1109,6 +1118,7 @@ occupied
 occupy
 octet
 octets
+odd
 of
 off
 old
@@ -1214,6 +1224,7 @@ per
 percent
 permission
 permitted
+permutation
 permuting
 persons
 phase
@@ -1244,6 +1255,7 @@ portable
 porting
 ports
 position
+positive
 positives
 posix
 postcondition
@@ -1442,6 +1454,7 @@ retry
 returns
 reveals
 reversal
+reverse
 revert
 revives
 revocation
@@ -1657,10 +1670,12 @@ substance
 substantive
 substituted
 substitution
+subtract
 subtracted
 subtraction
 subtracts
 success
+successor
 such
 suffix
 suite
@@ -1853,6 +1868,7 @@ unwritable
 unwritten
 up
 use
+user
 utf8
 v
 valgrind

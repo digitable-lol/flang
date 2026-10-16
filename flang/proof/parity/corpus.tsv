@@ -1,0 +1,41 @@
+name	area	lean	expected	gap
+nat-plus-zero	nat	simp	none	minus-zero
+nat-zero-plus	nat	induction, rw	none	minus-zero
+nat-plus-commutative	nat	omega	auto	-
+nat-plus-associative	nat	omega	auto	-
+nat-successor-of-less	nat	omega	none	linear-arithmetic
+nat-subtract-self	nat	simp	none	literal-identity
+nat-plus-subtract-cancel	nat	omega	none	linear-arithmetic
+nat-closed-power	nat	decide	auto	-
+nat-double	nat	unfold, omega	none	linear-arithmetic
+nat-sum-formula	nat	induction, simp, omega	none	exact-natural
+nat-factorial-positive	nat	induction, Nat.mul_pos	none	strict-order
+nat-maximum-bound	nat	unfold, split, omega	by-hand	branch-fact
+nat-even-odd-mutual	nat	mutual, induction, simp	none	mutual-induction
+nat-halving-measure	nat	termination_by, strongRecOn, omega	none	number-to-natural
+nat-order-chain	nat	calc	auto	-
+list-length-append	list	induction, simp, omega	none	exact-natural
+list-append-empty	list	induction, simp	none	empty-list-base
+list-append-associative	list	induction, simp	none	unfold-on-cons
+list-map-identity	list	induction, simp	none	empty-list-base
+list-map-composition	list	induction, simp	none	empty-list-base
+list-length-reverse	list	induction, simp with lemma	none	exact-natural
+list-reverse-append	list	induction, simp with lemmas	none	empty-list-base
+list-reverse-reverse	list	induction, calc, lemma	none	empty-list-base
+list-fold-accumulator	list	induction generalizing, rw, omega	none	exact-ring-atoms
+list-member-append	list	induction, cases on membership	none	empty-list-base
+list-filter-length-bound	list	induction, cases, omega	auto	-
+list-filter-subset	list	List.mem_filter	none	empty-list-base
+list-count-reverse-permutation	list	induction, simp with lemma, omega	none	empty-list-base
+list-rewrite-user-lemma	list	simp with user lemma	none	exact-natural
+tree-mirror-mirror	type	induction, simp	by-hand	-
+tree-size-mirror	type	induction, simp, omega	none	exact-natural
+enumeration-next-cycle	type	cases, rfl	auto	-
+option-map-identity	type	cases, rfl	auto	-
+option-map-composition	type	cases, rfl	auto	-
+record-swap-swap	type	cases, rfl	none	record-extensionality
+exists-greater	logic	exists, omega	none	strict-order
+and-introduction	logic	constructor, omega	auto	-
+or-elimination-maximum	logic	unfold, split, Or.inl	auto	-
+string-concat-associative	logic	simp with String.append_assoc	auto	-
+contradiction	logic	omega	auto	-

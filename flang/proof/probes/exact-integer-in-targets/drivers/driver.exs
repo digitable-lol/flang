@@ -31,7 +31,7 @@ total.("forged", digits.([1, 0, 511]), digits.([1]))
 IO.puts("numbers\t#{trunc(plain)}")
 
 try do
-  Rt.add(digits.([1, 0, 512]), {:num, 1.0})
+  Rt.add(digits.([1, 0, 512]), {:num, 0.5})
 rescue
   refusal -> IO.puts("refusal\t#{Exception.message(refusal)}")
 end

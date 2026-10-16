@@ -62,7 +62,7 @@ func main() {
 	total("forged", digits(1, 0, 511), digits(1))
 	plain, _ := Add(nil, Number(2), Number(3))
 	fmt.Printf("numbers\t%d\n", int64(plain.Num))
-	if _, err := Add(nil, digits(1, 0, 512), Number(1)); err != nil {
+	if _, err := Add(nil, digits(1, 0, 512), Number(0.5)); err != nil {
 		fmt.Printf("refusal\t%v\n", err)
 	}
 }

@@ -64,7 +64,7 @@ public static class Driver
         System.Console.WriteLine("numbers\t" + (long)Flang.Add(null, Value.Number(2), Value.Number(3)).Num);
         try
         {
-            Flang.Add(null, Digits(1, 0, 512), Value.Number(1));
+            Flang.Add(null, Digits(1, 0, 512), Value.Number(0.5));
         }
         catch (System.Exception refusal)
         {

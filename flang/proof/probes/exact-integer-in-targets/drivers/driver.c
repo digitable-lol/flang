@@ -97,7 +97,7 @@ int main(void) {
   if (fl_add(&ctx, fl_number(2.0), fl_number(3.0), &out, &error) == FL_OK) {
     printf("numbers\t%.0f\n", out.as.number);
   }
-  if (fl_add(&ctx, digits(&ctx, beyond_left, 3), fl_number(1.0), &out, &error) != FL_OK) {
+  if (fl_add(&ctx, digits(&ctx, beyond_left, 3), fl_number(0.5), &out, &error) != FL_OK) {
     printf("refusal\t%s\n", error.message);
   }
   fl_arena_release(&arena);

@@ -71,7 +71,7 @@ fn main() {
     if let Ok(Value::Number(plain)) = add(&ctx, number(2.0), number(3.0)) {
         println!("numbers\t{}", plain as i64);
     }
-    if let Err(refusal) = add(&ctx, digits(&[1.0, 0.0, 512.0]), number(1.0)) {
+    if let Err(refusal) = add(&ctx, digits(&[1.0, 0.0, 512.0]), number(0.5)) {
         println!("refusal\t{}", refusal.message);
     }
 }

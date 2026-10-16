@@ -58,7 +58,7 @@ public final class Driver {
     total("forged", digits(1, 0, 511), digits(1));
     System.out.println("numbers\t" + (long) Flang.add(null, Value.number(2), Value.number(3)).num);
     try {
-      Flang.add(null, digits(1, 0, 512), Value.number(1));
+      Flang.add(null, digits(1, 0, 512), Value.number(0.5));
     } catch (RuntimeException refusal) {
       System.out.println("refusal\t" + refusal.getMessage());
     }

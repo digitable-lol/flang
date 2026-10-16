@@ -22,7 +22,7 @@ total("denormal", [4194305], [0])
 total("forged", [1, 0, 511], [1])
 console.log(`numbers\t${$add(2, 3)}`)
 try {
-  $add([1, 0, 512], 1)
+  $add([1, 0, 512], 0.5)
 } catch (refusal) {
   console.log(`refusal\t${(refusal as Error).message}`)
 }

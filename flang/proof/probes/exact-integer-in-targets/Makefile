@@ -96,7 +96,7 @@ python:
 	  'total("forged", [1, 0, 511], [1])' \
 	  'print("numbers\t%d" % rt.add(None, rt.number(2), rt.number(3)).data)' \
 	  'try:' \
-	  '    rt.add(None, digits([1, 0, 512]), rt.number(1))' \
+	  '    rt.add(None, digits([1, 0, 512]), rt.number(0.5))' \
 	  'except Exception as refusal:' \
 	  '    print("refusal\t%s" % refusal)' \
 	  > "$$d/driver-python" \

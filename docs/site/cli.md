@@ -389,7 +389,6 @@ Exit codes of `emit`:
 ```bash
 $ flang emit привет.flang --target c --out вывод
 напечатано файлов 6, байт …, в вывод
-аргументы напечатанной программы по типам не проверяются: это ограничение двоичного flang, полная проверка есть в версии для Node
 проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.
 ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших
 программах он в предел шагов этого бинарника не укладывается — свяжи с ними
@@ -400,10 +399,10 @@ $ ls вывод
 Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  privet.c  privet.h
 ```
 
-The output says: 6 files written; the generated runner does not check argument
-types; the program was checked before generation; the unit tests were not run.
-The mention of a "version for Node" is outdated — there is no such version, and
-nothing checks the argument types of generated code. File names are the
+The output says: 6 files written; the program was checked before generation;
+the unit tests were not run. The generated runner checks arguments against the
+declared types the same way `flang run` does: for `−3` given to a
+`неотрицательное` parameter it answers `FLANG_TYPE`. File names are the
 module name in Latin letters («Привет» → `privet.c`).
 
 An unknown target is exit code `2`, with the list of targets:

@@ -50,13 +50,13 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Nine files in the order of their imports»
+  пример «Ten files in the order of their imports»
     ожидается [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
       ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["CategoryPaths", "CategoryPaths"]]
   [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
     ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["CategoryPaths", "CategoryPaths"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки

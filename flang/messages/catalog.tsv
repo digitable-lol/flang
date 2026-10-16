@@ -27,7 +27,6 @@ check.place-without-file	место указано строкой и столб�
 proof.verdict	{file}: {verdict} — утверждений {claims}: доказано {proved}, условно {conditional}, сетка {grid}, объявлено, не доказано {declared}, отвергнуто {refused}, нарушено {violated}; законов на сетке {laws-grid}, на веру {laws-trusted} — код возврата {code}	{file}: {verdict} — claims {claims}: proved {proved}, conditionally {conditional}, grid {grid}, declared but not proved {declared}, refused {refused}, violated {violated}; laws on a grid {laws-grid}, on trust {laws-trusted} — exit code {code}
 {verdict}	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО	VERIFIED ON ITS OWN
 {verdict}	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ	NOT PROVED — THE SUPPORT WAS NOT JUDGED
-{verdict}	НЕ ПРОВЕРЕНО — СВЕРЩИК НЕ ПРОИГРАЛ ЗАПИСЬ БЕЗ ЗАПИСЕЙ ВВЕЗЁННЫХ МОДУЛЕЙ	NOT VERIFIED — THE CHECKER DID NOT REPLAY THE RECORD WITHOUT THE RECORDS OF IMPORTED MODULES
 {verdict}	НЕ ПРОВЕРЕНО	NOT VERIFIED
 {verdict}	НЕ СОШЛОСЬ	DID NOT HOLD
 {verdict}	НЕ СОШЛОСЬ СО СВЕРЩИКОМ	THE CHECKER DID NOT AGREE

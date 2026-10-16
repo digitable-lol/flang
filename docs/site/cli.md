@@ -288,6 +288,7 @@ C compiler or Node is needed.
 ```bash
 flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-steps N]
                        [--max-depth N] [--trust] [--unproven refuse|warn|allow]
+                       [--cost]
 ```
 
 | Flag | What it does |
@@ -297,6 +298,7 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit of the program being evaluated (the binary's own limit is `--depth-limit`) |
 | `--memory-limit N` | memory limit; exit `5` at the limit |
+| `--cost` (`--цена`) | after the value, one line to the error stream: evaluator steps, the peak memory of the process in bytes and the seconds of the run — `цена прогона: шагов 13, пик памяти 13352960 байт, секунд 0.009739` |
 | `--trust` (`--на-веру`) | run even if guarantees are not proved; the proofs are not checked at all, and a line says so |
 | `--unproven WORD` (`--недоказанное`) | what to do when guarantees are not proved: `refuse` — do not run (the default), `warn` — say so and run, `allow` — the same as `--trust`. Cyrillic values: `отказ`, `предупреждение`, `разрешение` |
 

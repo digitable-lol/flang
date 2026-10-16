@@ -1675,6 +1675,9 @@ a61d4c792b44f01ec6e715f6420f1bbb|1|0|0|1|0|flang/proof/probes/strict/programs/de
 b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/probes/strict/programs/grid-without-proof.flang
 b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/probes/strict/programs/precedence.flang
 ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/honest.flang
+358a850cf63c9be805e6523f1f3c4bd1|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no.flang
+6ed9f3b3df26c560a9a63dcc2d042639|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no-with-import.flang
+8941e87345e668233fabaf1ffc7cffbe|1|1|0|0|0|flang/proof/probes/strict/programs/imported-module.flang
 // ── Набор проб ворот недоказанного (ADR-0045), снято 21 сентября 2026 ─────
 // Три программы каталога `flang/proof/probes/unproven/programs/`; вход
 // для проб, а не образцы корпуса. Приговор снят `flang check --proof --json`

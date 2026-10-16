@@ -360,9 +360,9 @@ $ flang check docs/examples/guide/flag-match-unproved.flang --proof
 что высказано и чем это несётся:
   постусловие «результат не ниже порога» функции «Не ниже порога» — сетка 2 значения (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
 …
-docs/examples/guide/flag-match-unproved.flang: ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго) — утверждений 1: доказано 0, условно 0, сетка 1, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
+docs/examples/guide/flag-match-unproved.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 1: доказано 0, условно 0, сетка 1, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
 $ echo $?
-0
+3
 ```
 
 With `если` the guarantee is proved. With `разбор` over yes and no the report
@@ -446,7 +446,7 @@ How to read the other words of the `--proof` report:
 | «доказано индукцией по «Тип»» | the prover went through every variant of the type |
 | «доказано по объявленным типам аргументов» | the prover went through the branches of `если` using the types of the arguments |
 | «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО» | every guarantee in the file is proved |
-| «ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ» | some guarantees rest on examples only, and this command did not run the examples |
+| «НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ» | some guarantees rest on examples only or on an unproved premise: code 3 |
 | «НЕ УДАЛОСЬ ДОКАЗАТЬ» | the same under `--strict`: code 3 |
 | «НЕ ПРОВЕРЕНО» | a guarantee has neither a proof nor examples |
 

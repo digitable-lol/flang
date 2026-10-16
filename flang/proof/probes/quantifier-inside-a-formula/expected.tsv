@@ -8,12 +8,12 @@ nested-exists-under-for-all-inside-conjunction.flang	proof	0	правило «р
 false-goal-under-conjunction.flang	check	0	замечаний нет
 false-goal-under-conjunction.flang	proof	3	доказано 0, сетка 1
 found-witness.flang	check	0	замечаний нет
-found-witness.flang	proof	0	утверждений 2: доказано 2
-found-witness.flang	proof	0	правило «тождество после переписки допущением»
+found-witness.flang	proof	3	утверждений 2: доказано 2
+found-witness.flang	proof	3	правило «тождество после переписки допущением»
 no-witness-fits.flang	check	0	замечаний нет
 no-witness-fits.flang	proof	3	доказано 0, сетка 1
 named-witness.flang	check	0	замечаний нет
-named-witness.flang	proof	0	утверждений 1: доказано 1
+named-witness.flang	proof	3	утверждений 1: доказано 1
 named-witness-is-wrong.flang	check	1	FLANG_PROOF_STEP
 named-witness-is-wrong.flang	check	1	свидетель «м», названный после «а именно» как ⟨0⟩, цели не сводит
 named-witness-is-wrong.flang	check	1	среди подтермов цели годен ⟨н⟩

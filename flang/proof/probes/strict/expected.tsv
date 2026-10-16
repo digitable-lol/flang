@@ -1,5 +1,5 @@
 program	keys	code	word
-false-postcondition.flang	--proof	0	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ
+false-postcondition.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
 false-postcondition.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 false-postcondition-without-examples.flang	--proof	3	НЕ ПРОВЕРЕНО
 false-postcondition-without-examples.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
@@ -7,19 +7,23 @@ honest.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 honest.flang	--proof --строго	0	ДОКАЗАНО
 no-obligations.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 no-obligations.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ
-grid-without-proof.flang	--proof	0	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ
+grid-without-proof.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
 grid-without-proof.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
 declared-not-proved.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 precedence.flang	--proof	3	НЕ ПРОВЕРЕНО
 precedence.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
-monad-with-arrow-example.flang	--proof	0	законов на сетке: 1 (значений в сетках 1
-monad-with-arrow-example.flang	--proof	0	ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ
+monad-with-arrow-example.flang	--proof	3	законов на сетке: 1 (значений в сетках 1
+monad-with-arrow-example.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
 monad-with-arrow-example.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 not-judged.flang	--proof	1	сетку строить не из чего
 not-judged.flang	--proof --строго	1	FLANG_MONAD
 refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство
 refuted.flang	--proof --строго	1	FLANG_PROPERTY: нарушено свойство
+checker-says-no.flang	--proof	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ
+checker-says-no.flang	--proof --строго	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ
+checker-says-no-with-import.flang	--proof	0	сверщик не сошёлся с записью (код 1; файлу с ввозом
+checker-says-no-with-import.flang	--proof --строго	0	ДОКАЗАНО
 honest.flang	--строго	2	осмыслен только рядом с «--proof»
 honest.flang	--быстро	4	часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0
 honest.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры

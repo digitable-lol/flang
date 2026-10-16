@@ -1,0 +1,33 @@
+name	area	stage	expected	moves
+functor-composition	functors	1	none	functoriality
+identity-functor	functors	1	none	functoriality
+inverse-is-unique	isomorphisms	1	none	unit associativity hypothesis
+isomorphisms-compose	isomorphisms	1	none	associativity hypothesis unit
+functor-preserves-isomorphism	isomorphisms	1	none	functoriality hypothesis-under-functor
+vertical-composition	transformations	1	none	associativity naturality
+squares-paste	diagrams	1	none	associativity hypothesis
+horizontal-composition	transformations	2	none	functoriality naturality-under-functor
+interchange-law	transformations	2	none	functoriality naturality-under-functor
+natural-isomorphism-inverse	transformations	2	none	naturality hypothesis unit
+isomorphism-is-mono-and-epi	isomorphisms	2	none	cancellation-goal hypothesis
+monos-compose	limits	2	none	cancellation-goal cancellation
+epis-compose	limits	2	none	duality
+mono-of-composite	limits	2	none	cancellation-goal cancellation
+terminal-is-unique	limits	2	none	universal-uniqueness isomorphism-goal
+initial-is-unique	limits	2	none	duality
+product-is-unique	limits	2	none	universal-uniqueness pairing
+product-is-commutative	limits	2	none	universal-uniqueness pairing
+product-is-associative	limits	2	none	universal-uniqueness pairing
+pullback-of-mono	limits	2	none	universal-uniqueness cancellation
+equalizer-is-mono	limits	2	none	universal-uniqueness
+opposite-is-involutive	duality	2	none	duality
+adjunction-hom-bijection	adjunctions	3	none	functoriality naturality triangle
+hom-bijection-gives-adjunction	adjunctions	3	none	defined-maps naturality
+adjunctions-compose	adjunctions	3	none	functoriality naturality triangle
+right-adjoint-preserves-terminal	adjunctions	3	none	universal-uniqueness transpose
+left-adjoint-preserves-initial	adjunctions	3	none	duality transpose
+right-adjoint-preserves-products	adjunctions	3	none	universal-uniqueness transpose pairing
+monad-from-adjunction	monads	3	none	functoriality naturality triangle
+yoneda-preorder	yoneda	4	none	preorder
+yoneda	yoneda	4	none	elements-of-sets naturality
+yoneda-embedding	yoneda	4	none	elements-of-sets naturality

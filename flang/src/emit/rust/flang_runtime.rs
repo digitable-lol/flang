@@ -443,6 +443,12 @@ fn same_number(left: f64, right: f64) -> bool {
 /// Рекурсия здесь по данным, а не по программе: её глубина ограничена
 /// вложенностью значения, а не длиной вычисления.
 pub fn equal(left: &Value, right: &Value) -> bool {
+    if let Some(promoted) = exact_neighbour(left, right) {
+        return equal(&promoted, right);
+    }
+    if let Some(promoted) = exact_neighbour(right, left) {
+        return equal(left, &promoted);
+    }
     if is_scalar(left) || is_scalar(right) {
         return match (left, right) {
             (Value::Number(a), Value::Number(b)) => same_number(*a, *b),
@@ -1187,6 +1193,19 @@ fn nat_text(digits: &[f64]) -> String {
     format!("[{}]", parts.join(", "))
 }
 
+fn natural_number(value: f64) -> bool {
+    (0.0..=9007199254740991.0).contains(&value) && value == value.floor()
+}
+
+fn exact_neighbour(value: &Value, other: &Value) -> Option<Value> {
+    match value {
+        Value::Number(whole) if natural_number(*whole) && exact_digits(other) => {
+            Some(nat_value(&exact_small_digits(*whole + 0.0)))
+        }
+        _ => None,
+    }
+}
+
 fn exact_fraction(value: &Value) -> bool {
     match value {
         Value::List(items) => {
@@ -1222,6 +1241,12 @@ fn fraction_text(top: &[f64], bottom: &[f64]) -> String {
 }
 
 fn exact_order(left: &Value, right: &Value) -> Option<std::cmp::Ordering> {
+    if let Some(promoted) = exact_neighbour(left, right) {
+        return exact_order(&promoted, right);
+    }
+    if let Some(promoted) = exact_neighbour(right, left) {
+        return exact_order(left, &promoted);
+    }
     if exact_fraction(left) && exact_fraction(right) {
         let (a, b) = fraction_parts(left);
         let (c, d) = fraction_parts(right);
@@ -1234,6 +1259,8 @@ fn exact_order(left: &Value, right: &Value) -> Option<std::cmp::Ordering> {
 }
 
 pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    let left = exact_neighbour(&left, &right).unwrap_or(left);
+    let right = exact_neighbour(&right, &left).unwrap_or(right);
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1247,6 +1274,8 @@ pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn sub(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    let left = exact_neighbour(&left, &right).unwrap_or(left);
+    let right = exact_neighbour(&right, &left).unwrap_or(right);
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1284,6 +1313,8 @@ pub fn sub(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn mul(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    let left = exact_neighbour(&left, &right).unwrap_or(left);
+    let right = exact_neighbour(&right, &left).unwrap_or(right);
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1317,6 +1348,8 @@ pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    let left = exact_neighbour(&left, &right).unwrap_or(left);
+    let right = exact_neighbour(&right, &left).unwrap_or(right);
     if exact_digits(&left) && exact_digits(&right) {
         let a = exact_canon(&left);
         let b = exact_canon(&right);
@@ -1331,6 +1364,46 @@ pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     }
     let (a, b) = arithmetic("mod", &left, &right)?;
     Ok(number(a % b))
+}
+
+pub fn b_convert_to_number(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    if matches!(value, Value::Number(_)) {
+        return Ok(value);
+    }
+    if !exact_digits(&value) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«перевод в число»: аргумент должен быть натуральным или числом, получено {}", type_name(&value)),
+        ));
+    }
+    let digits = exact_canon(&value);
+    if digits.len() > 3 || (digits.len() == 3 && digits[2] >= 512.0) {
+        return Err(fail(
+            CODE_PROPERTY,
+            "«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится".to_string(),
+        ));
+    }
+    Ok(number(digits.iter().rev().fold(0.0, |whole, digit| whole * EXACT_BASE + digit)))
+}
+
+pub fn b_convert_to_natural(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    if exact_digits(&value) {
+        return Ok(nat_value(&exact_canon(&value)));
+    }
+    match value {
+        Value::Number(whole) if natural_number(whole) => Ok(nat_value(&exact_small_digits(whole + 0.0))),
+        Value::Number(_) => Err(fail(
+            CODE_PROPERTY,
+            "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991".to_string(),
+        )),
+        _ => Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«перевод в натуральное»: аргумент должен быть натуральным или числом, получено {}",
+                type_name(&value)
+            ),
+        )),
+    }
 }
 
 pub fn b_integer_part(_ctx: &Ctx, value: Value) -> Result<Value, Error> {

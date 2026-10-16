@@ -1,7 +1,4 @@
 name	floor	ceiling	integrality
 неотрицательное	0	9007199254740991	integer
 нат	0	9007199254740991	integer
-натуральное	0	9007199254740991	integer
 nat	0	9007199254740991	integer
-naturo	0	9007199254740991	integer
-自然数	0	9007199254740991	integer

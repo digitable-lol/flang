@@ -3802,8 +3802,8 @@
     дано naturals равно []
     дано plain равно да
     ожидается "«r»: «struct rect»"
-  пусть natural равно ((не plain) и притом («Holds» от parameter и naturals))
-  пусть number равно («Chosen» от [(«When» от plain и "число"), («When» от natural и "нат")] и "целое")
+  пусть bounded равно ((не plain) и притом («Holds» от parameter и naturals))
+  пусть number равно («Chosen» от [(«When» от plain и "число"), («When» от bounded и "нат")] и "целое")
   пусть typed равно (если kind начинается с "struct " то («Parameter type» от kind) иначе number)
   соединить ["«", parameter, "»: ", typed] по ""
 

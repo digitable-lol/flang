@@ -331,6 +331,7 @@ func sameNumber(left, right float64) bool {
 // Рекурсия здесь по данным, а не по программе: её глубина ограничена
 // вложенностью значения, а не длиной вычисления.
 func Equal(left, right Value) bool {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if IsScalar(left) || IsScalar(right) {
 		if !IsScalar(left) || !IsScalar(right) || left.Tag != right.Tag {
 			return false
@@ -797,6 +798,22 @@ func exactText(whole *big.Int) string {
 	return "[" + strings.Join(parts, ", ") + "]"
 }
 
+func naturalNumber(value float64) bool {
+	return value >= 0 && value <= 9007199254740991 && value == math.Floor(value)
+}
+
+func exactNeighbour(value, other Value) Value {
+	if value.Tag != TagNumber || !naturalNumber(value.Num) || !exactDigits(other) {
+		return value
+	}
+	digits := exactSmallDigits(value.Num + 0)
+	items := make([]Value, len(digits))
+	for index, digit := range digits {
+		items[index] = Number(digit)
+	}
+	return List(items)
+}
+
 func exactFraction(value Value) bool {
 	return value.Tag == TagList && len(value.List) == 2 && exactDigits(value.List[0]) && exactDigits(value.List[1])
 }
@@ -824,6 +841,7 @@ func bigMul(left, right *big.Int) *big.Int {
 }
 
 func exactOrder(left, right Value) (int, bool) {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -836,6 +854,7 @@ func exactOrder(left, right Value) (int, bool) {
 }
 
 func Add(ctx *Ctx, left, right Value) (Value, error) {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -852,6 +871,7 @@ func Add(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Sub(ctx *Ctx, left, right Value) (Value, error) {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -880,6 +900,7 @@ func Sub(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Mul(ctx *Ctx, left, right Value) (Value, error) {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -913,6 +934,7 @@ func Div(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Mod(ctx *Ctx, left, right Value) (Value, error) {
+	left, right = exactNeighbour(left, right), exactNeighbour(right, left)
 	if exactDigits(left) && exactDigits(right) {
 		a := exactCanon(left)
 		b := exactCanon(right)
@@ -927,6 +949,36 @@ func Mod(ctx *Ctx, left, right Value) (Value, error) {
 		return Nothing(), err
 	}
 	return Number(math.Mod(a, b)), nil
+}
+
+func BConvertToNumber(ctx *Ctx, value Value) (Value, error) {
+	if value.Tag == TagNumber {
+		return value, nil
+	}
+	if !exactDigits(value) {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«перевод в число»: аргумент должен быть натуральным или числом, получено %s", TypeName(value))
+	}
+	whole := exactCanon(value)
+	if whole.Cmp(big.NewInt(9007199254740991)) > 0 {
+		return Nothing(), Fail(CodeProperty,
+			"«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится")
+	}
+	return Number(float64(whole.Int64())), nil
+}
+
+func BConvertToNatural(ctx *Ctx, value Value) (Value, error) {
+	if exactDigits(value) {
+		return exactValue(exactCanon(value)), nil
+	}
+	if value.Tag != TagNumber {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«перевод в натуральное»: аргумент должен быть натуральным или числом, получено %s", TypeName(value))
+	}
+	if !naturalNumber(value.Num) {
+		return Nothing(), Fail(CodeProperty, "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991")
+	}
+	return exactNeighbour(value, List([]Value{})), nil
 }
 
 func BIntegerPart(ctx *Ctx, value Value) (Value, error) {

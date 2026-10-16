@@ -837,7 +837,7 @@
 
 тотальная функция «Помощники форм JS»
   возвращает список «Пара имён»
-  обеспечивает «помощников форм ровно двадцать три» (длина результат) равен 23
+  обеспечивает «помощников форм ровно двадцать пять» (длина результат) равен 25
   [
     (запись «Пара имён» с «ключ» равным "длина" и «значение» равным "$b_dlina"),
     (запись «Пара имён» с «ключ» равным "символ" и «значение» равным "$b_simvol"),
@@ -854,6 +854,8 @@
     (запись «Пара имён» с «ключ» равным "к строке" и «значение» равным "$b_k_stroke"),
     (запись «Пара имён» с «ключ» равным "хеш256" и «значение» равным "$b_hesh256"),
     (запись «Пара имён» с «ключ» равным "целая часть" и «значение» равным "$b_integer_part"),
+    (запись «Пара имён» с «ключ» равным "перевод в число" и «значение» равным "$b_convert_to_number"),
+    (запись «Пара имён» с «ключ» равным "перевод в натуральное" и «значение» равным "$b_convert_to_natural"),
     (запись «Пара имён» с «ключ» равным "пусто" и «значение» равным "$b_pusto"),
     (запись «Пара имён» с «ключ» равным "голова" и «значение» равным "$b_golova"),
     (запись «Пара имён» с «ключ» равным "хвост" и «значение» равным "$b_hvost"),
@@ -883,6 +885,8 @@
     (запись «Метка» с «ключ» равным "к строке" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "хеш256" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "целая часть" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "перевод в число" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "перевод в натуральное" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "пусто" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "голова" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "хвост" и «значение» равным 1),
@@ -1094,6 +1098,8 @@
   обеспечивает «рантайм equal несёт function $equal» результат содержит "function $equal("
   соединить [
     "function $equal(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  if ($isScalar(left) || $isScalar(right)) {",
     "    if (!$isScalar(left) || !$isScalar(right)) return false",
     "    return Object.is(left, right)",
@@ -1382,11 +1388,66 @@
     "}"
   ] по "\n"
 
+тотальная функция «Текст exactNeighbour JS»
+  возвращает строка
+  обеспечивает «рантайм exactNeighbour несёт function $exactNeighbour» результат содержит "function $exactNeighbour("
+  соединить [
+    "function $exactNeighbour(value, other) {",
+    "  const whole = typeof value === \"number\" && Number.isInteger(value)",
+    "  if (whole && value >= 0 && value <= 9007199254740991 && $exactDigits(other)) {",
+    "    return $exactSmallDigits(value + 0)",
+    "  }",
+    "  return value",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_convert_to_number JS»
+  возвращает строка
+  обеспечивает «рантайм b_convert_to_number несёт свою функцию» результат содержит "function $b_convert_to_number("
+  соединить [
+    "function $b_convert_to_number(value) {",
+    "  if (typeof value === \"number\") {",
+    "    return value",
+    "  }",
+    "  if (!$exactDigits(value)) {",
+    "    const word = \"«перевод в число»: аргумент должен быть натуральным или числом, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  const whole = $exactCanon(value)",
+    "  if (whole > 9007199254740991n) {",
+    "    const word = \"«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится\"",
+    "    $fail(\"FLANG_PROPERTY\", word)",
+    "  }",
+    "  return Number(whole)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_convert_to_natural JS»
+  возвращает строка
+  обеспечивает «рантайм b_convert_to_natural несёт свою функцию» результат содержит "function $b_convert_to_natural("
+  соединить [
+    "function $b_convert_to_natural(value) {",
+    "  if ($exactDigits(value)) {",
+    "    return $exactOf($exactCanon(value))",
+    "  }",
+    "  if (typeof value !== \"number\") {",
+    "    const word = \"«перевод в натуральное»: аргумент должен быть натуральным или числом, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  if (!(Number.isInteger(value) && value >= 0 && value <= 9007199254740991)) {",
+    "    $fail(\"FLANG_PROPERTY\", \"«перевод в натуральное»: нужно целое число от 0 до 9007199254740991\")",
+    "  }",
+    "  return $exactSmallDigits(value + 0)",
+    "}"
+  ] по "\n"
+
 тотальная функция «Текст exactOrder JS»
   возвращает строка
   обеспечивает «рантайм exactOrder несёт function $exactOrder» результат содержит "function $exactOrder("
   соединить [
     "function $exactOrder(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  let first = null",
     "  let second = null",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
@@ -1411,6 +1472,8 @@
   соединить [
     "/** @returns {any} */",
     "function $add(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1430,6 +1493,8 @@
   соединить [
     "/** @returns {any} */",
     "function $sub(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1461,6 +1526,8 @@
   соединить [
     "/** @returns {any} */",
     "function $mul(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1500,6 +1567,8 @@
   соединить [
     "/** @returns {any} */",
     "function $mod(left, right) {",
+    "  left = $exactNeighbour(left, right)",
+    "  right = $exactNeighbour(right, left)",
     "  if ($exactDigits(left) && $exactDigits(right)) {",
     "    const a = $exactCanon(left)",
     "    const b = $exactCanon(right)",
@@ -2555,26 +2624,28 @@
 тотальная функция «Нужда exactOrder JS»
   возвращает список строки
   [
-    "$exactFraction", "$fractionParts", "$exactDigits", "$exactCanon"
+    "$exactFraction", "$fractionParts", "$exactDigits", "$exactCanon", "$exactNeighbour"
   ]
 
 тотальная функция «Нужда add JS»
   возвращает список строки
   [
-    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf",
+    "$exactNeighbour"
   ]
 
 тотальная функция «Нужда sub JS»
   возвращает список строки
   [
     "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText", "$exactDigits",
-    "$exactCanon", "$exactOf", "$exactText"
+    "$exactCanon", "$exactOf", "$exactText", "$exactNeighbour"
   ]
 
 тотальная функция «Нужда mul JS»
   возвращает список строки
   [
-    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf",
+    "$exactNeighbour"
   ]
 
 тотальная функция «Нужда div JS»
@@ -2586,7 +2657,13 @@
 тотальная функция «Нужда mod JS»
   возвращает список строки
   [
-    "$nums", "$fail", "$exactDigits", "$exactCanon", "$exactOf", "$exactText"
+    "$nums", "$fail", "$exactDigits", "$exactCanon", "$exactOf", "$exactText", "$exactNeighbour"
+  ]
+
+тотальная функция «Нужда b_convert_to_natural JS»
+  возвращает список строки
+  [
+    "$fail", "$typeName", "$exactDigits", "$exactCanon", "$exactOf", "$exactSmallDigits"
   ]
 
 тотальная функция «Нужда b_integer_part JS»
@@ -2603,7 +2680,7 @@
 
 тотальная функция «Рантайм JS»
   возвращает список «Кусок рантайма JS»
-  обеспечивает «кусков рантайма ровно сто шесть» (длина результат) равен 106
+  обеспечивает «кусков рантайма ровно сто девять» (длина результат) равен 109
   [
     (запись «Кусок рантайма JS» с «имя» равным "$FlangError" и «нужно» равным пустой список и «исходник» равным «Текст FlangError JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$fail" и «нужно» равным ["$FlangError"] и «исходник» равным «Текст fail JS»),
@@ -2618,7 +2695,8 @@
     (запись «Кусок рантайма JS» с «имя» равным "$chainTail" и «нужно» равным пустой список и «исходник» равным «Текст chainTail JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$typeName" и «нужно» равным ["$isList", "$isVariant", "$isRecord"] и «исходник» равным «Текст typeName JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$describe" и «нужно» равным ["$isList", "$isVariant", "$isRecord"] и «исходник» равным «Текст describe JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$equal" и «нужно» равным ["$isScalar", "$isList", "$isVariant", "$isRecord", "$recordsEqual"] и «исходник» равным «Текст equal JS»),
+    (запись «Кусок рантайма JS» с «имя» равным "$equal" и «нужно» равным ["$isScalar", "$isList", "$isVariant",
+      "$isRecord", "$recordsEqual", "$exactNeighbour"] и «исходник» равным «Текст equal JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$recordsEqual" и «нужно» равным ["$equal"] и «исходник» равным «Текст recordsEqual JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$field" и «нужно» равным ["$fail", "$isVariant", "$isRecord", "$typeName"] и «исходник» равным «Текст field JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$cond" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст cond JS»),
@@ -2641,6 +2719,7 @@
     («Собрать кусок JS» от "$fractionParts" и ["$exactCanon"] и «Текст fractionParts JS»),
     («Собрать кусок JS» от "$fractionValue" и ["$exactOf"] и «Текст fractionValue JS»),
     («Собрать кусок JS» от "$fractionText" и ["$exactText"] и «Текст fractionText JS»),
+    («Собрать кусок JS» от "$exactNeighbour" и ["$exactDigits", "$exactSmallDigits"] и «Текст exactNeighbour JS»),
     («Собрать кусок JS» от "$exactOrder" и («Нужда exactOrder JS») и «Текст exactOrder JS»),
     («Собрать кусок JS» от "$add" и («Нужда add JS») и «Текст add JS»),
     («Собрать кусок JS» от "$sub" и («Нужда sub JS») и «Текст sub JS»),
@@ -2674,6 +2753,10 @@
     (запись «Кусок рантайма JS» с «имя» равным "$SHA256_K" и «нужно» равным пустой список и «исходник» равным «Текст SHA256_K JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$utf8Bytes" и «нужно» равным пустой список и «исходник» равным «Текст utf8Bytes JS»),
     («Собрать кусок JS» от "$b_integer_part" и («Нужда b_integer_part JS») и «Текст b_integer_part JS»),
+    («Собрать кусок JS» от "$b_convert_to_number" и ["$fail", "$typeName", "$exactDigits", "$exactCanon"] и
+      «Текст b_convert_to_number JS»),
+    («Собрать кусок JS» от "$b_convert_to_natural" и («Нужда b_convert_to_natural JS») и
+      «Текст b_convert_to_natural JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_hesh256" и «нужно» равным ["$expectString", "$utf8Bytes", "$SHA256_K"] и «исходник» равным «Текст b_hesh256 JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_soderzhit JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString", "$isTorn", "$isBoundary"] и «исходник» равным «Текст b_nachinaetsya_s JS»),
@@ -2993,8 +3076,8 @@
 
 тотальная функция «Числовые имена JS»
   возвращает список строки
-  обеспечивает «числовых имён ровно десять» (длина результат) равен 10
-  ["неотрицательное", "нат", "натуральное", "nat", "naturo", "自然数", "целое", "integer", "entjero", "整数"]
+  обеспечивает «числовых имён ровно семь» (длина результат) равен 7
+  ["неотрицательное", "нат", "nat", "целое", "integer", "entjero", "整数"]
 
 функция «Пометка вида типа JS»
   принимает «тип»: «Значение», «общее»: «Общее JS»

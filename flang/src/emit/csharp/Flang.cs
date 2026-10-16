@@ -580,6 +580,24 @@ public static class Flang
         return text.Append(']').ToString();
     }
 
+    private static bool NaturalNumber(double value) =>
+        value >= 0.0 && value <= 9007199254740991.0 && value == System.Math.Floor(value);
+
+    private static Value ExactNeighbour(Value value, Value other)
+    {
+        if (value.Tag != Value.TagNumber || !NaturalNumber(value.Num) || !ExactDigits(other))
+        {
+            return value;
+        }
+        double[] digits = ExactSmallDigits(value.Num + 0.0);
+        Value[] items = new Value[digits.Length];
+        for (int index = 0; index < digits.Length; index++)
+        {
+            items[index] = Value.Number(digits[index]);
+        }
+        return Value.List(items);
+    }
+
     private static bool ExactFraction(Value value)
     {
         if (value.Tag != Value.TagList)
@@ -610,6 +628,9 @@ public static class Flang
 
     private static int? ExactOrder(Value left, Value right)
     {
+        Value pairedLeft = ExactNeighbour(left, right);
+        right = ExactNeighbour(right, left);
+        left = pairedLeft;
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -625,6 +646,9 @@ public static class Flang
 
     public static Value Add(Ctx ctx, Value left, Value right)
     {
+        Value pairedLeft = ExactNeighbour(left, right);
+        right = ExactNeighbour(right, left);
+        left = pairedLeft;
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -641,6 +665,9 @@ public static class Flang
 
     public static Value Sub(Ctx ctx, Value left, Value right)
     {
+        Value pairedLeft = ExactNeighbour(left, right);
+        right = ExactNeighbour(right, left);
+        left = pairedLeft;
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -675,6 +702,9 @@ public static class Flang
 
     public static Value Mul(Ctx ctx, Value left, Value right)
     {
+        Value pairedLeft = ExactNeighbour(left, right);
+        right = ExactNeighbour(right, left);
+        left = pairedLeft;
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -709,6 +739,9 @@ public static class Flang
 
     public static Value Mod(Ctx ctx, Value left, Value right)
     {
+        Value pairedLeft = ExactNeighbour(left, right);
+        right = ExactNeighbour(right, left);
+        left = pairedLeft;
         if (ExactDigits(left) && ExactDigits(right))
         {
             BigInteger a = ExactCanon(left);
@@ -723,6 +756,48 @@ public static class Flang
         }
         Arithmetic("mod", left, right);
         return Value.Number(left.Num % right.Num);
+    }
+
+    public static Value BConvertToNumber(Ctx ctx, Value value)
+    {
+        if (value.Tag == Value.TagNumber)
+        {
+            return value;
+        }
+        if (!ExactDigits(value))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«перевод в число»: аргумент должен быть натуральным или числом, получено " + Value.TypeName(value));
+        }
+        BigInteger whole = ExactCanon(value);
+        if (whole > new BigInteger(9007199254740991L))
+        {
+            throw Fail(
+                FlangError.CodeProperty,
+                "«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится");
+        }
+        return Value.Number((double)whole);
+    }
+
+    public static Value BConvertToNatural(Ctx ctx, Value value)
+    {
+        if (ExactDigits(value))
+        {
+            return ExactValue(ExactCanon(value));
+        }
+        if (value.Tag != Value.TagNumber)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«перевод в натуральное»: аргумент должен быть натуральным или числом, получено "
+                    + Value.TypeName(value));
+        }
+        if (!NaturalNumber(value.Num))
+        {
+            throw Fail(FlangError.CodeProperty, "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991");
+        }
+        return ExactNeighbour(value, Value.List([]));
     }
 
     public static Value BIntegerPart(Ctx ctx, Value value)
@@ -880,10 +955,12 @@ public static class Flang
     }
 
     /// <summary>Равенство значений как выражение языка.</summary>
-    public static Value Eq(Value left, Value right) => Value.Flag(Value.Equal(left, right));
+    public static Value Eq(Value left, Value right) =>
+        Value.Flag(Value.Equal(ExactNeighbour(left, right), ExactNeighbour(right, left)));
 
     /// <summary>Неравенство значений как выражение языка.</summary>
-    public static Value Neq(Value left, Value right) => Value.Flag(!Value.Equal(left, right));
+    public static Value Neq(Value left, Value right) =>
+        Value.Flag(!Value.Equal(ExactNeighbour(left, right), ExactNeighbour(right, left)));
 
     /* ───────────────────────── проверки аргументов ───────────────────────── */
 

@@ -558,6 +558,22 @@ public final class Flang {
     return out.append("]").toString();
   }
 
+  private static boolean naturalNumber(double value) {
+    return value >= 0.0 && value <= 9007199254740991.0 && value == Math.floor(value);
+  }
+
+  private static Value exactNeighbour(Value value, Value other) {
+    if (value.tag != Value.TAG_NUMBER || !naturalNumber(value.num) || !exactDigits(other)) {
+      return value;
+    }
+    double[] digits = exactSmallDigits(value.num + 0.0);
+    Value[] items = new Value[digits.length];
+    for (int index = 0; index < digits.length; index++) {
+      items[index] = Value.number(digits[index]);
+    }
+    return Value.list(items);
+  }
+
   private static boolean exactFraction(Value value) {
     if (value.tag != Value.TAG_LIST) {
       return false;
@@ -584,6 +600,9 @@ public final class Flang {
   }
 
   private static Integer exactOrder(Value left, Value right) {
+    Value pairedLeft = exactNeighbour(left, right);
+    right = exactNeighbour(right, left);
+    left = pairedLeft;
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -596,6 +615,9 @@ public final class Flang {
   }
 
   public static Value add(Ctx ctx, Value left, Value right) {
+    Value pairedLeft = exactNeighbour(left, right);
+    right = exactNeighbour(right, left);
+    left = pairedLeft;
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -609,6 +631,9 @@ public final class Flang {
   }
 
   public static Value sub(Ctx ctx, Value left, Value right) {
+    Value pairedLeft = exactNeighbour(left, right);
+    right = exactNeighbour(right, left);
+    left = pairedLeft;
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -638,6 +663,9 @@ public final class Flang {
   }
 
   public static Value mul(Ctx ctx, Value left, Value right) {
+    Value pairedLeft = exactNeighbour(left, right);
+    right = exactNeighbour(right, left);
+    left = pairedLeft;
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -666,6 +694,9 @@ public final class Flang {
   }
 
   public static Value mod(Ctx ctx, Value left, Value right) {
+    Value pairedLeft = exactNeighbour(left, right);
+    right = exactNeighbour(right, left);
+    left = pairedLeft;
     if (exactDigits(left) && exactDigits(right)) {
       java.math.BigInteger a = exactCanon(left);
       java.math.BigInteger b = exactCanon(right);
@@ -678,6 +709,40 @@ public final class Flang {
     }
     arithmetic("mod", left, right);
     return Value.number(left.num % right.num);
+  }
+
+  public static Value bConvertToNumber(Ctx ctx, Value value) {
+    if (value.tag == Value.TAG_NUMBER) {
+      return value;
+    }
+    if (!exactDigits(value)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«перевод в число»: аргумент должен быть натуральным или числом, получено " + Value.typeName(value));
+    }
+    java.math.BigInteger whole = exactCanon(value);
+    if (whole.compareTo(java.math.BigInteger.valueOf(9007199254740991L)) > 0) {
+      throw fail(
+          FlangError.CODE_PROPERTY,
+          "«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится");
+    }
+    return Value.number(whole.doubleValue());
+  }
+
+  public static Value bConvertToNatural(Ctx ctx, Value value) {
+    if (exactDigits(value)) {
+      return exactValue(exactCanon(value));
+    }
+    if (value.tag != Value.TAG_NUMBER) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«перевод в натуральное»: аргумент должен быть натуральным или числом, получено "
+              + Value.typeName(value));
+    }
+    if (!naturalNumber(value.num)) {
+      throw fail(FlangError.CODE_PROPERTY, "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991");
+    }
+    return exactNeighbour(value, Value.list(new Value[0]));
   }
 
   public static Value bIntegerPart(Ctx ctx, Value value) {
@@ -823,12 +888,12 @@ public final class Flang {
 
   /** Равенство значений как выражение языка. */
   public static Value eq(Value left, Value right) {
-    return Value.flag(Value.equal(left, right));
+    return Value.flag(Value.equal(exactNeighbour(left, right), exactNeighbour(right, left)));
   }
 
   /** Неравенство значений как выражение языка. */
   public static Value neq(Value left, Value right) {
-    return Value.flag(!Value.equal(left, right));
+    return Value.flag(!Value.equal(exactNeighbour(left, right), exactNeighbour(right, left)));
   }
 
   /* ───────────────────────── проверки аргументов ───────────────────────── */

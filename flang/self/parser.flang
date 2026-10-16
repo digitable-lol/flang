@@ -8333,7 +8333,8 @@
   [
     "litTrue", "litFalse", "litNull", "empty", "emptyList", "listOf", "length", "head", "tail", "toNumber",
     "toNumberOrFail", "toText", "char", "item", "substring", "join", "split", "add", "prepend", "variant",
-    "record", "field", "result", "if", "match", "map", "filter", "fold", "let", "hash256", "integerPart"
+    "record", "field", "result", "if", "match", "map", "filter", "fold", "let", "hash256", "integerPart",
+    "convertToNumber", "convertToNatural"
   ]
 
 тотальная функция «Имя одноместной формы дальше»
@@ -8348,6 +8349,12 @@
   пример «Хеш»
     дано «идентификатор» равно "hash256"
     ожидается "хеш256"
+  пример «Перевод в число»
+    дано «идентификатор» равно "convertToNumber"
+    ожидается "перевод в число"
+  пример «Перевод в натуральное»
+    дано «идентификатор» равно "convertToNatural"
+    ожидается "перевод в натуральное"
   пример «Не одноместная форма»
     дано «идентификатор» равно "split"
     ожидается ""
@@ -8358,5 +8365,9 @@
       то "хеш256"
     случай "integerPart"
       то "целая часть"
+    случай "convertToNumber"
+      то "перевод в число"
+    случай "convertToNatural"
+      то "перевод в натуральное"
     случай любое
       то ""

@@ -426,8 +426,8 @@
   принимает text: строка
   возвращает список строки
   пример «The names inside the literal of the naming function»
-    дано text равно "тотальная функция «Названо натуральным»\n  принимает имя: строка\n  \"|нат|натуральное|\" содержит имя\n"
-    ожидается ["нат", "натуральное"]
+    дано text равно "тотальная функция «Названо натуральным»\n  принимает имя: строка\n  \"|нат|nat|\" содержит имя\n"
+    ожидается ["нат", "nat"]
   пусть scan равно (свёртка (разделить text по "\n") начиная с (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным (пустой список)) как scan и line → «Chosen» от [(«When» от ((длина (scan.«found»)) больше 0) и scan), («When» от (line равен "тотальная функция «Названо натуральным»") и (запись «Scan» с «pending» равным "да" и «left» равным 0 и «found» равным (scan.«found»))), («When» от ((не (пусто (scan.«pending»))) и притом (line содержит "\"|")) и (запись «Scan» с «pending» равным "" и «left» равным 0 и «found» равным [line]))] и scan)
   отфильтровать (разделить («Cell» от 1 и (разделить («Cell» от 2 и (разделить («Cell» от 1 и (scan.«found»)) по "\"|")) по "|\"")) по "|") где name → не (пусто name)
 
@@ -746,7 +746,9 @@
     («Unbuilt» от "2" и (если пусто anchor то "в ведомости не нашлось опоры вида «proof-kernel.flang:N «Имя»»" иначе "опора в копии ведомости не сдвинулась") и (не (shifted равен table)) и («Completeness» от («Forged» от inputs и shifted и kernel и segments и native и (inputs.«sum»)) и нет) и "опора правила указывает не на ту строку ядра"),
     («Probe lines» от "3" и "имя правила в ведомости дважды" и («Consistency» от («Forged» от inputs и (соединить [table, («Beginning with» от "Н5\t" и («Lines» от table)), "\n"] по "") и kernel и segments и native и (inputs.«sum»)))),
     («Unbuilt» от "4" и "потолок в копии ядра не изменился" и (не (lowered равен kernel)) и («Consistency» от («Forged» от inputs и table и lowered и segments и native и (inputs.«sum»))) и "точный потолок ядра изменён на единицу"),
-    («Probe lines» от "9" и "имя отрезка убрано из таблицы, ядро его знает" и («Segment check» от («Forged» от inputs и table и kernel и (соединить (отобразить (отфильтровать («Lines» от segments) где line → не (line начинается с "натуральное\t")) как line → соединить [line, "\n"] по "") по "") и native и (inputs.«sum»)))),
+    («Probe lines» от "9" и "имя отрезка убрано из таблицы, ядро его знает" и («Segment check» от («Forged» от inputs и
+      table и kernel и (соединить (отобразить (отфильтровать («Lines» от segments) где line → не (line начинается с
+      "nat\t")) как line → соединить [line, "\n"] по "") по "") и native и (inputs.«sum»)))),
     (если пусто (отфильтровать («Size check» от («Forged» от inputs и table и kernel и segments и quiet и (inputs.«sum»))) где line → line начинается с "КРАСНО") то ["СОШЛОСЬ  подлог 10а (комментарии сверх потолка — не код, сторож зелен) — код 0"] иначе ["ПРОВАЛ   подлог 10а (комментарии сверх потолка) — сторож покраснел на комментариях: мерит не код"]),
     («Probe lines» от "10" и (соединить ["checker.c на строку кода выше потолка (", (к строке («Code lines» от grown)), " при ", («Ratchet» от (inputs.«ratchets») и "checker-code-lines"), ")"] по "") и («Size check» от («Forged» от inputs и table и kernel и segments и grown и (inputs.«sum»)))),
     («Probe lines» от "11" и "в ПРИМИТИВЫ[] сверщика дописано имя" и («Size check» от («Forged» от inputs и table и kernel и segments и widened и (inputs.«sum»)))),

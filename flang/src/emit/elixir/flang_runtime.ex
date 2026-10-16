@@ -1137,6 +1137,21 @@ defmodule Flang.Rt do
 
   defp exact_text(whole), do: "[" <> Enum.map_join(exact_digits_of(whole), ", ", &Integer.to_string/1) <> "]"
 
+  defp natural_number?(value) when is_number(value),
+    do: value >= 0 and value <= 9_007_199_254_740_991 and value == Float.floor(value * 1.0)
+
+  defp natural_number?(_), do: false
+
+  defp exact_neighbour({:num, value} = number, other) do
+    if natural_number?(value) and exact_digits?(other) do
+      list(Enum.map(exact_small_digits(num_add(value, 0.0)), &{:num, &1}))
+    else
+      number
+    end
+  end
+
+  defp exact_neighbour(value, _other), do: value
+
   defp exact_fraction?({:list, _, _} = value) do
     case items(value) do
       [top, bottom] -> exact_digits?(top) and exact_digits?(bottom)
@@ -1161,6 +1176,8 @@ defmodule Flang.Rt do
   defp fraction_text({top, bottom}), do: exact_text(top) <> " над " <> exact_text(bottom)
 
   defp exact_order(left, right) do
+    {left, right} = {exact_neighbour(left, right), exact_neighbour(right, left)}
+
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
         {a, b} = fraction_parts(left)
@@ -1191,6 +1208,8 @@ defmodule Flang.Rt do
   end
 
   def add(left, right) do
+    {left, right} = {exact_neighbour(left, right), exact_neighbour(right, left)}
+
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
         {a, b} = fraction_parts(left)
@@ -1207,6 +1226,8 @@ defmodule Flang.Rt do
   end
 
   def sub(left, right) do
+    {left, right} = {exact_neighbour(left, right), exact_neighbour(right, left)}
+
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
         {a, b} = fraction_parts(left)
@@ -1243,6 +1264,8 @@ defmodule Flang.Rt do
   end
 
   def mul(left, right) do
+    {left, right} = {exact_neighbour(left, right), exact_neighbour(right, left)}
+
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
         {a, b} = fraction_parts(left)
@@ -1279,6 +1302,8 @@ defmodule Flang.Rt do
   end
 
   def mod(left, right) do
+    {left, right} = {exact_neighbour(left, right), exact_neighbour(right, left)}
+
     if exact_digits?(left) and exact_digits?(right) do
       a = exact_canon(left)
       b = exact_canon(right)
@@ -1295,6 +1320,47 @@ defmodule Flang.Rt do
       {a, b, _} = arithmetic("mod", left, right)
       {:num, num_rem(a, b)}
     end
+  end
+
+  def b_convert_to_number({:num, _} = value), do: value
+
+  def b_convert_to_number(value) do
+    if not exact_digits?(value) do
+      raise fail(
+              @code_builtin_args,
+              "«перевод в число»: аргумент должен быть натуральным или числом, получено " <> type_name(value)
+            )
+    end
+
+    whole = exact_canon(value)
+
+    if whole > 9_007_199_254_740_991 do
+      raise fail(
+              @code_property,
+              "«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится"
+            )
+    end
+
+    {:num, whole * 1.0}
+  end
+
+  def b_convert_to_natural({:num, whole} = value) do
+    if not natural_number?(whole) do
+      raise fail(@code_property, "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991")
+    end
+
+    exact_neighbour(value, list([]))
+  end
+
+  def b_convert_to_natural(value) do
+    if not exact_digits?(value) do
+      raise fail(
+              @code_builtin_args,
+              "«перевод в натуральное»: аргумент должен быть натуральным или числом, получено " <> type_name(value)
+            )
+    end
+
+    exact_value(exact_canon(value))
   end
 
   def b_integer_part(value) do
@@ -1345,10 +1411,10 @@ defmodule Flang.Rt do
   end
 
   @doc "Равенство значений как выражение языка."
-  def eq(left, right), do: {:flag, equal(left, right)}
+  def eq(left, right), do: {:flag, equal(exact_neighbour(left, right), exact_neighbour(right, left))}
 
   @doc "Неравенство значений как выражение языка."
-  def neq(left, right), do: {:flag, not equal(left, right)}
+  def neq(left, right), do: {:flag, not equal(exact_neighbour(left, right), exact_neighbour(right, left))}
 
   # ───────────────────────── проверки аргументов ─────────────────────────
 

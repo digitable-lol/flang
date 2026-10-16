@@ -370,6 +370,7 @@ def equal(left, right):
     Рекурсия здесь по данным, а не по программе: её глубина ограничена
     вложенностью значения, а не длиной вычисления.
     """
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if is_scalar(left) or is_scalar(right):
         if not is_scalar(left) or not is_scalar(right) or left.tag != right.tag:
             return False
@@ -868,6 +869,18 @@ def _exact_text(whole):
     return "[" + ", ".join(digits) + "]"
 
 
+def _natural_number(value):
+    if math.isnan(value) or math.isinf(value):
+        return False
+    return 0 <= value <= 9007199254740991 and value == math.floor(value)
+
+
+def _exact_neighbour(value, other):
+    if value.tag == TAG_NUMBER and _natural_number(value.data) and _exact_digits(other):
+        return list_of([number(digit) for digit in _exact_small_digits(value.data + 0.0)])
+    return value
+
+
 def _exact_fraction(value):
     if value.tag != TAG_LIST:
         return False
@@ -898,6 +911,7 @@ def _fraction_order(left, right):
 
 
 def _exact_order(left, right):
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if _exact_fraction(left) and _exact_fraction(right):
         return _fraction_order(left, right)
     if _exact_digits(left) and _exact_digits(right):
@@ -907,6 +921,7 @@ def _exact_order(left, right):
 
 def add(ctx, left, right):
     """«плюс»."""
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -919,6 +934,7 @@ def add(ctx, left, right):
 
 def sub(ctx, left, right):
     """«минус»."""
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -945,6 +961,7 @@ def sub(ctx, left, right):
 
 def mul(ctx, left, right):
     """«умножить на»."""
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -1004,6 +1021,7 @@ def remainder_raw(a, b):
 
 def mod(ctx, left, right):
     """«остаток от» как двуместная операция."""
+    left, right = _exact_neighbour(left, right), _exact_neighbour(right, left)
     if _exact_digits(left) and _exact_digits(right):
         a = _exact_canon(left)
         b = _exact_canon(right)
@@ -1239,6 +1257,35 @@ def b_integer_part(ctx, value):
         )
     top, bottom = _fraction_parts(value)
     return _exact_value(top // bottom if bottom else 0)
+
+
+def b_convert_to_number(ctx, value):
+    if value.tag == TAG_NUMBER:
+        return value
+    if not _exact_digits(value):
+        raise fail(
+            CODE_BUILTIN_ARGS,
+            "«перевод в число»: аргумент должен быть натуральным или числом, получено " + type_name(value),
+        )
+    whole = _exact_canon(value)
+    if whole > 9007199254740991:
+        raise fail(
+            CODE_PROPERTY, "«перевод в число»: натуральное больше 9007199254740991 в число без потери не переводится"
+        )
+    return number(float(whole))
+
+
+def b_convert_to_natural(ctx, value):
+    if _exact_digits(value):
+        return _exact_value(_exact_canon(value))
+    if value.tag != TAG_NUMBER:
+        raise fail(
+            CODE_BUILTIN_ARGS,
+            "«перевод в натуральное»: аргумент должен быть натуральным или числом, получено " + type_name(value),
+        )
+    if not _natural_number(value.data):
+        raise fail(CODE_PROPERTY, "«перевод в натуральное»: нужно целое число от 0 до 9007199254740991")
+    return list_of([number(digit) for digit in _exact_small_digits(value.data + 0.0)])
 
 
 def b_hash256(ctx, text):

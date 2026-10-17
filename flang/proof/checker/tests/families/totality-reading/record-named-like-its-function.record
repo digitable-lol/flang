@@ -1,0 +1,14 @@
+запись доказательства 1
+исходник flang/proof/checker/tests/families/totality-reading/record-named-like-its-function.flang
+строк 17
+знаков 377
+отпечаток 133078675 644769976
+ядро 2
+утверждений 0
+отпечаток256 05de27a02a72aac5a81e2d359e8d0300fa971ffc317078e0b73f4d3bc52d5ab2
+тотальностей 1
+тотальность «Язык» строка 10
+  вид composition
+  самовызова нет
+  конец тотальности
+конец записи

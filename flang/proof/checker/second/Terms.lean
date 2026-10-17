@@ -12,6 +12,33 @@ def «обрезать» (s : String) : String :=
 def «одноЧисло» (a b : Float) : Bool :=
   (a == b && (a.toBits >>> 63) == (b.toBits >>> 63)) || (a.isNaN && b.isNaN)
 
+def «безСтрок» (t : String) : String := Id.run do
+  let a := t.toList.toArray
+  let n := a.size
+  let mut r : Array Char := #[]
+  let mut i := 0
+  for _ in [0:n + 1] do
+    if i ≥ n then break
+    let c := a.getD i ' '
+    if c = '«' then
+      let j := match (List.range' i (n - i)).find? (fun k => a.getD k ' ' = '»') with
+        | some k => k + 1
+        | none => n
+      r := r ++ a.extract i j
+      i := j
+    else if c = '"' || c = '\'' then
+      let mut j := i + 1
+      for _ in [0:n] do
+        if j ≥ n || a.getD j ' ' = c then break
+        if a.getD j ' ' = '\\' && j + 1 < n then j := j + 1
+        j := j + 1
+      r := r.push c |>.push c
+      i := if j < n then j + 1 else n
+    else
+      r := r.push c
+      i := i + 1
+  return String.ofList r.toList
+
 def «заменить» (t a b : String) : String := if a = "" then t else b.intercalate (t.splitOn a)
 
 def «сжать» (t : String) : String := " ".intercalate ((t.splitOn " ").filter (· ≠ ""))

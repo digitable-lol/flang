@@ -422,7 +422,7 @@ no rounding in the language, neither explicit nor silent. Each type in full:
 | --- | --- | --- |
 | a counter, an index, a count, a length | `nat` | zero and up, integral; a descent by a constant makes totality free |
 | a difference, a balance, an offset, a temperature | `integer` | minus allowed, fractions not |
-| money: units and cents | `hundredths` | an integer count of minor units; `19.99` is written `1999` |
+| money: units and cents | `money` | an exact count of hundredths without a ceiling; `19.99 money`, rounding only by an explicit form |
 | rates, shares, exchange rates | `thousandths` | the same with three decimal places |
 | weight, distance, path cost | `weight` | non-negative, where `+∞` is a value rather than an edge |
 | everything else, and any division | `number` | IEEE-754 double, no guarantees |
@@ -1931,18 +1931,16 @@ listed here so you know where they belong.
 | `embedding`, `intersection` | categories: a part of an object and the common part of two | [Categories and functors](../spec-cat.html) |
 | `property` | a law of a single operation: commutativity, monotonicity and three more | [Categories and functors](../spec-cat.html) |
 | `plan` | side effects (file, network, processes): declared by the same three lines as a process | [Categories and functors](../spec-cat.html), section "Эффекты и HTTP" |
-| `date`, `money` | older keywords: `date` behaves as `string`, `money` as `number` | [Glossary](../glossary.html) |
-| `has` — the line `given «Object» has «field» equal to value` | an older theorem form; rejected next to proof steps | below |
-| `utility`, `rule`, `nested object`, `in data`, `find where`, `by morphism` | older keywords: still parsed, but a program cannot be built from them | [Glossary](../glossary.html) |
+| `nested object` | an older keyword: still parsed, but a program cannot be built from it | [Glossary](../glossary.html) |
 
-The older theorem form cannot be mixed with the current one: the line
-`given «Object» has «field»` next to `claim` is an error.
+The words `utility` and `rule` are not in the language: a declaration that
+starts with them is refused with a hint of what to write instead. The older
+theorem form — the lines `given «Object» has «field» equal to value`,
+`in data … find where …`, `by morphism …` — is gone as well:
 
 ```
-FLANG_PARSE в файле mix.flang, строка 12, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
+FLANG_PARSE в файле old.flang, строка 12, столбец 18: старая форма теоремы снята: строка «дано «Объект» имеет «поле» равное …» больше не разбирается; теорема пишется «теорема «Имя»», строками «дано …», «утверждаем …» и «следовательно доказано»
 ```
-
-`in data`, `by morphism` and `therefore «conclusion»` behave the same way.
 
 ## What the language does not have
 

@@ -182,6 +182,11 @@ Names like `«Помощник»`, `«Утилиты»`, `«Общее»` are no
 be: linking merges declarations into one program, and **a name collision is the
 error `FLANG_DUPLICATE_NAME`, not shadowing** (`flang/self/link.flang`). A name has
 to be recognisable across the whole assembled program, not only within its file.
+`flang check` of one file looks at the other `.flang` files of its directory that
+it does not import and prints a note for each function or type declared there under
+the same name: `замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем
+модуле pairs-a.flang, строка 3`. The note does not change the exit code: two
+modules that nobody imports together are legal.
 
 **When it is otherwise.** Latin names go outward, into HTTP: the paths `/books`,
 `/loans`, `/returns` and the parameters `author`, `shelf`. They are read by a

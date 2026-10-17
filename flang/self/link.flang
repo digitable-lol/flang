@@ -128,7 +128,7 @@
 
 тотальная функция «Ключи входного файла»
   возвращает список строки
-  ["processes", "supervisors", "runs", "plans", "requirements"]
+  ["processes", "supervisors", "runs", "plans", "requirements", "categoryTheorems"]
 
 тотальная функция «Звено цепочки морфизмов»
   возвращает строка

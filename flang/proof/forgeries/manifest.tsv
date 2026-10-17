@@ -40,4 +40,4 @@ flang/proof/probes/syllogism/assumptions/programs/postcondition-with-a-hypothesi
 flang/proof/checker/tests/programs/audit-4791/case-split-under-a-binder.flang	flang/proof/checker/tests/records/corpus/forgery-case-split-captures-a-bound-name.record	record-lies
 flang/proof/examples/forgery-unfold-without-arguments.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-without-arguments.record	record-lies
 flang/proof/examples/forgery-unfold-inside-a-list.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-inside-a-list.record	record-lies
-flang/proof/examples/forgery-unfold-of-a-whole-equation.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-of-a-whole-equation.record	record-lies
+flang/proof/examples/forgery-unfold-of-a-whole-comparison.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-of-a-whole-comparison.record	record-lies

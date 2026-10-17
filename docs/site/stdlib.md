@@ -2,7 +2,7 @@
 
 The standard library is written in flang and is checked the same way as your
 program: types, termination, unit tests (`пример`) and postconditions. It has
-<!-- СНЯТО 2026-10-04 файлов flang/stdlib/*.flang = 55 --> 55 modules, one file
+<!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --> 64 modules, one file
 each in `flang/stdlib/`. This page lists every module and every function in it.
 
 ## Which module for which task

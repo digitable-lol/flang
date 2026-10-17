@@ -1,0 +1,490 @@
+модуль «Unicode conformance»
+  использует «Unicode tables» из "../../flang/stdlib/unicode-tables.flang"
+  использует «Unicode normalization» из "../../flang/stdlib/unicode-normalization.flang"
+  использует «Unicode graphemes» из "../../flang/stdlib/unicode-graphemes.flang"
+  использует «Unicode case folding» из "../../flang/stdlib/unicode-case.flang"
+  использует «Text decoding» из "../../flang/stdlib/text-decoding.flang"
+
+объект «Tally»
+  «lines»: число
+  «checks»: число
+  «failures»: число
+  «first failure»: строка
+
+тотальная функция «Empty tally»
+  возвращает «Tally»
+  пример «Nothing counted»
+    ожидается запись «Tally» с «lines» равным 0 и «checks» равным 0 и «failures» равным 0 и «first failure» равным ""
+  запись «Tally» с «lines» равным 0 и «checks» равным 0 и «failures» равным 0 и «first failure» равным ""
+
+тотальная функция «Hex points»
+  принимает source: строка
+  возвращает список числа
+  пример «Two points»
+    дано source равно " 0041 0301 "
+    ожидается [65, 769]
+  (отобразить (отфильтровать (разделить source по " ") где token → не (пусто token)) как token →
+      «Шестнадцатеричное число» от token)
+
+тотальная функция «Column»
+  принимает columns: список строки, position: число
+  возвращает строка
+  пример «Second column as text»
+    дано columns равно ["0041", "00C0 0301"]
+    дано position равно 2
+    ожидается "À́"
+  пример «Missing column»
+    дано columns равно ["0041"]
+    дано position равно 3
+    ожидается ""
+  если position больше (длина columns)
+    то ""
+    иначе «Текст из точек» от («Hex points» от (элемент position в columns))
+
+тотальная функция «Count check»
+  принимает tally: «Tally», good: признак, row: строка
+  возвращает «Tally»
+  пример «A failure is remembered once»
+    дано tally равно (запись «Tally» с «lines» равным 1 и «checks» равным 0 и «failures» равным 0 и «first failure»
+        равным "")
+    дано good равно нет
+    дано row равно "0041;"
+    ожидается (запись «Tally» с «lines» равным 1 и «checks» равным 1 и «failures» равным 1 и «first failure» равным
+        "0041;")
+  пусть earliest равно (если good или (не (пусто tally.«first failure»)) то tally.«first failure» иначе row)
+  (запись «Tally» с «lines» равным tally.«lines» и «checks» равным (tally.«checks» плюс 1) и «failures» равным
+      (tally.«failures» плюс (если good то 0 иначе 1)) и «first failure» равным earliest)
+
+тотальная функция «Normalization checks»
+  принимает columns: список строки
+  возвращает список признака
+  пример «Composed letter»
+    дано columns равно ["00C0", "00C0", "0041 0300", "00C0", "0041 0300"]
+    ожидается [да, да, да, да, да, да, да, да, да, да, да, да, да, да, да, да, да, да, да, да]
+  пусть c1 равно «Column» от columns и 1
+  пусть c2 равно «Column» от columns и 2
+  пусть c3 равно «Column» от columns и 3
+  пусть c4 равно «Column» от columns и 4
+  пусть c5 равно «Column» от columns и 5
+  [c2 равен («NFC» от c1), c2 равен («NFC» от c2), c2 равен («NFC» от c3), c4 равен («NFC» от c4), c4 равен («NFC» от
+    c5),
+   c3 равен («NFD» от c1), c3 равен («NFD» от c2), c3 равен («NFD» от c3), c5 равен («NFD» от c4), c5 равен («NFD» от
+     c5),
+   c4 равен («NFKC» от c1), c4 равен («NFKC» от c2), c4 равен («NFKC» от c3), c4 равен («NFKC» от c4), c4 равен («NFKC»
+     от c5),
+   c5 равен («NFKD» от c1), c5 равен («NFKD» от c2), c5 равен («NFKD» от c3), c5 равен («NFKD» от c4), c5 равен («NFKD»
+     от c5)]
+
+тотальная функция «Is test line»
+  принимает row: строка
+  возвращает признак
+  пример «Data»
+    дано row равно "0041;0041;0041;0041;0041; # A"
+    ожидается да
+  пример «Part heading»
+    дано row равно "@Part1 # Character by character test"
+    ожидается нет
+  пример «Comment»
+    дано row равно "# NormalizationTest"
+    ожидается нет
+  (не (пусто row)) и притом (не (row начинается с "#")) и притом (не (row начинается с "@"))
+
+тотальная функция «Normalization line step»
+  принимает tally: «Tally», row: строка
+  возвращает «Tally»
+  пример «One line is twenty checks»
+    дано tally равно (запись «Tally» с «lines» равным 0 и «checks» равным 0 и «failures» равным 0 и «first failure»
+        равным "")
+    дано row равно "1E0A;1E0A;0044 0307;1E0A;0044 0307; # D WITH DOT ABOVE"
+    ожидается запись «Tally» с «lines» равным 1 и «checks» равным 20 и «failures» равным 0 и «first failure» равным ""
+  пусть columns равно разделить («Before comment» от row) по ";"
+  пусть counted равно (запись «Tally» с «lines» равным (tally.«lines» плюс 1) и «checks» равным tally.«checks» и
+      «failures» равным tally.«failures» и «first failure» равным tally.«first failure»)
+  свёртка («Normalization checks» от columns) начиная с counted как done и good → «Count check» от done и good и row
+
+тотальная функция «Before comment»
+  принимает row: строка
+  возвращает строка
+  пример «Comment cut»
+    дано row равно "0041; # A"
+    ожидается "0041; "
+  разбор (разделить row по "#")
+    случай пусто
+      то ""
+    случай голова g и хвост rest
+      то g
+
+тотальная функция «Normalization tally»
+  принимает source: строка
+  возвращает «Tally»
+  пример «Two lines»
+    дано source равно "@Part0\n1E0A;1E0A;0044 0307;1E0A;0044 0307;\n00C5;00C5;0041 030A;00C5;0041 030A;\n"
+    ожидается запись «Tally» с «lines» равным 2 и «checks» равным 40 и «failures» равным 0 и «first failure» равным ""
+  (свёртка (отфильтровать (разделить source по "\n") где row → «Is test line» от row) начиная с («Empty tally») как
+      tally и row → «Normalization line step» от tally и row)
+
+тотальная функция «Part one points»
+  принимает source: строка
+  возвращает список числа
+  пример «Only part one, first column»
+    дано source равно """
+      @Part0
+      1E0A;1E0A;0044 0307;1E0A;0044 0307;
+      @Part1
+      00A0;00A0;00A0;0020;0020;
+      @Part2
+      0041;0041;0041;0041;0041;
+      """
+    ожидается [160]
+  пусть parts равно разделить source по "@Part"
+  пусть one равно отфильтровать parts где part → part начинается с "1"
+  (свёртка one начиная с пустой список как points и part → свёртка (отфильтровать (разделить part по "\n") где row →
+      («Is test line» от row) и притом (row содержит ";")) начиная с points как all и row → добавить
+      («Шестнадцатеричное число» от («Trimmed column» от row)) к all)
+
+тотальная функция «Trimmed column»
+  принимает row: строка
+  возвращает строка
+  пример «First column»
+    дано row равно "00A0;00A0;"
+    ожидается "00A0"
+  разбор (разделить row по ";")
+    случай пусто
+      то ""
+    случай голова g и хвост rest
+      то g
+
+тотальная функция «Listed step»
+  принимает listed: список числа, point: число, found: число, step: число
+  возвращает число
+  пример «Step»
+    дано listed равно [5, 9]
+    дано point равно 9
+    дано found равно 0
+    дано step равно 2
+    ожидается 2
+  пусть ahead равно found плюс step
+  если (ahead не больше (длина listed)) и притом ((элемент ahead в listed) не больше point)
+    то ahead
+    иначе found
+
+тотальная функция «Is listed»
+  принимает listed: список числа, point: число
+  возвращает признак
+  пример «Listed»
+    дано listed равно [5, 9, 12]
+    дано point равно 9
+    ожидается да
+  пример «Not listed»
+    дано listed равно [5, 9, 12]
+    дано point равно 10
+    ожидается нет
+  пусть found равно (свёртка [65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1]
+      начиная с 0 как found и step → «Listed step» от listed и point и found и step)
+  (found больше 0) и притом ((элемент found в listed) равен point)
+
+тотальная функция «Point is stable»
+  принимает point: число
+  возвращает признак
+  пример «Latin letter»
+    дано point равно 65
+    ожидается да
+  пусть source равно символ по коду point
+  ((source равен («NFC» от source)) и притом (source равен («NFD» от source)) и притом (source равен («NFKC» от source))
+      и притом (source равен («NFKD» от source)))
+
+тотальная функция «Sixty four»
+  возвращает список числа
+  обеспечивает «sixty four numbers» (длина результат) равен 64
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+      32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
+      60, 61, 62, 63]
+
+тотальная функция «Block points»
+  принимает block: число
+  возвращает список числа
+  обеспечивает «a block is 4096 points» (длина результат) равен 4096
+  (свёртка («Sixty four») начиная с пустой список как points и high → свёртка («Sixty four») начиная с points как all и
+      low → добавить ((block умножить на 4096) плюс (high умножить на 64) плюс low) к all)
+
+тотальная функция «Unlisted tally»
+  принимает listed: список числа, block: число, tally: «Tally»
+  возвращает «Tally»
+  пусть points равно (отфильтровать («Block points» от block) где point → не («Is listed» от listed и point) и притом
+      ((point меньше 55296) или (point больше 57343)))
+  свёртка points начиная с tally как done и point → «Count point» от done и point
+
+тотальная функция «Unlisted all»
+  принимает source: строка
+  возвращает «Tally»
+  пусть listed равно «Part one points» от source
+  свёртка («Block numbers») начиная с («Empty tally») как tally и block → «Unlisted tally» от listed и block и tally
+
+тотальная функция «Block numbers»
+  возвращает список числа
+  обеспечивает «blocks cover the code space» (длина результат) равен 272
+  (свёртка [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] начиная с пустой список как all и high → свёртка
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] начиная с all как more и low → добавить ((high умножить на
+      16) плюс low) к more)
+
+тотальная функция «Count point»
+  принимает tally: «Tally», point: число
+  возвращает «Tally»
+  пример «Stable point»
+    дано tally равно (запись «Tally» с «lines» равным 0 и «checks» равным 0 и «failures» равным 0 и «first failure»
+        равным "")
+    дано point равно 65
+    ожидается запись «Tally» с «lines» равным 1 и «checks» равным 1 и «failures» равным 0 и «first failure» равным ""
+  пусть counted равно (запись «Tally» с «lines» равным (tally.«lines» плюс 1) и «checks» равным tally.«checks» и
+      «failures» равным tally.«failures» и «first failure» равным tally.«first failure»)
+  «Count check» от counted и («Point is stable» от point) и (к строке point)
+
+объект «Cluster state»
+  «done»: список строки
+  «current»: строка
+
+тотальная функция «Spaces for tabs»
+  принимает source: строка
+  возвращает строка
+  пример «Tab becomes space»
+    дано source равно "a\tb"
+    ожидается "a b"
+  соединить (разделить source по "\t") по " "
+
+тотальная функция «Cluster step»
+  принимает progress: «Cluster state», token: строка
+  возвращает «Cluster state»
+  пример «Break closes the cluster»
+    дано progress равно запись «Cluster state» с «done» равным пустой список и «current» равным "A"
+    дано token равно "÷"
+    ожидается запись «Cluster state» с «done» равным ["A"] и «current» равным ""
+  пример «Point joins the cluster»
+    дано progress равно запись «Cluster state» с «done» равным пустой список и «current» равным "A"
+    дано token равно "0301"
+    ожидается запись «Cluster state» с «done» равным пустой список и «current» равным "A\u0301"
+  разбор token
+    случай "÷"
+      то (запись «Cluster state» с «done» равным (если пусто progress.«current» то progress.«done» иначе добавить
+          progress.«current» к progress.«done») и «current» равным "")
+    случай "×"
+      то progress
+    случай любое
+      то (запись «Cluster state» с «done» равным progress.«done» и «current» равным (соединить progress.«current» с
+          (символ по коду («Шестнадцатеричное число» от token))))
+
+тотальная функция «Expected clusters»
+  принимает row: строка
+  возвращает список строки
+  пример «CR LF is one cluster»
+    дано row равно "÷ 000D × 000A ÷ 0041 ÷\t#  comment"
+    ожидается ["\r\n", "A"]
+  пусть tokens равно (отфильтровать (разделить («Spaces for tabs» от («Before comment» от row)) по " ") где token → не
+      (пусто token))
+  ((свёртка tokens начиная с (запись «Cluster state» с «done» равным пустой список и «current» равным "") как progress и
+      token → «Cluster step» от progress и token).«done»)
+
+тотальная функция «Grapheme line step»
+  принимает tally: «Tally», row: строка
+  возвращает «Tally»
+  пример «Flags pair»
+    дано tally равно (запись «Tally» с «lines» равным 0 и «checks» равным 0 и «failures» равным 0 и «first failure»
+        равным "")
+    дано row равно "÷ 1F1E6 × 1F1E8 ÷ 1F1E6 ÷\t# flags"
+    ожидается запись «Tally» с «lines» равным 1 и «checks» равным 1 и «failures» равным 0 и «first failure» равным ""
+  пусть awaited равно «Expected clusters» от row
+  пусть counted равно (запись «Tally» с «lines» равным (tally.«lines» плюс 1) и «checks» равным tally.«checks» и
+      «failures» равным tally.«failures» и «first failure» равным tally.«first failure»)
+  «Count check» от counted и ((«Графемы» от (соединить awaited по "")) равен awaited) и row
+
+тотальная функция «Grapheme tally»
+  принимает source: строка
+  возвращает «Tally»
+  пример «Two lines»
+    дано source равно "# heading\n÷ 0020 ÷ 0020 ÷\t# x\n÷ 0065 × 0301 ÷\t# y\n"
+    ожидается запись «Tally» с «lines» равным 2 и «checks» равным 2 и «failures» равным 0 и «first failure» равным ""
+  (свёртка (отфильтровать (разделить source по "\n") где row → «Is test line» от row) начиная с («Empty tally») как
+      tally и row → «Grapheme line step» от tally и row)
+
+тотальная функция «Tally text»
+  принимает name: строка, tally: «Tally»
+  возвращает строка
+  пример «Clean»
+    дано name равно "graphemes"
+    дано tally равно (запись «Tally» с «lines» равным 2 и «checks» равным 2 и «failures» равным 0 и «first failure»
+        равным "")
+    ожидается "graphemes: lines 2, checks 2, failures 0"
+  пример «With a failure»
+    дано name равно "graphemes"
+    дано tally равно (запись «Tally» с «lines» равным 2 и «checks» равным 2 и «failures» равным 1 и «first failure»
+        равным "÷ 0020 ÷")
+    ожидается "graphemes: lines 2, checks 2, failures 1, first: ÷ 0020 ÷"
+  пусть heading равно (соединить [name, ": lines ", (к строке tally.«lines»), ", checks ", (к строке tally.«checks»),
+      ", failures ", (к строке tally.«failures»)] по "")
+  если tally.«failures» равен 0
+    то heading
+    иначе соединить [heading, ", first: ", tally.«first failure»] по ""
+
+тотальная функция «Normalization report»
+  принимает source: строка
+  возвращает строка
+  «Tally text» от "normalization" и («Normalization tally» от source)
+
+тотальная функция «Unlisted report»
+  принимает source: строка
+  возвращает строка
+  «Tally text» от "points outside part 1" и («Unlisted all» от source)
+
+тотальная функция «Law checks»
+  принимает source: строка
+  возвращает список признака
+  пример «Decomposed e acute»
+    дано source равно "e\u0301"
+    ожидается [да, да, да, да, да, да, да, да, да, да]
+  пусть nfc равно «NFC» от source
+  пусть nfd равно «NFD» от source
+  пусть folded равно «Свернуть регистр» от source
+  [(«NFC» от nfc) равен nfc, («NFD» от nfd) равен nfd, («NFKC» от («NFKC» от source)) равен («NFKC» от source),
+   («NFKD» от («NFKD» от source)) равен («NFKD» от source), («NFC» от nfd) равен nfc, («NFD» от nfc) равен nfd,
+   (соединить («Графемы» от source) по "") равен source, («Длина в графемах» от source) не больше (длина source),
+   «Равны без учёта регистра» от source и nfd, («Свернуть регистр» от folded) равен folded]
+
+тотальная функция «Law tally»
+  принимает source: строка
+  возвращает «Tally»
+  пример «One line, five columns, ten laws each»
+    дано source равно "1E0A;1E0A;0044 0307;1E0A;0044 0307;\n"
+    ожидается запись «Tally» с «lines» равным 5 и «checks» равным 50 и «failures» равным 0 и «first failure» равным ""
+  пусть columns равно (свёртка (отфильтровать (разделить source по "\n") где row → («Is test line» от row) и притом (row
+      содержит ";")) начиная с пустой список как all и row → «Join columns» от all и (разделить («Before comment» от
+      row) по ";"))
+  свёртка columns начиная с («Empty tally») как tally и column → «Law column step» от tally и column
+
+тотальная функция «Join columns»
+  принимает all: список строки, columns: список строки
+  возвращает список строки
+  пример «Five columns kept»
+    дано all равно пустой список
+    дано columns равно ["0041", "0041", "0041", "0041", "0041", " "]
+    ожидается ["0041", "0041", "0041", "0041", "0041"]
+  (свёртка (отфильтровать columns где column → не (пусто («Hex points» от column))) начиная с all как more и column →
+      добавить column к more)
+
+тотальная функция «Law column step»
+  принимает tally: «Tally», column: строка
+  возвращает «Tally»
+  пусть source равно «Текст из точек» от («Hex points» от column)
+  пусть counted равно (запись «Tally» с «lines» равным (tally.«lines» плюс 1) и «checks» равным tally.«checks» и
+      «failures» равным tally.«failures» и «first failure» равным tally.«first failure»)
+  свёртка («Law checks» от source) начиная с counted как done и good → «Count check» от done и good и column
+
+тотальная функция «Law report»
+  принимает source: строка
+  возвращает строка
+  «Tally text» от "laws on the test strings" и («Law tally» от source)
+
+тотальная функция «Grapheme report»
+  принимает source: строка
+  возвращает строка
+  «Tally text» от "graphemes" и («Grapheme tally» от source)
+
+тотальная функция «Hex word»
+  принимает point: число
+  возвращает строка
+  пример «Four places at least»
+    дано point равно 233
+    ожидается "00E9"
+  пример «Five places»
+    дано point равно 128512
+    ожидается "1F600"
+  пример «Six places»
+    дано point равно 1048576
+    ожидается "100000"
+  пусть full равно ((свёртка [1, 2, 3, 4, 5, 6] начиная с (запись «Hex digits» с «rest» равным point и «text» равным "")
+      как progress и place → «Hex digit step» от progress).«text»)
+  разбор («Первое годное значение» от [(«Правило числа при» от (point меньше 65536) и 3), («Правило числа при» от (point
+      меньше 1048576) и 2)] и 1)
+    случай 3
+      то подстрока full с 3 по 6
+    случай 2
+      то подстрока full с 2 по 6
+    случай любое
+      то full
+
+объект «Hex digits»
+  «rest»: число
+  «text»: строка
+
+тотальная функция «Hex digit step»
+  принимает progress: «Hex digits»
+  возвращает «Hex digits»
+  пример «Lowest digit»
+    дано progress равно запись «Hex digits» с «rest» равным 31 и «text» равным ""
+    ожидается запись «Hex digits» с «rest» равным 1 и «text» равным "F"
+  пусть digit равно progress.«rest» остаток от 16
+  (запись «Hex digits» с «rest» равным ((progress.«rest» минус digit) делить на 16) и «text» равным (соединить (символ
+      (digit плюс 1) в "0123456789ABCDEF") с progress.«text»))
+
+тотальная функция «Hex line»
+  принимает source: строка
+  возвращает строка
+  пример «Two points»
+    дано source равно "e\u0301"
+    ожидается "0065 0301"
+  соединить (отобразить («Точки текста» от source) как point → «Hex word» от point) по " "
+
+тотальная функция «Reference line»
+  принимает row: строка
+  возвращает строка
+  пример «Decomposed e acute»
+    дано row равно "0065 0301"
+    ожидается "00E9;0065 0301;00E9;0065 0301;0065 0301;1"
+  пусть source равно «Текст из точек» от («Hex points» от row)
+  (соединить [(«Hex line» от («NFC» от source)), («Hex line» от («NFD» от source)), («Hex line» от («NFKC» от source)),
+      («Hex line» от («NFKD» от source)), («Hex line» от («Свернуть регистр» от source)), (к строке («Длина в графемах»
+      от source))] по ";")
+
+тотальная функция «Reference lines»
+  принимает source: строка
+  возвращает строка
+  пример «Two lines»
+    дано source равно "0041\n0065 0301\n"
+    ожидается "0041;0041;0041;0041;0061;1\n00E9;0065 0301;00E9;0065 0301;0065 0301;1\n"
+  (соединить (отобразить (отфильтровать (разделить source по "\n") где row → не (пусто row)) как row → соединить
+      [(«Reference line» от row), "\n"] по "") по "")
+
+тотальная функция «Decoded line»
+  принимает row: строка
+  возвращает строка
+  пример «Good UTF-8»
+    дано row равно "UTF-8 208 156"
+    ожидается "ok 041C"
+  пример «Bad UTF-8»
+    дано row равно "UTF-8 192 128"
+    ожидается "fail"
+  пусть tokens равно отфильтровать (разделить row по " ") где token → не (пусто token)
+  разбор tokens
+    случай пусто
+      то "fail"
+    случай голова scheme и хвост octets
+      то «Decoded text» от («Раскодировать из» от scheme и (отобразить octets как token → к числу token))
+
+тотальная функция «Decoded text»
+  принимает verdict: «Итог раскодирования»
+  возвращает строка
+  пример «Empty success»
+    дано verdict равно вариант «Раскодировано» с текст равным ""
+    ожидается "ok "
+  разбор verdict
+    случай вариант «Раскодировано» с текст как source
+      то соединить ["ok ", «Hex line» от source] по ""
+    случай любое
+      то "fail"
+
+тотальная функция «Decoded lines»
+  принимает source: строка
+  возвращает строка
+  пример «Two lines»
+    дано source равно "UTF-8 65\nKOI8-R 237\n"
+    ожидается "ok 0041\nok 041C\n"
+  (соединить (отобразить (отфильтровать (разделить source по "\n") где row → не (пусто row)) как row → соединить
+      [(«Decoded line» от row), "\n"] по "") по "")

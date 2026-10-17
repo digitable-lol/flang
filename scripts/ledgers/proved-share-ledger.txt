@@ -1060,6 +1060,10 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
+0379164c233ebd09b61809d13dd00d24|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/first.flang
+9fd19a46c88644d82bc3c0a4963d7cee|2|2|0|0|0|flang/proof/probes/same-name-functions/programs/second.flang
+c71d287657835bb809e97a91f3b5d6d6|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/source.flang
+40a70f70f2a59082656bb5039c866771|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/user.flang
 26333c891deb6f08d1c5952cb671832b|1|1|0|0|0|flang/proof/probes/parse-and-import/programs/parse-error-imported.flang
 ccf79296c7ca4b9e14030c7619367fd2|0|0|0|0|1|flang/proof/probes/message-language/programs/precondition-call.flang
 f576ef59fb727973057323258bee048c|1|1|0|0|0|flang/proof/probes/message-language/programs/checked.flang
@@ -1360,7 +1364,7 @@ e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 cf285bfaf06251404d184ecee764f85f|24|10|10|4|0|flang/self/iso.flang
 b25da330b06be21a87c8a500d8a24ff5|43|12|30|1|0|flang/self/law-oracle.flang
 fb537024bd9a6899533d6a3233e3b092|101|97|4|0|0|flang/self/lexer.flang
-ef419036ed7ae00578750c7972e9c62f|6|×|×|×|0|flang/self/link.flang
+1c308cb36fbd9ec1d949484e1250710a|7|×|×|×|0|flang/self/link.flang
 7bc86c81be652752a5964593865681ae|224|96|13|115|0|flang/self/lsp.flang
 b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 8b54bf00afa4ab0bf7959bfa73175e82|117|62|49|6|0|flang/self/monad-expand.flang

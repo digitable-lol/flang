@@ -1,0 +1,19 @@
+module «English statements»
+
+total function «Double»
+  accepts n: nat
+  returns number
+  ensures «doubling stays non-negative» result is at least 0
+  example «two»
+    given n equals 2
+    expected 4
+  n plus n
+
+proposition «length is never negative»
+  for all items: list of number
+  claim (length items) is at least 0
+
+proposition «a sum of naturals is non-negative»
+  for all a: nat
+  for all b: nat
+  claim (a plus b) is at least 0

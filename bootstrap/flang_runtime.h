@@ -937,8 +937,24 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
 
 /* ───────────────────────────── операции языка ───────────────────────────── */
 
-fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name,
-                       fl_value *out, fl_error *error);
+fl_status fl_field_search(fl_ctx *ctx, fl_value target, const char *name,
+                          fl_value *out, fl_error *error);
+static inline fl_status fl_field_get(fl_ctx *ctx, fl_value target,
+                                     const char *name, fl_value *out,
+                                     fl_error *error) {
+  if (target.tag == FL_RECORD) {
+    const fl_field *fields = target.as.record->fields;
+    const size_t count = target.as.record->count;
+    size_t index = 0;
+    for (index = 0; index < count; index += 1) {
+      if (fields[index].name == name) {
+        *out = fields[index].value;
+        return FL_OK;
+      }
+    }
+  }
+  return fl_field_search(ctx, target, name, out, error);
+}
 fl_status fl_variant_field(fl_ctx *ctx, fl_value target, const char *name,
                            fl_value *out, fl_error *error);
 fl_status fl_cond(fl_ctx *ctx, fl_value value, bool *out, fl_error *error);

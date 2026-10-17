@@ -90,11 +90,7 @@ docs/tasks/1419-cyrillic-file-names-outside-proof-become-english.md	walk.sh	ил
 docs/tasks/1941-five-heavy-proof-checks-have-no-measured-run.md	ярлыки.flang	история: таблица коротких команд снята 30 сентября 2026 (задача 1416, ADR-0049), команды записаны в .flangrc; задача называет дерево своего дня
 docs/README.ru.md	.ru.md	обозначение расширения/суффикса-конвенции, не имя файла
 docs/adr/0051-the-proof-kernel-remembers-pure-calls-within-one-run.md	flang_memo.c	гипотетический файл в разборе решения: рядом сказано, что он «попал бы в сборку семени только печатью» — файла в дереве нет и не было
-docs/site/cli.md	привет.flang	учебное имя в примере команды, не файл
-docs/site/cli.md	плохо.flang	учебное имя в примере отказа, не файл
 docs/site/cli.md	план.flang	учебное имя в примере плана, не файл
-docs/site/cli.ru.md	привет.flang	учебное имя в примере команды, не файл
-docs/site/cli.ru.md	плохо.flang	учебное имя в примере отказа, не файл
 docs/site/cli.ru.md	план.flang	учебное имя в примере плана, не файл
 docs/site/cli.ru.md	privet.c	учебное имя напечатанного файла в выводе примера, не файл
 docs/site/diagnostics.md	rec.flang	учебное имя в примере отказа, не файл

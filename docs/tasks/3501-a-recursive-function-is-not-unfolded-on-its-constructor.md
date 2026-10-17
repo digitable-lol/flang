@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `unfold.flang`:
+1. Программа unfold.flang:
 
 ```flang
 модуль «Unfold recursive on constructor»

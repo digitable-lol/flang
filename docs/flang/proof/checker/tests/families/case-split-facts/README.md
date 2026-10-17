@@ -40,8 +40,8 @@
    фактами половины с самого начала и входят в тело случая, когда разбор снят.
 
 Ложная цель ни одним из шагов не закрывается: место остаётся на слове ядра (код 3).
-У каждого шага — теорема в `flang/proof/lean/Half.lean` (страница
-`docs/lean-checks-the-inference-rules.md`, раздел «Ходы половины»).
+У каждого шага — теорема в `flang/proof/lean/Half.lean` (решение
+`docs/adr/0127-every-half-move-of-the-checker-has-a-lean-theorem.md`).
 
 ## Пробы
 

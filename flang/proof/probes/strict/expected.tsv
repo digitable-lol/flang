@@ -35,3 +35,5 @@ refuted-statement.flang	-	1	утверждение «антирефлексив�
 statement-holds-on-the-edge.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
 unknown-property.flang	-	1	FLANG_UNKNOWN_PROPERTY
 known-property.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+refuted-flag-record.flang	-	1	утверждение «Сократ — человек» опровергнуто на входе кто = {человек: нет, смертен: да}
+flag-record-holds.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры

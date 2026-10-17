@@ -1065,6 +1065,31 @@ jobs:
 
   # Прогонщик корпуса: каталог, маска и ведомость строкой. Отдельной работой —
   # зависимостей нет, семь секунд.
+  stdlib-check:
+    name: stdlib-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Probe stdlib check guard
+        run: |
+          if bootstrap/flang io scripts/guards/stdlib-check-guard.fscript --plan Forgery --timeout 600000; then
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Check changed stdlib modules and their importers
+        run: bootstrap/flang run-script stdlib:changed
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+          FLANG_TMP: ${{ runner.temp }}
+
   korpus:
     name: corpus-runner
     runs-on: ubuntu-latest

@@ -103,6 +103,18 @@ jobs:
           fi
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Probe stdlib check guard
+        run: |
+          if bootstrap/flang io scripts/guards/stdlib-check-guard.fscript --plan Forgery --timeout 600000; then
+            echo "сторож промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Every stdlib module passes check
+        run: bootstrap/flang run-script stdlib:check
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Check stdlib proof ledger
         run: |
           set +e

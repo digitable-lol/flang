@@ -1,5 +1,4 @@
 модуль «Page inserts»
-  использует «Печать словаря» из "emit-dictionary.fscript"
 
 тип «Insert kind»
   вариант «Whole file» содержит path: строка
@@ -505,13 +504,13 @@
     дано table равно "library"
     дано arguments равно ""
     ожидается ["library list", "file docs/site/library-status.tsv"]
-  пример «the keywords need nothing: the table of surfaces is compiled in»
+  пример «the keywords need the glossary the dictionary plan prints from the lexer»
     дано table равно "keywords"
     дано arguments равно "Функции"
-    ожидается пустой список
+    ожидается ["file docs/glossary.md"]
   пусть sources равно [["codes", («Code lines command»), («File command» от («Catalog path»))],
     ["tsv", («File command» от (голова (разделить arguments по " ")))],
-    ["library", "library list", "file docs/site/library-status.tsv"]]
+    ["library", "library list", "file docs/site/library-status.tsv"], ["keywords", "file docs/glossary.md"]]
   свёртка (отфильтровать sources где known →
     (голова known) равен table) начиная с пустой список как acc и known → хвост known
 
@@ -1290,62 +1289,92 @@
   пусть kept равно (отфильтровать parted где cells → (place равен 0) или ((«Cell» от cells и place) равен wanted))
   отобразить kept как cells → «Row» от cells
 
-тотальная функция «Keyword head»
-  принимает language: строка
+тотальная функция «Glossary path»
+  возвращает строка
+  обеспечивает «the glossary the dictionary plan prints» результат равен "docs/glossary.md"
+  пример «the page of the glossary»
+    ожидается "docs/glossary.md"
+  "docs/glossary.md"
+
+объект «Section reading»
+  «inside»: признак
+  «rows»: список строки
+
+тотальная функция «Section rows»
+  принимает text: строка, name: строка
   возвращает список строки
-  пример «english»
-    дано language равно "en"
-    ожидается ["Russian", "English", "Esperanto", "Chinese"]
-  если language равен "ru"
-    то ["русская", "английская", "эсперанто", "китайская", "Что делает"]
-    иначе ["Russian", "English", "Esperanto", "Chinese"]
+  пример «the table under the heading of a section, up to the first empty line»
+    дано text равно "## А\n\nВедёт.\n\n| ru | en |\n| --- | --- |\n| `а` | `a` |\n\n## Б\n\n| ru |\n"
+    дано name равно "А"
+    ожидается ["| ru | en |", "| --- | --- |", "| `а` | `a` |"]
+  пусть heading равно (соединить ["## ", name] по "")
+  пусть start равно (запись «Section reading» с «inside» равным нет и «rows» равным пустой список)
+  пусть lines равно («Lines of» от text)
+  пусть read равно (свёртка lines начиная с start как acc и line → «Section step» от acc и line и heading)
+  read.«rows»
 
-тотальная функция «Keyword row»
-  принимает words: список «Слово», entry: строка, language: строка
-  возвращает строка
-  пример «a word nobody has gives dashes»
-    дано words равно пустой список
-    дано entry равно "нет-такого|описание"
-    дано language равно "en"
-    ожидается "| — | — | — | — |"
-  пусть concept равно («До черты» от entry)
-  пусть marked равно («Фразы понятия» от words и concept)
-  пусть cells равно (отобразить «Все поверхности» как surface → («Клетка» от marked и concept и surface))
-  если language равен "ru" то «Строка таблицы» от words и entry иначе «Row of written» от cells
+тотальная функция «Section step»
+  принимает acc: «Section reading», line: строка, heading: строка
+  возвращает «Section reading»
+  пример «the heading opens the section»
+    дано acc равно запись «Section reading» с «inside» равным нет и «rows» равным пустой список
+    дано line равно "## А"
+    дано heading равно "## А"
+    ожидается запись «Section reading» с «inside» равным да и «rows» равным пустой список
+  пример «a row of the table is kept»
+    дано acc равно запись «Section reading» с «inside» равным да и «rows» равным пустой список
+    дано line равно "| а |"
+    дано heading равно "## А"
+    ожидается запись «Section reading» с «inside» равным да и «rows» равным ["| а |"]
+  пример «an empty line after the rows closes the section»
+    дано acc равно запись «Section reading» с «inside» равным да и «rows» равным ["| а |"]
+    дано line равно ""
+    дано heading равно "## А"
+    ожидается запись «Section reading» с «inside» равным нет и «rows» равным ["| а |"]
+  пусть open равно ((acc.«inside») и притом (не ((line равен "") и притом (не (пусто (acc.«rows»))))))
+  пусть keep равно (open и притом (line начинается с "|"))
+  (запись «Section reading» с «inside» равным (open или (line равен heading))
+    и «rows» равным (если keep то добавить line к (acc.«rows») иначе (acc.«rows»)))
 
-тотальная функция «Row of written»
-  принимает cells: список строки
+тотальная функция «Without last cell»
+  принимает row: строка
   возвращает строка
-  пример «cells are already written as code»
-    дано cells равно ["`модуль`", "`module`"]
-    ожидается "| `модуль` | `module` |"
-  соединить ["| ", (соединить cells по " | "), " |"] по ""
+  пример «the column of the russian explanation goes»
+    дано row равно "| `а` | `a` | — | — | что делает |"
+    ожидается "| `а` | `a` | — | — |"
+  пусть cells равно (разделить row по " | ")
+  соединить [(соединить («Without last» от cells) по " | "), " |"] по ""
+
+тотальная функция «English row»
+  принимает row: строка
+  возвращает строка
+  пример «the head in english»
+    дано row равно "| русская | английская | эсперанто | китайская | Что делает |"
+    ожидается "| Russian | English | Esperanto | Chinese |"
+  пример «the rule line»
+    дано row равно "| --- | --- | --- | --- | --- |"
+    ожидается "| --- | --- | --- | --- |"
+  если row начинается с "| русская"
+    то "| Russian | English | Esperanto | Chinese |"
+    иначе «Without last cell» от row
 
 тотальная функция «Keywords filled»
-  принимает words: список «Слово», name: строка, language: строка
+  принимает taken: список «Taken», name: строка, language: строка
   возвращает «Filled»
   пример «a section that the glossary does not have is trouble»
-    дано words равно пустой список
+    дано taken равно [(запись «Taken» с «command» равным "file docs/glossary.md" и «code» равным 0
+      и «output» равным "## А\n")]
     дано name равно "Нет такого"
     дано language равно "ru"
     ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "в словаре нет раздела «Нет такого»"
-  пусть sections равно (отфильтровать («Разделы») где section → (section.«имя») равен name)
-  разбор sections
-    случай пусто
-      то «Trouble» от ["в словаре нет раздела «", name, "»"]
-    случай голова и хвост
-      то «Keywords of section» от words и голова и language
-
-тотальная функция «Keywords of section»
-  принимает words: список «Слово», section: «Раздел», language: строка
-  возвращает «Filled»
-  пример «a section without concepts gives the head only»
-    дано words равно пустой список
-    дано section равно (запись «Раздел» с «имя» равным "Р" и «ведёт» равным "" и «адрес» равным ""
-      и «понятия» равным пустой список)
+  пример «the english page drops the russian explanation»
+    дано taken равно [(запись «Taken» с «command» равным "file docs/glossary.md" и «code» равным 0
+      и «output» равным "## А\n\n| русская | английская | эсперанто | китайская | Что |\n| `а` | `a` | — | — | x |")]
+    дано name равно "А"
     дано language равно "en"
-    ожидается (запись «Filled» с «lines» равным ["| Russian | English | Esperanto | Chinese |",
-      "| --- | --- | --- | --- |"]
+    ожидается (запись «Filled» с «lines» равным ["| Russian | English | Esperanto | Chinese |", "| `а` | `a` | — | — |"]
       и «trouble» равным "")
-  пусть rows равно (отобразить (section.«понятия») как entry → «Keyword row» от words и entry и language)
-  «Filled with» от («Table of» от («Keyword head» от language) и rows)
+  пусть rows равно («Section rows» от («Output of» от taken и («File command» от («Glossary path»))) и name)
+  если пусто rows
+    то «Trouble» от ["в словаре нет раздела «", name, "»"]
+    иначе «Filled with» от (если language равен "ru" то rows иначе (отобразить rows как row → «English row» от row))

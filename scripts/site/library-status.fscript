@@ -14,7 +14,6 @@
 тотальная функция «Ledgers command»
   принимает directory: строка
   возвращает строка
-  обеспечивает «each module is measured with a limit of its own» результат содержит "timeout 900"
   пример «eight modules at a time, each ledger and its exit code in a file of its own»
     дано directory равно "/t/d"
     ожидается "git ls-files -z -- ':(glob)flang/stdlib/*.flang' |

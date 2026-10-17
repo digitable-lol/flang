@@ -1,0 +1,1293 @@
+модуль «Unicode table generator»
+  использует «Unicode tables» из "../../flang/stdlib/unicode-tables.flang"
+
+объект «Code entry»
+  «code»: число
+  «ccc»: число
+  «compat»: признак
+  «mapping»: список числа
+
+объект «Span»
+  «first»: число
+  «last»: число
+  «value»: число
+
+объект «Pair entry»
+  «key»: число
+  «composite»: число
+
+объект «Main row»
+  «lines»: список строки
+  «points»: список строки
+  «offset»: число
+
+объект «Output file»
+  «path»: строка
+  «text»: строка
+
+тип «Generation»
+  вариант «Asking arguments»
+  вариант «Reading» содержит folder: строка, target: строка, names: список строки, texts: список строки
+  вариант «Writing» содержит files: список «Output file», written: число
+
+тотальная функция «Source names»
+  возвращает список строки
+  обеспечивает «sources are eight» (длина результат) равен 8
+  ["UnicodeData.txt", "DerivedNormalizationProps.txt", "CaseFolding.txt", "GraphemeBreakProperty.txt", "emoji-data.txt",
+   "DerivedCoreProperties.txt", "index-windows-1251.txt", "index-koi8-r.txt"]
+
+тотальная функция «Hex digit text»
+  принимает digit: число
+  возвращает строка
+  пример «Ten is A»
+    дано digit равно 10
+    ожидается "A"
+  пример «Zero»
+    дано digit равно 0
+    ожидается "0"
+  символ (digit плюс 1) в "0123456789ABCDEF"
+
+тотальная функция «Hex text»
+  принимает value: число, width: число
+  возвращает строка
+  пример «Six places»
+    дано value равно 768
+    дано width равно 6
+    ожидается "000300"
+  пример «Last code point»
+    дано value равно 1114111
+    дано width равно 6
+    ожидается "10FFFF"
+  пример «One place»
+    дано value равно 3
+    дано width равно 1
+    ожидается "3"
+  пример «Twelve places»
+    дано value равно 1090519808
+    дано width равно 12
+    ожидается "000041000300"
+  пусть places равно отфильтровать [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] где place → place не больше width
+  пусть done равно (свёртка places начиная с (запись «Hex progress» с «rest» равным value и «text» равным "") как
+      progress и place → «Hex step» от progress)
+  done.«text»
+
+объект «Hex progress»
+  «rest»: число
+  «text»: строка
+
+тотальная функция «Hex step»
+  принимает progress: «Hex progress»
+  возвращает «Hex progress»
+  пример «Lowest digit»
+    дано progress равно запись «Hex progress» с «rest» равным 31 и «text» равным ""
+    ожидается запись «Hex progress» с «rest» равным 1 и «text» равным "F"
+  пусть digit равно progress.«rest» остаток от 16
+  (запись «Hex progress» с «rest» равным ((progress.«rest» минус digit) делить на 16) и «text» равным (соединить
+      («Hex digit text» от digit) с progress.«text»))
+
+тотальная функция «Hex list»
+  принимает text: строка
+  возвращает список числа
+  пример «Two points»
+    дано text равно "0041 0300"
+    ожидается [65, 768]
+  пример «Empty»
+    дано text равно ""
+    ожидается пустой список
+  (отобразить (отфильтровать (разделить text по " ") где word → не (пусто word)) как word → «Шестнадцатеричное число» от
+      word)
+
+тотальная функция «Without comment»
+  принимает line: строка
+  возвращает строка
+  пример «Comment is cut»
+    дано line равно "0041 ; Other # LATIN"
+    ожидается "0041 ; Other "
+  пример «No comment»
+    дано line равно "0041"
+    ожидается "0041"
+  разбор (разделить line по "#")
+    случай пусто
+      то ""
+    случай голова g и хвост rest
+      то g
+
+тотальная функция «Fields»
+  принимает line: строка
+  возвращает список строки
+  пример «Three fields trimmed»
+    дано line равно "0600..0605    ; InCB; Consonant # Cf"
+    ожидается ["0600..0605", "InCB", "Consonant"]
+  отобразить (разделить («Without comment» от line) по ";") как part → «Trimmed» от part
+
+тотальная функция «Field»
+  принимает fields: список строки, position: число
+  возвращает строка
+  пример «Second»
+    дано fields равно ["a", "b"]
+    дано position равно 2
+    ожидается "b"
+  пример «Missing»
+    дано fields равно ["a"]
+    дано position равно 3
+    ожидается ""
+  если position больше (длина fields)
+    то ""
+    иначе элемент position в fields
+
+тотальная функция «Span of range»
+  принимает range: строка, value: число
+  возвращает «Span»
+  пример «Range»
+    дано range равно "0300..036F"
+    дано value равно 4
+    ожидается запись «Span» с «first» равным 768 и «last» равным 879 и «value» равным 4
+  пример «Single point»
+    дано range равно "200D"
+    дано value равно 5
+    ожидается запись «Span» с «first» равным 8205 и «last» равным 8205 и «value» равным 5
+  пусть ends равно отфильтровать (разделить range по ".") где part → не (пусто part)
+  пусть start равно «Шестнадцатеричное число» от («Field» от ends и 1)
+  пусть stop равно (если (длина ends) больше 1 то «Шестнадцатеричное число» от («Field» от ends и 2) иначе start)
+  запись «Span» с «first» равным start и «last» равным stop и «value» равным value
+
+тотальная функция «Value code»
+  принимает names: список строки, name: строка
+  возвращает число
+  пример «Third name»
+    дано names равно ["Other", "CR", "LF"]
+    дано name равно "LF"
+    ожидается 2
+  пример «Unknown name»
+    дано names равно ["Other"]
+    дано name равно "Prepend"
+    ожидается -1
+  пусть found равно (свёртка names начиная с [(0 минус 1), 0] как tally и candidate → «Value code step» от tally и
+      candidate и name)
+  элемент 1 в found
+
+тотальная функция «Value code step»
+  принимает tally: список числа, candidate: строка, name: строка
+  возвращает список числа
+  пример «Found at the first place»
+    дано tally равно [-1, 0]
+    дано candidate равно "Other"
+    дано name равно "Other"
+    ожидается [0, 1]
+  пример «Not this one»
+    дано tally равно [-1, 0]
+    дано candidate равно "CR"
+    дано name равно "Other"
+    ожидается [-1, 1]
+  пусть seen равно элемент 2 в tally
+  если ((элемент 1 в tally) меньше 0) и притом (candidate равен name)
+    то [seen, seen плюс 1]
+    иначе [элемент 1 в tally, seen плюс 1]
+
+тотальная функция «Spans»
+  принимает text: строка, prop: строка, names: список строки
+  возвращает список «Span»
+  пример «Property with values»
+    дано text равно "0300..0301 ; Extend # Mn\n000D ; CR # Cc\n0041 ; Other\n"
+    дано prop равно ""
+    дано names равно ["Other", "CR", "LF", "Control", "Extend"]
+    ожидается [(запись «Span» с «first» равным 768 и «last» равным 769 и «value» равным 4), (запись «Span» с «first»
+        равным 13 и «last» равным 13 и «value» равным 1)]
+  пример «Named property with values»
+    дано text равно "0915 ; InCB; Consonant # Lo\n0300 ; InCB; Extend\n0041 ; Alphabetic\n"
+    дано prop равно "InCB"
+    дано names равно ["", "Consonant", "Extend", "Linker"]
+    ожидается [(запись «Span» с «first» равным 2325 и «last» равным 2325 и «value» равным 1), (запись «Span» с «first»
+        равным 768 и «last» равным 768 и «value» равным 2)]
+  пусть lines равно (отфильтровать (разделить text по "\n") где line → (не (line начинается с "#")) и притом ((пусто
+      prop) или (line содержит prop)))
+  пусть rows равно отобразить lines как line → «Fields» от line
+  пусть chosen равно отфильтровать rows где row → «Row is chosen» от row и prop и names
+  отобразить chosen как row → «Span of range» от («Field» от row и 1) и («Row value» от row и prop и names)
+
+тотальная функция «Row value»
+  принимает row: список строки, prop: строка, names: список строки
+  возвращает число
+  пример «Value in the second field»
+    дано row равно ["0041", "CR"]
+    дано prop равно ""
+    дано names равно ["Other", "CR"]
+    ожидается 1
+  пример «Value in the third field»
+    дано row равно ["0041", "InCB", "Linker"]
+    дано prop равно "InCB"
+    дано names равно ["", "Consonant", "Extend", "Linker"]
+    ожидается 3
+  если пусто prop
+    то «Value code» от names и («Field» от row и 2)
+    иначе «Value code» от names и («Field» от row и 3)
+
+тотальная функция «Row is chosen»
+  принимает row: список строки, prop: строка, names: список строки
+  возвращает признак
+  пример «Other is not written»
+    дано row равно ["0041", "Other"]
+    дано prop равно ""
+    дано names равно ["Other", "CR"]
+    ожидается нет
+  пример «Known value»
+    дано row равно ["000D", "CR"]
+    дано prop равно ""
+    дано names равно ["Other", "CR"]
+    ожидается да
+  пример «Other property»
+    дано row равно ["0041", "Alphabetic"]
+    дано prop равно "InCB"
+    дано names равно ["", "Consonant"]
+    ожидается нет
+  ((не (пусто («Field» от row и 1))) и притом ((пусто prop) или ((«Field» от row и 2) равен prop)) и притом
+      ((«Row value» от row и prop и names) больше 0))
+
+тотальная функция «Code entry of line»
+  принимает line: строка
+  возвращает «Code entry»
+  пример «Canonical pair»
+    дано line равно "00C0;LATIN CAPITAL LETTER A WITH GRAVE;Lu;0;L;0041 0300;;;;N;;;;00E0;"
+    ожидается (запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping» равным [65,
+        768])
+  пример «Compatibility mapping»
+    дано line равно "00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;"
+    ожидается запись «Code entry» с «code» равным 160 и «ccc» равным 0 и «compat» равным да и «mapping» равным [32]
+  пример «Combining class»
+    дано line равно "0301;COMBINING ACUTE ACCENT;Mn;230;NSM;;;;;N;;;;;"
+    ожидается (запись «Code entry» с «code» равным 769 и «ccc» равным 230 и «compat» равным нет и «mapping» равным
+        пустой список)
+  пусть fields равно разделить (соединить line с ";;;;;;") по ";"
+  пусть decomposition равно «Field» от fields и 6
+  пусть compat равно decomposition начинается с "<"
+  пусть mapping равно (если compat то «Hex list» от («Field» от (разделить decomposition по ">") и 2) иначе «Hex list»
+      от decomposition)
+  (запись «Code entry» с «code» равным («Шестнадцатеричное число» от («Field» от fields и 1)) и «ccc» равным (к числу
+      («Field» от fields и 4)) и «compat» равным compat и «mapping» равным mapping)
+
+тотальная функция «Line has normalization data»
+  принимает line: строка
+  возвращает признак
+  пример «Decomposed»
+    дано line равно "00C0;A;Lu;0;L;0041 0300;;;;N;;;;00E0;"
+    ожидается да
+  пример «Plain letter»
+    дано line равно "0041;A;Lu;0;L;;;;;N;;;;0061;"
+    ожидается нет
+  пример «Combining mark»
+    дано line равно "0301;ACUTE;Mn;230;NSM;;;;;N;;;;;"
+    ожидается да
+  пусть fields равно разделить (соединить line с ";;;;;;") по ";"
+  ((не (пусто («Field» от fields и 1))) и притом ((не ((«Field» от fields и 4) равен "0")) или (не (пусто («Field» от
+      fields и 6)))))
+
+тотальная функция «In spans»
+  принимает spans: список «Span», code: число
+  возвращает признак
+  пример «Inside»
+    дано spans равно [запись «Span» с «first» равным 768 и «last» равным 879 и «value» равным 1]
+    дано code равно 800
+    ожидается да
+  пример «Outside»
+    дано spans равно [запись «Span» с «first» равным 768 и «last» равным 879 и «value» равным 1]
+    дано code равно 880
+    ожидается нет
+  («Value at» от spans и code) больше 0
+
+тотальная функция «Entry search step»
+  принимает entries: список «Code entry», code: число, found: число, step: число
+  возвращает число
+  пример «Step taken»
+    дано entries равно [(запись «Code entry» с «code» равным 65 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным пустой список)]
+    дано code равно 65
+    дано found равно 0
+    дано step равно 1
+    ожидается 1
+  пусть ahead равно found плюс step
+  если (ahead не больше (длина entries)) и притом ((элемент ahead в entries).«code» не больше code)
+    то ahead
+    иначе found
+
+тотальная функция «Entry of»
+  принимает entries: список «Code entry», code: число
+  возвращает число
+  пример «Found»
+    дано entries равно [(запись «Code entry» с «code» равным 65 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным пустой список), (запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и
+        «mapping» равным [65, 768])]
+    дано code равно 192
+    ожидается 2
+  пример «Missing»
+    дано entries равно [(запись «Code entry» с «code» равным 65 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным пустой список)]
+    дано code равно 66
+    ожидается 0
+  пусть found равно (свёртка [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1] начиная с 0 как found и
+      step → «Entry search step» от entries и code и found и step)
+  если (found больше 0) и притом ((элемент found в entries).«code» равен code)
+    то found
+    иначе 0
+
+тотальная функция «Mapping of»
+  принимает entries: список «Code entry», code: число, compat: признак
+  возвращает список числа
+  пример «Canonical mapping»
+    дано entries равно [(запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным [65, 768])]
+    дано code равно 192
+    дано compat равно нет
+    ожидается [65, 768]
+  пример «Compatibility mapping is skipped for canonical»
+    дано entries равно [(запись «Code entry» с «code» равным 160 и «ccc» равным 0 и «compat» равным да и «mapping»
+        равным [32])]
+    дано code равно 160
+    дано compat равно нет
+    ожидается пустой список
+  пусть place равно «Entry of» от entries и code
+  если place равен 0
+    то пустой список
+    иначе «Allowed mapping» от (элемент place в entries) и compat
+
+тотальная функция «Allowed mapping»
+  принимает entry: «Code entry», compat: признак
+  возвращает список числа
+  пример «Compatibility allowed»
+    дано entry равно (запись «Code entry» с «code» равным 160 и «ccc» равным 0 и «compat» равным да и «mapping» равным
+        [32])
+    дано compat равно да
+    ожидается [32]
+  если entry.«compat» и притом не compat
+    то пустой список
+    иначе entry.«mapping»
+
+тотальная функция «Join numbers»
+  принимает start: список числа, second: список числа
+  возвращает список числа
+  пример «Join»
+    дано start равно [1]
+    дано second равно [2, 3]
+    ожидается [1, 2, 3]
+  свёртка second начиная с start как joined и element → добавить element к joined
+
+тотальная функция «Full decomposition»
+  принимает entries: список «Code entry», code: число, compat: признак, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Two levels»
+    дано entries равно [(запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным [65, 768]), (запись «Code entry» с «code» равным 7846 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным [192, 777])]
+    дано code равно 7846
+    дано compat равно нет
+    дано fuel равно 20
+    ожидается [65, 768, 777]
+  пример «No mapping»
+    дано entries равно пустой список
+    дано code равно 65
+    дано compat равно нет
+    дано fuel равно 20
+    ожидается [65]
+  пусть mapping равно «Mapping of» от entries и code и compat
+  если (fuel не больше 0) или (пусто mapping)
+    то [code]
+    иначе (свёртка mapping начиная с пустой список как joined и part → «Join numbers» от joined и («Full decomposition»
+        от entries и part и compat и (fuel минус 1)))
+
+тотальная функция «Main row step»
+  принимает row: «Main row», entry: «Code entry», entries: список «Code entry», maybes: список «Span»
+  возвращает «Main row»
+  пример «Decomposed letter»
+    дано row равно запись «Main row» с «lines» равным пустой список и «points» равным пустой список и «offset» равным 0
+    дано entry равно (запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping» равным
+        [65, 768])
+    дано entries равно [(запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным [65, 768])]
+    дано maybes равно пустой список
+    ожидается (запись «Main row» с «lines» равным ["0000C0 00 0 00000 2 00000 00"] и «points» равным ["000041",
+        "000300"] и «offset» равным 2)
+  пусть code равно entry.«code»
+  пусть canonical равно «Full decomposition» от entries и code и нет и 20
+  пусть compatible равно «Full decomposition» от entries и code и да и 20
+  пусть «canonical points» равно (если canonical равен [code] то пустой список иначе canonical)
+  пусть «compatible points» равно (если compatible равен canonical то пустой список иначе compatible)
+  пусть maybe равно (если «In spans» от maybes и code то "1" иначе "0")
+  пусть «compatible offset» равно row.«offset» плюс (длина «canonical points»)
+  пусть line равно (соединить [(«Hex text» от code и 6), " ", («Hex text» от entry.«ccc» и 2), " ", maybe, " ",
+      («Hex text» от (если пусто «canonical points» то 0 иначе row.«offset») и 5), " ", («Hex text» от (длина
+      «canonical points») и 1), " ", («Hex text» от (если пусто «compatible points» то 0 иначе «compatible offset») и
+      5), " ", («Hex text» от (длина «compatible points») и 2)] по "")
+  пусть «new points» равно (отобразить («Join numbers» от «canonical points» и «compatible points») как point →
+      «Hex text» от point и 6)
+  (запись «Main row» с «lines» равным (добавить line к row.«lines») и «points» равным (свёртка «new points» начиная с
+      row.«points» как all и point → добавить point к all) и «offset» равным («compatible offset» плюс (длина
+      «compatible points»)))
+
+тотальная функция «Pair of»
+  принимает entry: «Code entry»
+  возвращает «Pair entry»
+  пример «A with grave»
+    дано entry равно (запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping» равным
+        [65, 768])
+    ожидается запись «Pair entry» с «key» равным 1090519808 и «composite» равным 192
+  (запись «Pair entry» с «key» равным (((элемент 1 в entry.«mapping») умножить на 16777216) плюс (элемент 2 в
+      entry.«mapping»)) и «composite» равным entry.«code»)
+
+тотальная функция «Is primary pair»
+  принимает entry: «Code entry», excluded: список «Span»
+  возвращает признак
+  пример «Pair»
+    дано entry равно (запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping» равным
+        [65, 768])
+    дано excluded равно пустой список
+    ожидается да
+  пример «Excluded»
+    дано entry равно (запись «Code entry» с «code» равным 2392 и «ccc» равным 0 и «compat» равным нет и «mapping» равным
+        [2325, 2364])
+    дано excluded равно [запись «Span» с «first» равным 2392 и «last» равным 2399 и «value» равным 1]
+    ожидается нет
+  (не entry.«compat») и притом ((длина entry.«mapping») равен 2) и притом (не («In spans» от excluded и entry.«code»))
+
+тотальная функция «Insert pair»
+  принимает pair: «Pair entry», sorted: список «Pair entry»
+  возвращает список «Pair entry»
+  пример «Before»
+    дано pair равно запись «Pair entry» с «key» равным 1 и «composite» равным 10
+    дано sorted равно [запись «Pair entry» с «key» равным 2 и «composite» равным 20]
+    ожидается [(запись «Pair entry» с «key» равным 1 и «composite» равным 10), (запись «Pair entry» с «key» равным 2 и
+        «composite» равным 20)]
+  пример «After»
+    дано pair равно запись «Pair entry» с «key» равным 3 и «composite» равным 30
+    дано sorted равно [запись «Pair entry» с «key» равным 2 и «composite» равным 20]
+    ожидается [(запись «Pair entry» с «key» равным 2 и «composite» равным 20), (запись «Pair entry» с «key» равным 3 и
+        «composite» равным 30)]
+  разбор sorted
+    случай пусто
+      то [pair]
+    случай голова top и хвост rest
+      то (если pair.«key» не больше top.«key» то приписать pair к sorted иначе приписать top к («Insert pair» от pair и
+          rest))
+
+тотальная функция «Sorted pairs»
+  принимает pairs: список «Pair entry»
+  возвращает список «Pair entry»
+  пример «Two»
+    дано pairs равно [(запись «Pair entry» с «key» равным 3 и «composite» равным 30), (запись «Pair entry» с «key»
+        равным 2 и «composite» равным 20)]
+    ожидается [(запись «Pair entry» с «key» равным 2 и «composite» равным 20), (запись «Pair entry» с «key» равным 3 и
+        «composite» равным 30)]
+  свёртка pairs начиная с пустой список как sorted и pair → «Insert pair» от pair и sorted
+
+тотальная функция «Merge numbers»
+  принимает start: список числа, second: список числа, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Merge»
+    дано start равно [1, 4]
+    дано second равно [2, 3, 5]
+    дано fuel равно 30
+    ожидается [1, 2, 3, 4, 5]
+  если fuel не больше 0
+    то «Join numbers» от start и second
+    иначе «Merge heads» от start и second и (fuel минус 1)
+
+тотальная функция «Merge heads»
+  принимает start: список числа, second: список числа, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Second empty»
+    дано start равно [1]
+    дано second равно пустой список
+    дано fuel равно 3
+    ожидается [1]
+  если fuel не больше 0
+    то «Join numbers» от start и second
+    иначе
+      разбор start
+        случай пусто
+          то second
+        случай голова a и хвост rest
+          то «Merge with head» от a и rest и second и (fuel минус 1)
+
+тотальная функция «Merge with head»
+  принимает a: число, rest: список числа, second: список числа, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Smaller first»
+    дано a равно 1
+    дано rest равно пустой список
+    дано second равно [2]
+    дано fuel равно 6
+    ожидается [1, 2]
+  если fuel не больше 0
+    то «Join numbers» от (приписать a к rest) и second
+    иначе
+      разбор second
+        случай пусто
+          то приписать a к rest
+        случай голова b и хвост others
+          то «Pick smaller» от a и rest и b и others и (fuel минус 1)
+
+тотальная функция «Pick smaller»
+  принимает a: число, rest: список числа, b: число, others: список числа, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Second smaller»
+    дано a равно 3
+    дано rest равно пустой список
+    дано b равно 2
+    дано others равно пустой список
+    дано fuel равно 9
+    ожидается [2, 3]
+  если fuel не больше 0
+    то «Join numbers» от (приписать a к rest) и (приписать b к others)
+    иначе (если a не больше b то приписать a к («Merge numbers» от rest и (приписать b к others) и (fuel минус 1)) иначе
+        приписать b к («Merge numbers» от (приписать a к rest) и others и (fuel минус 1)))
+
+тотальная функция «Sort numbers»
+  принимает items: список числа, fuel: число
+  возвращает список числа
+  убывает fuel
+  пример «Sort»
+    дано items равно [5, 3, 9, 1, 3]
+    дано fuel равно 20
+    ожидается [1, 3, 3, 5, 9]
+  пусть half равно «Quotient» от (длина items) и 2
+  если (fuel не больше 0) или ((длина items) меньше 2)
+    то items
+    иначе («Merge numbers» от («Sort numbers» от («Taken» от items и half) и (fuel минус 1)) и («Sort numbers» от
+        («Dropped» от items и half) и (fuel минус 1)) и (4 умножить на ((длина items) плюс 1)))
+
+тотальная функция «Taken»
+  принимает items: список числа, count: число
+  возвращает список числа
+  пример «Two»
+    дано items равно [1, 2, 3]
+    дано count равно 2
+    ожидается [1, 2]
+  (свёртка items начиная с пустой список как taken и element → (если (длина taken) меньше count то добавить element к
+      taken иначе taken))
+
+тотальная функция «Dropped»
+  принимает items: список числа, count: число
+  возвращает список числа
+  пример «One left»
+    дано items равно [1, 2, 3]
+    дано count равно 2
+    ожидается [3]
+  (отобразить (отфильтровать («Numbered» от items) где pair → (элемент 1 в pair) больше count) как pair → элемент 2 в
+      pair)
+
+тотальная функция «Numbered»
+  принимает items: список числа
+  возвращает список список числа
+  пример «Numbered»
+    дано items равно [7, 8]
+    ожидается [[1, 7], [2, 8]]
+  свёртка items начиная с пустой список как numbered и element → добавить [(длина numbered) плюс 1, element] к numbered
+
+тотальная функция «Spans as numbers»
+  принимает spans: список «Span»
+  возвращает список числа
+  пример «One span»
+    дано spans равно [запись «Span» с «first» равным 1 и «last» равным 2 и «value» равным 3]
+    ожидается [33554467]
+  отобразить spans как span → (((span.«first» умножить на 2097152) плюс span.«last») умножить на 16) плюс span.«value»
+
+тотальная функция «Span of number»
+  принимает packed: число
+  возвращает «Span»
+  пример «Unpack»
+    дано packed равно 33554467
+    ожидается запись «Span» с «first» равным 1 и «last» равным 2 и «value» равным 3
+  пусть ends равно «Quotient» от packed и 16
+  (запись «Span» с «first» равным («Quotient» от ends и 2097152) и «last» равным (ends остаток от 2097152) и «value»
+      равным (packed остаток от 16))
+
+тотальная функция «Sorted spans»
+  принимает spans: список «Span»
+  возвращает список «Span»
+  пример «Two spans»
+    дано spans равно [(запись «Span» с «first» равным 5 и «last» равным 6 и «value» равным 1), (запись «Span» с «first»
+        равным 1 и «last» равным 2 и «value» равным 3)]
+    ожидается [(запись «Span» с «first» равным 1 и «last» равным 2 и «value» равным 3), (запись «Span» с «first» равным
+        5 и «last» равным 6 и «value» равным 1)]
+  отобразить («Sort numbers» от («Spans as numbers» от spans) и 64) как packed → «Span of number» от packed
+
+тотальная функция «Without repeats»
+  принимает sorted: список числа
+  возвращает список числа
+  пример «Repeats go»
+    дано sorted равно [1, 1, 2, 3, 3]
+    ожидается [1, 2, 3]
+  (свёртка sorted начиная с пустой список как kept и number → (если (не (пусто kept)) и притом ((элемент (длина kept) в
+      kept) равен number) то kept иначе добавить number к kept))
+
+тотальная функция «Span edges»
+  принимает spans: список «Span»
+  возвращает список числа
+  пример «Start and after stop»
+    дано spans равно [запись «Span» с «first» равным 5 и «last» равным 6 и «value» равным 1]
+    ожидается [5, 7]
+  (свёртка spans начиная с пустой список как edges и span → добавить (span.«last» плюс 1) к (добавить span.«first» к
+      edges))
+
+тотальная функция «Span search step»
+  принимает spans: список «Span», code: число, found: число, step: число
+  возвращает число
+  пример «Step taken»
+    дано spans равно [запись «Span» с «first» равным 5 и «last» равным 6 и «value» равным 1]
+    дано code равно 5
+    дано found равно 0
+    дано step равно 1
+    ожидается 1
+  пусть ahead равно found плюс step
+  если (ahead не больше (длина spans)) и притом ((элемент ahead в spans).«first» не больше code)
+    то ahead
+    иначе found
+
+тотальная функция «Value at»
+  принимает spans: список «Span», code: число
+  возвращает число
+  пример «Inside»
+    дано spans равно [запись «Span» с «first» равным 5 и «last» равным 6 и «value» равным 4]
+    дано code равно 6
+    ожидается 4
+  пример «After»
+    дано spans равно [запись «Span» с «first» равным 5 и «last» равным 6 и «value» равным 4]
+    дано code равно 7
+    ожидается 0
+  пусть found равно (свёртка [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1] начиная с 0 как found и
+      step → «Span search step» от spans и code и found и step)
+  если (found больше 0) и притом (code не больше (элемент found в spans).«last»)
+    то (элемент found в spans).«value»
+    иначе 0
+
+тотальная функция «Grapheme line»
+  принимает edge: число, breaks: список «Span», pictographs: список «Span», conjuncts: список «Span»
+  возвращает строка
+  пример «Extend that links conjuncts»
+    дано edge равно 2381
+    дано breaks равно [запись «Span» с «first» равным 2381 и «last» равным 2381 и «value» равным 4]
+    дано pictographs равно пустой список
+    дано conjuncts равно [запись «Span» с «first» равным 2381 и «last» равным 2381 и «value» равным 3]
+    ожидается "00094D 4 0 3"
+  (соединить [(«Hex text» от edge и 6), " ", («Hex text» от («Value at» от breaks и edge) и 1), " ", («Hex text» от
+      («Value at» от pictographs и edge) и 1), " ", («Hex text» от («Value at» от conjuncts и edge) и 1)] по "")
+
+тотальная функция «Grapheme lines»
+  принимает breaks: список «Span», pictographs: список «Span», conjuncts: список «Span»
+  возвращает список строки
+  пример «Runs merge»
+    дано breaks равно [запись «Span» с «first» равным 13 и «last» равным 13 и «value» равным 1]
+    дано pictographs равно пустой список
+    дано conjuncts равно пустой список
+    ожидается ["000000 0 0 0", "00000D 1 0 0", "00000E 0 0 0"]
+  пусть edges равно («Without repeats» от («Sort numbers» от (приписать 0 к («Join numbers» от («Span edges» от breaks)
+      и («Join numbers» от («Span edges» от pictographs) и («Span edges» от conjuncts)))) и 64))
+  пусть lines равно (отобразить (отфильтровать edges где edge → edge не больше 1114111) как edge → «Grapheme line» от
+      edge и breaks и pictographs и conjuncts)
+  (свёртка lines начиная с пустой список как kept и line → (если (не (пусто kept)) и притом ((подстрока (элемент (длина
+      kept) в kept) с 8 по 12) равен (подстрока line с 8 по 12)) то kept иначе добавить line к kept))
+
+тотальная функция «Break names»
+  возвращает список строки
+  обеспечивает «fourteen break values» (длина результат) равен 14
+  ["Other", "CR", "LF", "Control", "Extend", "ZWJ", "Regional_Indicator", "Prepend", "SpacingMark", "L", "V", "T", "LV",
+      "LVT"]
+
+тотальная функция «Case line»
+  принимает row: список строки
+  возвращает строка
+  пример «Full folding of sharp s»
+    дано row равно ["00DF", "F", "0073 0073"]
+    ожидается "0000DF 2 000073 000073 000000"
+  пусть points равно «Hex list» от («Field» от row и 3)
+  (соединить [(«Hex text» от («Шестнадцатеричное число» от («Field» от row и 1)) и 6), " ", («Hex text» от (длина
+      points) и 1), " ", («Hex text» от («Point or zero» от points и 1) и 6), " ", («Hex text» от («Point or zero» от
+      points и 2) и 6), " ", («Hex text» от («Point or zero» от points и 3) и 6)] по "")
+
+тотальная функция «Point or zero»
+  принимает points: список числа, position: число
+  возвращает число
+  пример «Missing»
+    дано points равно [5]
+    дано position равно 2
+    ожидается 0
+  если position больше (длина points)
+    то 0
+    иначе элемент position в points
+
+тотальная функция «Case lines»
+  принимает text: строка
+  возвращает список строки
+  пример «Common and full, not simple»
+    дано text равно "0041; C; 0061; # A\n00DF; F; 0073 0073; # sharp s\n1E9E; S; 00DF; # capital sharp s\n"
+    ожидается ["000041 1 000061 000000 000000", "0000DF 2 000073 000073 000000"]
+  пусть rows равно отобразить (разделить text по "\n") как line → «Fields» от line
+  (отобразить (отфильтровать rows где row → ((«Field» от row и 2) равен "C") или ((«Field» от row и 2) равен "F")) как
+      row → «Case line» от row)
+
+тотальная функция «Code page points»
+  принимает text: строка
+  возвращает список числа
+  пример «Two pointers»
+    дано text равно "# comment\n\n 0\t0x0402\t x\n 1\t0x0403\t y\n"
+    ожидается [1026, 1027]
+  пусть rows равно (отфильтровать (разделить text по "\n") где line → (не (пусто line)) и притом не (line начинается с
+      "#"))
+  (отобразить rows как line → «Шестнадцатеричное число» от («Field» от (разделить («Field» от (разделить line по "\t") и
+      2) по "x") и 2))
+
+тотальная функция «Main lines»
+  принимает entries: список «Code entry», maybes: список «Span»
+  возвращает «Main row»
+  пример «One combining mark»
+    дано entries равно [(запись «Code entry» с «code» равным 769 и «ccc» равным 230 и «compat» равным нет и «mapping»
+        равным пустой список)]
+    дано maybes равно [запись «Span» с «first» равным 768 и «last» равным 780 и «value» равным 1]
+    ожидается (запись «Main row» с «lines» равным ["000301 E6 1 00000 0 00000 00"] и «points» равным пустой список и
+        «offset» равным 0)
+  (свёртка entries начиная с (запись «Main row» с «lines» равным пустой список и «points» равным пустой список и
+      «offset» равным 0) как row и entry → «Main row step» от row и entry и entries и maybes)
+
+тотальная функция «Pair lines»
+  принимает entries: список «Code entry», excluded: список «Span»
+  возвращает список строки
+  пример «One pair»
+    дано entries равно [(запись «Code entry» с «code» равным 192 и «ccc» равным 0 и «compat» равным нет и «mapping»
+        равным [65, 768])]
+    дано excluded равно пустой список
+    ожидается ["000041000300 0000C0"]
+  пусть pairs равно («Sorted pairs» от (отобразить (отфильтровать entries где entry → «Is primary pair» от entry и
+      excluded) как entry → «Pair of» от entry))
+  отобразить pairs как pair → соединить [«Hex text» от pair.«key» и 12, " ", «Hex text» от pair.«composite» и 6] по ""
+
+тотальная функция «Maybe entries»
+  принимает text: строка, maybes: список «Span»
+  возвращает список «Code entry»
+  пример «Combining back without class»
+    дано text равно "0B3E;ORIYA VOWEL SIGN AA;Mc;0;L;;;;;N;;;;;\n0041;A;Lu;0;L;;;;;N;;;;0061;\n"
+    дано maybes равно [запись «Span» с «first» равным 2878 и «last» равным 2878 и «value» равным 1]
+    ожидается [(запись «Code entry» с «code» равным 2878 и «ccc» равным 0 и «compat» равным нет и «mapping» равным
+        пустой список)]
+  пусть lines равно отфильтровать (разделить text по "\n") где line → не (пусто line)
+  (отобразить (отфильтровать lines где line → («Line has normalization data» от line) или («In spans» от maybes и
+      («Шестнадцатеричное число» от («Field» от (разделить line по ";") и 1)))) как line → «Code entry of line» от line)
+
+тотальная функция «Grouped»
+  принимает lines: список строки, size: число
+  возвращает список список строки
+  пример «Three by two»
+    дано lines равно ["a", "b", "c"]
+    дано size равно 2
+    ожидается [["a", "b"], ["c"]]
+  свёртка lines начиная с пустой список как groups и line → «Group step» от groups и line и size
+
+тотальная функция «Group step»
+  принимает groups: список список строки, line: строка, size: число
+  возвращает список список строки
+  пример «New group»
+    дано groups равно [["a", "b"]]
+    дано line равно "c"
+    дано size равно 2
+    ожидается [["a", "b"], ["c"]]
+  пример «Same group»
+    дано groups равно [["a"]]
+    дано line равно "b"
+    дано size равно 2
+    ожидается [["a", "b"]]
+  если (пусто groups) или ((длина (элемент (длина groups) в groups)) не меньше size)
+    то добавить [line] к groups
+    иначе добавить (добавить line к (элемент (длина groups) в groups)) к («Without last» от groups)
+
+тотальная функция «Without last»
+  принимает groups: список список строки
+  возвращает список список строки
+  пример «Drop one»
+    дано groups равно [["a"], ["b"]]
+    ожидается [["a"]]
+  (отобразить (отфильтровать («Numbered groups» от groups) где pair → pair.«position» меньше (длина groups)) как pair →
+      pair.«lines»)
+
+объект «Numbered group»
+  «position»: число
+  «lines»: список строки
+
+тотальная функция «Numbered groups»
+  принимает groups: список список строки
+  возвращает список «Numbered group»
+  пример «Two»
+    дано groups равно [["a"], ["b"]]
+    ожидается [(запись «Numbered group» с «position» равным 1 и «lines» равным ["a"]), (запись «Numbered group» с
+        «position» равным 2 и «lines» равным ["b"])]
+  (свёртка groups начиная с пустой список как numbered и group → добавить (запись «Numbered group» с «position» равным
+      ((длина numbered) плюс 1) и «lines» равным group) к numbered)
+
+тотальная функция «Version of»
+  принимает text: строка
+  возвращает строка
+  пример «Header line»
+    дано text равно "# DerivedNormalizationProps-17.0.0.txt\n# Date"
+    ожидается "17.0.0"
+  пример «No header»
+    дано text равно ""
+    ожидается ""
+  пусть heading равно «Field» от (разделить text по "\n") и 1
+  «Field» от (разделить («Field» от (разделить heading по "-") и 2) по ".txt") и 1
+
+тотальная функция «Text block lines»
+  принимает lines: список строки
+  возвращает строка
+  пример «Two lines»
+    дано lines равно ["a", "b"]
+    ожидается "  a\n  b\n"
+  соединить (отобразить lines как line → соединить ["  ", line, "\n"] по "") по ""
+
+тотальная функция «Chunk function»
+  принимает name: строка, lines: список строки
+  возвращает строка
+  пример «Chunk»
+    дано name равно "Кусок 1"
+    дано lines равно ["000041"]
+    ожидается "тотальная функция «Кусок 1»\n  возвращает строка\n  \"\"\"\n  000041\n  \"\"\"\n"
+  (соединить ["тотальная функция «", name, "»\n  возвращает строка\n  \"\"\"\n", («Text block lines» от lines),
+      "  \"\"\"\n"] по "")
+
+тотальная функция «Chunk names»
+  принимает stem: строка, count: число
+  возвращает список строки
+  пример «Two»
+    дано stem равно "Кусок"
+    дано count равно 2
+    ожидается ["Кусок 1", "Кусок 2"]
+  отобразить («Positions» от count) как position → соединить [stem, " ", к строке position] по ""
+
+тотальная функция «Positions»
+  принимает count: число
+  возвращает список числа
+  убывает count
+  пример «Three»
+    дано count равно 3
+    ожидается [1, 2, 3]
+  если count не больше 0
+    то пустой список
+    иначе добавить count к («Positions» от (count минус 1))
+
+тотальная функция «Table functions»
+  принимает title: строка, stem: строка, lines: список строки, page: число
+  возвращает строка
+  пример «Small table with pages»
+    дано title равно "Таблица"
+    дано stem равно "Кусок"
+    дано lines равно ["000041 1", "000300 2"]
+    дано page равно 256
+    ожидается """
+      тотальная функция «Таблица»
+        возвращает «Таблица юникода»
+        обеспечивает «записей в таблице 2» результат.«всего» равен 2
+        пусть куски равно «Таблица: куски»
+        пусть страницы равно «Таблица: страницы»
+        (запись «Таблица юникода» с «куски» равным куски и «ширина» равным 9 и «в куске» равным 444 и «всего» равным 2
+          и «ключ» равным 6 и «страницы» равным страницы и «страниц» равным 5 и «страница» равным 256)
+
+      тотальная функция «Таблица: куски»
+        возвращает список строки
+        обеспечивает «кусков 1» (длина результат) равен 1
+        [
+          «Кусок 1»
+        ]
+
+      тотальная функция «Кусок 1»
+        возвращает строка
+        \"\"\"
+        000041 1
+        000300 2
+        \"\"\"
+
+      тотальная функция «Таблица: страницы»
+        возвращает список строки
+        обеспечивает «кусков 1» (длина результат) равен 1
+        [
+          «Кусок страниц 1»
+        ]
+
+      тотальная функция «Кусок страниц 1»
+        возвращает строка
+        \"\"\"
+        0000
+        0001
+        0001
+        0001
+        0002
+        \"\"\"
+      """
+  пусть width равно (длина («Field» от lines и 1)) плюс 1
+  пусть keyed равно длина («Field» от (разделить («Field» от lines и 1) по " ") и 1)
+  пусть size равно «Quotient» от 4000 и width
+  пусть pages равно «Page lines» от lines и keyed и page
+  пусть heading равно (соединить ["тотальная функция «", title,
+      "»\n  возвращает «Таблица юникода»\n  обеспечивает «записей в таблице ", (к строке (длина lines)),
+      "» результат.«всего» равен ", (к строке (длина lines)), "\n  пусть куски равно «", title,
+      ": куски»\n  пусть страницы равно ", («Page reference» от title и pages),
+      "\n  (запись «Таблица юникода» с «куски» равным куски и «ширина» равным ", (к строке width),
+      " и «в куске» равным ", (к строке size), " и «всего» равным ", (к строке (длина lines)), "\n    и «ключ» равным ",
+      (к строке keyed), " и «страницы» равным страницы и «страниц» равным ", (к строке (длина pages)),
+      " и «страница» равным ", (к строке page), ")\n\n"] по "")
+  (соединить [heading, («Chunked functions» от (соединить [title, ": куски"] по "") и stem и lines и size),
+      («Page functions» от title и stem и pages)] по "")
+
+тотальная функция «Page reference»
+  принимает title: строка, pages: список строки
+  возвращает строка
+  пример «No pages»
+    дано title равно "Т"
+    дано pages равно пустой список
+    ожидается "пустой список"
+  если пусто pages
+    то "пустой список"
+    иначе соединить ["«", title, ": страницы»"] по ""
+
+тотальная функция «Page functions»
+  принимает title: строка, stem: строка, pages: список строки
+  возвращает строка
+  пример «No pages»
+    дано title равно "Т"
+    дано stem равно "К"
+    дано pages равно пустой список
+    ожидается ""
+  если пусто pages
+    то ""
+    иначе (соединить ["\n", («Chunked functions» от (соединить [title, ": страницы"] по "") и (соединить [stem,
+        " страниц"] по "") и pages и 800)] по "")
+
+тотальная функция «Chunked functions»
+  принимает listName: строка, stem: строка, lines: список строки, size: число
+  возвращает строка
+  пример «One chunk»
+    дано listName равно "Т: куски"
+    дано stem равно "К"
+    дано lines равно ["0001"]
+    дано size равно 800
+    ожидается """
+      тотальная функция «Т: куски»
+        возвращает список строки
+        обеспечивает «кусков 1» (длина результат) равен 1
+        [
+          «К 1»
+        ]
+
+      тотальная функция «К 1»
+        возвращает строка
+        \"\"\"
+        0001
+        \"\"\"
+      """
+  пусть groups равно «Grouped» от lines и size
+  пусть names равно «Chunk names» от stem и (длина groups)
+  пусть listing равно (соединить ["тотальная функция «", listName,
+      "»\n  возвращает список строки\n  обеспечивает «кусков ", (к строке (длина groups)), "» (длина результат) равен ",
+      (к строке (длина groups)), "\n  [\n", (соединить (отобразить names как name → соединить ["    «", name, "»"] по
+      "") по ",\n"), "\n  ]\n"] по "")
+  (соединить [listing, (соединить (отобразить («Numbered groups» от groups) как group → соединить ["\n",
+      («Chunk function» от (элемент group.«position» в names) и group.«lines»)] по "") по "")] по "")
+
+тотальная функция «Count below search step»
+  принимает keys: список числа, bound: число, found: число, step: число
+  возвращает число
+  пример «Step taken»
+    дано keys равно [1, 5]
+    дано bound равно 6
+    дано found равно 0
+    дано step равно 2
+    ожидается 2
+  пусть ahead равно found плюс step
+  если (ahead не больше (длина keys)) и притом ((элемент ahead в keys) меньше bound)
+    то ahead
+    иначе found
+
+тотальная функция «Count below»
+  принимает keys: список числа, bound: число
+  возвращает число
+  пример «Two below»
+    дано keys равно [1, 5, 9]
+    дано bound равно 6
+    ожидается 2
+  (свёртка [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1] начиная с 0 как found и step →
+      «Count below search step» от keys и bound и found и step)
+
+тотальная функция «Page lines»
+  принимает lines: список строки, keyed: число, page: число
+  возвращает список строки
+  пример «Five pages for two keys»
+    дано lines равно ["000041 1", "000300 2"]
+    дано keyed равно 6
+    дано page равно 256
+    ожидается ["0000", "0001", "0001", "0001", "0002"]
+  пример «No pages»
+    дано lines равно ["000041 1"]
+    дано keyed равно 6
+    дано page равно 0
+    ожидается пустой список
+  пусть keys равно отобразить lines как line → «Шестнадцатеричное число» от (подстрока line с 1 по keyed)
+  пусть blocks равно (если page больше 0 то («Quotient» от (элемент (длина keys) в keys) и page) плюс 2 иначе 0)
+  (отобразить («Positions» от blocks) как block → «Hex text» от («Count below» от keys и ((block минус 1) умножить на
+      page)) и 4)
+
+тотальная функция «Version function»
+  принимает name: строка, version: строка
+  возвращает строка
+  пример «Version»
+    дано name равно "Версия"
+    дано version равно "17.0.0"
+    ожидается """
+      тотальная функция «Версия»
+        возвращает строка
+        пример «Версия Юникода, из которой сняты таблицы»
+          ожидается "17.0.0"
+        "17.0.0"
+      """
+  (соединить ["тотальная функция «", name,
+      "»\n  возвращает строка\n  пример «Версия Юникода, из которой сняты таблицы»\n    ожидается \"", version,
+      "\"\n  \"", version, "\"\n"] по "")
+
+тотальная функция «Module heading»
+  принимает name: строка
+  возвращает строка
+  пример «Heading»
+    дано name равно "Unicode case data"
+    ожидается """
+      модуль «Unicode case data»
+        использует «Unicode tables» из "unicode-tables.flang" только «Таблица юникода»
+
+      """
+  (соединить ["модуль «", name,
+      "»\n  использует «Unicode tables» из \"unicode-tables.flang\" только «Таблица юникода»\n\n"] по "")
+
+тотальная функция «Number list lines»
+  принимает numbers: список числа
+  возвращает строка
+  пример «Wrapped by twelve»
+    дано numbers равно [1, 2]
+    ожидается "    1, 2"
+  (соединить (отобразить («Grouped» от (отобразить numbers как number → к строке number) и 12) как group → соединить
+      ["    ", (соединить group по ", ")] по "") по ",\n")
+
+тотальная функция «Code page function»
+  принимает name: строка, points: список числа
+  возвращает строка
+  пример «Two points»
+    дано name равно "Страница"
+    дано points равно [1026, 1027]
+    ожидается """
+      тотальная функция «Страница»
+        возвращает список числа
+        обеспечивает «знаков верхней половины 2» (длина результат) равен 2
+        [
+          1026, 1027
+        ]
+      """
+  (соединить ["тотальная функция «", name, "»\n  возвращает список числа\n  обеспечивает «знаков верхней половины ",
+      (к строке (длина points)), "» (длина результат) равен ", (к строке (длина points)), "\n  [\n",
+      («Number list lines» от points), "\n  ]\n"] по "")
+
+тотальная функция «Normalization module»
+  принимает version: строка, data: строка, props: строка
+  возвращает строка
+  пусть maybes равно «Spans» от props и "NFC_QC" и ["", "", "M"]
+  пусть excluded равно «Spans» от props и "Full_Composition_Exclusion" и ["none", ""]
+  пусть entries равно «Maybe entries» от data и maybes
+  пусть main равно «Main lines» от entries и maybes
+  соединить [«Module heading» от "Unicode normalization data",
+    «Version function» от "Версия данных нормализации" и version, "\n",
+    «Table functions» от "Таблица нормализации" и "Кусок нормализации" и main.«lines» и 256, "\n",
+    «Table functions» от "Точки разложений" и "Кусок точек разложений" и main.«points» и 0, "\n",
+    «Table functions» от "Таблица композиций" и "Кусок композиций" и («Pair lines» от entries и excluded) и 0] по ""
+
+тотальная функция «Grapheme module»
+  принимает version: строка, breaks: строка, emoji: строка, core: строка
+  возвращает строка
+  пусть «break spans» равно «Sorted spans» от («Spans» от breaks и "" и («Break names»))
+  пусть «pictograph spans» равно «Sorted spans» от («Spans» от emoji и "Extended_Pictographic" и ["none", ""])
+  пусть «conjunct spans» равно «Sorted spans» от («Spans» от core и "InCB" и ["", "Consonant", "Extend", "Linker"])
+  соединить [«Module heading» от "Unicode grapheme data", «Version function» от "Версия данных графем" и version, "\n",
+    «Table functions» от "Таблица графем" и "Кусок графем" и («Grapheme lines» от «break spans» и «pictograph spans» и
+      «conjunct spans») и 256] по ""
+
+тотальная функция «Case module»
+  принимает version: строка, folding: строка
+  возвращает строка
+  соединить [«Module heading» от "Unicode case data", «Version function» от "Версия данных регистра" и version, "\n",
+    «Table functions» от "Таблица свёртки регистра" и "Кусок свёртки регистра" и («Case lines» от folding) и 256] по ""
+
+тотальная функция «Code page module»
+  принимает windows: строка, koi: строка
+  возвращает строка
+  соединить ["модуль «Code page data»\n\n", «Code page function» от "Верхняя половина CP1251" и («Code page points» от
+    windows), "\n",
+    «Code page function» от "Верхняя половина KOI8-R" и («Code page points» от koi)] по ""
+
+тотальная функция «Output files»
+  принимает target: строка, texts: список строки
+  возвращает список «Output file»
+  пусть version равно «Version of» от («Field» от texts и 2)
+  [запись «Output file» с «path» равным (соединить [target, "/unicode-normalization-data.flang"] по
+    "") и «text» равным («Normalization module» от version и («Field» от texts и 1) и («Field» от texts и 2)),
+   запись «Output file» с «path» равным (соединить [target, "/unicode-grapheme-data.flang"] по
+     "") и «text» равным («Grapheme module» от version и («Field» от texts и 4) и («Field» от texts и 5) и («Field» от
+     texts и 6)),
+   запись «Output file» с «path» равным (соединить [target, "/unicode-case-data.flang"] по
+     "") и «text» равным («Case module» от version и («Field» от texts и 3)),
+   запись «Output file» с «path» равным (соединить [target, "/code-page-data.flang"] по
+     "") и «text» равным («Code page module» от («Field» от texts и 7) и («Field» от texts и 8))]
+
+тотальная функция «Begin»
+  возвращает «Generation»
+  пример «Arguments first»
+    ожидается вариант «Asking arguments»
+  вариант «Asking arguments»
+
+тотальная функция «Read next»
+  принимает folder: строка, target: строка, names: список строки, texts: список строки
+  возвращает «Продолжение»
+  пример «First source»
+    дано folder равно "ucd"
+    дано target равно "out"
+    дано names равно ["UnicodeData.txt"]
+    дано texts равно пустой список
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "ucd/UnicodeData.txt") и
+        потом равным (вариант «Reading» с folder равным "ucd" и target равным "out" и names равным ["UnicodeData.txt"] и
+        texts равным пустой список))
+  разбор names
+    случай пусто
+      то «Write next» от («Output files» от target и texts) и 0
+    случай голова name и хвост rest
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [folder, "/", name] по
+          "")) и потом равным (вариант «Reading» с folder равным folder и target равным target и names равным names и
+          texts равным texts))
+
+тотальная функция «Write next»
+  принимает files: список «Output file», written: число
+  возвращает «Продолжение»
+  пример «Nothing left»
+    дано files равно пустой список
+    дано written равно 4
+    ожидается вариант «Конец работы» с значение равным "tables written: 4"
+  разбор files
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить ["tables written: ", к строке written] по "")
+    случай голова file и хвост rest
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным file.«path» и содержимое равным
+          file.«text») и потом равным (вариант «Writing» с files равным rest и written равным (written плюс 1)))
+
+тотальная функция «After reading»
+  принимает folder: строка, target: строка, names: список строки, texts: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Failure is said»
+    дано folder равно "ucd"
+    дано target равно "out"
+    дано names равно ["UnicodeData.txt"]
+    дано texts равно пустой список
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+    ожидается вариант «Провал» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Read next» от folder и target и (хвост names) и (добавить text к texts)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Провал» с код равным code и сообщение равным message
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "a file was awaited"
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Two folders»
+    дано reply равно вариант «Доводы» с доводы равным ["ucd", "out"]
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "ucd/UnicodeData.txt") и
+        потом равным (вариант «Reading» с folder равным "ucd" и target равным "out" и names равным ["UnicodeData.txt",
+        "DerivedNormalizationProps.txt", "CaseFolding.txt", "GraphemeBreakProperty.txt", "emoji-data.txt",
+        "DerivedCoreProperties.txt", "index-windows-1251.txt", "index-koi8-r.txt"] и texts равным пустой список))
+  пример «Folders missing»
+    дано reply равно вариант «Доводы» с доводы равным ["ucd"]
+    ожидается (вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+        "usage: -- <folder with UCD and WHATWG files> <folder for the tables>")
+  разбор reply
+    случай вариант «Доводы» с доводы как words
+      то (если (длина words) равен 2 то «Read next» от (элемент 1 в words) и (элемент 2 в words) и («Source names») и
+          пустой список иначе вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+          "usage: -- <folder with UCD and WHATWG files> <folder for the tables>")
+    случай любое
+      то вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным "arguments were awaited"
+
+тотальная функция «Next»
+  принимает generation: «Generation», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Start»
+    дано generation равно вариант «Asking arguments»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант
+        «Asking arguments»))
+  разбор generation
+    случай вариант «Asking arguments»
+      то «Arguments or ask» от reply
+    случай вариант «Reading» с folder как folder и target как target и names как names и texts как texts
+      то «After reading» от folder и target и names и texts и reply
+    случай вариант «Writing» с files как files и written как written
+      то «Write next» от files и written
+
+тотальная функция «Arguments or ask»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Ask»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант
+        «Asking arguments»))
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking arguments»)
+    случай любое
+      то «After arguments» от reply
+
+план «Generate»
+  состояние «Generation»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Trimmed»
+  принимает text: строка
+  возвращает строка
+  пример «Both sides»
+    дано text равно "  ab c "
+    ожидается "ab c"
+  пример «Only spaces»
+    дано text равно "   "
+    ожидается ""
+  пусть marks равно свёртка (разложить text на символы) начиная с [0, 0, 0] как seen и sign → «Trim step» от seen и sign
+  если (элемент 2 в marks) равен 0
+    то ""
+    иначе подстрока text с (элемент 2 в marks) по (элемент 3 в marks)
+
+тотальная функция «Trim step»
+  принимает seen: список числа, sign: строка
+  возвращает список числа
+  пример «First letter after a space»
+    дано seen равно [1, 0, 0]
+    дано sign равно "a"
+    ожидается [2, 2, 2]
+  пример «Space after a letter»
+    дано seen равно [2, 2, 2]
+    дано sign равно " "
+    ожидается [3, 2, 2]
+  пусть position равно (элемент 1 в seen) плюс 1
+  если (sign равен " ") или (sign равен "\t")
+    то [position, элемент 2 в seen, элемент 3 в seen]
+    иначе [position, (если (элемент 2 в seen) равен 0 то position иначе элемент 2 в seen), position]
+
+тотальная функция «Quotient»
+  принимает value: число, divisor: число
+  возвращает число
+  пример «Whole part of a division»
+    дано value равно 17
+    дано divisor равно 5
+    ожидается 3
+  (value минус (value остаток от divisor)) делить на divisor

@@ -1,0 +1,13 @@
+module «Measure»
+
+total function «GCD»
+  accepts a: number, b: number
+  returns number
+  decreases b
+  example «twelve and eighteen»
+    given a equals 12
+    given b equals 18
+    expected 6
+  if b equals 0
+    then a
+    else «GCD» of b and (a modulo b)

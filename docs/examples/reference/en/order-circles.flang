@@ -1,0 +1,35 @@
+module «Order circles»
+
+object «Order»
+  number is number
+  urgency is number
+
+object «Urgent»
+  number is number
+
+object «Paid»
+  number is number
+
+total function «Urgent order»
+  accepts urgent: «Urgent»
+  returns «Order»
+  example «the first»
+    given urgent equals record «Urgent» with number equal to 1
+    expected record «Order» with number equal to 1 and urgency equal to 1
+  example «the second»
+    given urgent equals record «Urgent» with number equal to 2
+    expected record «Order» with number equal to 2 and urgency equal to 1
+  record «Order» with number equal to urgent.number and urgency equal to 1
+
+total function «Paid order»
+  accepts paid: «Paid»
+  returns «Order»
+  example «the second»
+    given paid equals record «Paid» with number equal to 2
+    expected record «Order» with number equal to 2 and urgency equal to 1
+  record «Order» with number equal to paid.number and urgency equal to 1
+
+embedding «Urgent among orders» from «Urgent» to «Order» gives «Urgent order»
+embedding «Paid among orders» from «Paid» to «Order» gives «Paid order»
+
+intersection «Urgent and paid» from «Urgent» and «Paid» to «Order»

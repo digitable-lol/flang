@@ -1,0 +1,728 @@
+модуль «Library api»
+  использует «Page inserts» из "inserts.flang"
+
+объект «Library file»
+  «path»: строка
+  «text»: строка
+
+объект «Status row»
+  «path»: строка
+  «digest»: строка
+  «function»: строка
+  «claim»: строка
+  «status»: строка
+
+объект «Module view»
+  «path»: строка
+  «name»: строка
+  «digest»: строка
+  «interface»: список строки
+  «functions»: список строки
+
+объект «Context»
+  «words»: список «Слово»
+  «raised»: список строки
+  «modules»: список «Module view»
+
+объект «Header reading»
+  «keep»: признак
+  «examples»: число
+  «lines»: список строки
+
+объект «Status rule»
+  «prefix»: строка
+  «class»: строка
+
+тотальная функция «Library command»
+  возвращает строка
+  обеспечивает «the key names the list of modules» результат равен "library list"
+  пример «the list of the modules of the library»
+    ожидается "library list"
+  "library list"
+
+тотальная функция «Status path»
+  возвращает строка
+  обеспечивает «the record lies next to the pages» результат начинается с "docs/site/"
+  пример «the record of what the kernel said about the library»
+    ожидается "docs/site/library-status.tsv"
+  "docs/site/library-status.tsv"
+
+тотальная функция «Order of key»
+  принимает key: строка
+  возвращает «Поручение»
+  пример «a file of the tree is read from the root»
+    дано key равно "file docs/a.md"
+    ожидается вариант «Прочитать файл» с путь равным "../../docs/a.md"
+  пример «a file named from the root of the machine»
+    дано key равно "file /t/d/a.code"
+    ожидается вариант «Прочитать файл» с путь равным "/t/d/a.code"
+  пример «anything else is a line of the shell from the root of the tree»
+    дано key равно "run --version"
+    ожидается (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "cd ../.. && bootstrap/flang --version 2>&1"])
+  пусть path равно («After» от key и "file ")
+  пусть placed равно (если path начинается с "/" то path иначе соединить ["../../", path] по "")
+  пусть shell равно (соединить ["cd ../.. && ", («Shell line» от key)] по "")
+  если не (key начинается с "file ")
+    то вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", shell]
+    иначе вариант «Прочитать файл» с путь равным placed
+
+тотальная функция «Taken of answer»
+  принимает command: строка, answer: «Отклик»
+  возвращает «Taken»
+  пример «a finished process»
+    дано command равно "run --version"
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "x" и ошибки равным ""
+    ожидается запись «Taken» с «command» равным "run --version" и «code» равным 0 и «output» равным "x"
+  пример «a file that was read»
+    дано command равно "file a.md"
+    дано answer равно вариант «Прочитано» с содержимое равным "# А\n"
+    ожидается запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"
+  пример «anything else is a failure with no output»
+    дано command равно "file a.md"
+    дано answer равно вариант «Сбой» с код равным "E" и сообщение равным "нет"
+    ожидается запись «Taken» с «command» равным "file a.md" и «code» равным -1 и «output» равным ""
+  разбор answer
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то запись «Taken» с «command» равным command и «code» равным код и «output» равным вывод
+    случай вариант «Прочитано» с содержимое как содержимое
+      то запись «Taken» с «command» равным command и «code» равным 0 и «output» равным содержимое
+    случай любое
+      то запись «Taken» с «command» равным command и «code» равным -1 и «output» равным ""
+
+тотальная функция «Library paths»
+  принимает taken: список «Taken»
+  возвращает список строки
+  пример «the files the list names»
+    дано taken равно [(запись «Taken» с «command» равным "library list" и «code» равным 0
+      и «output» равным "a.flang\nb.flang\n")]
+    ожидается ["a.flang", "b.flang"]
+  «Lines of» от («Output of» от taken и («Library command»))
+
+тотальная функция «Library reads»
+  принимает taken: список «Taken»
+  возвращает список строки
+  пример «each module of the list that was not read yet»
+    дано taken равно [(запись «Taken» с «command» равным "library list" и «code» равным 0
+      и «output» равным "a.flang\nb.flang\n"),
+      (запись «Taken» с «command» равным "file a.flang" и «code» равным 0 и «output» равным "модуль «А»\n")]
+    ожидается ["file b.flang"]
+  пусть done равно (отобразить taken как one → one.«command»)
+  отфильтровать (отобразить
+    («Library paths» от taken) как path → «File command» от path) где command → не (done содержит command)
+
+тотальная функция «Library files»
+  принимает taken: список «Taken»
+  возвращает список «Library file»
+  пример «the modules with their text»
+    дано taken равно [(запись «Taken» с «command» равным "library list" и «code» равным 0
+      и «output» равным "a.flang\n"),
+      (запись «Taken» с «command» равным "file a.flang" и «code» равным 0 и «output» равным "модуль «А»\n")]
+    ожидается [запись «Library file» с «path» равным "a.flang" и «text» равным "модуль «А»\n"]
+  пусть read равно (отфильтровать («Library paths» от taken) где path → («Code of» от taken и
+    («File command» от path)) равен 0)
+  отобразить read как path → запись «Library file» с «path» равным path и «text» равным («Output of» от taken и
+    («File command» от path))
+
+тотальная функция «Header words»
+  возвращает список строки
+  обеспечивает «seven words open a part of the heading» (длина результат) равен 7
+  пример «the parts that come before the body»
+    ожидается ["принимает", "возвращает", "требует", "обеспечивает", "пример", "убывает", "для"]
+  ["принимает", "возвращает", "требует", "обеспечивает", "пример", "убывает", "для"]
+
+тотальная функция «Part word»
+  принимает line: строка
+  возвращает строка
+  пример «a part at the first indent»
+    дано line равно "  принимает н: нат"
+    ожидается "принимает"
+  пример «a deeper line opens no part»
+    дано line равно "    дано н равно 0"
+    ожидается ""
+  если (line начинается с "  ") и притом (не (line начинается с "   "))
+    то голова (разделить («After» от line и "  ") по " ")
+    иначе ""
+
+тотальная функция «Header step»
+  принимает reading: «Header reading», line: строка
+  возвращает «Header reading»
+  пример «the second example is left out»
+    дано reading равно запись «Header reading» с «keep» равным да и «examples» равным 1 и «lines» равным ["т"]
+    дано line равно "  пример «два»"
+    ожидается запись «Header reading» с «keep» равным нет и «examples» равным 2 и «lines» равным ["т"]
+  пример «a deeper line follows its part»
+    дано reading равно запись «Header reading» с «keep» равным да и «examples» равным 1 и «lines» равным ["т"]
+    дано line равно "    дано н равно 0"
+    ожидается (запись «Header reading» с «keep» равным да и «examples» равным 1
+      и «lines» равным ["т", "    дано н равно 0"])
+  пример «the body is left out»
+    дано reading равно запись «Header reading» с «keep» равным да и «examples» равным 1 и «lines» равным ["т"]
+    дано line равно "  если н больше 0"
+    ожидается запись «Header reading» с «keep» равным нет и «examples» равным 1 и «lines» равным ["т"]
+  пусть word равно («Part word» от line)
+  пусть examples равно (если word равен "пример" то ((reading.«examples») плюс 1) иначе (reading.«examples»))
+  пусть keep равно («Keeps» от word и examples и (reading.«keep»))
+  пусть lines равно (если keep и притом (не (line равен "")) то добавить line к (reading.«lines») иначе
+    (reading.«lines»))
+  запись «Header reading» с «keep» равным keep и «examples» равным examples и «lines» равным lines
+
+тотальная функция «Keeps»
+  принимает word: строка, examples: число, before: признак
+  возвращает признак
+  пример «a line without a part goes on as before»
+    дано word равно ""
+    дано examples равно 0
+    дано before равно да
+    ожидается да
+  пример «the first example is kept»
+    дано word равно "пример"
+    дано examples равно 1
+    дано before равно да
+    ожидается да
+  пример «a body word stops the heading»
+    дано word равно "пусть"
+    дано examples равно 0
+    дано before равно да
+    ожидается нет
+  если word равен ""
+    то before
+    иначе ((«Header words») содержит word) и притом ((не (word равен "пример")) или (examples равен 1))
+
+тотальная функция «Header of»
+  принимает block: список строки
+  возвращает список строки
+  пример «the heading of a function without its body»
+    дано block равно ["тотальная функция «А»", "  возвращает число", "  пример «один»", "    ожидается 1", "  1"]
+    ожидается ["тотальная функция «А»", "  возвращает число", "  пример «один»", "    ожидается 1"]
+  пусть start равно (запись «Header reading» с «keep» равным да и «examples» равным 0 и «lines» равным [голова block])
+  пусть read равно (свёртка (хвост block) начиная с start как acc и line → «Header step» от acc и line)
+  read.«lines»
+
+тотальная функция «Is function»
+  принимает line: строка
+  возвращает признак
+  пример «a total function»
+    дано line равно "тотальная функция «А»"
+    ожидается да
+  пример «a type»
+    дано line равно "тип «Т»"
+    ожидается нет
+  (line начинается с "тотальная функция «") или (line начинается с "функция «")
+
+тотальная функция «Is shape»
+  принимает line: строка
+  возвращает признак
+  пример «an object»
+    дано line равно "объект «О»"
+    ожидается да
+  пример «the module line»
+    дано line равно "модуль «М»"
+    ожидается нет
+  (line начинается с "тип «") или (line начинается с "объект «")
+
+тотальная функция «Interface of block»
+  принимает block: список строки
+  возвращает список строки
+  пример «a type is shown whole»
+    дано block равно ["тип «Т»", "  вариант А", ""]
+    ожидается ["тип «Т»", "  вариант А", ""]
+  пример «the module line is not part of the interface»
+    дано block равно ["модуль «М»", ""]
+    ожидается пустой список
+  пусть title равно (голова block)
+  если «Is function» от title
+    то добавить "" к («Header of» от block)
+    иначе (если «Is shape» от title то добавить "" к («Trimmed block» от block) иначе пустой список)
+
+тотальная функция «Interface»
+  принимает text: строка
+  возвращает список строки
+  пример «the declarations of a module without bodies»
+    дано text равно "модуль «М»\n\nтип «Т»\n  вариант А\n\nтотальная функция «Ф»\n  возвращает число\n  1\n"
+    ожидается ["тип «Т»", "  вариант А", "", "тотальная функция «Ф»", "  возвращает число"]
+  пусть parts равно (отобразить («Blocks» от («Lines of» от text)) как block → «Interface of block» от block)
+  «Without last» от (свёртка parts начиная с пустой список как acc и part → «Joined lists» от acc и part)
+
+тотальная функция «Module name»
+  принимает text: строка
+  возвращает строка
+  пример «the name on the first line»
+    дано text равно "модуль «Lists»\n"
+    ожидается "Lists"
+  «Declared name» от (голова (разделить text по "\n"))
+
+тотальная функция «Functions of»
+  принимает text: строка
+  возвращает список строки
+  пример «the names of the functions in their order»
+    дано text равно "модуль «М»\n\nтип «Т»\n  вариант А\n\nтотальная функция «Ф»\n  1\nфункция «Г»\n  2\n"
+    ожидается ["Ф", "Г"]
+  пусть titles равно (отфильтровать («Lines of» от text) где line → «Is function» от line)
+  отобразить titles как line → «Declared name» от line
+
+тотальная функция «Status rows»
+  принимает text: строка
+  возвращает список «Status row»
+  пример «the heading row is left out»
+    дано text равно "path\tdigest\tfunction\tclaim\tstatus\na.flang\tff\tФ\t\tдоказано композицией\n"
+    ожидается [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано композицией")]
+  отобразить («Past head» от («Data rows» от text)) как line → «Status row of» от (разделить line по "\t")
+
+тотальная функция «Status row of»
+  принимает cells: список строки
+  возвращает «Status row»
+  пример «five cells»
+    дано cells равно ["a.flang", "ff", "Ф", "c", "сетка"]
+    ожидается (запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "c" и «status» равным "сетка")
+  (запись «Status row» с «path» равным («Cell» от cells и 1) и «digest» равным («Cell» от cells и 2)
+    и «function» равным («Cell» от cells и 3) и «claim» равным («Cell» от cells и 4)
+    и «status» равным («Cell» от cells и 5))
+
+объект «Thinning»
+  «last»: строка
+  «rows»: список «Status row»
+
+тотальная функция «Thin rows»
+  принимает rows: список «Status row»
+  возвращает список «Status row»
+  пример «the digest stays on the first row of a file»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано"), (запись «Status row» с «path» равным "a.flang"
+      и «digest» равным "ff" и «function» равным "Ф" и «claim» равным "к" и «status» равным "сетка")]
+    ожидается [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано"), (запись «Status row» с «path» равным "a.flang"
+      и «digest» равным "" и «function» равным "Ф" и «claim» равным "к" и «status» равным "сетка")]
+  пусть start равно (запись «Thinning» с «last» равным "" и «rows» равным пустой список)
+  пусть done равно (свёртка rows начиная с start как acc и row → «Thin step» от acc и row)
+  done.«rows»
+
+тотальная функция «Thin step»
+  принимает acc: «Thinning», row: «Status row»
+  возвращает «Thinning»
+  пример «a row of the same file as the one before loses its digest»
+    дано acc равно запись «Thinning» с «last» равным "a.flang" и «rows» равным пустой список
+    дано row равно (запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано")
+    ожидается (запись «Thinning» с «last» равным "a.flang"
+      и «rows» равным [(запись «Status row» с «path» равным "a.flang" и «digest» равным "" и «function» равным "Ф"
+        и «claim» равным "" и «status» равным "доказано")])
+  пусть kept равно (если (acc.«last») равен (row.«path») то "" иначе (row.«digest»))
+  пусть thin равно (запись «Status row» с «path» равным (row.«path») и «digest» равным kept
+    и «function» равным (row.«function») и «claim» равным (row.«claim») и «status» равным (row.«status»))
+  запись «Thinning» с «last» равным (row.«path») и «rows» равным (добавить thin к (acc.«rows»))
+
+тотальная функция «Status line»
+  принимает row: «Status row»
+  возвращает строка
+  пример «a row of the record»
+    дано row равно (запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано")
+    ожидается "a.flang\tff\tФ\t\tдоказано"
+  соединить [(row.«path»), (row.«digest»), (row.«function»), (row.«claim»), (row.«status»)] по "\t"
+
+тотальная функция «Status text»
+  принимает rows: список «Status row»
+  возвращает строка
+  пример «the heading row, then one line per row»
+    дано rows равно пустой список
+    ожидается "path\tdigest\tfunction\tclaim\tstatus\n"
+  соединить [(соединить (приписать "path\tdigest\tfunction\tclaim\tstatus" к (отобразить («Thin rows» от rows) как row
+    → «Status line» от row)) по "\n"), "\n"] по ""
+
+тотальная функция «Status rules»
+  возвращает список «Status rule»
+  обеспечивает «eight answers of the kernel are told apart» (длина результат) равен 8
+  пример «the words the ledger starts an answer with»
+    ожидается [запись «Status rule» с «prefix» равным "доказано" и «class» равным "доказано",
+      запись «Status rule» с «prefix» равным "сетка" и «class» равным "сетка",
+      запись «Status rule» с «prefix» равным "объявлено, не доказано" и «class» равным "объявлено, не доказано",
+      запись «Status rule» с «prefix» равным "условно" и «class» равным "условно",
+      запись «Status rule» с «prefix» равным "на веру" и «class» равным "на веру",
+      запись «Status rule» с «prefix» равным "нарушено" и «class» равным "нарушено",
+      запись «Status rule» с «prefix» равным "НАРУШЕНО" и «class» равным "нарушено",
+      запись «Status rule» с «prefix» равным "отвергнуто" и «class» равным "отвергнуто"]
+  [запись «Status rule» с «prefix» равным "доказано" и «class» равным "доказано",
+   запись «Status rule» с «prefix» равным "сетка" и «class» равным "сетка",
+   запись «Status rule» с «prefix» равным "объявлено, не доказано" и «class» равным "объявлено, не доказано",
+   запись «Status rule» с «prefix» равным "условно" и «class» равным "условно",
+   запись «Status rule» с «prefix» равным "на веру" и «class» равным "на веру",
+   запись «Status rule» с «prefix» равным "нарушено" и «class» равным "нарушено",
+   запись «Status rule» с «prefix» равным "НАРУШЕНО" и «class» равным "нарушено",
+   запись «Status rule» с «prefix» равным "отвергнуто" и «class» равным "отвергнуто"]
+
+тотальная функция «Status class»
+  принимает said: строка
+  возвращает строка
+  пример «proved»
+    дано said равно "доказано сведением цели с телом функции: правило"
+    ожидается "доказано"
+  пример «declared and not proved»
+    дано said равно "объявлено, не доказано — ядру не хватило правил"
+    ожидается "объявлено, не доказано"
+  пример «an answer the rules do not know keeps its first word»
+    дано said равно "непонятно что"
+    ожидается "непонятно"
+  пусть held равно (отфильтровать («Status rules») где known → said начинается с (known.«prefix»))
+  разбор held
+    случай пусто
+      то голова (разделить said по " ")
+    случай голова и хвост
+      то голова.«class»
+
+тотальная функция «Collapsed»
+  принимает text: строка
+  возвращает строка
+  пример «runs of blanks become one, the edges go»
+    дано text равно "  доказано   композицией "
+    ожидается "доказано композицией"
+  соединить (отфильтровать (разделить text по " ") где word → не (word равен "")) по " "
+
+тотальная функция «Termination row»
+  принимает path: строка, digest: строка, line: строка
+  возвращает «Status row»
+  пример «a line of the termination part of the ledger»
+    дано path равно "a.flang"
+    дано digest равно "ff"
+    дано line равно "  «Длина»                 доказано композицией: рекурсии нет"
+    ожидается (запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Длина"
+      и «claim» равным "" и «status» равным "доказано композицией")
+  пусть name равно (голова (разделить («After» от line и "«") по "»"))
+  пусть said равно («Collapsed» от (голова (разделить («After» от line и "»") по ":")))
+  (запись «Status row» с «path» равным path и «digest» равным digest и «function» равным name
+    и «claim» равным "" и «status» равным said)
+
+тотальная функция «Claim row»
+  принимает path: строка, digest: строка, line: строка
+  возвращает «Status row»
+  пример «a line of the claims part of the ledger»
+    дано path равно "a.flang"
+    дано digest равно "ff"
+    дано line равно "  постусловие «длина — сумма» функции «Соединить списки» — сетка 3 значений: это не доказательство"
+    ожидается (запись «Status row» с «path» равным "a.flang" и «digest» равным "ff"
+      и «function» равным "Соединить списки"
+      и «claim» равным "длина — сумма" и «status» равным "сетка")
+  пусть owner равно («After» от line и " функции «")
+  пусть asserted равно (голова (разделить («After» от line и "«") по "»"))
+  пусть name равно (голова (разделить owner по "»"))
+  пусть said равно («After» от owner и "» — ")
+  (запись «Status row» с «path» равным path и «digest» равным digest и «function» равным name
+    и «claim» равным asserted и «status» равным («Status class» от said))
+
+тотальная функция «Is termination line»
+  принимает line: строка
+  возвращает признак
+  пример «a function at the first indent»
+    дано line равно "  «Длина»   доказано композицией"
+    ожидается да
+  пример «a claim»
+    дано line равно "  постусловие «а» функции «Б» — доказано"
+    ожидается нет
+  пример «a word of the legend of the ledger»
+    дано line равно "  «доказано» — утверждение обо ВСЕХ входах"
+    ожидается нет
+  (line начинается с "  «") и притом («After» от line и "»") начинается с "  "
+
+тотальная функция «Is claim line»
+  принимает line: строка
+  возвращает признак
+  пример «a claim»
+    дано line равно "  постусловие «а» функции «Б» — доказано"
+    ожидается да
+  пример «prose of the ledger»
+    дано line равно "  «доказано» — утверждение обо ВСЕХ входах"
+    ожидается нет
+  (line начинается с "  ") и притом (line содержит " функции «") и притом (line содержит "» — ")
+
+тотальная функция «Ledger rows»
+  принимает path: строка, digest: строка, code: число, ledger: строка
+  возвращает список «Status row»
+  пример «a ledger that was not printed names its code»
+    дано path равно "a.flang"
+    дано digest равно "ff"
+    дано code равно 124
+    дано ledger равно ""
+    ожидается [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным ""
+      и «claim» равным "" и «status» равным "ведомость не снялась: код 124")]
+  пример «a printed ledger without functions gives a row that names no failure»
+    дано path равно "a.flang"
+    дано digest равно "ff"
+    дано code равно 0
+    дано ledger равно "чем несётся обещание «тотальная»:\n  нет объявленных функций\n"
+    ожидается [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным ""
+      и «claim» равным "" и «status» равным "")]
+  пример «a printed ledger gives a row per line»
+    дано path равно "a.flang"
+    дано digest равно "ff"
+    дано code равно 0
+    дано ledger равно "чем несётся обещание «тотальная»:\n  «Ф»   доказано композицией: нет\n"
+    ожидается [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано композицией")]
+  пусть lines равно («Lines of» от ledger)
+  пусть ends равно (отобразить (отфильтровать lines где line → «Is termination line» от line) как line
+    → «Termination row» от path и digest и line)
+  пусть claims равно (отобразить (отфильтровать lines где line → «Is claim line» от line) как line
+    → «Claim row» от path и digest и line)
+  пусть rows равно («Joined rows» от ends и claims)
+  пусть printed равно ((code равен 0) или (code равен 3))
+  пусть opening равно («First code line» от lines)
+  пусть why равно (если opening равен "" то "" иначе соединить [" — ", opening] по "")
+  пусть said равно (если printed то "" иначе (соединить ["ведомость не снялась: код ", (к строке code), why] по ""))
+  если пусто rows
+    то [(запись «Status row» с «path» равным path и «digest» равным digest и «function» равным ""
+      и «claim» равным "" и «status» равным said)]
+    иначе rows
+
+тотальная функция «First code line»
+  принимает lines: список строки
+  возвращает строка
+  пример «the first line that names a code»
+    дано lines равно ["место указано строкой", "FLANG_UNKNOWN_NAME, строка 87: неизвестная функция «А»",
+      "FLANG_NOT_TOTAL"]
+    ожидается "FLANG_UNKNOWN_NAME, строка 87: неизвестная функция «А»"
+  пример «no code»
+    дано lines равно ["ничего"]
+    ожидается ""
+  пусть coded равно (отфильтровать lines где line → line начинается с "FLANG_")
+  разбор coded
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Joined rows»
+  принимает front: список «Status row», back: список «Status row»
+  возвращает список «Status row»
+  пример «nothing joined to nothing»
+    дано front равно пустой список
+    дано back равно пустой список
+    ожидается пустой список
+  свёртка back начиная с front как acc и one → добавить one к acc
+
+тотальная функция «Rows of file»
+  принимает rows: список «Status row», path: строка
+  возвращает список «Status row»
+  пример «only the rows of the file»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано")]
+    дано path равно "b.flang"
+    ожидается пустой список
+  отфильтровать rows где row → (row.«path») равен path
+
+тотальная функция «Termination of»
+  принимает rows: список «Status row», name: строка
+  возвращает строка
+  пример «what the kernel said about termination»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано композицией")]
+    дано name равно "Ф"
+    ожидается "доказано композицией"
+  пример «nothing said»
+    дано rows равно пустой список
+    дано name равно "Ф"
+    ожидается "—"
+  пусть own равно (отфильтровать rows где row → ((row.«function») равен name) и притом ((row.«claim») равен ""))
+  разбор own
+    случай пусто
+      то "—"
+    случай голова и хвост
+      то голова.«status»
+
+тотальная функция «Claims of»
+  принимает rows: список «Status row», name: строка
+  возвращает строка
+  пример «all proved»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "к" и «status» равным "доказано")]
+    дано name равно "Ф"
+    ожидается "доказано 1 из 1"
+  пример «one on a grid is named»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "к" и «status» равным "доказано"), (запись «Status row» с «path» равным "a.flang"
+      и «digest» равным "ff" и «function» равным "Ф" и «claim» равным "м" и «status» равным "сетка")]
+    дано name равно "Ф"
+    ожидается "доказано 1 из 2; «м» — сетка"
+  пример «no claims»
+    дано rows равно пустой список
+    дано name равно "Ф"
+    ожидается "—"
+  пусть own равно (отфильтровать rows где row → ((row.«function») равен name) и притом (не ((row.«claim») равен "")))
+  пусть proved равно (отфильтровать own где row → (row.«status») равен "доказано")
+  пусть others равно (отфильтровать own где row → не ((row.«status») равен "доказано"))
+  пусть named равно (отобразить others как row → соединить ["«", (row.«claim»), "» — ", (row.«status»)] по "")
+  пусть counted равно (соединить ["доказано ", (к строке (длина proved)), " из ", (к строке (длина own))] по "")
+  если пусто own
+    то "—"
+    иначе соединить (приписать counted к named) по "; "
+
+тотальная функция «Record standing»
+  принимает rows: список «Status row», digest: строка
+  возвращает строка
+  пример «the record was taken from this very file»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано")]
+    дано digest равно "ff"
+    ожидается "current"
+  пример «the file changed since»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ee" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано")]
+    дано digest равно "ff"
+    ожидается "stale"
+  пример «no record»
+    дано rows равно пустой список
+    дано digest равно "ff"
+    ожидается "missing"
+  разбор rows
+    случай пусто
+      то "missing"
+    случай голова и хвост
+      то если (голова.«digest») равен digest то "current" иначе "stale"
+
+тотальная функция «Failure of»
+  принимает rows: список «Status row»
+  возвращает строка
+  пример «a ledger that did not print»
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным ""
+      и «claim» равным "" и «status» равным "ведомость не снялась: код 124")]
+    ожидается "ведомость не снялась: код 124"
+  пример «a ledger that printed»
+    дано rows равно пустой список
+    ожидается ""
+  пусть failed равно (отфильтровать rows где row → (row.«function») равен "")
+  разбор failed
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«status»
+
+тотальная функция «Record words»
+  принимает standing: строка, failure: строка, language: строка
+  возвращает строка
+  пример «a current record in russian»
+    дано standing равно "current"
+    дано failure равно ""
+    дано language равно "ru"
+    ожидается "ведомость ядра снята с этой версии файла"
+  пример «a stale record in english»
+    дано standing равно "stale"
+    дано failure равно ""
+    дано language равно "en"
+    ожидается "the kernel ledger was taken from another version of the file; take it again: `docs:library-status`"
+  пример «a ledger that did not print»
+    дано standing равно "current"
+    дано failure равно "ведомость не снялась: код 124"
+    дано language равно "ru"
+    ожидается "ведомость не снялась: код 124"
+  пусть words равно (отфильтровать («Record sayings» от language) где pair → (голова pair) равен standing)
+  если не (failure равен "")
+    то failure
+    иначе элемент 2 в (голова words)
+
+тотальная функция «Record sayings»
+  принимает language: строка
+  возвращает список список строки
+  обеспечивает «three states of the record» (длина результат) равен 3
+  пример «russian»
+    дано language равно "ru"
+    ожидается [["current", "ведомость ядра снята с этой версии файла"],
+      ["stale", "ведомость ядра снята с другой версии файла; снять заново: `docs:library-status`"],
+      ["missing", "ведомость ядра не снималась; снять: `docs:library-status`"]]
+  если language равен "ru"
+    то [["current", "ведомость ядра снята с этой версии файла"],
+      ["stale", "ведомость ядра снята с другой версии файла; снять заново: `docs:library-status`"],
+      ["missing", "ведомость ядра не снималась; снять: `docs:library-status`"]]
+    иначе [["current", "the kernel ledger was taken from this version of the file"],
+      ["stale", "the kernel ledger was taken from another version of the file; take it again: `docs:library-status`"],
+      ["missing", "the kernel ledger was never taken; take it: `docs:library-status`"]]
+
+тотальная функция «Status heading»
+  принимает language: строка
+  возвращает список строки
+  пример «english»
+    дано language равно "en"
+    ожидается ["Function", "Termination", "Claims"]
+  если language равен "ru" то ["Функция", "Завершение", "Утверждения"] иначе ["Function", "Termination", "Claims"]
+
+тотальная функция «Status table»
+  принимает names: список строки, rows: список «Status row», language: строка
+  возвращает список строки
+  пример «a row per function»
+    дано names равно ["Ф"]
+    дано rows равно [(запись «Status row» с «path» равным "a.flang" и «digest» равным "ff" и «function» равным "Ф"
+      и «claim» равным "" и «status» равным "доказано композицией")]
+    дано language равно "ru"
+    ожидается ["| Функция | Завершение | Утверждения |", "| --- | --- | --- |", "| «Ф» | доказано композицией | — |"]
+  пусть body равно (отобразить names как name
+    → «Row» от [(соединить ["«", name, "»"] по ""), («Termination of» от rows и name), («Claims of» от rows и name)])
+  «Table of» от («Status heading» от language) и body
+
+тотальная функция «Module view of»
+  принимает file: «Library file»
+  возвращает «Module view»
+  пример «what the page shows of a module»
+    дано file равно (запись «Library file» с «path» равным "a.flang"
+      и «text» равным "модуль «М»\n\nтотальная функция «Ф»\n  1\n")
+    ожидается (запись «Module view» с «path» равным "a.flang" и «name» равным "М"
+      и «digest» равным "6470fdcb2dad9c5f10b8cf6c3a17da4ba1a78e841e345c4e22b907bea46a4a07"
+      и «interface» равным ["тотальная функция «Ф»"] и «functions» равным ["Ф"])
+  (запись «Module view» с «path» равным (file.«path») и «name» равным («Module name» от (file.«text»))
+    и «digest» равным (хеш256 (file.«text»)) и «interface» равным («Interface» от (file.«text»))
+    и «functions» равным («Functions of» от (file.«text»)))
+
+тотальная функция «Module views»
+  принимает taken: список «Taken»
+  возвращает список «Module view»
+  пример «nothing read, nothing shown»
+    дано taken равно пустой список
+    ожидается пустой список
+  отобразить («Library files» от taken) как file → «Module view of» от file
+
+тотальная функция «Module section»
+  принимает view: «Module view», rows: список «Status row», language: строка
+  возвращает список строки
+  пример «a module without a record»
+    дано view равно (запись «Module view» с «path» равным "a.flang" и «name» равным "М" и «digest» равным "ff"
+      и «interface» равным ["тотальная функция «Ф»"] и «functions» равным ["Ф"])
+    дано rows равно пустой список
+    дано language равно "en"
+    ожидается ["### «М»", "",
+      "`a.flang` — functions 1; the kernel ledger was never taken; take it: `docs:library-status`",
+      "", "```flang", "тотальная функция «Ф»", "```", ""]
+  пусть own равно («Rows of file» от rows и (view.«path»))
+  пусть standing равно («Record standing» от own и (view.«digest»))
+  пусть said равно («Record words» от standing и («Failure of» от own) и language)
+  пусть counted равно (соединить ["`", (view.«path»), "` — ", («Functions word» от language), " ",
+    (к строке (длина (view.«functions»))), "; ", said] по "")
+  пусть code равно («Joined lists» от (приписать "```flang" к (view.«interface»)) и ["```", ""])
+  пусть heading равно [(соединить ["### «", (view.«name»), "»"] по ""), "", counted, ""]
+  пусть table равно (если standing равен "current" то («Joined lists» от («Status table» от (view.«functions») и own
+    и language) и [""])
+    иначе пустой список)
+  «Joined lists» от («Joined lists» от heading и code) и table
+
+тотальная функция «Functions word»
+  принимает language: строка
+  возвращает строка
+  пример «russian»
+    дано language равно "ru"
+    ожидается "функций"
+  если language равен "ru" то "функций" иначе "functions"
+
+тотальная функция «Library filled»
+  принимает views: список «Module view», taken: список «Taken», arguments: строка, language: строка
+  возвращает «Filled»
+  пример «the library was not read»
+    дано views равно пустой список
+    дано taken равно пустой список
+    дано arguments равно ""
+    дано language равно "ru"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "текст библиотеки не прочитан"
+  пусть shown равно (отфильтровать views где view → (arguments равен "") или ((view.«path») равен arguments))
+  пусть noted равно («Status rows» от («Output of» от taken и («File command» от («Status path»))))
+  пусть sections равно (отобразить shown как view → «Module section» от view и noted и language)
+  пусть lines равно (свёртка sections начиная с пустой список как acc и section → «Joined lists» от acc и section)
+  если пусто shown
+    то «Trouble» от ["текст библиотеки не прочитан"]
+    иначе «Filled with» от («Without last» от lines)

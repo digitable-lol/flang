@@ -1,0 +1,36 @@
+module «Order pipeline»
+
+object «Order»
+  amount is number
+
+object «Shipment»
+  code is number
+
+object «Invoice»
+  total is number
+
+total function «Ship order»
+  accepts order: «Order»
+  returns «Shipment»
+  record «Shipment» with code equal to order.amount
+
+total function «Bill shipment»
+  accepts shipment: «Shipment»
+  returns «Invoice»
+  record «Invoice» with total equal to shipment.code
+
+morphism «ship» from «Order» to «Shipment»
+  gives «Ship order»
+  law «the shipment code comes from the order amount»
+    example «an ordinary order»
+      given order equals record «Order» with amount equal to 500
+      expected record «Shipment» with code equal to 500
+
+morphism «bill» from «Shipment» to «Invoice»
+  gives «Bill shipment»
+
+morphism «process» это «bill» after «ship»
+
+chain «process an order»
+  first «ship»
+  next «bill»

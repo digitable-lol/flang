@@ -1382,6 +1382,20 @@ jobs:
       - name: Check glossary
         run: bootstrap/flang run-script dictionary:check
 
+      - name: Probe docs built from code
+        run: |
+          set -u
+          page=docs/site/cli.ru.md
+          sed -i '0,/^\$ flang --help$/s//$ flang --pomosch/' "$page"
+          if bootstrap/flang run-script docs:check; then
+            git checkout -- "$page"
+            echo "docs:check промолчал на подменённом выводе — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$page"
+      - name: Check docs built from code
+        run: bootstrap/flang run-script docs:check
+
       - name: Probe description census
         run: |
           if bootstrap/flang io scripts/guards/description-census-guard.fscript --plan Forgery --на-веру; then

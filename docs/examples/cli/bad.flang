@@ -1,0 +1,6 @@
+module «Bad»
+
+total function «Удвоить»
+  accepts н: number
+  returns string
+  н plus н

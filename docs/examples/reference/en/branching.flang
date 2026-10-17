@@ -1,0 +1,14 @@
+module «Branching»
+
+total function «Sum up to»
+  accepts n: nat
+  returns number
+  example «up to zero is zero»
+    given n equals 0
+    expected 0
+  example «up to three is six»
+    given n equals 3
+    expected 6
+  if n is at most 0
+    then 0
+    else n plus («Sum up to» of (n minus 1))

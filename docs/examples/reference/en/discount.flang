@@ -1,0 +1,51 @@
+module «Discount»
+
+type «Maybe» of «A»
+  variant «Some» contains value: «A»
+  variant «None»
+
+monad «Maybe» of «A»
+  return «Wrap»
+  flatten «Flatten»
+
+total function «Wrap» of «A»
+  accepts value: «A»
+  returns «Maybe» of «A»
+  variant «Some» with value equal to value
+
+total function «Flatten» of «A»
+  accepts nested: «Maybe» of («Maybe» of «A»)
+  returns «Maybe» of «A»
+  match nested
+    case variant «Some» with value as inner
+      then inner
+    case «None»
+      then variant «None»
+
+total function «Price of item»
+  accepts code: number
+  returns «Maybe» of number
+  if code equals 1
+    then variant «Some» with value equal to 500
+    else variant «None»
+
+total function «Discount for price»
+  accepts price: number
+  returns «Maybe» of number
+  if price is at least 400
+    then variant «Some» with value equal to (price divided by 10)
+    else variant «None»
+
+total function «Discounted total»
+  accepts code: number
+  returns «Maybe» of number
+  example «the first item has a discount»
+    given code equals 1
+    expected variant «Some» with value equal to 450
+  example «the second item is not in the catalogue»
+    given code equals 2
+    expected variant «None»
+  in monad «Maybe»
+    let price equals «Price of item» of code
+    let discount equals «Discount for price» of price
+    return price minus discount

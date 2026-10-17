@@ -2,8 +2,13 @@
 
 Когда компилятор отвергает программу, каждая строка ошибки начинается с кода:
 
-```
-FLANG_TYPE в файле type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
+```text insert output: check docs/examples/diagnostics/type.flang
+$ flang check docs/examples/diagnostics/type.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_TYPE в файле docs/examples/diagnostics/type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
+docs/examples/diagnostics/type.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 В строке — код, файл, строка и столбец и что не так. Эта страница переводит
@@ -30,9 +35,8 @@ FLANG_TYPE в файле type.flang, строка 6, столбец 3: функ�
 
 Сам по себе модуль проверяется чисто. Падает модуль, который его ввозит.
 
-```flang
-// ядро.flang
-модуль «Ядро»
+```flang insert docs/examples/diagnostics/core.flang
+модуль «Core»
 
 тотальная функция «Двойка»
   принимает н: число
@@ -46,10 +50,9 @@ FLANG_TYPE в файле type.flang, строка 6, столбец 3: функ�
   («Двойка» от н) плюс 1
 ```
 
-```flang refused
-// ввоз.flang
-модуль «Ввоз»
-использует «Ядро» только «Учтено»
+```flang refused insert docs/examples/diagnostics/import.flang
+модуль «Import»
+использует «Core» только «Учтено»
 
 тотальная функция «Проба»
   принимает н: число
@@ -57,27 +60,23 @@ FLANG_TYPE в файле type.flang, строка 6, столбец 3: функ�
   «Учтено» от н
 ```
 
-```bash
-flang check ядро.flang
+```text insert output: check docs/examples/diagnostics/core.flang
+$ flang check docs/examples/diagnostics/core.flang
+модуль «Core»: функций 2, из них с доказанным завершением 2; типов 0
+docs/examples/diagnostics/core.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-```
-модуль «Ядро»: функций 2, из них с доказанным завершением 2; типов 0
-ядро.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-```
-
-```bash
-flang check ввоз.flang
-```
-
-```
-модуль «Ввоз»: функций 2, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
+```text insert output: check docs/examples/diagnostics/import.flang
+$ flang check docs/examples/diagnostics/import.flang
+модуль «Import»: функций 2, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
 без доказанного завершения: «Учтено» «Проба»
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 2, а диагностика компилятора имени файла не несёт
 FLANG_UNKNOWN_NAME, строка 12, столбец 4: неизвестная функция «Двойка»
 FLANG_UNKNOWN_NAME, строка 11, столбец 56: неизвестная функция «Двойка»
 FLANG_NOT_TOTAL, строка 12, столбец 4: тотальная функция «Учтено» вызывает неизвестную функцию «Двойка»: завершение доказать нельзя
-ввоз.flang: не проверено — замечаний 3
+docs/examples/diagnostics/import.flang: не проверено — замечаний 3
+$ echo $?
+1
 ```
 
 Ввоз `только «Учтено»` приносит одно имя. И тело, и гарантия «Учтено» зовут
@@ -89,8 +88,8 @@ FLANG_NOT_TOTAL, строка 12, столбец 4: тотальная функ�
 
 | Способ | Как |
 |---|---|
-| ввезти и помощника | `использует «Ядро» только «Учтено», «Двойка»` |
-| ввезти модуль целиком | `использует «Ядро»` |
+| ввезти и помощника | `использует «Core» только «Учтено», «Двойка»` |
+| ввезти модуль целиком | `использует «Core»` |
 | убрать вызов из гарантии | сказать то же арифметикой: `результат не меньше (н умножить на 2)` |
 
 ### `flang check` прошёл — не значит, что гарантии доказаны
@@ -103,13 +102,13 @@ FLANG_NOT_TOTAL, строка 12, столбец 4: тотальная функ�
 Чтобы увидеть, что доказано, попросите отчёт о доказательствах:
 
 ```bash
-flang check ядро.flang --proof
+flang check docs/examples/diagnostics/core.flang --proof
 ```
 
 ```
   постусловие «не меньше двойки» функции «Учтено» — объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех входах, которые придут
 …
-ядро.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0, объявлено, не доказано 1, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
+docs/examples/diagnostics/core.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказано 0, условно 0, сетка 0, объявлено, не доказано 1, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
 ```
 
 Как читать итог каждой гарантии: «доказано» — доказано для всех входов;
@@ -127,8 +126,8 @@ flang check ядро.flang --proof
 Самая частая неожиданность. Гарантия выглядит очевидно верной, а prover
 отвечает контрпримером.
 
-```flang refused
-модуль «Проба»
+```flang refused insert docs/examples/diagnostics/nan.flang
+модуль «Probe»
 
 тотальная функция «Прибавить один»
   принимает н: число
@@ -137,8 +136,13 @@ flang check ядро.flang --proof
   н плюс 1
 ```
 
-```
-FLANG_BOUND_ON_NAN в файле nan.flang, строка 6, столбец 3: постусловие «результат больше довода» функции «Прибавить один» ЛОЖНО, и контрпример назван: «н» объявлен типом «число», а «не число» живёт в этом типе и стоит ВНЕ ПОРЯДКА — оно не больше и не меньше ничего, включая самоё себя. Тело собрано только из арифметики над «н», а всякая арифметическая операция «не число» переносит, значит результат есть «не число», и сравнение с ним ложно. Позовите «Прибавить один» от (0 делить на 0) — рантайм ответит FLANG_PROPERTY. Чинится тремя способами: объявить вход отрезком («неотрицательное», «целое») — тогда «не число» не втащить вовсе; поставить предусловие — за него платит вызывающий; либо оговорить границу, и ядро оговорку читает: обеспечьте «не ((н минус н) равен 0) или (…)»
+```text insert output: check docs/examples/diagnostics/nan.flang
+$ flang check docs/examples/diagnostics/nan.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_BOUND_ON_NAN в файле docs/examples/diagnostics/nan.flang, строка 6, столбец 3: постусловие «результат больше довода» функции «Прибавить один» ЛОЖНО, и контрпример назван: «н» объявлен типом «число», а «не число» живёт в этом типе и стоит ВНЕ ПОРЯДКА — оно не больше и не меньше ничего, включая самоё себя. Тело собрано только из арифметики над «н», а всякая арифметическая операция «не число» переносит, значит результат есть «не число», и сравнение с ним ложно. Позовите «Прибавить один» от (0 делить на 0) — рантайм ответит FLANG_PROPERTY. Чинится тремя способами: объявить вход отрезком («неотрицательное», «целое») — тогда «не число» не втащить вовсе; поставить предусловие — за него платит вызывающий; либо оговорить границу, и ядро оговорку читает: обеспечьте «не ((н минус н) равен 0) или (…)»
+docs/examples/diagnostics/nan.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 Причина: тип `число` — число с плавающей точкой, и в нём есть NaN («не число»).
@@ -160,8 +164,8 @@ FLANG_BOUND_ON_NAN в файле nan.flang, строка 6, столбец 3: п
 | `FLANG_LEX` | лексер не смог прочесть токен: незакрытая кавычка, чужой знак | закрыть кавычку, убрать знак |
 | `FLANG_PARSE` | токены в порядке, конструкция — нет | смотреть строку и столбец: обычно нет ветки `иначе` или ключевое слово стоит вместо имени |
 
-```flang refused
-модуль «Проба»
+```flang refused insert docs/examples/diagnostics/parse.flang
+модуль «Probe»
 
 тотальная функция «Удвоить»
   принимает н: число
@@ -169,12 +173,20 @@ FLANG_BOUND_ON_NAN в файле nan.flang, строка 6, столбец 3: п
   если н больше 0 то н умножить на 2
 ```
 
-```
-FLANG_PARSE в файле parse.flang, строка 7, столбец 1: у 'если' нет ветки 'иначе'
+```text insert output: check docs/examples/diagnostics/parse.flang
+$ flang check docs/examples/diagnostics/parse.flang
+FLANG_PARSE в файле docs/examples/diagnostics/parse.flang, строка 7, столбец 1: у 'если' нет ветки 'иначе'
+docs/examples/diagnostics/parse.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
-```
-FLANG_LEX в файле lex.flang, строка 5, столбец 3: не закрыта кавычка
+```text insert output: check docs/examples/diagnostics/lex.flang
+$ flang check docs/examples/diagnostics/lex.flang
+FLANG_LEX в файле docs/examples/diagnostics/lex.flang, строка 5, столбец 3: не закрыта кавычка
+docs/examples/diagnostics/lex.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 `если … то …` — выражение, поэтому `иначе` у него обязательно.
@@ -193,8 +205,8 @@ FLANG_LEX в файле lex.flang, строка 5, столбец 3: не зак
 | `FLANG_IMPORT_AMBIGUOUS` | одно имя приходит из двух модулей | сузить ввоз через `только` |
 | `FLANG_IMPORT_NAME` | в списке `только` есть то, чего модуль не объявляет | сверить список с объявлениями модуля |
 
-```flang refused
-модуль «Проба»
+```flang refused insert docs/examples/diagnostics/unknown.flang
+модуль «Probe»
 
 тотальная функция «Удвоить»
   принимает н: число
@@ -202,9 +214,15 @@ FLANG_LEX в файле lex.flang, строка 5, столбец 3: не зак
   «Утроить» от н
 ```
 
-```
-FLANG_UNKNOWN_NAME в файле unknown.flang, строка 6, столбец 3: неизвестная функция «Утроить»
-FLANG_NOT_TOTAL в файле unknown.flang, строка 6, столбец 3: тотальная функция «Удвоить» вызывает неизвестную функцию «Утроить»: завершение доказать нельзя
+```text insert output: check docs/examples/diagnostics/unknown.flang
+$ flang check docs/examples/diagnostics/unknown.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 0; типов 0
+без доказанного завершения: «Удвоить»
+FLANG_UNKNOWN_NAME в файле docs/examples/diagnostics/unknown.flang, строка 6, столбец 3: неизвестная функция «Утроить»
+FLANG_NOT_TOTAL в файле docs/examples/diagnostics/unknown.flang, строка 6, столбец 3: тотальная функция «Удвоить» вызывает неизвестную функцию «Утроить»: завершение доказать нельзя
+docs/examples/diagnostics/unknown.flang: не проверено — замечаний 2
+$ echo $?
+1
 ```
 
 Неизвестное имя всегда тянет вторую ошибку, про завершаемость: компилятор не
@@ -213,8 +231,12 @@ FLANG_NOT_TOTAL в файле unknown.flang, строка 6, столбец 3: �
 
 Если операция записана не в том порядке, компилятор подскажет, как писать:
 
-```
-FLANG_UNKNOWN_NAME в файле pr4.flang, строка 10, столбец 14: имя «м» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р»
+```text insert output: check docs/examples/diagnostics/operator-order.flang
+$ flang check docs/examples/diagnostics/operator-order.flang
+FLANG_UNKNOWN_NAME в файле docs/examples/diagnostics/operator-order.flang, строка 10, столбец 3: имя «умножить» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р»
+docs/examples/diagnostics/operator-order.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 ## Типы
@@ -230,20 +252,40 @@ FLANG_UNKNOWN_NAME в файле pr4.flang, строка 10, столбец 14: 
 | `FLANG_MATCH_UNREACHABLE` | случай покрыт более ранним и не сработает никогда | убрать его или поднять выше |
 | `FLANG_EXAMPLE` | unit-тест не прошёл: значение не совпало с ожидаемым | поправить тело или ожидание |
 
-```
-FLANG_TYPE в файле type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
-```
-
-```
-FLANG_TYPE в файле dup.flang, строка 8, столбец 1: функция «Удвоить» объявлена дважды
-```
-
-```
-FLANG_MATCH_NOT_EXHAUSTIVE в файле match.flang, строка 6, столбец 3: разбор списка не покрывает «пусто»
+```text insert output: check docs/examples/diagnostics/type.flang
+$ flang check docs/examples/diagnostics/type.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_TYPE в файле docs/examples/diagnostics/type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
+docs/examples/diagnostics/type.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
+```text insert output: check docs/examples/diagnostics/duplicate.flang
+$ flang check docs/examples/diagnostics/duplicate.flang
+модуль «Probe»: функций 2, из них с доказанным завершением 2; типов 0
+FLANG_TYPE в файле docs/examples/diagnostics/duplicate.flang, строка 8, столбец 1: функция «Удвоить» объявлена дважды
+docs/examples/diagnostics/duplicate.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
+
+```text insert output: check docs/examples/diagnostics/match.flang
+$ flang check docs/examples/diagnostics/match.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/diagnostics/match.flang, строка 6, столбец 3: разбор списка не покрывает «пусто»
+docs/examples/diagnostics/match.flang: не проверено — замечаний 1
+$ echo $?
+1
+```
+
+```text insert output: check docs/examples/diagnostics/example.flang
+$ flang check docs/examples/diagnostics/example.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «Двойка» функции «Удвоить»: значение не совпало с ожидаемым: ожидалось 5, получено 4
+docs/examples/diagnostics/example.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 ## Завершаемость и пределы
@@ -258,8 +300,8 @@ FLANG_EXAMPLE: пример «Двойка» функции «Удвоить»: 
 | `FLANG_MEMORY` | кончилась память | уменьшить данные |
 | `FLANG_STOPPED` | прогон остановлен снаружи | запустить заново |
 
-```flang refused
-модуль «Проба»
+```flang refused insert docs/examples/diagnostics/total.flang
+модуль «Probe»
 
 тотальная функция «Считать»
   принимает н: число
@@ -267,8 +309,14 @@ FLANG_EXAMPLE: пример «Двойка» функции «Удвоить»: 
   если н равно 0 то 0 иначе («Считать» от (н плюс 1))
 ```
 
-```
-FLANG_NOT_TOTAL в файле total.flang, строка 6, столбец 30: тотальная функция «Считать»: рекурсивный вызов «Считать» не убывает — аргумент 1 («н» add 1) увеличивает параметр «н». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
+```text insert output: check docs/examples/diagnostics/total.flang
+$ flang check docs/examples/diagnostics/total.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 0; типов 0
+без доказанного завершения: «Считать»
+FLANG_NOT_TOTAL в файле docs/examples/diagnostics/total.flang, строка 6, столбец 30: тотальная функция «Считать»: рекурсивный вызов «Считать» не убывает — аргумент 1 («н» add 1) увеличивает параметр «н». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
+docs/examples/diagnostics/total.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 `н плюс 1` растёт, поэтому компилятор не может показать, что рекурсия кончится.
@@ -277,13 +325,12 @@ FLANG_NOT_TOTAL в файле total.flang, строка 6, столбец 30: т
 вычисляет только доказанные программы; в этом `rec.flang` есть недоказанное,
 поэтому добавлен `--trust`:
 
-```bash
-flang run rec.flang --function "Вниз" --args '{"н":100}' --max-steps 5 --trust
-```
-
-```
+```text insert output: run docs/examples/diagnostics/recursion.flang --function "Вниз" --args '{"н":100}' --max-steps 5 --trust
+$ flang run docs/examples/diagnostics/recursion.flang --function "Вниз" --args '{"н":100}' --max-steps 5 --trust
 на веру: доказанность не считалась — запуск по ключу --trust
 FLANG_RECURSION_LIMIT: функция «Вниз» исчерпала лимит шагов (5) на глубине вызовов 1
+$ echo $?
+1
 ```
 
 ## Гарантии и доказательства
@@ -296,7 +343,6 @@ FLANG_RECURSION_LIMIT: функция «Вниз» исчерпала лимит
 | `FLANG_PRECONDITION` | предусловие записано неверно | проверить форму `требует «имя» <условие>` |
 | `FLANG_PRECONDITION_CALL` | вызывающий не обеспечил предусловие вызываемой | доказать условие в точке вызова или сузить тип аргумента |
 | `FLANG_BOUND_ON_NAN` | гарантия о порядке ложна из-за NaN | см. третью ловушку выше |
-| `FLANG_PROOF` | prover не принял доказательство | почему — говорят коды `FLANG_PROOF_*` ниже |
 | `FLANG_PROOF_NO_GOAL` | теорема не доказывает ничего: гарантии с таким именем нет | назвать теорему ровно как гарантию |
 | `FLANG_PROOF_AMBIGUOUS` | теорема доказывала бы сразу две гарантии | дать гарантиям разные имена |
 | `FLANG_PROOF_CLAIM_MISMATCH` | `утверждаем` расходится с гарантией | скопировать текст гарантии слово в слово |
@@ -313,8 +359,8 @@ FLANG_RECURSION_LIMIT: функция «Вниз» исчерпала лимит
 | `FLANG_INITIAL_FAILURE` | для типа не удалось построить правило индукции | проверить, что тип объявлен вариантами |
 | `FLANG_UNCOVERED_FAILURE` | случай ошибки не обработан в pattern matching | добавить случай для ошибки |
 
-```flang refused
-модуль «Проба»
+```flang refused insert docs/examples/diagnostics/no-steps.flang
+модуль «Probe»
 
 тотальная функция «Удвоить»
   принимает н: число
@@ -328,32 +374,51 @@ FLANG_RECURSION_LIMIT: функция «Вниз» исчерпала лимит
   следовательно доказано
 ```
 
-```
+```text insert output: check docs/examples/diagnostics/no-steps.flang
+$ flang check docs/examples/diagnostics/no-steps.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_PROOF_STEP: теорема «удвоенное неотрицательно»: ни одного шага
+docs/examples/diagnostics/no-steps.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
-```
-FLANG_PROOF_NO_GOAL в файле pr1.flang, строка 9, столбец 1: теорема «удвоенное неотрицательно» ничего не закрывает: постусловия «удвоенное неотрицательно» нет ни у одной функции модуля. Теорема доказывает названное утверждение, а не утверждение вообще — назовите её так же, как постусловие, которое она закрывает
+```text insert output: check docs/examples/diagnostics/no-goal.flang
+$ flang check docs/examples/diagnostics/no-goal.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_PROOF_NO_GOAL в файле docs/examples/diagnostics/no-goal.flang, строка 8, столбец 1: теорема «удвоенное неотрицательно» ничего не закрывает: постусловия «удвоенное неотрицательно» нет ни у одной функции модуля. Теорема доказывает названное утверждение, а не утверждение вообще — назовите её так же, как постусловие, которое она закрывает
+docs/examples/diagnostics/no-goal.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
-```
-FLANG_PROOF_AMBIGUOUS в файле pa.flang, строка 15, столбец 1: теорема «неотрицательно» закрывала бы сразу 2 постусловия («Удвоить», «Утроить»), и выбрать нельзя. Дайте постусловиям разные имена
+```text insert output: check docs/examples/diagnostics/ambiguous.flang
+$ flang check docs/examples/diagnostics/ambiguous.flang
+модуль «Probe»: функций 2, из них с доказанным завершением 2; типов 0
+FLANG_PROOF_AMBIGUOUS в файле docs/examples/diagnostics/ambiguous.flang, строка 15, столбец 1: теорема «неотрицательно» закрывала бы сразу 2 постусловия («Удвоить», «Утроить»), и выбрать нельзя. Дайте постусловиям разные имена
+docs/examples/diagnostics/ambiguous.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
-```
-FLANG_PROOF_CLAIM_MISMATCH в файле pm.flang, строка 11, столбец 3: теорема «неотрицательно» утверждает не то, что обещает функция «Удвоить»: утверждение теоремы и постусловие обязаны совпадать слово в слово. Ядро не решает, что два разных утверждения означают одно и то же
+```text insert output: check docs/examples/diagnostics/mismatch.flang
+$ flang check docs/examples/diagnostics/mismatch.flang
+модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_PROOF_CLAIM_MISMATCH в файле docs/examples/diagnostics/mismatch.flang, строка 11, столбец 3: теорема «неотрицательно» утверждает не то, что обещает функция «Удвоить»: утверждение теоремы и постусловие обязаны совпадать слово в слово. Ядро не решает, что два разных утверждения означают одно и то же
+docs/examples/diagnostics/mismatch.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 Гарантия, которую prover не доказал, проверяется во время работы. `flang run`
 недоказанные программы не запускает, поэтому нужен `--trust`:
 
-```bash
-flang run prop.flang --function "Половина" --args '{"н":0}' --trust
-```
-
-```
+```text insert output: run docs/examples/diagnostics/property.flang --function "Половина" --args '{"н":0}' --trust
+$ flang run docs/examples/diagnostics/property.flang --function "Половина" --args '{"н":0}' --trust
 на веру: доказанность не считалась — запуск по ключу --trust
 FLANG_PROPERTY: нарушено свойство «результат меньше довода» функции «Половина»
+$ echo $?
+1
 ```
 
 ### Законы объявленных структур
@@ -375,11 +440,7 @@ FLANG_PROPERTY: нарушено свойство «результат мень�
 | `FLANG_CATEGORY_NOT_ASSOC` | композиция не ассоциативна |
 | `FLANG_COMPOSE_MISMATCH` | концы композиции не сходятся |
 | `FLANG_MORPHISM_SHAPE` | морфизм объявлен неверно |
-| `FLANG_FUNCTOR_NOT_TOTAL` | функтор определён не на всех объектах |
 | `FLANG_FUNCTOR_SQUARE` | квадрат функтора не коммутирует |
-| `FLANG_TRANSFORM_SHAPE` | преобразование объявлено неверно |
-| `FLANG_TRANSFORM_COMPONENT` | у преобразования нет компоненты |
-| `FLANG_TRANSFORM_NOT_TOTAL` | преобразование определено не на всех объектах |
 | `FLANG_TRANSFORM_NOT_NATURAL` | квадрат естественности не коммутирует |
 | `FLANG_ISO_NOT_INVERSE` | две стрелки не обратны друг другу |
 | `FLANG_EMBED_SHAPE` | вложение объявлено неверно |
@@ -411,7 +472,6 @@ FLANG_PROPERTY: нарушено свойство «результат мень�
 | `FLANG_PLAN` | план объявлен неверно | проверить объявление `план` |
 | `FLANG_UNKNOWN_PLAN` | в файле нет плана с таким именем | назвать существующий: `--plan 'Имя'`, без ёлочек |
 | `FLANG_PLAN_UNSUPPORTED` | целевой язык не умеет генерировать планы | генерировать на другую цель или запускать через `flang io` |
-| `FLANG_IO_UNSUPPORTED` | сгенерированный код для этой цели не поддерживает эту команду | генерировать на другую цель |
 | `FLANG_IO_DENIED` | право отнято ключом (`--no-read`, `--no-write`, `--no-net` и другие) | убрать ключ |
 | `FLANG_IO_NO_HOST` | нет рантайма, который выполнил бы команду | запускать через `flang io`, а не вычислением функции |
 | `FLANG_IO_NOT_TEXT` | чтение текста нашло байты, которые не текст | читать байтами |
@@ -434,7 +494,6 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_PROCESS_LIMIT` | достигнут предел числа процессов | поднять предел или запускать меньше |
 | `FLANG_MAILBOX_FULL` | почтовый ящик полон: читатель отстаёт | читать чаще или притормозить отправителя |
 | `FLANG_LINK_DOWN` | связь с узлом или процессом порвалась | обработать обрыв в супервизоре |
-| `FLANG_CONC_UNSUPPORTED` | эта возможность процессов не поддерживается целью | см. [страницу о процессах](processes.html) |
 | `FLANG_HOTSWAP_REFUSED` | горячая замена кода отвергнута | сделать новый код совместимым с прежними объявлениями |
 
 ## Командная строка и внутренние ошибки
@@ -443,19 +502,201 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 |---|---|---|
 | `FLANG_CLI` | кривой вызов: неизвестный ключ или нет довода | `flang <команда> --help` |
 | `FLANG_INTERNAL` | сломался сам компилятор | сообщить: это ошибка инструмента, а не вашей программы |
-| `FLANG_SELF_EVAL_UNSUPPORTED` | этот способ вычисления не поддерживает конструкцию | вычислить обычным `flang run` |
 | `FLANG_SELF_REPL_UNSUPPORTED` | оболочка не принимает эту конструкцию, например `использует` | положить код в файл и запустить `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` не получил значения для вызова | добавить значение в факты |
 
-```bash
-flang check --неткого
-```
-
-```
+```text insert output: check --неткого
+$ flang check --неткого
 flang check: непонятный ключ «--неткого»
+$ echo $?
+2
 ```
 
 Код возврата — `2`.
+
+## Все коды компилятора
+
+Таблица собрана из исходников компилятора: код в ней есть, пока его поднимает
+хоть одна строка исходников компилятора `flang/self/` или его рантайма
+`bootstrap/flang_*.c` вне примеров и постусловий. Текст — шаблоны из каталога сообщений `flang/messages/catalog.tsv`;
+прочерк значит, что у кода шаблона в каталоге нет и текст собирается на месте.
+Код, названный на этой странице, но не найденный в исходниках, роняет
+`docs:check`.
+
+<!-- insert codes -->
+| Код | Где в компиляторе | Текст сообщения |
+| --- | --- | --- |
+| `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
+| `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
+| `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
+| `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
+| `FLANG_CATEGORY_ARROW_TWICE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_EQUALITY_OUTSIDE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_EQUALITY_SHAPE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_EQUALITY_TWICE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_NOT_ASSOC` | `setoid.flang` | — |
+| `FLANG_CATEGORY_NOT_CLOSED` | `compiler.flang` | — |
+| `FLANG_CATEGORY_NO_IDENTITY` | `compiler.flang` | — |
+| `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
+| `FLANG_CC` | `flang_repl.c` | — |
+| `FLANG_CHECKER` | `flang_repl.c` | — |
+| `FLANG_CLI` | `flang_repl.c`, `cli.flang`, `repl.flang` | — |
+| `FLANG_COMPOSE_MISMATCH` | `compiler.flang` | — |
+| `FLANG_DUPLICATE_NAME` | `flang_repl.c`, `link.flang`, `sets.flang` | в файле {file}: функция «{name}» объявлена в двух модулях: {first} и {second} · функция «{name}» объявлена в двух модулях: {first} и {second} · в файле {file}: тип «{name}» объявлен в двух модулях: {first} и {second} · тип «{name}» объявлен в двух модулях: {first} и {second} |
+| `FLANG_EMBED_NOT_INJECTIVE` | `sets.flang` | — |
+| `FLANG_EMBED_SHAPE` | `sets.flang` | — |
+| `FLANG_EQUALITY_NOT_CONGRUENT` | `setoid.flang` | — |
+| `FLANG_EQUALITY_NOT_REFLEXIVE` | `setoid.flang` | — |
+| `FLANG_EQUALITY_NOT_SYMMETRIC` | `setoid.flang` | — |
+| `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
+| `FLANG_EXAMPLE` | `compiler.flang` | пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got} |
+| `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
+| `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
+| `FLANG_GROUP_INVERSE` | `monoid.flang` | — |
+| `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
+| `FLANG_HISTORY` | `flang_repl.c` | — |
+| `FLANG_HOTSWAP_REFUSED` | `hotswap.flang` | — |
+| `FLANG_IMPORT_AMBIGUOUS` | `flang_repl.c`, `link.flang` | — |
+| `FLANG_IMPORT_CYCLE` | `flang_repl.c`, `link.flang` | — |
+| `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
+| `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
+| `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
+| `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
+| `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
+| `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
+| `FLANG_IO_DENIED` | `flang_repl.c` | — |
+| `FLANG_IO_ENTROPY` | `flang_repl.c` | — |
+| `FLANG_IO_ENV` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_FAILED` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_LIMIT` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_LIST` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_NET` | `flang_repl.c` | — |
+| `FLANG_IO_NOT_CHECKED` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_NOT_TEXT` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_NOT_WIRED` | `flang_cli.c` | — |
+| `FLANG_IO_NO_HOST` | `conc.flang` | — |
+| `FLANG_IO_NO_SCREEN` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_NO_TLS` | `flang_repl.c` | — |
+| `FLANG_IO_OCTETS` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_ORDER` | `emit-from-source.flang` | — |
+| `FLANG_IO_PATH` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_PLACE` | `flang_repl.c` | — |
+| `FLANG_IO_READ` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_REMOVE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_SPAWN` | `flang_repl.c` | — |
+| `FLANG_IO_TEMPDIR` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_TIMEOUT` | `flang_repl.c` | — |
+| `FLANG_IO_TLS` | `flang_repl.c` | — |
+| `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
+| `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
+| `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
+| `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
+| `FLANG_LANG` | `flang_repl.c` | — |
+| `FLANG_LEX` | `lexer.flang` | — |
+| `FLANG_LIB_DIR` | `flang_repl.c` | — |
+| `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LOCK` | `flang_repl.c` | — |
+| `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
+| `FLANG_MATCH_NOT_EXHAUSTIVE` | `interpret.flang`, `types.flang` | разбор {subject} не покрывает {cases} · разбор без случаев не покрывает ничего |
+| `FLANG_MATCH_UNREACHABLE` | `types.flang` | — |
+| `FLANG_MEASURE` | `defunc.flang`, `failures.flang` | — |
+| `FLANG_MEET_NAME_TAKEN` | `sets.flang` | — |
+| `FLANG_MEET_NO_UNIVERSE` | `sets.flang` | — |
+| `FLANG_MEET_SAME_SIDE` | `sets.flang` | — |
+| `FLANG_MEET_TWICE` | `sets.flang` | — |
+| `FLANG_MEMO` | `flang_runtime.c` | — |
+| `FLANG_MEMORY` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_MEMO_AUDIT` | `flang_runtime.c` | — |
+| `FLANG_MEMO_BYTES` | `flang_runtime.c` | — |
+| `FLANG_MEMO_STATS` | `flang_runtime.c` | — |
+| `FLANG_MESSAGE_DIR` | `flang_repl.c` | — |
+| `FLANG_MODULE_DIR` | `flang_repl.c` | — |
+| `FLANG_MODULE_ROOT` | `flang_repl.c` | — |
+| `FLANG_MONAD` | `monad-expand.flang`, `monad.flang` | — |
+| `FLANG_MONAD_ASSOC` | `monad.flang` | — |
+| `FLANG_MONAD_LEFT_UNIT` | `monad.flang` | — |
+| `FLANG_MONAD_RIGHT_UNIT` | `monad.flang` | — |
+| `FLANG_MONOID` | `monoid.flang` | — |
+| `FLANG_MONOID_ASSOC` | `monoid.flang` | — |
+| `FLANG_MONOID_IDENTITY` | `monoid.flang` | — |
+| `FLANG_MORPHISM_SHAPE` | `compiler.flang` | — |
+| `FLANG_NAME_TAKEN` | `conc.flang`, `failures.flang` | — |
+| `FLANG_NEW` | `flang_repl.c` | — |
+| `FLANG_NOT_COMMUTATIVE` | `commutative.flang` | — |
+| `FLANG_NOT_DISTRIBUTIVE` | `distributive.flang` | — |
+| `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |
+| `FLANG_NOT_MONOTONE` | `monotone.flang` | — |
+| `FLANG_NOT_TOTAL` | `totality.flang` | тотальная функция «{function}» вызывает неизвестную функцию «{callee}»: завершение доказать нельзя · тотальная функция «{function}»: рекурсивный вызов «{callee}» не убывает — аргумент {position} ({argument}) увеличивает параметр «{parameter}». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции |
+| `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
+| `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
+| `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_PACKAGE` | `flang_repl.c` | — |
+| `FLANG_PARSE` | `interpret.flang`, `parser.flang` | у 'если' нет ветки 'иначе' · не разобрана конструкция: неожиданное '{word}' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («{word.quoted}») или переименуйте; а если слово попало в форму лишним — уберите его |
+| `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |
+| `FLANG_PECHAT_OTKAZ` | `emit-from-source.flang` | — |
+| `FLANG_PLAN` | `io.flang` | — |
+| `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
+| `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `parser.flang` | — |
+| `FLANG_PRECONDITION_CALL` | `proofterm.flang` | вызов «{callee}» в функции «{function}» не снимает предусловие «{precondition}»: {reason} |
+| `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
+| `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
+| `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
+| `FLANG_PROOF_AMBIGUOUS` | `obligations.flang` | — |
+| `FLANG_PROOF_CACHE` | `flang_repl.c` | — |
+| `FLANG_PROOF_CACHE_AUDIT` | `flang_repl.c` | — |
+| `FLANG_PROOF_CACHE_KEY` | `flang_repl.c` | — |
+| `FLANG_PROOF_CACHE_RECHECK` | `flang_repl.c` | — |
+| `FLANG_PROOF_CACHE_STATS` | `flang_repl.c` | — |
+| `FLANG_PROOF_CHECKER` | `flang_repl.c` | — |
+| `FLANG_PROOF_CLAIM_MISMATCH` | `obligations.flang`, `proofterm.flang` | — |
+| `FLANG_PROOF_DUPLICATE` | `obligations.flang` | — |
+| `FLANG_PROOF_INDUCTION_BRANCH` | `proofterm.flang` | шаг {step}, шаг «{case}» теоремы «{theorem}»: {reason} · шаг {step}, база «{case}» теоремы «{theorem}»: {reason} |
+| `FLANG_PROOF_INDUCTION_CASES` | `proofterm.flang` | — |
+| `FLANG_PROOF_INDUCTION_DESCENT` | `proofterm.flang` | — |
+| `FLANG_PROOF_INDUCTION_STEP` | `proofterm.flang` | шаг {step}, шаг «{case}» теоремы «{theorem}»: {reason} · шаг {step}, база «{case}» теоремы «{theorem}»: {reason} |
+| `FLANG_PROOF_INDUCTION_TYPE` | `proofterm.flang` | — |
+| `FLANG_PROOF_NO_GOAL` | `obligations.flang` | — |
+| `FLANG_PROOF_STEP` | `proofterm.flang` | шаг {step}, теорема «{theorem}»: {reason} |
+| `FLANG_PROOF_UNFINISHED` | `obligations.flang` | — |
+| `FLANG_PROOF_UNKNOWN_VAR` | `obligations.flang`, `parser.flang`, `types.flang` | — |
+| `FLANG_PROOF_VAR_TYPE` | `obligations.flang` | — |
+| `FLANG_PROPERTY` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | нарушено свойство «{claim}» функции «{function}» |
+| `FLANG_PULSE` | `flang_runtime.c` | — |
+| `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
+| `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
+| `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
+| `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
+| `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
+| `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_THREADS` | `flang_runtime.c` | — |
+| `FLANG_TICKS_OUT` | `flang_runtime.c` | — |
+| `FLANG_TIME_OUT` | `flang_runtime.c` | — |
+| `FLANG_TLS_CHAIN` | `flang_repl.c` | — |
+| `FLANG_TLS_ENGINE` | `flang_repl.c` | — |
+| `FLANG_TLS_EXPIRED` | `flang_repl.c` | — |
+| `FLANG_TLS_NAME` | `flang_repl.c` | — |
+| `FLANG_TLS_SIGNATURE` | `flang_repl.c` | — |
+| `FLANG_TMP` | `flang_repl.c` | — |
+| `FLANG_TRANSFORM_NOT_NATURAL` | `setoid.flang` | — |
+| `FLANG_TYPE` | `flang_cli.c`, `interpret.flang`, `types.flang` | {where} объявлена как {type.declared}, а тело даёт {type.body} · {where} объявлена дважды · {where} не имеет тела · аргумент «{parameter}» функции «{function}»: ожидался {type.wanted}, получен {type.got} · {side} операнд «{operation}»: ожидался {type.wanted}, получен {type.got} · условие «если» должно быть признаком, а не {type} · ветви «если» разных типов: {type.then} и {type.else} · запись «{record}» не имеет поля «{field}» · запись «{record}» требует поле «{field}» ({type}) · поле «{field}» объявлено дважды · функция «{function}» принимает {count} арг. ({parameters}), а вызвана с {given} · вызов функции «{function}»: аргумент «{parameter}»: {value} вне {type} · {label} функции «{function}» не задаёт аргумент «{parameter}» · {label}: {value} вне {type} · {label} не соответствует типу {type} |
+| `FLANG_TYPE_ARGS` | `types.flang` | — |
+| `FLANG_TYPE_PARAM` | `types.flang` | — |
+| `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
+| `FLANG_UNKNOWN` | `flang_cli.c` | — |
+| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `parser.flang`, `sets.flang`, `types.flang` | неизвестная функция «{name}» · неизвестный тип «{name}» · неизвестная запись «{name}» · неизвестный вариант «{name}» · неизвестный конструктор варианта «{name}» · не найдена функция «{name}» · запись не содержит поле «{field}» · имя «{name}» не связано · имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
+| `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
+| `FLANG_UNPROVED` | `compiler.flang` | — |
+| `FLANG_UNPROVEN` | `flang_repl.c` | — |
+| `FLANG_VITKI` | `flang_repl.c` | — |
+| `FLANG_WATCH` | `flang_runtime.c` | — |
+| `FLANG_WATCH_TICK` | `flang_runtime.c` | — |
+| `FLANG_ZAKAZ` | `emit-from-source.flang` | — |
+<!-- end insert -->
 
 Дальше: [Prover отказал: чья это ошибка](proof-refused.html) — как читать
 отвергнутое доказательство и когда ошибка не ваша.

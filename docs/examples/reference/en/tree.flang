@@ -1,0 +1,17 @@
+module «Tree»
+
+type «Tree»
+  variant Leaf
+  variant Node contains value: number, left: «Tree», right: «Tree»
+
+total function «Nodes»
+  accepts tree: «Tree»
+  returns number
+  example «a leaf has no nodes»
+    given tree equals variant Leaf
+    expected 0
+  match tree
+    case Leaf
+      then 0
+    case variant Node with left as l and right as r
+      then 1 plus («Nodes» of l) plus («Nodes» of r)

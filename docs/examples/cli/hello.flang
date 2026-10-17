@@ -1,0 +1,9 @@
+module «Hello»
+
+total function «Удвоить»
+  accepts н: number
+  returns number
+  example «Двадцать один»
+    given н equals 21
+    expected 42
+  н plus н

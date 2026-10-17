@@ -1,0 +1,12 @@
+module «Signature»
+
+total function «Share»
+  accepts part: nat, whole: nat
+  returns number
+  requires «divisor is positive» whole is greater than 0
+  for all part ensures «share is non-negative» result is at least 0
+  example «half»
+    given part equals 1
+    given whole equals 2
+    expected 0.5
+  part divided by whole

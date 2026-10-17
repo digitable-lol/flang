@@ -1,0 +1,21 @@
+module «Field by word»
+
+object «Point»
+  «x»: number
+  «y»: number
+
+total function «Abscissa»
+  accepts point: «Point»
+  returns number
+  example «the first coordinate»
+    given point equals record «Point» with «x» equal to 3 and «y» equal to 4
+    expected 3
+  field «x» at point
+
+total function «Ordinate»
+  accepts point: «Point»
+  returns number
+  example «the second coordinate»
+    given point equals record «Point» with «x» equal to 3 and «y» equal to 4
+    expected 4
+  field «y» from point

@@ -1,0 +1,33 @@
+module «Strings»
+
+total function «Second word»
+  accepts text: string
+  returns string
+  example «two words»
+    given text equals "one twice"
+    expected "twice"
+  item 2 in (split text by " ")
+
+total function «First three»
+  accepts text: string
+  returns string
+  example «cut from the head»
+    given text equals "abcdef"
+    expected "abc"
+  substring text from 1 to 3
+
+total function «Glued»
+  accepts parts: list string
+  returns string
+  example «joined with a comma»
+    given parts equals ["a", "b"]
+    expected "a,b"
+  join parts by ","
+
+total function «Initial»
+  accepts text: string
+  returns string
+  example «first letter»
+    given text equals "abc"
+    expected "a"
+  char 1 in text

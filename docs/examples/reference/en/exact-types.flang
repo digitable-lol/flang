@@ -1,0 +1,20 @@
+module «Exact types»
+
+total function «Order in cents»
+  accepts price: hundredths, count: nat
+  returns number
+  example «three at 19.99»
+    given price equals 1999
+    given count equals 3
+    expected 5997
+  price times count
+
+total function «Share»
+  accepts part: nat, whole: nat
+  returns number
+  requires «the divisor is positive» whole is greater than 0
+  example «a half»
+    given part equals 1
+    given whole equals 2
+    expected 0.5
+  part divided by whole

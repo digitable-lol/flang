@@ -58,6 +58,19 @@ node docs/site/build.mjs --check
 It turns red on a link to nowhere, a page without its English pair, and a
 substitution with no value.
 
+Code, output of the binary, error codes and the help of the commands stand on
+the pages as inserts from the tree, not typed by hand: the word `insert` in the
+first line of a fenced block or in an HTML remark above a table names the source.
+After changing an example or the compiler, rebuild the inserts and check that the
+pages agree with the code:
+
+```bash
+bootstrap/flang run-script docs:build
+bootstrap/flang run-script docs:check
+```
+
+How inserts work: [ADR-0151](../adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md).
+
 ## Send a change
 
 1. Branch off the trunk: `git switch -c my-change`.

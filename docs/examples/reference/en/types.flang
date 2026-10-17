@@ -1,0 +1,25 @@
+module «Types»
+
+object «Line»
+  title is string
+  price is number
+  discount may be number
+
+тип «Invoice» это list «Line»
+
+type «Answer»
+  variant Ok contains value: number
+  variant Failed contains reason: string
+
+total function «Check price»
+  accepts entry: «Line»
+  returns «Answer»
+  example «price is there»
+    given entry equals record «Line» with title equal to "bolt" and price equal to 30
+    expected variant Ok with value equal to 30
+  example «zero is not a price»
+    given entry equals record «Line» with title equal to "nut" and price equal to 0
+    expected variant Failed with reason equal to "price is not positive"
+  if entry.price is greater than 0
+    then variant Ok with value equal to entry.price
+    else variant Failed with reason equal to "price is not positive"

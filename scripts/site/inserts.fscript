@@ -1,0 +1,522 @@
+модуль «Docs from code»
+  использует «Library api» из "library-api.flang"
+
+тип «Table name»
+  вариант «Codes table»
+  вариант «Tsv table»
+  вариант «Keywords table»
+  вариант «Library table»
+  вариант «Unknown table»
+
+объект «Table pattern»
+  «name»: строка
+  «table»: «Table name»
+
+объект «Rendered»
+  «lines»: список строки
+  «troubles»: список строки
+  «stale»: список строки
+
+тип «Stage»
+  вариант «Start» содержит write: признак
+  вариант «Listing» содержит write: признак
+  вариант «Run» содержит write: признак, pages: список строки, queue: список строки, taken: список «Taken», leg: строка
+  вариант «Writing» содержит queue: список «Page result», written: число
+
+тотальная функция «Table patterns»
+  возвращает список «Table pattern»
+  обеспечивает «four tables are known» (длина результат) равен 4
+  пример «the names of the tables»
+    ожидается [запись «Table pattern» с «name» равным "codes" и «table» равным (вариант «Codes table»),
+      запись «Table pattern» с «name» равным "tsv" и «table» равным (вариант «Tsv table»),
+      запись «Table pattern» с «name» равным "keywords" и «table» равным (вариант «Keywords table»),
+      запись «Table pattern» с «name» равным "library" и «table» равным (вариант «Library table»)]
+  [запись «Table pattern» с «name» равным "codes" и «table» равным (вариант «Codes table»),
+   запись «Table pattern» с «name» равным "tsv" и «table» равным (вариант «Tsv table»),
+   запись «Table pattern» с «name» равным "keywords" и «table» равным (вариант «Keywords table»),
+   запись «Table pattern» с «name» равным "library" и «table» равным (вариант «Library table»)]
+
+тотальная функция «Table of name»
+  принимает name: строка
+  возвращает «Table name»
+  пример «a known table»
+    дано name равно "tsv"
+    ожидается вариант «Tsv table»
+  пример «a table nobody prints»
+    дано name равно "weather"
+    ожидается вариант «Unknown table»
+  пусть held равно (отфильтровать («Table patterns») где known → (known.«name») равен name)
+  разбор held
+    случай пусто
+      то вариант «Unknown table»
+    случай голова и хвост
+      то голова.«table»
+
+тотальная функция «Table filled»
+  принимает context: «Context», taken: список «Taken», table: строка, arguments: строка, language: строка
+  возвращает «Filled»
+  пример «a table nobody prints is trouble»
+    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+      и «modules» равным пустой список)
+    дано taken равно пустой список
+    дано table равно "weather"
+    дано arguments равно ""
+    дано language равно "ru"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "таблицы «weather» нет"
+  разбор («Table of name» от table)
+    случай вариант «Codes table»
+      то «Codes filled» от taken и language
+    случай вариант «Tsv table»
+      то «Tsv filled» от taken и arguments
+    случай вариант «Keywords table»
+      то «Keywords filled» от (context.«words») и arguments и language
+    случай вариант «Library table»
+      то «Library filled» от (context.«modules») и taken и arguments и language
+    случай вариант «Unknown table»
+      то «Trouble» от ["таблицы «", table, "» нет"]
+
+тотальная функция «Filled of kind»
+  принимает context: «Context», taken: список «Taken», kind: «Insert kind», language: строка
+  возвращает «Filled»
+  пример «an opening that could not be read»
+    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+      и «modules» равным пустой список)
+    дано taken равно пустой список
+    дано kind равно вариант «Unreadable» с line равным "<!-- insert"
+    дано language равно "ru"
+    ожидается (запись «Filled» с «lines» равным пустой список
+      и «trouble» равным "не прочитана строка вставки: <!-- insert")
+  разбор kind
+    случай вариант «Whole file» с path как path
+      то «File lines» от taken и path
+    случай вариант «Declaration» с path как path и name как name
+      то «Declaration filled» от taken и path и name
+    случай вариант «Output» с arguments как arguments
+      то «Output filled» от taken и arguments
+    случай вариант «Table» с table как table и arguments как arguments
+      то «Table filled» от context и taken и table и arguments и language
+    случай вариант «Unreadable» с line как line
+      то «Trouble» от ["не прочитана строка вставки: ", line]
+
+тотальная функция «Rendered piece»
+  принимает context: «Context», taken: список «Taken», language: строка, piece: «Piece»
+  возвращает «Rendered»
+  пример «prose stays as it is»
+    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+      и «modules» равным пустой список)
+    дано taken равно пустой список
+    дано language равно "ru"
+    дано piece равно вариант «Prose» с line равным "а"
+    ожидается запись «Rendered» с «lines» равным ["а"] и «troubles» равным пустой список и «stale» равным пустой список
+  пример «an insert whose body went stale»
+    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+      и «modules» равным пустой список)
+    дано taken равно [запись «Taken» с «command» равным "file a.flang" и «code» равным 0 и «output» равным "новое\n"]
+    дано language равно "ru"
+    дано piece равно (вариант «Insert» с opening равным "```flang insert a.flang"
+      и kind равным (вариант «Whole file» с path равным "a.flang") и body равным ["старое"] и closing равным "```")
+    ожидается (запись «Rendered» с «lines» равным ["```flang insert a.flang", "новое", "```"]
+      и «troubles» равным пустой список и «stale» равным ["```flang insert a.flang"])
+  разбор piece
+    случай вариант «Prose» с line как line
+      то запись «Rendered» с «lines» равным [line] и «troubles» равным пустой список и «stale» равным пустой список
+    случай вариант «Insert» с opening как opening и kind как kind и body как body и closing как closing
+      то «Rendered insert» от opening и body и closing и («Filled of kind» от context и taken и kind и language)
+
+тотальная функция «Rendered insert»
+  принимает opening: строка, body: список строки, closing: строка, filled: «Filled»
+  возвращает «Rendered»
+  пример «an insert that was never closed keeps its body and is trouble»
+    дано opening равно "<!-- insert codes -->"
+    дано body равно ["x"]
+    дано closing равно ""
+    дано filled равно запись «Filled» с «lines» равным ["x"] и «trouble» равным ""
+    ожидается (запись «Rendered» с «lines» равным ["<!-- insert codes -->", "x"]
+      и «troubles» равным ["вставка «<!-- insert codes -->» не закрыта"] и «stale» равным пустой список)
+  пусть unclosed равно (если closing равен "" то «Unclosed words» от opening иначе "")
+  пусть troubles равно (отфильтровать [(filled.«trouble»), unclosed]
+    где one → не (one равен ""))
+  пусть lines равно (если пусто troubles то (filled.«lines») иначе body)
+  пусть same равно ((соединить lines по "\n") равен (соединить body по "\n"))
+  пусть stale равно (если (пусто troubles) и притом (не same) то [opening] иначе пустой список)
+  пусть ending равно (если closing равен "" то пустой список иначе [closing])
+  (запись «Rendered» с «lines» равным («Joined lists» от (приписать opening к lines) и ending)
+    и «troubles» равным troubles и «stale» равным stale)
+
+тотальная функция «Unclosed words»
+  принимает opening: строка
+  возвращает строка
+  пример «the opening is named»
+    дано opening равно "```flang insert a.flang"
+    ожидается "вставка «```flang insert a.flang» не закрыта"
+  соединить ["вставка «", opening, "» не закрыта"] по ""
+
+тотальная функция «Joined rendered»
+  принимает acc: «Rendered», one: «Rendered»
+  возвращает «Rendered»
+  пример «lines, troubles and stale openings add up»
+    дано acc равно (запись «Rendered» с «lines» равным ["а"] и «troubles» равным пустой список
+      и «stale» равным пустой список)
+    дано one равно запись «Rendered» с «lines» равным ["б"] и «troubles» равным ["т"] и «stale» равным ["с"]
+    ожидается запись «Rendered» с «lines» равным ["а", "б"] и «troubles» равным ["т"] и «stale» равным ["с"]
+  (запись «Rendered» с «lines» равным («Joined lists» от (acc.«lines») и (one.«lines»))
+    и «troubles» равным («Joined lists» от (acc.«troubles») и (one.«troubles»))
+    и «stale» равным («Joined lists» от (acc.«stale») и (one.«stale»)))
+
+тотальная функция «Has codes table»
+  принимает pieces: список «Piece»
+  возвращает признак
+  пример «a page without the table of codes»
+    дано pieces равно [вариант «Prose» с line равным "а"]
+    ожидается нет
+  не (пусто (отфильтровать pieces где piece → «Is codes insert» от piece))
+
+тотальная функция «Is codes insert»
+  принимает piece: «Piece»
+  возвращает признак
+  пример «the table of codes»
+    дано piece равно (вариант «Insert» с opening равным "<!-- insert codes -->"
+      и kind равным (вариант «Table» с table равным "codes" и arguments равным "") и body равным пустой список
+      и closing равным "<!-- end insert -->")
+    ожидается да
+  разбор piece
+    случай вариант «Insert» с opening как opening и kind как kind и body как body и closing как closing
+      то «Is codes kind» от kind
+    случай любое
+      то нет
+
+тотальная функция «Is codes kind»
+  принимает kind: «Insert kind»
+  возвращает признак
+  пример «a file is not the table of codes»
+    дано kind равно вариант «Whole file» с path равным "a.flang"
+    ожидается нет
+  разбор kind
+    случай вариант «Table» с table как table и arguments как arguments
+      то table равен "codes"
+    случай любое
+      то нет
+
+тотальная функция «Named codes»
+  принимает pieces: список «Piece»
+  возвращает список строки
+  пример «codes in backticks in the prose»
+    дано pieces равно [вариант «Prose» с line равным "| `FLANG_LEX` | лексер | `FLANG_PARSE` |"]
+    ожидается ["FLANG_LEX", "FLANG_PARSE"]
+  пусть prose равно (отфильтровать pieces где piece → «Is prose» от piece)
+  пусть words равно (свёртка prose начиная с пустой список как acc и piece → «Joined lists» от acc и
+    («Ticked of» от piece))
+  «Add new» от пустой список и (отфильтровать words где word → «Is code name» от word)
+
+тотальная функция «Ticked of»
+  принимает piece: «Piece»
+  возвращает список строки
+  пример «what stands between backticks»
+    дано piece равно вариант «Prose» с line равным "а `б` в `г`"
+    ожидается ["а ", "б", " в ", "г", ""]
+  разбор piece
+    случай вариант «Prose» с line как line
+      то разделить line по "`"
+    случай любое
+      то пустой список
+
+тотальная функция «Unraised troubles»
+  принимает raised: список строки, pieces: список «Piece», path: строка
+  возвращает список строки
+  пример «a page without the table of codes is not asked»
+    дано raised равно пустой список
+    дано pieces равно [вариант «Prose» с line равным "`FLANG_GONE`"]
+    дано path равно "a.md"
+    ожидается пустой список
+  пусть gone равно (отфильтровать («Named codes» от pieces) где name → не (raised содержит name))
+  если «Has codes table» от pieces
+    то отобразить gone как name → соединить [path, ": код ", name, («Unraised words»)] по ""
+    иначе пустой список
+
+тотальная функция «Unraised words»
+  возвращает строка
+  обеспечивает «the words say the code is gone» результат содержит "не поднимает"
+  пример «the end of the line about a code that is gone»
+    ожидается " назван на странице, а компилятор его не поднимает"
+  " назван на странице, а компилятор его не поднимает"
+
+тотальная функция «Page result of»
+  принимает context: «Context», taken: список «Taken», path: строка
+  возвращает «Page result»
+  пример «a page without inserts stays itself»
+    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+      и «modules» равным пустой список)
+    дано taken равно [запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"]
+    дано path равно "a.md"
+    ожидается (запись «Page result» с «path» равным "a.md" и «before» равным "# А\n" и «after» равным "# А\n"
+      и «troubles» равным пустой список и «stale» равным пустой список)
+  пусть before равно («Output of» от taken и («File command» от path))
+  пусть pieces равно («Pieces» от before)
+  пусть language равно («Page language» от path)
+  пусть start равно (запись «Rendered» с «lines» равным пустой список и «troubles» равным пустой список
+    и «stale» равным пустой список)
+  пусть rendered равно (свёртка pieces начиная с start как acc и piece → «Joined rendered» от acc и
+    («Rendered piece» от context и taken и language и piece))
+  пусть named равно (отобразить (rendered.«troubles») как one → соединить [path, ": ", one] по "")
+  (запись «Page result» с «path» равным path и «before» равным before и «after» равным (соединить
+    (rendered.«lines») по "\n")
+    и «troubles» равным («Joined lists» от named и («Unraised troubles» от (context.«raised») и pieces и path))
+    и «stale» равным (отобразить (rendered.«stale») как one → соединить [path, ": ", one] по ""))
+
+тотальная функция «Pages command»
+  возвращает строка
+  обеспечивает «the pages are found by their inserts» результат содержит "git grep --untracked -l"
+  пример «every markdown page with an insert»
+    ожидается "git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'"
+  "git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'"
+
+тотальная функция «Process of»
+  принимает line: строка
+  возвращает «Поручение»
+  пример «a line of the shell from the root of the tree»
+    дано line равно "git status"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && git status"]
+  пусть shell равно (соединить ["cd ../.. && ", line] по "")
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", shell]
+
+тотальная функция «Begin»
+  принимает write: признак
+  возвращает «Продолжение»
+  пример «the pages are asked for first»
+    дано write равно нет
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "cd ../.. && git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'"])
+      и потом равным (вариант «Listing» с write равным нет))
+  вариант «Сделать» с поручение равным («Process of» от
+    («Pages command»)) и потом равным (вариант «Listing» с write равным write)
+
+тотальная функция «Start build»
+  возвращает «Stage»
+  обеспечивает «the build writes» результат равен (вариант «Start» с write равным да)
+  пример «the build writes pages»
+    ожидается вариант «Start» с write равным да
+  вариант «Start» с write равным да
+
+тотальная функция «Start check»
+  возвращает «Stage»
+  обеспечивает «the check does not write» результат равен (вариант «Start» с write равным нет)
+  пример «the check only reads»
+    ожидается вариант «Start» с write равным нет
+  вариант «Start» с write равным нет
+
+тотальная функция «Run next»
+  принимает write: признак, pages: список строки, queue: список строки, taken: список «Taken», leg: строка
+  возвращает «Продолжение»
+  пример «the next command of the queue runs»
+    дано write равно нет
+    дано pages равно ["a.md"]
+    дано queue равно ["file a.md"]
+    дано taken равно пустой список
+    дано leg равно "pages"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../a.md")
+      и потом равным (вариант «Run» с write равным нет
+      и pages равным ["a.md"] и queue равным ["file a.md"] и taken равным пустой список и leg равным "pages"))
+  разбор queue
+    случай пусто
+      то «Phase done» от write и pages и taken и leg
+    случай голова и хвост
+      то «Ask» от write и pages и queue и taken и leg
+
+тотальная функция «Phase done»
+  принимает write: признак, pages: список строки, taken: список «Taken», leg: строка
+  возвращает «Продолжение»
+  пример «nothing to take after the pages: the pages are judged»
+    дано write равно нет
+    дано pages равно ["a.md"]
+    дано taken равно [запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"]
+    дано leg равно "sources"
+    ожидается вариант «Конец работы» с значение равным "страниц со вставками 1, вставок 0: все сходятся с кодом"
+  пусть pieces равно (свёртка pages начиная с пустой список как acc и path
+    → «Joined pieces» от acc и («Pieces» от («Output of» от taken и («File command» от path))))
+  пусть sources равно (если leg равен "pages" то («Commands of pieces» от pieces) иначе («Library reads» от taken))
+  если (не (leg равен "more")) и притом (не (пусто sources))
+    то «Ask» от write и pages и sources и taken и (если leg равен "pages" то "sources" иначе "more")
+    иначе «Judge pages» от write и pages и taken и pieces
+
+тотальная функция «Judge pages»
+  принимает write: признак, pages: список строки, taken: список «Taken», pieces: список «Piece»
+  возвращает «Продолжение»
+  пример «a page without inserts agrees»
+    дано write равно нет
+    дано pages равно ["a.md"]
+    дано taken равно [запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"]
+    дано pieces равно пустой список
+    ожидается вариант «Конец работы» с значение равным "страниц со вставками 1, вставок 0: все сходятся с кодом"
+  пусть words равно (если «Needs glossary» от pieces то («Словарь таблицы») иначе пустой список)
+  пусть raised равно (если «Has codes table» от pieces то («Raised codes» от taken) иначе пустой список)
+  пусть context равно (запись «Context» с «words» равным words и «raised» равным raised и «modules» равным
+    («Module views» от taken))
+  пусть results равно (отобразить pages как path → «Page result of» от context и taken и path)
+  «Judged» от write и results и (длина («Inserts» от pieces))
+
+тотальная функция «Needs glossary»
+  принимает pieces: список «Piece»
+  возвращает признак
+  пример «no table of keywords»
+    дано pieces равно [вариант «Prose» с line равным "а"]
+    ожидается нет
+  не (пусто (отфильтровать pieces где piece → («First table» от piece) равен "keywords"))
+
+тотальная функция «First table»
+  принимает piece: «Piece»
+  возвращает строка
+  пример «prose names no table»
+    дано piece равно вариант «Prose» с line равным "а"
+    ожидается ""
+  разбор piece
+    случай вариант «Insert» с opening как opening и kind как kind и body как body и closing как closing
+      то «Table name of kind» от kind
+    случай любое
+      то ""
+
+тотальная функция «Table name of kind»
+  принимает kind: «Insert kind»
+  возвращает строка
+  пример «a table»
+    дано kind равно вариант «Table» с table равным "keywords" и arguments равным "Функции"
+    ожидается "keywords"
+  разбор kind
+    случай вариант «Table» с table как table и arguments как arguments
+      то table
+    случай любое
+      то ""
+
+тотальная функция «Ask»
+  принимает write: признак, pages: список строки, queue: список строки, taken: список «Taken», leg: строка
+  возвращает «Продолжение»
+  пример «the first command of the queue runs»
+    дано write равно нет
+    дано pages равно ["a.md"]
+    дано queue равно ["run --version"]
+    дано taken равно пустой список
+    дано leg равно "sources"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "cd ../.. && bootstrap/flang --version 2>&1"])
+      и потом равным (вариант «Run» с write равным нет и pages равным ["a.md"] и queue равным ["run --version"]
+      и taken равным пустой список и leg равным "sources"))
+  (вариант «Сделать» с поручение равным («Order of key» от (голова queue))
+    и потом равным (вариант «Run» с write равным write и pages равным pages и queue равным queue
+    и taken равным taken и leg равным leg))
+
+тотальная функция «Joined pieces»
+  принимает front: список «Piece», back: список «Piece»
+  возвращает список «Piece»
+  пример «nothing and nothing»
+    дано front равно пустой список
+    дано back равно пустой список
+    ожидается пустой список
+  свёртка back начиная с front как acc и one → добавить one к acc
+
+тотальная функция «Judged»
+  принимает write: признак, results: список «Page result», inserts: число
+  возвращает «Продолжение»
+  пример «a stale page fails the check»
+    дано write равно нет
+    дано results равно [(запись «Page result» с «path» равным "a.md" и «before» равным "" и «after» равным "x"
+      и «troubles» равным пустой список и «stale» равным ["a.md: ```flang insert b.flang"])]
+    дано inserts равно 1
+    ожидается (вариант «Провал» с код равным "DOCS_STALE" и сообщение равным
+      "страница разошлась с кодом, вставок 1 — соберите: run-script docs:build\n  a.md: ```flang insert b.flang")
+  пусть troubles равно (свёртка results начиная с пустой список как acc и one → «Joined lists» от acc и
+    (one.«troubles»))
+  пусть stale равно (свёртка results начиная с пустой список как acc и one → «Joined lists» от acc и (one.«stale»))
+  пусть changed равно (отфильтровать results где one → не ((one.«before») равен (one.«after»)))
+  если не (пусто troubles)
+    то вариант «Провал» с код равным "DOCS_INSERT" и сообщение равным («Listed» от "вставка не собирается" и troubles)
+    иначе если write
+      то «Write next» от changed и 0
+      иначе «Checked» от results и stale и inserts
+
+тотальная функция «Checked»
+  принимает results: список «Page result», stale: список строки, inserts: число
+  возвращает «Продолжение»
+  пример «all agree»
+    дано results равно пустой список
+    дано stale равно пустой список
+    дано inserts равно 0
+    ожидается вариант «Конец работы» с значение равным "страниц со вставками 0, вставок 0: все сходятся с кодом"
+  если пусто stale
+    то (вариант «Конец работы» с значение равным (соединить ["страниц со вставками ", (к строке (длина results)),
+      ", вставок ", (к строке inserts), ": все сходятся с кодом"] по ""))
+    иначе (вариант «Провал» с код равным "DOCS_STALE" и сообщение равным («Listed» от
+      (соединить ["страница разошлась с кодом, вставок ",
+      (к строке (длина stale)), " — соберите: run-script docs:build"] по "") и stale))
+
+тотальная функция «Listed»
+  принимает title: строка, items: список строки
+  возвращает строка
+  пример «a title and one line per item»
+    дано title равно "беды"
+    дано items равно ["а", "б"]
+    ожидается "беды\n  а\n  б"
+  соединить (приписать title к (отобразить items как one → соединить ["  ", one] по "")) по "\n"
+
+тотальная функция «Write next»
+  принимает queue: список «Page result», written: число
+  возвращает «Продолжение»
+  пример «nothing to write»
+    дано queue равно пустой список
+    дано written равно 0
+    ожидается вариант «Конец работы» с значение равным "страниц переписано: 0"
+  разбор queue
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить ["страниц переписано: ", (к строке written)] по "")
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным
+        (соединить ["../../", (голова.«path»)] по "")
+        и содержимое равным (голова.«after»))
+        и потом равным (вариант «Writing» с queue равным хвост и written равным written))
+
+тотальная функция «After listing»
+  принимает write: признак, answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the pages are read one by one»
+    дано write равно да
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "docs/a.md\n" и ошибки равным ""
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../docs/a.md")
+      и потом равным (вариант «Run» с write равным да и pages равным ["docs/a.md"] и queue равным ["file docs/a.md"]
+      и taken равным пустой список и leg равным "pages"))
+  пример «no page with an insert is a failure, not a silent success»
+    дано write равно нет
+    дано answer равно вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Провал» с код равным "DOCS_NO_PAGES" и сообщение равным "ни на одной странице нет вставки"
+  пусть pages равно (разделить («Output of» от [«Taken of answer» от "pages" и answer] и "pages") по "\n")
+  пусть real равно (отфильтровать pages где path → не (path равен ""))
+  если пусто real
+    то вариант «Провал» с код равным "DOCS_NO_PAGES" и сообщение равным "ни на одной странице нет вставки"
+    иначе «Run next» от write и real и (отобразить real как path → «File command» от path) и пустой список и "pages"
+
+тотальная функция «Next»
+  принимает stage: «Stage», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the check starts by asking for the pages»
+    дано stage равно вариант «Start» с write равным нет
+    дано answer равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "cd ../.. && git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'"])
+      и потом равным (вариант «Listing» с write равным нет))
+  разбор stage
+    случай вариант «Start» с write как write
+      то «Begin» от write
+    случай вариант «Listing» с write как write
+      то «After listing» от write и answer
+    случай вариант «Run» с write как write и pages как pages и queue как queue и taken как taken и leg как leg
+      то «Run next» от write и pages и (хвост queue) и (добавить («Taken of answer» от (голова queue)
+        и answer) к taken) и leg
+    случай вариант «Writing» с queue как queue и written как written
+      то «Write next» от queue и (written плюс 1)
+
+план «Build»
+  состояние «Stage»
+  начинает с «Start build»
+  обрабатывает «Next»
+
+план «Check»
+  состояние «Stage»
+  начинает с «Start check»
+  обрабатывает «Next»

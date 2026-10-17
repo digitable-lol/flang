@@ -537,7 +537,7 @@ def «сошлисьЗн» (a b : «Зн») : Bool :=
   | .«стр» x, .«стр» y => x == y
   | .«спис» x _, .«спис» y _ => x == y
   | .«тег» x, .«тег» y => x == y
-  | .«чис» x, .«чис» y => x == y
+  | .«чис» x, .«чис» y => «одноЧисло» x y
   | .«приз» x, .«приз» y => x == y
   | .«зап» _, .«зап» _ => true
   | _, _ => false
@@ -561,7 +561,7 @@ def «образецСовпал» («образец» «значение» : St
   if «образец».startsWith "вариант «" then («образец» = «значение», true)
   else if «образец» = "пусто" then («значение» = "пустой список" || «значение» = "\"\"", true)
   else match «числоТочно» «образец», «числоТочно» «значение» with
-    | some a, some b => if a == b then (true, true) else (false, false)
+    | some a, some b => if «одноЧисло» a b then (true, true) else (false, false)
     | _, _ => (false, false)
 
 def «Исх».«ветвьЕсли» (s : «Исх») (c : «Счёт») (a b : Nat) («по» «дано» : String) : String := Id.run do

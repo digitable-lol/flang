@@ -2055,3 +2055,11 @@ afef0441b80315d6e7b66e8c0f5f0680|12|7|5|0|2|flang/proof/checker/tests/families/u
 408249d6e22a41b1fa862c0a5e22a5f4|8|1|0|7|1|flang/proof/checker/tests/families/unfold-on-constructor/false-forms.flang
 b205efbd4be14caef921ae8d6c40c3ba|1|1|0|0|0|flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang
 4e8304bd34a18688e885fa234d71379f|1|×|×|×|0|flang/proof/checker/tests/families/unfold-on-constructor/two-argument-match.flang
+a7d06d1497aec65e31ce2f6b1cac60ee|1|0|0|1|0|flang/proof/checker/tests/families/declared-laws/forged/a-false-call.flang
+e5042466f410ab9cdd210834fd69d620|1|0|0|1|0|flang/proof/checker/tests/families/declared-laws/forged/arguments-substituted-one-by-one.flang
+a05dd5a15aca3cacd61f3a5d576ae456|2|2|0|0|0|flang/proof/checker/tests/families/declared-laws/monad-law-with-a-type-parameter.flang
+7dee6ce045f6f5623ea8f2ebb638ffed|2|2|0|0|0|flang/proof/checker/tests/families/declared-laws/ring-through-a-call.flang
+a7d06d1497aec65e31ce2f6b1cac60ee|1|0|0|1|0|flang/proof/checker/tests/families/declared-laws/forged/a-false-call.flang
+e5042466f410ab9cdd210834fd69d620|1|0|0|1|0|flang/proof/checker/tests/families/declared-laws/forged/arguments-substituted-one-by-one.flang
+a05dd5a15aca3cacd61f3a5d576ae456|2|2|0|0|0|flang/proof/checker/tests/families/declared-laws/monad-law-with-a-type-parameter.flang
+7dee6ce045f6f5623ea8f2ebb638ffed|2|2|0|0|0|flang/proof/checker/tests/families/declared-laws/ring-through-a-call.flang

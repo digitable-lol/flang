@@ -18,7 +18,7 @@ name: Docs site
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     # Гоняем только когда менялось то, из чего сайт собирается.
     paths:
       - 'docs/**'
@@ -69,7 +69,7 @@ on:
 # встают — у каждого своя группа, и новый пуш в ветку снимает прежний прогон:
 # он ничего не публикует, и ждать его незачем.
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages' }}
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || format('pages-{0}', github.ref) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -80,6 +80,7 @@ permissions:
 jobs:
   sobrat:
     name: build
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       # fetch-depth: 0 — не запас на будущее. Страница «Что изменилось»
@@ -231,15 +232,65 @@ jobs:
       # «Запросить». Стоит ПОСЛЕ сборки: `build.mjs` вычищает `docs/site/out`
       # целиком, и положенное до него не доехало бы. Сличение отпечатков идёт и
       # здесь: выложить ведомость с гнилым отпечатком нельзя.
-      - name: Install the WebAssembly toolchain
-        run: |
-          v=$(clang --version | sed -n 's/.*clang version \([0-9]*\).*/\1/p' | head -1)
-          sudo apt-get update
-          sudo apt-get install -y wasi-libc "libclang-rt-$v-dev-wasm32" "lld-$v"
-          echo "/usr/lib/llvm-$v/bin" >> "$GITHUB_PATH"
+      - name: Publish the registry ledger
+        if: github.event_name != 'pull_request'
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script registry:publish
 
-      - name: Build the playground
-        run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:build
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site
+          path: docs/site/out
+          retention-days: 1
+
+  playground:
+    name: playground
+    runs-on: ubuntu-latest
+    env:
+      WASI_SDK: wasi-sdk-25.0-x86_64-linux
+      WASI_SDK_SHA256: 52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Build bootstrap
+        run: make -C bootstrap CFLAGS='-std=c99 -O0' -j2
+
+      - name: Key of the WebAssembly build
+        id: key
+        run: echo "recipe=$(grep -E '^script\.playground:(checker|compiler) ' .flangrc | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the WebAssembly build
+        id: wasm
+        uses: actions/cache@v4
+        with:
+          path: |
+            docs/site/out/playground/flang.wasm
+            docs/site/out/playground/checker.wasm
+          key: playground-wasm-${{ env.WASI_SDK }}-${{ steps.key.outputs.recipe }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'flang/proof/checker/checker.c') }}
+
+      - name: Install the WebAssembly toolchain
+        if: steps.wasm.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/wasi-sdk.tar.gz" "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/$WASI_SDK.tar.gz"
+          echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/wasi-sdk.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/$WASI_SDK/bin" >> "$GITHUB_PATH"
+          echo "WASI_SYSROOT=$RUNNER_TEMP/$WASI_SDK/share/wasi-sysroot" >> "$GITHUB_ENV"
+
+      - name: Build the WebAssembly checker and compiler
+        if: steps.wasm.outputs.cache-hit != 'true'
+        run: |
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:checker
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:compiler
+
+      - name: Lay out the library and the translator
+        run: |
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:library
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:translator
 
       - name: Probe the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe
@@ -260,22 +311,39 @@ jobs:
             exit 1
           fi
 
-      - name: Publish the registry ledger
-        if: github.event_name != 'pull_request'
-        run: LC_ALL=C.UTF-8 bootstrap/flang run-script registry:publish
-
       - if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playground
+          path: docs/site/out/playground
+          retention-days: 1
 
-      - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+  pack:
+    name: pack
+    if: github.event_name != 'pull_request' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+    needs: [sobrat, playground]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: site
+          path: docs/site/out
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: playground
+          path: docs/site/out/playground
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: docs/site/out
 
   opublikovat:
     name: deploy
-    if: github.event_name != 'pull_request'
-    needs: sobrat
+    if: github.event_name != 'pull_request' && (github.event_name != 'push' || github.ref == 'refs/heads/main')
+    needs: pack
     runs-on: ubuntu-latest
     environment:
       name: github-pages

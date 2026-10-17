@@ -529,8 +529,8 @@ static const char HELP_TEST[] =
     "У не сошедшегося примера называются ОБЕ стороны: ожидалось и получено.\n"
     "Длинное значение обрезается на 200 знаках, и длина полного сказана числом.\n"
     "\n"
-    "Примеры, объявленные при морфизмах теорката, здесь не прогоняются: их считает\n"
-    "версия для Node. На таких программах счёт «примеров N» окажется меньше её.";
+    "Примеры, объявленные при морфизмах теорката, здесь не прогоняются, и в счёт\n"
+    "«примеров N» они не входят.";
 
 static const char HELP_RUN[] =
     "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
@@ -552,7 +552,7 @@ static const char HELP_RUN[] =
     "  --function «Имя»   что вычислять\n"
     "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
     "                     Списка или вложенного объекта здесь не принимают —\n"
-    "                     их считает версия для Node\n"
+    "                     функцию со списком зовут её примеры: flang test <файл>\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
@@ -640,7 +640,7 @@ static const char HELP_EMIT_3[] =
     "«--no-check» СНИМАЕТ РОВНО ЯДРО ДОКАЗАТЕЛЬСТВ, и больше ничего. Разбор,\n"
     "связывание, типы и завершаемость судятся и с ним, и печать при замечании\n"
     "по-прежнему отменяется кодом 1. Имя ключа шире его дела: написание занято у\n"
-    "«flang test» и у версии для Node, и второе заводить не стали — потому дело и\n"
+    "«flang test», и второе заводить не стали — потому дело и\n"
     "названо здесь, а не оставлено на догадку.\n"
     "СКОЛЬКО ОН ЭКОНОМИТ — ЧИСЛО НЕ ОДНО, и разброс больше самой экономии;\n"
     "«вдвое» неправда в обе стороны. Замер 30 августа 2026 на этом дереве, круг\n"
@@ -9152,9 +9152,19 @@ static void check_skipped(fl_value program, size_t *obligations, size_t *example
  * человек пойдёт править не тот файл. Про это сказано один раз перед списком, а
  * не при каждом замечании.
  */
+static bool check_bads_name_files(const repl_bads *bads) {
+  size_t index = 0;
+  for (index = 0; index < bads->count; index += 1) {
+    if (bads->items[index].has_at && strncmp(bads->items[index].message, "в файле ", strlen("в файле ")) != 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void check_print_bads(const repl_bads *bads, const char *file, size_t sources) {
   size_t index = 0;
-  if (sources > 1 && bads->count > 0) {
+  if (sources > 1 && bads->count > 0 && !check_bads_name_files(bads)) {
     msg_printf(stderr, "check.place-without-file",
             "место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов %lu, "
             "а диагностика компилятора имени файла не несёт\n",
@@ -9170,6 +9180,98 @@ static void check_print_bads(const repl_bads *bads, const char *file, size_t sou
       repl_print_bad(bad->code, bad->message, "ввод", NULL, bad->line, bad->column);
     }
   }
+}
+
+static void check_own_names(fl_value own, const char *key, repl_strings *names, size_t **lines) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(own, key, &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    size_t bytes = 0;
+    if (zn_field_text(items[index], "name", &name, &bytes) && bytes > 0) {
+      strings_add(names, name, bytes);
+      *lines = (size_t *)repl_grow(*lines, names->count * sizeof(size_t));
+      (*lines)[names->count - 1] = zn_line(items[index]);
+    }
+  }
+}
+
+static const char *const check_declaration_words[] = {
+    "тотальная функция «", "функция «", "total function «", "function «", "тип «", "type «",
+    "объект «", "структура «", "запись «", "object «", "structure «", "record «"};
+
+static void check_namesakes_in(const char *text, size_t bytes, const char *neighbour, const repl_strings *names,
+                               const size_t *lines) {
+  size_t at = 0;
+  size_t line = 1;
+  while (at < bytes) {
+    size_t end = at;
+    size_t word = 0;
+    while (end < bytes && text[end] != '\n') {
+      end += 1;
+    }
+    for (word = 0; word < sizeof(check_declaration_words) / sizeof(check_declaration_words[0]); word += 1) {
+      size_t prefix = strlen(check_declaration_words[word]);
+      const char *name = text + at + prefix;
+      const char *close = NULL;
+      size_t own = 0;
+      if (end - at <= prefix || memcmp(text + at, check_declaration_words[word], prefix) != 0) {
+        continue;
+      }
+      close = strstr(name, "»");
+      if (close == NULL || close > text + end) {
+        break;
+      }
+      for (own = 0; own < names->count; own += 1) {
+        if (names->sizes[own] == (size_t)(close - name) && memcmp(names->items[own], name, names->sizes[own]) == 0) {
+          fprintf(stderr,
+                  "замечание: «%.*s» объявлено здесь, строка %lu, и в соседнем модуле %s, строка %lu: "
+                  "программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME\n",
+                  (int)names->sizes[own], names->items[own], (unsigned long)lines[own], neighbour,
+                  (unsigned long)line);
+        }
+      }
+      break;
+    }
+    at = end + 1;
+    line += 1;
+  }
+}
+
+static void check_namesakes(const char *full, const repl_strings *paths, fl_value own) {
+  repl_strings names;
+  size_t *lines = NULL;
+  char *dir = NULL;
+  const repl_place_index *place = NULL;
+  size_t index = 0;
+  if (own.tag == FL_NOTHING) {
+    return;
+  }
+  strings_init(&names);
+  check_own_names(own, "functions", &names, &lines);
+  check_own_names(own, "types", &names, &lines);
+  dir = repl_dirname(full);
+  place = repl_place_read(dir);
+  for (index = 0; index < place->paths.count && names.count > 0; index += 1) {
+    const char *neighbour = place->paths.items[index];
+    const char *slash = strrchr(neighbour, '/');
+    char *text = NULL;
+    size_t bytes = 0;
+    if (strings_has(paths, neighbour, strlen(neighbour))) {
+      continue;
+    }
+    text = repl_read_file(neighbour, &bytes);
+    if (text == NULL) {
+      continue;
+    }
+    check_namesakes_in(text, bytes, slash == NULL ? neighbour : slash + 1, &names, lines);
+    free(text);
+  }
+  free(dir);
+  free(lines);
+  strings_free(&names);
 }
 
 /**
@@ -9484,6 +9586,7 @@ static int check_file(const char *path, bool fast) {
       }
     }
   }
+  check_namesakes(full, &paths, own);
   fflush(stderr);
   /*
    * ЧЕТВЁРТОЕ СЛОВО: «НЕ СМОТРЕЛИ НА ЭТОМ ПРОГОНЕ».

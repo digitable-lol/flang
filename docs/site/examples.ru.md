@@ -1,11 +1,11 @@
 # Каталог примеров
 
-Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-10-16 файлов docs/examples/*.flang = 251 --> 251 файлов в
-двадцати пяти наборах и одном полноразмерном проекте. Второго каталога с примерами
+Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-10-07 файлов docs/examples/*.flang = 247 --> 247 файлов в
+двадцати четырёх наборах и одном полноразмерном проекте. Второго каталога с примерами
 в репозитории нет.
 
 Число пересчитывается одной командой:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-10-16 файлов docs/examples/*.flang = 251 --> 251.
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-10-07 файлов docs/examples/*.flang = 247 --> 247.
 
 ## Наборы
 
@@ -19,7 +19,6 @@
 | [`library-api/`](docs/examples/library-api) | 7 | предметная половина REST-сервиса библиотеки: выдача книг, каталог, штрафы. Единственный набор, показывающий **раскладку проекта** целиком |
 | [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | разговор с PostgreSQL (в том числе SCRAM), с Redis и чтение файла SQLite |
 | [`service-on-processes/`](docs/examples/service-on-processes) | 4 | служба на процессах, а не пример на три функции: заявление о своей замене OTP, проверенное в полный рост |
-| [`behavior/`](docs/examples/behavior) | 4 | бизнес-правила для таблицы поведения и её диффа: доступ к отчёту в двух версиях и рефакторинг, скидка от суммы. Рассказ — [таблица поведения правила](https://github.com/digitable-lol/flang/blob/main/docs/guide/behavior-table.ru.md) |
 | [`frameworks/`](docs/examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов docs/examples/frameworks/*.flang = 6 --> 6 | ядро решения на flang под хозяином-фреймворком на JavaScript: NestJS, React, Vue. Ядро напечатано в JS и лежит рядом с хозяином — см. ниже |
 | [`https/`](docs/examples/https) | 3 | TLS: записи RFC 8448, системное хранилище доверия, привет настоящему узлу |
 | [`proof-probes/`](docs/examples/proof-probes) | 3 | пробы самого ядра доказательств: дверь к типизированному дереву, отказ от общего спуска, вариант с полями |

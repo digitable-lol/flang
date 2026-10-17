@@ -673,10 +673,6 @@ ab23106ff5b8bf990189d3bf0db7584c|1|1|0|0|0|docs/benchmarks/proof-cost/functions/
 d5bb9825b073b06030be44e0b8e6cadf|1|×|×|×|0|docs/benchmarks/proof-cost/probe-forgery.flang
 fba5ff6beca731554ac578d06b44b0fe|1|1|0|0|0|docs/benchmarks/verdict-cache/cache-probe.flang
 8327a820ef3553039861636d5ed5cc06|90|79|7|4|0|docs/examples/allocator/allocator.flang
-ba9acf7a37b50ba44f9a89d992ceb82b|2|1|1|0|0|docs/examples/behavior/discount.flang
-e18902deaeecc701377e0ee015eb90fe|1|0|1|0|0|docs/examples/behavior/report-access-after.flang
-90a19d668193971c1023865fd17b59a4|1|0|1|0|0|docs/examples/behavior/report-access-before.flang
-2009461896d40e94a67321258fef2811|1|0|1|0|0|docs/examples/behavior/report-access-refactored.flang
 a9dcb183b91d6879230a947a37fe09f8|14|9|4|1|0|docs/examples/crypto/aes-vectors.flang
 a9dcb183b91d6879230a947a37fe09f8|14|9|4|1|0|docs/examples/crypto/aes-vectors.flang
 a9dcb183b91d6879230a947a37fe09f8|14|9|4|1|0|docs/examples/crypto/aes-vectors.flang
@@ -1560,8 +1556,6 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 74e5d9b9bb87ede2cbd6b8db0fdda88e|2|2|0|0|0|fspec/spec/42-data-retention.flang
 ea0c808c837ad28c1ad06045e2c03504|58|55|3|0|0|packaging/install-check.flang
 8d846d0683d8827c598d657f85832ec8|8|8|0|0|0|packaging/install-parity.flang
-0b1bf8e8857ea88b1652c957962ad78e|2|2|0|0|0|scripts/behavior-table.fscript
-d538e6fd659d046d821331877ffe39a6|1|1|0|0|0|scripts/behavior.fscript
 e0822c51ca487deb59d8925c20396e93|7|7|0|0|0|scripts/cell-work-preserved.fscript
 986fad97002d55a23e04a3dca541f8a5|1|1|0|0|0|scripts/editors/language-words.flang
 1838287b42f3cd832187265d3edffc40|21|17|0|4|0|scripts/editors/lsp-check.fscript

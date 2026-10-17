@@ -128,9 +128,9 @@ run` на нуле нарушает постусловие. Ядро отказ�
 параметром `н` отдаёт поле `прежний`, двоичный объявляет доказанным, а верно
 `результат равно н`. Независимый checker такую запись не принимает: код 3.
 Ядро в исходниках поле второй раз не сводит (запрет Разв✗,
-[ADR-0112](../../adr/0112-the-kernel-unfolds-a-call-on-a-built-constructor.md));
+[ADR-0133](../../adr/0133-the-kernel-unfolds-a-call-on-a-built-constructor.md));
 до печати семени двоичный несёт дыру. Проба —
-`flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang`.
+`flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang`. Задача 2241.
 
 ## `kernel-proves-a-pattern-name-shadowing-a-parameter` — закрыто
 

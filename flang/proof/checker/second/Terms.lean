@@ -100,7 +100,7 @@ def «сверху» (t «знак» : String) : List String :=
   let sep := " " ++ «знак» ++ " "
   let r := (t.splitOn sep).foldl (fun (acc : List String × Option String) «ч» =>
     let «н» := match acc.2 with | some c => c ++ sep ++ «ч» | none => «ч»
-    if «скобкиРавны» «н» then (acc.1 ++ [«н»], none) else (acc.1, some «н»)) ([], none)
+    if «скобкиРавны» «н» && («н».splitOn "«").length = («н».splitOn "»").length then (acc.1 ++ [«н»], none) else (acc.1, some «н»)) ([], none)
   r.1
 
 structure «Разрез» where

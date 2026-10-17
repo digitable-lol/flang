@@ -50,13 +50,19 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Nine files in the order of their imports»
-    ожидается [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
-      ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
-  [["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"], ["Record", "Запись"],
-    ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"]]
+  пример «Sixteen files in the order of their imports»
+    ожидается [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
+      ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
+      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
+      ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
+      ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
+      ["Semantics/Json", "Semantics/Json"]]
+  [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
+    ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
+    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
+    ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
+    ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
+    ["Semantics/Json", "Semantics/Json"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки
@@ -187,7 +193,11 @@
     ожидается пустой список
   если пусто («Work» от answers)
     то пустой список
-    иначе приписать («Run» от "version" и («Lean» от answers) и ["--version"]) к (отобразить («Modules») как pair → «Run» от (соединить ["build ", («Cell» от 1 и pair)] по "") и "sh" и ["-c", "LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$3.lean\" 2>&1", («Work» от answers), («Lean» от answers), («Cell» от 2 и pair), («Cell» от 1 и pair)])
+    иначе приписать («Run» от "version" и («Lean» от answers)
+        и ["--version"]) к (отобразить («Modules») как pair → «Run» от (соединить ["build ",
+        («Cell» от 1 и pair)] по "") и "sh" и ["-c",
+        "mkdir -p \"$0/Semantics\" && LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$3.lean\" 2>&1",
+        («Work» от answers), («Lean» от answers), («Cell» от 2 и pair), («Cell» от 1 и pair)])
 
 тотальная функция «Built»
   принимает answers: список «Answer»
@@ -212,7 +222,16 @@
   пример «Nothing is tried until everything is built»
     дано answers равно пустой список
     ожидается пустой список
-  пусть text равно "import «Половина»\n#print axioms «состоятельность»\n#print axioms «половина-верно»\n"
+  пусть text равно (соединить ["import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\n",
+    "#print axioms «состоятельность»\n",
+    "#print axioms «половина-верно»\n",
+    "#print axioms «Эталон».«развёртка-доводами»\n",
+    "#print axioms «Эталон».«развёртка-без-подстановки-ложна»\n",
+    "#print axioms «Эталон».«развёртка-с-захватом-ложна»\n",
+    "#print axioms «Эталон».«топливо-моно»\n",
+    "#print axioms «окр64-это-д64»\n",
+    "#print axioms «вД64-плюс»\n",
+    "#print axioms «умножить-кон-кон»\n"] по "")
   пусть axioms равно [(«Write» от "axioms file" и («In work» от "axioms.lean" и answers) и text),
     («Lean run» от "axioms" и "axioms.lean" и answers)]
   пусть compiler равно («Setting of» от "compiler" и "cc" и answers)
@@ -601,9 +620,10 @@
   возвращает «Section»
   пример «Nothing built stops at the first module»
     дано answers равно пустой список
-    ожидается запись «Section» с «lines» равным ["Lean: ", "", "Model.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
+    ожидается запись «Section» с «lines» равным ["Lean: ", "",
+        "Binary64.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
   пусть built равно (свёртка («Modules») начиная с (запись «Section» с «lines» равным [(соединить ["Lean: ", («First line» от («Output of» от "version" и answers))] по ""), ""] и «bad» равным нет и «fatal» равным нет) как part и pair → «Build step» от part и pair и answers)
-  пусть names равно "Model, Rules, Term, Record, Acceptance, Consistency, Half, RecordReader, VerdictCheck"
+  пусть names равно (соединить (отобразить («Modules») как pair → «Cell» от 1 и pair) по ", ")
   пусть lines равно (добавить (соединить ["сборка — ", names, ": без сообщений"] по "") к (built.«lines»))
   пусть quiet равно (запись «Section» с «lines» равным lines и «bad» равным (built.«bad») и «fatal» равным нет)
   если built.«fatal» то built иначе quiet
@@ -935,7 +955,7 @@
   возвращает «Продолжение»
   пример «Nothing built stops at the first module»
     дано answers равно пустой список
-    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nModel.lean НЕ СОБРАЛСЯ:"
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nBinary64.lean НЕ СОБРАЛСЯ:"
   «Ending» от (свёртка [(«Build section» от answers), («Axioms section» от answers), («Trap section» от answers), («Lemma section» от answers), («Probe section» от answers), («Verdict section» от answers), («Control section» от answers)] начиная с (запись «Report» с «lines» равным пустой список и «bad» равным нет и «stopped» равным нет) как report и part → «Reported» от report и part)
 
 тотальная функция «Obstacles»
@@ -959,7 +979,7 @@
     дано queue равно пустой список
     дано stages равно 0
     дано answers равно пустой список
-    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nModel.lean НЕ СОБРАЛСЯ:"
+    ожидается вариант «Провал» с код равным "FLANG_LEAN_CHECK" и сообщение равным "Lean: \n\nBinary64.lean НЕ СОБРАЛСЯ:"
   разбор queue
     случай голова и хвост
       то «Ask» от (голова) и (хвост) и stages и answers

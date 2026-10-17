@@ -247,9 +247,8 @@ api.flang ──> catalog.flang ──> isbn.flang
 
 Two of the names in «Каталог»'s `только` list are not called by that file at all —
 `«Минимум»` and `«Все не меньше»`. They are called by the CONTRACT of the imported
-`«Сумма»`, and `только` narrows the name table together with the contracts; without
-them the module did not link at all. This is the case where a `только` list is read not from the
-body of the file but from a linking refusal.
+`«Сумма»`, and a name in a contract binds the same way as in a body: by the rules of
+the module the contract is written in. Linking would pull them in without the list.
 
 **A project library has one entry module.**
 [`lib/api.flang`](../examples/library-api/lib/api.flang) is the only file the
@@ -267,25 +266,24 @@ year.
 
 ## 7. Imports: whole and selective
 
-**Rule.** `использует «Модуль»` brings in all of the module's names.
-`только «А», «Б»` brings in the listed ones.
+**Rule.** `использует «Модуль»` gives the importing file all of the module's names.
+`только «А», «Б»` gives the listed ones.
 
-**The main thing about `только`: it lists NAMES, not the dependency closure.**
-Take a function that calls a neighbour inside its own module and you get
-`FLANG_UNKNOWN_NAME` on the very first reference — and, if the function is
-declared total, `FLANG_NOT_TOTAL` after it. That is why «ISBN» is taken whole in
-the example (`«Код верен»` calls `«Цифры»` and `«Контрольную сумму»`), while
-«Списки» and «Текст проекта» are taken selectively: there every needed function is
-self-contained.
+**The main thing about `только`: it narrows the names the IMPORTING file calls, not
+the program.** A function taken by the list arrives with everything it calls inside
+its own module: a name in its body binds the way its own module would bind it, and
+linking pulls such functions in by itself. The same holds for `экспортирует`: a
+function behind the export list is out of reach for another file but within reach
+for its own module. So a `только` list is written from the body of the importing
+file, and helpers of imported functions do not belong in it (ADR-0148).
 
-The example itself runs into this today: `flang check
-docs/examples/library-api/lib/api.flang` answers «не проверено — замечаний 8»,
-exit 1. `«Сумма»`, `«Минимум»`, `«Максимум»` and `«Все не меньше»` in
-`flang/stdlib/lists.flang` call helpers `«Шаг суммы»`, `«Шаг минимума»`, `«Шаг
-максимума»`, `«Шаг все не меньше»`, which are not in the `только` list of `catalog.flang` —
-`FLANG_UNKNOWN_NAME` and then `FLANG_NOT_TOTAL` on each. That is exactly the refusal this
-paragraph warns about; the fix is widening the `только` list in `catalog.flang`, not editing
-this page.
+**Namesakes in one program are refused.** If a name in a function body leads, by the
+rules of that function's file, into one module while the assembled program holds a
+function of another file under that name, linking refuses with
+`FLANG_DUPLICATE_NAME` naming both files and the calling function. The language
+cannot name a module inside a call, so two same-named functions that one program
+needs both are told apart by renaming one of them. A namesake that no linked
+function calls never enters the program and gives no refusal.
 
 **Why narrow at all.** Not for cleanliness: a name conflict at link time is an
 error, not silent shadowing. A twenty-name module brought in whole is twenty future
@@ -404,7 +402,7 @@ the fix are named in section 7.
 5. A directory is a layer, not an entity; you can see from a file which command checks it.
 6. A module is a file; the boundary is "what changes together"; the import graph is a tree.
 7. One entry module per library, with no logic of its own.
-8. `только` lists names together with their contracts, not dependencies; paths are relative.
+8. `только` narrows the names the importing file calls, not the program; paths are relative.
 9. The project's `stdlib/` holds what knows nothing about the domain.
 10. An example is part of a declaration, not a separate file.
 11. A value's ceiling is written as an `обеспечивает` promise, not as clamping.

@@ -2069,3 +2069,8 @@ eval
 ladder
 conformance
 translate
+commuted
+chinese
+preconditions
+esperanto
+guillemet

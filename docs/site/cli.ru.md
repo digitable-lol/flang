@@ -42,9 +42,9 @@
 
 Долгие прогоны печатают в поток ошибок строку хода `шагов N из M …`.
 
-Примеры ниже идут на этом файле, `docs/examples/cli/hello.flang`:
+Примеры ниже идут на этом файле, `docs/examples/cli/double.flang`:
 
-```flang insert docs/examples/cli/hello.flang
+```flang insert docs/examples/cli/double.flang
 module «Hello»
 
 total function «Удвоить»
@@ -122,10 +122,10 @@ flang check <файл.flang> [--proof [--json] [--strict] [--record <файл>]]
 несогласие там названо `НЕЗАВИСИМО НЕ ПРОВЕРЕНО` и код не меняет
 ([ADR-0115](../adr/0115-the-exit-code-of-a-proof-check-names-what-was-proved.md)).
 
-```text insert output: check docs/examples/cli/hello.flang
-$ flang check docs/examples/cli/hello.flang
+```text insert output: check docs/examples/cli/double.flang
+$ flang check docs/examples/cli/double.flang
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/cli/hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/cli/double.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 Первая строка считает функции и сколько из них с доказанным завершением. Вторая
@@ -146,8 +146,8 @@ $ echo $?
 
 Каждый код `FLANG_…` и как его чинить — в [Справочнике отказов](diagnostics.html).
 
-```text insert output: check docs/examples/cli/hello.flang --fast
-$ flang check docs/examples/cli/hello.flang --fast
+```text insert output: check docs/examples/cli/double.flang --fast
+$ flang check docs/examples/cli/double.flang --fast
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 ПРОВЕРЕНО: связывание имён и повторы объявлений, типы, исчерпываемость разбора,
            завершаемость (в том числе взаимная рекурсия по компонентам), процессы, планы.
@@ -157,7 +157,7 @@ $ flang check docs/examples/cli/hello.flang --fast
            «Не смотрели» — не то же, что «объявлено, доказательства нет»: второе
            значит «смотрели и не смогли», а здесь вопроса не задавали вовсе.
            Спросить всё — та же команда без «--быстро».
-docs/examples/cli/hello.flang: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0
+docs/examples/cli/double.flang: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0
 $ echo $?
 4
 ```
@@ -278,9 +278,9 @@ $ echo $?
 3
 ```
 
-```text insert output: test docs/examples/cli/hello.flang
-$ flang test docs/examples/cli/hello.flang
-docs/examples/cli/hello.flang: примеров 1, прошло 1, не прошло 0
+```text insert output: test docs/examples/cli/double.flang
+$ flang test docs/examples/cli/double.flang
+docs/examples/cli/double.flang: примеров 1, прошло 1, не прошло 0
 ```
 
 Для не прошедшего примера печатаются обе стороны: ожидалось и получено.
@@ -316,8 +316,8 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 печатает одну строку в поток ошибок: `доказано: утверждений N` (N гарантий, все
 доказаны) либо `не доказано: …` — и тогда не вычисляется ничего, код `3`.
 
-```text insert output: run docs/examples/cli/hello.flang --function «Удвоить» --args '{"н":21}'
-$ flang run docs/examples/cli/hello.flang --function «Удвоить» --args '{"н":21}'
+```text insert output: run docs/examples/cli/double.flang --function «Удвоить» --args '{"н":21}'
+$ flang run docs/examples/cli/double.flang --function «Удвоить» --args '{"н":21}'
 доказано: утверждений 0
 42
 ```
@@ -414,8 +414,8 @@ unit-тесты не прогнаны. Сгенерированная запус
 
 Неизвестная цель — код `2` и список целей:
 
-```text insert output: emit docs/examples/cli/hello.flang --target нету
-$ flang emit docs/examples/cli/hello.flang --target нету
+```text insert output: emit docs/examples/cli/double.flang --target нету
+$ flang emit docs/examples/cli/double.flang --target нету
 flang emit: цели «нету» у этой сборки flang нет — целей здесь ДЕСЯТЬ — «c», «cpp», «go», «rust», «java», «js», «ts», «elixir», «python», «csharp».
 Невтащенных целей больше нет: все десять живут в замыкании этой сборки, и
 печатает их она сама, без Node.
@@ -842,12 +842,12 @@ flang lock <файл.flang> [--pretty]
 него и исходников зависимостей не читают. Испорченный lock-файл отвергается с
 `FLANG_LOCK`.
 
-```text insert output: lock docs/examples/cli/hello.flang
-$ flang lock docs/examples/cli/hello.flang
-{"схема":2,"вход":"./hello.flang","модули":[],"печать":"dcf9b0c54a6a814573047949d66a78d7e4706c67ae8873e637823fa799609779"}
+```text insert output: lock docs/examples/cli/double.flang
+$ flang lock docs/examples/cli/double.flang
+{"схема":2,"вход":"./double.flang","модули":[],"печать":"dcf9b0c54a6a814573047949d66a78d7e4706c67ae8873e637823fa799609779"}
 ```
 
-`hello.flang` ничего не подключает, поэтому список модулей («модули») пуст.
+`double.flang` ничего не подключает, поэтому список модулей («модули») пуст.
 
 ## package
 

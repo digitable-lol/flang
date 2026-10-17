@@ -1,0 +1,504 @@
+модуль «Reference check»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Part»
+  «lines»: список строки
+  «bad»: признак
+
+объект «Tally»
+  «rows»: число
+  «agreed»: число
+  «differ»: список строки
+  «outside»: число
+  «fuel»: число
+  «refused»: число
+
+тотальная функция «Literals»
+  возвращает список строки
+  пример «Sixteen literals reach the corners of double precision»
+    ожидается ["0.1", "0.2", "3", "1e308", "5e-324", "9007199254740993", "123456.789", "1e-7", "2.5", "1e21", "-0.3",
+        "-7", "1e300", "4.9e-324", "0.5", "1.7976931348623157e308"]
+  ["0.1", "0.2", "3", "1e308", "5e-324", "9007199254740993", "123456.789", "1e-7", "2.5", "1e21", "-0.3", "-7",
+      "1e300", "4.9e-324", "0.5", "1.7976931348623157e308"]
+
+тотальная функция «Operations»
+  возвращает список строки
+  пример «Five operations of numbers»
+    ожидается ["плюс", "минус", "умножить на", "делить на", "остаток от"]
+  ["плюс", "минус", "умножить на", "делить на", "остаток от"]
+
+тотальная функция «Indices»
+  возвращает список число
+  пример «Twenty indices from zero»
+    ожидается [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+тотальная функция «Literal at»
+  принимает k: число
+  возвращает строка
+  пример «The literal after the table end wraps around»
+    дано k равно 17
+    ожидается "0.2"
+  элемент ((k остаток от 16) плюс 1) в («Literals»)
+
+тотальная функция «Operation at»
+  принимает k: число
+  возвращает строка
+  пример «The operation after the table end wraps around»
+    дано k равно 6
+    ожидается "минус"
+  элемент ((k остаток от 5) плюс 1) в («Operations»)
+
+тотальная функция «Expression»
+  принимает i: число, j: число
+  возвращает строка
+  пример «The first expression divides one by its value»
+    дано i равно 0
+    дано j равно 0
+    ожидается "(1 делить на ((0.1 плюс 0.2) плюс 3))"
+  пример «A later expression stands as it is»
+    дано i равно 1
+    дано j равно 0
+    ожидается "((1e-7 минус 123456.789) делить на 9007199254740993)"
+  пусть a равно («Literal at» от ((i умножить на 7) плюс (j умножить на 3)))
+  пусть b равно («Literal at» от (((i умножить на 5) плюс (j умножить на 11)) плюс 1))
+  пусть c равно («Literal at» от (((i умножить на 3) плюс (j умножить на 13)) плюс 2))
+  пусть inner равно (соединить ["((", a, " ", («Operation at» от (i плюс (j умножить на 2))), " ", b, ") ",
+      («Operation at» от ((i умножить на 3) плюс j)), " ", c, ")"] по "")
+  если ((i плюс j) остаток от 4) равен 0 то (соединить ["(1 делить на ", inner, ")"] по "") иначе inner
+
+тотальная функция «Expressions»
+  принимает indices: список число
+  возвращает список строки
+  пример «Every pair of indices gives one expression»
+    дано indices равно [0, 1]
+    ожидается ["(1 делить на ((0.1 плюс 0.2) плюс 3))", "((1e308 умножить на 1e300) минус 1.7976931348623157e308)",
+        "((1e-7 минус 123456.789) делить на 9007199254740993)", "((-0.3 делить на 0.2) остаток от 3)"]
+  свёртка indices начиная с (пустой список) как gathered и i → («Соединить списки» от gathered
+    и (отобразить indices как j → «Expression» от i и j))
+
+тотальная функция «Generated program»
+  принимает indices: список число
+  возвращает строка
+  пример «The program is one function giving a list of numbers»
+    дано indices равно пустой список
+    ожидается "модуль «Сверка чисел»\n\nфункция «Числа»\n  возвращает список число\n  []\n"
+  соединить ["модуль «Сверка чисел»\n\nфункция «Числа»\n  возвращает список число\n  [",
+      (соединить («Expressions» от indices) по ", "), "]\n"] по ""
+
+тотальная функция «Lean»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Lean is looked for on the path»
+    дано answers равно пустой список
+    ожидается "lean"
+  «Setting of» от "lean" и "lean" и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary of the tree»
+    дано answers равно пустой список
+    ожидается "../../../bootstrap/flang"
+  «Setting of» от "binary" и "../../../bootstrap/flang" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «In work»
+  принимает name: строка, answers: список «Answer»
+  возвращает строка
+  пример «A file in the work directory»
+    дано name равно "gen.flang"
+    дано answers равно [запись «Answer» с «name» равным "work" и «reply» равным (вариант «Заведено» с путь равным "/w")]
+    ожидается "/w/gen.flang"
+  соединить [(«Work» от answers), "/", name] по ""
+
+тотальная функция «Modules»
+  возвращает список строки
+  пример «The reference needs three modules»
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json"]
+  ["Binary64", "Semantics/Eval", "Semantics/Json"]
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «Three settings are read first»
+    ожидается [(запись «Question» с «name» равным "lean"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEAN")),
+      (запись «Question» с «name» равным "temporary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
+      (запись «Question» с «name» равным "binary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))]
+  [(«Environment» от "lean" и "LEAN"), («Environment» от "temporary" и "FLANG_TMP"),
+      («Environment» от "binary" и "FLANG_BIN")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory is made under the temporary directory»
+    дано answers равно пустой список
+    ожидается [(запись «Question» с «name» равным "work"
+        и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/reference-check."))]
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers),
+      "/reference-check."] по ""))]
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе отобразить («Modules») как name → «Run» от (соединить ["build ", name] по "") и "sh" и ["-c",
+        "mkdir -p \"$0/Semantics\" && LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$2.lean\" 2>&1",
+        («Work» от answers), («Lean» от answers), name]
+
+тотальная функция «Gathering»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is gathered»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "trees" и "sh" и ["-c",
+        (соединить ["mkdir -p \"$0/ast\" && for f in ../examples/*.flang; do b=${f##*/}; ",
+        "\"$1\" ast \"$f\" > \"$0/ast/${b%.flang}.json\" 2>/dev/null || rm -f \"$0/ast/${b%.flang}.json\"; done"]
+        по ""), («Work» от answers), («Binary» от answers)]),
+      («Run» от "tests" и "sh" и ["-c", "\"$0\" test ../examples 2>&1", («Binary» от answers)]),
+      («Write» от "generated" и («In work» от "gen.flang" и answers) и («Generated program» от («Indices»))),
+      («Run» от "generated tree" и "sh" и ["-c", "\"$1\" ast \"$0/gen.flang\" > \"$0/gen.json\"",
+          («Work» от answers), («Binary» от answers)]),
+      («Run» от "generated run" и («Binary» от answers) и ["run", («In work» от "gen.flang" и answers), "--function",
+          "«Числа»", "--trust"])]
+
+тотальная функция «Reference»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory the reference is not run»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "examples" и "sh" и ["-c",
+        "LEAN_PATH=\"$0\" exec \"$1\" --run Semantics/Run.lean examples \"$0\"/ast/*.json", («Work» от answers),
+        («Lean» от answers)]),
+      («Run» от "values" и "sh" и ["-c",
+          "LEAN_PATH=\"$0\" exec \"$1\" --run Semantics/Run.lean value \"$0/gen.json\" Числа", («Work» от answers),
+          («Lean» от answers)]),
+      («Run» от "hardware" и "sh" и ["-c", "LEAN_PATH=\"$0\" exec \"$1\" --run Semantics/Run.lean hardware 200000",
+          («Work» от answers), («Lean» от answers)])]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Presence» от answers
+    случай 3
+      то «Building» от answers
+    случай 2
+      то «Gathering» от answers
+    случай 1
+      то «Reference» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Base name»
+  принимает path: строка
+  возвращает строка
+  пример «The file name without directory and extension»
+    дано path равно "/w/ast/stack.json"
+    ожидается "stack"
+  пример «A source path in a report»
+    дано path равно "../examples/stack.flang: не взят — причина"
+    ожидается "stack"
+  пусть parts равно (разделить path по "/")
+  пусть last равно (если пусто parts то path иначе элемент (длина parts) в parts)
+  пусть stem равно («Cell» от 1 и (разделить last по ".json"))
+  «Cell» от 1 и (разделить stem по ".flang")
+
+тотальная функция «Refused files»
+  принимает text: строка
+  возвращает список строки
+  пример «Files the binary did not take»
+    дано text равно "../examples/a.flang: не взят — ошибка\n../examples/b.flang: примеров 2, прошло 2, не прошло 0\n"
+    ожидается ["a"]
+  отобразить (отфильтровать («Lines» от text) где line → «Refused line» от line) как line → «Base name» от line
+
+тотальная функция «Refused line»
+  принимает line: строка
+  возвращает признак
+  пример «A file the binary did not take»
+    дано line равно "../examples/a.flang: не взят — ошибка"
+    ожидается да
+  (line содержит ": не взят") или (line содержит "примеры не запускались")
+
+тотальная функция «Tally row»
+  принимает tally: «Tally», row: список строки, refused: список строки
+  возвращает «Tally»
+  пример «An agreeing row»
+    дано tally равно (запись «Tally» с «rows» равным 0 и «agreed» равным 0 и «differ» равным пустой список
+        и «outside» равным 0 и «fuel» равным 0 и «refused» равным 0)
+    дано row равно ["/w/ast/a.json", "Ф", "пример", "совпало", "1"]
+    дано refused равно пустой список
+    ожидается (запись «Tally» с «rows» равным 1 и «agreed» равным 1 и «differ» равным пустой список
+        и «outside» равным 0 и «fuel» равным 0 и «refused» равным 0)
+  пример «A row of a refused file is counted apart»
+    дано tally равно (запись «Tally» с «rows» равным 0 и «agreed» равным 0 и «differ» равным пустой список
+        и «outside» равным 0 и «fuel» равным 0 и «refused» равным 0)
+    дано row равно ["/w/ast/a.json", "Ф", "пример", "беда", "FLANG_PROPERTY"]
+    дано refused равно ["a"]
+    ожидается (запись «Tally» с «rows» равным 1 и «agreed» равным 0 и «differ» равным пустой список
+        и «outside» равным 0 и «fuel» равным 0 и «refused» равным 1)
+  пусть verdict равно («Cell» от 4 и row)
+  пусть counted равно (запись «Tally» с «rows» равным ((tally.«rows») плюс 1) и «agreed» равным (tally.«agreed»)
+      и «differ» равным (tally.«differ») и «outside» равным (tally.«outside») и «fuel» равным (tally.«fuel»)
+      и «refused» равным (tally.«refused»))
+  «Chosen» от [(«When» от (refused содержит («Base name» от («Cell» от 1 и row)))
+      и (запись «Tally» с «rows» равным (counted.«rows») и «agreed» равным (counted.«agreed»)
+      и «differ» равным (counted.«differ») и «outside» равным (counted.«outside») и «fuel» равным (counted.«fuel»)
+      и «refused» равным ((counted.«refused») плюс 1))),
+    («When» от (verdict равен "совпало") и (запись «Tally» с «rows» равным (counted.«rows»)
+        и «agreed» равным ((counted.«agreed») плюс 1) и «differ» равным (counted.«differ»)
+        и «outside» равным (counted.«outside») и «fuel» равным (counted.«fuel»)
+        и «refused» равным (counted.«refused»))),
+    («When» от (verdict равен "вне") и (запись «Tally» с «rows» равным (counted.«rows»)
+        и «agreed» равным (counted.«agreed») и «differ» равным (counted.«differ»)
+        и «outside» равным ((counted.«outside») плюс 1) и «fuel» равным (counted.«fuel»)
+        и «refused» равным (counted.«refused»))),
+    («When» от (verdict равен "топливо") и (запись «Tally» с «rows» равным (counted.«rows»)
+        и «agreed» равным (counted.«agreed») и «differ» равным (counted.«differ»)
+        и «outside» равным (counted.«outside») и «fuel» равным ((counted.«fuel») плюс 1)
+        и «refused» равным (counted.«refused»)))] и (запись «Tally» с «rows» равным (counted.«rows»)
+        и «agreed» равным (counted.«agreed») и «differ» равным (добавить (соединить [(«Base name» от («Cell» от 1
+        и row)), («Cell» от 2 и row), («Cell» от 3 и row), verdict,
+        («Cell» от 5 и row)] по " | ") к (counted.«differ»)) и «outside» равным (counted.«outside»)
+        и «fuel» равным (counted.«fuel») и «refused» равным (counted.«refused»))
+
+тотальная функция «Example tally»
+  принимает answers: список «Answer»
+  возвращает «Tally»
+  пример «Nothing run, nothing counted»
+    дано answers равно пустой список
+    ожидается (запись «Tally» с «rows» равным 0 и «agreed» равным 0 и «differ» равным пустой список
+        и «outside» равным 0 и «fuel» равным 0 и «refused» равным 0)
+  пусть refused равно («Refused files» от («Output of» от "tests" и answers))
+  пусть rows равно (отобразить («Lines» от («Output of» от "examples" и answers)) как line → разделить line по "\t")
+  свёртка rows начиная с (запись «Tally» с «rows» равным 0 и «agreed» равным 0 и «differ» равным пустой список
+      и «outside» равным 0 и «fuel» равным 0
+      и «refused» равным 0) как tally и row → «Tally row» от tally и row и refused
+
+тотальная функция «Last line»
+  принимает text: строка
+  возвращает строка
+  пример «The value is the last line»
+    дано text равно "на веру\n[1,2]\n"
+    ожидается "[1,2]"
+  пусть lines равно («Lines» от text)
+  если пусто lines то "" иначе элемент (длина lines) в lines
+
+тотальная функция «Items»
+  принимает text: строка
+  возвращает список строки
+  пример «A printed list becomes its items»
+    дано text равно "[0.1,Infinity]"
+    ожидается ["0.1", "Infinity"]
+  пусть inner равно («Cell» от 1 и (разделить («Cell» от 2 и (разделить text по "[")) по "]"))
+  если пусто inner то пустой список иначе разделить inner по ","
+
+тотальная функция «Pairs agreeing»
+  принимает left: список строки, right: список строки
+  возвращает число
+  пример «Two of three agree»
+    дано left равно ["1", "2", "3"]
+    дано right равно ["1", "5", "3"]
+    ожидается 2
+  разбор left
+    случай пусто
+      то 0
+    случай голова «первое» и хвост «прочие»
+      то («Head agrees» от «первое» и right) плюс («Pairs agreeing» от «прочие» и («Tail of» от right))
+
+тотальная функция «Head agrees»
+  принимает «искомое»: строка, right: список строки
+  возвращает число
+  пример «The first one agrees»
+    дано «искомое» равно "1"
+    дано right равно ["1", "2"]
+    ожидается 1
+  разбор right
+    случай пусто
+      то 0
+    случай голова «первое» и хвост «прочие»
+      то если «искомое» равен «первое» то 1 иначе 0
+
+тотальная функция «Tail of»
+  принимает right: список строки
+  возвращает список строки
+  пример «The tail of two items»
+    дано right равно ["1", "2"]
+    ожидается ["2"]
+  разбор right
+    случай пусто
+      то пустой список
+    случай голова «первое» и хвост «прочие»
+      то «прочие»
+
+тотальная функция «Generated line»
+  принимает answers: список «Answer»
+  возвращает «Part»
+  пример «Nothing generated is a failure»
+    дано answers равно пустой список
+    ожидается запись «Part» с «lines» равным ["порождённые выражения: значений 0, совпало 0 — ПУСТО"] и «bad» равным да
+  пусть mine равно («Items» от («Cell» от 2 и (разделить («First line» от («Output of» от "values"
+      и answers)) по "\t")))
+  пусть theirs равно («Items» от («Last line» от («Output of» от "generated run" и answers)))
+  пусть agreed равно («Pairs agreeing» от mine и theirs)
+  пусть total равно (длина theirs)
+  пусть «заголовок» равно (соединить ["порождённые выражения: значений ", (к строке total), ", совпало ",
+      (к строке agreed)] по "")
+  «Chosen» от [(«When» от (total равен 0) и (запись «Part» с «lines» равным [(соединить [«заголовок»,
+      " — ПУСТО"] по "")] и «bad» равным да)),
+    («When» от ((agreed равен total) и притом ((длина mine) равен total))
+        и (запись «Part» с «lines» равным [«заголовок»]
+        и «bad» равным нет))] и (запись «Part» с «lines» равным [(соединить [«заголовок»,
+        " — РАСХОЖДЕНИЕ"] по "")] и «bad» равным да)
+
+тотальная функция «Build failures»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing built is a failure of every module»
+    дано answers равно пустой список
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json"]
+  отфильтровать («Modules») где name → не («Built» от name и answers)
+
+тотальная функция «Built»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  пример «A module never built is not built»
+    дано name равно "Binary64"
+    дано answers равно пустой список
+    ожидается нет
+  пусть asked равно (соединить ["build ", name] по "")
+  ((«Exit code of» от asked и answers) равен 0) и притом (пусто («Output of» от asked и answers))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing built fails the check»
+    дано answers равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_REFERENCE_CHECK"
+        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json")
+  пусть broken равно («Build failures» от answers)
+  пусть tally равно («Example tally» от answers)
+  пусть compared равно ((tally.«rows») минус ((tally.«refused») плюс ((tally.«outside») плюс (tally.«fuel»))))
+  пусть examples равно (соединить ["примеры flang/proof/examples: строк ", (к строке (tally.«rows»)), ", сличено ",
+      (к строке compared), ", совпало ", (к строке (tally.«agreed»)), ", расхождений ",
+      (к строке (длина (tally.«differ»))), ", вне эталона ", (к строке (tally.«outside»)), ", топливо кончилось ",
+      (к строке (tally.«fuel»)), ", в файлах, которые двоичный не взял, ", (к строке (tally.«refused»))] по "")
+  пусть generated равно («Generated line» от answers)
+  пусть hardware равно («First line» от (соединить (отфильтровать («Lines» от («Output of» от "hardware"
+      и answers)) где line → line начинается с "операций") по "\n"))
+  пусть hardwareBad равно (не ((«Exit code of» от "hardware" и answers) равен 0))
+  пусть lines равно («Соединить списки» от («Соединить списки» от [examples] и (tally.«differ»))
+      и («Соединить списки» от (generated.«lines») и [(соединить ["аппаратное округление: ",
+      («Or unknown» от hardware)] по "")]))
+  пусть bad равно (не (пусто (tally.«differ»))) или ((generated.«bad») или (hardwareBad или (compared меньше 1)))
+  пусть failed равно (вариант «Провал» с код равным "FLANG_REFERENCE_CHECK"
+    и сообщение равным (соединить ["не собраны: ", (соединить broken по ", ")] по ""))
+  пусть differing равно (вариант «Провал» с код равным "FLANG_REFERENCE_CHECK"
+    и сообщение равным (соединить («Соединить списки» от lines и ["", "НЕ СОШЛОСЬ"]) по "\n"))
+  пусть passed равно (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и ["",
+      "сошлось всё"]) по "\n"))
+  «Chosen» от [(«When» от (не (пусто broken)) и failed), («When» от bad и differing)] и passed
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A work directory that was not made stops the run»
+    дано asked равно "work"
+    дано answers равно пустой список
+    ожидается ["временный каталог не заведён"]
+  пример «An answered question is no obstacle»
+    дано asked равно "lean"
+    дано answers равно пустой список
+    ожидается пустой список
+  «Chosen» от [(«When» от ((asked равен "work") и притом (пусто («Work» от answers)))
+      и ["временный каталог не заведён"])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_REFERENCE_CHECK"
+        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json")
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6
+        и «answers» равным пустой список)
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks which Lean to run»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "LEAN")
+      и потом равным (запись «Inquiry» с «asked» равным "lean"
+      и «queue» равным [(запись «Question» с «name» равным "temporary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
+        (запись «Question» с «name» равным "binary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))]
+      и «stages» равным 5 и «answers» равным пустой список))
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_REFERENCE_CHECK_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Reference check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

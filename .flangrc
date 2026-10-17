@@ -96,6 +96,7 @@ script.lean-rules:check = bootstrap/flang io flang/proof/lean/rules-guard.fscrip
 script.lean-rules:census = bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Census
 script.lean-rules:numbers = bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Numbers
 script.lean-rules:forgery = bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Forgery
+script.lean:reference = bootstrap/flang io flang/proof/lean/reference.fscript --timeout 900000
 script.kernel-verdict:check = bootstrap/flang io flang/proof/kernel-verdict.fscript --max-steps 4000000000 --timeout 900000
 script.kernel-verdict:forgery = bootstrap/flang io flang/proof/kernel-verdict-forgery.fscript --max-steps 4000000000 --timeout 900000
 script.falsifier:check = bootstrap/flang io flang/proof/probes/falsifier/run.fscript --plan Probe --timeout 600000 --max-orders 100000

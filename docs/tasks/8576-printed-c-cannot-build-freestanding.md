@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Любая программа без `план`, например `rights.flang` из одной записи.
+1. Любая программа без `план`, например rights.flang из одной записи.
 2. `bootstrap/flang emit rights.flang --target c --no-cli --out k`, затем в `k`: `gcc -std=c99 -O2 -ffreestanding -c *.c`, `ld -r -o all.o *.o`, `nm -u all.o | wc -l`.
 3. `gcc -std=c99 -O2 -DFL_NO_POSIX_STACK -c flang_runtime.c`.
 

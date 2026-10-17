@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `pattern.flang`:
+1. Программа pattern.flang:
 
 ```flang
 модуль «PatternNames»

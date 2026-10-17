@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `zeros.flang`:
+1. Программа zeros.flang:
 
 ```flang
 модуль «LengthProbe»

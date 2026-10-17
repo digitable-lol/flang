@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `and-name.flang`:
+1. Программа and-name.flang:
 
 ```flang
 модуль «Repro checker conjunction in type name»
@@ -32,7 +32,7 @@
   утверждаем пара.номер не меньше 0
 ```
 
-2. Программа `plain-name.flang`:
+2. Программа plain-name.flang:
 
 ```flang
 модуль «Repro checker plain type name»
@@ -78,7 +78,7 @@ $ flang/proof/checker/сверщик --строго plain-name.flang plain-name.
 
 ## Когда задача сделана
 
-`flang/proof/checker/сверщик --строго and-name.flang and-name.запись` и то же для `plain-name.flang` — код 0 или 3. Подделка: посылок у записи две — код 1.
+`flang/proof/checker/сверщик --строго and-name.flang and-name.запись` и то же для plain-name.flang — код 0 или 3. Подделка: посылок у записи две — код 1.
 
 ## Где живёт правка
 

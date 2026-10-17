@@ -49,7 +49,7 @@
   «Язык» от вариант «Есть»
 ```
 
-2. Программа `call-branch.flang`:
+2. Программа call-branch.flang:
 
 ```flang
 модуль «Repro checker call in branch»

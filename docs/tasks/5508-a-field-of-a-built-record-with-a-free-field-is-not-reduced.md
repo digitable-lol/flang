@@ -19,7 +19,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `projection.flang`:
+1. Программа projection.flang:
 
 ```flang
 модуль «Repro record projection»

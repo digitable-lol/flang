@@ -4549,6 +4549,24 @@ fl_status fl_mul_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
   return fl_word_arith(ctx, "mulWrap", left, right, out, error);
 }
 
+fl_status fl_mul_wide(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error) {
+  static const char *const names[2] = {"старшая", "младшая"};
+  fl_value halves[2];
+  uint64_t high = 0u;
+  uint64_t low = 0u;
+  unsigned width = 0u;
+  FL_TRY(fl_word_pair(ctx, &left, &right, error));
+  width = left.as.word.width;
+  fl_word_wide(left.as.word.bits, right.as.word.bits, &high, &low);
+  if (width < 64u) {
+    high = low >> width;
+  }
+  halves[0] = fl_word(width, left.as.word.sign, high);
+  halves[1] = fl_word(width, left.as.word.sign, low);
+  return fl_record_new(ctx, names, halves, 2u, out, error);
+}
+
 fl_status fl_bit_and(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                      fl_error *error) {
   return fl_word_arith(ctx, "bitAnd", left, right, out, error);

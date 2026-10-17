@@ -60,6 +60,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"math/bits"
 	"os"
 	"runtime"
 	"strconv"
@@ -80,6 +81,7 @@ const (
 	CodeRecursionLimit = "FLANG_RECURSION_LIMIT"
 	CodeProperty       = "FLANG_PROPERTY"
 	CodeParse          = "FLANG_PARSE"
+	CodeOverflow       = "FLANG_OVERFLOW"
 )
 
 // Error — диагностика flang: код и текст, дословно совпадающие с интерпретатором.
@@ -110,6 +112,7 @@ const (
 	TagList               // список
 	TagRecord             // запись — объект FTS
 	TagVariant            // вариант — конструктор суммы типов
+	TagWord
 )
 
 // Field — поле записи или варианта. Порядок полей сохраняется: он наблюдаем
@@ -155,6 +158,7 @@ type Value struct {
 	// («хвост», литерал, отобразить) её не наследует, и продлить его на месте
 	// нельзя — только копией.
 	Grow *Grow
+	Bits uint64
 }
 
 // Plan — объявление «план» напечатанной программы: имя плана и исходные имена
@@ -272,6 +276,8 @@ func TypeName(value Value) string {
 		return "вариант «" + value.Str + "»"
 	case TagRecord:
 		return "запись"
+	case TagWord:
+		return value.Str
 	}
 	return "неизвестное значение"
 }
@@ -307,6 +313,8 @@ func Describe(value Value) string {
 			return "да"
 		}
 		return "нет"
+	case TagWord:
+		return wordText(value)
 	}
 	return NumberText(value.Num)
 }
@@ -331,6 +339,9 @@ func sameNumber(left, right float64) bool {
 // Рекурсия здесь по данным, а не по программе: её глубина ограничена
 // вложенностью значения, а не длиной вычисления.
 func Equal(left, right Value) bool {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordEqual(left, right)
+	}
 	if IsScalar(left) || IsScalar(right) {
 		if !IsScalar(left) || !IsScalar(right) || left.Tag != right.Tag {
 			return false
@@ -836,6 +847,9 @@ func exactOrder(left, right Value) (int, bool) {
 }
 
 func Add(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordArith("add", left, right)
+	}
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -852,6 +866,9 @@ func Add(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Sub(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordArith("sub", left, right)
+	}
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -880,6 +897,9 @@ func Sub(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Mul(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordArith("mul", left, right)
+	}
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -896,6 +916,9 @@ func Mul(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Div(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordArith("div", left, right)
+	}
 	if exactFraction(left) && exactFraction(right) {
 		a, b := fractionParts(left)
 		c, d := fractionParts(right)
@@ -913,6 +936,9 @@ func Div(ctx *Ctx, left, right Value) (Value, error) {
 }
 
 func Mod(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		return wordArith("mod", left, right)
+	}
 	if exactDigits(left) && exactDigits(right) {
 		a := exactCanon(left)
 		b := exactCanon(right)
@@ -953,6 +979,10 @@ func Percent(ctx *Ctx, left, right Value) (Value, error) {
 
 // Gt — «больше».
 func Gt(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		order, err := wordOrdered(left, right)
+		return Flag(order > 0), err
+	}
 	if order, exact := exactOrder(left, right); exact {
 		return Flag(order > 0), nil
 	}
@@ -965,6 +995,10 @@ func Gt(ctx *Ctx, left, right Value) (Value, error) {
 
 // Lt — «меньше».
 func Lt(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		order, err := wordOrdered(left, right)
+		return Flag(order < 0), err
+	}
 	if order, exact := exactOrder(left, right); exact {
 		return Flag(order < 0), nil
 	}
@@ -977,6 +1011,10 @@ func Lt(ctx *Ctx, left, right Value) (Value, error) {
 
 // Gte — «не меньше».
 func Gte(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		order, err := wordOrdered(left, right)
+		return Flag(order >= 0), err
+	}
 	if order, exact := exactOrder(left, right); exact {
 		return Flag(order >= 0), nil
 	}
@@ -989,6 +1027,10 @@ func Gte(ctx *Ctx, left, right Value) (Value, error) {
 
 // Lte — «не больше».
 func Lte(ctx *Ctx, left, right Value) (Value, error) {
+	if left.Tag == TagWord || right.Tag == TagWord {
+		order, err := wordOrdered(left, right)
+		return Flag(order <= 0), err
+	}
 	if order, exact := exactOrder(left, right); exact {
 		return Flag(order <= 0), nil
 	}
@@ -1008,6 +1050,359 @@ func Concat(ctx *Ctx, left, right Value) (Value, error) {
 	}
 	return Text(left.Str + right.Str), nil
 }
+
+const wordExactCeiling = uint64(9007199254740991)
+
+func Word(name string, bits uint64) Value {
+	return Value{Tag: TagWord, Str: name, Bits: bits & wordMask(wordWidth(name))}
+}
+
+func wordWidth(name string) uint {
+	width, _ := strconv.Atoi(name[1:])
+	return uint(width)
+}
+
+func wordMask(width uint) uint64 {
+	if width >= 64 {
+		return math.MaxUint64
+	}
+	return (uint64(1) << width) - 1
+}
+
+func wordSigned(name string) bool { return name[0] == 'i' }
+
+func wordNegative(value Value) bool {
+	width := wordWidth(value.Str)
+	return wordSigned(value.Str) && value.Bits&(uint64(1)<<(width-1)) != 0
+}
+
+func wordMagnitude(value Value) uint64 {
+	if wordNegative(value) {
+		return (^value.Bits)&wordMask(wordWidth(value.Str)) + 1
+	}
+	return value.Bits
+}
+
+func wordText(value Value) string {
+	if wordNegative(value) {
+		return "-" + strconv.FormatUint(wordMagnitude(value), 10)
+	}
+	return strconv.FormatUint(value.Bits, 10)
+}
+
+func wordFits(magnitude uint64, negative bool, name string) bool {
+	width := wordWidth(name)
+	if !wordSigned(name) {
+		return !negative && magnitude <= wordMask(width) || negative && magnitude == 0
+	}
+	if negative {
+		return magnitude <= uint64(1)<<(width-1)
+	}
+	return magnitude < uint64(1)<<(width-1)
+}
+
+func wordFromMagnitude(name string, magnitude uint64, negative bool) Value {
+	if negative {
+		return Word(name, ^magnitude+1)
+	}
+	return Word(name, magnitude)
+}
+
+func wordFromNumber(name string, number float64) (Value, error) {
+	shown := NumberText(number)
+	if math.IsNaN(number) || math.IsInf(number, 0) || number != math.Floor(number) {
+		return Nothing(), Fail(CodeOverflow, "%s не целое и в %s не переводится", shown, name)
+	}
+	magnitude := math.Abs(number)
+	if magnitude >= 18446744073709551616.0 || !wordFits(uint64(magnitude), number < 0, name) {
+		return Nothing(), Fail(CodeOverflow, "%s не помещается в %s", shown, name)
+	}
+	return wordFromMagnitude(name, uint64(magnitude), number < 0), nil
+}
+
+func wordFromDigits(name string, value Value) (Value, error) {
+	digits := value.Str
+	negative := strings.HasPrefix(digits, "-")
+	body := strings.TrimPrefix(digits, "-")
+	if body == "" || strings.Trim(body, "0123456789") != "" {
+		return Nothing(), Fail(CodeBuiltinArgs, "«%s»: строка %s — не десятичное целое", name, Describe(value))
+	}
+	magnitude, err := strconv.ParseUint(body, 10, 64)
+	if err != nil || !wordFits(magnitude, negative, name) {
+		return Nothing(), Fail(CodeOverflow, "%s не помещается в %s", digits, name)
+	}
+	return wordFromMagnitude(name, magnitude, negative), nil
+}
+
+func wordConvert(name string, value Value) (Value, error) {
+	switch value.Tag {
+	case TagNumber:
+		return wordFromNumber(name, value.Num)
+	case TagString:
+		return wordFromDigits(name, value)
+	case TagWord:
+		if !wordFits(wordMagnitude(value), wordNegative(value), name) {
+			return Nothing(), Fail(CodeOverflow, "%s не помещается в %s", wordText(value), name)
+		}
+		return wordFromMagnitude(name, wordMagnitude(value), wordNegative(value)), nil
+	}
+	return Nothing(), Fail(CodeBuiltinArgs, "«%s»: переводится число или слово, получено %s", name, TypeName(value))
+}
+
+func wordPair(left, right Value) (Value, Value, error) {
+	first := left.Tag == TagWord
+	pattern, other := right, left
+	if first {
+		pattern, other = left, right
+	}
+	switch {
+	case other.Tag == TagNumber:
+		converted, err := wordFromNumber(pattern.Str, other.Num)
+		if err != nil {
+			return left, right, err
+		}
+		other = converted
+	case other.Tag != TagWord:
+		return left, right, Fail(CodeType, "%s и %s не смешиваются", pattern.Str, TypeName(other))
+	case other.Str != pattern.Str:
+		return left, right, Fail(CodeType, "%s и %s не смешиваются", pattern.Str, other.Str)
+	}
+	if first {
+		return pattern, other, nil
+	}
+	return other, pattern, nil
+}
+
+func wordWide(left, right uint64) (uint64, uint64) {
+	return bits.Mul64(left, right)
+}
+
+func wordResult(op string, left, right Value, magnitude uint64, negative, spilled bool) (Value, error) {
+	if spilled || !wordFits(magnitude, negative, left.Str) {
+		return Nothing(), Fail(CodeOverflow, "%s «%s» %s не помещается в %s", wordText(left), op, wordText(right), left.Str)
+	}
+	return wordFromMagnitude(left.Str, magnitude, negative), nil
+}
+
+func wordSum(op string, left, right Value, subtract bool) (Value, error) {
+	a, b := wordMagnitude(left), wordMagnitude(right)
+	aNegative := wordNegative(left)
+	bNegative := wordNegative(right) != subtract && b != 0
+	if aNegative == bNegative {
+		sum, carry := bits.Add64(a, b, 0)
+		return wordResult(op, left, right, sum, aNegative, carry != 0)
+	}
+	if a >= b {
+		return wordResult(op, left, right, a-b, aNegative, false)
+	}
+	return wordResult(op, left, right, b-a, bNegative, false)
+}
+
+func wordDivide(op string, left, right Value) (Value, error) {
+	a, b := wordMagnitude(left), wordMagnitude(right)
+	if b == 0 {
+		return Nothing(), Fail(CodeOverflow, "%s «%s» 0: деление на ноль", wordText(left), op)
+	}
+	if op == "mod" {
+		return wordResult(op, left, right, a%b, wordNegative(left), false)
+	}
+	return wordResult(op, left, right, a/b, wordNegative(left) != wordNegative(right), false)
+}
+
+func wordHalves(left, right Value) Value {
+	high, low := wordWide(left.Bits, right.Bits)
+	width := wordWidth(left.Str)
+	if width < 64 {
+		high = low >> width
+	}
+	return Record([]Field{{Name: "старшая", Value: Word(left.Str, high)}, {Name: "младшая", Value: Word(left.Str, low)}})
+}
+
+func wordArith(op string, left, right Value) (Value, error) {
+	left, right, err := wordPair(left, right)
+	if err != nil {
+		return Nothing(), err
+	}
+	switch op {
+	case "add":
+		return wordSum(op, left, right, false)
+	case "sub":
+		return wordSum(op, left, right, true)
+	case "mul":
+		high, low := wordWide(wordMagnitude(left), wordMagnitude(right))
+		return wordResult(op, left, right, low, wordNegative(left) != wordNegative(right), high != 0)
+	case "div", "mod":
+		return wordDivide(op, left, right)
+	case "addWrap":
+		return Word(left.Str, left.Bits+right.Bits), nil
+	case "subWrap":
+		return Word(left.Str, left.Bits-right.Bits), nil
+	case "mulWrap":
+		return Word(left.Str, left.Bits*right.Bits), nil
+	case "mulWide":
+		return wordHalves(left, right), nil
+	case "bitAnd":
+		return Word(left.Str, left.Bits&right.Bits), nil
+	case "bitOr":
+		return Word(left.Str, left.Bits|right.Bits), nil
+	case "bitXor":
+		return Word(left.Str, left.Bits^right.Bits), nil
+	}
+	return Nothing(), Fail(CodeType, "над %s «%s» не определено", left.Str, op)
+}
+
+func wordOrder(left, right Value) int {
+	aNegative, bNegative := wordNegative(left), wordNegative(right)
+	a, b := wordMagnitude(left), wordMagnitude(right)
+	switch {
+	case aNegative != bNegative && aNegative:
+		return -1
+	case aNegative != bNegative:
+		return 1
+	case a == b:
+		return 0
+	case aNegative == (a > b):
+		return -1
+	}
+	return 1
+}
+
+func wordOrdered(left, right Value) (int, error) {
+	left, right, err := wordPair(left, right)
+	if err != nil {
+		return 0, err
+	}
+	return wordOrder(left, right), nil
+}
+
+func wordShiftCount(op string, left, right Value) (uint, error) {
+	if left.Tag != TagWord {
+		return 0, Fail(CodeBuiltinArgs, "«%s»: сдвиг на %s не меньше ширины %s", op, Describe(right), TypeName(left))
+	}
+	count := -1.0
+	if right.Tag == TagNumber {
+		count = right.Num
+	}
+	if right.Tag == TagWord {
+		count = float64(wordExactCeiling)
+		if wordMagnitude(right) <= wordExactCeiling {
+			count = float64(wordMagnitude(right))
+			if wordNegative(right) {
+				count = -count
+			}
+		}
+	}
+	if math.IsNaN(count) || math.IsInf(count, 0) || count < 0 || count != math.Floor(count) {
+		return 0, Fail(CodeBuiltinArgs, "«%s»: величина сдвига — целое не меньше нуля, получено %s", op, Describe(right))
+	}
+	width := wordWidth(left.Str)
+	if strings.HasPrefix(op, "shift") && count >= float64(width) {
+		return 0, Fail(CodeBuiltinArgs, "«%s»: сдвиг на %s не меньше ширины %s", op, NumberText(count), left.Str)
+	}
+	return uint(math.Mod(count, float64(width))), nil
+}
+
+func wordShift(op string, left, right Value) (Value, error) {
+	step, err := wordShiftCount(op, left, right)
+	if err != nil {
+		return Nothing(), err
+	}
+	width := wordWidth(left.Str)
+	bitsValue := left.Bits
+	switch op {
+	case "shiftLeft":
+		return Word(left.Str, bitsValue<<step), nil
+	case "shiftRight":
+		if wordNegative(left) {
+			return Word(left.Str, ^(((^bitsValue) & wordMask(width)) >> step)), nil
+		}
+		return Word(left.Str, bitsValue>>step), nil
+	case "rotateRight":
+		step = (width - step) % width
+	}
+	if step == 0 {
+		return left, nil
+	}
+	return Word(left.Str, bitsValue<<step|bitsValue>>(width-step)), nil
+}
+
+func wordEqual(left, right Value) bool {
+	if left.Tag == TagWord && right.Tag == TagWord {
+		return left.Str == right.Str && left.Bits == right.Bits
+	}
+	word, other := left, right
+	if left.Tag != TagWord {
+		word, other = right, left
+	}
+	return other.Tag == TagNumber && wordMagnitude(word) <= wordExactCeiling && wordNumber(word) == other.Num
+}
+
+func wordNumber(value Value) float64 {
+	if wordNegative(value) {
+		return -float64(wordMagnitude(value))
+	}
+	return float64(wordMagnitude(value))
+}
+
+func wordToNumber(value Value) (Value, error) {
+	if wordMagnitude(value) > wordExactCeiling {
+		return Nothing(), Fail(CodeOverflow, "%s за потолком точных чисел 9007199254740991", wordText(value))
+	}
+	return Number(wordNumber(value)), nil
+}
+
+func AddWrap(ctx *Ctx, left, right Value) (Value, error) { return wordArith("addWrap", left, right) }
+
+func SubWrap(ctx *Ctx, left, right Value) (Value, error) { return wordArith("subWrap", left, right) }
+
+func MulWrap(ctx *Ctx, left, right Value) (Value, error) { return wordArith("mulWrap", left, right) }
+
+func MulWide(ctx *Ctx, left, right Value) (Value, error) { return wordArith("mulWide", left, right) }
+
+func BitAnd(ctx *Ctx, left, right Value) (Value, error) { return wordArith("bitAnd", left, right) }
+
+func BitOr(ctx *Ctx, left, right Value) (Value, error) { return wordArith("bitOr", left, right) }
+
+func BitXor(ctx *Ctx, left, right Value) (Value, error) { return wordArith("bitXor", left, right) }
+
+func ShiftLeft(ctx *Ctx, left, right Value) (Value, error) {
+	return wordShift("shiftLeft", left, right)
+}
+
+func ShiftRight(ctx *Ctx, left, right Value) (Value, error) {
+	return wordShift("shiftRight", left, right)
+}
+
+func RotateLeft(ctx *Ctx, left, right Value) (Value, error) {
+	return wordShift("rotateLeft", left, right)
+}
+
+func RotateRight(ctx *Ctx, left, right Value) (Value, error) {
+	return wordShift("rotateRight", left, right)
+}
+
+func BBitNot(ctx *Ctx, value Value) (Value, error) {
+	if value.Tag != TagWord {
+		return Nothing(), Fail(CodeBuiltinArgs, "«bitNot»: аргумент должен быть словом, получено %s", TypeName(value))
+	}
+	return Word(value.Str, ^value.Bits), nil
+}
+
+func BU8(ctx *Ctx, value Value) (Value, error) { return wordConvert("u8", value) }
+
+func BU16(ctx *Ctx, value Value) (Value, error) { return wordConvert("u16", value) }
+
+func BU32(ctx *Ctx, value Value) (Value, error) { return wordConvert("u32", value) }
+
+func BU64(ctx *Ctx, value Value) (Value, error) { return wordConvert("u64", value) }
+
+func BI8(ctx *Ctx, value Value) (Value, error) { return wordConvert("i8", value) }
+
+func BI16(ctx *Ctx, value Value) (Value, error) { return wordConvert("i16", value) }
+
+func BI32(ctx *Ctx, value Value) (Value, error) { return wordConvert("i32", value) }
+
+func BI64(ctx *Ctx, value Value) (Value, error) { return wordConvert("i64", value) }
 
 // ───────────────────────────── проверки аргументов ─────────────────────────
 
@@ -1468,6 +1863,9 @@ func looksLikeNumber(text string) bool {
 
 // BToNumber — «к числу».
 func BToNumber(ctx *Ctx, text Value) (Value, error) {
+	if text.Tag == TagWord {
+		return wordToNumber(text)
+	}
 	source, err := expectString("к числу", text, "строка")
 	if err != nil {
 		return Nothing(), err
@@ -1526,6 +1924,8 @@ func BToString(ctx *Ctx, value Value) (Value, error) {
 		return Text("нет"), nil
 	case TagNothing:
 		return Text("ничто"), nil
+	case TagWord:
+		return Text(wordText(value)), nil
 	}
 	return Nothing(), Fail(CodeBuiltinArgs,
 		"«к строке»: ожидается скаляр, получено %s", TypeName(value))

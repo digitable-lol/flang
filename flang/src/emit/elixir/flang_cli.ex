@@ -288,6 +288,10 @@ defmodule Flang.Cli do
 
   def encode_value({:str, value}), do: "{\"s\":" <> Flang.Json.quote_string(value) <> "}"
 
+  def encode_value({:word, name, _} = value) do
+    "{\"w\":" <> Flang.Json.quote_string(name) <> ",\"v\":" <> Flang.Json.quote_string(Flang.Rt.describe(value)) <> "}"
+  end
+
   def encode_value({:list, _, _} = value) do
     "{\"l\":[" <> Enum.map_join(Flang.Rt.items(value), ",", &encode_value/1) <> "]}"
   end

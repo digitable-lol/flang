@@ -82,6 +82,7 @@ CODE_BUILTIN_ARGS = "FLANG_BUILTIN_ARGS"
 CODE_RECURSION_LIMIT = "FLANG_RECURSION_LIMIT"
 CODE_PROPERTY = "FLANG_PROPERTY"
 CODE_PARSE = "FLANG_PARSE"
+CODE_OVERFLOW = "FLANG_OVERFLOW"
 
 
 class FlangError(Exception):
@@ -109,6 +110,7 @@ TAG_STRING = 3
 TAG_LIST = 4
 TAG_RECORD = 5
 TAG_VARIANT = 6
+TAG_WORD = 7
 
 
 class Value:
@@ -319,6 +321,8 @@ def type_name(value):
         return "вариант «" + value.name + "»"
     if tag == TAG_RECORD:
         return "запись"
+    if tag == TAG_WORD:
+        return value.name
     return "неизвестное значение"
 
 
@@ -343,6 +347,8 @@ def describe(value):
         return "ничто"
     if tag == TAG_FLAG:
         return "да" if value.data else "нет"
+    if tag == TAG_WORD:
+        return str(word_int(value))
     return number_text(value.data)
 
 
@@ -370,6 +376,8 @@ def equal(left, right):
     Рекурсия здесь по данным, а не по программе: её глубина ограничена
     вложенностью значения, а не длиной вычисления.
     """
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_equal(left, right)
     if is_scalar(left) or is_scalar(right):
         if not is_scalar(left) or not is_scalar(right) or left.tag != right.tag:
             return False
@@ -907,6 +915,8 @@ def _exact_order(left, right):
 
 def add(ctx, left, right):
     """«плюс»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_arith("add", left, right)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -919,6 +929,8 @@ def add(ctx, left, right):
 
 def sub(ctx, left, right):
     """«минус»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_arith("sub", left, right)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -945,6 +957,8 @@ def sub(ctx, left, right):
 
 def mul(ctx, left, right):
     """«умножить на»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_arith("mul", left, right)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -973,6 +987,8 @@ def divide_raw(a, b):
 
 def div(ctx, left, right):
     """«делить на»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_arith("div", left, right)
     if _exact_fraction(left) and _exact_fraction(right):
         a, b = _fraction_parts(left)
         c, d = _fraction_parts(right)
@@ -1004,6 +1020,8 @@ def remainder_raw(a, b):
 
 def mod(ctx, left, right):
     """«остаток от» как двуместная операция."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        return _word_arith("mod", left, right)
     if _exact_digits(left) and _exact_digits(right):
         a = _exact_canon(left)
         b = _exact_canon(right)
@@ -1028,24 +1046,36 @@ def percent(ctx, left, right):
 
 def gt(ctx, left, right):
     """«больше»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        a, b = _word_pair(left, right)
+        return TRUE if word_int(a) > word_int(b) else FALSE
     a, b = _exact_order(left, right)
     return TRUE if a > b else FALSE
 
 
 def lt(ctx, left, right):
     """«меньше»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        a, b = _word_pair(left, right)
+        return TRUE if word_int(a) < word_int(b) else FALSE
     a, b = _exact_order(left, right)
     return TRUE if a < b else FALSE
 
 
 def gte(ctx, left, right):
     """«не меньше»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        a, b = _word_pair(left, right)
+        return TRUE if word_int(a) >= word_int(b) else FALSE
     a, b = _exact_order(left, right)
     return TRUE if a >= b else FALSE
 
 
 def lte(ctx, left, right):
     """«не больше»."""
+    if left.tag == TAG_WORD or right.tag == TAG_WORD:
+        a, b = _word_pair(left, right)
+        return TRUE if word_int(a) <= word_int(b) else FALSE
     a, b = _exact_order(left, right)
     return TRUE if a <= b else FALSE
 
@@ -1062,6 +1092,255 @@ def concat(ctx, left, right):
 
 
 # ───────────────────────────── проверки аргументов ─────────────────────────
+
+
+EXACT_CEILING = 9007199254740991
+
+
+def word(name, bits):
+    return Value(TAG_WORD, bits & ((1 << word_width(name)) - 1), name)
+
+
+def word_width(name):
+    return int(name[1:])
+
+
+def word_int(value):
+    width = word_width(value.name)
+    if value.name[0] == "i" and value.data >> (width - 1):
+        return value.data - (1 << width)
+    return value.data
+
+
+def _word_fits(number, name):
+    width = word_width(name)
+    if name[0] == "i":
+        return -(1 << (width - 1)) <= number < (1 << (width - 1))
+    return 0 <= number < (1 << width)
+
+
+def _word_of_int(name, number):
+    return word(name, number % (1 << word_width(name)))
+
+
+def _word_from_number(name, number):
+    shown = number_text(number)
+    if math.isnan(number) or math.isinf(number) or number != math.floor(number):
+        raise fail(CODE_OVERFLOW, f"{shown} не целое и в {name} не переводится")
+    whole = int(number)
+    if not _word_fits(whole, name):
+        raise fail(CODE_OVERFLOW, f"{shown} не помещается в {name}")
+    return _word_of_int(name, whole)
+
+
+def _word_from_digits(form, name, value):
+    digits = value.data
+    body = digits[1:] if digits.startswith("-") else digits
+    if body == "" or any(symbol not in "0123456789" for symbol in body):
+        raise fail(CODE_BUILTIN_ARGS, f"«{form}»: строка {describe(value)} — не десятичное целое")
+    whole = -int(body) if digits.startswith("-") else int(body)
+    if not _word_fits(whole, name):
+        raise fail(CODE_OVERFLOW, f"{digits} не помещается в {name}")
+    return _word_of_int(name, whole)
+
+
+def _word_convert(name, value):
+    if value.tag == TAG_NUMBER:
+        return _word_from_number(name, value.data)
+    if value.tag == TAG_STRING:
+        return _word_from_digits(name, name, value)
+    if value.tag != TAG_WORD:
+        raise fail(CODE_BUILTIN_ARGS, f"«{name}»: переводится число или слово, получено {type_name(value)}")
+    whole = word_int(value)
+    if not _word_fits(whole, name):
+        raise fail(CODE_OVERFLOW, f"{whole} не помещается в {name}")
+    return _word_of_int(name, whole)
+
+
+def _word_pair(left, right):
+    pattern = left if left.tag == TAG_WORD else right
+    other = right if left.tag == TAG_WORD else left
+    if other.tag == TAG_NUMBER:
+        other = _word_from_number(pattern.name, other.data)
+    elif other.tag != TAG_WORD:
+        raise fail(CODE_TYPE, f"{pattern.name} и {type_name(other)} не смешиваются")
+    elif other.name != pattern.name:
+        raise fail(CODE_TYPE, f"{pattern.name} и {other.name} не смешиваются")
+    return (pattern, other) if left.tag == TAG_WORD else (other, pattern)
+
+
+def _word_checked(op, left, right, number):
+    if not _word_fits(number, left.name):
+        raise fail(CODE_OVERFLOW, f"{word_int(left)} «{op}» {word_int(right)} не помещается в {left.name}")
+    return _word_of_int(left.name, number)
+
+
+def _word_divide(op, left, right):
+    a = word_int(left)
+    b = word_int(right)
+    if b == 0:
+        raise fail(CODE_OVERFLOW, f"{a} «{op}» 0: деление на ноль")
+    quotient = abs(a) // abs(b)
+    if op == "mod":
+        rest = abs(a) - quotient * abs(b)
+        return _word_checked(op, left, right, -rest if a < 0 else rest)
+    return _word_checked(op, left, right, -quotient if (a < 0) != (b < 0) else quotient)
+
+
+def _word_halves(left, right):
+    width = word_width(left.name)
+    product = left.data * right.data
+    return record({"старшая": word(left.name, product >> width), "младшая": word(left.name, product)})
+
+
+WORD_STEPS = {
+    "add": lambda left, right: _word_checked("add", left, right, word_int(left) + word_int(right)),
+    "sub": lambda left, right: _word_checked("sub", left, right, word_int(left) - word_int(right)),
+    "mul": lambda left, right: _word_checked("mul", left, right, word_int(left) * word_int(right)),
+    "div": lambda left, right: _word_divide("div", left, right),
+    "mod": lambda left, right: _word_divide("mod", left, right),
+    "addWrap": lambda left, right: word(left.name, left.data + right.data),
+    "subWrap": lambda left, right: word(left.name, left.data - right.data),
+    "mulWrap": lambda left, right: word(left.name, left.data * right.data),
+    "mulWide": _word_halves,
+    "bitAnd": lambda left, right: word(left.name, left.data & right.data),
+    "bitOr": lambda left, right: word(left.name, left.data | right.data),
+    "bitXor": lambda left, right: word(left.name, left.data ^ right.data),
+}
+
+
+def _word_arith(op, left, right):
+    a, b = _word_pair(left, right)
+    return WORD_STEPS[op](a, b)
+
+
+def _word_shift_count(op, left, right):
+    if left.tag != TAG_WORD:
+        raise fail(CODE_BUILTIN_ARGS, f"«{op}»: сдвиг на {describe(right)} не меньше ширины {type_name(left)}")
+    count = -1.0
+    if right.tag == TAG_NUMBER:
+        count = right.data
+    elif right.tag == TAG_WORD:
+        whole = word_int(right)
+        count = float(whole) if abs(whole) <= EXACT_CEILING else float(EXACT_CEILING)
+    if math.isnan(count) or math.isinf(count) or count < 0.0 or count != math.floor(count):
+        raise fail(CODE_BUILTIN_ARGS, f"«{op}»: величина сдвига — целое не меньше нуля, получено {describe(right)}")
+    width = word_width(left.name)
+    if op.startswith("shift") and count >= width:
+        raise fail(CODE_BUILTIN_ARGS, f"«{op}»: сдвиг на {number_text(count)} не меньше ширины {left.name}")
+    return int(count) % width
+
+
+def _word_shift(op, left, right):
+    step = _word_shift_count(op, left, right)
+    width = word_width(left.name)
+    bits = left.data
+    if op == "shiftLeft":
+        return word(left.name, bits << step)
+    if op == "shiftRight":
+        return _word_of_int(left.name, word_int(left) >> step)
+    if op == "rotateRight":
+        step = (width - step) % width
+    return word(left.name, (bits << step) | (bits >> (width - step)))
+
+
+def _word_equal(left, right):
+    if left.tag == TAG_WORD and right.tag == TAG_WORD:
+        return left.name == right.name and left.data == right.data
+    if left.tag == TAG_NUMBER:
+        return abs(word_int(right)) <= EXACT_CEILING and float(word_int(right)) == left.data
+    if right.tag == TAG_NUMBER:
+        return abs(word_int(left)) <= EXACT_CEILING and float(word_int(left)) == right.data
+    return False
+
+
+def _word_to_number(value):
+    whole = word_int(value)
+    if abs(whole) > EXACT_CEILING:
+        raise fail(CODE_OVERFLOW, f"{whole} за потолком точных чисел {EXACT_CEILING}")
+    return Value(TAG_NUMBER, float(whole))
+
+
+def add_wrap(ctx, left, right):
+    return _word_arith("addWrap", left, right)
+
+
+def sub_wrap(ctx, left, right):
+    return _word_arith("subWrap", left, right)
+
+
+def mul_wrap(ctx, left, right):
+    return _word_arith("mulWrap", left, right)
+
+
+def mul_wide(ctx, left, right):
+    return _word_arith("mulWide", left, right)
+
+
+def bit_and(ctx, left, right):
+    return _word_arith("bitAnd", left, right)
+
+
+def bit_or(ctx, left, right):
+    return _word_arith("bitOr", left, right)
+
+
+def bit_xor(ctx, left, right):
+    return _word_arith("bitXor", left, right)
+
+
+def shift_left(ctx, left, right):
+    return _word_shift("shiftLeft", left, right)
+
+
+def shift_right(ctx, left, right):
+    return _word_shift("shiftRight", left, right)
+
+
+def rotate_left(ctx, left, right):
+    return _word_shift("rotateLeft", left, right)
+
+
+def rotate_right(ctx, left, right):
+    return _word_shift("rotateRight", left, right)
+
+
+def b_bit_not(ctx, value):
+    if value.tag != TAG_WORD:
+        raise fail(CODE_BUILTIN_ARGS, f"«bitNot»: аргумент должен быть словом, получено {type_name(value)}")
+    return word(value.name, ~value.data)
+
+
+def b_u8(ctx, value):
+    return _word_convert("u8", value)
+
+
+def b_u16(ctx, value):
+    return _word_convert("u16", value)
+
+
+def b_u32(ctx, value):
+    return _word_convert("u32", value)
+
+
+def b_u64(ctx, value):
+    return _word_convert("u64", value)
+
+
+def b_i8(ctx, value):
+    return _word_convert("i8", value)
+
+
+def b_i16(ctx, value):
+    return _word_convert("i16", value)
+
+
+def b_i32(ctx, value):
+    return _word_convert("i32", value)
+
+
+def b_i64(ctx, value):
+    return _word_convert("i64", value)
 
 
 def _expect_string(name, value, role):
@@ -1345,6 +1624,8 @@ def _looks_like_number(value):
 
 def b_to_number(ctx, source):
     """«к числу»."""
+    if source.tag == TAG_WORD:
+        return _word_to_number(source)
     value = _expect_string("к числу", source, "строка")
     trimmed = _trim_js(value)
     if not _looks_like_number(trimmed):
@@ -1396,6 +1677,8 @@ def b_to_string(ctx, value):
         return Value(TAG_STRING, "да" if value.data else "нет")
     if tag == TAG_NOTHING:
         return Value(TAG_STRING, "ничто")
+    if tag == TAG_WORD:
+        return Value(TAG_STRING, str(word_int(value)))
     raise fail(
         CODE_BUILTIN_ARGS,
         f"«к строке»: ожидается скаляр, получено {type_name(value)}",

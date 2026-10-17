@@ -8,6 +8,7 @@ honest.flang	--proof --строго	0	ДОКАЗАНО
 no-obligations.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 no-obligations.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ
 grid-without-proof.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
+grid-without-proof.flang	--proof	3	нарушений на них нет: проверка прогнала каждый пример
 grid-without-proof.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
 declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
 declared-not-proved.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
@@ -30,3 +31,7 @@ honest.flang	--быстро	4	часть проверок НЕ ЗАПУСКАЛ�
 honest.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
 false-postcondition.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
 no-obligations.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+refuted-statement.flang	-	1	утверждение «антирефлексивность» опровергнуто на входе а = 0
+statement-holds-on-the-edge.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+unknown-property.flang	-	1	FLANG_UNKNOWN_PROPERTY
+known-property.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры

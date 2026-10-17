@@ -2,3 +2,4 @@ program	judge	code	word
 ring-kernel-verdicts.flang	run --trust --function "Свод"	0	кольцо на точном целом: доказано 8 из 8, отвергнуто 7 из 7, из них с причиной кольца 3 из 3
 ring-laws-over-number.flang	check --proof --strict	3	утверждений 2: доказано 0, сетка 0, объявлено, не доказано 2
 ring-false-over-exact.flang	check --proof --strict	3	утверждений 1: доказано 0, сетка 0, объявлено, не доказано 1
+ring-kernel-verdicts-over-money.flang	run --trust --function "Свод"	0	кольцо над деньгами: доказано 3 из 3, отвергнуто 2 из 2

@@ -387,6 +387,11 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_TRANSFORM_COMPONENT` | a component of the transformation is missing |
 | `FLANG_TRANSFORM_NOT_TOTAL` | the transformation is not defined on every object |
 | `FLANG_TRANSFORM_NOT_NATURAL` | the naturality square does not commute |
+| `FLANG_BIFUNCTOR_OBJECT_TWICE` | the bifunctor maps one pair of objects twice |
+| `FLANG_BIFUNCTOR_OBJECT_MISSING` | a pair of arrows is mapped, but the pair of their ends has no image |
+| `FLANG_BIFUNCTOR_ARROW_MISMATCH` | the image of a pair of arrows is undeclared or goes between the wrong objects |
+| `FLANG_BIFUNCTOR_IDENTITY` | a pair of identities is mapped to an arrow that is not an identity |
+| `FLANG_BIFUNCTOR_COMPOSITION` | a pair of composites is mapped to an arrow that is not the composite of the images |
 | `FLANG_ISO_NOT_INVERSE` | the two arrows are not inverse to each other |
 | `FLANG_EMBED_SHAPE` | the embedding is declared wrong |
 | `FLANG_EMBED_NOT_INJECTIVE` | the embedding maps different values to the same one |

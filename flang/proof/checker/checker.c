@@ -1119,6 +1119,17 @@ static Сп связанные_телом(const char *тело) {
   }
   return r;
 }
+static int край_имени(char c) { return c == 0 || strchr(" ()[],:.", c) != NULL; }
+static int имя_в_терме(const char *t, const char *x) {
+  size_t d = strlen(x), i; int в_кав = 0;
+  for (i = 0; t[i]; i++) {
+    if (в_кав) { if (t[i] == '\\' && t[i + 1]) i++; else if (t[i] == '"') в_кав = 0; continue; }
+    if (t[i] == '"') { в_кав = 1; continue; }
+    if (strncmp(t + i, x, d) == 0 && (i == 0 || край_имени(t[i - 1])) && край_имени(t[i + d])) return 1;
+    if (strncmp(t + i, fmt("«%s»", x), strlen(fmt("«%s»", x))) == 0) return 1;
+  }
+  return 0;
+}
 static char *тело_при_доводах(Прогон *p, Сп строки, const char *имя, const char *что, char *тело) {
   Доводы д = доводы_функции(строки, имя);
   char *зов = fmt("«%s» от ", имя), *t = тело;
@@ -1140,6 +1151,9 @@ static char *тело_при_доводах(Прогон *p, Сп строки, 
     t = вставить_вместо(t, fmt("«%s»", д.голые.e[i]), fmt("⦃%d⦄", i));
     t = вставить_вместо(t, д.голые.e[i], fmt("⦃%d⦄", i));
   }
+  for (i = 0; i < арги.n; i++)
+    if (имя_в_терме(t, д.голые.e[i])) {
+      беда_прогона(p, fmt("развёртка «%s»: параметр «%s» стоит в теле там, куда подстановка не доходит", имя, д.голые.e[i])); return NULL; }
   for (i = 0; i < арги.n; i++) t = вставить_вместо(t, fmt("⦃%d⦄", i), терм(арги.e[i]));
   return терм(t);
 }

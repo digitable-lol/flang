@@ -2,9 +2,8 @@
 
 # Surfaces
 
-> The sections "Finishing Esperanto and Chinese" and "Printing a tree on another
-> surface" describe what the language does not have yet. Everything else is what
-> it has, checked by a run.
+> The section "Finishing Esperanto and Chinese" describes what the language does
+> not have yet. Everything else is what it has, checked by a run.
 
 One program can be written with four sets of words: Russian, English, Esperanto
 and Chinese. These are not four languages: `если`, `if`, `se` and `如果` are one
@@ -118,8 +117,21 @@ explicit refusal with the reason), not a quiet edit of the table.
 The parser produces one tree whatever surface the file is written on. Since the
 reverse dictionary (`«Слово на поверхности»`) exists, it is mechanically cheap to
 print a file again, substituting for every keyword token its word on the target
-surface. There is no tool that does this for a whole file: the reverse dictionary
-is used only inside parse error messages (`flang/self/parser.flang`).
+surface. The plan `scripts/unicode/translate.fscript` does exactly that on the
+current binary:
+
+```
+bootstrap/flang run-script unicode:translate <file> <ru|en|eo|zh> [<output file>]
+```
+
+It asks `bootstrap/flang tokens` where each keyword stands, takes the word on the
+target surface from the reverse dictionary, and writes the file with only those
+spans replaced; without an output file the text goes to standard output. Paths
+that are not absolute are read from the folder of the plan. The answer names how
+many keywords have no word on the target surface (Esperanto has no `модуль`, for
+example); such a keyword stays as it was written. An inflected Russian form comes
+back as the first form of its word: `равно` translated to English and back is
+`равен`, and the program means the same.
 
 What matters more is what such a translation does **not** translate:
 

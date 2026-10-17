@@ -1,0 +1,284 @@
+модуль «Surface translation»
+  использует «Лексер flang» из "../../flang/self/lexer.flang" только «Слово на поверхности», «Куски слов поверхностей»
+
+объект «Spot»
+  «row»: число
+  «column»: число
+  «concept»: строка
+  «until»: число
+
+объект «Translation»
+  «source»: строка
+  «surface»: строка
+  «target»: строка
+
+тип «Translation step»
+  вариант «Asking arguments»
+  вариант «Reading source» содержит job: «Translation»
+  вариант «Reading tokens» содержит job: «Translation», source: строка
+  вариант «Writing» содержит untranslated: число
+
+тотальная функция «Token fields»
+  принимает row: строка
+  возвращает список строки
+  пример «Keyword token»
+    дано row равно "9:3\tслово if"
+    ожидается ["9", "3", "слово", "if"]
+  пример «Newline token»
+    дано row равно "9:41\t/"
+    ожидается ["9", "41", "/", ""]
+  пусть halves равно разделить row по "\t"
+  пусть place равно разделить («Item or empty» от halves и 1) по ":"
+  пусть kind равно разделить («Item or empty» от halves и 2) по " "
+  [(«Item or empty» от place и 1), («Item or empty» от place и 2), («Item or empty» от kind и 1), (соединить (хвост
+      («Or empty list» от kind)) по " ")]
+
+тотальная функция «Or empty list»
+  принимает items: список строки
+  возвращает список строки
+  пример «Empty stays empty»
+    дано items равно пустой список
+    ожидается [""]
+  если пусто items
+    то [""]
+    иначе items
+
+тотальная функция «Item or empty»
+  принимает items: список строки, position: число
+  возвращает строка
+  пример «Missing»
+    дано items равно ["a"]
+    дано position равно 2
+    ожидается ""
+  если position больше (длина items)
+    то ""
+    иначе элемент position в items
+
+тотальная функция «Spots»
+  принимает tokens: строка
+  возвращает список «Spot»
+  пример «Keyword ends where the next token starts»
+    дано tokens равно "9:3\tслово if\n9:8\tимя н\n9:10\tслово cmpLte\n9:20\tчисло 0\n9:41\t/\n"
+    ожидается [(запись «Spot» с «row» равным 9 и «column» равным 3 и «concept» равным "if" и «until» равным 8), (запись
+        «Spot» с «row» равным 9 и «column» равным 10 и «concept» равным "cmpLte" и «until» равным 20)]
+  пусть rows равно (отобразить (отфильтровать (разделить tokens по "\n") где row → не (пусто row)) как row →
+      «Token fields» от row)
+  пусть paired равно (свёртка rows начиная с (запись «Pairing» с «spots» равным пустой список и «open» равным
+      пустой список) как pairing и fields → «Pair step» от pairing и fields)
+  paired.«spots»
+
+объект «Pairing»
+  «spots»: список «Spot»
+  «open»: список «Spot»
+
+тотальная функция «Pair step»
+  принимает pairing: «Pairing», fields: список строки
+  возвращает «Pairing»
+  пример «A keyword waits for its end»
+    дано pairing равно запись «Pairing» с «spots» равным пустой список и «open» равным пустой список
+    дано fields равно ["9", "3", "слово", "if"]
+    ожидается (запись «Pairing» с «spots» равным пустой список и «open» равным [(запись «Spot» с «row» равным 9 и
+        «column» равным 3 и «concept» равным "if" и «until» равным 0)])
+  пусть row равно к числу («Item or empty» от fields и 1)
+  пусть column равно к числу («Item or empty» от fields и 2)
+  пусть closed равно (свёртка pairing.«open» начиная с pairing.«spots» как done и spot → добавить (запись «Spot» с «row»
+      равным spot.«row» и «column» равным spot.«column» и «concept» равным spot.«concept» и «until» равным (если
+      spot.«row» равен row то column иначе 0)) к done)
+  пусть opened равно (если («Item or empty» от fields и 3) равен "слово" то [(запись «Spot» с «row» равным row и
+      «column» равным column и «concept» равным («Item or empty» от fields и 4) и «until» равным 0)] иначе
+      пустой список)
+  запись «Pairing» с «spots» равным closed и «open» равным opened
+
+тотальная функция «Trim right»
+  принимает body: строка
+  возвращает строка
+  пример «Spaces off»
+    дано body равно "если  "
+    ожидается "если"
+  пусть last равно (свёртка (разложить body на символы) начиная с [0, 0] как seen и sign → [((элемент 1 в seen) плюс 1),
+      (если sign равен " " то элемент 2 в seen иначе (элемент 1 в seen) плюс 1)])
+  если (элемент 2 в last) равен 0
+    то ""
+    иначе подстрока body с 1 по (элемент 2 в last)
+
+тотальная функция «Replace spot»
+  принимает row_text: строка, spot: «Spot», target: строка
+  возвращает строка
+  пример «Russian if becomes English»
+    дано row_text равно "  если н не больше 0 то 0 иначе н"
+    дано spot равно запись «Spot» с «row» равным 1 и «column» равным 3 и «concept» равным "if" и «until» равным 8
+    дано target равно "en"
+    ожидается "  if н не больше 0 то 0 иначе н"
+  пример «Last token of the line runs to the end»
+    дано row_text равно "  иначе"
+    дано spot равно запись «Spot» с «row» равным 1 и «column» равным 3 и «concept» равным "else" и «until» равным 0
+    дано target равно "eo"
+    ожидается "  alie"
+  пусть last_column равно (если spot.«until» больше 0 то spot.«until» минус 1 иначе длина row_text)
+  пусть word равно «Trim right» от (подстрока row_text с spot.«column» по last_column)
+  пусть replacement равно «Слово на поверхности» от spot.«concept» и target
+  пусть head_part равно (если spot.«column» больше 1 то подстрока row_text с 1 по (spot.«column» минус 1) иначе "")
+  пусть tail_part равно (если (spot.«column» плюс (длина word)) больше (длина row_text) то "" иначе подстрока row_text с
+      (spot.«column» плюс (длина word)) по (длина row_text))
+  если пусто replacement
+    то row_text
+    иначе соединить [head_part, replacement, tail_part] по ""
+
+тотальная функция «Translate line»
+  принимает row_text: строка, number: число, spots: список «Spot», target: строка
+  возвращает строка
+  пример «Two keywords on one line»
+    дано row_text равно "  если н то 0"
+    дано number равно 4
+    дано spots равно [(запись «Spot» с «row» равным 4 и «column» равным 3 и «concept» равным "if" и «until» равным 8),
+        (запись «Spot» с «row» равным 4 и «column» равным 10 и «concept» равным "then" и «until» равным 13)]
+    дано target равно "en"
+    ожидается "  if н then 0"
+  пусть mine равно отфильтровать spots где spot → spot.«row» равен number
+  (свёртка (свёртка mine начиная с пустой список как reversed и spot → приписать spot к reversed) начиная с row_text как
+      done и spot → «Replace spot» от done и spot и target)
+
+тотальная функция «Untranslated»
+  принимает spots: список «Spot», target: строка
+  возвращает число
+  пример «Every keyword has a word»
+    дано spots равно [запись «Spot» с «row» равным 4 и «column» равным 3 и «concept» равным "if" и «until» равным 8]
+    дано target равно "zh"
+    ожидается 0
+  длина (отфильтровать spots где spot → пусто («Слово на поверхности» от spot.«concept» и target))
+
+тотальная функция «Translated text»
+  принимает source: строка, tokens: строка, target: строка
+  возвращает строка
+  пример «A function head in English»
+    дано source равно "тотальная функция «Ф»\n  возвращает число\n"
+    дано tokens равно """
+      1:1\tслово total
+      1:11\tслово function
+      1:19\tёлочка Ф
+      1:22\t/
+      2:3\tслово returns
+      2:14\tслово tNumber
+      2:19\t/
+      """
+    дано target равно "en"
+    ожидается "total function «Ф»\n  returns number\n"
+  пусть spots равно «Spots» от tokens
+  пусть numbered равно (свёртка (разделить source по "\n") начиная с пустой список как lines и row_text → добавить
+      («Translate line» от row_text и ((длина lines) плюс 1) и spots и target) к lines)
+  соединить numbered по "\n"
+
+тотальная функция «Surfaces»
+  возвращает список строки
+  обеспечивает «four surfaces» (длина результат) равен 4
+  ["ru", "en", "eo", "zh"]
+
+тотальная функция «Begin translation»
+  возвращает «Translation step»
+  пример «Arguments first»
+    ожидается вариант «Asking arguments»
+  вариант «Asking arguments»
+
+тотальная функция «Usage»
+  возвращает «Продолжение»
+  пример «Usage words»
+    ожидается (вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+        "usage: -- <file> <ru|en|eo|zh> [<output file>]")
+  вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным "usage: -- <file> <ru|en|eo|zh> [<output file>]"
+
+тотальная функция «Job of»
+  принимает tokens_given: список строки
+  возвращает «Продолжение»
+  пример «File and surface»
+    дано tokens_given равно ["a.flang", "en"]
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "a.flang") и потом равным
+        (вариант «Reading source» с job равным (запись «Translation» с «source» равным "a.flang" и «surface» равным "en"
+        и «target» равным "/dev/stdout")))
+  пример «Unknown surface»
+    дано tokens_given равно ["a.flang", "fr"]
+    ожидается (вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+        "usage: -- <file> <ru|en|eo|zh> [<output file>]")
+  пусть job равно (запись «Translation» с «source» равным («Item or empty» от tokens_given и 1) и «surface» равным
+      («Item or empty» от tokens_given и 2) и «target» равным (если (длина tokens_given) больше 2 то элемент 3 в
+      tokens_given иначе "/dev/stdout"))
+  если (((длина tokens_given) не меньше 2) и притом ((длина tokens_given) не больше 3) и притом («Surfaces» содержит
+      job.«surface»))
+    то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным job.«source») и потом равным
+        (вариант «Reading source» с job равным job))
+    иначе «Usage»
+
+тотальная функция «Failed reply»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Host failure»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+    ожидается вариант «Провал» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Провал» с код равным code и сообщение равным message
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то вариант «Провал» с код равным "FLANG_TRANSLATE_TOKENS" и сообщение равным errors
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "another reply was awaited"
+
+тотальная функция «Next translation»
+  принимает step: «Translation step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Asking arguments»
+      то «After arguments» от reply
+    случай вариант «Reading source» с job как job
+      то «After source» от job и reply
+    случай вариант «Reading tokens» с job как job и source как source
+      то «After tokens» от job и source и reply
+    случай вариант «Writing» с untranslated как untranslated
+      то (вариант «Конец работы» с значение равным (соединить ["keywords without a word on the target surface: ",
+          (к строке untranslated)] по ""))
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Ask»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант
+        «Asking arguments»))
+  разбор reply
+    случай вариант «Доводы» с доводы как tokens_given
+      то «Job of» от tokens_given
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking arguments»)
+    случай любое
+      то «Failed reply» от reply
+
+тотальная функция «After source»
+  принимает job: «Translation», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как body
+      то (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и
+          аргументы равным ["tokens", job.«source»]) и потом равным (вариант «Reading tokens» с job равным job и source
+          равным body))
+    случай любое
+      то «Failed reply» от reply
+
+тотальная функция «After tokens»
+  принимает job: «Translation», source: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то (если code равен 0 то «Write translation» от job и source и output иначе «Failed reply» от reply)
+    случай любое
+      то «Failed reply» от reply
+
+тотальная функция «Write translation»
+  принимает job: «Translation», source: строка, tokens: строка
+  возвращает «Продолжение»
+  пусть body равно «Translated text» от source и tokens и job.«surface»
+  пусть missing равно «Untranslated» от («Spots» от tokens) и job.«surface»
+  (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным job.«target» и содержимое равным body) и
+      потом равным (вариант «Writing» с untranslated равным missing))
+
+план «Translate»
+  состояние «Translation step»
+  начинает с «Begin translation»
+  обрабатывает «Next translation»

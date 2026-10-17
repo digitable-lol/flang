@@ -2064,4 +2064,4 @@ e6e3366b0d54be4307c3173c8028a810|2|2|0|0|0|flang/stdlib/code-page-data.flang
 97a4162d22fb0af72fbe131a16a4b7c4|7|7|0|0|0|flang/stdlib/unicode-normalization-data.flang
 a7295dcc745c82c29b2242605154b567|2|2|0|0|0|scripts/unicode/conformance.flang
 ac4cc47276c94be7555bf785f5b45f25|2|2|0|0|0|scripts/unicode/generate-tables.fscript
-7e1284cd50de40cb41bdd9d04f72e207|1|1|0|0|0|scripts/unicode/translate.fscript
+50281ab9589d5009963c935f901afb40|1|1|0|0|0|scripts/unicode/translate.fscript

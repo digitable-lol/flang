@@ -1919,3 +1919,7 @@ afef0441b80315d6e7b66e8c0f5f0680|12|7|5|0|2|flang/proof/checker/tests/families/u
 408249d6e22a41b1fa862c0a5e22a5f4|8|1|0|7|1|flang/proof/checker/tests/families/unfold-on-constructor/false-forms.flang
 b205efbd4be14caef921ae8d6c40c3ba|1|1|0|0|0|flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang
 4e8304bd34a18688e885fa234d71379f|1|×|×|×|0|flang/proof/checker/tests/families/unfold-on-constructor/two-argument-match.flang
+6c5fd379043722a3a2adb542445db224|5|0|0|5|0|flang/proof/checker/tests/families/natural-ring/literal-neighbour.flang
+63e174b921c60caec80cfa1e16bdfcec|1|×|×|×|0|flang/proof/checker/tests/families/natural-ring/postcondition.flang
+e50f710194b09d31a2893aa7d1eb04c5|1|0|0|1|0|flang/proof/checker/tests/families/natural-ring/forged/false-triple.flang
+3ac4f9201ad6ae9a9c4b28596831bb1c|1|0|0|1|0|flang/proof/checker/tests/families/natural-ring/forged/over-number.flang

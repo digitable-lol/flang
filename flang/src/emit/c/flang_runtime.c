@@ -2124,6 +2124,7 @@ static void fl_charge_count(size_t count) {
  *
  * Включается FLANG_TIME_OUT=<файл>. Без него — одна запись указателя на виток.
  */
+#ifdef FL_WATCH
 #define FL_TIME_SLOTS 8192u
 
 static struct {
@@ -2213,6 +2214,9 @@ static void fl_time_open(void) {
   setitimer(ITIMER_PROF, &clock_setting, NULL);
   atexit(fl_time_dump);
 }
+#else
+static void fl_time_open(void) {}
+#endif
 
 fl_status fl_tick(fl_ctx *ctx, const char *function, fl_error *error) {
   if (ctx == NULL) {
@@ -6549,7 +6553,9 @@ fl_status fl_trampoline(fl_ctx *ctx, fl_step step, const fl_value *args,
 #define FL_MEMO_BLOCK (size_t)(4u * 1024u * 1024u)
 #endif
 #ifndef FL_MEMO_CAP
-#define FL_MEMO_CAP ((size_t)4u * 1024u * 1024u * 1024u)
+#define FL_MEMO_CAP                                                            \
+  ((size_t)-1 / 2u > (size_t)0xFFFFFFFFul ? (size_t)4u * 1024u * 1024u * 1024u \
+                                         : (size_t)512u * 1024u * 1024u)
 #endif
 #define FL_MEMO_TALLIES 16
 #define FL_MEMO_OFF 0

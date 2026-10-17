@@ -169,10 +169,10 @@ $ bootstrap/flang check docs/examples/usage/lvalue.flang --proof
   значение (примеры функции) … Это не доказательство — теоремы при утверждении нет
 …
   утверждений 2: доказано 0, сетка 2, объявлено, не доказано 0
-… ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУДИЛАСЬ (спросить: --строго) … код возврата 0
+… НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ … код возврата 3
 ```
 
-With `--строго` the same command gives **exit code 3** and the words «НЕ УДАЛОСЬ ДОКАЗАТЬ —
+With `--строго` the code is the same, **3**, and the words are «НЕ УДАЛОСЬ ДОКАЗАТЬ —
 ОПОРА НЕ СУДИЛАСЬ». `bootstrap/flang test` on the same file: «примеров 7, прошло 7, не прошло
 0», exit code 0.
 

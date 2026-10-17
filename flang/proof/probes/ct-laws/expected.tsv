@@ -3,8 +3,8 @@ flang/ct/monoid-and-monad.flang	check	0	моноид «Сумма»: сетка 
 monoid-false-unit.flang	check	1	моноид «Сумма»: единица не нейтральна слева: операция от единицы и 1 дала 2
 flang/ct/monoid-and-monad.flang	check	0	моноид «Склейка»: сетка 5 значений, троек 125, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 monoid-false-unit.flang	check	1	моноид «Сумма»: сочетательность и единица ядром НЕ доказаны — свёртка операцией «Сложить» идёт по порядку на одном потоке
-flang/ct/monoid-and-monad.flang	check --proof	0	законов на сетке: 4 (значений в сетках 20
-flang/ct/monoid-and-monad.flang	check --proof	0	монада «Возможно» — сетка 3 значения (предел 6), 27 троек
+flang/ct/monoid-and-monad.flang	check --proof	3	законов на сетке: 4 (значений в сетках 20
+flang/ct/monoid-and-monad.flang	check --proof	3	монада «Возможно» — сетка 3 значения (предел 6), 27 троек
 flang/ct/order-shipment.flang	check	0	проверено — разбор
 flang/ct/order-shipment.flang	test	0	примеров 4, прошло 4, не прошло 0
 order-shipment-false-law-example.flang	check	1	пример закона «номер отгрузки берётся из суммы заказа»: значение не совпало с ожидаемым: ожидалось {"номер":777}, получено {"номер":500}

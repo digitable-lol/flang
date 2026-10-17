@@ -837,7 +837,7 @@
 
 тотальная функция «Помощники форм JS»
   возвращает список «Пара имён»
-  обеспечивает «помощников форм ровно двадцать три» (длина результат) равен 23
+  обеспечивает «помощников форм ровно тридцать два» (длина результат) равен 32
   [
     (запись «Пара имён» с «ключ» равным "длина" и «значение» равным "$b_dlina"),
     (запись «Пара имён» с «ключ» равным "символ" и «значение» равным "$b_simvol"),
@@ -861,7 +861,16 @@
     (запись «Пара имён» с «ключ» равным "добавить" и «значение» равным "$b_dobavit"),
     (запись «Пара имён» с «ключ» равным "приписать" и «значение» равным "$b_pripisat"),
     (запись «Пара имён» с «ключ» равным "остаток от" и «значение» равным "$b_ostatok_ot"),
-    (запись «Пара имён» с «ключ» равным "процентов от" и «значение» равным "$b_procentov_ot")
+    (запись «Пара имён» с «ключ» равным "процентов от" и «значение» равным "$b_procentov_ot"),
+    (запись «Пара имён» с «ключ» равным "bitNot" и «значение» равным "$b_bit_not"),
+    (запись «Пара имён» с «ключ» равным "u8" и «значение» равным "$b_u8"),
+    (запись «Пара имён» с «ключ» равным "u16" и «значение» равным "$b_u16"),
+    (запись «Пара имён» с «ключ» равным "u32" и «значение» равным "$b_u32"),
+    (запись «Пара имён» с «ключ» равным "u64" и «значение» равным "$b_u64"),
+    (запись «Пара имён» с «ключ» равным "i8" и «значение» равным "$b_i8"),
+    (запись «Пара имён» с «ключ» равным "i16" и «значение» равным "$b_i16"),
+    (запись «Пара имён» с «ключ» равным "i32" и «значение» равным "$b_i32"),
+    (запись «Пара имён» с «ключ» равным "i64" и «значение» равным "$b_i64")
   ]
 
 тотальная функция «Арности форм JS»
@@ -890,12 +899,21 @@
     (запись «Метка» с «ключ» равным "добавить" и «значение» равным 2),
     (запись «Метка» с «ключ» равным "приписать" и «значение» равным 2),
     (запись «Метка» с «ключ» равным "остаток от" и «значение» равным 2),
-    (запись «Метка» с «ключ» равным "процентов от" и «значение» равным 2)
+    (запись «Метка» с «ключ» равным "процентов от" и «значение» равным 2),
+    (запись «Метка» с «ключ» равным "bitNot" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "u8" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "u16" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "u32" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "u64" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "i8" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "i16" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "i32" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "i64" и «значение» равным 1)
   ]
 
 тотальная функция «Помощники операций JS»
   возвращает список «Пара имён»
-  обеспечивает «помощников операций ровно одиннадцать» (длина результат) равен 11
+  обеспечивает «помощников операций ровно двадцать два» (длина результат) равен 22
   [
     (запись «Пара имён» с «ключ» равным "add" и «значение» равным "$add"),
     (запись «Пара имён» с «ключ» равным "sub" и «значение» равным "$sub"),
@@ -907,7 +925,18 @@
     (запись «Пара имён» с «ключ» равным "lt" и «значение» равным "$lt"),
     (запись «Пара имён» с «ключ» равным "gte" и «значение» равным "$gte"),
     (запись «Пара имён» с «ключ» равным "lte" и «значение» равным "$lte"),
-    (запись «Пара имён» с «ключ» равным "concat" и «значение» равным "$concat")
+    (запись «Пара имён» с «ключ» равным "concat" и «значение» равным "$concat"),
+    (запись «Пара имён» с «ключ» равным "addWrap" и «значение» равным "$addWrap"),
+    (запись «Пара имён» с «ключ» равным "subWrap" и «значение» равным "$subWrap"),
+    (запись «Пара имён» с «ключ» равным "mulWrap" и «значение» равным "$mulWrap"),
+    (запись «Пара имён» с «ключ» равным "mulWide" и «значение» равным "$mulWide"),
+    (запись «Пара имён» с «ключ» равным "bitAnd" и «значение» равным "$bitAnd"),
+    (запись «Пара имён» с «ключ» равным "bitOr" и «значение» равным "$bitOr"),
+    (запись «Пара имён» с «ключ» равным "bitXor" и «значение» равным "$bitXor"),
+    (запись «Пара имён» с «ключ» равным "shiftLeft" и «значение» равным "$shiftLeft"),
+    (запись «Пара имён» с «ключ» равным "shiftRight" и «значение» равным "$shiftRight"),
+    (запись «Пара имён» с «ключ» равным "rotateLeft" и «значение» равным "$rotateLeft"),
+    (запись «Пара имён» с «ключ» равным "rotateRight" и «значение» равным "$rotateRight")
   ]
 
 тотальная функция «Слово аргументов JS»
@@ -1003,7 +1032,8 @@
   обеспечивает «рантайм isRecord несёт function $isRecord» результат содержит "function $isRecord("
   соединить [
     "function $isRecord(value) {",
-    "  return typeof value === \"object\" && value !== null && !Array.isArray(value) && !(value instanceof $FlangVariant)",
+    "  if (typeof value !== \"object\" || value === null || value instanceof $Word) return false",
+    "  return !Array.isArray(value) && !(value instanceof $FlangVariant)",
     "}"
   ] по "\n"
 
@@ -1065,6 +1095,7 @@
     "  if (typeof value === \"boolean\") return \"признак\"",
     "  if ($isList(value)) return \"список\"",
     "  if ($isVariant(value)) return `вариант «${value.variant}»`",
+    "  if (value instanceof $Word) return value.word",
     "  if ($isRecord(value)) return \"запись\"",
     "  return \"неизвестное значение\"",
     "}"
@@ -1081,6 +1112,7 @@
     "    return fields.length === 0 ? value.variant : `${value.variant}(${fields.join(\", \")})`",
     "  }",
     "  if ($isList(value)) return `список из ${value.length}`",
+    "  if (value instanceof $Word) return String($wordInt(value))",
     "  if ($isRecord(value)) return `запись {${Object.keys(value).join(\", \")}}`",
     "  if (value === null) return \"ничто\"",
     "  if (value === true) return \"да\"",
@@ -1094,6 +1126,7 @@
   обеспечивает «рантайм equal несёт function $equal» результат содержит "function $equal("
   соединить [
     "function $equal(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordEqual(left, right)",
     "  if ($isScalar(left) || $isScalar(right)) {",
     "    if (!$isScalar(left) || !$isScalar(right)) return false",
     "    return Object.is(left, right)",
@@ -1411,6 +1444,7 @@
   соединить [
     "/** @returns {any} */",
     "function $add(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordArith(\"add\", left, right)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1430,6 +1464,7 @@
   соединить [
     "/** @returns {any} */",
     "function $sub(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordArith(\"sub\", left, right)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1461,6 +1496,7 @@
   соединить [
     "/** @returns {any} */",
     "function $mul(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordArith(\"mul\", left, right)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1480,6 +1516,7 @@
   соединить [
     "/** @returns {any} */",
     "function $div(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordArith(\"div\", left, right)",
     "  if ($exactFraction(left) && $exactFraction(right)) {",
     "    const [a, b] = $fractionParts(left)",
     "    const [c, d] = $fractionParts(right)",
@@ -1500,6 +1537,7 @@
   соединить [
     "/** @returns {any} */",
     "function $mod(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) return $wordArith(\"mod\", left, right)",
     "  if ($exactDigits(left) && $exactDigits(right)) {",
     "    const a = $exactCanon(left)",
     "    const b = $exactCanon(right)",
@@ -1529,6 +1567,10 @@
   обеспечивает «рантайм gt несёт function $gt» результат содержит "function $gt("
   соединить [
     "function $gt(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) {",
+    "    const [a, b] = $wordPair(left, right)",
+    "    return $wordInt(a) > $wordInt(b)",
+    "  }",
     "  const order = $exactOrder(left, right)",
     "  if (order !== null) {",
     "    return order > 0",
@@ -1543,6 +1585,10 @@
   обеспечивает «рантайм lt несёт function $lt» результат содержит "function $lt("
   соединить [
     "function $lt(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) {",
+    "    const [a, b] = $wordPair(left, right)",
+    "    return $wordInt(a) < $wordInt(b)",
+    "  }",
     "  const order = $exactOrder(left, right)",
     "  if (order !== null) {",
     "    return order < 0",
@@ -1557,6 +1603,10 @@
   обеспечивает «рантайм gte несёт function $gte» результат содержит "function $gte("
   соединить [
     "function $gte(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) {",
+    "    const [a, b] = $wordPair(left, right)",
+    "    return $wordInt(a) >= $wordInt(b)",
+    "  }",
     "  const order = $exactOrder(left, right)",
     "  if (order !== null) {",
     "    return order >= 0",
@@ -1571,6 +1621,10 @@
   обеспечивает «рантайм lte несёт function $lte» результат содержит "function $lte("
   соединить [
     "function $lte(left, right) {",
+    "  if (left instanceof $Word || right instanceof $Word) {",
+    "    const [a, b] = $wordPair(left, right)",
+    "    return $wordInt(a) <= $wordInt(b)",
+    "  }",
     "  const order = $exactOrder(left, right)",
     "  if (order !== null) {",
     "    return order <= 0",
@@ -2035,6 +2089,7 @@
   обеспечивает «рантайм b_k_chislu несёт function $b_k_chislu» результат содержит "function $b_k_chislu("
   соединить [
     "function $b_k_chislu(text) {",
+    "  if (text instanceof $Word) return $wordToNumber(text)",
     "  $expectString(\"к числу\", text, \"строка\")",
     "  const trimmed = text.trim()",
     "  if (!/^[+-]?(\\d+(\\.\\d+)?|\\.\\d+)([eE][+-]?\\d+)?$/u.test(trimmed)) {",
@@ -2073,6 +2128,7 @@
     "  if (typeof value === \"number\") return String(value)",
     "  if (typeof value === \"boolean\") return value ? \"да\" : \"нет\"",
     "  if (value === null) return \"ничто\"",
+    "  if (value instanceof $Word) return String($wordInt(value))",
     "  $fail(\"FLANG_BUILTIN_ARGS\", `«к строке»: ожидается скаляр, получено ${$typeName(value)}`)",
     "}"
   ] по "\n"
@@ -2558,35 +2614,41 @@
     "$exactFraction", "$fractionParts", "$exactDigits", "$exactCanon"
   ]
 
+тотальная функция «Нужда equal JS»
+  возвращает список строки
+  ["$isScalar", "$isList", "$isVariant", "$isRecord", "$recordsEqual", "$Word"]
+
 тотальная функция «Нужда add JS»
   возвращает список строки
   [
-    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf",
+    "$Word", "$wordArith"
   ]
 
 тотальная функция «Нужда sub JS»
   возвращает список строки
   [
     "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText", "$exactDigits",
-    "$exactCanon", "$exactOf", "$exactText"
+    "$exactCanon", "$exactOf", "$exactText", "$Word", "$wordArith"
   ]
 
 тотальная функция «Нужда mul JS»
   возвращает список строки
   [
-    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf"
+    "$nums", "$exactFraction", "$fractionParts", "$fractionValue", "$exactDigits", "$exactCanon", "$exactOf",
+    "$Word", "$wordArith"
   ]
 
 тотальная функция «Нужда div JS»
   возвращает список строки
   [
-    "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText"
+    "$nums", "$fail", "$exactFraction", "$fractionParts", "$fractionValue", "$fractionText", "$Word", "$wordArith"
   ]
 
 тотальная функция «Нужда mod JS»
   возвращает список строки
   [
-    "$nums", "$fail", "$exactDigits", "$exactCanon", "$exactOf", "$exactText"
+    "$nums", "$fail", "$exactDigits", "$exactCanon", "$exactOf", "$exactText", "$Word", "$wordArith"
   ]
 
 тотальная функция «Нужда b_integer_part JS»
@@ -2603,22 +2665,44 @@
 
 тотальная функция «Рантайм JS»
   возвращает список «Кусок рантайма JS»
-  обеспечивает «кусков рантайма ровно сто шесть» (длина результат) равен 106
+  обеспечивает «кусков рантайма ровно сто двадцать восемь» (длина результат) равен 128
   [
     (запись «Кусок рантайма JS» с «имя» равным "$FlangError" и «нужно» равным пустой список и «исходник» равным «Текст FlangError JS»),
+    («Собрать кусок JS» от "$Word" и пустой список и «Текст Word JS»),
+    («Собрать кусок JS» от "$wordArith" и ["$Word", "$fail", "$typeName", "$describe"] и «Текст words JS»),
+    («Собрать кусок JS» от "$addWrap" и ["$wordArith"] и («Текст действия над словом JS» от "addWrap")),
+    («Собрать кусок JS» от "$subWrap" и ["$wordArith"] и («Текст действия над словом JS» от "subWrap")),
+    («Собрать кусок JS» от "$mulWrap" и ["$wordArith"] и («Текст действия над словом JS» от "mulWrap")),
+    («Собрать кусок JS» от "$mulWide" и ["$wordArith"] и («Текст действия над словом JS» от "mulWide")),
+    («Собрать кусок JS» от "$bitAnd" и ["$wordArith"] и («Текст действия над словом JS» от "bitAnd")),
+    («Собрать кусок JS» от "$bitOr" и ["$wordArith"] и («Текст действия над словом JS» от "bitOr")),
+    («Собрать кусок JS» от "$bitXor" и ["$wordArith"] и («Текст действия над словом JS» от "bitXor")),
+    («Собрать кусок JS» от "$shiftLeft" и ["$wordArith"] и («Текст действия над словом JS» от "shiftLeft")),
+    («Собрать кусок JS» от "$shiftRight" и ["$wordArith"] и («Текст действия над словом JS» от "shiftRight")),
+    («Собрать кусок JS» от "$rotateLeft" и ["$wordArith"] и («Текст действия над словом JS» от "rotateLeft")),
+    («Собрать кусок JS» от "$rotateRight" и ["$wordArith"] и («Текст действия над словом JS» от "rotateRight")),
+    («Собрать кусок JS» от "$b_bit_not" и ["$Word", "$fail", "$typeName"] и «Текст b_bit_not JS»),
+    («Собрать кусок JS» от "$b_u8" и ["$wordArith"] и («Текст перевода в слово JS» от "u8")),
+    («Собрать кусок JS» от "$b_u16" и ["$wordArith"] и («Текст перевода в слово JS» от "u16")),
+    («Собрать кусок JS» от "$b_u32" и ["$wordArith"] и («Текст перевода в слово JS» от "u32")),
+    («Собрать кусок JS» от "$b_u64" и ["$wordArith"] и («Текст перевода в слово JS» от "u64")),
+    («Собрать кусок JS» от "$b_i8" и ["$wordArith"] и («Текст перевода в слово JS» от "i8")),
+    («Собрать кусок JS» от "$b_i16" и ["$wordArith"] и («Текст перевода в слово JS» от "i16")),
+    («Собрать кусок JS» от "$b_i32" и ["$wordArith"] и («Текст перевода в слово JS» от "i32")),
+    («Собрать кусок JS» от "$b_i64" и ["$wordArith"] и («Текст перевода в слово JS» от "i64")),
     (запись «Кусок рантайма JS» с «имя» равным "$fail" и «нужно» равным ["$FlangError"] и «исходник» равным «Текст fail JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$FlangVariant" и «нужно» равным пустой список и «исходник» равным «Текст FlangVariant JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$isList" и «нужно» равным пустой список и «исходник» равным «Текст isList JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$isVariant" и «нужно» равным ["$FlangVariant"] и «исходник» равным «Текст isVariant JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$isRecord" и «нужно» равным ["$FlangVariant"] и «исходник» равным «Текст isRecord JS»),
+    («Собрать кусок JS» от "$isRecord" и ["$FlangVariant", "$Word"] и «Текст isRecord JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$isScalar" и «нужно» равным пустой список и «исходник» равным «Текст isScalar JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$chainEmpty" и «нужно» равным ["$isList"] и «исходник» равным «Текст chainEmpty JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$chainCons" и «нужно» равным ["$isList"] и «исходник» равным «Текст chainCons JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$chainHead" и «нужно» равным пустой список и «исходник» равным «Текст chainHead JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$chainTail" и «нужно» равным пустой список и «исходник» равным «Текст chainTail JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$typeName" и «нужно» равным ["$isList", "$isVariant", "$isRecord"] и «исходник» равным «Текст typeName JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$describe" и «нужно» равным ["$isList", "$isVariant", "$isRecord"] и «исходник» равным «Текст describe JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$equal" и «нужно» равным ["$isScalar", "$isList", "$isVariant", "$isRecord", "$recordsEqual"] и «исходник» равным «Текст equal JS»),
+    («Собрать кусок JS» от "$typeName" и ["$isList", "$isVariant", "$isRecord", "$Word"] и «Текст typeName JS»),
+    («Собрать кусок JS» от "$describe" и ["$isList", "$isVariant", "$isRecord", "$Word"] и «Текст describe JS»),
+    («Собрать кусок JS» от "$equal" и («Нужда equal JS») и «Текст equal JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$recordsEqual" и «нужно» равным ["$equal"] и «исходник» равным «Текст recordsEqual JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$field" и «нужно» равным ["$fail", "$isVariant", "$isRecord", "$typeName"] и «исходник» равным «Текст field JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$cond" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст cond JS»),
@@ -2648,10 +2732,10 @@
     («Собрать кусок JS» от "$div" и («Нужда div JS») и «Текст div JS»),
     («Собрать кусок JS» от "$mod" и («Нужда mod JS») и «Текст mod JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$percent" и «нужно» равным ["$nums"] и «исходник» равным «Текст percent JS»),
-    («Собрать кусок JS» от "$gt" и ["$ord", "$exactOrder"] и «Текст gt JS»),
-    («Собрать кусок JS» от "$lt" и ["$ord", "$exactOrder"] и «Текст lt JS»),
-    («Собрать кусок JS» от "$gte" и ["$ord", "$exactOrder"] и «Текст gte JS»),
-    («Собрать кусок JS» от "$lte" и ["$ord", "$exactOrder"] и «Текст lte JS»),
+    («Собрать кусок JS» от "$gt" и ["$ord", "$exactOrder", "$Word", "$wordArith"] и «Текст gt JS»),
+    («Собрать кусок JS» от "$lt" и ["$ord", "$exactOrder", "$Word", "$wordArith"] и «Текст lt JS»),
+    («Собрать кусок JS» от "$gte" и ["$ord", "$exactOrder", "$Word", "$wordArith"] и «Текст gte JS»),
+    («Собрать кусок JS» от "$lte" и ["$ord", "$exactOrder", "$Word", "$wordArith"] и «Текст lte JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$pairSplits" и «нужно» равным пустой список и «исходник» равным «Текст pairSplits JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$glueCheck" и «нужно» равным ["$fail", "$pairSplits"] и «исходник» равным «Текст glueCheck JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$glue" и «нужно» равным ["$glueCheck"] и «исходник» равным «Текст glue JS»),
@@ -2677,9 +2761,9 @@
     (запись «Кусок рантайма JS» с «имя» равным "$b_hesh256" и «нужно» равным ["$expectString", "$utf8Bytes", "$SHA256_K"] и «исходник» равным «Текст b_hesh256 JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_soderzhit JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString", "$isTorn", "$isBoundary"] и «исходник» равным «Текст b_nachinaetsya_s JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_k_chislu" и «нужно» равным ["$fail", "$expectString"] и «исходник» равным «Текст b_k_chislu JS»),
+    («Собрать кусок JS» от "$b_k_chislu" и ["$fail", "$expectString", "$Word", "$wordArith"] и «Текст b_k_chislu JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_k_chislu_ili_beda" и «нужно» равным ["$FlangVariant", "$b_k_chislu"] и «исходник» равным «Текст b_k_chislu_ili_beda JS»),
-    (запись «Кусок рантайма JS» с «имя» равным "$b_k_stroke" и «нужно» равным ["$fail", "$typeName"] и «исходник» равным «Текст b_k_stroke JS»),
+    («Собрать кусок JS» от "$b_k_stroke" и ["$fail", "$typeName", "$Word"] и «Текст b_k_stroke JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_pusto" и «нужно» равным ["$fail", "$isList", "$typeName"] и «исходник» равным «Текст b_pusto JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_golova" и «нужно» равным ["$fail", "$expectList"] и «исходник» равным «Текст b_golova JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_hvost" и «нужно» равным ["$fail", "$expectList"] и «исходник» равным «Текст b_hvost JS»),
@@ -4869,3 +4953,198 @@
     («Хвост плана ввода-вывода» от («общее».«типизировано»))
   ] по "")
   запись «Блок JS» с «состояние» равным («планы».«состояние») и «вывод» равным «вывод»
+
+тотальная функция «Текст Word JS»
+  возвращает строка
+  обеспечивает «рантайм Word несёт class $Word» результат содержит "class $Word"
+  соединить [
+    "class $Word {",
+    "  constructor(name, bits) {",
+    "    this.word = name",
+    "    this.bits = BigInt.asUintN(Number(name.slice(1)), bits)",
+    "  }",
+    "}",
+    "",
+    "function $wordInt(value) {",
+    "  const width = Number(value.word.slice(1))",
+    "  return value.word[0] === \"i\" ? BigInt.asIntN(width, value.bits) : value.bits",
+    "}",
+    "",
+    "function $wordExact(whole) {",
+    "  return whole <= 9007199254740991n && whole >= -9007199254740991n",
+    "}",
+    "",
+    "function $wordEqual(left, right) {",
+    "  if (left instanceof $Word && right instanceof $Word) {",
+    "    return left.word === right.word && left.bits === right.bits",
+    "  }",
+    "  const word = left instanceof $Word ? left : right",
+    "  const other = left instanceof $Word ? right : left",
+    "  const whole = $wordInt(word)",
+    "  return typeof other === \"number\" && $wordExact(whole) && Number(whole) === other",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст words JS»
+  возвращает строка
+  обеспечивает «рантайм words несёт function $wordArith» результат содержит "function $wordArith("
+  соединить [
+    "function $wordFits(whole, name) {",
+    "  const width = BigInt(Number(name.slice(1)))",
+    "  if (name[0] === \"i\") return -(1n << (width - 1n)) <= whole && whole < 1n << (width - 1n)",
+    "  return 0n <= whole && whole < 1n << width",
+    "}",
+    "",
+    "function $wordFromNumber(name, number) {",
+    "  const shown = String(number)",
+    "  if (!Number.isFinite(number) || number !== Math.floor(number)) {",
+    "    $fail(\"FLANG_OVERFLOW\", `${shown} не целое и в ${name} не переводится`)",
+    "  }",
+    "  const whole = BigInt(number)",
+    "  if (!$wordFits(whole, name)) $fail(\"FLANG_OVERFLOW\", `${shown} не помещается в ${name}`)",
+    "  return new $Word(name, whole)",
+    "}",
+    "",
+    "function $wordFromDigits(name, text) {",
+    "  const negative = text.startsWith(\"-\")",
+    "  const body = negative ? text.slice(1) : text",
+    "  if (!/^[0-9]+$/u.test(body)) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«${name}»: строка ${JSON.stringify(text)} — не десятичное целое`)",
+    "  }",
+    "  const whole = negative ? -BigInt(body) : BigInt(body)",
+    "  if (!$wordFits(whole, name)) $fail(\"FLANG_OVERFLOW\", `${text} не помещается в ${name}`)",
+    "  return new $Word(name, whole)",
+    "}",
+    "",
+    "function $wordConvert(name, value) {",
+    "  if (typeof value === \"number\") return $wordFromNumber(name, value)",
+    "  if (typeof value === \"string\") return $wordFromDigits(name, value)",
+    "  if (!(value instanceof $Word)) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«${name}»: переводится число или слово, получено ${$typeName(value)}`)",
+    "  }",
+    "  const whole = $wordInt(value)",
+    "  if (!$wordFits(whole, name)) $fail(\"FLANG_OVERFLOW\", `${whole} не помещается в ${name}`)",
+    "  return new $Word(name, whole)",
+    "}",
+    "",
+    "function $wordPair(left, right) {",
+    "  const first = left instanceof $Word",
+    "  const pattern = first ? left : right",
+    "  let other = first ? right : left",
+    "  if (typeof other === \"number\") {",
+    "    other = $wordFromNumber(pattern.word, other)",
+    "  } else if (!(other instanceof $Word)) {",
+    "    $fail(\"FLANG_TYPE\", `${pattern.word} и ${$typeName(other)} не смешиваются`)",
+    "  } else if (other.word !== pattern.word) {",
+    "    $fail(\"FLANG_TYPE\", `${pattern.word} и ${other.word} не смешиваются`)",
+    "  }",
+    "  return first ? [pattern, other] : [other, pattern]",
+    "}",
+    "",
+    "function $wordChecked(op, left, right, whole) {",
+    "  if (!$wordFits(whole, left.word)) {",
+    "    $fail(\"FLANG_OVERFLOW\", `${$wordInt(left)} «${op}» ${$wordInt(right)} не помещается в ${left.word}`)",
+    "  }",
+    "  return new $Word(left.word, whole)",
+    "}",
+    "",
+    "function $wordDivide(op, left, right) {",
+    "  const a = $wordInt(left)",
+    "  const b = $wordInt(right)",
+    "  if (b === 0n) $fail(\"FLANG_OVERFLOW\", `${a} «${op}» 0: деление на ноль`)",
+    "  return $wordChecked(op, left, right, op === \"mod\" ? a % b : a / b)",
+    "}",
+    "",
+    "function $wordHalves(left, right) {",
+    "  const product = left.bits * right.bits",
+    "  const width = BigInt(Number(left.word.slice(1)))",
+    "  return { \"старшая\": new $Word(left.word, product >> width), \"младшая\": new $Word(left.word, product) }",
+    "}",
+    "",
+    "/** @type {Record<string, (left: any, right: any) => any>} */",
+    "const $WORD_STEPS = {",
+    "  add: (left, right) => $wordChecked(\"add\", left, right, $wordInt(left) + $wordInt(right)),",
+    "  sub: (left, right) => $wordChecked(\"sub\", left, right, $wordInt(left) - $wordInt(right)),",
+    "  mul: (left, right) => $wordChecked(\"mul\", left, right, $wordInt(left) * $wordInt(right)),",
+    "  div: (left, right) => $wordDivide(\"div\", left, right),",
+    "  mod: (left, right) => $wordDivide(\"mod\", left, right),",
+    "  addWrap: (left, right) => new $Word(left.word, left.bits + right.bits),",
+    "  subWrap: (left, right) => new $Word(left.word, left.bits - right.bits),",
+    "  mulWrap: (left, right) => new $Word(left.word, left.bits * right.bits),",
+    "  mulWide: $wordHalves,",
+    "  bitAnd: (left, right) => new $Word(left.word, left.bits & right.bits),",
+    "  bitOr: (left, right) => new $Word(left.word, left.bits | right.bits),",
+    "  bitXor: (left, right) => new $Word(left.word, left.bits ^ right.bits),",
+    "}",
+    "",
+    "function $wordArith(op, left, right) {",
+    "  const [a, b] = $wordPair(left, right)",
+    "  return $WORD_STEPS[op](a, b)",
+    "}",
+    "",
+    "function $wordShiftCount(op, left, right) {",
+    "  if (!(left instanceof $Word)) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«${op}»: сдвиг на ${$describe(right)} не меньше ширины ${$typeName(left)}`)",
+    "  }",
+    "  let count = -1",
+    "  if (typeof right === \"number\") count = right",
+    "  if (right instanceof $Word) count = $wordExact($wordInt(right)) ? Number($wordInt(right)) : 9007199254740991",
+    "  if (!Number.isFinite(count) || count < 0 || count !== Math.floor(count)) {",
+    "    const shown = $describe(right)",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«${op}»: величина сдвига — целое не меньше нуля, получено ${shown}`)",
+    "  }",
+    "  const width = Number(left.word.slice(1))",
+    "  if (op.startsWith(\"shift\") && count >= width) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«${op}»: сдвиг на ${String(count)} не меньше ширины ${left.word}`)",
+    "  }",
+    "  return BigInt(count % width)",
+    "}",
+    "",
+    "function $wordShift(op, left, right) {",
+    "  const count = $wordShiftCount(op, left, right)",
+    "  const width = BigInt(Number(left.word.slice(1)))",
+    "  if (op === \"shiftLeft\") return new $Word(left.word, left.bits << count)",
+    "  if (op === \"shiftRight\") return new $Word(left.word, $wordInt(left) >> count)",
+    "  const step = op === \"rotateRight\" ? (width - count) % width : count",
+    "  return new $Word(left.word, (left.bits << step) | (left.bits >> (width - step)))",
+    "}",
+    "",
+    "function $wordToNumber(value) {",
+    "  const whole = $wordInt(value)",
+    "  if (!$wordExact(whole)) $fail(\"FLANG_OVERFLOW\", `${whole} за потолком точных чисел 9007199254740991`)",
+    "  return Number(whole)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст действия над словом JS»
+  принимает «действие»: строка
+  возвращает строка
+  обеспечивает «обёртка действия называется действием» результат содержит (соединить ["function $", «действие»] по "")
+  пример «Сдвиг влево зовёт общий сдвиг слова»
+    дано «действие» равно "shiftLeft"
+    ожидается "function $shiftLeft(left, right) {\n  return $wordShift(\"shiftLeft\", left, right)\n}"
+  пусть «сдвиг» равно ((«действие» начинается с "shift") или («действие» начинается с "rotate"))
+  пусть «общее» равно (если «сдвиг» то "$wordShift" иначе "$wordArith")
+  пусть «вызов» равно (соединить ["(\"", «действие», "\", left, right)\n}"] по "")
+  соединить ["function $", «действие», "(left, right) {\n  return ", «общее», «вызов»] по ""
+
+тотальная функция «Текст перевода в слово JS»
+  принимает «имя»: строка
+  возвращает строка
+  обеспечивает «перевод называется словом» результат содержит (соединить ["function $b_", «имя»] по "")
+  пример «Перевод в u32»
+    дано «имя» равно "u32"
+    ожидается "function $b_u32(value) {\n  return $wordConvert(\"u32\", value)\n}"
+  соединить ["function $b_", «имя», "(value) {\n  return $wordConvert(\"", «имя», "\", value)\n}"] по ""
+
+тотальная функция «Текст b_bit_not JS»
+  возвращает строка
+  обеспечивает «рантайм b_bit_not несёт function $b_bit_not» результат содержит "function $b_bit_not("
+  соединить [
+    "function $b_bit_not(value) {",
+    "  if (!(value instanceof $Word)) {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", `«bitNot»: аргумент должен быть словом, получено ${$typeName(value)}`)",
+    "  }",
+    "  return new $Word(value.word, ~value.bits)",
+    "}"
+  ] по "\n"

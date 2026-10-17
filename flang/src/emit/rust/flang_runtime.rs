@@ -93,6 +93,7 @@ pub const CODE_RECURSION_LIMIT: &str = "FLANG_RECURSION_LIMIT";
 pub const CODE_PROPERTY: &str = "FLANG_PROPERTY";
 /// Код диагностики: программа не разобрана.
 pub const CODE_PARSE: &str = "FLANG_PARSE";
+pub const CODE_OVERFLOW: &str = "FLANG_OVERFLOW";
 
 /// Диагностика flang: код и текст, дословно совпадающие с интерпретатором.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -275,6 +276,7 @@ pub enum Value {
     Record(Rc<Vec<Field>>),
     /// вариант — конструктор суммы типов
     Variant(Rc<VariantData>),
+    Word(&'static str, u64),
 }
 
 /// «ничто».
@@ -394,6 +396,7 @@ pub fn type_name(value: &Value) -> String {
         Value::List(_) => "список".to_string(),
         Value::Variant(data) => format!("вариант «{}»", data.name),
         Value::Record(_) => "запись".to_string(),
+        Value::Word(name, _) => name.to_string(),
     }
 }
 
@@ -418,6 +421,7 @@ pub fn describe(value: &Value) -> String {
         Value::Nothing => "ничто".to_string(),
         Value::Flag(item) => (if *item { "да" } else { "нет" }).to_string(),
         Value::Number(item) => number_text(*item),
+        Value::Word(_, _) => word_text(value),
     }
 }
 
@@ -443,6 +447,9 @@ fn same_number(left: f64, right: f64) -> bool {
 /// Рекурсия здесь по данным, а не по программе: её глубина ограничена
 /// вложенностью значения, а не длиной вычисления.
 pub fn equal(left: &Value, right: &Value) -> bool {
+    if matches!(left, Value::Word(_, _)) || matches!(right, Value::Word(_, _)) {
+        return word_equal(left, right);
+    }
     if is_scalar(left) || is_scalar(right) {
         return match (left, right) {
             (Value::Number(a), Value::Number(b)) => same_number(*a, *b),
@@ -1234,6 +1241,9 @@ fn exact_order(left: &Value, right: &Value) -> Option<std::cmp::Ordering> {
 }
 
 pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return word_arith("add", &left, &right);
+    }
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1247,6 +1257,9 @@ pub fn add(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn sub(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return word_arith("sub", &left, &right);
+    }
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1284,6 +1297,9 @@ pub fn sub(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn mul(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return word_arith("mul", &left, &right);
+    }
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1297,6 +1313,9 @@ pub fn mul(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return word_arith("div", &left, &right);
+    }
     if exact_fraction(&left) && exact_fraction(&right) {
         let (a, b) = fraction_parts(&left);
         let (c, d) = fraction_parts(&right);
@@ -1317,6 +1336,9 @@ pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 }
 
 pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return word_arith("mod", &left, &right);
+    }
     if exact_digits(&left) && exact_digits(&right) {
         let a = exact_canon(&left);
         let b = exact_canon(&right);
@@ -1355,6 +1377,9 @@ pub fn percent(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 
 /// «больше».
 pub fn gt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return Ok(flag(word_ordered(&left, &right)? == std::cmp::Ordering::Greater));
+    }
     if let Some(order) = exact_order(&left, &right) {
         return Ok(flag(order == std::cmp::Ordering::Greater));
     }
@@ -1364,6 +1389,9 @@ pub fn gt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 
 /// «меньше».
 pub fn lt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return Ok(flag(word_ordered(&left, &right)? == std::cmp::Ordering::Less));
+    }
     if let Some(order) = exact_order(&left, &right) {
         return Ok(flag(order == std::cmp::Ordering::Less));
     }
@@ -1373,6 +1401,9 @@ pub fn lt(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 
 /// «не меньше».
 pub fn gte(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return Ok(flag(word_ordered(&left, &right)? != std::cmp::Ordering::Less));
+    }
     if let Some(order) = exact_order(&left, &right) {
         return Ok(flag(order != std::cmp::Ordering::Less));
     }
@@ -1382,6 +1413,9 @@ pub fn gte(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
 
 /// «не больше».
 pub fn lte(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    if is_word(&left) || is_word(&right) {
+        return Ok(flag(word_ordered(&left, &right)? != std::cmp::Ordering::Greater));
+    }
     if let Some(order) = exact_order(&left, &right) {
         return Ok(flag(order != std::cmp::Ordering::Greater));
     }
@@ -1403,6 +1437,404 @@ pub fn concat(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
         )),
     }
 }
+
+const WORD_EXACT_CEILING: u64 = 9007199254740991;
+
+fn word_name(name: &str) -> &'static str {
+    match name {
+        "u8" => "u8",
+        "u16" => "u16",
+        "u32" => "u32",
+        "u64" => "u64",
+        "i8" => "i8",
+        "i16" => "i16",
+        "i32" => "i32",
+        _ => "i64",
+    }
+}
+
+fn word_width(name: &str) -> u32 {
+    name[1..].parse().unwrap_or(64)
+}
+
+fn word_mask(width: u32) -> u64 {
+    if width >= 64 {
+        u64::MAX
+    } else {
+        (1u64 << width) - 1
+    }
+}
+
+pub fn word(name: &str, bits: u64) -> Value {
+    Value::Word(word_name(name), bits & word_mask(word_width(name)))
+}
+
+fn is_word(value: &Value) -> bool {
+    matches!(value, Value::Word(_, _))
+}
+
+fn word_parts(value: &Value) -> (&'static str, u64) {
+    match value {
+        Value::Word(name, bits) => (name, *bits),
+        _ => ("u64", 0),
+    }
+}
+
+fn word_negative(value: &Value) -> bool {
+    let (name, bits) = word_parts(value);
+    name.starts_with('i') && bits & (1u64 << (word_width(name) - 1)) != 0
+}
+
+fn word_magnitude(value: &Value) -> u64 {
+    let (name, bits) = word_parts(value);
+    if word_negative(value) {
+        ((!bits) & word_mask(word_width(name))) + 1
+    } else {
+        bits
+    }
+}
+
+fn word_text(value: &Value) -> String {
+    if word_negative(value) {
+        format!("-{}", word_magnitude(value))
+    } else {
+        word_parts(value).1.to_string()
+    }
+}
+
+fn word_fits(magnitude: u64, negative: bool, name: &str) -> bool {
+    let width = word_width(name);
+    if !name.starts_with('i') {
+        return if negative { magnitude == 0 } else { magnitude <= word_mask(width) };
+    }
+    if negative {
+        magnitude <= 1u64 << (width - 1)
+    } else {
+        magnitude < 1u64 << (width - 1)
+    }
+}
+
+fn word_from_magnitude(name: &str, magnitude: u64, negative: bool) -> Value {
+    if negative {
+        word(name, (!magnitude).wrapping_add(1))
+    } else {
+        word(name, magnitude)
+    }
+}
+
+fn word_from_number(name: &str, number: f64) -> Result<Value, Error> {
+    let shown = number_text(number);
+    if !number.is_finite() || number != number.floor() {
+        return Err(fail(CODE_OVERFLOW, format!("{} не целое и в {} не переводится", shown, name)));
+    }
+    let magnitude = number.abs();
+    if magnitude >= 18446744073709551616.0 || !word_fits(magnitude as u64, number < 0.0, name) {
+        return Err(fail(CODE_OVERFLOW, format!("{} не помещается в {}", shown, name)));
+    }
+    Ok(word_from_magnitude(name, magnitude as u64, number < 0.0))
+}
+
+fn word_from_digits(name: &str, value: &Value, digits: &str) -> Result<Value, Error> {
+    let negative = digits.starts_with('-');
+    let body = digits.strip_prefix('-').unwrap_or(digits);
+    if body.is_empty() || !body.bytes().all(|symbol| symbol.is_ascii_digit()) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{}»: строка {} — не десятичное целое", name, describe(value)),
+        ));
+    }
+    match body.parse::<u64>() {
+        Ok(magnitude) if word_fits(magnitude, negative, name) => Ok(word_from_magnitude(name, magnitude, negative)),
+        _ => Err(fail(CODE_OVERFLOW, format!("{} не помещается в {}", digits, name))),
+    }
+}
+
+fn word_convert(name: &str, value: &Value) -> Result<Value, Error> {
+    match value {
+        Value::Number(number) => word_from_number(name, *number),
+        Value::Text(digits) => word_from_digits(name, value, digits),
+        Value::Word(_, _) => {
+            if !word_fits(word_magnitude(value), word_negative(value), name) {
+                return Err(fail(CODE_OVERFLOW, format!("{} не помещается в {}", word_text(value), name)));
+            }
+            Ok(word_from_magnitude(name, word_magnitude(value), word_negative(value)))
+        }
+        other => Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{}»: переводится число или слово, получено {}", name, type_name(other)),
+        )),
+    }
+}
+
+fn word_pair(left: &Value, right: &Value) -> Result<(Value, Value), Error> {
+    let first = is_word(left);
+    let (pattern, other) = if first { (left, right) } else { (right, left) };
+    let name = word_parts(pattern).0;
+    let converted = match other {
+        Value::Number(number) => word_from_number(name, *number)?,
+        Value::Word(other_name, _) if *other_name == name => other.clone(),
+        Value::Word(other_name, _) => {
+            return Err(fail(CODE_TYPE, format!("{} и {} не смешиваются", name, other_name)));
+        }
+        _ => return Err(fail(CODE_TYPE, format!("{} и {} не смешиваются", name, type_name(other)))),
+    };
+    if first {
+        Ok((pattern.clone(), converted))
+    } else {
+        Ok((converted, pattern.clone()))
+    }
+}
+
+fn word_result(op: &str, left: &Value, right: &Value, magnitude: u64, negative: bool, spilled: bool) -> Result<Value, Error> {
+    let name = word_parts(left).0;
+    if spilled || !word_fits(magnitude, negative, name) {
+        return Err(fail(
+            CODE_OVERFLOW,
+            format!("{} «{}» {} не помещается в {}", word_text(left), op, word_text(right), name),
+        ));
+    }
+    Ok(word_from_magnitude(name, magnitude, negative))
+}
+
+fn word_sum(op: &str, left: &Value, right: &Value, subtract: bool) -> Result<Value, Error> {
+    let (a, b) = (word_magnitude(left), word_magnitude(right));
+    let a_negative = word_negative(left);
+    let b_negative = word_negative(right) != subtract && b != 0;
+    if a_negative == b_negative {
+        let (sum, spilled) = a.overflowing_add(b);
+        return word_result(op, left, right, sum, a_negative, spilled);
+    }
+    if a >= b {
+        word_result(op, left, right, a - b, a_negative, false)
+    } else {
+        word_result(op, left, right, b - a, b_negative, false)
+    }
+}
+
+fn word_divide(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    let (a, b) = (word_magnitude(left), word_magnitude(right));
+    if b == 0 {
+        return Err(fail(CODE_OVERFLOW, format!("{} «{}» 0: деление на ноль", word_text(left), op)));
+    }
+    if op == "mod" {
+        return word_result(op, left, right, a % b, word_negative(left), false);
+    }
+    word_result(op, left, right, a / b, word_negative(left) != word_negative(right), false)
+}
+
+fn word_halves(left: &Value, right: &Value) -> Value {
+    let (name, a) = word_parts(left);
+    let b = word_parts(right).1;
+    let product = (a as u128) * (b as u128);
+    let width = word_width(name);
+    let high = (product >> width) as u64;
+    record(vec![field("старшая", word(name, high)), field("младшая", word(name, product as u64))])
+}
+
+fn word_arith(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    let (left, right) = word_pair(left, right)?;
+    let (name, a) = word_parts(&left);
+    let b = word_parts(&right).1;
+    match op {
+        "add" => word_sum(op, &left, &right, false),
+        "sub" => word_sum(op, &left, &right, true),
+        "mul" => {
+            let product = (word_magnitude(&left) as u128) * (word_magnitude(&right) as u128);
+            let negative = word_negative(&left) != word_negative(&right);
+            word_result(op, &left, &right, product as u64, negative, product >> 64 != 0)
+        }
+        "div" | "mod" => word_divide(op, &left, &right),
+        "addWrap" => Ok(word(name, a.wrapping_add(b))),
+        "subWrap" => Ok(word(name, a.wrapping_sub(b))),
+        "mulWrap" => Ok(word(name, a.wrapping_mul(b))),
+        "mulWide" => Ok(word_halves(&left, &right)),
+        "bitAnd" => Ok(word(name, a & b)),
+        "bitOr" => Ok(word(name, a | b)),
+        "bitXor" => Ok(word(name, a ^ b)),
+        _ => Err(fail(CODE_TYPE, format!("над {} «{}» не определено", name, op))),
+    }
+}
+
+fn word_ordered(left: &Value, right: &Value) -> Result<std::cmp::Ordering, Error> {
+    let (left, right) = word_pair(left, right)?;
+    let signed = |value: &Value| {
+        let magnitude = word_magnitude(value) as i128;
+        if word_negative(value) {
+            -magnitude
+        } else {
+            magnitude
+        }
+    };
+    Ok(signed(&left).cmp(&signed(&right)))
+}
+
+fn word_shift_count(op: &str, left: &Value, right: &Value) -> Result<u32, Error> {
+    if !is_word(left) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{}»: сдвиг на {} не меньше ширины {}", op, describe(right), type_name(left)),
+        ));
+    }
+    let count = match right {
+        Value::Number(number) => *number,
+        Value::Word(_, _) if word_magnitude(right) > WORD_EXACT_CEILING => WORD_EXACT_CEILING as f64,
+        Value::Word(_, _) if word_negative(right) => -(word_magnitude(right) as f64),
+        Value::Word(_, _) => word_magnitude(right) as f64,
+        _ => -1.0,
+    };
+    if !count.is_finite() || count < 0.0 || count != count.floor() {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{}»: величина сдвига — целое не меньше нуля, получено {}", op, describe(right)),
+        ));
+    }
+    let (name, _) = word_parts(left);
+    let width = word_width(name);
+    if op.starts_with("shift") && count >= width as f64 {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{}»: сдвиг на {} не меньше ширины {}", op, number_text(count), name),
+        ));
+    }
+    Ok((count % width as f64) as u32)
+}
+
+fn word_shift(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    let step = word_shift_count(op, left, right)?;
+    let (name, bits) = word_parts(left);
+    let width = word_width(name);
+    match op {
+        "shiftLeft" => Ok(word(name, bits.checked_shl(step).unwrap_or(0))),
+        "shiftRight" if word_negative(left) => Ok(word(name, !(((!bits) & word_mask(width)) >> step))),
+        "shiftRight" => Ok(word(name, bits >> step)),
+        _ => {
+            let turn = if op == "rotateRight" { (width - step) % width } else { step };
+            if turn == 0 {
+                return Ok(left.clone());
+            }
+            Ok(word(name, (bits << turn) | (bits >> (width - turn))))
+        }
+    }
+}
+
+fn word_number(value: &Value) -> f64 {
+    let magnitude = word_magnitude(value) as f64;
+    if word_negative(value) {
+        -magnitude
+    } else {
+        magnitude
+    }
+}
+
+fn word_equal(left: &Value, right: &Value) -> bool {
+    match (left, right) {
+        (Value::Word(a, x), Value::Word(b, y)) => a == b && x == y,
+        (Value::Number(number), Value::Word(_, _)) => {
+            word_magnitude(right) <= WORD_EXACT_CEILING && word_number(right) == *number
+        }
+        (Value::Word(_, _), Value::Number(number)) => {
+            word_magnitude(left) <= WORD_EXACT_CEILING && word_number(left) == *number
+        }
+        _ => false,
+    }
+}
+
+fn word_to_number(value: &Value) -> Result<Value, Error> {
+    if word_magnitude(value) > WORD_EXACT_CEILING {
+        return Err(fail(
+            CODE_OVERFLOW,
+            format!("{} за потолком точных чисел 9007199254740991", word_text(value)),
+        ));
+    }
+    Ok(number(word_number(value)))
+}
+
+pub fn add_wrap(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("addWrap", &left, &right)
+}
+
+pub fn sub_wrap(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("subWrap", &left, &right)
+}
+
+pub fn mul_wrap(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("mulWrap", &left, &right)
+}
+
+pub fn mul_wide(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("mulWide", &left, &right)
+}
+
+pub fn bit_and(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("bitAnd", &left, &right)
+}
+
+pub fn bit_or(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("bitOr", &left, &right)
+}
+
+pub fn bit_xor(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_arith("bitXor", &left, &right)
+}
+
+pub fn shift_left(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_shift("shiftLeft", &left, &right)
+}
+
+pub fn shift_right(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_shift("shiftRight", &left, &right)
+}
+
+pub fn rotate_left(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_shift("rotateLeft", &left, &right)
+}
+
+pub fn rotate_right(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
+    word_shift("rotateRight", &left, &right)
+}
+
+pub fn b_bit_not(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    match value {
+        Value::Word(name, bits) => Ok(word(name, !bits)),
+        other => Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«bitNot»: аргумент должен быть словом, получено {}", type_name(&other)),
+        )),
+    }
+}
+
+pub fn b_u8(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("u8", &value)
+}
+
+pub fn b_u16(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("u16", &value)
+}
+
+pub fn b_u32(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("u32", &value)
+}
+
+pub fn b_u64(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("u64", &value)
+}
+
+pub fn b_i8(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("i8", &value)
+}
+
+pub fn b_i16(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("i16", &value)
+}
+
+pub fn b_i32(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("i32", &value)
+}
+
+pub fn b_i64(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    word_convert("i64", &value)
+}
+
 
 // ───────────────────────────── проверки аргументов ─────────────────────────
 
@@ -1834,6 +2266,9 @@ fn looks_like_number(value: &str) -> bool {
 
 /// «к числу».
 pub fn b_to_number(_ctx: &Ctx, source: Value) -> Result<Value, Error> {
+    if is_word(&source) {
+        return word_to_number(&source);
+    }
     let string = expect_string("к числу", &source, "строка")?;
     let trimmed = string.trim_matches(is_js_space);
     if !looks_like_number(trimmed) {
@@ -1883,6 +2318,7 @@ pub fn b_to_string(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
         Value::Number(item) => Ok(text(&number_text(item))),
         Value::Flag(item) => Ok(text(if item { "да" } else { "нет" })),
         Value::Nothing => Ok(text("ничто")),
+        Value::Word(_, _) => Ok(text(&word_text(&value))),
         other => Err(fail(
             CODE_BUILTIN_ARGS,
             format!("«к строке»: ожидается скаляр, получено {}", type_name(&other)),

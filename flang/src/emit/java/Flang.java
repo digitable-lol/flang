@@ -596,6 +596,9 @@ public final class Flang {
   }
 
   public static Value add(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      return wordArith("add", left, right);
+    }
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -609,6 +612,9 @@ public final class Flang {
   }
 
   public static Value sub(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      return wordArith("sub", left, right);
+    }
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -638,6 +644,9 @@ public final class Flang {
   }
 
   public static Value mul(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      return wordArith("mul", left, right);
+    }
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -651,6 +660,9 @@ public final class Flang {
   }
 
   public static Value div(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      return wordArith("div", left, right);
+    }
     if (exactFraction(left) && exactFraction(right)) {
       java.math.BigInteger[] l = fractionParts(left);
       java.math.BigInteger[] r = fractionParts(right);
@@ -666,6 +678,9 @@ public final class Flang {
   }
 
   public static Value mod(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      return wordArith("mod", left, right);
+    }
     if (exactDigits(left) && exactDigits(right)) {
       java.math.BigInteger a = exactCanon(left);
       java.math.BigInteger b = exactCanon(right);
@@ -706,6 +721,10 @@ public final class Flang {
 
   /** «больше». */
   public static Value gt(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      Value[] pair = wordPair(left, right);
+      return Value.flag(Value.wordInt(pair[0]).compareTo(Value.wordInt(pair[1])) > 0);
+    }
     Integer order = exactOrder(left, right);
     if (order != null) {
       return Value.flag(order > 0);
@@ -716,6 +735,10 @@ public final class Flang {
 
   /** «меньше». */
   public static Value lt(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      Value[] pair = wordPair(left, right);
+      return Value.flag(Value.wordInt(pair[0]).compareTo(Value.wordInt(pair[1])) < 0);
+    }
     Integer order = exactOrder(left, right);
     if (order != null) {
       return Value.flag(order < 0);
@@ -726,6 +749,10 @@ public final class Flang {
 
   /** «не меньше». */
   public static Value gte(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      Value[] pair = wordPair(left, right);
+      return Value.flag(Value.wordInt(pair[0]).compareTo(Value.wordInt(pair[1])) >= 0);
+    }
     Integer order = exactOrder(left, right);
     if (order != null) {
       return Value.flag(order >= 0);
@@ -736,6 +763,10 @@ public final class Flang {
 
   /** «не больше». */
   public static Value lte(Ctx ctx, Value left, Value right) {
+    if (left.tag == Value.TAG_WORD || right.tag == Value.TAG_WORD) {
+      Value[] pair = wordPair(left, right);
+      return Value.flag(Value.wordInt(pair[0]).compareTo(Value.wordInt(pair[1])) <= 0);
+    }
     Integer order = exactOrder(left, right);
     if (order != null) {
       return Value.flag(order <= 0);
@@ -899,6 +930,288 @@ public final class Flang {
   }
 
   /* ───────────────────────── встроенные формы ───────────────────────── */
+
+  private static final java.math.BigInteger WORD_CEILING = java.math.BigInteger.valueOf(9007199254740991L);
+
+  private static final String CODE_OVERFLOW = "FLANG_OVERFLOW";
+
+  private static boolean wordFits(java.math.BigInteger whole, String name) {
+    int width = Value.wordWidth(name);
+    java.math.BigInteger one = java.math.BigInteger.ONE;
+    if (name.charAt(0) == 'i') {
+      java.math.BigInteger half = one.shiftLeft(width - 1);
+      return whole.compareTo(half.negate()) >= 0 && whole.compareTo(half) < 0;
+    }
+    return whole.signum() >= 0 && whole.compareTo(one.shiftLeft(width)) < 0;
+  }
+
+  private static Value wordOf(String name, java.math.BigInteger whole) {
+    return Value.word(name, whole.longValue());
+  }
+
+  private static Value wordFromNumber(String name, double number) {
+    String shown = Value.numberText(number);
+    if (Double.isNaN(number) || Double.isInfinite(number) || number != Math.floor(number)) {
+      throw fail(CODE_OVERFLOW, shown + " не целое и в " + name + " не переводится");
+    }
+    java.math.BigInteger whole = new java.math.BigDecimal(number).toBigInteger();
+    if (!wordFits(whole, name)) {
+      throw fail(CODE_OVERFLOW, shown + " не помещается в " + name);
+    }
+    return wordOf(name, whole);
+  }
+
+  private static Value wordFromDigits(String name, Value value) {
+    String digits = value.str;
+    String body = digits.startsWith("-") ? digits.substring(1) : digits;
+    if (!body.matches("[0-9]+")) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + name + "»: строка " + Value.describe(value) + " — не десятичное целое");
+    }
+    java.math.BigInteger whole = new java.math.BigInteger(digits);
+    if (!wordFits(whole, name)) {
+      throw fail(CODE_OVERFLOW, digits + " не помещается в " + name);
+    }
+    return wordOf(name, whole);
+  }
+
+  private static Value wordConvert(String name, Value value) {
+    switch (value.tag) {
+      case Value.TAG_NUMBER:
+        return wordFromNumber(name, value.num);
+      case Value.TAG_STRING:
+        return wordFromDigits(name, value);
+      case Value.TAG_WORD:
+        if (!wordFits(Value.wordInt(value), name)) {
+          throw fail(CODE_OVERFLOW, Value.describe(value) + " не помещается в " + name);
+        }
+        return wordOf(name, Value.wordInt(value));
+      default:
+        throw fail(
+            FlangError.CODE_BUILTIN_ARGS,
+            "«" + name + "»: переводится число или слово, получено " + Value.typeName(value));
+    }
+  }
+
+  private static Value[] wordPair(Value left, Value right) {
+    boolean first = left.tag == Value.TAG_WORD;
+    Value pattern = first ? left : right;
+    Value other = first ? right : left;
+    if (other.tag == Value.TAG_NUMBER) {
+      other = wordFromNumber(pattern.str, other.num);
+    } else if (other.tag != Value.TAG_WORD) {
+      throw fail(FlangError.CODE_TYPE, pattern.str + " и " + Value.typeName(other) + " не смешиваются");
+    } else if (!other.str.equals(pattern.str)) {
+      throw fail(FlangError.CODE_TYPE, pattern.str + " и " + other.str + " не смешиваются");
+    }
+    return first ? new Value[] {pattern, other} : new Value[] {other, pattern};
+  }
+
+  private static Value wordChecked(String op, Value left, Value right, java.math.BigInteger whole) {
+    if (!wordFits(whole, left.str)) {
+      throw fail(
+          CODE_OVERFLOW,
+          Value.describe(left) + " «" + op + "» " + Value.describe(right) + " не помещается в " + left.str);
+    }
+    return wordOf(left.str, whole);
+  }
+
+  private static Value wordDivide(String op, Value left, Value right) {
+    java.math.BigInteger a = Value.wordInt(left);
+    java.math.BigInteger b = Value.wordInt(right);
+    if (b.signum() == 0) {
+      throw fail(CODE_OVERFLOW, a + " «" + op + "» 0: деление на ноль");
+    }
+    return wordChecked(op, left, right, op.equals("mod") ? a.remainder(b) : a.divide(b));
+  }
+
+  private static java.math.BigInteger wordUnsigned(Value value) {
+    return new java.math.BigInteger(Long.toUnsignedString(value.bits));
+  }
+
+  private static Value wordHalves(Value left, Value right) {
+    java.math.BigInteger product = wordUnsigned(left).multiply(wordUnsigned(right));
+    int width = Value.wordWidth(left.str);
+    return Value.record(
+        new Field[] {
+          new Field("старшая", wordOf(left.str, product.shiftRight(width))),
+          new Field("младшая", wordOf(left.str, product))
+        });
+  }
+
+  private static Value wordArith(String op, Value left, Value right) {
+    Value[] pair = wordPair(left, right);
+    Value a = pair[0];
+    Value b = pair[1];
+    switch (op) {
+      case "add":
+        return wordChecked(op, a, b, Value.wordInt(a).add(Value.wordInt(b)));
+      case "sub":
+        return wordChecked(op, a, b, Value.wordInt(a).subtract(Value.wordInt(b)));
+      case "mul":
+        return wordChecked(op, a, b, Value.wordInt(a).multiply(Value.wordInt(b)));
+      case "div":
+      case "mod":
+        return wordDivide(op, a, b);
+      case "addWrap":
+        return Value.word(a.str, a.bits + b.bits);
+      case "subWrap":
+        return Value.word(a.str, a.bits - b.bits);
+      case "mulWrap":
+        return Value.word(a.str, a.bits * b.bits);
+      case "mulWide":
+        return wordHalves(a, b);
+      case "bitAnd":
+        return Value.word(a.str, a.bits & b.bits);
+      case "bitOr":
+        return Value.word(a.str, a.bits | b.bits);
+      case "bitXor":
+        return Value.word(a.str, a.bits ^ b.bits);
+      default:
+        throw fail(FlangError.CODE_TYPE, "над " + a.str + " «" + op + "» не определено");
+    }
+  }
+
+  private static int wordShiftCount(String op, Value left, Value right) {
+    if (left.tag != Value.TAG_WORD) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + op + "»: сдвиг на " + Value.describe(right) + " не меньше ширины " + Value.typeName(left));
+    }
+    double count = -1.0;
+    if (right.tag == Value.TAG_NUMBER) {
+      count = right.num;
+    }
+    if (right.tag == Value.TAG_WORD) {
+      java.math.BigInteger whole = Value.wordInt(right);
+      count = whole.abs().compareTo(WORD_CEILING) <= 0 ? whole.doubleValue() : 9007199254740991.0;
+    }
+    if (Double.isNaN(count) || Double.isInfinite(count) || count < 0 || count != Math.floor(count)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + op + "»: величина сдвига — целое не меньше нуля, получено " + Value.describe(right));
+    }
+    int width = Value.wordWidth(left.str);
+    if (op.startsWith("shift") && count >= width) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + op + "»: сдвиг на " + Value.numberText(count) + " не меньше ширины " + left.str);
+    }
+    return (int) (count % width);
+  }
+
+  private static Value wordShift(String op, Value left, Value right) {
+    int step = wordShiftCount(op, left, right);
+    int width = Value.wordWidth(left.str);
+    long bits = left.bits;
+    switch (op) {
+      case "shiftLeft":
+        return Value.word(left.str, bits << step);
+      case "shiftRight":
+        return wordOf(left.str, Value.wordInt(left).shiftRight(step));
+      default:
+        int turn = op.equals("rotateRight") ? (width - step) % width : step;
+        if (turn == 0) {
+          return left;
+        }
+        return Value.word(left.str, (bits << turn) | (bits >>> (width - turn)));
+    }
+  }
+
+  private static Value wordToNumber(Value value) {
+    java.math.BigInteger whole = Value.wordInt(value);
+    if (whole.abs().compareTo(WORD_CEILING) > 0) {
+      throw fail(CODE_OVERFLOW, whole + " за потолком точных чисел 9007199254740991");
+    }
+    return Value.number(whole.doubleValue());
+  }
+
+  public static Value addWrap(Ctx ctx, Value left, Value right) {
+    return wordArith("addWrap", left, right);
+  }
+
+  public static Value subWrap(Ctx ctx, Value left, Value right) {
+    return wordArith("subWrap", left, right);
+  }
+
+  public static Value mulWrap(Ctx ctx, Value left, Value right) {
+    return wordArith("mulWrap", left, right);
+  }
+
+  public static Value mulWide(Ctx ctx, Value left, Value right) {
+    return wordArith("mulWide", left, right);
+  }
+
+  public static Value bitAnd(Ctx ctx, Value left, Value right) {
+    return wordArith("bitAnd", left, right);
+  }
+
+  public static Value bitOr(Ctx ctx, Value left, Value right) {
+    return wordArith("bitOr", left, right);
+  }
+
+  public static Value bitXor(Ctx ctx, Value left, Value right) {
+    return wordArith("bitXor", left, right);
+  }
+
+  public static Value shiftLeft(Ctx ctx, Value left, Value right) {
+    return wordShift("shiftLeft", left, right);
+  }
+
+  public static Value shiftRight(Ctx ctx, Value left, Value right) {
+    return wordShift("shiftRight", left, right);
+  }
+
+  public static Value rotateLeft(Ctx ctx, Value left, Value right) {
+    return wordShift("rotateLeft", left, right);
+  }
+
+  public static Value rotateRight(Ctx ctx, Value left, Value right) {
+    return wordShift("rotateRight", left, right);
+  }
+
+  public static Value bBitNot(Ctx ctx, Value value) {
+    if (value.tag != Value.TAG_WORD) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«bitNot»: аргумент должен быть словом, получено " + Value.typeName(value));
+    }
+    return Value.word(value.str, ~value.bits);
+  }
+
+  public static Value bU8(Ctx ctx, Value value) {
+    return wordConvert("u8", value);
+  }
+
+  public static Value bU16(Ctx ctx, Value value) {
+    return wordConvert("u16", value);
+  }
+
+  public static Value bU32(Ctx ctx, Value value) {
+    return wordConvert("u32", value);
+  }
+
+  public static Value bU64(Ctx ctx, Value value) {
+    return wordConvert("u64", value);
+  }
+
+  public static Value bI8(Ctx ctx, Value value) {
+    return wordConvert("i8", value);
+  }
+
+  public static Value bI16(Ctx ctx, Value value) {
+    return wordConvert("i16", value);
+  }
+
+  public static Value bI32(Ctx ctx, Value value) {
+    return wordConvert("i32", value);
+  }
+
+  public static Value bI64(Ctx ctx, Value value) {
+    return wordConvert("i64", value);
+  }
+
 
   /** «длина»: строка в кодовых точках, список в элементах. */
   public static Value bLength(Ctx ctx, Value value) {
@@ -1235,6 +1548,9 @@ public final class Flang {
 
   /** «к числу». */
   public static Value bToNumber(Ctx ctx, Value source) {
+    if (source.tag == Value.TAG_WORD) {
+      return wordToNumber(source);
+    }
     String value = expectString("к числу", source, "строка");
     String trimmed = trimJs(value);
     if (!looksLikeNumber(trimmed)) {
@@ -1291,6 +1607,8 @@ public final class Flang {
         return Value.text(value.bit ? "да" : "нет");
       case Value.TAG_NOTHING:
         return Value.text("ничто");
+      case Value.TAG_WORD:
+        return Value.text(Value.describe(value));
       default:
         throw fail(
             FlangError.CODE_BUILTIN_ARGS,

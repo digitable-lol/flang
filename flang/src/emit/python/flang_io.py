@@ -480,6 +480,8 @@ def io_plain(value):
         return io_number(value.data)
     if tag == rt.TAG_STRING:
         return value.data
+    if tag == rt.TAG_WORD:
+        return rt.word_int(value)
     if tag == rt.TAG_LIST:
         return [io_plain(item) for item in rt.list_items(value)]
     if tag == rt.TAG_RECORD:

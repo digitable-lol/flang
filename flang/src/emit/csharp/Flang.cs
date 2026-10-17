@@ -625,6 +625,10 @@ public static class Flang
 
     public static Value Add(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            return WordArith("add", left, right);
+        }
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -641,6 +645,10 @@ public static class Flang
 
     public static Value Sub(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            return WordArith("sub", left, right);
+        }
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -675,6 +683,10 @@ public static class Flang
 
     public static Value Mul(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            return WordArith("mul", left, right);
+        }
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -691,6 +703,10 @@ public static class Flang
 
     public static Value Div(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            return WordArith("div", left, right);
+        }
         if (ExactFraction(left) && ExactFraction(right))
         {
             BigInteger[] l = FractionParts(left);
@@ -709,6 +725,10 @@ public static class Flang
 
     public static Value Mod(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            return WordArith("mod", left, right);
+        }
         if (ExactDigits(left) && ExactDigits(right))
         {
             BigInteger a = ExactCanon(left);
@@ -751,6 +771,11 @@ public static class Flang
     /// <summary>«больше».</summary>
     public static Value Gt(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            Value[] pair = WordPair(left, right);
+            return Value.Flag(Value.WordInt(pair[0]).CompareTo(Value.WordInt(pair[1])) > 0);
+        }
         int? order = ExactOrder(left, right);
         if (order.HasValue)
         {
@@ -763,6 +788,11 @@ public static class Flang
     /// <summary>«меньше».</summary>
     public static Value Lt(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            Value[] pair = WordPair(left, right);
+            return Value.Flag(Value.WordInt(pair[0]).CompareTo(Value.WordInt(pair[1])) < 0);
+        }
         int? order = ExactOrder(left, right);
         if (order.HasValue)
         {
@@ -775,6 +805,11 @@ public static class Flang
     /// <summary>«не меньше».</summary>
     public static Value Gte(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            Value[] pair = WordPair(left, right);
+            return Value.Flag(Value.WordInt(pair[0]).CompareTo(Value.WordInt(pair[1])) >= 0);
+        }
         int? order = ExactOrder(left, right);
         if (order.HasValue)
         {
@@ -787,6 +822,11 @@ public static class Flang
     /// <summary>«не больше».</summary>
     public static Value Lte(Ctx ctx, Value left, Value right)
     {
+        if (left.Tag == Value.TagWord || right.Tag == Value.TagWord)
+        {
+            Value[] pair = WordPair(left, right);
+            return Value.Flag(Value.WordInt(pair[0]).CompareTo(Value.WordInt(pair[1])) <= 0);
+        }
         int? order = ExactOrder(left, right);
         if (order.HasValue)
         {
@@ -994,6 +1034,277 @@ public static class Flang
     }
 
     /* ───────────────────────── встроенные формы ───────────────────────── */
+
+    private static readonly System.Numerics.BigInteger WordCeiling = new(9007199254740991L);
+
+    private const string CodeOverflow = "FLANG_OVERFLOW";
+
+    private static bool WordFits(System.Numerics.BigInteger whole, string name)
+    {
+        int width = Value.WordWidth(name);
+        if (name[0] == 'i')
+        {
+            var half = System.Numerics.BigInteger.One << (width - 1);
+            return whole >= -half && whole < half;
+        }
+        return whole.Sign >= 0 && whole < (System.Numerics.BigInteger.One << width);
+    }
+
+    private static Value WordOf(string name, System.Numerics.BigInteger whole)
+    {
+        var modulus = System.Numerics.BigInteger.One << 64;
+        var bits = ((whole % modulus) + modulus) % modulus;
+        return Value.Word(name, (ulong)bits);
+    }
+
+    private static Value WordFromNumber(string name, double number)
+    {
+        string shown = Value.NumberText(number);
+        if (double.IsNaN(number) || double.IsInfinity(number) || number != Math.Floor(number))
+        {
+            throw Fail(CodeOverflow, shown + " не целое и в " + name + " не переводится");
+        }
+        var whole = new System.Numerics.BigInteger(number);
+        if (!WordFits(whole, name))
+        {
+            throw Fail(CodeOverflow, shown + " не помещается в " + name);
+        }
+        return WordOf(name, whole);
+    }
+
+    private static Value WordFromDigits(string name, Value value)
+    {
+        string digits = value.Str;
+        string body = digits.StartsWith('-') ? digits.Substring(1) : digits;
+        bool decimalDigits = body.Length > 0;
+        foreach (char symbol in body)
+        {
+            decimalDigits = decimalDigits && symbol >= '0' && symbol <= '9';
+        }
+        if (!decimalDigits)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + name + "»: строка " + Value.Describe(value) + " — не десятичное целое");
+        }
+        var whole = System.Numerics.BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+        if (!WordFits(whole, name))
+        {
+            throw Fail(CodeOverflow, digits + " не помещается в " + name);
+        }
+        return WordOf(name, whole);
+    }
+
+    private static Value WordConvert(string name, Value value)
+    {
+        switch (value.Tag)
+        {
+            case Value.TagNumber:
+                return WordFromNumber(name, value.Num);
+            case Value.TagString:
+                return WordFromDigits(name, value);
+            case Value.TagWord:
+                if (!WordFits(Value.WordInt(value), name))
+                {
+                    throw Fail(CodeOverflow, Value.Describe(value) + " не помещается в " + name);
+                }
+                return WordOf(name, Value.WordInt(value));
+            default:
+                throw Fail(
+                    FlangError.CodeBuiltinArgs,
+                    "«" + name + "»: переводится число или слово, получено " + Value.TypeName(value));
+        }
+    }
+
+    private static Value[] WordPair(Value left, Value right)
+    {
+        bool first = left.Tag == Value.TagWord;
+        Value pattern = first ? left : right;
+        Value other = first ? right : left;
+        if (other.Tag == Value.TagNumber)
+        {
+            other = WordFromNumber(pattern.Str, other.Num);
+        }
+        else if (other.Tag != Value.TagWord)
+        {
+            throw Fail(FlangError.CodeType, pattern.Str + " и " + Value.TypeName(other) + " не смешиваются");
+        }
+        else if (other.Str != pattern.Str)
+        {
+            throw Fail(FlangError.CodeType, pattern.Str + " и " + other.Str + " не смешиваются");
+        }
+        return first ? [pattern, other] : [other, pattern];
+    }
+
+    private static Value WordChecked(string op, Value left, Value right, System.Numerics.BigInteger whole)
+    {
+        if (!WordFits(whole, left.Str))
+        {
+            throw Fail(
+                CodeOverflow,
+                Value.Describe(left) + " «" + op + "» " + Value.Describe(right) + " не помещается в " + left.Str);
+        }
+        return WordOf(left.Str, whole);
+    }
+
+    private static Value WordDivide(string op, Value left, Value right)
+    {
+        var a = Value.WordInt(left);
+        var b = Value.WordInt(right);
+        if (b.IsZero)
+        {
+            throw Fail(CodeOverflow, a.ToString(CultureInfo.InvariantCulture) + " «" + op + "» 0: деление на ноль");
+        }
+        return WordChecked(op, left, right, op == "mod" ? System.Numerics.BigInteger.Remainder(a, b) : a / b);
+    }
+
+    private static Value WordHalves(Value left, Value right)
+    {
+        var product = new System.Numerics.BigInteger(left.Bits) * new System.Numerics.BigInteger(right.Bits);
+        int width = Value.WordWidth(left.Str);
+        return Value.Record(
+        [
+            new Field("старшая", WordOf(left.Str, product >> width)),
+            new Field("младшая", WordOf(left.Str, product)),
+        ]);
+    }
+
+    private static Value WordArith(string op, Value left, Value right)
+    {
+        Value[] pair = WordPair(left, right);
+        Value a = pair[0];
+        Value b = pair[1];
+        return op switch
+        {
+            "add" => WordChecked(op, a, b, Value.WordInt(a) + Value.WordInt(b)),
+            "sub" => WordChecked(op, a, b, Value.WordInt(a) - Value.WordInt(b)),
+            "mul" => WordChecked(op, a, b, Value.WordInt(a) * Value.WordInt(b)),
+            "div" or "mod" => WordDivide(op, a, b),
+            "addWrap" => Value.Word(a.Str, unchecked(a.Bits + b.Bits)),
+            "subWrap" => Value.Word(a.Str, unchecked(a.Bits - b.Bits)),
+            "mulWrap" => Value.Word(a.Str, unchecked(a.Bits * b.Bits)),
+            "mulWide" => WordHalves(a, b),
+            "bitAnd" => Value.Word(a.Str, a.Bits & b.Bits),
+            "bitOr" => Value.Word(a.Str, a.Bits | b.Bits),
+            "bitXor" => Value.Word(a.Str, a.Bits ^ b.Bits),
+            _ => throw Fail(FlangError.CodeType, "над " + a.Str + " «" + op + "» не определено"),
+        };
+    }
+
+    private static int WordShiftCount(string op, Value left, Value right)
+    {
+        if (left.Tag != Value.TagWord)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + op + "»: сдвиг на " + Value.Describe(right) + " не меньше ширины " + Value.TypeName(left));
+        }
+        double count = -1.0;
+        if (right.Tag == Value.TagNumber)
+        {
+            count = right.Num;
+        }
+        if (right.Tag == Value.TagWord)
+        {
+            var whole = Value.WordInt(right);
+            count = System.Numerics.BigInteger.Abs(whole) <= WordCeiling ? (double)whole : 9007199254740991.0;
+        }
+        if (double.IsNaN(count) || double.IsInfinity(count) || count < 0 || count != Math.Floor(count))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + op + "»: величина сдвига — целое не меньше нуля, получено " + Value.Describe(right));
+        }
+        int width = Value.WordWidth(left.Str);
+        if (op.StartsWith("shift", StringComparison.Ordinal) && count >= width)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + op + "»: сдвиг на " + Value.NumberText(count) + " не меньше ширины " + left.Str);
+        }
+        return (int)(count % width);
+    }
+
+    private static Value WordShift(string op, Value left, Value right)
+    {
+        int step = WordShiftCount(op, left, right);
+        int width = Value.WordWidth(left.Str);
+        ulong bits = left.Bits;
+        if (op == "shiftLeft")
+        {
+            return Value.Word(left.Str, bits << step);
+        }
+        if (op == "shiftRight")
+        {
+            return WordOf(left.Str, Value.WordInt(left) >> step);
+        }
+        int turn = op == "rotateRight" ? (width - step) % width : step;
+        if (turn == 0)
+        {
+            return left;
+        }
+        return Value.Word(left.Str, (bits << turn) | (bits >> (width - turn)));
+    }
+
+    private static Value WordToNumber(Value value)
+    {
+        var whole = Value.WordInt(value);
+        if (System.Numerics.BigInteger.Abs(whole) > WordCeiling)
+        {
+            throw Fail(CodeOverflow, whole.ToString(CultureInfo.InvariantCulture) + " за потолком точных чисел 9007199254740991");
+        }
+        return Value.Number((double)whole);
+    }
+
+    public static Value AddWrap(Ctx ctx, Value left, Value right) => WordArith("addWrap", left, right);
+
+    public static Value SubWrap(Ctx ctx, Value left, Value right) => WordArith("subWrap", left, right);
+
+    public static Value MulWrap(Ctx ctx, Value left, Value right) => WordArith("mulWrap", left, right);
+
+    public static Value MulWide(Ctx ctx, Value left, Value right) => WordArith("mulWide", left, right);
+
+    public static Value BitAnd(Ctx ctx, Value left, Value right) => WordArith("bitAnd", left, right);
+
+    public static Value BitOr(Ctx ctx, Value left, Value right) => WordArith("bitOr", left, right);
+
+    public static Value BitXor(Ctx ctx, Value left, Value right) => WordArith("bitXor", left, right);
+
+    public static Value ShiftLeft(Ctx ctx, Value left, Value right) => WordShift("shiftLeft", left, right);
+
+    public static Value ShiftRight(Ctx ctx, Value left, Value right) => WordShift("shiftRight", left, right);
+
+    public static Value RotateLeft(Ctx ctx, Value left, Value right) => WordShift("rotateLeft", left, right);
+
+    public static Value RotateRight(Ctx ctx, Value left, Value right) => WordShift("rotateRight", left, right);
+
+    public static Value BBitNot(Ctx ctx, Value value)
+    {
+        if (value.Tag != Value.TagWord)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«bitNot»: аргумент должен быть словом, получено " + Value.TypeName(value));
+        }
+        return Value.Word(value.Str, ~value.Bits);
+    }
+
+    public static Value BU8(Ctx ctx, Value value) => WordConvert("u8", value);
+
+    public static Value BU16(Ctx ctx, Value value) => WordConvert("u16", value);
+
+    public static Value BU32(Ctx ctx, Value value) => WordConvert("u32", value);
+
+    public static Value BU64(Ctx ctx, Value value) => WordConvert("u64", value);
+
+    public static Value BI8(Ctx ctx, Value value) => WordConvert("i8", value);
+
+    public static Value BI16(Ctx ctx, Value value) => WordConvert("i16", value);
+
+    public static Value BI32(Ctx ctx, Value value) => WordConvert("i32", value);
+
+    public static Value BI64(Ctx ctx, Value value) => WordConvert("i64", value);
+
 
     /// <summary>«длина»: строка в кодовых точках, список в элементах.</summary>
     public static Value BLength(Ctx ctx, Value value)
@@ -1378,6 +1689,10 @@ public static class Flang
     /// <summary>«к числу».</summary>
     public static Value BToNumber(Ctx ctx, Value source)
     {
+        if (source.Tag == Value.TagWord)
+        {
+            return WordToNumber(source);
+        }
         string value = ExpectString("к числу", source, "строка");
         string trimmed = TrimJs(value);
         if (!LooksLikeNumber(trimmed))
@@ -1444,6 +1759,7 @@ public static class Flang
             Value.TagNumber => Value.Text(Value.NumberText(value.Num)),
             Value.TagFlag => Value.Text(value.Bit ? "да" : "нет"),
             Value.TagNothing => Value.Text("ничто"),
+            Value.TagWord => Value.Text(Value.Describe(value)),
             _ => throw Fail(
                 FlangError.CodeBuiltinArgs,
                 "«к строке»: ожидается скаляр, получено " + Value.TypeName(value)),

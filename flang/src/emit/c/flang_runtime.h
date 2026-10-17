@@ -976,6 +976,8 @@ fl_status fl_sub_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                       fl_error *error);
 fl_status fl_mul_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                       fl_error *error);
+fl_status fl_mul_wide(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error);
 fl_status fl_bit_and(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                      fl_error *error);
 fl_status fl_bit_or(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,

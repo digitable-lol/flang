@@ -1,11 +1,11 @@
-program	surface	code	word	ЭТО ФОТОГРАФИЯ ДЕФЕКТА задачи 1116, А НЕ КОНТРАКТ	снято с bootstrap/flang 0.7.24 4 октября 2026	строки json и ledger отвечают код 0 и о блоках «прогон» молчат — это и есть дефект	закрытие 1116 ОБЯЗАНО покраснить эту таблицу: её тогда перемеряют, а не правят под зелёный
-true-run.flang	test	3	блоков «прогон» 1, исполнено 0
-false-run.flang	test	3	блоков «прогон» 1, исполнено 0
+program	surface	code	word	КОНТРАКТ задачи 1116: блоки «прогон» исполнены, и верное ожидание отличимо от ложного на всех четырёх поверхностях	снято с «Прогон примеров исходников» из исходника flang/self/bootstrap/compiler.flang 15 октября 2026 (толкователь над исходником, двоичный 0.7.28)	семя, напечатанное до этой правки, на строках с блоками краснеет, пока его не перепечатают
+true-run.flang	test	0	примеров 2, прошло 2, не прошло 0
+false-run.flang	test	1	примеров 2, прошло 1, не прошло 1
 without-runs.flang	test	0	примеров 1, прошло 1, не прошло 0
 true-run.flang	json	0	"valid":true
-false-run.flang	json	0	"valid":true
+false-run.flang	json	1	"valid":false
 without-runs.flang	json	0	"valid":true
-true-run.flang	ledger	0	1 1 0 1
-false-run.flang	ledger	0	1 1 0 1
+true-run.flang	ledger	0	2 2 0 2
+false-run.flang	ledger	1	2 1 1 2
 without-runs.flang	ledger	0	1 1 0 1
-true-run.flang	corpus	0	файлов 3, взято 3, отказано 0
+true-run.flang	corpus	1	примеров 5 (своих 5), на чужих примерах 0, потеряно своих 0, прошло 4, не прошло 1

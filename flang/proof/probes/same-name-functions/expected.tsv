@@ -1,0 +1,26 @@
+program	surface	code	word
+first.flang	check	0	замечаний нет
+second.flang	check	0	замечаний нет
+third.flang	check	0	замечаний нет
+source.flang	check	0	замечаний нет
+user.flang	check	0	замечаний нет
+export.flang	check	0	замечаний нет
+broken.flang	check	1	у функции больше одного тела
+both-full.flang	check	1	функция «Шаг» объявлена в двух модулях
+both-full.flang	trust	1	согласие на недоказанное эту проверку не снимает
+both-only.flang	check	1	из второго ввезена не она, а «Через второй», которая её зовёт
+both-only.flang	trust	1	согласие на недоказанное эту проверку не снимает
+both-hidden.flang	check	1	из второго ввезена не она, а «Через второй», которая её зовёт
+both-hidden.flang	trust	1	согласие на недоказанное эту проверку не снимает
+rebind.flang	check	1	«Через два» зовёт её из
+rebind.flang	trust	1	согласие на недоказанное эту проверку не снимает
+two-lists.flang	check	0	замечаний нет
+two-lists.flang	run	0	2
+helper-only.flang	check	0	замечаний нет
+helper-only.flang	run	0	2
+export-helper.flang	check	0	замечаний нет
+export-helper.flang	run	0	4
+trust-parse.flang	check	1	FLANG_PARSE
+trust-parse.flang	trust	1	согласие на недоказанное эту проверку не снимает
+unused-namesakes.flang	check	0	замечаний нет
+unused-namesakes.flang	run	0	31

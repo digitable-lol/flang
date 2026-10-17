@@ -5118,6 +5118,293 @@ fl_status fl_b_convert_to_natural(fl_ctx *ctx, fl_value value, fl_value *out,
   return fl_exact_neighbour(ctx, out, fl_list(NULL, 0), error);
 }
 
+fl_status fl_b_convert_to_money(fl_ctx *ctx, fl_value value, fl_value *out,
+                                fl_error *error) {
+  double amount;
+  double cents;
+  if (value.tag != FL_NUMBER) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«перевод в деньги»: аргумент должен быть числом, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  amount = value.as.number;
+  cents = floor(amount * 100.0 + 0.5);
+  if (!(amount >= 0.0 && amount < 10000000000000.0 &&
+        cents / 100.0 == amount + 0.0)) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "«перевод в деньги»: нужно число не меньше 0 и меньше "
+                   "10000000000000, равное целому числу сотых");
+  }
+  *out = fl_number(cents + 0.0);
+  return fl_exact_neighbour(ctx, out, fl_list(NULL, 0), error);
+}
+
+static fl_status fl_expect_money(fl_ctx *ctx, const char *name, fl_value value,
+                                 fl_nat *out, fl_error *error) {
+  if (!fl_exact_digits(value)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: аргумент должен быть деньгами, получено %s", name,
+                   fl_type_name(ctx, value));
+  }
+  return fl_nat_canon(ctx, value, out, error);
+}
+
+static fl_status fl_nat_small(fl_ctx *ctx, double digit, fl_nat *out,
+                              fl_error *error) {
+  FL_TRY(fl_nat_room(ctx, 1, out, error));
+  out->d[0] = digit;
+  out->n = fl_exact_trim(out->d, 1);
+  return FL_OK;
+}
+
+fl_status fl_b_money_as_fraction(fl_ctx *ctx, fl_value value, fl_value *out,
+                                 fl_error *error) {
+  fl_nat cents;
+  fl_nat hundred;
+  FL_TRY(fl_expect_money(ctx, "деньги дробью", value, &cents, error));
+  FL_TRY(fl_nat_small(ctx, 100.0, &hundred, error));
+  return fl_frac_value(ctx, cents, hundred, out, error);
+}
+
+static fl_status fl_nat_decimal(fl_ctx *ctx, fl_nat whole, char **text,
+                                fl_error *error) {
+  fl_nat million;
+  fl_nat quotient;
+  fl_nat rest;
+  double *chunks;
+  size_t count = 0;
+  size_t used = 0;
+  size_t index;
+  FL_TRY(fl_nat_small(ctx, 1000000.0, &million, error));
+  chunks = (double *)fl_arena_alloc(ctx->arena, (whole.n * 2 + 1) * sizeof(double));
+  *text = (char *)fl_arena_alloc(ctx->arena, whole.n * 14 + 8);
+  if (chunks == NULL || *text == NULL) {
+    return fl_no_memory(error);
+  }
+  while (whole.n > 0) {
+    FL_TRY(fl_nat_divmod(ctx, whole, million, &quotient, &rest, error));
+    chunks[count++] = rest.n > 0 ? rest.d[0] : 0.0;
+    whole = quotient;
+  }
+  if (count == 0) {
+    strcpy(*text, "0");
+    return FL_OK;
+  }
+  used += (size_t)sprintf(*text + used, "%.0f", chunks[count - 1]);
+  for (index = count - 1; index > 0; index--) {
+    used += (size_t)sprintf(*text + used, "%06.0f", chunks[index - 1]);
+  }
+  return FL_OK;
+}
+
+fl_status fl_b_money_as_text(fl_ctx *ctx, fl_value value, fl_value *out,
+                             fl_error *error) {
+  fl_nat cents;
+  fl_nat hundred;
+  fl_nat whole;
+  fl_nat rest;
+  char *head;
+  char *text;
+  FL_TRY(fl_expect_money(ctx, "деньги строкой", value, &cents, error));
+  FL_TRY(fl_nat_small(ctx, 100.0, &hundred, error));
+  FL_TRY(fl_nat_divmod(ctx, cents, hundred, &whole, &rest, error));
+  FL_TRY(fl_nat_decimal(ctx, whole, &head, error));
+  text = (char *)fl_arena_alloc(ctx->arena, strlen(head) + 8);
+  if (text == NULL) {
+    return fl_no_memory(error);
+  }
+  sprintf(text, "%s.%02.0f", head, rest.n > 0 ? rest.d[0] : 0.0);
+  return fl_text(ctx, text, strlen(text), out, error);
+}
+
+static fl_status fl_money_rounded(fl_ctx *ctx, const char *name, char rule,
+                                  fl_value value, fl_value *out,
+                                  fl_error *error) {
+  fl_nat top;
+  fl_nat bottom;
+  fl_nat hundred;
+  fl_nat scaled;
+  fl_nat cents;
+  fl_nat rest;
+  fl_nat twice;
+  fl_nat one;
+  int half;
+  int bump = 0;
+  if (!fl_exact_fraction(value)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: аргумент должен быть точным дробным, получено %s",
+                   name, fl_type_name(ctx, value));
+  }
+  FL_TRY(fl_frac_parts(ctx, value, &top, &bottom, error));
+  FL_TRY(fl_nat_small(ctx, 100.0, &hundred, error));
+  FL_TRY(fl_nat_mul(ctx, top, hundred, &scaled, error));
+  FL_TRY(fl_nat_divmod(ctx, scaled, bottom, &cents, &rest, error));
+  FL_TRY(fl_nat_mul_small(ctx, rest, 2.0, &twice, error));
+  half = fl_nat_cmp(twice, bottom);
+  if (rule == 'u') {
+    bump = rest.n > 0;
+  } else if (rule == 'e') {
+    bump = half > 0 ||
+           (half == 0 && cents.n > 0 && fmod(cents.d[0], 2.0) == 1.0);
+  }
+  if (bump) {
+    FL_TRY(fl_nat_small(ctx, 1.0, &one, error));
+    FL_TRY(fl_nat_add(ctx, cents, one, &cents, error));
+  }
+  return fl_nat_value(ctx, cents, out, error);
+}
+
+fl_status fl_b_money_rounded_down(fl_ctx *ctx, fl_value value, fl_value *out,
+                                  fl_error *error) {
+  return fl_money_rounded(ctx, "деньги с округлением вниз", 'd', value, out,
+                          error);
+}
+
+fl_status fl_b_money_rounded_up(fl_ctx *ctx, fl_value value, fl_value *out,
+                                fl_error *error) {
+  return fl_money_rounded(ctx, "деньги с округлением вверх", 'u', value, out,
+                          error);
+}
+
+fl_status fl_b_money_rounded_half_even(fl_ctx *ctx, fl_value value,
+                                       fl_value *out, fl_error *error) {
+  return fl_money_rounded(ctx, "деньги с банковским округлением", 'e', value,
+                          out, error);
+}
+
+static long fl_days_in_month(long year, long month) {
+  if (month == 2) {
+    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28;
+  }
+  return month == 4 || month == 6 || month == 9 || month == 11 ? 30 : 31;
+}
+
+static long fl_date_digits(const char *source, int from, int to) {
+  long whole = 0;
+  int place;
+  for (place = from; place < to; place++) {
+    whole = whole * 10 + (source[place] - '0');
+  }
+  return whole;
+}
+
+static const char *fl_date_reason(fl_ctx *ctx, const char *source,
+                                  size_t bytes) {
+  static const int places[] = {0, 1, 2, 3, 5, 6, 8, 9};
+  long year;
+  long month;
+  long day;
+  long last;
+  size_t index;
+  char *text;
+  if (bytes != 10 || source[4] != '-' || source[7] != '-') {
+    return "нужна запись ГГГГ-ММ-ДД";
+  }
+  for (index = 0; index < sizeof places / sizeof places[0]; index++) {
+    if (source[places[index]] < '0' || source[places[index]] > '9') {
+      return "нужна запись ГГГГ-ММ-ДД";
+    }
+  }
+  year = fl_date_digits(source, 0, 4);
+  month = fl_date_digits(source, 5, 7);
+  day = fl_date_digits(source, 8, 10);
+  if (year < 1) {
+    return "год идёт от 0001 до 9999";
+  }
+  if (month < 1 || month > 12) {
+    return "месяц идёт от 01 до 12";
+  }
+  last = fl_days_in_month(year, month);
+  if (day >= 1 && day <= last) {
+    return "";
+  }
+  text = (char *)fl_arena_alloc(ctx->arena, 64);
+  if (text == NULL) {
+    return "в этом месяце дни идут от 01 до 31";
+  }
+  sprintf(text, "в этом месяце дни идут от 01 до %ld", last);
+  return text;
+}
+
+fl_status fl_b_date_from_text(fl_ctx *ctx, fl_value value, fl_value *out,
+                              fl_error *error) {
+  const char *source;
+  const char *reason;
+  size_t bytes;
+  long year;
+  long month;
+  long day;
+  long shifted;
+  long era;
+  long year_of_era;
+  long day_of_year;
+  long day_of_era;
+  if (value.tag != FL_STRING) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«дата из строки»: аргумент должен быть строкой, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  source = value.as.string.utf8;
+  bytes = value.as.string.bytes;
+  reason = fl_date_reason(ctx, source, bytes);
+  if (*reason) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "«дата из строки»: «%.*s» — %s", (int)bytes, source,
+                   reason);
+  }
+  year = fl_date_digits(source, 0, 4);
+  month = fl_date_digits(source, 5, 7);
+  day = fl_date_digits(source, 8, 10);
+  shifted = year - (month <= 2 ? 1 : 0);
+  era = shifted / 400;
+  year_of_era = shifted - era * 400;
+  day_of_year = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1;
+  day_of_era =
+      year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+  *out = fl_number((double)(era * 146097 + day_of_era - 719468));
+  return FL_OK;
+}
+
+fl_status fl_b_date_as_text(fl_ctx *ctx, fl_value value, fl_value *out,
+                            fl_error *error) {
+  double days;
+  long shifted;
+  long era;
+  long day_of_era;
+  long year_of_era;
+  long day_of_year;
+  long shifted_month;
+  long day;
+  long month;
+  long year;
+  char text[64];
+  if (value.tag != FL_NUMBER) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«дата строкой»: аргумент должен быть датой, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  days = value.as.number;
+  if (!(days >= -719162.0 && days <= 2932896.0 && days == floor(days))) {
+    return fl_fail(ctx, error, FL_CODE_PROPERTY,
+                   "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не "
+                   "печатается");
+  }
+  shifted = (long)days + 719468;
+  era = shifted / 146097;
+  day_of_era = shifted - era * 146097;
+  year_of_era = (day_of_era - day_of_era / 1460 + day_of_era / 36524 -
+                 day_of_era / 146096) /
+                365;
+  day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 -
+                              year_of_era / 100);
+  shifted_month = (5 * day_of_year + 2) / 153;
+  day = day_of_year - (153 * shifted_month + 2) / 5 + 1;
+  month = shifted_month < 10 ? shifted_month + 3 : shifted_month - 9;
+  year = year_of_era + era * 400 + (month <= 2 ? 1 : 0);
+  snprintf(text, sizeof text, "%04ld-%02ld-%02ld", year, month, day);
+  return fl_text(ctx, text, strlen(text), out, error);
+}
+
 fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
                             fl_error *error) {
   fl_nat top;

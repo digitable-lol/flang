@@ -745,6 +745,158 @@ public final class Flang {
     return exactNeighbour(value, Value.list(new Value[0]));
   }
 
+  public static Value bConvertToMoney(Ctx ctx, Value value) {
+    if (value.tag != Value.TAG_NUMBER) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«перевод в деньги»: аргумент должен быть числом, получено " + Value.typeName(value));
+    }
+    double amount = value.num;
+    double cents = Math.floor(amount * 100.0 + 0.5);
+    if (!(amount >= 0.0 && amount < 10000000000000.0 && cents / 100.0 == amount + 0.0)) {
+      throw fail(
+          FlangError.CODE_PROPERTY,
+          "«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых");
+    }
+    return exactNeighbour(Value.number(cents + 0.0), Value.list(new Value[0]));
+  }
+
+  private static java.math.BigInteger expectMoney(String name, Value value) {
+    if (!exactDigits(value)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + name + "»: аргумент должен быть деньгами, получено " + Value.typeName(value));
+    }
+    return exactCanon(value);
+  }
+
+  public static Value bMoneyAsFraction(Ctx ctx, Value value) {
+    return fractionValue(expectMoney("деньги дробью", value), java.math.BigInteger.valueOf(100));
+  }
+
+  public static Value bMoneyAsText(Ctx ctx, Value value) {
+    java.math.BigInteger[] parts =
+        expectMoney("деньги строкой", value).divideAndRemainder(java.math.BigInteger.valueOf(100));
+    String rest = parts[1].toString();
+    return Value.text(parts[0].toString() + "." + (rest.length() < 2 ? "0" : "") + rest);
+  }
+
+  private static Value moneyRounded(String name, String rule, Value value) {
+    if (!exactFraction(value)) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«" + name + "»: аргумент должен быть точным дробным, получено " + Value.typeName(value));
+    }
+    java.math.BigInteger[] parts = fractionParts(value);
+    java.math.BigInteger scaled = parts[0].multiply(java.math.BigInteger.valueOf(100));
+    java.math.BigInteger cents = java.math.BigInteger.ZERO;
+    java.math.BigInteger rest = scaled;
+    if (parts[1].signum() != 0) {
+      java.math.BigInteger[] split = scaled.divideAndRemainder(parts[1]);
+      cents = split[0];
+      rest = split[1];
+    }
+    int half = rest.shiftLeft(1).compareTo(parts[1]);
+    boolean up = rule.equals("up") && rest.signum() != 0;
+    boolean even = rule.equals("even") && (half > 0 || (half == 0 && cents.testBit(0)));
+    return exactValue(up || even ? cents.add(java.math.BigInteger.ONE) : cents);
+  }
+
+  public static Value bMoneyRoundedDown(Ctx ctx, Value value) {
+    return moneyRounded("деньги с округлением вниз", "down", value);
+  }
+
+  public static Value bMoneyRoundedUp(Ctx ctx, Value value) {
+    return moneyRounded("деньги с округлением вверх", "up", value);
+  }
+
+  public static Value bMoneyRoundedHalfEven(Ctx ctx, Value value) {
+    return moneyRounded("деньги с банковским округлением", "even", value);
+  }
+
+  private static long daysInMonth(long year, long month) {
+    if (month == 2) {
+      return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28;
+    }
+    return month == 4 || month == 6 || month == 9 || month == 11 ? 30 : 31;
+  }
+
+  private static long dateDigits(String source, int from, int to) {
+    long whole = 0;
+    for (int place = from; place < to; place++) {
+      whole = whole * 10 + (source.charAt(place) - '0');
+    }
+    return whole;
+  }
+
+  private static String dateReason(String source) {
+    if (source.length() != 10 || source.charAt(4) != '-' || source.charAt(7) != '-') {
+      return "нужна запись ГГГГ-ММ-ДД";
+    }
+    for (int place : new int[] {0, 1, 2, 3, 5, 6, 8, 9}) {
+      if (source.charAt(place) < '0' || source.charAt(place) > '9') {
+        return "нужна запись ГГГГ-ММ-ДД";
+      }
+    }
+    long year = dateDigits(source, 0, 4);
+    long month = dateDigits(source, 5, 7);
+    long day = dateDigits(source, 8, 10);
+    if (year < 1) {
+      return "год идёт от 0001 до 9999";
+    }
+    if (month < 1 || month > 12) {
+      return "месяц идёт от 01 до 12";
+    }
+    long last = daysInMonth(year, month);
+    if (day < 1 || day > last) {
+      return "в этом месяце дни идут от 01 до " + last;
+    }
+    return "";
+  }
+
+  public static Value bDateFromText(Ctx ctx, Value value) {
+    if (value.tag != Value.TAG_STRING) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«дата из строки»: аргумент должен быть строкой, получено " + Value.typeName(value));
+    }
+    String reason = dateReason(value.str);
+    if (!reason.isEmpty()) {
+      throw fail(FlangError.CODE_PROPERTY, "«дата из строки»: «" + value.str + "» — " + reason);
+    }
+    long year = dateDigits(value.str, 0, 4);
+    long month = dateDigits(value.str, 5, 7);
+    long day = dateDigits(value.str, 8, 10);
+    long shifted = year - (month <= 2 ? 1 : 0);
+    long era = shifted / 400;
+    long yearOfEra = shifted - era * 400;
+    long dayOfYear = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1;
+    long dayOfEra = yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear;
+    return Value.number((double) (era * 146097 + dayOfEra - 719468));
+  }
+
+  public static Value bDateAsText(Ctx ctx, Value value) {
+    if (value.tag != Value.TAG_NUMBER) {
+      throw fail(
+          FlangError.CODE_BUILTIN_ARGS,
+          "«дата строкой»: аргумент должен быть датой, получено " + Value.typeName(value));
+    }
+    double days = value.num;
+    if (!(days >= -719162.0 && days <= 2932896.0 && days == Math.floor(days))) {
+      throw fail(FlangError.CODE_PROPERTY, "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается");
+    }
+    long shifted = (long) days + 719468;
+    long era = shifted / 146097;
+    long dayOfEra = shifted - era * 146097;
+    long yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36524 - dayOfEra / 146096) / 365;
+    long dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100);
+    long shiftedMonth = (5 * dayOfYear + 2) / 153;
+    long day = dayOfYear - (153 * shiftedMonth + 2) / 5 + 1;
+    long month = shiftedMonth < 10 ? shiftedMonth + 3 : shiftedMonth - 9;
+    long year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0);
+    return Value.text(String.format(java.util.Locale.ROOT, "%04d-%02d-%02d", year, month, day));
+  }
+
   public static Value bIntegerPart(Ctx ctx, Value value) {
     if (!exactFraction(value)) {
       throw fail(

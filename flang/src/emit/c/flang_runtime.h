@@ -1010,6 +1010,22 @@ fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out,
                        fl_error *error);
 fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
                             fl_error *error);
+fl_status fl_b_convert_to_money(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_money_as_fraction(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_money_as_text(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_money_rounded_down(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_money_rounded_up(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_money_rounded_half_even(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_date_from_text(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
+fl_status fl_b_date_as_text(fl_ctx *ctx, fl_value value, fl_value *out,
+    fl_error *error);
 fl_status fl_b_convert_to_number(fl_ctx *ctx, fl_value value, fl_value *out,
                                  fl_error *error);
 fl_status fl_b_convert_to_natural(fl_ctx *ctx, fl_value value, fl_value *out,

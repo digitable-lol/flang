@@ -1406,6 +1406,189 @@ pub fn b_convert_to_natural(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     }
 }
 
+pub fn b_convert_to_money(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let amount = match value {
+        Value::Number(amount) => amount,
+        _ => {
+            return Err(fail(
+                CODE_BUILTIN_ARGS,
+                format!("«перевод в деньги»: аргумент должен быть числом, получено {}", type_name(&value)),
+            ))
+        }
+    };
+    let cents = (amount * 100.0 + 0.5).floor();
+    if !(amount >= 0.0 && amount < 10000000000000.0 && cents / 100.0 == amount + 0.0) {
+        return Err(fail(
+            CODE_PROPERTY,
+            "«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых".to_string(),
+        ));
+    }
+    Ok(nat_value(&exact_small_digits(cents + 0.0)))
+}
+
+fn expect_money(name: &str, value: &Value) -> Result<Vec<f64>, Error> {
+    if !exact_digits(value) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{name}»: аргумент должен быть деньгами, получено {}", type_name(value)),
+        ));
+    }
+    Ok(exact_canon(value))
+}
+
+pub fn b_money_as_fraction(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let cents = expect_money("деньги дробью", &value)?;
+    Ok(fraction_value(&cents, &[100.0]))
+}
+
+fn nat_decimal(digits: &[f64]) -> String {
+    let mut chunks: Vec<f64> = Vec::new();
+    let mut rest = digits.to_vec();
+    while !rest.is_empty() {
+        let (quotient, low) = nat_divmod(&rest, &[1000000.0]);
+        chunks.push(low.first().copied().unwrap_or(0.0));
+        rest = quotient;
+    }
+    match chunks.split_last() {
+        None => "0".to_string(),
+        Some((top, lower)) => {
+            let mut out = format!("{top:.0}");
+            for chunk in lower.iter().rev() {
+                out.push_str(&format!("{chunk:06.0}"));
+            }
+            out
+        }
+    }
+}
+
+pub fn b_money_as_text(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let cents = expect_money("деньги строкой", &value)?;
+    let (whole, rest) = nat_divmod(&cents, &[100.0]);
+    let tail = rest.first().copied().unwrap_or(0.0);
+    Ok(text(&format!("{}.{tail:02.0}", nat_decimal(&whole))))
+}
+
+fn money_rounded(name: &str, rule: &str, value: &Value) -> Result<Value, Error> {
+    if !exact_fraction(value) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!("«{name}»: аргумент должен быть точным дробным, получено {}", type_name(value)),
+        ));
+    }
+    let (top, bottom) = fraction_parts(value);
+    let (cents, rest) = nat_divmod(&nat_mul(&top, &[100.0]), &bottom);
+    let half = nat_cmp(&nat_mul_small(&rest, 2.0), &bottom);
+    let odd = cents.first().map(|digit| digit % 2.0 == 1.0).unwrap_or(false);
+    let bump = match rule {
+        "up" => !rest.is_empty(),
+        "even" => half == std::cmp::Ordering::Greater || (half == std::cmp::Ordering::Equal && odd),
+        _ => false,
+    };
+    Ok(nat_value(&if bump { nat_add(&cents, &[1.0]) } else { cents }))
+}
+
+pub fn b_money_rounded_down(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    money_rounded("деньги с округлением вниз", "down", &value)
+}
+
+pub fn b_money_rounded_up(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    money_rounded("деньги с округлением вверх", "up", &value)
+}
+
+pub fn b_money_rounded_half_even(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    money_rounded("деньги с банковским округлением", "even", &value)
+}
+
+fn days_in_month(year: i64, month: i64) -> i64 {
+    match month {
+        2 if (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 => 29,
+        2 => 28,
+        4 | 6 | 9 | 11 => 30,
+        _ => 31,
+    }
+}
+
+fn date_parts(source: &str) -> Option<(i64, i64, i64)> {
+    let bytes = source.as_bytes();
+    let digit_places = [0usize, 1, 2, 3, 5, 6, 8, 9];
+    if bytes.len() != 10 || bytes[4] != b'-' || bytes[7] != b'-' {
+        return None;
+    }
+    if !digit_places.iter().all(|place| bytes[*place].is_ascii_digit()) {
+        return None;
+    }
+    let digits = |from: usize, to: usize| bytes[from..to].iter().fold(0i64, |whole, byte| whole * 10 + i64::from(byte - b'0'));
+    Some((digits(0, 4), digits(5, 7), digits(8, 10)))
+}
+
+fn date_reason(parts: Option<(i64, i64, i64)>) -> String {
+    match parts {
+        None => "нужна запись ГГГГ-ММ-ДД".to_string(),
+        Some((year, _, _)) if year < 1 => "год идёт от 0001 до 9999".to_string(),
+        Some((_, month, _)) if !(1..=12).contains(&month) => "месяц идёт от 01 до 12".to_string(),
+        Some((year, month, day)) => {
+            let last = days_in_month(year, month);
+            if (1..=last).contains(&day) {
+                String::new()
+            } else {
+                format!("в этом месяце дни идут от 01 до {last}")
+            }
+        }
+    }
+}
+
+pub fn b_date_from_text(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let source = match &value {
+        Value::Text(source) => source.to_string(),
+        _ => {
+            return Err(fail(
+                CODE_BUILTIN_ARGS,
+                format!("«дата из строки»: аргумент должен быть строкой, получено {}", type_name(&value)),
+            ))
+        }
+    };
+    let parts = date_parts(&source);
+    let reason = date_reason(parts);
+    let (year, month, day) = match parts {
+        Some(found) if reason.is_empty() => found,
+        _ => return Err(fail(CODE_PROPERTY, format!("«дата из строки»: «{source}» — {reason}"))),
+    };
+    let shifted = year - i64::from(month <= 2);
+    let era = shifted / 400;
+    let year_of_era = shifted - era * 400;
+    let day_of_year = (153 * (if month > 2 { month - 3 } else { month + 9 }) + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    Ok(number((era * 146097 + day_of_era - 719468) as f64))
+}
+
+pub fn b_date_as_text(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    let days = match value {
+        Value::Number(days) => days,
+        _ => {
+            return Err(fail(
+                CODE_BUILTIN_ARGS,
+                format!("«дата строкой»: аргумент должен быть датой, получено {}", type_name(&value)),
+            ))
+        }
+    };
+    if !((-719162.0..=2932896.0).contains(&days) && days == days.floor()) {
+        return Err(fail(
+            CODE_PROPERTY,
+            "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается".to_string(),
+        ));
+    }
+    let shifted = days as i64 + 719468;
+    let era = shifted / 146097;
+    let day_of_era = shifted - era * 146097;
+    let year_of_era = (day_of_era - day_of_era / 1460 + day_of_era / 36524 - day_of_era / 146096) / 365;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let shifted_month = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * shifted_month + 2) / 5 + 1;
+    let month = if shifted_month < 10 { shifted_month + 3 } else { shifted_month - 9 };
+    let year = year_of_era + era * 400 + i64::from(month <= 2);
+    Ok(text(&format!("{year:04}-{month:02}-{day:02}")))
+}
+
 pub fn b_integer_part(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     if !exact_fraction(&value) {
         return Err(fail(

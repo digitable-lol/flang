@@ -800,6 +800,178 @@ public static class Flang
         return ExactNeighbour(value, Value.List([]));
     }
 
+    public static Value BConvertToMoney(Ctx ctx, Value value)
+    {
+        if (value.Tag != Value.TagNumber)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«перевод в деньги»: аргумент должен быть числом, получено " + Value.TypeName(value));
+        }
+        double amount = value.Num;
+        double cents = Math.Floor(amount * 100.0 + 0.5);
+        if (!(amount >= 0.0 && amount < 10000000000000.0 && cents / 100.0 == amount + 0.0))
+        {
+            throw Fail(
+                FlangError.CodeProperty,
+                "«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых");
+        }
+        return ExactNeighbour(Value.Number(cents + 0.0), Value.List([]));
+    }
+
+    private static BigInteger ExpectMoney(string name, Value value)
+    {
+        if (!ExactDigits(value))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + name + "»: аргумент должен быть деньгами, получено " + Value.TypeName(value));
+        }
+        return ExactCanon(value);
+    }
+
+    public static Value BMoneyAsFraction(Ctx ctx, Value value) =>
+        FractionValue(ExpectMoney("деньги дробью", value), new BigInteger(100));
+
+    public static Value BMoneyAsText(Ctx ctx, Value value)
+    {
+        BigInteger cents = ExpectMoney("деньги строкой", value);
+        BigInteger whole = BigInteger.DivRem(cents, new BigInteger(100), out BigInteger rest);
+        string tail = rest.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return Value.Text(whole.ToString(System.Globalization.CultureInfo.InvariantCulture) + "." + (tail.Length < 2 ? "0" : "") + tail);
+    }
+
+    private static Value MoneyRounded(string name, string rule, Value value)
+    {
+        if (!ExactFraction(value))
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + name + "»: аргумент должен быть точным дробным, получено " + Value.TypeName(value));
+        }
+        BigInteger[] parts = FractionParts(value);
+        BigInteger scaled = parts[0] * 100;
+        BigInteger cents = BigInteger.Zero;
+        BigInteger rest = scaled;
+        if (!parts[1].IsZero)
+        {
+            cents = BigInteger.DivRem(scaled, parts[1], out rest);
+        }
+        int half = (rest * 2).CompareTo(parts[1]);
+        bool up = rule == "up" && !rest.IsZero;
+        bool even = rule == "even" && (half > 0 || (half == 0 && !cents.IsEven));
+        return ExactValue(up || even ? cents + 1 : cents);
+    }
+
+    public static Value BMoneyRoundedDown(Ctx ctx, Value value) => MoneyRounded("деньги с округлением вниз", "down", value);
+
+    public static Value BMoneyRoundedUp(Ctx ctx, Value value) => MoneyRounded("деньги с округлением вверх", "up", value);
+
+    public static Value BMoneyRoundedHalfEven(Ctx ctx, Value value) =>
+        MoneyRounded("деньги с банковским округлением", "even", value);
+
+    private static long DaysInMonth(long year, long month)
+    {
+        if (month == 2)
+        {
+            return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0 ? 29 : 28;
+        }
+        return month == 4 || month == 6 || month == 9 || month == 11 ? 30 : 31;
+    }
+
+    private static long DateDigits(string source, int from, int to)
+    {
+        long whole = 0;
+        for (int place = from; place < to; place++)
+        {
+            whole = whole * 10 + (source[place] - '0');
+        }
+        return whole;
+    }
+
+    private static string DateReason(string source)
+    {
+        if (source.Length != 10 || source[4] != '-' || source[7] != '-')
+        {
+            return "нужна запись ГГГГ-ММ-ДД";
+        }
+        foreach (int place in new[] { 0, 1, 2, 3, 5, 6, 8, 9 })
+        {
+            if (source[place] < '0' || source[place] > '9')
+            {
+                return "нужна запись ГГГГ-ММ-ДД";
+            }
+        }
+        long year = DateDigits(source, 0, 4);
+        long month = DateDigits(source, 5, 7);
+        long day = DateDigits(source, 8, 10);
+        if (year < 1)
+        {
+            return "год идёт от 0001 до 9999";
+        }
+        if (month < 1 || month > 12)
+        {
+            return "месяц идёт от 01 до 12";
+        }
+        long last = DaysInMonth(year, month);
+        if (day < 1 || day > last)
+        {
+            return "в этом месяце дни идут от 01 до " + last.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        return "";
+    }
+
+    public static Value BDateFromText(Ctx ctx, Value value)
+    {
+        if (value.Tag != Value.TagString)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«дата из строки»: аргумент должен быть строкой, получено " + Value.TypeName(value));
+        }
+        string reason = DateReason(value.Str);
+        if (reason.Length > 0)
+        {
+            throw Fail(FlangError.CodeProperty, "«дата из строки»: «" + value.Str + "» — " + reason);
+        }
+        long year = DateDigits(value.Str, 0, 4);
+        long month = DateDigits(value.Str, 5, 7);
+        long day = DateDigits(value.Str, 8, 10);
+        long shifted = year - (month <= 2 ? 1 : 0);
+        long era = shifted / 400;
+        long yearOfEra = shifted - era * 400;
+        long dayOfYear = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + day - 1;
+        long dayOfEra = yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear;
+        return Value.Number(era * 146097 + dayOfEra - 719468);
+    }
+
+    public static Value BDateAsText(Ctx ctx, Value value)
+    {
+        if (value.Tag != Value.TagNumber)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«дата строкой»: аргумент должен быть датой, получено " + Value.TypeName(value));
+        }
+        double days = value.Num;
+        if (!(days >= -719162.0 && days <= 2932896.0 && days == Math.Floor(days)))
+        {
+            throw Fail(FlangError.CodeProperty, "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается");
+        }
+        long shifted = (long)days + 719468;
+        long era = shifted / 146097;
+        long dayOfEra = shifted - era * 146097;
+        long yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36524 - dayOfEra / 146096) / 365;
+        long dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100);
+        long shiftedMonth = (5 * dayOfYear + 2) / 153;
+        long day = dayOfYear - (153 * shiftedMonth + 2) / 5 + 1;
+        long month = shiftedMonth < 10 ? shiftedMonth + 3 : shiftedMonth - 9;
+        long year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0);
+        System.Globalization.CultureInfo invariant = System.Globalization.CultureInfo.InvariantCulture;
+        return Value.Text(
+            year.ToString("D4", invariant) + "-" + month.ToString("D2", invariant) + "-" + day.ToString("D2", invariant));
+    }
+
     public static Value BIntegerPart(Ctx ctx, Value value)
     {
         if (!ExactFraction(value))

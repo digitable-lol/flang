@@ -1288,6 +1288,112 @@ def b_convert_to_natural(ctx, value):
     return list_of([number(digit) for digit in _exact_small_digits(value.data + 0.0)])
 
 
+
+def b_convert_to_money(ctx, value):
+    if value.tag != TAG_NUMBER:
+        raise fail(CODE_BUILTIN_ARGS, "«перевод в деньги»: аргумент должен быть числом, получено " + type_name(value))
+    amount = value.data
+    cents = math.floor(amount * 100 + 0.5) if math.isfinite(amount) else 0.0
+    if not (amount >= 0 and amount < 10000000000000 and cents / 100 == amount + 0.0):
+        raise fail(
+            CODE_PROPERTY,
+            "«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых",
+        )
+    return list_of([number(digit) for digit in _exact_small_digits(float(cents) + 0.0)])
+
+
+def _expect_money(name, value):
+    if not _exact_digits(value):
+        raise fail(CODE_BUILTIN_ARGS, "«" + name + "»: аргумент должен быть деньгами, получено " + type_name(value))
+    return _exact_canon(value)
+
+
+def b_money_as_fraction(ctx, value):
+    return _fraction_value(_expect_money("деньги дробью", value), 100)
+
+
+def b_money_as_text(ctx, value):
+    cents = _expect_money("деньги строкой", value)
+    return text(str(cents // 100) + "." + str(cents % 100).rjust(2, "0"))
+
+
+def _money_rounded(name, rule, value):
+    if not _exact_fraction(value):
+        raise fail(CODE_BUILTIN_ARGS, "«" + name + "»: аргумент должен быть точным дробным, получено " + type_name(value))
+    top, bottom = _fraction_parts(value)
+    scaled = top * 100
+    cents, rest = (scaled // bottom, scaled % bottom) if bottom else (0, scaled)
+    if rule == "up" and rest != 0:
+        cents += 1
+    if rule == "even" and (rest * 2 > bottom or (rest * 2 == bottom and cents % 2 == 1)):
+        cents += 1
+    return _exact_value(cents)
+
+
+def b_money_rounded_down(ctx, value):
+    return _money_rounded("деньги с округлением вниз", "down", value)
+
+
+def b_money_rounded_up(ctx, value):
+    return _money_rounded("деньги с округлением вверх", "up", value)
+
+
+def b_money_rounded_half_even(ctx, value):
+    return _money_rounded("деньги с банковским округлением", "even", value)
+
+
+def _days_in_month(year, month):
+    if month == 2:
+        return 29 if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0 else 28
+    return 30 if month in (4, 6, 9, 11) else 31
+
+
+def _date_reason(source):
+    places = (0, 1, 2, 3, 5, 6, 8, 9)
+    if len(source) != 10 or source[4] != "-" or source[7] != "-" or not all("0" <= source[i] <= "9" for i in places):
+        return "нужна запись ГГГГ-ММ-ДД", 0, 0, 0
+    year, month, day = int(source[0:4]), int(source[5:7]), int(source[8:10])
+    if year < 1:
+        return "год идёт от 0001 до 9999", year, month, day
+    if month < 1 or month > 12:
+        return "месяц идёт от 01 до 12", year, month, day
+    last = _days_in_month(year, month)
+    if day < 1 or day > last:
+        return "в этом месяце дни идут от 01 до " + str(last), year, month, day
+    return "", year, month, day
+
+
+def b_date_from_text(ctx, value):
+    if value.tag != TAG_STRING:
+        raise fail(CODE_BUILTIN_ARGS, "«дата из строки»: аргумент должен быть строкой, получено " + type_name(value))
+    reason, year, month, day = _date_reason(value.data)
+    if reason:
+        raise fail(CODE_PROPERTY, "«дата из строки»: «" + value.data + "» — " + reason)
+    shifted = year - (1 if month <= 2 else 0)
+    era = shifted // 400
+    year_of_era = shifted - era * 400
+    day_of_year = (153 * (month - 3 if month > 2 else month + 9) + 2) // 5 + day - 1
+    day_of_era = year_of_era * 365 + year_of_era // 4 - year_of_era // 100 + day_of_year
+    return number(float(era * 146097 + day_of_era - 719468))
+
+
+def b_date_as_text(ctx, value):
+    if value.tag != TAG_NUMBER:
+        raise fail(CODE_BUILTIN_ARGS, "«дата строкой»: аргумент должен быть датой, получено " + type_name(value))
+    days = value.data
+    if not (math.isfinite(days) and -719162 <= days <= 2932896 and days == math.floor(days)):
+        raise fail(CODE_PROPERTY, "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается")
+    shifted = int(days) + 719468
+    era = shifted // 146097
+    day_of_era = shifted - era * 146097
+    year_of_era = (day_of_era - day_of_era // 1460 + day_of_era // 36524 - day_of_era // 146096) // 365
+    day_of_year = day_of_era - (365 * year_of_era + year_of_era // 4 - year_of_era // 100)
+    shifted_month = (5 * day_of_year + 2) // 153
+    day = day_of_year - (153 * shifted_month + 2) // 5 + 1
+    month = shifted_month + 3 if shifted_month < 10 else shifted_month - 9
+    year = year_of_era + era * 400 + (1 if month <= 2 else 0)
+    return text(str(year).rjust(4, "0") + "-" + str(month).rjust(2, "0") + "-" + str(day).rjust(2, "0"))
+
 def b_hash256(ctx, text):
     """«хеш256»: SHA-256 байтов строки шестнадцатеричной записью.
 

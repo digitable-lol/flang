@@ -981,6 +981,171 @@ func BConvertToNatural(ctx *Ctx, value Value) (Value, error) {
 	return exactNeighbour(value, List([]Value{})), nil
 }
 
+func BConvertToMoney(ctx *Ctx, value Value) (Value, error) {
+	if value.Tag != TagNumber {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«перевод в деньги»: аргумент должен быть числом, получено %s", TypeName(value))
+	}
+	amount := value.Num
+	cents := math.Floor(amount*100 + 0.5)
+	if !(amount >= 0 && amount < 10000000000000 && cents/100 == amount+0) {
+		return Nothing(), Fail(CodeProperty,
+			"«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых")
+	}
+	return exactNeighbour(Number(cents+0), List([]Value{})), nil
+}
+
+func expectMoney(name string, value Value) (*big.Int, error) {
+	if !exactDigits(value) {
+		return nil, Fail(CodeBuiltinArgs, "«%s»: аргумент должен быть деньгами, получено %s", name, TypeName(value))
+	}
+	return exactCanon(value), nil
+}
+
+func BMoneyAsFraction(ctx *Ctx, value Value) (Value, error) {
+	cents, err := expectMoney("деньги дробью", value)
+	if err != nil {
+		return Nothing(), err
+	}
+	return fractionValue(cents, big.NewInt(100)), nil
+}
+
+func BMoneyAsText(ctx *Ctx, value Value) (Value, error) {
+	cents, err := expectMoney("деньги строкой", value)
+	if err != nil {
+		return Nothing(), err
+	}
+	whole, rest := new(big.Int).QuoRem(cents, big.NewInt(100), new(big.Int))
+	return Text(whole.String() + "." + fmt.Sprintf("%02d", rest.Int64())), nil
+}
+
+func moneyRounded(name, rule string, value Value) (Value, error) {
+	if !exactFraction(value) {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«%s»: аргумент должен быть точным дробным, получено %s", name, TypeName(value))
+	}
+	top, bottom := fractionParts(value)
+	scaled := bigMul(top, big.NewInt(100))
+	cents, rest := new(big.Int), new(big.Int).Set(scaled)
+	if bottom.Sign() != 0 {
+		cents.QuoRem(scaled, bottom, rest)
+	}
+	twice := bigMul(rest, big.NewInt(2))
+	if rule == "up" && rest.Sign() != 0 {
+		cents.Add(cents, big.NewInt(1))
+	}
+	if rule == "even" && (twice.Cmp(bottom) > 0 || (twice.Cmp(bottom) == 0 && cents.Bit(0) == 1)) {
+		cents.Add(cents, big.NewInt(1))
+	}
+	return exactValue(cents), nil
+}
+
+func BMoneyRoundedDown(ctx *Ctx, value Value) (Value, error) {
+	return moneyRounded("деньги с округлением вниз", "down", value)
+}
+
+func BMoneyRoundedUp(ctx *Ctx, value Value) (Value, error) {
+	return moneyRounded("деньги с округлением вверх", "up", value)
+}
+
+func BMoneyRoundedHalfEven(ctx *Ctx, value Value) (Value, error) {
+	return moneyRounded("деньги с банковским округлением", "even", value)
+}
+
+func daysInMonth(year, month int64) int64 {
+	if month == 2 {
+		if (year%4 == 0 && year%100 != 0) || year%400 == 0 {
+			return 29
+		}
+		return 28
+	}
+	if month == 4 || month == 6 || month == 9 || month == 11 {
+		return 30
+	}
+	return 31
+}
+
+func dateReason(source string) (string, int64, int64, int64) {
+	if len(source) != 10 || source[4] != '-' || source[7] != '-' {
+		return "нужна запись ГГГГ-ММ-ДД", 0, 0, 0
+	}
+	for _, place := range []int{0, 1, 2, 3, 5, 6, 8, 9} {
+		if source[place] < '0' || source[place] > '9' {
+			return "нужна запись ГГГГ-ММ-ДД", 0, 0, 0
+		}
+	}
+	digits := func(from, to int) int64 {
+		var whole int64
+		for place := from; place < to; place++ {
+			whole = whole*10 + int64(source[place]-'0')
+		}
+		return whole
+	}
+	year, month, day := digits(0, 4), digits(5, 7), digits(8, 10)
+	if year < 1 {
+		return "год идёт от 0001 до 9999", year, month, day
+	}
+	if month < 1 || month > 12 {
+		return "месяц идёт от 01 до 12", year, month, day
+	}
+	last := daysInMonth(year, month)
+	if day < 1 || day > last {
+		return "в этом месяце дни идут от 01 до " + strconv.FormatInt(last, 10), year, month, day
+	}
+	return "", year, month, day
+}
+
+func BDateFromText(ctx *Ctx, value Value) (Value, error) {
+	if value.Tag != TagString {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«дата из строки»: аргумент должен быть строкой, получено %s", TypeName(value))
+	}
+	reason, year, month, day := dateReason(value.Str)
+	if reason != "" {
+		return Nothing(), Fail(CodeProperty, "«дата из строки»: «%s» — %s", value.Str, reason)
+	}
+	shifted := year
+	if month <= 2 {
+		shifted--
+	}
+	era := shifted / 400
+	yearOfEra := shifted - era*400
+	shiftedMonth := month + 9
+	if month > 2 {
+		shiftedMonth = month - 3
+	}
+	dayOfYear := (153*shiftedMonth+2)/5 + day - 1
+	dayOfEra := yearOfEra*365 + yearOfEra/4 - yearOfEra/100 + dayOfYear
+	return Number(float64(era*146097 + dayOfEra - 719468)), nil
+}
+
+func BDateAsText(ctx *Ctx, value Value) (Value, error) {
+	if value.Tag != TagNumber {
+		return Nothing(), Fail(CodeBuiltinArgs,
+			"«дата строкой»: аргумент должен быть датой, получено %s", TypeName(value))
+	}
+	days := value.Num
+	if !(days >= -719162 && days <= 2932896 && days == math.Floor(days)) {
+		return Nothing(), Fail(CodeProperty, "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается")
+	}
+	shifted := int64(days) + 719468
+	era := shifted / 146097
+	dayOfEra := shifted - era*146097
+	yearOfEra := (dayOfEra - dayOfEra/1460 + dayOfEra/36524 - dayOfEra/146096) / 365
+	dayOfYear := dayOfEra - (365*yearOfEra + yearOfEra/4 - yearOfEra/100)
+	shiftedMonth := (5*dayOfYear + 2) / 153
+	day := dayOfYear - (153*shiftedMonth+2)/5 + 1
+	month := shiftedMonth - 9
+	if shiftedMonth < 10 {
+		month = shiftedMonth + 3
+	}
+	year := yearOfEra + era*400
+	if month <= 2 {
+		year++
+	}
+	return Text(fmt.Sprintf("%04d-%02d-%02d", year, month, day)), nil
+}
+
 func BIntegerPart(ctx *Ctx, value Value) (Value, error) {
 	if !exactFraction(value) {
 		return Nothing(), Fail(CodeBuiltinArgs,

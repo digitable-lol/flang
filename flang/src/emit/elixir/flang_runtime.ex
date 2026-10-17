@@ -1363,6 +1363,133 @@ defmodule Flang.Rt do
     exact_value(exact_canon(value))
   end
 
+  def b_convert_to_money({:num, amount}) do
+    cents = if is_float(amount), do: Float.floor(amount * 100.0 + 0.5), else: 0.0
+
+    if not (is_float(amount) and amount >= 0 and amount < 10_000_000_000_000 and cents / 100.0 == amount + 0.0) do
+      raise fail(
+              @code_property,
+              "«перевод в деньги»: нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых"
+            )
+    end
+
+    exact_neighbour({:num, cents + 0.0}, list([]))
+  end
+
+  def b_convert_to_money(value) do
+    raise fail(@code_builtin_args, "«перевод в деньги»: аргумент должен быть числом, получено " <> type_name(value))
+  end
+
+  defp expect_money(name, value) do
+    if not exact_digits?(value) do
+      raise fail(@code_builtin_args, "«" <> name <> "»: аргумент должен быть деньгами, получено " <> type_name(value))
+    end
+
+    exact_canon(value)
+  end
+
+  def b_money_as_fraction(value), do: fraction_value(expect_money("деньги дробью", value), 100)
+
+  def b_money_as_text(value) do
+    cents = expect_money("деньги строкой", value)
+    {:str, Integer.to_string(div(cents, 100)) <> "." <> String.pad_leading(Integer.to_string(rem(cents, 100)), 2, "0")}
+  end
+
+  defp money_rounded(name, rule, value) do
+    if not exact_fraction?(value) do
+      raise fail(
+              @code_builtin_args,
+              "«" <> name <> "»: аргумент должен быть точным дробным, получено " <> type_name(value)
+            )
+    end
+
+    {top, bottom} = fraction_parts(value)
+    scaled = top * 100
+    {cents, rest} = if bottom == 0, do: {0, scaled}, else: {div(scaled, bottom), rem(scaled, bottom)}
+
+    bump =
+      case rule do
+        :up -> rest != 0
+        :even -> rest * 2 > bottom or (rest * 2 == bottom and rem(cents, 2) == 1)
+        :down -> false
+      end
+
+    exact_value(if bump, do: cents + 1, else: cents)
+  end
+
+  def b_money_rounded_down(value), do: money_rounded("деньги с округлением вниз", :down, value)
+  def b_money_rounded_up(value), do: money_rounded("деньги с округлением вверх", :up, value)
+  def b_money_rounded_half_even(value), do: money_rounded("деньги с банковским округлением", :even, value)
+
+  defp days_in_month(year, 2) do
+    if (rem(year, 4) == 0 and rem(year, 100) != 0) or rem(year, 400) == 0, do: 29, else: 28
+  end
+
+  defp days_in_month(_year, month) when month in [4, 6, 9, 11], do: 30
+  defp days_in_month(_year, _month), do: 31
+
+  defp date_parts(<<y1, y2, y3, y4, ?-, m1, m2, ?-, d1, d2>>)
+       when y1 in ?0..?9 and y2 in ?0..?9 and y3 in ?0..?9 and y4 in ?0..?9 and m1 in ?0..?9 and m2 in ?0..?9 and
+              d1 in ?0..?9 and d2 in ?0..?9 do
+    digits = fn list -> Enum.reduce(list, 0, fn digit, whole -> whole * 10 + (digit - ?0) end) end
+    {:ok, digits.([y1, y2, y3, y4]), digits.([m1, m2]), digits.([d1, d2])}
+  end
+
+  defp date_parts(_source), do: :error
+
+  defp date_reason(:error), do: "нужна запись ГГГГ-ММ-ДД"
+  defp date_reason({:ok, year, _month, _day}) when year < 1, do: "год идёт от 0001 до 9999"
+  defp date_reason({:ok, _year, month, _day}) when month < 1 or month > 12, do: "месяц идёт от 01 до 12"
+
+  defp date_reason({:ok, year, month, day}) do
+    last = days_in_month(year, month)
+    if day < 1 or day > last, do: "в этом месяце дни идут от 01 до " <> Integer.to_string(last), else: ""
+  end
+
+  def b_date_from_text({:str, source}) do
+    parts = date_parts(source)
+
+    case date_reason(parts) do
+      "" ->
+        {:ok, year, month, day} = parts
+        shifted = if month <= 2, do: year - 1, else: year
+        era = div(shifted, 400)
+        year_of_era = shifted - era * 400
+        day_of_year = div(153 * if(month > 2, do: month - 3, else: month + 9) + 2, 5) + day - 1
+        day_of_era = year_of_era * 365 + div(year_of_era, 4) - div(year_of_era, 100) + day_of_year
+        {:num, (era * 146_097 + day_of_era - 719_468) * 1.0}
+
+      reason ->
+        raise fail(@code_property, "«дата из строки»: «" <> source <> "» — " <> reason)
+    end
+  end
+
+  def b_date_from_text(value) do
+    raise fail(@code_builtin_args, "«дата из строки»: аргумент должен быть строкой, получено " <> type_name(value))
+  end
+
+  def b_date_as_text({:num, days}) do
+    if not (is_float(days) and days >= -719_162 and days <= 2_932_896 and days == Float.floor(days)) do
+      raise fail(@code_property, "«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается")
+    end
+
+    shifted = trunc(days) + 719_468
+    era = div(shifted, 146_097)
+    day_of_era = shifted - era * 146_097
+    year_of_era = div(day_of_era - div(day_of_era, 1460) + div(day_of_era, 36524) - div(day_of_era, 146_096), 365)
+    day_of_year = day_of_era - (365 * year_of_era + div(year_of_era, 4) - div(year_of_era, 100))
+    shifted_month = div(5 * day_of_year + 2, 153)
+    day = day_of_year - div(153 * shifted_month + 2, 5) + 1
+    month = if shifted_month < 10, do: shifted_month + 3, else: shifted_month - 9
+    year = year_of_era + era * 400 + if(month <= 2, do: 1, else: 0)
+    pad = fn whole, width -> String.pad_leading(Integer.to_string(whole), width, "0") end
+    {:str, pad.(year, 4) <> "-" <> pad.(month, 2) <> "-" <> pad.(day, 2)}
+  end
+
+  def b_date_as_text(value) do
+    raise fail(@code_builtin_args, "«дата строкой»: аргумент должен быть датой, получено " <> type_name(value))
+  end
+
   def b_integer_part(value) do
     if not exact_fraction?(value) do
       raise fail(

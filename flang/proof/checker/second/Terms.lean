@@ -96,11 +96,18 @@ def «вместо» («где» «что» «на» : String) : String :=
 
 def «естьТ» («где» «что» : String) : Bool := ((" " ++ «где» ++ " ").splitOn (" " ++ «что» ++ " ")).length > 1
 
+def «ёлочкиРавны» (t : String) : Bool :=
+  let r := t.toList.foldl (fun (a : Int × Bool × Bool) c =>
+    let (d, «в», «экран») := a
+    if «в» then (if «экран» then (d, true, false) else if c = '\\' then (d, true, true) else if c = '"' then (d, false, false) else (d, true, false))
+    else if c = '"' then (d, true, false) else if c = '«' then (d + 1, false, false) else if c = '»' then (d - 1, false, false) else (d, false, false)) (0, false, false)
+  r.1 == 0
+
 def «сверху» (t «знак» : String) : List String :=
   let sep := " " ++ «знак» ++ " "
   let r := (t.splitOn sep).foldl (fun (acc : List String × Option String) «ч» =>
     let «н» := match acc.2 with | some c => c ++ sep ++ «ч» | none => «ч»
-    if «скобкиРавны» «н» && («н».splitOn "«").length = («н».splitOn "»").length then (acc.1 ++ [«н»], none) else (acc.1, some «н»)) ([], none)
+    if «скобкиРавны» «н» && «ёлочкиРавны» «н» then (acc.1 ++ [«н»], none) else (acc.1, some «н»)) ([], none)
   r.1
 
 structure «Разрез» where

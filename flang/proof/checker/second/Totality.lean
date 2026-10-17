@@ -214,14 +214,36 @@ def «упоминания» (l : String) : List «Упоминание» :=
 def «конструктор?» (u : «Упоминание») : Bool :=
   u.«до».endsWith "вариант " || u.«до».endsWith "случай " || u.«до».endsWith "запись " || u.«до».endsWith "."
 
+def «Исх».«словоМонады» (s : «Исх») (k : Array String) («монада» «слово» : String) : String := Id.run do
+  let mut «внутри» := false
+  for i in s.«номера» do
+    let «сыр» := s.«сырая» i
+    let l := «кодСтроки» k i
+    if «сыр» ≠ "" && !«сыр».startsWith " " && !«сыр».startsWith "\t" then
+      «внутри» := l = s!"монада «{«монада»}»" || l.startsWith s!"монада «{«монада»}» от "
+    else if «внутри» && l.startsWith s!"{«слово»} «" then return «ёлочка» l 1
+  return ""
+
+def «Исх».«зовыМонады» (s : «Исх») (k : Array String) (f : String) : List (String × Nat) := Id.run do
+  let mut «монада» := ""
+  let mut r : List (String × Nat) := []
+  for i in (s.«внутри» f).filter (s.«строкаТела?» f) do
+    let l := «кодСтроки» k i
+    if l.startsWith "в монаде «" then «монада» := «ёлочка» l 1
+    else if «монада» ≠ "" && l.startsWith "пусть " && s.«словоМонады» k «монада» "соединение" ≠ "" then
+      r := r ++ [(s.«словоМонады» k «монада» "соединение", i)]
+    else if «монада» ≠ "" && l.startsWith "возврат " && s.«словоМонады» k «монада» "возврат" ≠ "" then
+      r := r ++ [(s.«словоМонады» k «монада» "возврат", i)]
+  return r
+
 def «Исх».«зовы» (s : «Исх») (f : String) : List (String × Nat) :=
   let «свои» := s.«функции»
   let k := «кодИсходника» s.«текст»
-  (s.«внутри» f).filter (s.«строкаТела?» f) |>.flatMap fun i =>
+  ((s.«внутри» f).filter (s.«строкаТела?» f) |>.flatMap fun i =>
     («упоминания» («кодСтроки» k i)).filterMap fun u =>
       if «конструктор?» u then none
       else if u.«после».startsWith "от " || u.«после» = "от" || u.«имя» = f || «свои».contains u.«имя» then some (u.«имя», i)
-      else none
+      else none) ++ s.«зовыМонады» k f
 
 def «Исх».«объявлено?» (s : «Исх») (x : String) : Bool :=
   s.«функции».contains x ||

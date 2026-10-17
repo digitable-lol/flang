@@ -1,0 +1,16 @@
+program	judge	code	word	снято исходниками компилятора (check-with-source-compiler и разбор исходниками) до печати семени; двоичным переснимается после печати
+money-and-date-are-exact.flang	check	0	money-and-date-are-exact.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+money-and-date-are-exact.flang	test	0	money-and-date-are-exact.flang: примеров 15, прошло 15, не прошло 0
+money-with-number-needs-a-translation.flang	check	1	«плюс»: деньги с типом «неотрицательное» не смешиваются; число переводится в деньги словом «перевод в деньги»
+money-times-money-is-refused.flang	check	1	«умножить на»: деньги умножают только на натуральное число штук, деньги на деньги не умножаются
+money-divided-is-refused.flang	check	1	«делить на»: деньги не делятся; доля считается дробью
+money-literal-has-two-places.flang	check	1	литерал денег «12.345»: после точки не больше двух цифр
+money-to-number-is-refused.flang	check	1	«перевод в число» принимает натуральное или число, а получила деньги
+date-plus-date-is-refused.flang	check	1	«плюс»: к дате прибавляют и от неё отнимают целое число дней, а две даты только вычитаются
+date-plus-half-a-day-is-refused.flang	check	1	«плюс»: к дате прибавляют и от неё отнимают целое число дней, а две даты только вычитаются
+date-is-not-a-string.flang	check	1	«длина» принимает строку или список, а получила дата
+date-literal-is-checked.flang	check	1	литерал даты «2025-02-29»: в этом месяце дни идут от 01 до 28
+date-from-text-refuses-a-missing-day.flang	check	0	date-from-text-refuses-a-missing-day.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+date-from-text-refuses-a-missing-day.flang	run --function "Тридцать первое апреля"	1	FLANG_PROPERTY: «дата из строки»: «2025-04-31» — в этом месяце дни идут от 01 до 30
+old-theorem-form-is-refused.flang	check	1	старая форма теоремы снята
+utility-word-is-refused.flang	check	1	слово «утилита» снято

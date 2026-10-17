@@ -223,6 +223,142 @@
   /* ── Ниже — только связь с окном. В node этой части нет. ────────────────── */
   if (typeof document === 'undefined') return;
 
+  function завестиПесочницу() {
+    var корень = (document.querySelector('.poisk') || { getAttribute: function () { return ''; } }).getAttribute('data-koren') || '';
+    var английский = document.documentElement.lang === 'en';
+    var С = английский
+      ? { запустить: 'run in the playground', проверить: 'Check', поделиться: 'Share', пример: 'Example', проверяю: 'checking… (the first run downloads the compiler)', ссылка: 'the link carries the text; nothing is sent to a server', готово: 'done', код: 'exit code' }
+      : { запустить: 'запустить в песочнице', проверить: 'Проверить', поделиться: 'Поделиться', пример: 'Пример', проверяю: 'проверяю… (первый прогон скачивает компилятор)', ссылка: 'текст едет в адресе; на сервер не уходит ничего', готово: 'готово', код: 'код возврата' };
+    var адресПесочницы = корень + (английский ? 'en/playground.html' : 'playground.html');
+    function вАдрес(текст) {
+      var байты = new TextEncoder().encode(текст);
+      var строка = '';
+      for (var i = 0; i < байты.length; i++) строка += String.fromCharCode(байты[i]);
+      return btoa(строка).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function изАдреса(хеш) {
+      var найдено = /(?:^#|&)text=([A-Za-z0-9_-]*)/.exec(хеш || '');
+      if (!найдено) return null;
+      try {
+        var строка = atob(найдено[1].replace(/-/g, '+').replace(/_/g, '/'));
+        var байты = new Uint8Array(строка.length);
+        for (var i = 0; i < строка.length; i++) байты[i] = строка.charCodeAt(i);
+        return new TextDecoder().decode(байты);
+      } catch (беда) {
+        return null;
+      }
+    }
+    if (typeof document.querySelectorAll !== 'function') return;
+    var место = document.querySelector('main pre.lang-playground');
+    var блоки = document.querySelectorAll('main pre');
+    function годитсяВПесочницу(блок) {
+      if (блок === место) return false;
+      if (место && блок.classList.contains('lang-text')) return true;
+      return блок.classList.contains('lang-flang') && /^\s*(модуль|категория)\s/.test(блок.textContent);
+    }
+    function имяПримера(блок, н) {
+      var до = блок.previousElementSibling;
+      var текст = до && до.tagName === 'P' ? до.textContent : '';
+      var имя = текст.split(/[:.]/)[0].trim();
+      return имя || (С.пример + ' ' + (н + 1));
+    }
+    var примеры = [];
+    for (var н = 0; н < блоки.length; н++) {
+      if (!годитсяВПесочницу(блоки[н])) continue;
+      var ссылка = document.createElement('a');
+      ссылка.className = 'run-in-playground';
+      ссылка.href = адресПесочницы + '#text=' + вАдрес(блоки[н].textContent);
+      ссылка.textContent = С.запустить;
+      блоки[н].insertAdjacentElement('afterend', ссылка);
+      if (место) примеры.push({ имя: имяПримера(блоки[н], примеры.length), текст: блоки[н].textContent });
+    }
+    if (!место) return;
+    var замена = document.createElement('div');
+    замена.className = 'playground';
+    место.replaceWith(замена);
+    место = замена;
+    место.textContent = '';
+    var выбор = document.createElement('select');
+    выбор.className = 'playground-examples';
+    выбор.setAttribute('aria-label', С.пример);
+    for (var п = 0; п < примеры.length; п++) {
+      var вариант = document.createElement('option');
+      вариант.value = String(п);
+      вариант.textContent = примеры[п].имя;
+      выбор.appendChild(вариант);
+    }
+    var поле = document.createElement('textarea');
+    поле.className = 'playground-input';
+    поле.spellcheck = false;
+    поле.rows = 14;
+    var кнопка = document.createElement('button');
+    кнопка.type = 'button';
+    кнопка.className = 'playground-check';
+    кнопка.textContent = С.проверить;
+    var делиться = document.createElement('button');
+    делиться.type = 'button';
+    делиться.className = 'playground-share';
+    делиться.textContent = С.поделиться;
+    var состояние = document.createElement('span');
+    состояние.className = 'playground-status';
+    состояние.setAttribute('role', 'status');
+    var вывод = document.createElement('pre');
+    вывод.className = 'playground-output';
+    вывод.setAttribute('data-playground-output', '');
+    var строка = document.createElement('div');
+    строка.className = 'playground-bar';
+    строка.appendChild(выбор);
+    строка.appendChild(кнопка);
+    строка.appendChild(делиться);
+    строка.appendChild(состояние);
+    место.appendChild(строка);
+    место.appendChild(поле);
+    место.appendChild(вывод);
+    function взятьИзАдреса() {
+      var текст = изАдреса(location.hash);
+      if (текст !== null) поле.value = текст;
+      return текст !== null;
+    }
+    if (!взятьИзАдреса() && примеры.length) поле.value = примеры[0].текст;
+    выбор.addEventListener('change', function () { поле.value = примеры[Number(выбор.value)].текст; });
+    window.addEventListener('hashchange', взятьИзАдреса);
+    делиться.addEventListener('click', function () {
+      var адрес = location.href.replace(/#.*$/, '') + '#text=' + вАдрес(поле.value);
+      history.replaceState(null, '', адрес);
+      if (navigator.clipboard) navigator.clipboard.writeText(адрес).catch(function () {});
+      состояние.textContent = С.ссылка;
+    });
+    var поток = null;
+    var номер = 0;
+    var начало = 0;
+    кнопка.addEventListener('click', function () {
+      if (поток === null) {
+        поток = new Worker(корень + 'playground/flang_host_browser.js', { type: 'module' });
+        поток.addEventListener('message', function (событие) {
+          if (событие.data.номер !== номер) return;
+          вывод.textContent = событие.data.вывод;
+          место.setAttribute('data-playground-verdict', событие.data.итог);
+          состояние.textContent = событие.data.итог + ' · ' + С.код + ' ' + событие.data.код + ' · ' + (Date.now() - начало) + ' мс';
+          кнопка.disabled = false;
+        });
+        поток.addEventListener('error', function (событие) {
+          вывод.textContent = 'FLANG_PLAYGROUND ' + (событие.message || 'поток не завёлся');
+          место.setAttribute('data-playground-verdict', 'сбой');
+          кнопка.disabled = false;
+        });
+      }
+      номер += 1;
+      начало = Date.now();
+      кнопка.disabled = true;
+      место.removeAttribute('data-playground-verdict');
+      состояние.textContent = С.проверяю;
+      вывод.textContent = '';
+      поток.postMessage({ номер: номер, текст: поле.value, база: new URL(корень + 'playground/', location.href).href });
+    });
+    if (/(?:^#|&)run(?:&|$)/.test(location.hash)) кнопка.click();
+  }
+  завестиПесочницу();
+
   var короб = document.querySelector('.poisk');
   var поле = короб && короб.querySelector('input');
   if (!короб || !поле) return;

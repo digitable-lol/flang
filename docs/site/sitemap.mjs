@@ -30,6 +30,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.ru.md' },
       { адрес: 'install.html', имя: 'Установка', из: 'docs/site/install.ru.md' },
       { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.ru.md' },
+      { адрес: 'playground.html', имя: 'Песочница', из: 'docs/site/playground.ru.md' },
       { адрес: 'tutorial.html', имя: 'Учебник', из: 'docs/site/tutorial.ru.md' },
       { адрес: 'editor.html', имя: 'Настройка редактора', из: 'docs/site/editor.ru.md' },
       /* ДОРОГА. Страниц у сайта много, а порядка между ними не было ни одного:

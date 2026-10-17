@@ -349,9 +349,10 @@ def «объявленияТела» : List String :=
 
 def «Исх».«строкаРазбора» (s : «Исх») (a b : Nat) : Option (Nat × String) := Id.run do
   let heads := ["принимает ", "возвращает ", "для всех ", "обеспечивает ", "требует ", "пример ", "дано ", "ожидается ", "использует ", "//"]
+  let «база» := «отступ» (s.«сырая» (a + 1))
   for i in s.«меж» a b do
     let z := s.«по» i
-    if z = "" then continue
+    if z = "" || «отступ» (s.«сырая» i) > «база» then continue
     if z.startsWith "разбор " then return some (i, «после» z "разбор ")
     if !heads.any (z.startsWith ·) then return none
   return none

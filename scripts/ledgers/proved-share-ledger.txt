@@ -2125,6 +2125,6 @@ e981c629a08a4002b9c882ec98269e3b|2|×|×|×|0|docs/examples/reference/ru/propert
 f911845dd1233e7fe90b288a4e33cec8|1|×|×|×|1|docs/examples/reference/ru/signature.flang
 654ad00b955a99ba5163fe84c4186145|1|×|×|×|0|docs/examples/reference/ru/theorem.flang
 c2a0fa1100b1c2fb01bff4fe8e6d1e5a|12|×|×|×|0|scripts/site/inserts.flang
-ec250edb245a5977fea25daac16fe9ac|5|×|×|×|0|scripts/site/inserts.fscript
+52acd497efd95f767352600049e427f7|7|×|×|×|0|scripts/site/inserts.fscript
 b71516e7916ff46436b5d912ed69b5da|5|×|×|×|0|scripts/site/library-api.flang
 6bcf580ac885b09d37e7223ffd7255b1|1|×|×|×|0|scripts/site/library-status.fscript

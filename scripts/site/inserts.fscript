@@ -19,7 +19,9 @@
 
 тип «Stage»
   вариант «Start» содержит write: признак
+  вариант «Start changed»
   вариант «Listing» содержит write: признак
+  вариант «Listing changed»
   вариант «Run» содержит write: признак, pages: список строки, queue: список строки, taken: список «Taken», leg: строка
   вариант «Writing» содержит queue: список «Page result», written: число
 
@@ -325,6 +327,24 @@
 тотальная функция «Phase done»
   принимает write: признак, pages: список строки, taken: список «Taken», leg: строка
   возвращает «Продолжение»
+  пример «after the selection only the chosen pages go on»
+    дано write равно нет
+    дано pages равно ["a.md", "b.md"]
+    дано taken равно [(запись «Taken» с «command» равным "base" и «code» равным 0 и «output» равным "gh/dev\n"),
+      (запись «Taken» с «command» равным "changed" и «code» равным 0 и «output» равным "b.md\n"),
+      (запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"),
+      (запись «Taken» с «command» равным "file b.md" и «code» равным 0 и «output» равным "# Б\n")]
+    дано leg равно "select"
+    ожидается вариант «Конец работы» с значение равным "страниц со вставками 1, вставок 0: все сходятся с кодом"
+  разбор leg
+    случай "select"
+      то «Selected done» от pages и taken
+    случай любое
+      то «Phase on» от write и pages и taken и leg
+
+тотальная функция «Phase on»
+  принимает write: признак, pages: список строки, taken: список «Taken», leg: строка
+  возвращает «Продолжение»
   пример «nothing to take after the pages: the pages are judged»
     дано write равно нет
     дано pages равно ["a.md"]
@@ -458,6 +478,178 @@
     то вариант «Провал» с код равным "DOCS_NO_PAGES" и сообщение равным "ни на одной странице нет вставки"
     иначе «Run next» от write и real и (отобразить real как path → «File command» от path) и пустой список и "pages"
 
+тотальная функция «Sources of command»
+  принимает command: строка
+  возвращает список строки
+  пример «a file is its own source»
+    дано command равно "file docs/examples/cli/double.flang"
+    ожидается ["docs/examples/cli/double.flang"]
+  пример «a run of the binary hangs on the binary and on the files it names»
+    дано command равно "run check docs/examples/cli/double.flang --proof"
+    ожидается ["bootstrap/", "docs/examples/cli/double.flang"]
+  пример «the lines of codes come from the compiler and its runtime»
+    дано command равно "code lines"
+    ожидается ["flang/self/", "bootstrap/"]
+  пример «the list of the library»
+    дано command равно "library list"
+    ожидается ["flang/stdlib/"]
+  разбор («First of» от [["file ", "file"], ["run ", "run"], ["code lines", "codes"], ["library list", "library"]]
+    и command)
+    случай "file"
+      то [«After» от command и "file "]
+    случай "run"
+      то приписать "bootstrap/" к (отфильтровать (разделить («After» от command и "run ") по " ") где word →
+        word содержит "/")
+    случай "codes"
+      то ["flang/self/", "bootstrap/"]
+    случай "library"
+      то ["flang/stdlib/"]
+    случай любое
+      то пустой список
+
+тотальная функция «First of»
+  принимает rules: список список строки, command: строка
+  возвращает строка
+  пример «the name of the first prefix the command starts with»
+    дано rules равно [["file ", "file"], ["run ", "run"]]
+    дано command равно "run --version"
+    ожидается "run"
+  свёртка rules начиная с "" как found и pair → (если (found равен "") и притом
+    (command начинается с (элемент 1 в pair)) то (элемент 2 в pair) иначе found)
+
+тотальная функция «Page sources»
+  принимает taken: список «Taken», path: строка
+  возвращает список строки
+  пример «the page and the file it inserts»
+    дано taken равно [(запись «Taken» с «command» равным "file a.md" и «code» равным 0 и
+      «output» равным "```flang insert docs/b.flang\nx\n```\n")]
+    дано path равно "a.md"
+    ожидается ["a.md", "docs/b.flang"]
+  пусть commands равно («Commands of pieces» от («Pieces» от («Output of» от taken и («File command» от path))))
+  свёртка commands начиная с [path] как acc и command → «Joined lists» от acc и («Sources of command» от command)
+
+тотальная функция «Touched»
+  принимает changed: список строки, sources: список строки
+  возвращает признак
+  пример «a changed file under a source folder»
+    дано changed равно ["flang/stdlib/der.flang"]
+    дано sources равно ["a.md", "flang/stdlib/"]
+    ожидается да
+  пример «nothing of the page changed»
+    дано changed равно ["docs/c.md"]
+    дано sources равно ["a.md", "flang/stdlib/"]
+    ожидается нет
+  не (пусто (отфильтровать changed где path → «Under» от path и sources))
+
+тотальная функция «Under»
+  принимает path: строка, sources: список строки
+  возвращает признак
+  пример «a path under a source folder»
+    дано path равно "flang/stdlib/der.flang"
+    дано sources равно ["flang/stdlib/"]
+    ожидается да
+  не (пусто (отфильтровать sources где source → path начинается с source))
+
+тотальная функция «Renderer files»
+  возвращает список строки
+  обеспечивает «the plan, its module and the library reader» (длина результат) равен 3
+  пример «the files that turn inserts into text»
+    ожидается ["scripts/site/inserts.fscript", "scripts/site/inserts.flang", "scripts/site/library-api.flang"]
+  ["scripts/site/inserts.fscript", "scripts/site/inserts.flang", "scripts/site/library-api.flang"]
+
+тотальная функция «Chosen pages»
+  принимает pages: список строки, taken: список «Taken»
+  возвращает список строки
+  пример «only the page whose source changed»
+    дано pages равно ["a.md", "b.md"]
+    дано taken равно [(запись «Taken» с «command» равным "base" и «code» равным 0 и «output» равным "gh/dev\n"),
+      (запись «Taken» с «command» равным "changed" и «code» равным 0 и «output» равным "b.md\n")]
+    ожидается ["b.md"]
+  пример «no base to compare with takes every page»
+    дано pages равно ["a.md", "b.md"]
+    дано taken равно [(запись «Taken» с «command» равным "base" и «code» равным 0 и «output» равным "\n")]
+    ожидается ["a.md", "b.md"]
+  пусть changed равно («Lines of» от («Output of» от taken и "changed"))
+  пусть base равно (отфильтровать («Lines of» от («Output of» от taken и "base")) где line → не (line равен ""))
+  пусть everything равно ((пусто base) или («Touched» от changed и («Renderer files»)))
+  отфильтровать pages где path → everything или («Touched» от changed и («Page sources» от taken и path))
+
+тотальная функция «Selected done»
+  принимает pages: список строки, taken: список «Taken»
+  возвращает «Продолжение»
+  пример «a branch that changes no page and no source has nothing to compare»
+    дано pages равно ["a.md"]
+    дано taken равно [(запись «Taken» с «command» равным "base" и «code» равным 0 и «output» равным "gh/dev\n"),
+      (запись «Taken» с «command» равным "changed" и «code» равным 0 и «output» равным "docs/c.md\n")]
+    ожидается (вариант «Конец работы» с значение равным
+      "страниц со вставками 1, ни одной из них и ни одного их источника ветка не меняет — сверять нечего")
+  пусть chosen равно («Chosen pages» от pages и taken)
+  разбор chosen
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить ["страниц со вставками ", (к строке (длина pages)),
+        ", ни одной из них и ни одного их источника ветка не меняет — сверять нечего"] по "")
+    случай голова и хвост
+      то «Phase on» от нет и chosen и taken и "pages"
+
+тотальная функция «Changed command»
+  возвращает строка
+  обеспечивает «the pages are found by their inserts» результат содержит "git grep --untracked -l"
+  пример «the pages, the base and the files the branch changed against it»
+    ожидается """
+    git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'; echo @@@
+    b="${BASE:-$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)}"; echo "$b"; echo @@@
+    [ -z "$b" ] || git diff --name-only "$b"...HEAD"""
+  """
+  git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'; echo @@@
+  b="${BASE:-$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)}"; echo "$b"; echo @@@
+  [ -z "$b" ] || git diff --name-only "$b"...HEAD"""
+
+тотальная функция «After changed listing»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the pages are read, the base and the changed files are kept»
+    дано answer равно (вариант «Процесс завершён» с код равным 0 и
+      вывод равным "docs/a.md\n@@@\ngh/dev\n@@@\ndocs/a.md\n" и ошибки равным "")
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../docs/a.md")
+      и потом равным (вариант «Run» с write равным нет и pages равным ["docs/a.md"] и queue равным ["file docs/a.md"]
+      и taken равным [(запись «Taken» с «command» равным "base" и «code» равным 0 и «output» равным "gh/dev\n"),
+      (запись «Taken» с «command» равным "changed" и «code» равным 0 и «output» равным "docs/a.md\n")]
+      и leg равным "select"))
+  пусть parts равно (разделить («Output of» от [«Taken of answer» от "pages" и answer] и "pages") по "@@@\n")
+  пусть real равно (отфильтровать («Lines of» от («Piece of» от parts и 1)) где path → не (path равен ""))
+  пусть kept равно [(запись «Taken» с «command» равным "base" и «code» равным 0 и
+    «output» равным («Piece of» от parts и 2)), (запись «Taken» с «command» равным "changed" и «code» равным 0 и
+    «output» равным («Piece of» от parts и 3))]
+  если пусто real
+    то вариант «Провал» с код равным "DOCS_NO_PAGES" и сообщение равным "ни на одной странице нет вставки"
+    иначе «Run next» от нет и real и (отобразить real как path → «File command» от path) и kept и "select"
+
+тотальная функция «Piece of»
+  принимает parts: список строки, place: число
+  возвращает строка
+  пример «a part past the end is empty»
+    дано parts равно ["a"]
+    дано place равно 2
+    ожидается ""
+  если place больше (длина parts) то "" иначе (элемент place в parts)
+
+тотальная функция «Begin changed»
+  возвращает «Продолжение»
+  пример «the pages and the changed files are asked for first»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", """
+    cd ../.. && git grep --untracked -l -E '^(```.* insert |<!-- insert )' -- '*.md'; echo @@@
+    b="${BASE:-$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)}"; echo "$b"; echo @@@
+    [ -z "$b" ] || git diff --name-only "$b"...HEAD"""])
+      и потом равным (вариант «Listing changed»))
+  вариант «Сделать» с поручение равным («Process of» от («Changed command»)) и потом равным (вариант «Listing changed»)
+
+тотальная функция «Start changed check»
+  возвращает «Stage»
+  пример «the check of the changed pages starts by asking»
+    ожидается вариант «Start changed»
+  вариант «Start changed»
+
 тотальная функция «Next»
   принимает stage: «Stage», answer: «Отклик»
   возвращает «Продолжение»
@@ -472,6 +664,10 @@
       то «Begin» от write
     случай вариант «Listing» с write как write
       то «After listing» от write и answer
+    случай вариант «Start changed»
+      то «Begin changed»
+    случай вариант «Listing changed»
+      то «After changed listing» от answer
     случай вариант «Run» с write как write и pages как pages и queue как queue и taken как taken и leg как leg
       то «Run next» от write и pages и (хвост queue) и (добавить («Taken of answer» от (голова queue)
         и answer) к taken) и leg
@@ -486,4 +682,9 @@
 план «Check»
   состояние «Stage»
   начинает с «Start check»
+  обрабатывает «Next»
+
+план «Changed»
+  состояние «Stage»
+  начинает с «Start changed check»
   обрабатывает «Next»

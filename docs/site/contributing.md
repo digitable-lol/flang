@@ -69,6 +69,13 @@ bootstrap/flang run-script docs:build
 bootstrap/flang run-script docs:check
 ```
 
+`docs:check` compares every page. The hook before a push runs `docs:changed`: it
+compares only the pages whose text or sources the branch changed against the dev
+of its remote — an inserted file, a file named in an inserted run, the binary
+under `bootstrap/`, the compiler sources for the table of codes, `flang/stdlib`
+for the library tables — and every page when the insert plan itself changed. CI
+runs the full `docs:check`.
+
 How inserts work: [ADR-0151](../adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md).
 
 ## Send a change

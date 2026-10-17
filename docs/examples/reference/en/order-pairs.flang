@@ -1,0 +1,75 @@
+module «Order pairs»
+
+object «Order»
+  amount is number
+  cancelled is number
+
+object «Payment»
+  cents is number
+  refunded is number
+
+object «Order pair»
+  first is «Order»
+  second is «Order»
+
+total function «Cancel order»
+  accepts order: «Order»
+  returns «Order»
+  example «an ordinary order is cancelled»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Order» with amount equal to 500 and cancelled equal to 1
+  record «Order» with amount equal to order.amount and cancelled equal to 1
+
+total function «Refund payment»
+  accepts payment: «Payment»
+  returns «Payment»
+  example «an ordinary payment is refunded»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 1
+  record «Payment» with cents equal to payment.cents and refunded equal to 1
+
+total function «Cancel both»
+  accepts pair: «Order pair»
+  returns «Order pair»
+  example «both orders are cancelled»
+    given pair equals record «Order pair» with first equal to (record «Order» with amount equal to 500 and cancelled equal to 0) and second equal to (record «Order» with amount equal to 300 and cancelled equal to 0)
+    expected record «Order pair» with first equal to (record «Order» with amount equal to 500 and cancelled equal to 1) and second equal to (record «Order» with amount equal to 300 and cancelled equal to 1)
+  record «Order pair» with first equal to («Cancel order» of pair.first) and second equal to («Cancel order» of pair.second)
+
+total function «Payment for order»
+  accepts order: «Order»
+  returns «Payment»
+  example «roubles become kopecks»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to (order.amount times 100) and refunded equal to order.cancelled
+
+morphism «cancel order» from «Order» to «Order»
+  gives «Cancel order»
+
+morphism «refund payment» from «Payment» to «Payment»
+  gives «Refund payment»
+
+morphism «cancel both» from «Order pair» to «Order pair»
+  gives «Cancel both»
+
+identity «Order»
+identity «Payment»
+identity «Order pair»
+
+category «Orders»
+  morphism «cancel order»
+  morphism «cancel both»
+
+category «Payments»
+  morphism «refund payment»
+
+functor «Order to payment» from «Orders» to «Payments»
+  object «Order» maps to «Payment» gives «Payment for order»
+    field «amount» maps to field «cents»
+    field «cancelled» maps to field «refunded»
+  morphism «cancel order» maps to morphism «refund payment»
+
+bifunctor «Pair» from «Orders» and «Orders» to «Orders»
+  objects «Order» and «Order» map to «Order pair»
+  morphisms «cancel order» and «cancel order» map to morphism «cancel both»

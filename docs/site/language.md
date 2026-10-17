@@ -94,7 +94,7 @@ comma-separated. Signs are not in the glossary: it holds words only.
 | `uses … only «A», «B»` | import the named ones — with the caveat below |
 | `uses «Module» from "path"` | the same, but the file is named directly |
 
-```flang
+```flang insert docs/examples/reference/en/report.flang
 module «Report»
   exports «Total»
   uses «Lists»
@@ -114,7 +114,8 @@ call other functions of their module, in their bodies and in their
 postconditions. Replace the third line above with `uses «Lists» only «Сумма»,
 «Уникальные»` and the check fails:
 
-```
+```text insert output: check docs/examples/reference/en/report-only.flang
+$ flang check docs/examples/reference/en/report-only.flang
 модуль «Report»: функций 3, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
 без доказанного завершения: «Сумма» «Уникальные» «Total»
 место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 2, а диагностика компилятора имени файла не несёт
@@ -124,7 +125,9 @@ FLANG_UNKNOWN_NAME, строка 453, столбец 130: неизвестная
 FLANG_UNKNOWN_NAME, строка 564, столбец 59: неизвестная функция «Шаг уникальных»
 FLANG_NOT_TOTAL, строка 460, столбец 47: тотальная функция «Сумма» вызывает неизвестную функцию «Шаг суммы»: завершение доказать нельзя
 FLANG_NOT_TOTAL, строка 564, столбец 59: тотальная функция «Уникальные» вызывает неизвестную функцию «Шаг уникальных»: завершение доказать нельзя
-only.flang: не проверено — замечаний 6
+docs/examples/reference/en/report-only.flang: не проверено — замечаний 6
+$ echo $?
+1
 ```
 
 `неизвестная функция` means "unknown function". The line numbers point into
@@ -137,7 +140,7 @@ out. The same file with a plain `uses «Lists»` passes with exit code 0.
 Where the imported function needs nothing but itself, `only` is safe. Two files
 side by side:
 
-```flang
+```flang insert docs/examples/reference/en/counting-core.flang
 module «Counting core»
 
 total function «Double»
@@ -157,7 +160,7 @@ total function «Triple»
   n times 3
 ```
 
-```flang
+```flang insert docs/examples/reference/en/counting.flang
 module «Counting»
   uses «Counting core» only «Double»
 
@@ -193,6 +196,24 @@ Limit: module names are not translated. The standard list module is called
 Russian keywords imports it under that name too. `uses «Списки»` fails with
 `FLANG_IMPORT_NOT_FOUND`.
 
+The words of this section on all four surfaces, from the lexer's table:
+
+<!-- insert keywords Документ и модульность -->
+| Russian | English | Esperanto | Chinese |
+| --- | --- | --- | --- |
+| `модуль` | `module` | — | `模块` |
+| `экспортирует` | `exports` | `eksportas` | `导出` |
+| `использует` | `uses` | `uzas` | `使用` |
+| `категория` | `category` | `kategorio` | `类别` |
+| `объект`, `структура` | `object`, `structure` | `objekto`, `strukturo` | `对象`, `结构` |
+| `запись` | `record` | `rikordo` | `记录` |
+| `тип` | `type` | `tipo` | `类型` |
+| `вариант` | `variant` | `varianto` | `变体` |
+| `это` | — | — | — |
+| `вложен объект`, `вложена структура` | `nested object`, `nested structure` | — | `嵌套对象`, `嵌套结构` |
+| `примечание` | `note` | `noto` | `注` |
+<!-- end insert -->
+
 ## Function
 
 The parts go in a fixed order. The body comes last and is one expression.
@@ -208,7 +229,7 @@ The parts go in a fixed order. The body comes last and is one expression.
 | `for all p ensures «name» condition` | no | postcondition about `result` |
 | `example «name»` / `given` / `expected` | no | a unit test: arguments and the expected result |
 
-```flang
+```flang insert docs/examples/reference/en/signature.flang
 module «Signature»
 
 total function «Share»
@@ -235,6 +256,23 @@ Limits:
 - examples run on **every** check. A failing example is the error
   `FLANG_EXAMPLE`, and the compiler does not generate code for the program.
 
+The words of this section on all four surfaces, from the lexer's table:
+
+<!-- insert keywords Функции -->
+| Russian | English | Esperanto | Chinese |
+| --- | --- | --- | --- |
+| `код символа` | `character code` | `kodo de signo` | `字符码` |
+| `символ по коду` | `character by code` | `signo per kodo` | `按码字符` |
+| `убывает` | `decreases` | — | — |
+| `тотальная` | `total` | `totala` | `完全` |
+| `функция` | `function` | `funkcio` | `函数` |
+| `принимает` | `accepts` | `akceptas` | `接受` |
+| `возвращает` | `returns` | `redonas` | `返回` |
+| `пример` | `example` | `ekzemplo` | `示例` |
+| `дано` | `given` | `donite` | `给定` |
+| `ожидается` | `expected` | `atendata` | `期望` |
+<!-- end insert -->
+
 ## Totality and measures
 
 The compiler proves termination of a `total` function in one of five ways. The
@@ -253,7 +291,7 @@ report; the counts across the repository are on [Why and how](proofs.html).
 `decreases` goes between `returns` and the body and must be a number. Write it
 when the recursion goes down by arithmetic, not by taking a part of the value:
 
-```flang
+```flang insert docs/examples/reference/en/measure.flang
 module «Measure»
 
 total function «GCD»
@@ -279,7 +317,7 @@ call. `«GCD»` of integers always works; `«GCD»` of two fractions stops with
 
 ### `match` — pattern matching over an enum
 
-```flang
+```flang insert docs/examples/reference/en/tree.flang
 module «Tree»
 
 type «Tree»
@@ -311,7 +349,7 @@ form.
 
 ### `fold` — reduce: one pass over a list
 
-```flang
+```flang insert docs/examples/reference/en/fold.flang
 module «Fold»
 
 total function «Product»
@@ -330,7 +368,7 @@ Limit: the accumulator type is not refined. A `nat` in the accumulator stays
 
 ### `if` — if as an expression
 
-```flang
+```flang insert docs/examples/reference/en/branching.flang
 module «Branching»
 
 total function «Sum up to»
@@ -352,8 +390,8 @@ condition narrows **numeric bounds** inside its branch, but the prover does not
 use it as a fact. This postcondition is not proved: `check --proof` says
 «объявлено, не доказано» (declared, not proved) and exits 3:
 
-```flang
-модуль «Если»
+```flang insert docs/examples/reference/en/if-as-expression.flang
+модуль «If as an expression»
 
 тотальная функция «Положительное»
   принимает н: число
@@ -369,7 +407,7 @@ proofs, is on [Which construct to use when](which-construct.html).
 
 ### `let` — a constant
 
-```flang
+```flang insert docs/examples/reference/en/binding.flang
 module «Binding»
 
 object «Line»
@@ -427,7 +465,7 @@ no rounding in the language, neither explicit nor silent. Each type in full:
 | weight, distance, path cost | `weight` | non-negative, where `+∞` is a value rather than an edge |
 | everything else, and any division | `number` | IEEE-754 double, no guarantees |
 
-```flang
+```flang insert docs/examples/reference/en/exact-types.flang
 module «Exact types»
 
 total function «Order in cents»
@@ -453,8 +491,13 @@ total function «Share»
 Limit: **arithmetic does not keep the exact type.** Add two `nat` values,
 declare the return as `nat`, and the check fails:
 
-```
-FLANG_TYPE в файле nats.flang, строка 6, столбец 5: функция «Sum of nats» объявлена как неотрицательное, а тело даёт число
+```text insert output: check docs/examples/reference/en/natural-sum.flang
+$ flang check docs/examples/reference/en/natural-sum.flang
+модуль «Sum of naturals»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_TYPE в файле docs/examples/reference/en/natural-sum.flang, строка 6, столбец 5: функция «Sum of nats» объявлена как неотрицательное, а тело даёт число
+docs/examples/reference/en/natural-sum.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 Put exact types on **parameters and record fields**: that is where the prover
@@ -472,7 +515,7 @@ An exact integer literal is a list of digits, lowest first, in base 4 194 304
 of such lists, numerator over denominator: `[[1], [3]]` is one third, `[[], [1]]`
 is zero. There is no decimal notation for the literal.
 
-```flang
+```flang insert docs/examples/reference/en/exact-numbers.flang
 module «Exact numbers»
 
 note "The digits of an exact integer go lowest first in base 4194304"
@@ -558,7 +601,7 @@ and `list of 1 and 2 and 3` in value position.
 
 ### Record (struct)
 
-```flang
+```flang insert docs/examples/reference/en/types.flang «Line»
 object «Line»
   title is string
   price is number
@@ -574,7 +617,7 @@ immutable, so you build a new record.
 
 ### Type with variants (enum)
 
-```flang
+```flang insert docs/examples/reference/en/types.flang «Answer»
 type «Answer»
   variant Ok contains value: number
   variant Failed contains reason: string
@@ -587,7 +630,7 @@ variants, and the caller has to match on them. `null` is not used for this.
 
 All of it in one program:
 
-```flang
+```flang insert docs/examples/reference/en/types.flang
 module «Types»
 
 object «Line»
@@ -671,7 +714,7 @@ A `"…"` literal survives a line break: the value continues on the next line, a
 the line break is part of it as written. Single quotes `'…'` are the same
 literal. These two spellings give the same string:
 
-```flang
+```flang insert docs/examples/reference/en/two-spellings.flang
 module «Two spellings»
 
 total function «Through a line break»
@@ -745,6 +788,33 @@ itself. There is no interpolation. The decision with every case:
 [ADR-0052](../adr/0052-a-text-block-literal-strips-its-common-indentation.md)
 (in Russian).
 
+The words of this section on all four surfaces, from the lexer's table:
+
+<!-- insert keywords Выражения -->
+| Russian | English | Esperanto | Chinese |
+| --- | --- | --- | --- |
+| `пусть` | `let` | `estu` | `令` |
+| `если` | `if` | `se` | `如果` |
+| `то` | `then` | `tiam` | `那么` |
+| `иначе` | `else` | `alie` | `否则` |
+| `разбор` | `match` | `kongruo` | `匹配` |
+| `случай` | `case` | `kazo` | `情况` |
+| `от` | `of` | `de` | `的` |
+| `и` | `and` | `kaj` | `和` |
+| `и притом` | `and also` | `kaj ankaŭ` | `并且` |
+| `или` | `or` | `aŭ` | `或者` |
+| `не` | `not` | — | `非` |
+| `с` | `with` | `kun` | `带有` |
+| `из` | `from` | `el` | `从` |
+| `только` | `only` | `nur` | `仅` |
+| `в`, `к` | `to`, `into`, `in`, `onto` | `al` | `到` |
+| `по` | `by` | `per` | `按` |
+| `у` | `at` | `ĉe` | `在` |
+| `как` | `as` | `kiel` | `作为` |
+| `где` | `where` | `kie` | `其中` |
+| `начиная с` | `starting with` | `komencante per` | `起始于` |
+<!-- end insert -->
+
 ## Built-in forms over lists and strings
 
 | Form | What it does |
@@ -765,7 +835,7 @@ itself. There is no interpolation. The decision with every case:
 | `character code X`, `decompose X into characters` | character by character |
 | `character by code N` | code point as a number → a one-character string; fails on fractions, outside [0, 1114111], and on a lone surrogate |
 
-```flang
+```flang insert docs/examples/reference/en/built-in-forms.flang
 module «Built-in forms»
 
 total function «Long words»
@@ -787,7 +857,7 @@ total function «Word lengths»
 
 Each form has its own fixed prepositions:
 
-```flang
+```flang insert docs/examples/reference/en/strings.flang
 module «Strings»
 
 total function «Second word»
@@ -829,7 +899,7 @@ function; which one solves which task is on [Operations](operations.html).
 
 ### Characters, fingerprints and logic
 
-```flang
+```flang insert docs/examples/reference/en/character-by-character.flang
 module «Character by character»
 
 total function «Shift a letter»
@@ -882,7 +952,7 @@ and back, `hash256` gives the SHA-256 of a string as a hex string, and
 only value is `null`. A record field can also be taken by
 word:
 
-```flang
+```flang insert docs/examples/reference/en/field-by-word.flang
 module «Field by word»
 
 object «Point»
@@ -906,9 +976,44 @@ total function «Ordinate»
   field «y» from point
 ```
 
+The words of this section on all four surfaces, from the lexer's table:
+
+<!-- insert keywords Встроенные формы -->
+| Russian | English | Esperanto | Chinese |
+| --- | --- | --- | --- |
+| `отобразить` | `map` | `mapi` | `映射` |
+| `отфильтровать` | `filter` | `filtri` | `过滤` |
+| `свёртка`, `свертка` | `fold` | `faldo` | `折叠` |
+| `длина` | `length` | `longo` | `长度` |
+| `целая часть` | `integer part` | `entjera parto` | `整数部分` |
+| `символ` | `char` | `signo` | `字符` |
+| `разложить` | `decompose` | `malkomponi` | `分解` |
+| `на символы` | `into characters` | `en signojn` | `为字符` |
+| `подстрока` | `substring` | `subĉeno` | `子串` |
+| `соединить` | `join` | `kunigi` | `连接` |
+| `разделить` | `split` | `dividi` | `分割` |
+| `содержит` | `contains` | `enhavas` | `包含` |
+| `начинается с` | `begins with` | `komenciĝas per` | `开始于` |
+| `к числу или беда` | `to number or failure` | `al nombro aŭ fiasko` | `转数字或失败` |
+| `к числу` | `to number` | `al nombro` | `转数字` |
+| `к строке` | `to text` | `al teksto` | `转文本` |
+| `хеш256` | `hash256` | — | `哈希256` |
+| `голова` | `head` | `kapo` | `头` |
+| `хвост` | `tail` | `vosto` | `尾` |
+| `элемент` | `item` | `ero` | `元素` |
+| `голова и хвост` | `head and tail` | `kapo kaj vosto` | `头和尾` |
+| `пусто` | `empty` | `malplena` | `空` |
+| `пустой список` | `empty list` | `malplena listo` | `空列表` |
+| `список из` | `list of` | `listo de` | `列表由` |
+| `список` | `list` | `listo` | `列表` |
+| `добавить` | `add` | `aldoni` | `添加` |
+| `приписать` | `prepend` | `antaŭmeti` | `前置` |
+| `любое` | `any` | `ajna` | `任意` |
+<!-- end insert -->
+
 ## Functions as values
 
-```flang
+```flang insert docs/examples/reference/en/function-as-a-value.flang
 module «Function as a value»
 
 total function «Double»
@@ -975,7 +1080,7 @@ own way.
 
 `requires «name» condition` — what must hold for a call to be valid.
 
-```flang
+```flang insert docs/examples/reference/en/precondition.flang
 module «Precondition»
 
 total function «Share»
@@ -1000,7 +1105,7 @@ where a value comes from outside. Internal calls do not pay for it.
 `for all p ensures «name» condition` — what holds for `result` on every input.
 `result` in the condition is the returned value.
 
-```flang
+```flang insert docs/examples/reference/en/postcondition.flang
 module «Postcondition»
 
 total function «Double all»
@@ -1027,8 +1132,8 @@ proof.
 To say something about every element of a list, write the quantifier in the
 postcondition itself. A colon separates its body.
 
-```flang
-модуль «Все элементы после отбора»
+```flang insert docs/examples/reference/en/for-all-after-filter.flang
+модуль «For all after a filter»
 
 тотальная функция «Только положительные»
   принимает элементы: список числа
@@ -1066,7 +1171,7 @@ apart.
 
 Write a theorem when the prover could not prove a postcondition on its own.
 
-```flang
+```flang insert docs/examples/reference/en/theorem.flang
 module «Theorem»
 
 total function «Sum up to»
@@ -1106,7 +1211,7 @@ page [Proving by hand](manual-proofs.html).
 
 A theorem does not need induction; a short one is a single justification:
 
-```flang
+```flang insert docs/examples/reference/en/property.flang
 module «Property»
 
 total function «Double all»
@@ -1137,8 +1242,8 @@ goes down.
 
 A property can stand on its own, without a function.
 
-```flang
-модуль «Свободные утверждения»
+```flang insert docs/examples/reference/en/free-statements.flang
+модуль «Free statements»
 
 утверждение «длина пустого списка нулевая»
   утверждаем (длина пустой список) равен 0
@@ -1162,8 +1267,8 @@ it.
 `индукция по` (induction on) works for your own types with variants as well as
 for the built-in ones: the induction principle comes from the type declaration.
 
-```flang
-модуль «Своё натуральное»
+```flang insert docs/examples/reference/en/own-natural.flang
+модуль «Own natural»
 
 тип «Нат»
   вариант «Ноль»
@@ -1214,8 +1319,13 @@ the arguments of the call, `result` becomes the call itself.
 The example is the theorem "through doubling the length is the same" above.
 Referring to the postcondition you are proving is circular, and the check fails:
 
-```
-FLANG_PROOF_STEP в файле circle.flang, строка 12, столбец 3: шаг 1, теорема «длина сохраняется»: «по свойству «длина сохраняется»» ссылается на то самое постусловие, которое сейчас доказывается — это круг. Часть значения обосновывает «по предположению», а не ссылка на саму цель. к этому месту не известно ничего, кроме гипотез «дано»
+```text insert output: check docs/examples/reference/refused/circular-property.flang
+$ flang check docs/examples/reference/refused/circular-property.flang
+модуль «Circle»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_PROOF_STEP в файле docs/examples/reference/refused/circular-property.flang, строка 12, столбец 3: шаг 1, теорема «длина сохраняется»: «по свойству «длина сохраняется»» ссылается на то самое постусловие, которое сейчас доказывается — это круг. Часть значения обосновывает «по предположению», а не ссылка на саму цель. к этому месту не известно ничего, кроме гипотез «дано»
+docs/examples/reference/refused/circular-property.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 Limit: some function of the module must have a postcondition with that name;
@@ -1229,8 +1339,13 @@ property for a smaller part of the value) and the function's precondition (the
 
 Without either, the check fails and says what is missing:
 
-```
-FLANG_PROOF_INDUCTION_STEP в файле hyp.flang, строка 12, столбец 3: шаг 1, теорема «половина неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем. к этому месту не известно ничего, кроме гипотез «дано»
+```text insert output: check docs/examples/reference/refused/missing-hypothesis.flang
+$ flang check docs/examples/reference/refused/missing-hypothesis.flang
+модуль «Without a hypothesis»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_PROOF_INDUCTION_STEP в файле docs/examples/reference/refused/missing-hypothesis.flang, строка 12, столбец 3: шаг 1, теорема «половина неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем. к этому месту не известно ничего, кроме гипотез «дано»
+docs/examples/reference/refused/missing-hypothesis.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 Limit: a hypothesis has no name. There is one per case, and you cannot use the
@@ -1255,8 +1370,13 @@ Refers to a monoid, monad or isomorphism declared in the module, or to an
 inference rule by name. Any other name is rejected — otherwise
 `under law «what never happens»` would prove anything:
 
-```
-FLANG_PROOF_STEP в файле law.flang, строка 12, столбец 3: теорема «то же»: шаг 1 (чего не бывает, без основания): правило «чего не бывает» ведомости ядро пока не проверяет; проверяет шесть: Н1, Н3, Н5, О1, О10, Разв2
+```text insert output: check docs/examples/reference/refused/unknown-law.flang
+$ flang check docs/examples/reference/refused/unknown-law.flang
+модуль «Without a law»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_PROOF_STEP в файле docs/examples/reference/refused/unknown-law.flang, строка 12, столбец 3: теорема «то же»: шаг 1 (чего не бывает, без основания): правило «чего не бывает» ведомости ядро пока не проверяет; проверяет шесть: Н1, Н3, Н5, О1, О10, Разв2
+docs/examples/reference/refused/unknown-law.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 The message says: the prover does not check a rule called «чего не бывает»; it
@@ -1283,6 +1403,55 @@ then checks that rule application instead of searching for a proof itself.
 `из K` and `из K L` are the numbers of earlier steps of the same theorem. The
 rule names are listed in `flang/proof/tables/inference-rules.tsv`.
 
+The rows of the table for the three families that hold the six checked rules:
+
+<!-- insert tsv flang/proof/tables/inference-rules.tsv family=Н -->
+| name | family | kind | kernel-rule | anchor | status |
+| --- | --- | --- | --- | --- | --- |
+| Н1 | Н | rule | неотрицательность по построению | proof-kernel.flang:1487 «Литерал неотрицателен» | code |
+| Н2 | Н | rule | неотрицательность по построению | proof-kernel.flang:1494 «Есть известное» | code |
+| Н3 | Н | rule | неотрицательность по построению | proof-kernel.flang:3504 «Известное снизу» | code |
+| Н4 | Н | rule | неотрицательность по построению | proof-kernel.flang:1657 «Неотрицательная форма» | code |
+| Н5 | Н | rule | неотрицательность по построению | proof-kernel.flang:1503 «Обе неотрицательны» | code |
+| Н6 | Н | rule | неотрицательность по построению | proof-kernel.flang:1722 «Неотрицательно», случай "if" | code |
+| Н7 | Н | rule | неотрицательность по построению | proof-kernel.flang:1677 «Свёртка неотрицательна» | code |
+| Н8 | Н | rule | неотрицательность по построению | proof-kernel.flang:1633 «Умножение неотрицательно» | code |
+| Н9 | Н | rule | неотрицательность по построению | proof-kernel.flang:1623 «Квадрат конечного» | code |
+| Н10 | Н | rule | неотрицательность по построению | proof-kernel.flang:1645 «Остаток неотрицателен» | code-stricter |
+| Н11 | Н | rule | неотрицательность по построению | proof-kernel.flang:1705 «Разбор неотрицателен» | not-in-adr |
+| Н12 | Н | rule | неотрицательность по построению | proof-kernel.flang:3539 «Разность по порядку» | code |
+| Н13 | Н | rule | неотрицательность по построению | proof-kernel.flang:3521 «Разность из-под конечного литерала» | code |
+| Н✗ | Н | ban | неотрицательность по построению | proof-kernel.flang:1722 «Неотрицательно», отсутствие случая "sub" | code |
+<!-- end insert -->
+
+<!-- insert tsv flang/proof/tables/inference-rules.tsv family=О -->
+| name | family | kind | kernel-rule | anchor | status |
+| --- | --- | --- | --- | --- | --- |
+| О1 | О | rule | порядок по построению | proof-kernel.flang:1961 «Есть порядок» | code |
+| О2 | О | rule | порядок по построению | proof-kernel.flang:2062 «Тождество сторон» | code |
+| О3 | О | rule | порядок по построению | proof-kernel.flang:2069 «По порядку», случай "if" | code |
+| О4 | О | rule | порядок по построению | proof-kernel.flang:2020 «Литерал под дном» | code |
+| О5 | О | rule | порядок по построению | proof-kernel.flang:2057 «Сумма под суммой» | code-wider |
+| О6 | О | rule | порядок по построению | proof-kernel.flang:3000 «Слагаемое в границе» | code-wider |
+| О7 | О | rule | порядок по построению | proof-kernel.flang:2787 «По разбору» | code-stricter |
+| О8 | О | rule | порядок по построению | proof-kernel.flang:2982 «Отбор под длиной» | code-wider |
+| О9 | О | rule | порядок по построению | proof-kernel.flang:2819 «Свёртка не быстрее списка» | code-stricter |
+| О10 | О | rule | порядок по построению | proof-kernel.flang:2010 «Есть порядок через середину» | not-in-adr |
+| О✗ | О | ban | порядок по построению | proof-kernel.flang:2069 «По порядку», отсутствие случая "sub" | not-in-adr |
+| О✗✗ | О | ban | порядок по построению | proof-kernel.flang:3000 «Слагаемое в границе», требование обеих границ | not-in-adr |
+| О✗✗✗ | О | ban | порядок по построению | proof-kernel.flang:1889 «Дно произведения», отсутствие парного случая у порядка | not-in-adr |
+<!-- end insert -->
+
+<!-- insert tsv flang/proof/tables/inference-rules.tsv family=Разв -->
+| name | family | kind | kernel-rule | anchor | status |
+| --- | --- | --- | --- | --- | --- |
+| Разв1 | Разв | rule | — | proof-kernel.flang:1324 «Правило развёртки», ветвь конструктора | code |
+| Разв2 | Разв | rule | — | proof-kernel.flang:1324 «Правило развёртки», ветвь плоского определения | code |
+| Яр1 | Разв | rule | — | proof-kernel.flang:5538 «Ярлык применения» | code-narrower |
+| Разв3 | Разв | rule | — | proof-kernel.flang:1302 «Развернуть подстановкой» | code |
+| К↑ | Разв | rule | — | proof-kernel.flang:874 «Поле известного значения» | code |
+<!-- end insert -->
+
 Why name the rule: the independent proof checker (`flang/proof/checker/checker.c`)
 re-checks a step that names its rule; a step without a name it has to take on the
 prover's word.
@@ -1298,7 +1467,7 @@ how](proofs.html) and [Prover specification](../spec-proof.html) (in Russian).
 Objects, arrows (morphisms) between them and their composition, declared rather
 than called.
 
-```flang
+```flang insert docs/examples/reference/en/order-pipeline.flang
 module «Order pipeline»
 
 object «Order»
@@ -1353,7 +1522,7 @@ chain «process an order»
 
 ### A whole program: category, isomorphism, functor
 
-```flang
+```flang insert docs/examples/reference/en/orders-and-payments.flang
 module «Orders and payments»
 
 object «Order»
@@ -1453,7 +1622,7 @@ field goes to: `field «a» maps to field «b»`. A `bifunctor` is a functor of 
 arguments: the `objects` line carries a pair of objects to one object, and the
 `morphisms` line carries a pair of arrows to one arrow.
 
-```flang
+```flang insert docs/examples/reference/en/order-pairs.flang
 module «Order pairs»
 
 object «Order»
@@ -1539,7 +1708,7 @@ objects.
 A part of an object and the common part of two objects are declared with
 `embedding` and `intersection`:
 
-```flang
+```flang insert docs/examples/reference/en/order-circles.flang
 module «Order circles»
 
 object «Order»
@@ -1579,7 +1748,7 @@ intersection «Urgent and paid» from «Urgent» and «Paid» to «Order»
 
 ### Monoids and folding in chunks
 
-```flang
+```flang insert docs/examples/reference/en/monoids.flang
 module «Monoids»
 
 total function «Add exact»
@@ -1648,9 +1817,14 @@ total function «Squares»
 to prove associativity and both identity laws over the carrier, and `flang check`
 says what came out:
 
-```
+```text insert output: check docs/examples/reference/en/monoids.flang
+$ flang check docs/examples/reference/en/monoids.flang
+моноид «Number sum»: сетка 5 значений, троек 125, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+свойство «коммутативность» у «Add numbers»: сетка 3 значений, пар 9, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+модуль «Monoids»: функций 6, из них с доказанным завершением 6; типов 0
 моноид «Exact sum»: сочетательность и единица доказаны ядром — свёртка операцией «Add exact» считается кусками на всех потоках
 моноид «Number sum»: сочетательность и единица ядром НЕ доказаны — свёртка операцией «Add numbers» идёт по порядку на одном потоке
+docs/examples/reference/en/monoids.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 When the laws are proved, a fold whose body is exactly a call of the operation on
@@ -1676,8 +1850,12 @@ finite set of values that the equality is an equivalence, that composition
 respects it, and that composition is associative. The report gives the size of
 the set («сетка», grid):
 
-```
+```text insert output: check flang/ct/order-shipment.flang
+$ flang check flang/ct/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+изоморфизм «Отгрузка и накладная»: сетка 2 значений, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+модуль «Order shipment»: функций 6, из них с доказанным завершением 6; типов 3
+flang/ct/order-shipment.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 It reads: 5 values on 3 objects, 7 triples of arrows, 0 violations — counted on
@@ -1720,7 +1898,7 @@ not](what-is-proved.html).
 
 ## Monads and `in monad`: chaining steps that may fail
 
-```flang
+```flang insert docs/examples/reference/en/discount.flang
 module «Discount»
 
 type «Maybe» of «A»
@@ -1797,7 +1975,7 @@ A process owns its state, like an actor in Erlang. The handler is an ordinary
 total function: it takes the state and a message and returns the new state and a
 list of actions. Sending a message is an action in that list, not a side effect.
 
-```flang
+```flang insert docs/examples/reference/en/counter.flang
 module «Counter»
 
 object «Count»
@@ -1862,7 +2040,7 @@ A handler without the word `total` must name a step budget, and a process with
 such a handler must stand under supervision: an exhausted budget is a failure,
 and someone has to take it. The mailbox is bounded with `with mailbox`:
 
-```flang
+```flang insert docs/examples/reference/en/counter-with-limits.flang
 module «Counter with limits»
 
 object «Count»
@@ -1938,11 +2116,87 @@ listed here so you know where they belong.
 The older theorem form cannot be mixed with the current one: the line
 `given «Object» has «field»` next to `claim` is an error.
 
-```
-FLANG_PARSE в файле mix.flang, строка 12, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
+```text insert output: check docs/examples/reference/refused/mixed-theorem-forms.flang
+$ flang check docs/examples/reference/refused/mixed-theorem-forms.flang
+FLANG_PARSE в файле docs/examples/reference/refused/mixed-theorem-forms.flang, строка 11, столбец 1: теорема «цена та же» смешала две формы: дано «Объект» имеет «поле» — из старой, а рядом стоят слова доказательства. Выберите одну форму
+docs/examples/reference/refused/mixed-theorem-forms.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 `in data`, `by morphism` and `therefore «conclusion»` behave the same way.
+
+The words of this section on all four surfaces, from the lexer's table:
+
+<!-- insert keywords Наследие прежней поверхности -->
+| Russian | English | Esperanto | Chinese |
+| --- | --- | --- | --- |
+| `утилита` | `utility` | `utilaĵo` | `工具` |
+| `правило` | `rule` | `regulo` | `规则` |
+| `свойство` | `property` | `propraĵo` | `属性` |
+| `результат` | `result` | `rezulto` | `结果` |
+| `начинает с` | `starts with` | `komencas per` | `始于` |
+| `поле`, `поля` | `field` | `kampo` | `字段` |
+| `морфизм` | `morphism` | `morfismo` | `态射` |
+| `после` | `after` | `post` | `之后` |
+| `цепочка` | `chain` | `ĉeno` | `链` |
+| `сначала` | `first` | `unue` | `首先` |
+| `затем` | `next` | `poste` | `然后` |
+| `единица` | `identity` | `identeco` | `恒等` |
+| `даёт` | `gives` | `donas` | `给出` |
+| `закон` | `law` | `leĝo` | `定律` |
+| `изоморфизм` | `isomorphism` | `izomorfio` | `同构` |
+| `прямой морфизм` | `forward morphism` | `rekta morfismo` | `正向态射` |
+| `обратный морфизм` | `inverse morphism` | `inversa morfismo` | `逆态射` |
+| `вложение` | `embedding` | — | `嵌入` |
+| `пересечение` | `intersection` | `komunaĵo` | `交集` |
+| `моноид` | `monoid` | `monoido` | `幺半群` |
+| `носитель` | `carrier` | `portanto` | `载体` |
+| `операция` | `operation` | `operacio` | `运算` |
+| `обратный элемент` | `inverse element` | `inversa elemento` | `逆元` |
+| `монада` | `monad` | `monado` | `单子` |
+| `возврат` | `return` | `redono` | `单位` |
+| `соединение` | `flatten` | `platigo` | `压平` |
+| `в монаде` | `in monad` | `en monado` | `在单子中` |
+| `теорема` | `theorem` | `teoremo` | `定理` |
+| `следует` | `follows` | — | — |
+| `функтор`, `функтора` | `functor` | `funktoro` | `函子` |
+| `бифунктор` | `bifunctor` | `bifunktoro` | `双函子` |
+| `объекты` | `objects` | `objektoj` | `对象对` |
+| `морфизмы` | `morphisms` | `morfismoj` | `态射对` |
+| `утверждение` | `proposition`, `statement` | `propozicio` | `命题` |
+| `имеет` | `has` | `havas` | `具有` |
+| `в данных` | `in data` | `en datumoj` | `在数据中` |
+| `найти где` | `find where` | `trovi kie` | `查找其中` |
+| `по морфизму`, `затем по морфизму`, `применить морфизм`, `затем применить морфизм` | `by morphism`, `then by morphism`, `apply morphism`, `then apply morphism` | `per morfismo`, `poste per morfismo` | `按态射`, `然后按态射` |
+| `следовательно`, `получаем` | `therefore` | `sekve` | `因此` |
+| `по закону` | `under law` | `laŭ leĝo` | `依定律` |
+| `отображается в`, `отображаются в` | `maps to`, `map to` | `mapiĝas al` | `映射到` |
+| `отображается в поле` | `maps to field` | `mapiĝas al kampo` | `映射到字段` |
+| `отображается в морфизм`, `отображаются в морфизм` | `maps to morphism`, `map to morphism` | `mapiĝas al morfismo` | `映射到态射` |
+| `требует` | `requires` | — | — |
+| `обеспечивает` | `ensures` | — | — |
+| `для всех` | `for all` | — | — |
+| `таких что` | `such that` | — | — |
+| `есть такой` | `there is` | — | — |
+| `а именно` | `namely` | — | — |
+| `утверждаем` | `claim` | — | — |
+| `индукция по` | `induction on` | — | — |
+| `по свойству` | `by property` | — | — |
+| `по примеру` | `by example` | — | — |
+| `по предположению` | `by hypothesis` | — | — |
+| `следовательно доказано` | `therefore proved` | — | — |
+| `процесс` | `process` | `procezo` | `进程` |
+| `обрабатывает` | `handles` | `traktas` | `处理` |
+| `с запасом` | `with budget` | `kun buĝeto` | `带预算` |
+| `с ящиком` | `with mailbox` | `kun leterkesto` | `带信箱` |
+| `надзор` | `supervision` | — | `监督` |
+| `стратегия` | `strategy` | `strategio` | `策略` |
+| `порог отказов` | `failure threshold` | `sojlo de fiaskoj` | `失败阈值` |
+| `прогон` | `run` | `rulo` | `运行` |
+| `семя` | `seed` | `semo` | `种子` |
+| `план` | `plan` | `plano` | `计划` |
+<!-- end insert -->
 
 ## What the language does not have
 

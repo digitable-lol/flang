@@ -1,0 +1,10 @@
+module «Postcondition»
+
+total function «Double all»
+  accepts items: list number
+  returns list number
+  for all items ensures «length is preserved» (length result) equals (length items)
+  example «three items»
+    given items equals [1, 2, 3]
+    expected [2, 4, 6]
+  map items as x → x times 2

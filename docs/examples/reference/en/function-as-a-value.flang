@@ -1,0 +1,28 @@
+module «Function as a value»
+
+total function «Double»
+  accepts x: number
+  returns number
+  x times 2
+
+total function «Add»
+  accepts a: number, b: number
+  returns number
+  a plus b
+
+total function «Apply twice»
+  accepts f: number → number, x: number
+  returns number
+  f of (f of x)
+
+total function «Trial»
+  returns number
+  example «five doubled twice»
+    expected 20
+  «Apply twice» of function «Double» and 5
+
+total function «Trial with capture»
+  returns number
+  example «ten added twice»
+    expected 25
+  «Apply twice» of (function «Add» with a equal to 10) and 5

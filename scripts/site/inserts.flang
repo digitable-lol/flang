@@ -1,0 +1,1351 @@
+модуль «Page inserts»
+  использует «Печать словаря» из "emit-dictionary.fscript"
+
+тип «Insert kind»
+  вариант «Whole file» содержит path: строка
+  вариант «Declaration» содержит path: строка, name: строка
+  вариант «Output» содержит arguments: строка
+  вариант «Table» содержит table: строка, arguments: строка
+  вариант «Unreadable» содержит line: строка
+
+тип «Piece»
+  вариант «Prose» содержит line: строка
+  вариант «Insert» содержит opening: строка, kind: «Insert kind», body: список строки, closing: строка
+
+тип «Mode»
+  вариант «In prose»
+  вариант «In fence»
+  вариант «In insert fence» содержит opening: строка, body: список строки
+  вариант «In insert region» содержит opening: строка, body: список строки
+
+объект «Reading»
+  «pieces»: список «Piece»
+  «mode»: «Mode»
+
+объект «Taken»
+  «command»: строка
+  «code»: число
+  «output»: строка
+
+объект «Filled»
+  «lines»: список строки
+  «trouble»: строка
+
+тип «Shape»
+  вариант «Insert fence»
+  вариант «Plain fence»
+  вариант «Insert region»
+  вариант «Plain line»
+
+объект «Code line»
+  «file»: строка
+  «content»: строка
+
+объект «Page result»
+  «path»: строка
+  «before»: строка
+  «after»: строка
+  «troubles»: список строки
+  «stale»: список строки
+
+объект «Shape pattern»
+  «prefix»: строка
+  «insert»: признак
+  «shape»: «Shape»
+
+тотальная функция «Fence mark»
+  возвращает строка
+  обеспечивает «a fence is three backticks» (длина результат) равен 3
+  пример «three backticks»
+    ожидается "```"
+  "```"
+
+тотальная функция «Region opening»
+  возвращает строка
+  обеспечивает «the opening of a region is twelve characters» (длина результат) равен 12
+  пример «an html remark that names the insert»
+    ожидается "<!-- insert "
+  "<!-- insert "
+
+тотальная функция «Region closing»
+  возвращает строка
+  обеспечивает «the closing line ends a region» результат содержит "end insert"
+  пример «the closing line»
+    ожидается "<!-- end insert -->"
+  "<!-- end insert -->"
+
+тотальная функция «Insert word»
+  возвращает строка
+  обеспечивает «the word stands between blanks» результат начинается с " "
+  пример «the word of a fence insert»
+    ожидается " insert "
+  " insert "
+
+тотальная функция «Shape rules»
+  возвращает список «Shape pattern»
+  обеспечивает «three shapes are told apart» (длина результат) равен 3
+  пример «the insert fence is tried front»
+    ожидается [(запись «Shape pattern» с «prefix» равным "```" и «insert» равным да
+        и «shape» равным (вариант «Insert fence»)),
+      (запись «Shape pattern» с «prefix» равным "```" и «insert» равным нет и «shape» равным (вариант «Plain fence»)),
+      (запись «Shape pattern» с «prefix» равным "<!-- insert " и «insert» равным нет
+        и «shape» равным (вариант «Insert region»))]
+  [(запись «Shape pattern» с «prefix» равным («Fence mark») и «insert» равным да
+     и «shape» равным (вариант «Insert fence»)),
+   (запись «Shape pattern» с «prefix» равным («Fence mark») и «insert» равным нет
+     и «shape» равным (вариант «Plain fence»)),
+   (запись «Shape pattern» с «prefix» равным («Region opening») и «insert» равным нет
+     и «shape» равным (вариант «Insert region»))]
+
+тотальная функция «Rule holds»
+  принимает pattern: «Shape pattern», line: строка
+  возвращает признак
+  пример «a fence with the insert word holds the insert pattern»
+    дано pattern равно запись «Shape pattern» с «prefix» равным "```" и «insert» равным да и «shape» равным (вариант
+      «Insert fence»)
+    дано line равно "```flang insert docs/examples/a.flang"
+    ожидается да
+  пример «a plain fence does not hold the insert pattern»
+    дано pattern равно запись «Shape pattern» с «prefix» равным "```" и «insert» равным да и «shape» равным (вариант
+      «Insert fence»)
+    дано line равно "```flang"
+    ожидается нет
+  (line начинается с (pattern.«prefix»)) и притом ((не (pattern.«insert»)) или (line содержит («Insert word»)))
+
+тотальная функция «Line shape»
+  принимает line: строка
+  возвращает «Shape»
+  пример «an insert fence»
+    дано line равно "```text insert output: --version"
+    ожидается вариант «Insert fence»
+  пример «a plain fence»
+    дано line равно "```flang"
+    ожидается вариант «Plain fence»
+  пример «an insert region»
+    дано line равно "<!-- insert codes -->"
+    ожидается вариант «Insert region»
+  пример «prose»
+    дано line равно "Обычная строка."
+    ожидается вариант «Plain line»
+  пусть held равно (отфильтровать («Shape rules») где pattern → («Rule holds» от pattern и line))
+  разбор held
+    случай пусто
+      то вариант «Plain line»
+    случай голова и хвост
+      то голова.«shape»
+
+тотальная функция «After»
+  принимает text: строка, mark: строка
+  возвращает строка
+  пример «everything after the front mark»
+    дано text равно "a insert b insert c"
+    дано mark равно " insert "
+    ожидается "b insert c"
+  пример «no mark — nothing»
+    дано text равно "abc"
+    дано mark равно ":"
+    ожидается ""
+  соединить (хвост (разделить text по mark)) по mark
+
+тотальная функция «Without end»
+  принимает text: строка, count: число
+  возвращает строка
+  пример «the ending is cut»
+    дано text равно "<!-- insert codes -->"
+    дано count равно 4
+    ожидается "<!-- insert codes"
+  пример «cutting more than there is leaves nothing»
+    дано text равно "ab"
+    дано count равно 5
+    ожидается ""
+  если (длина text) не больше count
+    то ""
+    иначе подстрока text с 1 по ((длина text) минус count)
+
+тотальная функция «Kind of fence rest»
+  принимает rest: строка
+  возвращает «Insert kind»
+  пример «the output of a command»
+    дано rest равно "output: check a.flang"
+    ожидается вариант «Output» с arguments равным "check a.flang"
+  пример «a whole file»
+    дано rest равно "docs/examples/a.flang"
+    ожидается вариант «Whole file» с path равным "docs/examples/a.flang"
+  пример «one declaration of a file»
+    дано rest равно "docs/examples/a.flang «Сумма до»"
+    ожидается вариант «Declaration» с path равным "docs/examples/a.flang" и name равным "Сумма до"
+  пусть words равно (разделить rest по " ")
+  пусть name равно (соединить (хвост words) по " ")
+  если rest начинается с "output: "
+    то вариант «Output» с arguments равным («After» от rest и "output: ")
+    иначе если name равен ""
+      то вариант «Whole file» с path равным (голова words)
+      иначе вариант «Declaration» с path равным (голова words) и name равным («Unquoted» от name)
+
+тотальная функция «Unquoted»
+  принимает name: строка
+  возвращает строка
+  пример «guillemets are taken off»
+    дано name равно "«Сумма до»"
+    ожидается "Сумма до"
+  пример «a bare name stays»
+    дано name равно "Сумма"
+    ожидается "Сумма"
+  соединить (разделить (соединить (разделить name по "«") по "") по "»") по ""
+
+тотальная функция «Kind of region»
+  принимает line: строка
+  возвращает «Insert kind»
+  пример «a table with arguments»
+    дано line равно "<!-- insert keywords Функции -->"
+    ожидается вариант «Table» с table равным "keywords" и arguments равным "Функции"
+  пример «a table without arguments»
+    дано line равно "<!-- insert codes -->"
+    ожидается вариант «Table» с table равным "codes" и arguments равным ""
+  пусть inner равно («Without end» от («After» от line и («Region opening»)) и 4)
+  пусть words равно (разделить inner по " ")
+  вариант «Table» с table равным (голова words) и arguments равным (соединить (хвост words) по " ")
+
+тотальная функция «Kind of opening»
+  принимает line: строка
+  возвращает «Insert kind»
+  пример «a fence»
+    дано line равно "```flang refused insert docs/examples/a.flang"
+    ожидается вариант «Whole file» с path равным "docs/examples/a.flang"
+  пример «a region»
+    дано line равно "<!-- insert codes -->"
+    ожидается вариант «Table» с table равным "codes" и arguments равным ""
+  пример «a region that is not closed on its line»
+    дано line равно "<!-- insert codes"
+    ожидается вариант «Unreadable» с line равным "<!-- insert codes"
+  пример «a fence that names nothing»
+    дано line равно "```flang insert "
+    ожидается вариант «Unreadable» с line равным "```flang insert "
+  разбор («Line shape» от line)
+    случай вариант «Insert region»
+      то если line содержит " -->" то «Kind of region» от line иначе вариант «Unreadable» с line равным line
+    случай любое
+      то «Kind of fence» от line
+
+тотальная функция «Kind of fence»
+  принимает line: строка
+  возвращает «Insert kind»
+  пример «the rest after the insert word»
+    дано line равно "```text insert output: --version"
+    ожидается вариант «Output» с arguments равным "--version"
+  пусть rest равно («After» от line и («Insert word»))
+  если rest равен "" то вариант «Unreadable» с line равным line иначе «Kind of fence rest» от rest
+
+тотальная функция «Add piece»
+  принимает reading: «Reading», piece: «Piece», mode: «Mode»
+  возвращает «Reading»
+  пример «a piece goes to the end»
+    дано reading равно запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In prose»)
+    дано piece равно вариант «Prose» с line равным "а"
+    дано mode равно вариант «In fence»
+    ожидается (запись «Reading» с «pieces» равным [вариант «Prose» с line равным "а"] и «mode» равным
+      (вариант «In fence»))
+  запись «Reading» с «pieces» равным (добавить piece к (reading.«pieces»)) и «mode» равным mode
+
+тотальная функция «Go on»
+  принимает reading: «Reading», mode: «Mode»
+  возвращает «Reading»
+  пример «only the mode changes»
+    дано reading равно запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In prose»)
+    дано mode равно вариант «In fence»
+    ожидается запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In fence»)
+  запись «Reading» с «pieces» равным (reading.«pieces») и «mode» равным mode
+
+тотальная функция «Step in prose»
+  принимает reading: «Reading», line: строка
+  возвращает «Reading»
+  пример «an insert fence opens»
+    дано reading равно запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In prose»)
+    дано line равно "```flang insert a.flang"
+    ожидается (запись «Reading» с «pieces» равным пустой список
+      и «mode» равным (вариант «In insert fence» с opening равным "```flang insert a.flang"
+        и body равным пустой список))
+        
+  пример «a plain line stays prose»
+    дано reading равно запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In prose»)
+    дано line равно "текст"
+    ожидается (запись «Reading» с «pieces» равным [вариант «Prose» с line равным "текст"] и «mode» равным
+      (вариант «In prose»))
+  разбор («Line shape» от line)
+    случай вариант «Insert fence»
+      то «Go on» от reading и (вариант «In insert fence» с opening равным line и body равным пустой список)
+    случай вариант «Insert region»
+      то «Go on» от reading и (вариант «In insert region» с opening равным line и body равным пустой список)
+    случай вариант «Plain fence»
+      то «Add piece» от reading и (вариант «Prose» с line равным line) и (вариант «In fence»)
+    случай вариант «Plain line»
+      то «Add piece» от reading и (вариант «Prose» с line равным line) и (вариант «In prose»)
+
+тотальная функция «Closed insert»
+  принимает opening: строка, body: список строки, closing: строка
+  возвращает «Piece»
+  пример «the kind is read from the opening»
+    дано opening равно "<!-- insert codes -->"
+    дано body равно ["| a |"]
+    дано closing равно "<!-- end insert -->"
+    ожидается (вариант «Insert» с opening равным "<!-- insert codes -->"
+      и kind равным (вариант «Table» с table равным "codes" и arguments равным "") и body равным ["| a |"]
+      и closing равным "<!-- end insert -->")
+  (вариант «Insert» с opening равным opening и kind равным («Kind of opening» от opening) и body равным body
+    и closing равным closing)
+
+тотальная функция «Step»
+  принимает reading: «Reading», line: строка
+  возвращает «Reading»
+  пример «a fence closes»
+    дано reading равно запись «Reading» с «pieces» равным пустой список и «mode» равным (вариант «In fence»)
+    дано line равно "```"
+    ожидается (запись «Reading» с «pieces» равным [вариант «Prose» с line равным "```"] и «mode» равным
+      (вариант «In prose»))
+  пример «a region gathers its body»
+    дано reading равно (запись «Reading» с «pieces» равным пустой список
+      и «mode» равным (вариант «In insert region» с opening равным "<!-- insert codes -->" и body равным пустой список))
+        
+    дано line равно "| a |"
+    ожидается (запись «Reading» с «pieces» равным пустой список
+      и «mode» равным (вариант «In insert region» с opening равным "<!-- insert codes -->" и body равным ["| a |"]))
+  разбор (reading.«mode»)
+    случай вариант «In prose»
+      то «Step in prose» от reading и line
+    случай вариант «In fence»
+      то «Add piece» от reading и (вариант «Prose» с line равным line) и («Mode in fence» от line)
+    случай вариант «In insert fence» с opening как opening и body как body
+      то если line начинается с («Fence mark»)
+        то «Add piece» от reading и («Closed insert» от opening и body и line) и (вариант «In prose»)
+        иначе «Go on» от reading и (вариант «In insert fence» с opening равным opening и body равным (добавить line к
+          body))
+    случай вариант «In insert region» с opening как opening и body как body
+      то если line равен («Region closing»)
+        то «Add piece» от reading и («Closed insert» от opening и body и line) и (вариант «In prose»)
+        иначе «Go on» от reading и (вариант «In insert region» с opening равным opening и body равным (добавить line к
+          body))
+
+тотальная функция «Mode in fence»
+  принимает line: строка
+  возвращает «Mode»
+  пример «the closing fence goes back to prose»
+    дано line равно "```"
+    ожидается вариант «In prose»
+  пример «any other line stays in the fence»
+    дано line равно "<!-- insert codes -->"
+    ожидается вариант «In fence»
+  если line начинается с («Fence mark») то вариант «In prose» иначе вариант «In fence»
+
+тотальная функция «Unclosed»
+  принимает reading: «Reading»
+  возвращает список «Piece»
+  пример «a closed page keeps its pieces»
+    дано reading равно запись «Reading» с «pieces» равным [вариант «Prose» с line равным "а"] и «mode» равным (вариант
+      «In prose»)
+    ожидается [вариант «Prose» с line равным "а"]
+  пример «an open insert is kept with an empty closing»
+    дано reading равно (запись «Reading» с «pieces» равным пустой список
+      и «mode» равным (вариант «In insert region» с opening равным "<!-- insert codes -->" и body равным ["x"]))
+    ожидается [(вариант «Insert» с opening равным "<!-- insert codes -->"
+      и kind равным (вариант «Table» с table равным "codes" и arguments равным
+        "") и body равным ["x"] и closing равным "")]
+  разбор (reading.«mode»)
+    случай вариант «In insert fence» с opening как opening и body как body
+      то добавить («Closed insert» от opening и body и "") к (reading.«pieces»)
+    случай вариант «In insert region» с opening как opening и body как body
+      то добавить («Closed insert» от opening и body и "") к (reading.«pieces»)
+    случай любое
+      то reading.«pieces»
+
+тотальная функция «Pieces»
+  принимает text: строка
+  возвращает список «Piece»
+  пример «prose, an insert and prose again»
+    дано text равно "а\n<!-- insert codes -->\nстарое\n<!-- end insert -->\nб"
+    ожидается [вариант «Prose» с line равным "а", (вариант «Insert» с opening равным "<!-- insert codes -->"
+      и kind равным (вариант «Table» с table равным "codes" и arguments равным "") и body равным ["старое"]
+      и closing равным "<!-- end insert -->"), вариант «Prose» с line равным "б"]
+  «Unclosed» от (свёртка (разделить text по "\n") начиная с (запись «Reading» с «pieces» равным пустой список
+    и «mode» равным (вариант «In prose»)) как reading и line → «Step» от reading и line)
+
+тотальная функция «Inserts»
+  принимает pieces: список «Piece»
+  возвращает список «Piece»
+  пример «prose is left out»
+    дано pieces равно [вариант «Prose» с line равным "а"]
+    ожидается пустой список
+  отфильтровать pieces где piece → не («Is prose» от piece)
+
+тотальная функция «Is prose»
+  принимает piece: «Piece»
+  возвращает признак
+  пример «prose»
+    дано piece равно вариант «Prose» с line равным "а"
+    ожидается да
+  разбор piece
+    случай вариант «Prose» с line как line
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Page language»
+  принимает path: строка
+  возвращает строка
+  пример «a russian page»
+    дано path равно "docs/site/language.ru.md"
+    ожидается "ru"
+  пример «an english page»
+    дано path равно "docs/site/language.md"
+    ожидается "en"
+  если («Without end» от path и 0) содержит ".ru.md" то "ru" иначе "en"
+
+тотальная функция «File command»
+  принимает path: строка
+  возвращает строка
+  пример «a file is read whole»
+    дано path равно "docs/examples/a.flang"
+    ожидается "file docs/examples/a.flang"
+  соединить ["file ", path] по ""
+
+тотальная функция «Binary command»
+  принимает arguments: строка
+  возвращает строка
+  пример «a run of the binary»
+    дано arguments равно "check a.flang"
+    ожидается "run check a.flang"
+  соединить ["run ", arguments] по ""
+
+тотальная функция «Code lines command»
+  возвращает строка
+  обеспечивает «the key names the lines of codes» результат равен "code lines"
+  пример «every line of the compiler that names a code»
+    ожидается "code lines"
+  "code lines"
+
+тотальная функция «Code pattern»
+  возвращает строка
+  обеспечивает «a code is a quoted name» результат начинается с "'"
+  пример «a quoted code in the compiler sources and in its runtime»
+    ожидается "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
+  "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
+
+тотальная функция «Shell line»
+  принимает key: строка
+  возвращает строка
+  пример «a file»
+    дано key равно "file docs/a.flang"
+    ожидается "cat -- 'docs/a.flang'"
+  пример «a run of the binary, both streams in the order it wrote them»
+    дано key равно "run check a.flang"
+    ожидается "bootstrap/flang check a.flang 2>&1"
+  пример «the lines that name a code»
+    дано key равно "code lines"
+    ожидается "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
+  пример «the list of the modules of the library»
+    дано key равно "library list"
+    ожидается "git ls-files -- ':(glob)flang/stdlib/*.flang'"
+  пусть rest равно («After» от key и " ")
+  свёртка («Shell rules» от rest) начиная с "" как found и pair
+    если (found равен "") и притом (key начинается с (голова pair)) то элемент 2 в pair иначе found
+
+тотальная функция «Shell rules»
+  принимает rest: строка
+  возвращает список список строки
+  обеспечивает «four kinds of sources» (длина результат) равен 4
+  пример «each key to its line»
+    дано rest равно "a"
+    ожидается [["file ", "cat -- 'a'"],
+      ["run ", "bootstrap/flang a 2>&1"],
+      ["code lines", "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"],
+      ["library list", "git ls-files -- ':(glob)flang/stdlib/*.flang'"]]
+  [["file ", (соединить ["cat -- '", rest, "'"] по "")],
+   ["run ", (соединить ["bootstrap/flang ", rest, " 2>&1"] по "")],
+   ["code lines", (соединить ["git grep -a -n -E ", («Code pattern»)] по "")],
+   ["library list", "git ls-files -- ':(glob)flang/stdlib/*.flang'"]]
+
+тотальная функция «Catalog path»
+  возвращает строка
+  обеспечивает «the catalog lies next to the compiler» результат содержит "messages"
+  пример «the message catalog»
+    ожидается "flang/messages/catalog.tsv"
+  "flang/messages/catalog.tsv"
+
+тотальная функция «Commands of kind»
+  принимает kind: «Insert kind»
+  возвращает список строки
+  пример «a file needs the file»
+    дано kind равно вариант «Declaration» с path равным "a.flang" и name равным "А"
+    ожидается ["file a.flang"]
+  пример «an output needs the binary»
+    дано kind равно вариант «Output» с arguments равным "--version"
+    ожидается ["run --version"]
+  пример «a table of rows needs its file»
+    дано kind равно вариант «Table» с table равным "tsv" и arguments равным "a.tsv"
+    ожидается ["file a.tsv"]
+  разбор kind
+    случай вариант «Whole file» с path как path
+      то [«File command» от path]
+    случай вариант «Declaration» с path как path и name как name
+      то [«File command» от path]
+    случай вариант «Output» с arguments как arguments
+      то [«Binary command» от arguments]
+    случай вариант «Table» с table как table и arguments как arguments
+      то «Commands of table» от table и arguments
+    случай любое
+      то пустой список
+
+тотальная функция «Commands of table»
+  принимает table: строка, arguments: строка
+  возвращает список строки
+  пример «the codes need the compiler sources and the catalog»
+    дано table равно "codes"
+    дано arguments равно ""
+    ожидается ["code lines", "file flang/messages/catalog.tsv"]
+  пример «the library needs its text and the record of the kernel»
+    дано table равно "library"
+    дано arguments равно ""
+    ожидается ["library list", "file docs/site/library-status.tsv"]
+  пример «the keywords need nothing: the table of surfaces is compiled in»
+    дано table равно "keywords"
+    дано arguments равно "Функции"
+    ожидается пустой список
+  пусть sources равно [["codes", («Code lines command»), («File command» от («Catalog path»))],
+    ["tsv", («File command» от (голова (разделить arguments по " ")))],
+    ["library", "library list", "file docs/site/library-status.tsv"]]
+  свёртка (отфильтровать sources где known →
+    (голова known) равен table) начиная с пустой список как acc и known → хвост known
+
+тотальная функция «Add new»
+  принимает gathered: список строки, items: список строки
+  возвращает список строки
+  пример «a repeat is dropped»
+    дано gathered равно ["а"]
+    дано items равно ["а", "б"]
+    ожидается ["а", "б"]
+  свёртка items начиная с gathered как acc и entry → (если acc содержит entry то acc иначе добавить entry к acc)
+
+тотальная функция «Commands of pieces»
+  принимает pieces: список «Piece»
+  возвращает список строки
+  пример «one command per source, once»
+    дано pieces равно [(вариант «Insert» с opening равным "" и kind равным (вариант «Whole file» с path равным
+      "a.flang")
+      и body равным пустой список и closing равным "```"), (вариант «Insert» с opening равным ""
+      и kind равным (вариант «Declaration» с path равным "a.flang" и name равным "А") и body равным пустой список
+      и closing равным "```")]
+    ожидается ["file a.flang"]
+  свёртка pieces начиная с пустой список как acc и piece → «Add new» от acc и («Commands of piece» от piece)
+
+тотальная функция «Commands of piece»
+  принимает piece: «Piece»
+  возвращает список строки
+  пример «prose needs nothing»
+    дано piece равно вариант «Prose» с line равным "а"
+    ожидается пустой список
+  разбор piece
+    случай вариант «Insert» с opening как opening и kind как kind и body как body и closing как closing
+      то «Commands of kind» от kind
+    случай любое
+      то пустой список
+
+тотальная функция «Found»
+  принимает taken: список «Taken», command: строка
+  возвращает список «Taken»
+  пример «the answer to the command»
+    дано taken равно [запись «Taken» с «command» равным "a" и «code» равным 0 и «output» равным "x"]
+    дано command равно "a"
+    ожидается [запись «Taken» с «command» равным "a" и «code» равным 0 и «output» равным "x"]
+  отфильтровать taken где entry → (entry.«command») равен command
+
+тотальная функция «Output of»
+  принимает taken: список «Taken», command: строка
+  возвращает строка
+  пример «the output of a command that ran»
+    дано taken равно [запись «Taken» с «command» равным "a" и «code» равным 0 и «output» равным "x"]
+    дано command равно "a"
+    ожидается "x"
+  пример «a command that did not run gives nothing»
+    дано taken равно пустой список
+    дано command равно "a"
+    ожидается ""
+  свёртка («Found» от taken и command) начиная с "" как acc и entry → entry.«output»
+
+тотальная функция «Code of»
+  принимает taken: список «Taken», command: строка
+  возвращает число
+  пример «the exit code of a command that ran»
+    дано taken равно [запись «Taken» с «command» равным "a" и «code» равным 3 и «output» равным "x"]
+    дано command равно "a"
+    ожидается 3
+  пример «a command that did not run answers minus one»
+    дано taken равно пустой список
+    дано command равно "a"
+    ожидается -1
+  свёртка («Found» от taken и command) начиная с -1 как acc и entry → entry.«code»
+
+тотальная функция «Lines of»
+  принимает text: строка
+  возвращает список строки
+  пример «the last line feed does not make an empty line»
+    дано text равно "а\nб\n"
+    ожидается ["а", "б"]
+  пример «nothing is no lines»
+    дано text равно ""
+    ожидается пустой список
+  пусть lines равно (разделить text по "\n")
+  если text равен ""
+    то пустой список
+    иначе если (элемент (длина lines) в lines) равен ""
+      то «Without last» от lines
+      иначе lines
+
+тотальная функция «Without last»
+  принимает items: список строки
+  возвращает список строки
+  пример «the last one goes»
+    дано items равно ["а", "б"]
+    ожидается ["а"]
+  пусть count равно ((длина items) минус 1)
+  свёртка items начиная с пустой список как acc и entry → (если (длина acc) меньше count то добавить entry к acc иначе
+    acc)
+
+тотальная функция «Filled with»
+  принимает lines: список строки
+  возвращает «Filled»
+  пример «lines without trouble»
+    дано lines равно ["а"]
+    ожидается запись «Filled» с «lines» равным ["а"] и «trouble» равным ""
+  запись «Filled» с «lines» равным lines и «trouble» равным ""
+
+тотальная функция «Trouble»
+  принимает words: список строки
+  возвращает «Filled»
+  пример «trouble keeps no lines»
+    дано words равно ["нет файла ", "a.flang"]
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "нет файла a.flang"
+  запись «Filled» с «lines» равным пустой список и «trouble» равным (соединить words по "")
+
+тотальная функция «File lines»
+  принимает taken: список «Taken», path: строка
+  возвращает «Filled»
+  пример «a file that was read»
+    дано taken равно [(запись «Taken» с «command» равным "file a.flang" и «code» равным 0
+      и «output» равным "модуль «А»\n")]
+    дано path равно "a.flang"
+    ожидается запись «Filled» с «lines» равным ["модуль «А»"] и «trouble» равным ""
+  пример «a file that is not there»
+    дано taken равно [запись «Taken» с «command» равным "file a.flang" и «code» равным 1 и «output» равным ""]
+    дано path равно "a.flang"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "файл a.flang не читается"
+  если («Code of» от taken и («File command» от path)) равен 0
+    то «Filled with» от («Lines of» от («Output of» от taken и («File command» от path)))
+    иначе «Trouble» от ["файл ", path, " не читается"]
+
+тотальная функция «Declared name»
+  принимает line: строка
+  возвращает строка
+  пример «the name of a function»
+    дано line равно "тотальная функция «Сумма до»"
+    ожидается "Сумма до"
+  пример «the name of a generic function»
+    дано line равно "тотальная функция «Длина» от «А»"
+    ожидается "Длина"
+  пример «an indented line declares nothing»
+    дано line равно "  принимает н: нат"
+    ожидается ""
+  пример «a line without a name declares nothing»
+    дано line равно "модуль"
+    ожидается ""
+  если (line начинается с " ") или (не (line содержит "«"))
+    то ""
+    иначе голова (разделить («After» от line и "«") по "»")
+
+тотальная функция «Is top line»
+  принимает line: строка
+  возвращает признак
+  пример «a declaration starts at the margin»
+    дано line равно "тип «Т»"
+    ожидается да
+  пример «an indented line continues»
+    дано line равно "  вариант А"
+    ожидается нет
+  пример «an empty line continues»
+    дано line равно ""
+    ожидается нет
+  (не (line равен "")) и притом (не (line начинается с " "))
+
+тотальная функция «Blocks»
+  принимает lines: список строки
+  возвращает список список строки
+  пример «a block runs from one margin line to the next»
+    дано lines равно ["модуль «А»", "", "тип «Т»", "  вариант Б", "", "тип «У»"]
+    ожидается [["модуль «А»", ""], ["тип «Т»", "  вариант Б", ""], ["тип «У»"]]
+  свёртка lines начиная с пустой список как acc и line → «Block step» от acc и line
+
+тотальная функция «Block step»
+  принимает blocks: список список строки, line: строка
+  возвращает список список строки
+  пример «a margin line opens a block»
+    дано blocks равно [["модуль «А»"]]
+    дано line равно "тип «Т»"
+    ожидается [["модуль «А»"], ["тип «Т»"]]
+  пример «an indented line joins the last block»
+    дано blocks равно [["тип «Т»"]]
+    дано line равно "  вариант Б"
+    ожидается [["тип «Т»", "  вариант Б"]]
+  если («Is top line» от line) или (пусто blocks)
+    то добавить [line] к blocks
+    иначе добавить (добавить line к (элемент (длина blocks) в blocks)) к («Without last block» от blocks)
+
+тотальная функция «Without last block»
+  принимает blocks: список список строки
+  возвращает список список строки
+  пример «the last block goes»
+    дано blocks равно [["а"], ["б"]]
+    ожидается [["а"]]
+  пусть count равно ((длина blocks) минус 1)
+  свёртка blocks начиная с пустой список как acc и block → (если
+    (длина acc) меньше count то добавить block к acc иначе acc)
+
+тотальная функция «Trimmed block»
+  принимает block: список строки
+  возвращает список строки
+  пример «empty lines at the end go»
+    дано block равно ["тип «Т»", "  вариант Б", "", ""]
+    ожидается ["тип «Т»", "  вариант Б"]
+  «Reversed» от («Drop empty head» от («Reversed» от block))
+
+тотальная функция «Reversed»
+  принимает items: список строки
+  возвращает список строки
+  пример «order is turned»
+    дано items равно ["а", "б"]
+    ожидается ["б", "а"]
+  свёртка items начиная с пустой список как acc и one → приписать one к acc
+
+тотальная функция «Drop empty head»
+  принимает items: список строки
+  возвращает список строки
+  пример «leading empty lines go, inner ones stay»
+    дано items равно ["", "а", "", "б"]
+    ожидается ["а", "", "б"]
+  свёртка items начиная с пустой список как acc и one → (если (пусто acc) и притом
+    (one равен "") то acc иначе добавить one к acc)
+
+тотальная функция «Declaration lines»
+  принимает lines: список строки, name: строка
+  возвращает список строки
+  пример «the declaration and its indented lines»
+    дано lines равно ["модуль «А»", "", "тип «Т»", "  вариант Б", "", "тип «У»"]
+    дано name равно "Т"
+    ожидается ["тип «Т»", "  вариант Б"]
+  пример «a name that is not declared»
+    дано lines равно ["модуль «А»"]
+    дано name равно "Т"
+    ожидается пустой список
+  пусть named равно (отфильтровать («Blocks» от lines) где block → («Declared name» от (голова block)) равен name)
+  разбор named
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Trimmed block» от голова
+
+тотальная функция «Declaration filled»
+  принимает taken: список «Taken», path: строка, name: строка
+  возвращает «Filled»
+  пример «a name the file does not declare is trouble»
+    дано taken равно [(запись «Taken» с «command» равным "file a.flang" и «code» равным 0
+      и «output» равным "модуль «А»\n")]
+    дано path равно "a.flang"
+    дано name равно "Т"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "в файле a.flang нет объявления «Т»"
+  пусть file равно («File lines» от taken и path)
+  пусть found равно («Declaration lines» от (file.«lines») и name)
+  если не ((file.«trouble») равен "")
+    то file
+    иначе если пусто found
+      то «Trouble» от ["в файле ", path, " нет объявления «", name, "»"]
+      иначе «Filled with» от found
+
+тотальная функция «Output filled»
+  принимает taken: список «Taken», arguments: строка
+  возвращает «Filled»
+  пример «the command, what it printed and a nonzero code»
+    дано taken равно [(запись «Taken» с «command» равным "run check a.flang" и «code» равным 1
+      и «output» равным "a.flang: не проверено\n")]
+    дано arguments равно "check a.flang"
+    ожидается (запись «Filled» с «lines» равным ["$ flang check a.flang", "a.flang: не проверено", "$ echo $?", "1"]
+      и «trouble» равным "")
+  пример «a zero code is not printed»
+    дано taken равно [(запись «Taken» с «command» равным "run --version" и «code» равным 0
+      и «output» равным "flang 0.7.28\n")]
+    дано arguments равно "--version"
+    ожидается запись «Filled» с «lines» равным ["$ flang --version", "flang 0.7.28"] и «trouble» равным ""
+  пусть command равно («Binary command» от arguments)
+  пусть code равно («Code of» от taken и command)
+  пусть said равно («Lines of» от («Output of» от taken и command))
+  пусть printed равно (приписать (соединить ["$ flang ", arguments] по "") к said)
+  если code меньше 0
+    то «Trouble» от ["команда не запускалась: flang ", arguments]
+    иначе «Filled with» от (если code равен 0 то printed иначе («Joined lists» от printed и («Code lines of» от code)))
+
+тотальная функция «Code lines of»
+  принимает code: число
+  возвращает список строки
+  пример «the shell asks for the code and hears it»
+    дано code равно 2
+    ожидается ["$ echo $?", "2"]
+  ["$ echo $?", к строке code]
+
+тотальная функция «Joined lists»
+  принимает front: список строки, back: список строки
+  возвращает список строки
+  пример «back after front»
+    дано front равно ["а"]
+    дано back равно ["б"]
+    ожидается ["а", "б"]
+  свёртка back начиная с front как acc и one → добавить one к acc
+
+тотальная функция «Escaped cell»
+  принимает text: строка
+  возвращает строка
+  пример «a bar inside a cell is escaped»
+    дано text равно "а|б"
+    ожидается "а\\|б"
+  соединить (разделить text по "|") по "\\|"
+
+тотальная функция «Row»
+  принимает cells: список строки
+  возвращает строка
+  пример «cells between bars»
+    дано cells равно ["а", "б"]
+    ожидается "| а | б |"
+  соединить ["| ", (соединить (отобразить cells как cell → («Escaped cell» от cell)) по " | "), " |"] по ""
+
+тотальная функция «Rule row»
+  принимает titles: список строки
+  возвращает строка
+  пример «the line under the head of a table»
+    дано titles равно ["а", "б"]
+    ожидается "| --- | --- |"
+  соединить ["| ", (соединить (отобразить titles как cell → "---") по " | "), " |"] по ""
+
+тотальная функция «Table of»
+  принимает titles: список строки, rows: список строки
+  возвращает список строки
+  пример «the head, the rule and the rows»
+    дано titles равно ["а"]
+    дано rows равно ["| 1 |"]
+    ожидается ["| а |", "| --- |", "| 1 |"]
+  «Joined lists» от [«Row» от titles, «Rule row» от titles] и rows
+
+тотальная функция «Code characters»
+  возвращает строка
+  обеспечивает «capital letters of two alphabets, digits and the underscore» (длина результат) равен 70
+  пример «the characters of a code name»
+    ожидается "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789_"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789_"
+
+тотальная функция «Is code name»
+  принимает word: строка
+  возвращает признак
+  пример «a code»
+    дано word равно "FLANG_TYPE_ARGS"
+    ожидается да
+  пример «a prefix of a family is not a code»
+    дано word равно "FLANG_IO_"
+    ожидается нет
+  пример «prose after the code is not a code»
+    дано word равно "FLANG_TYPE и"
+    ожидается нет
+  пусть strange равно (отфильтровать (разложить word на символы) где sign → не ((«Code characters») содержит sign))
+  (word начинается с "FLANG_") и притом (пусто strange) и притом (не («Ends with» от word и "_"))
+
+тотальная функция «Ends with»
+  принимает text: строка, ending: строка
+  возвращает признак
+  пример «ends»
+    дано text равно "FLANG_IO_"
+    дано ending равно "_"
+    ожидается да
+  пример «does not end»
+    дано text равно "FLANG_IO"
+    дано ending равно "_"
+    ожидается нет
+  если (длина ending) больше (длина text)
+    то нет
+    иначе (подстрока text с ((длина text) минус (длина ending) плюс 1) по (длина text)) равен ending
+
+тотальная функция «Example prefixes»
+  возвращает список строки
+  обеспечивает «four kinds of lines only show a code» (длина результат) равен 4
+  пример «lines of examples and promises»
+    ожидается ["    дано ", "    ожидается ", "  пример ", "  обеспечивает "]
+  ["    дано ", "    ожидается ", "  пример ", "  обеспечивает "]
+
+тотальная функция «Raises»
+  принимает content: строка
+  возвращает признак
+  пример «a body line raises»
+    дано content равно "      то вариант «Провал» с код равным \"FLANG_TYPE\""
+    ожидается да
+  пример «an example line only shows»
+    дано content равно "    дано код равно \"FLANG_X\""
+    ожидается нет
+  пусто (отфильтровать («Example prefixes») где prefix → content начинается с prefix)
+
+тотальная функция «Code line of»
+  принимает found: строка
+  возвращает «Code line»
+  пример «the file without its folder and the line without its number»
+    дано found равно "flang/self/types.flang:12:  \"FLANG_TYPE\": a"
+    ожидается запись «Code line» с «file» равным "types.flang" и «content» равным "  \"FLANG_TYPE\": a"
+  пусть parts равно (разделить found по ":")
+  пусть folders равно (разделить (голова parts) по "/")
+  (запись «Code line» с «file» равным (элемент (длина folders) в folders)
+    и «content» равным (соединить (хвост (хвост parts)) по ":"))
+
+тотальная функция «Files raising»
+  принимает lines: список «Code line», name: строка
+  возвращает список строки
+  пример «each file once»
+    дано lines равно [запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_A",
+      запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_A",
+      запись «Code line» с «file» равным "b.flang" и «content» равным "FLANG_AB"]
+    дано name равно "FLANG_A"
+    ожидается ["a.flang"]
+  пусть raising равно (отфильтровать lines где one → (one.«content») равен name)
+  «Add new» от пустой список и (отобразить raising как one → one.«file»)
+
+тотальная функция «Catalog rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «remarks and the head row are left out»
+    дано text равно "# remark\nkey\tru\ten\nFLANG_A\tа\ta\n"
+    ожидается [["FLANG_A", "а", "a"]]
+  отобразить («Past head» от («Data rows» от text)) как line → разделить line по "\t"
+
+тотальная функция «Past head»
+  принимает rows: список строки
+  возвращает список строки
+  пример «the head row goes»
+    дано rows равно ["key", "a"]
+    ожидается ["a"]
+  пример «nothing stays nothing»
+    дано rows равно пустой список
+    ожидается пустой список
+  разбор rows
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Data rows»
+  принимает text: строка
+  возвращает список строки
+  пример «remarks and empty lines are left out»
+    дано text равно "# a\nname\tkind\nН1\trule\n\n"
+    ожидается ["name\tkind", "Н1\trule"]
+  отфильтровать («Lines of» от text) где line → не ((line равен "") или (line начинается с "#"))
+
+тотальная функция «Cell»
+  принимает cells: список строки, place: число
+  возвращает строка
+  пример «a cell that is there»
+    дано cells равно ["а", "б"]
+    дано place равно 2
+    ожидается "б"
+  пример «past the end»
+    дано cells равно ["а"]
+    дано place равно 3
+    ожидается ""
+  если (place не меньше 1) и притом (place не больше (длина cells)) то элемент place в cells иначе ""
+
+тотальная функция «Templates of»
+  принимает rows: список список строки, name: строка, language: строка
+  возвращает строка
+  пример «the russian templates of a code»
+    дано rows равно [["FLANG_A", "раз", "one"], ["FLANG_A", "два", "two"], ["FLANG_B", "три", "three"]]
+    дано name равно "FLANG_A"
+    дано language равно "ru"
+    ожидается "раз · два"
+  пример «a code the catalog does not hold»
+    дано rows равно пустой список
+    дано name равно "FLANG_A"
+    дано language равно "en"
+    ожидается "—"
+  пусть column равно (если language равен "ru" то 2 иначе 3)
+  пусть own равно (отфильтровать rows где row → («Cell» от row и 1) равен name)
+  пусть said равно (отобразить own как row → («Cell» от row и column))
+  если пусто said то "—" иначе соединить said по " · "
+
+тотальная функция «Earlier»
+  принимает front: строка, back: строка
+  возвращает признак
+  пример «by the first character that differs»
+    дано front равно "FLANG_AB"
+    дано back равно "FLANG_B"
+    ожидается да
+  пример «a prefix comes first»
+    дано front равно "FLANG_A"
+    дано back равно "FLANG_AB"
+    ожидается да
+  пример «the same is not earlier»
+    дано front равно "FLANG_A"
+    дано back равно "FLANG_A"
+    ожидается нет
+  пусть signs равно (разложить front на символы)
+  пусть compared равно (свёртка signs начиная с [0, 0] как acc и sign → «Compare step» от acc и sign и back)
+  если (элемент 1 в compared) равен 0 то (длина front) меньше (длина back) иначе (элемент 1 в compared) равен 1
+
+тотальная функция «Compare step»
+  принимает acc: список числа, sign: строка, back: строка
+  возвращает список числа
+  пример «a smaller character decides»
+    дано acc равно [0, 0]
+    дано sign равно "A"
+    дано back равно "B"
+    ожидается [1, 1]
+  пример «a decided order stays»
+    дано acc равно [2, 1]
+    дано sign равно "A"
+    дано back равно "BB"
+    ожидается [2, 2]
+  пусть place равно ((элемент 2 в acc) плюс 1)
+  пусть other равно (если place больше (длина back) то "" иначе (подстрока back с place по place))
+  [(«Order of signs» от (элемент 1 в acc) и sign и other), place]
+
+тотальная функция «Order of signs»
+  принимает decided: число, sign: строка, other: строка
+  возвращает число
+  пример «a longer front after a shorter back is later»
+    дано decided равно 0
+    дано sign равно "A"
+    дано other равно ""
+    ожидается 2
+  пример «equal characters decide nothing»
+    дано decided равно 0
+    дано sign равно "A"
+    дано other равно "A"
+    ожидается 0
+  если не (decided равен 0)
+    то decided
+    иначе «Order of codes» от sign и other
+
+тотальная функция «Order of codes»
+  принимает sign: строка, other: строка
+  возвращает число
+  пример «smaller»
+    дано sign равно "A"
+    дано other равно "B"
+    ожидается 1
+  пример «nothing to compare with»
+    дано sign равно "A"
+    дано other равно ""
+    ожидается 2
+  если other равен "" то 2 иначе «Order of numbers» от (код символа sign) и (код символа other)
+
+тотальная функция «Order of numbers»
+  принимает front: число, back: число
+  возвращает число
+  пример «smaller»
+    дано front равно 65
+    дано back равно 66
+    ожидается 1
+  пример «equal»
+    дано front равно 65
+    дано back равно 65
+    ожидается 0
+  если front равен back то 0 иначе (если front меньше back то 1 иначе 2)
+
+объект «Placing»
+  «placed»: признак
+  «items»: список строки
+
+тотальная функция «Placed in order»
+  принимает items: список строки, entry: строка
+  возвращает список строки
+  пример «an entry goes before the first later one»
+    дано items равно ["FLANG_A", "FLANG_C"]
+    дано entry равно "FLANG_B"
+    ожидается ["FLANG_A", "FLANG_B", "FLANG_C"]
+  пример «the latest goes last»
+    дано items равно ["FLANG_A"]
+    дано entry равно "FLANG_B"
+    ожидается ["FLANG_A", "FLANG_B"]
+  пусть start равно (запись «Placing» с «placed» равным нет и «items» равным пустой список)
+  пусть done равно (свёртка items начиная с start как acc и one → «Placing step» от acc и one и entry)
+  если done.«placed» то done.«items» иначе добавить entry к (done.«items»)
+
+тотальная функция «Placing step»
+  принимает acc: «Placing», one: строка, entry: строка
+  возвращает «Placing»
+  пример «the entry stands before a later one»
+    дано acc равно запись «Placing» с «placed» равным нет и «items» равным пустой список
+    дано one равно "FLANG_C"
+    дано entry равно "FLANG_B"
+    ожидается запись «Placing» с «placed» равным да и «items» равным ["FLANG_B", "FLANG_C"]
+  если (не (acc.«placed»)) и притом («Earlier» от entry и one)
+    то запись «Placing» с «placed» равным да и «items» равным («Joined lists» от (acc.«items») и [entry, one])
+    иначе запись «Placing» с «placed» равным (acc.«placed») и «items» равным (добавить one к (acc.«items»))
+
+тотальная функция «In order»
+  принимает items: список строки
+  возвращает список строки
+  пример «codes in the order of their characters»
+    дано items равно ["FLANG_B", "FLANG_A", "FLANG_AB"]
+    ожидается ["FLANG_A", "FLANG_AB", "FLANG_B"]
+  свёртка items начиная с пустой список как acc и one → «Placed in order» от acc и one
+
+тотальная функция «Code lines»
+  принимает taken: список «Taken»
+  возвращает список «Code line»
+  пример «each code a line raises, with the file it stands in»
+    дано taken равно [(запись «Taken» с «command» равным "code lines" и «code» равным 0
+      и «output» равным "a.flang:1:  \"FLANG_A\" и \"FLANG_B: беда\"\na.flang:2:    дано \"FLANG_X\"\n")]
+    ожидается [запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_A",
+      запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_B"]
+  пусть found равно (отобразить («Lines of» от («Output of» от taken и
+    («Code lines command»))) как line → «Code line of» от line)
+  пусть raising равно (отфильтровать found где one → «Raises» от (one.«content»))
+  свёртка raising начиная с пустой список как acc и one → «Joined code lines» от acc и («Codes in line» от one)
+
+тотальная функция «Codes in line»
+  принимает one: «Code line»
+  возвращает список «Code line»
+  пример «two codes in one line»
+    дано one равно (запись «Code line» с «file» равным "a.flang"
+      и «content» равным "\"FLANG_A\", \"FLANG_B: x\", \"FLANG_IO_\"")
+    ожидается [запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_A",
+      запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_B"]
+  пусть chunks равно (хвост (разделить (one.«content») по "\"FLANG_"))
+  пусть names равно (отобразить chunks как chunk → «Code of chunk» от chunk)
+  пусть real равно (отфильтровать names где name → «Is code name» от name)
+  отобразить real как name → запись «Code line» с «file» равным (one.«file») и «content» равным name
+
+тотальная функция «Code of chunk»
+  принимает chunk: строка
+  возвращает строка
+  пример «the name ends at the quote»
+    дано chunk равно "TYPE\" и дальше"
+    ожидается "FLANG_TYPE"
+  пример «the name ends at the colon»
+    дано chunk равно "PLAN_UNSUPPORTED: цель"
+    ожидается "FLANG_PLAN_UNSUPPORTED"
+  соединить ["FLANG_", (голова (разделить (голова (разделить chunk по "\"")) по ":"))] по ""
+
+тотальная функция «Joined code lines»
+  принимает front: список «Code line», back: список «Code line»
+  возвращает список «Code line»
+  пример «nothing and nothing»
+    дано front равно пустой список
+    дано back равно пустой список
+    ожидается пустой список
+  свёртка back начиная с front как acc и one → добавить one к acc
+
+тотальная функция «Raised codes»
+  принимает taken: список «Taken»
+  возвращает список строки
+  пример «a code only shown by an example is not raised»
+    дано taken равно [(запись «Taken» с «command» равным "code lines" и «code» равным 0
+      и «output» равным "flang/self/a.flang:1:  \"FLANG_A\"\nflang/self/a.flang:2:    дано к равно \"FLANG_X\"\n")]
+    ожидается ["FLANG_A"]
+  «Raised of» от («Code lines» от taken)
+
+тотальная функция «Raised of»
+  принимает lines: список «Code line»
+  возвращает список строки
+  пример «each raised code once, in order»
+    дано lines равно [запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_B",
+      запись «Code line» с «file» равным "b.flang" и «content» равным "FLANG_A",
+      запись «Code line» с «file» равным "c.flang" и «content» равным "FLANG_B"]
+    ожидается ["FLANG_A", "FLANG_B"]
+  «In order» от («Add new» от пустой список и (отобразить lines как one → one.«content»))
+
+тотальная функция «Code head»
+  принимает language: строка
+  возвращает список строки
+  пример «russian»
+    дано language равно "ru"
+    ожидается ["Код", "Где в компиляторе", "Текст сообщения"]
+  если language равен "ru"
+    то ["Код", "Где в компиляторе", "Текст сообщения"]
+    иначе ["Code", "Where in the compiler", "Message"]
+
+тотальная функция «Quoted code»
+  принимает text: строка
+  возвращает строка
+  пример «in backticks»
+    дано text равно "FLANG_A"
+    ожидается "`FLANG_A`"
+  соединить ["`", text, "`"] по ""
+
+тотальная функция «Code row»
+  принимает lines: список «Code line», rows: список список строки, name: строка, language: строка
+  возвращает строка
+  пример «the code, its files and its templates»
+    дано lines равно [запись «Code line» с «file» равным "a.flang" и «content» равным "FLANG_A"]
+    дано rows равно [["FLANG_A", "нет", "no"]]
+    дано name равно "FLANG_A"
+    дано language равно "ru"
+    ожидается "| `FLANG_A` | `a.flang` | нет |"
+  пусть files равно (отобразить («Files raising» от lines и name) как file → «Quoted code» от file)
+  «Row» от [(«Quoted code» от name), (соединить files по ", "), («Templates of» от rows и name и language)]
+
+тотальная функция «Codes filled»
+  принимает taken: список «Taken», language: строка
+  возвращает «Filled»
+  пример «one row per raised code»
+    дано taken равно [(запись «Taken» с «command» равным "code lines" и «code» равным 0
+      и «output» равным "flang/self/a.flang:1:  \"FLANG_A\"\n"),
+      (запись «Taken» с «command» равным "file flang/messages/catalog.tsv" и «code» равным 0
+      и «output» равным "key\tru\ten\nFLANG_A\tнет {x}\tno {x}\n")]
+    дано language равно "en"
+    ожидается (запись «Filled» с «lines» равным ["| Code | Where in the compiler | Message |", "| --- | --- | --- |",
+      "| `FLANG_A` | `a.flang` | no {x} |"] и «trouble» равным "")
+  пусть lines равно («Code lines» от taken)
+  пусть rows равно («Catalog rows» от («Output of» от taken и («File command» от («Catalog path»))))
+  пусть body равно (отобразить («Raised of» от lines) как name → («Code row» от lines и rows
+    и name и language))
+  если пусто body
+    то «Trouble» от ["в исходниках компилятора не нашлось ни одного кода"]
+    иначе «Filled with» от («Table of» от («Code head» от language) и body)
+
+тотальная функция «Column number»
+  принимает titles: список строки, name: строка
+  возвращает число
+  пример «the place of a column»
+    дано titles равно ["name", "family", "kind"]
+    дано name равно "family"
+    ожидается 2
+  пример «a column that is not there»
+    дано titles равно ["name"]
+    дано name равно "family"
+    ожидается 0
+  пусть counted равно (свёртка titles начиная с [0, 0] как acc и title → «Count step» от acc и (title равен name))
+  элемент 2 в counted
+
+тотальная функция «Count step»
+  принимает acc: список числа, hit: признак
+  возвращает список числа
+  пример «the place is kept at the first hit»
+    дано acc равно [1, 0]
+    дано hit равно да
+    ожидается [2, 2]
+  пусть place равно ((элемент 1 в acc) плюс 1)
+  [place, (если hit и притом ((элемент 2 в acc) равен 0) то place иначе (элемент 2 в acc))]
+
+тотальная функция «Tsv filled»
+  принимает taken: список «Taken», arguments: строка
+  возвращает «Filled»
+  пример «a whole table»
+    дано taken равно [(запись «Taken» с «command» равным "file a.tsv" и «code» равным 0
+      и «output» равным "n\tk\nН1\tr\n")]
+    дано arguments равно "a.tsv"
+    ожидается запись «Filled» с «lines» равным ["| n | k |", "| --- | --- |", "| Н1 | r |"] и «trouble» равным ""
+  пример «the rows of one family»
+    дано taken равно [(запись «Taken» с «command» равным "file a.tsv" и «code» равным 0
+      и «output» равным "n\tf\nН1\tН\nТ1\tТ\n")]
+    дано arguments равно "a.tsv f=Т"
+    ожидается запись «Filled» с «lines» равным ["| n | f |", "| --- | --- |", "| Т1 | Т |"] и «trouble» равным ""
+  пусть words равно (разделить arguments по " ")
+  пусть path равно (голова words)
+  пусть file равно («File lines» от taken и path)
+  пусть rows равно («Data rows» от («Output of» от taken и («File command» от path)))
+  если не ((file.«trouble») равен "")
+    то file
+    иначе если пусто rows
+      то «Trouble» от ["в таблице ", path, " нет строк"]
+      иначе «Tsv rows filled» от rows и (соединить (хвост words) по " ")
+
+тотальная функция «Tsv rows filled»
+  принимает rows: список строки, selection: строка
+  возвращает «Filled»
+  пример «a column that is not there is trouble»
+    дано rows равно ["n\tf"]
+    дано selection равно "x=1"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "в таблице нет столбца x"
+  пусть titles равно (разделить (голова rows) по "\t")
+  пусть column равно (голова (разделить selection по "="))
+  пусть place равно («Column number» от titles и column)
+  пусть kept равно («Selected rows» от (хвост rows) и place и («After» от selection и "="))
+  если (не (selection равен "")) и притом (place равен 0)
+    то «Trouble» от ["в таблице нет столбца ", column]
+    иначе «Filled with» от («Table of» от titles и kept)
+
+тотальная функция «Selected rows»
+  принимает rows: список строки, place: число, wanted: строка
+  возвращает список строки
+  пример «no column keeps every row»
+    дано rows равно ["Н1\tН", "Т1\tТ"]
+    дано place равно 0
+    дано wanted равно ""
+    ожидается ["| Н1 | Н |", "| Т1 | Т |"]
+  пример «the rows whose cell is the one wanted»
+    дано rows равно ["Н1\tН", "Т1\tТ"]
+    дано place равно 2
+    дано wanted равно "Т"
+    ожидается ["| Т1 | Т |"]
+  пусть parted равно (отобразить rows как row → разделить row по "\t")
+  пусть kept равно (отфильтровать parted где cells → (place равен 0) или ((«Cell» от cells и place) равен wanted))
+  отобразить kept как cells → «Row» от cells
+
+тотальная функция «Keyword head»
+  принимает language: строка
+  возвращает список строки
+  пример «english»
+    дано language равно "en"
+    ожидается ["Russian", "English", "Esperanto", "Chinese"]
+  если language равен "ru"
+    то ["русская", "английская", "эсперанто", "китайская", "Что делает"]
+    иначе ["Russian", "English", "Esperanto", "Chinese"]
+
+тотальная функция «Keyword row»
+  принимает words: список «Слово», entry: строка, language: строка
+  возвращает строка
+  пример «a word nobody has gives dashes»
+    дано words равно пустой список
+    дано entry равно "нет-такого|описание"
+    дано language равно "en"
+    ожидается "| — | — | — | — |"
+  пусть concept равно («До черты» от entry)
+  пусть marked равно («Фразы понятия» от words и concept)
+  пусть cells равно (отобразить «Все поверхности» как surface → («Клетка» от marked и concept и surface))
+  если language равен "ru" то «Строка таблицы» от words и entry иначе «Row of written» от cells
+
+тотальная функция «Row of written»
+  принимает cells: список строки
+  возвращает строка
+  пример «cells are already written as code»
+    дано cells равно ["`модуль`", "`module`"]
+    ожидается "| `модуль` | `module` |"
+  соединить ["| ", (соединить cells по " | "), " |"] по ""
+
+тотальная функция «Keywords filled»
+  принимает words: список «Слово», name: строка, language: строка
+  возвращает «Filled»
+  пример «a section that the glossary does not have is trouble»
+    дано words равно пустой список
+    дано name равно "Нет такого"
+    дано language равно "ru"
+    ожидается запись «Filled» с «lines» равным пустой список и «trouble» равным "в словаре нет раздела «Нет такого»"
+  пусть sections равно (отфильтровать («Разделы») где section → (section.«имя») равен name)
+  разбор sections
+    случай пусто
+      то «Trouble» от ["в словаре нет раздела «", name, "»"]
+    случай голова и хвост
+      то «Keywords of section» от words и голова и language
+
+тотальная функция «Keywords of section»
+  принимает words: список «Слово», section: «Раздел», language: строка
+  возвращает «Filled»
+  пример «a section without concepts gives the head only»
+    дано words равно пустой список
+    дано section равно (запись «Раздел» с «имя» равным "Р" и «ведёт» равным "" и «адрес» равным ""
+      и «понятия» равным пустой список)
+    дано language равно "en"
+    ожидается (запись «Filled» с «lines» равным ["| Russian | English | Esperanto | Chinese |",
+      "| --- | --- | --- | --- |"]
+      и «trouble» равным "")
+  пусть rows равно (отобразить (section.«понятия») как entry → «Keyword row» от words и entry и language)
+  «Filled with» от («Table of» от («Keyword head» от language) и rows)

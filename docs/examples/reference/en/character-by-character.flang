@@ -1,0 +1,44 @@
+module «Character by character»
+
+total function «Shift a letter»
+  accepts letter: string
+  returns string
+  example «a becomes b»
+    given letter equals "a"
+    expected "b"
+  character by code ((character code letter) plus 1)
+
+total function «Fingerprint»
+  accepts text: string
+  returns string
+  example «fingerprint of the empty string»
+    given text equals ""
+    expected "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  hash256 text
+
+total function «Word is usable»
+  accepts word: string
+  returns flag
+  example «a plain word is usable»
+    given word equals "house"
+    expected yes
+  example «an empty one is not»
+    given word equals ""
+    expected no
+  ((length word) is not equal to 0) and also (not (word contains " "))
+
+total function «Words»
+  accepts text: string
+  returns list of string
+  example «two words»
+    given text equals "one two"
+    expected ["one", "two"]
+  split text by " "
+
+total function «Nothing»
+  accepts text: string
+  returns null
+  example «the value of emptiness»
+    given text equals "a"
+    expected null
+  null

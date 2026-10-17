@@ -1,0 +1,6 @@
+module «Sum of naturals»
+
+total function «Sum of nats»
+  accepts a: nat, b: nat
+  returns nat
+  a plus b

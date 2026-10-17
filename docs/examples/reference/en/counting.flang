@@ -1,0 +1,8 @@
+module «Counting»
+  uses «Counting core» only «Double»
+
+total function «Four»
+  returns number
+  example «two doubled»
+    expected 4
+  «Double» of 2

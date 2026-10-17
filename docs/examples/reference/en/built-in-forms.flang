@@ -1,0 +1,17 @@
+module «Built-in forms»
+
+total function «Long words»
+  accepts text: string
+  returns list string
+  example «the short word is dropped»
+    given text equals "one twice thrice"
+    expected ["twice", "thrice"]
+  filter (split text by " ") where word → (length word) is greater than 3
+
+total function «Word lengths»
+  accepts words: list string
+  returns list number
+  example «three words»
+    given words equals ["one", "twice", "thrice"]
+    expected [3, 5, 6]
+  map words as word → length word

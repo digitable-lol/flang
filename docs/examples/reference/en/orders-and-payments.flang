@@ -1,0 +1,82 @@
+module «Orders and payments»
+
+object «Order»
+  amount is number
+  cancelled is number
+
+object «Payment»
+  cents is number
+  refunded is number
+
+object «Receipt»
+  cents is number
+  refunded is number
+
+total function «Cancel order»
+  accepts order: «Order»
+  returns «Order»
+  example «a plain order is cancelled»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Order» with amount equal to 500 and cancelled equal to 1
+  record «Order» with amount equal to order.amount and cancelled equal to 1
+
+total function «Refund payment»
+  accepts payment: «Payment»
+  returns «Payment»
+  example «a plain payment is refunded»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 1
+  record «Payment» with cents equal to payment.cents and refunded equal to 1
+
+total function «Payment for order»
+  accepts order: «Order»
+  returns «Payment»
+  example «units become cents»
+    given order equals record «Order» with amount equal to 500 and cancelled equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to (order.amount times 100) and refunded equal to order.cancelled
+
+total function «Receipt for payment»
+  accepts payment: «Payment»
+  returns «Receipt»
+  example «cents go into the receipt»
+    given payment equals record «Payment» with cents equal to 50000 and refunded equal to 0
+    expected record «Receipt» with cents equal to 50000 and refunded equal to 0
+  record «Receipt» with cents equal to payment.cents and refunded equal to payment.refunded
+
+total function «Payment for receipt»
+  accepts receipt: «Receipt»
+  returns «Payment»
+  example «cents come back into the payment»
+    given receipt equals record «Receipt» with cents equal to 50000 and refunded equal to 0
+    expected record «Payment» with cents equal to 50000 and refunded equal to 0
+  record «Payment» with cents equal to receipt.cents and refunded equal to receipt.refunded
+
+morphism «issue» from «Payment» to «Receipt»
+  gives «Receipt for payment»
+
+morphism «by receipt» from «Receipt» to «Payment»
+  gives «Payment for receipt»
+
+morphism «cancel order» from «Order» to «Order»
+  gives «Cancel order»
+
+morphism «refund payment» from «Payment» to «Payment»
+  gives «Refund payment»
+
+identity «Order»
+identity «Payment»
+
+category «Orders»
+  morphism «cancel order»
+
+category «Payments»
+  morphism «refund payment»
+
+isomorphism «Payment and receipt» from «Payment» to «Receipt»
+  forward morphism «issue»
+  inverse morphism «by receipt»
+
+functor «Order to payment» from «Orders» to «Payments»
+  object «Order» maps to «Payment» gives «Payment for order»
+  morphism «cancel order» maps to morphism «refund payment»

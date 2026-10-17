@@ -1,0 +1,43 @@
+module «Counter with limits»
+
+object «Count»
+  «total»: number
+
+object «Reply»
+  «состояние»: «Count»
+  «действия»: list «Действие»
+
+type «Command»
+  variant «add» contains «amount»: number
+
+process «Counter»
+  state «Count»
+  starts with «empty count»
+  accepts «Command» with mailbox 4 messages
+  handles «counter step» with budget 2000 steps
+
+supervision «Bookkeeping»
+  process «Counter» strategy «перезапустить»
+  failure threshold 3 within 5000 milliseconds else «передать выше»
+
+total function «empty count»
+  returns «Count»
+  record «Count» with «total» equal to 0
+
+function «counter step»
+  accepts current: «Count», message: «Command»
+  returns «Reply»
+  example «adding changes the state and sends nothing»
+    given current equals (record «Count» with «total» equal to 1)
+    given message equals (variant «add» with «amount» equal to 2)
+    expected (record «Reply» with «состояние» equal to (record «Count» with «total» equal to 3) and «действия» equal to [])
+  match message
+    case variant «add» with «amount» as amount
+      let updated equals (record «Count» with «total» equal to (current.«total» plus amount))
+      record «Reply» with «состояние» equal to updated and «действия» equal to []
+
+run «two additions»
+  seed of 1 through 3
+  given «Counter» accepts (variant «add» with «amount» equal to 2)
+  given «Counter» accepts (variant «add» with «amount» equal to 3)
+  expected «Counter» equals (record «Count» with «total» equal to 5)

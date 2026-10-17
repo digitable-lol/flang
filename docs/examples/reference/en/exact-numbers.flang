@@ -1,0 +1,50 @@
+module «Exact numbers»
+
+note "The digits of an exact integer go lowest first in base 4194304"
+
+total function «Sum»
+  accepts a: exact integer, b: exact integer
+  returns exact integer
+  example «a carry into the next digit»
+    given a equals [4194303]
+    given b equals [1]
+    expected [0, 1]
+  example «two to the fifty-third plus one»
+    given a equals [0, 0, 512]
+    given b equals [1]
+    expected [1, 0, 512]
+  a plus b
+
+total function «Sum of fractions»
+  accepts a: exact fraction, b: exact fraction
+  returns exact fraction
+  example «a tenth and a fifth»
+    given a equals [[1], [10]]
+    given b equals [[1], [5]]
+    expected [[3], [10]]
+  a plus b
+
+total function «Zero fraction»
+  returns exact fraction
+  [[], [1]]
+
+total function «Share»
+  accepts part: exact fraction, whole: exact fraction
+  returns exact fraction
+  requires «whole is not zero» whole is greater than «Zero fraction»
+  example «a third over two fifths»
+    given part equals [[1], [3]]
+    given whole equals [[2], [5]]
+    expected [[5], [6]]
+  part divided by whole
+
+total function «Whole units»
+  accepts fraction: exact fraction
+  returns exact integer
+  example «seven halves are three»
+    given fraction equals [[7], [2]]
+    expected [3]
+  example «a third is zero»
+    given fraction equals [[1], [3]]
+    expected []
+  integer part fraction

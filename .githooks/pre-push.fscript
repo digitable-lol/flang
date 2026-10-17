@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly twenty-six checks» (длина результат) равен 26
+  обеспечивает «there are exactly twenty-seven checks» (длина результат) равен 27
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "registry" и «command» равным "bootstrap/flang run-script registry-resolution:check",
    запись «Check» с «name» равным "prints" и «command» равным "bootstrap/flang run-script registry-prints:check",
@@ -42,6 +42,7 @@
    запись «Check» с «name» равным "lint-growth" и «command» равным "bootstrap/flang run-script lint:growth",
    запись «Check» с «name» равным "behavior-probes" и «command» равным "bootstrap/flang run-script behavior:probes",
    запись «Check» с «name» равным "behavior-review" и «command» равным "bootstrap/flang run-script behavior:review",
+   запись «Check» с «name» равным "docs-from-code" и «command» равным "bootstrap/flang run-script docs:check",
    запись «Check» с «name» равным "no-growth" и «command» равным "bootstrap/flang io .githooks/no-growth.fscript --plan Range -- \"$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)\""]
 
 тотальная функция «Output path»

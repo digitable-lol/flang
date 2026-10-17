@@ -1,0 +1,17 @@
+module «Counting core»
+
+total function «Double»
+  accepts n: number
+  returns number
+  example «two»
+    given n equals 2
+    expected 4
+  n times 2
+
+total function «Triple»
+  accepts n: number
+  returns number
+  example «two»
+    given n equals 2
+    expected 6
+  n times 3

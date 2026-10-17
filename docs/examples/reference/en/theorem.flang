@@ -1,0 +1,22 @@
+module «Theorem»
+
+total function «Sum up to»
+  accepts n: nat
+  returns number
+  for all n ensures «sum up to is non-negative» result is at least 0
+  example «no steps left»
+    given n equals 0
+    expected 0
+  if n is at most 0
+    then 0
+    else n plus («Sum up to» of (n minus 1))
+
+theorem «sum up to is non-negative»
+  given n: nat
+  claim result is at least 0
+  induction on n decreases n
+    case 0
+      then by example «no steps left»
+    case any
+      then by hypothesis
+  therefore proved

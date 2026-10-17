@@ -1,0 +1,62 @@
+module «Monoids»
+
+total function «Add exact»
+  accepts a: exact integer, b: exact integer
+  returns exact integer
+  example «a carry into the next digit»
+    given a equals [4194303]
+    given b equals [1]
+    expected [0, 1]
+  a plus b
+
+total function «Exact zero»
+  returns exact integer
+  []
+
+monoid «Exact sum»
+  carrier exact integer
+  operation «Add exact»
+  identity []
+
+total function «Total»
+  accepts sums: list exact integer
+  returns exact integer
+  example «three terms»
+    given sums equals [[1], [2], [3]]
+    expected [6]
+  fold sums starting with «Exact zero» as acc and x → «Add exact» of acc and x
+
+total function «Add numbers»
+  accepts a: number, b: number
+  returns number
+  example «two and three»
+    given a equals 2
+    given b equals 3
+    expected 5
+  a plus b
+
+total function «Opposite»
+  accepts a: number
+  returns number
+  example «three»
+    given a equals 3
+    expected -3
+  0 minus a
+
+monoid «Number sum»
+  carrier number
+  operation «Add numbers»
+  identity 0
+  inverse element «Opposite»
+
+property «коммутативность»
+  carrier number
+  operation «Add numbers»
+
+total function «Squares»
+  accepts numbers: list number
+  returns list number
+  example «three numbers»
+    given numbers equals [1, 2, 3]
+    expected [1, 4, 9]
+  map numbers as x → x times x

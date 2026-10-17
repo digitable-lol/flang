@@ -1,0 +1,15 @@
+module «Binding»
+
+object «Line»
+  price is number
+  quantity is number
+
+total function «Line cost»
+  accepts entry: «Line»
+  returns number
+  example «two at three hundred»
+    given entry equals record «Line» with price equal to 300 and quantity equal to 2
+    expected 660
+  let net equals entry.price times entry.quantity
+  let tax equals 10 percent of net
+  net plus tax

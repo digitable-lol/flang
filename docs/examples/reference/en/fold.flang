@@ -1,0 +1,9 @@
+module «Fold»
+
+total function «Product»
+  accepts items: list number
+  returns number
+  example «three factors»
+    given items equals [2, 3, 4]
+    expected 24
+  fold items starting with 1 as acc and x → acc times x

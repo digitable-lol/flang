@@ -1,0 +1,14 @@
+module «Two spellings»
+
+total function «Through a line break»
+  returns string
+  example «the same as with \n»
+    expected "first\nsecond"
+  "first
+second"
+
+total function «In single quotes»
+  returns string
+  example «the same quotes, only different»
+    expected "text"
+  'text'

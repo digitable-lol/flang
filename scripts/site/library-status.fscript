@@ -1,0 +1,244 @@
+модуль «Library status»
+  использует «Library api» из "library-api.flang"
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting root»
+  вариант «Awaiting directory»
+  вариант «Measuring» содержит directory: строка
+  вариант «Listing» содержит directory: строка
+  вариант «Reading» содержит directory: строка, paths: список строки, queue: список строки, taken: список «Taken»
+  вариант «Writing» содержит directory: строка, count: число
+  вариант «Removing» содержит count: число
+
+тотальная функция «Ledgers command»
+  принимает directory: строка
+  возвращает строка
+  обеспечивает «each module is measured with a limit of its own» результат содержит "timeout 900"
+  пример «eight modules at a time, each ledger and its exit code in a file of its own»
+    дано directory равно "/t/d"
+    ожидается "git ls-files -z -- ':(glob)flang/stdlib/*.flang' |
+    xargs -0 -P 8 -I{} sh -c '
+    b=$(basename \"$1\")
+    timeout 900 bootstrap/flang check --proof \"$1\" > \"$0/$b.out\" 2>&1
+    echo $? > \"$0/$b.code\"' '/t/d' {}"
+  соединить ["git ls-files -z -- ':(glob)flang/stdlib/*.flang' |
+    xargs -0 -P 8 -I{} sh -c '
+    b=$(basename \"$1\")
+    timeout 900 bootstrap/flang check --proof \"$1\" > \"$0/$b.out\" 2>&1
+    echo $? > \"$0/$b.code\"' '", directory, "' {}"] по ""
+
+тотальная функция «Base name»
+  принимает path: строка
+  возвращает строка
+  пример «the name without its folders»
+    дано path равно "flang/stdlib/lists.flang"
+    ожидается "lists.flang"
+  пусть parts равно (разделить path по "/")
+  элемент (длина parts) в parts
+
+тотальная функция «Reads of path»
+  принимает directory: строка, path: строка
+  возвращает список строки
+  пример «the module, its exit code and its ledger»
+    дано directory равно "/t/d"
+    дано path равно "flang/stdlib/lists.flang"
+    ожидается ["file flang/stdlib/lists.flang", "file /t/d/lists.flang.code", "file /t/d/lists.flang.out"]
+  пусть base равно (соединить [directory, "/", («Base name» от path)] по "")
+  [(«File command» от path), («File command» от (соединить [base, ".code"] по "")),
+   («File command» от (соединить [base, ".out"] по ""))]
+
+тотальная функция «Row of path»
+  принимает directory: строка, taken: список «Taken», path: строка
+  возвращает список «Status row»
+  пример «a module whose ledger was not printed»
+    дано directory равно "/t/d"
+    дано taken равно [(запись «Taken» с «command» равным "file a.flang" и «code» равным 0
+      и «output» равным "модуль «А»\n"),
+      (запись «Taken» с «command» равным "file /t/d/a.flang.code" и «code» равным 0 и «output» равным "124\n"),
+      (запись «Taken» с «command» равным "file /t/d/a.flang.out" и «code» равным 0 и «output» равным "")]
+    дано path равно "a.flang"
+    ожидается [(запись «Status row» с «path» равным "a.flang"
+      и «digest» равным "ebe2a020760c0e23be3a3d83f821dcb7fa76d4b02c55bb8af0cb887647658388" и «function» равным ""
+      и «claim» равным "" и «status» равным "ведомость не снялась: код 124")]
+  пусть reads равно («Reads of path» от directory и path)
+  пусть digest равно (хеш256 («Output of» от taken и (элемент 1 в reads)))
+  пусть code равно («Code of ledger» от («Output of» от taken и (элемент 2 в reads)))
+  «Ledger rows» от path и digest и code и («Output of» от taken и (элемент 3 в reads))
+
+тотальная функция «Process of line»
+  принимает line: строка
+  возвращает «Поручение»
+  пример «a line of the shell from the root of the tree»
+    дано line равно "git status"
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && git status"]
+  пусть shell равно (соединить ["cd ../.. && ", line] по "")
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", shell]
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  обеспечивает «the measure starts from the start» результат равен (вариант «Start»)
+  пример «the first stage»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Output of answer»
+  принимает answer: «Отклик»
+  возвращает строка
+  пример «what a process printed»
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "x" и ошибки равным ""
+    ожидается "x"
+  пример «any other answer gives nothing»
+    дано answer равно вариант «Пока ничего»
+    ожидается ""
+  разбор answer
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как ошибки
+      то вывод
+    случай любое
+      то ""
+
+тотальная функция «Code of ledger»
+  принимает text: строка
+  возвращает число
+  пример «the exit code stands on the first line»
+    дано text равно "124\n"
+    ожидается 124
+  пример «a code that is not a number is minus one»
+    дано text равно "x\n"
+    ожидается -1
+  пусть line равно (голова (разделить text по "\n"))
+  разбор (к числу или беда line)
+    случай вариант «Разобрано» с значение как значение
+      то значение
+    случай любое
+      то -1
+
+тотальная функция «Shell of»
+  принимает line: строка, following: «Stage»
+  возвращает «Продолжение»
+  пример «a line of the shell and the stage following it»
+    дано line равно "git status"
+    дано following равно вариант «Removing» с count равным 0
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", "cd ../.. && git status"]) и потом равным (вариант «Removing» с count равным 0))
+  вариант «Сделать» с поручение равным («Process of line» от line) и потом равным following
+
+тотальная функция «Read next»
+  принимает directory: строка, paths: список строки, queue: список строки, taken: список «Taken»
+  возвращает «Продолжение»
+  пример «nothing read is a failure, not an empty record»
+    дано directory равно "/t/d"
+    дано paths равно пустой список
+    дано queue равно пустой список
+    дано taken равно пустой список
+    ожидается (вариант «Провал» с код равным "LIBRARY_STATUS_EMPTY"
+      и сообщение равным "ни одна ведомость библиотеки не прочитана")
+  разбор queue
+    случай пусто
+      то «Write record» от directory и (свёртка paths начиная с пустой список как acc и path
+        → «Joined rows» от acc и («Row of path» от directory и taken и path))
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Order of key» от голова) и потом равным (вариант «Reading»
+        с directory равным directory и paths равным paths и queue равным queue и taken равным taken))
+
+тотальная функция «Write record»
+  принимает directory: строка, rows: список «Status row»
+  возвращает «Продолжение»
+  пример «no rows is a failure, not an empty record»
+    дано directory равно "/t/d"
+    дано rows равно пустой список
+    ожидается (вариант «Провал» с код равным "LIBRARY_STATUS_EMPTY"
+      и сообщение равным "ни одна ведомость библиотеки не прочитана")
+  если пусто rows
+    то (вариант «Провал» с код равным "LIBRARY_STATUS_EMPTY"
+      и сообщение равным "ни одна ведомость библиотеки не прочитана")
+    иначе (вариант «Сделать» с поручение равным
+      (вариант «Записать файл» с путь равным "../../docs/site/library-status.tsv"
+      и содержимое равным («Status text» от rows)) и потом равным (вариант «Writing» с directory равным directory
+      и count равным (длина rows)))
+
+тотальная функция «Root of»
+  принимает answer: «Отклик»
+  возвращает строка
+  пример «the variable names the root»
+    дано answer равно вариант «Значение среды» с значение равным "/t"
+    ожидается "/t"
+  пример «without the variable the root is /tmp»
+    дано answer равно вариант «Переменной среды нет»
+    ожидается "/tmp"
+  разбор answer
+    случай вариант «Значение среды» с значение как значение
+      то значение
+    случай любое
+      то "/tmp"
+
+тотальная функция «Directory of»
+  принимает answer: «Отклик»
+  возвращает строка
+  пример «the directory that was made»
+    дано answer равно вариант «Заведено» с путь равным "/t/d"
+    ожидается "/t/d"
+  пример «no directory»
+    дано answer равно вариант «Пока ничего»
+    ожидается ""
+  разбор answer
+    случай вариант «Заведено» с путь как путь
+      то путь
+    случай любое
+      то ""
+
+тотальная функция «After directory»
+  принимает directory: строка
+  возвращает «Продолжение»
+  пример «no directory is a failure»
+    дано directory равно ""
+    ожидается вариант «Провал» с код равным "LIBRARY_STATUS_DIRECTORY" и сообщение равным "временный каталог не заведён"
+  если directory равен ""
+    то вариант «Провал» с код равным "LIBRARY_STATUS_DIRECTORY" и сообщение равным "временный каталог не заведён"
+    иначе «Shell of» от («Ledgers command» от directory) и (вариант «Measuring» с directory равным directory)
+
+тотальная функция «Next»
+  принимает stage: «Stage», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the record is written and the directory goes»
+    дано stage равно вариант «Removing» с count равным 3
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "" и ошибки равным ""
+    ожидается вариант «Конец работы» с значение равным "docs/site/library-status.tsv: строк 3"
+  разбор stage
+    случай вариант «Start»
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")
+        и потом равным (вариант «Awaiting root»))
+    случай вариант «Awaiting root»
+      то (вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным
+        (соединить [(«Root of» от answer), "/library-status-"] по "")) и потом равным (вариант «Awaiting directory»))
+    случай вариант «Awaiting directory»
+      то «After directory» от («Directory of» от answer)
+    случай вариант «Measuring» с directory как directory
+      то «Shell of» от («Shell line» от («Library command»)) и (вариант «Listing» с directory равным directory)
+    случай вариант «Listing» с directory как directory
+      то «Start reading» от directory и («Lines of» от («Output of answer» от answer))
+    случай вариант «Reading» с directory как directory и paths как paths и queue как queue и taken как taken
+      то «Read next» от directory и paths и (хвост queue) и (добавить («Taken of answer» от (голова queue)
+        и answer) к taken)
+    случай вариант «Writing» с directory как directory и count как count
+      то «Shell of» от (соединить ["rm -rf '", directory, "'"] по "") и (вариант «Removing» с count равным count)
+    случай вариант «Removing» с count как count
+      то (вариант «Конец работы» с значение равным
+        (соединить ["docs/site/library-status.tsv: строк ", (к строке count)] по ""))
+
+тотальная функция «Start reading»
+  принимает directory: строка, paths: список строки
+  возвращает «Продолжение»
+  пример «no module is a failure»
+    дано directory равно "/t/d"
+    дано paths равно пустой список
+    ожидается (вариант «Провал» с код равным "LIBRARY_STATUS_EMPTY"
+      и сообщение равным "ни одна ведомость библиотеки не прочитана")
+  пусть queue равно (свёртка paths начиная с пустой список как acc и path → «Joined lists» от acc и
+    («Reads of path» от directory и path))
+  «Read next» от directory и paths и queue и пустой список
+
+план «Measure»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

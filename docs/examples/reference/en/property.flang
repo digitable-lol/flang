@@ -1,0 +1,19 @@
+module «Property»
+
+total function «Double all»
+  accepts items: list number
+  returns list number
+  for all items ensures «doubling keeps the length» (length result) equals (length items)
+  map items as x → x times 2
+
+total function «Through doubling»
+  accepts items: list number
+  returns list number
+  for all items ensures «through doubling the length is the same» (length result) equals (length items)
+  «Double all» of items
+
+theorem «through doubling the length is the same»
+  given items: list number
+  claim (length result) equals (length items)
+  by property «doubling keeps the length»
+  therefore proved

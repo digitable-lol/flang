@@ -22,11 +22,11 @@
     ожидается ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka",
       "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost",
       "forgery-case-split-captures-a-bound-name", "forgery-unfold-without-arguments",
-      "forgery-unfold-inside-a-list", "forgery-unfold-of-a-whole-equation"]
+      "forgery-unfold-inside-a-list", "forgery-unfold-of-a-whole-comparison"]
   ["poddelka-nositel-chislo-segment", "poddelka-nositel-psevdonim-ne-otrezok", "poddelka-raznost-bez-poryadka",
     "poddelka-svyortka-nad-pustym", "poddelka-razv2-sebya", "poddelka-razv3-raznost",
     "forgery-case-split-captures-a-bound-name", "forgery-unfold-without-arguments",
-    "forgery-unfold-inside-a-list", "forgery-unfold-of-a-whole-equation"]
+    "forgery-unfold-inside-a-list", "forgery-unfold-of-a-whole-comparison"]
 
 тотальная функция «Allowed to be refused»
   возвращает список строки

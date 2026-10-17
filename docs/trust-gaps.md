@@ -77,7 +77,7 @@ of the abstract law"; extensionality. Laws over `число` are never declared 
 | 4 | law generation leaves the trusted base |
 | 5 | laws over functions |
 
-## Gap 4. The checker and the semantics — [ADR-0127](adr/0127-a-reference-semantics-in-lean-is-the-yardstick-for-the-checker-and-the-print.md)
+## Gap 4. The checker and the semantics — [ADR-0136](adr/0136-a-reference-semantics-in-lean-is-the-yardstick-for-the-checker-and-the-print.md)
 
 The reference is a semantics of flang in Lean: an executable definition of the language with
 IEEE 754 binary64 numbers, strings as UTF-8 bytes, lists, records and sums. The theorem of the

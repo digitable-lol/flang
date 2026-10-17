@@ -1342,7 +1342,7 @@ e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 cc8efee04153882fa095db14dfa0548d|144|88|4|50|0|flang/self/emit-elixir.flang
 a21cc98b06700c8c8fb3a0f414a84f23|197|148|7|39|0|flang/self/emit-go.flang
 b1818a43c9906c906ad3d8521756d44b|213|137|7|61|0|flang/self/emit-java.flang
-d716fe052f0b062a45a29f4156e34603|175|152|0|4|0|flang/self/emit-js.flang
+d716fe052f0b062a45a29f4156e34603|186|152|0|4|0|flang/self/emit-js.flang
 dc0f3f20e387d3a5db3813d2ae137694|18|17|0|0|0|flang/self/emit-layout.flang
 f13484b53a5c82fb325806ab879986a2|644|584|24|38|0|flang/self/emit-python.flang
 3ce042a5f1a0c6f91894e71ae4c7452e|114|79|0|35|0|flang/self/emit-rust.flang
@@ -1369,11 +1369,11 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|56|44|0|0|0|flang/self/obligations.flang
 3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
-54cfb1a8e907051aafea33efa6ac337d|781|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|755|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
-0671f904ac2c1b423ee51e1562ed2a08|96|44|0|0|0|flang/self/proof-kernel.flang
+0671f904ac2c1b423ee51e1562ed2a08|97|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|231|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
@@ -1386,7 +1386,7 @@ bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
 5244f474a7f26171786a1690f79a98e9|319|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
-6f5995562eb91e54ecbcd9bde4c4853e|440|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|450|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1842,7 +1842,7 @@ f91d13cf6ac7c76a4abb75d145a2413f|2|×|×|×|0|flang/proof/checker/tests/families
 // `требует` и `закон` в файле нет, потому «без приговора» ноль. Водители проб
 // каталога `drivers/` написаны на чужих языках и в опись не входят вовсе.
 32d11fd659e2ab5bb90881536ffaa952|15|15|0|0|0|flang/proof/probes/exact-integer-in-targets/run.fscript
-fca5a4487b4fbe469b0ff22403c4e3f7|8|8|0|0|0|flang/proof/probes/exact-fraction-in-targets/run.fscript
+444ccae06f44da99563fbb85af201fbd|1|1|0|0|0|flang/proof/probes/exact-fraction-in-targets/run.fscript
 // ── Предел памяти и срока у поручения (ADR-0056), снято 4 октября 2026 ─────
 // У ЭТИХ ТРЁХ ПРИГОВОР НЕ СНЯТ, И ПРОЧЕРК ЗНАЧИТ «НЕ МЕРЕНО», а не ноль.
 // Причина названа и проверена прогоном: все три пишут поручение «Запустить
@@ -1872,9 +1872,9 @@ a21cc98b06700c8c8fb3a0f414a84f23|194|148|7|39|0|flang/self/emit-go.flang
 b1818a43c9906c906ad3d8521756d44b|205|137|7|61|0|flang/self/emit-java.flang
 dc0f3f20e387d3a5db3813d2ae137694|17|17|0|0|0|flang/self/emit-layout.flang
 6b887e3137c1eee1b3ac07816837f436|285|146|31|76|0|flang/self/interpret.flang
-54cfb1a8e907051aafea33efa6ac337d|784|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|755|446|22|261|0|flang/self/parser.flang
 82baac47756df343c845cc40f740dfbe|97|82|2|10|0|flang/self/proof-initial.flang
-c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|97|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|230|98|57|3|0|flang/self/proof-record.flang
 c9e3ee258bfab2a0503a1214f8d1034f|185|46|1|91|0|flang/self/proofterm.flang
 03fd28e29405769fdb0d19a3fc2d726e|3|×|×|×|0|flang/ct/monad-maybe-monoid.flang
@@ -1883,7 +1883,7 @@ eed32097cecd0d636f9310d09e7fc976|4|×|×|×|0|flang/ct/monoidal-routes.flang
 f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
 a91ae4dd453568a691d07c06503f7344|38|17|21|0|0|flang/self/functor-oracle.flang
 3f8970a696cb0bc0b668c6e31668b8bf|41|11|0|30|0|flang/self/oracle.flang
-c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|97|44|0|0|0|flang/self/proof-kernel.flang
 bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
 7d10df9d9c1f5160df1ea5f9e2970291|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/false-goal-under-conjunction.flang
 eb368d87b57b78f0b12d189ec83cb4bb|2|2|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/found-witness.flang
@@ -1893,13 +1893,13 @@ d10f7559f19e2c79a1249fad2fc746bd|1|1|0|0|0|flang/proof/probes/quantifier-inside-
 dcdf98a5c22b7eac4510ef6d47df7db2|1|1|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/nested-each-has-a-witness.flang
 c218b0c6b08465319ece2a61e3598862|1|1|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/nested-exists-under-for-all-inside-conjunction.flang
 1646758aea547d9cdf049f06c94b5586|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/no-witness-fits.flang
-c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|97|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-law.flang
 1880ce56bb426cf1802c224455273e46|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-zero.flang
 9f4af10b6f645ab264cd446665d22220|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/non-canon-literal.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/over-number.flang
 1c40267274311ec4479e99c16fed524f|7|×|×|×|0|flang/proof/checker/tests/families/exact-ring/ring-laws.flang
-c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|97|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-false-over-exact.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-laws-over-number.flang
 91ac4cc44b324360041a8eb79081efcd|2|1|0|1|0|flang/proof/checker/tests/families/postcondition-rewrite/chain-of-eighteen.flang
@@ -1923,3 +1923,7 @@ b205efbd4be14caef921ae8d6c40c3ba|1|1|0|0|0|flang/proof/checker/tests/families/un
 63e174b921c60caec80cfa1e16bdfcec|1|×|×|×|0|flang/proof/checker/tests/families/natural-ring/postcondition.flang
 e50f710194b09d31a2893aa7d1eb04c5|1|0|0|1|0|flang/proof/checker/tests/families/natural-ring/forged/false-triple.flang
 3ac4f9201ad6ae9a9c4b28596831bb1c|1|0|0|1|0|flang/proof/checker/tests/families/natural-ring/forged/over-number.flang
+1c487ad9b831077e54b2411e43663d8b|5|5|0|0|0|flang/proof/probes/answers-in-targets.fscript
+65be31534e602738266caac5a9dd7548|1|1|0|0|0|flang/proof/probes/money-and-date-in-targets/run.fscript
+628d5f5602948e83d2d2e92c1035fc13|3|×|×|×|0|flang/proof/checker/tests/families/money-ring/ring-over-money.flang
+6a88c15c1bcb342d4b37bd9f0b2c8997|1|×|×|×|0|flang/proof/checker/tests/families/money-ring/forged/false-law.flang

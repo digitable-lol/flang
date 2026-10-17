@@ -50,16 +50,18 @@ only the hand-written sources are runtimes.
 | prebuilt tarball, `install.sh`, deb, rpm, AUR | `bin/flang` | `share/flang/stdlib` | `share/flang/<t>` |
 | Homebrew (`flang-package`, `flang`) | `Cellar/…/bin/flang` | `Cellar/…/share/flang/stdlib` | `Cellar/…/share/flang/<t>` |
 | asdf (prebuilt or C archive) | `installs/flang/<v>/bin/flang` | `…/share/flang/stdlib` | `…/share/flang/<t>` |
-| `make install PREFIX=<p>` | `<p>/bin/flang` | not installed | not installed |
+| `make install PREFIX=<p>` | `<p>/bin/flang` | `<p>/share/flang/stdlib` | `<p>/share/flang/<t>` |
 
 The C release archive carries the image of `share/flang` in its `runtime/` directory: one
 subdirectory per target plus `stdlib/`. Every package copies that directory as a whole, so
 the library travels the same road as the runtimes. Releases before 0.7.29 ship no
 `stdlib/`; an install of such a release finds the library only through `FLANG_MODULE_DIR`.
 
-`make install` from the tree installs `bin`, `lib`, `include` and the manual page. For a
-library and runtimes there, point the binary at the tree:
-`FLANG_MODULE_DIR=<clone>/flang/stdlib` and `--runtime <clone>/flang/src/emit/<t>`.
+`make install` copies `flang/src/emit/<t>` and `flang/stdlib` of the clone (or `runtime/` of
+the C archive) into `<p>/share/flang`. The rule comes with the bootstrap seed of 0.7.29; an
+older seed installs only `bin`, `lib`, `include` and the manual page, and such an install is
+pointed at the tree by hand: `FLANG_MODULE_DIR=<clone>/flang/stdlib` and
+`--runtime <clone>/flang/src/emit/<t>`.
 
 ## How it is checked
 

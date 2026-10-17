@@ -95,8 +95,9 @@ make -C bootstrap -j4
 sudo make -C bootstrap install        # or PREFIX=$HOME/.local, without sudo
 ```
 
-Lays down `bin/flang`, `lib/libcompiler_flang.a` and the headers in `include/`,
-and says where:
+Lays down `bin/flang`, `lib/libcompiler_flang.a`, the headers in `include/`,
+the runtimes of the emit targets in `share/flang/<target>/` and the standard
+library in `share/flang/stdlib/`, and says where:
 
 ```
 …
@@ -105,13 +106,11 @@ make: Leaving directory '…/bootstrap'
 ```
 
 The version is whatever the clone holds, not the latest release. There is no
-`man` page on this path: `flang.1` ships only in the release archive. There is no
-`share/flang/` either: neither the runtime sources of the emit targets nor the
-standard library. `flang emit` from such an install asks for the runtime
-directory: `--runtime <clone>/flang/src/emit/c`, or the variable
-`FLANG_RUNTIME_DIR` — one directory per target. The search order of the library
-and the variables that point the binary at the clone are in
-[the guide](../guide/installed-library.md).
+`man` page on this path: `flang.1` ships only in the release archive. A clone
+older than 0.7.29 installs no `share/flang/`; `flang emit` from such an install
+asks for the runtime directory (`--runtime <clone>/flang/src/emit/c`, or the
+variable `FLANG_RUNTIME_DIR`). The search order of the library and the variables
+that point the binary at the clone are in [the guide](../guide/installed-library.md).
 
 If the machine has no `make`, one `cc` call is enough:
 
@@ -196,7 +195,7 @@ the directory holding it.
 | deb, rpm | `sudo apt remove flang-package`, `sudo dnf remove flang-package` |
 | From source | `make -C bootstrap uninstall` — add the same `PREFIX=…` you installed with |
 
-`make -C bootstrap uninstall` removes `bin/flang`, the library and the man page,
+`make -C bootstrap uninstall` removes `bin/flang`, the library, `share/flang/` and the man page,
 but LEAVES the headers in `include/` (`compiler_flang.h`, `flang_runtime.h`,
 `tls_client.h`) — delete them by hand if the prefix has to be empty.
 

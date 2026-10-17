@@ -92,8 +92,9 @@ make -C bootstrap -j4
 sudo make -C bootstrap install        # или PREFIX=$HOME/.local, без sudo
 ```
 
-Кладёт `bin/flang`, `lib/libcompiler_flang.a` и заголовки в `include/` — и
-говорит куда:
+Кладёт `bin/flang`, `lib/libcompiler_flang.a`, заголовки в `include/`, рантаймы
+целей печати в `share/flang/<цель>/` и стандартную библиотеку в
+`share/flang/stdlib/` — и говорит куда:
 
 ```
 …
@@ -102,11 +103,10 @@ make: Leaving directory '…/bootstrap'
 ```
 
 Версия будет та, что в клоне, а не последняя выпущенная. Страницы `man` на этом
-пути нет: `flang.1` приезжает только в архиве релиза. Нет и `share/flang/`: ни
-исходников рантайма целей печати, ни стандартной библиотеки. `flang emit` из такой
-установки просит назвать каталог рантайма: `--runtime <клон>/flang/src/emit/c`
-или та же переменная `FLANG_RUNTIME_DIR` — по каталогу на цель. Порядок поиска
-библиотеки и переменные, которые показывают двоичному клон, — в
+пути нет: `flang.1` приезжает только в архиве релиза. Клон старше 0.7.29
+`share/flang/` не ставит; `flang emit` из такой установки просит назвать каталог
+рантайма (`--runtime <клон>/flang/src/emit/c` или переменная `FLANG_RUNTIME_DIR`).
+Порядок поиска библиотеки и переменные, которые показывают двоичному клон, — в
 [руководстве](../guide/installed-library.ru.md).
 
 Если `make` на машине нет, хватает одного вызова `cc`:
@@ -192,7 +192,7 @@ libcompiler_flang.a`, двоичный файл поставлен, а библ�
 | deb, rpm | `sudo apt remove flang-package`, `sudo dnf remove flang-package` |
 | Из исходников | `make -C bootstrap uninstall` — с тем же `PREFIX=…`, с каким ставили |
 
-`make -C bootstrap uninstall` снимает `bin/flang`, библиотеку и страницу man, но
+`make -C bootstrap uninstall` снимает `bin/flang`, библиотеку, `share/flang/` и страницу man, но
 ОСТАВЛЯЕТ заголовки в `include/` (`compiler_flang.h`, `flang_runtime.h`,
 `tls_client.h`) — удалите их руками, если каталог должен остаться пустым.
 

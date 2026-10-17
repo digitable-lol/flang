@@ -1,0 +1,17 @@
+program	surface	code	word
+list-pattern-in-call-arguments.flang	check	0	замечаний нет
+list-pattern-with-own-names.flang	check	0	замечаний нет
+field-type-nonnegative-instrumental.flang	check	0	замечаний нет
+field-type-integer-instrumental.flang	check	0	замечаний нет
+parse-error-entry.flang	check	1	parse-error-entry.flang: не разобрана конструкция: неожиданное 'закон'
+parse-error-entry.flang	check	1	не проверено — замечаний 1
+parse-error-imported.flang	check	0	замечаний нет
+parse-error-base.flang	check	0	замечаний нет
+result-with-failure-variant.flang	check	0	замечаний нет
+failure-variant-imported.flang	check	0	замечаний нет
+story-discount-cap.flang	proof	0	постусловие «хочу: скидка не больше 30» функции «потолок скидки» — доказано
+story-undeclared-role.flang	check	1	запись «Роль» не имеет поля «завсклад»
+namesake-first.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang
+namesake-second.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-first.flang
+seed-range-from-to.flang	check	2	проверено НЕ ДО КОНЦА
+seed-range-of-to.flang	check	2	проверено НЕ ДО КОНЦА

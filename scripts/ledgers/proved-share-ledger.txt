@@ -1060,6 +1060,7 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
+26333c891deb6f08d1c5952cb671832b|1|1|0|0|0|flang/proof/probes/parse-and-import/programs/parse-error-imported.flang
 ccf79296c7ca4b9e14030c7619367fd2|0|0|0|0|1|flang/proof/probes/message-language/programs/precondition-call.flang
 f576ef59fb727973057323258bee048c|1|1|0|0|0|flang/proof/probes/message-language/programs/checked.flang
 d1904783bf9e67c54add5731ca6cc8dc|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/absolute-integer.flang
@@ -1359,7 +1360,7 @@ e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 cf285bfaf06251404d184ecee764f85f|24|10|10|4|0|flang/self/iso.flang
 b25da330b06be21a87c8a500d8a24ff5|43|12|30|1|0|flang/self/law-oracle.flang
 fb537024bd9a6899533d6a3233e3b092|101|97|4|0|0|flang/self/lexer.flang
-ef419036ed7ae00578750c7972e9c62f|1|×|×|×|0|flang/self/link.flang
+ef419036ed7ae00578750c7972e9c62f|6|×|×|×|0|flang/self/link.flang
 7bc86c81be652752a5964593865681ae|224|96|13|115|0|flang/self/lsp.flang
 b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 8b54bf00afa4ab0bf7959bfa73175e82|117|62|49|6|0|flang/self/monad-expand.flang
@@ -1369,7 +1370,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|56|44|0|0|0|flang/self/obligations.flang
 3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
-54cfb1a8e907051aafea33efa6ac337d|781|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|809|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang

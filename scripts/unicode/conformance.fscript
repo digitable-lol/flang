@@ -1,0 +1,128 @@
+модуль «Unicode conformance plan»
+  использует «Unicode conformance» из "conformance.flang"
+
+тип «Conformance step»
+  вариант «Asking folder»
+  вариант «Reading normalization» содержит folder: строка
+  вариант «Reading graphemes» содержит normalization: строка
+
+тотальная функция «Begin conformance»
+  возвращает «Conformance step»
+  пример «The folder is asked first»
+    ожидается вариант «Asking folder»
+  вариант «Asking folder»
+
+тотальная функция «Report»
+  принимает normalization: строка, graphemes: строка
+  возвращает строка
+  (соединить [(«Normalization report» от normalization), («Unlisted report» от normalization), («Law report» от
+      normalization), («Grapheme report» от graphemes)] по "\n")
+
+тотальная функция «Verdict»
+  принимает report: строка
+  возвращает «Продолжение»
+  пример «All clean»
+    дано report равно "graphemes: lines 2, checks 2, failures 0"
+    ожидается вариант «Конец работы» с значение равным "graphemes: lines 2, checks 2, failures 0"
+  пример «A failure fails the plan»
+    дано report равно "graphemes: lines 2, checks 2, failures 1, first: ÷ 0020 ÷"
+    ожидается (вариант «Провал» с код равным "FLANG_UNICODE_CONFORMANCE" и сообщение равным
+        "graphemes: lines 2, checks 2, failures 1, first: ÷ 0020 ÷")
+  если report содержит ", first: "
+    то вариант «Провал» с код равным "FLANG_UNICODE_CONFORMANCE" и сообщение равным report
+    иначе вариант «Конец работы» с значение равным report
+
+тотальная функция «Read in»
+  принимает folder: строка, name: строка, later: «Conformance step»
+  возвращает «Продолжение»
+  пример «Path inside the folder»
+    дано folder равно "ucd"
+    дано name равно "NormalizationTest.txt"
+    дано later равно вариант «Reading normalization» с folder равным "ucd"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "ucd/NormalizationTest.txt")
+        и потом равным (вариант «Reading normalization» с folder равным "ucd"))
+  (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [folder, "/", name] по "")) и
+      потом равным later)
+
+тотальная функция «Failure of»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Host failure is passed on»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+    ожидается вариант «Провал» с код равным "FLANG_IO_READ" и сообщение равным "no file"
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как message
+      то вариант «Провал» с код равным code и сообщение равным message
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "a file or the arguments were awaited"
+
+тотальная функция «After folder»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Ask the arguments»
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking folder»)
+  пример «Folder given»
+    дано reply равно вариант «Доводы» с доводы равным ["ucd"]
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "ucd/NormalizationTest.txt")
+        и потом равным (вариант «Reading normalization» с folder равным "ucd"))
+  разбор reply
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking folder»)
+    случай вариант «Доводы» с доводы как words
+      то «Read folder» от words
+    случай любое
+      то «Failure of» от reply
+
+тотальная функция «Read folder»
+  принимает words: список строки
+  возвращает «Продолжение»
+  пример «No folder»
+    дано words равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+        "usage: -- <folder with NormalizationTest.txt and GraphemeBreakTest.txt>")
+  разбор words
+    случай голова folder и хвост rest
+      то «Read in» от folder и "NormalizationTest.txt" и (вариант «Reading normalization» с folder равным folder)
+    случай любое
+      то (вариант «Провал» с код равным "FLANG_ARGS" и сообщение равным
+          "usage: -- <folder with NormalizationTest.txt and GraphemeBreakTest.txt>")
+
+тотальная функция «Next conformance»
+  принимает step: «Conformance step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Asking folder»
+      то «After folder» от reply
+    случай вариант «Reading normalization» с folder как folder
+      то «After normalization» от folder и reply
+    случай вариант «Reading graphemes» с normalization как normalization
+      то «After graphemes» от normalization и reply
+
+тотальная функция «After normalization»
+  принимает folder: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Graphemes are read next»
+    дано folder равно "ucd"
+    дано reply равно вариант «Прочитано» с содержимое равным "x"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "ucd/GraphemeBreakTest.txt")
+        и потом равным (вариант «Reading graphemes» с normalization равным "x"))
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Read in» от folder и "GraphemeBreakTest.txt" и (вариант «Reading graphemes» с normalization равным text)
+    случай любое
+      то «Failure of» от reply
+
+тотальная функция «After graphemes»
+  принимает normalization: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Verdict» от («Report» от normalization и text)
+    случай любое
+      то «Failure of» от reply
+
+план «Conformance»
+  состояние «Conformance step»
+  начинает с «Begin conformance»
+  обрабатывает «Next conformance»

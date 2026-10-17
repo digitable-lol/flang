@@ -413,4 +413,568 @@ function документМеста(место) {
   return document.querySelector(`[${ПРИЗНАК_МЕСТА}="${место}"]`)
 }
 
+
+const WASI_ОШИБКА = Object.freeze({ BADF: 8, EXIST: 20, INVAL: 28, ISDIR: 31, NOENT: 44, NOSYS: 52, NOTDIR: 54, NOTEMPTY: 55, SPIPE: 70 })
+const WASI_ТИП = Object.freeze({ символьный: 2, каталог: 3, файл: 4 })
+const WASI_ПРАВА = 0x1fffffffn
+
+class ВыходWasi {
+  constructor(код) {
+    this.код = код
+  }
+}
+
+function путьWasi(основа, хвост) {
+  const части = (хвост.startsWith("/") ? хвост : `${основа}/${хвост}`).split("/")
+  const итог = []
+  for (const часть of части) {
+    if (часть === "" || часть === ".") continue
+    if (часть === "..") итог.pop()
+    else итог.push(часть)
+  }
+  return `/${итог.join("/")}`
+}
+
+function родительWasi(путь) {
+  const место = путь.lastIndexOf("/")
+  return место <= 0 ? "/" : путь.slice(0, место)
+}
+
+export function файлыWasi(начальные = {}) {
+  const узлы = new Map([["/", { тип: "каталог" }]])
+  const кодер = new TextEncoder()
+  const положить = (путь, содержимое) => {
+    const полный = путьWasi("/", путь)
+    let каталог = родительWasi(полный)
+    const цепочка = []
+    while (!узлы.has(каталог)) {
+      цепочка.push(каталог)
+      каталог = родительWasi(каталог)
+    }
+    for (const звено of цепочка) узлы.set(звено, { тип: "каталог" })
+    узлы.set(полный, { тип: "файл", байты: typeof содержимое === "string" ? кодер.encode(содержимое) : содержимое })
+  }
+  for (const [путь, содержимое] of Object.entries(начальные)) положить(путь, содержимое)
+  return { узлы, положить, прочитать: (путь) => узлы.get(путьWasi("/", путь))?.байты ?? null }
+}
+
+export function запуститьWasi(модуль, { доводы = [], окружение = {}, файлы = файлыWasi(), вход = "" } = {}) {
+  const кодер = new TextEncoder()
+  const декодер = new TextDecoder()
+  const вывод = []
+  const входБайты = кодер.encode(вход)
+  let входПозиция = 0
+  let память = null
+  const вид = () => new DataView(память.buffer)
+  const байты = () => new Uint8Array(память.buffer)
+  const строкаИз = (адрес, длина) => декодер.decode(байты().slice(адрес, адрес + длина))
+  const дескрипторы = new Map([
+    [0, { тип: WASI_ТИП.символьный, поток: 0 }],
+    [1, { тип: WASI_ТИП.символьный, поток: 1 }],
+    [2, { тип: WASI_ТИП.символьный, поток: 2 }],
+    [3, { тип: WASI_ТИП.каталог, путь: "/", предоткрыт: true }],
+  ])
+  let следующий = 4
+  const узлы = файлы.узлы
+  const найти = (дескриптор, адрес, длина) => {
+    const основа = дескрипторы.get(дескриптор)
+    if (основа === undefined || основа.тип !== WASI_ТИП.каталог) return null
+    return путьWasi(основа.путь, строкаИз(адрес, длина))
+  }
+  const сведения = (адрес, узел, размер) => {
+    const в = вид()
+    for (let сдвиг = 0; сдвиг < 64; сдвиг += 8) в.setBigUint64(адрес + сдвиг, 0n, true)
+    в.setBigUint64(адрес + 8, BigInt(узел.номер ?? 1), true)
+    в.setUint8(адрес + 16, узел.тип === "каталог" ? WASI_ТИП.каталог : узел.тип === WASI_ТИП.символьный ? WASI_ТИП.символьный : WASI_ТИП.файл)
+    в.setBigUint64(адрес + 24, 1n, true)
+    в.setBigUint64(адрес + 32, BigInt(размер), true)
+  }
+  const векторы = (адрес, число, делать) => {
+    const в = вид()
+    let всего = 0
+    for (let н = 0; н < число; н += 1) {
+      const начало = в.getUint32(адрес + н * 8, true)
+      const длина = в.getUint32(адрес + н * 8 + 4, true)
+      const сделано = делать(начало, длина)
+      всего += сделано
+      if (сделано < длина) break
+    }
+    return всего
+  }
+  const список = (строки) => строки.map((с) => кодер.encode(`${с}\0`))
+  const доводыБайты = список(доводы)
+  const средаБайты = список(Object.entries(окружение).map(([к, з]) => `${к}=${з}`))
+  const отдатьСписок = (элементы, адресУказателей, адресБуфера) => {
+    let место = адресБуфера
+    элементы.forEach((элемент, н) => {
+      вид().setUint32(адресУказателей + н * 4, место, true)
+      байты().set(элемент, место)
+      место += элемент.length
+    })
+    return 0
+  }
+  const размерыСписка = (элементы, адресЧисла, адресРазмера) => {
+    вид().setUint32(адресЧисла, элементы.length, true)
+    вид().setUint32(адресРазмера, элементы.reduce((с, э) => с + э.length, 0), true)
+    return 0
+  }
+  const wasi = {
+    args_sizes_get: (а, б) => размерыСписка(доводыБайты, а, б),
+    args_get: (а, б) => отдатьСписок(доводыБайты, а, б),
+    environ_sizes_get: (а, б) => размерыСписка(средаБайты, а, б),
+    environ_get: (а, б) => отдатьСписок(средаБайты, а, б),
+    clock_res_get: (часы, адрес) => {
+      вид().setBigUint64(адрес, 1000n, true)
+      return 0
+    },
+    clock_time_get: (часы, точность, адрес) => {
+      const сейчас = часы === 0 ? Date.now() * 1e6 : (globalThis.performance?.now() ?? Date.now()) * 1e6
+      вид().setBigUint64(адрес, BigInt(Math.round(сейчас)), true)
+      return 0
+    },
+    random_get: (адрес, длина) => {
+      globalThis.crypto.getRandomValues(байты().subarray(адрес, адрес + длина))
+      return 0
+    },
+    proc_exit: (код) => {
+      throw new ВыходWasi(код)
+    },
+    proc_raise: () => WASI_ОШИБКА.NOSYS,
+    sched_yield: () => 0,
+    poll_oneoff: () => WASI_ОШИБКА.NOSYS,
+    fd_advise: () => 0,
+    fd_allocate: () => 0,
+    fd_datasync: () => 0,
+    fd_sync: () => 0,
+    fd_fdstat_set_flags: () => 0,
+    fd_fdstat_set_rights: () => 0,
+    fd_filestat_set_times: () => 0,
+    path_filestat_set_times: () => 0,
+    path_link: () => WASI_ОШИБКА.NOSYS,
+    path_symlink: () => WASI_ОШИБКА.NOSYS,
+    path_readlink: () => WASI_ОШИБКА.INVAL,
+    fd_renumber: (от, к) => {
+      const запись = дескрипторы.get(от)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      дескрипторы.set(к, запись)
+      дескрипторы.delete(от)
+      return 0
+    },
+    sock_accept: () => WASI_ОШИБКА.NOSYS,
+    sock_recv: () => WASI_ОШИБКА.NOSYS,
+    sock_send: () => WASI_ОШИБКА.NOSYS,
+    sock_shutdown: () => WASI_ОШИБКА.NOSYS,
+    fd_write: (дескриптор, адрес, число, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      const всего = векторы(адрес, число, (начало, длина) => {
+        const кусок = байты().slice(начало, начало + длина)
+        if (запись.поток !== undefined) {
+          вывод.push({ поток: запись.поток, кусок })
+          return длина
+        }
+        const узел = узлы.get(запись.путь)
+        if (узел === undefined || узел.тип !== "файл") return 0
+        const позиция = запись.добавлять ? узел.байты.length : запись.позиция
+        const нужно = позиция + длина
+        if (нужно > узел.байты.length) {
+          const больше = new Uint8Array(нужно)
+          больше.set(узел.байты)
+          узел.байты = больше
+        }
+        узел.байты.set(кусок, позиция)
+        запись.позиция = позиция + длина
+        return длина
+      })
+      вид().setUint32(адресИтога, всего, true)
+      return 0
+    },
+    fd_read: (дескриптор, адрес, число, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      if (запись.тип === WASI_ТИП.каталог) return WASI_ОШИБКА.ISDIR
+      const источник = запись.поток === 0 ? входБайты : запись.поток !== undefined ? new Uint8Array(0) : узлы.get(запись.путь)?.байты ?? new Uint8Array(0)
+      const всего = векторы(адрес, число, (начало, длина) => {
+        const позиция = запись.поток === 0 ? входПозиция : запись.позиция ?? 0
+        const кусок = источник.subarray(позиция, Math.min(источник.length, позиция + длина))
+        байты().set(кусок, начало)
+        if (запись.поток === 0) входПозиция += кусок.length
+        else запись.позиция = позиция + кусок.length
+        return кусок.length
+      })
+      вид().setUint32(адресИтога, всего, true)
+      return 0
+    },
+    fd_pread: (дескриптор, адрес, число, сдвиг, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      const узел = запись && узлы.get(запись.путь)
+      if (узел === undefined || узел.тип !== "файл") return WASI_ОШИБКА.BADF
+      let позиция = Number(сдвиг)
+      const всего = векторы(адрес, число, (начало, длина) => {
+        const кусок = узел.байты.subarray(позиция, Math.min(узел.байты.length, позиция + длина))
+        байты().set(кусок, начало)
+        позиция += кусок.length
+        return кусок.length
+      })
+      вид().setUint32(адресИтога, всего, true)
+      return 0
+    },
+    fd_pwrite: () => WASI_ОШИБКА.NOSYS,
+    fd_seek: (дескриптор, сдвиг, откуда, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      if (запись.поток !== undefined) return WASI_ОШИБКА.SPIPE
+      const длина = узлы.get(запись.путь)?.байты?.length ?? 0
+      const основа = откуда === 0 ? 0 : откуда === 1 ? запись.позиция : длина
+      const новая = основа + Number(сдвиг)
+      if (новая < 0) return WASI_ОШИБКА.INVAL
+      запись.позиция = новая
+      вид().setBigUint64(адресИтога, BigInt(новая), true)
+      return 0
+    },
+    fd_tell: (дескриптор, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      вид().setBigUint64(адресИтога, BigInt(запись.позиция ?? 0), true)
+      return 0
+    },
+    fd_close: (дескриптор) => {
+      if (!дескрипторы.has(дескриптор)) return WASI_ОШИБКА.BADF
+      дескрипторы.delete(дескриптор)
+      return 0
+    },
+    fd_fdstat_get: (дескриптор, адрес) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      const в = вид()
+      в.setUint8(адрес, запись.тип)
+      в.setUint16(адрес + 2, запись.добавлять ? 1 : 0, true)
+      в.setBigUint64(адрес + 8, WASI_ПРАВА, true)
+      в.setBigUint64(адрес + 16, WASI_ПРАВА, true)
+      return 0
+    },
+    fd_filestat_get: (дескриптор, адрес) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined) return WASI_ОШИБКА.BADF
+      if (запись.поток !== undefined) {
+        сведения(адрес, { тип: WASI_ТИП.символьный }, 0)
+        return 0
+      }
+      const узел = узлы.get(запись.путь)
+      if (узел === undefined) return WASI_ОШИБКА.BADF
+      сведения(адрес, узел, узел.байты?.length ?? 0)
+      return 0
+    },
+    fd_filestat_set_size: (дескриптор, размер) => {
+      const запись = дескрипторы.get(дескриптор)
+      const узел = запись && узлы.get(запись.путь)
+      if (узел === undefined || узел.тип !== "файл") return WASI_ОШИБКА.BADF
+      const новый = new Uint8Array(Number(размер))
+      новый.set(узел.байты.subarray(0, новый.length))
+      узел.байты = новый
+      return 0
+    },
+    fd_prestat_get: (дескриптор, адрес) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined || !запись.предоткрыт) return WASI_ОШИБКА.BADF
+      вид().setUint8(адрес, 0)
+      вид().setUint32(адрес + 4, кодер.encode(запись.путь).length, true)
+      return 0
+    },
+    fd_prestat_dir_name: (дескриптор, адрес, длина) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined || !запись.предоткрыт) return WASI_ОШИБКА.BADF
+      байты().set(кодер.encode(запись.путь).subarray(0, длина), адрес)
+      return 0
+    },
+    fd_readdir: (дескриптор, адрес, длина, печенье, адресИтога) => {
+      const запись = дескрипторы.get(дескриптор)
+      if (запись === undefined || запись.тип !== WASI_ТИП.каталог) return WASI_ОШИБКА.BADF
+      const префикс = запись.путь === "/" ? "/" : `${запись.путь}/`
+      const имена = [".", ".."]
+      for (const путь of узлы.keys()) {
+        if (путь !== "/" && путь.startsWith(префикс) && !путь.slice(префикс.length).includes("/")) имена.push(путь.slice(префикс.length))
+      }
+      const куча = []
+      имена.slice(Number(печенье)).forEach((имя, н) => {
+        const имяБайты = кодер.encode(имя)
+        const шапка = new DataView(new ArrayBuffer(24))
+        const узел = имя === "." || имя === ".." ? { тип: "каталог" } : узлы.get(префикс + имя)
+        шапка.setBigUint64(0, BigInt(Number(печенье) + н + 1), true)
+        шапка.setBigUint64(8, 1n, true)
+        шапка.setUint32(16, имяБайты.length, true)
+        шапка.setUint8(20, узел.тип === "каталог" ? WASI_ТИП.каталог : WASI_ТИП.файл)
+        куча.push(new Uint8Array(шапка.buffer), имяБайты)
+      })
+      let занято = 0
+      for (const кусок of куча) {
+        const влезет = Math.min(кусок.length, длина - занято)
+        байты().set(кусок.subarray(0, влезет), адрес + занято)
+        занято += влезет
+        if (занято >= длина) break
+      }
+      вид().setUint32(адресИтога, занято, true)
+      return 0
+    },
+    path_open: (каталог, флагиПути, адрес, длина, флагиОткрытия, праваОсновные, праваНаследуемые, флагиДескриптора, адресИтога) => {
+      const путь = найти(каталог, адрес, длина)
+      if (путь === null) return WASI_ОШИБКА.BADF
+      let узел = узлы.get(путь)
+      const создать = (флагиОткрытия & 1) !== 0
+      const толькоКаталог = (флагиОткрытия & 2) !== 0
+      const исключить = (флагиОткрытия & 4) !== 0
+      const обрезать = (флагиОткрытия & 8) !== 0
+      if (узел !== undefined && исключить && создать) return WASI_ОШИБКА.EXIST
+      if (узел === undefined) {
+        if (!создать) return WASI_ОШИБКА.NOENT
+        const родитель = узлы.get(родительWasi(путь))
+        if (родитель === undefined) return WASI_ОШИБКА.NOENT
+        if (родитель.тип !== "каталог") return WASI_ОШИБКА.NOTDIR
+        узел = { тип: "файл", байты: new Uint8Array(0) }
+        узлы.set(путь, узел)
+      }
+      if (толькоКаталог && узел.тип !== "каталог") return WASI_ОШИБКА.NOTDIR
+      if (обрезать && узел.тип === "файл") узел.байты = new Uint8Array(0)
+      const номер = следующий
+      следующий += 1
+      дескрипторы.set(номер, {
+        тип: узел.тип === "каталог" ? WASI_ТИП.каталог : WASI_ТИП.файл,
+        путь,
+        позиция: 0,
+        добавлять: (флагиДескриптора & 1) !== 0,
+      })
+      вид().setUint32(адресИтога, номер, true)
+      return 0
+    },
+    path_filestat_get: (каталог, флаги, адрес, длина, адресИтога) => {
+      const путь = найти(каталог, адрес, длина)
+      if (путь === null) return WASI_ОШИБКА.BADF
+      const узел = узлы.get(путь)
+      if (узел === undefined) return WASI_ОШИБКА.NOENT
+      сведения(адресИтога, узел, узел.байты?.length ?? 0)
+      return 0
+    },
+    path_create_directory: (каталог, адрес, длина) => {
+      const путь = найти(каталог, адрес, длина)
+      if (путь === null) return WASI_ОШИБКА.BADF
+      if (узлы.has(путь)) return WASI_ОШИБКА.EXIST
+      if (узлы.get(родительWasi(путь))?.тип !== "каталог") return WASI_ОШИБКА.NOENT
+      узлы.set(путь, { тип: "каталог" })
+      return 0
+    },
+    path_remove_directory: (каталог, адрес, длина) => {
+      const путь = найти(каталог, адрес, длина)
+      if (путь === null) return WASI_ОШИБКА.BADF
+      const узел = узлы.get(путь)
+      if (узел === undefined) return WASI_ОШИБКА.NOENT
+      if (узел.тип !== "каталог") return WASI_ОШИБКА.NOTDIR
+      for (const другой of узлы.keys()) if (другой.startsWith(`${путь}/`)) return WASI_ОШИБКА.NOTEMPTY
+      узлы.delete(путь)
+      return 0
+    },
+    path_unlink_file: (каталог, адрес, длина) => {
+      const путь = найти(каталог, адрес, длина)
+      if (путь === null) return WASI_ОШИБКА.BADF
+      const узел = узлы.get(путь)
+      if (узел === undefined) return WASI_ОШИБКА.NOENT
+      if (узел.тип === "каталог") return WASI_ОШИБКА.ISDIR
+      узлы.delete(путь)
+      return 0
+    },
+    path_rename: (каталог, адрес, длина, новыйКаталог, новыйАдрес, новаяДлина) => {
+      const откуда = найти(каталог, адрес, длина)
+      const куда = найти(новыйКаталог, новыйАдрес, новаяДлина)
+      if (откуда === null || куда === null) return WASI_ОШИБКА.BADF
+      const узел = узлы.get(откуда)
+      if (узел === undefined) return WASI_ОШИБКА.NOENT
+      узлы.delete(откуда)
+      узлы.set(куда, узел)
+      return 0
+    },
+  }
+  const образец = new WebAssembly.Instance(модуль, { wasi_snapshot_preview1: wasi })
+  память = образец.exports.memory
+  let код = 0
+  let сбой = null
+  try {
+    образец.exports._start()
+  } catch (беда) {
+    if (беда instanceof ВыходWasi) код = беда.код
+    else {
+      код = -1
+      сбой = беда
+    }
+  }
+  const склеить = (отбор) => {
+    const куски = вывод.filter(отбор).map((з) => з.кусок)
+    const всё = new Uint8Array(куски.reduce((с, к) => с + к.length, 0))
+    let место = 0
+    for (const кусок of куски) {
+      всё.set(кусок, место)
+      место += кусок.length
+    }
+    return декодер.decode(всё)
+  }
+  return {
+    код,
+    сбой,
+    вывод: склеить(() => true),
+    стандартный: склеить((з) => з.поток === 1),
+    ошибки: склеить((з) => з.поток === 2),
+    файлы,
+  }
+}
+
+export function разобратьTar(байты) {
+  const декодер = new TextDecoder()
+  const файлы = {}
+  let место = 0
+  while (место + 512 <= байты.length && байты[место] !== 0) {
+    const поле = (сдвиг, длина) => декодер.decode(байты.subarray(место + сдвиг, место + сдвиг + длина)).replace(/\0[\s\S]*$/u, "")
+    const размер = parseInt(поле(124, 12).trim() || "0", 8)
+    const приставка = поле(345, 155)
+    const путь = (приставка ? `${приставка}/${поле(0, 100)}` : поле(0, 100)).replace(/^\.\//u, "")
+    if (байты[место + 156] === 0 || байты[место + 156] === 48) файлы[`/${путь}`] = байты.slice(место + 512, место + 512 + размер)
+    место += 512 + Math.ceil(размер / 512) * 512
+  }
+  return файлы
+}
+
+export const ПЕСОЧНИЦА_ФАЙЛЫ = Object.freeze({
+  компилятор: "flang.wasm",
+  сверщик: "checker.wasm",
+  библиотека: "library.tar",
+  рассуждения: "reasoning.js",
+})
+
+export function видТекста(текст) {
+  return /^\s*(модуль|категория)\s/u.test(текст) ? "flang" : "рассуждение"
+}
+
+export function песочница({ достать, модульРассуждений }) {
+  const модули = new Map()
+  let библиотека = null
+  const модуль = (имя) => {
+    if (!модули.has(имя)) модули.set(имя, Promise.resolve(достать(имя)).then((байты) => WebAssembly.compile(байты)))
+    return модули.get(имя)
+  }
+  const книги = async () => {
+    if (библиотека === null) библиотека = разобратьTar(new Uint8Array(await достать(ПЕСОЧНИЦА_ФАЙЛЫ.библиотека)))
+    return библиотека
+  }
+  const прогнать = async (имя, доводы, файлы) =>
+    запуститьWasi(await модуль(имя), { доводы, файлы, окружение: { LC_ALL: "C.UTF-8", FLANG_TMP: "/tmp", HOME: "/tmp", FLANG_MODULE_DIR: "/flang/stdlib:/flang/core" } })
+  const файлыПрогона = async (путь, текст) =>
+    файлыWasi({ ...(/использует/u.test(текст) ? await книги() : {}), "/tmp/.keep": "", [путь]: текст })
+  const строкаКоманды = (доводы) => `$ ${доводы.join(" ")}`
+  const хвостКода = (код) => (код === 0 ? [] : [`[код возврата ${код}]`])
+  const сверить = async (файлы, путь, запись) => {
+    const байтыЗаписи = файлы.прочитать(запись)
+    if (байтыЗаписи === null || байтыЗаписи.length === 0) return { код: null, строки: ["запись доказательства не положена — сверщику сверять нечего"] }
+    const доводы = ["сверщик", "--по-утверждениям", путь, запись]
+    try {
+      const сверка = await прогнать(ПЕСОЧНИЦА_ФАЙЛЫ.сверщик, доводы, файлы)
+      return { код: сверка.код, строки: [строкаКоманды(доводы), сверка.вывод.replace(/\n$/u, ""), ...хвостКода(сверка.код)] }
+    } catch (беда) {
+      return { код: null, строки: [строкаКоманды(доводы), `FLANG_PLAYGROUND сверщик не загружен: ${текст(беда)} — доказанное стоит на слове ядра`] }
+    }
+  }
+  const проверитьFlang = async (исходник) => {
+    const путь = "/playground.flang"
+    const запись = "/playground.record"
+    const файлы = await файлыПрогона(путь, исходник)
+    const доводы = ["flang", "check", путь, "--proof", "--записать", запись]
+    const ответ = await прогнать(ПЕСОЧНИЦА_ФАЙЛЫ.компилятор, доводы, файлы)
+    const строки = [строкаКоманды(доводы), ответ.вывод.replace(/\n$/u, ""), ...хвостКода(ответ.код)]
+    if (ответ.сбой !== null) строки.push(`ЛОВУШКА WebAssembly: ${текст(ответ.сбой)}`)
+    const сверка = await сверить(файлы, путь, запись)
+    return { код: ответ.код, сверщик: сверка.код, вывод: [...строки, ...сверка.строки].join("\n"), итог: ответ.код === 0 ? "проверено" : "не проверено" }
+  }
+  const проверитьРассуждение = async (текстРассуждения) => {
+    const р = await модульРассуждений()
+    const чтение = р.readText(текстРассуждения)
+    if (чтение.variant !== "Read") {
+      const жалобы = ["текст не прочитан:", ...чтение.fields.faults].join("\n")
+      return { код: 1, вывод: `FLANG_REASONING_TEXT ${жалобы}`, итог: "текст не прочитан" }
+    }
+    const { words, sentences } = чтение.fields
+    const программа = р.programOf(words, sentences)
+    const путь = "/reasoning.flang"
+    const запись = "/reasoning.record"
+    const файлы = файлыWasi({ "/tmp/.keep": "", [путь]: программа })
+    const доводы = ["flang", "check", путь, "--proof", "--strict", "--записать", запись]
+    const ответ = await прогнать(ПЕСОЧНИЦА_ФАЙЛЫ.компилятор, доводы, файлы)
+    const приговор = р.verdictOf(words, sentences, ответ.вывод)
+    const код = приговор.variant === "Follows" ? 0 : приговор.variant === "Does not follow" ? 1 : 3
+    const слово = { 0: "", 1: "FLANG_REASONING_DOES_NOT_FOLLOW ", 3: "FLANG_REASONING_CANNOT_LOOK " }[код]
+    const строки = [
+      `${слово}${приговор.fields.report}`,
+      "",
+      "── программа, которую судит ядро ──",
+      программа.replace(/\n$/u, ""),
+      "── ответ ядра ──",
+      строкаКоманды(доводы),
+      ответ.вывод.replace(/\n$/u, ""),
+      ...хвостКода(ответ.код),
+    ]
+    if (ответ.сбой !== null) строки.push(`ЛОВУШКА WebAssembly: ${текст(ответ.сбой)}`)
+    const сверка = await сверить(файлы, путь, запись)
+    return { код, сверщик: сверка.код, вывод: [...строки, ...сверка.строки].join("\n"), итог: { 0: "следует", 1: "не следует", 3: "не судимо" }[код] }
+  }
+  return {
+    async проверить(текстПроверки) {
+      const начало = Date.now()
+      const вид = видТекста(текстПроверки)
+      const итог = вид === "flang" ? await проверитьFlang(текстПроверки) : await проверитьРассуждение(текстПроверки)
+      return { ...итог, вид, мс: Date.now() - начало }
+    },
+  }
+}
+
+function песочницаПоАдресу(база) {
+  return песочница({
+    достать: async (имя) => {
+      const ответ = await fetch(new URL(имя, база))
+      if (!ответ.ok) throw new Error(`${имя}: ${ответ.status} ${ответ.statusText}`)
+      return new Uint8Array(await ответ.arrayBuffer())
+    },
+    модульРассуждений: () => import(new URL(ПЕСОЧНИЦА_ФАЙЛЫ.рассуждения, база).href),
+  })
+}
+
+function завестиПоток() {
+  const песочницы = new Map()
+  globalThis.addEventListener("message", async (событие) => {
+    const { номер, текст: текстПроверки, база } = событие.data ?? {}
+    try {
+      if (!песочницы.has(база)) песочницы.set(база, песочницаПоАдресу(база))
+      globalThis.postMessage({ номер, ...(await песочницы.get(база).проверить(String(текстПроверки ?? ""))) })
+    } catch (беда) {
+      globalThis.postMessage({ номер, код: 2, итог: "сбой", вывод: `FLANG_PLAYGROUND ${текст(беда)}` })
+    }
+  })
+}
+
+async function запуститьИзКоманднойСтроки() {
+  const { pathToFileURL } = await import(["node:", "url"].join(""))
+  if (process.argv[1] === undefined || pathToFileURL(process.argv[1]).href !== import.meta.url) return
+  const { readFile } = await import(["node:", "fs/promises"].join(""))
+  const [каталог, ...слова] = process.argv.slice(2)
+  if (каталог === undefined || слова.length === 0) {
+    process.stderr.write("звать: node flang_host_browser.js <каталог песочницы> <текст>\n")
+    process.exitCode = 2
+    return
+  }
+  const п = песочница({
+    достать: (имя) => readFile(`${каталог}/${имя}`),
+    модульРассуждений: () => import(pathToFileURL(`${каталог}/${ПЕСОЧНИЦА_ФАЙЛЫ.рассуждения}`).href),
+  })
+  const итог = await п.проверить(слова.join(" ")).catch((беда) => ({ код: 2, вид: "?", итог: "сбой", мс: 0, вывод: `FLANG_PLAYGROUND ${текст(беда)}` }))
+  process.stdout.write(`${итог.вывод}\n`)
+  process.stderr.write(`песочница: ${итог.вид}, ${итог.итог}, ${итог.мс} мс\n`)
+  process.exitCode = итог.код
+}
+
 if (typeof document !== "undefined") завестиИзРазметки()
+else if (typeof WorkerGlobalScope !== "undefined" && globalThis instanceof WorkerGlobalScope) завестиПоток()
+else if (typeof process !== "undefined" && Array.isArray(process.argv)) запуститьИзКоманднойСтроки()

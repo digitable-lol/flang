@@ -51,6 +51,11 @@ on:
       # палитру, а правка таблицы стилей — то, что он судит.
       - 'docs/site/contrast-guard.flang'
       - 'docs/site/style.css'
+      - 'flang/src/emit/js/flang_host_browser.js'
+      - 'flang/proof/checker/checker.c'
+      - 'flang/proof/probes/syllogism/sentences/translator.flang'
+      - 'scripts/site/playground-probe.fscript'
+      - '.flangrc'
   # На КАЖДОМ запросе слияния, без фильтра `paths`. Ссылки сайта ведут не
   # только в docs/: переезд каталога исходников ломает их, не трогая ни одного
   # документа (так было с переездами задачи 1418). А стоит проверка две минуты:
@@ -226,6 +231,35 @@ jobs:
       # «Запросить». Стоит ПОСЛЕ сборки: `build.mjs` вычищает `docs/site/out`
       # целиком, и положенное до него не доехало бы. Сличение отпечатков идёт и
       # здесь: выложить ведомость с гнилым отпечатком нельзя.
+      - name: Install the WebAssembly toolchain
+        run: |
+          v=$(clang --version | sed -n 's/.*clang version \([0-9]*\).*/\1/p' | head -1)
+          sudo apt-get update
+          sudo apt-get install -y wasi-libc "libclang-rt-$v-dev-wasm32" "lld-$v"
+          echo "/usr/lib/llvm-$v/bin" >> "$GITHUB_PATH"
+
+      - name: Build the playground
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:build
+
+      - name: Probe the playground
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe
+
+      - name: Probe a playground without its checker
+        run: |
+          mesto=docs/site/out/playground
+          mv "$mesto/checker.wasm" "$RUNNER_TEMP/checker.wasm"
+          if LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe > "$RUNNER_TEMP/playground.out" 2>&1; then
+            mv "$RUNNER_TEMP/checker.wasm" "$mesto/checker.wasm"
+            echo "ПРОБА ПРОМОЛЧАЛА: песочница без сверщика прошла" >&2
+            exit 1
+          fi
+          mv "$RUNNER_TEMP/checker.wasm" "$mesto/checker.wasm"
+          if ! grep -F 'barbara: в выводе нет' "$RUNNER_TEMP/playground.out"; then
+            echo "ПОКРАСНЕЛО НЕ НА СВЕРЩИКЕ:" >&2
+            tail -20 "$RUNNER_TEMP/playground.out" >&2
+            exit 1
+          fi
+
       - name: Publish the registry ledger
         if: github.event_name != 'pull_request'
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script registry:publish

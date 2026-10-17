@@ -1,0 +1,266 @@
+модуль «Playground probe»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Probe case»
+  «name»: строка
+  «text file»: строка
+  «text»: строка
+  «code»: число
+  «present»: список строки
+  «absent»: список строки
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Host»
+  возвращает строка
+  пример «The playground host is the tab host of the js target»
+    ожидается "flang/src/emit/js/flang_host_browser.js"
+  "flang/src/emit/js/flang_host_browser.js"
+
+тотальная функция «Playground directory»
+  возвращает строка
+  пример «The built playground lies beside the site pages»
+    ожидается "docs/site/out/playground"
+  "docs/site/out/playground"
+
+тотальная функция «Texts»
+  возвращает строка
+  пример «The judge's texts live beside the judge»
+    ожидается "flang/proof/probes/syllogism/sentences/texts/"
+  "flang/proof/probes/syllogism/sentences/texts/"
+
+тотальная функция «Through cat»
+  возвращает строка
+  пример «The shell reads the text file and hands its content to the host»
+    ожидается "cd \"$0\" && exec node \"$1\" \"$2\" \"$(cat \"$3\")\""
+  "cd \"$0\" && exec node \"$1\" \"$2\" \"$(cat \"$3\")\""
+
+тотальная функция «False statement»
+  возвращает строка
+  пример «Doubling zero is not greater than zero»
+    ожидается """
+      модуль «Ложное»
+
+      утверждение «удвоение больше»
+        для всех н: неотрицательное
+        утверждаем (н плюс н) больше н
+      """
+  """
+  модуль «Ложное»
+
+  утверждение «удвоение больше»
+    для всех н: неотрицательное
+    утверждаем (н плюс н) больше н
+  """
+
+тотальная функция «Barbara»
+  возвращает «Probe case»
+  пример «A valid syllogism follows and the checker agrees»
+    ожидается (запись «Probe case» с «name» равным "barbara"
+      и «text file» равным "flang/proof/probes/syllogism/sentences/texts/barbara.txt" и «text» равным ""
+      и «code» равным 0
+      и «present» равным ["СЛЕДУЕТ: предложение 3 выведено из посылок 1, 2", "ПРОВЕРЕНО — запись сошлась с исходником"]
+      и «absent» равным ["НЕ СЛЕДУЕТ"])
+  (запись «Probe case» с «name» равным "barbara"
+    и «text file» равным (соединить [(«Texts»), "barbara.txt"] по "") и «text» равным ""
+    и «code» равным 0
+    и «present» равным ["СЛЕДУЕТ: предложение 3 выведено из посылок 1, 2", "ПРОВЕРЕНО — запись сошлась с исходником"]
+    и «absent» равным ["НЕ СЛЕДУЕТ"])
+
+тотальная функция «Consequent»
+  возвращает «Probe case»
+  пример «Affirming the consequent does not follow»
+    ожидается (запись «Probe case» с «name» равным "affirming the consequent"
+      и «text file» равным "flang/proof/probes/syllogism/sentences/texts/affirming-the-consequent.txt"
+      и «text» равным "" и «code» равным 1
+      и «present» равным ["FLANG_REASONING_DOES_NOT_FOLLOW", "НЕ СЛЕДУЕТ: предложение 3"]
+      и «absent» равным ["СЛЕДУЕТ: предложение 3 выведено"])
+  (запись «Probe case» с «name» равным "affirming the consequent"
+    и «text file» равным (соединить [(«Texts»), "affirming-the-consequent.txt"] по "")
+    и «text» равным "" и «code» равным 1
+    и «present» равным ["FLANG_REASONING_DOES_NOT_FOLLOW", "НЕ СЛЕДУЕТ: предложение 3"]
+    и «absent» равным ["СЛЕДУЕТ: предложение 3 выведено"])
+
+тотальная функция «Falsehood»
+  возвращает «Probe case»
+  пример «A false statement is not proved and nothing is replayed»
+    ожидается (запись «Probe case» с «name» равным "false statement" и «text file» равным ""
+      и «text» равным """
+        модуль «Ложное»
+
+        утверждение «удвоение больше»
+          для всех н: неотрицательное
+          утверждаем (н плюс н) больше н
+        """
+      и «code» равным 3
+      и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+      и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])
+  (запись «Probe case» с «name» равным "false statement" и «text file» равным ""
+    и «text» равным («False statement»)
+    и «code» равным 3
+    и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+    и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])
+
+тотальная функция «Cases»
+  возвращает список «Probe case»
+  пример «Three cases: a valid syllogism, a fallacy and a false statement»
+    ожидается [(запись «Probe case» с «name» равным "barbara"
+      и «text file» равным "flang/proof/probes/syllogism/sentences/texts/barbara.txt" и «text» равным ""
+      и «code» равным 0
+      и «present» равным ["СЛЕДУЕТ: предложение 3 выведено из посылок 1, 2", "ПРОВЕРЕНО — запись сошлась с исходником"]
+      и «absent» равным ["НЕ СЛЕДУЕТ"]),
+      (запись «Probe case» с «name» равным "affirming the consequent"
+        и «text file» равным "flang/proof/probes/syllogism/sentences/texts/affirming-the-consequent.txt"
+        и «text» равным "" и «code» равным 1
+        и «present» равным ["FLANG_REASONING_DOES_NOT_FOLLOW", "НЕ СЛЕДУЕТ: предложение 3"]
+        и «absent» равным ["СЛЕДУЕТ: предложение 3 выведено"]),
+      (запись «Probe case» с «name» равным "false statement" и «text file» равным ""
+        и «text» равным """
+          модуль «Ложное»
+
+          утверждение «удвоение больше»
+            для всех н: неотрицательное
+            утверждаем (н плюс н) больше н
+          """
+        и «code» равным 3
+        и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+        и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])]
+  [(«Barbara»), («Consequent»), («Falsehood»)]
+
+тотальная функция «Question of»
+  принимает probe: «Probe case»
+  возвращает «Question»
+  пример «A text in a file is read by the shell and handed to the host»
+    дано probe равно (запись «Probe case» с «name» равным "barbara" и «text file» равным "b.txt"
+      и «text» равным "" и «code» равным 0 и «present» равным пустой список и «absent» равным пустой список)
+    ожидается (запись «Question» с «name» равным "barbara"
+      и «order» равным (вариант «Запустить процесс» с программа равным "sh"
+        и аргументы равным ["-c", "cd \"$0\" && exec node \"$1\" \"$2\" \"$(cat \"$3\")\"", "../..",
+          "flang/src/emit/js/flang_host_browser.js", "docs/site/out/playground", "b.txt"]))
+  пример «A text given in place goes to the host as it is»
+    дано probe равно (запись «Probe case» с «name» равным "false" и «text file» равным ""
+      и «text» равным "модуль «М»" и «code» равным 3 и «present» равным пустой список и «absent» равным пустой список)
+    ожидается (запись «Question» с «name» равным "false"
+      и «order» равным (вариант «Запустить процесс» с программа равным "sh"
+        и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "node",
+          "flang/src/emit/js/flang_host_browser.js", "docs/site/out/playground", "модуль «М»"]))
+  если пусто (probe.«text file»)
+    то «Run from» от (probe.«name») и («Root») и "node" и [(«Host»), («Playground directory»), (probe.«text»)]
+    иначе («Run» от (probe.«name») и "sh"
+      и ["-c", («Through cat»), («Root»), («Host»), («Playground directory»), (probe.«text file»)])
+
+тотальная функция «Complaints of case»
+  принимает probe: «Probe case», answers: список «Answer»
+  возвращает список строки
+  пример «A matching answer has no complaint»
+    дано probe равно (запись «Probe case» с «name» равным "b" и «text file» равным "" и «text» равным ""
+      и «code» равным 0 и «present» равным ["СЛЕДУЕТ"] и «absent» равным ["НЕ СЛЕДУЕТ"])
+    дано answers равно [(запись «Answer» с «name» равным "b"
+      и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "СЛЕДУЕТ: 3\n" и ошибки равным ""))]
+    ожидается пустой список
+  пример «A wrong code, a missing word and a forbidden word are all named»
+    дано probe равно (запись «Probe case» с «name» равным "b" и «text file» равным "" и «text» равным ""
+      и «code» равным 0 и «present» равным ["СЛЕДУЕТ: 3"] и «absent» равным ["НЕ СЛЕДУЕТ"])
+    дано answers равно [(запись «Answer» с «name» равным "b"
+      и «reply» равным (вариант «Процесс завершён» с код равным 1 и вывод равным "НЕ СЛЕДУЕТ\n" и ошибки равным ""))]
+    ожидается ["b: ждали код 0, вышел 1", "b: в выводе нет «СЛЕДУЕТ: 3»", "b: в выводе есть «НЕ СЛЕДУЕТ»"]
+  пусть output равно («Output of» от (probe.«name») и answers)
+  пусть code равно («Exit code of» от (probe.«name») и answers)
+  пусть wrong равно («Applying» от [(«When» от (code не равен (probe.«code»))
+    и (соединить [probe.«name», ": ждали код ", (к строке (probe.«code»)), ", вышел ", (к строке code)] по ""))])
+  пусть missing равно (отобразить (отфильтровать (probe.«present») где word → не (output содержит word))
+    как word → соединить [probe.«name», ": в выводе нет «", word, "»"] по "")
+  пусть forbidden равно (отобразить (отфильтровать (probe.«absent») где word → output содержит word)
+    как word → соединить [probe.«name», ": в выводе есть «", word, "»"] по "")
+  «Соединить списки» от wrong и («Соединить списки» от missing и forbidden)
+
+тотальная функция «Verdict of cases»
+  принимает cases: список «Probe case», answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Every case answered as expected»
+    дано cases равно [(запись «Probe case» с «name» равным "b" и «text file» равным "" и «text» равным ""
+      и «code» равным 0 и «present» равным ["СЛЕДУЕТ"] и «absent» равным пустой список)]
+    дано answers равно [(запись «Answer» с «name» равным "b"
+      и «reply» равным (вариант «Процесс завершён» с код равным 0 и вывод равным "СЛЕДУЕТ\n" и ошибки равным ""))]
+    ожидается вариант «Конец работы» с значение равным "песочница: случаев 1, все ответили как ждали"
+  пример «A case without an answer is named»
+    дано cases равно [(запись «Probe case» с «name» равным "b" и «text file» равным "" и «text» равным ""
+      и «code» равным 0 и «present» равным ["СЛЕДУЕТ"] и «absent» равным пустой список)]
+    дано answers равно пустой список
+    ожидается вариант «Провал» с код равным "FLANG_PLAYGROUND_PROBE" и сообщение равным """
+      песочница ответила не так, как ждали:
+      b: ждали код 0, вышел 127
+      b: в выводе нет «СЛЕДУЕТ»"""
+  пусть complaints равно (свёртка cases начиная с (пустой список) как gathered и probe
+    → «Соединить списки» от gathered и («Complaints of case» от probe и answers))
+  если пусто complaints
+    то вариант «Конец работы» с значение равным (соединить ["песочница: случаев ", (к строке (длина cases)),
+      ", все ответили как ждали"] по "")
+    иначе (вариант «Провал» с код равным "FLANG_PLAYGROUND_PROBE"
+      и сообщение равным (соединить (приписать "песочница ответила не так, как ждали:" к complaints) по "\n"))
+
+тотальная функция «Probe stage»
+  принимает stages: число
+  возвращает список «Question»
+  пример «Stages before the last ask nothing»
+    дано stages равно 1
+    ожидается пустой список
+  если stages равен 0
+    то отобразить («Cases») как probe → «Question of» от probe
+    иначе пустой список
+
+тотальная функция «Proceed with probing»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A question in the queue is asked before anything else»
+    дано queue равно [(запись «Question» с «name» равным "b" и «order» равным (вариант «Прочитать доводы»))]
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы»)
+      и потом равным (запись «Inquiry» с «asked» равным "b" и «queue» равным пустой список
+        и «stages» равным 0 и «answers» равным пустой список))
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict of cases» от («Cases») и answers
+        иначе «Proceed with probing» от («Probe stage» от (stages минус 1)) и (stages минус 1) и answers
+
+тотальная функция «Begin probing»
+  возвращает «Inquiry»
+  пример «One stage: every case at once»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 1
+      и «answers» равным пустой список)
+  «Begin with» от 1
+
+тотальная функция «Next probing question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without any answer every case complains»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 0
+      и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_PLAYGROUND_PROBE" и сообщение равным """
+      песочница ответила не так, как ждали:
+      barbara: ждали код 0, вышел 127
+      barbara: в выводе нет «СЛЕДУЕТ: предложение 3 выведено из посылок 1, 2»
+      barbara: в выводе нет «ПРОВЕРЕНО — запись сошлась с исходником»
+      affirming the consequent: ждали код 1, вышел 127
+      affirming the consequent: в выводе нет «FLANG_REASONING_DOES_NOT_FOLLOW»
+      affirming the consequent: в выводе нет «НЕ СЛЕДУЕТ: предложение 3»
+      false statement: ждали код 3, вышел 127
+      false statement: в выводе нет «НЕ ПРОВЕРЕНО — утверждений 1: доказано 0»
+      false statement: в выводе нет «объявлено, не доказано»"""
+  «Proceed with probing» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Probe»
+  состояние «Inquiry»
+  начинает с «Begin probing»
+  обрабатывает «Next probing question»

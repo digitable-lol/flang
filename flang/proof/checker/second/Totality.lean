@@ -212,7 +212,7 @@ def «упоминания» (l : String) : List «Упоминание» :=
     | [] => none
 
 def «конструктор?» (u : «Упоминание») : Bool :=
-  u.«до».endsWith "вариант " || u.«до».endsWith "случай " || u.«до».endsWith "."
+  u.«до».endsWith "вариант " || u.«до».endsWith "случай " || u.«до».endsWith "запись " || u.«до».endsWith "."
 
 def «Исх».«зовы» (s : «Исх») (f : String) : List (String × Nat) :=
   let «свои» := s.«функции»

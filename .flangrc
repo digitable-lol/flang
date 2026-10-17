@@ -76,7 +76,7 @@ script.unicode:tables = bootstrap/flang io scripts/unicode/generate-tables.fscri
 script.unicode:conformance = d=$(mktemp -d "${FLANG_TMP:-/tmp}/unicode-conformance.XXXXXX") && bootstrap/flang emit scripts/unicode/conformance.fscript --target c --out "$d" --runtime "$PWD/flang/src/emit/c" --max-steps 1000000000000 > "$d/emit.log" 2>&1 && make -s -C "$d" > "$d/make.log" 2>&1 && "$d/flang_cli" --plan ""
 script.unicode-text:probe = bootstrap/flang io flang/proof/probes/unicode-text-in-targets/run.fscript --plan Binary --timeout 900000
 script.unicode-text:forgery = bootstrap/flang io flang/proof/probes/unicode-text-in-targets/run.fscript --plan Forgery --timeout 900000
-script.unicode:translate = bootstrap/flang io scripts/unicode/translate.fscript --plan Translate --на-веру --max-steps 10000000000 --
+script.unicode:translate = bootstrap/flang io scripts/unicode/translate.fscript --plan Translate --max-steps 10000000000 --
 script.russian-grammar:probe = bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
 script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-demo.fscript --plan Demo --timeout 600000
 script.ring-rules:probe = bootstrap/flang io flang/proof/probes/ring-laws/run.fscript --plan Binary --max-steps 4000000000 --timeout 1800000

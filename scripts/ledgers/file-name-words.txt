@@ -2067,3 +2067,5 @@ binary64
 bracket
 eval
 ladder
+conformance
+translate

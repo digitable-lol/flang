@@ -162,6 +162,7 @@ script.links:check = bootstrap/flang io scripts/guards/link-guard.fscript --на
 script.docs:examples = bootstrap/flang io scripts/site/page-examples.fscript --timeout 900000
 script.docs:build = bootstrap/flang io scripts/site/inserts.fscript --plan Build --timeout 900000 --max-orders 100000 --max-steps 40000000000
 script.docs:check = bootstrap/flang io scripts/site/inserts.fscript --plan Check --timeout 900000 --max-orders 100000 --max-steps 40000000000
+script.docs:changed = bootstrap/flang io scripts/site/inserts.fscript --plan Changed --timeout 900000 --max-orders 100000 --max-steps 40000000000
 script.docs:library-status = bootstrap/flang io scripts/site/library-status.fscript --plan Measure --timeout 14400000 --max-steps 40000000000
 script.tasks:check = bootstrap/flang io flang/scripts/tasks.fscript --plan 'Задачник цел' --max-steps 200000000 --на-веру
 script.inventory:languages = bootstrap/flang io scripts/guards/tree-inventory.fscript --plan 'Опись дерева по языкам' --max-steps 50000000 --на-веру

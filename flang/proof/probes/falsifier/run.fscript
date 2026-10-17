@@ -935,7 +935,7 @@
       export LC_ALL=C.UTF-8 && root=$(cd ../../../.. && pwd) && f=${FLANG_BIN:-$root/bootstrap/flang} &&
         c=$root/flang/proof/checker/сверщик && d='/w' &&
         { [ -x "$c" ] || make -C "$root/flang/proof/checker" >/dev/null 2>&1; } &&
-        "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
+        FLANG_CHECKER=/no-checker "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
       k=$?
       p=0
       if [ $k = 0 ] && grep -q ': ДОКАЗАНО — ' "$d/k.out"; then p=1; fi
@@ -968,7 +968,7 @@
   пусть дальше равно """
     ' &&
       { [ -x "$c" ] || make -C "$root/flang/proof/checker" >/dev/null 2>&1; } &&
-      "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
+      FLANG_CHECKER=/no-checker "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
     k=$?
     p=0
     if [ $k = 0 ] && grep -q ': ДОКАЗАНО — ' "$d/k.out"; then p=1; fi
@@ -1281,7 +1281,7 @@
       export LC_ALL=C.UTF-8 && root=$(cd ../../../.. && pwd) && f=${FLANG_BIN:-$root/bootstrap/flang} &&
         c=$root/flang/proof/checker/сверщик && d='/w' &&
         { [ -x "$c" ] || make -C "$root/flang/proof/checker" >/dev/null 2>&1; } &&
-        "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
+        FLANG_CHECKER=/no-checker "$f" check "$d/k.flang" --proof --strict --record "$d/k.rec" > "$d/k.out" 2>&1
       k=$?
       p=0
       if [ $k = 0 ] && grep -q ': ДОКАЗАНО — ' "$d/k.out"; then p=1; fi

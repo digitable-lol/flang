@@ -43,4 +43,4 @@ flang/proof/forgeries/negative-zero/a-plus-zero.flang	flang/proof/checker/tests/
 flang/proof/forgeries/negative-zero/a-minus-a.flang	flang/proof/checker/tests/records/corpus/negative-zero-a-minus-a.record	program-lies
 flang/proof/examples/forgery-unfold-without-arguments.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-without-arguments.record	record-lies
 flang/proof/examples/forgery-unfold-inside-a-list.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-inside-a-list.record	record-lies
-flang/proof/examples/forgery-unfold-of-a-whole-equation.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-of-a-whole-equation.record	record-lies
+flang/proof/examples/forgery-unfold-of-a-whole-comparison.flang	flang/proof/checker/tests/records/corpus/forgery-unfold-of-a-whole-comparison.record	record-lies

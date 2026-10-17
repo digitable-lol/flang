@@ -1380,7 +1380,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
 0671f904ac2c1b423ee51e1562ed2a08|91|44|0|0|0|flang/self/proof-kernel.flang
-94902a6939c9331164c3fdd856ef2a93|231|98|57|3|0|flang/self/proof-record.flang
+94902a6939c9331164c3fdd856ef2a93|245|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
@@ -1888,7 +1888,7 @@ dc0f3f20e387d3a5db3813d2ae137694|17|17|0|0|0|flang/self/emit-layout.flang
 54cfb1a8e907051aafea33efa6ac337d|784|446|22|261|0|flang/self/parser.flang
 82baac47756df343c845cc40f740dfbe|97|82|2|10|0|flang/self/proof-initial.flang
 c8dbb7179b35f785da41f5990dd41238|65|44|0|0|0|flang/self/proof-kernel.flang
-94902a6939c9331164c3fdd856ef2a93|230|98|57|3|0|flang/self/proof-record.flang
+94902a6939c9331164c3fdd856ef2a93|245|98|57|3|0|flang/self/proof-record.flang
 c9e3ee258bfab2a0503a1214f8d1034f|185|46|1|91|0|flang/self/proofterm.flang
 03fd28e29405769fdb0d19a3fc2d726e|3|×|×|×|0|flang/ct/monad-maybe-monoid.flang
 2ecf1a6240805cad9d57e1103181ad39|4|×|×|×|0|flang/ct/kleisli-outcome.flang
@@ -2132,3 +2132,17 @@ c2a0fa1100b1c2fb01bff4fe8e6d1e5a|12|×|×|×|0|scripts/site/inserts.flang
 52acd497efd95f767352600049e427f7|7|×|×|×|0|scripts/site/inserts.fscript
 b71516e7916ff46436b5d912ed69b5da|5|×|×|×|0|scripts/site/library-api.flang
 6bcf580ac885b09d37e7223ffd7255b1|1|×|×|×|0|scripts/site/library-status.fscript
+// ⚑ 17 октября 2026, ветка a/nested-object-and-proof-moves (задачи 4735, 5908):
+// пять честных программ семьи сверщика body-moves и три подделки развёртки;
+// приговор снят двоичным 0.7.28 (`bootstrap/flang check --proof`), подделки
+// ядро не доказывает — «объявлено, не доказано». У flang/self/proof-record.flang
+// пересчитано только «написано»: 231 → 245 (печатники ходов по телу); md5 и
+// числитель не тронуты.
+9dd5cff79c8be02e1548f4318b90ef0d|2|2|0|0|0|flang/proof/checker/tests/families/body-moves/account.flang
+e40c5b6e77a7648e670421ae545d79aa|2|2|0|0|0|flang/proof/checker/tests/families/body-moves/door.flang
+115c9184cbcdd94769361ccaa6fc938a|3|3|0|0|0|flang/proof/checker/tests/families/body-moves/point.flang
+fb81c00853e3b7291316d8dc04d3ace1|1|1|0|0|0|flang/proof/checker/tests/families/body-moves/price-table.flang
+5745ad3ceb42865f0c9e3da4f4cd38db|3|3|0|0|0|flang/proof/checker/tests/families/body-moves/socrates.flang
+187925358f1ee7a6f07659431b7d872f|1|0|0|1|0|flang/proof/examples/forgery-unfold-inside-a-list.flang
+fe6ae44b60de761e120eefd61c6708b5|1|0|0|1|0|flang/proof/examples/forgery-unfold-of-a-whole-comparison.flang
+98be78cf0ec7a467da2d21e77981647e|1|0|0|1|0|flang/proof/examples/forgery-unfold-without-arguments.flang

@@ -468,6 +468,29 @@ def «связанныеТелом» (t : String) : List String :=
     let acc := if x = "→" && i > 0 then acc ++ [«голо» (w.getD (i - 1) "")] else acc
     if x = "голова" && w.getD (i + 1) "" = "и" && w.getD (i + 2) "" = "хвост" then acc ++ ["голова", "хвост"] else acc) []
 
+def «крайИмени» (c : Option Char) : Bool :=
+  match c with
+  | none => true
+  | some c => " ()[],:.".toList.contains c
+
+partial def «имяВТерме» (t x : String) : Bool :=
+  let cs := t.toList
+  let xs := x.toList
+  let ys := ("«" ++ x ++ "»").toList
+  let rec go (i : Nat) (q : Bool) : Bool :=
+    if i ≥ cs.length then false
+    else
+      let c := cs[i]!
+      if q then
+        if c = '\\' then go (i + 2) true else if c = '"' then go (i + 1) false else go (i + 1) true
+      else if c = '"' then go (i + 1) true
+      else
+        let rest := cs.drop i
+        let prev := if i = 0 then none else some cs[i - 1]!
+        if (rest.take xs.length = xs && «крайИмени» prev && «крайИмени» (rest.drop xs.length).head?) || rest.take ys.length = ys then true
+        else go (i + 1) false
+  go 0 false
+
 def «Исх».«телоПриДоводах» (s : «Исх») («имя» «что» «тело» : String) : Except String String :=
   let d := s.«доводы» «имя»
   let «зов» := s!"«{«имя»}» от "
@@ -488,8 +511,11 @@ def «Исх».«телоПриДоводах» (s : «Исх») («имя» «�
         let t1 := (List.range n).foldl (fun t i =>
           let x := («пары».getD i ("", "")).2
           «вместо» («вместо» t s!"«{x}»" s!"⦃{i}⦄") x s!"⦃{i}⦄") «тело»
-        let t2 := (List.range n).foldl (fun t i => «вместо» t s!"⦃{i}⦄" («т» («пары».getD i ("", "")).1)) t1
-        .ok («т» t2)
+        match «пары».find? (fun (_, x) => «имяВТерме» t1 x) with
+        | some (_, x) => .error s!"развёртка «{«имя»}»: параметр «{x}» стоит в теле там, куда подстановка не доходит"
+        | none =>
+          let t2 := (List.range n).foldl (fun t i => «вместо» t s!"⦃{i}⦄" («т» («пары».getD i ("", "")).1)) t1
+          .ok («т» t2)
 
 def «ходРазвёртки» (p : «Прогон») (l : String) (o : «Обст») : «Прогон» := Id.run do
   let «что» := «т» («уголок» l 1)

@@ -48,8 +48,12 @@ flang, функцию с постусловием — и получает отв
    (`seed:refresh`).
 6. **Сборка — шаг сайта, а не файлы в дереве**: `bootstrap/flang run-script
    playground:build` кладёт пять файлов в `docs/site/out/playground/`;
-   `.github/workflows/pages.yml` ставит `wasi-libc`, `libclang-rt-*-dev-wasm32`, `lld`,
-   собирает и пробует. Выпуск сайта несёт `.wasm` рядом со страницей.
+   работа `playground` в `.github/workflows/pages.yml` ставит wasi-sdk 25 (архив выпуска
+   со сверкой sha256: в wasi-libc Ubuntu 24.04 нет `realpath`), собирает и пробует.
+   `flang.wasm` и `checker.wasm` лежат в кеше под ключом из `bootstrap/*.c`, `*.h`,
+   `checker.c` и рецепта в `.flangrc`: пуш в `dev` или `main` кладёт их туда, а запрос
+   слияния, не тронувший этих входов, берёт их из кеша и гоняет пробу без пересборки.
+   Тронувший — собирает заново. Выпуск сайта несёт `.wasm` рядом со страницей.
 7. **Проба** — `scripts/site/playground-probe.fscript` (`playground:probe`): тот же
    хозяин под Node проверяет, что Barbara «следует» и сверщик сошёлся, утверждение
    следствия «НЕ СЛЕДУЕТ» с кодом 1, ложное утверждение получает «НЕ ПРОВЕРЕНО» с кодом

@@ -567,6 +567,7 @@ explains
 explanation
 exploration
 explicit
+export
 exposed
 express
 expressible
@@ -1058,6 +1059,7 @@ name
 named
 names
 namesake
+namesakes
 namesigns
 naming
 nan
@@ -1365,6 +1367,7 @@ reads
 real
 reason
 rebased
+rebind
 rebuilds
 rechecked
 recomputed

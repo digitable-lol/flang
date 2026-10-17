@@ -12,6 +12,7 @@ both-only.flang	check	1	из второго ввезена не она, а «Ч�
 both-only.flang	trust	1	согласие на недоказанное эту проверку не снимает
 both-hidden.flang	check	1	из второго ввезена не она, а «Через второй», которая её зовёт
 both-hidden.flang	trust	1	согласие на недоказанное эту проверку не снимает
+rebind.flang	check	1	FLANG_DUPLICATE_NAME
 rebind.flang	check	1	«Через два» зовёт её из
 rebind.flang	trust	1	согласие на недоказанное эту проверку не снимает
 two-lists.flang	check	0	замечаний нет

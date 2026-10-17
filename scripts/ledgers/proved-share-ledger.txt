@@ -1066,6 +1066,10 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
+0379164c233ebd09b61809d13dd00d24|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/first.flang
+9fd19a46c88644d82bc3c0a4963d7cee|2|2|0|0|0|flang/proof/probes/same-name-functions/programs/second.flang
+c71d287657835bb809e97a91f3b5d6d6|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/source.flang
+40a70f70f2a59082656bb5039c866771|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/user.flang
 ccf79296c7ca4b9e14030c7619367fd2|0|0|0|0|1|flang/proof/probes/message-language/programs/precondition-call.flang
 f576ef59fb727973057323258bee048c|1|1|0|0|0|flang/proof/probes/message-language/programs/checked.flang
 d1904783bf9e67c54add5731ca6cc8dc|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/absolute-integer.flang

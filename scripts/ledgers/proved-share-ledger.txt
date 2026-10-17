@@ -1373,7 +1373,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
-0671f904ac2c1b423ee51e1562ed2a08|93|44|0|0|0|flang/self/proof-kernel.flang
+0671f904ac2c1b423ee51e1562ed2a08|96|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|231|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
@@ -1874,7 +1874,7 @@ dc0f3f20e387d3a5db3813d2ae137694|17|17|0|0|0|flang/self/emit-layout.flang
 6b887e3137c1eee1b3ac07816837f436|285|146|31|76|0|flang/self/interpret.flang
 54cfb1a8e907051aafea33efa6ac337d|784|446|22|261|0|flang/self/parser.flang
 82baac47756df343c845cc40f740dfbe|97|82|2|10|0|flang/self/proof-initial.flang
-c8dbb7179b35f785da41f5990dd41238|93|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|230|98|57|3|0|flang/self/proof-record.flang
 c9e3ee258bfab2a0503a1214f8d1034f|185|46|1|91|0|flang/self/proofterm.flang
 03fd28e29405769fdb0d19a3fc2d726e|3|×|×|×|0|flang/ct/monad-maybe-monoid.flang
@@ -1883,7 +1883,7 @@ eed32097cecd0d636f9310d09e7fc976|4|×|×|×|0|flang/ct/monoidal-routes.flang
 f7c2a36f3b5d690600431dbbeaeff6f6|1|×|×|×|0|flang/ct/mon-free-forgetful.flang
 a91ae4dd453568a691d07c06503f7344|38|17|21|0|0|flang/self/functor-oracle.flang
 3f8970a696cb0bc0b668c6e31668b8bf|41|11|0|30|0|flang/self/oracle.flang
-c8dbb7179b35f785da41f5990dd41238|93|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
 bddb9033aaa4c5848f9eb45f5b8780b7|88|24|0|64|0|flang/self/setoid-oracle.flang
 7d10df9d9c1f5160df1ea5f9e2970291|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/false-goal-under-conjunction.flang
 eb368d87b57b78f0b12d189ec83cb4bb|2|2|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/found-witness.flang
@@ -1893,13 +1893,13 @@ d10f7559f19e2c79a1249fad2fc746bd|1|1|0|0|0|flang/proof/probes/quantifier-inside-
 dcdf98a5c22b7eac4510ef6d47df7db2|1|1|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/nested-each-has-a-witness.flang
 c218b0c6b08465319ece2a61e3598862|1|1|0|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/nested-exists-under-for-all-inside-conjunction.flang
 1646758aea547d9cdf049f06c94b5586|1|0|1|0|0|flang/proof/probes/quantifier-inside-a-formula/programs/no-witness-fits.flang
-c8dbb7179b35f785da41f5990dd41238|93|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-law.flang
 1880ce56bb426cf1802c224455273e46|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-zero.flang
 9f4af10b6f645ab264cd446665d22220|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/non-canon-literal.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/over-number.flang
 1c40267274311ec4479e99c16fed524f|7|×|×|×|0|flang/proof/checker/tests/families/exact-ring/ring-laws.flang
-c8dbb7179b35f785da41f5990dd41238|93|44|0|0|0|flang/self/proof-kernel.flang
+c8dbb7179b35f785da41f5990dd41238|96|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-false-over-exact.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-laws-over-number.flang
 91ac4cc44b324360041a8eb79081efcd|2|1|0|1|0|flang/proof/checker/tests/families/postcondition-rewrite/chain-of-eighteen.flang

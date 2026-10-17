@@ -4,7 +4,7 @@ LEAN ?= lean
 LEANC ?= leanc
 OUT ?= second/out
 SECOND = Source Terms Totality Moves Evaluator Body Node Sections Premises Theorem Ring Checker
-MODULES = Model:Модель Rules:Правила Term:Терм Record:Запись Acceptance:Приёмка Consistency:Состоятельность RecordReader:RecordReader
+MODULES = Binary64:Binary64 Model:Модель Rules:Правила Term:Терм Record:Запись Acceptance:Приёмка Consistency:Состоятельность RecordReader:RecordReader
 all: сверщик
 сверщик: checker.c
 	$(CC) $(CFLAGS) -o $@ $<

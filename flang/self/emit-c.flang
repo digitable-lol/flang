@@ -5415,6 +5415,27 @@
   пусть «вход» равно (если «оболочка» то («Строка зависимости Makefile» от "flang_repl" и ["flang_runtime.h"]) иначе "")
   соединить [«рантайм», «движок», «модуль», «прогон», «вход»] по ""
 
+тотальная функция «Пояснение рантаймов Makefile»
+  возвращает строка
+  обеспечивает «пояснение — строки комментария Makefile» результат начинается с "# "
+  соединить [
+    "# Рантаймы целей печати и стандартная библиотека ложатся в share/flang:\n",
+    "# двоичный ищет их в ../share/flang рядом с собой. В архиве релиза они\n",
+    "# лежат в runtime/, в дереве репозитория — в ../flang/src/emit и\n",
+    "# ../flang/stdlib.\n"
+  ] по ""
+
+тотальная функция «Установка рантаймов Makefile»
+  возвращает строка
+  обеспечивает «make install кладёт рантаймы архива» результат содержит "cp -R runtime/. "
+  обеспечивает «make install кладёт библиотеку языка из дерева» результат содержит " ../flang/stdlib "
+  соединить [
+    "\ttest ! -d runtime || { install -d $(DESTDIR)$(PREFIX)/share/flang",
+    " && cp -R runtime/. $(DESTDIR)$(PREFIX)/share/flang/; }\n",
+    "\ttest -d runtime || test ! -d ../flang/src/emit || { install -d $(DESTDIR)$(PREFIX)/share/flang",
+    " && cp -R ../flang/src/emit/. ../flang/stdlib $(DESTDIR)$(PREFIX)/share/flang/; }\n"
+  ] по ""
+
 тотальная функция «Печать Makefile»
   принимает «файл»: строка, «прогонщик»: признак, «оболочка»: признак, «конкурентно»: признак
   возвращает строка
@@ -5426,7 +5447,7 @@
   пусть «объект оболочки» равно (если «оболочка» то " flang_repl.o" иначе "")
   пусть «префикс» равно (если «оболочка» то (соединить ["# Куда ставит `make install`. Человек после сборки обязан получить КОМАНДУ\n", "# `flang`, а не путь в каталог сборки: PREFIX=$HOME/.local, если без sudo.\n", "PREFIX ?= /usr/local\n", "\n"] по "") иначе "")
   пусть «правило» равно (если «прогонщик» то (соединить ["\n", «бинарник», ": flang_cli.o", «объект оболочки», " $(OBJECTS)\n\t$(CC) $(CFLAGS) -o $@ flang_cli.o", «объект оболочки», " $(OBJECTS) $(LDLIBS)\n"] по "") иначе "")
-  пусть «установка» равно (если «прогонщик» и притом «оболочка» то (соединить ["\n# Заголовки и библиотека ставятся рядом с бинарником не для порядка: без\n", "# них оболочка не может собрать выражение системным `cc` и умеет только\n", "# проверять. Страница руководства кладётся, если она рядом (в архиве\n", "# релиза она есть, в дереве репозитория — нет).\n", "install: all\n", "\tinstall -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include\n", "\tinstall -m 0755 ", «бинарник», " $(DESTDIR)$(PREFIX)/bin/", «бинарник», "\n", "\tinstall -m 0644 lib", «файл», ".a $(DESTDIR)$(PREFIX)/lib/\n", "\tinstall -m 0644 *.h $(DESTDIR)$(PREFIX)/include/\n", "\ttest ! -f flang.1 || { install -d $(DESTDIR)$(PREFIX)/share/man/man1 && install -m 0644 flang.1 $(DESTDIR)$(PREFIX)/share/man/man1/; }\n", "\t@echo 'поставлено: $(DESTDIR)$(PREFIX)/bin/", «бинарник», " — проверьте: ", «бинарник», " --version'\n", "\n", "uninstall:\n", "\trm -f $(DESTDIR)$(PREFIX)/bin/", «бинарник», " $(DESTDIR)$(PREFIX)/lib/lib", «файл», ".a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1\n"] по "") иначе "")
+  пусть «установка» равно (если «прогонщик» и притом «оболочка» то (соединить ["\n# Заголовки и библиотека ставятся рядом с бинарником не для порядка: без\n", "# них оболочка не может собрать выражение системным `cc` и умеет только\n", "# проверять. Страница руководства кладётся, если она рядом (в архиве\n", "# релиза она есть, в дереве репозитория — нет).\n", («Пояснение рантаймов Makefile»), "install: all\n", "\tinstall -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include\n", "\tinstall -m 0755 ", «бинарник», " $(DESTDIR)$(PREFIX)/bin/", «бинарник», "\n", "\tinstall -m 0644 lib", «файл», ".a $(DESTDIR)$(PREFIX)/lib/\n", "\tinstall -m 0644 *.h $(DESTDIR)$(PREFIX)/include/\n", "\ttest ! -f flang.1 || { install -d $(DESTDIR)$(PREFIX)/share/man/man1 && install -m 0644 flang.1 $(DESTDIR)$(PREFIX)/share/man/man1/; }\n", («Установка рантаймов Makefile»), "\t@echo 'поставлено: $(DESTDIR)$(PREFIX)/bin/", «бинарник», " — проверьте: ", «бинарник», " --version'\n", "\n", "uninstall:\n", "\trm -f $(DESTDIR)$(PREFIX)/bin/", «бинарник», " $(DESTDIR)$(PREFIX)/lib/lib", «файл», ".a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1\n", "\trm -rf $(DESTDIR)$(PREFIX)/share/flang\n"] по "") иначе "")
   пусть «фиктивные цели» равно (если «прогонщик» и притом «оболочка» то " install uninstall" иначе "")
   пусть «пояснение зависимостей» равно (соединить [
     "# Заголовки названы поимённо. Без них действует одно неявное правило\n",

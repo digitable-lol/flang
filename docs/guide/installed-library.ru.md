@@ -49,16 +49,18 @@
 | готовая сборка, `install.sh`, deb, rpm, AUR | `bin/flang` | `share/flang/stdlib` | `share/flang/<ц>` |
 | Homebrew (`flang-package`, `flang`) | `Cellar/…/bin/flang` | `Cellar/…/share/flang/stdlib` | `Cellar/…/share/flang/<ц>` |
 | asdf (готовая сборка или архив C) | `installs/flang/<в>/bin/flang` | `…/share/flang/stdlib` | `…/share/flang/<ц>` |
-| `make install PREFIX=<п>` | `<п>/bin/flang` | не ставится | не ставятся |
+| `make install PREFIX=<п>` | `<п>/bin/flang` | `<п>/share/flang/stdlib` | `<п>/share/flang/<ц>` |
 
 Архив C выпуска несёт образ `share/flang` в каталоге `runtime/`: по подкаталогу на цель и
 `stdlib/`. Каждая упаковка переносит этот каталог целиком, и библиотека едет той же дорогой,
 что и рантаймы. В выпусках до 0.7.29 `stdlib/` нет; установка такого выпуска находит
 библиотеку только через `FLANG_MODULE_DIR`.
 
-`make install` из дерева ставит `bin`, `lib`, `include` и страницу руководства. Библиотеку
-и рантаймы такой установке показывают на дерево:
-`FLANG_MODULE_DIR=<клон>/flang/stdlib` и `--runtime <клон>/flang/src/emit/<ц>`.
+`make install` переносит `flang/src/emit/<ц>` и `flang/stdlib` клона (или `runtime/` архива
+C) в `<п>/share/flang`. Это правило приходит с точкой раскрутки 0.7.29; прежняя ставит только
+`bin`, `lib`, `include` и страницу руководства, и такой установке библиотеку и рантаймы
+показывают на дерево руками: `FLANG_MODULE_DIR=<клон>/flang/stdlib` и
+`--runtime <клон>/flang/src/emit/<ц>`.
 
 ## Как это проверяется
 

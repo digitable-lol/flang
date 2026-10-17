@@ -324,7 +324,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 27
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 28
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

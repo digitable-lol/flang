@@ -20,7 +20,6 @@
   «functions»: список строки
 
 объект «Context»
-  «words»: список «Слово»
   «raised»: список строки
   «modules»: список «Module view»
 

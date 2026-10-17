@@ -56,7 +56,7 @@
   принимает context: «Context», taken: список «Taken», table: строка, arguments: строка, language: строка
   возвращает «Filled»
   пример «a table nobody prints is trouble»
-    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+    дано context равно (запись «Context» с «raised» равным пустой список
       и «modules» равным пустой список)
     дано taken равно пустой список
     дано table равно "weather"
@@ -69,7 +69,7 @@
     случай вариант «Tsv table»
       то «Tsv filled» от taken и arguments
     случай вариант «Keywords table»
-      то «Keywords filled» от (context.«words») и arguments и language
+      то «Keywords filled» от taken и arguments и language
     случай вариант «Library table»
       то «Library filled» от (context.«modules») и taken и arguments и language
     случай вариант «Unknown table»
@@ -79,7 +79,7 @@
   принимает context: «Context», taken: список «Taken», kind: «Insert kind», language: строка
   возвращает «Filled»
   пример «an opening that could not be read»
-    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+    дано context равно (запись «Context» с «raised» равным пустой список
       и «modules» равным пустой список)
     дано taken равно пустой список
     дано kind равно вариант «Unreadable» с line равным "<!-- insert"
@@ -102,14 +102,14 @@
   принимает context: «Context», taken: список «Taken», language: строка, piece: «Piece»
   возвращает «Rendered»
   пример «prose stays as it is»
-    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+    дано context равно (запись «Context» с «raised» равным пустой список
       и «modules» равным пустой список)
     дано taken равно пустой список
     дано language равно "ru"
     дано piece равно вариант «Prose» с line равным "а"
     ожидается запись «Rendered» с «lines» равным ["а"] и «troubles» равным пустой список и «stale» равным пустой список
   пример «an insert whose body went stale»
-    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+    дано context равно (запись «Context» с «raised» равным пустой список
       и «modules» равным пустой список)
     дано taken равно [запись «Taken» с «command» равным "file a.flang" и «code» равным 0 и «output» равным "новое\n"]
     дано language равно "ru"
@@ -244,7 +244,7 @@
   принимает context: «Context», taken: список «Taken», path: строка
   возвращает «Page result»
   пример «a page without inserts stays itself»
-    дано context равно (запись «Context» с «words» равным пустой список и «raised» равным пустой список
+    дано context равно (запись «Context» с «raised» равным пустой список
       и «modules» равным пустой список)
     дано taken равно [запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"]
     дано path равно "a.md"
@@ -347,44 +347,11 @@
     дано taken равно [запись «Taken» с «command» равным "file a.md" и «code» равным 0 и «output» равным "# А\n"]
     дано pieces равно пустой список
     ожидается вариант «Конец работы» с значение равным "страниц со вставками 1, вставок 0: все сходятся с кодом"
-  пусть words равно (если «Needs glossary» от pieces то («Словарь таблицы») иначе пустой список)
   пусть raised равно (если «Has codes table» от pieces то («Raised codes» от taken) иначе пустой список)
-  пусть context равно (запись «Context» с «words» равным words и «raised» равным raised и «modules» равным
+  пусть context равно (запись «Context» с «raised» равным raised и «modules» равным
     («Module views» от taken))
   пусть results равно (отобразить pages как path → «Page result of» от context и taken и path)
   «Judged» от write и results и (длина («Inserts» от pieces))
-
-тотальная функция «Needs glossary»
-  принимает pieces: список «Piece»
-  возвращает признак
-  пример «no table of keywords»
-    дано pieces равно [вариант «Prose» с line равным "а"]
-    ожидается нет
-  не (пусто (отфильтровать pieces где piece → («First table» от piece) равен "keywords"))
-
-тотальная функция «First table»
-  принимает piece: «Piece»
-  возвращает строка
-  пример «prose names no table»
-    дано piece равно вариант «Prose» с line равным "а"
-    ожидается ""
-  разбор piece
-    случай вариант «Insert» с opening как opening и kind как kind и body как body и closing как closing
-      то «Table name of kind» от kind
-    случай любое
-      то ""
-
-тотальная функция «Table name of kind»
-  принимает kind: «Insert kind»
-  возвращает строка
-  пример «a table»
-    дано kind равно вариант «Table» с table равным "keywords" и arguments равным "Функции"
-    ожидается "keywords"
-  разбор kind
-    случай вариант «Table» с table как table и arguments как arguments
-      то table
-    случай любое
-      то ""
 
 тотальная функция «Ask»
   принимает write: признак, pages: список строки, queue: список строки, taken: список «Taken», leg: строка

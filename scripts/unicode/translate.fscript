@@ -1,11 +1,14 @@
 модуль «Surface translation»
-  использует «Лексер flang» из "../../flang/self/lexer.flang" только «Слово на поверхности», «Куски слов поверхностей»
 
 объект «Spot»
   «row»: число
   «column»: число
   «concept»: строка
   «until»: число
+
+объект «Surface»
+  «name»: строка
+  «words»: строка
 
 объект «Translation»
   «source»: строка
@@ -15,7 +18,8 @@
 тип «Translation step»
   вариант «Asking arguments»
   вариант «Reading source» содержит job: «Translation»
-  вариант «Reading tokens» содержит job: «Translation», source: строка
+  вариант «Reading lexer» содержит job: «Translation», source: строка
+  вариант «Reading tokens» содержит job: «Translation», source: строка, words: строка
   вариант «Writing» содержит untranslated: число
 
 тотальная функция «Token fields»
@@ -102,21 +106,23 @@
     иначе подстрока body с 1 по (элемент 2 в last)
 
 тотальная функция «Replace spot»
-  принимает row_text: строка, spot: «Spot», target: строка
+  принимает row_text: строка, spot: «Spot», target: «Surface»
   возвращает строка
   пример «Russian if becomes English»
     дано row_text равно "  если н не больше 0 то 0 иначе н"
     дано spot равно запись «Spot» с «row» равным 1 и «column» равным 3 и «concept» равным "if" и «until» равным 8
-    дано target равно "en"
+    дано target равно (запись «Surface» с «name» равным "en" и «words» равным
+        "|if@en:if|then@en:then|else@eo:alie|if@zh:如果|total@en:total|function@en:function|")
     ожидается "  if н не больше 0 то 0 иначе н"
   пример «Last token of the line runs to the end»
     дано row_text равно "  иначе"
     дано spot равно запись «Spot» с «row» равным 1 и «column» равным 3 и «concept» равным "else" и «until» равным 0
-    дано target равно "eo"
+    дано target равно (запись «Surface» с «name» равным "eo" и «words» равным
+        "|if@en:if|then@en:then|else@eo:alie|if@zh:如果|total@en:total|function@en:function|")
     ожидается "  alie"
   пусть last_column равно (если spot.«until» больше 0 то spot.«until» минус 1 иначе длина row_text)
   пусть word равно «Trim right» от (подстрока row_text с spot.«column» по last_column)
-  пусть replacement равно «Слово на поверхности» от spot.«concept» и target
+  пусть replacement равно «Surface word» от target и spot.«concept»
   пусть head_part равно (если spot.«column» больше 1 то подстрока row_text с 1 по (spot.«column» минус 1) иначе "")
   пусть tail_part равно (если (spot.«column» плюс (длина word)) больше (длина row_text) то "" иначе подстрока row_text с
       (spot.«column» плюс (длина word)) по (длина row_text))
@@ -125,30 +131,32 @@
     иначе соединить [head_part, replacement, tail_part] по ""
 
 тотальная функция «Translate line»
-  принимает row_text: строка, number: число, spots: список «Spot», target: строка
+  принимает row_text: строка, number: число, spots: список «Spot», target: «Surface»
   возвращает строка
   пример «Two keywords on one line»
     дано row_text равно "  если н то 0"
     дано number равно 4
     дано spots равно [(запись «Spot» с «row» равным 4 и «column» равным 3 и «concept» равным "if" и «until» равным 8),
         (запись «Spot» с «row» равным 4 и «column» равным 10 и «concept» равным "then" и «until» равным 13)]
-    дано target равно "en"
+    дано target равно (запись «Surface» с «name» равным "en" и «words» равным
+        "|if@en:if|then@en:then|else@eo:alie|if@zh:如果|total@en:total|function@en:function|")
     ожидается "  if н then 0"
   пусть mine равно отфильтровать spots где spot → spot.«row» равен number
   (свёртка (свёртка mine начиная с пустой список как reversed и spot → приписать spot к reversed) начиная с row_text как
       done и spot → «Replace spot» от done и spot и target)
 
 тотальная функция «Untranslated»
-  принимает spots: список «Spot», target: строка
+  принимает spots: список «Spot», target: «Surface»
   возвращает число
   пример «Every keyword has a word»
     дано spots равно [запись «Spot» с «row» равным 4 и «column» равным 3 и «concept» равным "if" и «until» равным 8]
-    дано target равно "zh"
+    дано target равно (запись «Surface» с «name» равным "zh" и «words» равным
+        "|if@en:if|then@en:then|else@eo:alie|if@zh:如果|total@en:total|function@en:function|")
     ожидается 0
-  длина (отфильтровать spots где spot → пусто («Слово на поверхности» от spot.«concept» и target))
+  длина (отфильтровать spots где spot → пусто («Surface word» от target и spot.«concept»))
 
 тотальная функция «Translated text»
-  принимает source: строка, tokens: строка, target: строка
+  принимает source: строка, tokens: строка, target: «Surface»
   возвращает строка
   пример «A function head in English»
     дано source равно "тотальная функция «Ф»\n  возвращает число\n"
@@ -161,7 +169,8 @@
       2:14\tслово tNumber
       2:19\t/
       """
-    дано target равно "en"
+    дано target равно (запись «Surface» с «name» равным "en"
+        и «words» равным "|total@en:total|function@en:function|returns@en:returns|tNumber@en:number|")
     ожидается "total function «Ф»\n  returns number\n"
   пусть spots равно «Spots» от tokens
   пусть numbered равно (свёртка (разделить source по "\n") начиная с пустой список как lines и row_text → добавить
@@ -229,8 +238,10 @@
       то «After arguments» от reply
     случай вариант «Reading source» с job как job
       то «After source» от job и reply
-    случай вариант «Reading tokens» с job как job и source как source
-      то «After tokens» от job и source и reply
+    случай вариант «Reading lexer» с job как job и source как source
+      то «After lexer» от job и source и reply
+    случай вариант «Reading tokens» с job как job и source как source и words как words
+      то «After tokens» от job и source и words и reply
     случай вариант «Writing» с untranslated как untranslated
       то (вариант «Конец работы» с значение равным (соединить ["keywords without a word on the target surface: ",
           (к строке untranslated)] по ""))
@@ -255,28 +266,92 @@
   возвращает «Продолжение»
   разбор reply
     случай вариант «Прочитано» с содержимое как body
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../flang/self/lexer.flang") и
+          потом равным (вариант «Reading lexer» с job равным job и source равным body))
+    случай любое
+      то «Failed reply» от reply
+
+тотальная функция «After lexer»
+  принимает job: «Translation», source: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как body
       то (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и
           аргументы равным ["tokens", job.«source»]) и потом равным (вариант «Reading tokens» с job равным job и source
-          равным body))
+          равным source и words равным («Word table» от body)))
     случай любое
       то «Failed reply» от reply
 
 тотальная функция «After tokens»
-  принимает job: «Translation», source: строка, reply: «Отклик»
+  принимает job: «Translation», source: строка, words: строка, reply: «Отклик»
   возвращает «Продолжение»
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
-      то (если code равен 0 то «Write translation» от job и source и output иначе «Failed reply» от reply)
+      то (если code равен 0 то «Write translation» от job и source и words и output иначе «Failed reply» от reply)
     случай любое
       то «Failed reply» от reply
 
 тотальная функция «Write translation»
-  принимает job: «Translation», source: строка, tokens: строка
+  принимает job: «Translation», source: строка, words: строка, tokens: строка
   возвращает «Продолжение»
-  пусть body равно «Translated text» от source и tokens и job.«surface»
-  пусть missing равно «Untranslated» от («Spots» от tokens) и job.«surface»
+  пусть target равно запись «Surface» с «name» равным job.«surface» и «words» равным words
+  пусть body равно «Translated text» от source и tokens и target
+  пусть missing равно «Untranslated» от («Spots» от tokens) и target
   (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным job.«target» и содержимое равным body) и
       потом равным (вариант «Writing» с untranslated равным missing))
+
+тотальная функция «Word table»
+  принимает lexer: строка
+  возвращает строка
+  пример «The strings of the word table, joined»
+    дано lexer равно """
+      тотальная функция «Куски слов поверхностей»
+        возвращает список строки
+        [
+          "|module@ru:модуль|",
+          "|if@en:if|"
+        ]
+
+      тотальная функция «Слово на поверхности»
+      """
+    ожидается "|module@ru:модуль||if@en:if|"
+  пусть after_marker равно «Item or empty» от (разделить lexer по "функция «Куски слов поверхностей»") и 2
+  пусть table равно «Item or empty» от (разделить after_marker по "функция «Слово на поверхности»") и 1
+  пусть pieces равно разделить table по "\""
+  (соединить (отобразить (отфильтровать («Numbered pieces» от pieces) где piece → (piece.«position» остаток от 2) равен
+    0)
+      как piece → piece.«text») по "")
+
+объект «Numbered piece»
+  «position»: число
+  «text»: строка
+
+тотальная функция «Numbered pieces»
+  принимает pieces: список строки
+  возвращает список «Numbered piece»
+  пример «Two»
+    дано pieces равно ["a", "b"]
+    ожидается [(запись «Numbered piece» с «position» равным 1 и «text» равным "a"), (запись «Numbered piece» с
+        «position» равным 2 и «text» равным "b")]
+  (свёртка pieces начиная с пустой список как numbered и piece → добавить (запись «Numbered piece» с «position» равным
+      ((длина numbered) плюс 1) и «text» равным piece) к numbered)
+
+тотальная функция «Surface word»
+  принимает target: «Surface», concept: строка
+  возвращает строка
+  пример «If in Chinese»
+    дано target равно (запись «Surface» с «name» равным "zh" и «words» равным "|if@en:if|if@zh:如果|")
+    дано concept равно "if"
+    ожидается "如果"
+  пример «No word»
+    дано target равно (запись «Surface» с «name» равным "eo" и «words» равным "|if@en:if|")
+    дано concept равно "module"
+    ожидается ""
+  пусть key равно соединить ["|", concept, "@", target.«name», ":"] по ""
+  пусть parts равно разделить target.«words» по key
+  если (длина parts) больше 1
+    то «Item or empty» от (разделить (элемент 2 в parts) по "|") и 1
+    иначе ""
 
 план «Translate»
   состояние «Translation step»

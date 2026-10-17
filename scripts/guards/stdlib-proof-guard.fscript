@@ -381,15 +381,35 @@
 тотальная функция «Debt of»
   принимает text: строка
   возвращает список строки
-  пример «the modules named in the ledger»
+  пример «the modules named in the ledger with their codes»
     дано text равно "модуль\tкод\tпочему\naes\t3\tдолг\n# заметка\ntree\t124\n"
-    ожидается ["aes"]
-  отобразить (отфильтровать («Text lines» от text) где line → (не (line начинается с "#")) и притом (не ((«First piece» от line и "\t") равен "модуль")) и притом ((длина (разделить line по "\t")) не меньше 3)) как line → «First piece» от line и "\t"
+    ожидается ["aes\t3"]
+  пусть kept равно (отфильтровать («Text lines» от text) где line → (не (line начинается с "#")) и притом
+    (не ((«First piece» от line и "\t") равен "модуль")) и притом ((длина (разделить line по "\t")) не меньше 3))
+  отобразить kept как line → соединить [(«First piece» от line и "\t"), "\t",
+    («First piece» от («After first» от line и "\t") и "\t")] по ""
+
+тотальная функция «Debt key»
+  принимает probe: «Probe»
+  возвращает строка
+  пример «the module and its code»
+    дано probe равно (запись «Probe» с «module» равным "tls" и «code» равным 3 и «seconds» равным 1 и
+      «bytes» равным 9 и «line» равным "")
+    ожидается "tls\t3"
+  соединить [(probe.«module»), "\t", (к строке (probe.«code»))] по ""
+
+тотальная функция «Owed modules»
+  принимает debt: список строки
+  возвращает список строки
+  пример «the modules of the ledger without their codes»
+    дано debt равно ["aes\t3", "tls\t3"]
+    ожидается ["aes", "tls"]
+  отобразить debt как key → «First piece» от key и "\t"
 
 тотальная функция «Newly failed»
   принимает probes: список «Probe», debt: список строки
   возвращает список «Probe»
-  отфильтровать probes где probe → («Failed» от probe) и притом (не («Holds» от debt и (probe.«module»)))
+  отфильтровать probes где probe → («Failed» от probe) и притом (не («Holds» от debt и («Debt key» от probe)))
 
 тотальная функция «Said of»
   принимает said: список «Said», wanted: строка
@@ -405,7 +425,7 @@
   возвращает список строки
   пример «a closed debt is a gravestone»
     дано probe равно (запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 9 и «line» равным "")
-    дано debt равно ["aes"]
+    дано debt равно ["aes\t3"]
     дано said равно пустой список
     дано ledger равно "/srv/tree/debt.tsv"
     ожидается ["НАДГРОБИЕ: aes.flang стоит в /srv/tree/debt.tsv, а ведомость с него снимается (код 0, 9 байт) — уберите строку, иначе она глушит проверку"]
@@ -414,13 +434,25 @@
     дано debt равно пустой список
     дано said равно [(запись «Said» с «module» равным "kdf" и «lines» равным ["беда"])]
     дано ledger равно "/srv/tree/debt.tsv"
-    ожидается ["ПРИБАВИЛОСЬ: kdf.flang — код 1, ведомости 0 байт, а в долге его нет; поток ошибок:", "    беда"]
-  пусть owed равно («Holds» от debt и (probe.«module»))
+    ожидается ["ПРИБАВИЛОСЬ: kdf.flang — код 1, ведомости 0 байт, а в долге его нет с этим кодом; поток ошибок:",
+      "    беда"]
+  пример «a debt that changed its code is a new failure»
+    дано probe равно (запись «Probe» с «module» равным "tls" и «code» равным 1 и «seconds» равным 1 и
+      «bytes» равным 0 и «line» равным "")
+    дано debt равно ["tls\t3"]
+    дано said равно [(запись «Said» с «module» равным "tls" и «lines» равным ["FLANG_UNKNOWN_NAME"])]
+    дано ledger равно "/srv/tree/debt.tsv"
+    ожидается ["ПРИБАВИЛОСЬ: tls.flang — код 1, ведомости 0 байт, а в долге его нет с этим кодом; поток ошибок:",
+      "    FLANG_UNKNOWN_NAME"]
+  пусть owed равно («Holds» от debt и («Debt key» от probe))
+  пусть named равно («Holds» от («Owed modules» от debt) и (probe.«module»))
   разбор («First holding» от [
     (запись «Rule» с «name» равным "new" и «holds» равным ((«Failed» от probe) и притом (не owed))),
-    (запись «Rule» с «name» равным "gravestone" и «holds» равным ((не («Failed» от probe)) и притом owed))] и "none")
+    (запись «Rule» с «name» равным "gravestone" и «holds» равным ((не («Failed» от probe)) и притом named))] и "none")
     случай "new"
-      то приписать (соединить ["ПРИБАВИЛОСЬ: ", (probe.«module»), ".flang — код ", (к строке (probe.«code»)), ", ведомости ", (к строке (probe.«bytes»)), " байт, а в долге его нет; поток ошибок:"] по "") к (отобразить («Said of» от said и (probe.«module»)) как line → соединить ["    ", line] по "")
+      то (приписать (соединить ["ПРИБАВИЛОСЬ: ", (probe.«module»), ".flang — код ", (к строке (probe.«code»)),
+        ", ведомости ", (к строке (probe.«bytes»)), " байт, а в долге его нет с этим кодом; поток ошибок:"] по "") к
+        (отобразить («Said of» от said и (probe.«module»)) как line → соединить ["    ", line] по ""))
     случай "gravestone"
       то [
         (соединить ["НАДГРОБИЕ: ", (probe.«module»), ".flang стоит в ", ledger, ", а ведомость с него снимается (код ",

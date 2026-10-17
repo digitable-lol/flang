@@ -282,6 +282,12 @@ exit 1. `«Сумма»`, `«Минимум»`, `«Максимум»` and `«В
 paragraph warns about; the fix is widening the `только` list in `catalog.flang`, not editing
 this page.
 
+The same refusal reaches the standard library when a module gains a helper that an
+importer's `только` list does not name. `bootstrap/flang run-script stdlib:changed` runs
+`flang check` on every `flang/stdlib` module the branch changed and on every module that
+imports one of them, directly or through another; a change under `bootstrap/` checks the
+whole library. The hook before a push and CI run it; `stdlib:check` checks every module.
+
 **Why narrow at all.** Not for cleanliness: a name conflict at link time is an
 error, not silent shadowing. A twenty-name module brought in whole is twenty future
 `FLANG_DUPLICATE_NAME`s, and the first collision stops the build.

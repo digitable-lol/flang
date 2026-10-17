@@ -1,0 +1,651 @@
+модуль «Stdlib check guard»
+
+объект «Edge»
+  «importer»: строка
+  «imported»: строка
+
+объект «Probe»
+  «module»: строка
+  «code»: число
+  «said»: список строки
+
+объект «Rule»
+  «name»: строка
+  «holds»: признак
+
+объект «Gathered»
+  «root»: строка
+  «base»: строка
+  «changed»: список строки
+  «modules»: список строки
+  «edges»: список «Edge»
+
+тип «Step»
+  вариант «Gathering» содержит mode: строка
+  вариант «Probing» содержит total: число
+  вариант «Forging»
+
+тотальная функция «Lines»
+  принимает text: строка
+  возвращает список строки
+  обеспечивает «no line is longer than the list of pieces» (длина результат) не больше (длина (разделить text по "\n"))
+  пример «empty lines are dropped»
+    дано text равно "a\n\nb\n"
+    ожидается ["a", "b"]
+  отфильтровать (разделить text по "\n") где line → не (line равен "")
+
+тотальная функция «Piece»
+  принимает pieces: список строки, place: число
+  возвращает строка
+  пример «a piece past the end is empty»
+    дано pieces равно ["a"]
+    дано place равно 3
+    ожидается ""
+  пример «the second piece»
+    дано pieces равно ["a", "b"]
+    дано place равно 2
+    ожидается "b"
+  если place больше (длина pieces) то "" иначе (элемент place в pieces)
+
+тотальная функция «Last piece»
+  принимает text: строка, sign: строка
+  возвращает строка
+  пример «the file name of a path»
+    дано text равно "flang/stdlib/tls.flang"
+    дано sign равно "/"
+    ожидается "tls.flang"
+  свёртка (разделить text по sign) начиная с "" как kept и piece → piece
+
+тотальная функция «Between»
+  принимает text: строка, left: строка, right: строка
+  возвращает строка
+  пример «the file between the quotes»
+    дано text равно "  использует «DER» из \"der.flang\" только «Кусок»"
+    дано left равно " из \""
+    дано right равно "\""
+    ожидается "der.flang"
+  пример «no left sign gives nothing»
+    дано text равно "  использует «Lists»"
+    дано left равно " из \""
+    дано right равно "\""
+    ожидается ""
+  «Piece» от (разделить («Piece» от (разделить text по left) и 2) по right) и 1
+
+тотальная функция «File of line»
+  принимает line: строка
+  возвращает строка
+  пример «the file before the colon of grep»
+    дано line равно "flang/stdlib/lists.flang:модуль «Lists»"
+    ожидается "lists.flang"
+  «Last piece» от («Piece» от (разделить line по ":") и 1) и "/"
+
+тотальная функция «First holding»
+  принимает rules: список «Rule», otherwise: строка
+  возвращает строка
+  пример «the first rule that holds gives the name»
+    дано rules равно [(запись «Rule» с «name» равным "one" и «holds» равным нет),
+      (запись «Rule» с «name» равным "two" и «holds» равным да)]
+    дано otherwise равно "none"
+    ожидается "two"
+  разбор (отфильтровать rules где each → each.«holds»)
+    случай пусто
+      то otherwise
+    случай голова и хвост
+      то голова.«name»
+
+тотальная функция «Module of path»
+  принимает path: строка
+  возвращает строка
+  пример «a library file»
+    дано path равно "flang/stdlib/der.flang"
+    ожидается "der.flang"
+  пример «a file in a folder below the library is not a module»
+    дано path равно "flang/stdlib/data/der.flang"
+    ожидается ""
+  пример «a file elsewhere is not a module»
+    дано path равно "docs/der.flang"
+    ожидается ""
+  пусть rest равно («Piece» от (разделить path по "flang/stdlib/") и 2)
+  разбор («First holding» от [
+    (запись «Rule» с «name» равным "outside" и «holds» равным (не (path начинается с "flang/stdlib/"))),
+    (запись «Rule» с «name» равным "below" и «holds» равным (rest содержит "/")),
+    (запись «Rule» с «name» равным "other" и
+      «holds» равным (не ((«Last piece» от rest и ".") равен "flang")))] и "module")
+    случай "module"
+      то rest
+    случай любое
+      то ""
+
+тотальная функция «Holds»
+  принимает pieces: список строки, wanted: строка
+  возвращает признак
+  пример «a piece of the list is held»
+    дано pieces равно ["aes.flang", "tls.flang"]
+    дано wanted равно "tls.flang"
+    ожидается да
+  (длина (отфильтровать pieces где piece → piece равен wanted)) больше 0
+
+тотальная функция «Module names»
+  принимает lines: список строки
+  возвращает список «Edge»
+  пример «the name of a module points at its file»
+    дано lines равно ["flang/stdlib/lists.flang:модуль «Lists»"]
+    ожидается [запись «Edge» с «importer» равным "Lists" и «imported» равным "lists.flang"]
+  отобразить lines как line → (запись «Edge» с «importer» равным («Between» от line и "модуль «" и "»") и
+    «imported» равным («File of line» от line))
+
+тотальная функция «File of name»
+  принимает names: список «Edge», name: строка
+  возвращает строка
+  пример «a known name»
+    дано names равно [запись «Edge» с «importer» равным "Lists" и «imported» равным "lists.flang"]
+    дано name равно "Lists"
+    ожидается "lists.flang"
+  пример «an unknown name gives nothing»
+    дано names равно пустой список
+    дано name равно "Lists"
+    ожидается ""
+  свёртка names начиная с "" как found и each → (если (each.«importer») равен name то (each.«imported»)
+    иначе found)
+
+тотальная функция «Edge of use»
+  принимает names: список «Edge», line: строка
+  возвращает «Edge»
+  пример «an import by file»
+    дано names равно пустой список
+    дано line равно "flang/stdlib/tls.flang:  использует «DER» из \"der.flang\" только «Кусок»"
+    ожидается запись «Edge» с «importer» равным "tls.flang" и «imported» равным "der.flang"
+  пример «an import by module name»
+    дано names равно [запись «Edge» с «importer» равным "Lists" и «imported» равным "lists.flang"]
+    дано line равно "flang/stdlib/json.flang:  использует «Lists» только «Приписать в начало»"
+    ожидается запись «Edge» с «importer» равным "json.flang" и «imported» равным "lists.flang"
+  пусть quoted равно («Between» от line и " из \"" и "\"")
+  пусть named равно («File of name» от names и («Between» от line и "использует «" и "»"))
+  (запись «Edge» с «importer» равным («File of line» от line) и
+    «imported» равным (если quoted равен "" то named иначе («Last piece» от quoted и "/")))
+
+тотальная функция «Grown»
+  принимает chosen: список строки, edges: список «Edge»
+  возвращает список строки
+  пример «an importer of a chosen module joins once»
+    дано chosen равно ["der.flang"]
+    дано edges равно [(запись «Edge» с «importer» равным "tls.flang" и «imported» равным "der.flang"),
+      (запись «Edge» с «importer» равным "x509.flang" и «imported» равным "der.flang"),
+      (запись «Edge» с «importer» равным "tls.flang" и «imported» равным "aes.flang")]
+    ожидается ["der.flang", "tls.flang", "x509.flang"]
+  свёртка edges начиная с chosen как grown и edge → (если («Holds» от chosen и (edge.«imported»)) и притом
+    (не («Holds» от grown и (edge.«importer»))) то (добавить (edge.«importer») к grown) иначе grown)
+
+тотальная функция «Closure»
+  принимает seeds: список строки, edges: список «Edge», modules: список строки
+  возвращает список строки
+  пример «importers of importers are reached»
+    дано seeds равно ["der.flang"]
+    дано edges равно [(запись «Edge» с «importer» равным "tls.flang" и «imported» равным "der.flang"),
+      (запись «Edge» с «importer» равным "tls-client.flang" и «imported» равным "tls.flang")]
+    дано modules равно ["der.flang", "tls.flang", "tls-client.flang"]
+    ожидается ["der.flang", "tls.flang", "tls-client.flang"]
+  свёртка modules начиная с seeds как chosen и each → «Grown» от chosen и edges
+
+тотальная функция «Changed modules»
+  принимает gathered: «Gathered»
+  возвращает список строки
+  пример «only library modules count, in the order of the library»
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["flang/stdlib/tls.flang", "docs/a.md", "flang/stdlib/der.flang"] и
+      «modules» равным ["aes.flang", "der.flang", "tls.flang"] и «edges» равным пустой список)
+    ожидается ["der.flang", "tls.flang"]
+  пусть touched равно (отобразить (gathered.«changed») как path → «Module of path» от path)
+  отфильтровать (gathered.«modules») где each → «Holds» от touched и each
+
+тотальная функция «Compiler changed»
+  принимает gathered: «Gathered»
+  возвращает признак
+  пример «a change of the seed changes the compiler»
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["bootstrap/compiler_flang.c"] и «modules» равным пустой список и
+      «edges» равным пустой список)
+    ожидается да
+  (длина (отфильтровать (gathered.«changed») где path → path начинается с "bootstrap/")) больше 0
+
+тотальная функция «Wanted»
+  принимает mode: строка, gathered: «Gathered»
+  возвращает список строки
+  пример «the whole library when asked for all»
+    дано mode равно "all"
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным пустой список и «modules» равным ["aes.flang", "der.flang"] и
+      «edges» равным пустой список)
+    ожидается ["aes.flang", "der.flang"]
+  пример «the whole library when the compiler changed»
+    дано mode равно "changed"
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["bootstrap/compiler_flang.c"] и «modules» равным ["aes.flang", "der.flang"] и
+      «edges» равным пустой список)
+    ожидается ["aes.flang", "der.flang"]
+  пример «a changed module and its importers»
+    дано mode равно "changed"
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["flang/stdlib/der.flang", "docs/a.md"] и
+      «modules» равным ["aes.flang", "der.flang", "tls.flang"] и
+      «edges» равным [запись «Edge» с «importer» равным "tls.flang" и «imported» равным "der.flang"])
+    ожидается ["der.flang", "tls.flang"]
+  пример «nothing in the library changed»
+    дано mode равно "changed"
+    дано gathered равно (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["docs/a.md"] и «modules» равным ["aes.flang"] и «edges» равным пустой список)
+    ожидается пустой список
+  разбор («First holding» от [(запись «Rule» с «name» равным "all" и «holds» равным (mode равен "all")),
+    (запись «Rule» с «name» равным "all" и «holds» равным ((gathered.«base») равен "")),
+    (запись «Rule» с «name» равным "all" и «holds» равным («Compiler changed» от gathered))] и "changed")
+    случай "all"
+      то gathered.«modules»
+    случай любое
+      то «Closure» от («Changed modules» от gathered) и (gathered.«edges») и (gathered.«modules»)
+
+тотальная функция «Part»
+  принимает parts: список строки, place: число
+  возвращает список строки
+  пример «the lines of the second part»
+    дано parts равно ["a\n", "b\nc\n"]
+    дано place равно 2
+    ожидается ["b", "c"]
+  «Lines» от («Piece» от parts и place)
+
+тотальная функция «Gathered of»
+  принимает output: строка
+  возвращает «Gathered»
+  пример «six parts of the answer»
+    дано output равно """
+    /srv/tree
+    @@@
+    gh/dev
+    @@@
+    flang/stdlib/der.flang
+    @@@
+    flang/stdlib/lists.flang:модуль «Lists»
+    @@@
+    flang/stdlib/json.flang:  использует «Lists» только «Приписать в начало»
+    @@@
+    flang/stdlib/json.flang
+    flang/stdlib/lists.flang
+    """
+    ожидается (запись «Gathered» с «root» равным "/srv/tree" и «base» равным "gh/dev" и
+      «changed» равным ["flang/stdlib/der.flang"] и «modules» равным ["json.flang", "lists.flang"] и
+      «edges» равным [запись «Edge» с «importer» равным "json.flang" и «imported» равным "lists.flang"])
+  пусть parts равно (разделить output по "@@@\n")
+  пусть names равно («Module names» от («Part» от parts и 4))
+  (запись «Gathered» с «root» равным («Piece» от («Part» от parts и 1) и 1) и
+    «base» равным («Piece» от («Part» от parts и 2) и 1) и «changed» равным («Part» от parts и 3) и
+    «modules» равным (отобразить («Part» от parts и 6) как path → «Last piece» от path и "/") и
+    «edges» равным (отобразить («Part» от parts и 5) как line → «Edge of use» от names и line))
+
+тотальная функция «Gather script»
+  возвращает строка
+  пример «the root, the base, the changed files, module names, imports and modules in one answer»
+    ожидается """
+    cd ../.. && pwd -P && echo @@@ &&
+    b="${BASE:-$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)}" &&
+    echo "$b" && echo @@@ &&
+    { [ -z "$b" ] || git diff --name-only "$b"...HEAD; } && echo @@@ &&
+    { grep -H '^модуль «' flang/stdlib/*.flang || true; } && echo @@@ &&
+    { grep -H '^  использует «' flang/stdlib/*.flang || true; } && echo @@@ &&
+    ls flang/stdlib/*.flang"""
+  """
+  cd ../.. && pwd -P && echo @@@ &&
+  b="${BASE:-$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1)}" &&
+  echo "$b" && echo @@@ &&
+  { [ -z "$b" ] || git diff --name-only "$b"...HEAD; } && echo @@@ &&
+  { grep -H '^модуль «' flang/stdlib/*.flang || true; } && echo @@@ &&
+  { grep -H '^  использует «' flang/stdlib/*.flang || true; } && echo @@@ &&
+  ls flang/stdlib/*.flang"""
+
+тотальная функция «Probe script»
+  возвращает строка
+  пример «every module is checked by the binary of the tree, several at once, and answers in one write»
+    ожидается """
+    cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
+    o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
+    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+    printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}"""
+  """
+  cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
+  o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
+  d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+  printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}"""
+
+тотальная функция «Number of»
+  принимает text: строка
+  возвращает число
+  пример «digits make a number»
+    дано text равно "124"
+    ожидается 124
+  пример «anything else is minus one»
+    дано text равно ""
+    ожидается -1
+  разбор (к числу или беда text)
+    случай вариант «Разобрано» с значение как value
+      то value
+    случай любое
+      то -1
+
+тотальная функция «Opened probe»
+  принимает line: строка
+  возвращает «Probe»
+  пример «the module and its code»
+    дано line равно "tls.flang\t1"
+    ожидается запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным пустой список
+  пусть fields равно (разделить line по "\t")
+  (запись «Probe» с «module» равным («Piece» от fields и 1) и «code» равным («Number of» от («Piece» от fields и 2)) и
+    «said» равным (пустой список))
+
+тотальная функция «Said to last»
+  принимает probes: список «Probe», line: строка
+  возвращает список «Probe»
+  пример «an indented line belongs to the last probe»
+    дано probes равно [запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным пустой список]
+    дано line равно "    FLANG_UNKNOWN_NAME"
+    ожидается [(запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и
+      «said» равным ["    FLANG_UNKNOWN_NAME"])]
+  пусть last равно (свёртка probes начиная с "" как kept и each → each.«module»)
+  отобразить probes как probe → (если (probe.«module») равен last
+    то (запись «Probe» с «module» равным (probe.«module») и «code» равным (probe.«code») и
+      «said» равным (добавить line к (probe.«said»)))
+    иначе probe)
+
+тотальная функция «Probe step»
+  принимает probes: список «Probe», line: строка
+  возвращает список «Probe»
+  пример «a line with a tab opens a probe»
+    дано probes равно пустой список
+    дано line равно "tls.flang\t1"
+    ожидается [запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным пустой список]
+  если line содержит "\t" то (добавить («Opened probe» от line) к probes) иначе («Said to last» от probes и line)
+
+тотальная функция «Probes of»
+  принимает output: строка
+  возвращает список «Probe»
+  пример «two modules, one refused»
+    дано output равно "aes.flang\t0\n\ntls.flang\t1\n    FLANG_UNKNOWN_NAME\n"
+    ожидается [(запись «Probe» с «module» равным "aes.flang" и «code» равным 0 и «said» равным пустой список),
+      (запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным ["    FLANG_UNKNOWN_NAME"])]
+  свёртка («Lines» от output) начиная с (пустой список) как probes и line → «Probe step» от probes и line
+
+тотальная функция «Refused»
+  принимает probes: список «Probe»
+  возвращает список «Probe»
+  пример «a module with a code other than zero is refused»
+    дано probes равно [(запись «Probe» с «module» равным "aes.flang" и «code» равным 0 и «said» равным пустой список),
+      (запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным пустой список)]
+    ожидается [запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным пустой список]
+  отфильтровать probes где probe → не ((probe.«code») равен 0)
+
+тотальная функция «Trouble lines»
+  принимает probes: список «Probe»
+  возвращает список строки
+  пример «a refused module is named with its first diagnostics»
+    дано probes равно [(запись «Probe» с «module» равным "aes.flang" и «code» равным 0 и «said» равным пустой список),
+      (запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным ["    FLANG_UNKNOWN_NAME"])]
+    ожидается ["НЕ ПРОХОДИТ CHECK: flang/stdlib/tls.flang — код 1", "    FLANG_UNKNOWN_NAME"]
+  свёртка («Refused» от probes) начиная с (пустой список) как lines и probe → «Lines of refused» от lines и probe
+
+тотальная функция «Lines of refused»
+  принимает lines: список строки, probe: «Probe»
+  возвращает список строки
+  пример «the name line and then what the check said»
+    дано lines равно пустой список
+    дано probe равно запись «Probe» с «module» равным "tls.flang" и «code» равным 1 и «said» равным ["    FLANG_X"]
+    ожидается ["НЕ ПРОХОДИТ CHECK: flang/stdlib/tls.flang — код 1", "    FLANG_X"]
+  пусть named равно (добавить (соединить ["НЕ ПРОХОДИТ CHECK: flang/stdlib/", (probe.«module»), " — код ",
+    (к строке (probe.«code»))] по "") к lines)
+  свёртка (probe.«said») начиная с named как kept и said → добавить said к kept
+
+тотальная функция «Counted»
+  принимает total: число, tail: строка
+  возвращает строка
+  пример «the count of the asked modules»
+    дано total равно 2
+    дано tail равно "все проходят flang check"
+    ожидается "модулей библиотеки проверено 2 из 2, все проходят flang check"
+  соединить ["модулей библиотеки проверено ", (к строке total), " из ", (к строке total), ", ", tail] по ""
+
+тотальная функция «Check verdict»
+  принимает total: число, output: строка
+  возвращает «Продолжение»
+  пример «every asked module passes»
+    дано total равно 1
+    дано output равно "aes.flang\t0\n"
+    ожидается (вариант «Конец работы» с
+      значение равным "модулей библиотеки проверено 1 из 1, все проходят flang check")
+  пример «a refused module fails the guard»
+    дано total равно 1
+    дано output равно "tls.flang\t1\n    FLANG_UNKNOWN_NAME\n"
+    ожидается (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным """
+    НЕ ПРОХОДИТ CHECK: flang/stdlib/tls.flang — код 1
+        FLANG_UNKNOWN_NAME
+    модулей библиотеки проверено 1 из 1, не проходят 1""")
+  пример «a module that did not answer is not passed»
+    дано total равно 2
+    дано output равно "aes.flang\t0\n"
+    ожидается (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и
+      сообщение равным "ответили 1 модулей из 2 — прогон оборван")
+  пусть probes равно («Probes of» от output)
+  пусть refused равно (длина («Refused» от probes))
+  пусть summary равно («Counted» от total и (соединить ["не проходят ", (к строке refused)] по ""))
+  разбор («First holding» от [
+    (запись «Rule» с «name» равным "short" и «holds» равным (не ((длина probes) равен total))),
+    (запись «Rule» с «name» равным "refused" и «holds» равным (refused больше 0))] и "clean")
+    случай "short"
+      то вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным (соединить ["ответили ",
+        (к строке (длина probes)), " модулей из ", (к строке total), " — прогон оборван"] по "")
+    случай "refused"
+      то вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным (соединить (добавить summary к
+        («Trouble lines» от probes)) по "\n")
+    случай любое
+      то вариант «Конец работы» с значение равным («Counted» от total и "все проходят flang check")
+
+тотальная функция «Probe order»
+  принимает wanted: список строки
+  возвращает «Поручение»
+  пример «the modules follow the script as its arguments»
+    дано wanted равно ["der.flang"]
+    ожидается (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", """
+    cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
+    o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
+    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+    printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}""", "sh", "der.flang"])
+  (вариант «Запустить процесс» с программа равным "sh" и
+    аргументы равным (приписать "-c" к (приписать («Probe script») к (приписать "sh" к wanted))))
+
+тотальная функция «After gathering»
+  принимает mode: строка, output: строка
+  возвращает «Продолжение»
+  пример «a branch that does not touch the library has nothing to check»
+    дано mode равно "changed"
+    дано output равно "/srv/tree\n@@@\ngh/dev\n@@@\ndocs/a.md\n@@@\n@@@\n@@@\nflang/stdlib/aes.flang\n"
+    ожидается (вариант «Конец работы» с
+      значение равным "ветка не меняет ни модулей библиотеки, ни компилятора против gh/dev — проверять нечего")
+  пусть gathered равно («Gathered of» от output)
+  пусть wanted равно («Wanted» от mode и gathered)
+  разбор wanted
+    случай пусто
+      то вариант «Конец работы» с значение равным (соединить [
+        "ветка не меняет ни модулей библиотеки, ни компилятора против ", (gathered.«base»),
+        " — проверять нечего"] по "")
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Probe order» от wanted) и
+        потом равным (вариант «Probing» с total равным (длина wanted)))
+
+тотальная функция «Forge script»
+  возвращает строка
+  пример «a copy of the guard over a library whose importer misses a helper of the imported module»
+    ожидается """
+    cd ../.. && K=${FLANG_TMP:-/tmp}/stdlib-check-forgery.$$ && rm -rf "$K" &&
+    mkdir -p "$K/flang/stdlib" "$K/scripts/guards" "$K/bootstrap" &&
+    ln -s "$(pwd -P)/bootstrap/flang" "$K/bootstrap/flang" &&
+    cp scripts/guards/stdlib-check-guard.fscript "$K/scripts/guards/" &&
+    printf '%s\\n' 'модуль «Forged base»' '' 'тотальная функция «Helper»' '  принимает н: число' '  возвращает число' \\
+      '  пример «one more»' '    дано н равно 1' '    ожидается 2' '  н плюс 1' '' 'тотальная функция «Outer»' \\
+      '  принимает н: число' '  возвращает число' '  пример «two more»' '    дано н равно 1' '    ожидается 3' \\
+      '  «Helper» от («Helper» от н)' > "$K/flang/stdlib/base.flang" &&
+    printf '%s\\n' 'модуль «Forged user»' '  использует «Forged base» из "base.flang" только «Outer»' '' \\
+      'тотальная функция «Twice outer»' '  принимает н: число' '  возвращает число' '  пример «outer of one»' \\
+      '    дано н равно 1' '    ожидается 3' '  «Outer» от н' > "$K/flang/stdlib/user.flang" &&
+    bootstrap/flang io "$K/scripts/guards/stdlib-check-guard.fscript" --plan Check > "$K/out" 2>&1
+    echo "код $?"; echo @@@; cat "$K/out"; rm -rf "$K"
+    """
+  """
+  cd ../.. && K=${FLANG_TMP:-/tmp}/stdlib-check-forgery.$$ && rm -rf "$K" &&
+  mkdir -p "$K/flang/stdlib" "$K/scripts/guards" "$K/bootstrap" &&
+  ln -s "$(pwd -P)/bootstrap/flang" "$K/bootstrap/flang" &&
+  cp scripts/guards/stdlib-check-guard.fscript "$K/scripts/guards/" &&
+  printf '%s\\n' 'модуль «Forged base»' '' 'тотальная функция «Helper»' '  принимает н: число' '  возвращает число' \\
+    '  пример «one more»' '    дано н равно 1' '    ожидается 2' '  н плюс 1' '' 'тотальная функция «Outer»' \\
+    '  принимает н: число' '  возвращает число' '  пример «two more»' '    дано н равно 1' '    ожидается 3' \\
+    '  «Helper» от («Helper» от н)' > "$K/flang/stdlib/base.flang" &&
+  printf '%s\\n' 'модуль «Forged user»' '  использует «Forged base» из "base.flang" только «Outer»' '' \\
+    'тотальная функция «Twice outer»' '  принимает н: число' '  возвращает число' '  пример «outer of one»' \\
+    '    дано н равно 1' '    ожидается 3' '  «Outer» от н' > "$K/flang/stdlib/user.flang" &&
+  bootstrap/flang io "$K/scripts/guards/stdlib-check-guard.fscript" --plan Check > "$K/out" 2>&1
+  echo "код $?"; echo @@@; cat "$K/out"; rm -rf "$K"
+  """
+
+тотальная функция «Indented»
+  принимает text: строка
+  возвращает строка
+  пример «every line is moved by two blanks»
+    дано text равно "a\nb\n"
+    ожидается "  a\n  b"
+  соединить (отобразить («Lines» от text) как line → соединить ["  ", line] по "") по "\n"
+
+тотальная функция «Forgery caught»
+  принимает word: строка, body: строка
+  возвращает признак
+  пример «the importer is named and the imported module is not»
+    дано word равно "код 1\n"
+    дано body равно "  НЕ ПРОХОДИТ CHECK: flang/stdlib/user.flang — код 1"
+    ожидается да
+  ((word начинается с "код 1") и притом (body содержит "НЕ ПРОХОДИТ CHECK: flang/stdlib/user.flang") и притом
+    (не (body содержит "flang/stdlib/base.flang")))
+
+тотальная функция «Forgery verdict»
+  принимает output: строка
+  возвращает «Продолжение»
+  пример «the importer is named and the imported module is not»
+    дано output равно "код 1\n@@@\nНЕ ПРОХОДИТ CHECK: flang/stdlib/user.flang — код 1\n    FLANG_UNKNOWN_NAME\n"
+    ожидается (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным """
+    подлог пойман: модуль, чей ввоз теряет помощника, назван, код 1
+      НЕ ПРОХОДИТ CHECK: flang/stdlib/user.flang — код 1
+          FLANG_UNKNOWN_NAME""")
+  пример «a silent guard is broken»
+    дано output равно "код 0\n@@@\nвсе проходят\n"
+    ожидается (вариант «Конец работы» с значение равным """
+    ПОДЛОГ НЕ ПОЙМАН — сторож сломан: модуль, чей ввоз теряет помощника, прошёл
+      все проходят""")
+  пусть parts равно (разделить output по "@@@\n")
+  пусть body равно («Indented» от («Piece» от parts и 2))
+  если «Forgery caught» от («Piece» от parts и 1) и body
+    то (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и
+      сообщение равным (соединить ["подлог пойман: модуль, чей ввоз теряет помощника, назван, код 1\n", body] по ""))
+    иначе (вариант «Конец работы» с значение равным (соединить [
+      "ПОДЛОГ НЕ ПОЙМАН — сторож сломан: модуль, чей ввоз теряет помощника, прошёл\n", body] по ""))
+
+тотальная функция «Not judged»
+  принимает words: строка
+  возвращает «Продолжение»
+  пример «what could not be seen is named»
+    дано words равно "оболочка не запустилась"
+    ожидается (вариант «Не проверено» с код равным "FLANG_STDLIB_CHECK_NOT_JUDGED" и
+      сообщение равным "оболочка не запустилась")
+  вариант «Не проверено» с код равным "FLANG_STDLIB_CHECK_NOT_JUDGED" и сообщение равным words
+
+тотальная функция «Shell failure»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Not judged» от (соединить ["оболочка ответила кодом ", (к строке code), ": ", errors] по "")
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то «Not judged» от (соединить ["оболочка убита сигналом ", signal, " — поднимите срок ключом --timeout"] по "")
+    случай любое
+      то «Not judged» от "оболочка не запустилась"
+
+тотальная функция «Shell order»
+  принимает script: строка, step: «Step»
+  возвращает «Продолжение»
+  пример «one script for the shell»
+    дано script равно "true"
+    дано step равно вариант «Forging»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и
+      аргументы равным ["-c", "true"]) и потом равным (вариант «Forging»))
+  (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и
+    аргументы равным ["-c", script]) и потом равным step)
+
+тотальная функция «After gather reply»
+  принимает mode: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «Shell order» от («Gather script») и (вариант «Gathering» с mode равным mode)
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0 то («After gathering» от mode и output) иначе («Shell failure» от reply)
+    случай любое
+      то «Shell failure» от reply
+
+тотальная функция «After probe reply»
+  принимает total: число, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Check verdict» от total и output
+    случай любое
+      то «Shell failure» от reply
+
+тотальная функция «After forge reply»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «Shell order» от («Forge script») и (вариант «Forging»)
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Forgery verdict» от output
+    случай любое
+      то «Shell failure» от reply
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Gathering» с mode как mode
+      то «After gather reply» от mode и reply
+    случай вариант «Probing» с total как total
+      то «After probe reply» от total и reply
+    случай вариант «Forging»
+      то «After forge reply» от reply
+
+тотальная функция «Begin check»
+  возвращает «Step»
+  вариант «Gathering» с mode равным "all"
+
+тотальная функция «Begin changed»
+  возвращает «Step»
+  вариант «Gathering» с mode равным "changed"
+
+тотальная функция «Begin forgery»
+  возвращает «Step»
+  вариант «Forging»
+
+план «Check»
+  состояние «Step»
+  начинает с «Begin check»
+  обрабатывает «Next»
+
+план «Changed»
+  состояние «Step»
+  начинает с «Begin changed»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Begin forgery»
+  обрабатывает «Next»

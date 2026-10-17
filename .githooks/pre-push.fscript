@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly twenty-six checks» (длина результат) равен 26
+  обеспечивает «there are exactly twenty-seven checks» (длина результат) равен 27
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "registry" и «command» равным "bootstrap/flang run-script registry-resolution:check",
    запись «Check» с «name» равным "prints" и «command» равным "bootstrap/flang run-script registry-prints:check",
@@ -28,6 +28,7 @@
    запись «Check» с «name» равным "forgery-probe" и «command» равным "bootstrap/flang run-script forgery-probe:check",
    запись «Check» с «name» равным "share-tree" и «command» равным "bootstrap/flang run-script proved-share-tree:check",
    запись «Check» с «name» равным "stdlib-proof-guard" и «command» равным "bootstrap/flang io scripts/guards/stdlib-proof-guard.fscript --plan Brackets",
+   запись «Check» с «name» равным "stdlib-check" и «command» равным "bootstrap/flang run-script stdlib:changed",
    запись «Check» с «name» равным "cyrillic-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "translit-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
@@ -323,7 +324,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 27
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 28
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

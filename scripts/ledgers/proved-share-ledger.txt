@@ -2068,3 +2068,11 @@ f565ff9b9848456ba742783389ee8b9a|1|1|0|0|0|flang/proof/checker/tests/families/pr
 5fc4e960ccb7be579066ca045de89b80|2|×|×|×|0|flang/proof/checker/tests/families/proof-moves/forged/unpaid-precondition.flang
 fb81c00853e3b7291316d8dc04d3ace1|1|1|0|0|0|flang/proof/checker/tests/families/proof-moves/ladder-as-table.flang
 5745ad3ceb42865f0c9e3da4f4cd38db|3|3|0|0|0|flang/proof/checker/tests/families/proof-moves/socrates.flang
+264b5bba7603c05c57cf5ecfa6398b24|8|8|0|0|0|flang/proof/probes/unicode-text-in-targets/run.fscript
+e6e3366b0d54be4307c3173c8028a810|2|2|0|0|0|flang/stdlib/code-page-data.flang
+5daefa6e4fdcf48981e54b79ba8aacd8|3|3|0|0|0|flang/stdlib/unicode-case-data.flang
+08185d8ba0f14431eb8ee69fe5385d49|3|3|0|0|0|flang/stdlib/unicode-grapheme-data.flang
+97a4162d22fb0af72fbe131a16a4b7c4|7|7|0|0|0|flang/stdlib/unicode-normalization-data.flang
+a7295dcc745c82c29b2242605154b567|2|2|0|0|0|scripts/unicode/conformance.flang
+ac4cc47276c94be7555bf785f5b45f25|2|2|0|0|0|scripts/unicode/generate-tables.fscript
+7e1284cd50de40cb41bdd9d04f72e207|1|1|0|0|0|scripts/unicode/translate.fscript

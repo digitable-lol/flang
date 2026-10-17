@@ -1140,7 +1140,7 @@ partial def «собратьТелоСлучая» (L : Array String) (i «ко�
         if a = "" || b = "" || u = "" then "" else «т» s!"если ( {u} ) то ( {a} ) иначе ( {b} )"
 
 def «Исх».«телоСлучая» (s : «Исх») (ci «конец» : Nat) : String :=
-  let kr := ((s.«меж» ci «конец»).find? (fun i => (s.«строка» i).startsWith "случай ")).getD «конец»
+  let kr := ((s.«меж» ci «конец»).find? (fun i => (s.«строка» i).startsWith "случай " && «отступ» (s.«сырая» i) ≤ «отступ» (s.«сырая» ci))).getD «конец»
   let ls := (s.«меж» ci kr).filterMap (fun i => let l := s.«строка» i; if l = "" then none else some l)
   if ls.isEmpty || ls.length > 5 then "" else «собратьТелоСлучая» ls.toArray 0 ls.length 8
 

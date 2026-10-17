@@ -19,10 +19,37 @@ def «вариантСлучая» («хвост» : String) : String :=
   else if «хвост» = s!"«{«ёлочка» «хвост» 1}»" then «ёлочка» «хвост» 1
   else «слово» «хвост» 1
 
-def «Исх».«найтиСлучай» (s : «Исх») (a b : Nat) («вариант» : String) : Option Nat :=
-  (List.range' a (b - a)).find? fun i =>
+def «Исх».«случайРазбора» (s : «Исх») (r b : Nat) («вариант» : String) : Option Nat := Id.run do
+  let dr := «отступ» (s.«сырая» r)
+  let mut d : Option Nat := none
+  for i in s.«меж» r b do
     let l := s.«строка» i
-    l.startsWith "случай " && «вариантСлучая» («словаС» l 1) = «вариант»
+    if l = "" then continue
+    let o := «отступ» (s.«сырая» i)
+    if o ≤ dr then return none
+    if !l.startsWith "случай " then continue
+    if d.isNone then d := some o
+    if d = some o && «вариантСлучая» («словаС» l 1) = «вариант» then return some i
+  return none
+
+def «общийПрефиксБайт» (a b : String) : Nat :=
+  let x := a.toUTF8
+  let y := b.toUTF8
+  ((List.range (min x.size y.size)).takeWhile (fun i => x.get! i = y.get! i)).length
+
+def «тоЖеИмяРазбора» («что» «по» : String) («доводы» : List String) : Bool :=
+  let «ч» := «голо» «что»
+  let «п» := «голо» «по»
+  if «ч» = «п» then true
+  else if («ч».splitOn " ").length > 1 || «п».utf8ByteSize < 6 then false
+  else if «общийПрефиксБайт» «ч» «п» + 4 < «п».utf8ByteSize then false
+  else if «доводы».any (fun «д» => «голо» «д» = «ч») then false
+  else («доводы».filter (fun «д» => let dd := «голо» «д»; dd.utf8ByteSize ≥ 6 && «общийПрефиксБайт» «ч» dd + 4 ≥ dd.utf8ByteSize)).length = 1
+
+def «Исх».«случайТела» (s : «Исх») («чья» : String) (a b : Nat) («по» «вариант» : String) : Option Nat :=
+  match s.«строкаРазбора» a b with
+  | some (r, «что») => if «тоЖеИмяРазбора» «что» «по» (s.«именаДоводовФункции» «чья») then s.«случайРазбора» r b «вариант» else none
+  | none => none
 
 def «образецКакТерм» («хвост» «тип» : String) : String :=
   let str := «тип» = "строка"
@@ -175,7 +202,7 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
   if !dv.startsWith "вариант «" then return t
   let var := «ёлочка» dv 1
   if var = "" then return t
-  let some ci := s.«найтиСлучай» a b var | return t
+  let some ci := s.«случайТела» n a b (ds.getD k0 "") var | return t
   let mut body := s.«телоСлучая» ci b
   if body = "" then return t
   let hs := «словаС» (s.«строка» ci) 1
@@ -444,7 +471,7 @@ def «Исх».«узелАлгебры» (s : «Исх») (c : «Счёт») (�
     if «правилоПосылки» l = "" then continue
     n := n + 1
     let v := «вариантПосылки» l
-    let some ci := s.«найтиСлучай» a b v | return .«не» s!"случай варианта «{v}» не найден в теле функции «{«чья»}»"
+    let some ci := s.«случайТела» «чья» a b po v | return .«не» s!"случай варианта «{v}» не найден в разборе «{po}», которым тело функции «{«чья»}» начинается"
     let body := s.«телоСлучая» ci b
     if body = "" then return .«не» s!"тело случая «{v}» не читается одним термом"
     let hs := «словаС» (s.«строка» ci) 1

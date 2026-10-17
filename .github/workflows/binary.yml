@@ -2136,6 +2136,8 @@ jobs:
       # назван явно: набор зовёт двоичный четырнадцатью программами.
       - name: Check imported helpers bind in their own module
         run: cd flang/proof/probes/import-helper-binding && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
+      - name: Check parse and import probes
+        run: cd flang/proof/probes/parse-and-import && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
 
       # ПЛАН ПЕЧАТАЕТСЯ В C, GO, RUST И PYTHON (ADR-0100). Три программы с планом
       # идут через `flang io` и через прогонщики шести целей, итог и код обязаны

@@ -2,7 +2,7 @@ program	surface	code	word	контракт заявок 349 и 350: слова �
 step-first.flang	check	0	замечаний нет
 step-second.flang	check	0	замечаний нет
 pairs-a.flang	check	0	замечаний нет
-pairs-b.flang	check	0	замечаний нет
+pairs-b.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле pairs-a.flang
 honest.flang	check	0	замечаний нет
 honest.flang	run	0	"г"
 hidden-unused.flang	check	0	замечаний нет

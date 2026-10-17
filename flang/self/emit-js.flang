@@ -837,7 +837,7 @@
 
 тотальная функция «Помощники форм JS»
   возвращает список «Пара имён»
-  обеспечивает «помощников форм ровно двадцать пять» (длина результат) равен 25
+  обеспечивает «помощников форм ровно тридцать три» (длина результат) равен 33
   [
     (запись «Пара имён» с «ключ» равным "длина" и «значение» равным "$b_dlina"),
     (запись «Пара имён» с «ключ» равным "символ" и «значение» равным "$b_simvol"),
@@ -856,6 +856,15 @@
     (запись «Пара имён» с «ключ» равным "целая часть" и «значение» равным "$b_integer_part"),
     (запись «Пара имён» с «ключ» равным "перевод в число" и «значение» равным "$b_convert_to_number"),
     (запись «Пара имён» с «ключ» равным "перевод в натуральное" и «значение» равным "$b_convert_to_natural"),
+    (запись «Пара имён» с «ключ» равным "перевод в деньги" и «значение» равным "$b_convert_to_money"),
+    (запись «Пара имён» с «ключ» равным "деньги дробью" и «значение» равным "$b_money_as_fraction"),
+    (запись «Пара имён» с «ключ» равным "деньги строкой" и «значение» равным "$b_money_as_text"),
+    (запись «Пара имён» с «ключ» равным "деньги с округлением вниз" и «значение» равным "$b_money_rounded_down"),
+    (запись «Пара имён» с «ключ» равным "деньги с округлением вверх" и «значение» равным "$b_money_rounded_up"),
+    (запись «Пара имён» с «ключ» равным "деньги с банковским округлением" и
+      «значение» равным "$b_money_rounded_half_even"),
+    (запись «Пара имён» с «ключ» равным "дата из строки" и «значение» равным "$b_date_from_text"),
+    (запись «Пара имён» с «ключ» равным "дата строкой" и «значение» равным "$b_date_as_text"),
     (запись «Пара имён» с «ключ» равным "пусто" и «значение» равным "$b_pusto"),
     (запись «Пара имён» с «ключ» равным "голова" и «значение» равным "$b_golova"),
     (запись «Пара имён» с «ключ» равным "хвост" и «значение» равным "$b_hvost"),
@@ -887,6 +896,14 @@
     (запись «Метка» с «ключ» равным "целая часть" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "перевод в число" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "перевод в натуральное" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "перевод в деньги" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "деньги дробью" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "деньги строкой" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "деньги с округлением вниз" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "деньги с округлением вверх" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "деньги с банковским округлением" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "дата из строки" и «значение» равным 1),
+    (запись «Метка» с «ключ» равным "дата строкой" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "пусто" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "голова" и «значение» равным 1),
     (запись «Метка» с «ключ» равным "хвост" и «значение» равным 1),
@@ -1438,6 +1455,181 @@
     "    $fail(\"FLANG_PROPERTY\", \"«перевод в натуральное»: нужно целое число от 0 до 9007199254740991\")",
     "  }",
     "  return $exactSmallDigits(value + 0)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_convert_to_money JS»
+  возвращает строка
+  обеспечивает «рантайм b_convert_to_money несёт свою функцию» результат содержит "function $b_convert_to_money("
+  соединить [
+    "function $b_convert_to_money(value) {",
+    "  if (typeof value !== \"number\") {",
+    "    const word = \"«перевод в деньги»: аргумент должен быть числом, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  const cents = Math.floor(value * 100 + 0.5)",
+    "  if (!(value >= 0 && value < 10000000000000 && cents / 100 === value + 0)) {",
+    "    const bound = \"нужно число не меньше 0 и меньше 10000000000000, равное целому числу сотых\"",
+    "    const word = \"«перевод в деньги»: \" + bound",
+    "    $fail(\"FLANG_PROPERTY\", word)",
+    "  }",
+    "  return $exactSmallDigits(cents + 0)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст expectMoney JS»
+  возвращает строка
+  обеспечивает «рантайм expectMoney несёт свою функцию» результат содержит "function $expectMoney("
+  соединить [
+    "function $expectMoney(name, value) {",
+    "  if (!$exactDigits(value)) {",
+    "    const word = \"«\" + name + \"»: аргумент должен быть деньгами, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  return $exactCanon(value)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_money_as_fraction JS»
+  возвращает строка
+  обеспечивает «рантайм b_money_as_fraction несёт свою функцию» результат содержит "function $b_money_as_fraction("
+  соединить [
+    "function $b_money_as_fraction(value) {",
+    "  return $fractionValue($expectMoney(\"деньги дробью\", value), 100n)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_money_as_text JS»
+  возвращает строка
+  обеспечивает «рантайм b_money_as_text несёт свою функцию» результат содержит "function $b_money_as_text("
+  соединить [
+    "function $b_money_as_text(value) {",
+    "  const cents = $expectMoney(\"деньги строкой\", value)",
+    "  const rest = (cents % 100n).toString()",
+    "  return (cents / 100n).toString() + \".\" + (rest.length < 2 ? \"0\" : \"\") + rest",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст moneyRounded JS»
+  возвращает строка
+  обеспечивает «рантайм moneyRounded несёт свою функцию» результат содержит "function $moneyRounded("
+  соединить [
+    "function $moneyRounded(name, rule, value) {",
+    "  if (!$exactFraction(value)) {",
+    "    const word = \"«\" + name + \"»: аргумент должен быть точным дробным, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  const [top, bottom] = $fractionParts(value)",
+    "  const scaled = top * 100n",
+    "  let cents = bottom === 0n ? 0n : scaled / bottom",
+    "  const rest = bottom === 0n ? scaled : scaled % bottom",
+    "  const up = rule === \"up\" && rest !== 0n",
+    "  const even = rule === \"even\" && (rest * 2n > bottom || (rest * 2n === bottom && cents % 2n === 1n))",
+    "  return $exactOf(up || even ? cents + 1n : cents)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_money_rounded_down JS»
+  возвращает строка
+  обеспечивает «рантайм b_money_rounded_down несёт свою функцию» результат содержит "function $b_money_rounded_down("
+  соединить [
+    "function $b_money_rounded_down(value) {",
+    "  return $moneyRounded(\"деньги с округлением вниз\", \"down\", value)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_money_rounded_up JS»
+  возвращает строка
+  обеспечивает «рантайм b_money_rounded_up несёт свою функцию» результат содержит "function $b_money_rounded_up("
+  соединить [
+    "function $b_money_rounded_up(value) {",
+    "  return $moneyRounded(\"деньги с округлением вверх\", \"up\", value)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_money_rounded_half_even JS»
+  возвращает строка
+  обеспечивает «рантайм b_money_rounded_half_even несёт свою функцию» (результат содержит
+    "function $b_money_rounded_half_even(")
+  соединить [
+    "function $b_money_rounded_half_even(value) {",
+    "  return $moneyRounded(\"деньги с банковским округлением\", \"even\", value)",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст dateReason JS»
+  возвращает строка
+  обеспечивает «рантайм dateReason несёт свою функцию» результат содержит "function $dateReason("
+  соединить [
+    "function $dateReason(source) {",
+    "  const digit = (place) => source.charCodeAt(place) >= 48 && source.charCodeAt(place) <= 57",
+    "  const digits = [0, 1, 2, 3, 5, 6, 8, 9].every(digit)",
+    "  if (source.length !== 10 || source[4] !== \"-\" || source[7] !== \"-\" || !digits) {",
+    "    return [\"нужна запись ГГГГ-ММ-ДД\", 0, 0, 0]",
+    "  }",
+    "  const year = Number(source.slice(0, 4))",
+    "  const month = Number(source.slice(5, 7))",
+    "  const day = Number(source.slice(8, 10))",
+    "  if (year < 1) {",
+    "    return [\"год идёт от 0001 до 9999\", year, month, day]",
+    "  }",
+    "  if (month < 1 || month > 12) {",
+    "    return [\"месяц идёт от 01 до 12\", year, month, day]",
+    "  }",
+    "  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0",
+    "  const last = month === 2 ? (leap ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31",
+    "  if (day < 1 || day > last) {",
+    "    return [\"в этом месяце дни идут от 01 до \" + String(last), year, month, day]",
+    "  }",
+    "  return [\"\", year, month, day]",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_date_from_text JS»
+  возвращает строка
+  обеспечивает «рантайм b_date_from_text несёт свою функцию» результат содержит "function $b_date_from_text("
+  соединить [
+    "function $b_date_from_text(value) {",
+    "  if (typeof value !== \"string\") {",
+    "    const word = \"«дата из строки»: аргумент должен быть строкой, получено \"",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", word + $typeName(value))",
+    "  }",
+    "  const [reason, year, month, day] = $dateReason(value)",
+    "  if (reason !== \"\") {",
+    "    $fail(\"FLANG_PROPERTY\", \"«дата из строки»: «\" + value + \"» — \" + reason)",
+    "  }",
+    "  const shifted = year - (month <= 2 ? 1 : 0)",
+    "  const era = Math.floor(shifted / 400)",
+    "  const yearOfEra = shifted - era * 400",
+    "  const dayOfYear = Math.floor((153 * (month > 2 ? month - 3 : month + 9) + 2) / 5) + day - 1",
+    "  const dayOfEra = yearOfEra * 365 + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100) + dayOfYear",
+    "  return era * 146097 + dayOfEra - 719468",
+    "}"
+  ] по "\n"
+
+тотальная функция «Текст b_date_as_text JS»
+  возвращает строка
+  обеспечивает «рантайм b_date_as_text несёт свою функцию» результат содержит "function $b_date_as_text("
+  соединить [
+    "function $b_date_as_text(value) {",
+    "  if (typeof value !== \"number\") {",
+    "    $fail(\"FLANG_BUILTIN_ARGS\", \"«дата строкой»: аргумент должен быть датой, получено \" + $typeName(value))",
+    "  }",
+    "  if (!(value >= -719162 && value <= 2932896 && Number.isInteger(value))) {",
+    "    $fail(\"FLANG_PROPERTY\", \"«дата строкой»: дата вне лет 0001–9999 в ISO 8601 не печатается\")",
+    "  }",
+    "  const shifted = value + 719468",
+    "  const era = Math.floor(shifted / 146097)",
+    "  const dayOfEra = shifted - era * 146097",
+    "  const yearOfEra = Math.floor((dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) -",
+    "    Math.floor(dayOfEra / 146096)) / 365)",
+    "  const dayOfYear = dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100))",
+    "  const shiftedMonth = Math.floor((5 * dayOfYear + 2) / 153)",
+    "  const day = dayOfYear - Math.floor((153 * shiftedMonth + 2) / 5) + 1",
+    "  const month = shiftedMonth < 10 ? shiftedMonth + 3 : shiftedMonth - 9",
+    "  const year = yearOfEra + era * 400 + (month <= 2 ? 1 : 0)",
+    "  const pad = (whole, width) => String(whole).padStart(width, \"0\")",
+    "  return pad(year, 4) + \"-\" + pad(month, 2) + \"-\" + pad(day, 2)",
     "}"
   ] по "\n"
 
@@ -2680,7 +2872,7 @@
 
 тотальная функция «Рантайм JS»
   возвращает список «Кусок рантайма JS»
-  обеспечивает «кусков рантайма ровно сто девять» (длина результат) равен 109
+  обеспечивает «кусков рантайма ровно сто двадцать» (длина результат) равен 120
   [
     (запись «Кусок рантайма JS» с «имя» равным "$FlangError" и «нужно» равным пустой список и «исходник» равным «Текст FlangError JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$fail" и «нужно» равным ["$FlangError"] и «исходник» равным «Текст fail JS»),
@@ -2757,6 +2949,21 @@
       «Текст b_convert_to_number JS»),
     («Собрать кусок JS» от "$b_convert_to_natural" и («Нужда b_convert_to_natural JS») и
       «Текст b_convert_to_natural JS»),
+    («Собрать кусок JS» от "$b_convert_to_money" и ["$fail", "$typeName", "$exactSmallDigits"] и
+      «Текст b_convert_to_money JS»),
+    («Собрать кусок JS» от "$expectMoney" и ["$fail", "$typeName", "$exactDigits", "$exactCanon"] и
+      «Текст expectMoney JS»),
+    («Собрать кусок JS» от "$b_money_as_fraction" и ["$expectMoney", "$fractionValue"] и
+      «Текст b_money_as_fraction JS»),
+    («Собрать кусок JS» от "$b_money_as_text" и ["$expectMoney"] и «Текст b_money_as_text JS»),
+    («Собрать кусок JS» от "$moneyRounded" и ["$fail", "$typeName", "$exactFraction", "$fractionParts", "$exactOf"] и
+      «Текст moneyRounded JS»),
+    («Собрать кусок JS» от "$b_money_rounded_down" и ["$moneyRounded"] и «Текст b_money_rounded_down JS»),
+    («Собрать кусок JS» от "$b_money_rounded_up" и ["$moneyRounded"] и «Текст b_money_rounded_up JS»),
+    («Собрать кусок JS» от "$b_money_rounded_half_even" и ["$moneyRounded"] и «Текст b_money_rounded_half_even JS»),
+    («Собрать кусок JS» от "$dateReason" и пустой список и «Текст dateReason JS»),
+    («Собрать кусок JS» от "$b_date_from_text" и ["$fail", "$typeName", "$dateReason"] и «Текст b_date_from_text JS»),
+    («Собрать кусок JS» от "$b_date_as_text" и ["$fail", "$typeName"] и «Текст b_date_as_text JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_hesh256" и «нужно» равным ["$expectString", "$utf8Bytes", "$SHA256_K"] и «исходник» равным «Текст b_hesh256 JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_soderzhit" и «нужно» равным ["$isList", "$equal", "$expectString", "$isTorn", "$findAligned"] и «исходник» равным «Текст b_soderzhit JS»),
     (запись «Кусок рантайма JS» с «имя» равным "$b_nachinaetsya_s" и «нужно» равным ["$expectString", "$isTorn", "$isBoundary"] и «исходник» равным «Текст b_nachinaetsya_s JS»),

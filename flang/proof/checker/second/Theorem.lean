@@ -71,7 +71,7 @@ def «Р5телом?» (s : «Исх») («чья» : String) (o f : String) (m 
   let some (a, b) := s.«блокС» «чья» | return false
   let some (g, «что») := s.«строкаРазбора» a b | return false
   if g ≠ m || «т» («голо» «что») ≠ «пуст» then return false
-  let some ci := s.«найтиСлучай» m b "пусто" | return false
+  let some ci := s.«случайРазбора» m b "пусто" | return false
   let «тело» := s.«телоСлучая» ci b
   return «тело» ≠ "" && «тело» = x
 

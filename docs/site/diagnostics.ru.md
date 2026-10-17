@@ -377,6 +377,7 @@ FLANG_PROPERTY: нарушено свойство «результат мень�
 | `FLANG_MORPHISM_SHAPE` | морфизм объявлен неверно |
 | `FLANG_FUNCTOR_NOT_TOTAL` | функтор определён не на всех объектах |
 | `FLANG_FUNCTOR_SQUARE` | квадрат функтора не коммутирует |
+| `FLANG_FUNCTOR_FIELD` | строка поля функтора называет поле, которого у объекта нет |
 | `FLANG_TRANSFORM_SHAPE` | преобразование объявлено неверно |
 | `FLANG_TRANSFORM_COMPONENT` | у преобразования нет компоненты |
 | `FLANG_TRANSFORM_NOT_TOTAL` | преобразование определено не на всех объектах |

@@ -383,6 +383,7 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_MORPHISM_SHAPE` | the morphism is declared wrong |
 | `FLANG_FUNCTOR_NOT_TOTAL` | the functor is not defined on every object |
 | `FLANG_FUNCTOR_SQUARE` | the functor square does not commute |
+| `FLANG_FUNCTOR_FIELD` | a field line of a functor names a field the object does not have |
 | `FLANG_TRANSFORM_SHAPE` | the transformation is declared wrong |
 | `FLANG_TRANSFORM_COMPONENT` | a component of the transformation is missing |
 | `FLANG_TRANSFORM_NOT_TOTAL` | the transformation is not defined on every object |

@@ -124,12 +124,13 @@ TLS на языке и цена его счёта; [ADR-0036](0036-an-exact-inte
 переигрывает шаг по строке объявления (`правило_сл`). Леммы «Сл1» и «Сл2» в
 `flang/proof/lean/Rules.lean` доказаны через `BitVec.isLt` без аксиом сверх
 `propext` и `Quot.sound`; встречные примеры «Сл1-знаковое-ложно» и
-«Сл2-ниже-ложна» там же, ловушки 94 и 95 — в `Trap.lean`. Приёмка Lean
-(второй сверщик) терма «к числу» над словом не читает: строки долга Сл1 и Сл2
+«Сл2-ниже-ложна» там же, ловушки 105 и 106 — в `Trap.lean`. Приёмка Lean
+(второй сверщик) терма «к числу» над словом не читает и считает шаги Сл1 и Сл2
+вне модели (`«внеМодели»` в `Acceptance.lean`): строки долга Сл1 и Сл2
 в `flang/proof/tables/lean-acceptance-debt.tsv`, задача 4804.
 
 Сверщик вырос на 36 строк кода: потолок `checker-code-lines` в
-`flang/proof/ratchets.txt` — 9701.
+`flang/proof/ratchets.txt` — 9798.
 
 Набор проб — `flang/proof/checker/tests/families/fixed-width-words` и строки
 `flang/proof/checker/tests/probes.tsv`: честная запись проигрывается, а

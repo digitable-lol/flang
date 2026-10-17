@@ -1559,7 +1559,7 @@ d5c13131139cbbb4d9cffbbb4f9f1cdc|2|2|0|0|0|fspec/spec/38-booking-rules.flang
 33150d7b5a9856f61b5cc79a7eb83ff0|4|4|0|0|0|fspec/spec/41-consent-scope.flang
 74e5d9b9bb87ede2cbd6b8db0fdda88e|2|2|0|0|0|fspec/spec/42-data-retention.flang
 ea0c808c837ad28c1ad06045e2c03504|58|55|3|0|0|packaging/install-check.flang
-8d846d0683d8827c598d657f85832ec8|8|8|0|0|0|packaging/install-parity.flang
+8d846d0683d8827c598d657f85832ec8|10|8|0|0|0|packaging/install-parity.flang
 0b1bf8e8857ea88b1652c957962ad78e|2|2|0|0|0|scripts/behavior-table.fscript
 d538e6fd659d046d821331877ffe39a6|1|1|0|0|0|scripts/behavior.fscript
 e0822c51ca487deb59d8925c20396e93|7|7|0|0|0|scripts/cell-work-preserved.fscript

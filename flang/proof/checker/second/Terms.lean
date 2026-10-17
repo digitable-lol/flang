@@ -9,6 +9,9 @@ def «обрезать» (s : String) : String :=
   let «пуст» := fun (c : Char) => c = ' ' || c = '\t' || c = '\r'
   String.ofList ((cs.dropWhile «пуст»).reverse.dropWhile «пуст»).reverse
 
+def «одноЧисло» (a b : Float) : Bool :=
+  (a == b && (a.toBits >>> 63) == (b.toBits >>> 63)) || (a.isNaN && b.isNaN)
+
 def «заменить» (t a b : String) : String := if a = "" then t else b.intercalate (t.splitOn a)
 
 def «сжать» (t : String) : String := " ".intercalate ((t.splitOn " ").filter (· ≠ ""))

@@ -1,0 +1,26 @@
+module «English postconditions»
+
+total function «Word for number»
+  accepts n: number
+  returns string
+  ensures «a multiple of three is called Fizz» if (n modulo 3) equals 0 then (result equals "Fizz") else true
+  ensures «the rest is called by its digits» if (n modulo 3) equals 0 then true else (result equals to text n)
+  example «Divisible by three»
+    given n equals 9
+    expected "Fizz"
+  example «Neither»
+    given n equals 7
+    expected "7"
+  if (n modulo 3) equals 0
+    then "Buzz"
+    else to text n
+
+total function «Pair of words»
+  accepts left: string, right: string
+  returns list of string
+  ensures «two words make two items» (length result) equals 2
+  example «Two words»
+    given left equals "a"
+    given right equals "b"
+    expected ["a", "b"]
+  [left, right]

@@ -1,0 +1,16 @@
+module «English preconditions»
+
+total function «Steps»
+  accepts remaining: nat, previous: number, current: number
+  returns number
+  requires «previous is non-negative» previous is at least 0
+  requires «current is non-negative» current is at least 0
+  ensures «the step is non-negative» result is at least 0
+  example «No steps left»
+    given remaining equals 0
+    given previous equals 7
+    given current equals 9
+    expected 7
+  if remaining is at most 0
+    then previous
+    else «Steps» of (remaining minus 1) and current and (previous plus current)

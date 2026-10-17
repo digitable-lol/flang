@@ -29,8 +29,8 @@ docs/tasks/     the open and closed work of the tree, one file per task
 
 <!-- КАРТА-КОНЕЦ -->
 
-Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 65 files of flang —
-<!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
+Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 66 files of flang —
+<!-- СНЯТО 2026-10-17 файлов flang/self/*.flang = 66 -->
 lexer, parser, types, totality, proof kernel and one printer per target.
 [`flang/stdlib/`](../flang/stdlib) is the standard library — **55 modules, 1931 functions and 3956
 examples** that run on every check:

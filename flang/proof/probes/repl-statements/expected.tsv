@@ -1,0 +1,18 @@
+program	code	word
+proved-statement.txt	0	утверждение «сложение перестановочно»: доказано (код 0)
+proved-statement.txt	0	1. утверждение «сложение перестановочно» — доказано
+unproved-false-statement.txt	3	утверждение «всякое натуральное меньше тысячи»: не доказано (код 3)
+unproved-false-statement.txt	3	1. утверждение «всякое натуральное меньше тысячи» — не доказано
+theorem-on-an-unproved-premise.txt	3	теорема «пять меньше тысячи»: не доказано (код 3)
+theorem-on-an-unproved-premise.txt	3	доказано ПРИ УСЛОВИИ
+barbara-declared.txt	0	теорема «Сократ смертен»: доказано (код 0)
+affirming-the-consequent-declared.txt	1	ввод в сессию не принят: сессия осталась прежней (код 1)
+affirming-the-consequent-declared.txt	1	FLANG_PROOF_STEP в сессии
+english-words.txt	3	утверждение «addition commutes»: не доказано (код 3)
+english-words.txt	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ
+syllogism-follows.txt	0	силлогизм: следует (код 0)
+syllogism-affirming-the-consequent.txt	1	силлогизм: не следует (код 1)
+syllogism-affirming-the-consequent.txt	1	пример против, подсказка переводчика, ядром не проверена — «Сократ»: человек — нет, смертен — да
+syllogism-without-a-dictionary.txt	1	силлогизм: не следует (код 1)
+syllogism-without-a-dictionary.txt	1	«Барсик»: тих — да, мохнатый — нет
+syllogism-the-dictionary-is-asked-for.txt	3	допишите одну строку: Понятие: человек, люди

@@ -1,0 +1,3 @@
+statement «addition commutes»
+  for all a: number и b: number
+  claim a plus b equals b plus a

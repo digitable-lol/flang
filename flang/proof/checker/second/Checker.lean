@@ -394,7 +394,7 @@ def «судитьМеста» («зап» : String) : «Суд» := Id.run do
   return r
 
 def «сверить» («исх» : String) («путь» : String) («зап» : String) («каталог» : String) : «Итог» := Id.run do
-  let «строки» := «исх».splitOn "\n"
+  let «строки» := «строкиПоРусски» («исх».splitOn "\n")
   let «п» := «зап».splitOn "\nплан "
   let «т» := («часть» «п» 1).splitOn "\nтотальность "
   let «с» := («часть» «т» 1).splitOn "\nснятие "

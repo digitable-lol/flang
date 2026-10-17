@@ -271,7 +271,7 @@ partial def «значение» («сыр» : String) («топливо» : Nat
           | _ => none
         else none
 where «равны» : «Знач» → «Знач» → Option Bool
-  | .«ч» x, .«ч» y => some (x == y)
+  | .«ч» x, .«ч» y => some («одноЧисло» x y)
   | .«с» x, .«с» y => some (x == y)
   | .«п» x, .«п» y => some (x == y)
   | _, _ => none

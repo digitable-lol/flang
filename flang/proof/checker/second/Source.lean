@@ -1,4 +1,4 @@
-import «RecordReader»
+import «Surfaces»
 
 open «Разбор»
 
@@ -7,8 +7,15 @@ namespace «Второй»
 structure «Исх» where
   «сырые» : Array String
   «текст» : String
+  «подлинные» : Array String
+  «язык» : Option String
 
-def «исходник» (t : String) : «Исх» := ⟨(t.splitOn "\n").toArray, t⟩
+def «исходник» (t : String) : «Исх» :=
+  let «подл» := t.splitOn "\n"
+  let «ру» := «строкиПоРусски» «подл»
+  ⟨«ру».toArray, "\n".intercalate «ру», «подл».toArray, «языкИсходника» «подл»⟩
+
+def «Исх».«подлинная» (s : «Исх») (n : Nat) : String := if n = 0 then "" else s.«подлинные».getD (n - 1) ""
 
 def «Исх».«сырая» (s : «Исх») (n : Nat) : String := if n = 0 then "" else s.«сырые».getD (n - 1) ""
 

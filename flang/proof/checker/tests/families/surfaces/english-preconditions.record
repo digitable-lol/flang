@@ -1,0 +1,28 @@
+запись доказательства 1
+исходник flang/proof/checker/tests/families/surfaces/english-preconditions.flang
+строк 17
+знаков 561
+отпечаток 323110463 246386464
+ядро 2
+утверждений 1
+отпечаток256 0ff6c27b4dece9d25f9e7cd00cabb20a3e48c8fda52d74b491163f3c6005cc99
+
+утверждение «the step is non-negative» функции «Steps» строка 8
+  вид postcondition
+  вердикт нет вердикта
+  теоремы нет
+конец утверждения
+
+снятие «previous is non-negative» функции «Steps» зовёт «Steps» строка 16 столбец 10
+  вид precondition-at-call
+  вердикт доказано
+  правило «цель есть допущение»
+конец снятия
+
+снятие «current is non-negative» функции «Steps» зовёт «Steps» строка 16 столбец 10
+  вид precondition-at-call
+  вердикт доказано
+  правило «неотрицательность по построению»
+конец снятия
+
+конец записи

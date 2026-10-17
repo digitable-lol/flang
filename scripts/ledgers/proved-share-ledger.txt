@@ -2057,3 +2057,14 @@ dd51cf8972e30795ece5a36ecf43b2f0|1|1|0|0|0|flang/proof/parity/programs/string-co
 865380ea9a596cf255bbf6f5fb3e1b73|1|0|0|1|0|flang/proof/parity/programs/tree-mirror-mirror.flang
 c0044472a1d4022f108d993981cfd01f|1|×|×|×|0|flang/proof/parity/programs/tree-size-mirror-by-hand.flang
 2156f0072c3e5eeb84bd4b13c47a5e40|1|0|0|1|0|flang/proof/parity/programs/tree-size-mirror.flang
+9dd5cff79c8be02e1548f4318b90ef0d|2|2|0|0|0|flang/proof/checker/tests/families/proof-moves/account.flang
+e3f824a35733612eed8e45a0ab0ded4b|2|2|0|0|0|flang/proof/checker/tests/families/proof-moves/discount.flang
+09c705eae53b3d23824da6346753e684|1|0|1|0|0|flang/proof/checker/tests/families/proof-moves/filter-of-a-built-list.flang
+709ba629a82f0d9b4c3ca37ee70b3551|1|1|0|0|0|flang/proof/checker/tests/families/proof-moves/fold-total.flang
+f565ff9b9848456ba742783389ee8b9a|1|1|0|0|0|flang/proof/checker/tests/families/proof-moves/forged/duplicate-field.flang
+58669ce7bb61d133dc6107280ca5990a|1|0|0|1|0|flang/proof/checker/tests/families/proof-moves/forged/swapped-field.flang
+3adb91c0b1da0c93bd9810860ae2e5f8|1|0|0|1|0|flang/proof/checker/tests/families/proof-moves/forged/unfold-past-a-bracket.flang
+7da60575aad8a90b0a5e190ef84cbd93|1|0|0|1|0|flang/proof/checker/tests/families/proof-moves/forged/unfold-without-arguments.flang
+5fc4e960ccb7be579066ca045de89b80|2|×|×|×|0|flang/proof/checker/tests/families/proof-moves/forged/unpaid-precondition.flang
+fb81c00853e3b7291316d8dc04d3ace1|1|1|0|0|0|flang/proof/checker/tests/families/proof-moves/ladder-as-table.flang
+5745ad3ceb42865f0c9e3da4f4cd38db|3|3|0|0|0|flang/proof/checker/tests/families/proof-moves/socrates.flang

@@ -376,6 +376,10 @@ bool fl_arena_extend(fl_arena *arena, const void *block, size_t size,
 static void fl_region_forget(fl_arena *arena);
 static void fl_memo_unpin(fl_arena *arena, const fl_chunk *from, size_t used);
 static void fl_memo_disown(fl_arena *arena);
+static bool fl_memo_carry_begin(const fl_arena *arena);
+static void fl_memo_carry_note(int phase, fl_tag tag, const void *from,
+                               const void *to);
+static void fl_memo_carry_end(fl_arena *arena);
 
 void fl_arena_reset(fl_arena *arena) {
   fl_chunk *chunk = NULL;
@@ -2895,6 +2899,7 @@ typedef struct fl_pack {
   size_t size;
   size_t used;
   fl_live zone;
+  int carry;
 } fl_pack;
 
 static void *fl_pack_alloc(fl_pack *pack, size_t size) {
@@ -2956,6 +2961,9 @@ static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth,
       memcpy(text, value.as.string.utf8, value.as.string.bytes);
     }
     text[value.as.string.bytes] = '\0';
+    if (pack->carry != 0) {
+      fl_memo_carry_note(pack->carry, FL_STRING, value.as.string.utf8, text);
+    }
     *out = fl_text_borrow(text, value.as.string.bytes, value.as.string.points);
     return true;
   }
@@ -2970,6 +2978,9 @@ static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth,
         (fl_value *)fl_pack_alloc(pack, value.as.list.count * sizeof(fl_value));
     if (items == NULL) {
       return false;
+    }
+    if (pack->carry != 0) {
+      fl_memo_carry_note(pack->carry, FL_LIST, value.as.list.items, items);
     }
     for (index = 0; index < value.as.list.count; index += 1) {
       if (!fl_pack_value(pack, value.as.list.items[index], depth + 1,
@@ -2995,6 +3006,9 @@ static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth,
     }
     record->count = value.as.record->count;
     record->fields = NULL;
+    if (pack->carry != 0) {
+      fl_memo_carry_note(pack->carry, FL_RECORD, value.as.record, record);
+    }
     if (!fl_pack_fields(pack, value.as.record->fields, value.as.record->count,
                         depth, &record->fields)) {
       return false;
@@ -3019,6 +3033,9 @@ static bool fl_pack_node(fl_pack *pack, fl_value value, size_t depth,
     variant->name = value.as.variant->name;
     variant->count = value.as.variant->count;
     variant->fields = NULL;
+    if (pack->carry != 0) {
+      fl_memo_carry_note(pack->carry, FL_VARIANT, value.as.variant, variant);
+    }
     if (!fl_pack_fields(pack, value.as.variant->fields, value.as.variant->count,
                         depth, &variant->fields)) {
       return false;
@@ -3336,6 +3353,7 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status,
   pack.size = live;
   pack.used = 0;
   pack.zone = zone;
+  pack.carry = fl_memo_carry_begin(arena) ? 1 : 0;
   if (!fl_pack_value(&pack, *result, 0, &staged)) {
     return FL_OK;
   }
@@ -3349,12 +3367,16 @@ fl_status fl_region_close(fl_ctx *ctx, fl_mark mark, fl_status status,
   pack.base = block;
   pack.size = live;
   pack.used = 0;
+  pack.carry = pack.carry != 0 ? 2 : 0;
   /* Обратно копируется ровно то, что легло в буфер; всё прочее уже пережило
      откат и лежит на месте. */
   pack.zone.lo = arena->staging;
   pack.zone.hi = arena->staging + live;
   if (!fl_pack_value(&pack, staged, 0, &moved)) {
     return fl_no_memory(error);
+  }
+  if (pack.carry != 0) {
+    fl_memo_carry_end(arena);
   }
   *result = moved;
   return FL_OK;
@@ -4387,8 +4409,8 @@ bool fl_equal(fl_value left, fl_value right) {
 
 /* ═════════════════════════ операции языка ═════════════════════════ */
 
-fl_status fl_field_get(fl_ctx *ctx, fl_value target, const char *name,
-                       fl_value *out, fl_error *error) {
+fl_status fl_field_search(fl_ctx *ctx, fl_value target, const char *name,
+                          fl_value *out, fl_error *error) {
   size_t index = 0;
   if (target.tag == FL_VARIANT) {
     /* Поле СУММЫ ИЗ ОДНОГО ВАРИАНТА. Что вариант ровно один, проверила проверка
@@ -6562,6 +6584,12 @@ typedef struct fl_memo_pin {
   size_t size;
 } fl_memo_pin;
 
+typedef struct fl_memo_carry {
+  fl_memo_pin pin;
+  const void *staged;
+  const void *settled;
+} fl_memo_carry;
+
 typedef struct fl_memo_name {
   unsigned long long hash;
   const char *text;
@@ -6607,6 +6635,8 @@ typedef struct fl_memo_state {
   size_t name_slots;
   size_t name_count;
   fl_memo_pin pins[FL_MEMO_PINS];
+  fl_memo_carry carries[FL_MEMO_PINS];
+  size_t carry_count;
   fl_memo_tally tallies[FL_MEMO_TALLIES];
   size_t tally_count;
   fl_memo_buffer key;
@@ -7018,6 +7048,77 @@ static void fl_memo_unpin(fl_arena *arena, const fl_chunk *from, size_t used) {
       fl_memo.pins_dropped += 1;
     }
   }
+}
+
+static bool fl_memo_carry_begin(const fl_arena *arena) {
+  size_t index = 0;
+  if (arena == NULL || arena->memo_pins == 0) {
+    return false;
+  }
+  fl_memo.carry_count = 0;
+  for (index = 0; index < FL_MEMO_PINS; index += 1) {
+    const fl_memo_pin *pin = &fl_memo.pins[index];
+    if (pin->id != 0 && pin->arena == arena) {
+      fl_memo_carry *carry = &fl_memo.carries[fl_memo.carry_count];
+      carry->pin = *pin;
+      carry->staged = NULL;
+      carry->settled = NULL;
+      fl_memo.carry_count += 1;
+    }
+  }
+  return fl_memo.carry_count != 0;
+}
+
+static void fl_memo_carry_note(int phase, fl_tag tag, const void *from,
+                               const void *to) {
+  size_t index = 0;
+  for (index = 0; index < fl_memo.carry_count; index += 1) {
+    fl_memo_carry *carry = &fl_memo.carries[index];
+    if (carry->pin.tag != tag) {
+      continue;
+    }
+    if (phase == 1 && carry->staged == NULL && carry->pin.address == from) {
+      carry->staged = to;
+    } else if (phase == 2 && carry->settled == NULL &&
+               carry->staged == from) {
+      carry->settled = to;
+    }
+  }
+}
+
+static void fl_memo_carry_end(fl_arena *arena) {
+  size_t index = 0;
+  for (index = 0; index < fl_memo.carry_count; index += 1) {
+    const fl_memo_carry *carry = &fl_memo.carries[index];
+    fl_memo_pin *slot = NULL;
+    size_t at = 0;
+    if (carry->settled == NULL) {
+      continue;
+    }
+    for (at = 0; at < FL_MEMO_PINS; at += 1) {
+      fl_memo_pin *other = &fl_memo.pins[at];
+      if (other->id == 0) {
+        slot = other;
+        break;
+      }
+      if (other->size < carry->pin.size &&
+          (slot == NULL || other->size < slot->size)) {
+        slot = other;
+      }
+    }
+    if (slot == NULL) {
+      continue;
+    }
+    if (slot->id == 0) {
+      arena->memo_pins += 1;
+    } else if (slot->arena != arena) {
+      continue;
+    }
+    *slot = carry->pin;
+    slot->arena = arena;
+    slot->address = carry->settled;
+  }
+  fl_memo.carry_count = 0;
 }
 
 static bool fl_memo_grow_blobs(void) {

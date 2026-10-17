@@ -90,7 +90,7 @@ All of this is taken from runs on the files of this page.
 | What happened to the promise | What the report calls it | `check --proof` | `check --proof --строго` |
 |---|---|---:|---:|
 | proven for all inputs | `ПРОВЕРЕНО САМОСТОЯТЕЛЬНО` / under the flag `ДОКАЗАНО` | 0 | 0 |
-| examples exist, no proof | `ПРОВЕРЕНО С ОПОРОЙ`, `сетка N … Это не доказательство` / under the flag `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ` | 0 | 3 |
+| examples exist, no proof | `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ`, `сетка N … Это не доказательство` / under the flag `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ` | 3 | 3 |
 | neither a theorem nor examples | `НЕ ПРОВЕРЕНО`, `объявлено, не доказано` / under the flag `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО` | 3 | 3 |
 | an example breaks the promise | `FLANG_PROPERTY: нарушено свойство …` | 1 | 1 |
 

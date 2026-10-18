@@ -1,35 +1,63 @@
 # Playground
 
-Here flang checks a text right in the tab: a syllogism written in words, or a flang
-program with statements, theorems and postconditions. The compiler with its proof kernel
-is built to WebAssembly and runs in the browser; nothing is sent to a server, and the
-"Share" link carries the text in the address after `#`, which the browser does not send
-to the server.
+Here flang checks a text right in the tab: a syllogism written in words, a formula with
+the quantifiers ∀ and ∃, or a flang program with statements, theorems and laws. The
+compiler with its proof kernel is built to WebAssembly and runs in the browser; nothing
+is sent to a server, and the "Share" link carries the text in the address after `#`,
+which the browser does not send to the server.
 
 ```playground
 The playground needs JavaScript and a browser with WebAssembly. Without them the same
 checks are done by the binary compiler: flang check file.flang --proof.
 ```
 
+## What you see
+
+The answer is split into four tabs.
+
+- **Result** — one line about what matters and the list of statements with marks:
+  - "Proved for all values" — every statement holds for every input, not only for the
+    examples written;
+  - "Checked on examples only" — no violations were found, but for the other values this
+    is not a proof;
+  - "Does not follow: here is a counterexample" — an input on which the statement is
+    false;
+  - "Not proved" — a statement has neither a proof nor examples;
+  - "Error on line N" — the line is marked in the editor, and the button with its number
+    puts the cursor there.
+
+  Under the result, the details are folded: what the independent proof check said, and
+  the full compiler output as in a terminal.
+- **Formulas** — every statement of the program written with quantifiers and in LaTeX.
+- **Formula → flang** — a field for a formula with ∀ / ∃ or in LaTeX: it is translated
+  to flang and checked right away.
+- **Pictures** — diagrams of what is declared: objects and arrows of a category, functor
+  squares, monoid laws, Euler–Venn circles for sets and the proof tree. Every picture
+  carries a mark: "proved", "on examples" or "violated".
+
 ## What becomes what
 
-The playground decides what it is looking at by the first word of the text.
+The playground decides what it is looking at by the start of the text.
 
 - A text that starts with `модуль` or `категория` is a flang program. `flang check
-  --proof` checks it and prints the proof ledger, as in a terminal.
+  --proof --json` checks it; the result is built from the compiler's machine-readable
+  answer, not from its text.
+- A text that starts with `∀`, `∃`, `\forall` or `\exists` is a formula. The formula
+  translator (`flang/foreign/formula`) turns it into a flang statement, and the kernel
+  checks it. When a formula cannot be read, the translator names the reason: "a chain of
+  comparisons without parentheses is ambiguous", "there is no ℝ in flang" and so on.
 - Any other text is reasoning in Russian: a dictionary (`Понятие:`, `Свойство:`,
   `Имя:`), premises and a conclusion after the word «Следовательно». The translator
-  `flang/proof/probes/syllogism/sentences/translator.flang` builds a program from it, the
-  kernel judges it with `--proof --strict`, and the answer comes in the judge's words:
-  «СЛЕДУЕТ» (follows) or «НЕ СЛЕДУЕТ» (does not follow) with a counterexample.
+  `flang/proof/probes/syllogism/sentences/translator.flang` builds a program from it, and
+  the kernel decides whether the conclusion follows from the premises.
 
-After the kernel, the playground hands the proof record to the checker
-(`flang/proof/checker/checker.c`), built as a separate WebAssembly module, and prints its
-answer next. A statement the checker replayed rests on more than the kernel's word.
+After the kernel, the proof record is replayed by a separate program
+(`flang/proof/checker/checker.c`, also in WebAssembly). When it matches, what is proved
+rests on more than the compiler's word.
 
 ## Examples
 
-Syllogism Barbara: the conclusion follows from the premises.
+Barbara syllogism: the conclusion follows from the premises.
 
 ```text playground Barbara syllogism — follows
 Понятие: человек, люди.
@@ -39,9 +67,202 @@ Syllogism Barbara: the conclusion follows from the premises.
 Все люди смертны. Все греки — люди. Следовательно, все греки смертны.
 ```
 
+A theorem about lists: the sum of the empty list is zero, a list's length is not
+negative, and an element put in front makes the list one longer. All of it is proved for
+every list.
+
+```flang playground A theorem about lists
+модуль «Списки»
+
+тотальная функция «Сумма»
+  принимает л: список число
+  возвращает число
+  разбор л
+    случай пусто
+      то 0
+    случай голова и хвост
+      то голова плюс («Сумма» от хвост)
+
+утверждение «сумма пустого списка — ноль»
+  утверждаем («Сумма» от пустой список) равна 0
+
+утверждение «длина списка не отрицательна»
+  для всех л: список число
+  утверждаем (длина л) не меньше 0
+
+утверждение «приписанный элемент удлиняет список на один»
+  для всех л: список число
+  для всех э: число
+  утверждаем (длина (приписать э к л)) равна ((длина л) плюс 1)
+```
+
+A monoid with laws: string concatenation is associative, and the empty string is its
+unit. The compiler checks the monoid laws on the values from the operation's examples;
+the picture shows the associativity square and the unit triangles.
+
+```flang playground A monoid with laws
+модуль «Склейка строк»
+
+тотальная функция «Склеить»
+  принимает а: строка, б: строка
+  возвращает строка
+  пример «два слова»
+    дано а равно "мир"
+    дано б равно "ок"
+    ожидается "мирок"
+  пример «с пустой строкой»
+    дано а равно ""
+    дано б равно "ум"
+    ожидается "ум"
+  соединить [а, б] по ""
+
+моноид «Склейка»
+  носитель строка
+  операция «Склеить»
+  единица ""
+```
+
+A category with a square: a functor turns roubles into kopecks, and the square "issue
+the bill, then convert" = "convert, then issue the bill" has to commute.
+
+```flang playground A category with a square
+модуль «Заказы и счета»
+
+объект «Заказ»
+  рубли является числом
+
+объект «Счёт»
+  рубли является числом
+
+объект «Заказ в копейках»
+  копейки является числом
+
+объект «Счёт в копейках»
+  копейки является числом
+
+тотальная функция «Выставить»
+  принимает заказ: «Заказ»
+  возвращает «Счёт»
+  пример «три рубля — счёт на тринадцать»
+    дано заказ равно запись «Заказ» с рубли равным 3
+    ожидается запись «Счёт» с рубли равным 13
+  запись «Счёт» с рубли равным (заказ.рубли плюс 10)
+
+тотальная функция «Выставить в копейках»
+  принимает заказ: «Заказ в копейках»
+  возвращает «Счёт в копейках»
+  пример «триста копеек — счёт на тысячу триста»
+    дано заказ равно запись «Заказ в копейках» с копейки равным 300
+    ожидается запись «Счёт в копейках» с копейки равным 1300
+  запись «Счёт в копейках» с копейки равным (заказ.копейки плюс 1000)
+
+тотальная функция «Заказы равны»
+  принимает а: «Заказ», б: «Заказ»
+  возвращает признак
+  а.рубли равен б.рубли
+
+тотальная функция «Счета равны»
+  принимает а: «Счёт», б: «Счёт»
+  возвращает признак
+  а.рубли равен б.рубли
+
+тотальная функция «Заказы в копейках равны»
+  принимает а: «Заказ в копейках», б: «Заказ в копейках»
+  возвращает признак
+  а.копейки равен б.копейки
+
+тотальная функция «Счета в копейках равны»
+  принимает а: «Счёт в копейках», б: «Счёт в копейках»
+  возвращает признак
+  а.копейки равен б.копейки
+
+тотальная функция «Заказ в копейки»
+  принимает заказ: «Заказ»
+  возвращает «Заказ в копейках»
+  пример «три рубля — триста копеек»
+    дано заказ равно запись «Заказ» с рубли равным 3
+    ожидается запись «Заказ в копейках» с копейки равным 300
+  запись «Заказ в копейках» с копейки равным (заказ.рубли умножить на 100)
+
+тотальная функция «Счёт в копейки»
+  принимает счёт: «Счёт»
+  возвращает «Счёт в копейках»
+  пример «тринадцать рублей — тысяча триста копеек»
+    дано счёт равно запись «Счёт» с рубли равным 13
+    ожидается запись «Счёт в копейках» с копейки равным 1300
+  запись «Счёт в копейках» с копейки равным (счёт.рубли умножить на 100)
+
+морфизм «выставить» из «Заказ» в «Счёт»
+  даёт «Выставить»
+
+морфизм «выставить в копейках» из «Заказ в копейках» в «Счёт в копейках»
+  даёт «Выставить в копейках»
+
+единица «Заказ»
+единица «Счёт»
+единица «Заказ в копейках»
+единица «Счёт в копейках»
+
+категория «Рубли»
+  морфизм «выставить»
+  объект «Заказ» даёт «Заказы равны»
+  объект «Счёт» даёт «Счета равны»
+
+категория «Копейки»
+  морфизм «выставить в копейках»
+  объект «Заказ в копейках» даёт «Заказы в копейках равны»
+  объект «Счёт в копейках» даёт «Счета в копейках равны»
+
+функтор «В копейки» из «Рубли» в «Копейки»
+  объект «Заказ» отображается в «Заказ в копейках» даёт «Заказ в копейки»
+  объект «Счёт» отображается в «Счёт в копейках» даёт «Счёт в копейки»
+  морфизм «выставить» отображается в морфизм «выставить в копейках»
+```
+
+Sets: the letters of words as sets of strings, their intersection and inclusion. The
+picture shows Euler–Venn circles with the letters in their regions.
+
+```flang playground Sets — inclusion and intersection
+модуль «Буквы»
+
+тотальная функция «Гласные»
+  возвращает список строки
+  ["а", "е", "и", "о", "у"]
+
+тотальная функция «Буквы слова мир»
+  возвращает список строки
+  ["м", "и", "р"]
+
+тотальная функция «Буквы слова ум»
+  возвращает список строки
+  ["у", "м"]
+
+тотальная функция «Пересечение»
+  принимает первое: список строки, второе: список строки
+  возвращает список строки
+  отфильтровать первое где э → второе содержит э
+
+тотальная функция «Вложение»
+  принимает меньшее: список строки, большее: список строки
+  возвращает признак
+  (длина (отфильтровать меньшее где э → не (большее содержит э))) равна 0
+
+утверждение «общие буквы мира и гласных — гласные»
+  утверждаем «Вложение» от («Пересечение» от («Буквы слова мир») и («Гласные»)) и («Гласные»)
+
+утверждение «у слов мир и ум общая только м»
+  утверждаем («Пересечение» от («Буквы слова мир») и («Буквы слова ум»)) равно ["м"]
+```
+
+A formula with quantifiers in LaTeX: addition of integers is commutative. The same
+formula can be entered on the "Formula → flang" tab.
+
+```text playground Formula with ∀ in LaTeX
+\forall x \in \mathbb{Z},\ \forall y \in \mathbb{Z},\ x + y = y + x
+```
+
 Affirming the consequent: from "all men are mortal" and "Socrates is mortal" it does not
-follow that Socrates is a man. The kernel does not derive the goal, the judge names a
-counterexample.
+follow that Socrates is a man. The playground shows a counterexample.
 
 ```text playground Affirming the consequent — does not follow
 Понятие: человек, люди.
@@ -51,7 +272,8 @@ counterexample.
 Все люди смертны. Сократ смертен. Следовательно, Сократ — человек.
 ```
 
-A statement about your own type, proved by induction.
+A statement about your own type, proved by induction; the "Pictures" tab shows the
+proof tree: the base, the step and the rule of each case.
 
 ```flang playground Statement with a theorem — induction on a type
 модуль «Своё натуральное»
@@ -97,8 +319,8 @@ A function with a postcondition: the `обеспечивает` promise is prove
   н плюс н
 ```
 
-A false statement: at `н = 0` doubling is not greater than the original. The ledger says
-«объявлено, не доказано» (declared, not proved), the verdict is «НЕ ПРОВЕРЕНО» with code 3.
+A false statement: at `н = 0` doubling is not greater than the original. There is no
+proof, and the playground answers "Not proved".
 
 ```flang playground False statement — not proved
 модуль «Ложное»
@@ -116,41 +338,55 @@ playground" link: it opens this page with the block's text in the address.
 | what | where | built by |
 |---|---|---|
 | compiler with the kernel | `playground/flang.wasm` | `bootstrap/*.c`, `clang --target=wasm32-wasi` |
-| checker | `playground/checker.wasm` | `flang/proof/checker/checker.c`, the same `clang` |
+| independent proof check | `playground/checker.wasm` | `flang/proof/checker/checker.c`, the same `clang` |
 | reasoning translator | `playground/reasoning.js` | `bootstrap/flang emit --target js` |
+| formula translator | `playground/formula.js` | `flang/foreign/formula/browser.fscript`, `bootstrap/flang emit --target js` |
 | library | `playground/library.tar` | `flang/stdlib/*.flang` and `flang/core/*.flang` |
-| WASI host and playground | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
+| WASI host | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
+| playground page | `playground.js` | `docs/site/playground.js` |
 
-All five files are built by a step of the site build (`bootstrap/flang run-script
-playground:build`); they are not in the tree. The WASI host keeps a file system in the
-tab's memory: the user's source, the library (downloaded only when the text has
-`использует`) and a temporary directory `/tmp`. The compiler and the checker run in a
+The files of the `playground/` directory are built by a step of the site build
+(`bootstrap/flang run-script playground:build`); they are not in the tree. The WASI host
+keeps a file system in the tab's memory: the user's source, the library (downloaded only
+when the text has `использует`) and a temporary directory `/tmp`. The compiler runs in a
 separate thread (a Web Worker), so the page does not freeze.
+
+The editor takes its keywords from the lexer's table (`flang/self/lexer.flang`, the
+function «Куски таблицы»): the site build puts them on the page, and there is no second
+list of words. LaTeX formulas are drawn by KaTeX, which the page loads from
+`cdn.jsdelivr.net`; without a network the formula stays LaTeX source. Pictures are SVG
+the page draws itself from the parse tree (`flang ast`) and the compiler's
+machine-readable answer.
 
 The same host runs under Node, without a browser:
 
 ```sh
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground "$(cat text.txt)"
+node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --json "$(cat text.txt)"
 ```
 
 Its exit code is the check's: 0 — follows or proved, 1 — does not follow, 3 — not proved.
+With `--json` it prints the whole parsed answer — the one the page builds the result and
+the pictures from.
 
 This is how the site build probes the playground (`bootstrap/flang run-script
 playground:probe`, the plan `scripts/site/playground-probe.fscript`): Barbara must
-follow and the checker must agree with the record; affirming the consequent must give
-«НЕ СЛЕДУЕТ» with code 1; the false statement must give «НЕ ПРОВЕРЕНО» with code 3 and
-no «ДОКАЗАНО» at all.
+follow and the independent check must match the record; affirming the consequent must
+give "does not follow" with code 1; the false statement must give code 3 and nothing
+proved; the LaTeX formula must be translated to flang, proved and matched by the
+independent check.
 
 ## What the playground does not have
 
-- **Processes.** WebAssembly has no `fork` and `exec`, so the compiler cannot call the
-  checker itself and prints «НЕЗАВИСИМО НЕ ПРОВЕРЕНО этим модулем» (not independently
-  checked by this module); the host calls the checker next, as a second module.
+- **Processes.** WebAssembly has no `fork` and `exec`, so the compiler cannot start the
+  independent check itself; the host starts it next, as a second module.
 - **Network and the machine's files.** There are no sockets; files live only in the
   tab's memory.
-- **Checking imports.** For a program with `использует` the checker needs the records of
-  the imported modules (`--зависимость`); the playground does not build them, and the
-  checker answers with code 1.
+- **Independent check of programs with `использует`.** It needs the proof records of the
+  imported modules; the playground does not build them.
+- **Naturality squares in the pictures.** The components of a natural transformation
+  (`морфизм … из функтора … в функтор …`) do not reach the parse tree of `flang ast`, so
+  there is nothing to draw the square from; the law's mark is still in the result.
 - **A 64-bit address.** The module is built for `wasm32`: memory is at most 4 GiB, and the
   built-in step limit 8·10¹² does not fit a 32-bit `size_t` and becomes 2 770 894 848 —
   `clang` warns about it during the build.

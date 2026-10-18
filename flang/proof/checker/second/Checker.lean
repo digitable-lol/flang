@@ -1,3 +1,4 @@
+import Exploration
 import «Состоятельность»
 import Totality
 import Moves
@@ -511,6 +512,11 @@ end «Второй»
 
 def main (args : List String) : IO UInt32 := do
   match args with
+  | ["--перебор", «зап»] =>
+    let «тз» ← IO.FS.readFile «зап»
+    let (s, k) := «Перебор».«сверить» «тз»
+    IO.println s
+    pure k
   | [«исх», «зап»] =>
     let «б» ← IO.FS.readBinFile «исх»
     let «тз» ← IO.FS.readFile «зап»

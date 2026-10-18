@@ -536,6 +536,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
 | `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
 | `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BIN` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |

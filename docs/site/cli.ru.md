@@ -270,10 +270,7 @@ flang test 'docs/examples/**/*.flang'  по маске (кавычки — от 
 
 ```text insert output: test flang/concurrency/examples/counter.flang
 $ flang test flang/concurrency/examples/counter.flang
-flang/concurrency/examples/counter.flang: примеров 2, прошло 2, не прошло 0
-flang/concurrency/examples/counter.flang: блоков «прогон» 2, исполнено 0 — исполнить их нечем: планировщика в этом двоичном нет
-$ echo $?
-3
+flang/concurrency/examples/counter.flang: примеров 4, прошло 4, не прошло 0
 ```
 
 ```text insert output: test docs/examples/cli/double.flang

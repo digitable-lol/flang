@@ -541,6 +541,11 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
 | `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
 | `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BIFUNCTOR_ARROW_MISMATCH` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_COMPOSITION` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_IDENTITY` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
@@ -694,13 +699,16 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_TLS_NAME` | `flang_repl.c` | — |
 | `FLANG_TLS_SIGNATURE` | `flang_repl.c` | — |
 | `FLANG_TMP` | `flang_repl.c` | — |
+| `FLANG_TRANSFORM_COMPONENT` | `compiler.flang` | — |
 | `FLANG_TRANSFORM_NOT_NATURAL` | `setoid.flang` | — |
+| `FLANG_TRANSFORM_NOT_TOTAL` | `compiler.flang` | — |
+| `FLANG_TRANSFORM_SHAPE` | `compiler.flang` | — |
 | `FLANG_TYPE` | `flang_cli.c`, `interpret.flang`, `types.flang` | {where} is declared to return {type.declared}, but its body gives {type.body} · {where} is declared twice · {where} has no body · argument «{parameter}» of function «{function}»: expected {type.wanted}, got {type.got} · {side} operand of «{operation}»: expected {type.wanted}, got {type.got} · the condition of «если» must be a flag, not {type} · the branches of «если» have different types: {type.then} and {type.else} · record «{record}» has no field «{field}» · record «{record}» requires field «{field}» ({type}) · field «{field}» is declared twice · function «{function}» takes {count} argument(s) ({parameters}), but is called with {given} · call of function «{function}»: argument «{parameter}»: {value} is outside {type} · {label} of function «{function}» does not give argument «{parameter}» · {label}: {value} is outside {type} · {label} does not match type {type} |
 | `FLANG_TYPE_ARGS` | `types.flang` | — |
 | `FLANG_TYPE_PARAM` | `types.flang` | — |
 | `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_UNKNOWN` | `flang_cli.c` | — |
-| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
 | `FLANG_UNPROVED` | `compiler.flang` | — |

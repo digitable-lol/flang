@@ -2086,11 +2086,12 @@ run «two additions»
   expected «Counter» equals (record «Count» with «total» equal to 5)
 ```
 
-Limit: `flang check` and `flang test` parse and check a `run` block but do not
-execute it — the binary compiler has no scheduler. `flang test` on such a file
-exits with code 3 and prints `блоков «прогон» 1, исполнено 0`. The scheduler is
-generated together with the code of the `c`, `elixir`, `js` and `ts` targets —
-see [Processes](processes.html).
+`flang test` executes a `run` block with the scheduler of `flang/self/conc.flang`
+and checks its expectations; the block counts as one example, and a false
+expectation fails the file with exit code 1. `flang check` parses and checks the
+block without running it. The scheduler is also generated together with the
+code of the `c`, `elixir`, `js` and `ts` targets — see
+[Processes](processes.html).
 
 Limit: the reply fields (`состояние`, `действия`) and the type `«Действие»` are
 fixed names of the process model, and they are spelled in Russian in every file.

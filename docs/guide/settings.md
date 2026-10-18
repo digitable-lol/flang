@@ -111,7 +111,11 @@ The bottom three keys set the linter's limits; what exactly is counted is descri
 `flang check`
 ([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
 the `FLANG_*` code stays the same, and the text comes from the catalogue
-`flang/messages/catalog.tsv`. 13 of the 144 codes have an English template
+`flang/messages/catalog.tsv`. The catalogue is a table: a header row `key<TAB>ru<TAB>en`, then
+one row per template. The key is the `FLANG_*` code of a diagnostic, the name of a summary line
+(`check.*`, `proof.*`, `place.*`, `ledger`), or `{stem}` for the words of a placeholder. A
+placeholder is `{name}` of lowercase Latin letters, digits, `-` and `.`, and both templates of a
+row name the same placeholders. 13 of the 144 codes have an English template
 (`bootstrap/flang run-script messages:check`); the rest answer in Russian — task
 [2510](../tasks/2510-most-compiler-messages-have-no-english-template.md).
 The other commands always answer in Russian — task

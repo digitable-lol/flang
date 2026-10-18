@@ -2107,6 +2107,12 @@ jobs:
       - name: Check import list order
         run: cd flang/proof/probes/import-list-order && ../../../../bootstrap/flang io run.fscript --plan Binary
 
+      # ВЛОЖЕННЫЙ ОБЪЕКТ — НАЗВАННЫЙ ОТКАЗ РАЗБОРА, А НЕ ПАДЕНИЕ (задача 4735).
+      # Обе старые формы («вложен объект», «вложена структура») отвечают
+      # FLANG_PARSE с местом, обходной путь отдельным объектом проходит.
+      - name: Check a nested object is refused by the parser
+        run: bootstrap/flang io flang/proof/probes/nested-object/run.fscript --plan Binary --timeout 900000
+
       # ПОМОЩНИК ВВЕЗЁННОЙ ФУНКЦИИ НЕ СМЕЕТ СВЯЗАТЬСЯ С ЧУЖИМ ТЁЗКОЙ (заявки 349 и
       # 350, ADR-0090). Таблица набора — контракт, а не фотография: она снята с
       # связывания из исходника `flang/self/link.flang`, и семя, напечатанное до

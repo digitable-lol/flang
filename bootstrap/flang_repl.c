@@ -1234,6 +1234,12 @@ static const char REPL_HELP[] =
     "Объявление проверяется той же дорогой, что и «flang check»: разбор, типы,\n"
     "завершаемость. Не прошедшее проверку в сессию не попадает.\n"
     "\n"
+    "«утверждение», «теорема» и «следует» (statement, theorem, follows) — тоже\n"
+    "объявления. После них оболочка зовёт на сессию «flang check --proof --строго»\n"
+    "и отвечает за каждое утверждение: «доказано» (код 0), «опровергнуто» с\n"
+    "примером против (код 1) или «не доказано» с причиной (код 3). Опровергнутое\n"
+    "в сессию не попадает; недоказанное остаётся с пометкой в «.объявления».\n"
+    "\n"
     "Команды (строка с точки — точкой не может начаться ни одна конструкция языка):\n"
     "  .помощь                    эта справка\n"
     "  .объявления                что объявлено в сессии\n"
@@ -1241,9 +1247,16 @@ static const char REPL_HELP[] =
     "  .сохранить <файл>          записать исходник сессии в файл\n"
     "  .загрузить <файл>          добавить объявления из файла .flang\n"
     "  .сбросить                  забыть всё объявленное\n"
+    "  .силлогизм [<файл>]        рассудить текст: строки словаря «Понятие:»,\n"
+    "                             «Свойство:», «Имя:» и предложения; пустая\n"
+    "                             строка заканчивает ввод; без словаря слова\n"
+    "                             читает морфология\n"
     "  .очистить                  очистить экран\n"
     "  .выход                     закончить работу\n"
-    "По-английски: .help .list .source .save .load .reset .clear .quit\n"
+    "По-английски: .help .list .source .save .load .reset .syllogism .clear .quit\n"
+    "Утверждения и силлогизмы с живыми сеансами: docs/guide/repl-statements.ru.md\n";
+
+static const char REPL_HELP_2[] =
     "\n"
     "Клавиши (когда на обоих концах терминал):\n"
     "  ←/→, Home/End, Ctrl-A/Ctrl-E      по строке\n"
@@ -1275,7 +1288,8 @@ static const char REPL_HELP[] =
  */
 static const char *const REPL_DECLARATIONS[] = {
     "module", "exports", "uses", "category", "object", "record", "type",
-    "total", "function", "utility", "morphism", "chain", "identity", "theorem", "functor", NULL};
+    "total", "function", "utility", "morphism", "chain", "identity", "theorem", "functor", "proposition",
+    "follows", NULL};
 
 /*
  * Объявления, у которых тело — отступный блок ниже: их ввод не может кончиться
@@ -1283,7 +1297,8 @@ static const char *const REPL_DECLARATIONS[] = {
  * сюда не входят — им продолжение не нужно.
  */
 static const char *const REPL_BLOCKS[] = {
-    "object", "record", "type", "total", "function", "utility", "category", "chain", "functor", "theorem", NULL};
+    "object", "record", "type", "total", "function", "utility", "category", "chain", "functor", "theorem",
+    "proposition", "follows", NULL};
 
 /*
  * Диагностики связывания, чьё место — в ЧУЖОМ файле. Диагностика flang несёт
@@ -2763,6 +2778,9 @@ typedef struct repl_session {
   char *steps;
   char *depth;
   repl_strings litter;
+  repl_strings claims_proved;
+  repl_strings claims_open;
+  bool syllogisms_open;
 } repl_session;
 
 static void decls_init(repl_decls *list) {
@@ -6356,6 +6374,22 @@ static char *repl_label(const char *word, const char *name, size_t name_bytes) {
   return label;
 }
 
+static void repl_claim_nodes(fl_value program, const char *field, const char *word, repl_nodes *out) {
+  const fl_value *items = NULL;
+  size_t count = 0;
+  size_t index = 0;
+  zn_field_items(program, field, &items, &count);
+  for (index = 0; index < count; index += 1) {
+    const char *name = NULL;
+    size_t name_bytes = 0;
+    if (!zn_field_text(items[index], "name", &name, &name_bytes)) {
+      continue;
+    }
+    nodes_push(out, repl_label(word, name, name_bytes), zn_line(items[index]), repl_label(word, name, name_bytes),
+               -1);
+  }
+}
+
 /**
  * Узлы объявлений разобранной программы. Порядок тот же, что в свидетеле: типы,
  * функции, наследие, — от него зависит и порядок строк «объявлено: …».
@@ -6398,6 +6432,8 @@ static void repl_nodes_of(fl_value program, const repl_strings *proven, repl_nod
                repl_label(total ? "тотальная функция" : "функция", name, name_bytes),
                total && (proven == NULL || strings_has(proven, name, name_bytes)) ? 1 : 0);
   }
+  repl_claim_nodes(program, "statements", "утверждение", out);
+  repl_claim_nodes(program, "theorems", "теорема", out);
   zn_field_items(program, "legacy", &items, &count);
   for (index = 0; index < count; index += 1) {
     const char *construct = NULL;
@@ -6991,6 +7027,14 @@ static bool repl_header_only(fl_value program) {
     return false;
   }
   zn_field_items(program, "functions", &items, &count);
+  if (count > 0) {
+    return false;
+  }
+  zn_field_items(program, "statements", &items, &count);
+  if (count > 0) {
+    return false;
+  }
+  zn_field_items(program, "theorems", &items, &count);
   if (count > 0) {
     return false;
   }
@@ -7668,6 +7712,615 @@ static void repl_report(const repl_nodes *nodes, const repl_strings *proven, con
  * собранная сессия прошла проверку целиком, становятся сессией. Отвергнутое не
  * оставляет следов: сессия после отказа обязана быть точно такой, какой была.
  */
+static bool repl_make_tmp(repl_session *session);
+
+static bool json_text_at(const char *text, size_t from, size_t to, const char *key, const char **out,
+                         size_t *bytes);
+static bool json_array_at(const char *text, size_t bytes, const char *key, size_t *start, size_t *stop);
+static bool json_object_next(const char *text, size_t *at, size_t to, size_t *start, size_t *stop);
+
+static long json_hex4(const char *text) {
+  long value = 0;
+  int index = 0;
+  for (index = 0; index < 4; index += 1) {
+    const char digit = text[index];
+    value *= 16;
+    if (digit >= '0' && digit <= '9') {
+      value += digit - '0';
+    } else if (digit >= 'a' && digit <= 'f') {
+      value += digit - 'a' + 10;
+    } else if (digit >= 'A' && digit <= 'F') {
+      value += digit - 'A' + 10;
+    } else {
+      return -1;
+    }
+  }
+  return value;
+}
+
+static void buf_utf8(repl_buf *out, unsigned long code) {
+  if (code < 0x80) {
+    buf_char(out, (char)code);
+  } else if (code < 0x800) {
+    buf_char(out, (char)(0xC0 | (code >> 6)));
+    buf_char(out, (char)(0x80 | (code & 0x3F)));
+  } else if (code < 0x10000) {
+    buf_char(out, (char)(0xE0 | (code >> 12)));
+    buf_char(out, (char)(0x80 | ((code >> 6) & 0x3F)));
+    buf_char(out, (char)(0x80 | (code & 0x3F)));
+  } else {
+    buf_char(out, (char)(0xF0 | (code >> 18)));
+    buf_char(out, (char)(0x80 | ((code >> 12) & 0x3F)));
+    buf_char(out, (char)(0x80 | ((code >> 6) & 0x3F)));
+    buf_char(out, (char)(0x80 | (code & 0x3F)));
+  }
+}
+
+static void json_plain(const char *text, size_t bytes, repl_buf *out) {
+  size_t at = 0;
+  while (at < bytes) {
+    long code = 0;
+    if (text[at] != '\\' || at + 1 >= bytes) {
+      buf_char(out, text[at]);
+      at += 1;
+      continue;
+    }
+    at += 1;
+    if (text[at] != 'u' || at + 5 > bytes || (code = json_hex4(text + at + 1)) < 0) {
+      buf_char(out, text[at] == 'n' ? '\n' : text[at] == 't' ? '\t' : text[at] == 'r' ? '\r' : text[at]);
+      at += 1;
+      continue;
+    }
+    at += 5;
+    if (code >= 0xD800 && code <= 0xDBFF && at + 6 <= bytes && text[at] == '\\' && text[at + 1] == 'u') {
+      const long low = json_hex4(text + at + 2);
+      if (low >= 0xDC00 && low <= 0xDFFF) {
+        code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+        at += 6;
+      }
+    }
+    buf_utf8(out, (unsigned long)code);
+  }
+}
+
+static char *json_plain_field(const char *text, size_t from, size_t to, const char *key) {
+  const char *raw = NULL;
+  size_t bytes = 0;
+  repl_buf out;
+  char *said = NULL;
+  if (!json_text_at(text, from, to, key, &raw, &bytes)) {
+    return NULL;
+  }
+  buf_init(&out);
+  json_plain(raw, bytes, &out);
+  said = repl_dup(out.data == NULL ? "" : out.data, out.used);
+  buf_free(&out);
+  return said;
+}
+
+static char *repl_self_binary(void) {
+  char *real = realpath("/proc/self/exe", NULL);
+  char *found = NULL;
+  if (real == NULL && repl_self_kept != NULL && strchr(repl_self_kept, '/') != NULL) {
+    real = realpath(repl_self_kept, NULL);
+  }
+  if (real != NULL) {
+    found = repl_say(real);
+    free(real);
+    return found;
+  }
+  return repl_self_kept == NULL ? NULL : repl_in_path(repl_self_kept);
+}
+
+static char *repl_beside_self(const char *relative) {
+  char *self_dir = repl_self_dir(repl_self_kept);
+  char *found = NULL;
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  found = repl_join(self_dir, relative);
+  free(self_dir);
+  if (access(found, R_OK) != 0) {
+    free(found);
+    return NULL;
+  }
+  return found;
+}
+
+static int repl_run_self(char *const *words, const char *self, const char *out_path, const char *err_path) {
+  int status = 0;
+  pid_t child = 0;
+  fflush(stdout);
+  fflush(stderr);
+  child = fork();
+  if (child < 0) {
+    return -1;
+  }
+  if (child == 0) {
+    const int out = open(out_path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    const int err = open(err_path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    const int none = open("/dev/null", O_RDONLY);
+    if (out < 0 || err < 0) {
+      _exit(127);
+    }
+    dup2(out, 1);
+    dup2(err, 2);
+    if (none >= 0) {
+      dup2(none, 0);
+    }
+    setenv("FLANG_BIN", self, 1);
+    execv(self, words);
+    _exit(127);
+  }
+  if (waitpid(child, &status, 0) < 0 || !WIFEXITED(status)) {
+    return -1;
+  }
+  return WEXITSTATUS(status);
+}
+
+static bool repl_claim_name(const char *label, const char **name, size_t *bytes, bool *statement) {
+  const char *open = strstr(label, "«");
+  const char *close = strrchr(label, '\xBB');
+  if (open == NULL || close == NULL || close < open + 2) {
+    return false;
+  }
+  *statement = strncmp(label, "утверждение «", strlen("утверждение «")) == 0;
+  if (!*statement && strncmp(label, "теорема «", strlen("теорема «")) != 0) {
+    return false;
+  }
+  *name = open + strlen("«");
+  *bytes = (size_t)(close - 1 - *name);
+  return true;
+}
+
+typedef struct repl_claim {
+  char *label;
+  int code;
+  char *why;
+} repl_claim;
+
+typedef struct repl_claims {
+  repl_claim *items;
+  size_t count;
+  size_t capacity;
+} repl_claims;
+
+static void claims_init(repl_claims *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static void claims_push(repl_claims *list, const char *label) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = (repl_claim *)repl_grow(list->items, list->capacity * sizeof(repl_claim));
+  }
+  list->items[list->count].label = repl_say(label);
+  list->items[list->count].code = 3;
+  list->items[list->count].why = NULL;
+  list->count += 1;
+}
+
+static void claims_free(repl_claims *list) {
+  size_t index = 0;
+  for (index = 0; index < list->count; index += 1) {
+    free(list->items[index].label);
+    free(list->items[index].why);
+  }
+  free(list->items);
+  claims_init(list);
+}
+
+static void claim_say(repl_claim *claim, int code, const char *why) {
+  free(claim->why);
+  claim->code = code;
+  claim->why = repl_say(why);
+}
+
+static void repl_claims_of(const repl_decls *decls, repl_claims *out) {
+  size_t index = 0;
+  size_t inner = 0;
+  for (index = 0; index < decls->count; index += 1) {
+    for (inner = 0; inner < decls->items[index]->names.count; inner += 1) {
+      const char *name = NULL;
+      size_t bytes = 0;
+      bool statement = false;
+      if (repl_claim_name(decls->items[index]->names.items[inner], &name, &bytes, &statement)) {
+        claims_push(out, decls->items[index]->names.items[inner]);
+      }
+    }
+  }
+}
+
+static void repl_claim_from_ledger(repl_claim *claim, const char *json, size_t bytes) {
+  const char *name = NULL;
+  size_t name_bytes = 0;
+  bool statement = false;
+  size_t start = 0;
+  size_t stop = 0;
+  size_t at = 0;
+  size_t from = 0;
+  size_t to = 0;
+  size_t rows = 0;
+  bool proved = true;
+  bool violated = false;
+  char *first_says = NULL;
+  char *open_says = NULL;
+  if (!repl_claim_name(claim->label, &name, &name_bytes, &statement) ||
+      !json_array_at(json, bytes, "claims", &start, &stop)) {
+    claim_say(claim, 3, "ведомость не назвала его вовсе");
+    return;
+  }
+  at = start;
+  while (json_object_next(json, &at, stop, &from, &to)) {
+    char *row_name = json_plain_field(json, from, to, "name");
+    char *row_kind = json_plain_field(json, from, to, "kind");
+    char *verdict = json_plain_field(json, from, to, "verdict");
+    char *says = json_plain_field(json, from, to, "says");
+    const bool same = row_name != NULL && strlen(row_name) == name_bytes && memcmp(row_name, name, name_bytes) == 0 &&
+                      (!statement || (row_kind != NULL && strcmp(row_kind, "утверждение") == 0));
+    if (same) {
+      rows += 1;
+      if (first_says == NULL) {
+        first_says = repl_say(says == NULL ? "" : says);
+      }
+      if (verdict == NULL || (strcmp(verdict, "proved") != 0 && strcmp(verdict, "proved-induction") != 0)) {
+        proved = false;
+        violated = violated || (verdict != NULL && strcmp(verdict, "violated") == 0);
+        if (open_says == NULL) {
+          open_says = repl_say(says == NULL ? "" : says);
+        }
+      }
+    }
+    free(row_name);
+    free(row_kind);
+    free(verdict);
+    free(says);
+  }
+  if (rows == 0) {
+    claim_say(claim, 3, "в ведомости нет утверждения с этим именем: доказывать теореме нечего");
+  } else if (proved) {
+    claim_say(claim, 0, first_says);
+  } else {
+    claim_say(claim, violated ? 1 : 3, open_says);
+  }
+  free(first_says);
+  free(open_says);
+}
+
+static char *repl_line_with(const char *text, const char *first, const char *second) {
+  const char *scan = text;
+  while (scan != NULL && *scan != '\0') {
+    const char *end = strchr(scan, '\n');
+    const size_t bytes = end == NULL ? strlen(scan) : (size_t)(end - scan);
+    char *line = repl_dup(scan, bytes);
+    if (strstr(line, first) != NULL && (second == NULL || strstr(line, second) != NULL)) {
+      return line;
+    }
+    free(line);
+    scan = end == NULL ? NULL : end + 1;
+  }
+  return NULL;
+}
+
+static char *repl_short_reason(const char *line) {
+  const char *place = strstr(line, " в файле ");
+  const char *comma = place == NULL ? NULL : strstr(place, ", строка");
+  const char *rest = comma == NULL ? line : comma;
+  const char *aside = strstr(rest, " (");
+  repl_buf out;
+  char *said = NULL;
+  buf_init(&out);
+  if (comma != NULL) {
+    buf_add(&out, line, (size_t)(place - line));
+    buf_put(&out, " в сессии");
+  }
+  buf_add(&out, rest, aside == NULL ? strlen(rest) : (size_t)(aside - rest));
+  if (aside != NULL) {
+    buf_put(&out, " — весь ответ ядра: «.сохранить» и flang check --proof");
+  }
+  said = repl_dup(out.data, out.used);
+  buf_free(&out);
+  return said;
+}
+
+static void repl_claim_from_failure(repl_claim *claim, const char *err) {
+  const char *name = NULL;
+  size_t name_bytes = 0;
+  bool statement = false;
+  repl_buf quoted;
+  char *line = NULL;
+  const char *marker = "опровергнуто на входе ";
+  buf_init(&quoted);
+  if (repl_claim_name(claim->label, &name, &name_bytes, &statement)) {
+    buf_put(&quoted, "«");
+    buf_add(&quoted, name, name_bytes);
+    buf_put(&quoted, "»");
+    line = repl_line_with(err, quoted.data, marker);
+  }
+  if (line != NULL) {
+    repl_buf why;
+    buf_init(&why);
+    buf_put(&why, "пример против: ");
+    buf_put(&why, strstr(line, marker) + strlen(marker));
+    claim_say(claim, 1, why.data);
+    buf_free(&why);
+    free(line);
+  } else {
+    char *reason = NULL;
+    line = repl_line_with(err, "FLANG_", NULL);
+    reason = line == NULL ? repl_say("проверка сессии не прошла, а причины не назвала") : repl_short_reason(line);
+    claim_say(claim, 2, reason);
+    free(reason);
+    free(line);
+  }
+  buf_free(&quoted);
+}
+
+static bool repl_write_text(const char *path, const char *text, size_t bytes) {
+  FILE *stream = fopen(path, "wb");
+  bool ok = false;
+  if (stream == NULL) {
+    return false;
+  }
+  ok = fwrite(text, 1, bytes, stream) == bytes;
+  return fclose(stream) == 0 && ok;
+}
+
+static char *repl_tmp_file(repl_session *session, const char *name) {
+  if (session->tmp_dir == NULL && !repl_make_tmp(session)) {
+    return NULL;
+  }
+  return repl_join(session->tmp_dir, name);
+}
+
+typedef struct repl_ledger {
+  int code;
+  char *out;
+  char *err;
+  size_t out_bytes;
+} repl_ledger;
+
+static void repl_ledger_free(repl_ledger *ledger) {
+  free(ledger->out);
+  free(ledger->err);
+  ledger->out = NULL;
+  ledger->err = NULL;
+}
+
+static void repl_ledger_of(repl_session *session, const char *module, const repl_imports *imports,
+                           const repl_strings *exports, const repl_decls *decls, repl_ledger *ledger) {
+  repl_imports moved;
+  repl_view view;
+  repl_buf source;
+  repl_map map;
+  char *self = repl_self_binary();
+  char *file = repl_tmp_file(session, "claims.flang");
+  char *out_path = repl_tmp_file(session, "claims.json");
+  char *err_path = repl_tmp_file(session, "claims.err");
+  size_t err_bytes = 0;
+  size_t index = 0;
+  ledger->code = -1;
+  ledger->out = NULL;
+  ledger->err = NULL;
+  ledger->out_bytes = 0;
+  imports_init(&moved);
+  buf_init(&source);
+  map_init(&map);
+  for (index = 0; index < imports->count && file != NULL; index += 1) {
+    repl_import item = import_copy(&imports->items[index]);
+    if (item.from != NULL) {
+      char *rewritten = repl_rewrite_path(item.from, session->base, session->tmp_dir);
+      free(item.from);
+      item.from = rewritten;
+    }
+    imports_push(&moved, item);
+  }
+  view.module = module;
+  view.imports = &moved;
+  view.exports = exports;
+  view.decls = decls;
+  view.fresh_first = decls->count;
+  view.fresh_last = decls->count;
+  repl_assemble(&view, NULL, 0, 0, &source, &map);
+  if (self != NULL && file != NULL && out_path != NULL && err_path != NULL &&
+      repl_write_text(file, source.data == NULL ? "" : source.data, source.used)) {
+    char *words[7];
+    words[0] = self;
+    words[1] = (char *)"check";
+    words[2] = file;
+    words[3] = (char *)"--proof";
+    words[4] = (char *)"--strict";
+    words[5] = (char *)"--json";
+    words[6] = NULL;
+    ledger->code = repl_run_self(words, self, out_path, err_path);
+    ledger->out = repl_read_file(out_path, &ledger->out_bytes);
+    ledger->err = repl_read_file(err_path, &err_bytes);
+  }
+  if (ledger->out == NULL || ledger->err == NULL) {
+    ledger->code = -1;
+  }
+  if (file != NULL) {
+    remove(file);
+  }
+  if (out_path != NULL) {
+    remove(out_path);
+  }
+  if (err_path != NULL) {
+    remove(err_path);
+  }
+  imports_free(&moved);
+  buf_free(&source);
+  map_free(&map);
+  free(self);
+  free(file);
+  free(out_path);
+  free(err_path);
+}
+
+static bool repl_ledger_printed(const repl_ledger *ledger) {
+  return ledger->code >= 0 && strstr(ledger->out, "\"claims\":[") != NULL;
+}
+
+static void repl_judge_claims(const repl_ledger *ledger, repl_claims *claims) {
+  size_t index = 0;
+  for (index = 0; index < claims->count; index += 1) {
+    repl_claim *claim = &claims->items[index];
+    if (ledger->code < 0) {
+      claim_say(claim, 3, "ядро не позвано: проверка сессии не запустилась");
+    } else if (repl_ledger_printed(ledger)) {
+      repl_claim_from_ledger(claim, ledger->out, ledger->out_bytes);
+      if (claim->code == 0 && strstr(ledger->err, "НЕ СОШЛОСЬ СО СВЕРЩИКОМ") != NULL) {
+        char *line = repl_line_with(ledger->err, "НЕ СОШЛОСЬ СО СВЕРЩИКОМ", NULL);
+        const char *from = strstr(line, "НЕ СОШЛОСЬ СО СВЕРЩИКОМ");
+        char *cut = strstr(from, "; ");
+        if (cut != NULL) {
+          *cut = '\0';
+        }
+        claim_say(claim, 3, from);
+        free(line);
+      }
+    } else {
+      repl_claim_from_failure(claim, ledger->err);
+    }
+  }
+}
+
+static char *repl_new_failure(const char *after, const char *before) {
+  const char *scan = after;
+  while (scan != NULL && *scan != '\0') {
+    const char *end = strchr(scan, '\n');
+    const size_t bytes = end == NULL ? strlen(scan) : (size_t)(end - scan);
+    char *line = repl_dup(scan, bytes);
+    if (strstr(line, "FLANG_") != NULL && (before == NULL || strstr(before, line) == NULL)) {
+      return line;
+    }
+    free(line);
+    scan = end == NULL ? NULL : end + 1;
+  }
+  return NULL;
+}
+
+static char *repl_failure_added(repl_session *session, const char *after, char **old_reason) {
+  repl_ledger before;
+  char *added = NULL;
+  repl_ledger_of(session, session->module, &session->imports, &session->exports, &session->decls, &before);
+  *old_reason = NULL;
+  if (before.code > 0 && !repl_ledger_printed(&before)) {
+    added = repl_new_failure(after, before.err);
+    *old_reason = repl_line_with(before.err, "FLANG_", NULL);
+  } else {
+    added = repl_new_failure(after, NULL);
+  }
+  repl_ledger_free(&before);
+  return added;
+}
+
+static int repl_claim_was(const repl_session *session, const char *label) {
+  if (strings_has(&session->claims_proved, label, strlen(label))) {
+    return 0;
+  }
+  if (strings_has(&session->claims_open, label, strlen(label))) {
+    return 3;
+  }
+  return -1;
+}
+
+static void repl_say_claim(const repl_claim *claim, bool again) {
+  const char *word = claim->code == 0 ? "доказано" : claim->code == 1 ? "опровергнуто" : "не доказано";
+  const repl_hue hue = claim->code == 0 ? HUE_GREEN : claim->code == 1 ? HUE_RED : HUE_YELLOW;
+  const char *why = claim->why == NULL ? "" : claim->why;
+  char *painted = repl_painted(repl_depth_out, hue, true, word);
+  if (claim->code == 0 && strncmp(why, "доказано ", strlen("доказано ")) == 0) {
+    why += strlen("доказано ");
+  }
+  printf("%s%s: %s (код %d)\n  %s\n", claim->label, again ? " теперь" : "", painted, claim->code == 2 ? 1 : claim->code,
+         why);
+  free(painted);
+}
+
+static bool repl_claims_hold(repl_session *session, const char *module, const repl_imports *imports,
+                             const repl_strings *exports, const repl_decls *candidate, repl_claims *claims) {
+  size_t index = 0;
+  size_t refuted = 0;
+  size_t rejected = 0;
+  bool holds = true;
+  repl_ledger ledger;
+  repl_claims_of(candidate, claims);
+  if (claims->count == 0) {
+    return true;
+  }
+  repl_ledger_of(session, module, imports, exports, candidate, &ledger);
+  repl_judge_claims(&ledger, claims);
+  for (index = 0; index < claims->count; index += 1) {
+    if (claims->items[index].code == 1) {
+      refuted += 1;
+    } else if (claims->items[index].code == 2) {
+      rejected += 1;
+    }
+  }
+  if (refuted == 0 && rejected > 0) {
+    char *old_reason = NULL;
+    char *added = repl_failure_added(session, ledger.err, &old_reason);
+    for (index = 0; index < claims->count; index += 1) {
+      repl_claim *claim = &claims->items[index];
+      if (claim->code == 2 && added == NULL && old_reason != NULL) {
+        repl_buf why;
+        char *short_reason = repl_short_reason(old_reason);
+        buf_init(&why);
+        buf_put(&why, "проверка сессии не проходит и без этого ввода — ");
+        buf_put(&why, short_reason);
+        claim_say(claim, 3, why.data);
+        buf_free(&why);
+        free(short_reason);
+      } else if (claim->code == 2 && added != NULL) {
+        char *short_reason = repl_short_reason(added);
+        claim_say(claim, 2, short_reason);
+        free(short_reason);
+      }
+    }
+    rejected = added == NULL && old_reason != NULL ? 0 : rejected;
+    free(added);
+    free(old_reason);
+  }
+  repl_ledger_free(&ledger);
+  holds = refuted == 0 && rejected == 0;
+  if (!holds) {
+    const repl_claim *reason = NULL;
+    for (index = 0; index < claims->count; index += 1) {
+      const repl_claim *claim = &claims->items[index];
+      if (claim->code == 1) {
+        repl_say_claim(claim, false);
+      } else if (claim->code == 2 && reason == NULL) {
+        reason = claim;
+      }
+    }
+    if (refuted == 0 && reason != NULL) {
+      printf("не принято: %s\n", reason->why);
+    }
+    printf("ввод в сессию не принят: сессия осталась прежней (код 1)\n");
+  }
+  return holds;
+}
+
+static void repl_claims_report(repl_session *session, const repl_claims *claims) {
+  size_t index = 0;
+  for (index = 0; index < claims->count; index += 1) {
+    const repl_claim *claim = &claims->items[index];
+    const int was = repl_claim_was(session, claim->label);
+    if (was != claim->code) {
+      repl_say_claim(claim, was >= 0);
+    }
+  }
+  strings_free(&session->claims_proved);
+  strings_free(&session->claims_open);
+  for (index = 0; index < claims->count; index += 1) {
+    strings_say(claims->items[index].code == 0 ? &session->claims_proved : &session->claims_open,
+                claims->items[index].label);
+  }
+}
+
 static bool repl_take(repl_session *session, fl_value program, const char *from_directory, const char *from_label,
                       const char *text) {
   repl_nodes nodes;
@@ -7688,6 +8341,8 @@ static bool repl_take(repl_session *session, fl_value program, const char *from_
   size_t fresh_last = 0;
   size_t index = 0;
   bool ok = false;
+  repl_claims claims;
+  claims_init(&claims);
   nodes_init(&nodes);
   decls_init(&fresh);
   decls_init(&candidate);
@@ -7705,8 +8360,10 @@ static bool repl_take(repl_session *session, fl_value program, const char *from_
     bads_say(&bads, error);
     free(error);
     repl_print_bads(&bads, NULL, NULL, NULL, 0, 0);
-  } else if (repl_apply(session, module, &imports, &exports, &candidate, fresh_first, fresh_last, &bads, &linked,
-                        &proven, &source, &map)) {
+  } else if (!repl_apply(session, module, &imports, &exports, &candidate, fresh_first, fresh_last, &bads, &linked,
+                         &proven, &source, &map)) {
+    repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
+  } else if (repl_claims_hold(session, module, &imports, &exports, &candidate, &claims)) {
     repl_strings kept;
     strings_init(&kept);
     for (index = 0; index < proven.count; index += 1) {
@@ -7715,10 +8372,9 @@ static bool repl_take(repl_session *session, fl_value program, const char *from_
     repl_commit(session, module, &imports, &exports, &candidate, &dropped, linked, &proven);
     module = NULL;
     repl_report(&nodes, &kept, &replaced, from_label);
+    repl_claims_report(session, &claims);
     strings_free(&kept);
     ok = true;
-  } else {
-    repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
   }
   if (!ok) {
     for (index = 0; index < fresh.count; index += 1) {
@@ -7737,6 +8393,7 @@ static bool repl_take(repl_session *session, fl_value program, const char *from_
   buf_free(&source);
   map_free(&map);
   nodes_free(&nodes);
+  claims_free(&claims);
   return ok;
 }
 
@@ -7896,6 +8553,14 @@ static bool repl_command_list(repl_session *session) {
       }
     }
     /* Про завершение говорит не пометка в тексте, а множество доказанных имён. */
+    for (inner = 0; inner < decl->names.count; inner += 1) {
+      if (strings_has(&session->claims_open, decl->names.items[inner], strlen(decl->names.items[inner]))) {
+        about = " — не доказано";
+      } else if (about[0] == '\0' &&
+                 strings_has(&session->claims_proved, decl->names.items[inner], strlen(decl->names.items[inner]))) {
+        about = " — доказано";
+      }
+    }
     if (proven) {
       about = " — завершение доказано";
     } else if (strstr(decl->label, "функция") != NULL) {
@@ -8115,6 +8780,172 @@ static void repl_reset(repl_session *session) {
   decls_free(&session->decls);
   strings_free(&session->known);
   strings_free(&session->total);
+  strings_free(&session->claims_proved);
+  strings_free(&session->claims_open);
+}
+
+static bool repl_trimmed_empty(const char *text);
+
+static bool repl_has_dictionary(const char *text) {
+  const char *scan = text;
+  while (scan != NULL && *scan != '\0') {
+    while (*scan == ' ' || *scan == '\t') {
+      scan += 1;
+    }
+    if (strncmp(scan, "Понятие:", strlen("Понятие:")) == 0 || strncmp(scan, "Свойство:", strlen("Свойство:")) == 0 ||
+        strncmp(scan, "Имя:", strlen("Имя:")) == 0) {
+      return true;
+    }
+    scan = strchr(scan, '\n');
+    scan = scan == NULL ? NULL : scan + 1;
+  }
+  return false;
+}
+
+static const char *repl_syllogism_word(bool dictionary, int code, const char *said) {
+  if (code == 0 && dictionary) {
+    return "следует (код 0)";
+  }
+  if (code == 1 && strstr(said, "НЕ СЛЕДУЕТ") != NULL) {
+    return "не следует (код 1)";
+  }
+  if (code == 1) {
+    return "текст не прочитан (код 1)";
+  }
+  if (!dictionary && strstr(said, "приговора нет") != NULL) {
+    return "без словаря не судится — допишите в текст строки, названные выше (код 3)";
+  }
+  if (!dictionary && strstr(said, "приговор судьи, код 0") != NULL) {
+    return "следует (код 0)";
+  }
+  if (!dictionary && strstr(said, "приговор судьи, код 1") != NULL && strstr(said, "НЕ СЛЕДУЕТ") != NULL) {
+    return "не следует (код 1)";
+  }
+  return "не проверено (код 3)";
+}
+
+static bool repl_command_syllogism(repl_session *session, const char *argument) {
+  char *given = NULL;
+  char *text = NULL;
+  size_t bytes = 0;
+  bool dictionary = false;
+  char *plan = NULL;
+  char *self = repl_self_binary();
+  char *file = repl_tmp_file(session, "syllogism.txt");
+  char *out_path = repl_tmp_file(session, "syllogism.json");
+  char *err_path = repl_tmp_file(session, "syllogism.err");
+  char *out = NULL;
+  char *said = NULL;
+  int code = -1;
+  bool ok = false;
+  if (argument[0] != '\0' && strchr(argument, '\n') == NULL) {
+    given = repl_resolve(session->base, argument);
+    text = access(given, R_OK) == 0 ? repl_read_file(given, &bytes) : NULL;
+  }
+  if (text == NULL) {
+    text = repl_say(argument);
+  }
+  dictionary = repl_has_dictionary(text);
+  plan = repl_beside_self(dictionary ? "../flang/proof/probes/syllogism/sentences/run.fscript"
+                                     : "../flang/experimental/ru-syllogism-demo.fscript");
+  if (repl_trimmed_empty(text)) {
+    printf("силлогизм: текста нет — после «.силлогизм» наберите словарь и предложения, пустая строка "
+           "заканчивает ввод\n");
+  } else if (plan == NULL) {
+    printf("силлогизм: %s\n",
+           dictionary ? "судьи рядом с этим двоичным нет (flang/proof/probes/syllogism/sentences/run.fscript)"
+                      : "словаря в тексте нет, а морфологии рядом с этим двоичным нет "
+                        "(flang/experimental/ru-syllogism-demo.fscript): впишите словарь строками «Понятие: …», "
+                        "«Свойство: …», «Имя: …»");
+  } else if (self != NULL && file != NULL && out_path != NULL && err_path != NULL) {
+    repl_buf body;
+    char *words[8];
+    buf_init(&body);
+    buf_put(&body, text);
+    buf_char(&body, '\n');
+    if (repl_write_text(file, body.data, body.used)) {
+      words[0] = self;
+      words[1] = (char *)"io";
+      words[2] = plan;
+      words[3] = (char *)"--plan";
+      words[4] = (char *)(dictionary ? "Judge" : "Demo");
+      words[5] = (char *)"--";
+      words[6] = file;
+      words[7] = NULL;
+      code = repl_run_self(words, self, out_path, err_path);
+      out = repl_read_file(out_path, &bytes);
+      if (out != NULL) {
+        said = json_plain_field(out, 0, bytes, "result");
+      }
+      free(out);
+      out = said == NULL ? repl_read_file(err_path, &bytes) : NULL;
+      if (out != NULL) {
+        const char *brace = strchr(out, '{');
+        said = brace == NULL ? NULL : json_plain_field(out, (size_t)(brace - out), bytes, "error");
+      }
+    }
+    buf_free(&body);
+    if (said != NULL) {
+      char *named = strstr(said, file);
+      if (named != NULL) {
+        memmove(named + strlen("ввод"), named + strlen(file), strlen(named + strlen(file)) + 1);
+        memcpy(named, "ввод", strlen("ввод"));
+      }
+    }
+    if (!dictionary) {
+      printf("словаря в тексте нет: слова читает морфология (flang/experimental/ru-syllogism-demo.fscript)\n");
+    }
+    if (said != NULL) {
+      size_t end = strlen(said);
+      while (end > 0 && said[end - 1] == '\n') {
+        end -= 1;
+      }
+      printf("%.*s\n", (int)end, said);
+    }
+    {
+      const char *word = repl_syllogism_word(dictionary, code, said == NULL ? "" : said);
+      printf("силлогизм: %s\n", word);
+      ok = strstr(word, "(код 1)") == NULL;
+      session->syllogisms_open = session->syllogisms_open || strstr(word, "(код 3)") != NULL;
+    }
+  }
+  if (file != NULL) {
+    remove(file);
+  }
+  if (out_path != NULL) {
+    remove(out_path);
+  }
+  if (err_path != NULL) {
+    remove(err_path);
+  }
+  free(given);
+  free(text);
+  free(plan);
+  free(self);
+  free(file);
+  free(out_path);
+  free(err_path);
+  free(out);
+  free(said);
+  return ok;
+}
+
+static bool repl_syllogism_name(const char *text, size_t bytes) {
+  const char *latin = ".syllogism";
+  size_t index = 0;
+  if (bytes == strlen(".силлогизм") && memcmp(text, ".силлогизм", bytes) == 0) {
+    return true;
+  }
+  if (bytes != strlen(latin)) {
+    return false;
+  }
+  for (index = 0; index < bytes; index += 1) {
+    const char symbol = text[index] >= 'A' && text[index] <= 'Z' ? (char)(text[index] - 'A' + 'a') : text[index];
+    if (symbol != latin[index]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** Команда: разбор имени и довеска. Регистр латиницы не важен, как в свидетеле. */
@@ -8125,11 +8956,11 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
   size_t end = 0;
   bool ok = true;
   buf_init(&name);
-  while (*rest != '\0' && *rest != ' ' && *rest != '\t') {
+  while (*rest != '\0' && *rest != ' ' && *rest != '\t' && *rest != '\n') {
     buf_char(&name, *rest >= 'A' && *rest <= 'Z' ? (char)(*rest - 'A' + 'a') : *rest);
     rest += 1;
   }
-  while (*rest == ' ' || *rest == '\t') {
+  while (*rest == ' ' || *rest == '\t' || *rest == '\n' || *rest == '\r') {
     rest += 1;
   }
   end = strlen(rest);
@@ -8138,9 +8969,11 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
   }
   argument = repl_dup(rest, end);
   if (strcmp(name.data, ".помощь") == 0 || strcmp(name.data, ".help") == 0 || strcmp(name.data, ".?") == 0) {
-    printf("%s\n", REPL_HELP);
+    printf("%s%s\n", REPL_HELP, REPL_HELP_2);
     printf("\n");
     repl_say_build(session->why_no_eval);
+  } else if (repl_syllogism_name(name.data, name.used)) {
+    ok = repl_command_syllogism(session, argument);
   } else if (strcmp(name.data, ".объявления") == 0 || strcmp(name.data, ".list") == 0) {
     ok = repl_command_list(session);
   } else if (strcmp(name.data, ".исходник") == 0 || strcmp(name.data, ".source") == 0) {
@@ -8183,6 +9016,16 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
 }
 
 /* ─────────────────────────────── приём ввода ────────────────────────────── */
+
+static bool repl_trimmed_empty_line(const char *text) {
+  size_t index = 0;
+  for (index = 0; text[index] != '\0' && text[index] != '\n'; index += 1) {
+    if (text[index] != ' ' && text[index] != '\t' && text[index] != '\r') {
+      return false;
+    }
+  }
+  return true;
+}
 
 static bool repl_trimmed_empty(const char *text) {
   size_t index = 0;
@@ -8328,10 +9171,13 @@ static bool repl_needs_more(repl_session *session, const char *text) {
   while (*scan == ' ' || *scan == '\t' || *scan == '\n' || *scan == '\r') {
     scan += 1;
   }
-  if (*scan == '.') {
-    return false;
-  }
   last = strrchr(text, '\n');
+  if (*scan == '.') {
+    const size_t first = strcspn(scan, " \t\r\n");
+    const bool bare = scan[first] == '\0' || scan[first] == '\n' || scan[first] == '\r' ||
+                      repl_trimmed_empty_line(scan + first);
+    return repl_syllogism_name(scan, first) && bare && (last == NULL || !repl_blank(last + 1));
+  }
   if (last != NULL && repl_blank(last + 1)) {
     return false;
   }
@@ -8717,7 +9563,7 @@ static void repl_recall(repl_editor *editor, size_t at) {
 static const char *const REPL_COMMANDS[] = {
     ".помощь",  ".объявления", ".исходник", ".сохранить", ".загрузить", ".сбросить", ".очистить", ".выход",
     ".help",    ".list",       ".source",   ".save",      ".load",      ".reset",    ".clear",    ".quit",
-    NULL};
+    ".силлогизм", ".syllogism", NULL};
 
 /** Начаток имени в ёлочках: смещение первого байта после незакрытой «, или -1. */
 static size_t repl_name_from(const char *text, size_t at) {
@@ -9091,6 +9937,9 @@ static void repl_open_session(repl_session *session, const char *self) {
   strings_init(&session->known);
   strings_init(&session->total);
   strings_init(&session->litter);
+  strings_init(&session->claims_proved);
+  strings_init(&session->claims_open);
+  session->syllogisms_open = false;
   session->cc = NULL;
   session->include_dir = NULL;
   session->lib_dir = NULL;
@@ -9112,6 +9961,8 @@ static void repl_close_session(repl_session *session) {
   strings_free(&session->known);
   strings_free(&session->total);
   strings_free(&session->litter);
+  strings_free(&session->claims_proved);
+  strings_free(&session->claims_open);
   free(session->cc);
   free(session->include_dir);
   free(session->lib_dir);
@@ -15157,6 +16008,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
   const char *file = NULL;
   const bool interactive = isatty(0) == 1;
   bool failed = false;
+  bool unproved = false;
   bool quit = false;
   int index = 0;
 
@@ -15264,11 +16116,12 @@ static int repl_loop(int argc, char **argv, const char *self) {
   }
   buf_free(&buffer);
   buf_free(&line);
+  unproved = session.claims_open.count > 0 || session.syllogisms_open;
   repl_close_session(&session);
   /* Человеку код возврата не нужен — он видел ошибку и продолжил работать.
      Конвейеру нужен: `flang repl < сценарий.flang` — это прогон сценария, и
      молча отдать 0 после диагностики значило бы соврать вызывающему. */
-  return interactive || !failed ? 0 : 1;
+  return interactive ? 0 : failed ? 1 : unproved ? 3 : 0;
 }
 
 /**

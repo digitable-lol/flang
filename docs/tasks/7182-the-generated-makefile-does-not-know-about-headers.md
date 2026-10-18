@@ -1,7 +1,7 @@
 ---
 номер: 7182
 заголовок: Ни одна проба не краснеет, если напечатанный Makefile снова перестанет знать заголовки
-статус: в работе — проба `makefile-headers:check` стоит в CI и красна на семени 0.7.28 по делу: `flang_repl.o` не знает `tls_client.c` и `tls_client.h`; печатник починен в `flang/self/emit-c.flang`, на копии семени с починенным Makefile проба зелена; подлоги (`makefile-headers:forgery`, шаг CI с убранной строкой `compiler_flang.o`) названы; зелёной на семени проба станет перепечаткой
+статус: в работе — печатник Makefile починен в `flang/self/emit-c.flang`, но Makefile семени печатает печатник: печать 1 партии 8 (семя 0.7.28) дала прежний Makefile, `makefile-headers:check` на нём красна — «НЕ ПЕРЕСОБИРАЕТСЯ: flang_repl.o — flang_repl.c включает tls_client.c / tls_client.h»; вторая печать снята (задача 6425), шаг CI до следующей печати идёт с continue-on-error
 приоритет: P1
 исполнитель: reprint-recipe
 ветка: a/reprint-cost-and-makefile-probe

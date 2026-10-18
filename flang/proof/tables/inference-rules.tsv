@@ -37,6 +37,7 @@ name	family	kind	kernel-rule	anchor	status
 О8	О	rule	порядок по построению	proof-kernel.flang:3023 «Отбор под длиной»	code-wider
 О9	О	rule	порядок по построению	proof-kernel.flang:2860 «Свёртка не быстрее списка»	code-stricter
 О10	О	rule	порядок по построению	proof-kernel.flang:2051 «Есть порядок через середину»	not-in-adr
+О11	О	rule	порядок по построению	proof-kernel.flang:6888 «Нестрогий из строгого»	not-in-adr
 О✗	О	ban	порядок по построению	proof-kernel.flang:2110 «По порядку», отсутствие случая "sub"	not-in-adr
 О✗✗	О	ban	порядок по построению	proof-kernel.flang:3041 «Слагаемое в границе», требование обеих границ	not-in-adr
 О✗✗✗	О	ban	порядок по построению	proof-kernel.flang:1930 «Дно произведения», отсутствие парного случая у порядка	not-in-adr

@@ -538,7 +538,13 @@
 
 тотальная функция «Before script»
   возвращает строка
-  "cd ..; T=${FLANG_TMP:-/tmp}/o.${2##*/}; git show $1 >$T 2>&-; exec bootstrap/flang lint --tsv --warn $T"
+  обеспечивает «the old side lives in this worktree» результат содержит "--git-path flang-lint-growth"
+  обеспечивает «a failed write of the old side fails the step» результат содержит "git show \"$1\" >\"$t\" || exit;"
+  соединить [
+    "cd .. || exit; git cat-file -e \"$1\" 2>/dev/null || exit 0; ",
+    "d=$(git rev-parse --path-format=absolute --git-path flang-lint-growth) || exit; ",
+    "mkdir -p \"$d\" || exit; t=\"$d/${2##*/}\"; git show \"$1\" >\"$t\" || exit; ",
+    "exec bootstrap/flang lint --tsv --warn \"$t\""] по ""
 
 тотальная функция «Before arguments»
   принимает rev: строка, path: строка

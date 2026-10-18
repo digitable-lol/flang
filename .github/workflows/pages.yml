@@ -54,6 +54,7 @@ on:
       - 'flang/src/emit/js/flang_host_browser.js'
       - 'flang/proof/checker/checker.c'
       - 'flang/proof/probes/syllogism/sentences/translator.flang'
+      - 'flang/foreign/formula/**'
       - 'scripts/site/playground-probe.fscript'
       - '.flangrc'
   # На КАЖДОМ запросе слияния, без фильтра `paths`. Ссылки сайта ведут не
@@ -287,10 +288,11 @@ jobs:
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:checker
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:compiler
 
-      - name: Lay out the library and the translator
+      - name: Lay out the library and the translators
         run: |
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:library
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:translator
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:formula
 
       - name: Probe the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe

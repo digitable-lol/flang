@@ -107,9 +107,28 @@
     и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
     и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])
 
+тотальная функция «Formula text»
+  возвращает строка
+  пример «Addition of integers commutes, written in LaTeX»
+    ожидается "\\forall x \\in \\mathbb{Z},\\ \\forall y \\in \\mathbb{Z},\\ x + y = y + x"
+  "\\forall x \\in \\mathbb{Z},\\ \\forall y \\in \\mathbb{Z},\\ x + y = y + x"
+
+тотальная функция «Formula»
+  возвращает «Probe case»
+  пример «A LaTeX formula is translated to flang, proved and replayed»
+    ожидается (запись «Probe case» с «name» равным "formula" и «text file» равным ""
+      и «text» равным "\\forall x \\in \\mathbb{Z},\\ \\forall y \\in \\mathbb{Z},\\ x + y = y + x"
+      и «code» равным 0
+      и «present» равным ["утверждаем («x» плюс «y») равен («y» плюс «x»)", "ПРОВЕРЕНО — запись сошлась"]
+      и «absent» равным ["FLANG_FORMULA", "FLANG_PLAYGROUND"])
+  (запись «Probe case» с «name» равным "formula" и «text file» равным "" и «text» равным («Formula text»)
+    и «code» равным 0
+    и «present» равным ["утверждаем («x» плюс «y») равен («y» плюс «x»)", "ПРОВЕРЕНО — запись сошлась"]
+    и «absent» равным ["FLANG_FORMULA", "FLANG_PLAYGROUND"])
+
 тотальная функция «Cases»
   возвращает список «Probe case»
-  пример «Three cases: a valid syllogism, a fallacy and a false statement»
+  пример «Four cases: a valid syllogism, a fallacy, a false statement and a formula»
     ожидается [(запись «Probe case» с «name» равным "barbara"
       и «text file» равным "flang/proof/probes/syllogism/sentences/texts/barbara.txt" и «text» равным ""
       и «code» равным 0
@@ -130,8 +149,13 @@
           """
         и «code» равным 3
         и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
-        и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])]
-  [(«Barbara»), («Consequent»), («Falsehood»)]
+        и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"]),
+      (запись «Probe case» с «name» равным "formula" и «text file» равным ""
+        и «text» равным "\\forall x \\in \\mathbb{Z},\\ \\forall y \\in \\mathbb{Z},\\ x + y = y + x"
+        и «code» равным 0
+        и «present» равным ["утверждаем («x» плюс «y») равен («y» плюс «x»)", "ПРОВЕРЕНО — запись сошлась"]
+        и «absent» равным ["FLANG_FORMULA", "FLANG_PLAYGROUND"])]
+  [(«Barbara»), («Consequent»), («Falsehood»), («Formula»)]
 
 тотальная функция «Question of»
   принимает probe: «Probe case»
@@ -257,7 +281,10 @@
       affirming the consequent: в выводе нет «НЕ СЛЕДУЕТ: предложение 3»
       false statement: ждали код 3, вышел 127
       false statement: в выводе нет «НЕ ПРОВЕРЕНО — утверждений 1: доказано 0»
-      false statement: в выводе нет «объявлено, не доказано»"""
+      false statement: в выводе нет «объявлено, не доказано»
+      formula: ждали код 0, вышел 127
+      formula: в выводе нет «утверждаем («x» плюс «y») равен («y» плюс «x»)»
+      formula: в выводе нет «ПРОВЕРЕНО — запись сошлась»"""
   «Proceed with probing» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
 
 план «Probe»

@@ -34,8 +34,8 @@
   «entry»: «Entry»
   «gaps»: список «Gap»
 
-тип «Reading»
-  вариант «Read» содержит candidate: «Candidate»
+тип «Form reading»
+  вариант «One way» содержит candidate: «Candidate»
   вариант «Two ways» содержит candidates: список «Candidate», telling: строка
   вариант «Not read» содержит why: строка
 
@@ -252,7 +252,7 @@
   обеспечивает «невыполненное условие чтения не даёт» если не holds то ((длина результат) равен 0) иначе да
   если holds то [single] иначе (пустой список)
 
-тотальная функция «Gathered»
+тотальная функция «Gathered candidates»
   принимает parts: список список «Candidate»
   возвращает список «Candidate»
   свёртка parts начиная с (пустой список) как all и part → «Соединить списки» от all и part
@@ -272,7 +272,7 @@
     то голова options
     иначе ""
 
-тотальная функция «Forms of»
+тотальная функция «Shapes of»
   принимает masculine: строка, plurals: строка, her: строка, its: строка
   возвращает «Forms»
   пример «четыре ячейки стоят в одном порядке»
@@ -291,7 +291,7 @@
     дано singulars равно "кит"
     дано plurals равно ""
     ожидается запись «Forms» с «one» равным "кит" и «many» равным "" и «she» равным "" и «it» равным ""
-  «Forms of» от singulars и plurals и "" и ""
+  «Shapes of» от singulars и plurals и "" и ""
 
 тотальная функция «Entry of»
   принимает which: строка, shapes: «Forms», who: строка
@@ -895,7 +895,7 @@
   пусть its равно («Neuter choices of» от form)
   пусть them равно («Plural choices of» от form)
   пусть pick равно («Only choice» от them)
-  пусть shapes равно («Forms of» от form и pick и («Only choice» от her) и («Only choice» от its))
+  пусть shapes равно («Shapes of» от form и pick и («Only choice» от her) и («Only choice» от its))
   пусть made равно («Entry of» от "свойство" и shapes и "он")
   пусть fug равно («Has fugitive vowel» от form)
   «Candidate of» от made и («Gathered gaps» от («Short masculine gaps» от fug и them и her и its))
@@ -906,7 +906,7 @@
   пусть base равно («Without last» от form и 1)
   пусть her равно (соединить [base, "а"] по "")
   пусть its равно (соединить [base, "о"] по "")
-  пусть shapes равно («Forms of» от "" и («Plural by hardness» от base) и her и its)
+  пусть shapes равно («Shapes of» от "" и («Plural by hardness» от base) и her и its)
   пусть made равно («Entry of» от "свойство" и shapes и "он")
   пусть offer равно («Masculine choices of» от base)
   «Candidate of» от made и [(«Gap of» от "singular" и "masculine-of-short-form" и offer)]
@@ -999,7 +999,7 @@
 тотальная функция «Candidates of»
   принимает form: строка, opens: признак
   возвращает список «Candidate»
-  «Gathered» от («Candidate parts» от form и opens)
+  «Gathered candidates» от («Candidate parts» от form и opens)
 
 тотальная функция «Kind clauses»
   возвращает список «Told»
@@ -1048,16 +1048,16 @@
 
 тотальная функция «Settled»
   принимает every: список «Candidate», lead: «Candidate», rest: список «Candidate»
-  возвращает «Reading»
+  возвращает «Form reading»
   разбор rest
     случай пусто
-      то вариант «Read» с candidate равным lead
+      то вариант «One way» с candidate равным lead
     случай голова и хвост
       то вариант «Two ways» с candidates равным every и telling равным («Telling for» от every)
 
 тотальная функция «Reading of»
   принимает form: строка, opens: признак
-  возвращает «Reading»
+  возвращает «Form reading»
   пусть every равно («Candidates of» от form и opens)
   разбор every
     случай пусто
@@ -1105,10 +1105,10 @@
   соединить (отобразить every как each → («Printed candidate» от each)) по " + "
 
 тотальная функция «Printed reading»
-  принимает said: «Reading»
+  принимает said: «Form reading»
   возвращает строка
   разбор said
-    случай вариант «Read» с candidate как each
+    случай вариант «One way» с candidate как each
       то соединить ["одно чтение: ", («Printed candidate» от each)] по ""
     случай вариант «Two ways» с candidates как every и telling как words
       то соединить ["чтений ", (к строке (длина every)), ": ", («Printed many» от every), " — ", words] по ""

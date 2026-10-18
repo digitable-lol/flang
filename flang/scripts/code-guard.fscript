@@ -237,6 +237,7 @@
         "сторожа слов в коммите 4e110672e. Задачи 0049 и 6858 разбирают расхождение двойника с .mjs именно по этому ",
         "коду, и без имени разбор не читается"]),
       (запись «Отсрочка» с «код» равным "FLANG_IO_UNSUPPORTED" и «род» равным "отвергнут" и «где» равным [
+        "docs/adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md",
         "docs/flang/concurrency/SPEC.md",
         "docs/site/diagnostics.md",
         "docs/site/diagnostics.ru.md"] и «почему» равным [
@@ -247,6 +248,7 @@
         "напечатанном C его не было ни разу. Его появление значило бы, что у одного отказа стало два имени, — это ",
         "отказ, а не долг"]),
       (запись «Отсрочка» с «код» равным "FLANG_SELF_EVAL_UNSUPPORTED" и «род» равным "обещан" и «где» равным [
+        "docs/adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md",
         "docs/flang/self/SPEC.md",
         "docs/site/diagnostics.md",
         "docs/site/diagnostics.ru.md"] и «почему» равным [
@@ -290,6 +292,7 @@
       "сторожа слов в коммите 4e110672e. Задачи 0049 и 6858 разбирают расхождение двойника с .mjs именно по этому ",
       "коду, и без имени разбор не читается"]),
     (запись «Отсрочка» с «код» равным "FLANG_IO_UNSUPPORTED" и «род» равным "отвергнут" и «где» равным [
+      "docs/adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md",
       "docs/flang/concurrency/SPEC.md",
       "docs/site/diagnostics.md",
       "docs/site/diagnostics.ru.md"] и «почему» равным [
@@ -300,6 +303,7 @@
       "напечатанном C его не было ни разу. Его появление значило бы, что у одного отказа стало два имени, — это ",
       "отказ, а не долг"]),
     (запись «Отсрочка» с «код» равным "FLANG_SELF_EVAL_UNSUPPORTED" и «род» равным "обещан" и «где» равным [
+      "docs/adr/0151-a-page-is-prose-plus-inserts-taken-from-the-code.md",
       "docs/flang/self/SPEC.md",
       "docs/site/diagnostics.md",
       "docs/site/diagnostics.ru.md"] и «почему» равным [

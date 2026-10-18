@@ -16,7 +16,7 @@
 
 тип «Formula»
   вариант «Var» содержит name: строка
-  вариант «Number» содержит text: строка
+  вариант «Numeral» содержит text: строка
   вариант «Text» содержит text: строка
   вариант «Truth» содержит value: признак
   вариант «Binary» содержит op: строка, left: «Formula», right: «Formula»
@@ -956,13 +956,13 @@
   принимает tree: «Formula»
   возвращает число
   пример «Two»
-    дано tree равно вариант «Number» с text равным "2"
+    дано tree равно вариант «Numeral» с text равным "2"
     ожидается 2
   пример «A name is no exponent»
     дано tree равно вариант «Var» с name равным "n"
     ожидается 0
   разбор tree
-    случай вариант «Number» с text как text
+    случай вариант «Numeral» с text как text
       то если ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"] содержит text
         то к числу text
         иначе 0
@@ -1000,7 +1000,7 @@
   принимает rest: список «Token»
   возвращает «Parsed»
   если («Peek» от rest) равен "number"
-    то «Got of» от (вариант «Number» с text равным (соединить ["-", («Peek text» от rest)] по "")) и («Rest» от rest)
+    то «Got of» от (вариант «Numeral» с text равным (соединить ["-", («Peek text» от rest)] по "")) и («Rest» от rest)
     иначе «Refusal» от "FLANG_FORMULA_MINUS" и («No minus»)
 
 тотальная функция «No minus»
@@ -1035,14 +1035,14 @@
   возвращает «Parsed»
   пусть rest равно («Rest» от tokens)
   разбор («Peek» от tokens)
-    случай "number" то «Got of» от (вариант «Number» с text равным («Peek text» от tokens)) и rest
+    случай "number" то «Got of» от (вариант «Numeral» с text равным («Peek text» от tokens)) и rest
     случай "string" то «Got of» от (вариант «Text» с text равным («Peek text» от tokens)) и rest
     случай "true" то «Got of» от (вариант «Truth» с value равным да) и rest
     случай "false" то «Got of» от (вариант «Truth» с value равным нет) и rest
     случай "name" то «Named» от tokens
     случай "quoted" то «Named» от tokens
     случай "lparen" то «Grouped» от («Level» от "body" и rest)
-    случай "lbrack" то «Arguments» от "rbrack" и rest
+    случай "lbrack" то «Argument list» от "rbrack" и rest
     случай "frac" то «Fraction» от («Primary» от rest)
     случай любое то «Primary refused» от tokens
 
@@ -1079,7 +1079,7 @@
   возвращает «Parsed»
   пусть rest равно («Rest» от tokens)
   если («Peek» от rest) равен "lparen"
-    то «Called» от («Peek text» от tokens) и («Peek» от tokens) и («Arguments» от "rparen" и («Rest» от rest))
+    то «Called» от («Peek text» от tokens) и («Peek» от tokens) и («Argument list» от "rparen" и («Rest» от rest))
     иначе вариант «Got» с tree равным (вариант «Var» с name равным («Peek text» от tokens)) и rest равным rest
 
 функция «Called»
@@ -1107,7 +1107,7 @@
     то вариант «Length» с arg равным (голова items)
     иначе вариант «Call» с name равным name и args равным items
 
-функция «Arguments»
+функция «Argument list»
   принимает closer: строка, tokens: список «Token»
   возвращает «Parsed»
   если («Peek» от tokens) равен closer
@@ -1382,7 +1382,7 @@
     случай вариант «Binary» с op как op и left как l и right как r то «Op precedence» от op
     случай вариант «Negation» с body как b то 4
     случай вариант «Exists» с name как n и witness как w и body как b то 0
-    случай вариант «Number» с text как text то (если text начинается с "-" то 8 иначе 9)
+    случай вариант «Numeral» с text как text то (если text начинается с "-" то 8 иначе 9)
     случай любое то 9
 
 тотальная функция «Op precedence»
@@ -1502,7 +1502,7 @@
   возвращает строка
   разбор tree
     случай вариант «Var» с name как name то «Shown name» от name и style
-    случай вариант «Number» с text как text то «Shown number» от text и style
+    случай вариант «Numeral» с text как text то «Shown number» от text и style
     случай вариант «Text» с text как text то «Shown text» от text и style
     случай вариант «Truth» с value как value то «Shown truth» от value и style
     случай вариант «Binary» с op как op и left как l и right как r
@@ -1638,7 +1638,7 @@
   возвращает признак
   разбор tree
     случай вариант «Var» с name как n то да
-    случай вариант «Number» с text как t то да
+    случай вариант «Numeral» с text как t то да
     случай вариант «Text» с text как t то да
     случай вариант «Truth» с value как v то да
     случай вариант «Items» с items как i то да
@@ -1656,7 +1656,7 @@
   возвращает строка
   разбор tree
     случай вариант «Var» с name как n то соединить ["«", n, "»"] по ""
-    случай вариант «Number» с text как t то t
+    случай вариант «Numeral» с text как t то t
     случай вариант «Text» с text как t то соединить ["\"", t, "\""] по ""
     случай вариант «Truth» с value как v то (если v то "да" иначе "нет")
     случай вариант «Binary» с op как op и left как l и right как r

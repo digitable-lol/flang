@@ -98,11 +98,11 @@ flowchart TD
   D --> E([0 violations:<br>the grid size is stated])
   D --> F([a violation found:<br>exit 1, both values shown])
   C -->|the shape of those<br>same declarations| G([not checked:<br>exit 2, said in a separate line])
-  C -->|monoid, monad,<br>functor, isomorphism| H([not judged at all:<br>exit 2, named one by one])
+  C -->|monoid, functor,<br>isomorphism| H([laws are kernel statements:<br>about all values])
   class E vyvod
   class F glavnoe
   class G otkaz
-  class H otkaz
+  class H vyvod
 ```
 
 ### The compiler COMPUTES the laws of a category — over a grid
@@ -185,18 +185,27 @@ $ echo $?
 2
 ```
 
-### Monoid, monad, functor and isomorphism are not judged at all
+### The laws of a monoid, functor and isomorphism are kernel statements
 
-Their rules are neither computed over a grid nor checked by comparing
-declarations. The compiler names them one by one and answers with exit code 2:
+The laws that follow from a monoid, functor, isomorphism or natural
+transformation declaration are written out as statements and handed to the
+kernel: it judges them for ALL values of the carrier, not for the points of a
+grid. `check --proof` prints them in a section of their own and counts them as a
+share of their own:
 
 ```
-$ flang check flang/ct/monoid-and-monad.flang
-проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе —
-monoids, monads.
-$ echo $?
-2
+$ flang check --proof flang/ct/yoneda-preorder.flang
+законы как утверждения (ядро судит о ВСЕХ значениях носителя, а не о написанных):
+  закон «Вложить этапы — квадрат на согласовать» — доказано сведением цели с телом функции: …
+  …
+  законов утверждениями 9: доказано ядром 9, не доказано 0
 ```
+
+In `--json` the same share is the `lawClaims` field: `{"total":9,"proved":9}`. A
+law the kernel did not prove is named with «ядром НЕ доказан», and then only the
+grid speaks for it. The laws of a monad are not written out as statements yet —
+the grid computes them. All 25 files of `flang/ct` (21 at the top and 4 in
+`modules/`) pass `flang check` with exit code 0.
 
 The examples still run, as in any program:
 
@@ -207,9 +216,6 @@ $ echo $?
 0
 ```
 
-Exit code 2 means "not checked all the way through". Reading it as "all good" is
-wrong.
-
 ## What it comes to for you
 
 | What you declared | What the compiler does with it |
@@ -218,11 +224,13 @@ wrong.
 | a transformation | computes the commuting square over a grid; a violation is a refusal |
 | a category without an equality | the laws are not computed, and it says so in words |
 | closure, identities, endpoints of composites | not checked; said in a separate line, exit code 2 |
-| monoid, monad, functor, isomorphism | not judged at all; named one by one, exit code 2 |
+| monoid, functor, isomorphism, transformation | the laws are kernel statements about all values; unproved ones are named one by one |
+| monad | the laws are computed over a grid |
 | a law attached to an arrow | run as an example under `flang test` |
 
-In one line: **everything can be declared; what is computed today are the laws of
-a category and of a transformation, and they are computed over a finite grid.**
+In one line: **everything can be declared; the laws of a category and of a monad
+are computed over a finite grid, and the laws of a monoid, functor, isomorphism
+and transformation are judged by the kernel for all values.**
 
 ## The `в монаде` form
 

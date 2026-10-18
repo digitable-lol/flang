@@ -1,9 +1,3 @@
-# Message catalog of the flang compiler (ADR-0102).
-# key: the FLANG_* code of a diagnostic, the name of a summary line (check.*, proof.*, place.*, ledger),
-#      or {stem} for the vocabulary of a placeholder (the part of its name before a dot).
-# ru: the Russian template, matched against what the compiler says; en: the English template.
-# A placeholder is {name}: lowercase Latin letters, digits, '-' and '.'; both templates of a row name the same set.
-# Checked by: bootstrap/flang run-script messages:check
 key	ru	en
 place.input-column	{code}, строка {line}, столбец {column}: {message}	{code}, line {line}, column {column}: {message}
 place.input	{code}, строка {line}: {message}	{code}, line {line}: {message}

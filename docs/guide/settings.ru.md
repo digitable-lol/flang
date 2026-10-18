@@ -112,7 +112,11 @@ bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
 `flang check`
 ([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
 код `FLANG_*` остаётся прежним, текст берётся из каталога
-`flang/messages/catalog.tsv`. Английский шаблон есть у 13 кодов из 144
+`flang/messages/catalog.tsv`. Каталог — таблица: строка заголовка `key<TAB>ru<TAB>en`, дальше по
+строке на шаблон. Ключ — код `FLANG_*` у отказа, имя строки итога (`check.*`, `proof.*`,
+`place.*`, `ledger`) или `{основа}` у слов подстановки. Подстановка — `{имя}` из строчных
+латинских букв, цифр, `-` и `.`, и оба шаблона строки называют одни и те же подстановки.
+Английский шаблон есть у 13 кодов из 144
 (счёт печатает `bootstrap/flang run-script messages:check`), остальные
 отвечают по-русски — задача
 [2510](../tasks/2510-most-compiler-messages-have-no-english-template.md).

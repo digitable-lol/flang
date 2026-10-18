@@ -7,6 +7,7 @@
 | надзор, ящик, запас витков, горячая замена | [`docs/flang/concurrency/RESILIENCE.md`](RESILIENCE.md) |
 | узлы, связь, размещение | [`docs/flang/concurrency/DISTRIBUTED.md`](DISTRIBUTED.md) |
 | сам язык процессов: `процесс`, `надзор`, поручения | [`docs/flang/concurrency/SPEC.md`](SPEC.md) |
+| свойства во времени: перебор конечной модели | [`docs/flang/concurrency/temporal.md`](temporal.md) |
 
 ## Что в каталоге
 
@@ -15,6 +16,7 @@
   и код отказа обязан назвать причину (`FLANG_TYPE`, `FLANG_PROCESS`);
 - `services/` — службы поверх модели;
 - `bin/` — хозяин узла на языках целей печати;
+- `temporal/` — перебор конечной модели процессов, записи перебора и их сверка;
 - `bench/` — стенды замера; разбор каждого файла и числа — в задаче 5821 и `docs/tree-inventory.md`.
 
 ## Чем проверяется

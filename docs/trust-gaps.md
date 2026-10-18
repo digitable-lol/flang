@@ -65,6 +65,11 @@ Fairness of the reference scheduler becomes a theorem.
 | 5 | `когда-нибудь`, `в ответ на`, `до тех пор`; fairness is a theorem |
 | 6 | effects: host response as branching or assumption, `разрешает` |
 
+Stage 4 starts first, outside the compiler: [ADR-0163](adr/0163-always-properties-of-a-finite-process-model-are-explored-to-a-bound-and-never-called-proved.md)
+explores `всегда` over a finite process model written as data, writes each verdict as a
+record, replays every counterexample step by step and never calls a bounded exploration
+proved (`flang/concurrency/temporal/`).
+
 Still trusted: fairness of the C concurrency runtime and the outside world answering an
 order, both named as assumptions in the record.
 

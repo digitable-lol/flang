@@ -982,6 +982,8 @@ ec1f624e7568f4537f7518b1b4c0d0fd|1|1|0|0|0|flang/concurrency/examples/budget.fla
 521a207c82805b8502b2b40e692448ae|6|×|×|×|0|flang/concurrency/services/host-io-survey.flang
 c21138380e993a1c284bbdc534e1488e|3|3|0|0|0|flang/concurrency/services/two-on-our-own-engine.flang
 d12bbb4087f2b3c81797a7dc34666e85|55|46|1|8|0|flang/concurrency/supervisor.flang
+9cd3b451bdcb2af400f1f8b56e4348d9|5|5|0|0|0|flang/concurrency/temporal/explore.flang
+9ace0126434547f9494e57dbed9ce8d6|1|1|0|0|0|flang/concurrency/temporal/probes.fscript
 c9ada194623f84cf972701a608568544|40|21|8|11|1|flang/concurrency/wire.flang
 97c9dc395bdfb30f152711d16fd006c6|1|1|0|0|0|flang/core/evaluate.flang
 281a35fe56b5cd518ee758e0b45d0afc|25|14|3|8|0|flang/core/json.flang

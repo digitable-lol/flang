@@ -2086,3 +2086,7 @@ esperanto
 guillemet
 api
 inserts
+instrumental
+error
+range
+story

@@ -554,9 +554,14 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_CATEGORY_EQUALITY_OUTSIDE` | `compiler.flang` | — |
 | `FLANG_CATEGORY_EQUALITY_SHAPE` | `compiler.flang` | — |
 | `FLANG_CATEGORY_EQUALITY_TWICE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_FORM` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_GOAL` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_NAME` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_NOT_ASSOC` | `setoid.flang` | — |
 | `FLANG_CATEGORY_NOT_CLOSED` | `compiler.flang` | — |
 | `FLANG_CATEGORY_NO_IDENTITY` | `compiler.flang` | — |
+| `FLANG_CATEGORY_STEP` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_TYPE` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
 | `FLANG_CC` | `flang_repl.c` | — |
 | `FLANG_CHECKER` | `flang_repl.c` | — |
@@ -663,6 +668,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
+| `FLANG_PROOF` | `compiler.flang`, `link.flang` | — |
 | `FLANG_PROOF_AMBIGUOUS` | `obligations.flang` | — |
 | `FLANG_PROOF_CACHE` | `flang_repl.c` | — |
 | `FLANG_PROOF_CACHE_AUDIT` | `flang_repl.c` | — |
@@ -682,12 +688,13 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_PROOF_UNFINISHED` | `obligations.flang` | — |
 | `FLANG_PROOF_UNKNOWN_VAR` | `obligations.flang`, `parser.flang`, `types.flang` | — |
 | `FLANG_PROOF_VAR_TYPE` | `obligations.flang` | — |
-| `FLANG_PROPERTY` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
+| `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
+| `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
 | `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
@@ -711,6 +718,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
+| `FLANG_UNKNOWN_PROPERTY` | `compiler.flang` | — |
 | `FLANG_UNPROVED` | `compiler.flang` | — |
 | `FLANG_UNPROVEN` | `flang_repl.c` | — |
 | `FLANG_VITKI` | `flang_repl.c` | — |

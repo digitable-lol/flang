@@ -28,13 +28,13 @@ docs/tasks/     открытая и закрытая работа дерева, 
 
 <!-- КАРТА-КОНЕЦ -->
 
-Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 65 файлов на flang —
-<!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
+Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 66 файлов на flang —
+<!-- СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **64 модуля, 2139 функция и 4143
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **64 модуля, 2140 функций и 4144
 примеров**, которые прогоняются при каждой проверке:
 <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang = 4143 -->
+<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17) -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.

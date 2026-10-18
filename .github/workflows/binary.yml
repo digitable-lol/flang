@@ -34,8 +34,8 @@ name: Binary
 #   дым (`--version`, `--help`, `check` одного файла)              3 с
 #   обходчик проверок на flang, 211 проверок                       3 с
 #   СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-#   примеры stdlib и ядра, 4327 штук                        44 мин 07 с
-#   СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4327
+#   примеры stdlib и ядра, 4328 штук                        44 мин 07 с
+#   СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4328 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4327, снято 2026-10-17)
 #   ─────────────────────────────────────────────────────────────────
 #   обходчик примеров корпуса, всё дерево                    ДЕСЯТКИ МИНУТ
 #
@@ -58,10 +58,10 @@ name: Binary
 # это ровно та беда, из-за которой `ci.yml` увели с пуша на тег, и повторять её
 # незачем. Язык перед слиянием не остаётся неприкрытым: работа `sborka` выше
 # гоняет на каждый пуш 211 проверок и 184 примера ядра. Примеры `stdlib` (3663
-# из 4327 ниже) с пуша сняты на тег (задача 6890): их прогон брал 44 минуты, и
+# из 4328 ниже) с пуша сняты на тег (задача 6890): их прогон брал 44 минуты, и
 # пуш из-за них не влезал в пять минут — та самая утечка, ради которой заведено.
 # СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-# СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4327
+# СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4328 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4327, снято 2026-10-17)
 # (число 98 стояло здесь ещё дважды после того, как строкой 21 его уже сняли
 #  и назвали протухшим: одна правка прошла по одному месту из трёх.)
 # Здесь же — глубокая сверка всего дерева, и её место там, где решают выпуск.
@@ -372,9 +372,9 @@ jobs:
       # Примеры двух каталогов, которые СХОДЯТСЯ ЦЕЛИКОМ и потому годятся в
       # дешёвый гейт по голому коду возврата, без ведомости:
       #
-      #   flang/stdlib   64 файлов, 4143 примеров, прошли все  44 мин
+      #   flang/stdlib   64 файлов, 4144 примеров, прошли все  44 мин
       #   СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64
-      #   СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang = 4143
+      #   СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17)
       #   flang/core      4 файла,  184 примера,  прошли все     15 с
       #   СНЯТО 2026-09-05 файлов flang/core/*.flang = 4
       #   СНЯТО 2026-09-05 примеров-в flang/core/*.flang = 184
@@ -710,10 +710,10 @@ jobs:
   #
   # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
   # на двух
-  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 65
-  # файл и 5805 примера, объявленных внутри функций.
-  # СНЯТО 2026-10-08 файлов flang/self/*.flang = 65
-  # СНЯТО 2026-10-17 примеров-в flang/self/*.flang = 5805 (партия печати 8: задачи 3010, 7182, 8570, 2663, 2761, 1113, 1116, 4735, 5908, 6752 и 2277 вместе — установка библиотеки, проба Makefile, связывание, блоки «прогон», ходы по телу, законы категорий; до них 5722, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
+  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 66
+  # файлов и 5933 примера, объявленных внутри функций.
+  # СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-08)
+  # СНЯТО 2026-10-18 примеров-в flang/self/*.flang = 5933 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 5805, снято 2026-10-17) (партия печати 8: задачи 3010, 7182, 8570, 2663, 2761, 1113, 1116, 4735, 5908, 6752 и 2277 вместе — установка библиотеки, проба Makefile, связывание, блоки «прогон», ходы по телу, законы категорий; до них 5722, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
   # в типизаторе и вычислителе; до них 5297, снято 2026-10-03)
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже

@@ -29,13 +29,13 @@ docs/tasks/     the open and closed work of the tree, one file per task
 
 <!-- КАРТА-КОНЕЦ -->
 
-Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 65 files of flang —
-<!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
+Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 66 files of flang —
+<!-- СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **64 modules, 2139 functions and 4143
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **64 modules, 2140 functions and 4144
 examples** that run on every check:
 <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang = 4143 -->
+<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17) -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.

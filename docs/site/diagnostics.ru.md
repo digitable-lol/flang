@@ -529,6 +529,7 @@ $ echo $?
 | `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
 | `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
 | `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BIN` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |

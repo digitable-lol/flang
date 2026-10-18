@@ -275,7 +275,7 @@ its own module: a name in its body binds the way its own module would bind it, a
 linking pulls such functions in by itself. The same holds for `экспортирует`: a
 function behind the export list is out of reach for another file but within reach
 for its own module. So a `только` list is written from the body of the importing
-file, and helpers of imported functions do not belong in it (ADR-0148).
+file, and helpers of imported functions do not belong in it (ADR-0149).
 
 **Namesakes in one program are refused.** If a name in a function body leads, by the
 rules of that function's file, into one module while the assembled program holds a

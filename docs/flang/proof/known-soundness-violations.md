@@ -114,7 +114,7 @@ run` на нуле нарушает постусловие. Ядро отказ�
 утверждение недоказанным, напечатанный код сохранял проверку постусловия. Связывание в
 исходниках разрешает имя по правилам файла зовущей функции и отказывает такой программе
 `FLANG_DUPLICATE_NAME` с обоими файлами
-([ADR-0148](../../adr/0148-a-call-binds-where-its-module-binds-it-and-a-namesake-is-refused.md));
+([ADR-0149](../../adr/0149-a-call-binds-where-its-module-binds-it-and-a-namesake-is-refused.md));
 до печати семени двоичный несёт дыру. Проба —
 `flang/proof/probes/same-name-functions/programs/rebind.flang`.
 

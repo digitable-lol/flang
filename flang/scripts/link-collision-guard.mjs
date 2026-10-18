@@ -252,8 +252,14 @@ export function шапка(текст) {
   const импорты = []
   let экспорт = null
   const строки = текст.split("\n")
+  let вБлокеТекста = false
   for (let и = 0; и < строки.length; и += 1) {
     const строка = строки[и]
+    const кавычек = строка.split('"""').length - 1
+    if (вБлокеТекста || кавычек % 2 === 1) {
+      if (кавычек % 2 === 1) вБлокеТекста = !вБлокеТекста
+      continue
+    }
     if (/^[ \t]*\/\//u.test(строка)) continue
     const имп = ИМПОРТ.exec(строка)
     if (имп) {

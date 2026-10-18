@@ -255,6 +255,7 @@ script.parallel:check = bootstrap/flang io flang/concurrency/bench/parallel-map.
 script.temporal:check = bootstrap/flang io flang/concurrency/temporal/probes.fscript --plan Check --timeout 600000
 script.temporal:write = bootstrap/flang io flang/concurrency/temporal/probes.fscript --plan Write --timeout 600000
 script.temporal:forgery = bootstrap/flang io flang/concurrency/temporal/probes.fscript --plan Forgery --timeout 600000
+script.temporal-replay:check = bootstrap/flang io flang/concurrency/temporal/probes.fscript --plan Checkers --timeout 600000
 script.behavior = bootstrap/flang io scripts/behavior.fscript --plan Behavior --max-steps 4000000000 --
 script.behavior:review = bootstrap/flang io scripts/behavior.fscript --plan Review --max-steps 4000000000 --
 script.behavior:probes = bootstrap/flang io scripts/behavior.fscript --plan Probes

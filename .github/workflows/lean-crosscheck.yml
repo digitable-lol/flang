@@ -109,3 +109,8 @@ jobs:
         run: |
           bootstrap/flang run-script checker:second-forgery
           bootstrap/flang run-script checker:second
+
+      - name: Replay exploration records under both checkers
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: bootstrap/flang run-script temporal-replay:check

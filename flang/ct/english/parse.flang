@@ -1,0 +1,270 @@
+модуль «English parser»
+  использует «Lists» только «Соединить списки»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Pregroup» из "../pregroup.flang"
+  использует «English morphology» из "morphology.flang"
+  использует «English lexicon» из "lexicon.flang"
+
+примечание "Разбор английского предложения прегруппой. Слова делятся по пробелам и знакам препинания,
+морфология даёт каждому слову чтения, словарь типов — типы, и поиск по словам ищет свёртку к s
+(к q, если предложение кончается вопросительным знаком). Если свёртки нет, причина находится
+ослаблением: забыть число и лицо, забыть падеж, забыть форму глагола, дать считаемому
+существительному в единственном числе именную группу без артикля. Ослабление, после которого
+предложение сводится, и есть названная причина."
+
+объект «Parsed word»
+  «token»: строка
+  «analyses»: список «Analysis»
+
+тип «English verdict»
+  вариант «Well formed» содержит choice: список «Тип», links: список «Связь»
+  вариант «Unknown word» содержит word: строка
+  вариант «No finite verb»
+  вариант «Ill formed» содержит reason: строка
+  вариант «Search cut» содержит kept: число
+
+тотальная функция «Spaced punctuation»
+  принимает letter: строка
+  возвращает строка
+  пример «запятая уходит»
+    дано letter равно ","
+    ожидается " "
+  пример «апостроф остаётся»
+    дано letter равно "'"
+    ожидается "'"
+  если ([".", ",", ";", ":", "!", "?", "(", ")", "\"", "“", "”", "—", "–"]) содержит letter
+    то " "
+    иначе letter
+
+тотальная функция «Tokens»
+  принимает text: строка
+  возвращает список строки
+  пример «знаки препинания и лишние пробелы не мешают»
+    дано text равно "Socrates is a man,  therefore mortal."
+    ожидается ["Socrates", "is", "a", "man", "therefore", "mortal"]
+  (отфильтровать (разделить (соединить (отобразить (разложить text на символы)
+    как letter → «Spaced punctuation» от letter)
+    по "") по " ") где piece → (длина piece) больше 0)
+
+тотальная функция «Asks»
+  принимает text: строка
+  возвращает признак
+  пример «вопрос»
+    дано text равно "Does the dog sleep? "
+    ожидается да
+  пример «утверждение»
+    дано text равно "The dog sleeps."
+    ожидается нет
+  ((длина (отфильтровать (разложить text на символы) где letter → letter равен "?")) больше 0)
+
+тотальная функция «Goal of»
+  принимает text: строка
+  возвращает «Простой тип»
+  если «Asks» от text то «Plain» от "q" иначе «Plain» от "s"
+
+тотальная функция «Parsed words»
+  принимает dictionary: «English dictionary», tokens: список строки
+  возвращает список «Parsed word»
+  (свёртка tokens начиная с пустой список как collected
+    и token → добавить (запись «Parsed word» с «token» равным token
+    и «analyses» равным («Analyses» от dictionary и token и ((длина collected) равен 0))) к collected)
+
+тотальная функция «Typed»
+  принимает words: список «Parsed word»
+  возвращает список «Слово с типами»
+  (свёртка words начиная с пустой список как collected и word → добавить (запись «Слово с типами»
+    с номер равным ((длина collected) плюс 1) и типы равным («Types of word» от word.«analyses»)) к collected)
+
+тотальная функция «Erased»
+  принимает simple_type: «Простой тип», feature: строка
+  возвращает «Простой тип»
+  пример «согласование забыто»
+    дано simple_type равно (запись «Простой тип» с вид равным "n" и падеж равным "nom" и род равным "*"
+      и число равным "sg" и лицо равным "3" и сопряжение равным 1)
+    дано feature равно "agreement"
+    ожидается (запись «Простой тип» с вид равным "n" и падеж равным "nom" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным 1)
+  (запись «Простой тип» с вид равным simple_type.вид
+    и падеж равным (если (feature равен "case") или (feature равен "all") то "*" иначе simple_type.падеж)
+    и род равным (если (feature равен "form") или (feature равен "all") то "*" иначе simple_type.род)
+    и число равным (если (feature равен "agreement") или (feature равен "all") то "*" иначе simple_type.число)
+    и лицо равным (если (feature равен "agreement") или (feature равен "all") то "*" иначе simple_type.лицо)
+    и сопряжение равным simple_type.сопряжение)
+
+тотальная функция «Erased words»
+  принимает words: список «Слово с типами», feature: строка
+  возвращает список «Слово с типами»
+  (отобразить words как word → запись «Слово с типами» с номер равным word.номер и типы равным (отобразить word.типы
+    как word_type → отобразить word_type как simple_type → «Erased» от simple_type и feature))
+
+тотальная функция «Pick»
+  принимает words: список «Parsed word», number: число
+  возвращает «Parsed word»
+  если (number не меньше 1) и притом (number не больше (длина words))
+    то элемент number в words
+    иначе запись «Parsed word» с «token» равным "" и «analyses» равным пустой список
+
+тотальная функция «With extra types»
+  принимает typed: список «Слово с типами», words: список «Parsed word», extra: функция из «Analysis» в список «Тип»
+  возвращает список «Слово с типами»
+  (отобразить typed как word → запись «Слово с типами» с номер равным word.номер и типы равным («Соединить списки»
+    от word.типы и (свёртка («Pick» от words и word.номер).«analyses» начиная с пустой список как collected
+    и analysis →
+    «Соединить списки» от collected и (extra от analysis))))
+
+тотальная функция «Bare noun types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  если «Needs a determiner» от analysis то «Noun phrase alternatives» от "sg" иначе пустой список
+
+тотальная функция «Beam»
+  возвращает число
+  пример «сколько состояний разбора держится после каждого слова»
+    ожидается 24
+  24
+
+тотальная функция «Reduces»
+  принимает words: список «Слово с типами», goal: «Простой тип»
+  возвращает признак
+  разбор («Искать по словам» от words и goal и («Beam»)).исход
+    случай вариант «Сводится» с выбор как выбор и связи как связи
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Weakened»
+  принимает typed: список «Слово с типами», words: список «Parsed word», weakening: строка
+  возвращает список «Слово с типами»
+  пусть loosened равно «With extra types» от typed и words и функция «Loosened verb types»
+  пусть bare равно «With extra types» от typed и words и функция «Bare noun types»
+  («Chosen» от [(«When» от (weakening равен "agreement") и («Erased words» от typed и "agreement")),
+    («When» от (weakening равен "case") и («Erased words» от typed и "case")),
+    («When» от (weakening равен "form") и («Erased words» от loosened и "form")),
+    («When» от (weakening равен "determiner") и bare)]
+    и («Erased words» от («With extra types» от loosened и words и функция «Bare noun types») и "all"))
+
+тотальная функция «Weakenings»
+  возвращает список строки
+  пример «ослабления по порядку: от частного к общему»
+    ожидается ["agreement", "case", "form", "determiner", "several"]
+  ["agreement", "case", "form", "determiner", "several"]
+
+тотальная функция «Reason of»
+  принимает typed: список «Слово с типами», words: список «Parsed word», goal: «Простой тип»
+  возвращает строка
+  пусть found равно (свёртка («Weakenings») начиная с "" как found и weakening → (если found равен ""
+    то (если «Reduces» от («Weakened» от typed и words и weakening) и goal то weakening иначе "")
+    иначе found))
+  если found равен "" то "order" иначе found
+
+тотальная функция «First unknown»
+  принимает words: список «Parsed word»
+  возвращает строка
+  (свёртка words начиная с "" как found и word → (если (found равен "") и притом ((длина word.«analyses») равен 0)
+    то word.«token» иначе found))
+
+тотальная функция «Has a finite verb»
+  принимает words: список «Parsed word»
+  возвращает признак
+  ((длина (отфильтровать words где word → (длина (отфильтровать word.«analyses»
+    где analysis → «Is finite» от analysis))
+    больше 0)) больше 0)
+
+тотальная функция «Verdict of words»
+  принимает words: список «Parsed word», goal: «Простой тип»
+  возвращает «English verdict»
+  пусть typed равно «Typed» от words
+  пусть found равно «Искать по словам» от typed и goal и («Beam»)
+  разбор found.исход
+    случай вариант «Сводится» с выбор как выбор и связи как связи
+      то вариант «Well formed» с choice равным выбор и links равным связи
+    случай любое
+      то (если found.срезано
+        то вариант «Search cut» с kept равным («Beam»)
+        иначе вариант «Ill formed» с reason равным («Reason of» от typed и words и goal))
+
+тотальная функция «Judge words»
+  принимает words: список «Parsed word», goal: «Простой тип»
+  возвращает «English verdict»
+  пусть unknown равно «First unknown» от words
+  если (длина unknown) больше 0
+    то вариант «Unknown word» с word равным unknown
+    иначе (если «Has a finite verb» от words
+      то «Verdict of words» от words и goal
+      иначе вариант «No finite verb»)
+
+тотальная функция «Judge sentence»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает «English verdict»
+  «Judge words» от («Parsed words» от dictionary и («Tokens» от text)) и («Goal of» от text)
+
+тотальная функция «Reason text»
+  принимает reason: строка
+  возвращает строка
+  пример «согласование»
+    дано reason равно "agreement"
+    ожидается "words do not agree in number or person"
+  («Chosen» от [(«When» от (reason равен "agreement") и "words do not agree in number or person"),
+    («When» от (reason равен "case") и "wrong case of a pronoun"),
+    («When» от (reason равен "form") и "wrong verb form after an auxiliary or a modal"),
+    («When» от (reason равен "determiner") и "a singular countable noun needs a determiner"),
+    («When» от (reason равен "several") и "more than one fault: agreement, case, verb form or determiner")]
+    и "the types of the words do not reduce to a sentence")
+
+тотальная функция «Verdict text»
+  принимает verdict: «English verdict», tokens: список строки
+  возвращает строка
+  разбор verdict
+    случай вариант «Well formed» с choice как choice и links как links
+      то соединить ["grammatical: ", «Записать выбор» от tokens и choice, "; links: ",
+        «Записать связи» от tokens и links] по ""
+    случай вариант «Unknown word» с word как word
+      то соединить ["not grammatical: unknown word «", word, "»"] по ""
+    случай вариант «No finite verb»
+      то "not grammatical: no finite verb"
+    случай вариант «Ill formed» с reason как reason
+      то соединить ["not grammatical: ", «Reason text» от reason] по ""
+    случай вариант «Search cut» с kept как kept
+      то соединить ["not judged: the search kept the ", к строке kept,
+        " most promising readings after a word and found no parse among them"] по ""
+
+тотальная функция «Guessed»
+  принимает words: список «Parsed word»
+  возвращает список строки
+  (отобразить (отфильтровать words где word → (длина (отфильтровать word.«analyses» где analysis →
+    analysis.«source» равен "guess")) больше 0) как word → соединить [«Lowercase» от word.«token», " as ",
+    соединить (отобразить word.«analyses» как analysis → analysis.«class») по "/"] по "")
+
+тотальная функция «Parse with»
+  принимает dictionary: «English dictionary», sentence: строка
+  возвращает строка
+  пусть tokens равно «Tokens» от sentence
+  пусть words равно «Parsed words» от dictionary и tokens
+  пусть guessed равно «Guessed» от words
+  пусть told равно «Verdict text» от («Judge words» от words
+    и («Goal of» от sentence)) и (отобразить tokens как token →
+    «Lowercase» от token)
+  если (длина guessed) больше 0
+    то соединить [told, "; guessed by form: ", соединить guessed по ", "] по ""
+    иначе told
+
+тотальная функция «Parse»
+  принимает sentence: строка
+  возвращает строка
+  пример «подлежащее и непереходный глагол»
+    дано sentence равно "The dog sleeps."
+    ожидается "grammatical: the: n[nom sg 3] · c[sg]ˡ; dog: c[sg]; sleeps: n[nom sg 3]ʳ · s; links: the—dog, the—sleeps"
+  пример «нет согласования»
+    дано sentence равно "The dogs sleeps."
+    ожидается "not grammatical: words do not agree in number or person"
+  «Parse with» от («Dictionary») и sentence
+
+тотальная функция «Types»
+  принимает word: строка
+  возвращает строка
+  пример «типы служебного слова»
+    дано word равно "than"
+    ожидается "k · nˡ"
+  соединить (отобразить («Types of word» от («Analyses» от («Dictionary») и word
+    и нет)) как word_type → «Записать тип»
+    от word_type) по "; "

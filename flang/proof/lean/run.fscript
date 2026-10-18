@@ -603,7 +603,8 @@
     дано answers равно пустой список
     ожидается запись «Section» с «lines» равным ["Lean: ", "", "Model.lean НЕ СОБРАЛСЯ:"] и «bad» равным да и «fatal» равным да
   пусть built равно (свёртка («Modules») начиная с (запись «Section» с «lines» равным [(соединить ["Lean: ", («First line» от («Output of» от "version" и answers))] по ""), ""] и «bad» равным нет и «fatal» равным нет) как part и pair → «Build step» от part и pair и answers)
-  пусть names равно "Model, Rules, Term, Record, Acceptance, Consistency, Half, RecordReader, VerdictCheck"
+  пусть names равно (соединить ["Model, Rules, Term, Record, Acceptance, Consistency, Half, RecordReader",
+    "VerdictCheck", "CategoryPaths"] по ", ")
   пусть lines равно (добавить (соединить ["сборка — ", names, ": без сообщений"] по "") к (built.«lines»))
   пусть quiet равно (запись «Section» с «lines» равным lines и «bad» равным (built.«bad») и «fatal» равным нет)
   если built.«fatal» то built иначе quiet

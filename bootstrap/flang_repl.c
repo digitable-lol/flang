@@ -158,91 +158,8 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#ifdef __wasi__
-typedef unsigned int tcflag_t;
-struct termios {
-  tcflag_t c_iflag;
-  tcflag_t c_oflag;
-  tcflag_t c_cflag;
-  tcflag_t c_lflag;
-  unsigned char c_cc[32];
-};
-#define TCSANOW 0
-#define VMIN 6
-#define VTIME 5
-#define VSUSP 10
-#define ECHO 0x8u
-#define ICANON 0x2u
-#define ISIG 0x1u
-#define IEXTEN 0x8000u
-#define IXON 0x400u
-#define ICRNL 0x100u
-#define SA_RESTART 0x10000000
-#define WIFEXITED(status) ((status) >= 0)
-#define WEXITSTATUS(status) ((status) & 0xff)
-#define WIFSIGNALED(status) 0
-#define WTERMSIG(status) 0
-#define REPL_PEAK_BYTES(usage) (-1L)
-struct sigaction {
-  void (*sa_handler)(int);
-  int sa_mask;
-  int sa_flags;
-};
-static int tcgetattr(int fd, struct termios *mode) { (void)fd; (void)mode; errno = ENOTTY; return -1; }
-static int tcsetattr(int fd, int when, const struct termios *mode) { (void)fd; (void)when; (void)mode; errno = ENOTTY; return -1; }
-static int sigemptyset(int *mask) { *mask = 0; return 0; }
-static int sigaction(int number, const struct sigaction *action, struct sigaction *old) { (void)number; (void)action; (void)old; errno = ENOSYS; return -1; }
-static unsigned alarm(unsigned seconds) { (void)seconds; return 0; }
-static int kill(pid_t child, int number) { (void)child; (void)number; errno = ENOSYS; return -1; }
-static pid_t fork(void) { errno = ENOSYS; return -1; }
-static pid_t waitpid(pid_t child, int *status, int options) { (void)child; (void)status; (void)options; errno = ECHILD; return -1; }
-static int execv(const char *path, char *const words[]) { (void)path; (void)words; errno = ENOSYS; return -1; }
-static int execvp(const char *path, char *const words[]) { (void)path; (void)words; errno = ENOSYS; return -1; }
-static int execl(const char *path, const char *word, ...) { (void)path; (void)word; errno = ENOSYS; return -1; }
-static int dup2(int from, int to) { (void)from; (void)to; errno = ENOSYS; return -1; }
-static int pipe(int ends[2]) { (void)ends; errno = ENOSYS; return -1; }
-static int repl_wasi_system(const char *command) { (void)command; errno = ENOSYS; return -1; }
-#define system repl_wasi_system
-static void repl_wasi_fill(char *pattern, unsigned long serial) {
-  size_t length = strlen(pattern);
-  size_t at = length;
-  while (at > 0 && length - at < 6u && pattern[at - 1] == 'X') {
-    at -= 1;
-    pattern[at] = (char)('a' + serial % 26u);
-    serial /= 26u;
-  }
-}
-static int mkstemp(char *pattern) {
-  static unsigned long serial = 0;
-  char *kept = strdup(pattern);
-  int fd = -1;
-  unsigned tries = 0;
-  for (tries = 0; kept != NULL && fd < 0 && tries < 1000u; tries += 1) {
-    strcpy(pattern, kept);
-    repl_wasi_fill(pattern, serial++);
-    fd = open(pattern, O_RDWR | O_CREAT | O_EXCL, 0600);
-  }
-  free(kept);
-  return fd;
-}
-static char *mkdtemp(char *pattern) {
-  static unsigned long serial = 0;
-  char *kept = strdup(pattern);
-  int made = -1;
-  unsigned tries = 0;
-  for (tries = 0; kept != NULL && made != 0 && tries < 1000u; tries += 1) {
-    strcpy(pattern, kept);
-    repl_wasi_fill(pattern, serial++);
-    made = mkdir(pattern, 0700);
-  }
-  free(kept);
-  return made == 0 ? pattern : NULL;
-}
-#else
 #include <sys/wait.h>
 #include <termios.h>
-#define REPL_PEAK_BYTES(usage) ((usage).ru_maxrss * 1024L)
-#endif
 #include <time.h>
 #include <unistd.h>
 
@@ -10124,15 +10041,6 @@ static char *proof_checker_path(void) {
   return found;
 }
 
-#ifdef __wasi__
-static void proof_say_independent(const char *path, const char *record, size_t bytes, long proved) {
-  (void)record;
-  (void)bytes;
-  fprintf(stderr,
-          "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО этим модулем — в WebAssembly нет процессов, и сверщика отсюда не запустить: все %ld доказанных стоят на слове ядра, пока запись (--записать) не сверит сверщик, собранный отдельным модулем\n",
-          path, proved);
-}
-#else
 static void proof_say_independent(const char *path, const char *record, size_t bytes, long proved) {
   char *checker = proof_checker_path();
   const char *place = getenv("FLANG_TMP");
@@ -10226,7 +10134,6 @@ static void proof_say_independent(const char *path, const char *record, size_t b
   buf_free(&answer);
   free(checker);
 }
-#endif
 
 static int proof_file(const char *path, bool json, const char *record, bool strict) {
   repl_strings paths;
@@ -13058,7 +12965,7 @@ static void run_cost_say(fl_value result, double started) {
     steps = field.as.number;
   }
   if (getrusage(RUSAGE_SELF, &usage) == 0) {
-    peak = REPL_PEAK_BYTES(usage);
+    peak = usage.ru_maxrss * 1024L;
   }
   fprintf(stderr, "цена прогона: шагов %.0f, пик памяти %ld байт, секунд %.6f\n", steps, peak,
           run_clock() - started);
@@ -16545,48 +16452,14 @@ static int facts_file(int argc, char **argv) {
 
 #include <arpa/inet.h>
 #include <fcntl.h>
-#ifndef __wasi__
 #include <netdb.h>
-#endif
 #include <netinet/in.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#ifndef __wasi__
 #include <sys/wait.h>
-#endif
 #include <time.h>
-#ifdef __wasi__
-struct addrinfo {
-  int ai_flags;
-  int ai_family;
-  int ai_socktype;
-  int ai_protocol;
-  socklen_t ai_addrlen;
-  struct sockaddr *ai_addr;
-  char *ai_canonname;
-  struct addrinfo *ai_next;
-};
-#define SO_REUSEADDR 2
-#define RLIMIT_AS 9
-typedef unsigned long long rlim_t;
-struct rlimit {
-  rlim_t rlim_cur;
-  rlim_t rlim_max;
-};
-static int setrlimit(int kind, const struct rlimit *bound) { (void)kind; (void)bound; errno = ENOSYS; return -1; }
-static int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **found) { (void)node; (void)service; (void)hints; *found = NULL; return 1; }
-static void freeaddrinfo(struct addrinfo *found) { (void)found; }
-static const char *gai_strerror(int failed) { (void)failed; return "в WebAssembly сети нет"; }
-static int socket(int family, int kind, int protocol) { (void)family; (void)kind; (void)protocol; errno = ENOSYS; return -1; }
-static int connect(int fd, const struct sockaddr *address, socklen_t length) { (void)fd; (void)address; (void)length; errno = ENOSYS; return -1; }
-static int bind(int fd, const struct sockaddr *address, socklen_t length) { (void)fd; (void)address; (void)length; errno = ENOSYS; return -1; }
-static int listen(int fd, int backlog) { (void)fd; (void)backlog; errno = ENOSYS; return -1; }
-static int setsockopt(int fd, int level, int name, const void *value, socklen_t length) { (void)fd; (void)level; (void)name; (void)value; (void)length; errno = ENOSYS; return -1; }
-static ssize_t sendto(int fd, const void *data, size_t length, int flags, const struct sockaddr *to, socklen_t to_length) { (void)fd; (void)data; (void)length; (void)flags; (void)to; (void)to_length; errno = ENOSYS; return -1; }
-static ssize_t recvfrom(int fd, void *data, size_t length, int flags, struct sockaddr *from, socklen_t *from_length) { (void)fd; (void)data; (void)length; (void)flags; (void)from; (void)from_length; errno = ENOSYS; return -1; }
-#endif
 
 /* ═══════════ прогон примеров ПО КОРПУСУ: `flang test <каталог|маска>` ═══════ */
 

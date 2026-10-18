@@ -1,0 +1,613 @@
+модуль «Translation validation»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «Reading» из "../../scripts/reading.fscript"
+  использует «Tables» из "../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+объект «Row»
+  «unit»: строка
+  «function»: строка
+  «class»: строка
+  «reference»: строка
+  «answer»: строка
+
+объект «Summary»
+  «unit»: строка
+  «function»: строка
+  «class»: строка
+  «compared»: число
+  «agreed»: число
+  «skipped»: число
+  «reason»: строка
+  «differ»: список строки
+
+объект «Count»
+  «reason»: строка
+  «count»: число
+
+объект «Forgery»
+  «name»: строка
+  «unit»: строка
+  «file»: строка
+  «original»: строка
+  «forged»: строка
+  «function»: строка
+
+тотальная функция «Forgery of»
+  принимает name: строка, unit: строка, file: строка, original: строка, forged: строка, target: строка
+  возвращает «Forgery»
+  пример «A forgery names the unit, the printed file, the edit and the function it must break»
+    дано name равно "sign"
+    дано unit равно "precondition"
+    дано file равно "preduslovie.c"
+    дано original равно "+"
+    дано forged равно "-"
+    дано target равно "Удвоить"
+    ожидается (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition" и «file» равным "preduslovie.c"
+        и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
+  (запись «Forgery» с «name» равным name и «unit» равным unit и «file» равным file и «original» равным original
+      и «forged» равным forged и «function» равным target)
+
+тотальная функция «Forgeries»
+  возвращает список «Forgery»
+  обеспечивает «six forgeries» (длина результат) равен 6
+  ([(«Forgery of» от "operation sign" и "precondition" и "preduslovie.c" и "n.as.number + n.as.number"
+      и "n.as.number - n.as.number" и "Удвоить"),
+    («Forgery of» от "branch literal" и "traffic-light" и "svetofor.c" и "fl_number(500.0)" и "fl_number(501.0)"
+      и "Штраф"),
+    («Forgery of» от "precondition bound" и "precondition" и "preduslovie.c"
+      и "args[0].as.number >= 0.0), \"вход" и "args[0].as.number > 0.0), \"вход" и "Удвоить"),
+    («Forgery of» от "recursion step" и "precondition" и "preduslovie.c" и "fl_t1.as.number + 1.0"
+      и "fl_t1.as.number + 2.0" и "Высота от дна"),
+    («Forgery of» от "text constant" и "corpus-alphabet" и "alfavit_leksera.c" и "{\"abcdefg" и "{\"abcdefq"
+      и "Строчные"),
+    («Forgery of» от "swapped operands" и "precondition" и "preduslovie.c" и "shirina.as.number - dlina.as.number"
+      и "dlina.as.number - shirina.as.number" и "Сколько дополнить")])
+
+тотальная функция «Specification»
+  принимает forgery: «Forgery»
+  возвращает строка
+  пример «Six fields joined by a bar»
+    дано forgery равно (запись «Forgery» с «name» равным "a" и «unit» равным "b" и «file» равным "c.c"
+        и «original» равным "x" и «forged» равным "y" и «function» равным "Ф")
+    ожидается "a|b|c.c|x|y|Ф"
+  соединить [(forgery.«name»), (forgery.«unit»), (forgery.«file»), (forgery.«original»), (forgery.«forged»),
+      (forgery.«function»)] по "|"
+
+тотальная функция «Corpus»
+  возвращает список строки
+  пример «The proof examples and the Pythagoras examples»
+    ожидается ["../proof/examples", "../../docs/examples/pythagoras"]
+  ["../proof/examples", "../../docs/examples/pythagoras"]
+
+тотальная функция «Modules»
+  возвращает список строки
+  пример «The reference and the validator are four Lean modules»
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
+  ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
+
+тотальная функция «Validator»
+  возвращает строка
+  пример «The Lean file the validator runs»
+    ожидается "../proof/lean/Semantics/Validate.lean"
+  "../proof/lean/Semantics/Validate.lean"
+
+тотальная функция «Whole corpus program»
+  возвращает строка
+  обеспечивает «the program has fifteen lines» (длина (разделить результат по "\n")) равен 15
+  соединить ["W=$0; B=$1; L=$2; R=$3; shift 3",
+      "say() { printf '%s\\t%s\\t%s\\t\\t\\n' \"$1\" \"$2\" \"$3\"; }",
+      "for g in \"$@\"; do for f in \"$g\"/*.flang; do",
+      "b=${f##*/}; b=${b%.flang}; d=$W/c/$b; mkdir -p \"$d\"",
+      "\"$B\" ast \"$f\" > \"$d/ast.json\" 2>/dev/null || { say \"$b\" \"\" \"не прочитано\"; continue; }",
+      "\"$B\" emit \"$f\" --target c --out \"$d\" > /dev/null 2>&1 ||",
+      "{ say \"$b\" \"\" \"не напечатано\"; continue; }",
+      "(cd \"$d\" && cc -std=c99 -O2 -o run *.c -lm -lpthread > cc.log 2>&1) ||",
+      "{ say \"$b\" \"\" \"не собрано\"; continue; }",
+      "LEAN_PATH=$W \"$L\" --run \"$R\" plan \"$d/ast.json\" > \"$d/plan.tsv\"",
+      "cut -f3 \"$d/plan.tsv\" | grep '^{' | \"$d/run\" --json > \"$d/c.jsonl\"",
+      "LEAN_PATH=$W \"$L\" --run \"$R\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
+      "awk -F'\\t' -v OFS='\\t' -v b=\"$b\" -v c=\"$d/c.txt\" '$2==\"вне\"{print b, $1, $2, $3, \"\"; next}",
+      "{x=\"\"; getline x < c; print b, $1, $2, $4, x}' \"$d/plan.tsv\"",
+      "done; done"] по "\n"
+
+тотальная функция «Forgery program»
+  возвращает строка
+  обеспечивает «the program has seventeen lines» (длина (разделить результат по "\n")) равен 17
+  соединить ["W=$0; L=$1; R=$2; shift 2",
+      "say() { printf '%s\\t%s\\t%s\\t\\t\\n' \"$1\" \"$2\" \"$3\"; }",
+      "mkdir -p \"$W/f\"",
+      "forge() { d=$W/f/$(printf '%s' \"$1\" | tr ' ' '-'); o=$W/c/$2/$3",
+      "k=$(grep -cF -- \"$4\" \"$o\" 2>/dev/null)",
+      "[ \"$k\" = 1 ] && cp -r \"$W/c/$2\" \"$d\" || { say \"$1\" \"$6\" \"не построена\"; return; }",
+      "awk -v a=\"$4\" -v z=\"$5\" '{i=index($0, a); if (i) $0=substr($0, 1, i-1) z substr($0, i+length(a))",
+      "print}' \"$o\" > \"$d/$3\"",
+      "cmp -s \"$o\" \"$d/$3\" && { say \"$1\" \"$6\" \"не построена\"; return; }",
+      "(cd \"$d\" && cc -std=c99 -O2 -o run *.c -lm -lpthread > cc.log 2>&1) ||",
+      "{ say \"$1\" \"$6\" \"не собрано\"; return; }",
+      "cut -f3 \"$d/plan.tsv\" | grep '^{' | \"$d/run\" --json > \"$d/c.jsonl\"",
+      "LEAN_PATH=$W \"$L\" --run \"$R\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
+      "awk -F'\\t' -v OFS='\\t' -v n=\"$1\" -v g=\"$6\" -v c=\"$d/c.txt\" '$2==\"вне\"{next}",
+      "{x=\"\"; getline x < c} $1==g{print n, $1, $2, $4, x}' \"$d/plan.tsv\"; }",
+      "for s in \"$@\"; do ( IFS='|'; set -f; set -- $s; set +f; IFS=' '; forge \"$@\" ); done",
+      "exit 0"] по "\n"
+
+тотальная функция «Lean»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Lean is looked for on the path»
+    дано answers равно пустой список
+    ожидается "lean"
+  «Setting of» от "lean" и "lean" и answers
+
+тотальная функция «Binary»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The built binary of the tree»
+    дано answers равно пустой список
+    ожидается "../../bootstrap/flang"
+  «Setting of» от "binary" и "../../bootstrap/flang" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  пример «Three settings are read first»
+    ожидается ([(запись «Question» с «name» равным "lean"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEAN")),
+      (запись «Question» с «name» равным "temporary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
+      (запись «Question» с «name» равным "binary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))])
+  [(«Environment» от "lean" и "LEAN"), («Environment» от "temporary" и "FLANG_TMP"),
+      («Environment» от "binary" и "FLANG_BIN")]
+
+тотальная функция «Presence»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «A work directory is made under the temporary directory»
+    дано answers равно пустой список
+    ожидается ([(запись «Question» с «name» равным "work"
+        и «order» равным (вариант «Завести временный каталог» с образец равным "/srv/tmp/translation-validation."))])
+  [(«Temporary directory» от "work" и (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers),
+      "/translation-validation."] по ""))]
+
+тотальная функция «Building»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is built»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе отобразить («Modules») как name → «Run» от (соединить ["build ", name] по "") и "sh" и ["-c",
+        (соединить ["mkdir -p \"$0/Semantics\" && cd ../proof/lean && ",
+          "LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$2.lean\" 2>&1"] по ""),
+        («Work» от answers), («Lean» от answers), name]
+
+тотальная функция «Validating»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is validated»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "corpus" и "sh" и («Соединить списки» от ["-c", («Whole corpus program»), («Work» от answers),
+        («Binary» от answers), («Lean» от answers), («Validator»)] и («Corpus»)))]
+
+тотальная функция «Forging»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is forged»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers)
+    то пустой список
+    иначе [(«Run» от "forgeries" и "sh" и («Соединить списки» от ["-c", («Forgery program»), («Work» от answers),
+        («Lean» от answers), («Validator»)] и (отобразить («Forgeries») как forgery → «Specification» от forgery)))]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Presence» от answers
+    случай 3
+      то «Building» от answers
+    случай 2
+      то «Validating» от answers
+    случай 1
+      то «Forging» от answers
+    случай 0
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Row of»
+  принимает line: строка
+  возвращает «Row»
+  пример «A compared row»
+    дано line равно "traffic-light\tШтраф\tперебор\tзначение {\"n\":\"500\"}\tзначение {\"n\":\"500\"}"
+    ожидается (запись «Row» с «unit» равным "traffic-light" и «function» равным "Штраф" и «class» равным "перебор"
+        и «reference» равным "значение {\"n\":\"500\"}" и «answer» равным "значение {\"n\":\"500\"}")
+  пусть cells равно (разделить line по "\t")
+  (запись «Row» с «unit» равным («Cell» от 1 и cells) и «function» равным («Cell» от 2 и cells)
+      и «class» равным («Cell» от 3 и cells) и «reference» равным («Cell» от 4 и cells)
+      и «answer» равным («Cell» от 5 и cells))
+
+тотальная функция «Witness class»
+  принимает class: строка
+  возвращает признак
+  пример «A sampled function is checked on witnesses»
+    дано class равно "свидетели"
+    ожидается да
+  пример «An outside function is not»
+    дано class равно "вне"
+    ожидается нет
+  ["перебор", "свидетели", "без параметров"] содержит class
+
+тотальная функция «Skipped»
+  принимает row: «Row»
+  возвращает признак
+  пример «Both sides ran out of their limits»
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «reference» равным "топливо" и «answer» равным "предел FLANG_RECURSION_LIMIT")
+    ожидается да
+  пример «Both sides answered»
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «reference» равным "значение 1" и «answer» равным "значение 1")
+    ожидается нет
+  ((row.«reference») начинается с "топливо") или (((row.«reference») начинается с "вне")
+      или ((row.«answer») начинается с "предел"))
+
+тотальная функция «Fresh summary»
+  принимает row: «Row»
+  возвращает «Summary»
+  пример «An outside function keeps its reason»
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «reference» равным "значение-функция" и «answer» равным "")
+    ожидается (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным "значение-функция"
+        и «differ» равным пустой список)
+  пусть reason равно (если «Witness class» от (row.«class») то "" иначе (row.«reference»))
+  (запись «Summary» с «unit» равным (row.«unit») и «function» равным (row.«function») и «class» равным (row.«class»)
+      и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным reason
+      и «differ» равным пустой список)
+
+тотальная функция «Counted»
+  принимает summary: «Summary», row: «Row»
+  возвращает «Summary»
+  пример «An agreeing witness is counted»
+    дано summary равно (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «reference» равным "значение 1" и «answer» равным "значение 1")
+    ожидается (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 1 и «agreed» равным 1 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)
+  пример «A differing witness is named»
+    дано summary равно (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «reference» равным "значение 1" и «answer» равным "значение 2")
+    ожидается (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 1 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным ["эталон: значение 1; C: значение 2"])
+  пусть skipped равно ((не («Witness class» от (row.«class»))) или («Skipped» от row))
+  пусть agrees равно ((row.«reference») равен (row.«answer»))
+  пусть compared равно (если skipped то 0 иначе 1)
+  пусть agreed равно (если (не skipped) и притом agrees то 1 иначе 0)
+  пусть limited равно (если skipped и притом («Witness class» от (row.«class»)) то 1 иначе 0)
+  пусть differ равно (если (не skipped) и притом (не agrees) то (добавить (соединить ["эталон: ", (row.«reference»),
+      "; C: ", (row.«answer»)] по "") к (summary.«differ»)) иначе (summary.«differ»))
+  (запись «Summary» с «unit» равным (summary.«unit») и «function» равным (summary.«function»)
+      и «class» равным (summary.«class») и «compared» равным ((summary.«compared») плюс compared)
+      и «agreed» равным ((summary.«agreed») плюс agreed)
+      и «skipped» равным ((summary.«skipped») плюс limited)
+      и «reason» равным (summary.«reason») и «differ» равным differ)
+
+тотальная функция «Joined»
+  принимает summaries: список «Summary», row: «Row»
+  возвращает список «Summary»
+  пример «A row of the same function joins its summary»
+    дано summaries равно [(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)]
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «reference» равным "значение 1" и «answer» равным "значение 1")
+    ожидается ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 1 и «agreed» равным 1 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)])
+  пример «A row of another function opens a summary»
+    дано summaries равно пустой список
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «reference» равным "значение-функция" и «answer» равным "")
+    ожидается ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным "значение-функция"
+        и «differ» равным пустой список)])
+  разбор summaries
+    случай голова и хвост
+      то если ((голова.«unit») равен (row.«unit»)) и притом ((голова.«function») равен (row.«function»))
+        то «Соединить списки» от [(«Counted» от голова и row)] и хвост
+        иначе «Соединить списки» от [(«Counted» от («Fresh summary» от row) и row)] и summaries
+    случай пусто
+      то [(«Counted» от («Fresh summary» от row) и row)]
+
+тотальная функция «Summaries»
+  принимает text: строка
+  возвращает список «Summary»
+  пример «Two rows of one function make one summary»
+    дано text равно "a\tФ\tсвидетели\tзначение 1\tзначение 1\na\tФ\tсвидетели\tзначение 2\tзначение 2\n"
+    ожидается ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
+        и «compared» равным 2 и «agreed» равным 2 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)])
+  (свёртка («Lines» от text) начиная с (пустой список) как summaries и line → «Joined» от summaries
+      и («Row of» от line))
+
+тотальная функция «Kind»
+  принимает summary: «Summary»
+  возвращает строка
+  пример «A function whose every point agreed is proved by exhaustion»
+    дано summary равно ((запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "перебор"
+        и «compared» равным 1 и «agreed» равным 1 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список))
+    ожидается "перебор"
+  пример «A unit the printer refused»
+    дано summary равно (запись «Summary» с «unit» равным "a" и «function» равным "" и «class» равным "не напечатано"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным ""
+        и «differ» равным пустой список)
+    ожидается "файл"
+  «Chosen» от [(«When» от (пусто (summary.«function»)) и "файл"),
+      («When» от (не (пусто (summary.«differ»))) и "расхождение"),
+      («When» от (не («Witness class» от (summary.«class»))) и "вне"),
+      («When» от ((summary.«compared») равен 0) и "не сличено"),
+      («When» от ((summary.«class») равен "свидетели") и "свидетели"),
+      («When» от ((summary.«skipped») больше 0) и "свидетели")] и "перебор"
+
+тотальная функция «Of kind»
+  принимает kind: строка, summaries: список «Summary»
+  возвращает список «Summary»
+  пример «Nothing of a kind in an empty list»
+    дано kind равно "вне"
+    дано summaries равно пустой список
+    ожидается пустой список
+  отфильтровать summaries где summary → («Kind» от summary) равен kind
+
+тотальная функция «Bumped»
+  принимает counts: список «Count», reason: строка
+  возвращает список «Count»
+  пример «A new reason is appended»
+    дано counts равно пустой список
+    дано reason равно "значение-функция"
+    ожидается [(запись «Count» с «reason» равным "значение-функция" и «count» равным 1)]
+  пример «A known reason grows»
+    дано counts равно [(запись «Count» с «reason» равным "значение-функция" и «count» равным 1)]
+    дано reason равно "значение-функция"
+    ожидается [(запись «Count» с «reason» равным "значение-функция" и «count» равным 2)]
+  если пусто (отфильтровать counts где c → (c.«reason») равен reason)
+    то добавить (запись «Count» с «reason» равным reason и «count» равным 1) к counts
+    иначе отобразить counts как c → если (c.«reason») равен reason
+      то запись «Count» с «reason» равным reason и «count» равным ((c.«count») плюс 1)
+      иначе c
+
+тотальная функция «Reasons»
+  принимает summaries: список «Summary»
+  возвращает строка
+  пример «Two outside functions with one reason»
+    дано summaries равно ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным "значение-функция"
+        и «differ» равным пустой список),
+        (запись «Summary» с «unit» равным "a" и «function» равным "Г" и «class» равным "вне" и «compared» равным 0
+            и «agreed» равным 0 и «skipped» равным 0 и «reason» равным "значение-функция"
+            и «differ» равным пустой список)])
+    ожидается "значение-функция — 2"
+  пусть counts равно (свёртка summaries начиная с (пустой список) как acc и s → «Bumped» от acc и (s.«reason»))
+  соединить (отобразить counts как c → соединить [(c.«reason»), " — ", (к строке (c.«count»))] по "") по "; "
+
+тотальная функция «Name of»
+  принимает summary: «Summary»
+  возвращает строка
+  пример «A function is named with its unit»
+    дано summary равно (запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "вне"
+        и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным "значение-функция"
+        и «differ» равным пустой список)
+    ожидается "a «Ф»"
+  соединить [(summary.«unit»), " «", (summary.«function»), "»"] по ""
+
+тотальная функция «Total compared»
+  принимает summaries: список «Summary»
+  возвращает число
+  пример «Nothing compared in an empty list»
+    дано summaries равно пустой список
+    ожидается 0
+  свёртка summaries начиная с 0 как acc и s → acc плюс (s.«compared»)
+
+тотальная функция «Corpus lines»
+  принимает summaries: список «Summary»
+  возвращает список строки
+  пример «An empty corpus»
+    дано summaries равно пустой список
+    ожидается (["СООТВЕТСТВИЕ ПРОВЕРЕНО для 0 функций, вне валидации 0",
+        "  перебором всей области 0 (из них без параметров 0), на свидетелях 0; сличено свидетелей 0",
+        "  причины вне валидации: ", "не напечатано или не собрано файлов 0: ", "расхождений 0"])
+  пусть exhaustive равно («Of kind» от "перебор" и summaries)
+  пусть witnesses равно («Of kind» от "свидетели" и summaries)
+  пусть constant равно (отфильтровать exhaustive где s → (s.«class») равен "без параметров")
+  пусть outside равно («Соединить списки» от («Of kind» от "вне" и summaries)
+      и (отобразить («Of kind» от "не сличено" и summaries) как s → запись «Summary» с «unit» равным (s.«unit»)
+      и «function» равным (s.«function») и «class» равным (s.«class») и «compared» равным 0 и «agreed» равным 0
+      и «skipped» равным (s.«skipped») и «reason» равным "эталон или C упёрлись в предел на каждом свидетеле"
+      и «differ» равным пустой список))
+  пусть files равно («Of kind» от "файл" и summaries)
+  пусть differing равно («Of kind» от "расхождение" и summaries)
+  пусть validated равно ((длина exhaustive) плюс (длина witnesses))
+  («Соединить списки» от [(соединить ["СООТВЕТСТВИЕ ПРОВЕРЕНО для ", (к строке validated),
+      " функций, вне валидации ", (к строке (длина outside))] по ""),
+    (соединить ["  перебором всей области ", (к строке (длина exhaustive)), " (из них без параметров ",
+      (к строке (длина constant)), "), на свидетелях ", (к строке (длина witnesses)), "; сличено свидетелей ",
+      (к строке («Total compared» от («Соединить списки» от exhaustive и witnesses)))] по ""),
+    (соединить ["  причины вне валидации: ", («Reasons» от outside)] по ""),
+    (соединить ["не напечатано или не собрано файлов ", (к строке (длина files)), ": ",
+      (соединить (отобразить files как s → соединить [(s.«unit»), " (", (s.«class»), ")"] по "") по ", ")] по ""),
+    (соединить ["расхождений ", (к строке (длина differing))] по "")]
+      и (отобразить differing как s → соединить ["РАСХОЖДЕНИЕ ", («Name of» от s), ": ",
+      (соединить (s.«differ») по " | ")] по ""))
+
+тотальная функция «Forgery line»
+  принимает forgery: «Forgery», summaries: список «Summary»
+  возвращает строка
+  пример «A forgery that left no trace is not rejected»
+    дано forgery равно (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition"
+        и «file» равным "preduslovie.c" и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
+    дано summaries равно пустой список
+    ожидается "подделка «sign» (precondition «Удвоить»): НЕ ОТВЕРГНУТА — нет ни одной строки"
+  пусть mine равно (отфильтровать summaries где s → (s.«unit») равен (forgery.«name»))
+  пусть head равно (соединить ["подделка «", (forgery.«name»), "» (", (forgery.«unit»), " «", (forgery.«function»),
+      "»): "] по "")
+  пусть broken равно (отфильтровать mine где s → не («Witness class» от (s.«class»)))
+  пусть differ равно (свёртка mine начиная с 0 как acc и s → acc плюс (длина (s.«differ»)))
+  пусть compared равно («Total compared» от mine)
+  («Chosen» от [(«When» от (пусто mine) и (соединить [head, "НЕ ОТВЕРГНУТА — нет ни одной строки"] по "")),
+      («When» от (не (пусто broken)) и (соединить [head, "НЕ ОТВЕРГНУТА — ",
+        (соединить (отобразить broken как s → s.«class») по ", ")] по "")),
+      («When» от (differ больше 0) и (соединить [head, "отвергнута — расходится на ", (к строке differ), " из ",
+        (к строке compared), " свидетелей"] по ""))]
+    и (соединить [head, "НЕ ОТВЕРГНУТА — все ", (к строке compared), " свидетелей совпали"] по ""))
+
+тотальная функция «Rejected»
+  принимает line: строка
+  возвращает признак
+  пример «A rejected forgery»
+    дано line равно "подделка «a» (b «Ф»): отвергнута — расходится на 1 из 3 свидетелей"
+    ожидается да
+  line содержит "): отвергнута"
+
+тотальная функция «Build failures»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing built is a failure of every module»
+    дано answers равно пустой список
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
+  отфильтровать («Modules») где name → не («Built» от name и answers)
+
+тотальная функция «Built»
+  принимает name: строка, answers: список «Answer»
+  возвращает признак
+  пример «A module never built is not built»
+    дано name равно "Binary64"
+    дано answers равно пустой список
+    ожидается нет
+  пусть asked равно (соединить ["build ", name] по "")
+  ((«Exit code of» от asked и answers) равен 0) и притом (пусто («Output of» от asked и answers))
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Nothing built fails the check»
+    дано answers равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
+        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json, Semantics/Validate")
+  пусть broken равно («Build failures» от answers)
+  пусть corpus равно («Summaries» от («Output of» от "corpus" и answers))
+  пусть forged равно («Summaries» от («Output of» от "forgeries" и answers))
+  пусть forgeries равно (отобразить («Forgeries») как forgery → «Forgery line» от forgery и forged)
+  пусть lines равно («Соединить списки» от («Corpus lines» от corpus) и forgeries)
+  пусть validated равно ((длина («Of kind» от "перебор" и corpus)) плюс (длина («Of kind» от "свидетели" и corpus)))
+  пусть bad равно (не (пусто («Of kind» от "расхождение" и corpus)))
+  пусть unrejected равно (отфильтровать forgeries где line → не («Rejected» от line))
+  пусть failing равно (bad или ((не (пусто unrejected)) или (validated меньше 1)))
+  пусть failed равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
+    и сообщение равным (соединить ["не собраны: ", (соединить broken по ", ")] по ""))
+  пусть differing равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
+    и сообщение равным (соединить («Соединить списки» от lines и ["", "НЕ СОШЛОСЬ"]) по "\n"))
+  пусть passed равно (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и ["",
+      "сошлось всё"]) по "\n"))
+  «Chosen» от [(«When» от (не (пусто broken)) и failed), («When» от failing и differing)] и passed
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «A work directory that was not made stops the run»
+    дано asked равно "work"
+    дано answers равно пустой список
+    ожидается ["временный каталог не заведён"]
+  пример «An answered question is no obstacle»
+    дано asked равно "lean"
+    дано answers равно пустой список
+    ожидается пустой список
+  («Chosen» от [(«When» от ((asked равен "work") и притом (пусто («Work» от answers)))
+      и ["временный каталог не заведён"])] и (пустой список))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «An empty queue at the last stage gives the verdict»
+    дано queue равно пустой список
+    дано stages равно 0
+    дано answers равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
+        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json, Semantics/Validate")
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Six stages lie ahead»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6
+        и «answers» равным пустой список)
+  «Begin with» от 6
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks which Lean to run»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 6
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "LEAN")
+      и потом равным (запись «Inquiry» с «asked» равным "lean"
+      и «queue» равным [(запись «Question» с «name» равным "temporary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
+        (запись «Question» с «name» равным "binary"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))]
+      и «stages» равным 5 и «answers» равным пустой список))
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_TRANSLATION_VALIDATION_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Translation validation»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

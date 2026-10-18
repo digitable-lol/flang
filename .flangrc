@@ -89,6 +89,7 @@ script.tls:get = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-engine" && bootstrap/flang
 script.tls:rfc8448 = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-rfc8448" && bootstrap/flang emit docs/examples/https/rfc8448-vectors.flang --target c --cli --no-check --no-postconditions --out "$d" && make -C "$d" -j8 && printf '%s\n' '{"fn":"Отчёт сверки RFC 8448","args":[],"steps":"100000000000000","depth":"1000000"}' | "$d/flang_cli"
 script.tls:forgeries = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-forgeries" && bootstrap/flang emit docs/examples/https/tls-forgeries.flang --target c --cli --no-check --no-postconditions --out "$d" && make -C "$d" -j8 && printf '%s\n' '{"fn":"Отчёт подделок","args":[],"steps":"100000000000000","depth":"1000000"}' | "$d/flang_cli"
 script.translation:check = bootstrap/flang io flang/translation/run.fscript --plan Проверка
+script.translation:validate = bootstrap/flang io flang/translation/validation.fscript --timeout 1800000
 script.foreign-c:demo = bootstrap/flang io flang/foreign/c/run.fscript --plan Demo --timeout 1800000 --max-steps 4000000000
 script.foreign-c:census = bootstrap/flang io flang/foreign/c/run.fscript --plan Census --timeout 3600000 --max-steps 40000000000
 script.formula:read = bootstrap/flang io flang/foreign/formula/run.fscript --plan Read --timeout 600000 --max-steps 4000000000 --на-веру --

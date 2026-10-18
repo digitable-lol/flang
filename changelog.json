@@ -2,14 +2,379 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.28",
-  "latest": "0.7.28",
+  "declared": "0.7.29",
+  "latest": "0.7.29",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
-    "flang/messages"
+    "flang/messages",
+    "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.29",
+      "tag": "v0.7.29",
+      "date": "2026-10-18",
+      "human": "18 октября 2026",
+      "commit": "2a71e57",
+      "title": "Готовые сборки и установка одной командой, законы категорий доказываются",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.29 archive and the full notes",
+          "commit": "2a71e57"
+        },
+        {
+          "text": "chore(release): version 0.7.29 and its release notes",
+          "commit": "2b7b6c5"
+        },
+        {
+          "text": "test(probes): run on a refused record field answers code 1, not 3",
+          "commit": "992a621"
+        },
+        {
+          "text": "fix(checker): the second checker keeps the reader of dev for its laws",
+          "commit": "6fa568a"
+        },
+        {
+          "text": "chore(seed): reseed the shell over dev and take the fingerprint",
+          "commit": "117fb38"
+        },
+        {
+          "text": "chore(seed): print batch eight",
+          "commit": "0f531a8"
+        },
+        {
+          "text": "docs(adr): adr-0121 makes a declared law a statement of the kernel",
+          "commit": "e5f2c07"
+        },
+        {
+          "text": "fix(ct): the bifunctor court keys a pair of names on one line",
+          "commit": "f9507c6"
+        },
+        {
+          "text": "feat(ct): a declared law is a statement the kernel judges for all values",
+          "commit": "6382b99"
+        },
+        {
+          "text": "fix(ct): nine programs declare the translations and equalities they lack",
+          "commit": "de94145"
+        },
+        {
+          "text": "fix(cli): check --proof asks the checked program what was not counted",
+          "commit": "99ade27"
+        },
+        {
+          "text": "feat(checker): checkers derive the declared laws past the source end",
+          "commit": "a1203f8"
+        },
+        {
+          "text": "chore(guards): ledgers and prose numbers follow the new probe files",
+          "commit": "d69a3df"
+        },
+        {
+          "text": "feat(record): proved statements carry moves read off the function body",
+          "commit": "0ccdf7a"
+        },
+        {
+          "text": "fix(record): the move-form derivation reaches the reader",
+          "commit": "c0b95cd"
+        },
+        {
+          "text": "fix(checker): the fields move and an unfold of a whole call only",
+          "commit": "b091f87"
+        },
+        {
+          "text": "fix(parser): a nested object line is refused as an old word",
+          "commit": "f56349b"
+        },
+        {
+          "text": "fix(test): the compiler imports the scheduler after its own lists",
+          "commit": "ac45af6"
+        },
+        {
+          "text": "feat(test): run blocks are executed and their expectations checked",
+          "commit": "62d501d"
+        },
+        {
+          "text": "fix(bounded): the step estimate counts the postcondition check",
+          "commit": "429a7a7"
+        },
+        {
+          "text": "refactor(conc): scheduler names no longer clash with the compiler",
+          "commit": "1364adc"
+        },
+        {
+          "text": "fix(link): a name outside an only list is refused in any import order",
+          "commit": "71729dc"
+        },
+        {
+          "text": "fix(run): consent to the unproven no longer runs an unlinked program",
+          "commit": "47f7160"
+        },
+        {
+          "text": "fix(link): an exported function may call a helper its module hides",
+          "commit": "704a05f"
+        },
+        {
+          "text": "fix(emit-c): the printed makefile names the tls client of the shell",
+          "commit": "d37931b"
+        },
+        {
+          "text": "feat(self): make install lays down share/flang",
+          "commit": "8733178"
+        },
+        {
+          "text": "feat(checker): both checkers replay exploration records",
+          "commit": "0d48131"
+        },
+        {
+          "text": "feat(temporal): explore always-properties of a finite process model",
+          "commit": "f376a6e"
+        },
+        {
+          "text": "feat(translation): validate the printed C against the reference",
+          "commit": "e02b026"
+        },
+        {
+          "text": "feat(lean): reference answers on witnesses for translation validation",
+          "commit": "e5db23a"
+        },
+        {
+          "text": "chore(seed): reseed the shell after statements and syllogisms",
+          "commit": "e11d342"
+        },
+        {
+          "text": "test(repl): probes for statements and syllogisms fed on stdin",
+          "commit": "6e483b5"
+        },
+        {
+          "text": "fix(repl): judge statements and syllogisms in the shell",
+          "commit": "fc4978f"
+        },
+        {
+          "text": "chore(proof): ratchets follow the new forgeries and probes",
+          "commit": "ae470e5"
+        },
+        {
+          "text": "docs(adr): 0160 the checker reads what the kernel proves",
+          "commit": "68b859f"
+        },
+        {
+          "text": "fix(checker): a match after a multi-line example still opens the body",
+          "commit": "8cec902"
+        },
+        {
+          "text": "fix(checker): count postconditions in code, not in text blocks",
+          "commit": "7578563"
+        },
+        {
+          "text": "fix(checker): monad blocks call their unit and join, quotes in names",
+          "commit": "a7d40f8"
+        },
+        {
+          "text": "fix(checker): examples by value, joined restrictions, more readers",
+          "commit": "cff9908"
+        },
+        {
+          "text": "fix(checker): a claim's place is its line, names keep their and",
+          "commit": "189bbea"
+        },
+        {
+          "text": "fix(checker): read calls in code, sums over a segment, true counts",
+          "commit": "7cc2eed"
+        },
+        {
+          "text": "feat(checker): read foreign surfaces, compare numbers as the language",
+          "commit": "75c9fa0"
+        },
+        {
+          "text": "fix(checker): a case is read only from the body's own match",
+          "commit": "74decc8"
+        },
+        {
+          "text": "chore(seed): reseed the shell after the verdict change",
+          "commit": "7399e70"
+        },
+        {
+          "text": "fix(guards): falsifier and word guard follow the code contract",
+          "commit": "063d65b"
+        },
+        {
+          "text": "chore(proof): register the forgery programs and refresh the counts",
+          "commit": "a24e075"
+        },
+        {
+          "text": "test(proof): the strict probe names its import helper apart",
+          "commit": "a66c325"
+        },
+        {
+          "text": "fix(cli): the shell speaks plain words in seven more messages",
+          "commit": "c49a29e"
+        },
+        {
+          "text": "fix(proof): grid and checker disagreement give code 3, not 0",
+          "commit": "23f6135"
+        },
+        {
+          "text": "fix(proof): the exit code of check --proof says what was proved",
+          "commit": "c3ef7f0"
+        },
+        {
+          "text": "test(unicode): official conformance tests and a ten target probe",
+          "commit": "ff0e134"
+        },
+        {
+          "text": "feat(stdlib): explicit decoding of bytes with an honest refusal",
+          "commit": "f75a8ca"
+        },
+        {
+          "text": "feat(stdlib): normalization, grapheme clusters and case folding",
+          "commit": "6b7424d"
+        },
+        {
+          "text": "feat(stdlib): unicode 17.0.0 tables generated from the UCD files",
+          "commit": "90e31cb"
+        },
+        {
+          "text": "build(seed): reseed the runtime mirror after rebase",
+          "commit": "a88b960"
+        },
+        {
+          "text": "build(seed): take the runtime mirror of dev before reseeding",
+          "commit": "6882b72"
+        },
+        {
+          "text": "feat(site): a playground checks flang and syllogisms in the tab",
+          "commit": "0b0d423"
+        },
+        {
+          "text": "chore(seed): reseed the shell and the runtime for wasm32-wasi",
+          "commit": "d2fb4da"
+        },
+        {
+          "text": "fix(emit-c): the shell and the runtime build for wasm32-wasi",
+          "commit": "e0130e7"
+        },
+        {
+          "text": "feat(proof): the reference semantics is compared with the binary",
+          "commit": "48b7728"
+        },
+        {
+          "text": "feat(lean): a reference semantics of the language core with theorems",
+          "commit": "1340d78"
+        },
+        {
+          "text": "feat(lean): the model rounds integers in binary64",
+          "commit": "43591bd"
+        },
+        {
+          "text": "chore(seed): refresh the copied runtime with carried memo pins",
+          "commit": "3415002"
+        },
+        {
+          "text": "perf(runtime): memo pins follow moved values, inline field read",
+          "commit": "4a87587"
+        },
+        {
+          "text": "docs(ct): the resolver module and the corpus plan get distinct names",
+          "commit": "d435bae"
+        },
+        {
+          "text": "docs(ct): specify proofs about every category, with a Lean corpus",
+          "commit": "8c138b7"
+        },
+        {
+          "text": "docs(adr): 0145 unfolding takes the arguments and names what Lean misses",
+          "commit": "c667fa8"
+        },
+        {
+          "text": "fix(checker): unfolding refuses a parameter the substitution misses",
+          "commit": "924070c"
+        },
+        {
+          "text": "fix(checker): the compute move reads string literals in escaped form",
+          "commit": "4b33bb0"
+        },
+        {
+          "text": "fix(checker): unfolding puts the call arguments in place of parameters",
+          "commit": "c5b70f9"
+        },
+        {
+          "text": "chore(asdf): the plugin submodule counts only target directories",
+          "commit": "ff9468e"
+        },
+        {
+          "text": "fix(packaging): the parity probe of the library fits the lint limits",
+          "commit": "de827a9"
+        },
+        {
+          "text": "feat(release): ship the standard library with every install",
+          "commit": "c501f7b"
+        },
+        {
+          "text": "feat(proof): measure the prover against lean on forty tasks",
+          "commit": "1b8f9fe"
+        },
+        {
+          "text": "docs(adr): 0127 lifts the checker ceiling by the half moves",
+          "commit": "02e1b60"
+        },
+        {
+          "text": "fix(checker): evaluator no longer computes element and symbol",
+          "commit": "fdc2af8"
+        },
+        {
+          "text": "feat(lean): rules guard counts the half moves",
+          "commit": "20fdcae"
+        },
+        {
+          "text": "feat(lean): every half move of the checker has a soundness theorem",
+          "commit": "6e8deff"
+        },
+        {
+          "text": "fix(checker): half moves keep facts out of pattern scopes",
+          "commit": "cb36663"
+        },
+        {
+          "text": "chore(asdf): the plugin submodule points at the prebuilt-first plugin",
+          "commit": "24e0c06"
+        },
+        {
+          "text": "fix(asdf): the c archive fallback builds with the makefile flags",
+          "commit": "e52119d"
+        },
+        {
+          "text": "fix(packaging): the parity instrument runs on an installed flang",
+          "commit": "700a851"
+        },
+        {
+          "text": "feat(packaging): the parity instrument compares any number of installs",
+          "commit": "68de7ad"
+        },
+        {
+          "text": "feat(asdf): the plugin installs the prebuilt build and falls back to C",
+          "commit": "38ba44e"
+        },
+        {
+          "text": "build(packaging): homebrew and aur manifests for flang-package",
+          "commit": "033a1f3"
+        },
+        {
+          "text": "ci(release): four prebuilt tarballs, deb, rpm and one sha256sums",
+          "commit": "b02a1cc"
+        },
+        {
+          "text": "test(probes): 71 russian sentences are judged by the pregroup parser",
+          "commit": "208d78f"
+        },
+        {
+          "text": "feat(ct): a russian sentence is checked by a pregroup of typed words",
+          "commit": "91192ab"
+        }
+      ],
+      "hidden": 141
+    },
     {
       "version": "0.7.28",
       "tag": "v0.7.28",
@@ -13305,6 +13670,11 @@
     }
   ],
   "unreleased": {
-    "entries": []
+    "entries": [
+      {
+        "text": "chore(release): the tap serves flang-package, the checks follow it",
+        "commit": "7936da8"
+      }
+    ]
   }
 }

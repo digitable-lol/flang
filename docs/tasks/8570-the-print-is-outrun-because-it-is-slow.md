@@ -1,7 +1,7 @@
 ---
 номер: 8570
 заголовок: Отказ рецепта перепечатки называет цену захода устаревшим числом, а поимённой ведомости расхода самой перепечатки нет
-статус: в работе — п. 1, 2 и 4 сделаны: отказ `--bystro` называет «5 ч 43 мин (docs/reprint-ledger.tsv, заход 2026-10-14, строка 27)», подменённая строка ведомости даёт «1 ч 2 мин», `MAX_STEPS=1` — отказ кодом 2 (`reprint-refusal:check`, `reprint-refusal:forgery`, в CI); п. 3 — заход с `FLANG_TICKS_OUT` идёт
+статус: сделана — п. 1, 2 и 4 сделаны раньше (`reprint-refusal:check`, `reprint-refusal:forgery`, `seed:fast` — код 0); п. 3: поимённая ведомость печати партии 8 (FLANG_TICKS_OUT на вызове `emit` рецепта, 18 октября 2026, 7 ч 48 мин) — главная строка «Первое определение по имени» (`flang/self/proof-kernel.flang`), 41,14 % заряда; свод — `docs/reprint-cost.md`, строка захода — `docs/reprint-ledger.tsv`
 приоритет: P1
 исполнитель: reprint-recipe
 ветка: a/reprint-cost-and-makefile-probe

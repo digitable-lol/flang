@@ -1,6 +1,48 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.29": {
+      "ru": {
+        "заголовок": "Готовые сборки и установка одной командой, законы категорий доказываются",
+        "появилось": [
+          "**Готовые сборки для Linux и macOS, установка одной командой.** Компилятор C и sudo не нужны: `curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh` кладёт `flang` в `~/.local/bin` и сверяет архив с `SHA256SUMS` выпуска. Есть и другие пути: `brew install digitable-lol/tap/flang-package`, asdf, пакеты deb и rpm.",
+          "**Установленный flang находит стандартную библиотеку.** `использует «Lists» только «Длина»` работает в программе из любого каталога: библиотека лежит в `share/flang/stdlib` рядом с двоичным. Раньше это работало только внутри клона репозитория.",
+          "**Законы моноида, функтора, изоморфизма и естественного преобразования доказывает ядро** — для всех значений, а не на сетке. `check --proof` печатает их отдельным разделом, например на `flang/ct/yoneda-preorder.flang`: `законов утверждениями 9: доказано ядром 9, не доказано 0`, в `--json` это поле `lawClaims`. Недоказанный закон назван поимённо. Законы монады пока считаются на сетке.",
+          "**`flang test` исполняет блоки `прогон`** и сверяет их ожидания. Каждый блок считается примером: неверное ожидание — код 1 и сообщение `у процесса «Счётчик» состояние {\"всего\":5}, а ожидалось {\"всего\":999}`.",
+          "**`check --proof` печатает ход доказательства у большинства утверждений:** какое поле или какой вызов раскрыт и на какой строке исходника, например `ход 1 поля ⟨«Пополнить» от ( счёт ) и сумма⟩ строка 15 …`. У части утверждений пока только имя правила."
+        ],
+        "изменилось": [
+          "**Экспортированная функция может звать скрытого помощника своего модуля.** Раньше программа, которая подключала такой модуль, не проходила `check`; теперь проходит, а прямой вызов скрытой функции — ошибка `FLANG_UNKNOWN_NAME`: «её объявляет …, но не экспортирует».",
+          "**Вложенный объект — понятная ошибка вместо падения.** Строка `вложен объект` даёт `FLANG_PARSE … старое слово, программу из него не составить: вложенную запись объявите объектом и сошлитесь полем`.",
+          "**Ошибки связывания называют файл,** а не только строку и столбец.",
+          "**`make install` из клона репозитория пока не кладёт стандартную библиотеку** — программа с `использует «Lists»` вне клона библиотеку не найдёт. Ставьте flang через `install.sh`, brew, asdf, deb или rpm: там библиотека есть."
+        ],
+        "сломалось": [
+          "**`run` на программе, которая не проходит проверку, отвечает кодом 1, а не 3.** То же с `--на-веру`: согласие на недоказанное не снимает ошибок разбора, связывания и типов. Если скрипт ждал код 3, проверяйте ненулевой код или исправьте ошибку из сообщения.",
+          "**Имя, которого нет в списке `только`, теперь ошибка `FLANG_UNKNOWN_NAME`** при любом порядке строк `использует`. Раньше оно иногда проходило, если тот же модуль ввозил шире другой файл. Впишите имя в список `только` или уберите вызов."
+        ]
+      },
+      "en": {
+        "заголовок": "Prebuilt binaries and a one-command install, category laws are proved",
+        "появилось": [
+          "**Prebuilt binaries for Linux and macOS, installed with one command.** No C compiler and no sudo: `curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh` puts `flang` into `~/.local/bin` and checks the archive against the release `SHA256SUMS`. Other ways: `brew install digitable-lol/tap/flang-package`, asdf, deb and rpm packages.",
+          "**An installed flang finds the standard library.** `использует «Lists» только «Длина»` (uses Lists, only Length) works in a program in any directory: the library sits in `share/flang/stdlib` next to the binary. Before, this worked only inside a clone of the repository.",
+          "**The kernel proves the laws of a monoid, functor, isomorphism and natural transformation** — for all values, not on a grid. `check --proof` prints them in a section of their own, for example on `flang/ct/yoneda-preorder.flang`: `законов утверждениями 9: доказано ядром 9, не доказано 0` (laws as statements 9: proved by the kernel 9, not proved 0); in `--json` it is the `lawClaims` field. A law that is not proved is named. Monad laws are still computed on a grid.",
+          "**`flang test` runs `прогон` (run) blocks** and checks their expectations. Each block counts as an example: a wrong expectation is exit code 1 and the message `у процесса «Счётчик» состояние {\"всего\":5}, а ожидалось {\"всего\":999}` (process Counter has state 5, expected 999).",
+          "**`check --proof` prints the proof steps for most statements:** which field or which call was unfolded and on which source line, for example `ход 1 поля ⟨«Пополнить» от ( счёт ) и сумма⟩ строка 15 …` (step 1, fields, line 15). Some statements still show only the rule name."
+        ],
+        "изменилось": [
+          "**An exported function may call a hidden helper of its own module.** A program that imported such a module used to fail `check`; now it passes, and calling the hidden function directly is a `FLANG_UNKNOWN_NAME` error that says the module declares it but does not export it.",
+          "**A nested object is a clear error instead of a crash.** The line `вложен объект` (nested object) gives `FLANG_PARSE … старое слово` (an old word): declare the nested record as an object of its own and refer to it by a field.",
+          "**Linking errors name the file,** not only the line and column.",
+          "**`make install` from a clone of the repository does not install the standard library yet,** so a program with `использует «Lists»` outside the clone will not find it. Install flang with `install.sh`, brew, asdf, deb or rpm instead: those carry the library."
+        ],
+        "сломалось": [
+          "**`run` on a program that does not pass checking exits with code 1, not 3.** The same with `--на-веру` (on trust): consent to unproved code does not lift parse, link and type errors. If a script waited for code 3, test for a non-zero code or fix the error the message names.",
+          "**A name missing from an `только` (only) list is now a `FLANG_UNKNOWN_NAME` error,** whatever the order of the `использует` (uses) lines. Before, it sometimes passed when another file imported the same module more widely. Add the name to the `только` list or remove the call."
+        ]
+      }
+    },
     "0.7.28": {
       "ru": {
         "заголовок": "Примеры в законах проверяются, ошибки в категориях находятся при компиляции",

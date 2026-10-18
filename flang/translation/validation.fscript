@@ -51,19 +51,25 @@
 
 тотальная функция «Forgeries»
   возвращает список «Forgery»
-  обеспечивает «six forgeries» (длина результат) равен 6
-  ([(«Forgery of» от "operation sign" и "precondition" и "preduslovie.c" и "n.as.number + n.as.number"
-      и "n.as.number - n.as.number" и "Удвоить"),
-    («Forgery of» от "branch literal" и "traffic-light" и "svetofor.c" и "fl_number(500.0)" и "fl_number(501.0)"
-      и "Штраф"),
-    («Forgery of» от "precondition bound" и "precondition" и "preduslovie.c"
+  обеспечивает «eight forgeries» (длина результат) равен 8
+  ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "preduslovie.c"
+      и "n.as.number + n.as.number" и "n.as.number - n.as.number" и "Удвоить"),
+    («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "svetofor.c" и "fl_number(500.0)"
+      и "fl_number(501.0)" и "Штраф"),
+    («Forgery of» от "precondition bound" и "flang-proof-examples-precondition" и "preduslovie.c"
       и "args[0].as.number >= 0.0), \"вход" и "args[0].as.number > 0.0), \"вход" и "Удвоить"),
-    («Forgery of» от "recursion step" и "precondition" и "preduslovie.c" и "fl_t1.as.number + 1.0"
-      и "fl_t1.as.number + 2.0" и "Высота от дна"),
-    («Forgery of» от "text constant" и "corpus-alphabet" и "alfavit_leksera.c" и "{\"abcdefg" и "{\"abcdefq"
-      и "Строчные"),
-    («Forgery of» от "swapped operands" и "precondition" и "preduslovie.c" и "shirina.as.number - dlina.as.number"
-      и "dlina.as.number - shirina.as.number" и "Сколько дополнить")])
+    («Forgery of» от "recursion step" и "flang-proof-examples-precondition" и "preduslovie.c"
+      и "fl_t1.as.number + 1.0" и "fl_t1.as.number + 2.0" и "Высота от дна"),
+    («Forgery of» от "text constant" и "flang-proof-examples-corpus-alphabet" и "alfavit_leksera.c"
+      и "{\"abcdefg" и "{\"abcdefq" и "Строчные"),
+    («Forgery of» от "swapped operands" и "flang-proof-examples-precondition" и "preduslovie.c"
+      и "shirina.as.number - dlina.as.number" и "dlina.as.number - shirina.as.number" и "Сколько дополнить"),
+    («Forgery of» от "hidden point" и "flang-proof-examples-precondition" и "preduslovie.c"
+      и "fl_flag(fl_t2.as.number >= 0.0)" и "fl_flag(fl_t2.as.number >= 0.0 && fl_t2.as.number != 777.0)"
+      и "Сколько дополнить"),
+    («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "formula_evklida.c"
+      и "<= 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\""
+      и "< 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\"" и "Гипотенуза")])
 
 тотальная функция «Specification»
   принимает forgery: «Forgery»
@@ -76,46 +82,55 @@
       (forgery.«function»)] по "|"
 
 тотальная функция «Corpus»
+  принимает answers: список «Answer»
   возвращает список строки
-  пример «The proof examples and the Pythagoras examples»
-    ожидается ["../proof/examples", "../../docs/examples/pythagoras"]
-  ["../proof/examples", "../../docs/examples/pythagoras"]
+  пример «By default the proof examples and the Pythagoras examples»
+    дано answers равно пустой список
+    ожидается ["flang/proof/examples", "docs/examples/pythagoras"]
+  пример «With --all every example of the documentation»
+    дано answers равно [(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["--all"]))]
+    ожидается ["flang/proof/examples", "docs/examples"]
+  если («Given of» от "arguments" и answers) содержит "--all"
+    то ["flang/proof/examples", "docs/examples"]
+    иначе ["flang/proof/examples", "docs/examples/pythagoras"]
 
 тотальная функция «Modules»
   возвращает список строки
-  пример «The reference and the validator are four Lean modules»
-    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
-  ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
-
-тотальная функция «Validator»
-  возвращает строка
-  пример «The Lean file the validator runs»
-    ожидается "../proof/lean/Semantics/Validate.lean"
-  "../proof/lean/Semantics/Validate.lean"
+  пример «The reference and the validator are five Lean modules»
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate"]
+  ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate"]
 
 тотальная функция «Whole corpus program»
   возвращает строка
-  обеспечивает «the program has fifteen lines» (длина (разделить результат по "\n")) равен 15
-  соединить ["W=$0; B=$1; L=$2; R=$3; shift 3",
-      "say() { printf '%s\\t%s\\t%s\\t\\t\\n' \"$1\" \"$2\" \"$3\"; }",
-      "for g in \"$@\"; do for f in \"$g\"/*.flang; do",
-      "b=${f##*/}; b=${b%.flang}; d=$W/c/$b; mkdir -p \"$d\"",
-      "\"$B\" ast \"$f\" > \"$d/ast.json\" 2>/dev/null || { say \"$b\" \"\" \"не прочитано\"; continue; }",
-      "\"$B\" emit \"$f\" --target c --out \"$d\" > /dev/null 2>&1 ||",
-      "{ say \"$b\" \"\" \"не напечатано\"; continue; }",
+  обеспечивает «the program has twenty-two lines» (длина (разделить результат по "\n")) равен 22
+  соединить ["W=$0; B=$1; shift 1",
+      "case $B in /*) ;; *) B=$PWD/$B;; esac",
+      "cd ../.. || exit 1",
+      "say() { printf '%s\\t%s\\t%s\\t%s\\t\\n' \"$1\" \"$2\" \"$3\" \"$4\"; }",
+      "for g in \"$@\"; do find \"$g\" -name '*.flang' | LC_ALL=C sort; done | while read -r f; do",
+      "u=${f%.flang}; d=$W/c/$(printf '%s' \"$u\" | tr '/' '-'); [ -d \"$d\" ] && continue; mkdir -p \"$d\"",
+      "timeout 120 \"$B\" ast \"$f\" > \"$d/ast.json\" 2>/dev/null ||",
+      "{ say \"$u\" \"\" \"не прочитано\" \"$?\"; continue; }",
+      "timeout 300 \"$B\" emit \"$f\" --target c --out \"$d\" > /dev/null 2>&1 ||",
+      "{ say \"$u\" \"\" \"не напечатано\" \"$?\"; continue; }",
+      "timeout 300 \"$B\" check --proof --json \"$f\" > \"$d/proof.json\" 2>/dev/null",
       "(cd \"$d\" && cc -std=c99 -O2 -o run *.c -lm -lpthread > cc.log 2>&1) ||",
-      "{ say \"$b\" \"\" \"не собрано\"; continue; }",
-      "LEAN_PATH=$W \"$L\" --run \"$R\" plan \"$d/ast.json\" > \"$d/plan.tsv\"",
-      "cut -f3 \"$d/plan.tsv\" | grep '^{' | \"$d/run\" --json > \"$d/c.jsonl\"",
-      "LEAN_PATH=$W \"$L\" --run \"$R\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
-      "awk -F'\\t' -v OFS='\\t' -v b=\"$b\" -v c=\"$d/c.txt\" '$2==\"вне\"{print b, $1, $2, $3, \"\"; next}",
+      "{ say \"$u\" \"\" \"не собрано\" \"\"; continue; }",
+      "cat $(ls \"$d\"/*.c | grep -v '/flang_') > \"$d/module.txt\"",
+      "timeout 600 \"$W/validate\" plan \"$d/ast.json\" \"$d/module.txt\" \"$d/proof.json\" \\",
+      "> \"$d/plan.tsv\" || { say \"$u\" \"\" \"эталон не уложился\" \"$?\"; continue; }",
+      "cut -f3 \"$d/plan.tsv\" | grep -a '^{' | timeout 600 \"$d/run\" --json > \"$d/c.jsonl\"",
+      "timeout 600 \"$W/validate\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
+      "awk -F'\\t' -v OFS='\\t' -v b=\"$u\" -v c=\"$d/c.txt\" '",
+      "$2==\"вне\" || $2==\"символ\" {print b, $1, $2, $3, $4; next}",
       "{x=\"\"; getline x < c; print b, $1, $2, $4, x}' \"$d/plan.tsv\"",
-      "done; done"] по "\n"
+      "done"] по "\n"
 
 тотальная функция «Forgery program»
   возвращает строка
-  обеспечивает «the program has seventeen lines» (длина (разделить результат по "\n")) равен 17
-  соединить ["W=$0; L=$1; R=$2; shift 2",
+  обеспечивает «the program has twenty lines» (длина (разделить результат по "\n")) равен 20
+  соединить ["W=$0", "cd ../.. || exit 1",
       "say() { printf '%s\\t%s\\t%s\\t\\t\\n' \"$1\" \"$2\" \"$3\"; }",
       "mkdir -p \"$W/f\"",
       "forge() { d=$W/f/$(printf '%s' \"$1\" | tr ' ' '-'); o=$W/c/$2/$3",
@@ -126,10 +141,12 @@
       "cmp -s \"$o\" \"$d/$3\" && { say \"$1\" \"$6\" \"не построена\"; return; }",
       "(cd \"$d\" && cc -std=c99 -O2 -o run *.c -lm -lpthread > cc.log 2>&1) ||",
       "{ say \"$1\" \"$6\" \"не собрано\"; return; }",
-      "cut -f3 \"$d/plan.tsv\" | grep '^{' | \"$d/run\" --json > \"$d/c.jsonl\"",
-      "LEAN_PATH=$W \"$L\" --run \"$R\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
-      "awk -F'\\t' -v OFS='\\t' -v n=\"$1\" -v g=\"$6\" -v c=\"$d/c.txt\" '$2==\"вне\"{next}",
-      "{x=\"\"; getline x < c} $1==g{print n, $1, $2, $4, x}' \"$d/plan.tsv\"; }",
+      "cat $(ls \"$d\"/*.c | grep -v '/flang_') > \"$d/module.txt\"",
+      "timeout 600 \"$W/validate\" plan \"$d/ast.json\" \"$d/module.txt\" \"$d/proof.json\" > \"$d/plan.tsv\"",
+      "cut -f3 \"$d/plan.tsv\" | grep -a '^{' | \"$d/run\" --json > \"$d/c.jsonl\"",
+      "timeout 600 \"$W/validate\" canon \"$d/c.jsonl\" > \"$d/c.txt\"",
+      "awk -F'\\t' -v OFS='\\t' -v n=\"$1\" -v g=\"$6\" -v c=\"$d/c.txt\" '$2==\"вне\"{next} $2==\"символ\"{if ($1==g)",
+      "print n, $1, $2, $3, $4; next} {x=\"\"; getline x < c} $1==g{print n, $1, $2, $4, x}' \"$d/plan.tsv\"; }",
       "for s in \"$@\"; do ( IFS='|'; set -f; set -- $s; set +f; IFS=' '; forge \"$@\" ); done",
       "exit 0"] по "\n"
 
@@ -159,15 +176,18 @@
 
 тотальная функция «Setup»
   возвращает список «Question»
-  пример «Three settings are read first»
+  пример «Three settings and the arguments are read first»
     ожидается ([(запись «Question» с «name» равным "lean"
         и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEAN")),
       (запись «Question» с «name» равным "temporary"
         и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
       (запись «Question» с «name» равным "binary"
-        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))])
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")),
+      (запись «Question» с «name» равным "leanc"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEANC")),
+      (запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»))])
   [(«Environment» от "lean" и "LEAN"), («Environment» от "temporary" и "FLANG_TMP"),
-      («Environment» от "binary" и "FLANG_BIN")]
+      («Environment» от "binary" и "FLANG_BIN"), («Environment» от "leanc" и "LEANC"), («Arguments» от "arguments")]
 
 тотальная функция «Presence»
   принимает answers: список «Answer»
@@ -187,10 +207,22 @@
     ожидается пустой список
   если пусто («Work» от answers)
     то пустой список
-    иначе отобразить («Modules») как name → «Run» от (соединить ["build ", name] по "") и "sh" и ["-c",
-        (соединить ["mkdir -p \"$0/Semantics\" && cd ../proof/lean && ",
-          "LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" \"$2.lean\" 2>&1"] по ""),
-        («Work» от answers), («Lean» от answers), name]
+    иначе добавить («Link» от answers) к (отобразить («Modules») как name → «Run» от (соединить ["build ", name] по "")
+        и "sh" и ["-c", (соединить ["mkdir -p \"$0/Semantics\" && cd ../proof/lean && ",
+          "LEAN_PATH=\"$0\" exec \"$1\" -o \"$0/$2.olean\" -c \"$0/$2.c\" \"$2.lean\" 2>&1"] по ""),
+        («Work» от answers), («Lean» от answers), name])
+
+тотальная функция «Link»
+  принимает answers: список «Answer»
+  возвращает «Question»
+  пример «The compiled modules are linked into one program next to them»
+    дано answers равно пустой список
+    ожидается (запись «Question» с «name» равным "build validator" и «order» равным (вариант «Запустить процесс»
+        с программа равным "sh" и аргументы равным ["-c",
+        "exec \"$1\" -O2 -o \"$0/validate\" \"$0/Binary64.c\" \"$0\"/Semantics/*.c 2>&1", "", "leanc"]))
+  «Run» от "build validator" и "sh" и ["-c",
+      "exec \"$1\" -O2 -o \"$0/validate\" \"$0/Binary64.c\" \"$0\"/Semantics/*.c 2>&1", («Work» от answers),
+      («Setting of» от "leanc" и "leanc" и answers)]
 
 тотальная функция «Validating»
   принимает answers: список «Answer»
@@ -201,7 +233,7 @@
   если пусто («Work» от answers)
     то пустой список
     иначе [(«Run» от "corpus" и "sh" и («Соединить списки» от ["-c", («Whole corpus program»), («Work» от answers),
-        («Binary» от answers), («Lean» от answers), («Validator»)] и («Corpus»)))]
+        («Binary» от answers)] и («Corpus» от answers)))]
 
 тотальная функция «Forging»
   принимает answers: список «Answer»
@@ -212,7 +244,7 @@
   если пусто («Work» от answers)
     то пустой список
     иначе [(«Run» от "forgeries" и "sh" и («Соединить списки» от ["-c", («Forgery program»), («Work» от answers),
-        («Lean» от answers), («Validator»)] и (отобразить («Forgeries») как forgery → «Specification» от forgery)))]
+        ] и (отобразить («Forgeries») как forgery → «Specification» от forgery)))]
 
 тотальная функция «Cleaning»
   принимает answers: список «Answer»
@@ -365,8 +397,8 @@
     ожидается ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
         и «compared» равным 2 и «agreed» равным 2 и «skipped» равным 0 и «reason» равным ""
         и «differ» равным пустой список)])
-  (свёртка («Lines» от text) начиная с (пустой список) как summaries и line → «Joined» от summaries
-      и («Row of» от line))
+  (свёртка (отфильтровать («Lines» от text) где line → не («Symbolic line» от line)) начиная с (пустой список)
+      как summaries и line → «Joined» от summaries и («Row of» от line))
 
 тотальная функция «Kind»
   принимает summary: «Summary»
@@ -446,17 +478,120 @@
     ожидается 0
   свёртка summaries начиная с 0 как acc и s → acc плюс (s.«compared»)
 
+тотальная функция «Symbolic line»
+  принимает line: строка
+  возвращает признак
+  пример «A line of the symbolic comparison»
+    дано line равно "a\tФ\tсимвол\tдоказано\tГ"
+    ожидается да
+  пример «A witness line»
+    дано line равно "a\tФ\tсвидетели\tзначение 1\tзначение 1"
+    ожидается нет
+  («Cell» от 3 и (разделить line по "\t")) равен "символ"
+
+тотальная функция «Symbolic rows»
+  принимает text: строка
+  возвращает список «Row»
+  пример «Only the symbolic lines are kept»
+    дано text равно "a\tФ\tсвидетели\tзначение 1\tзначение 1\na\tФ\tсимвол\tдоказано\t\n"
+    ожидается ([(запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "")])
+  отобразить (отфильтровать («Lines» от text) где line → «Symbolic line» от line) как line → «Row of» от line
+
+тотальная функция «Key»
+  принимает unit: строка, name: строка
+  возвращает строка
+  пример «A unit and a function make one key»
+    дано unit равно "a"
+    дано name равно "Ф"
+    ожидается "a|Ф"
+  соединить [unit, "|", name] по ""
+
+тотальная функция «Callee keys»
+  принимает row: «Row»
+  возвращает список строки
+  пример «Two callees of one unit»
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "Г,Д")
+    ожидается ["a|Г", "a|Д"]
+  пример «No callees»
+    дано row равно (запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "")
+    ожидается пустой список
+  пусть names равно (отфильтровать (разделить (row.«answer») по ",") где name → не (пусто name))
+  отобразить names как name → «Key» от (row.«unit») и name
+
+тотальная функция «Pruned»
+  принимает candidates: список «Row», base: список строки
+  возвращает список «Row»
+  пример «A candidate whose callee is not proved drops out»
+    дано candidates равно [(запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "Г")]
+    дано base равно пустой список
+    ожидается пустой список
+  пример «A callee proved by exhaustion keeps the candidate»
+    дано candidates равно [(запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "Г")]
+    дано base равно ["a|Г"]
+    ожидается ([(запись «Row» с «unit» равным "a" и «function» равным "Ф" и «class» равным "символ"
+        и «reference» равным "доказано" и «answer» равным "Г")])
+  пусть own равно (отобразить candidates как c → «Key» от (c.«unit») и (c.«function»))
+  пусть keys равно («Соединить списки» от base и own)
+  отфильтровать candidates где c → для всех k из («Callee keys» от c): keys содержит k
+
+тотальная функция «Proved symbolically»
+  принимает summaries: список «Summary», rows: список «Row»
+  возвращает список «Row»
+  пример «Nothing to prove»
+    дано summaries равно пустой список
+    дано rows равно пустой список
+    ожидается пустой список
+  пусть base равно (отобразить («Of kind» от "перебор" и summaries) как s → «Key» от (s.«unit») и (s.«function»))
+  пусть sampled равно (отобразить («Of kind» от "свидетели" и summaries) как s → «Key» от (s.«unit») и
+      (s.«function»))
+  пусть candidates равно (отфильтровать rows где r → ((r.«reference») начинается с "доказано") и притом
+      (sampled содержит («Key» от (r.«unit») и (r.«function»))))
+  свёртка candidates начиная с candidates как kept и r → «Pruned» от kept и base
+
+тотальная функция «Status reason»
+  принимает status: строка
+  возвращает строка
+  пример «The reason of a function outside the symbolic comparison»
+    дано status равно "вне: разбор"
+    ожидается "разбор"
+  пример «A refused C statement keeps only its first two words»
+    дано status равно "вне: C страж fl_t2 . tag != FL_NUMBER"
+    ожидается "C страж"
+  пусть words равно (разделить («Cell» от 2 и (разделить status по "вне: ")) по " ")
+  соединить (отфильтровать [(«Cell» от 1 и words), (если ((«Cell» от 1 и words) равен "C") то («Cell» от 2 и words)
+      иначе "")] где w → не (пусто w)) по " "
+
 тотальная функция «Corpus lines»
-  принимает summaries: список «Summary»
+  принимает summaries: список «Summary», rows: список «Row»
   возвращает список строки
   пример «An empty corpus»
     дано summaries равно пустой список
+    дано rows равно пустой список
     ожидается (["СООТВЕТСТВИЕ ПРОВЕРЕНО для 0 функций, вне валидации 0",
-        "  перебором всей области 0 (из них без параметров 0), на свидетелях 0; сличено свидетелей 0",
-        "  причины вне валидации: ", "не напечатано или не собрано файлов 0: ", "расхождений 0"])
+        "  доказано для 0: перебором всей области 0 (из них без параметров 0), символьно 0",
+        "  из символьных опираются на постусловия, доказанные ядром, 0",
+        "  на свидетелях без доказательства 0; сличено свидетелей 0",
+        "  символьно не сошлось 0; символьно сошлось, но опирается на недоказанные вызовы 0",
+        "  причины вне символьной проверки: ", "  причины вне валидации: ",
+        "не напечатано или не собрано файлов 0: ", "расхождений 0"])
   пусть exhaustive равно («Of kind» от "перебор" и summaries)
   пусть witnesses равно («Of kind» от "свидетели" и summaries)
   пусть constant равно (отфильтровать exhaustive где s → (s.«class») равен "без параметров")
+  пусть symbolic равно («Proved symbolically» от summaries и rows)
+  пусть sampledKeys равно (отобразить witnesses как s → «Key» от (s.«unit») и (s.«function»))
+  пусть mine равно (отфильтровать rows где r → sampledKeys содержит («Key» от (r.«unit») и (r.«function»)))
+  пусть mismatched равно (отфильтровать mine где r → (r.«reference») начинается с "не сошлось")
+  пусть agreeing равно (отфильтровать mine где r → (r.«reference») начинается с "доказано")
+  пусть leaning равно ((длина agreeing) минус (длина symbolic))
+  пусть outsideSym равно (отобразить (отфильтровать mine где r → (r.«reference») начинается с "вне")
+      как r → запись «Summary» с «unit» равным (r.«unit») и «function» равным (r.«function») и «class» равным ""
+      и «compared» равным 0 и «agreed» равным 0 и «skipped» равным 0 и «reason» равным («Status reason» от
+      (r.«reference»)) и «differ» равным пустой список)
   пусть outside равно («Соединить списки» от («Of kind» от "вне" и summaries)
       и (отобразить («Of kind» от "не сличено" и summaries) как s → запись «Summary» с «unit» равным (s.«unit»)
       и «function» равным (s.«function») и «class» равным (s.«class») и «compared» равным 0 и «agreed» равным 0
@@ -465,25 +600,37 @@
   пусть files равно («Of kind» от "файл" и summaries)
   пусть differing равно («Of kind» от "расхождение" и summaries)
   пусть validated равно ((длина exhaustive) плюс (длина witnesses))
+  пусть proved равно ((длина exhaustive) плюс (длина symbolic))
+  пусть named равно (отобразить differing как s → соединить ["РАСХОЖДЕНИЕ ", («Name of» от s), ": ",
+      (соединить (s.«differ») по " | ")] по "")
+  пусть unmatched равно (отобразить mismatched как r → соединить ["СИМВОЛЬНО НЕ СОШЛОСЬ ", (r.«unit»), " «",
+      (r.«function»), "»"] по "")
+  пусть notes равно («Соединить списки» от named и unmatched)
   («Соединить списки» от [(соединить ["СООТВЕТСТВИЕ ПРОВЕРЕНО для ", (к строке validated),
       " функций, вне валидации ", (к строке (длина outside))] по ""),
-    (соединить ["  перебором всей области ", (к строке (длина exhaustive)), " (из них без параметров ",
-      (к строке (длина constant)), "), на свидетелях ", (к строке (длина witnesses)), "; сличено свидетелей ",
-      (к строке («Total compared» от («Соединить списки» от exhaustive и witnesses)))] по ""),
+    (соединить ["  доказано для ", (к строке proved), ": перебором всей области ", (к строке (длина exhaustive)),
+      " (из них без параметров ", (к строке (длина constant)), "), символьно ", (к строке (длина symbolic))] по ""),
+    (соединить ["  из символьных опираются на постусловия, доказанные ядром, ", (к строке (длина (отфильтровать
+      symbolic где r → (r.«reference») содержит "на слове ядра")))] по ""),
+    (соединить ["  на свидетелях без доказательства ", (к строке ((длина witnesses) минус (длина symbolic))),
+      "; сличено свидетелей ", (к строке («Total compared» от («Соединить списки» от exhaustive и witnesses)))]
+      по ""),
+    (соединить ["  символьно не сошлось ", (к строке (длина mismatched)),
+      "; символьно сошлось, но опирается на недоказанные вызовы ", (к строке leaning)] по ""),
+    (соединить ["  причины вне символьной проверки: ", («Reasons» от outsideSym)] по ""),
     (соединить ["  причины вне валидации: ", («Reasons» от outside)] по ""),
     (соединить ["не напечатано или не собрано файлов ", (к строке (длина files)), ": ",
       (соединить (отобразить files как s → соединить [(s.«unit»), " (", (s.«class»), ")"] по "") по ", ")] по ""),
-    (соединить ["расхождений ", (к строке (длина differing))] по "")]
-      и (отобразить differing как s → соединить ["РАСХОЖДЕНИЕ ", («Name of» от s), ": ",
-      (соединить (s.«differ») по " | ")] по ""))
+    (соединить ["расхождений ", (к строке (длина differing))] по "")] и notes)
 
 тотальная функция «Forgery line»
-  принимает forgery: «Forgery», summaries: список «Summary»
+  принимает forgery: «Forgery», summaries: список «Summary», rows: список «Row»
   возвращает строка
   пример «A forgery that left no trace is not rejected»
     дано forgery равно (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition"
         и «file» равным "preduslovie.c" и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
     дано summaries равно пустой список
+    дано rows равно пустой список
     ожидается "подделка «sign» (precondition «Удвоить»): НЕ ОТВЕРГНУТА — нет ни одной строки"
   пусть mine равно (отфильтровать summaries где s → (s.«unit») равен (forgery.«name»))
   пусть head равно (соединить ["подделка «", (forgery.«name»), "» (", (forgery.«unit»), " «", (forgery.«function»),
@@ -491,12 +638,16 @@
   пусть broken равно (отфильтровать mine где s → не («Witness class» от (s.«class»)))
   пусть differ равно (свёртка mine начиная с 0 как acc и s → acc плюс (длина (s.«differ»)))
   пусть compared равно («Total compared» от mine)
+  пусть status равно (соединить (отобразить (отфильтровать rows где r → (r.«unit») равен (forgery.«name»)) как r →
+      «Cell» от 1 и (разделить (r.«reference») по ":")) по "")
+  пусть symbolic равно (status равен "не сошлось")
+  пусть tail равно (соединить ["расходится на ", (к строке differ), " из ", (к строке compared),
+      " свидетелей; символьно: ", (если пусто status то "нет строки" иначе status)] по "")
   («Chosen» от [(«When» от (пусто mine) и (соединить [head, "НЕ ОТВЕРГНУТА — нет ни одной строки"] по "")),
       («When» от (не (пусто broken)) и (соединить [head, "НЕ ОТВЕРГНУТА — ",
         (соединить (отобразить broken как s → s.«class») по ", ")] по "")),
-      («When» от (differ больше 0) и (соединить [head, "отвергнута — расходится на ", (к строке differ), " из ",
-        (к строке compared), " свидетелей"] по ""))]
-    и (соединить [head, "НЕ ОТВЕРГНУТА — все ", (к строке compared), " свидетелей совпали"] по ""))
+      («When» от ((differ больше 0) или symbolic) и (соединить [head, "отвергнута — ", tail] по ""))]
+    и (соединить [head, "НЕ ОТВЕРГНУТА — ", tail] по ""))
 
 тотальная функция «Rejected»
   принимает line: строка
@@ -511,8 +662,8 @@
   возвращает список строки
   пример «Nothing built is a failure of every module»
     дано answers равно пустой список
-    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Validate"]
-  отфильтровать («Modules») где name → не («Built» от name и answers)
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate", "validator"]
+  отфильтровать (добавить "validator" к («Modules»)) где name → не («Built» от name и answers)
 
 тотальная функция «Built»
   принимает name: строка, answers: список «Answer»
@@ -530,18 +681,21 @@
   пример «Nothing built fails the check»
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json, Semantics/Validate")
+        и сообщение равным "не собраны: Binary64,Eval,Json,Symbolic,Validate,validator")
   пусть broken равно («Build failures» от answers)
+  пусть shortBroken равно (отобразить broken как n → «Cell» от (длина (разделить n по "/")) и (разделить n по "/"))
   пусть corpus равно («Summaries» от («Output of» от "corpus" и answers))
+  пусть symbolic равно («Symbolic rows» от («Output of» от "corpus" и answers))
   пусть forged равно («Summaries» от («Output of» от "forgeries" и answers))
-  пусть forgeries равно (отобразить («Forgeries») как forgery → «Forgery line» от forgery и forged)
-  пусть lines равно («Соединить списки» от («Corpus lines» от corpus) и forgeries)
+  пусть forgedSymbolic равно («Symbolic rows» от («Output of» от "forgeries" и answers))
+  пусть forgeries равно (отобразить («Forgeries») как forgery → «Forgery line» от forgery и forged и forgedSymbolic)
+  пусть lines равно («Соединить списки» от («Corpus lines» от corpus и symbolic) и forgeries)
   пусть validated равно ((длина («Of kind» от "перебор" и corpus)) плюс (длина («Of kind» от "свидетели" и corpus)))
   пусть bad равно (не (пусто («Of kind» от "расхождение" и corpus)))
   пусть unrejected равно (отфильтровать forgeries где line → не («Rejected» от line))
   пусть failing равно (bad или ((не (пусто unrejected)) или (validated меньше 1)))
   пусть failed равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-    и сообщение равным (соединить ["не собраны: ", (соединить broken по ", ")] по ""))
+    и сообщение равным (соединить ["не собраны: ", (соединить shortBroken по ",")] по ""))
   пусть differing равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
     и сообщение равным (соединить («Соединить списки» от lines и ["", "НЕ СОШЛОСЬ"]) по "\n"))
   пусть passed равно (вариант «Конец работы» с значение равным (соединить («Соединить списки» от lines и ["",
@@ -570,7 +724,7 @@
     дано stages равно 0
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64, Semantics/Eval, Semantics/Json, Semantics/Validate")
+        и сообщение равным "не собраны: Binary64,Eval,Json,Symbolic,Validate,validator")
   разбор queue
     случай голова и хвост
       то «Ask» от (голова) и (хвост) и stages и answers
@@ -598,7 +752,10 @@
       и «queue» равным [(запись «Question» с «name» равным "temporary"
         и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")),
         (запись «Question» с «name» равным "binary"
-        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN"))]
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BIN")),
+        (запись «Question» с «name» равным "leanc"
+        и «order» равным (вариант «Прочитать переменную среды» с имя равным "LEANC")),
+        (запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»))]
       и «stages» равным 5 и «answers» равным пустой список))
   пусть answers равно («Heard» от inquiry и reply)
   разбор («Obstacles» от (inquiry.«asked») и answers)

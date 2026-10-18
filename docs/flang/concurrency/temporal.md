@@ -1,6 +1,6 @@
 # Свойства во времени: перебор конечной модели
 
-Решение — [ADR-0163](../../adr/0163-always-properties-of-a-finite-process-model-are-explored-to-a-bound-and-never-called-proved.md),
+Решение — [ADR-0165](../../adr/0165-always-properties-of-a-finite-process-model-are-explored-to-a-bound-and-never-called-proved.md),
 общий путь — [ADR-0125](../../adr/0125-properties-over-time-are-invariants-and-measures-and-finite-models-are-explored.md).
 Код — `flang/concurrency/temporal/`.
 

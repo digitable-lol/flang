@@ -1,0 +1,932 @@
+модуль «English morphology»
+  использует «Lists» только «Соединить списки»
+  использует «Rules» из "../../../scripts/rules.fscript"
+
+примечание "Морфология английского по форме слова. Слово читается в таком порядке: объявленное
+текстом (объявление — уточнение поверх вывода и всегда побеждает), служебное слово из закрытого
+списка, неправильная форма из таблицы исключений, основа из словаря частотных слов вместе с
+правилами окончаний (-s, -es, -ies, -ed, -ied, -ing, -er, -est, -ly, удвоение согласной, немое e,
+притяжательные 's и s'). Если ничего не нашлось, класс угадывается по суффиксу (-tion, -ity, -ize,
+-ous, -ly …), а слово с заглавной буквы или одна латинская буква читается именем; такое чтение
+помечено источником guess, и разбор называет угаданные слова вслух."
+
+примечание "Словарь основ — собственный список частотных слов этого дерева (лицензия дерева).
+WordNet (Princeton, лицензия в духе BSD: свободное использование с сохранением уведомления)
+совместим, но в дерево не ввезён: 150 тысяч лемм — это корпус, а не словарь первой ступени.
+Подключить его можно позже как внешний источник основ, не меняя правил."
+
+объект «Analysis»
+  «form»: строка
+  «lemma»: строка
+  «class»: строка
+  «tags»: список строки
+  «source»: строка
+
+объект «Listed form»
+  «form»: строка
+  «lemma»: строка
+  «class»: строка
+  «tags»: список строки
+
+объект «Lexeme»
+  «lemma»: строка
+  «class»: строка
+  «tags»: список строки
+
+объект «English dictionary»
+  «declared»: список «Listed form»
+  «closed»: список «Listed form»
+  «irregular»: список «Listed form»
+  «stems»: список «Lexeme»
+
+тотальная функция «Small letter»
+  принимает letter: строка
+  возвращает строка
+  пример «заглавная латинская становится строчной»
+    дано letter равно "S"
+    ожидается "s"
+  пример «строчная не меняется»
+    дано letter равно "s"
+    ожидается "s"
+  пример «правая кавычка становится апострофом»
+    дано letter равно "’"
+    ожидается "'"
+  пусть code равно код символа letter
+  если (code не меньше 65) и притом (code не больше 90)
+    то символ по коду (code плюс 32)
+    иначе (если code равен 8217 то "'" иначе letter)
+
+тотальная функция «Lowercase»
+  принимает token: строка
+  возвращает строка
+  пример «слово с заглавной»
+    дано token равно "Socrates"
+    ожидается "socrates"
+  пример «пустое слово»
+    дано token равно ""
+    ожидается ""
+  соединить (отобразить (разложить token на символы) как letter → «Small letter» от letter) по ""
+
+тотальная функция «Is capitalized»
+  принимает token: строка
+  возвращает признак
+  пример «имя с заглавной»
+    дано token равно "Plato"
+    ожидается да
+  пример «строчное слово»
+    дано token равно "plato"
+    ожидается нет
+  пример «пустое слово»
+    дано token равно ""
+    ожидается нет
+  если (длина token) меньше 1
+    то нет
+    иначе (((код символа (подстрока token с 1 по 1)) не меньше 65)
+      и притом ((код символа (подстрока token с 1 по 1)) не больше 90))
+
+тотальная функция «Is a single letter»
+  принимает token: строка
+  возвращает признак
+  пример «переменная x»
+    дано token равно "x"
+    ожидается да
+  пример «артикль a переменной не считается»
+    дано token равно "a"
+    ожидается нет
+  пример «два знака — не буква»
+    дано token равно "xy"
+    ожидается нет
+  если (длина token) равен 1
+    то (не ((["a", "i", "A",
+      "I"]) содержит token)) и притом ((("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") содержит token))
+    иначе нет
+
+тотальная функция «Is a numeral»
+  принимает token: строка
+  возвращает признак
+  пример «число цифрами»
+    дано token равно "42"
+    ожидается да
+  пример «слово»
+    дано token равно "four"
+    ожидается нет
+  если (длина token) меньше 1
+    то нет
+    иначе ((длина (отфильтровать (разложить token на символы)
+      где letter → не (("0123456789.") содержит letter))) равен 0)
+
+тотальная функция «Ends in»
+  принимает word: строка, ending: строка
+  возвращает признак
+  пример «plural ending»
+    дано word равно "dogs"
+    дано ending равно "s"
+    ожидается да
+  пример «окончание длиннее слова»
+    дано word равно "s"
+    дано ending равно "ies"
+    ожидается нет
+  если (длина ending) не больше (длина word)
+    то (подстрока word с ((длина word) минус (длина ending) плюс 1) по (длина word)) равен ending
+    иначе нет
+
+тотальная функция «Cut»
+  принимает word: строка, count: число
+  возвращает строка
+  пример «отрезано окончание ing»
+    дано word равно "sleeping"
+    дано count равно 3
+    ожидается "sleep"
+  пример «отрезать всё»
+    дано word равно "is"
+    дано count равно 5
+    ожидается ""
+  если count не меньше (длина word)
+    то ""
+    иначе (если count меньше 1 то word иначе подстрока word с 1 по ((длина word) минус count))
+
+тотальная функция «Undoubled»
+  принимает stem: строка
+  возвращает строка
+  пример «stopp — удвоенная p»
+    дано stem равно "stopp"
+    ожидается "stop"
+  пример «без удвоения ничего»
+    дано stem равно "walk"
+    ожидается ""
+  если (длина stem) меньше 3
+    то ""
+    иначе (если (подстрока stem с (длина stem) по (длина stem)) равен (подстрока stem с ((длина stem) минус 1)
+      по ((длина stem) минус 1))
+      то «Cut» от stem и 1
+      иначе "")
+
+тотальная функция «Words of line»
+  принимает line: строка
+  возвращает список строки
+  пример «строка таблицы делится по пробелам»
+    дано line равно "men noun man pl"
+    ожидается ["men", "noun", "man", "pl"]
+  отфильтровать (разделить line по " ") где piece → (длина piece) больше 0
+
+объект «Dropping»
+  «seen»: число
+  «kept»: список строки
+
+тотальная функция «Rest after»
+  принимает pieces: список строки, count: число
+  возвращает список строки
+  пример «признаки после трёх первых полей»
+    дано pieces равно ["men", "noun", "man", "pl", "x"]
+    дано count равно 3
+    ожидается ["pl", "x"]
+  пример «полей меньше, чем отбросить»
+    дано pieces равно ["men"]
+    дано count равно 3
+    ожидается пустой список
+  (свёртка pieces начиная с (запись «Dropping» с «seen» равным 0 и «kept» равным пустой список) как progress и piece →
+    (если progress.«seen» меньше count
+      то запись «Dropping» с «seen» равным (progress.«seen» плюс 1) и «kept» равным progress.«kept»
+      иначе запись «Dropping» с «seen» равным progress.«seen»
+      и «kept» равным (добавить piece к progress.«kept»))).«kept»
+
+тотальная функция «Listed from line»
+  принимает line: строка
+  возвращает «Listed form»
+  пример «неправильное множественное»
+    дано line равно "men noun man pl"
+    ожидается (запись «Listed form» с «form» равным "men" и «lemma» равным "man" и «class» равным "noun"
+      и «tags» равным ["pl"])
+  пусть pieces равно «Words of line» от line
+  если (длина pieces) меньше 3
+    то (запись «Listed form» с «form» равным line и «lemma» равным line и «class» равным ""
+      и «tags» равным пустой список)
+    иначе (запись «Listed form» с «form» равным (элемент 1 в pieces) и «lemma» равным (элемент 3 в pieces)
+      и «class» равным (элемент 2 в pieces) и «tags» равным («Rest after» от pieces и 3))
+
+тотальная функция «Lexeme from line»
+  принимает line: строка
+  возвращает «Lexeme»
+  пример «глагол с рамками»
+    дано line равно "see verb t c irr"
+    ожидается запись «Lexeme» с «lemma» равным "see" и «class» равным "verb" и «tags» равным ["t", "c", "irr"]
+  пусть pieces равно «Words of line» от line
+  если (длина pieces) меньше 2
+    то запись «Lexeme» с «lemma» равным line и «class» равным "" и «tags» равным пустой список
+    иначе (запись «Lexeme» с «lemma» равным (элемент 1 в pieces) и «class» равным (элемент 2 в pieces)
+      и «tags» равным («Rest after» от pieces и 2))
+
+примечание "Закрытые классы. Поле после класса — лемма, дальше признаки: число sg/pl/both, лицо 1/2/3,
+падеж nom/acc, время present/past, форма finite/base/ing/en. Классы: determiner, pronoun,
+preposition, conjunction, subordinator, complementizer, relative, wh, be, have, do, modal, negation,
+infinitive, adverb, degree, marker, than, existential."
+
+тотальная функция «Closed lines»
+  возвращает список строки
+  ["the determiner the both", "a determiner a sg", "an determiner a sg", "every determiner every sg",
+   "each determiner each sg", "this determiner this sg", "that determiner that sg", "these determiner these pl",
+   "those determiner those pl", "all determiner all pl", "some determiner some both", "any determiner any both",
+   "no determiner no both", "many determiner many pl", "few determiner few pl", "several determiner several pl",
+   "both determiner both pl", "most determiner most pl", "another determiner another sg", "other determiner other pl",
+   "much determiner much sg", "my determiner my both", "your determiner your both", "his determiner his both",
+   "her determiner her both", "its determiner its both", "our determiner our both", "their determiner their both",
+   "one determiner one sg", "two determiner two pl", "three determiner three pl", "four determiner four pl",
+   "five determiner five pl", "ten determiner ten pl", "i pronoun i nom sg 1", "me pronoun i acc sg 1",
+   "you pronoun you nom pl 2", "you pronoun you acc pl 2", "he pronoun he nom sg 3", "him pronoun he acc sg 3",
+   "she pronoun she nom sg 3", "her pronoun she acc sg 3", "it pronoun it nom sg 3", "it pronoun it acc sg 3",
+   "we pronoun we nom pl 1", "us pronoun we acc pl 1", "they pronoun they nom pl 3", "them pronoun they acc pl 3",
+   "this pronoun this nom sg 3", "this pronoun this acc sg 3", "that pronoun that nom sg 3",
+   "that pronoun that acc sg 3", "these pronoun these nom pl 3", "these pronoun these acc pl 3",
+   "those pronoun those nom pl 3", "those pronoun those acc pl 3", "something pronoun something nom sg 3",
+   "something pronoun something acc sg 3", "nothing pronoun nothing nom sg 3", "nothing pronoun nothing acc sg 3",
+   "everything pronoun everything nom sg 3", "everything pronoun everything acc sg 3",
+   "everyone pronoun everyone nom sg 3", "everyone pronoun everyone acc sg 3", "someone pronoun someone nom sg 3",
+   "someone pronoun someone acc sg 3", "nobody pronoun nobody nom sg 3", "nobody pronoun nobody acc sg 3",
+   "there existential there both", "of preposition of", "in preposition in", "on preposition on",
+   "at preposition at", "by preposition by", "with preposition with", "from preposition from",
+   "to preposition to", "for preposition for", "about preposition about", "into preposition into",
+   "onto preposition onto", "over preposition over", "under preposition under", "between preposition between",
+   "among preposition among", "through preposition through", "during preposition during",
+   "after preposition after", "before preposition before", "without preposition without",
+   "within preposition within", "against preposition against", "across preposition across",
+   "along preposition along", "around preposition around", "behind preposition behind",
+   "near preposition near", "toward preposition toward", "towards preposition toward", "upon preposition upon",
+   "via preposition via", "per preposition per", "like preposition like", "since preposition since",
+   "as preposition as", "and conjunction and", "or conjunction or", "but conjunction but",
+   "because subordinator because", "since subordinator since", "as subordinator as",
+   "although subordinator although", "though subordinator though", "while subordinator while",
+   "whereas subordinator whereas", "if subordinator if", "unless subordinator unless",
+   "when subordinator when", "after subordinator after", "before subordinator before",
+   "until subordinator until", "for subordinator for", "so conjunction so", "that complementizer that",
+   "whether complementizer whether", "that relative that", "which relative which", "who relative who",
+   "what wh what", "who wh who", "whom wh who", "which wh which", "how wh how", "why wh why", "when wh when",
+   "where wh where", "than than than", "to infinitive to", "not negation not", "never negation never",
+   "am be be present finite sg 1", "is be be present finite sg 3", "are be be present finite pl",
+   "was be be past finite sg", "were be be past finite pl", "be be be base", "been be be en", "being be be ing",
+   "isn't be be present finite sg 3 negated", "aren't be be present finite pl negated",
+   "wasn't be be past finite sg negated", "weren't be be past finite pl negated",
+   "have have have present finite base", "has have have present finite sg 3", "had have have past finite",
+   "had have have en", "having have have ing", "haven't have have present finite base negated",
+   "hasn't have have present finite sg 3 negated", "hadn't have have past finite negated",
+   "do do do present finite base", "does do do present finite sg 3", "did do do past finite", "done do do en",
+   "doing do do ing", "don't do do present finite base negated", "doesn't do do present finite sg 3 negated",
+   "didn't do do past finite negated", "can modal can", "could modal could", "may modal may",
+   "might modal might", "must modal must", "shall modal shall", "should modal should", "will modal will",
+   "would modal would", "cannot modal can negated", "can't modal can negated", "couldn't modal could negated",
+   "won't modal will negated", "wouldn't modal would negated", "shouldn't modal should negated",
+   "mustn't modal must negated", "therefore marker therefore", "thus marker thus", "hence marker hence",
+   "consequently marker consequently", "accordingly marker accordingly", "then adverb then",
+   "also adverb also", "often adverb often", "always adverb always", "sometimes adverb sometimes",
+   "usually adverb usually", "rarely adverb rarely", "here adverb here", "now adverb now", "today adverb today",
+   "only adverb only", "even adverb even", "still adverb still", "already adverb already", "yet adverb yet",
+   "again adverb again", "however adverb however", "moreover adverb moreover", "furthermore adverb furthermore",
+   "indeed adverb indeed", "almost adverb almost", "nearly adverb nearly", "perhaps adverb perhaps",
+   "together adverb together", "well adverb well", "very degree very", "quite degree quite", "rather degree rather",
+   "too degree too", "so degree so", "more degree more", "less degree less", "most degree most",
+   "least degree least", "highly degree highly", "extremely degree extremely", "fairly degree fairly",
+   "so marker so"]
+
+примечание "Таблица исключений: неправильные формы существительных, глаголов и прилагательных.
+Поле после класса — лемма, дальше признаки формы."
+
+тотальная функция «Irregular lines»
+  возвращает список строки
+  ["men noun man pl", "women noun woman pl", "children noun child pl", "people noun person pl",
+   "mice noun mouse pl", "feet noun foot pl", "teeth noun tooth pl", "geese noun goose pl", "oxen noun ox pl",
+   "data noun datum pl", "phenomena noun phenomenon pl", "criteria noun criterion pl", "analyses noun analysis pl",
+   "hypotheses noun hypothesis pl", "theses noun thesis pl", "bases noun basis pl", "axes noun axis pl",
+   "crises noun crisis pl", "indices noun index pl", "matrices noun matrix pl", "vertices noun vertex pl",
+   "nuclei noun nucleus pl", "radii noun radius pl", "stimuli noun stimulus pl", "fungi noun fungus pl",
+   "formulae noun formula pl", "spectra noun spectrum pl", "media noun medium pl", "bacteria noun bacterium pl",
+   "lives noun life pl", "leaves noun leaf pl", "halves noun half pl", "wolves noun wolf pl", "selves noun self pl",
+   "shelves noun shelf pl", "knives noun knife pl", "wives noun wife pl", "heroes noun hero pl",
+   "potatoes noun potato pl", "fish noun fish sg", "fish noun fish pl", "sheep noun sheep sg", "sheep noun sheep pl",
+   "species noun species sg", "species noun species pl", "series noun series sg", "series noun series pl",
+   "went verb go past finite", "gone verb go en", "saw verb see past finite", "seen verb see en",
+   "gave verb give past finite", "given verb give en", "took verb take past finite", "taken verb take en",
+   "made verb make past finite", "made verb make en", "knew verb know past finite", "known verb know en",
+   "shown verb show en", "found verb find past finite", "found verb find en", "thought verb think past finite",
+   "thought verb think en", "said verb say past finite", "said verb say en", "got verb get past finite",
+   "got verb get en", "gotten verb get en", "came verb come past finite", "come verb come en",
+   "became verb become past finite", "become verb become en", "ran verb run past finite", "run verb run en",
+   "wrote verb write past finite", "written verb write en", "read verb read past finite", "read verb read en",
+   "proven verb prove en", "began verb begin past finite", "begun verb begin en", "chose verb choose past finite",
+   "chosen verb choose en", "drew verb draw past finite", "drawn verb draw en", "ate verb eat past finite",
+   "eaten verb eat en", "fell verb fall past finite", "fallen verb fall en", "felt verb feel past finite",
+   "felt verb feel en", "flew verb fly past finite", "flown verb fly en", "grew verb grow past finite",
+   "grown verb grow en", "heard verb hear past finite", "heard verb hear en", "held verb hold past finite",
+   "held verb hold en", "kept verb keep past finite", "kept verb keep en", "led verb lead past finite",
+   "led verb lead en", "left verb leave past finite", "left verb leave en", "lost verb lose past finite",
+   "lost verb lose en", "meant verb mean past finite", "meant verb mean en", "met verb meet past finite",
+   "met verb meet en", "paid verb pay past finite", "paid verb pay en", "put verb put past finite",
+   "put verb put en", "rose verb rise past finite", "risen verb rise en", "sold verb sell past finite",
+   "sold verb sell en", "sent verb send past finite", "sent verb send en", "set verb set past finite",
+   "set verb set en", "sat verb sit past finite", "sat verb sit en", "slept verb sleep past finite",
+   "slept verb sleep en", "spoke verb speak past finite", "spoken verb speak en", "spent verb spend past finite",
+   "spent verb spend en", "stood verb stand past finite", "stood verb stand en", "swam verb swim past finite",
+   "swum verb swim en", "taught verb teach past finite", "taught verb teach en", "told verb tell past finite",
+   "told verb tell en", "threw verb throw past finite", "thrown verb throw en",
+   "understood verb understand past finite", "understood verb understand en", "wore verb wear past finite",
+   "worn verb wear en", "won verb win past finite", "won verb win en", "bought verb buy past finite",
+   "bought verb buy en", "brought verb bring past finite", "brought verb bring en", "built verb build past finite",
+   "built verb build en", "caught verb catch past finite", "caught verb catch en", "cut verb cut past finite",
+   "cut verb cut en", "let verb let past finite", "let verb let en", "lay verb lie past finite", "lain verb lie en",
+   "sought verb seek past finite", "sought verb seek en", "sang verb sing past finite", "sung verb sing en",
+   "struck verb strike past finite", "struck verb strike en", "arose verb arise past finite", "arisen verb arise en",
+   "broke verb break past finite", "broken verb break en", "froze verb freeze past finite", "frozen verb freeze en",
+   "fed verb feed past finite", "fed verb feed en", "hid verb hide past finite", "hidden verb hide en",
+   "bit verb bite past finite", "bitten verb bite en", "fought verb fight past finite", "fought verb fight en",
+   "forgot verb forget past finite", "forgotten verb forget en", "drank verb drink past finite",
+   "drunk verb drink en", "drove verb drive past finite", "driven verb drive en", "shone verb shine past finite",
+   "shone verb shine en", "better adjective good comparative", "best adjective good superlative",
+   "worse adjective bad comparative", "worst adjective bad superlative", "further adjective far comparative",
+   "farther adjective far comparative", "furthest adjective far superlative", "less adjective little comparative",
+   "least adjective little superlative"]
+
+примечание "Словарь основ: частотные слова учебных и научных текстов. После класса — рамки и пометы.
+У существительного count (считаемое) или mass (несчитаемое, может стоять без артикля); irr — у слова
+есть форма из таблицы исключений, и правило окончания к нему не применяется. У глагола рамки:
+i — без дополнения, t — с прямым дополнением, c — с придаточным that, v — с инфинитивом to.
+У прилагательного c — допускает придаточное that (it is clear that …), v — инфинитив (able to …)."
+
+тотальная функция «Noun lines»
+  возвращает список строки
+  ["man noun count irr", "woman noun count irr", "child noun count irr", "person noun count irr",
+   "mouse noun count irr", "foot noun count irr", "tooth noun count irr", "datum noun count irr",
+   "phenomenon noun count irr", "criterion noun count irr", "analysis noun count irr", "hypothesis noun count irr",
+   "thesis noun count irr", "basis noun count irr", "axis noun count irr", "crisis noun count irr",
+   "index noun count", "matrix noun count irr", "vertex noun count irr", "nucleus noun count irr",
+   "radius noun count irr", "stimulus noun count irr", "fungus noun count irr", "formula noun count",
+   "spectrum noun count irr", "medium noun count irr", "bacterium noun count irr", "life noun count mass irr",
+   "leaf noun count irr", "half noun count irr", "wolf noun count irr", "knife noun count irr", "hero noun count irr",
+   "fish noun count irr", "sheep noun count irr", "species noun count irr", "series noun count irr",
+   "dog noun count", "cat noun count", "bird noun count", "horse noun count", "cow noun count", "animal noun count",
+   "mammal noun count", "reptile noun count", "insect noun count", "plant noun count", "tree noun count",
+   "flower noun count", "whale noun count", "dolphin noun count", "penguin noun count", "bat noun count",
+   "swan noun count", "crow noun count", "raven noun count", "rabbit noun count", "pet noun count",
+   "creature noun count", "human noun count", "mortal noun count", "greek noun count", "athenian noun count",
+   "philosopher noun count", "king noun count", "queen noun count", "mother noun count", "father noun count",
+   "brother noun count", "sister noun count", "friend noun count", "family noun count", "house noun count",
+   "room noun count", "table noun count", "chair noun count", "door noun count", "window noun count",
+   "book noun count", "paper noun count mass", "article noun count", "letter noun count", "word noun count",
+   "sentence noun count", "text noun count", "page noun count", "chapter noun count", "section noun count",
+   "figure noun count", "number noun count", "value noun count", "result noun count", "method noun count",
+   "model noun count", "theory noun count", "theorem noun count", "lemma noun count", "proof noun count",
+   "claim noun count", "argument noun count", "premise noun count", "conclusion noun count", "idea noun count",
+   "question noun count", "answer noun count", "problem noun count", "solution noun count", "example noun count",
+   "case noun count", "fact noun count", "reason noun count", "cause noun count", "effect noun count",
+   "experiment noun count", "test noun count", "sample noun count", "study noun count", "student noun count",
+   "teacher noun count", "scientist noun count", "researcher noun count", "author noun count", "reader noun count",
+   "group noun count", "set noun count", "element noun count", "function noun count", "equation noun count",
+   "variable noun count", "parameter noun count", "system noun count", "process noun count",
+   "structure noun count", "property noun count", "feature noun count", "rate noun count", "level noun count",
+   "size noun count", "mass noun count mass", "energy noun count mass", "force noun count", "field noun count",
+   "particle noun count", "atom noun count", "molecule noun count", "cell noun count", "gene noun count",
+   "protein noun count", "water noun mass", "air noun mass", "light noun mass count", "heat noun mass",
+   "temperature noun count mass", "pressure noun count mass", "time noun count mass", "year noun count",
+   "day noun count", "hour noun count", "point noun count", "line noun count", "curve noun count",
+   "graph noun count", "node noun count", "edge noun count", "path noun count", "map noun count",
+   "image noun count", "picture noun count", "shape noun count", "part noun count", "side noun count",
+   "end noun count", "way noun count", "world noun count", "country noun count", "city noun count",
+   "school noun count", "university noun count", "company noun count", "market noun count", "price noun count",
+   "cost noun count", "money noun mass", "work noun mass count", "task noun count", "goal noun count",
+   "plan noun count", "rule noun count", "law noun count", "list noun count", "name noun count",
+   "thing noun count", "object noun count", "body noun count", "mind noun count", "knowledge noun mass",
+   "information noun mass", "evidence noun mass", "research noun mass", "science noun mass count",
+   "mathematics noun mass", "physics noun mass", "logic noun mass", "language noun count mass",
+   "grammar noun count mass", "program noun count", "computer noun count", "machine noun count",
+   "network noun count", "algorithm noun count", "software noun mass", "code noun mass count", "file noun count",
+   "error noun count", "mistake noun count", "step noun count", "stage noun count", "measure noun count",
+   "measurement noun count", "observation noun count", "prediction noun count", "assumption noun count",
+   "definition noun count", "principle noun count", "concept noun count", "term noun count",
+   "relation noun count", "difference noun count", "change noun count", "increase noun count",
+   "decrease noun count", "growth noun mass", "behavior noun mass count", "behaviour noun mass count",
+   "pattern noun count", "trend noun count", "distribution noun count", "probability noun count mass",
+   "population noun count", "car noun count", "road noun count", "river noun count", "sea noun count",
+   "sun noun count", "moon noun count", "star noun count", "planet noun count", "earth noun mass count",
+   "stone noun count", "rock noun count", "metal noun count", "iron noun mass", "gold noun mass",
+   "food noun mass", "apple noun count", "bread noun mass", "milk noun mass", "square noun count",
+   "triangle noun count", "circle noun count", "rectangle noun count", "polygon noun count",
+   "integer noun count", "prime noun count", "vector noun count", "space noun count mass",
+   "dimension noun count", "unit noun count", "sensor noun count", "signal noun count", "sound noun count",
+   "wave noun count", "frequency noun count", "gas noun count mass", "liquid noun count", "solid noun count",
+   "ground noun count", "rain noun mass", "snow noun mass", "street noun count",
+   "approach noun count", "framework noun count", "data noun mass", "conjecture noun count",
+   "statement noun count", "fallacy noun count", "inference noun count",
+   "consequence noun count", "contradiction noun count", "proposition noun count", "class noun count",
+   "member noun count", "patient noun count", "drug noun count", "disease noun count",
+   "treatment noun count", "risk noun count", "dose noun count", "virus noun count", "vaccine noun count",
+   "brain noun count", "heart noun count", "blood noun mass", "oxygen noun mass",
+   "carbon noun mass", "electron noun count", "proton noun count", "neutron noun count", "photon noun count",
+   "substance noun count", "reaction noun count",
+   "surface noun count", "volume noun count", "density noun count", "speed noun count", "velocity noun count",
+   "acceleration noun count", "distance noun count", "length noun count", "width noun count",
+   "height noun count", "weight noun count", "area noun count", "angle noun count", "sum noun count",
+   "product noun count", "ratio noun count", "average noun count", "mean noun count",
+   "noise noun mass", "source noun count", "mat noun count", "owner noun count", "motion noun count mass",
+   "laboratory noun count", "accuracy noun mass count", "material noun count mass",
+   "box noun count", "glass noun count mass", "snake noun count", "feather noun count",
+   "electricity noun mass", "copper noun mass", "plastic noun count mass", "polymer noun count", "unicorn noun count",
+   "lepton noun count", "fermion noun count", "conductor noun count", "degree noun count"]
+
+тотальная функция «Verb lines»
+  возвращает список строки
+  ["go verb i irr", "come verb i irr", "see verb t i c irr", "know verb t c irr", "think verb c i irr",
+   "say verb c t irr", "make verb t irr", "take verb t irr", "give verb t irr", "get verb t irr",
+   "find verb t c irr", "show verb t c", "prove verb t c", "use verb t", "need verb t v", "want verb t v",
+   "try verb v t", "begin verb v t i irr", "start verb v t i", "stop verb t i", "continue verb t i v",
+   "like verb t v", "love verb t", "hate verb t", "help verb t", "sleep verb i irr", "run verb i t irr",
+   "walk verb i", "swim verb i irr", "fly verb i irr", "eat verb t i irr", "drink verb t i irr",
+   "read verb t i irr", "write verb t i irr", "speak verb i irr", "talk verb i", "live verb i",
+   "die verb i", "grow verb i t irr", "fall verb i irr", "rise verb i irr", "increase verb i t",
+   "decrease verb i t", "change verb i t", "move verb i t", "work verb i", "play verb i t", "call verb t",
+   "ask verb t", "answer verb t", "tell verb t irr", "explain verb t c", "describe verb t", "define verb t",
+   "compute verb t", "calculate verb t", "measure verb t", "observe verb t c", "suggest verb t c",
+   "indicate verb t c", "imply verb t c", "follow verb i t", "mean verb t c irr", "contain verb t",
+   "include verb t", "consider verb t", "assume verb t c", "believe verb t c", "claim verb t c",
+   "argue verb c i", "conclude verb c t", "predict verb t c", "test verb t", "study verb t",
+   "analyze verb t", "analyse verb t", "compare verb t", "support verb t", "confirm verb t c",
+   "reject verb t", "accept verb t", "produce verb t", "cause verb t", "affect verb t", "depend verb i",
+   "exist verb i", "occur verb i", "happen verb i", "appear verb i v", "seem verb v", "remain verb i",
+   "hold verb t i irr", "apply verb t i", "solve verb t", "build verb t irr", "create verb t",
+   "develop verb t", "propose verb t", "present verb t", "report verb t c", "obtain verb t", "reach verb t",
+   "require verb t", "allow verb t", "provide verb t", "represent verb t", "denote verb t", "satisfy verb t",
+   "equal verb t", "exceed verb t", "reduce verb t", "improve verb t", "learn verb t", "teach verb t irr",
+   "understand verb t c irr", "remember verb t", "forget verb t irr", "keep verb t irr", "leave verb t i irr",
+   "put verb t irr", "bring verb t irr", "buy verb t irr", "sell verb t irr", "pay verb t irr",
+   "send verb t irr", "lose verb t irr", "win verb t i irr", "meet verb t irr", "visit verb t", "chase verb t",
+   "bite verb t irr", "catch verb t irr", "hunt verb t", "kill verb t", "feed verb t irr", "bark verb i",
+   "sing verb i t irr", "dance verb i", "laugh verb i", "cry verb i", "arrive verb i", "wait verb i",
+   "sit verb i irr", "stand verb i irr", "lie verb i irr", "rain verb i", "snow verb i", "shine verb i irr",
+   "burn verb i t", "boil verb i t", "freeze verb i t irr", "melt verb i t", "heat verb t", "cool verb t i",
+   "conduct verb t", "expand verb i t", "vote verb i", "fail verb i", "succeed verb i", "converge verb i",
+   "diverge verb i", "vary verb i", "differ verb i", "agree verb i", "decide verb t c v", "choose verb t irr",
+   "check verb t", "verify verb t", "derive verb t", "estimate verb t", "evaluate verb t",
+   "generalize verb t", "simulate verb t", "train verb t", "fit verb t", "sort verb t", "store verb t",
+   "compile verb t", "parse verb t", "execute verb t", "terminate verb i", "draw verb t irr",
+   "drive verb t irr", "feel verb t irr", "hear verb t irr", "lead verb t irr", "set verb t irr",
+   "spend verb t irr", "throw verb t irr", "wear verb t irr", "cut verb t irr", "let verb t irr",
+   "seek verb t irr", "strike verb t irr", "arise verb i irr", "break verb t i irr", "hide verb t irr",
+   "fight verb t i irr", "become verb t irr", "contradict verb t", "entail verb t", "establish verb t c",
+   "demonstrate verb t c", "reveal verb t c", "examine verb t", "investigate verb t", "determine verb t",
+   "identify verb t", "detect verb t", "collect verb t", "record verb t", "infect verb t", "prevent verb t",
+   "treat verb t", "protect verb t", "absorb verb t", "emit verb t", "attract verb t", "repel verb t",
+   "rotate verb i", "orbit verb t", "decay verb i", "react verb i", "dissolve verb i t", "flow verb i",
+   "matter verb i", "finish verb t i", "repeat verb t", "conserve verb t", "publish verb t",
+   "replicate verb t", "assess verb t", "address verb t", "discuss verb t", "focus verb i", "pass verb t i"]
+
+тотальная функция «Adjective lines»
+  возвращает список строки
+  ["good adjective irr", "bad adjective irr", "far adjective irr", "little adjective irr", "big adjective",
+   "small adjective", "large adjective", "long adjective", "short adjective", "high adjective", "low adjective",
+   "old adjective", "new adjective", "young adjective", "great adjective", "important adjective",
+   "possible adjective c", "impossible adjective c", "true adjective c", "false adjective", "clear adjective c",
+   "obvious adjective c", "evident adjective c", "likely adjective c v", "unlikely adjective c v",
+   "certain adjective c", "necessary adjective c", "sufficient adjective", "correct adjective",
+   "incorrect adjective", "wrong adjective", "right adjective", "valid adjective", "invalid adjective",
+   "sound adjective", "consistent adjective", "inconsistent adjective", "significant adjective",
+   "different adjective", "similar adjective", "same adjective", "equal adjective", "open adjective",
+   "simple adjective", "complex adjective", "hard adjective", "easy adjective", "difficult adjective",
+   "strong adjective", "weak adjective", "fast adjective", "slow adjective", "quick adjective", "hot adjective",
+   "cold adjective", "warm adjective", "wet adjective", "dry adjective", "dark adjective", "bright adjective",
+   "red adjective", "green adjective", "blue adjective", "black adjective", "white adjective",
+   "happy adjective", "sad adjective", "mortal adjective", "immortal adjective", "wise adjective",
+   "rational adjective", "human adjective", "alive adjective", "dead adjective", "free adjective",
+   "full adjective", "empty adjective", "rich adjective", "poor adjective", "real adjective",
+   "natural adjective", "general adjective", "specific adjective", "special adjective", "main adjective",
+   "major adjective", "minor adjective", "common adjective", "rare adjective", "early adjective",
+   "late adjective", "recent adjective", "final adjective", "whole adjective", "entire adjective",
+   "positive adjective", "negative adjective", "finite adjective", "infinite adjective",
+   "continuous adjective", "discrete adjective", "linear adjective", "nonlinear adjective",
+   "constant adjective", "random adjective", "stable adjective", "unstable adjective", "prime adjective",
+   "even adjective", "odd adjective", "irrational adjective", "empirical adjective", "theoretical adjective",
+   "experimental adjective", "statistical adjective", "physical adjective", "chemical adjective",
+   "biological adjective", "mathematical adjective", "logical adjective", "formal adjective",
+   "informal adjective", "scientific adjective", "accurate adjective", "precise adjective",
+   "efficient adjective", "effective adjective", "useful adjective", "interesting adjective",
+   "known adjective", "unknown adjective", "able adjective v", "unable adjective v", "ready adjective v",
+   "safe adjective", "dangerous adjective", "heavy adjective", "flat adjective", "round adjective",
+   "deep adjective", "wide adjective", "narrow adjective", "thin adjective", "thick adjective",
+   "cheap adjective", "expensive adjective", "famous adjective", "honest adjective", "careful adjective",
+   "flightless adjective", "carnivorous adjective", "aquatic adjective", "first adjective", "last adjective",
+   "next adjective", "previous adjective", "other adjective", "such adjective", "many adjective",
+   "harmful adjective", "healthy adjective", "sick adjective", "toxic adjective",
+   "visible adjective", "invisible adjective", "solid adjective", "liquid adjective", "electric adjective",
+   "magnetic adjective", "nuclear adjective", "thermal adjective", "optical adjective", "quantum adjective",
+   "classical adjective", "relative adjective", "absolute adjective", "independent adjective",
+   "dependent adjective", "normal adjective", "standard adjective", "typical adjective", "average adjective",
+   "total adjective", "partial adjective", "complete adjective", "incomplete adjective", "proper adjective",
+   "strict adjective", "smooth adjective", "rough adjective", "dense adjective", "sparse adjective",
+   "rapid adjective", "gradual adjective", "sharp adjective"]
+
+тотальная функция «Adverb lines»
+  возвращает список строки
+  ["away adverb", "back adverb", "yesterday adverb", "tomorrow adverb",
+   "experimentally adverb", "here adverb", "there adverb"]
+
+тотальная функция «Dictionary»
+  возвращает «English dictionary»
+  пусть stems равно («Соединить списки» от («Соединить списки» от («Noun lines») и («Verb lines»))
+    и («Соединить списки» от («Adjective lines») и («Adverb lines»)))
+  (запись «English dictionary» с «declared» равным пустой список и «closed» равным (отобразить («Closed lines»)
+    как line → «Listed from line» от line)
+    и «irregular» равным (отобразить («Irregular lines») как line → «Listed from line»
+    от line) и «stems» равным (отобразить stems как line → «Lexeme from line» от line))
+
+тотальная функция «With declarations»
+  принимает dictionary: «English dictionary», declared: список «Listed form»
+  возвращает «English dictionary»
+  (запись «English dictionary» с «declared» равным («Соединить списки» от dictionary.«declared» и declared)
+    и «closed» равным dictionary.«closed» и «irregular» равным dictionary.«irregular»
+    и «stems» равным dictionary.«stems»)
+
+тотальная функция «Analysis of listed»
+  принимает listed: «Listed form», source: строка
+  возвращает «Analysis»
+  пример «форма из таблицы исключений»
+    дано listed равно (запись «Listed form» с «form» равным "men" и «lemma» равным "man" и «class» равным "noun"
+      и «tags» равным ["pl"])
+    дано source равно "irregular"
+    ожидается (запись «Analysis» с «form» равным "men" и «lemma» равным "man" и «class» равным "noun"
+      и «tags» равным ["pl"] и «source» равным "irregular")
+  (запись «Analysis» с «form» равным listed.«form» и «lemma» равным listed.«lemma» и «class» равным listed.«class»
+    и «tags» равным listed.«tags» и «source» равным source)
+
+тотальная функция «Listed analyses»
+  принимает table: список «Listed form», word: строка, source: строка
+  возвращает список «Analysis»
+  (отобразить (отфильтровать table где listed → listed.«form» равен word) как listed → «Analysis of listed» от listed
+    и source)
+
+тотальная функция «Lexemes named»
+  принимает stems: список «Lexeme», lemma: строка, kind: строка
+  возвращает список «Lexeme»
+  отфильтровать stems где lexeme → (lexeme.«lemma» равен lemma) и притом (lexeme.«class» равен kind)
+
+тотальная функция «Regular»
+  принимает word: строка, lexeme: «Lexeme», kind: строка, tags: список строки
+  возвращает «Analysis»
+  (запись «Analysis» с «form» равным word и «lemma» равным lexeme.«lemma» и «class» равным kind
+    и «tags» равным («Соединить списки» от tags и lexeme.«tags») и «source» равным "rule")
+
+тотальная функция «By rule»
+  принимает stems: список «Lexeme», word: строка, cuts: список строки, kind: строка, tags: список строки, firm: признак
+  возвращает список «Analysis»
+  пусть fitting равно (свёртка (отфильтровать cuts
+    где candidate → (длина candidate) больше 0) начиная с пустой список
+    как found и candidate → «Соединить списки» от found и («Lexemes named» от stems и candidate и kind))
+  (отобразить (отфильтровать fitting где lexeme → не (firm
+    и притом (lexeme.«tags» содержит "irr"))) как lexeme →
+    «Regular» от word и lexeme и kind и tags)
+
+тотальная функция «S candidates»
+  принимает word: строка
+  возвращает список строки
+  пример «studies — study»
+    дано word равно "studies"
+    ожидается ["study", "studie", "studi"]
+  пример «dogs — dog»
+    дано word равно "dogs"
+    ожидается ["dog"]
+  пример «boxes — box и boxe»
+    дано word равно "boxes"
+    ожидается ["box", "boxe"]
+  пример «class на ss множественным не бывает»
+    дано word равно "class"
+    ожидается пустой список
+  («Chosen» от [(«When» от («Ends in» от word и "ies") и [(соединить [«Cut» от word и 3, "y"] по ""), «Cut» от word и 1,
+    «Cut» от word и 2]),
+    («When» от («Ends in» от word и "es") и [«Cut» от word и 2, «Cut» от word и 1]),
+    («When» от ((«Ends in» от word и "s") и притом (не («Ends in» от word и "ss"))) и [«Cut» от word и 1])]
+    и пустой список)
+
+тотальная функция «Ed candidates»
+  принимает word: строка
+  возвращает список строки
+  пример «stopped — stop»
+    дано word равно "stopped"
+    ожидается ["stopp", "stoppe", "stop"]
+  пример «studied — study»
+    дано word равно "studied"
+    ожидается ["study"]
+  пример «used — use»
+    дано word равно "used"
+    ожидается ["us", "use", ""]
+  если «Ends in» от word и "ied"
+    то [(соединить [«Cut» от word и 3, "y"] по "")]
+    иначе (если «Ends in» от word и "ed"
+      то [«Cut» от word и 2, «Cut» от word и 1, «Undoubled» от («Cut» от word и 2)]
+      иначе пустой список)
+
+тотальная функция «Ing candidates»
+  принимает word: строка
+  возвращает список строки
+  пример «running — run»
+    дано word равно "running"
+    ожидается ["runn", "runne", "run", ""]
+  пример «lying — lie»
+    дано word равно "lying"
+    ожидается ["ly", "lye", "", "lie"]
+  если «Ends in» от word и "ing"
+    то [«Cut» от word и 3, (соединить [«Cut» от word и 3, "e"] по ""), «Undoubled» от («Cut» от word и 3),
+      (если «Ends in» от word и "ying" то соединить [«Cut» от word и 4, "ie"] по "" иначе "")]
+    иначе пустой список
+
+тотальная функция «Er candidates»
+  принимает word: строка, ending: строка
+  возвращает список строки
+  пример «bigger — big»
+    дано word равно "bigger"
+    дано ending равно "er"
+    ожидается ["bigg", "bigge", "big"]
+  пример «happiest — happy»
+    дано word равно "happiest"
+    дано ending равно "est"
+    ожидается ["happy"]
+  если «Ends in» от word и (соединить ["i", ending] по "")
+    то [(соединить [«Cut» от word и ((длина ending) плюс 1), "y"] по "")]
+    иначе (если «Ends in» от word и ending
+      то [«Cut» от word и (длина ending), «Cut» от word и ((длина ending) минус 1), «Undoubled» от («Cut» от word
+        и (длина ending))]
+      иначе пустой список)
+
+тотальная функция «Ly candidates»
+  принимает word: строка
+  возвращает список строки
+  пример «happily — happy»
+    дано word равно "happily"
+    ожидается ["happy"]
+  пример «probably — probable»
+    дано word равно "probably"
+    ожидается ["probab", "probable"]
+  пример «basically — basic»
+    дано word равно "basically"
+    ожидается ["basical", "basic"]
+  («Chosen» от [(«When» от («Ends in» от word и "ily") и [(соединить [«Cut» от word и 3, "y"] по "")]),
+    («When» от («Ends in» от word и "ically") и [«Cut» от word и 2, «Cut» от word и 4]),
+    («When» от («Ends in» от word и "bly") и [«Cut» от word и 2, (соединить [«Cut» от word и 1, "e"] по "")]),
+    («When» от («Ends in» от word и "ly") и [«Cut» от word и 2])] и пустой список)
+
+тотальная функция «Stem analyses»
+  принимает stems: список «Lexeme», word: строка
+  возвращает список «Analysis»
+  пусть lexemes равно отфильтровать stems где lexeme → lexeme.«lemma» равен word
+  (отобразить lexemes как lexeme → «Regular» от word и lexeme и lexeme.«class» и («Base tags» от lexeme.«class»))
+
+тотальная функция «Base tags»
+  принимает kind: строка
+  возвращает список строки
+  пример «основа существительного — единственное число»
+    дано kind равно "noun"
+    ожидается ["sg"]
+  («Chosen» от [(«When» от (kind равен "noun") и ["sg"]), («When» от (kind равен "verb") и ["base"]),
+    («When» от (kind равен "adjective") и ["positive"])] и пустой список)
+
+тотальная функция «Ending analyses»
+  принимает stems: список «Lexeme», word: строка
+  возвращает список «Analysis»
+  пример «dogs — множественное от dog»
+    дано stems равно [(запись «Lexeme» с «lemma» равным "dog" и «class» равным "noun" и «tags» равным ["count"])]
+    дано word равно "dogs"
+    ожидается [(запись «Analysis» с «form» равным "dogs" и «lemma» равным "dog" и «class» равным "noun"
+      и «tags» равным ["pl", "count"] и «source» равным "rule")]
+  пример «mans — у неправильного слова правило не работает»
+    дано stems равно [(запись «Lexeme» с «lemma» равным "man" и «class» равным "noun" и «tags» равным ["count",
+      "irr"])]
+    дано word равно "mans"
+    ожидается пустой список
+  пусть s_forms равно «S candidates» от word
+  пусть ed_forms равно «Ed candidates» от word
+  пусть ing_forms равно «Ing candidates» от word
+  («Соединить списки» от («Соединить списки» от («Соединить списки» от («By rule» от stems и word и s_forms и "noun"
+    и ["pl"]
+    и да) и («By rule» от stems и word и s_forms и "verb" и ["present", "finite", "sg", "3"] и нет))
+    и («Соединить списки» от («By rule» от stems и word и ed_forms и "verb" и ["past", "finite"] и да)
+    и («Соединить списки» от («By rule» от stems и word и ed_forms и "verb" и ["en"] и да) и («By rule» от stems
+    и word
+    и ing_forms и "verb" и ["ing"] и нет))))
+    и («Соединить списки» от («Соединить списки» от («By rule» от stems и word и («Er candidates» от word и "er")
+    и "adjective" и ["comparative"] и да) и («By rule» от stems и word и («Er candidates» от word и "est")
+    и "adjective"
+    и ["superlative"] и да)) и («By rule» от stems и word и («Ly candidates» от word) и "adjective"
+    и ["from adjective"]
+    и нет)))
+
+тотальная функция «As adverb»
+  принимает found: список «Analysis»
+  возвращает список «Analysis»
+  отобразить found как analysis → (если analysis.«tags» содержит "from adjective"
+    то запись «Analysis» с «form» равным analysis.«form» и «lemma» равным analysis.«lemma» и «class» равным "adverb"
+      и «tags» равным ["from adjective"] и «source» равным analysis.«source»
+    иначе analysis)
+
+тотальная функция «Possessive»
+  принимает word: строка, found: список «Analysis»
+  возвращает список «Analysis»
+  (отобразить (отфильтровать found где analysis → (analysis.«class» равен "noun") или (analysis.«class» равен "name"))
+    как analysis → запись «Analysis» с «form» равным word и «lemma» равным analysis.«lemma»
+    и «class» равным analysis.«class» и «tags» равным (добавить "poss" к analysis.«tags»)
+    и «source» равным analysis.«source»)
+
+тотальная функция «Name analysis»
+  принимает word: строка, source: строка
+  возвращает «Analysis»
+  (запись «Analysis» с «form» равным word и «lemma» равным word и «class» равным "name" и «tags» равным ["sg"]
+    и «source» равным source)
+
+тотальная функция «Possessive name»
+  принимает word: строка
+  возвращает «Analysis»
+  пример «Newton's — имя в притяжательной форме»
+    дано word равно "newton's"
+    ожидается (запись «Analysis» с «form» равным "newton's" и «lemma» равным "newton" и «class» равным "name"
+      и «tags» равным ["sg", "poss"] и «source» равным "guess")
+  (запись «Analysis» с «form» равным word и «lemma» равным («Cut» от word и (если «Ends in» от word
+    и "'s" то 2 иначе 1))
+    и «class» равным "name" и «tags» равным ["sg", "poss"] и «source» равным "guess")
+
+тотальная функция «Guess»
+  принимает word: строка, kind: строка, tags: список строки
+  возвращает «Analysis»
+  (запись «Analysis» с «form» равным word и «lemma» равным word и «class» равным kind и «tags» равным tags
+    и «source» равным "guess")
+
+тотальная функция «Noun endings»
+  возвращает список строки
+  ["tion", "sion", "ment", "ness", "ity", "acy", "ism", "ance", "ence", "ancy", "ency", "ure", "ogy", "ship", "hood",
+   "dom", "ist", "or", "er", "graph", "gram", "ics", "sis", "um", "on", "ty"]
+
+тотальная функция «Verb endings»
+  возвращает список строки
+  ["ize", "ise", "ify", "ate"]
+
+тотальная функция «Adjective endings»
+  возвращает список строки
+  ["ous", "al", "ic", "ive", "able", "ible", "ful", "less", "ary", "ory", "ent", "ant", "ical", "ar", "ian"]
+
+тотальная функция «Ends with one of»
+  принимает word: строка, endings: список строки
+  возвращает признак
+  пример «entropy — на py»
+    дано word равно "entropy"
+    дано endings равно ["ity", "py"]
+    ожидается да
+  ((длина (отфильтровать endings где ending → («Ends in» от word и ending)
+    и притом ((длина word) больше ((длина ending) плюс 1)))) больше 0)
+
+тотальная функция «Guesses»
+  принимает word: строка
+  возвращает список «Analysis»
+  пример «термин на -tion — существительное»
+    дано word равно "normalization"
+    ожидается [(запись «Analysis» с «form» равным "normalization" и «lemma» равным "normalization"
+      и «class» равным "noun" и «tags» равным ["sg", "count", "mass"] и «source» равным "guess")]
+  пример «глагол на -izes»
+    дано word равно "normalizes"
+    ожидается [(запись «Analysis» с «form» равным "normalizes" и «lemma» равным "normalizes" и «class» равным "verb"
+      и «tags» равным ["present", "finite", "sg", "3", "t", "i"] и «source» равным "guess")]
+  пусть noun_sg равно (если «Ends with one of» от word и («Noun endings») то [«Guess» от word и "noun" и ["sg",
+    "count", "mass"]]
+    иначе пустой список)
+  пусть noun_pl равно (если («Ends in» от word и "s") и притом («Ends with one of» от («Cut» от word и 1)
+    и («Noun endings»))
+    то [«Guess» от word и "noun" и ["pl", "count"]] иначе пустой список)
+  пусть verb_base равно (если «Ends with one of» от word и («Verb endings») то [«Guess» от word и "verb" и ["base",
+    "t", "i"]]
+    иначе пустой список)
+  пусть verb_s равно (если («Ends in» от word и "s") и притом («Ends with one of» от («Cut» от word и 1)
+    и («Verb endings»))
+    то [«Guess» от word и "verb" и ["present", "finite", "sg", "3", "t", "i"]] иначе пустой список)
+  пусть verb_ed равно (если («Ends in» от word и "ed") и притом ((длина word) больше 4)
+    то [«Guess» от word и "verb" и ["past", "finite", "t", "i"], «Guess» от word и "verb" и ["en", "t", "i"]]
+    иначе пустой список)
+  пусть verb_ing равно (если («Ends in» от word и "ing") и притом ((длина word) больше 5)
+    то [«Guess» от word и "verb" и ["ing", "t", "i"]] иначе пустой список)
+  пусть adjective равно (если «Ends with one of» от word
+    и («Adjective endings») то [«Guess» от word и "adjective" и ["positive"]]
+    иначе пустой список)
+  пусть adverb равно (если («Ends in» от word и "ly") и притом ((длина word) больше 4) то [(«Guess» от word и "adverb"
+    и пустой список)] иначе пустой список)
+  («Соединить списки» от («Соединить списки» от («Соединить списки» от noun_sg и noun_pl)
+    и («Соединить списки» от verb_base
+    и verb_s)) и («Соединить списки» от («Соединить списки» от verb_ed и verb_ing) и («Соединить списки» от adjective
+    и adverb)))
+
+тотальная функция «With stem tags»
+  принимает stems: список «Lexeme», found: список «Analysis»
+  возвращает список «Analysis»
+  пример «у неправильной формы рамки берутся у основы»
+    дано stems равно [(запись «Lexeme» с «lemma» равным "see" и «class» равным "verb" и «tags» равным ["t", "i"])]
+    дано found равно [(запись «Analysis» с «form» равным "saw" и «lemma» равным "see" и «class» равным "verb"
+      и «tags» равным ["past", "finite"] и «source» равным "irregular")]
+    ожидается [(запись «Analysis» с «form» равным "saw" и «lemma» равным "see" и «class» равным "verb"
+      и «tags» равным ["past", "finite", "t", "i"] и «source» равным "irregular")]
+  (отобразить found как analysis → запись «Analysis» с «form» равным analysis.«form» и «lemma» равным analysis.«lemma»
+    и «class» равным analysis.«class» и «tags» равным (свёртка («Lexemes named» от stems и analysis.«lemma»
+    и analysis.«class») начиная с analysis.«tags» как gathered и lexeme → «Соединить списки» от gathered
+    и lexeme.«tags»)
+    и «source» равным analysis.«source»)
+
+тотальная функция «Known analyses»
+  принимает dictionary: «English dictionary», word: строка
+  возвращает список «Analysis»
+  пусть closed равно «Listed analyses» от dictionary.«closed» и word и "closed"
+  пусть irregular равно («With stem tags» от dictionary.«stems» и («Listed analyses» от dictionary.«irregular» и word
+    и "irregular"))
+  пусть stem равно «Stem analyses» от dictionary.«stems» и word
+  пусть endings равно «As adverb» от («Ending analyses» от dictionary.«stems» и word)
+  «Соединить списки» от («Соединить списки» от closed и irregular) и («Соединить списки» от stem и endings)
+
+тотальная функция «Possessive analyses»
+  принимает dictionary: «English dictionary», word: строка
+  возвращает список «Analysis»
+  если «Ends in» от word и "'s"
+    то «Possessive» от word и («Known analyses» от dictionary и («Cut» от word и 2))
+    иначе (если «Ends in» от word и "s'"
+      то «Possessive» от word и (отфильтровать («Known analyses» от dictionary и («Cut» от word и 1)) где analysis →
+        analysis.«tags» содержит "pl")
+      иначе пустой список)
+
+тотальная функция «Analyses»
+  принимает dictionary: «English dictionary», token: строка, opening: признак
+  возвращает список «Analysis»
+  пример «dogs — множественное от dog»
+    дано dictionary равно (запись «English dictionary» с «declared» равным пустой список
+      и «closed» равным пустой список и «irregular» равным пустой список
+      и «stems» равным [(запись «Lexeme» с «lemma» равным "dog" и «class» равным "noun" и «tags» равным ["count"])])
+    дано token равно "dogs"
+    дано opening равно нет
+    ожидается [(запись «Analysis» с «form» равным "dogs" и «lemma» равным "dog" и «class» равным "noun"
+      и «tags» равным ["pl", "count"] и «source» равным "rule")]
+  пример «объявленное слово побеждает словарь»
+    дано dictionary равно (запись «English dictionary» с «declared» равным [(запись «Listed form» с «form» равным "dogs"
+      и «lemma» равным "dogs" и «class» равным "name" и «tags» равным ["sg"])] и «closed» равным пустой список
+      и «irregular» равным пустой список и «stems» равным [(запись «Lexeme» с «lemma» равным "dog"
+      и «class» равным "noun" и «tags» равным ["count"])])
+    дано token равно "Dogs"
+    дано opening равно да
+    ожидается [(запись «Analysis» с «form» равным "dogs" и «lemma» равным "dogs" и «class» равным "name"
+      и «tags» равным ["sg"] и «source» равным "declared")]
+  пример «имя с заглавной в середине предложения»
+    дано dictionary равно (запись «English dictionary» с «declared» равным пустой список
+      и «closed» равным пустой список и «irregular» равным пустой список и «stems» равным пустой список)
+    дано token равно "Plato"
+    дано opening равно нет
+    ожидается [(запись «Analysis» с «form» равным "plato" и «lemma» равным "plato" и «class» равным "name"
+      и «tags» равным ["sg"] и «source» равным "guess")]
+  пусть word равно «Lowercase» от token
+  пусть declared равно «Listed analyses» от dictionary.«declared» и word и "declared"
+  пусть known равно «Соединить списки» от («Known analyses» от dictionary
+    и word) и («Possessive analyses» от dictionary и word)
+  пусть capital равно «Is capitalized» от token
+  пусть name равно (если (capital и притом (не opening)) и притом (длина (отфильтровать known где analysis →
+    analysis.«class» равен "name")) равен 0 то [«Name analysis» от word и "guess"] иначе пустой список)
+  пусть numeral равно (если «Is a numeral» от word то [(запись «Analysis» с «form» равным word и «lemma» равным word
+    и «class» равным "numeral" и «tags» равным пустой список и «source» равным "rule")] иначе пустой список)
+  пусть letter равно (если «Is a single letter» от word то [«Name analysis» от word и "guess"] иначе пустой список)
+  пусть owner равно (если capital и притом (((«Ends in» от word и "'s") или («Ends in» от word и "s'"))
+    и притом ((длина known) равен 0)) то [(«Possessive name» от word)] иначе пустой список)
+  пусть found равно («Соединить списки» от («Соединить списки» от known и name) и («Соединить списки» от numeral
+    и («Соединить списки» от letter и owner)))
+  если (длина declared) больше 0
+    то declared
+    иначе (если (длина found) больше 0 то found иначе «Unknown analyses» от word и capital)
+
+тотальная функция «Unknown analyses»
+  принимает word: строка, capital: признак
+  возвращает список «Analysis»
+  если capital
+    то (приписать («Name analysis» от word и "guess") к (отфильтровать («Guesses» от word) где analysis →
+      analysis.«class» равен "noun"))
+    иначе «Guesses» от word
+
+тотальная функция «Has tag»
+  принимает analysis: «Analysis», tag: строка
+  возвращает признак
+  analysis.«tags» содержит tag
+
+тотальная функция «Analysis line»
+  принимает analysis: «Analysis»
+  возвращает строка
+  пример «строка чтения: лемма, класс, признаки, источник»
+    дано analysis равно (запись «Analysis» с «form» равным "dogs" и «lemma» равным "dog" и «class» равным "noun"
+      и «tags» равным ["pl", "count"] и «source» равным "rule")
+    ожидается "dogs: noun dog [pl count] (rule)"
+  (соединить [analysis.«form», ": ", analysis.«class», " ", analysis.«lemma», " [", соединить analysis.«tags» по " ",
+    "] (",
+    analysis.«source», ")"] по "")
+
+тотальная функция «Analyze»
+  принимает word: строка
+  возвращает строка
+  пример «неправильная форма»
+    дано word равно "went"
+    ожидается "went: verb go [past finite i irr] (irregular)"
+  пример «основа по правилу: удвоение согласной»
+    дано word равно "stopped"
+    ожидается "stopped: verb stop [past finite t i] (rule); stopped: verb stop [en t i] (rule)"
+  пример «термин угадан по суффиксу»
+    дано word равно "entropy"
+    ожидается ""
+  соединить (отобразить («Analyses» от («Dictionary») и word
+    и нет) как analysis → «Analysis line» от analysis) по "; "

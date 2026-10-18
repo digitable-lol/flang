@@ -88,6 +88,11 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
         run: bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000
 
+      - name: Printed C agrees with the reference semantics
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: bootstrap/flang run-script translation:validate
+
       - name: Category theory corpus
         env:
           FLANG_TMP: ${{ runner.temp }}

@@ -708,3 +708,8 @@ theorem «ловушка104» (m : Nat → Nat) (cs : List (Nat × Int)) (c x y 
     «отн» .«неБольше» («кон» x) («кон» y) = true := by
   have := «всеНеОтр-сумма» m cs h
   simp [«отн», «неБольше»]; omega
+
+/- ИСКАЖЕНИЕ 105 -/
+theorem «ловушка105» (e g : «Знач») (h : «неБольше» e g = true) :
+    «меньше» e g = true := by
+  cases e <;> cases g <;> simp_all [«меньше», «неБольше»]

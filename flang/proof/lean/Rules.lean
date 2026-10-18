@@ -1055,6 +1055,12 @@ theorem «О10» (e m g : «Знач»)
     (h1 : «неБольше» e m = true) (h2 : «неБольше» m g = true) :
     «неБольше» e g = true := «переход» h1 h2
 
+theorem «О11» (e g : «Знач») (h : «меньше» e g = true) :
+    «неБольше» e g = true := «меньше-влечёт-неБольше» e g h
+
+theorem «О11-обратно-ложно» : ∃ e : «Знач», «неБольше» e e = true ∧ «меньше» e e = false :=
+  ⟨«кон» 0, by decide, by decide⟩
+
 /- flang/proof/tables/inference-rules.tsv, строка «О✗» — дословно:
    имя           О✗
    семейство     О

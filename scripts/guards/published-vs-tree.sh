@@ -751,7 +751,7 @@ komandy() {
 # раскладке он объявляет «input is not in sorted order» на ровном месте.
 karta() {
   echo "КАРТА РАСКЛАДКИ (docs/repository-layout против корня дерева):"
-  find . -mindepth 1 -maxdepth 1 -type d ! -name '.*' -printf '%f\n' | LC_ALL=C sort > "$VREMENNO.derevo"
+  git -c core.quotepath=off ls-files | sed -n 's|^\([^./][^/]*\)/.*|\1|p' | LC_ALL=C sort -u > "$VREMENNO.derevo"
   n_dereve=$(wc -l < "$VREMENNO.derevo" | tr -d ' ')
 
   for f in docs/repository-layout.md docs/repository-layout.ru.md; do

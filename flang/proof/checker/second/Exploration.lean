@@ -19,13 +19,15 @@ structure «Модель» where
   «правила» : List «Правило» := []
   «первые» : List (String × String) := []
   «условие» : List String := []
+  «повод» : List String := []
+  «цель» : List String := []
 
 structure «Место» where
   «в» : String
   «ящик» : List String
   «жив» : Bool
   «потеряно» : Nat
-deriving BEq
+deriving BEq, Inhabited
 
 abbrev «Система» := List «Место»
 
@@ -107,6 +109,11 @@ def «верно» (m : «Модель») (s : «Система») : Nat → Lis
               x.toNat?.map (fun n => ((place.map (fun c => decide (c.«ящик».length ≤ n))).getD true, q2))
             else none
 
+def «по» (m : «Модель») (s : «Система») (tokens : List String) : Option Bool :=
+  match «верно» m s (tokens.length + 1) tokens with
+  | some (v, []) => some v
+  | _ => none
+
 def «условие» (m : «Модель») (s : «Система») : Option Bool :=
   match «верно» m s (m.«условие».length + 1) m.«условие» with
   | some (v, []) => some v
@@ -138,6 +145,7 @@ structure «Чтение» where
   «состояний» : String := ""
   «целиком» : String := ""
   «шаги» : List (List String) := []
+  «петля» : List (List String) := []
   «беда» : Option String := none
 
 def «пары» : List String → List (String × String)
@@ -161,6 +169,9 @@ def «строка» (rd : «Чтение») (line : String) : «Чтение» 
   | ["состояний", x] => { rd with «состояний» := x }
   | ["целиком", x] => { rd with «целиком» := x }
   | "шаг" :: fields => { rd with «шаги» := rd.«шаги» ++ [fields] }
+  | "петля" :: fields => { rd with «петля» := rd.«петля» ++ [fields] }
+  | "повод" :: tokens => { rd with «модель» := { m with «повод» := m.«повод» ++ tokens } }
+  | "цель" :: tokens => { rd with «модель» := { m with «цель» := m.«цель» ++ tokens } }
   | "процесс" :: name :: start :: box :: finals =>
     match box.toNat? with
     | some n => { rd with «модель» := { m with «процессы» := m.«процессы» ++
@@ -219,6 +230,179 @@ def «отсутствие» (rd : «Чтение») (bound : Nat) : String × U
           "это не доказательство", 0)
       else (s!"НЕ СОШЛОСЬ: перебор заново даёт глубину {d}, состояний {seen.length}, целиком {whole}", 1)
 
+def «ждёмНачала» (m : «Модель») (s : «Система») : Option Bool := do
+  let goal ← «по» m s m.«цель»
+  if m.«повод».isEmpty then pure (!goal) else
+    let p ← «по» m s m.«повод»
+    pure (p && !goal)
+
+def «ждёмПосле» (m : «Модель») (w : Bool) (s : «Система») : Option Bool := do
+  let goal ← «по» m s m.«цель»
+  if m.«повод».isEmpty then pure (w && !goal) else
+    let p ← «по» m s m.«повод»
+    pure ((w || p) && !goal)
+
+def «готов» (c : «Место») : Bool := c.«жив» && !c.«ящик».isEmpty
+
+def «готовВ» (s : «Система») (i : Nat) : Bool := (s[i]?.map «готов»).getD false
+
+def «шагнуть» (m : «Модель») (s : «Система») (n : Nat) : List String → Except String («Система» × Nat)
+  | [who, letter, src, dst, note] =>
+    match («номер» m who).bind (fun i => (s[i]?).map (fun c => (i, c))) with
+    | none => .error s!"шаг {n} невозможен: процесса «{who}» нет"
+    | some (i, c) =>
+      if c.«ящик».head? != some letter || c.«в» != src then
+        .error s!"шаг {n} невозможен: у «{who}» нет письма «{letter}» во главе ящика в состоянии «{src}»"
+      else
+        match «ход» m s i with
+        | none => .error s!"шаг {n} невозможен: «{who}» остановлен"
+        | some (s2, k, e) =>
+          if k == dst && e == note then .ok (s2, i)
+          else .error s!"шаг {n} не совпал с моделью: она даёт «{k}, {e}»"
+  | _ => .error s!"шаг {n} не из шести полей"
+
+def «переигратьОтвет» (m : «Модель») (steps loop : List (List String)) : Except String Unit := do
+  let mut s := «начало» m
+  let some w0 := «ждёмНачала» m s | throw "условие записано не по форме"
+  let mut w := w0
+  let mut n := 1
+  for st in steps do
+    let (s2, _) ← «шагнуть» m s n st
+    s := s2
+    let some w2 := «ждёмПосле» m w s | throw "условие записано не по форме"
+    w := w2
+    n := n + 1
+  if !w then throw "в конце пути цель достигнута или повода нет: это не встречный прогон"
+  let count := m.«процессы».length
+  if loop.isEmpty then
+    match (List.range count).find? («готовВ» s) with
+    | some i => throw s!"путь не кончается: «{(m.«процессы»[i]?.map (fun p => p.«имя»)).getD ""}» ещё может ходить"
+    | none => return ()
+  let s0 := s
+  let mut always := List.replicate count true
+  let mut moved := List.replicate count false
+  let mut k := 1
+  for st in loop do
+    let cur := s
+    always := (List.range count).map (fun i => always.getD i false && «готовВ» cur i)
+    let (s2, i) ← «шагнуть» m s n st
+    moved := moved.set i true
+    s := s2
+    let some w2 := «ждёмПосле» m w s | throw "условие записано не по форме"
+    w := w2
+    if !w then throw s!"на шаге петли {k} цель достигнута: петля не без цели"
+    n := n + 1
+    k := k + 1
+  if !(s == s0) then throw "петля не замыкается: после неё система не та, что в её начале"
+  for i in List.range count do
+    if always.getD i false && !moved.getD i false then
+      throw s!"петля несправедлива: «{(m.«процессы»[i]?.map (fun p => p.«имя»)).getD ""}» готов во всех её состояниях и ни разу не ходит"
+  return ()
+
+structure «Пара» where
+  «система» : «Система»
+  «ждём» : Bool
+deriving BEq, Inhabited
+
+def «достижимые» (nodes : Array «Пара») (edges : Array (Nat × Nat × Nat)) (v : Nat) : Array Bool := Id.run do
+  let mut seen := (Array.replicate nodes.size false).set! v true
+  let mut more := true
+  let mut fuel := nodes.size + 1
+  while more && fuel > 0 do
+    more := false
+    fuel := fuel - 1
+    for e in edges do
+      let (a, b, _) := e
+      if seen[a]! && !seen[b]! && nodes[b]!.«ждём» then
+        seen := seen.set! b true
+        more := true
+  return seen
+
+def «справедливаяПетля» (m : «Модель») (nodes : Array «Пара») (edges : Array (Nat × Nat × Nat)) : Bool := Id.run do
+  let n := nodes.size
+  for v in [0:n] do
+    if nodes[v]!.«ждём» then
+      let fromV := «достижимые» nodes edges v
+      let comp := (List.range n).map (fun u => fromV[u]! && («достижимые» nodes edges u)[v]!)
+      let inside := edges.filter (fun e => comp.getD e.1 false && comp.getD e.2.1 false)
+      let fair := (List.range m.«процессы».length).all (fun i =>
+        let always := (List.range n).all (fun u => !comp.getD u false || «готовВ» nodes[u]!.«система» i)
+        !always || inside.any (fun e => e.2.2 == i))
+      if !inside.isEmpty && fair then return true
+  return false
+
+def «перебратьОтвет» (m : «Модель») (bound : Nat) : Option (Bool × Nat × Nat × Bool) := Id.run do
+  let s0 := «начало» m
+  let some w0 := «ждёмНачала» m s0 | return none
+  let mut nodes : Array «Пара» := #[⟨s0, w0⟩]
+  let mut expanded : Array Bool := #[false]
+  let mut edges : Array (Nat × Nat × Nat) := #[]
+  let mut lo := 0
+  let mut hi := 1
+  let mut depth := 0
+  for _ in [0:bound] do
+    if hi ≤ lo then break
+    let before := nodes.size
+    for u in [lo:hi] do
+      expanded := expanded.set! u true
+      for i in [0:m.«процессы».length] do
+        match «ход» m nodes[u]!.«система» i with
+        | none => pure ()
+        | some (s2, _, _) =>
+          match «ждёмПосле» m nodes[u]!.«ждём» s2 with
+          | none => return none
+          | some w2 =>
+            let p : «Пара» := ⟨s2, w2⟩
+            let j := (nodes.findIdx? (fun q => q == p)).getD nodes.size
+            if j == nodes.size then
+              nodes := nodes.push p
+              expanded := expanded.push false
+            edges := edges.push (u, j, i)
+    if nodes.size > before then depth := depth + 1
+    lo := before
+    hi := nodes.size
+  let n := nodes.size
+  let terminal := (List.range n).any (fun u =>
+    expanded[u]! && nodes[u]!.«ждём» && !(edges.any (fun e => e.1 == u)))
+  return some (terminal || «справедливаяПетля» m nodes edges, depth, n, hi ≤ lo)
+
+def «безОтвета» (rd : «Чтение») : String × UInt32 :=
+  match «переигратьОтвет» rd.«модель» rd.«шаги» rd.«петля» with
+  | .error why => ("НЕ СОШЛОСЬ: " ++ why, 1)
+  | .ok _ =>
+    (s!"ПЕРЕБОР СВЕРЕН: встречный прогон переигран, шагов до петли {rd.«шаги».length}, в петле {rd.«петля».length}, " ++
+      s!"свойство «{rd.«имя»}» без ответа; это перебор модели при справедливости, не доказательство", 0)
+
+def «ответЕсть» (rd : «Чтение») (bound : Nat) : String × UInt32 :=
+  if !rd.«шаги».isEmpty || !rd.«петля».isEmpty then ("НЕ СОШЛОСЬ: при исходе «не нарушено» в записи стоят шаги", 1) else
+  match «перебратьОтвет» rd.«модель» bound with
+  | none => ("НЕ СОШЛОСЬ: условие записано не по форме", 1)
+  | some (true, _, _, _) => ("НЕ СОШЛОСЬ: записано «не нарушено», а перебор заново нашёл нарушение", 1)
+  | some (false, d, n, emptyFront) =>
+    let whole := if emptyFront then "да" else "нет"
+    if rd.«глубина» == toString d && rd.«состояний» == toString n && rd.«целиком» == whole then
+      (s!"ПЕРЕБОР СВЕРЕН: перебор повторён, глубина {d}, состояний {n}, целиком {whole}; это не доказательство", 0)
+    else (s!"НЕ СОШЛОСЬ: перебор заново даёт глубину {d}, состояний {n}, целиком {whole}", 1)
+
+def «сверитьОтвет» (rd : «Чтение») (bound : Nat) : String × UInt32 :=
+  match «ждёмНачала» rd.«модель» («начало» rd.«модель») with
+  | none => ("НЕ СОШЛОСЬ: условие записано не по форме", 1)
+  | some _ =>
+    if rd.«исход» == "нарушено" then «безОтвета» rd
+    else if rd.«исход» == "не нарушено" then «ответЕсть» rd bound
+    else (s!"НЕ СОШЛОСЬ: исход «{rd.«исход»}» не из двух: «нарушено» или «не нарушено»", 1)
+
+def «сверитьВсегда» (rd : «Чтение») (bound : Nat) : String × UInt32 :=
+  let m := rd.«модель»
+  if !rd.«петля».isEmpty || !m.«повод».isEmpty then ("НЕ СОШЛОСЬ: у свойства «всегда» не бывает ни петли, ни повода", 1)
+  else
+  match «условие» m («начало» m) with
+  | none => ("НЕ СОШЛОСЬ: условие записано не по форме", 1)
+  | some _ =>
+    if rd.«исход» == "нарушено" then «нарушение» rd
+    else if rd.«исход» == "не нарушено" then «отсутствие» rd bound
+    else (s!"НЕ СОШЛОСЬ: исход «{rd.«исход»}» не из двух: «нарушено» или «не нарушено»", 1)
+
 def «сверить» (text : String) : String × UInt32 :=
   if (text.splitOn "доказано").length > 1 then ("НЕ СОШЛОСЬ: перебор не доказывает, а в записи слово «доказано»", 1)
   else
@@ -228,12 +412,9 @@ def «сверить» (text : String) : String × UInt32 :=
   | some why, _ => ("НЕ СОШЛОСЬ: " ++ why, 1)
   | none, none => ("НЕ СОШЛОСЬ: в записи нет границы", 1)
   | none, some bound =>
-    if m.«процессы».isEmpty || m.«условие».isEmpty then ("НЕ СОШЛОСЬ: в записи нет модели или условия", 1) else
-    match «условие» m («начало» m) with
-    | none => ("НЕ СОШЛОСЬ: условие записано не по форме", 1)
-    | some _ =>
-      if rd.«исход» == "нарушено" then «нарушение» rd
-      else if rd.«исход» == "не нарушено" then «отсутствие» rd bound
-      else (s!"НЕ СОШЛОСЬ: исход «{rd.«исход»}» не из двух: «нарушено» или «не нарушено»", 1)
+    if m.«процессы».isEmpty || (m.«условие».isEmpty == m.«цель».isEmpty) then
+      ("НЕ СОШЛОСЬ: в записи нет модели или нет ровно одного: условия или цели", 1)
+    else if m.«цель».isEmpty then «сверитьВсегда» rd bound
+    else «сверитьОтвет» rd bound
 
 end «Перебор»

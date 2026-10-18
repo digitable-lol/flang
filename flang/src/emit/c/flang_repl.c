@@ -11144,7 +11144,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       const char *say = NULL;
       size_t say_bytes = 0;
       bool unjudged = false;
-      obstacle_args[0] = linked.tag == FL_NOTHING ? program : linked;
+      obstacle_args[0] = program;
       obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
       if (repl_call("Устройство категорий не сверялось", obstacle_args, 2, &obstacle) == FL_OK
           && val_text(obstacle, &say, &say_bytes) && say_bytes > 0) {

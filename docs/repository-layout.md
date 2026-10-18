@@ -59,9 +59,9 @@ service; the 333 more programs in the other sets are single files, the LeetCode 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
-last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 77 lines in the
-input half; with the second half, the seed body, the file is 96 lines.
-<!-- СНЯТО 2026-10-14 строк scripts/seed-fingerprint = 96 (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
+last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 79 lines in the
+input half; with the second half, the seed body, the file is 98 lines.
+<!-- СНЯТО 2026-10-18 строк scripts/seed-fingerprint = 98 (print batch eight: flang/self/bounded.flang and conc.flang join the inputs, input half 79 lines; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
 The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that

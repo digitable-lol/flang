@@ -286,6 +286,38 @@ jobs:
       - name: Probe binary origin
         run: bootstrap/flang io scripts/seed/binary-origin.fscript --plan Forgery --timeout 300000
 
+      # Напечатанный Makefile обязан знать каждый файл, который исходник включает
+      # (задача 7182). Без этого смена заголовка не пересобирает объектный файл, и
+      # новый компилятор линкуется со старым рантаймом. Проба спрашивает
+      # `make -n -W <файл>` на копии семени с поддельными объектными файлами —
+      # компилировать ничего не нужно, обе работы идут секунды. Второй шаг —
+      # подлоги: из копии Makefile убрана строка compiler_flang.o, а к flang_cli.o
+      # приписан чужой заголовок; оба обязаны быть названы.
+      # ВРЕМЕННО НЕ РОНЯЕТ РАБОТУ (решение куратора, 18 октября 2026). Makefile семени
+      # печатает ПЕЧАТНИК, а не исходник: правки emit-c.flang задач 7182 (заголовки
+      # tls_client) и 3010 (`make install` кладёт share/flang) доедут до
+      # bootstrap/Makefile только второй печатью, а печатник партии 8 на стадии суда
+      # в 15 раз медленнее (задача 6425) — вторая печать снята. Шаг выполняется и
+      # печатает красное как прежде; вернуть без continue-on-error при следующей печати.
+      - name: Check printed Makefile headers
+        continue-on-error: true
+        run: bootstrap/flang run-script makefile-headers:forgery && bootstrap/flang run-script makefile-headers:check
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Probe Makefile headers check by a seed without the compiler_flang.o rule
+        run: |
+          forged="$RUNNER_TEMP/forged-seed"
+          mkdir -p "$forged"
+          cp bootstrap/*.c bootstrap/*.h "$forged"/
+          grep -v '^compiler_flang.o:' bootstrap/Makefile > "$forged/Makefile"
+          if bootstrap/flang run-script makefile-headers:check "$forged" > "$RUNNER_TEMP/forged.out" 2>&1; then
+            echo "the check stayed green on a Makefile without the compiler_flang.o rule" >&2
+            exit 1
+          fi
+          grep -q 'НЕ ПЕРЕСОБИРАЕТСЯ: compiler_flang.o' "$RUNNER_TEMP/forged.out" || { cat "$RUNNER_TEMP/forged.out"; exit 1; }
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
       # Собралось — ещё не значит работает. Проверяется то, что человек наберёт
       # первым, и настоящий файл дерева, а не выдуманный.
       #
@@ -394,9 +426,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (44 файла, 8361 строка), HTML, CSS, пробы на
+      # язык: JavaScript. Оболочка (44 файла, 8359 строка), HTML, CSS, пробы на
       # СНЯТО 2026-10-14 файлов *.sh = 44 (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 40, снято 2026-10-08) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял два файла оболочки; до них 49, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл оболочки; до него 50, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-17)
-      # СНЯТО 2026-10-14 строк-в *.sh = 8361 (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 7994, снято 2026-10-09) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял 414 строк оболочки; до них 9344, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
+      # СНЯТО 2026-10-17 строк-в *.sh = 8359 (task 8570: the reprint recipe reads its cost from the ledger, scripts/bootstrap-reprint.sh lost two lines; до них 8361, снято 2026-10-14) (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 7994, снято 2026-10-09) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял 414 строк оболочки; до них 9344, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -679,9 +711,9 @@ jobs:
   # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
   # на двух
   # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 65
-  # файл и 5722 примера, объявленных внутри функций.
+  # файл и 5805 примера, объявленных внутри функций.
   # СНЯТО 2026-10-08 файлов flang/self/*.flang = 65
-  # СНЯТО 2026-10-14 примеров-в flang/self/*.flang = 5722 (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
+  # СНЯТО 2026-10-17 примеров-в flang/self/*.flang = 5805 (партия печати 8: задачи 3010, 7182, 8570, 2663, 2761, 1113, 1116, 4735, 5908, 6752 и 2277 вместе — установка библиотеки, проба Makefile, связывание, блоки «прогон», ходы по телу, законы категорий; до них 5722, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
   # в типизаторе и вычислителе; до них 5297, снято 2026-10-03)
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже
@@ -862,11 +894,13 @@ jobs:
   # объявлено напечатанным, и предок ли тот коммит HEAD. Отставание при этом не
   # прячется — оно печатается ЧИСЛОМ на каждом прогоне.
   #
-  # Ни двоичного, ни Node, ни `npm ci` работе не нужно: sh, find, awk, sha256sum.
+  # Сверке отпечатка ни двоичного, ни Node, ни `npm ci` не нужно: sh, find, awk,
+  # sha256sum. Двоичный нужен только пробе отказа ниже (задача 8570), и он из
+  # кеша работы `build`; без кеша сборка — минуты, отсюда timeout-minutes: 30.
   semya:
     name: seed-fingerprint
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       # ПОЧЕМУ ВСЯ ИСТОРИЯ, А НЕ ОДИН КОММИТ.
       #
@@ -917,6 +951,43 @@ jobs:
       - name: Check seed inputs
         continue-on-error: true
         run: sh scripts/bootstrap-reprint.sh --bystro
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
+      # Отказ `--bystro` называет цену последнего дошедшего захода печати, и
+      # число берётся из docs/reprint-ledger.tsv, а не вписано в рецепт (задача
+      # 8570: рецепт называл 8 ч 34 мин, когда ведомость давно говорила 1 ч 28
+      # мин). Проба заводит копию дерева (git worktree), правит в ней вход
+      # печати и спрашивает отказ: число в нём обязано совпасть с ведомостью.
+      # Подлоги: дописанная строка ведомости обязана сменить число в отказе, а
+      # MAX_STEPS ниже MEASURED_COST — дать отказ кодом 2. Плану нужен двоичный;
+      # он берётся из того же кеша, что у работы `build`, и собирается, если
+      # кеша нет.
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Check reprint refusal
+        run: bootstrap/flang run-script reprint-refusal:forgery && bootstrap/flang run-script reprint-refusal:check
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Probe reprint refusal check by a cost written into the recipe
+        run: |
+          sed 's|$(last_landed_cost "$ROOT/docs/reprint-ledger.tsv")|8 ч 34 мин|' scripts/bootstrap-reprint.sh > "$RUNNER_TEMP/recipe.sh"
+          cp "$RUNNER_TEMP/recipe.sh" scripts/bootstrap-reprint.sh
+          if bootstrap/flang run-script reprint-refusal:check; then
+            git checkout -- scripts/bootstrap-reprint.sh
+            echo "the check stayed green on a refusal with a written-in cost" >&2
+            exit 1
+          fi
+          git checkout -- scripts/bootstrap-reprint.sh
         env:
           FLANG_TMP: ${{ runner.temp }}
 
@@ -1412,10 +1483,13 @@ jobs:
   # кодом 1. Запись, о которой чекер честно говорит «проверено не всё, и вот
   # что», работу не валит — иначе третий исход слился бы с отказом, а ради него
   # всё и написано.
+  # Потолок 15 минут, а не 10: семя партии 8 больше (compiler_flang.c 48,4 МБ
+  # против 46,5 МБ), и сборка из семени на раннере выросла с 356 до 480 с
+  # (заходы 39138300135 и 39138924496, 18 октября 2026) — работа упёрлась в 10.
   chekker:
     name: proof-checker
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
@@ -1677,10 +1751,13 @@ jobs:
           grep -o '"\(result\|error\)":"[^"]*' "$RUNNER_TEMP/falsifier.out"
           exit "$kod"
 
+  # Потолок 25 минут, а не 20: на двоичном партии 8 проба русской грамматики
+  # идёт 369 с против 238 (медленнее печатник — задача 6425), и прибавился шаг
+  # вложенного объекта (137 с); заход 39138924496 упёрся в 20 минут.
   storozha:
     name: guards-selftest
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       # Полная история не нужна: сторож спрашивает `git ls-files`, а не журнал.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -2043,11 +2120,20 @@ jobs:
       - name: Check import list order
         run: cd flang/proof/probes/import-list-order && ../../../../bootstrap/flang io run.fscript --plan Binary
 
+      # ВЛОЖЕННЫЙ ОБЪЕКТ — НАЗВАННЫЙ ОТКАЗ РАЗБОРА, А НЕ ПАДЕНИЕ (задача 4735).
+      # Обе старые формы («вложен объект», «вложена структура») отвечают
+      # FLANG_PARSE с местом, обходной путь отдельным объектом проходит.
+      - name: Check a nested object is refused by the parser
+        run: bootstrap/flang io flang/proof/probes/nested-object/run.fscript --plan Binary --timeout 900000
+
       # ПОМОЩНИК ВВЕЗЁННОЙ ФУНКЦИИ НЕ СМЕЕТ СВЯЗАТЬСЯ С ЧУЖИМ ТЁЗКОЙ (заявки 349 и
       # 350, ADR-0090). Таблица набора — контракт, а не фотография: она снята с
       # связывания из исходника `flang/self/link.flang`, и семя, напечатанное до
-      # этой правки, на ней краснеет, пока его не перепечатают. Таймаут назван
-      # явно: набор зовёт двоичный девятью программами по три поверхности.
+      # этой правки, на ней краснеет, пока его не перепечатают. Строки задач
+      # 2663 (неэкспортированный помощник своего модуля) и 2761 (запуск на веру
+      # не снимает отказ связывания) так же ждут перепечатки семени: первые —
+      # правки `link.flang`, вторые — правки оболочки `flang_repl.c`. Таймаут
+      # назван явно: набор зовёт двоичный четырнадцатью программами.
       - name: Check imported helpers bind in their own module
         run: cd flang/proof/probes/import-helper-binding && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
 
@@ -2098,7 +2184,7 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
-  # ── БЛОКИ «прогон»: НАЗВАНЫ ЧИСЛОМ ИЛИ ПРОХОДЯТ МОЛЧА (задача 1116) ───────
+  # ── БЛОКИ «прогон»: ВЕРНОЕ ОЖИДАНИЕ ОТЛИЧИМО ОТ ЛОЖНОГО (задача 1116) ─────
   #
   # ПОЧЕМУ ОТДЕЛЬНАЯ РАБОТА, А НЕ ШАГ У СОСЕДЕЙ ВЫШЕ. Эта проба собирает ВТОРОЙ
   # двоичный — из оболочки дерева (`flang/src/emit/c/flang_repl.c`) и логики
@@ -2110,16 +2196,15 @@ jobs:
   # 2026: 1 мин 10 с), и работа заводит её ДВАЖДЫ — на подлоге и начисто, — так
   # что держать её шагом в работе `storozha` с её потолком 20 минут нельзя.
   #
-  # ЧТО СТОРОЖИТСЯ. `flang test` не исполняет блоки `прогон` (планировщик живёт в
-  # `flang/self/conc.flang`, а этого слоя в двоичном нет — задача 1104) и до
-  # 2 октября 2026 НЕ ГОВОРИЛ ОБ ЭТОМ НИЧЕГО: файл, у которого все ожидания в
-  # блоках заведомо ложны, выходил кодом 0. Теперь блоки называются числом и код
-  # 3 (ADR-0010: «сделано, но проверено не всё, и непроверенное названо»).
+  # ЧТО СТОРОЖИТСЯ. `flang test` исполняет блоки `прогон` планировщиком
+  # `flang/self/conc.flang` и сверяет их ожидания: блок — строка в том же счёте,
+  # что и примеры функций. До этого (задача 1116) блоки не исполнялись вовсе, и
+  # файл с заведомо ложными ожиданиями отвечал так же, как с верными.
   #
   # ПЕРВЫЙ ШАГ — ПОДЛОГ, и он нужен не для порядка: проба, которая не умеет
-  # краснеть, от чистого дерева неотличима. Подлог возвращает прежний код
-  # возврата, оставляя строку о блоках на месте, — значит краснеет проба СВОИМ
-  # предметом (кодом), а не сломанной сборкой.
+  # краснеть, от чистого дерева неотличима. Подлог глушит код возврата, оставляя
+  # счёт на месте, — значит краснеет проба СВОИМ предметом (кодом на ложном
+  # ожидании), а не сломанной сборкой.
   progony:
     name: runs-not-executed
     runs-on: ubuntu-latest
@@ -2153,13 +2238,13 @@ jobs:
         run: |
           set -u
           podlog=flang/src/emit/c/flang_repl.c
-          staroe='      code = failed > 0 ? 1 : (runs > 0 ? 3 : 0);'
-          novoe='      code = failed > 0 ? 1 : 0;'
+          staroe='      code = failed > 0 ? 1 : 0;'
+          novoe='      code = 0;'
           cp "$podlog" "$podlog.do"
           sed -i "s/$staroe/$novoe/" "$podlog"
           if cmp -s "$podlog.do" "$podlog"; then
             rm -f "$podlog.do"; git checkout -- "$podlog"
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки с кодом 3 в $podlog нет — поправить подлог, проба ни при чём" >&2
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: строки кода возврата в $podlog нет — поправить подлог, проба ни при чём" >&2
             exit 1
           fi
           rm -f "$podlog.do"

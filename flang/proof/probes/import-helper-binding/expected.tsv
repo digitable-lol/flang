@@ -1,4 +1,4 @@
-program	surface	code	word	контракт заявок 349 и 350: слова и коды сняты со связывания из исходника flang/self/link.flang (гарнитура-толкователь, 11 октября 2026) и с поверхностей семени 0.7.25 на уже отказанных тёзках; семя до перепечатки на строках probe, probe-example и own-step расходится — это и есть снятый дефект
+program	surface	code	word	контракт заявок 349 и 350: слова и коды сняты со связывания из исходника flang/self/link.flang (гарнитура-толкователь, 11 октября 2026) и с поверхностей семени 0.7.25 на уже отказанных тёзках; семя до перепечатки на строках probe, probe-example и own-step расходится — это и есть снятый дефект; строки run на отказанных связыванием (код 1, а не 3), строка trust (run --на-веру) и пары prices/checkout сняты 15 октября 2026: run и trust — с двоичного, собранного с правленым flang_repl.c (задача 2761), пары checkout — со связывания из исходника flang/self/link.flang (задача 2663); семя 0.7.28 на этих строках расходится до перепечатки
 step-first.flang	check	0	замечаний нет
 step-second.flang	check	0	замечаний нет
 pairs-a.flang	check	0	замечаний нет
@@ -10,12 +10,22 @@ hidden-unused.flang	run	0	"всвоё г"
 probe.flang	check	1	FLANG_DUPLICATE_NAME, строка 7, столбец 1: в файле
 probe.flang	check	1	функция «Шаг» объявлена в двух модулях
 probe.flang	check	1	из второго ввезена не она, а «Через шаг Г», которая её зовёт
-probe.flang	run	3	FLANG_DUPLICATE_NAME
+probe.flang	run	1	FLANG_DUPLICATE_NAME
 probe.flang	test	1	примеры не запускались — программа не прошла проверку
 probe-example.flang	check	1	FLANG_DUPLICATE_NAME
 probe-example.flang	test	1	примеры не запускались — программа не прошла проверку
 own-step.flang	check	1	функция «Шаг» объявлена в двух модулях
-own-step.flang	run	3	FLANG_DUPLICATE_NAME
+own-step.flang	run	1	FLANG_DUPLICATE_NAME
 both.flang	check	1	FLANG_DUPLICATE_NAME, строка 3, столбец 1: в файле
 both.flang	check	1	pairs-b.flang: функция «Имя пары» объявлена в двух модулях
-both.flang	run	3	FLANG_DUPLICATE_NAME
+both.flang	run	1	FLANG_DUPLICATE_NAME
+own-step-and-first.flang	check	1	функция «Шаг» объявлена в двух модулях
+own-step-and-first.flang	run	1	FLANG_DUPLICATE_NAME
+own-step-and-first.flang	trust	1	FLANG_DUPLICATE_NAME
+own-step-and-first.flang	trust	1	не запущено — программа не прошла проверку разбора, связывания и типов
+probe.flang	trust	1	FLANG_DUPLICATE_NAME
+prices.flang	check	0	замечаний нет
+checkout.flang	check	0	замечаний нет
+checkout.flang	test	0	примеров 1, прошло 1, не прошло 0
+checkout-calls-helper.flang	check	1	FLANG_UNKNOWN_NAME
+checkout-calls-helper.flang	check	1	неизвестная функция «Скидка»: её объявляет

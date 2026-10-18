@@ -166,8 +166,8 @@ docs/tasks/     открытая и закрытая работа дерева, 
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/bootstrap-reprint.sh --check`. Входы последней печати записаны в
 `scripts/seed-fingerprint`, по хешированной строке на файл — 77 строк во входной половине; вместе
-со второй половиной, телом семени, в файле 96 строк.
-<!-- СНЯТО 2026-10-14 строк scripts/seed-fingerprint = 96 (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
+со второй половиной, телом семени, в файле 98 строк.
+<!-- СНЯТО 2026-10-18 строк scripts/seed-fingerprint = 98 (print batch eight over dev 51d92cf31; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
 Семя отстаёт от исходников: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` перечисляет, какие файлы и
 функции новее семени, а перепечатка (`sh scripts/bootstrap-reprint.sh`, часы на одном ядре) — единственный
 путь, которым правки `flang/self/` доезжают до двоичного. **Правка исходника не попадает в

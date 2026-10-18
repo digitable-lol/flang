@@ -442,6 +442,11 @@ $ echo $?
 | `FLANG_MORPHISM_SHAPE` | морфизм объявлен неверно |
 | `FLANG_FUNCTOR_SQUARE` | квадрат функтора не коммутирует |
 | `FLANG_TRANSFORM_NOT_NATURAL` | квадрат естественности не коммутирует |
+| `FLANG_BIFUNCTOR_OBJECT_TWICE` | бифунктор отображает одну пару объектов дважды |
+| `FLANG_BIFUNCTOR_OBJECT_MISSING` | пара стрелок отображена, а у пары их концов образа нет |
+| `FLANG_BIFUNCTOR_ARROW_MISMATCH` | образ пары стрелок не объявлен или ведёт не между образами концов |
+| `FLANG_BIFUNCTOR_IDENTITY` | пара единиц отображена в стрелку, которая не единица |
+| `FLANG_BIFUNCTOR_COMPOSITION` | пара композиций отображена не в композицию образов частей |
 | `FLANG_ISO_NOT_INVERSE` | две стрелки не обратны друг другу |
 | `FLANG_EMBED_SHAPE` | вложение объявлено неверно |
 | `FLANG_EMBED_NOT_INJECTIVE` | вложение переводит разные значения в одно |
@@ -529,6 +534,11 @@ $ echo $?
 | `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
 | `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
 | `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BIFUNCTOR_ARROW_MISMATCH` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_COMPOSITION` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_IDENTITY` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
+| `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
@@ -682,13 +692,16 @@ $ echo $?
 | `FLANG_TLS_NAME` | `flang_repl.c` | — |
 | `FLANG_TLS_SIGNATURE` | `flang_repl.c` | — |
 | `FLANG_TMP` | `flang_repl.c` | — |
+| `FLANG_TRANSFORM_COMPONENT` | `compiler.flang` | — |
 | `FLANG_TRANSFORM_NOT_NATURAL` | `setoid.flang` | — |
+| `FLANG_TRANSFORM_NOT_TOTAL` | `compiler.flang` | — |
+| `FLANG_TRANSFORM_SHAPE` | `compiler.flang` | — |
 | `FLANG_TYPE` | `flang_cli.c`, `interpret.flang`, `types.flang` | {where} объявлена как {type.declared}, а тело даёт {type.body} · {where} объявлена дважды · {where} не имеет тела · аргумент «{parameter}» функции «{function}»: ожидался {type.wanted}, получен {type.got} · {side} операнд «{operation}»: ожидался {type.wanted}, получен {type.got} · условие «если» должно быть признаком, а не {type} · ветви «если» разных типов: {type.then} и {type.else} · запись «{record}» не имеет поля «{field}» · запись «{record}» требует поле «{field}» ({type}) · поле «{field}» объявлено дважды · функция «{function}» принимает {count} арг. ({parameters}), а вызвана с {given} · вызов функции «{function}»: аргумент «{parameter}»: {value} вне {type} · {label} функции «{function}» не задаёт аргумент «{parameter}» · {label}: {value} вне {type} · {label} не соответствует типу {type} |
 | `FLANG_TYPE_ARGS` | `types.flang` | — |
 | `FLANG_TYPE_PARAM` | `types.flang` | — |
 | `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_UNKNOWN` | `flang_cli.c` | — |
-| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `parser.flang`, `sets.flang`, `types.flang` | неизвестная функция «{name}» · неизвестный тип «{name}» · неизвестная запись «{name}» · неизвестный вариант «{name}» · неизвестный конструктор варианта «{name}» · не найдена функция «{name}» · запись не содержит поле «{field}» · имя «{name}» не связано · имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | неизвестная функция «{name}» · неизвестный тип «{name}» · неизвестная запись «{name}» · неизвестный вариант «{name}» · неизвестный конструктор варианта «{name}» · не найдена функция «{name}» · запись не содержит поле «{field}» · имя «{name}» не связано · имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
 | `FLANG_UNPROVED` | `compiler.flang` | — |

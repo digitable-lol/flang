@@ -10555,6 +10555,7 @@ typedef struct {
   long laws_grid;
   long laws_assumed;
   int checker;
+  long law_claims_proved;
 } proof_tally;
 
 /*
@@ -10636,8 +10637,18 @@ static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
   if (!proof_object_at(json, bytes, "laws", &from, &to)) {
     return false;
   }
-  return proof_int_at(json, from, to, "grid", &out->laws_grid) &&
-         proof_int_at(json, from, to, "assumed", &out->laws_assumed);
+  if (!proof_int_at(json, from, to, "grid", &out->laws_grid) ||
+      !proof_int_at(json, from, to, "assumed", &out->laws_assumed)) {
+    return false;
+  }
+  /* ЗАКОНЫ УТВЕРЖДЕНИЯМИ (ADR-0121) — своя доля рядом с «claims», в приговор не
+     входят; их доказанные переигрывает сверщик вместе с прочими, и счёт
+     «проиграно X из Y» обязан их знать. Поля нет — законов нет, это не беда. */
+  out->law_claims_proved = 0;
+  if (proof_object_at(json, bytes, "lawClaims", &from, &to)) {
+    return proof_int_at(json, from, to, "proved", &out->law_claims_proved);
+  }
+  return true;
 }
 
 static int proof_verdict(const proof_tally *t, bool strict) {
@@ -10812,10 +10823,27 @@ static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
  * утверждения открывает строка `утверждение …` без отступа, закрывает любая
  * следующая строка без отступа. Внутри берутся строки, называющие правило или
  * основание: `правило «…»`, `шаг N …`, `вывод …` (кроме `вывод конец`, который
- * ничего не называет), `сведение «…»`, а под индукцией — `случай …` и
+ * ничего не называет), `ход …` (кроме `ход конец` — по тому же доводу),
+ * `сведение «…»`, а под индукцией — `случай …` и
  * `посылка …`. Шапка печатается только у блока, где такая строка нашлась:
  * пустая шапка читалась бы как «шагов нет», а это не одно и то же с «шаги
  * есть, но о них нечего сказать».
+ *
+ * ФОРМА `ход` ДОБАВЛЕНА ЗДЕСЬ, А НЕ СВЕДЕНА К `вывод` (задачи 3046 и 5908).
+ * Ядро пишет вывод в двух формах, и до этой правки в раздел уходила ровно одна:
+ * замер на корпусе 47 файлов (14 программ `flang/proof/probes/user-programs/`
+ * и 33 примера `docs/examples/guide/`, двоичный 0.7.24) дал 40 строк `ход` в
+ * записях, из них 22 реальных хода, и НОЛЬ напечатанных человеку. У девяти
+ * доказанных утверждений из 53 в разделе стояла одна строка — имя правила, —
+ * тогда как в самой записи под ней лежала цепочка `развернуть → переписать
+ * формой → закрыть тождеством`. Сведение двух форм в одну (ADR-0057 §3.1)
+ * здесь НЕ делается: форму `ход` переигрывает независимый сверщик
+ * (`flang/proof/checker/checker.c`, тринадцать первичных ходов закрытым
+ * списком), и переименование формы — правка в двух читателях сразу. Отбор же
+ * ничего не сочиняет: он печатает те самые строки, на которых сверщик
+ * спотыкается подделкой (проверено четырьмя подделками — подменой закона,
+ * подменой правой части, пропуском хода и лишним ходом: на каждой сверщик
+ * отвечает «НЕ СОШЛОСЬ» и кодом 1).
  *
  * `случай …` БЕРЁТСЯ РЯДОМ СО ШАГАМИ НЕ ДЛЯ ПОЛНОТЫ. Внутри индукции нумерация
  * шагов идёт от единицы В КАЖДОМ случае, и без строки случая раздел печатал бы
@@ -10866,11 +10894,12 @@ static void proof_say_steps(const char *record, size_t bytes) {
     line += indent;
     length -= indent;
     if (!proof_line_is(line, length, "правило «") && !proof_line_is(line, length, "шаг ") &&
-        !proof_line_is(line, length, "вывод ") && !proof_line_is(line, length, "случай ") &&
-        !proof_line_is(line, length, "посылка ") && !proof_line_is(line, length, "сведение «")) {
+        !proof_line_is(line, length, "вывод ") && !proof_line_is(line, length, "ход ") &&
+        !proof_line_is(line, length, "случай ") && !proof_line_is(line, length, "посылка ") &&
+        !proof_line_is(line, length, "сведение «")) {
       continue;
     }
-    if (proof_line_is(line, length, "вывод конец")) {
+    if (proof_line_is(line, length, "вывод конец") || proof_line_is(line, length, "ход конец")) {
       continue;
     }
     if (!header_said) {
@@ -11146,6 +11175,14 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
      *
      * Ничто в `own` значит «разбор не дошёл» — тогда спрашивают связанную,
      * ровно как спрашивает `check`.
+     *
+     * ПЕРВЫЙ ДОВОД — ПРОВЕРЕННАЯ ПРОГРАММА, КАК У `check`, а не сырая связанная
+     * (ADR-0121, §6). Судья категорий считает законы, вызывая функции равенства,
+     * и на сырой связанной их не находил: на девяти файлах `flang/ct`, где `check`
+     * отвечал «посчитано на сетке» и кодом 0, `check --proof` отвечал «НЕ
+     * СЧИТАЛИСЬ — категория …» и кодом 2 (замер 15 октября 2026, двоичный 0.7.28
+     * против того же двоичного с этой строкой: `grp-clock-shifts`, `order-shipment`,
+     * `set-product`, `vect-plane` — 2 → 0).
      */
     kept_program = program;
     kept = has_program;
@@ -11155,7 +11192,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       const char *say = NULL;
       size_t say_bytes = 0;
       bool unjudged = false;
-      obstacle_args[0] = linked.tag == FL_NOTHING ? program : linked;
+      obstacle_args[0] = program;
       obstacle_args[1] = own.tag == FL_NOTHING ? program : own;
       if (repl_call("Устройство категорий не сверялось", obstacle_args, 2, &obstacle) == FL_OK
           && val_text(obstacle, &say, &say_bytes) && say_bytes > 0) {
@@ -11268,7 +11305,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
       code = 2;
     } else {
       tally.checker = val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)
-                          ? proof_say_independent(path, utf8, bytes, tally.proved, paths.count > 1)
+                          ? proof_say_independent(path, utf8, bytes, tally.proved + tally.law_claims_proved, paths.count > 1)
                           : -1;
       code = proof_verdict(&tally, strict);
       proof_say_verdict(path, &tally, code, strict);
@@ -11343,56 +11380,6 @@ static int test_corpus(const char *given, bool check, const char *steps, const c
                        bool ledger, bool many);
 
 /**
- * Сколько блоков `прогон` объявлено в САМОМ файле.
- *
- * ЗАЧЕМ ЭТО СЧИТАЕТСЯ ВООБЩЕ. Строка `ожидается` в блоке `прогон` при разборе
- * ОБЯЗАТЕЛЬНА, а исполнить блок двоичному нечем: планировщик объявлен в
- * `flang/self/conc.flang`, и в замыкании двоичного этого слоя нет — поиск имени
- * «Прогнать» в `bootstrap/compiler_flang.c` даёт ноль вхождений. До этого счёта
- * `flang test` называл одни примеры функций, и программа, у которой ВСЕ
- * ожидания блоков ложны, выходила кодом 0: молчание о непроверенном читалось
- * как «проверено» (задача 1116).
- *
- * Считается по разбору ОДНОГО файла, без зависимостей: блок `прогон` стоит там
- * же, где объявлены процессы, которых он касается, и ввезённые блоки в счёт
- * этого файла не входят — по тому же доводу, по которому отдельно считаются
- * свои примеры файла. Файл, который не разбирается, даёт ноль, и это не ложь:
- * до этого места такой файл не доходит, его отвергает проверка выше.
- */
-static size_t test_runs_of(const char *text, size_t bytes) {
-  fl_value args[2];
-  fl_value parsed = fl_nothing();
-  fl_value program = fl_nothing();
-  const fl_value *items = NULL;
-  size_t count = 0;
-  args[0] = repl_value_text(text, bytes);
-  args[1] = repl_value_list(NULL, 0);
-  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK) {
-    return 0;
-  }
-  if (!val_field(parsed, "программа", &program)) {
-    return 0;
-  }
-  zn_field_items(program, "runs", &items, &count);
-  return count;
-}
-
-/**
- * Неисполненные блоки `прогон` — строкой рядом со счётом примеров.
- *
- * ЧИСЛО, А НЕ СЛОВО «частично». Строка стоит ровно тогда, когда блок в файле
- * есть, и называет, сколько их и сколько исполнено; «исполнено 0» написано
- * прямо, чтобы ноль нельзя было принять за «исполнено, и всё сошлось».
- */
-static void test_say_runs(const char *path, size_t runs) {
-  if (runs == 0) {
-    return;
-  }
-  printf("%s: блоков «прогон» %lu, исполнено 0 — исполнить их нечем: планировщика в этом двоичном нет\n", path,
-         (unsigned long)runs);
-}
-
-/**
  * `flang test <файл|каталог|маска> [--no-check] [--json]` — прогон примеров.
  *
  * Довод, не кончающийся на «.flang», и всякий довод со звездой или вопросом —
@@ -11425,7 +11412,6 @@ static int test_file(int argc, char **argv) {
   char *text = NULL;
   size_t bytes = 0;
   size_t index = 0;
-  size_t runs = 0;
   bool check = true;
   bool json = false;
   bool ledger = false;
@@ -11499,10 +11485,6 @@ static int test_file(int argc, char **argv) {
   }
 
   repl_cycle();
-
-  /* БЛОКИ `прогон` СЧИТАЮТСЯ ДО ПРОГОНА ПРИМЕРОВ, и в той же области: ответ —
-     одно число, и следующий сброс области ему не страшен. */
-  runs = test_runs_of(text, bytes);
 
   strings_init(&paths);
   strings_init(&texts);
@@ -11585,13 +11567,12 @@ static int test_file(int argc, char **argv) {
       fflush(stderr);
       printf("%s: примеров %lu, прошло %lu, не прошло %lu\n", path, (unsigned long)total, (unsigned long)passed,
              (unsigned long)failed);
-      test_say_runs(path, runs);
       fflush(stdout);
-      /* КОД 0 У ПРОГРАММЫ С БЛОКАМИ `прогон` НЕ ВЫХОДИТ. Код 3 по ADR-0010 —
-         «сделано, но проверено не всё, и непроверенное названо»: примеры
-         прогнаны, блоки названы числом. Сорвавшийся пример старше: он говорит
-         «работа не сделана», а это код 1. */
-      code = failed > 0 ? 1 : (runs > 0 ? 3 : 0);
+      /* БЛОКИ `прогон` ИСПОЛНЯЕТ ПЛАНИРОВЩИК В ЗАМЫКАНИИ КОМПИЛЯТОРА и сверяет их
+         ожидания (задача 1116): каждый блок — строка в том же счёте, что и
+         примеры функций, сошедшийся прошёл, разошедшийся не прошёл. Отдельного
+         кода для блоков больше нет — неисполненного блока не бывает. */
+      code = failed > 0 ? 1 : 0;
     }
   }
 
@@ -13853,6 +13834,72 @@ static void run_cost_say(fl_value result, double started) {
           run_clock() - started);
 }
 
+/*
+ * БЕДА РАЗБОРА, СВЯЗЫВАНИЯ ИЛИ ТИПОВ — НЕ НЕДОКАЗАННОСТЬ (задача 2761).
+ *
+ * Согласие `--на-веру` дано на одно: запустить программу, чьи утверждения не
+ * доказаны. До этой правки оно снимало всё: «Запуск исходников» под признаком
+ * «на веру» звал «Прогон связанного», не глядя на диагностики связывания, и
+ * программа с FLANG_DUPLICATE_NAME запускалась — ответ давала та из двух
+ * одноимённых функций, которую связывание положило первой. `flang test` и
+ * `flang emit` на том же файле отказывали кодом 1.
+ *
+ * Поэтому перед запуском, при любом ключе, хозяин связывает программу и
+ * сверяет типы — те же два шага и в том же порядке, что у `check`
+ * (`repl_check_sources`). Беда хоть в одном — запуска нет, код 1, беды
+ * напечатаны так же, как у `check`. Типы сверяются только у связанной без бед:
+ * у программы, которая не связалась, они повторили бы ту же беду неизвестными
+ * именами.
+ *
+ * Завершаемость и ядро здесь не судятся: это и есть доказанность, на которую
+ * человек дал согласие.
+ *
+ * Связанная программа отдаётся вызывающему: под согласием запуск идёт по ней
+ * («Прогон связанного»), и второй раз связывать не нужно — на больших
+ * программах связывание дороже всего остального.
+ */
+static bool run_checked(fl_value sources, const char *full, const char *path, size_t files,
+                        fl_value *program) {
+  repl_bads bads;
+  fl_value pair[2];
+  fl_value linked = fl_nothing();
+  fl_value typed = fl_nothing();
+  fl_value diagnostics = fl_nothing();
+  size_t index = 0;
+  bool ok = true;
+  bads_init(&bads);
+  pair[0] = sources;
+  pair[1] = repl_value_say(full);
+  if (repl_call("Связать исходники", pair, 2, &linked) != FL_OK ||
+      !val_field(linked, "программа", program)) {
+    bads_say(&bads, "компилятор не связал программу");
+  } else {
+    if (val_field(linked, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+      for (index = 0; index < diagnostics.as.list.count; index += 1) {
+        bads_take(&bads, diagnostics.as.list.items[index]);
+      }
+    }
+    if (bads.count == 0) {
+      if (repl_call("Проверить типы", program, 1, &typed) != FL_OK) {
+        bads_say(&bads, "проверка типов прекращена");
+      } else if (val_field(typed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
+        for (index = 0; index < diagnostics.as.list.count; index += 1) {
+          bads_take(&bads, diagnostics.as.list.items[index]);
+        }
+      }
+    }
+  }
+  if (bads.count > 0) {
+    check_print_bads(&bads, path, files);
+    msg_printf(stderr, "run.not-checked",
+               "%s: не запущено — программа не прошла проверку разбора, связывания и типов; согласие на недоказанное эту проверку не снимает\n",
+               path);
+    ok = false;
+  }
+  bads_free(&bads);
+  return ok;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
@@ -13862,6 +13909,8 @@ static int run_file(int argc, char **argv) {
   fl_value args[7];
   fl_value bound = fl_nothing();
   fl_value field = fl_nothing();
+  fl_value linked = fl_nothing();
+  bool ran = false;
   char buffer[4096];
   const char *path = NULL;
   const char *name = NULL;
@@ -13998,6 +14047,8 @@ static int run_file(int argc, char **argv) {
   if (!run_args(given, &bound)) {
     fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
     code = 2;
+  } else if (!run_checked(sources, full, path, paths.count, &linked)) {
+    code = 1;
   } else {
     args[0] = sources;
     args[1] = repl_value_say(full);
@@ -14009,8 +14060,26 @@ static int run_file(int argc, char **argv) {
     args[3] = bound;
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
-    if (!verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL,
-                      &said)) {
+    if (how.mode == UNPROVEN_ALLOW) {
+      /* Согласие дано, и проверка выше прошла: вердикт не считается, запуск
+         идёт по уже связанной программе — так же, как «Запуск исходников»
+         под признаком «на веру», только без второго связывания. */
+      fl_value direct[5];
+      direct[0] = linked;
+      direct[1] = args[2];
+      direct[2] = args[3];
+      direct[3] = args[4];
+      direct[4] = args[5];
+      verdict_print(NULL, 0, true, &how);
+      ran = repl_call("Прогон связанного", direct, 5, &result) == FL_OK;
+      if (!ran) {
+        code = 1;
+      }
+    } else {
+      ran = verdict_gate("Запуск исходников", args, 7, 6, "прогон", &result, &code, &how, 1, NULL,
+                         &said);
+    }
+    if (!ran) {
       /*
        * Недоказанная программа без согласия: строка сказана, код — ядра. А
        * дальше идёт то, чего в строке нет и не было: ИМЕНА недоказанных

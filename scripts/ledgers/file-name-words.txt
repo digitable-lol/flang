@@ -261,6 +261,7 @@ check
 checked
 checker
 checking
+checkout
 checks
 checksum
 cherry
@@ -740,6 +741,7 @@ have
 having
 head
 header
+headers
 headings
 headroom
 heartbeat
@@ -747,6 +749,7 @@ heavy
 height
 held
 help
+helper
 hid
 hidden
 hide
@@ -1279,6 +1282,7 @@ press
 presses
 previous
 price
+prices
 principle
 print
 printed

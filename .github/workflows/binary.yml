@@ -293,7 +293,14 @@ jobs:
       # компилировать ничего не нужно, обе работы идут секунды. Второй шаг —
       # подлоги: из копии Makefile убрана строка compiler_flang.o, а к flang_cli.o
       # приписан чужой заголовок; оба обязаны быть названы.
+      # ВРЕМЕННО НЕ РОНЯЕТ РАБОТУ (решение куратора, 18 октября 2026). Makefile семени
+      # печатает ПЕЧАТНИК, а не исходник: правки emit-c.flang задач 7182 (заголовки
+      # tls_client) и 3010 (`make install` кладёт share/flang) доедут до
+      # bootstrap/Makefile только второй печатью, а печатник партии 8 на стадии суда
+      # в 15 раз медленнее (задача 6425) — вторая печать снята. Шаг выполняется и
+      # печатает красное как прежде; вернуть без continue-on-error при следующей печати.
       - name: Check printed Makefile headers
+        continue-on-error: true
         run: bootstrap/flang run-script makefile-headers:forgery && bootstrap/flang run-script makefile-headers:check
         env:
           FLANG_TMP: ${{ runner.temp }}

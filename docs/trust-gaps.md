@@ -94,7 +94,8 @@ tied to the second checker by verdict comparison.
 | 5 | strings and fractions |
 | 6 | record reading leaves the trusted base |
 
-The reference of stage 2 is the common ground for gaps 1, 2 and 3.
+The reference of stage 2 is the common ground for gaps 1, 2 and 3. What the reference is today
+and what is proved about it: [reference-semantics.md](reference-semantics.md).
 
 ## What stays trusted when every stage is done
 

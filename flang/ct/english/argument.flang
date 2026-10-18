@@ -1,0 +1,1417 @@
+модуль «English argument map»
+  использует «Lists» только «Соединить списки»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Reasoning sentences» из "../../proof/probes/syllogism/sentences/translator.flang"
+  использует «English morphology» из "morphology.flang"
+  использует «English parser» из "parse.flang"
+
+примечание "Карта рассуждения из английского текста. Текст делится на предложения, предложения — на
+утверждения по маркерам вывода (therefore, so, thus, hence, consequently, it follows that …) и
+маркерам основания (because, since, as, given that …). Утверждения до маркера вывода — посылки,
+после — вывод; из этого строится граф «посылки → вывод». Каждое утверждение проверяется
+грамматикой (прегруппа) и, если оно читается как категорическое суждение (all, no, some, имя is …)
+или как условие и простое высказывание (if …, … ; it rains), — переводится в программу, которую
+судит ядро flang. Формальная ошибка — это вердикт ядра, а не догадка карты: карта лишь строит
+программу и называет вид ошибки по форме посылок."
+
+объект «English claim»
+  «number»: число
+  «text»: строка
+  «concludes»: признак
+  «marker»: строка
+  «sentence»: число
+
+объект «English argument»
+  «premises»: список число
+  «conclusion»: число
+
+тип «Claim reading»
+  вариант «Categorical» содержит judgment: «Judgment», names: список строки
+  вариант «Conditional» содержит cause: строка, cause_on: признак, effect: строка, effect_on: признак
+  вариант «Atomic» содержит key: строка, holds: признак
+  вариант «Unreadable» содержит why: строка
+
+объект «English named fallacy»
+  «id»: строка
+  «name»: строка
+  «slug»: строка
+  «why»: строка
+
+тотальная функция «Squeezed»
+  принимает text: строка
+  возвращает строка
+  пример «края и двойные пробелы»
+    дано text равно "  All men  are mortal "
+    ожидается "All men are mortal"
+  соединить (отфильтровать (разделить text по " ") где piece → (длина piece) больше 0) по " "
+
+тотальная функция «Without end mark»
+  принимает text: строка
+  возвращает строка
+  пример «точка в конце уходит»
+    дано text равно "Socrates is a man."
+    ожидается "Socrates is a man"
+  пример «запятая в конце уходит»
+    дано text равно "it rains,"
+    ожидается "it rains"
+  пусть squeezed равно «Squeezed» от text
+  если (длина squeezed) больше 0
+    то (если ([".", "!", "?", ",", ";", ":"]) содержит (подстрока squeezed с (длина squeezed) по (длина squeezed))
+      то «Squeezed» от (подстрока squeezed с 1 по ((длина squeezed) минус 1))
+      иначе squeezed)
+    иначе squeezed
+
+тотальная функция «Position of»
+  принимает text: строка, piece: строка
+  возвращает число
+  пример «первое вхождение»
+    дано text равно "it rains, so the ground is wet"
+    дано piece равно ", so "
+    ожидается 9
+  пример «нет вхождения»
+    дано text равно "it rains"
+    дано piece равно ", so "
+    ожидается 0
+  если (длина piece) равен 0
+    то 0
+    иначе «Place after split» от (разделить text по piece)
+
+тотальная функция «Place after split»
+  принимает parts: список строки
+  возвращает число
+  если (длина parts) больше 1 то (длина (элемент 1 в parts)) плюс 1 иначе 0
+
+тотальная функция «Before»
+  принимает text: строка, place: число
+  возвращает строка
+  если place больше 1 то подстрока text с 1 по (place минус 1) иначе ""
+
+тотальная функция «After»
+  принимает text: строка, place: число
+  возвращает строка
+  если (place не больше (длина text)) и притом (place больше 0) то подстрока text с place по (длина text) иначе ""
+
+тотальная функция «Declaration of line»
+  принимает line: строка
+  возвращает список «Listed form»
+  пример «термин с формой множественного числа»
+    дано line равно "Term: hypothesis, hypotheses."
+    ожидается [(запись «Listed form» с «form» равным "hypothesis" и «lemma» равным "hypothesis"
+      и «class» равным "noun" и «tags» равным ["sg", "count"]), (запись «Listed form» с «form» равным "hypotheses"
+      и «lemma» равным "hypothesis" и «class» равным "noun" и «tags» равным ["pl", "count"])]
+  пример «имя»
+    дано line равно "Name: Tweety."
+    ожидается [(запись «Listed form» с «form» равным "tweety" и «lemma» равным "tweety" и «class» равным "name"
+      и «tags» равным ["sg"])]
+  пример «обычная строка объявлением не бывает»
+    дано line равно "All men are mortal."
+    ожидается пустой список
+  пусть lowered равно «Lowercase» от («Without end mark» от line)
+  пусть forms_of равно функция «Declared forms»
+  («Chosen» от [(«When» от (lowered начинается с "term: ") и (forms_of от "noun" и («After» от lowered и 7))),
+    («When» от (lowered начинается с "property: ") и (forms_of от "adjective" и («After» от lowered и 11))),
+    («When» от (lowered начинается с "name: ") и (forms_of от "name" и («After» от lowered и 7)))] и пустой список)
+
+тотальная функция «Declared forms»
+  принимает word_class: строка, listed: строка
+  возвращает список «Listed form»
+  пусть spelled равно (отфильтровать (отобразить (разделить listed по ",") как piece → «Squeezed» от piece)
+    где piece → (длина piece) больше 0)
+  пусть lemma равно (если (длина spelled) больше 0 то элемент 1 в spelled иначе "")
+  если word_class равен "noun"
+    то (отобразить spelled как piece → запись «Listed form» с «form» равным piece и «lemma» равным lemma
+      и «class» равным "noun"
+      и «tags» равным (если piece равен lemma то ["sg", "count"] иначе ["pl", "count"]))
+    иначе (отобразить spelled как piece → запись «Listed form» с «form» равным piece и «lemma» равным lemma
+      и «class» равным word_class и «tags» равным (если word_class равен "name" то ["sg"] иначе ["positive"]))
+
+тотальная функция «Is a declaration»
+  принимает line: строка
+  возвращает признак
+  (длина («Declaration of line» от line)) больше 0
+
+тотальная функция «Declarations in»
+  принимает text: строка
+  возвращает список «Listed form»
+  (свёртка (разделить text по "\n") начиная с пустой список как collected и line → «Соединить списки» от collected
+    и («Declaration of line» от line))
+
+тотальная функция «Body of»
+  принимает text: строка
+  возвращает строка
+  пример «объявления уходят из текста»
+    дано text равно "Name: Tweety.\nTweety is a bird.\nTweety flies."
+    ожидается "Tweety is a bird. Tweety flies."
+  «Squeezed» от (соединить (отфильтровать (разделить text по "\n") где line → не («Is a declaration» от line)) по " ")
+
+тотальная функция «Sentences in»
+  принимает body: строка
+  возвращает список строки
+  пример «три предложения»
+    дано body равно "All men are mortal. Socrates is a man. Therefore, Socrates is mortal."
+    ожидается ["All men are mortal.", "Socrates is a man.", "Therefore, Socrates is mortal."]
+  пример «вопрос остаётся вопросом»
+    дано body равно "Is it wet? It rains."
+    ожидается ["Is it wet?", "It rains."]
+  пусть marked равно (((соединить (разделить (соединить (разделить (соединить (разделить body по ". ") по ".|") по "? ")
+    по "?|") по "! ") по "!|")))
+  (отфильтровать (отобразить (разделить marked по "|") как piece → «Squeezed» от piece)
+    где piece → (длина piece) больше 0)
+
+тотальная функция «Conclusion openers»
+  возвращает список строки
+  ["it follows that ", "we conclude that ", "this shows that ", "this means that ", "which shows that ",
+   "therefore, ", "therefore ", "thus, ", "thus ", "hence, ", "hence ", "consequently, ", "consequently ",
+   "accordingly, ", "accordingly ", "so, ", "so "]
+
+тотальная функция «Reason openers»
+  возвращает список строки
+  ["given that ", "because ", "since ", "as "]
+
+тотальная функция «Conclusion joints»
+  возвращает список строки
+  [", and therefore ", ", therefore ", "; therefore ", ", hence ", "; hence ", ", thus ", "; thus ", ", so ", "; so ",
+   ", consequently ", "; consequently ", ", which shows that ", ", it follows that "]
+
+тотальная функция «Reason joints»
+  возвращает список строки
+  [", because ", " because ", ", since ", " since ", ", for ", ", as "]
+
+тотальная функция «First opener»
+  принимает lowered: строка, openers: список строки
+  возвращает строка
+  пример «маркер вывода в начале»
+    дано lowered равно "therefore, socrates is mortal"
+    дано openers равно ["therefore, ", "therefore "]
+    ожидается "therefore, "
+  (свёртка openers начиная с "" как found и opener → (если (found равен "") и притом (lowered начинается с opener)
+    то opener иначе found))
+
+тотальная функция «First joint»
+  принимает lowered: строка, joints: список строки
+  возвращает строка
+  (свёртка joints начиная с "" как found и joint → (если (found равен "") и притом ((«Position of» от lowered и joint)
+    больше 0) то joint иначе found))
+
+тотальная функция «Claim»
+  принимает number: число, text: строка, concludes: признак, marker: строка, sentence: число
+  возвращает «English claim»
+  (запись «English claim» с «number» равным number и «text» равным («Without end mark» от text)
+    и «concludes» равным concludes
+    и «marker» равным («Squeezed» от (соединить (разделить marker по ",") по ""))
+    и «sentence» равным sentence)
+
+тотальная функция «Claims of sentence»
+  принимает text: строка, sentence: число, start: число
+  возвращает список «English claim»
+  пример «маркер вывода в начале предложения»
+    дано text равно "Therefore, Socrates is mortal."
+    дано sentence равно 3
+    дано start равно 3
+    ожидается [(запись «English claim» с «number» равным 3 и «text» равным "Socrates is mortal"
+      и «concludes» равным да и «marker» равным "therefore" и «sentence» равным 3)]
+  пример «основание после вывода»
+    дано text равно "The ground is wet because it rains."
+    дано sentence равно 1
+    дано start равно 1
+    ожидается [(запись «English claim» с «number» равным 1 и «text» равным "it rains" и «concludes» равным нет
+      и «marker» равным "because" и «sentence» равным 1), (запись «English claim» с «number» равным 2
+      и «text» равным "The ground is wet" и «concludes» равным да и «marker» равным "" и «sentence» равным 1)]
+  пример «посылка и вывод через so»
+    дано text равно "It rains, so the ground is wet."
+    дано sentence равно 1
+    дано start равно 1
+    ожидается [(запись «English claim» с «number» равным 1 и «text» равным "It rains" и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 1), (запись «English claim» с «number» равным 2
+      и «text» равным "the ground is wet" и «concludes» равным да и «marker» равным "so" и «sentence» равным 1)]
+  пусть plain равно «Without end mark» от text
+  пусть lowered равно «Lowercase» от plain
+  пусть opener равно «First opener» от lowered и («Conclusion openers»)
+  пусть reason равно «First opener» от lowered и («Reason openers»)
+  пусть joint равно «First joint» от lowered и («Conclusion joints»)
+  пусть because равно «First joint» от lowered и («Reason joints»)
+  пусть comma равно «Position of» от lowered и ", "
+  пусть joint_at равно «Position of» от lowered и joint
+  пусть because_at равно «Position of» от lowered и because
+  пусть drawn_first равно [(«Claim» от start и («After» от plain и ((длина opener) плюс 1)) и да и opener и sentence)]
+  пусть reason_first равно («Two claims» от start и («After» от («Before» от plain и comma) и ((длина reason) плюс 1))
+    и reason и («After» от plain и (comma плюс 2)) и "" и sentence)
+  пусть joined равно («Two claims» от start и («Before» от plain и joint_at) и "" и («After» от plain
+    и (joint_at плюс (длина joint))) и joint и sentence)
+  пусть reason_after равно («Two claims» от start и («After» от plain и (because_at плюс (длина because))) и because
+    и («Before» от plain и because_at) и "" и sentence)
+  («Chosen» от [(«When» от ((длина opener) больше 0) и drawn_first),
+    («When» от (((длина reason) больше 0) и притом (comma больше 0)) и reason_first),
+    («When» от ((длина joint) больше 0) и joined),
+    («When» от ((длина because) больше 0) и reason_after)] и [(«Claim» от start и plain и нет и "" и sentence)])
+
+тотальная функция «Two claims»
+  принимает start: число, premise: строка, premise_marker: строка, drawn: строка, drawn_marker: строка, sentence: число
+  возвращает список «English claim»
+  [(«Claim» от start и premise и нет и premise_marker и sentence), («Claim» от (start плюс 1) и drawn и да
+    и drawn_marker и sentence)]
+
+тотальная функция «Claims in text»
+  принимает text: строка
+  возвращает список «English claim»
+  пример «силлогизм: две посылки и вывод»
+    дано text равно "All men are mortal. Socrates is a man. Therefore, Socrates is mortal."
+    ожидается [(запись «English claim» с «number» равным 1 и «text» равным "All men are mortal"
+      и «concludes» равным нет и «marker» равным "" и «sentence» равным 1),
+      (запись «English claim» с «number» равным 2 и «text» равным "Socrates is a man" и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 2), (запись «English claim» с «number» равным 3
+      и «text» равным "Socrates is mortal" и «concludes» равным да и «marker» равным "therefore"
+      и «sentence» равным 3)]
+  пусть pieces равно «Sentences in» от («Body of» от text)
+  (свёртка pieces начиная с пустой список как collected и piece → «Соединить списки» от collected
+    и («Claims of sentence»
+    от piece и ((«Sentence count» от collected) плюс 1) и ((длина collected) плюс 1)))
+
+тотальная функция «Sentence count»
+  принимает claims: список «English claim»
+  возвращает число
+  свёртка claims начиная с 0 как most и one → (если one.«sentence» больше most то one.«sentence» иначе most)
+
+объект «Gathering»
+  «open»: список число
+  «last»: число
+  «done»: список «English argument»
+
+тотальная функция «Arguments of»
+  принимает claims: список «English claim»
+  возвращает список «English argument»
+  пример «две посылки ведут к выводу»
+    дано claims равно [(запись «English claim» с «number» равным 1 и «text» равным "a" и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 1), (запись «English claim» с «number» равным 2 и «text» равным "b"
+      и «concludes» равным нет и «marker» равным "" и «sentence» равным 2),
+      (запись «English claim» с «number» равным 3 и «text» равным "c" и «concludes» равным да и «marker» равным "so"
+      и «sentence» равным 3)]
+    ожидается [(запись «English argument» с «premises» равным [1, 2] и «conclusion» равным 3)]
+  пример «вывод без новых посылок опирается на прежний вывод»
+    дано claims равно [(запись «English claim» с «number» равным 1 и «text» равным "a" и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 1), (запись «English claim» с «number» равным 2 и «text» равным "b"
+      и «concludes» равным да и «marker» равным "so" и «sentence» равным 2),
+      (запись «English claim» с «number» равным 3 и «text» равным "c" и «concludes» равным да
+      и «marker» равным "hence" и «sentence» равным 3)]
+    ожидается [(запись «English argument» с «premises» равным [1] и «conclusion» равным 2),
+      (запись «English argument» с «premises» равным [2] и «conclusion» равным 3)]
+  «With trailing premises» от («Gathered arguments» от claims)
+
+тотальная функция «With trailing premises»
+  принимает gathering: «Gathering»
+  возвращает список «English argument»
+  пример «основания после вывода присоединяются к последнему рассуждению»
+    дано gathering равно (запись «Gathering» с «open» равным [3] и «last» равным 2
+      и «done» равным [(запись «English argument» с «premises» равным [1] и «conclusion» равным 2)])
+    ожидается [(запись «English argument» с «premises» равным [1, 3] и «conclusion» равным 2)]
+  пусть count равно длина gathering.«done»
+  (свёртка gathering.«done» начиная с пустой список как collected
+    и one → добавить (если ((длина collected) плюс 1) равен count
+    то запись «English argument» с «premises» равным («Соединить списки» от one.«premises» и gathering.«open»)
+      и «conclusion» равным one.«conclusion»
+    иначе one) к collected)
+
+тотальная функция «Gathered arguments»
+  принимает claims: список «English claim»
+  возвращает «Gathering»
+  (свёртка claims начиная с (запись «Gathering» с «open» равным пустой список и «last» равным 0
+    и «done» равным пустой список)
+    как gathering и one → (если one.«concludes»
+      то (запись «Gathering» с «open» равным пустой список и «last» равным one.«number»
+      и «done» равным (добавить (запись
+        «English argument» с «premises» равным (если ((длина gathering.«open») равен 0)
+        и притом (gathering.«last» больше 0)
+        то [gathering.«last»] иначе gathering.«open») и «conclusion» равным one.«number») к gathering.«done»))
+      иначе (запись «Gathering» с «open» равным (добавить one.«number» к gathering.«open»)
+      и «last» равным gathering.«last»
+        и «done» равным gathering.«done»)))
+
+тотальная функция «Main argument»
+  принимает claims: список «English claim»
+  возвращает «English argument»
+  (свёртка («Arguments of» от claims) начиная с (запись «English argument» с «premises» равным пустой список
+    и «conclusion» равным 0) как found и one → one)
+
+тотальная функция «Claim numbered»
+  принимает claims: список «English claim», wanted: число
+  возвращает «English claim»
+  (свёртка claims начиная с (запись «English claim» с «number» равным 0 и «text» равным "" и «concludes» равным нет
+    и «marker» равным "" и «sentence» равным 0) как found и one → (если one.«number» равен wanted то one иначе found))
+
+примечание "Чтение утверждения как суждения. Слова приводятся к лемме морфологией (men → man,
+mammals → mammal, flies → fly), артикли a, an, the отбрасываются, многословный термин — леммы
+через пробел (prime number). Простое высказывание читается ключом из лемм без отрицания: «it rains»
+и «it does not rain» — один ключ «it rain» с разным знаком."
+
+тотальная функция «Lemma of token»
+  принимает dictionary: «English dictionary», token: строка
+  возвращает строка
+  пример «множественное приводится к единственному»
+    дано dictionary равно (запись «English dictionary» с «declared» равным пустой список
+      и «closed» равным пустой список
+      и «irregular» равным [(запись «Listed form» с «form» равным "men" и «lemma» равным "man" и «class» равным "noun"
+      и «tags» равным ["pl"])] и «stems» равным пустой список)
+    дано token равно "men"
+    ожидается "man"
+  пусть found равно «Analyses» от dictionary и token и нет
+  пусть nouns равно (отфильтровать found где analysis → (analysis.«class» равен "noun")
+    или (analysis.«class» равен "adjective"))
+  если (длина nouns) больше 0
+    то (голова nouns).«lemma»
+    иначе (если (длина found) больше 0 то (голова found).«lemma» иначе «Lowercase» от token)
+
+тотальная функция «Articles»
+  возвращает список строки
+  ["a", "an", "the"]
+
+тотальная функция «Negations»
+  возвращает список строки
+  ["not", "never", "no", "doesn't", "don't", "didn't", "isn't", "aren't", "wasn't", "weren't", "cannot", "can't",
+   "won't", "hasn't", "haven't"]
+
+тотальная функция «Helpers»
+  возвращает список строки
+  ["do", "does", "did", "can", "could", "may", "might", "must", "will", "would", "should", "shall"]
+
+тотальная функция «Term of»
+  принимает dictionary: «English dictionary», tokens: список строки
+  возвращает строка
+  пример «многословный термин»
+    дано dictionary равно (запись «English dictionary» с «declared» равным пустой список
+      и «closed» равным пустой список и «irregular» равным пустой список
+      и «stems» равным [(запись «Lexeme» с «lemma» равным "number" и «class» равным "noun"
+      и «tags» равным ["count"])])
+    дано tokens равно ["a", "prime", "numbers"]
+    ожидается "prime number"
+  (соединить (отобразить (отфильтровать tokens где token → не ((«Articles») содержит («Lowercase» от token)))
+    как token →
+    «Lemma of token» от dictionary и token) по " ")
+
+тотальная функция «Words of claim»
+  принимает text: строка
+  возвращает список строки
+  «Tokens» от text
+
+тотальная функция «Lowered words»
+  принимает text: строка
+  возвращает список строки
+  отобразить («Tokens» от text) как token → «Lowercase» от token
+
+тотальная функция «Copula place»
+  принимает tokens: список строки
+  возвращает число
+  пример «место связки — третье слово»
+    дано tokens равно ["all", "men", "are", "mortal"]
+    ожидается 3
+  пример «без связки — ноль»
+    дано tokens равно ["birds", "fly"]
+    ожидается 0
+  (свёртка tokens начиная с (запись «Position count» с «at» равным 0 и «seen» равным 0) как counter и token →
+    (если (counter.«at» равен 0) и притом ((["is", "are", "isn't", "aren't"]) содержит token)
+      то запись «Position count» с «at» равным (counter.«seen» плюс 1) и «seen» равным (counter.«seen» плюс 1)
+      иначе запись «Position count» с «at» равным counter.«at» и «seen» равным (counter.«seen» плюс 1))).«at»
+
+объект «Position count»
+  «at»: число
+  «seen»: число
+
+тотальная функция «Verb place»
+  принимает dictionary: «English dictionary», tokens: список строки
+  возвращает число
+  (свёртка tokens начиная с (запись «Position count» с «at» равным 0 и «seen» равным 0) как counter и token →
+    (если (counter.«at» равен 0) и притом ((counter.«seen» больше 0) и притом («Verb like» от dictionary и token))
+      то запись «Position count» с «at» равным (counter.«seen» плюс 1) и «seen» равным (counter.«seen» плюс 1)
+      иначе запись «Position count» с «at» равным counter.«at» и «seen» равным (counter.«seen» плюс 1))).«at»
+
+тотальная функция «Verb like»
+  принимает dictionary: «English dictionary», token: строка
+  возвращает признак
+  ((«Helpers») содержит token) или (((«Negations») содержит token) и притом (не (token равен "no"))) или ((длина
+    (отфильтровать («Analyses» от dictionary и token и нет) где analysis → (analysis.«class» равен "verb") и притом
+    ((«Has tag» от analysis и "finite") или («Has tag» от analysis и "base")))) больше 0)
+
+тотальная функция «Slice»
+  принимает tokens: список строки, from_place: число, to_place: число
+  возвращает список строки
+  пример «середина списка»
+    дано tokens равно ["a", "b", "c", "d"]
+    дано from_place равно 2
+    дано to_place равно 3
+    ожидается ["b", "c"]
+  (свёртка tokens начиная с (запись «Slicing» с «seen» равным 0 и «kept» равным пустой список) как slicing и token →
+    (если ((slicing.«seen» плюс 1) не меньше from_place) и притом ((slicing.«seen» плюс 1) не больше to_place)
+      то запись «Slicing» с «seen» равным (slicing.«seen» плюс 1) и «kept» равным (добавить token к slicing.«kept»)
+      иначе запись «Slicing» с «seen» равным (slicing.«seen» плюс 1) и «kept» равным slicing.«kept»)).«kept»
+
+объект «Slicing»
+  «seen»: число
+  «kept»: список строки
+
+тотальная функция «Third person»
+  принимает dictionary: «English dictionary», token: строка
+  возвращает признак
+  ((длина (отфильтровать («Analyses» от dictionary и token и нет) где analysis → (analysis.«class» равен "verb")
+    и притом
+    ((«Has tag» от analysis и "3") и притом («Has tag» от analysis и "sg")))) больше 0)
+
+тотальная функция «Has article»
+  принимает tokens: список строки
+  возвращает признак
+  ((длина (отфильтровать tokens где token → (["a", "an", "the", "every", "each", "all", "some",
+    "no"]) содержит token)) больше 0)
+
+тотальная функция «Is negated»
+  принимает tokens: список строки
+  возвращает признак
+  (длина (отфильтровать tokens где token → ((«Negations») содержит token) и притом (не (token равен "no")))) больше 0
+
+тотальная функция «Without negation»
+  принимает tokens: список строки
+  возвращает список строки
+  отфильтровать tokens где token → не (((«Negations») содержит token) или ((«Helpers») содержит token))
+
+тотальная функция «Name like»
+  принимает dictionary: «English dictionary», token: строка, capital: признак
+  возвращает признак
+  (длина (отфильтровать («Analyses» от dictionary и token
+    и да) где analysis → analysis.«class» равен "name")) больше 0
+
+тотальная функция «Categorical»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает «Claim reading»
+  пусть written равно «Words of claim» от text
+  пусть tokens равно отобразить written как token → «Lowercase» от token
+  пусть quantifier равно (если (длина tokens) больше 0 то элемент 1 в tokens иначе "")
+  пусть copula равно «Copula place» от tokens
+  пусть verb равно «Verb place» от dictionary и tokens
+  пусть cut равно (если copula больше 0 то copula иначе verb)
+  пусть opening равно (((если ((["all", "every", "each", "any", "no", "some"]) содержит quantifier) то 2 иначе
+    (если (quantifier равен "not") и притом ((длина tokens) больше 1) то 3 иначе 1))))
+  пусть subject_words равно «Slice» от tokens и opening и (cut минус 1)
+  пусть predicate_words равно (((«Without negation» от («Slice» от tokens
+    и (если copula больше 0 то cut плюс 1 иначе cut)
+    и (длина tokens)))))
+  пусть negated равно «Is negated» от («Slice» от tokens и cut и (длина tokens))
+  пусть subject равно «Term of» от dictionary и subject_words
+  пусть predicate равно «Term of» от dictionary и predicate_words
+  пусть head_word равно (если (длина subject_words) больше 0 то элемент 1 в subject_words иначе "")
+  пусть definite равно ((["the", "this", "that", "it", "he", "she"]) содержит head_word)
+  пусть verb_word равно (если (cut больше 0) и притом (cut не больше (длина tokens)) то элемент cut в tokens иначе "")
+  пусть singular равно ((["is", "isn't", "was", "wasn't", "does", "doesn't",
+    "has"]) содержит verb_word) или («Third person» от dictionary
+    и verb_word)
+  пусть named равно ((opening равен 1) и притом (definite или ((((длина subject_words) равен 1)
+    и притом («Name like» от dictionary
+    и (элемент 1 в written) и да)) или (singular и притом (не («Has article» от subject_words))))))
+  пусть plural равно ((opening равен 1) и притом (не named))
+  пусть judgment равно (запись «Judgment» с «form» равным («Quantified form» от quantifier и negated и named)
+    и «subject» равным subject и «predicate» равным predicate)
+  пусть unusual равно (соединить ["the quantifier «", quantifier,
+    "» is not one of all, every, each, any, no, some, not all: a syllogism cannot say it"] по "")
+  («Chosen» от [(«When» от ((["most", "many", "few", "several", "both", "half"]) содержит quantifier)
+    и (вариант «Unreadable» с why равным unusual)),
+    («When» от ((cut меньше 2) или (((длина subject) равен 0) или ((длина predicate) равен 0)))
+    и (вариант «Unreadable» с why равным "no subject and predicate around a verb or the copula"))]
+    и (вариант «Categorical» с judgment равным judgment и names равным (если named то [subject] иначе пустой список)))
+
+тотальная функция «Quantified form»
+  принимает quantifier: строка, negated: признак, named: признак
+  возвращает «Form»
+  пример «some … not — частноотрицательное»
+    дано quantifier равно "some"
+    дано negated равно да
+    дано named равно нет
+    ожидается вариант «Some not»
+  («Chosen» от [(«When» от named и (если negated то вариант «Is not» иначе вариант «Is»)),
+    («When» от (quantifier равен "not") и вариант «Some not»),
+    («When» от (quantifier равен "no") и вариант «None»),
+    («When» от (quantifier равен "some") и (если negated то вариант «Some not» иначе вариант «Some»))]
+    и (если negated то вариант «None» иначе вариант «All»))
+
+тотальная функция «Atomic key»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает строка
+  «Term of» от dictionary и («Without negation» от («Lowered words» от text))
+
+тотальная функция «Atomic»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает «Claim reading»
+  пусть key равно «Atomic key» от dictionary и text
+  если (длина key) больше 0
+    то вариант «Atomic» с key равным key и holds равным (не («Is negated» от («Lowered words» от text)))
+    иначе вариант «Unreadable» с why равным "empty statement"
+
+тотальная функция «Reading of claim»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает «Claim reading»
+  пусть lowered равно «Lowercase» от text
+  пусть comma равно «Position of» от lowered и ", "
+  пусть then_place равно «Position of» от lowered и " then "
+  если lowered начинается с "if "
+    то «Condition reading» от dictionary и text и comma и then_place
+    иначе «Categorical» от dictionary и text
+
+тотальная функция «Condition reading»
+  принимает dictionary: «English dictionary», text: строка, comma: число, then_place: число
+  возвращает «Claim reading»
+  если then_place больше 0
+    то «Conditional of» от dictionary и («Before» от text и then_place) и («After» от text и (then_place плюс 6))
+    иначе (если comma больше 0
+      то «Conditional of» от dictionary и («Before» от text и comma) и («After» от text и (comma плюс 2))
+      иначе вариант «Unreadable» с why равным "a condition without a comma or then")
+
+тотальная функция «Conditional of»
+  принимает dictionary: «English dictionary», cause_text: строка, effect_text: строка
+  возвращает «Claim reading»
+  пусть cause_words равно «Without end mark» от («After» от («Squeezed» от cause_text) и 4)
+  (вариант «Conditional» с cause равным («Atomic key» от dictionary и cause_words)
+    и cause_on равным (не («Is negated»
+    от («Lowered words» от cause_words))) и effect равным («Atomic key» от dictionary
+    и («Without end mark» от effect_text))
+    и effect_on равным (не («Is negated» от («Lowered words» от effect_text))))
+
+тотальная функция «As atomic»
+  принимает dictionary: «English dictionary», text: строка, reading: «Claim reading»
+  возвращает «Claim reading»
+  разбор reading
+    случай вариант «Conditional» с cause как cause и cause_on как cause_on и effect как effect и effect_on как effect_on
+      то reading
+    случай любое
+      то «Atomic» от dictionary и text
+
+тотальная функция «Is conditional»
+  принимает reading: «Claim reading»
+  возвращает признак
+  разбор reading
+    случай вариант «Conditional» с cause как cause и cause_on как cause_on и effect как effect и effect_on как effect_on
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Judgment of reading»
+  принимает reading: «Claim reading»
+  возвращает «Judgment»
+  разбор reading
+    случай вариант «Categorical» с judgment как judgment и names как names
+      то judgment
+    случай любое
+      то «No judgment»
+
+тотальная функция «Names of reading»
+  принимает reading: «Claim reading»
+  возвращает список строки
+  разбор reading
+    случай вариант «Categorical» с judgment как judgment и names как names
+      то names
+    случай любое
+      то пустой список
+
+тотальная функция «Why unread»
+  принимает reading: «Claim reading»
+  возвращает строка
+  разбор reading
+    случай вариант «Unreadable» с why как why
+      то why
+    случай любое
+      то ""
+
+объект «Read claim»
+  «claim»: «English claim»
+  «reading»: «Claim reading»
+
+тотальная функция «Readings of»
+  принимает dictionary: «English dictionary», claims: список «English claim», wanted: «English argument»
+  возвращает список «Read claim»
+  пусть numbers равно добавить wanted.«conclusion» к wanted.«premises»
+  пусть chosen равно отфильтровать claims где one → numbers содержит one.«number»
+  пусть first_pass равно (((отобразить chosen как one → запись «Read claim» с «claim» равным one
+    и «reading» равным («Reading of claim»
+    от dictionary и one.«text»))))
+  пусть propositional равно (длина (отфильтровать first_pass где read → «Is conditional» от read.«reading»)) больше 0
+  если propositional
+    то (отобразить first_pass как read → запись «Read claim» с «claim» равным read.«claim»
+      и «reading» равным («As atomic» от dictionary
+      и read.«claim».«text» и read.«reading»))
+    иначе first_pass
+
+тотальная функция «Unread claims»
+  принимает readings: список «Read claim»
+  возвращает список «Read claim»
+  отфильтровать readings где read → (длина («Why unread» от read.«reading»)) больше 0
+
+примечание "Программа для ядра. Категорическое рассуждение идёт переводчиком силлогизмов
+(flang/proof/probes/syllogism/sentences/translator.flang): те же суждения «All», «None», «Some»,
+«Some not», «Is», «Is not», тот же вывод программы. Условное — одной записью «world» из признаков:
+у каждого простого высказывания свой признак, условие — охрана «если … то … иначе да», и судит ядро
+перебором значений признаков."
+
+тотальная функция «Term words of»
+  принимает readings: список «Read claim»
+  возвращает список «Word»
+  пусть names равно (((свёртка readings начиная с пустой список как collected и read → «Соединить списки» от collected
+    и («Names of reading» от read.«reading»))))
+  пусть terms равно «Terms in» от (отобразить readings как read → «Judgment of reading» от read.«reading»)
+  (отобразить terms как term → запись «Word» с «kind» равным (если names содержит term то "name" иначе "notion")
+    и «singular» равным term и «plural» равным term и «feminine» равным "" и «neuter» равным ""
+    и «gender» равным "он")
+
+тотальная функция «Terms in»
+  принимает judgments: список «Judgment»
+  возвращает список строки
+  (свёртка judgments начиная с пустой список как kept и judgment → свёртка [judgment.«subject», judgment.«predicate»]
+    начиная с kept как more и term → (если more содержит term то more иначе добавить term к more))
+
+тотальная функция «Syllogism sentences»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает список «Sentence»
+  (отобразить readings как read → запись «Sentence» с «number» равным read.«claim».«number»
+    и «concludes» равным (read.«claim».«number» равен conclusion)
+    и «judgment» равным («Judgment of reading» от read.«reading»))
+
+тотальная функция «Premises first»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает список «Read claim»
+  («Соединить списки» от (отфильтровать readings где read → не (read.«claim».«number» равен conclusion))
+    и (отфильтровать readings
+    где read → read.«claim».«number» равен conclusion))
+
+тотальная функция «World»
+  возвращает строка
+  "world"
+
+тотальная функция «Given of reading»
+  принимает reading: «Claim reading»
+  возвращает список «Given»
+  разбор reading
+    случай вариант «Conditional» с cause как cause и cause_on как cause_on и effect как effect и effect_on как effect_on
+      то ([(запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным («World»)
+        и «what» равным cause
+        и «holds» равным cause_on) и «effect» равным (запись «Literal» с «who» равным («World»)
+        и «what» равным effect
+        и «holds» равным effect_on))])
+    случай вариант «Atomic» с key как key и holds как holds
+      то [(«Fact» от («World») и key и holds)]
+    случай любое
+      то пустой список
+
+тотальная функция «Literal of reading»
+  принимает reading: «Claim reading»
+  возвращает список «Literal»
+  разбор reading
+    случай вариант «Atomic» с key как key и holds как holds
+      то [(запись «Literal» с «who» равным («World») и «what» равным key и «holds» равным holds)]
+    случай любое
+      то пустой список
+
+тотальная функция «Keys of readings»
+  принимает readings: список «Read claim»
+  возвращает список строки
+  (свёртка readings начиная с пустой список как kept
+    и read → свёртка («Keys of reading» от read.«reading») начиная с kept
+    как more и key → (если more содержит key то more иначе добавить key к more))
+
+тотальная функция «Keys of reading»
+  принимает reading: «Claim reading»
+  возвращает список строки
+  разбор reading
+    случай вариант «Conditional» с cause как cause и cause_on как cause_on и effect как effect и effect_on как effect_on
+      то [cause, effect]
+    случай вариант «Atomic» с key как key и holds как holds
+      то [key]
+    случай любое
+      то пустой список
+
+тотальная функция «Propositional proof»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает «Proof»
+  пусть premises равно отфильтровать readings где read → не (read.«claim».«number» равен conclusion)
+  пусть drawn равно отфильтровать readings где read → read.«claim».«number» равен conclusion
+  пусть givens равно (((свёртка premises начиная с пустой список как collected
+    и read → «Соединить списки» от collected
+    и («Given of reading» от read.«reading»))))
+  пусть claims равно (((свёртка drawn начиная с пустой список как collected и read → «Соединить списки» от collected
+    и («Literal of reading» от read.«reading»))))
+  пусть denial равно отобразить claims как literal → «Fact» от literal.«who» и literal.«what» и (не literal.«holds»)
+  пусть refuting равно «Соединить списки» от givens и denial
+  если «All known» от ((«Derived from» от givens).«known») и claims
+    то (запись «Proof» с «variables» равным [«World»] и «assumptions» равным givens
+      и «goal» равным («Goal text» от claims)
+      и «steps» равным («Direct steps» от givens и claims))
+    иначе (если (длина («Clash in» от refuting и ((«Derived from» от refuting).«known»))) больше 0
+      то (запись «Proof» с «variables» равным [«World»] и «assumptions» равным refuting и «goal» равным "нет"
+        и «steps» равным («Refuting steps» от refuting))
+      иначе (запись «Proof» с «variables» равным [«World»] и «assumptions» равным givens
+      и «goal» равным («Goal text» от claims)
+        и «steps» равным пустой список))
+
+тотальная функция «Kernel program»
+  принимает dictionary: «English dictionary», text: строка
+  возвращает строка
+  пусть claims равно «Claims in text» от text
+  пусть main равно «Main argument» от claims
+  пусть readings равно «Premises first» от («Readings of» от dictionary и claims и main) и main.«conclusion»
+  пусть title равно «Title of» от («Claim numbered» от claims и main.«conclusion»).«text»
+  если (main.«conclusion» равен 0) или (((длина («Unread claims» от readings)) больше 0)
+    или ((длина main.«premises») равен 0))
+    то ""
+    иначе (если «Is propositional» от readings
+      то (соединить [соединить («Program lines» от («Keys of readings» от readings) и title
+      и («Propositional proof» от readings
+        и main.«conclusion»)) по "\n", "\n"] по "")
+      иначе (соединить [соединить («Program lines» от («Fields of» от («Term words of» от readings)) и title
+      и («Proof of»
+        от («Syllogism sentences» от readings и main.«conclusion»))) по "\n", "\n"] по ""))
+
+тотальная функция «Is categorical reading»
+  принимает reading: «Claim reading»
+  возвращает признак
+  разбор reading
+    случай вариант «Categorical» с judgment как judgment и names как names
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Is propositional»
+  принимает readings: список «Read claim»
+  возвращает признак
+  (длина (отфильтровать readings где read → не («Is categorical reading» от read.«reading»))) больше 0
+
+тотальная функция «Title of»
+  принимает text: строка
+  возвращает строка
+  пример «кавычки-ёлочки из названия уходят»
+    дано text равно "it «rains»"
+    ожидается "it rains"
+  соединить (разделить (соединить (разделить text по "«") по "") по "»") по ""
+
+тотальная функция «Reading text»
+  принимает reading: «Claim reading»
+  возвращает строка
+  разбор reading
+    случай вариант «Categorical» с judgment как judgment и names как names
+      то соединить [«Form name» от judgment.«form», " (", judgment.«subject», ", ", judgment.«predicate», ")"] по ""
+    случай вариант «Conditional» с cause как cause и cause_on как cause_on и effect как effect и effect_on как effect_on
+      то соединить ["if ", «Signed» от cause и cause_on, " then ", «Signed» от effect и effect_on] по ""
+    случай вариант «Atomic» с key как key и holds как holds
+      то «Signed» от key и holds
+    случай вариант «Unreadable» с why как why
+      то соединить ["unread: ", why] по ""
+
+тотальная функция «Signed»
+  принимает key: строка, holds: признак
+  возвращает строка
+  если holds то key иначе соединить ["not ", key] по ""
+
+тотальная функция «Form name»
+  принимает form: «Form»
+  возвращает строка
+  разбор form
+    случай вариант «All»
+      то "All"
+    случай вариант «None»
+      то "None"
+    случай вариант «Some»
+      то "Some"
+    случай вариант «Some not»
+      то "Some not"
+    случай вариант «Is»
+      то "Is"
+    случай вариант «Is not»
+      то "Is not"
+
+тотальная функция «Read english claim»
+  принимает text: строка
+  возвращает строка
+  пример «All men are mortal»
+    дано text равно "All men are mortal"
+    ожидается "All (man, mortal)"
+  пример «Socrates is a man»
+    дано text равно "Socrates is a man"
+    ожидается "Is (socrates, man)"
+  пример «Some birds do not fly»
+    дано text равно "Some birds do not fly"
+    ожидается "Some not (bird, fly)"
+  пример «No fish are mammals»
+    дано text равно "No fish are mammals"
+    ожидается "None (fish, mammal)"
+  пример «Tweety cannot fly»
+    дано text равно "Tweety cannot fly"
+    ожидается "Is not (tweety, fly)"
+  пример «условие»
+    дано text равно "If it rains, the ground is wet"
+    ожидается "if it rain then ground be wet"
+  «Reading text» от («Reading of claim» от («Dictionary») и text)
+
+тотальная функция «English kernel program»
+  принимает text: строка
+  возвращает строка
+  пример «текст без вывода программы не даёт»
+    дано text равно "All men are mortal."
+    ожидается ""
+  «Kernel program» от («Dictionary») и text
+
+примечание "Отчёт о рассуждении — тот же JSON, что у проверки рассуждений на русском (ветка
+a/reasoning-checks-name-the-fallacy): language, verdict (follows, does-not-follow, not-judged), fallacy,
+premises, conclusion, counterexample, unparsed, hints, dictionary, kernel, boundary. Вердикт следует
+только из ответа ядра. Имя формальной ошибки и пример против — подсказки по форме посылок, у них
+те же коды, что в русском каталоге. Сверх общих полей — поле map: утверждения с ролью и
+грамматикой, рассуждения и граф «посылки → вывод» с записью для Mermaid."
+
+тотальная функция «Letter of»
+  принимает judgment: «Judgment»
+  возвращает строка
+  пример «All — общеутвердительное A»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "man"
+      и «predicate» равным "mortal")
+    ожидается "A"
+  разбор judgment.«form»
+    случай вариант «All»
+      то "A"
+    случай вариант «None»
+      то "E"
+    случай вариант «Some»
+      то "I"
+    случай вариант «Some not»
+      то "O"
+    случай вариант «Is»
+      то "a"
+    случай вариант «Is not»
+      то "e"
+
+тотальная функция «Is a denial»
+  принимает judgment: «Judgment»
+  возвращает признак
+  (["E", "O", "e"]) содержит («Letter of» от judgment)
+
+тотальная функция «Is particular»
+  принимает judgment: «Judgment»
+  возвращает признак
+  (["I", "O"]) содержит («Letter of» от judgment)
+
+тотальная функция «Distributes»
+  принимает judgment: «Judgment», term: строка
+  возвращает признак
+  пример «подлежащее при All взято целиком»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "man"
+      и «predicate» равным "mortal")
+    дано term равно "man"
+    ожидается да
+  пример «сказуемое при All — только частью»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "man"
+      и «predicate» равным "mortal")
+    дано term равно "mortal"
+    ожидается нет
+  (((judgment.«subject» равен term) и притом ((["A", "E", "a", "e"]) содержит («Letter of» от judgment))) или
+    ((judgment.«predicate» равен term) и притом ((["E", "O", "e"]) содержит («Letter of» от judgment))))
+
+тотальная функция «Uses term»
+  принимает judgment: «Judgment», term: строка
+  возвращает признак
+  (judgment.«subject» равен term) или (judgment.«predicate» равен term)
+
+тотальная функция «Same judgment»
+  принимает one: «Judgment», other: «Judgment»
+  возвращает признак
+  пусть same равно («Letter of» от one) равен («Letter of» от other)
+  пусть straight равно (one.«subject» равен other.«subject») и притом (one.«predicate» равен other.«predicate»)
+  пусть turned равно ((((one.«subject» равен other.«predicate») и притом ((one.«predicate» равен other.«subject»)
+    и притом ((["E", "I"]) содержит («Letter of» от one))))))
+  same и притом (straight или turned)
+
+тотальная функция «No error»
+  возвращает «English named fallacy»
+  запись «English named fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным ""
+
+тотальная функция «Error named»
+  принимает id: строка, name: строка, slug: строка, why: строка
+  возвращает «English named fallacy»
+  запись «English named fallacy» с «id» равным id и «name» равным name и «slug» равным slug и «why» равным why
+
+тотальная функция «Quoted terms»
+  принимает terms: список строки
+  возвращает строка
+  соединить (отобразить terms как term → соединить ["“", term, "”"] по "") по ", "
+
+тотальная функция «Middle of»
+  принимает terms: список строки, small: строка, large: строка
+  возвращает строка
+  пусть others равно отфильтровать terms где term → не ((term равен small) или (term равен large))
+  если (длина others) больше 0 то элемент 1 в others иначе ""
+
+объект «Error rule»
+  «applies»: признак
+  «error»: «English named fallacy»
+
+тотальная функция «First error»
+  принимает rules: список «Error rule»
+  возвращает «English named fallacy»
+  (свёртка rules начиная с («No error») как found и one → (если (found.«id» равен "") и притом one.«applies»
+    то one.«error» иначе found))
+
+тотальная функция «Rule»
+  принимает applies: признак, error: «English named fallacy»
+  возвращает «Error rule»
+  запись «Error rule» с «applies» равным applies и «error» равным error
+
+тотальная функция «Two premise error»
+  принимает one_premise: «Judgment», other_premise: «Judgment», conclusion: «Judgment»
+  возвращает «English named fallacy»
+  пусть small равно conclusion.«subject»
+  пусть large равно conclusion.«predicate»
+  пусть terms равно «Terms in» от [one_premise, other_premise, conclusion]
+  пусть major равно (если «Uses term» от one_premise и large то one_premise иначе other_premise)
+  пусть minor равно (если «Uses term» от one_premise и large то other_premise иначе one_premise)
+  пусть middle равно «Middle of» от terms и small и large
+  пусть placed равно («Uses term» от major и large) и притом («Uses term» от minor и small)
+  пусть consequent равно (((((«Letter of» от major) равен "A") и притом (major.«subject» равен large)) и притом
+    ((((«Letter of» от minor) равен "a") и притом (minor.«predicate» равен middle))
+    и притом ((«Letter of» от conclusion) равен "a"))))
+  пусть antecedent равно (((((«Letter of» от major) равен "A") и притом (major.«subject» равен middle)) и притом
+    ((((«Letter of» от minor) равен "e") и притом (minor.«predicate» равен middle))
+    и притом ((«Letter of» от conclusion) равен "e"))))
+  пусть middle_part равно (не («Distributes» от major и middle)) и притом (не («Distributes» от minor и middle))
+  пусть major_grows равно («Distributes» от conclusion и large) и притом (не («Distributes» от major и large))
+  пусть minor_grows равно («Distributes» от conclusion и small) и притом (не («Distributes» от minor и small))
+  пусть negatives равно («Is a denial» от major) и притом («Is a denial» от minor)
+  пусть from_negative равно (((«Is a denial» от major) или («Is a denial» от minor))
+    и притом (не («Is a denial» от conclusion)))
+  пусть from_affirmatives равно (((«Is a denial» от conclusion) и притом ((не («Is a denial» от major))
+    и притом (не («Is a denial»
+    от minor)))))
+  пусть particulars равно («Is particular» от major) и притом («Is particular» от minor)
+  пусть existential равно (((«Is particular» от conclusion) и притом ((не («Is particular» от major))
+    и притом (не («Is particular»
+    от minor)))))
+  («First error» от [(«Rule» от ((длина terms) больше 3) и («Error named» от "four-terms" и "four terms"
+    и "equivocation"
+    и (соединить ["there are four terms, not three: ", «Quoted terms» от terms,
+    "; the premises share no middle term"] по ""))),
+    («Rule» от (не placed) и («No error»)),
+    («Rule» от consequent и («Error named» от "affirming-the-consequent" и "affirming the consequent"
+    и "affirming-the-consequent"
+    и (соединить ["something can be “", middle, "” without being “", large, "”: from “", small, "” being “", middle,
+    "” it does not follow that “", small, "” is “", large, "”; the middle term “", middle,
+    "” is not taken whole in either premise"] по ""))),
+    («Rule» от antecedent и («Error named» от "denying-the-antecedent" и "denying the antecedent"
+    и "denying-the-antecedent"
+    и (соединить ["the premise says that every “", middle, "” is “", large, "”, not that only a “", middle, "” is “",
+    large,
+    "”: from “", small, "” not being “", middle, "” nothing follows about “", large, "”"] по ""))),
+    («Rule» от negatives и («Error named» от "two-negative-premises" и "two negative premises" и ""
+    и (соединить ["both premises deny: they say how the terms are not linked to the middle term, ",
+    "and nothing about how they are linked to each other"] по ""))),
+    («Rule» от middle_part и («Error named» от "undistributed-middle" и "undistributed middle" и ""
+    и (соединить ["the middle term “", middle, "” is not taken whole in either premise"] по ""))),
+    («Rule» от major_grows и («Error named» от "illicit-major" и "illicit major" и ""
+    и (соединить ["the major term “", large,
+    "” is taken whole in the conclusion but only in part in its premise"] по ""))),
+    («Rule» от minor_grows и («Error named» от "illicit-minor" и "illicit minor" и ""
+    и (соединить ["the minor term “", small,
+    "” is taken whole in the conclusion but only in part in its premise"] по ""))),
+    («Rule» от from_negative и («Error named» от "affirmative-from-negative"
+    и "affirmative conclusion from a negative premise" и ""
+    и "one premise denies and the conclusion affirms: an affirmation does not follow from a denial")),
+    («Rule» от from_affirmatives и («Error named» от "negative-from-affirmatives"
+    и "negative conclusion from affirmative premises"
+    и "" и "both premises affirm and the conclusion denies: the denial has nothing to rest on")),
+    («Rule» от particulars и («Error named» от "two-particular-premises" и "two particular premises" и ""
+    и "both premises speak only of “some”: two particular premises give no conclusion")),
+    («Rule» от existential и («Error named» от "existential-fallacy" и "existential fallacy" и "vacuous-truth"
+    и (соединить ["both premises are universal and the conclusion is particular: a universal claim about “", small,
+    "” is true even if there is no “", small, "”, while “some …” says there is one"] по "")))])
+
+тотальная функция «Propositional error»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает «English named fallacy»
+  пусть drawn равно «Literal of reading» от («Claim reading at» от readings и conclusion)
+  пусть conditions равно (((свёртка readings начиная с пустой список как collected
+    и read → «Соединить списки» от collected
+    и («Conditions of» от read.«reading»))))
+  пусть facts равно (((свёртка readings начиная с пустой список как collected и read → «Соединить списки» от collected
+    и (если read.«claim».«number» равен conclusion то пустой список иначе «Literal of reading» от read.«reading»))))
+  («First error» от (свёртка conditions начиная с пустой список как collected
+    и guard → «Соединить списки» от collected
+    и [(«Rule» от ((facts содержит guard.«effect») и притом (drawn содержит guard.«cause»)) и («Error named»
+    от "affirming-the-consequent" и "affirming the consequent" и "affirming-the-consequent" и (соединить ["“",
+    guard.«effect».«what», "” may hold for another reason: the condition says that “", guard.«cause».«what»,
+    "” brings “",
+    guard.«effect».«what», "”, not that only “", guard.«cause».«what», "” does"] по ""))),
+    («Rule» от ((facts содержит («Opposite» от guard.«cause»))
+    и притом (drawn содержит («Opposite» от guard.«effect»)))
+    и («Error named» от "denying-the-antecedent" и "denying the antecedent" и "denying-the-antecedent"
+    и (соединить ["the condition says what follows when “", guard.«cause».«what»,
+    "” holds, and nothing about the case when it does not"] по "")))]))
+
+тотальная функция «Conditions of»
+  принимает reading: «Claim reading»
+  возвращает список «Given»
+  отфильтровать («Given of reading» от reading) где guard → guard.«conditional»
+
+тотальная функция «Claim reading at»
+  принимает readings: список «Read claim», wanted: число
+  возвращает «Claim reading»
+  (свёртка readings начиная с (вариант «Unreadable» с why равным "no such claim") как found и read →
+    (если read.«claim».«number» равен wanted то read.«reading» иначе found))
+
+тотальная функция «Json text»
+  принимает text: строка
+  возвращает строка
+  пример «кавычки, обратная черта и перевод строки экранируются»
+    дано text равно "a \"b\"\nc\\d"
+    ожидается "\"a \\\"b\\\"\\nc\\\\d\""
+  (соединить ["\"", «Replaced» от («Replaced» от («Replaced» от («Replaced» от text и "\\" и "\\\\") и "\"" и "\\\"")
+    и "\n" и "\\n") и "\t" и "\\t", "\""] по "")
+
+тотальная функция «Json texts»
+  принимает texts: список строки
+  возвращает строка
+  соединить ["[", соединить (отобразить texts как text → «Json text» от text) по ", ", "]"] по ""
+
+тотальная функция «Json pair»
+  принимает name: строка, value: строка
+  возвращает строка
+  соединить [«Json text» от name, ": ", value] по ""
+
+тотальная функция «Json braces»
+  принимает pairs: список строки
+  возвращает строка
+  соединить ["{", соединить pairs по ", ", "}"] по ""
+
+тотальная функция «Json list»
+  принимает values: список строки
+  возвращает строка
+  соединить ["[", соединить values по ", ", "]"] по ""
+
+тотальная функция «Error json»
+  принимает error: «English named fallacy»
+  возвращает строка
+  пример «нет ошибки — null»
+    дано error равно (запись «English named fallacy» с «id» равным "" и «name» равным "" и «slug» равным ""
+      и «why» равным "")
+    ожидается "null"
+  если error.«id» равен ""
+    то "null"
+    иначе («Json braces» от [«Json pair» от "id" и («Json text» от error.«id»),
+      «Json pair» от "name" и («Json text» от error.«name»),
+      «Json pair» от "slug" и («Json text» от error.«slug»),
+      «Json pair» от "url" и («Json text» от (если error.«slug» равен ""
+      то "" иначе соединить ["https://courses.digitable.life/fallacies/#", error.«slug»] по "")),
+      «Json pair» от "why" и («Json text» от error.«why»)])
+
+тотальная функция «Kernel verdict»
+  принимает program: строка, output: строка
+  возвращает строка
+  пример «доказано — следует»
+    дано program равно "модуль «Reasoning»\n\n  по предположению\n"
+    дано output равно "r.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0"
+    ожидается "follows"
+  пример «шаг вывода не прошёл на закрывающей строке — не следует»
+    дано program равно "модуль «Reasoning»\n\n  по предположению\n"
+    дано output равно "FLANG_PROOF_STEP в файле r.flang, строка 3, столбец 3: шаг 1"
+    ожидается "does-not-follow"
+  пример «ядро не спрашивали»
+    дано program равно ""
+    дано output равно ""
+    ожидается "not-judged"
+  пусть closing равно соединить [", строка ", к строке («Closing line» от program), ", столбец"] по ""
+  («Chosen» от [(«When» от ((длина program) равен 0) и "not-judged"),
+    («When» от (output содержит "ДОКАЗАНО — утверждений 1: доказано 1") и "follows"),
+    («When» от ((output содержит "FLANG_PROOF_STEP") и притом (output содержит closing)) и "does-not-follow")]
+    и "not-judged")
+
+тотальная функция «Kernel line»
+  принимает verdict: строка, output: строка
+  возвращает строка
+  («Chosen» от [(«When» от (verdict равен "follows") и («After the mark» от output и "ДОКАЗАНО — ")),
+    («When» от (verdict равен "does-not-follow")
+    и (соединить ["FLANG_PROOF_STEP: the closing step of the checked program ",
+    "fails — the conclusion is not derived from the premises"] по ""))]
+    и (если (длина output) больше 300 то подстрока output с 1 по 300 иначе output))
+
+тотальная функция «Informal words»
+  возвращает строка
+  пример «неформальные ошибки формой не решаются»
+    ожидается "informal fallacies such as ad hominem, straw man or appeal to authority are not decided by form"
+  "informal fallacies such as ad hominem, straw man or appeal to authority are not decided by form"
+
+тотальная функция «Boundary of»
+  принимает verdict: строка
+  возвращает строка
+  если verdict равен "follows"
+    то ((соединить ["the conclusion follows by form; ", «Informal words»,
+      ": the kernel does not check that the premises ",
+      "are true or that the dispute is fair"] по ""))
+    иначе (если verdict равен "does-not-follow"
+      то (соединить ["the conclusion does not follow by form; ", «Informal words», ", and the kernel says nothing ",
+        "about them either way"] по "")
+      иначе (соединить ["the form is not judged: not every sentence was read; ", «Informal words», " at all"] по ""))
+
+тотальная функция «Yes or no»
+  принимает known: список строки, literal: «Literal»
+  возвращает строка
+  если known содержит («Literal text» от literal) то "yes" иначе "no"
+
+тотальная функция «Syllogism counterexample»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает строка
+  пусть sentences равно «Syllogism sentences» от readings и conclusion
+  пусть words равно «Term words of» от readings
+  пусть individuals равно «Individuals of» от sentences
+  пусть known равно ((«Derived from» от («Соединить списки» от («Givens of premises» от sentences)
+    и («Denial of» от individuals
+    и («Conclusion of» от sentences)))).«known»)
+  (соединить (отобразить individuals как individual → соединить [individual, ": ",
+    соединить (отобразить («Fields of» от words)
+    как column → соединить [column, " = ", «Yes or no» от known и (запись «Literal» с «who» равным individual
+    и «what» равным column
+    и «holds» равным да)] по "") по ", "] по "") по "; ")
+
+тотальная функция «Propositional counterexample»
+  принимает readings: список «Read claim», conclusion: число
+  возвращает строка
+  пусть premises равно отфильтровать readings где read → не (read.«claim».«number» равен conclusion)
+  пусть givens равно ((свёртка premises начиная с пустой список как collected и read → «Соединить списки» от collected
+    и («Given of reading» от read.«reading»)))
+  пусть claims равно «Literal of reading» от («Claim reading at» от readings и conclusion)
+  пусть denial равно отобразить claims как literal → «Fact» от literal.«who» и literal.«what» и (не literal.«holds»)
+  пусть known равно («Derived from» от («Соединить списки» от givens и denial)).«known»
+  (соединить (отобразить («Keys of readings» от readings) как key → соединить [key, " = ",
+    «Yes or no» от known и (запись «Literal»
+    с «who» равным («World») и «what» равным key и «holds» равным да)] по "") по ", ")
+
+тотальная функция «Map json»
+  принимает dictionary: «English dictionary», claims: список «English claim»
+  возвращает строка
+  пусть arguments равно «Arguments of» от claims
+  пусть claim_values равно (отобразить claims
+    как one → «Json braces» от [«Json pair» от "id" и (к строке one.«number»),
+    «Json pair» от "text" и («Json text» от one.«text»),
+    «Json pair» от "role" и («Json text» от (если one.«concludes» то "conclusion"
+    иначе "premise")), «Json pair» от "marker" и («Json text» от one.«marker»),
+    «Json pair» от "sentence" и (к строке one.«sentence»),
+    «Json pair» от "grammar" и («Json text» от («Parse with» от dictionary и one.«text»))])
+  пусть argument_values равно ((отобразить arguments
+    как one → «Json braces» от [«Json pair» от "premises" и («Json list»
+    от (отобразить one.«premises» как number → к строке number)),
+    «Json pair» от "conclusion" и (к строке one.«conclusion»)]))
+  пусть nodes равно (отобразить claims
+    как one → «Json braces» от [«Json pair» от "id" и («Json text» от («Node of» от one.«number»)),
+    «Json pair» от "label" и («Json text» от one.«text»),
+    «Json pair» от "role" и («Json text» от (если one.«concludes»
+    то "conclusion" иначе "premise"))])
+  пусть edges равно ((свёртка arguments начиная с пустой список как collected и one → «Соединить списки» от collected
+    и (отобразить one.«premises»
+    как number → «Json braces» от [«Json pair» от "from" и («Json text» от («Node of» от number)),
+    «Json pair» от "to" и («Json text» от («Node of» от one.«conclusion»))])))
+  («Json braces» от [«Json pair» от "claims" и («Json list» от claim_values),
+    «Json pair» от "arguments" и («Json list»
+    от argument_values), «Json pair» от "graph" и («Json braces» от [«Json pair» от "nodes" и («Json list» от nodes),
+    «Json pair» от "edges" и («Json list» от edges)]),
+    «Json pair» от "mermaid" и («Json text» от («Mermaid of» от claims))])
+
+тотальная функция «Node of»
+  принимает number: число
+  возвращает строка
+  соединить ["c", к строке number] по ""
+
+тотальная функция «Mermaid of»
+  принимает claims: список «English claim»
+  возвращает строка
+  пример «две посылки и вывод»
+    дано claims равно [(запись «English claim» с «number» равным 1 и «text» равным "It rains" и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 1), (запись «English claim» с «number» равным 2
+      и «text» равным "the ground is wet" и «concludes» равным да и «marker» равным "so" и «sentence» равным 1)]
+    ожидается "graph TD\n  c1[\"It rains\"]\n  c2([\"the ground is wet\"])\n  c1 --> c2"
+  пусть nodes равно ((отобразить claims как one → соединить ["  ", «Node of» от one.«number»,
+    (если one.«concludes» то "([\"" иначе "[\""),
+    «Replaced» от one.«text» и "\"" и "'", (если one.«concludes» то "\"])" иначе "\"]")] по ""))
+  пусть edges равно ((свёртка («Arguments of» от claims) начиная с пустой список как collected
+    и one → «Соединить списки» от collected
+    и (отобразить one.«premises» как number → соединить ["  ", «Node of» от number, " --> ",
+    «Node of» от one.«conclusion»] по "")))
+  соединить (приписать "graph TD" к («Соединить списки» от nodes и edges)) по "\n"
+
+тотальная функция «Unparsed json of»
+  принимает readings: список «Read claim»
+  возвращает список строки
+  (отобразить («Unread claims» от readings)
+    как read → «Json braces» от [«Json pair» от "sentence" и (к строке read.«claim».«number»),
+    «Json pair» от "text" и («Json text» от read.«claim».«text»),
+    «Json pair» от "reason" и («Json text» от («Why unread» от read.«reading»))])
+
+тотальная функция «Dictionary lines of»
+  принимает readings: список «Read claim»
+  возвращает список строки
+  (отобразить («Term words of» от readings) как word → соединить [(если word.«kind» равен "name" то "Name: "
+    иначе "Term: "),
+    word.«singular»] по "")
+
+тотальная функция «No conclusion words»
+  возвращает строка
+  (соединить ["no conclusion: the text has no marker such as therefore, so, thus, hence, ",
+    "because or since"] по "")
+
+тотальная функция «Error of»
+  принимает verdict: строка, circle: признак, propositional: признак, readings: список «Read claim», conclusion: число
+  возвращает «English named fallacy»
+  если (verdict равен "follows") и притом circle
+    то («Error named» от "circular-reasoning" и "circular reasoning" и "circular-reasoning"
+      и "the conclusion repeats a premise: it follows from it, of course, but adds no support it did not already have")
+    иначе (если verdict равен "does-not-follow"
+      то «Not following error» от propositional и readings и conclusion
+      иначе «No error»)
+
+тотальная функция «Not following error»
+  принимает propositional: признак, readings: список «Read claim», conclusion: число
+  возвращает «English named fallacy»
+  пусть premises равно отфильтровать readings где read → не (read.«claim».«number» равен conclusion)
+  пусть judgments равно отобразить premises как read → «Judgment of reading» от read.«reading»
+  пусть drawn равно «Judgment of reading» от («Claim reading at» от readings и conclusion)
+  если propositional
+    то «Propositional error» от readings и conclusion
+    иначе (если (длина judgments) равен 2
+      то «Two premise error» от (элемент 1 в judgments) и (элемент 2 в judgments) и drawn
+      иначе «No error»)
+
+тотальная функция «Counterexample of»
+  принимает verdict: строка, propositional: признак, readings: список «Read claim», conclusion: число
+  возвращает строка
+  если verdict равен "does-not-follow"
+    то (если propositional то «Propositional counterexample» от readings и conclusion
+      иначе «Syllogism counterexample» от readings и conclusion)
+    иначе ""
+
+тотальная функция «Report json of»
+  принимает dictionary: «English dictionary», text: строка, output: строка
+  возвращает строка
+  пусть claims равно «Claims in text» от text
+  пусть main равно «Main argument» от claims
+  пусть readings равно «Premises first» от («Readings of» от dictionary и claims и main) и main.«conclusion»
+  пусть program равно «Kernel program» от dictionary и text
+  пусть verdict равно «Kernel verdict» от program и output
+  пусть propositional равно «Is propositional» от readings
+  пусть premise_readings равно отфильтровать readings где read → не (read.«claim».«number» равен main.«conclusion»)
+  пусть judgments равно отобразить premise_readings как read → «Judgment of reading» от read.«reading»
+  пусть drawn равно «Judgment of reading» от («Claim reading at» от readings и main.«conclusion»)
+  пусть circle равно (длина (отфильтровать judgments где judgment → «Same judgment» от judgment и drawn)) больше 0
+  пусть error равно («Error of» от verdict и (circle и притом (не propositional)) и propositional и readings
+    и main.«conclusion»)
+  пусть against равно «Counterexample of» от verdict и propositional и readings и main.«conclusion»
+  пусть unparsed равно (если main.«conclusion» равен 0 то [«Json braces» от [«Json pair» от "sentence" и "0",
+    «Json pair» от "text" и "\"\"",
+    «Json pair» от "reason" и («Json text» от («No conclusion words»))]]
+    иначе «Unparsed json of» от readings)
+  («Json braces» от [«Json pair» от "language" и "\"en\"", «Json pair» от "verdict" и («Json text» от verdict),
+    «Json pair» от "fallacy" и («Error json» от error),
+    «Json pair» от "premises" и («Json texts» от (отобразить premise_readings
+    как read → read.«claim».«text»)), «Json pair» от "conclusion" и («Json text» от («Claim numbered» от claims
+    и main.«conclusion»).«text»), «Json pair» от "counterexample" и («Json text» от against),
+    «Json pair» от "unparsed" и («Json list» от unparsed), «Json pair» от "hints" и "[]",
+    «Json pair» от "dictionary" и («Json texts» от (если propositional
+    то пустой список иначе «Dictionary lines of» от readings)),
+    «Json pair» от "kernel" и («Json text» от («Kernel line» от verdict
+    и output)), «Json pair» от "boundary" и («Json text» от («Boundary of» от verdict)),
+    «Json pair» от "map" и («Map json»
+    от dictionary и claims)])
+
+тотальная функция «English report»
+  принимает text: строка
+  возвращает строка
+  «Report json of» от («Dictionary») и text и ""
+
+примечание "Вход для страниц по договору ADR-0167 §5: те же три функции, что у русского модуля проверки
+рассуждений, — «Kernel program of», «Reasoning json», «Reasoning words». Первый довод — код языка; этот
+модуль читает en, на другой код отвечает not-judged с причиной. Выбор модуля по языку — у страницы."
+
+тотальная функция «Reads language»
+  принимает language: строка
+  возвращает признак
+  пример «английский читается»
+    дано language равно "en"
+    ожидается да
+  пример «русский — другим модулем»
+    дано language равно "ru"
+    ожидается нет
+  language равен "en"
+
+тотальная функция «Kernel program of»
+  принимает language: строка, text: строка
+  возвращает строка
+  пример «на другом языке судить нечего»
+    дано language равно "ru"
+    дано text равно "Все люди смертны."
+    ожидается ""
+  если «Reads language» от language то «Kernel program» от («Dictionary») и text иначе ""
+
+тотальная функция «Other language json»
+  принимает language: строка
+  возвращает строка
+  пусть reason равно соединить ["the language «", language, "» is not read by this module: it reads English (en)"] по ""
+  («Json braces» от [«Json pair» от "language" и («Json text» от language), «Json pair» от "verdict" и "\"not-judged\"",
+    «Json pair» от "fallacy" и "null", «Json pair» от "premises" и "[]", «Json pair» от "conclusion" и "\"\"",
+    «Json pair» от "counterexample" и "\"\"", «Json pair» от "unparsed" и («Json list» от [(«Json braces» от
+    [«Json pair» от "sentence" и "0", «Json pair» от "text" и "\"\"",
+    «Json pair» от "reason" и («Json text» от reason)])]),
+    «Json pair» от "hints" и "[]", «Json pair» от "dictionary" и "[]", «Json pair» от "kernel" и "\"\"",
+    «Json pair» от "boundary" и («Json text» от («Boundary of» от "not-judged"))])
+
+тотальная функция «Reasoning json»
+  принимает language: строка, text: строка, output: строка
+  возвращает строка
+  если «Reads language» от language
+    то «Report json of» от («Dictionary») и text и output
+    иначе «Other language json» от language
+
+тотальная функция «Claim line»
+  принимает one: «English claim»
+  возвращает строка
+  пример «строка утверждения: номер, роль, текст»
+    дано one равно (запись «English claim» с «number» равным 2 и «text» равным "Socrates is a man"
+      и «concludes» равным нет
+      и «marker» равным "" и «sentence» равным 2)
+    ожидается "2. premise: Socrates is a man"
+  (соединить [к строке one.«number», ". ", (если one.«concludes» то "conclusion" иначе "premise"), ": ",
+    one.«text»] по "")
+
+тотальная функция «Reasoning words»
+  принимает language: строка, text: строка, output: строка
+  возвращает строка
+  пример «чужой язык назван словами»
+    дано language равно "ru"
+    дано text равно "Все люди смертны."
+    дано output равно ""
+    ожидается "NOT JUDGED: the language «ru» is not read by this module"
+  если «Reads language» от language
+    то «English words» от text и output
+    иначе (соединить ["NOT JUDGED: the language «", language,
+      "» is not read by this module"] по "")
+
+тотальная функция «English words»
+  принимает text: строка, output: строка
+  возвращает строка
+  пусть dictionary равно «Dictionary»
+  пусть claims равно «Claims in text» от text
+  пусть main равно «Main argument» от claims
+  пусть readings равно «Premises first» от («Readings of» от dictionary и claims и main) и main.«conclusion»
+  пусть verdict равно «Kernel verdict» от («Kernel program» от dictionary и text) и output
+  пусть propositional равно «Is propositional» от readings
+  пусть premises равно отфильтровать readings где read → не (read.«claim».«number» равен main.«conclusion»)
+  пусть drawn равно «Judgment of reading» от («Claim reading at» от readings и main.«conclusion»)
+  пусть circle равно ((длина (отфильтровать premises
+    где read → «Same judgment» от («Judgment of reading» от read.«reading»)
+    и drawn)) больше 0)
+  пусть error равно («Error of» от verdict и (circle и притом (не propositional)) и propositional и readings
+    и main.«conclusion»)
+  пусть against равно «Counterexample of» от verdict и propositional и readings и main.«conclusion»
+  пусть head равно («Chosen» от [(«When» от (verdict равен "follows") и "FOLLOWS"),
+    («When» от (verdict равен "does-not-follow") и "DOES NOT FOLLOW")] и "NOT JUDGED")
+  пусть unread равно (отобразить («Unread claims» от readings) как read → соединить ["not read: ", read.«claim».«text»,
+    " — ",
+    «Why unread» от read.«reading»] по "")
+  (соединить («Соединить списки» от («Соединить списки» от (отобразить claims как one → «Claim line» от one) и [head])
+    и («Соединить списки» от unread и (отфильтровать [(если error.«id» равен "" то "" иначе соединить ["fallacy: ",
+    error.«name»,
+    " — ", error.«why»] по ""), (если against равен "" то "" иначе соединить ["counterexample: ", against] по ""),
+    соединить ["kernel: ", «Kernel line» от verdict и output] по "", «Boundary of» от verdict]
+    где line → (длина line) больше 0)))
+    по "\n")

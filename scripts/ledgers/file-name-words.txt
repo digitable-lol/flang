@@ -564,6 +564,7 @@ expected
 expensive
 explains
 explanation
+exploration
 explicit
 exposed
 express

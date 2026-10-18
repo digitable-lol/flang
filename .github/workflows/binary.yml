@@ -2011,8 +2011,24 @@ jobs:
         run: bootstrap/flang io flang/proof/probes/syllogism/assumptions/run.fscript --plan Binary
         env:
           FLANG_TMP: ${{ runner.temp }}
+      # Предел шагов поднят с 40 до 100 миллионов: перед переводчиком теперь стоит
+      # морфология (словарь из формы слова) и разбор подсказок прегруппой, и шаг
+      # плана, который готовит 63 текста разом, на 40 миллионах не помещается.
       - name: Check reasoning in sentences
-        run: bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary --max-steps 40000000
+        run: bootstrap/flang io flang/proof/probes/syllogism/sentences/run.fscript --plan Binary --max-steps 100000000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      # ИМЯ ОШИБКИ И ПОДСКАЗКИ. Набор flang/proof/probes/syllogism/fallacies/:
+      # приговор ядра, имя формальной ошибки по правилам силлогистики и
+      # подсказки о неформальных ошибках. Похожие фразы, которые ошибкой не
+      # являются, лежат в том же наборе, и итог считает ложные подсказки
+      # числом. План Forgery сдвигает ожидания на строку и обязан это заметить.
+      - name: Check the names of fallacies
+        run: bootstrap/flang io flang/proof/probes/syllogism/fallacies/run.fscript --plan Binary --max-steps 400000000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Check that the fallacy set notices a forged table
+        run: bootstrap/flang io flang/proof/probes/syllogism/fallacies/run.fscript --plan Forgery --max-steps 400000000
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check a user story in sentences

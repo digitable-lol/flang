@@ -1,0 +1,385 @@
+модуль «Fallacy probes»
+  использует «Rules» из "../../../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../../../scripts/inquiry.fscript"
+  использует «Lists» только «Соединить списки»
+  использует «Reasoning check» из "../sentences/reasoning-check.flang"
+  использует «Таблица проб» из "../../table.fscript"
+
+примечание "Набор проб имени ошибки и подсказок. Каждая строка expected.tsv
+называет текст, приговор ядра (follows, does-not-follow, not-judged), имя
+формальной ошибки или «-», подсказки через запятую или «-» и вид строки. Вид
+«not» — отрицательный пример: фраза похожа на образец подсказки, но ошибкой не
+является; любая подсказка на нём — ложное срабатывание, и итог считает их
+числом. План Forgery сдвигает ожидания на строку и обязан это заметить."
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../../../../.."
+  "../../../../.."
+
+тотальная функция «Kernel script»
+  возвращает строка
+  (соединить ["box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" ",
+      "fallacy.XXXXXX) && printf '%s' \"$1\" > \"$box/reasoning.flang\" ",
+      "&& \"${FLANG_BIN:-$0/bootstrap/flang}\" check ",
+      "\"$box/reasoning.flang\" --proof --strict 2>&1; code=$?; rm -rf ", "\"$box\"; exit $code"] по "")
+
+тотальная функция «Kernel questions»
+  принимает name: строка, text: строка
+  возвращает список «Question»
+  пример «A text that is not read asks the kernel nothing»
+    дано name равно "a.txt"
+    дано text равно "Ты неправ."
+    ожидается пустой список
+  пусть program равно («Kernel program of» от "ru" и text)
+  если пусто program
+    то пустой список
+    иначе [«Run» от (соединить ["check ", name] по "") и "sh" и ["-c", («Kernel script»), («Root»), program]]
+
+тотальная функция «Rows of»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «Every data line of the table is a row»
+    дано answers равно ([(запись «Answer» с «name» равным "table"
+        и «reply» равным (вариант «Прочитано» с содержимое равным
+        "text\tverdict\tfallacy\thints\tkind\na.txt\tfollows\t-\t-\tsound\n"))])
+    ожидается [["a.txt", "follows", "-", "-", "sound"]]
+  «Строки данных» от («Output of» от "table" и answers)
+
+тотальная функция «Text of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает строка
+  пример «The text read for the row»
+    дано row равно ["a.txt", "follows", "-", "-", "sound"]
+    дано answers равно ([(запись «Answer» с «name» равным "text a.txt"
+        и «reply» равным (вариант «Прочитано» с содержимое равным "Все люди смертны."))])
+    ожидается "Все люди смертны."
+  «Output of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers
+
+тотальная функция «Probe stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The table and the directory of texts are asked first»
+    дано stages равно 2
+    дано answers равно пустой список
+    ожидается ([(запись «Question» с «name» равным "table"
+        и «order» равным (вариант «Прочитать файл» с путь равным "expected.tsv")),
+        (запись «Question» с «name» равным "texts"
+        и «order» равным (вариант «Перечислить каталог» с путь равным "texts"))])
+  («Chosen» от [(«When» от (stages равен 2) и [(«Read» от "table" и "expected.tsv"), («List» от "texts" и "texts")]),
+      («When» от (stages равен 1) и (отобразить («Rows of» от answers) как row → «Read» от (соединить ["text ",
+      («Поле» от row и 1)] по "") и (соединить ["texts/", («Поле» от row и 1)] по "")))]
+      и (свёртка («Rows of» от answers) начиная с (пустой список) как gathered и row → «Соединить списки» от gathered
+      и («Kernel questions» от («Поле» от row и 1) и («Text of row» от row и answers))))
+
+тотальная функция «Report of row»
+  принимает row: список строки, answers: список «Answer»
+  возвращает «Check report»
+  («Check report of» от "ru" и («Text of row» от row и answers) и («Output of» от (соединить ["check ",
+      («Поле» от row и 1)] по "") и answers))
+
+тотальная функция «Dash for nothing»
+  принимает text: строка
+  возвращает строка
+  пример «Nothing is written as a dash»
+    дано text равно ""
+    ожидается "-"
+  если пусто text то "-" иначе text
+
+тотальная функция «Hint ids of»
+  принимает report: «Check report»
+  возвращает строка
+  пример «No hint is a dash»
+    дано report равно (запись «Check report» с «language» равным "ru" и «verdict» равным "not-judged"
+        и «fallacy» равным (запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным "")
+        и «premises» равным пустой список и «conclusion» равным "" и «counterexample» равным ""
+        и «unparsed» равным пустой список и «hints» равным пустой список и «dictionary» равным пустой список
+        и «kernel» равным "" и «boundary» равным "")
+    ожидается "-"
+  «Dash for nothing» от (соединить (отобразить (report.«hints») как hint → hint.«id») по ",")
+
+тотальная функция «Seen of report»
+  принимает report: «Check report»
+  возвращает список строки
+  пример «What the row is compared with: verdict, fallacy, hints»
+    дано report равно (запись «Check report» с «language» равным "ru" и «verdict» равным "follows"
+        и «fallacy» равным (запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным "")
+        и «premises» равным пустой список и «conclusion» равным "" и «counterexample» равным ""
+        и «unparsed» равным пустой список и «hints» равным пустой список и «dictionary» равным пустой список
+        и «kernel» равным "" и «boundary» равным "")
+    ожидается ["follows", "-", "-"]
+  [(report.«verdict»), («Dash for nothing» от ((report.«fallacy»).«id»)), («Hint ids of» от report)]
+
+тотальная функция «Complaint of»
+  принимает name: строка, wanted: список строки, seen: список строки
+  возвращает список строки
+  пример «A row that matches has no complaint»
+    дано name равно "a.txt"
+    дано wanted равно ["follows", "-", "-"]
+    дано seen равно ["follows", "-", "-"]
+    ожидается пустой список
+  пример «A mismatch names what was wanted and what came»
+    дано name равно "a.txt"
+    дано wanted равно ["follows", "-", "-"]
+    дано seen равно ["does-not-follow", "illicit-major", "-"]
+    ожидается ["a.txt — ждали follows / - / -, вышло does-not-follow / illicit-major / -"]
+  если wanted равен seen
+    то пустой список
+    иначе [(соединить [name, " — ждали ", (соединить wanted по " / "), ", вышло ", (соединить seen по " / ")] по "")]
+
+тотальная функция «Wanted of row»
+  принимает row: список строки
+  возвращает список строки
+  пример «The three columns that are compared»
+    дано row равно ["a.txt", "follows", "-", "-", "sound"]
+    ожидается ["follows", "-", "-"]
+  [(«Поле» от row и 2), («Поле» от row и 3), («Поле» от row и 4)]
+
+тотальная функция «Shifted rows»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «Every row takes the expectations of the row below, the last one those of the first»
+    дано rows равно ([["a.txt", "follows", "-", "-", "sound"], ["b.txt", "does-not-follow", "illicit-major", "-",
+        "formal"]])
+    ожидается [["a.txt", "does-not-follow", "illicit-major", "-", "sound"], ["b.txt", "follows", "-", "-", "formal"]]
+  пусть below равно («Соединить списки» от («Rows behind the first» от rows) и («First row only» от rows))
+  (отобразить («Numbered rows» от rows) как numbered → «Row with expectations of» от (numbered.«row»)
+      и («Row at» от below и (numbered.«at»)))
+
+тотальная функция «Rows behind the first»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «All rows but the first»
+    дано rows равно [["a"], ["b"]]
+    ожидается [["b"]]
+  разбор rows
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «First row only»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «The first row alone»
+    дано rows равно [["a"], ["b"]]
+    ожидается [["a"]]
+  разбор rows
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [голова]
+
+объект «Numbered row»
+  «at»: число
+  «row»: список строки
+
+тотальная функция «Numbered rows»
+  принимает rows: список список строки
+  возвращает список «Numbered row»
+  пример «Rows are counted from one»
+    дано rows равно [["a"], ["b"]]
+    ожидается ([(запись «Numbered row» с «at» равным 1 и «row» равным ["a"]),
+        (запись «Numbered row» с «at» равным 2 и «row» равным ["b"])])
+  (свёртка rows начиная с (пустой список) как got
+      и row → добавить (запись «Numbered row» с «at» равным ((длина got) плюс 1) и «row» равным row) к got)
+
+тотальная функция «Row at»
+  принимает rows: список список строки, position: число
+  возвращает список строки
+  пример «A missing row is empty»
+    дано rows равно [["a"]]
+    дано position равно 2
+    ожидается пустой список
+  если (position не меньше 1) и притом (position не больше (длина rows))
+    то элемент position в rows
+    иначе пустой список
+
+тотальная функция «Row with expectations of»
+  принимает row: список строки, other: список строки
+  возвращает список строки
+  пример «The name and the kind stay, the expectations come from the other row»
+    дано row равно ["a.txt", "follows", "-", "-", "sound"]
+    дано other равно ["b.txt", "does-not-follow", "illicit-major", "-", "formal"]
+    ожидается ["a.txt", "does-not-follow", "illicit-major", "-", "sound"]
+  [(«Поле» от row и 1), («Поле» от other и 2), («Поле» от other и 3), («Поле» от other и 4), («Поле» от row и 5)]
+
+тотальная функция «Complaints of rows»
+  принимает rows: список список строки, answers: список «Answer»
+  возвращает список строки
+  пример «No rows, no complaints»
+    дано rows равно пустой список
+    дано answers равно пустой список
+    ожидается пустой список
+  (свёртка rows начиная с (пустой список) как gathered и row → «Соединить списки» от gathered
+      и («Complaint of» от («Поле» от row и 1) и («Wanted of row» от row)
+      и («Seen of report» от («Report of row» от row и answers))))
+
+тотальная функция «Look-alike rows»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «Rows of the kind "not" are the look-alikes»
+    дано rows равно [["a.txt", "follows", "-", "-", "sound"], ["b.txt", "not-judged", "-", "-", "not"]]
+    ожидается [["b.txt", "not-judged", "-", "-", "not"]]
+  отфильтровать rows где row → («Поле» от row и 5) равен "not"
+
+тотальная функция «False hints»
+  принимает rows: список список строки, answers: список «Answer»
+  возвращает число
+  пример «Without look-alikes nothing is false»
+    дано rows равно пустой список
+    дано answers равно пустой список
+    ожидается 0
+  длина (отфильтровать («Look-alike rows» от rows) где row → не (пусто ((«Report of row» от row и answers).«hints»)))
+
+тотальная функция «Hint rows»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «Rows of the kind "hint" are the ones a hint must fire on»
+    дано rows равно [["a.txt", "not-judged", "-", "ad-hominem", "hint"], ["b.txt", "not-judged", "-", "-", "not"]]
+    ожидается [["a.txt", "not-judged", "-", "ad-hominem", "hint"]]
+  отфильтровать rows где row → («Поле» от row и 5) равен "hint"
+
+тотальная функция «Count words»
+  принимает rows: список список строки, answers: список «Answer»
+  возвращает строка
+  пример «Nothing counted»
+    дано rows равно пустой список
+    дано answers равно пустой список
+    ожидается ("подсказок на образцах 0 из 0, ложных подсказок на похожих фразах 0 из 0")
+  пусть fired равно (длина (отфильтровать («Hint rows» от rows) где row → не (пусто ((«Report of row» от row
+      и answers).«hints»))))
+  (соединить ["подсказок на образцах ", (к строке fired), " из ", (к строке (длина («Hint rows» от rows))),
+      ", ложных подсказок на похожих фразах ",
+      (к строке («False hints» от rows и answers)), " из ", (к строке (длина («Look-alike rows» от rows)))] по "")
+
+тотальная функция «This set»
+  возвращает «Набор»
+  пример «The set is named»
+    ожидается (запись «Набор» с «имя» равным "syllogism/fallacies" и «код расхождения» равным "FLANG_PROBE_FALLACIES"
+        и «код слепоты» равным "FLANG_PROBE_FALLACIES_CANNOT_LOOK")
+  (запись «Набор» с «имя» равным "syllogism/fallacies" и «код расхождения» равным "FLANG_PROBE_FALLACIES"
+      и «код слепоты» равным "FLANG_PROBE_FALLACIES_CANNOT_LOOK")
+
+тотальная функция «Texts without a row»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пример «Nothing listed, nothing missing»
+    дано answers равно пустой список
+    ожидается пустой список
+  (отобразить (отфильтровать («Listed of» от "texts"
+      и answers) где name → не ((отобразить («Rows of» от answers) как row → «Поле» от row
+      и 1) содержит name)) как name → соединить [name, " — текст лежит в каталоге, а строки о нём в expected.tsv нет"]
+      по "")
+
+тотальная функция «Probes judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Without a table there is nothing to look at»
+    дано answers равно пустой список
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_FALLACIES_CANNOT_LOOK"
+        и сообщение равным "syllogism/fallacies: в expected.tsv нет ни одной строки данных")
+  пусть rows равно («Rows of» от answers)
+  пусть complaints равно («Соединить списки» от («Texts without a row» от answers) и («Complaints of rows» от rows
+      и answers))
+  («Chosen» от [(«When» от (пусто rows) и («Нечем смотреть» от («This set»)
+      и "в expected.tsv нет ни одной строки данных")), («When» от (пусто complaints)
+      и (вариант «Конец работы» с значение равным (соединить ["syllogism/fallacies: проб ", (к строке (длина rows)),
+      ", разошлось 0; ", («Count words» от rows и answers)] по "")))]
+      и (вариант «Провал» с код равным "FLANG_PROBE_FALLACIES"
+      и сообщение равным (соединить (приписать (соединить ["syllogism/fallacies: проб ", (к строке (длина rows)),
+      ", разошлось ", (к строке (длина complaints)), "; ", («Count words» от rows и answers)] по "") к complaints)
+      по "\n")))
+
+тотальная функция «Forgery judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Without a table the forgery cannot be judged»
+    дано answers равно пустой список
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_FALLACIES_CANNOT_LOOK"
+        и сообщение равным "syllogism/fallacies: в expected.tsv нет ни одной строки данных")
+  пусть rows равно («Rows of» от answers)
+  пусть caught равно (длина («Complaints of rows» от («Shifted rows» от rows) и answers))
+  («Chosen» от [(«When» от (пусто rows) и («Нечем смотреть» от («This set»)
+      и "в expected.tsv нет ни одной строки данных")), («When» от (caught больше 0)
+      и (вариант «Конец работы» с значение равным (соединить [(соединить
+      ["syllogism/fallacies: подлог замечен — ожидания сдвинуты на ", "строку, разошлось "] по ""), (к строке caught),
+      " из ", (к строке (длина rows))] по "")))] и (вариант «Провал» с код равным "FLANG_PROBE_FALLACIES_BLIND"
+      и сообщение равным (соединить ["syllogism/fallacies: подлог НЕ замечен — ожидания сдвинуты на ",
+      "строку, а набор зелен: он ничего не проверяет"] по "")))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer», forged: признак
+  возвращает «Продолжение»
+  пример «A question in the queue is asked before anything else»
+    дано queue равно ([(запись «Question» с «name» равным "table"
+        и «order» равным (вариант «Прочитать файл» с путь равным "expected.tsv"))])
+    дано stages равно 2
+    дано answers равно пустой список
+    дано forged равно нет
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "expected.tsv")
+        и потом равным (запись «Inquiry» с «asked» равным "table" и «queue» равным пустой список и «stages» равным 2
+        и «answers» равным пустой список))
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Final of» от answers и forged
+        иначе «Proceed» от («Probe stage» от (stages минус 1) и answers) и (stages минус 1) и answers и forged
+
+тотальная функция «Final of»
+  принимает answers: список «Answer», forged: признак
+  возвращает «Продолжение»
+  пример «Without a table neither plan can look»
+    дано answers равно пустой список
+    дано forged равно да
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_FALLACIES_CANNOT_LOOK"
+      и сообщение равным "syllogism/fallacies: в expected.tsv нет ни одной строки данных")
+  если forged то «Forgery judged» от answers иначе «Probes judged» от answers
+
+тотальная функция «Begin probes»
+  возвращает «Inquiry»
+  пример «Three stages: the table, the texts, the kernel»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3
+        и «answers» равным пустой список)
+  «Begin with» от 3
+
+тотальная функция «Next probe question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the table and the texts»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "expected.tsv")
+        и потом равным (запись «Inquiry» с «asked» равным "table"
+        и «queue» равным [(запись «Question» с «name» равным "texts"
+        и «order» равным (вариант «Перечислить каталог» с путь равным "texts"))] и «stages» равным 2
+        и «answers» равным пустой список))
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply) и нет
+
+тотальная функция «Next forgery question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The forgery asks the same first question»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "expected.tsv")
+        и потом равным (запись «Inquiry» с «asked» равным "table"
+        и «queue» равным [(запись «Question» с «name» равным "texts"
+        и «order» равным (вариант «Перечислить каталог» с путь равным "texts"))] и «stages» равным 2
+        и «answers» равным пустой список))
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply) и да
+
+план «Binary»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next probe question»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next forgery question»

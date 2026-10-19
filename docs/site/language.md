@@ -263,6 +263,9 @@ The words of this section on all four surfaces, from the lexer's table:
 | `пример` | `example` | `ekzemplo` | `示例` |
 | `дано` | `given` | `donite` | `给定` |
 | `ожидается` | `expected` | `atendata` | `期望` |
+| `история` | — | — | — |
+| `хочу` | — | — | — |
+| `чтобы` | — | — | — |
 <!-- end insert -->
 
 ## Totality and measures

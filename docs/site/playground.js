@@ -27,7 +27,7 @@
     tabs: { result: 'Result', formula: 'Formulas', emit: 'flang → language', foreign: 'language → flang', input: 'Formula → flang', picture: 'Pictures' },
     loading: function (mb) { return 'downloading the compiler: ' + mb + ' MB'; }, ready: 'compiler loaded',
     emitLead: 'The same program printed by «flang emit» into every target language. The compiler in this tab prints it, nothing is sent anywhere.',
-    emitting: 'printing…', emitFailed: 'Not printed', runtimeNote: 'Runtime files are copied into the output as they are and are not shown here: ',
+    emitting: 'printing…', emitFailed: 'Not printed', emitRefusedLead: 'flang emit prints only a program that passes the check; here is what stopped it.', runtimeNote: 'Runtime files are copied into the output as they are and are not shown here: ',
     emitFrom: { 'формула': 'The formula was first translated to flang; this is that program.', 'рассуждение': 'The reasoning was first turned into a flang program; this is that program.' },
     buildHow: 'Compiler output', emitStale: 'The text in the editor changed. Press «Print» to print it again.', print: 'Print',
     foreignLead: 'Write a function in another language. A translator turns it into flang, and the kernel checks the result right away. The translator is not trusted: whatever it writes, the kernel judges.',
@@ -77,7 +77,7 @@
     tabs: { result: 'Итог', formula: 'Формулы', emit: 'flang → язык', foreign: 'язык → flang', input: 'Формула → flang', picture: 'Рисунки' },
     loading: function (mb) { return 'скачиваю компилятор: ' + mb + ' МБ'; }, ready: 'компилятор загружен',
     emitLead: 'Та же программа, напечатанная командой «flang emit» во все целевые языки. Печатает компилятор в этой вкладке, на сервер не уходит ничего.',
-    emitting: 'печатаю…', emitFailed: 'Не напечатано', runtimeNote: 'Файлы рантайма копируются в вывод как есть и здесь не показаны: ',
+    emitting: 'печатаю…', emitFailed: 'Не напечатано', emitRefusedLead: 'flang emit печатает только программу, которая проходит проверку; вот что её остановило.', runtimeNote: 'Файлы рантайма копируются в вывод как есть и здесь не показаны: ',
     emitFrom: { 'формула': 'Формулу сначала перевели на flang; напечатана эта программа.', 'рассуждение': 'Рассуждение сначала превратили в программу на flang; напечатана она.' },
     buildHow: 'Вывод компилятора', emitStale: 'Текст в редакторе изменился. Нажмите «Напечатать», чтобы напечатать его заново.', print: 'Напечатать',
     foreignLead: 'Напишите функцию на другом языке. Переводчик сделает из неё программу на flang, и ядро сразу её проверит. Переводчику не доверяют: что бы он ни написал, судит ядро.',
@@ -825,6 +825,7 @@
       if (answer.код !== 0 || !(answer.файлы || []).length) {
         var card = el('div', 'pg-verdict pg-error');
         card.appendChild(el('p', 'pg-verdict-title', T.emitFailed));
+        card.appendChild(el('p', 'pg-verdict-lead', T.emitRefusedLead));
         var first = (answer.замечания || [])[0];
         if (first) card.appendChild(el('p', 'pg-verdict-lead', (first.строка ? T.line + first.строка + ': ' : '') + first.текст));
         out.appendChild(card);

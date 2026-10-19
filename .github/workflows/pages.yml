@@ -56,7 +56,7 @@ on:
       - 'flang/proof/probes/syllogism/sentences/*.flang'
       - 'flang/proof/probes/syllogism/fallacies/**'
       - 'flang/experimental/ru-morphology.flang'
-      - 'flang/ct/russian/pregroup.flang'
+      - 'flang/ct/pregroup.flang'
       - 'scripts/site/reasoning-check-probe.fscript'
       - 'flang/foreign/formula/**'
       - 'scripts/site/playground-probe.fscript'

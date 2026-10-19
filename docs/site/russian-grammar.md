@@ -12,7 +12,7 @@ One command:
 
 ```
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"Мама читает книгу."}'
-доказано: утверждений 11
+доказано: утверждений 12
 "грамматично: мама: n[им ж ед 3]; читает: n[им ед 3]ʳ · s · n[вин]ˡ; книгу: n[вин ж ед 3]; связи: мама—читает, читает—книгу"
 ```
 
@@ -25,7 +25,7 @@ Word order is free, as in Russian:
 
 ```
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"книгу мама читает"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "грамматично: книгу: n[вин ж ед 3]; мама: n[им ж ед 3]; читает: n[им ед 3]ʳ · n[вин]ʳ · s; связи: мама—читает, книгу—читает"
 ```
 
@@ -33,16 +33,16 @@ An ungrammatical sentence gets a reason:
 
 ```
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"мама читает книга"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "не грамматично: неверный падеж"
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"мама читают книгу"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "не грамматично: нет согласования по роду, числу или лицу"
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"мама книгу"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "не грамматично: нет сказуемого"
 $ flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"мама шьёт"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "не грамматично: неизвестное слово «шьёт»"
 ```
 
@@ -95,7 +95,7 @@ quoted for the shell:
 
 ```
 $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --args '{"слово":"читает"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "s · n[им ед 3]ˡ; n[им ед 3]ʳ · s; s · n[вин]ˡ · n[им ед 3]ˡ; n[им ед 3]ʳ · s · n[вин]ˡ; n[вин]ʳ · n[им ед 3]ʳ · s; s · n[им ед 3]ˡ · n[вин]ˡ; n[вин]ʳ · s · n[им ед 3]ˡ; n[им ед 3]ʳ · n[вин]ʳ · s"
 ```
 
@@ -105,7 +105,7 @@ reading of the form:
 
 ```
 $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --args '{"слово":"книги"}'
-доказано: утверждений 11
+доказано: утверждений 12
 "n[род ж ед 3]; n[им мн 3]; n[вин мн 3]"
 ```
 
@@ -113,7 +113,7 @@ $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --
 
 - **Proved** for all inputs: adjoints and multiplication of types keep the
   length they should, and one contraction never makes a type longer. See
-  `flang check flang/ct/russian/pregroup.flang --proof`: 9 of 9 proved.
+  `flang check flang/ct/pregroup.flang --proof`: 10 of 10 proved (the module is shared with the English grammar since ADR-0166).
 - **Counted on examples:** the pregroup laws — associativity of
   multiplication, `(aˡ)ʳ = a`, `aˡ · a → 1` — in
   `flang/ct/russian/category.flang`. These are examples, not a proof.

@@ -2107,6 +2107,25 @@ jobs:
         env:
           LC_ALL: C.UTF-8
 
+      - name: Check the english pregroup grammar on its probe sentences
+        # ADR-0166: 67 sentences parsed in one process; the Forgery plan turns every
+        # expected verdict over and must see all of them diverge.
+        run: |
+          bootstrap/flang io flang/proof/probes/english-grammar/run.fscript --plan Binary --timeout 900000 --max-steps 100000000000
+          bootstrap/flang io flang/proof/probes/english-grammar/run.fscript --plan Forgery --timeout 900000 --max-steps 100000000000
+        env:
+          LC_ALL: C.UTF-8
+
+      - name: Check english arguments are judged by the kernel
+        # ADR-0166: 25 texts; the verdict is the kernel's (flang check --proof --strict),
+        # the Forgery plan shifts the expectations one row down and must turn red.
+        run: |
+          bootstrap/flang io flang/proof/probes/english-reasoning/run.fscript --plan Binary --timeout 900000 --max-steps 100000000000
+          bootstrap/flang io flang/proof/probes/english-reasoning/run.fscript --plan Forgery --timeout 900000 --max-steps 100000000000
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
+
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 

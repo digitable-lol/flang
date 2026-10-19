@@ -1,0 +1,1 @@
+All whales are mammals. No fish are mammals. Therefore, no whales are fish.

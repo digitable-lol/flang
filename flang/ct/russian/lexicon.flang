@@ -1,5 +1,5 @@
 модуль «Russian lexicon»
-  использует «Russian pregroup» из "pregroup.flang"
+  использует «Pregroup» из "../pregroup.flang"
 
 объект «Статья»
   слово является строкой

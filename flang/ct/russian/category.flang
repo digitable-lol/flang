@@ -1,5 +1,5 @@
 модуль «Russian pregroup category»
-  использует «Russian pregroup» из "pregroup.flang"
+  использует «Pregroup» из "../pregroup.flang"
   использует «Russian parser» из "parse.flang"
 
 тотальная функция «Типы равны»

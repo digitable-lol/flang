@@ -1,0 +1,622 @@
+модуль «English lexicon»
+  использует «Lists» только «Соединить списки»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Pregroup» из "../pregroup.flang"
+  использует «English morphology» из "morphology.flang"
+
+примечание "Типы слов английской прегруппы (Lambek 1999, 2008). Простые типы: n — именная группа
+(падеж nom/acc, число sg/pl, лицо 1/2/3), c — существительное без определителя (число), s —
+повествовательное предложение, q — вопрос, v — глагольная группа без лица (форма inf, ing, en —
+перфектное причастие, pas — страдательное, to — инфинитив с to), a — сказуемое-прилагательное, p —
+предложная группа при связке, t — придаточное с that, k — группа сравнения с than. В записи
+простого типа поле «падеж» несёт падеж, поле «род» — форму глагола, «число» и «лицо» — согласование.
+Порядок слов английского жёсткий, поэтому у глагола один порядок: подлежащее слева, дополнение
+справа; вопрос строят вспомогательный глагол и связка, у них тип q · Xˡ · nˡ."
+
+объект «Agreement»
+  «number»: строка
+  «person»: строка
+
+тотальная функция «Simple»
+  принимает word_class: строка, case_mark: строка, form_mark: строка, count_mark: строка, person: строка, adjoint: число
+  возвращает «Простой тип»
+  пример «подлежащее третьего лица единственного числа»
+    дано word_class равно "n"
+    дано case_mark равно "nom"
+    дано form_mark равно "*"
+    дано count_mark равно "sg"
+    дано person равно "3"
+    дано adjoint равно 0
+    ожидается (запись «Простой тип» с вид равным "n" и падеж равным "nom" и род равным "*" и число равным "sg"
+      и лицо равным "3" и сопряжение равным 0)
+  (запись «Простой тип» с вид равным word_class и падеж равным case_mark и род равным form_mark
+    и число равным count_mark
+    и лицо равным person и сопряжение равным adjoint)
+
+тотальная функция «Plain»
+  принимает word_class: строка
+  возвращает «Простой тип»
+  «Simple» от word_class и "*" и "*" и "*" и "*" и 0
+
+тотальная функция «Noun phrase»
+  принимает grammatical_case: строка, grammatical_number: строка, person: строка
+  возвращает «Простой тип»
+  «Simple» от "n" и grammatical_case и "*" и grammatical_number и person и 0
+
+тотальная функция «Any noun phrase»
+  возвращает «Простой тип»
+  «Noun phrase» от "*" и "*" и "*"
+
+тотальная функция «Object»
+  возвращает «Простой тип»
+  «Noun phrase» от "acc" и "*" и "*"
+
+тотальная функция «Common»
+  принимает grammatical_number: строка
+  возвращает «Простой тип»
+  «Simple» от "c" и "*" и "*" и grammatical_number и "*" и 0
+
+тотальная функция «Verb phrase»
+  принимает verb_form: строка
+  возвращает «Простой тип»
+  «Simple» от "v" и "*" и verb_form и "*" и "*" и 0
+
+тотальная функция «L»
+  принимает simple_type: «Простой тип»
+  возвращает «Простой тип»
+  «Сопряжённый» от simple_type и -1
+
+тотальная функция «R»
+  принимает simple_type: «Простой тип»
+  возвращает «Простой тип»
+  «Сопряжённый» от simple_type и 1
+
+тотальная функция «LL»
+  принимает simple_type: «Простой тип»
+  возвращает «Простой тип»
+  «Сопряжённый» от simple_type и -2
+
+тотальная функция «RR»
+  принимает simple_type: «Простой тип»
+  возвращает «Простой тип»
+  «Сопряжённый» от simple_type и 2
+
+тотальная функция «Subject»
+  принимает concord: «Agreement»
+  возвращает «Простой тип»
+  «Noun phrase» от "nom" и concord.«number» и concord.«person»
+
+тотальная функция «Numbers of»
+  принимает tags: список строки
+  возвращает список строки
+  пример «both — оба числа»
+    дано tags равно ["both"]
+    ожидается ["sg", "pl"]
+  пример «sg — только единственное»
+    дано tags равно ["sg"]
+    ожидается ["sg"]
+  («Chosen» от [(«When» от (tags содержит "both") и ["sg", "pl"]), («When» от (tags содержит "pl") и ["pl"]),
+    («When» от (tags содержит "sg") и ["sg"])] и ["sg", "pl"])
+
+тотальная функция «Cases»
+  возвращает список строки
+  ["nom", "acc"]
+
+тотальная функция «Determiner of»
+  принимает numbers: список строки
+  возвращает список «Тип»
+  пример «a — единственное в двух падежах»
+    дано numbers равно ["sg"]
+    ожидается [[(запись «Простой тип» с вид равным "n" и падеж равным "nom" и род равным "*" и число равным "sg"
+      и лицо равным "3" и сопряжение равным 0), (запись «Простой тип» с вид равным "c" и падеж равным "*"
+      и род равным "*" и число равным "sg" и лицо равным "*" и сопряжение равным -1)],
+      [(запись «Простой тип» с вид равным "n" и падеж равным "acc" и род равным "*" и число равным "sg"
+      и лицо равным "3" и сопряжение равным 0), (запись «Простой тип» с вид равным "c" и падеж равным "*"
+      и род равным "*" и число равным "sg" и лицо равным "*" и сопряжение равным -1)]]
+  (свёртка numbers начиная с пустой список как collected и grammatical_number → «Соединить списки» от collected
+    и (отобразить («Cases»)
+    как grammatical_case → [«Noun phrase» от grammatical_case и grammatical_number и "3",
+    «L» от («Common» от grammatical_number)]))
+
+тотальная функция «Both numbers»
+  возвращает список строки
+  ["sg", "pl"]
+
+тотальная функция «Each number»
+  принимает builder: функция из строки в «Тип»
+  возвращает список «Тип»
+  отобразить («Both numbers») как grammatical_number → builder от grammatical_number
+
+тотальная функция «Attributive»
+  принимает grammatical_number: строка
+  возвращает «Тип»
+  [«Common» от grammatical_number, «L» от («Common» от grammatical_number)]
+
+тотальная функция «Noun phrase alternatives»
+  принимает grammatical_number: строка
+  возвращает список «Тип»
+  [[«Noun phrase» от "nom" и grammatical_number и "3"], [«Noun phrase» от "acc" и grammatical_number и "3"]]
+
+тотальная функция «Possessed»
+  принимает opening_types: «Тип»
+  возвращает список «Тип»
+  (свёртка («Both numbers») начиная с пустой список как collected
+    и grammatical_number → «Соединить списки» от collected
+    и (отобразить («Cases») как grammatical_case → «Соединить списки» от opening_types
+    и [«Noun phrase» от grammatical_case и grammatical_number и "3", «L» от («Common» от grammatical_number)]))
+
+тотальная функция «Noun types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пример «dogs — существительное множественного числа»
+    дано analysis равно (запись «Analysis» с «form» равным "dogs" и «lemma» равным "dog" и «class» равным "noun"
+      и «tags» равным ["pl", "count"] и «source» равным "rule")
+    ожидается [[(запись «Простой тип» с вид равным "c" и падеж равным "*" и род равным "*" и число равным "pl"
+      и лицо равным "*" и сопряжение равным 0)], [(запись «Простой тип» с вид равным "n" и падеж равным "nom"
+      и род равным "*" и число равным "pl" и лицо равным "3" и сопряжение равным 0)],
+      [(запись «Простой тип» с вид равным "n" и падеж равным "acc" и род равным "*" и число равным "pl"
+      и лицо равным "3" и сопряжение равным 0)]]
+  пусть grammatical_number равно (если «Has tag» от analysis и "pl" то "pl" иначе "sg")
+  пусть bare равно ((grammatical_number равен "pl") или («Has tag» от analysis и "mass"))
+  если «Has tag» от analysis и "poss"
+    то «Possessed» от [«Common» от grammatical_number, «R» от («Any noun phrase»)]
+    иначе («Соединить списки» от (приписать [«Common» от grammatical_number] к (если bare
+      то «Noun phrase alternatives» от grammatical_number
+      иначе пустой список))
+      и (если grammatical_number равен "sg" то («Each number» от функция «Attributive») иначе пустой список))
+
+тотальная функция «Name types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  если «Has tag» от analysis и "poss"
+    то «Possessed» от пустой список
+    иначе «Noun phrase alternatives» от "sg"
+
+тотальная функция «Pronoun types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пример «him — дополнение»
+    дано analysis равно (запись «Analysis» с «form» равным "him" и «lemma» равным "he" и «class» равным "pronoun"
+      и «tags» равным ["acc", "sg", "3"] и «source» равным "closed")
+    ожидается [[(запись «Простой тип» с вид равным "n" и падеж равным "acc" и род равным "*" и число равным "sg"
+      и лицо равным "3" и сопряжение равным 0)]]
+  пусть grammatical_case равно (если «Has tag» от analysis и "acc" то "acc" иначе "nom")
+  пусть grammatical_number равно (если «Has tag» от analysis и "pl" то "pl" иначе "sg")
+  пусть person равно (если «Has tag» от analysis и "1" то "1" иначе (если «Has tag» от analysis
+    и "2" то "2" иначе "3"))
+  [[«Noun phrase» от grammatical_case и grammatical_number и person]]
+
+тотальная функция «Complements»
+  принимает tags: список строки
+  возвращает список «Тип»
+  пример «переходный и с придаточным»
+    дано tags равно ["t", "c"]
+    ожидается [[(запись «Простой тип» с вид равным "n" и падеж равным "acc" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным -1)], [(запись «Простой тип» с вид равным "t" и падеж равным "*"
+      и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным -1)]]
+  пример «без помет — оба простых порядка»
+    дано tags равно пустой список
+    ожидается [пустой список,
+      [(запись «Простой тип» с вид равным "n" и падеж равным "acc" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным -1)]]
+  пусть framed равно («Соединить списки» от («Соединить списки» от (если tags содержит "i" то [пустой список]
+    иначе пустой список)
+    и (если tags содержит "t" то [[«L» от («Object»)]] иначе пустой список))
+    и («Соединить списки» от (если tags содержит "c"
+    то [[«L» от («Plain» от "t")]] иначе пустой список)
+    и (если tags содержит "v" то [[«L» от («Verb phrase» от "to")]]
+    иначе пустой список)))
+  если (длина framed) равен 0 то [пустой список, [«L» от («Object»)]] иначе framed
+
+тотальная функция «Agreements»
+  принимает tags: список строки
+  возвращает список «Agreement»
+  пример «sees — третье лицо единственного»
+    дано tags равно ["present", "finite", "sg", "3"]
+    ожидается [(запись «Agreement» с «number» равным "sg" и «person» равным "3")]
+  пример «see как настоящее — я и множественное»
+    дано tags равно ["base"]
+    ожидается [(запись «Agreement» с «number» равным "sg" и «person» равным "1"),
+      (запись «Agreement» с «number» равным "pl" и «person» равным "*")]
+  пример «was — первое и третье единственного»
+    дано tags равно ["past", "finite", "sg"]
+    ожидается [(запись «Agreement» с «number» равным "sg" и «person» равным "1"),
+      (запись «Agreement» с «number» равным "sg" и «person» равным "3")]
+  пусть first_singular равно запись «Agreement» с «number» равным "sg" и «person» равным "1"
+  пусть third_singular равно запись «Agreement» с «number» равным "sg" и «person» равным "3"
+  пусть plural равно запись «Agreement» с «number» равным "pl" и «person» равным "*"
+  («Chosen» от [(«When» от ((tags содержит "sg") и притом (tags содержит "3")) и [third_singular]),
+    («When» от ((tags содержит "sg") и притом (tags содержит "1")) и [first_singular]),
+    («When» от (tags содержит "sg") и [first_singular, third_singular]),
+    («When» от (tags содержит "pl") и [plural]),
+    («When» от (tags содержит "base") и [first_singular, plural])]
+    и [(запись «Agreement» с «number» равным "*" и «person» равным "*")])
+
+тотальная функция «Finite with»
+  принимает concords: список «Agreement», completions: список «Тип»
+  возвращает список «Тип»
+  (свёртка concords начиная с пустой список как collected и concord → «Соединить списки» от collected
+    и (отобразить completions как completion → приписать («R» от («Subject» от concord)) к (приписать («Plain» от "s")
+    к completion)))
+
+тотальная функция «Question with»
+  принимает concords: список «Agreement», completions: список «Тип»
+  возвращает список «Тип»
+  (свёртка concords начиная с пустой список как collected и concord → «Соединить списки» от collected
+    и (отобразить completions как completion → приписать («Plain» от "q") к (добавить («L» от («Subject» от concord))
+    к completion)))
+
+тотальная функция «Nonfinite with»
+  принимает verb_form: строка, completions: список «Тип»
+  возвращает список «Тип»
+  отобразить completions как completion → приписать («Verb phrase» от verb_form) к completion
+
+тотальная функция «Verb types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пример «sleeps — непереходный в третьем лице»
+    дано analysis равно (запись «Analysis» с «form» равным "sleeps" и «lemma» равным "sleep" и «class» равным "verb"
+      и «tags» равным ["present", "finite", "sg", "3", "i"] и «source» равным "rule")
+    ожидается [[(запись «Простой тип» с вид равным "n" и падеж равным "nom" и род равным "*" и число равным "sg"
+      и лицо равным "3" и сопряжение равным 1), (запись «Простой тип» с вид равным "s" и падеж равным "*"
+      и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным 0)]]
+  пусть completions равно «Complements» от analysis.«tags»
+  пусть transitive равно (analysis.«tags» содержит "t") или (не ((analysis.«tags» содержит "i")
+    или ((analysis.«tags» содержит "c")
+    или (analysis.«tags» содержит "v"))))
+  пусть finite равно «Finite with» от («Agreements» от analysis.«tags») и completions
+  («Chosen» от [(«When» от («Has tag» от analysis и "finite") и finite),
+    («When» от («Has tag» от analysis и "base") и («Соединить списки» от («Nonfinite with» от "inf" и completions)
+    и finite)),
+    («When» от («Has tag» от analysis и "ing") и («Nonfinite with» от "ing" и completions)),
+    («When» от («Has tag» от analysis и "en") и («Participle types» от analysis.«tags» и completions и transitive))]
+    и пустой список)
+
+тотальная функция «Participle types»
+  принимает tags: список строки, completions: список «Тип», transitive: признак
+  возвращает список «Тип»
+  пусть passive равно (если transitive то [[«Verb phrase» от "pas"]] иначе пустой список)
+  пусть passive_clause равно (если tags содержит "c" то [[«Verb phrase» от "pas", «L» от («Plain» от "t")]]
+    иначе пустой список)
+  пусть attributive равно (если transitive то («Each number» от функция «Attributive») иначе пустой список)
+  («Соединить списки» от («Соединить списки» от («Nonfinite with» от "en" и completions) и passive)
+    и («Соединить списки» от passive_clause и attributive))
+
+тотальная функция «Be complements»
+  возвращает список «Тип»
+  [[«L» от («Plain» от "a")], [«L» от («Any noun phrase»)], [«L» от («Verb phrase» от "ing")],
+   [«L» от («Verb phrase» от "pas")], [«L» от («Plain» от "p")], [«L» от («Verb phrase» от "to")],
+   [«L» от («Plain» от "t")]]
+
+тотальная функция «Auxiliary types»
+  принимает analysis: «Analysis», completions: список «Тип»
+  возвращает список «Тип»
+  пусть form_mark равно («Chosen» от [(«When» от («Has tag» от analysis и "base") и "inf"),
+    («When» от («Has tag» от analysis и "en") и "en")] и "ing")
+  если «Has tag» от analysis и "finite"
+    то «Соединить списки» от («Finite with» от («Agreements» от analysis.«tags») и completions) и («Question with»
+      от («Agreements» от analysis.«tags») и completions)
+    иначе «Nonfinite with» от form_mark и completions
+
+тотальная функция «Be types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Auxiliary types» от analysis и («Be complements»)
+
+тотальная функция «Have types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Auxiliary types» от analysis и [[«L» от («Verb phrase» от "en")], [«L» от («Object»)],
+    [«L» от («Verb phrase» от "to")]]
+
+тотальная функция «Do types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  если «Has tag» от analysis и "en"
+    то [[«Verb phrase» от "en", «L» от («Object»)], [«Verb phrase» от "pas"]]
+    иначе «Auxiliary types» от analysis и [[«L» от («Verb phrase» от "inf")], [«L» от («Object»)]]
+
+тотальная функция «Modal types»
+  возвращает список «Тип»
+  пусть free_subject равно [(запись «Agreement» с «number» равным "*" и «person» равным "*")]
+  («Соединить списки» от («Finite with» от free_subject и [[«L» от («Verb phrase» от "inf")]])
+    и («Question with» от free_subject
+    и [[«L» от («Verb phrase» от "inf")]]))
+
+тотальная функция «Modifier»
+  принимает simple_type: «Простой тип»
+  возвращает «Тип»
+  [simple_type, «L» от simple_type]
+
+тотальная функция «Verb forms»
+  возвращает список строки
+  ["inf", "ing", "en", "pas"]
+
+тотальная функция «Subject agreements»
+  возвращает список «Agreement»
+  [(запись «Agreement» с «number» равным "sg" и «person» равным "1"),
+    (запись «Agreement» с «number» равным "sg" и «person» равным "3"),
+    (запись «Agreement» с «number» равным "pl" и «person» равным "*")]
+
+тотальная функция «Adverb types»
+  возвращает список «Тип»
+  пусть clause_type равно «Plain» от "s"
+  пусть preverbal равно (отобразить («Subject agreements») как concord → [«R» от («Subject» от concord), clause_type,
+    «L» от clause_type, «Subject» от concord])
+  («Соединить списки» от («Соединить списки» от [[clause_type, «L» от clause_type], [«R» от clause_type, clause_type]]
+    и preverbal)
+    и (приписать («Modifier» от («Plain» от "a")) к (отобразить («Verb forms»)
+    как verb_form → «Modifier» от («Verb phrase»
+    от verb_form))))
+
+тотальная функция «Negation types»
+  возвращает список «Тип»
+  («Соединить списки» от (отобразить [«Verb phrase» от "inf", «Verb phrase» от "ing", «Verb phrase» от "en",
+    «Verb phrase» от "pas", «Verb phrase» от "to", «Plain» от "a", «Plain» от "p",
+    «Any noun phrase»] как simple_type →
+    «Modifier» от simple_type) и [«Modifier» от («Noun phrase» от "nom" и "sg" и "3"),
+    «Modifier» от («Noun phrase» от "nom"
+    и "pl" и "3")])
+
+тотальная функция «Degree types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пусть attributive равно (отобразить («Both numbers») как grammatical_number → [«Common» от grammatical_number,
+    «L» от («Common» от grammatical_number),
+    «LL» от («Common» от grammatical_number), «L» от («Common» от grammatical_number)])
+  пусть comparative равно (если (analysis.«lemma» равен "more") или (analysis.«lemma» равен "less")
+    то [[«Plain» от "a", «L» от («Plain» от "k"), «L» от («Plain» от "a")]] иначе пустой список)
+  «Соединить списки» от (приписать («Modifier» от («Plain» от "a")) к attributive) и comparative
+
+тотальная функция «Adjective types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пример «mortal — сказуемое и определение»
+    дано analysis равно (запись «Analysis» с «form» равным "mortal" и «lemma» равным "mortal"
+      и «class» равным "adjective" и «tags» равным ["positive"] и «source» равным "stem")
+    ожидается [[(запись «Простой тип» с вид равным "a" и падеж равным "*" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным 0)], [(запись «Простой тип» с вид равным "c" и падеж равным "*"
+      и род равным "*" и число равным "sg" и лицо равным "*" и сопряжение равным 0),
+      (запись «Простой тип» с вид равным "c" и падеж равным "*" и род равным "*" и число равным "sg" и лицо равным "*"
+      и сопряжение равным -1)], [(запись «Простой тип» с вид равным "c" и падеж равным "*" и род равным "*"
+      и число равным "pl" и лицо равным "*" и сопряжение равным 0), (запись «Простой тип» с вид равным "c"
+      и падеж равным "*" и род равным "*" и число равным "pl" и лицо равным "*" и сопряжение равным -1)]]
+  пусть predicative равно [«Plain» от "a"]
+  пусть clause равно (если «Has tag» от analysis и "c" то [[«Plain» от "a",
+    «L» от («Plain» от "t")]] иначе пустой список)
+  пусть infinitive равно (если «Has tag» от analysis и "v" то [[«Plain» от "a", «L» от («Verb phrase» от "to")]]
+    иначе пустой список)
+  пусть than_types равно (если «Has tag» от analysis и "comparative" то [[«Plain» от "a", «L» от («Plain» от "k")]]
+    иначе пустой список)
+  («Соединить списки» от (приписать predicative к («Each number» от функция «Attributive»))
+    и («Соединить списки» от clause
+    и («Соединить списки» от infinitive и than_types)))
+
+тотальная функция «Preposition types»
+  возвращает список «Тип»
+  пусть argument_slot равно «L» от («Object»)
+  пусть clause_type равно «Plain» от "s"
+  пусть of_nouns равно (отобразить («Both numbers») как grammatical_number → [«R» от («Common» от grammatical_number),
+    «Common» от grammatical_number, argument_slot])
+  пусть of_phrases равно (свёртка («Both numbers») начиная с пустой список как collected
+    и grammatical_number → «Соединить списки»
+    от collected и (отобразить («Cases») как grammatical_case → [«R» от («Noun phrase» от grammatical_case
+    и grammatical_number и "3"),
+    «Noun phrase» от grammatical_case и grammatical_number и "3", argument_slot]))
+  («Соединить списки» от («Соединить списки» от of_nouns и of_phrases) и [[«R» от clause_type, clause_type,
+    argument_slot],
+    [clause_type, «L» от clause_type, argument_slot], [«Plain» от "p", argument_slot], [«R» от («Plain» от "a"),
+    «Plain» от "a", argument_slot],
+    [«R» от («Plain» от "q"), «Plain» от "q", argument_slot]])
+
+тотальная функция «Clause joiner types»
+  возвращает список «Тип»
+  пусть clause_type равно «Plain» от "s"
+  [[«R» от clause_type, clause_type, «L» от clause_type], [clause_type, «L» от clause_type, «L» от clause_type]]
+
+тотальная функция «Conjunction types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пусть clause_type равно «Plain» от "s"
+  пусть numbers равно (если analysis.«lemma» равен "and" то ["pl"] иначе ["sg", "pl"])
+  пусть phrases равно (свёртка numbers начиная с пустой список как collected
+    и grammatical_number → «Соединить списки» от collected
+    и (отобразить («Cases») как grammatical_case → [«R» от («Noun phrase» от grammatical_case и "*" и "*"),
+    «Noun phrase» от grammatical_case и grammatical_number и "3", «L» от («Noun phrase» от grammatical_case и "*"
+    и "*")]))
+  пусть predicates равно (отобразить («Subject agreements») как concord → [«R» от clause_type,
+    «RR» от («Subject» от concord),
+    «R» от («Subject» от concord), clause_type, «L» от clause_type, «Subject» от concord])
+  пусть phrases_of_kind равно (отобразить [«Plain» от "a", «Verb phrase» от "inf", «Verb phrase» от "ing",
+    «Verb phrase» от "en", «Verb phrase» от "pas"] как simple_type → [«R» от simple_type, simple_type,
+    «L» от simple_type])
+  пусть clauses равно (если analysis.«lemma» равен "so" то («Adverb types») иначе [[«R» от clause_type, clause_type,
+    «L» от clause_type]])
+  («Соединить списки» от clauses и (если analysis.«lemma» равен "so" то [[«R» от clause_type, clause_type,
+    «L» от clause_type]]
+    иначе («Соединить списки» от phrases и («Соединить списки» от predicates и phrases_of_kind))))
+
+тотальная функция «Relative types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пусть clause_type равно «Plain» от "s"
+  пусть subject_gap равно (отобразить («Both numbers»)
+    как grammatical_number → [«R» от («Common» от grammatical_number), «Common» от grammatical_number,
+    «L» от clause_type, «Noun phrase» от "nom" и grammatical_number и "3"])
+  пусть object_gap равно (отобразить («Both numbers»)
+    как grammatical_number → [«R» от («Common» от grammatical_number), «Common» от grammatical_number,
+    «LL» от («Object»), «L» от clause_type])
+  пусть whole_clause равно (если analysis.«lemma» равен "which" то [[«R» от clause_type, clause_type,
+    «L» от clause_type,
+    «Noun phrase» от "nom" и "sg" и "3"]] иначе пустой список)
+  «Соединить списки» от («Соединить списки» от subject_gap и object_gap) и whole_clause
+
+тотальная функция «Wh types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пусть question_type равно «Plain» от "q"
+  если (["how", "why", "when", "where"]) содержит analysis.«lemma»
+    то [[question_type, «L» от question_type]]
+    иначе [[question_type, «LL» от («Object»), «L» от question_type], [question_type, «L» от («Plain» от "s"),
+      «Noun phrase» от "nom" и "sg" и "3"]]
+
+тотальная функция «Types of analysis»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пусть word_class равно analysis.«class»
+  «Chosen types» от word_class и analysis
+
+объект «Builder»
+  «class»: строка
+  «make»: функция из «Analysis» в список «Тип»
+
+тотальная функция «Determiner types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Determiner of» от («Numbers of» от analysis.«tags»)
+
+тотальная функция «Numeral types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Соединить списки» от («Determiner of» от ["pl"]) и («Noun phrase alternatives» от "sg")
+
+тотальная функция «Existential types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  [[«Noun phrase» от "nom" и "sg" и "3"], [«Noun phrase» от "nom" и "pl" и "3"]]
+
+тотальная функция «Modal types of»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Modal types»
+
+тотальная функция «Negation types of»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  («Соединить списки» от («Negation types») и (если analysis.«lemma» равен "never" то («Adverb types»)
+    иначе пустой список))
+
+тотальная функция «Infinitive types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  [[«Verb phrase» от "to", «L» от («Verb phrase» от "inf")]]
+
+тотальная функция «Adverb types of»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Adverb types»
+
+тотальная функция «Than types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  [[«Plain» от "k", «L» от («Any noun phrase»)]]
+
+тотальная функция «Preposition types of»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Preposition types»
+
+тотальная функция «Joiner types of»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  «Clause joiner types»
+
+тотальная функция «Complementizer types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  [[«Plain» от "t", «L» от («Plain» от "s")]]
+
+тотальная функция «Builders»
+  возвращает список «Builder»
+  [(запись «Builder» с «class» равным "noun" и «make» равным функция «Noun types»),
+   (запись «Builder» с «class» равным "name" и «make» равным функция «Name types»),
+   (запись «Builder» с «class» равным "pronoun" и «make» равным функция «Pronoun types»),
+   (запись «Builder» с «class» равным "determiner" и «make» равным функция «Determiner types»),
+   (запись «Builder» с «class» равным "numeral" и «make» равным функция «Numeral types»),
+   (запись «Builder» с «class» равным "existential" и «make» равным функция «Existential types»),
+   (запись «Builder» с «class» равным "verb" и «make» равным функция «Verb types»),
+   (запись «Builder» с «class» равным "be" и «make» равным функция «Be types»),
+   (запись «Builder» с «class» равным "have" и «make» равным функция «Have types»),
+   (запись «Builder» с «class» равным "do" и «make» равным функция «Do types»),
+   (запись «Builder» с «class» равным "modal" и «make» равным функция «Modal types of»),
+   (запись «Builder» с «class» равным "negation" и «make» равным функция «Negation types of»),
+   (запись «Builder» с «class» равным "infinitive" и «make» равным функция «Infinitive types»),
+   (запись «Builder» с «class» равным "adverb" и «make» равным функция «Adverb types of»),
+   (запись «Builder» с «class» равным "marker" и «make» равным функция «Adverb types of»),
+   (запись «Builder» с «class» равным "degree" и «make» равным функция «Degree types»),
+   (запись «Builder» с «class» равным "than" и «make» равным функция «Than types»),
+   (запись «Builder» с «class» равным "adjective" и «make» равным функция «Adjective types»),
+   (запись «Builder» с «class» равным "preposition" и «make» равным функция «Preposition types of»),
+   (запись «Builder» с «class» равным "subordinator" и «make» равным функция «Joiner types of»),
+   (запись «Builder» с «class» равным "conjunction" и «make» равным функция «Conjunction types»),
+   (запись «Builder» с «class» равным "complementizer" и «make» равным функция «Complementizer types»),
+   (запись «Builder» с «class» равным "relative" и «make» равным функция «Relative types»),
+   (запись «Builder» с «class» равным "wh" и «make» равным функция «Wh types»)]
+
+тотальная функция «Chosen types»
+  принимает word_class: строка, analysis: «Analysis»
+  возвращает список «Тип»
+  пример «предлог than даёт группу сравнения»
+    дано word_class равно "than"
+    дано analysis равно (запись «Analysis» с «form» равным "than" и «lemma» равным "than" и «class» равным "than"
+      и «tags» равным пустой список и «source» равным "closed")
+    ожидается [[(запись «Простой тип» с вид равным "k" и падеж равным "*" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным 0), (запись «Простой тип» с вид равным "n" и падеж равным "*"
+      и род равным "*"
+      и число равным "*" и лицо равным "*" и сопряжение равным -1)]]
+  (свёртка («Builders») начиная с пустой список как found и builder → (если builder.«class» равен word_class
+    то «Соединить списки» от found и (builder.«make» от analysis) иначе found))
+
+тотальная функция «Types of word»
+  принимает analyses: список «Analysis»
+  возвращает список «Тип»
+  (свёртка analyses начиная с пустой список как collected и analysis → «Соединить списки» от collected
+    и («Types of analysis» от analysis))
+
+тотальная функция «Is finite»
+  принимает analysis: «Analysis»
+  возвращает признак
+  пример «sleeps — личная форма»
+    дано analysis равно (запись «Analysis» с «form» равным "sleeps" и «lemma» равным "sleep" и «class» равным "verb"
+      и «tags» равным ["present", "finite", "sg", "3"] и «source» равным "rule")
+    ожидается да
+  пример «sleeping — нет»
+    дано analysis равно (запись «Analysis» с «form» равным "sleeping" и «lemma» равным "sleep" и «class» равным "verb"
+      и «tags» равным ["ing"] и «source» равным "rule")
+    ожидается нет
+  ((analysis.«class» равен "modal") или ((«Has tag» от analysis и "finite") или ((analysis.«class» равен "verb")
+    и притом («Has tag» от analysis и "base"))))
+
+тотальная функция «Loosened verb types»
+  принимает analysis: «Analysis»
+  возвращает список «Тип»
+  пример «sees после модального глагола читается и как глагольная группа»
+    дано analysis равно (запись «Analysis» с «form» равным "sees" и «lemma» равным "see" и «class» равным "verb"
+      и «tags» равным ["present", "finite", "sg", "3", "i"] и «source» равным "rule")
+    ожидается [[(запись «Простой тип» с вид равным "v" и падеж равным "*" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным 0)]]
+  пример «repeat после was читается и как страдательная группа без дополнения»
+    дано analysis равно (запись «Analysis» с «form» равным "repeat" и «lemma» равным "repeat" и «class» равным "verb"
+      и «tags» равным ["base", "t"] и «source» равным "stem")
+    ожидается [[(запись «Простой тип» с вид равным "v" и падеж равным "*" и род равным "*" и число равным "*"
+      и лицо равным "*" и сопряжение равным 0), (запись «Простой тип» с вид равным "n" и падеж равным "acc"
+      и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным -1)],
+      [(запись «Простой тип» с вид равным "v" и падеж равным "*" и род равным "*" и число равным "*" и лицо равным "*"
+      и сопряжение равным 0)]]
+  если (analysis.«class» равен "verb") и притом ((«Has tag» от analysis и "finite") или («Has tag» от analysis
+    и "base"))
+    то «Соединить списки» от («Nonfinite with» от "*"
+      и («Complements» от analysis.«tags»)) и (если «Has tag» от analysis и "t"
+      то [[«Verb phrase» от "*"]] иначе пустой список)
+    иначе пустой список
+
+тотальная функция «Needs a determiner»
+  принимает analysis: «Analysis»
+  возвращает признак
+  пример «dog — считаемое в единственном числе»
+    дано analysis равно (запись «Analysis» с «form» равным "dog" и «lemma» равным "dog" и «class» равным "noun"
+      и «tags» равным ["sg", "count"] и «source» равным "stem")
+    ожидается да
+  (analysis.«class» равен "noun") и притом ((«Has tag» от analysis и "sg") и притом ((не («Has tag» от analysis
+    и "mass"))
+    и притом (не («Has tag» от analysis и "poss"))))

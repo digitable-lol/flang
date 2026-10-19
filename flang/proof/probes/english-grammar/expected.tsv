@@ -1,0 +1,68 @@
+sentence	verdict	word
+The dog sleeps.	grammatical	links: the—dog, the—sleeps
+Socrates is a man.	grammatical	links: socrates—is, is—a, a—man
+All men are mortal.	grammatical	are: n[nom pl]ʳ · s · aˡ
+Every student reads the book.	grammatical	reads: n[nom sg 3]ʳ · s · n[acc]ˡ
+The results show that the method is correct.	grammatical	that: t · sˡ
+Does the dog sleep?	grammatical	does: q · v[inf]ˡ · n[nom sg 3]ˡ
+What does the dog see?	grammatical	what: q · n[acc]ˡˡ · qˡ
+Who wrote the paper?	grammatical	who: q · sˡ · n[nom sg 3]
+The book that Mary reads is old.	grammatical	that: c[sg]ʳ · c[sg] · n[acc]ˡˡ · sˡ
+The scientist who proposed the theory was right.	grammatical	who: c[sg]ʳ · c[sg] · sˡ · n[nom sg 3]
+If it rains, the ground is wet.	grammatical	if: s · sˡ · sˡ
+The cat on the mat sleeps.	grammatical	on: c[sg]ʳ · c[sg] · n[acc]ˡ
+The proposed method improves the accuracy of the model.	grammatical	proposed: c[sg] · c[sg]ˡ
+The data suggest that the hypothesis is false.	grammatical	suggest: n[nom pl]ʳ · s · tˡ
+This theorem implies that every prime number is odd.	grammatical	implies: n[nom sg 3]ʳ · s · tˡ
+Some birds cannot fly.	grammatical	cannot: n[nom]ʳ · s · v[inf]ˡ
+No fish are mammals.	grammatical	no: n[nom pl 3] · c[pl]ˡ
+Whales are mammals.	grammatical	whales: n[nom pl 3]
+The experiment was repeated by the students.	grammatical	repeated: v[pas]
+The temperature of the gas increases.	grammatical	increases: n[nom sg 3]ʳ · s
+The samples were analyzed in the laboratory.	grammatical	in: sʳ · s · n[acc]ˡ
+We observed a significant increase in the rate.	grammatical	observed: n[nom]ʳ · s · n[acc]ˡ
+The model predicts the behaviour of the system.	grammatical	links: the—model
+It is clear that the argument is valid.	grammatical	clear: a · tˡ
+Therefore the conclusion follows from the premises.	grammatical	therefore: s · sˡ
+The students have finished the experiment.	grammatical	have: n[nom pl]ʳ · s · v[en]ˡ
+The function is continuous and the set is finite.	grammatical	and: sʳ · s · sˡ
+Socrates and Plato are philosophers.	grammatical	and: n[nom]ʳ · n[nom pl 3] · n[nom]ˡ
+She does not like cats.	grammatical	not: v[inf] · v[inf]ˡ
+The algorithm can solve the problem quickly.	grammatical	quickly: sʳ · s
+Energy is conserved.	grammatical	energy: n[nom sg 3]
+The energy of the particle is larger than the energy of the field.	grammatical	than: k · nˡ
+Because the sample was small, the result is not significant.	grammatical	because: s · sˡ · sˡ
+The method is more efficient than the previous approach.	grammatical	more: a · kˡ · aˡ
+Is the method correct?	grammatical	is: q · aˡ · n[nom sg 3]ˡ
+Many researchers believe that the effect is real.	grammatical	believe: n[nom pl]ʳ · s · tˡ
+The authors propose a new framework.	grammatical	new: c[sg] · c[sg]ˡ
+The dog's owner feeds the cat.	grammatical	dog's: c[sg] · nʳ · n[nom sg 3] · c[sg]ˡ
+Newton's law explains the motion of the planets.	grammatical	newton's: n[nom sg 3] · c[sg]ˡ
+They are studying the effect of the drug.	grammatical	studying: v[ing] · n[acc]ˡ
+Hence the claim is true.	grammatical	hence: s · sˡ
+The dogs sleeps.	not grammatical	words do not agree in number or person
+He sleep.	not grammatical	words do not agree in number or person
+The results shows that the method is correct.	not grammatical	words do not agree in number or person
+A students reads the book.	not grammatical	words do not agree in number or person
+These method is correct.	not grammatical	words do not agree in number or person
+I is a student.	not grammatical	words do not agree in number or person
+Him sees the cat.	not grammatical	wrong case of a pronoun
+The cat sees he.	not grammatical	wrong case of a pronoun
+Me am a student.	not grammatical	wrong case of a pronoun
+Them are mammals.	not grammatical	wrong case of a pronoun
+He can sees the cat.	not grammatical	wrong verb form after an auxiliary or a modal
+She has see the dog.	not grammatical	wrong verb form after an auxiliary or a modal
+They will goes.	not grammatical	wrong verb form after an auxiliary or a modal
+The dog is sleep.	not grammatical	wrong verb form after an auxiliary or a modal
+The experiment was repeat.	not grammatical	wrong verb form after an auxiliary or a modal
+Dog sleeps.	not grammatical	a singular countable noun needs a determiner
+Student reads the book.	not grammatical	a singular countable noun needs a determiner
+The cat sees dog.	not grammatical	a singular countable noun needs a determiner
+The dog on the mat.	not grammatical	no finite verb
+The results of the experiment.	not grammatical	no finite verb
+A new method.	not grammatical	no finite verb
+Sleeps the dog.	not grammatical	do not reduce to a sentence
+The the dog sleeps.	not grammatical	do not reduce to a sentence
+Dog the sleeps.	not grammatical	do not reduce to a sentence
+The dog sleeps the.	not grammatical	do not reduce to a sentence
+The glorb sleeps.	not grammatical	unknown word «glorb»

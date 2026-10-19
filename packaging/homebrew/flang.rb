@@ -13,6 +13,17 @@ class Flang < Formula
     собрано = File.exist?("flang") ? "flang" : "flang_cli"
     bin.install собрано => "flang"
 
+    # Независимый сверщик доказательств. `flang check --proof` ищет его рядом с
+    # собой, в ../libexec/flang/checker; без него каждое доказанное стоит на
+    # слове ядра. Архивы до 0.7.30 checker.c не несут — тогда и ставить нечего.
+    if File.exist?("checker.c")
+      # Без -Werror: строгие флаги — для разработки сверщика, а у ставящего
+      # другой компилятор вправе предупредить там, где разработческий молчал
+      # (gcc 12 ловит -Wstring-compare в checker.c, gcc 13 — нет).
+      system ENV.cc, "-std=c99", "-O2", "-o", "flang-checker", "checker.c", "-lm"
+      (libexec/"flang").install "flang-checker" => "checker"
+    end
+
     # Проводник по языку и его уроки. Ставятся ТОЛЬКО если архив их несёт:
     # формула ставит и выпуски постарше, а в них проводника нет вовсе, и
     # безусловная строка отказала бы на них по делу.
@@ -67,6 +78,21 @@ class Flang < Formula
 
     (testpath/"проба.flang").write(исходник)
     assert_match "проверено", shell_output("#{bin}/flang check проба.flang")
+
+    if (libexec/"flang/checker").exist?
+      (testpath/"большее.flang").write(<<~FLANG)
+        модуль «Проба большего»
+
+        тотальная функция «Большее»
+          принимает а: неотрицательное, б: неотрицательное
+          возвращает неотрицательное
+          обеспечивает «не меньше первого» результат не меньше а
+          если а больше б то а иначе б
+      FLANG
+      доказано = shell_output("#{bin}/flang check большее.flang --proof 2>&1")
+      refute_match "сверщика нет", доказано
+      assert_match "независимо, сверщиком", доказано
+    end
 
     (testpath/"кривая.flang").write(<<~FLANG)
       модуль «Кривая»

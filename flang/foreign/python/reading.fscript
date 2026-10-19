@@ -1,0 +1,1733 @@
+модуль «Python reading»
+
+примечание "Чтение подмножества Python: знаки, логические строки с отступом и дерево разбора."
+примечание "Читатель стоит вне доверенной основы (ADR-0058): его дерево переводят, а перевод судит ядро."
+
+объект «Token»
+  «kind»: строка
+  «text»: строка
+  «line»: число
+
+объект «Line»
+  «indent»: число
+  «tokens»: список «Token»
+  «number»: число
+
+объект «Lexer»
+  «lines»: список «Line»
+  «tokens»: список «Token»
+  «indent»: число
+  «spaces»: число
+  «mode»: строка
+  «buffer»: строка
+  «quote»: строка
+  «closing»: число
+  «depth»: число
+  «line»: число
+  «start»: число
+  «code»: строка
+  «message»: строка
+
+тип «Node»
+  вариант «Tree» содержит kind: строка, words: список строки, line: число, kids: список «Node»
+
+объект «Parsed»
+  «node»: «Node»
+  «rest»: список «Token»
+
+объект «Block read»
+  «nodes»: список «Node»
+  «rest»: список «Line»
+
+тотальная функция «Turned» от «А»
+  принимает items: список «А»
+  возвращает список «А»
+  пример «The last comes first»
+    дано items равно ["a", "b", "c"]
+    ожидается ["c", "b", "a"]
+  свёртка items начиная с (пустой список) как turned и entry → приписать entry к turned
+
+тотальная функция «Joined»
+  принимает parts: список строки
+  возвращает строка
+  пример «Parts glued without a separator»
+    дано parts равно ["a", "b", "c"]
+    ожидается "abc"
+  соединить parts по ""
+
+тотальная функция «Code of»
+  принимает c: строка
+  возвращает число
+  пример «Latin a»
+    дано c равно "a"
+    ожидается 97
+  пример «Nothing has no code»
+    дано c равно ""
+    ожидается 0
+  если (длина c) равен 1 то код символа c иначе 0
+
+тотальная функция «Between»
+  принимает n: число, low: число, high: число
+  возвращает признак
+  (n не меньше low) и притом (n не больше high)
+
+тотальная функция «Letter»
+  принимает c: строка
+  возвращает признак
+  пример «An underscore starts a name»
+    дано c равно "_"
+    ожидается да
+  пример «A digit does not»
+    дано c равно "7"
+    ожидается нет
+  пусть n равно («Code of» от c)
+  («Between» от n и 65 и 90) или («Between» от n и 97 и 122) или (n равен 95) или (n больше 127)
+
+тотальная функция «Digit»
+  принимает c: строка
+  возвращает признак
+  пример «Seven is a digit»
+    дано c равно "7"
+    ожидается да
+  «Between» от («Code of» от c) и 48 и 57
+
+тотальная функция «Operator sign»
+  принимает c: строка
+  возвращает признак
+  пример «A minus»
+    дано c равно "-"
+    ожидается да
+  ["+", "-", "*", "/", "%", "<", ">", "=", "!"] содержит c
+
+тотальная функция «Single sign»
+  принимает c: строка
+  возвращает признак
+  пример «A comma stands alone»
+    дано c равно ","
+    ожидается да
+  ["(", ")", "[", "]", "{", "}", ",", ":", ".", ";", "@", "&", "|", "^", "~"] содержит c
+
+тотальная функция «Depth change»
+  принимает c: строка
+  возвращает число
+  пример «An opening bracket goes one deeper»
+    дано c равно "["
+    ожидается 1
+  если ["(", "[", "{"] содержит c то 1 иначе (если [")", "]", "}"] содержит c то -1 иначе 0)
+
+тотальная функция «Token of»
+  принимает kind: строка, text: строка, line: число
+  возвращает «Token»
+  запись «Token» с «kind» равным kind и «text» равным text и «line» равным line
+
+тотальная функция «Lexer of»
+  принимает l: «Lexer», tokens: список «Token», mode: строка, buffer: строка
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным tokens и «indent» равным (l.«indent») и
+    «spaces» равным (
+    l.«spaces») и «mode» равным mode и «buffer» равным buffer и «quote» равным (l.«quote») и «closing» равным (
+    l.«closing») и «depth» равным (l.«depth») и «line» равным (l.«line») и «start» равным (l.«start») и «code» равным (
+    l.«code») и «message» равным (l.«message»))
+
+тотальная функция «Lexer start»
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным пустой список и «tokens» равным пустой список и «indent» равным -1 и
+    «spaces» равным 0 и
+    «mode» равным "code" и «buffer» равным "" и «quote» равным "" и «closing» равным 0 и «depth» равным 0 и
+      «line» равным 1 и
+    «start» равным 1 и «code» равным "" и «message» равным "")
+
+тотальная функция «Lexer refused»
+  принимает l: «Lexer», code: строка, message: строка
+  возвращает «Lexer»
+  пусть said равно («Joined» от ["строка ", к строке (l.«line»), ": ", message])
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным (l.«tokens») и «indent» равным (l.«indent») и
+    «spaces» равным (
+    l.«spaces») и «mode» равным (l.«mode») и «buffer» равным "" и «quote» равным "" и «closing» равным 0 и
+      «depth» равным (
+    l.«depth») и «line» равным (l.«line») и «start» равным (l.«start») и «code» равным code и «message» равным said)
+
+тотальная функция «Emitted»
+  принимает l: «Lexer», kind: строка, text: строка
+  возвращает «Lexer»
+  «Lexer of» от l и (приписать («Token of» от kind и text и (l.«line»)) к (l.«tokens»)) и "code" и ""
+
+тотальная функция «Quoted mode»
+  принимает l: «Lexer», mode: строка, quote: строка, closing: число, buffer: строка
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным (l.«tokens») и «indent» равным (l.«indent») и
+    «spaces» равным (
+    l.«spaces») и «mode» равным mode и «buffer» равным buffer и «quote» равным quote и «closing» равным closing и
+      «depth» равным (
+    l.«depth») и «line» равным (l.«line») и «start» равным (l.«start») и «code» равным (l.«code») и «message» равным (
+    l.«message»))
+
+тотальная функция «Deeper»
+  принимает l: «Lexer», change: число
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным (l.«tokens») и «indent» равным (l.«indent») и
+    «spaces» равным (
+    l.«spaces») и «mode» равным (l.«mode») и «buffer» равным (l.«buffer») и «quote» равным (l.«quote») и
+      «closing» равным (
+    l.«closing») и «depth» равным ((l.«depth») плюс change) и «line» равным (l.«line») и «start» равным (l.«start») и
+      «code» равным (
+    l.«code») и «message» равным (l.«message»))
+
+тотальная функция «Next line»
+  принимает l: «Lexer», mode: строка
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным (l.«tokens») и «indent» равным (l.«indent») и
+    «spaces» равным (
+    l.«spaces») и «mode» равным mode и «buffer» равным (l.«buffer») и «quote» равным (l.«quote») и «closing» равным (
+    l.«closing») и «depth» равным (l.«depth») и «line» равным ((l.«line») плюс 1) и «start» равным (l.«start») и
+      «code» равным (
+    l.«code») и «message» равным (l.«message»))
+
+тотальная функция «Indented»
+  принимает l: «Lexer», indent: число, spaces: число
+  возвращает «Lexer»
+  (запись «Lexer» с «lines» равным (l.«lines») и «tokens» равным (l.«tokens») и «indent» равным indent и
+    «spaces» равным spaces и
+    «mode» равным (l.«mode») и «buffer» равным (l.«buffer») и «quote» равным (l.«quote») и «closing» равным
+      (l.«closing») и
+    «depth» равным (l.«depth») и «line» равным (l.«line») и «start» равным (l.«line») и «code» равным (l.«code») и
+      «message» равным (
+    l.«message»))
+
+тотальная функция «Line ended»
+  принимает l: «Lexer»
+  возвращает «Lexer»
+  пусть kept равно (если пусто (l.«tokens») то (l.«lines») иначе (приписать (запись «Line» с «indent» равным
+    (l.«indent») и
+    «tokens» равным («Turned» от (l.«tokens»)) и «number» равным (l.«start»)) к (l.«lines»)))
+  (запись «Lexer» с «lines» равным kept и «tokens» равным пустой список и «indent» равным -1 и «spaces» равным 0 и
+    «mode» равным "code" и
+    «buffer» равным "" и «quote» равным "" и «closing» равным 0 и «depth» равным (l.«depth») и «line» равным
+      ((l.«line») плюс 1) и
+    «start» равным (l.«start») и «code» равным (l.«code») и «message» равным (l.«message»))
+
+тотальная функция «Operators»
+  возвращает список строки
+  пример «Longest first»
+    ожидается ["**=", "//=", "==", "!=", "<=", ">=", "//", "**", "->", "+=", "-=", "*=", "/=", "%=", "+", "-", "*",
+      "/", "%", "<", ">",
+      "="]
+  (["**=", "//=", "==", "!=", "<=", ">=", "//", "**", "->", "+=", "-=", "*=", "/=", "%=", "+", "-", "*", "/", "%",
+    "<", ">", "="])
+
+тотальная функция «Leading operator»
+  принимает text: строка
+  возвращает строка
+  пример «The longest operator at the start»
+    дано text равно "**-"
+    ожидается "**"
+  пример «No operator»
+    дано text равно "!x"
+    ожидается ""
+  (свёртка («Operators») начиная с "" как found и op → если (found равен "") и притом
+    (text начинается с op) то op иначе found)
+
+функция «Split operators»
+  принимает l: «Lexer», text: строка
+  возвращает «Lexer»
+  пусть top равно («Leading operator» от text)
+  если (длина text) равен 0
+    то «Lexer of» от l и (l.«tokens») и "code" и ""
+    иначе если top равен ""
+      то («Lexer refused» от l и "FLANG_PYTHON_SYNTAX" и («Joined» от ["знак «", подстрока text с 1 по 1,
+        "» вне подмножества"]))
+      иначе «Split operators» от («Emitted» от l и "op" и top) и (подстрока text с ((длина top) плюс 1) по (длина text))
+
+тотальная функция «Keywords refused»
+  возвращает список строки
+  пример «Words of Python the subset does not read as names»
+    ожидается ["class", "while", "break", "continue", "import", "from", "global", "nonlocal", "try", "except",
+      "finally",
+      "raise", "with", "lambda", "yield", "assert", "del", "async", "await", "is", "elif", "else", "def", "return",
+        "if",
+      "for", "in", "not", "and", "or", "pass", "None", "True", "False"]
+  ["class", "while", "break", "continue", "import", "from", "global", "nonlocal", "try", "except", "finally", "raise",
+    "with",
+    "lambda", "yield", "assert", "del", "async", "await", "is", "elif", "else", "def", "return", "if", "for", "in",
+      "not",
+    "and", "or", "pass", "None", "True", "False"]
+
+функция «Closed word»
+  принимает l: «Lexer»
+  возвращает «Lexer»
+  разбор l.«mode»
+    случай "name"
+      то «Emitted» от l и (если («Keywords refused») содержит (l.«buffer») то "keyword" иначе "name") и (l.«buffer»)
+    случай "number"
+      то «Closed number» от l
+    случай "op"
+      то «Split operators» от l и (l.«buffer»)
+    случай любое
+      то l
+
+функция «Closed number»
+  принимает l: «Lexer»
+  возвращает «Lexer»
+  пусть text равно (соединить (разделить (l.«buffer») по "_") по "")
+  пусть shapes равно (отфильтровать (разложить text на символы) где c → не ((«Digit» от c) или
+    ([".", "e", "E", "+", "-"] содержит c)))
+  если пусто shapes
+    то «Emitted» от l и "number" и text
+    иначе «Lexer refused» от l и "FLANG_PYTHON_NUMBER" и («Joined» от ["число «", l.«buffer»,
+      "» вне подмножества: только десятичные целые и дробные"])
+
+тотальная функция «Escaped sign»
+  принимает c: строка
+  возвращает строка
+  пример «A new line»
+    дано c равно "n"
+    ожидается "\n"
+  пример «Outside the subset»
+    дано c равно "x"
+    ожидается ""
+  разбор c
+    случай "n" то "\n"
+    случай "t" то "\t"
+    случай "\\" то "\\"
+    случай "'" то "'"
+    случай "\"" то "\""
+    случай любое то ""
+
+функция «Escape»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть back равно («Escaped sign» от c)
+  если c равен "\n"
+    то «Next line» от («Quoted mode» от l и "string" и (l.«quote») и 0 и (l.«buffer»)) и "string"
+    иначе если back равен ""
+      то «Lexer refused» от l и "FLANG_PYTHON_STRING" и («Joined» от ["экранирование \\", c,
+        " вне подмножества: только \\n, \\t, \\\\, \\' и \\\""])
+      иначе «Quoted mode» от l и "string" и (l.«quote») и 0 и («Joined» от [l.«buffer», back])
+
+тотальная функция «Repeated»
+  принимает text: строка, many: число
+  возвращает строка
+  пример «Two quotes»
+    дано text равно "'"
+    дано many равно 2
+    ожидается "''"
+  если many не больше 0 то "" иначе соединить text с («Repeated» от text и (many минус 1))
+
+функция «String sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть q равно (подстрока (l.«quote») с 1 по 1)
+  пусть triple равно (длина (l.«quote»)) равен 3
+  пусть pending равно («Repeated» от q и (l.«closing»))
+  пусть what равно («Chosen» от [(«Option of» от (c равен "\\") и "escape"),
+    («Option of» от ((c равен q) и притом ((не triple) или ((l.«closing») равен 2))) и "close"),
+    («Option of» от (c равен q) и "quote")] и "plain")
+  разбор what
+    случай "escape" то «Quoted mode» от l и "escape" и (l.«quote») и 0 и («Joined» от [l.«buffer», pending])
+    случай "close" то «Emitted» от l и "string" и (l.«buffer»)
+    случай "quote" то «Quoted mode» от l и "string" и (l.«quote») и ((l.«closing») плюс 1) и (l.«buffer»)
+    случай любое то «String plain» от l и c и triple и pending
+
+объект «Option»
+  «when»: признак
+  «label»: строка
+
+тотальная функция «Option of»
+  принимает when: признак, label: строка
+  возвращает «Option»
+  запись «Option» с «when» равным when и «label» равным label
+
+тотальная функция «Chosen»
+  принимает options: список «Option», fallback: строка
+  возвращает строка
+  пример «The first option that holds»
+    дано options равно [(запись «Option» с «when» равным нет и «label» равным "a"), (запись «Option» с
+      «when» равным да и
+      «label» равным "b")]
+    дано fallback равно "c"
+    ожидается "b"
+  пример «Nothing holds»
+    дано options равно []
+    дано fallback равно "c"
+    ожидается "c"
+  пусть found равно (свёртка options начиная с "" как found и option → если (found равен "") и притом (option.«when»)
+    то option.«label» иначе found)
+  если found равен "" то fallback иначе found
+
+функция «String plain»
+  принимает l: «Lexer», c: строка, triple: признак, pending: строка
+  возвращает «Lexer»
+  пусть kept равно («Quoted mode» от l и "string" и (l.«quote») и 0 и («Joined» от [l.«buffer», pending, c]))
+  если (c равен "\n") и притом (не triple)
+    то «Lexer refused» от l и "FLANG_PYTHON_STRING" и "строка в кавычках не закрыта до конца строки"
+    иначе если c равен "\n" то «Next line» от kept и "string" иначе kept
+
+функция «Quote sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть q равно (l.«quote»)
+  разбор l.«mode»
+    случай "quote1"
+      то если c равен q то «Quoted mode» от l и "quote2" и q и 0 и "" иначе «String sign» от («Quoted mode» от l и
+        "string" и q и 0 и
+        "") и c
+    случай любое
+      то если c равен q то «Quoted mode» от l и "string" и («Joined» от [q, q,
+        q]) и 0 и "" иначе «Code sign» от («Emitted» от l и
+        "string" и "") и c
+
+функция «Line start sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  разбор c
+    случай " " то «Indented» от l и -1 и ((l.«spaces») плюс 1)
+    случай "\t" то («Lexer refused» от l и "FLANG_PYTHON_INDENT" и
+      "табуляция в отступе вне подмножества: отступ пишется пробелами")
+    случай "\r" то l
+    случай "\n" то «Next line» от («Indented» от l и -1 и 0) и "code"
+    случай "#" то «Lexer of» от l и (l.«tokens») и "comment" и ""
+    случай любое то «Code sign» от («Indented» от l и (l.«spaces») и (l.«spaces»)) и c
+
+функция «Code sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  если ((l.«indent») равен -1) и притом ((l.«depth») равен 0)
+    то «Line start sign» от l и c
+    иначе «Code sign inside» от l и c
+
+функция «Code sign inside»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть what равно («Chosen» от [(«Option of» от (c равен "\n") и "newline"),
+    («Option of» от ([" ", "\t", "\r"] содержит c) и "blank"), («Option of» от («Letter» от c) и "letter"),
+    («Option of» от («Digit» от c) и "digit"), («Option of» от ((c равен "'") или (c равен "\"")) и "quote"),
+    («Option of» от («Operator sign» от c) и "op")] и "single")
+  разбор what
+    случай "newline" то (если (l.«depth») больше 0 то «Next line» от l и "code" иначе «Line ended» от l)
+    случай "blank" то l
+    случай "letter" то «Lexer of» от l и (l.«tokens») и "name" и c
+    случай "digit" то «Lexer of» от l и (l.«tokens») и "number" и c
+    случай "quote" то «Quoted mode» от l и "quote1" и c и 0 и ""
+    случай "op" то «Lexer of» от l и (l.«tokens») и "op" и c
+    случай любое то «Code sign single» от l и c
+
+функция «Code sign single»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  разбор c
+    случай "#" то «Lexer of» от l и (l.«tokens») и "comment" и ""
+    случай "\\" то «Lexer of» от l и (l.«tokens») и "continue" и ""
+    случай любое то если «Single sign» от c
+      то «Deeper» от («Emitted» от l и "op" и c) и («Depth change» от c)
+      иначе «Lexer refused» от l и "FLANG_PYTHON_SYNTAX" и («Joined» от ["знак «", c, "» вне подмножества"])
+
+функция «Word sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  если («Letter» от c) или («Digit» от c)
+    то «Lexer of» от l и (l.«tokens») и "name" и («Joined» от [l.«buffer», c])
+    иначе если (c равен "'") или (c равен "\"")
+      то «Lexer refused» от l и "FLANG_PYTHON_STRING" и («Joined» от ["строка с приставкой «", l.«buffer»,
+        "» (f-строка, сырая или байты) вне подмножества"])
+      иначе «Code sign» от («Closed word» от l) и c
+
+тотальная функция «Last sign»
+  принимает text: строка
+  возвращает строка
+  пример «The last sign»
+    дано text равно "1e"
+    ожидается "e"
+  пример «Nothing in nothing»
+    дано text равно ""
+    ожидается ""
+  если (длина text) больше 0 то подстрока text с (длина text) по (длина text) иначе ""
+
+функция «Number sign»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  пусть exponent равно ["e", "E"] содержит («Last sign» от (l.«buffer»))
+  если («Digit» от c) или ([".", "_", "e", "E"] содержит c) или (exponent и притом ((c равен "+") или (c равен "-")))
+    то «Lexer of» от l и (l.«tokens») и "number" и («Joined» от [l.«buffer», c])
+    иначе если «Letter» от c
+      то «Lexer refused» от l и "FLANG_PYTHON_NUMBER" и («Joined» от ["число «", l.«buffer», c, "» вне подмножества"])
+      иначе «Code sign» от («Closed word» от l) и c
+
+функция «Operator run»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  если «Operator sign» от c
+    то «Lexer of» от l и (l.«tokens») и "op" и («Joined» от [l.«buffer», c])
+    иначе «Code sign» от («Closed word» от l) и c
+
+функция «Lex step»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  если не ((l.«code») равен "")
+    то l
+    иначе «Lex mode» от l и c
+
+функция «Lex mode»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  разбор l.«mode»
+    случай "string" то «String sign» от l и c
+    случай "escape" то «Escape» от l и c
+    случай "quote1" то «Quote sign» от l и c
+    случай "quote2" то «Quote sign» от l и c
+    случай "comment" то (если c равен "\n" то «Code sign» от («Lexer of» от l и (l.«tokens») и "code" и "") и c иначе l)
+    случай "continue" то «Continued» от l и c
+    случай "name" то «Word sign» от l и c
+    случай "number" то «Number sign» от l и c
+    случай "op" то «Operator run» от l и c
+    случай любое то «Code sign» от l и c
+
+функция «Continued»
+  принимает l: «Lexer», c: строка
+  возвращает «Lexer»
+  если c равен "\n"
+    то «Next line» от l и "code"
+    иначе если [" ", "\t", "\r"] содержит c
+      то l
+      иначе «Lexer refused» от l и "FLANG_PYTHON_SYNTAX" и "после обратной косой черты строка обязана кончаться"
+
+функция «Lexed»
+  принимает text: строка
+  возвращает «Lexer»
+  пусть signs равно (разложить (соединить text с "\n") на символы)
+  пусть finished равно (свёртка signs начиная с («Lexer start») как l и c → «Lex step» от l и c)
+  пусть what равно («Chosen» от [(«Option of» от ((finished.«code») не равен "") и "refused"),
+    («Option of» от (["string", "escape", "quote1", "quote2"] содержит (finished.«mode»)) и "string"),
+    («Option of» от ((finished.«depth») не равен 0) и "depth")] и "ok")
+  разбор what
+    случай "refused" то finished
+    случай "string" то «Lexer refused» от finished и "FLANG_PYTHON_STRING" и "строка не закрыта до конца файла"
+    случай "depth" то «Lexer refused» от finished и "FLANG_PYTHON_SYNTAX" и "скобки не сходятся к концу файла"
+    случай любое то «Line ended» от («Closed word» от finished)
+
+функция «Logical lines»
+  принимает text: строка
+  возвращает «Lexer»
+  пусть finished равно («Lexed» от text)
+  (запись «Lexer» с «lines» равным («Turned» от (finished.«lines»)) и «tokens» равным пустой список и
+    «indent» равным 0 и «spaces» равным 0 и
+    «mode» равным "code" и «buffer» равным "" и «quote» равным "" и «closing» равным 0 и «depth» равным 0 и
+      «line» равным (finished.«line») и
+    «start» равным 0 и «code» равным (finished.«code») и «message» равным (finished.«message»))
+
+тотальная функция «Tree of»
+  принимает kind: строка, words: список строки, line: число, kids: список «Node»
+  возвращает «Node»
+  вариант «Tree» с kind равным kind и words равным words и line равным line и kids равным kids
+
+тотальная функция «Leaf»
+  принимает kind: строка, word: строка, line: число
+  возвращает «Node»
+  «Tree of» от kind и [word] и line и пустой список
+
+тотальная функция «Refusal»
+  принимает code: строка, message: строка, line: число
+  возвращает «Node»
+  пример «A refusal names its line»
+    дано code равно "FLANG_PYTHON_CLASS"
+    дано message равно "классы вне подмножества"
+    дано line равно 3
+    ожидается вариант «Tree» с kind равным "refused" и words равным ["FLANG_PYTHON_CLASS",
+      "строка 3: классы вне подмножества"] и line равным 3 и kids равным []
+  «Tree of» от "refused" и [code, «Joined» от ["строка ", к строке line, ": ", message]] и line и пустой список
+
+тотальная функция «Kind of»
+  принимает node: «Node»
+  возвращает строка
+  разбор node
+    случай вариант «Tree» с kind как k и words как w и line как n и kids как s
+      то k
+
+тотальная функция «Words of»
+  принимает node: «Node»
+  возвращает список строки
+  разбор node
+    случай вариант «Tree» с kind как k и words как w и line как n и kids как s
+      то w
+
+тотальная функция «Line of»
+  принимает node: «Node»
+  возвращает число
+  разбор node
+    случай вариант «Tree» с kind как k и words как w и line как n и kids как s
+      то n
+
+тотальная функция «Kids of»
+  принимает node: «Node»
+  возвращает список «Node»
+  разбор node
+    случай вариант «Tree» с kind как k и words как w и line как n и kids как s
+      то s
+
+тотальная функция «Word of»
+  принимает node: «Node», place: число
+  возвращает строка
+  пример «The first word»
+    дано node равно вариант «Tree» с kind равным "name" и words равным ["x"] и line равным 1 и kids равным []
+    дано place равно 1
+    ожидается "x"
+  пример «No such word»
+    дано node равно вариант «Tree» с kind равным "name" и words равным ["x"] и line равным 1 и kids равным []
+    дано place равно 2
+    ожидается ""
+  пусть words равно («Words of» от node)
+  если (place больше 0) и притом (place не больше (длина words)) то элемент place в words иначе ""
+
+тотальная функция «Kid of»
+  принимает node: «Node», place: число
+  возвращает «Node»
+  пусть kids равно («Kids of» от node)
+  если (place больше 0) и притом (place не больше (длина kids))
+    то элемент place в kids
+    иначе «Tree of» от "missing" и пустой список и («Line of» от node) и пустой список
+
+тотальная функция «Refused»
+  принимает node: «Node»
+  возвращает признак
+  («Kind of» от node) равен "refused"
+
+тотальная функция «First refused»
+  принимает nodes: список «Node»
+  возвращает список «Node»
+  пример «Nothing refused»
+    дано nodes равно []
+    ожидается []
+  (свёртка nodes начиная с (пустой список) как found и node → если (пусто found) и притом
+    («Refused» от node) то [node] иначе found)
+
+тотальная функция «Parsed of»
+  принимает node: «Node», rest: список «Token»
+  возвращает «Parsed»
+  запись «Parsed» с «node» равным node и «rest» равным rest
+
+тотальная функция «Failed»
+  принимает code: строка, message: строка, line: число
+  возвращает «Parsed»
+  «Parsed of» от («Refusal» от code и message и line) и пустой список
+
+тотальная функция «First text»
+  принимает tokens: список «Token»
+  возвращает строка
+  разбор tokens
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если (голова.«kind») равен "string" то "" иначе голова.«text»
+
+тотальная функция «First kind»
+  принимает tokens: список «Token»
+  возвращает строка
+  разбор tokens
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«kind»
+
+тотальная функция «First word»
+  принимает tokens: список «Token»
+  возвращает строка
+  разбор tokens
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«text»
+
+тотальная функция «First line»
+  принимает tokens: список «Token»
+  возвращает число
+  разбор tokens
+    случай пусто
+      то 0
+    случай голова и хвост
+      то голова.«line»
+
+тотальная функция «After first»
+  принимает tokens: список «Token»
+  возвращает список «Token»
+  разбор tokens
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Shown»
+  принимает tokens: список «Token»
+  возвращает строка
+  пример «The end of the line»
+    дано tokens равно []
+    ожидается "конец строки"
+  разбор tokens
+    случай пусто
+      то "конец строки"
+    случай голова и хвост
+      то «Joined» от ["«", голова.«text», "»"]
+
+тотальная функция «Unexpected»
+  принимает tokens: список «Token», wanted: строка, line: число
+  возвращает «Parsed»
+  пусть place равно (если («First line» от tokens) больше 0 то «First line» от tokens иначе line)
+  «Failed» от "FLANG_PYTHON_SYNTAX" и («Joined» от ["ожидалось ", wanted, ", а стоит ", «Shown» от tokens]) и place
+
+функция «Expected sign»
+  принимает parsed: «Parsed», sign: строка, line: число
+  возвращает «Parsed»
+  если «Refused» от (parsed.«node»)
+    то parsed
+    иначе если («First text» от (parsed.«rest»)) равен sign
+      то «Parsed of» от (parsed.«node») и («After first» от (parsed.«rest»))
+      иначе «Unexpected» от (parsed.«rest») и («Joined» от ["«", sign, "»"]) и line
+
+функция «Expression»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть taken равно («Or expression» от tokens)
+  если («Refused» от (taken.«node»)) или (не (((«First text» от (taken.«rest»)) равен "if") и притом ((«First kind» от
+    (taken.«rest»)) равен
+    "keyword")))
+    то taken
+    иначе «Choice expression» от taken и («First line» от tokens)
+
+функция «Choice expression»
+  принимает taken: «Parsed», line: число
+  возвращает «Parsed»
+  пусть test равно («Expected sign» от («Or expression» от («After first» от (taken.«rest»))) и "else" и line)
+  пусть other равно («Expression» от (test.«rest»))
+  пусть parts равно [test.«node», taken.«node», other.«node»]
+  пусть bad равно («First refused» от parts)
+  если пусто bad
+    то «Parsed of» от («Tree of» от "choice" и пустой список и line и parts) и (other.«rest»)
+    иначе «Parsed of» от (элемент 1 в bad) и пустой список
+
+тотальная функция «Binary node»
+  принимает op: строка, left: «Node», right: «Node», line: число
+  возвращает «Node»
+  «Tree of» от "binary" и [op] и line и [left, right]
+
+функция «Chained»
+  принимает left: «Parsed», op: строка, right: «Parsed», line: число
+  возвращает «Parsed»
+  если «Refused» от (left.«node»)
+    то left
+    иначе если «Refused» от (right.«node»)
+      то right
+      иначе «Parsed of» от («Binary node» от op и (left.«node») и (right.«node») и line) и (right.«rest»)
+
+функция «Or expression»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «Or rest» от («And expression» от tokens)
+
+функция «Or rest»
+  принимает left: «Parsed»
+  возвращает «Parsed»
+  если («Refused» от (left.«node»)) или (не ((«First text» от (left.«rest»)) равен "or"))
+    то left
+    иначе «Or rest» от («Chained» от left и "or" и («And expression» от («After first» от (left.«rest»))) и
+      («First line» от (
+      left.«rest»)))
+
+функция «And expression»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «And rest» от («Not expression» от tokens)
+
+функция «And rest»
+  принимает left: «Parsed»
+  возвращает «Parsed»
+  если («Refused» от (left.«node»)) или (не ((«First text» от (left.«rest»)) равен "and"))
+    то left
+    иначе «And rest» от («Chained» от left и "and" и («Not expression» от («After first» от (left.«rest»))) и
+      («First line» от (
+      left.«rest»)))
+
+функция «Not expression»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  если («First text» от tokens) равен "not"
+    то «Unary parsed» от "not" и («Not expression» от («After first» от tokens)) и («First line» от tokens)
+    иначе «Comparison» от tokens
+
+функция «Unary parsed»
+  принимает op: строка, inner: «Parsed», line: число
+  возвращает «Parsed»
+  если «Refused» от (inner.«node»)
+    то inner
+    иначе «Parsed of» от («Tree of» от "unary" и [op] и line и [inner.«node»]) и (inner.«rest»)
+
+тотальная функция «Comparison sign»
+  принимает tokens: список «Token»
+  возвращает строка
+  пример «Not in is one sign»
+    дано tokens равно [(запись «Token» с «kind» равным "keyword" и «text» равным "not" и «line» равным 1), (запись
+      «Token» с «kind» равным
+      "keyword" и «text» равным "in" и «line» равным 1)]
+    ожидается "not in"
+  пусть lead равно («First text» от tokens)
+  если ["==", "!=", "<", "<=", ">", ">=", "in", "is"] содержит lead
+    то lead
+    иначе если (lead равен "not") и притом ((«First text» от («After first» от tokens)) равен "in") то "not in" иначе ""
+
+функция «Comparison»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть lead равно («Arithmetic» от tokens)
+  «Comparison rest» от («Tree of» от "none" и пустой список и 0 и пустой список) и lead
+
+функция «Comparison rest»
+  принимает linked: «Node», last: «Parsed»
+  возвращает «Parsed»
+  пусть op равно («Comparison sign» от (last.«rest»))
+  пусть finished равно (если («Kind of» от linked) равен "none" то last иначе «Parsed of» от linked и (last.«rest»))
+  если («Refused» от (last.«node»)) или (op равен "")
+    то (если «Refused» от (last.«node») то last иначе finished)
+    иначе «Comparison next» от linked и last и op
+
+функция «Comparison next»
+  принимает linked: «Node», last: «Parsed», op: строка
+  возвращает «Parsed»
+  пусть line равно («First line» от (last.«rest»))
+  пусть skip равно (если op равен "not in" то «After first» от («After first» от (last.«rest»)) иначе «After first» от
+    (last.«rest»))
+  пусть right равно («Arithmetic» от skip)
+  пусть pair равно («Binary node» от op и (last.«node») и (right.«node») и line)
+  пусть glued равно (если («Kind of» от linked) равен "none" то pair иначе
+    «Binary node» от "and" и linked и pair и line)
+  если op равен "is"
+    то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "сравнение «is» вне подмножества: пишите ==" и line
+    иначе если «Refused» от (right.«node»)
+      то right
+      иначе «Comparison rest» от glued и (запись «Parsed» с «node» равным (right.«node») и «rest» равным (right.«rest»))
+
+функция «Arithmetic»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «Arithmetic rest» от («Term» от tokens)
+
+функция «Arithmetic rest»
+  принимает left: «Parsed»
+  возвращает «Parsed»
+  пусть op равно («First text» от (left.«rest»))
+  если («Refused» от (left.«node»)) или (не (["+", "-"] содержит op))
+    то left
+    иначе «Arithmetic rest» от («Chained» от left и op и («Term» от («After first» от (left.«rest»))) и
+      («First line» от (left.«rest»)))
+
+функция «Term»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «Term rest» от («Factor» от tokens)
+
+функция «Term rest»
+  принимает left: «Parsed»
+  возвращает «Parsed»
+  пусть op равно («First text» от (left.«rest»))
+  если («Refused» от (left.«node»)) или (не (["*", "/", "//", "%"] содержит op))
+    то left
+    иначе «Term rest» от («Chained» от left и op и («Factor» от («After first» от (left.«rest»))) и («First line» от
+      (left.«rest»)))
+
+функция «Factor»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть lead равно («First text» от tokens)
+  если lead равен "-"
+    то «Unary parsed» от "-" и («Factor» от («After first» от tokens)) и («First line» от tokens)
+    иначе если lead равен "+"
+      то «Factor» от («After first» от tokens)
+      иначе «Power» от tokens
+
+функция «Power»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть base равно («Postfix» от tokens)
+  если («Refused» от (base.«node»)) или (не ((«First text» от (base.«rest»)) равен "**"))
+    то base
+    иначе «Chained» от base и "**" и («Factor» от («After first» от (base.«rest»))) и («First line» от (base.«rest»))
+
+функция «Postfix»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  «Postfix rest» от («Atom» от tokens)
+
+функция «Postfix rest»
+  принимает left: «Parsed»
+  возвращает «Parsed»
+  пусть sign равно («First text» от (left.«rest»))
+  пусть line равно («First line» от (left.«rest»))
+  если «Refused» от (left.«node»)
+    то left
+    иначе разбор sign
+      случай "(" то «Postfix rest» от («Call» от (left.«node») и («After first» от (left.«rest»)) и line)
+      случай "[" то «Postfix rest» от («Subscript» от (left.«node») и («After first» от (left.«rest»)) и line)
+      случай "." то «Attribute» от (left.«rest») и line
+      случай любое то left
+
+тотальная функция «Mutating methods»
+  возвращает список строки
+  пример «Methods that change a list in place»
+    ожидается ["append", "extend", "insert", "pop", "remove", "sort", "reverse", "clear"]
+  ["append", "extend", "insert", "pop", "remove", "sort", "reverse", "clear"]
+
+функция «Attribute»
+  принимает tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть name равно («First word» от («After first» от tokens))
+  если («Mutating methods») содержит name
+    то «Failed» от "FLANG_PYTHON_MUTATION" и («Joined» от ["метод «", name,
+      "» меняет список на месте, а значения flang не меняются: вместо xs.append(v) пишите xs = xs + [v]"]) и line
+    иначе «Failed» от "FLANG_PYTHON_CONSTRUCT" и («Joined» от ["обращение через точку («.", name,
+      "») вне подмножества: методы, модули и поля объектов не переводятся"]) и line
+
+функция «Call»
+  принимает callee: «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  если не ((«Kind of» от callee) равен "name")
+    то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "вызов значения, а не функции по имени, вне подмножества" и line
+    иначе если («First text» от tokens) равен ")"
+      то («Parsed of» от («Tree of» от "call" и [«Word of» от callee и 1] и line и пустой список) и
+        («After first» от tokens))
+      иначе «Call arguments» от («Word of» от callee и 1) и пустой список и tokens и line
+
+функция «Call arguments»
+  принимает name: строка, made: список «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть keyword равно ((«First kind» от tokens) равен "name") и притом ((«First text» от
+    («After first» от tokens)) равен "=")
+  пусть starred равно ["*", "**"] содержит («First text» от tokens)
+  если keyword или starred
+    то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "именованные и распакованные доводы вызова вне подмножества" и line
+    иначе «Argument» от name и made и («Expression» от tokens) и line
+
+функция «Argument»
+  принимает name: строка, made: список «Node», arg: «Parsed», line: число
+  возвращает «Parsed»
+  пусть sign равно («First text» от (arg.«rest»))
+  пусть kept равно (добавить (arg.«node») к made)
+  пусть later равно («After first» от (arg.«rest»))
+  пусть closing равно ((sign равен ",") и притом ((«First text» от later) равен ")"))
+  пусть what равно («Chosen» от [(«Option of» от («Refused» от (arg.«node»)) и "refused"), («Option of» от closing и
+    "close comma"),
+    («Option of» от (sign равен ")") и "close"), («Option of» от (sign равен ",") и "next"),
+    («Option of» от (sign равен "for") и "generator")] и "other")
+  разбор what
+    случай "refused" то arg
+    случай "close" то «Parsed of» от («Tree of» от "call" и [name] и line и kept) и later
+    случай "close comma" то «Parsed of» от («Tree of» от "call" и [name] и line и kept) и («After first» от later)
+    случай "next" то «Call arguments» от name и kept и later и line
+    случай "generator" то («Generator argument» от name и made и («Comprehension» от (arg.«node») и
+      (arg.«rest») и line) и line)
+    случай любое то «Unexpected» от (arg.«rest») и "«,» или «)»" и line
+
+функция «Generator argument»
+  принимает name: строка, made: список «Node», inner: «Parsed», line: число
+  возвращает «Parsed»
+  пусть closed равно («Expected sign» от inner и ")" и line)
+  если «Refused» от (closed.«node»)
+    то closed
+    иначе «Parsed of» от («Tree of» от "call" и [name] и line и (добавить (closed.«node») к made)) и (closed.«rest»)
+
+функция «Subscript»
+  принимает target: «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  если («First text» от tokens) равен ":"
+    то «Slice high» от target и [] и («After first» от tokens) и line
+    иначе «Subscript after low» от target и («Expression» от tokens) и line
+
+функция «Subscript after low»
+  принимает target: «Node», low: «Parsed», line: число
+  возвращает «Parsed»
+  пусть sign равно («First text» от (low.«rest»))
+  если «Refused» от (low.«node»)
+    то low
+    иначе если sign равен ":"
+      то «Slice high» от target и [low.«node»] и («After first» от (low.«rest»)) и line
+      иначе «Index closed» от target и (low.«node») и («Expected sign» от low и "]" и line) и line
+
+функция «Index closed»
+  принимает target: «Node», index: «Node», closed: «Parsed», line: число
+  возвращает «Parsed»
+  если «Refused» от (closed.«node»)
+    то closed
+    иначе «Parsed of» от («Tree of» от "index" и пустой список и line и [target, index]) и (closed.«rest»)
+
+функция «Slice high»
+  принимает target: «Node», low: список «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть marks равно [(если пусто low то "" иначе "low")]
+  если («First text» от tokens) равен "]"
+    то «Parsed of» от («Tree of» от "slice" и (добавить "" к marks) и line и
+      (приписать target к low)) и («After first» от tokens)
+    иначе «Slice closed» от target и low и («Expression» от tokens) и line
+
+функция «Slice closed»
+  принимает target: «Node», low: список «Node», high: «Parsed», line: число
+  возвращает «Parsed»
+  пусть marks равно [(если пусто low то "" иначе "low"), "high"]
+  пусть closed равно («Expected sign» от high и "]" и line)
+  если («First text» от (high.«rest»)) равен ":"
+    то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "срез с шагом вне подмножества" и line
+    иначе если «Refused» от (closed.«node»)
+      то closed
+      иначе «Parsed of» от («Tree of» от "slice" и marks и line и (добавить (high.«node») к
+        (приписать target к low))) и (closed.«rest»)
+
+функция «Atom»
+  принимает tokens: список «Token»
+  возвращает «Parsed»
+  пусть kind равно («First kind» от tokens)
+  пусть word равно («First word» от tokens)
+  пусть line равно («First line» от tokens)
+  пусть rest равно («After first» от tokens)
+  разбор kind
+    случай "name" то «Parsed of» от («Leaf» от "name" и word и line) и rest
+    случай "number" то «Parsed of» от («Leaf» от "number" и word и line) и rest
+    случай "string" то «Strings» от word и rest и line
+    случай "keyword" то «Keyword atom» от word и rest и line
+    случай "op" то «Bracket atom» от word и rest и line
+    случай любое то «Unexpected» от tokens и "выражение" и line
+
+функция «Strings»
+  принимает text: строка, tokens: список «Token», line: число
+  возвращает «Parsed»
+  если («First kind» от tokens) равен "string"
+    то «Strings» от («Joined» от [text, «First word» от tokens]) и («After first» от tokens) и line
+    иначе «Parsed of» от («Leaf» от "string" и text и line) и tokens
+
+функция «Keyword atom»
+  принимает word: строка, rest: список «Token», line: число
+  возвращает «Parsed»
+  разбор word
+    случай "True" то «Parsed of» от («Leaf» от "truth" и "true" и line) и rest
+    случай "False" то «Parsed of» от («Leaf» от "truth" и "false" и line) и rest
+    случай "None" то («Failed» от "FLANG_PYTHON_CONSTRUCT" и
+      "None вне подмножества: у функции подмножества всегда есть значение" и line)
+    случай "lambda" то («Failed» от "FLANG_PYTHON_CONSTRUCT" и
+      "lambda вне подмножества: напишите именованную функцию через def" и line)
+    случай "yield" то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "генераторы (yield) вне подмножества" и line
+    случай "await" то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "асинхронный код вне подмножества" и line
+    случай любое то («Failed» от "FLANG_PYTHON_SYNTAX" и («Joined» от ["слово «", word,
+      "» не может стоять в выражении"]) и line)
+
+функция «Bracket atom»
+  принимает sign: строка, rest: список «Token», line: число
+  возвращает «Parsed»
+  разбор sign
+    случай "(" то «Group» от («Expression» от rest) и line
+    случай "[" то (если («First text» от rest) равен "]" то «Parsed of» от
+      («Tree of» от "list" и пустой список и line и пустой список) и (
+      «After first» от rest) иначе «List items» от пустой список и («Expression» от rest) и line)
+    случай "{" то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "словари и множества вне подмножества: пишите списки" и line
+    случай любое то («Failed» от "FLANG_PYTHON_SYNTAX" и («Joined» от ["знак «", sign,
+      "» не может начинать выражение"]) и line)
+
+функция «Group»
+  принимает inner: «Parsed», line: число
+  возвращает «Parsed»
+  если («First text» от (inner.«rest»)) равен ","
+    то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "кортежи вне подмножества: функция возвращает одно значение" и line
+    иначе «Expected sign» от inner и ")" и line
+
+функция «List items»
+  принимает made: список «Node», entry: «Parsed», line: число
+  возвращает «Parsed»
+  пусть sign равно («First text» от (entry.«rest»))
+  пусть kept равно (добавить (entry.«node») к made)
+  пусть later равно («After first» от (entry.«rest»))
+  пусть closing равно ((sign равен ",") и притом ((«First text» от later) равен "]"))
+  пусть listed равно («Tree of» от "list" и пустой список и line и kept)
+  пусть what равно («Chosen» от [(«Option of» от («Refused» от (entry.«node»)) и "refused"), («Option of» от closing и
+    "close comma"),
+    («Option of» от (sign равен "]") и "close"), («Option of» от (sign равен ",") и "next"),
+    («Option of» от ((sign равен "for") и притом (пусто made)) и "comprehension"),
+    («Option of» от (sign равен "for") и "late")] и "other")
+  разбор what
+    случай "refused" то entry
+    случай "close" то «Parsed of» от listed и later
+    случай "close comma" то «Parsed of» от listed и («After first» от later)
+    случай "next" то «List items» от kept и («Expression» от later) и line
+    случай "comprehension" то («Expected sign» от («Comprehension» от (entry.«node») и (entry.«rest») и line) и
+      "]" и line)
+    случай "late" то «Failed» от "FLANG_PYTHON_SYNTAX" и "списковое выражение после перечня элементов" и line
+    случай любое то «Unexpected» от (entry.«rest») и "«,» или «]»" и line
+
+функция «Comprehension»
+  принимает body: «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть name равно («First word» от («After first» от tokens))
+  пусть second равно («After first» от («After first» от tokens))
+  пусть named равно ((«First kind» от
+    («After first» от tokens)) равен "name") и притом ((«First text» от second) равен "in")
+  пусть source равно («Or expression» от («After first» от second))
+  если не named
+    то («Failed» от "FLANG_PYTHON_CONSTRUCT" и
+      "в списковом выражении после for стоит одно имя и in: разбор кортежей вне подмножества" и line)
+    иначе если «Refused» от (source.«node»)
+      то source
+      иначе «Comprehension filters» от body и name и (source.«node») и пустой список и (source.«rest») и line
+
+функция «Comprehension filters»
+  принимает body: «Node», name: строка, source: «Node», filters: список «Node», tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть sign равно («First text» от tokens)
+  пусть node равно («Tree of» от "comprehension" и [name] и line и (приписать body к (приписать source к filters)))
+  если sign равен "if"
+    то «Comprehension filter» от body и name и source и filters и («Or expression» от («After first» от tokens)) и line
+    иначе если sign равен "for"
+      то «Failed» от "FLANG_PYTHON_CONSTRUCT" и "вложенное списковое выражение (два for) вне подмножества" и line
+      иначе «Parsed of» от node и tokens
+
+функция «Comprehension filter»
+  принимает body: «Node», name: строка, source: «Node», filters: список «Node», test: «Parsed», line: число
+  возвращает «Parsed»
+  если «Refused» от (test.«node»)
+    то test
+    иначе «Comprehension filters» от body и name и source и (добавить (test.«node») к filters) и (test.«rest») и line
+
+функция «Whole expression»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть read равно («Expression» от tokens)
+  пусть extra равно («Joined» от ["лишнее после выражения: ", «Shown» от (read.«rest»)])
+  пусть what равно («Chosen» от [(«Option of» от («Refused» от (read.«node»)) и "done"), («Option of» от (пусто
+    (read.«rest»)) и "done"),
+    («Option of» от ((«First text» от (read.«rest»)) равен ",") и "tuple")] и "extra")
+  разбор what
+    случай "done" то read.«node»
+    случай "tuple" то («Refusal» от "FLANG_PYTHON_CONSTRUCT" и
+      "кортежи вне подмножества: функция возвращает одно значение" и line)
+    случай любое то «Refusal» от "FLANG_PYTHON_SYNTAX" и extra и line
+
+объект «Lines split»
+  «inside»: список «Line»
+  «rest»: список «Line»
+  «open»: признак
+
+тотальная функция «Split step»
+  принимает cut: «Lines split», line: «Line», indent: число
+  возвращает «Lines split»
+  если (cut.«open») и притом ((line.«indent») больше indent)
+    то запись «Lines split» с «inside» равным (добавить line к
+      (cut.«inside»)) и «rest» равным (cut.«rest») и «open» равным да
+    иначе запись «Lines split» с «inside» равным (cut.«inside») и «rest» равным (добавить line к
+      (cut.«rest»)) и «open» равным нет
+
+тотальная функция «Inner lines»
+  принимает lines: список «Line», indent: число
+  возвращает «Lines split»
+  пусть start равно (запись «Lines split» с «inside» равным пустой список и «rest» равным пустой список и
+    «open» равным да)
+  свёртка lines начиная с start как cut и line → «Split step» от cut и line и indent
+
+объект «Colon split»
+  «before»: список «Token»
+  «later»: список «Token»
+  «depth»: число
+  «found»: признак
+
+тотальная функция «Colon step»
+  принимает cut: «Colon split», token: «Token»
+  возвращает «Colon split»
+  пусть sign равно (если (token.«kind») равен "op" то token.«text» иначе "")
+  пусть depth равно ((cut.«depth») плюс («Depth change» от sign))
+  если cut.«found»
+    то (запись «Colon split» с «before» равным (cut.«before») и «later» равным (добавить token к (cut.«later»)) и
+      «depth» равным depth и
+      «found» равным да)
+    иначе если (sign равен ":") и притом ((cut.«depth») равен 0)
+      то (запись «Colon split» с «before» равным (cut.«before») и «later» равным пустой список и
+        «depth» равным depth и «found» равным да)
+      иначе (запись «Colon split» с «before» равным (добавить token к (cut.«before»)) и «later» равным пустой список и
+        «depth» равным depth и
+        «found» равным нет)
+
+тотальная функция «Split at colon»
+  принимает tokens: список «Token»
+  возвращает «Colon split»
+  пусть start равно (запись «Colon split» с «before» равным пустой список и «later» равным пустой список и
+    «depth» равным 0 и «found» равным нет)
+  свёртка tokens начиная с start как cut и token → «Colon step» от cut и token
+
+тотальная функция «Block of»
+  принимает nodes: список «Node», line: число
+  возвращает «Node»
+  пусть bad равно («First refused» от nodes)
+  если пусто bad то «Tree of» от "block" и пустой список и line и nodes иначе элемент 1 в bad
+
+тотальная функция «Block read of»
+  принимает nodes: список «Node», rest: список «Line»
+  возвращает «Block read»
+  запись «Block read» с «nodes» равным nodes и «rest» равным rest
+
+функция «Statements»
+  принимает lines: список «Line», indent: число, made: список «Node»
+  возвращает список «Node»
+  разбор lines
+    случай пусто
+      то made
+    случай голова и хвост
+      то «Statements after» от («Statement» от (голова) и (хвост) и indent) и indent и made
+
+функция «Statements after»
+  принимает read: «Block read», indent: число, made: список «Node»
+  возвращает список «Node»
+  пусть kept равно («Соединить» от made и (read.«nodes»))
+  если не (пусто («First refused» от (read.«nodes»)))
+    то kept
+    иначе «Statements» от (read.«rest») и indent и kept
+
+тотальная функция «Соединить» от «А»
+  принимает front: список «А», back: список «А»
+  возвращает список «А»
+  свёртка back начиная с front как made и entry → добавить entry к made
+
+функция «Body of»
+  принимает header: «Line», trailing: список «Token», rest: список «Line»
+  возвращает «Block read»
+  пусть cut равно («Inner lines» от rest и (header.«indent»))
+  пусть inside равно (cut.«inside»)
+  пусть single равно (запись «Line» с «indent» равным 1000 и «tokens» равным trailing и «number» равным
+    (header.«number»))
+  если не (пусто trailing)
+    то «Block read of» от [«Block of» от («Statements» от [single] и 1000 и пустой список) и (header.«number»)] и rest
+    иначе если пусто inside
+      то («Block read of» от [(«Refusal» от "FLANG_PYTHON_INDENT" и "после двоеточия нет тела с отступом" и
+        (header.«number»))] и rest)
+      иначе «Block read of» от [«Block of» от («Statements» от inside и
+        («Line indent» от inside) и пустой список) и (header.«number»)] и (
+        cut.«rest»)
+
+тотальная функция «Line indent»
+  принимает lines: список «Line»
+  возвращает число
+  разбор lines
+    случай пусто
+      то 0
+    случай голова и хвост
+      то голова.«indent»
+
+функция «Statement»
+  принимает line: «Line», rest: список «Line», indent: число
+  возвращает «Block read»
+  пусть tokens равно (line.«tokens»)
+  пусть number равно (line.«number»)
+  пусть word равно («First text» от tokens)
+  если (line.«indent») не равен indent
+    то («Block read of» от [(«Refusal» от "FLANG_PYTHON_INDENT" и
+      "отступ строки не совпадает с отступом блока" и number)] и rest)
+    иначе если («First kind» от tokens) равен "keyword"
+      то «Keyword statement» от line и rest и word
+      иначе «Block read of» от [«Simple statement» от tokens и number] и rest
+
+функция «Keyword statement»
+  принимает line: «Line», rest: список «Line», word: строка
+  возвращает «Block read»
+  пусть number равно (line.«number»)
+  пусть tokens равно («After first» от (line.«tokens»))
+  разбор word
+    случай "return" то «Block read of» от [«Return statement» от tokens и number] и rest
+    случай "if" то «If statement» от line и rest
+    случай "for" то «For statement» от line и rest
+    случай "pass" то «Block read of» от [«Tree of» от "pass" и пустой список и number и пустой список] и rest
+    случай любое то «Block read of» от [«Keyword refusal» от word и number] и rest
+
+тотальная функция «Keyword refusal»
+  принимает word: строка, line: число
+  возвращает «Node»
+  разбор word
+    случай "while" то («Refusal» от "FLANG_PYTHON_LOOP" и
+      («Joined» от ["цикл while вне подмножества: у него нет меры, которую видно из кода; ",
+        "пишите for по списку или по range, либо рекурсию"]) и line)
+    случай "break" то («Refusal» от "FLANG_PYTHON_LOOP" и
+      "break вне подмножества: цикл for проходит список целиком" и line)
+    случай "continue" то («Refusal» от "FLANG_PYTHON_LOOP" и
+      "continue вне подмножества: напишите условие через if" и line)
+    случай "class" то («Refusal» от "FLANG_PYTHON_CLASS" и
+      "классы вне подмножества: у объекта Python есть изменяемое состояние, а значения flang не меняются" и line)
+    случай "global" то («Refusal» от "FLANG_PYTHON_GLOBAL" и
+      "global вне подмножества: функция подмножества не меняет ничего вне себя" и line)
+    случай "nonlocal" то («Refusal» от "FLANG_PYTHON_GLOBAL" и
+      "nonlocal вне подмножества: функция подмножества не меняет ничего вне себя" и line)
+    случай "try" то («Refusal» от "FLANG_PYTHON_EXCEPTION" и
+      "исключения (try) вне подмножества: перехвата в flang нет, отказ останавливает вычисление целиком" и line)
+    случай "raise" то («Refusal» от "FLANG_PYTHON_EXCEPTION" и
+      "raise вне подмножества: исключение в flang не бросают; верните значение, которое говорит об ошибке" и line)
+    случай "assert" то («Refusal» от "FLANG_PYTHON_EXCEPTION" и
+      "assert вне подмножества: в flang такое условие пишется как требование функции" и line)
+    случай "with" то «Refusal» от "FLANG_PYTHON_IO" и "with вне подмножества: файлы и ресурсы — это ввод-вывод" и line
+    случай "import" то («Refusal» от "FLANG_PYTHON_IMPORT" и
+      "import вне подмножества: переводится одна программа без модулей" и line)
+    случай "from" то («Refusal» от "FLANG_PYTHON_IMPORT" и
+      "import вне подмножества: переводится одна программа без модулей" и line)
+    случай "del" то «Refusal» от "FLANG_PYTHON_MUTATION" и "del вне подмножества: значения flang не меняются" и line
+    случай "def" то («Refusal» от "FLANG_PYTHON_CONSTRUCT" и
+      "функция внутри функции вне подмножества: вынесите её наверх" и line)
+    случай "elif" то «Refusal» от "FLANG_PYTHON_SYNTAX" и "elif без if перед ним" и line
+    случай "else" то «Refusal» от "FLANG_PYTHON_SYNTAX" и "else без if или for перед ним" и line
+    случай любое то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и («Joined» от ["«", word, "» вне подмножества"]) и line
+
+функция «Return statement»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть value равно («Whole expression» от tokens и line)
+  если пусто tokens
+    то («Refusal» от "FLANG_PYTHON_RETURN" и
+      "return без значения: функция вернёт None, а у функции подмножества значение есть всегда" и line)
+    иначе если «Refused» от value
+      то value
+      иначе «Tree of» от "return" и пустой список и line и [value]
+
+функция «If statement»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
+  пусть test равно («Whole expression» от (cut.«before») и (line.«number»))
+  пусть body равно («Body of» от line и (cut.«later») и rest)
+  если не (cut.«found»)
+    то «Block read of» от [«Refusal» от "FLANG_PYTHON_SYNTAX" и "у if нет двоеточия" и (line.«number»)] и rest
+    иначе «If tail» от line и test и (элемент 1 в (body.«nodes»)) и (body.«rest»)
+
+функция «If tail»
+  принимает line: «Line», test: «Node», body: «Node», rest: список «Line»
+  возвращает «Block read»
+  пусть made равно («Else of» от line и rest)
+  пусть node равно («Tree of» от "if" и пустой список и (line.«number») и [test, body, элемент 1 в (made.«nodes»)])
+  пусть bad равно («First refused» от («Kids of» от node))
+  «Block read of» от [(если пусто bad то node иначе элемент 1 в bad)] и (made.«rest»)
+
+тотальная функция «Next word»
+  принимает line: «Line», rest: список «Line»
+  возвращает строка
+  разбор rest
+    случай пусто
+      то ""
+    случай голова и хвост
+      то если (голова.«indent») равен (line.«indent») то «First text» от (голова.«tokens») иначе ""
+
+функция «Else of»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть vacant равно («Tree of» от "block" и пустой список и (line.«number») и пустой список)
+  разбор («Next word» от line и rest)
+    случай "elif" то «Elif part» от rest
+    случай "else" то «Else part» от rest
+    случай любое то «Block read of» от [vacant] и rest
+
+функция «Elif part»
+  принимает rest: список «Line»
+  возвращает «Block read»
+  разбор rest
+    случай пусто
+      то «Block read of» от пустой список и пустой список
+    случай голова и хвост
+      то «Elif read» от («If statement» от (голова) и (хвост)) и (голова.«number»)
+
+функция «Elif read»
+  принимает read: «Block read», line: число
+  возвращает «Block read»
+  «Block read of» от [«Block of» от (read.«nodes») и line] и (read.«rest»)
+
+функция «Else part»
+  принимает rest: список «Line»
+  возвращает «Block read»
+  разбор rest
+    случай пусто
+      то «Block read of» от пустой список и пустой список
+    случай голова и хвост
+      то «Else body» от (голова) и (хвост)
+
+функция «Else body»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
+  если (не (cut.«found»)) или (не (пусто (cut.«before»)))
+    то «Block read of» от [«Refusal» от "FLANG_PYTHON_SYNTAX" и "после else стоит двоеточие" и (line.«number»)] и rest
+    иначе «Body of» от line и (cut.«later») и rest
+
+функция «For statement»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть number равно (line.«number»)
+  пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
+  пусть lead равно (cut.«before»)
+  пусть name равно («First word» от lead)
+  пусть named равно ((«First kind» от lead) равен "name") и притом ((«First text» от
+    («After first» от lead)) равен "in")
+  пусть source равно («Whole expression» от («After first» от («After first» от lead)) и number)
+  пусть body равно («Body of» от line и (cut.«later») и rest)
+  пусть node равно («Tree of» от "for" и [name] и number и [source, элемент 1 в (body.«nodes»)])
+  пусть tuple равно "после for стоит одно имя и in: разбор кортежей (for i, x in …) вне подмножества"
+  пусть trailing равно («Next word» от line и (body.«rest»)) равен "else"
+  пусть problems равно («Flat» от [(«Problem» от (не
+    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у for нет двоеточия" и number),
+    («Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и tuple и number),
+    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "for … else вне подмножества" и number),
+      «First refused» от («Kids of» от node)])
+  «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
+
+тотальная функция «Problem»
+  принимает wrong: признак, code: строка, message: строка, line: число
+  возвращает список «Node»
+  пример «Nothing wrong, nothing to say»
+    дано wrong равно нет
+    дано code равно "FLANG_PYTHON_SYNTAX"
+    дано message равно "x"
+    дано line равно 1
+    ожидается []
+  если wrong то [«Refusal» от code и message и line] иначе пустой список
+
+тотальная функция «Flat» от «А»
+  принимает lists: список список «А»
+  возвращает список «А»
+  пример «Lists glued in order»
+    дано lists равно [["a"], [], ["b", "c"]]
+    ожидается ["a", "b", "c"]
+  свёртка lists начиная с (пустой список) как made и part → «Соединить» от made и part
+
+тотальная функция «Assignment sign»
+  принимает tokens: список «Token»
+  возвращает строка
+  пример «A plain assignment»
+    дано tokens равно [(запись «Token» с «kind» равным "name" и «text» равным "x" и «line» равным 1), (запись
+      «Token» с «kind» равным
+      "op" и «text» равным "=" и «line» равным 1)]
+    ожидается "="
+  пусть signs равно (отфильтровать tokens где token → ((token.«kind») равен "op") и притом («Assigning» от
+    (token.«text»)))
+  разбор signs
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова.«text»
+
+тотальная функция «Assigning»
+  принимает sign: строка
+  возвращает признак
+  ["=", "+=", "-=", "*=", "/=", "//=", "%=", "**="] содержит sign
+
+тотальная функция «Before sign»
+  принимает tokens: список «Token», sign: строка
+  возвращает список «Token»
+  пусть start равно (запись «Colon split» с «before» равным пустой список и «later» равным пустой список и
+    «depth» равным 0 и «found» равным нет)
+  (свёртка tokens начиная с start как cut и token → «Sign step» от cut и token и sign).«before»
+
+тотальная функция «After sign»
+  принимает tokens: список «Token», sign: строка
+  возвращает список «Token»
+  пусть start равно (запись «Colon split» с «before» равным пустой список и «later» равным пустой список и
+    «depth» равным 0 и «found» равным нет)
+  (свёртка tokens начиная с start как cut и token → «Sign step» от cut и token и sign).«later»
+
+тотальная функция «Sign step»
+  принимает cut: «Colon split», token: «Token», sign: строка
+  возвращает «Colon split»
+  пусть hit равно (не (cut.«found»)) и притом (((token.«kind») равен "op") и притом ((token.«text») равен sign))
+  пусть before равно (если (cut.«found») или hit то cut.«before» иначе добавить token к (cut.«before»))
+  пусть later равно (если (cut.«found») и притом (не hit) то добавить token к (cut.«later») иначе cut.«later»)
+  (запись «Colon split» с «before» равным before и «later» равным later и «depth» равным 0 и «found» равным
+    ((cut.«found») или hit))
+
+функция «Simple statement»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть sign равно («Assignment sign» от tokens)
+  пусть lone равно ((«First kind» от tokens) равен "string") и притом (пусто («After first» от tokens))
+  если lone
+    то «Tree of» от "pass" и пустой список и line и пустой список
+    иначе если sign равен ""
+      то «Expression statement» от tokens и line
+      иначе «Assignment» от («Before sign» от tokens и sign) и sign и («After sign» от tokens и sign) и line
+
+функция «Expression statement»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть read равно («Whole expression» от tokens и line)
+  пусть called равно (если («Kind of» от read) равен "call" то «Word of» от read и 1 иначе "")
+  пусть io равно ["print", "input", "open"] содержит called
+  если «Refused» от read
+    то read
+    иначе если io
+      то («Refusal» от "FLANG_PYTHON_IO" и («Joined» от ["вызов ", called,
+        "() — это ввод-вывод, а функция подмножества чистая"]) и line)
+      иначе («Refusal» от "FLANG_PYTHON_CONSTRUCT" и
+        "выражение без присваивания ничего не значит в чистой функции" и line)
+
+функция «Assignment»
+  принимает target: список «Token», sign: строка, value: список «Token», line: число
+  возвращает «Node»
+  пусть names равно (отфильтровать target где token → (token.«kind») равен "name")
+  пусть commas равно (отфильтровать target где token → (token.«text») равен ",")
+  пусть second равно («First text» от («After first» от target))
+  пусть named равно («First kind» от target) равен "name"
+  пусть typed равно named и притом (second равен ":")
+  пусть plain равно ((длина target) равен 1) и притом named
+  пусть many равно ((длина names) равен ((длина commas) плюс 1)) и притом ((длина target) равен ((длина names) плюс
+    (длина commas)))
+  пусть indexed равно named и притом (second равен "[")
+  пусть mutation равно («Joined» от ["присваивание элементу списка вне подмножества: ",
+    "значения flang не меняются; соберите новый список"])
+  пусть odd равно "слева от = стоит не имя: присваивание полям и элементам вне подмножества"
+  пусть what равно («Chosen» от [(«Option of» от indexed и "indexed"),
+    («Option of» от (many и притом ((длина names) больше 1) и притом (sign не равен "=")) и "tuple"),
+    («Option of» от typed и "typed"), («Option of» от (plain или many) и "plain")] и "odd")
+  разбор what
+    случай "indexed" то «Refusal» от "FLANG_PYTHON_MUTATION" и mutation и line
+    случай "tuple" то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "составное присваивание кортежу вне подмножества" и line
+    случай "typed" то («Typed assignment» от («First word» от target) и («After first» от
+      («After first» от target)) и sign и value и line)
+    случай "plain" то «Plain assignment» от (отобразить names как token → token.«text») и sign и value и line
+    случай любое то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и odd и line
+
+функция «Typed assignment»
+  принимает name: строка, kind: список «Token», sign: строка, value: список «Token», line: число
+  возвращает «Node»
+  пусть read равно («Type of» от kind и line)
+  пусть made равно («Plain assignment» от [name] и sign и value и line)
+  если «Refused» от read
+    то read
+    иначе если «Refused» от made
+      то made
+      иначе «Tree of» от "assign" и («Words of» от made) и line и [«Kid of» от made и 1, read]
+
+тотальная функция «Augmented operator»
+  принимает sign: строка
+  возвращает строка
+  пример «Plus equals adds»
+    дано sign равно "+="
+    ожидается "+"
+  подстрока sign с 1 по ((длина sign) минус 1)
+
+функция «Plain assignment»
+  принимает names: список строки, sign: строка, value: список «Token», line: число
+  возвращает «Node»
+  пусть values равно («Values» от value и line)
+  пусть none равно («Tree of» от "none" и пустой список и line и пустой список)
+  пусть single равно (длина names) равен 1
+  пусть aug равно (sign не равен "=")
+  пусть kids равно («Kids of» от values)
+  пусть target равно («Leaf» от "name" и (элемент 1 в names) и line)
+  пусть changed равно (если aug то [(«Binary node» от («Augmented operator» от sign) и target и
+    (элемент 1 в kids) и line)] иначе kids)
+  если «Refused» от values
+    то values
+    иначе если (длина kids) не равен (длина names)
+      то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "число имён слева не равно числу значений справа" и line
+      иначе «Tree of» от "assign" и names и line и [«Tree of» от "values" и пустой список и line и changed, none]
+
+функция «Values»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  «Value list» от пустой список и («Expression» от tokens) и line
+
+функция «Value list»
+  принимает made: список «Node», read: «Parsed», line: число
+  возвращает «Node»
+  пусть kept равно (добавить (read.«node») к made)
+  пусть extra равно («Joined» от ["лишнее после значения: ", «Shown» от (read.«rest»)])
+  пусть what равно («Chosen» от [(«Option of» от («Refused» от (read.«node»)) и "refused"),
+    («Option of» от (пусто (read.«rest»)) и "done"), («Option of» от ((«First text» от (read.«rest»)) равен ",") и
+      "next")] и "extra")
+  разбор what
+    случай "refused" то read.«node»
+    случай "done" то «Tree of» от "values" и пустой список и line и kept
+    случай "next" то «Value list» от kept и («Expression» от («After first» от (read.«rest»))) и line
+    случай любое то «Refusal» от "FLANG_PYTHON_SYNTAX" и extra и line
+
+функция «Type of»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть read равно («Type read» от tokens и line)
+  если «Refused» от (read.«node»)
+    то read.«node»
+    иначе если пусто (read.«rest»)
+      то read.«node»
+      иначе «Refusal» от "FLANG_PYTHON_TYPE" и («Joined» от ["лишнее после типа: ", «Shown» от (read.«rest»)]) и line
+
+функция «Type read»
+  принимает tokens: список «Token», line: число
+  возвращает «Parsed»
+  пусть word равно («First text» от tokens)
+  пусть rest равно («After first» от tokens)
+  пусть known равно ["int", "float", "bool", "str"] содержит word
+  пусть listed равно (["list", "List"] содержит word) и притом ((«First text» от rest) равен "[")
+  если known
+    то «Parsed of» от («Leaf» от "type" и word и line) и rest
+    иначе если listed
+      то «List type» от («Expected sign» от («Type read» от («After first» от rest) и line) и "]" и line) и line
+      иначе «Failed» от "FLANG_PYTHON_TYPE" и («Joined» от ["тип «", word,
+        "» вне подмножества: годятся int, float, bool, str и list[…] из них"]) и line
+
+функция «List type»
+  принимает inner: «Parsed», line: число
+  возвращает «Parsed»
+  если «Refused» от (inner.«node»)
+    то inner
+    иначе «Parsed of» от («Tree of» от "type" и ["list"] и line и [inner.«node»]) и (inner.«rest»)
+
+объект «Pieces»
+  «pieces»: список список «Token»
+  «current»: список «Token»
+  «depth»: число
+
+тотальная функция «Piece step»
+  принимает cut: «Pieces», token: «Token»
+  возвращает «Pieces»
+  пусть sign равно (если (token.«kind») равен "op" то token.«text» иначе "")
+  пусть depth равно ((cut.«depth») плюс («Depth change» от sign))
+  если (sign равен ",") и притом ((cut.«depth») равен 0)
+    то запись «Pieces» с «pieces» равным (добавить (cut.«current») к
+      (cut.«pieces»)) и «current» равным пустой список и «depth» равным depth
+    иначе запись «Pieces» с «pieces» равным (cut.«pieces») и «current» равным (добавить token к
+      (cut.«current»)) и «depth» равным depth
+
+тотальная функция «Comma pieces»
+  принимает tokens: список «Token»
+  возвращает список список «Token»
+  пусть start равно (запись «Pieces» с «pieces» равным пустой список и «current» равным пустой список и
+    «depth» равным 0)
+  пусть cut равно (свёртка tokens начиная с start как cut и token → «Piece step» от cut и token)
+  если пусто (cut.«current») то cut.«pieces» иначе добавить (cut.«current») к (cut.«pieces»)
+
+функция «Parameter»
+  принимает tokens: список «Token», line: число
+  возвращает «Node»
+  пусть name равно («First word» от tokens)
+  пусть named равно («First kind» от tokens) равен "name"
+  пусть typed равно («First text» от («After first» от tokens)) равен ":"
+  пусть defaulted равно не (пусто («After sign» от tokens и "="))
+  пусть kind равно («Type of» от («After first» от («After first» от tokens)) и line)
+  пусть problems равно («Flat» от [(«Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и
+    "параметр вида *args, **kwargs или / вне подмножества" и line),
+    («Problem» от defaulted и "FLANG_PYTHON_CONSTRUCT" и "значение параметра по умолчанию вне подмножества" и line),
+    («Problem» от (не typed) и "FLANG_PYTHON_TYPE" и («Joined» от ["у параметра «", name,
+      "» нет аннотации типа: перевод пишет тип каждого параметра, а угадывать его переводчик не берётся"]) и line)])
+  если не (пусто problems)
+    то элемент 1 в problems
+    иначе если «Refused» от kind
+      то kind
+      иначе «Tree of» от "param" и [name] и line и [kind]
+
+функция «Definition»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть number равно (line.«number»)
+  пусть tokens равно («After first» от (line.«tokens»))
+  пусть name равно («First word» от tokens)
+  пусть opened равно («First text» от («After first» от tokens)) равен "("
+  пусть inside равно («Before sign» от («After first» от («After first» от tokens)) и ")")
+  пусть later равно («After sign» от tokens и ")")
+  пусть arrow равно («First text» от later) равен "->"
+  пусть cut равно («Split at colon» от («After first» от later))
+  пусть params равно (отобразить («Comma pieces» от inside) как piece → «Parameter» от piece и number)
+  пусть outcome равно («Type of» от (cut.«before») и number)
+  пусть body равно («Body of» от line и (cut.«later») и rest)
+  пусть node равно («Tree of» от "def" и [name] и number и [«Tree of» от "params" и пустой список и number и params,
+    outcome,
+    элемент 1 в (body.«nodes»)])
+  пусть untyped равно («Joined» от ["у функции «", name,
+    "» нет аннотации результата (-> тип): перевод пишет тип результата, а угадывать его переводчик не берётся"])
+  пусть problems равно («Flat» от [(«Problem» от
+    (не opened) и "FLANG_PYTHON_SYNTAX" и "после def стоит имя и скобка" и number),
+    («Problem» от (не arrow) и "FLANG_PYTHON_TYPE" и untyped и number),
+    («Problem» от (пусто params) и "FLANG_PYTHON_CONSTRUCT" и
+      («Joined» от ["функция без параметров вне подмножества: это постоянная, а не функция; ",
+        "напишите её значение там, где оно нужно"]) и number),
+    «First refused» от params, «First refused» от [outcome, элемент 1 в (body.«nodes»)]])
+  «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
+
+функция «Top statement»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть word равно («First text» от (line.«tokens»))
+  пусть number равно (line.«number»)
+  пусть lone равно ((«First kind» от (line.«tokens»)) равен "string") и притом (пусто («After first» от
+    (line.«tokens»)))
+  пусть kept равно (если lone то пустой список иначе [«Top refusal» от line])
+  если (line.«indent») не равен 0
+    то «Block read of» от [«Refusal» от "FLANG_PYTHON_INDENT" и "строка верхнего уровня с отступом" и number] и rest
+    иначе разбор word
+      случай "def" то «Definition» от line и rest
+      случай "if" то «Main block» от line и rest
+      случай "from" то «Block read of» от («Typing import» от line) и rest
+      случай любое то «Block read of» от kept и rest
+
+функция «Typing import»
+  принимает line: «Line»
+  возвращает список «Node»
+  пусть unit равно («First word» от («After first» от (line.«tokens»)))
+  если ["typing", "__future__"] содержит unit
+    то пустой список
+    иначе ([(«Refusal» от "FLANG_PYTHON_IMPORT" и "import вне подмножества: переводится одна программа без модулей" и
+      (line.«number»))])
+
+функция «Main block»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть entrance равно («First word» от («After first» от (line.«tokens»))) равен "__name__"
+  пусть cut равно («Inner lines» от rest и 0)
+  пусть message равно "условие на верхнем уровне вне подмножества: это состояние модуля, а не функция"
+  если entrance
+    то «Block read of» от пустой список и («Main else» от (cut.«rest»))
+    иначе «Block read of» от [«Refusal» от "FLANG_PYTHON_GLOBAL" и message и (line.«number»)] и rest
+
+тотальная функция «Main else»
+  принимает rest: список «Line»
+  возвращает список «Line»
+  разбор rest
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если («First text» от (голова.«tokens»)) равен "else" то («Inner lines» от хвост и 0).«rest» иначе rest
+
+функция «Top refusal»
+  принимает line: «Line»
+  возвращает «Node»
+  пусть tokens равно (line.«tokens»)
+  пусть number равно (line.«number»)
+  пусть word равно («First text» от tokens)
+  пусть shared равно («Joined» от ["имя «", «First word» от tokens,
+    "» на верхнем уровне — это состояние модуля; функции подмножества получают всё через параметры"])
+  пусть what равно («Chosen» от [(«Option of» от ((«First kind» от tokens) равен "keyword") и "keyword"),
+    («Option of» от (word равен "@") и "decorator"), («Option of» от ((«Assignment sign» от tokens) не равен "") и
+      "shared")] и "other")
+  разбор what
+    случай "keyword" то «Keyword refusal» от word и number
+    случай "decorator" то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "декораторы вне подмножества" и number
+    случай "shared" то «Refusal» от "FLANG_PYTHON_GLOBAL" и shared и number
+    случай любое то «Expression statement» от tokens и number
+
+функция «Top statements»
+  принимает lines: список «Line», made: список «Node»
+  возвращает список «Node»
+  разбор lines
+    случай пусто
+      то made
+    случай голова и хвост
+      то «Top after» от («Top statement» от (голова) и (хвост)) и made
+
+функция «Top after»
+  принимает read: «Block read», made: список «Node»
+  возвращает список «Node»
+  пусть kept равно («Соединить» от made и (read.«nodes»))
+  если не (пусто («First refused» от (read.«nodes»)))
+    то kept
+    иначе «Top statements» от (read.«rest») и kept
+
+функция «Read module»
+  принимает text: строка
+  возвращает «Node»
+  пусть lexed равно («Logical lines» от text)
+  пусть defs равно («Top statements» от (lexed.«lines») и пустой список)
+  пусть bad равно («First refused» от defs)
+  пусть what равно («Chosen» от [(«Option of» от ((lexed.«code») не равен "") и "lexer"), («Option of» от (не
+    (пусто bad)) и "refused"),
+    («Option of» от (пусто defs) и "nothing")] и "ok")
+  разбор what
+    случай "lexer" то «Tree of» от "refused" и [lexed.«code», lexed.«message»] и 0 и пустой список
+    случай "refused" то элемент 1 в bad
+    случай "nothing" то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "в программе нет ни одной функции def" и 1
+    случай любое то «Tree of» от "unit" и пустой список и 1 и defs

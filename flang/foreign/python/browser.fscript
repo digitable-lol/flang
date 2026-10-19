@@ -1,0 +1,35 @@
+модуль «Python in the browser»
+  использует «Python translator» из "translator.fscript"
+
+примечание "Тот же переводчик Python, что у плана Demo, но без файлов и процессов: текст программы на входе,"
+примечание "перевод на flang на выходе. Его печатает в JavaScript сборка песочницы; Python в браузере не нужен."
+
+объект «Page translation»
+  «code»: строка
+  «why»: строка
+  «unit»: строка
+  «verdicts»: список строки
+
+тотальная функция «Page verdict»
+  принимает verdict: «Verdict line»
+  возвращает строка
+  пример «A total function»
+    дано verdict равно (запись «Verdict line» с «name» равным "square" и «total» равным да и «reason» равным "" и
+      «line» равным 4)
+    ожидается "«square»: тотальная функция"
+  пример «A function whose end is not proved says why»
+    дано verdict равно (запись «Verdict line» с «name» равным "steps" и «total» равным нет и
+      «reason» равным "нет меры" и «line» равным 4)
+    ожидается "«steps»: функция без «тотальная» — нет меры"
+  пусть word равно (если verdict.«total» то "тотальная функция" иначе "функция без «тотальная»")
+  пусть reason равно (если (verdict.«reason») равен "" то "" иначе соединить " — " с (verdict.«reason»))
+  соединить [«Name text» от (verdict.«name»), ": ", word, reason] по ""
+
+функция «Translate for page»
+  принимает source: строка, name: строка
+  возвращает «Page translation»
+  пусть called равно (если name равен "" то "program" иначе name)
+  пусть made равно («Translate» от source и called и "honest")
+  (запись «Page translation» с «code» равным (made.«code») и «why» равным (made.«message») и «unit» равным
+    (made.«unit») и
+    «verdicts» равным (отобразить (made.«verdicts») как v → «Page verdict» от v))

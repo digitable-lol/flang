@@ -1955,6 +1955,23 @@ jobs:
         run: bootstrap/flang run-script kernel-abilities:check
         env:
           FLANG_TMP: ${{ runner.temp }}
+  # Программа на Python входит во flang переводчиком, которому не верят (ADR-0058,
+  # docs/python-to-flang.md). Сам переводчик написан на flang; Python здесь нужен
+  # одному шагу — узнать ответы оригинала и сравнить их с ответами перевода на
+  # корпусе flang/foreign/python/corpus. План краснеет, если перевод не прошёл
+  # flang check, если хоть один ответ разошёлся, если завершение функции не то,
+  # что ждёт corpus/expected.tsv, и если хоть одна лживая версия перевода прошла.
+  python-in:
+    name: python-enters-flang
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Python programs are translated and agree with Python
+        run: bootstrap/flang run-script foreign-python:demo
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
   uncalled:
     name: checks-nobody-calls
     runs-on: ubuntu-latest

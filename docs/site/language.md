@@ -1447,13 +1447,13 @@ The rows of the table for the three families that hold the six checked rules:
 | --- | --- | --- | --- | --- | --- |
 | Разв1 | Разв | rule | — | proof-kernel.flang:1325 «Правило развёртки», ветвь конструктора | code |
 | Разв2 | Разв | rule | — | proof-kernel.flang:1325 «Правило развёртки», ветвь плоского определения | code |
-| Яр1 | Разв | rule | — | proof-kernel.flang:5781 «Ярлык применения» | code-narrower |
+| Яр1 | Разв | rule | — | proof-kernel.flang:5885 «Ярлык применения» | code-narrower |
 | Разв3 | Разв | rule | — | proof-kernel.flang:1303 «Развернуть подстановкой» | code |
 | К↑ | Разв | rule | — | proof-kernel.flang:875 «Поле известного значения» | code |
-| Зап1 | Разв | rule | равенство записей по полям | proof-kernel.flang:5043 «Свести поля записей» | not-in-adr |
-| Зап2 | Разв | rule | запись из своих полей | proof-kernel.flang:5097 «Запись из своих полей» | not-in-adr |
-| Зап3 | Разв | rule | равенство записей по полям | proof-kernel.flang:5110 «Равны по полям фактов» | not-in-adr |
-| Зап✗ | Разв | ban | запись из своих полей | proof-kernel.flang:5074 «Поля записи имени», отказ при необязательном поле, при параметрах типа и при неполном наборе полей | not-in-adr |
+| Зап1 | Разв | rule | равенство записей по полям | proof-kernel.flang:5085 «Свести поля записей» | not-in-adr |
+| Зап2 | Разв | rule | запись из своих полей | proof-kernel.flang:5176 «Запись из своих полей» | not-in-adr |
+| Зап3 | Разв | rule | равенство записей по полям | proof-kernel.flang:5188 «Равны по полям фактов» | not-in-adr |
+| Зап✗ | Разв | ban | запись из своих полей | proof-kernel.flang:5157 «Поля записи имени», отказ при необязательном поле, при параметрах типа и при неполном наборе полей | not-in-adr |
 <!-- end insert -->
 
 Why name the rule: the independent proof checker (`flang/proof/checker/checker.c`)

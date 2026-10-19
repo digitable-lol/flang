@@ -1379,7 +1379,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
-0671f904ac2c1b423ee51e1562ed2a08|91|44|0|0|0|flang/self/proof-kernel.flang
+5abec3f29ee633cbbf3f9762d4ba897b|96|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|245|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
@@ -2147,3 +2147,15 @@ fb81c00853e3b7291316d8dc04d3ace1|1|1|0|0|0|flang/proof/checker/tests/families/bo
 187925358f1ee7a6f07659431b7d872f|1|0|0|1|0|flang/proof/examples/forgery-unfold-inside-a-list.flang
 fe6ae44b60de761e120eefd61c6708b5|1|0|0|1|0|flang/proof/examples/forgery-unfold-of-a-whole-comparison.flang
 98be78cf0ec7a467da2d21e77981647e|1|0|0|1|0|flang/proof/examples/forgery-unfold-without-arguments.flang
+// ── Записи по полям, равенство себе, кольцо под остатком (ADR-0171), снято 19 октября 2026 ──
+// Приговор снят исходным компилятором этого же дерева (flang/proof/probes/records-and-arithmetic
+// и записи flang/proof/checker/tests/records/records-arith); у ядра «написано» пересчитано по
+// исходнику в строке ядра выше по описи: +5 «обеспечивает» (имена трёх правил, «Слово с длиной»,
+// «Точное себе по типу»).
+b31e0e8c97ef5430b004a92af4ecc305|3|0|2|1|0|flang/proof/checker/tests/programs/records-arith/equal-to-itself-number.flang
+b54fba392b4f560c6fd3063aa11cebc4|2|2|0|0|0|flang/proof/checker/tests/programs/records-arith/equal-to-itself.flang
+cd0afad3dcc1dbd5249a70eba65cfe77|4|0|0|4|0|flang/proof/checker/tests/programs/records-arith/record-eta-refused.flang
+9c41ec34b17be1269bbcedcb7cb91a04|3|3|0|0|0|flang/proof/checker/tests/programs/records-arith/record-eta.flang
+ff29e953fb02bbc50fc03b65d6e944cc|3|3|0|0|0|flang/proof/checker/tests/programs/records-arith/record-fields.flang
+eebdc6bd8fa9a00bb25456c8e6012b90|2|1|0|1|0|flang/proof/checker/tests/programs/records-arith/record-four-fields.flang
+26d141486ba6a4db7cbc291388f52459|6|4|0|2|0|flang/proof/checker/tests/programs/records-arith/ring-under-remainder.flang

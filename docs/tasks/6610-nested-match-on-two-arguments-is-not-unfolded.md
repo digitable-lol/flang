@@ -20,7 +20,7 @@
 
 ## Шаги воспроизведения
 
-1. Программа `nat-eq.flang`:
+1. Программа nat-eq.flang:
 
 ```flang
 модуль «Eq»
@@ -63,7 +63,7 @@
   следовательно доказано
 ```
 
-2. Программа `two-levels.flang`:
+2. Программа two-levels.flang:
 
 ```flang
 модуль «Repro nested case projection»
@@ -151,7 +151,7 @@ two-levels.flang: ПРОВЕРЕНО С ОПОРОЙ, И ОПОРА НЕ СУД�
 
 ## Когда задача сделана
 
-`bootstrap/flang check nat-eq.flang --proof` и `two-levels.flang` — код 0, все утверждения доказаны. Подделка: в одном листе другое значение поля — не доказано.
+`bootstrap/flang check nat-eq.flang --proof` и two-levels.flang — код 0, все утверждения доказаны. Подделка: в одном листе другое значение поля — не доказано.
 
 ## Где живёт правка
 

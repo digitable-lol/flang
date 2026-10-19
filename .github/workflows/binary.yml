@@ -34,8 +34,8 @@ name: Binary
 #   дым (`--version`, `--help`, `check` одного файла)              3 с
 #   обходчик проверок на flang, 211 проверок                       3 с
 #   СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-#   примеры stdlib и ядра, 4327 штук                        44 мин 07 с
-#   СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4327
+#   примеры stdlib и ядра, 4328 штук                        44 мин 07 с
+#   СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4328 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4327, снято 2026-10-17)
 #   ─────────────────────────────────────────────────────────────────
 #   обходчик примеров корпуса, всё дерево                    ДЕСЯТКИ МИНУТ
 #
@@ -58,10 +58,10 @@ name: Binary
 # это ровно та беда, из-за которой `ci.yml` увели с пуша на тег, и повторять её
 # незачем. Язык перед слиянием не остаётся неприкрытым: работа `sborka` выше
 # гоняет на каждый пуш 211 проверок и 184 примера ядра. Примеры `stdlib` (3663
-# из 4327 ниже) с пуша сняты на тег (задача 6890): их прогон брал 44 минуты, и
+# из 4328 ниже) с пуша сняты на тег (задача 6890): их прогон брал 44 минуты, и
 # пуш из-за них не влезал в пять минут — та самая утечка, ради которой заведено.
 # СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-# СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4327
+# СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4328 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4327, снято 2026-10-17)
 # (число 98 стояло здесь ещё дважды после того, как строкой 21 его уже сняли
 #  и назвали протухшим: одна правка прошла по одному месту из трёх.)
 # Здесь же — глубокая сверка всего дерева, и её место там, где решают выпуск.
@@ -372,9 +372,9 @@ jobs:
       # Примеры двух каталогов, которые СХОДЯТСЯ ЦЕЛИКОМ и потому годятся в
       # дешёвый гейт по голому коду возврата, без ведомости:
       #
-      #   flang/stdlib   64 файлов, 4143 примеров, прошли все  44 мин
+      #   flang/stdlib   64 файлов, 4144 примеров, прошли все  44 мин
       #   СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64
-      #   СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang = 4143
+      #   СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17)
       #   flang/core      4 файла,  184 примера,  прошли все     15 с
       #   СНЯТО 2026-09-05 файлов flang/core/*.flang = 4
       #   СНЯТО 2026-09-05 примеров-в flang/core/*.flang = 184
@@ -426,9 +426,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (44 файла, 8359 строка), HTML, CSS, пробы на
+      # язык: JavaScript. Оболочка (44 файла, 8387 строк), HTML, CSS, пробы на
       # СНЯТО 2026-10-14 файлов *.sh = 44 (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 40, снято 2026-10-08) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял два файла оболочки; до них 49, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял один файл оболочки; до него 50, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 52, снято 2026-10-04) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 101, снято 2026-09-17)
-      # СНЯТО 2026-10-17 строк-в *.sh = 8359 (task 8570: the reprint recipe reads its cost from the ledger, scripts/bootstrap-reprint.sh lost two lines; до них 8361, снято 2026-10-14) (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 7994, снято 2026-10-09) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял 414 строк оболочки; до них 9344, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
+      # СНЯТО 2026-10-19 строк-в *.sh = 8387 (installs ship the proof checker, task 1542; до них 8359, снято 2026-10-17) (task 8570: the reprint recipe reads its cost from the ledger, scripts/bootstrap-reprint.sh lost two lines; до них 8361, снято 2026-10-14) (prebuilt release: install.sh, packaging/prebuilt/build-tarball.sh, manifests.sh and smoke.sh run before flang is installed; до них 7994, снято 2026-10-09) (перенос scripts/guards/proved-share-vs-tree.sh и guards-without-forgery-probe.sh на планы снял 414 строк оболочки; до них 9344, снято 2026-10-04) (перенос flang/translation/run.sh на план flang/translation/run.fscript снял 214 строк оболочки; до него 9558, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 9756, снято 2026-10-04) (задачи 1426 и 8567: поиск коммита отпечатка по содержимому прибавил 135 строк в scripts/bootstrap-reprint.sh, а отменённая хронология предела шагов убрала 141; до них 9762, снято 2026-09-17) (задача 1400: девять проб на подлог и две честные под правила Н6 и О9 прибавили 42 строки в flang/proof/checker/tests/run.sh) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 23372, снято 2026-09-17) (задача 5821: семь скриптов scripts/** переехали с оболочки на flang; до них 23980, снято 2026-09-22) (ADR-0046: довод в шапках двух сторожей имён — сперва почему flang/proof не судится, потом почему вошёл в область — прибавил 9 строк; до него 23971, снято 2026-09-17)
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.
@@ -710,10 +710,10 @@ jobs:
   #
   # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
   # на двух
-  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 65
-  # файл и 5805 примера, объявленных внутри функций.
-  # СНЯТО 2026-10-08 файлов flang/self/*.flang = 65
-  # СНЯТО 2026-10-17 примеров-в flang/self/*.flang = 5805 (партия печати 8: задачи 3010, 7182, 8570, 2663, 2761, 1113, 1116, 4735, 5908, 6752 и 2277 вместе — установка библиотеки, проба Makefile, связывание, блоки «прогон», ходы по телу, законы категорий; до них 5722, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
+  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 66
+  # файлов и 5933 примера, объявленных внутри функций.
+  # СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-08)
+  # СНЯТО 2026-10-18 примеров-в flang/self/*.flang = 5933 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 5805, снято 2026-10-17) (партия печати 8: задачи 3010, 7182, 8570, 2663, 2761, 1113, 1116, 4735, 5908, 6752 и 2277 вместе — установка библиотеки, проба Makefile, связывание, блоки «прогон», ходы по телу, законы категорий; до них 5722, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 5719, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 5654, снято 2026-10-13) (задача 7662: два примера у «Исход суда сеткой»; до них 5652, снято 2026-10-11) (задача 7367: пять примеров у правила Кол5 «Сумма над отрезком сошлась»; до них 5641, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 5637, снято 2026-10-11) (ADR-0062, задача 5243: примеры сокращения дроби, НОД и порока канона; до них 5373, снято 2026-10-04) (задача 1908: сорок шесть примеров у вычитания с займом, умножения столбиком, сравнения и заслона канона — 36 в flang/self/interpret.flang и 11 в flang/self/types.flang, один прежний снят; до них 5327, снято 2026-10-04) (задача 1412: четыре примера у правил кольца над точным целым в flang/self/proof-kernel.flang; до них 5323, снято 2026-10-04) (задача 7182: пять примеров у печати зависимостей Makefile; до них 5318) (задача 1908: примеры точного целого
   # в типизаторе и вычислителе; до них 5297, снято 2026-10-03)
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже
@@ -2152,6 +2152,8 @@ jobs:
       # назван явно: набор зовёт двоичный четырнадцатью программами.
       - name: Check imported helpers bind in their own module
         run: cd flang/proof/probes/import-helper-binding && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
+      - name: Check parse and import probes
+        run: cd flang/proof/probes/parse-and-import && ../../../../bootstrap/flang io run.fscript --plan Binary --timeout 900000
 
       # ПЛАН ПЕЧАТАЕТСЯ В C, GO, RUST И PYTHON (ADR-0100). Три программы с планом
       # идут через `flang io` и через прогонщики шести целей, итог и код обязаны

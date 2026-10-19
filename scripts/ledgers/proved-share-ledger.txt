@@ -1066,6 +1066,11 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
+26333c891deb6f08d1c5952cb671832b|1|1|0|0|0|flang/proof/probes/parse-and-import/programs/parse-error-imported.flang
+0379164c233ebd09b61809d13dd00d24|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/first.flang
+9fd19a46c88644d82bc3c0a4963d7cee|2|2|0|0|0|flang/proof/probes/same-name-functions/programs/second.flang
+c71d287657835bb809e97a91f3b5d6d6|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/source.flang
+40a70f70f2a59082656bb5039c866771|1|1|0|0|0|flang/proof/probes/same-name-functions/programs/user.flang
 ccf79296c7ca4b9e14030c7619367fd2|0|0|0|0|1|flang/proof/probes/message-language/programs/precondition-call.flang
 f576ef59fb727973057323258bee048c|1|1|0|0|0|flang/proof/probes/message-language/programs/checked.flang
 d1904783bf9e67c54add5731ca6cc8dc|1|0|0|1|0|flang/proof/probes/branch-condition-and-literal-order/programs/absolute-integer.flang
@@ -1330,7 +1335,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|41|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|42|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
@@ -1342,7 +1347,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|459|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|460|291|8|107|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|663|551|30|78|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|144|88|4|50|0|flang/self/emit-elixir.flang
@@ -1364,8 +1369,8 @@ e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 732fafea03a19a84be8b371d78d0ba2e|19|19|0|0|0|flang/self/io.flang
 cf285bfaf06251404d184ecee764f85f|24|10|10|4|0|flang/self/iso.flang
 b25da330b06be21a87c8a500d8a24ff5|43|12|30|1|0|flang/self/law-oracle.flang
-fb537024bd9a6899533d6a3233e3b092|101|97|4|0|0|flang/self/lexer.flang
-ef419036ed7ae00578750c7972e9c62f|1|×|×|×|0|flang/self/link.flang
+fb537024bd9a6899533d6a3233e3b092|102|97|4|0|0|flang/self/lexer.flang
+ef419036ed7ae00578750c7972e9c62f|7|×|×|×|0|flang/self/link.flang
 7bc86c81be652752a5964593865681ae|224|96|13|115|0|flang/self/lsp.flang
 b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
 8b54bf00afa4ab0bf7959bfa73175e82|117|62|49|6|0|flang/self/monad-expand.flang
@@ -1375,12 +1380,12 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|56|44|0|0|0|flang/self/obligations.flang
 3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
-54cfb1a8e907051aafea33efa6ac337d|781|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|808|446|22|261|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
 0671f904ac2c1b423ee51e1562ed2a08|91|44|0|0|0|flang/self/proof-kernel.flang
-94902a6939c9331164c3fdd856ef2a93|245|98|57|3|0|flang/self/proof-record.flang
+94902a6939c9331164c3fdd856ef2a93|247|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
@@ -1613,6 +1618,7 @@ bcb9a4bd2f77da1cc1fdfe50b7385bed|2|2|0|0|0|scripts/guards/record-follows-its-sou
 1083cc30fab03e5f16e2060519b7c8c1|8|8|0|0|0|scripts/guards/release-guard.fscript
 ca577bce09cd63ed95ee91dd19eb6179|17|17|0|0|0|scripts/guards/run-verdict-debt-guard.fscript
 6428b484fce59de690810ba7fcdce7f4|3|2|1|0|0|scripts/guards/stale-pages-guard.fscript
+9609f3c97d65c7dbcef4d24df09a2758|1|1|0|0|0|scripts/guards/stdlib-check-guard.fscript
 67b437a7b5b0dfeb01b82fd408cbb23c|12|12|0|0|0|scripts/guards/stray-temporaries-guard.fscript
 d46e8405a2d1d150db2ebed304183084|8|5|3|0|0|scripts/guards/string-measure.flang
 d25c2b3399f45c84d4b13bf0ec83ba1a|6|3|2|0|0|scripts/guards/tab-host-guard.fscript
@@ -1681,6 +1687,10 @@ ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/ho
 358a850cf63c9be805e6523f1f3c4bd1|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no.flang
 6ed9f3b3df26c560a9a63dcc2d042639|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no-with-import.flang
 8941e87345e668233fabaf1ffc7cffbe|1|1|0|0|0|flang/proof/probes/strict/programs/imported-module.flang
+655219cf6d2a957f59ec25fe64750d3b|1|0|0|1|0|flang/proof/probes/strict/programs/refuted-statement.flang
+f84ca35166f09e0b6aa713f960ec37fa|2|2|0|0|0|flang/proof/probes/strict/programs/statement-holds-on-the-edge.flang
+ee3b18f56f49e463087b7c74a842d338|1|1|0|0|0|flang/proof/probes/strict/programs/flag-record-holds.flang
+5b6f288510374052e68a9836e532f244|1|0|0|1|0|flang/proof/probes/strict/programs/refuted-flag-record.flang
 // ── Набор проб ворот недоказанного (ADR-0045), снято 21 сентября 2026 ─────
 // Три программы каталога `flang/proof/probes/unproven/programs/`; вход
 // для проб, а не образцы корпуса. Приговор снят `flang check --proof --json`

@@ -29,13 +29,13 @@ docs/tasks/     the open and closed work of the tree, one file per task
 
 <!-- КАРТА-КОНЕЦ -->
 
-Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 65 files of flang —
-<!-- СНЯТО 2026-10-07 файлов flang/self/*.flang = 65 -->
+Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 66 files of flang —
+<!-- СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **64 modules, 2139 functions and 4143
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **64 modules, 2140 functions and 4144
 examples** that run on every check:
 <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-17 примеров-в flang/stdlib/*.flang = 4143 -->
+<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17) -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
@@ -59,9 +59,9 @@ service; the 333 more programs in the other sets are single files, the LeetCode 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
-last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 79 lines in the
-input half; with the second half, the seed body, the file is 98 lines.
-<!-- СНЯТО 2026-10-18 строк scripts/seed-fingerprint = 98 (print batch eight: flang/self/bounded.flang and conc.flang join the inputs, input half 79 lines; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
+last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 80 lines in the
+input half; with the second half, the seed body, the file is 99 lines.
+<!-- СНЯТО 2026-10-19 строк scripts/seed-fingerprint = 99 (print batch 9a: flang/self/category-paths.flang joins the inputs, input half 80 lines; до них 98, снято 2026-10-18) (print batch eight: flang/self/bounded.flang and conc.flang join the inputs, input half 79 lines; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
 The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that

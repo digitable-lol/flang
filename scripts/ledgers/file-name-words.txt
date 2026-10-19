@@ -233,6 +233,7 @@ catch
 catches
 categories
 category
+categorypaths
 caught
 ceiling
 cell
@@ -567,6 +568,7 @@ explains
 explanation
 exploration
 explicit
+export
 exposed
 express
 expressible
@@ -1058,6 +1060,7 @@ name
 named
 names
 namesake
+namesakes
 namesigns
 naming
 nan
@@ -1365,6 +1368,7 @@ reads
 real
 reason
 rebased
+rebind
 rebuilds
 rechecked
 recomputed
@@ -2082,6 +2086,10 @@ esperanto
 guillemet
 api
 inserts
+instrumental
+error
+range
+story
 advice
 alloys
 animals

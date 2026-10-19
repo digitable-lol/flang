@@ -2855,6 +2855,21 @@ fl_status tls_client_itog_vitkov(fl_ctx *ctx, fl_value hod, fl_value *result,
                                  fl_error *error);
 
 /*
+ * Функция flang «Витки после первой подписи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parol — «пароль»: список: число
+ * @param pervyy — «первый»: список: число
+ * @param povtorov — «повторов»: число
+ * @return значение: список: число
+ */
+fl_status tls_client_vitki_posle_pervoy_podpisi(fl_ctx *ctx, fl_value parol,
+                                                fl_value pervyy,
+                                                fl_value povtorov,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
  * Функция flang «Кусок вывода».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

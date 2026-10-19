@@ -35,6 +35,12 @@ contents:
     dst: /usr/bin/flangtutor
     file_info:
       mode: 0755
+  # The independent proof checker: `flang check --proof` runs it from
+  # ../libexec/flang/checker next to the binary.
+  - src: ./libexec/flang/checker
+    dst: /usr/libexec/flang/checker
+    file_info:
+      mode: 0755
   - src: ./share/flang
     dst: /usr/share/flang
     type: tree

@@ -6,6 +6,15 @@ When the compiler rejects a program, every error line starts with a code:
 $ flang check docs/examples/diagnostics/type.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_TYPE в файле docs/examples/diagnostics/type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/type.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -72,15 +81,8 @@ docs/examples/diagnostics/core.flang: проверено — разбор, ти�
 
 ```text insert output: check docs/examples/diagnostics/import.flang
 $ flang check docs/examples/diagnostics/import.flang
-модуль «Import»: функций 2, из них с доказанным завершением 0; типов 0; файлов вместе с импортами 2
-без доказанного завершения: «Учтено» «Проба»
-место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 2, а диагностика компилятора имени файла не несёт
-FLANG_UNKNOWN_NAME, строка 12, столбец 4: неизвестная функция «Двойка»
-FLANG_UNKNOWN_NAME, строка 11, столбец 56: неизвестная функция «Двойка»
-FLANG_NOT_TOTAL, строка 12, столбец 4: тотальная функция «Учтено» вызывает неизвестную функцию «Двойка»: завершение доказать нельзя
-docs/examples/diagnostics/import.flang: не проверено — замечаний 3
-$ echo $?
-1
+модуль «Import»: функций 3, из них с доказанным завершением 3; типов 0; файлов вместе с импортами 2
+docs/examples/diagnostics/import.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 The import `только «Учтено»` brings in one name. Both the body and the
@@ -225,6 +227,15 @@ $ flang check docs/examples/diagnostics/unknown.flang
 без доказанного завершения: «Удвоить»
 FLANG_UNKNOWN_NAME в файле docs/examples/diagnostics/unknown.flang, строка 6, столбец 3: неизвестная функция «Утроить»
 FLANG_NOT_TOTAL в файле docs/examples/diagnostics/unknown.flang, строка 6, столбец 3: тотальная функция «Удвоить» вызывает неизвестную функцию «Утроить»: завершение доказать нельзя
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/unknown.flang: не проверено — замечаний 2
 $ echo $?
 1
@@ -262,6 +273,15 @@ $ echo $?
 $ flang check docs/examples/diagnostics/type.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_TYPE в файле docs/examples/diagnostics/type.flang, строка 6, столбец 3: функция «Удвоить» объявлена как число, а тело даёт строка
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/type.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -271,6 +291,22 @@ $ echo $?
 $ flang check docs/examples/diagnostics/duplicate.flang
 модуль «Probe»: функций 2, из них с доказанным завершением 2; типов 0
 FLANG_TYPE в файле docs/examples/diagnostics/duplicate.flang, строка 8, столбец 1: функция «Удвоить» объявлена дважды
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 8, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/duplicate.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -289,6 +325,15 @@ $ echo $?
 $ flang check docs/examples/diagnostics/example.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «Двойка» функции «Удвоить»: значение не совпало с ожидаемым: ожидалось 5, получено 4
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/example.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -384,6 +429,15 @@ Preconditions (`требует`), guarantees (`обеспечивает`) and th
 $ flang check docs/examples/diagnostics/no-steps.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_PROOF_STEP: теорема «удвоенное неотрицательно»: ни одного шага
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/no-steps.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -393,6 +447,15 @@ $ echo $?
 $ flang check docs/examples/diagnostics/no-goal.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_PROOF_NO_GOAL в файле docs/examples/diagnostics/no-goal.flang, строка 8, столбец 1: теорема «удвоенное неотрицательно» ничего не закрывает: постусловия «удвоенное неотрицательно» нет ни у одной функции модуля. Теорема доказывает названное утверждение, а не утверждение вообще — назовите её так же, как постусловие, которое она закрывает
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/no-goal.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -402,6 +465,15 @@ $ echo $?
 $ flang check docs/examples/diagnostics/ambiguous.flang
 модуль «Probe»: функций 2, из них с доказанным завершением 2; типов 0
 FLANG_PROOF_AMBIGUOUS в файле docs/examples/diagnostics/ambiguous.flang, строка 15, столбец 1: теорема «неотрицательно» закрывала бы сразу 2 постусловия («Удвоить», «Утроить»), и выбрать нельзя. Дайте постусловиям разные имена
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле mismatch.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/ambiguous.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -411,6 +483,15 @@ $ echo $?
 $ flang check docs/examples/diagnostics/mismatch.flang
 модуль «Probe»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_PROOF_CLAIM_MISMATCH в файле docs/examples/diagnostics/mismatch.flang, строка 11, столбец 3: теорема «неотрицательно» утверждает не то, что обещает функция «Удвоить»: утверждение теоремы и постусловие обязаны совпадать слово в слово. Ядро не решает, что два разных утверждения означают одно и то же
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле ambiguous.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле duplicate.flang, строка 8: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле example.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-goal.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле no-steps.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле parse.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле type.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+замечание: «Удвоить» объявлено здесь, строка 3, и в соседнем модуле unknown.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
 docs/examples/diagnostics/mismatch.flang: не проверено — замечаний 1
 $ echo $?
 1
@@ -554,9 +635,14 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_CATEGORY_EQUALITY_OUTSIDE` | `compiler.flang` | — |
 | `FLANG_CATEGORY_EQUALITY_SHAPE` | `compiler.flang` | — |
 | `FLANG_CATEGORY_EQUALITY_TWICE` | `compiler.flang` | — |
+| `FLANG_CATEGORY_FORM` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_GOAL` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_NAME` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_NOT_ASSOC` | `setoid.flang` | — |
 | `FLANG_CATEGORY_NOT_CLOSED` | `compiler.flang` | — |
 | `FLANG_CATEGORY_NO_IDENTITY` | `compiler.flang` | — |
+| `FLANG_CATEGORY_STEP` | `category-paths.flang` | — |
+| `FLANG_CATEGORY_TYPE` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
 | `FLANG_CC` | `flang_repl.c` | — |
 | `FLANG_CHECKER` | `flang_repl.c` | — |
@@ -663,6 +749,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
+| `FLANG_PROOF` | `compiler.flang`, `link.flang` | — |
 | `FLANG_PROOF_AMBIGUOUS` | `obligations.flang` | — |
 | `FLANG_PROOF_CACHE` | `flang_repl.c` | — |
 | `FLANG_PROOF_CACHE_AUDIT` | `flang_repl.c` | — |
@@ -682,12 +769,13 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_PROOF_UNFINISHED` | `obligations.flang` | — |
 | `FLANG_PROOF_UNKNOWN_VAR` | `obligations.flang`, `parser.flang`, `types.flang` | — |
 | `FLANG_PROOF_VAR_TYPE` | `obligations.flang` | — |
-| `FLANG_PROPERTY` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
+| `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
+| `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
 | `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
@@ -711,6 +799,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
+| `FLANG_UNKNOWN_PROPERTY` | `compiler.flang` | — |
 | `FLANG_UNPROVED` | `compiler.flang` | — |
 | `FLANG_UNPROVEN` | `flang_repl.c` | — |
 | `FLANG_VITKI` | `flang_repl.c` | — |

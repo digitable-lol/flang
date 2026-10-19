@@ -10,7 +10,7 @@
 #
 # What it does: picks the build for this OS and CPU, downloads it and the
 # release's SHA256SUMS from GitHub, refuses to go on if the checksum differs,
-# and copies bin/, share/ (and lib/, include/ on macOS) into PREFIX.
+# and copies bin/, libexec/, share/ (and lib/, include/ on macOS) into PREFIX.
 set -eu
 
 repo="digitable-lol/flang"
@@ -96,7 +96,7 @@ src="$tmp/$name"
 mkdir -p "$prefix/bin" 2>/dev/null || die "cannot create $prefix/bin. Choose a directory you own: PREFIX=\$HOME/.local"
 [ -w "$prefix/bin" ] || die "$prefix/bin is not writable. Choose a directory you own: PREFIX=\$HOME/.local (no sudo needed)"
 
-for dir in bin share lib include; do
+for dir in bin libexec share lib include; do
   if [ -d "$src/$dir" ]; then
     mkdir -p "$prefix/$dir"
     cp -R "$src/$dir/." "$prefix/$dir/"
@@ -122,4 +122,4 @@ elif [ -n "$found" ] && [ "$found" != "$prefix/bin/flang" ]; then
   say "Put $prefix/bin first on PATH, or call $prefix/bin/flang directly."
 fi
 extra="$(cd "$src" && find lib include -type f 2>/dev/null | sed "s|^|$prefix/|" | tr '\n' ' ')"
-say "to uninstall: rm -rf $prefix/bin/flang $prefix/bin/flangtutor $prefix/share/flang $prefix/share/flang-tutor $prefix/share/man/man1/flang.1 $prefix/share/doc/flang-package $extra"
+say "to uninstall: rm -rf $prefix/bin/flang $prefix/bin/flangtutor $prefix/libexec/flang $prefix/share/flang $prefix/share/flang-tutor $prefix/share/man/man1/flang.1 $prefix/share/doc/flang-package $extra"

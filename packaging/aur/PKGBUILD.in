@@ -23,6 +23,7 @@ package() {
   cd "flang-package-${pkgver}-linux-${CARCH}"
   install -Dm755 bin/flang "${pkgdir}/usr/bin/flang"
   install -Dm755 bin/flangtutor "${pkgdir}/usr/bin/flangtutor"
+  install -Dm755 libexec/flang/checker "${pkgdir}/usr/libexec/flang/checker"
   install -d "${pkgdir}/usr/share/flang" "${pkgdir}/usr/share/flang-tutor"
   cp -R share/flang/. "${pkgdir}/usr/share/flang/"
   cp -R share/flang-tutor/. "${pkgdir}/usr/share/flang-tutor/"

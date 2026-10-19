@@ -89,7 +89,7 @@
 
 тотальная функция «Falsehood»
   возвращает «Probe case»
-  пример «A false statement is not proved and nothing is replayed»
+  пример «A false statement is refuted at its first input and nothing is replayed»
     ожидается (запись «Probe case» с «name» равным "false statement" и «text file» равным ""
       и «text» равным """
         модуль «Ложное»
@@ -98,13 +98,13 @@
           для всех н: неотрицательное
           утверждаем (н плюс н) больше н
         """
-      и «code» равным 3
-      и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+      и «code» равным 1
+      и «present» равным ["опровергнуто на входе н = 0", "не проверено"]
       и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])
   (запись «Probe case» с «name» равным "false statement" и «text file» равным ""
     и «text» равным («False statement»)
-    и «code» равным 3
-    и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+    и «code» равным 1
+    и «present» равным ["опровергнуто на входе н = 0", "не проверено"]
     и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"])
 
 тотальная функция «Formula text»
@@ -147,8 +147,8 @@
             для всех н: неотрицательное
             утверждаем (н плюс н) больше н
           """
-        и «code» равным 3
-        и «present» равным ["НЕ ПРОВЕРЕНО — утверждений 1: доказано 0", "объявлено, не доказано"]
+        и «code» равным 1
+        и «present» равным ["опровергнуто на входе н = 0", "не проверено"]
         и «absent» равным ["ДОКАЗАНО —", "ПРОВЕРЕНО — запись сошлась"]),
       (запись «Probe case» с «name» равным "formula" и «text file» равным ""
         и «text» равным "\\forall x \\in \\mathbb{Z},\\ \\forall y \\in \\mathbb{Z},\\ x + y = y + x"
@@ -457,9 +457,9 @@
       affirming the consequent: ждали код 1, вышел 127
       affirming the consequent: в выводе нет «FLANG_REASONING_DOES_NOT_FOLLOW»
       affirming the consequent: в выводе нет «НЕ СЛЕДУЕТ: предложение 3»
-      false statement: ждали код 3, вышел 127
-      false statement: в выводе нет «НЕ ПРОВЕРЕНО — утверждений 1: доказано 0»
-      false statement: в выводе нет «объявлено, не доказано»
+      false statement: ждали код 1, вышел 127
+      false statement: в выводе нет «опровергнуто на входе н = 0»
+      false statement: в выводе нет «не проверено»
       formula: ждали код 0, вышел 127
       formula: в выводе нет «утверждаем («x» плюс «y») равен («y» плюс «x»)»
       formula: в выводе нет «ПРОВЕРЕНО — запись сошлась»

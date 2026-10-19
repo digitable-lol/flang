@@ -3,7 +3,7 @@ surface = ru
 color = auto
 page = ru
 
-version = 0.7.29
+version = 0.7.30
 name = @digitable-lol/flang
 license = BSD-2-Clause
 repository = https://github.com/digitable-lol/flang

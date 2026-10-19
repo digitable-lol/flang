@@ -1,6 +1,58 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.30": {
+      "ru": {
+        "заголовок": "Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке",
+        "появилось": [
+          "**Проверка рассуждений называет логическую ошибку.** Если вывод не следует, ответ говорит, какая это ошибка по форме: обращение следствия, отрицание основания, нераспределённый средний термин и другие. Рядом ссылка на карточку с разбором, например https://courses.digitable.life/fallacies/#affirming-the-consequent. На тексте «Все люди смертны. Сократ смертен. Значит, Сократ — человек.» ответ — `не следует — это обращение следствия` и `силлогизм: не следует (код 1)`. Работает в песочнице и в `flang repl` из клона репозитория: `.syllogism файл.txt`.",
+          "**Для доводов, которые не сводятся к форме, — подсказка, а не приговор.** Переход на личность, апелляцию к авторитету, ложную дилемму, «скользкую дорожку» и «все так делают» проверка отмечает с цитатой и словами «возможная ошибка, проверьте сами». Например, на «Профессор Иванов сказал, что вода в реке ядовита. Поэтому вода в реке ядовита.» — `подсказка (возможная ошибка, проверьте сами): апелляция к авторитету`. О таких ошибках ядро не судит и прямо пишет об этом.",
+          "**В песочнице появились номера строк.** Строка с ошибкой отмечена и в тексте, и в номере. Подсветка слов осталась.",
+          "**Песочница показывает программу на десяти языках.** Вкладка «flang → язык» показывает ту же программу на C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python и C# — как `flang emit --target <язык>`. Программу, которая не прошла проверку, вкладка не переводит и говорит почему.",
+          "**Песочница переводит C во flang.** Вкладка «язык → flang» читает функции на C (int, struct из int, if/else, циклы, return), и каждую переведённую функцию проверяет ядро. Что ядро не доказало, вкладка пробует на краях int. Так, `midpoint` с `(lo + hi) / 2` получает `контрпример: «lo» = 2147483647, «hi» = 2147483647` — это настоящее переполнение. Python в списке языков тоже есть, но пока с пометкой «скоро».",
+          "**Python → flang.** Переводчик читает программу на части Python (функции с аннотациями типов, if, for, рекурсия) и записывает её на flang. Доверять переводчику не нужно: текст проверяет `flang check`, а ответы перевода сверяются с ответами самого Python. Рекурсию, которая кончается не на всех входах, перевод пишет как `функция`, а не `тотальная функция`, и объясняет почему. Из клона: `bootstrap/flang run-script foreign-python:demo` переводит 20 программ и сверяет 131 ответ с Python. Подробности — `docs/python-to-flang.md`.",
+          "**Пользовательская история становится функцией.** Блок `история «потолок скидки»` со строками `как «менеджер зала»`, `хочу «скидка» не больше 30`, `чтобы \"…\"`, `при …`, `тогда при «скидка» 40 ответ 30` превращается в тотальную функцию. `хочу` — постусловие, которое доказывает ядро, `тогда` — пример. Независимый сверщик истории пока не читает, поэтому `check --proof` на таком файле отвечает кодом 3.",
+          "**Образец списка с любыми именами.** В `разбор` можно писать `случай первое и остальные`, а не только `случай голова и хвост`. Имена из образца можно передавать в вызов: `«Сложить» от голова и хвост`.",
+          "**Тип поля в творительном падеже.** `поле является неотрицательным` и `поле является целым` теперь понятны, как уже было с числом, строкой и признаком."
+        ],
+        "изменилось": [
+          "**`check --proof` находит сверщик доказательств в любой установке.** Архив, deb, rpm, install.sh, asdf и Homebrew кладут его в `libexec/flang/checker` рядом с `bin/flang`. Раньше вне клона ответ всегда был «сверщика нет». Теперь, например: `logic.flang: независимо, сверщиком, проиграно 10 из 13 доказанных`.",
+          "**`check` предупреждает об одинаковых именах в соседних файлах.** Если в том же каталоге есть модуль с той же функцией, `check` пишет `замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang` и отвечает кодом 0. Раньше это всплывало ошибкой только там, где оба модуля ввозились вместе.",
+          "**Ошибка разбора в модуле называет файл** и больше не порождает ложных `FLANG_UNKNOWN_NAME` в файлах, которые этот модуль ввозят.",
+          "**Свой вариант `Сбой` больше не сталкивается со встроенным типом `Отклик`** при ввозе модуля: вариант автора берёт верх.",
+          "**flangtutor находит уроки на системах без `/bin/ls`,** например на NixOS."
+        ],
+        "сломалось": [
+          "**Ложное утверждение теперь опровергается, и `check` отвечает кодом 1.** Ядро пробует края типов и числа из примеров файла. Раньше `утверждаем не («Родитель» от а и а)` проходило `check` с кодом 0, а теперь — `утверждение «антирефлексивность» опровергнуто на входе а = 0`. Как починить: вход из сообщения — контрпример; исправьте утверждение или функцию.",
+          "**Незнакомое свойство — ошибка `FLANG_UNKNOWN_PROPERTY`.** Раньше `свойство «повторяемость»` молча проходило с кодом 0. Язык проверяет пять свойств: дистрибутивность, идемпотентность, частичный порядок, монотонность, коммутативность. Как починить: назовите одно из пяти или запишите закон как `утверждение`."
+        ]
+      },
+      "en": {
+        "заголовок": "Reasoning checks name the logical fallacy; the playground translates into ten languages and from C; the proof checker in every install",
+        "появилось": [
+          "**Reasoning checks name the logical fallacy.** When a conclusion does not follow, the answer says which formal fallacy it is: affirming the consequent, denying the antecedent, undistributed middle and others. A link to a card with the explanation comes along, for example https://courses.digitable.life/fallacies/#affirming-the-consequent. For «Все люди смертны. Сократ смертен. Значит, Сократ — человек.» (All men are mortal. Socrates is mortal. So Socrates is a man.) the answer is `не следует — это обращение следствия` (does not follow: affirming the consequent) and `силлогизм: не следует (код 1)`. It works in the playground and in `flang repl` run from a clone of the repository: `.syllogism file.txt`.",
+          "**Arguments that have no formal shape get a hint, not a verdict.** Personal attack, appeal to authority, false dilemma, slippery slope and \"everyone does it\" are marked with a quote and the words «возможная ошибка, проверьте сами» (possible fallacy, check it yourself). For example, «Профессор Иванов сказал, что вода в реке ядовита. Поэтому вода в реке ядовита.» (Professor Ivanov said the river water is poisonous, so it is) gets `подсказка (возможная ошибка, проверьте сами): апелляция к авторитету` (hint: appeal to authority). The kernel does not judge such fallacies and says so.",
+          "**The playground editor shows line numbers.** The line with an error is marked both in the text and in its number. Highlighting stays.",
+          "**The playground shows a program in ten languages.** The \"flang → language\" tab shows the same program in C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python and C#, the same as `flang emit --target <language>`. A program that does not pass checking is not translated, and the tab says why.",
+          "**The playground translates C into flang.** The \"language → flang\" tab reads C functions (int, structs of int, if/else, loops, return), and the kernel checks every translated function. Whatever the kernel did not prove, the tab tries at the int bounds. So `midpoint` with `(lo + hi) / 2` gets `контрпример: «lo» = 2147483647, «hi» = 2147483647` (counterexample), a real overflow. Python is in the language list too, marked \"soon\".",
+          "**Python → flang.** A translator reads a program in a subset of Python (functions with type annotations, if, for, recursion) and writes it in flang. You do not have to trust the translator: `flang check` judges the text, and the answers of the translation are compared with the answers of Python itself. Recursion that does not end on every input is written as `функция` (function), not `тотальная функция` (total function), with the reason. From a clone: `bootstrap/flang run-script foreign-python:demo` translates 20 programs and compares 131 answers with Python. Details: `docs/python-to-flang.md`.",
+          "**A user story becomes a function.** A block `история «потолок скидки»` (story) with the lines `как «менеджер зала»` (as), `хочу «скидка» не больше 30` (I want), `чтобы \"…\"` (so that), `при …` (given) and `тогда при «скидка» 40 ответ 30` (then) turns into a total function. `хочу` is a postcondition the kernel proves; `тогда` is an example. The independent proof checker does not read stories yet, so `check --proof` on such a file exits with code 3.",
+          "**List patterns with any names.** In `разбор` (match) you can write `случай первое и остальные` (case first and rest), not only `случай голова и хвост` (head and tail). Names from the pattern can be passed to a call: `«Сложить» от голова и хвост`.",
+          "**Field types in the instrumental case.** `поле является неотрицательным` (is non-negative) and `поле является целым` (is integer) are now understood, as number, string and flag already were."
+        ],
+        "изменилось": [
+          "**`check --proof` finds the proof checker in every install.** The archive, deb, rpm, install.sh, asdf and Homebrew put it at `libexec/flang/checker` next to `bin/flang`. Before, outside a clone the answer was always «сверщика нет» (no checker). Now, for example: `logic.flang: независимо, сверщиком, проиграно 10 из 13 доказанных` (independently replayed 10 of 13 proved).",
+          "**`check` warns about the same name in neighbouring files.** If a module in the same directory declares the same function, `check` prints `замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang` (note: declared here and in the neighbouring module) and exits with code 0. Before, this surfaced as an error only where both modules were imported together.",
+          "**A parse error in a module names the file** and no longer causes false `FLANG_UNKNOWN_NAME` errors in the files that import that module.",
+          "**Your own `Сбой` (failure) variant no longer clashes with the built-in `Отклик` (response) type** when the module is imported: the author's variant wins.",
+          "**flangtutor finds its lessons on systems without `/bin/ls`,** such as NixOS."
+        ],
+        "сломалось": [
+          "**A false statement is now refuted, and `check` exits with code 1.** The kernel tries the edges of the types and the numbers from the file's examples. Before, `утверждаем не («Родитель» от а и а)` passed `check` with code 0; now it is `утверждение «антирефлексивность» опровергнуто на входе а = 0` (refuted at input a = 0). How to fix: the input in the message is a counterexample; fix the statement or the function.",
+          "**An unknown property is a `FLANG_UNKNOWN_PROPERTY` error.** Before, `свойство «повторяемость»` (repeatability) silently passed with code 0. The language checks five properties: distributivity, idempotence, partial order, monotonicity, commutativity. How to fix: name one of the five, or write the law as an `утверждение` (statement)."
+        ]
+      }
+    },
     "0.7.29": {
       "ru": {
         "заголовок": "Готовые сборки для Linux и macOS и установка одной командой; законы моноида, функтора и естественного преобразования доказываются для всех значений",

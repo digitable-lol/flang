@@ -359,10 +359,11 @@ A function with a postcondition: the `обеспечивает` promise is prove
   н плюс н
 ```
 
-A false statement: at `н = 0` doubling is not greater than the original. There is no
-proof, and the playground answers "Not proved".
+A false statement: at `н = 0` doubling is not greater than the original. The kernel
+tries the edges of the type, finds this input, and the playground answers
+«опровергнуто на входе н = 0» (refuted at n = 0) with code 1.
 
-```flang playground False statement — not proved
+```flang playground False statement — refuted
 модуль «Ложное»
 
 утверждение «удвоение всегда больше»

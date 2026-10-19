@@ -8,7 +8,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.29 — 18 October 2026
 
-**Prebuilt binaries and a one-command install, category laws are proved**
+**Prebuilt binaries for Linux and macOS and a one-command install; monoid, functor and natural transformation laws are proved for all values**
 
 ### What appeared
 
@@ -40,7 +40,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.28 — 14 October 2026
 
-**Examples inside laws run, mistakes in categories are caught at compile time**
+**Examples inside laws run, and `check` catches mistakes in how a category is built**
 
 ### What appeared
 
@@ -61,7 +61,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.27 — 14 October 2026
 
-**Grown-up proofs: algebra, terminating recursion, LaTeX formulas; HTTPS without curl**
+**Algebraic identities and termination by a measure are proved, formulas can be written in LaTeX, HTTPS works without curl**
 
 ### What appeared
 
@@ -91,7 +91,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.26 — 11 October 2026
 
-**TLS in the language, host entropy, cost before the run, a kernel cache and a second checker in Lean**
+**TLS 1.3 written in the language, random bytes from the system, a function's cost before the run, a proof cache between runs and a second proof checker in Lean 4**
 
 ### What appeared
 
@@ -125,7 +125,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.25 — 6 October 2026
 
-**Exact integer and exact fraction, a child's limit named by the order, the registry page**
+**Exact integers and exact fractions, the program itself sets a child process's limits, a package registry page**
 
 ### What appeared
 
@@ -155,7 +155,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.24 — 3 October 2026
 
-**A linter in the language, a kernel memo, and three closed soundness holes**
+**The `flang lint` linter, repeated calls in a proof are computed once, three bugs that let wrong proofs through are fixed**
 
 ### What appeared
 
@@ -200,7 +200,7 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.23 — 29 September 2026
 
-**Record fields are checked against their type, and runs have a memory limit**
+**Record fields are checked against their type, and a run has a memory limit, `--memory-limit`**
 
 ### What appeared
 
@@ -233,7 +233,7 @@ Issue #160.
 
 ## 0.7.22 — 26 September 2026
 
-**The `следует` syllogism and correct code points outside the BMP**
+**Deriving a statement from premises with `следует`, and correct code points outside the Unicode BMP**
 
 ### What appeared
 
@@ -345,7 +345,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.20 — 18 September 2026
 
-**The compiler's own proof is fully replayed: 650 places of 650**
+**All 650 proofs in the compiler's sources are rechecked by an independent program**
 
 ### What appeared
 
@@ -368,7 +368,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.19 — 13 September 2026
 
-**Quantifiers reached the built compiler**
+**"For all elements" statements, induction over your own types and standalone theorems work in the installed compiler**
 
 ### What appeared
 
@@ -394,7 +394,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.18 — 12 September 2026
 
-**The checker got stricter, and the tree got clearer**
+**The independent check replays 629 proofs of 651, and the terminal tutor has twelve lessons**
 
 ### What appeared
 
@@ -417,7 +417,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.17 — 11 September 2026
 
-**The language passed its own provability check**
+**The compiler's proofs pass its own check for the first time; the `flangtutor` tutor ships with the install**
 
 ### What appeared
 
@@ -444,7 +444,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.16 — 9 September 2026
 
-**The checker replays a derivation of a type fact; the road to the end is measured place by place**
+**The independent check replays derivations of type facts; the `flangtutor` tutor, Ctrl+L in the shell, `flang package` works again**
 
 ### What appeared
 
@@ -472,7 +472,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.15 — 8 September 2026
 
-**The calculator is gone from the checker: the independent-verification gate is closed**
+**The independent check only rechecks proofs and no longer proves anything itself; the `.flangrc` settings file, code output in TypeScript**
 
 ### What appeared
 
@@ -503,7 +503,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.14 — 7 September 2026
 
-**The checker replays termination proofs itself**
+**The independent check rechecks termination proofs itself**
 
 ### What appeared
 
@@ -525,7 +525,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.13 — 6 September 2026
 
-**The proof object: the checker verifies the kernel’s finished derivation instead of recomputing it**
+**A proof is saved as a finished derivation, and the check replays it instead of recomputing it; built-in SHA-256, `хеш256`**
 
 ### What appeared
 
@@ -555,7 +555,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.12 — 6 September 2026
 
-**An install now carries the runtimes of all nine emit targets, not one**
+**An install carries the runtimes for all nine code output targets, not one**
 
 ### What appeared
 
@@ -580,7 +580,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.11 — 5 September 2026
 
-**Supervision is back on dev, and guards prove by a run that they can redden**
+**Repository checks before a push; this release's archive was not published**
 
 ### What appeared
 
@@ -607,7 +607,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.10 — 4 September 2026
 
-**Hotfix: the live shell crashed on every line of input**
+**Fix: the `flang` shell crashed on every line of input**
 
 ### What changed
 
@@ -620,7 +620,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.9 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline**
+**Not published: the build was stopped by the release check; the same content shipped as 0.7.10**
 
 ### What changed
 
@@ -628,7 +628,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.8 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline — deliberately**
+**Not published: the build was stopped by the release check**
 
 ### What changed
 
@@ -636,7 +636,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.7 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline — deliberately**
+**Not published: the build was stopped by the release check**
 
 ### What changed
 
@@ -644,7 +644,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.6 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline**
+**Not published: the build was stopped by the release check**
 
 ### What changed
 
@@ -652,7 +652,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.5 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline**
+**Not published: the build was stopped by the release check**
 
 ### What changed
 
@@ -660,7 +660,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.4 — 4 September 2026
 
-**Tagged, publication stopped by the pipeline**
+**Not published: the build was stopped by the release check; the same content shipped as 0.7.5**
 
 ### What changed
 
@@ -668,7 +668,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.3 — 3 September 2026
 
-**The version hotfix finally reached publication**
+**`flang --version` reports the right version again**
 
 ### What changed
 
@@ -676,7 +676,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.2 — 3 September 2026
 
-**Tagged, but publication failed again**
+**Not published: the version fix, shipped as 0.7.3**
 
 ### What changed
 
@@ -684,7 +684,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.1 — 3 September 2026
 
-**Version hotfix — tagged, but publication didn't land**
+**Not published: the version fix, shipped as 0.7.3**
 
 ### What changed
 
@@ -696,7 +696,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.7.0 — 3 September 2026
 
-**The compiler was reprinted from scratch, and the release’s main work was finding our own self-deceptions**
+**The compiler is rebuilt from its flang sources; code output in C++, regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry**
 
 ### What appeared
 
@@ -736,7 +736,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.6.1 — 22 August 2026
 
-**A compiler change that never reached the built compiler now goes red in half a second**
+**The name collision check sees every imported module; reading a file no longer truncates binary content**
 
 ### What appeared
 
@@ -756,7 +756,7 @@ Affected: scripts calling `flang run` or `flang io` on programs where `обес�
 
 ## 0.6.0 — 22 August 2026
 
-**Long computations no longer hit a memory wall: 15.98 GiB became 0.0135**
+**Long computations no longer hit a memory wall: 15.98 GiB became 0.0135 GiB**
 
 ### What appeared
 

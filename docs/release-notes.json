@@ -3,7 +3,7 @@
   "выпуски": {
     "0.7.29": {
       "ru": {
-        "заголовок": "Готовые сборки и установка одной командой, законы категорий доказываются",
+        "заголовок": "Готовые сборки для Linux и macOS и установка одной командой; законы моноида, функтора и естественного преобразования доказываются для всех значений",
         "появилось": [
           "**Готовые сборки для Linux и macOS, установка одной командой.** Компилятор C и sudo не нужны: `curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh` кладёт `flang` в `~/.local/bin` и сверяет архив с `SHA256SUMS` выпуска. Есть и другие пути: `brew install digitable-lol/tap/flang-package`, asdf, пакеты deb и rpm.",
           "**Песочница в браузере.** На странице https://digitable-lol.github.io/flang/playground.html программа и силлогизм проверяются прямо во вкладке: компилятор собран в WebAssembly, ставить ничего не нужно.",
@@ -31,7 +31,7 @@
         ]
       },
       "en": {
-        "заголовок": "Prebuilt binaries and a one-command install, category laws are proved",
+        "заголовок": "Prebuilt binaries for Linux and macOS and a one-command install; monoid, functor and natural transformation laws are proved for all values",
         "появилось": [
           "**Prebuilt binaries for Linux and macOS, installed with one command.** No C compiler and no sudo: `curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh` puts `flang` into `~/.local/bin` and checks the archive against the release `SHA256SUMS`. Other ways: `brew install digitable-lol/tap/flang-package`, asdf, deb and rpm packages.",
           "**A playground in the browser.** On https://digitable-lol.github.io/flang/en/playground.html a program or a syllogism is checked right in the tab: the compiler is built to WebAssembly, nothing to install.",
@@ -61,7 +61,7 @@
     },
     "0.7.28": {
       "ru": {
-        "заголовок": "Примеры в законах проверяются, ошибки в категориях находятся при компиляции",
+        "заголовок": "Примеры внутри законов проверяются, ошибки в устройстве категории находит `check`",
         "появилось": [
           "**`flang test` и `flang check` прогоняют примеры внутри блока `закон`.** Раньше такие примеры не запускались вовсе, и неверное ожидание в них проходило молча. Теперь пример с неверным ожиданием даёт код 1, а сообщение называет закон, пример, ожидаемое и полученное значение: `ожидалось {\"номер\":777}, получено {\"номер\":500}`.",
           "**`check` проверяет, как собрана категория.** Стрелка, которой нет среди объявленных, стрелка, названная дважды, композиция через стрелку не из этой категории, концы стрелок, которые не сходятся, — всё это теперь ошибка с кодом 1 и номером строки. Например: `FLANG_CATEGORY_UNKNOWN_ARROW в файле warehouse.flang, строка 9, столбец 1: категория «Склад»: стрелки «потерять» не объявлено`.",
@@ -78,7 +78,7 @@
         ]
       },
       "en": {
-        "заголовок": "Examples inside laws run, mistakes in categories are caught at compile time",
+        "заголовок": "Examples inside laws run, and `check` catches mistakes in how a category is built",
         "появилось": [
           "**`flang test` and `flang check` run the examples inside a `закон` (law) block.** These examples never ran before, so a wrong expectation passed silently. Now a wrong expectation is exit code 1, and the message names the law, the example, the expected and the actual value: `ожидалось {\"номер\":777}, получено {\"номер\":500}`.",
           "**`check` verifies how a category is put together.** An arrow that was never declared, an arrow listed twice, a composition through an arrow outside the category, arrow ends that do not meet are now errors with exit code 1 and a line number. For example: `FLANG_CATEGORY_UNKNOWN_ARROW в файле warehouse.flang, строка 9, столбец 1: категория «Склад»: стрелки «потерять» не объявлено`.",
@@ -97,7 +97,7 @@
     },
     "0.7.27": {
       "ru": {
-        "заголовок": "Доказательства по-взрослому: алгебра, завершение рекурсии, формулы в LaTeX; HTTPS без curl",
+        "заголовок": "Доказываются алгебраические тождества и завершение рекурсии по мере, формулы пишутся в LaTeX, HTTPS работает без curl",
         "появилось": [
           "**Ядро доказывает алгебраические тождества над целыми.** `check --proof` раскрывает обе стороны равенства в многочлен и сравнивает их. Это аналог тактики `ring` в Lean. Например, `(a + b)·(a + b) = a·a + a·b + b·a + b·b` доказывается для всех точных целых `a` и `b`. Для `число`, то есть для double, такие законы ложны, поэтому там будет отказ с объяснением.",
           "**Доказательства перепроверяют две независимые программы, на C и на Lean 4.** Ядро записывает доказательство в файл, а обе программы перепроверяют его каждая по-своему. Если ядро ошибётся или запись подделают, это поймают. Что перепроверить не удалось, `check --proof` называет прямо. Обе проверки идут в CI на каждом пуше.",
@@ -123,7 +123,7 @@
         ]
       },
       "en": {
-        "заголовок": "Grown-up proofs: algebra, terminating recursion, LaTeX formulas; HTTPS without curl",
+        "заголовок": "Algebraic identities and termination by a measure are proved, formulas can be written in LaTeX, HTTPS works without curl",
         "появилось": [
           "**The kernel proves algebraic identities over integers.** `check --proof` expands both sides of an equality into a polynomial and compares them, like Lean's `ring`. For example, `(a + b)·(a + b) = a·a + a·b + b·a + b·b` is proved for all exact integers `a` and `b`. Over `число` (double) these laws are false, so you get a refusal that says why.",
           "**Proofs are re-checked by two independent programs, one in C and one in Lean 4.** The kernel writes the proof to a file, and each checker replays it on its own. A kernel bug or a forged record gets caught; whatever could not be replayed, `check --proof` names. Both checks run in CI on every push.",
@@ -151,7 +151,7 @@
     },
     "0.7.26": {
       "ru": {
-        "заголовок": "TLS на языке, случайность у хозяина, цена до прогона, кеш ядра и второй сличитель на Lean",
+        "заголовок": "TLS 1.3 на самом языке, случайные байты из системы, цена функции до запуска, кеш доказательств между прогонами и вторая проверка доказательств на Lean 4",
         "появилось": [
           "**TLS 1.3 собран на языке и работает напечатанным** (ADR-0078). `flang/stdlib/tls-client.flang` и `certificate-path.flang`: рукопожатие, проверка подписи сервера RSA-PSS (все 60 векторов `pss-vect.txt` приняты, подделки отвергнуты), цепочка до корня, срок, `basicConstraints` и имя узла — живой узел `www.google.com` до GTS Root R1. Поручение «Запросить» по https по-прежнему исполняет curl: решение названо, не умолчано.",
           "**Хозяин отдаёт октеты из системного источника случайности** (ADR-0077): поручение «Случайные октеты» с полем «сколько», отклик «Октеты». Главный довод ADR-0007 «секрет взять неоткуда» снят.",
@@ -181,7 +181,7 @@
         ]
       },
       "en": {
-        "заголовок": "TLS in the language, host entropy, cost before the run, a kernel cache and a second checker in Lean",
+        "заголовок": "TLS 1.3 written in the language, random bytes from the system, a function's cost before the run, a proof cache between runs and a second proof checker in Lean 4",
         "появилось": [
           "**TLS 1.3 is assembled in the language and runs printed** (ADR-0078). `flang/stdlib/tls-client.flang` and `certificate-path.flang`: the handshake, the server signature RSA-PSS (all 60 vectors of `pss-vect.txt` accepted, forgeries refused), the chain to a root, the validity window, `basicConstraints` and the host name, against the live host `www.google.com` up to GTS Root R1. The `«Запросить»` order over https still goes through curl: named, not hidden.",
           "**The host hands out octets from the system random source** (ADR-0077): the order «Случайные октеты» with a `сколько` field answers «Октеты». The main argument of ADR-0007, that a program has nowhere to take a secret from, is gone.",
@@ -213,7 +213,7 @@
     },
     "0.7.25": {
       "ru": {
-        "заголовок": "Точное целое и точное дробное, предел потомку от поручения, страница реестра",
+        "заголовок": "Точные целые и точные дроби, пределы дочернего процесса задаёт сама программа, страница реестра пакетов",
         "появилось": [
           "**Точное целое — свой тип, не новое имя числа** (ADR-0036; задачи 1908, 1412, 1413). `точное целое` складывается, вычитается, умножается и сравнивается без потолка 2^53; значение — список разрядов по основанию 2^22 без знака, канон (без старших нулей) держится при каждом действии, литерал не в каноне отвергается типизатором. Разрядное сложение напечатано во все десять целей печати. Ассоциативность сложения над ним доказывается правилом ядра — первым правилом кольца, у которого есть лемма в Lean и подлоги в пробах.",
           "**Точное дробное** (ADR-0062; задача 5243). Пара точных целых — числитель над знаменателем, — сокращаемая при каждом действии; `плюс`, `минус`, `умножить на`, `делить на` и порядок перекрёстным умножением; записанный литерал проверяется на канон (пара, канонические половины, непустой знаменатель, сокращённость); ниже нуля и деление на нулевую дробь — отказы `FLANG_PROPERTY` своим словом; с `число` и `точное целое` не смешивается. Набор проб `exact-fraction`: 26 из 26, старое семя отвергает все 26.",
@@ -239,7 +239,7 @@
         ]
       },
       "en": {
-        "заголовок": "Exact integer and exact fraction, a child's limit named by the order, the registry page",
+        "заголовок": "Exact integers and exact fractions, the program itself sets a child process's limits, a package registry page",
         "появилось": [
           "**The exact integer is a type of its own, not a new name for number** (ADR-0036; tasks 1908, 1412, 1413). `exact integer` adds, subtracts, multiplies and compares without the 2^53 ceiling; a value is a list of base-2^22 digits without sign, the canon (no leading zeros) holds at every action, a non-canonical literal is refused by the typechecker. Digit addition is printed into all ten targets. The associativity of its addition is proved by a kernel rule, the first ring rule with a Lean lemma and forgery probes.",
           "**The exact fraction** (ADR-0062; task 5243). A pair of exact integers, numerator over denominator, reduced at every action; `plus`, `minus`, `times`, `divided by` and the order by cross multiplication; a written literal is checked for canon (a pair, canonical halves, non-empty denominator, reduced); below zero and division by the zero fraction are `FLANG_PROPERTY` refusals by word; it does not mix with `number` or `exact integer`. Probe set `exact-fraction`: 26 of 26; the previous seed refuses all 26.",
@@ -267,7 +267,7 @@
     },
     "0.7.24": {
       "ru": {
-        "заголовок": "Линтер в языке, памятка ядра и три закрытые дыры в доказательствах",
+        "заголовок": "Линтер `flang lint`, повторные вызовы в доказательстве считаются один раз, исправлены три ошибки, из-за которых принимались неверные доказательства",
         "появилось": [
           "**`flang lint` — длина строки и глубина ветвлений, пределы из `.flangrc`.** Ключи `max-line-length` и `max-conditional-depth`, поведение задаёт `lint` (`refuse` — отказывать). Заслон перед пушем судит только вашу правку: добавленная строка не длиннее предела, тронутая функция не глубже. Дерево пределам не отвечает, и ведомости долга нет по решению ADR-0053: `flang lint` по дереву находит 32 342 строки длиннее 120 знаков и 1365 функций глубже 2 — в 703 файлах из 1301 (снято 3 октября 2026). Правка этого выпуска убрала из своих строк 77 длинных, остальное осталось как было.",
           "**Короткие команды живут в файле настроек.** `flang run-script <имя>` берёт строку из `.flangrc`; ярлыки больше не прячутся в отдельном скрипте, и `flang run-script` без имени печатает, какие есть.",
@@ -308,7 +308,7 @@
         ]
       },
       "en": {
-        "заголовок": "A linter in the language, a kernel memo, and three closed soundness holes",
+        "заголовок": "The `flang lint` linter, repeated calls in a proof are computed once, three bugs that let wrong proofs through are fixed",
         "появилось": [
           "**`flang lint` — line length and conditional depth, limits read from `.flangrc`.** The keys are `max-line-length` and `max-conditional-depth`, and `lint` (`refuse`) says what to do about a violation. The pre-push gate judges your change only: an added line must fit the limit, a touched function must not be deeper. The tree does not meet the limits and no debt ledger is kept — that is the decision of ADR-0053: `flang lint` over the tree finds 32342 lines longer than 120 characters and 1365 functions nested deeper than 2, across 703 of 1301 files (measured 3 October 2026). This release's own change took 77 long lines out of the lines it touched and left the rest of the debt where it was.",
           "**Short commands live in the settings file.** `flang run-script <name>` takes its line from `.flangrc`; shortcuts no longer hide in a separate script, and `flang run-script` with no name prints the ones there are.",
@@ -351,7 +351,7 @@
     },
     "0.7.23": {
       "ru": {
-        "заголовок": "Поле записи проверяется по своему типу, и прогон знает предел памяти",
+        "заголовок": "Поле записи проверяется по своему типу, у прогона есть предел памяти `--memory-limit`",
         "появилось": [
           "**`--memory-limit N` (`--предел-памяти`) — предел памяти прогона.** Годится при любой команде. У `check`, `test` и `run` по умолчанию три четверти памяти машины; `0` снимает предел. На пределе прогон останавливается кодом 5 и называет функцию, которая считалась.\n\n```\n$ flang run runaway.flang --function «Раздуть» --args '{\"текст\":\"а\",\"раз\":28}' --trust --memory-limit 32M\nFLANG_MEMORY: прогон остановлен на пределе памяти 32 МиБ: занято 25 МиБ, просили ещё 25 165 880 байт\n  считалась функция «Раздуть», шагов программы 544\n                                                                    код 5\n```\n\nЗаявка #160.",
           "**Шаг доказательства называет правило ядра.** Строка шага в записи `--record` кончается словами `правило «…»`, в `--proof --json` есть поле `stepRules`. Независимая проверяющая программа сверяет имя с правилом, которое применяет сама.\n\n```\n$ flang check chain.flang --proof --json\n… \"stepRules\":[{\"step\":1,\"line\":33,\"rule\":\"цель есть допущение\"}, …]\n```"
@@ -369,7 +369,7 @@
         ]
       },
       "en": {
-        "заголовок": "Record fields are checked against their type, and runs have a memory limit",
+        "заголовок": "Record fields are checked against their type, and a run has a memory limit, `--memory-limit`",
         "появилось": [
           "**`--memory-limit N` (`--предел-памяти`) — memory cap for a run.** Works with any command. `check`, `test` and `run` default to three quarters of the machine's memory; `0` removes the cap. At the cap the run stops with exit code 5 and names the function being evaluated.\n\n```\n$ flang run runaway.flang --function «Раздуть» --args '{\"текст\":\"а\",\"раз\":28}' --trust --memory-limit 32M\nFLANG_MEMORY: прогон остановлен на пределе памяти 32 МиБ: занято 25 МиБ, просили ещё 25 165 880 байт\n  считалась функция «Раздуть», шагов программы 544\n                                                                    exit 5\n```\n\nIssue #160.",
           "**Every proof step names its kernel rule.** A step line in a `--record` file ends with `правило «…»`; `--proof --json` has a `stepRules` field. The independent proof checker compares the name with the rule it applies itself."
@@ -389,7 +389,7 @@
     },
     "0.7.22": {
       "ru": {
-        "заголовок": "Силлогизм `следует` и верный код символа вне базовой плоскости",
+        "заголовок": "Вывод из посылок словом `следует` и верные коды символов за пределами базовой плоскости Юникода",
         "появилось": [
           "**`следует` — вывод утверждения из посылок, названных выше.** Заключение записывается отдельным блоком и ссылается на доказанное утверждение словом `по свойству`.\n\n```flang\nутверждение «все люди смертны»\n  для всех кто: «Человек»\n  утверждаем («Смертен» от кто)\n\nследует «Сократ смертен»\n  дано сократ: «Человек»\n  утверждаем («Смертен» от сократ)\n  по свойству «все люди смертны»\n```\n\n```\n$ flang check socrates.flang --proof\nутверждение «Сократ смертен» — доказано: терм принят ядром, 1 шаг, основания: утверждение «все люди смертны» — утверждение обо ВСЕХ входах\n```\n\nБез строки `по свойству` заключение не доказывается:\n\n```\nFLANG_PROOF_STEP: теорема «Сократ смертен»: ни одного шага        код 1\n```"
         ],
@@ -402,7 +402,7 @@
         ]
       },
       "en": {
-        "заголовок": "The `следует` syllogism and correct code points outside the BMP",
+        "заголовок": "Deriving a statement from premises with `следует`, and correct code points outside the Unicode BMP",
         "появилось": [
           "**`следует` (follows) — derive a statement from premises named above it.** The conclusion is a separate block that cites a proved statement with `по свойству`.\n\n```flang\nутверждение «все люди смертны»\n  для всех кто: «Человек»\n  утверждаем («Смертен» от кто)\n\nследует «Сократ смертен»\n  дано сократ: «Человек»\n  утверждаем («Смертен» от сократ)\n  по свойству «все люди смертны»\n```\n\n```\n$ flang check socrates.flang --proof\nутверждение «Сократ смертен» — доказано: терм принят ядром, 1 шаг, основания: утверждение «все люди смертны» — утверждение обо ВСЕХ входах\n```\n\nWithout the `по свойству` line the conclusion is not proved:\n\n```\nFLANG_PROOF_STEP: теорема «Сократ смертен»: ни одного шага        exit 1\n```"
         ],
@@ -417,7 +417,7 @@
     },
     "0.7.20": {
       "ru": {
-        "заголовок": "Компилятор доказан сам себе целиком: 650 мест из 650 переиграны независимой программой",
+        "заголовок": "Все 650 доказательств в исходниках компилятора перепроверены независимой программой",
         "появилось": [
           "Впервые вердикт `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` говорит ДОКАЗУЕМ при пороге 100 %: каждое из 650 обязательств в записях собственного доказательства компилятора независимая программа на C переиграла сама, не приняв от компилятора ни одного шага на слово. Раньше часть мест она брала на веру, и порог был ниже.",
           "Снятие предусловия (`требует`) на месте вызова теперь печатается в запись и переигрывается: вторая доля, которая считает и предусловия, тоже 652 из 652.",
@@ -436,7 +436,7 @@
         ]
       },
       "en": {
-        "заголовок": "The compiler's own proof is fully replayed: 650 places of 650",
+        "заголовок": "All 650 proofs in the compiler's sources are rechecked by an independent program",
         "появилось": [
           "For the first time `bootstrap/flang io scripts/provability.fscript --plan Verdict --timeout 900000` prints ДОКАЗУЕМ against a 100 % gate: every one of the 650 obligations in the compiler's own proof records was replayed by an independent C program, with nothing taken on the compiler's word. Before this some places were accepted on trust and the gate stood lower.",
           "Discharging a precondition (`требует`) at a call site is now printed into the record and replayed as well: the second share, the one that counts preconditions, is 652 of 652.",
@@ -457,7 +457,7 @@
     },
     "0.7.19": {
       "ru": {
-        "заголовок": "Кванторы дошли до собранного компилятора",
+        "заголовок": "Утверждения «для всех элементов», индукция по своим типам и отдельные теоремы работают в установленном компиляторе",
         "появилось": [
           "Теперь можно сказать «для всех элементов этого списка» — и компилятор это докажет. Раньше квантор связывал только простые имена, а про элементы списка сказать было нечем. Работают и вложенные кванторы: «для каждого элемента и для каждого другого элемента».",
           "Индукция по вашему собственному объявленному типу. Раньше доказать что-то про свой тип разбором случаев было нельзя — правила знали только встроенные типы.",
@@ -479,7 +479,7 @@
         ]
       },
       "en": {
-        "заголовок": "Quantifiers reached the built compiler",
+        "заголовок": "\"For all elements\" statements, induction over your own types and standalone theorems work in the installed compiler",
         "появилось": [
           "You can now say «for every element of this list», and the compiler will prove it. Previously a quantifier could bind only plain names, and there was no way to speak about list elements. Nested quantifiers work too: «for each element and for each other element».",
           "Induction over your own declared type. Proving something about your own type by case analysis was impossible before — the rules knew only built-in types.",
@@ -503,7 +503,7 @@
     },
     "0.7.17": {
       "ru": {
-        "заголовок": "Язык прошёл собственную проверку на доказуемость",
+        "заголовок": "Все доказательства компилятора впервые проходят его собственную проверку; учебник `flangtutor` входит в установку",
         "появилось": [
           "Команда `./ярлык доказуемость` впервые отвечает ДОКАЗУЕМ. Как это работает: когда компилятор проверяет программу, он записывает, какое утверждение доказано и какими шагами. Отдельная программа на C, написанная без оглядки на компилятор, берёт исходник и эту запись и повторяет каждый шаг сама. Повторено 625 обязательств из 651 — 96 %.",
           "Проверка «проверяющая программа не считает сама вместо повторения шагов» теперь не ищет имя функции в коде, а запускает настоящую пару исходник + запись, в которой есть цели, доказуемые только переписыванием. Честная программа за такие цели не берётся. Под этой проверкой 34 вида обязательства.",
@@ -526,7 +526,7 @@
         ]
       },
       "en": {
-        "заголовок": "The language passed its own provability check",
+        "заголовок": "The compiler's proofs pass its own check for the first time; the `flangtutor` tutor ships with the install",
         "появилось": [
           "`./ярлык доказуемость` answers PROVABLE for the first time. How it works: when the compiler checks a program, it writes down which claim was proved and by which steps. A separate C program, written without reference to the compiler, takes the source and that record and repeats every step itself. 625 of 651 obligations were repeated — 96 %.",
           "The check «the checking program does not compute instead of repeating steps» no longer looks for a function name in the code. It runs a real source + record pair that contains goals provable only by rewriting; an honest checker must refuse them. 34 kinds of obligation sit under that check.",
@@ -551,7 +551,7 @@
     },
     "0.7.16": {
       "ru": {
-        "заголовок": "Чекер переигрывает вывод факта о типе; дорога до конца измерена поимённо",
+        "заголовок": "Независимая проверка повторяет вывод фактов о типах; учебник `flangtutor`, Ctrl+L в оболочке, снова работает `flang package`",
         "появилось": [
           "ПРИЁМ «ВЫВОД»: независимый чекер переигрывает записанный вывод факта о типе — шаг за шагом, а не по имени правила. Заключение каждого шага записано формулой языка и сличается знак в знак; цель блока сверяется С ИСХОДНИКОМ, а не берётся из записи; каждое основание проверяется по существу (строка обязана быть объявлением довода, допущением либо телом той функции, о которой речь); имена, помеченные в списке правил как запрет, отвергаются. Решение ADR-0022: факт о типе едет в записи ВЫВОДОМ, а не аксиомой и не именем правила.",
           "Проб на подлог стало 219 вместо 200: девятнадцать новых ловят ложь именно в блоке вывода — чужая цель, номер мимо объявления, пропущенная посылка, не та посылка, переставленный шаг, развёртка не на тело, оборванный вывод, имя вне списка правил, подмена вычитания суммой, ссылка на запрет вместо правила. Ни одна подделка не принята, ни одна честная запись не отвергнута.",
@@ -575,7 +575,7 @@
         ]
       },
       "en": {
-        "заголовок": "The checker replays a derivation of a type fact; the road to the end is measured place by place",
+        "заголовок": "The independent check replays derivations of type facts; the `flangtutor` tutor, Ctrl+L in the shell, `flang package` works again",
         "появилось": [
           "A DERIVATION REPLAY: the independent checker now replays a recorded derivation of a type fact step by step, rather than trusting a rule name. Each step's conclusion is written as a formula of the language and compared sign for sign; the block's goal is checked AGAINST THE SOURCE rather than taken from the record; every premise is checked on its merits (the line must be an argument declaration, an assumption, or the body of the function in question); names marked in the rule list as prohibitions are rejected. Decision ADR-0022: a type fact travels in the record as a DERIVATION, not as an axiom and not as a rule name.",
           "Forgery probes went from 200 to 219: nineteen new ones catch a lie inside the derivation block — a foreign goal, a line number that misses the declaration, a missing premise, the wrong premise, reordered steps, an unfolding that is not the body, an unterminated derivation, a name outside the rule list, subtraction passed off as a sum, a reference to a prohibition instead of a rule. No forgery was accepted and no honest record rejected.",
@@ -601,7 +601,7 @@
     },
     "0.7.15": {
       "ru": {
-        "заголовок": "Калькулятор снят из чекера: гейт независимой проверки закрыт",
+        "заголовок": "Независимая проверка только перепроверяет доказательства и больше не доказывает сама; файл настроек `.flangrc`, вывод кода на TypeScript",
         "появилось": [
           "ГЕЙТ Г7 ЗАКРЫТ. Из чекера убран ход, который ДОКАЗЫВАЛ утверждение, вычисляя его, вместо того чтобы проигрывать записанные шаги. Убран в обеих точках: сняв его в одной, работу немедленно подхватывала вторая (дверь `половина_закрыта`, `тождественны` на глубине 6), и проверка грепом по имени печатала при этом ноль. Сторож подлога отделён от вычислителя и остался на месте. Тождество знак в знак и замкнутый счёт сохранены.",
           "Проверка гейта на калькулятор больше НЕ ГРЕП ПО ИМЕНИ, а прогон по живой паре исходник+запись (`flang/proof/checker/tests/records/identity-after-rewrite/p1-goal-not-an-equality`). Две ∀-цели там доказуемы только переписыванием тела законами, ходов в записи нет ни одного — честный чекер обязан оставить их на слове ядра и назвать поимённо. Ловушка ДВУСТОРОННЯЯ: третья цель закрывается тождеством знак в знак и обязана остаться закрытой, иначе проверку брал бы и чекер, сломанный до состояния «ничего не доказываю». Переименование функции обойти проверку больше не может.",
@@ -628,7 +628,7 @@
         ]
       },
       "en": {
-        "заголовок": "The calculator is gone from the checker: the independent-verification gate is closed",
+        "заголовок": "The independent check only rechecks proofs and no longer proves anything itself; the `.flangrc` settings file, code output in TypeScript",
         "появилось": [
           "GATE G7 IS CLOSED. The step that PROVED a claim by computing it, instead of replaying the recorded moves, is gone from the checker. Gone from both places: removing it from one, the work was immediately picked up by the second (the `половина_закрыта` door, `тождественны` at depth 6), while a grep-by-name check printed zero. The forgery sentinel has been separated from the prover and stays. Sign-for-sign identity and closed arithmetic are kept.",
           "The gate's calculator check is NO LONGER A GREP BY NAME but a run against a live source+record pair. Two of its goals are provable only by rewriting the body through laws, and the record holds no moves at all, so an honest checker must leave them on the kernel's word and name them. The trap is TWO-SIDED: a third goal closes by sign-for-sign identity and must stay closed, otherwise a checker broken down to «I prove nothing» would pass too. Renaming a function can no longer evade the check.",
@@ -657,7 +657,7 @@
     },
     "0.7.14": {
       "ru": {
-        "заголовок": "Чекер сам проигрывает доказательства завершения",
+        "заголовок": "Независимая проверка сама перепроверяет доказательства завершения",
         "появилось": [
           "Сертификат тотальности КОМПОЗИЦИИ. Двоичный печатает в запись доказательства свидетельство «функция завершается, потому что рекурсии в ней нет — только вызовы уже завершённых», а независимый чекер проигрывает это свидетельство заново (`сверить_тотальность`), а не верит имени правила. Переигрыш не зависит от порядка блоков в записи: два прохода и обнаружение цикла. Семя перепечатано, 82 записи корпуса напечатаны заново. Коммиты `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.",
           "Сертификат тотальности РЕКУРСИИ, виды `structure` и `step`: завершение по спуску вдоль варианта индуктивного типа и по убывающей мере, не меньшей нуля. Двоичный печатает узел с полным свидетелем — убывающий довод, дно, витки, самовызов, — чекер его проигрывает. Честно: на нынешнем корпусе прирост доли около нуля, потому что корпус доказывает завершение рекурсии над встроенным списком типовым законом, а не этими сертификатами; способность влита как задел. Коммиты `4bfbd217`, `5d73d391`, `d1bbbf94`.",
@@ -675,7 +675,7 @@
         ]
       },
       "en": {
-        "заголовок": "The checker replays termination proofs itself",
+        "заголовок": "The independent check rechecks termination proofs itself",
         "появилось": [
           "A totality certificate for COMPOSITION. The binary prints into the proof record the evidence «this function terminates because it has no recursion — only calls to already-terminating functions», and the independent checker replays that evidence (`сверить_тотальность`) instead of trusting the name of the rule. The replay does not depend on the order of blocks in the record: two passes plus cycle detection. The seed was reprinted and 82 corpus records were printed anew. Commits `ff1dc5b7`, `cbac34ce`, `7cd56073`, `fba02c9a`.",
           "A totality certificate for RECURSION, kinds `structure` and `step`: termination by descent along a variant of an inductive type, and by a decreasing measure bounded below by zero. The binary prints the node with the full witness — decreasing argument, floor, turns, self-call — and the checker replays it. Honestly: on the current corpus the share gains about nothing, because the corpus proves termination of recursion over the built-in list by a type law rather than by these certificates; the ability landed as groundwork. Commits `4bfbd217`, `5d73d391`, `d1bbbf94`.",
@@ -695,7 +695,7 @@
     },
     "0.7.13": {
       "ru": {
-        "заголовок": "Объект доказательства: чекер проверяет готовый вывод ядра, а не пересчитывает его",
+        "заголовок": "Доказательство сохраняется готовым выводом, и проверка перепроверяет его, а не считает заново; встроенный SHA-256 `хеш256`",
         "появилось": [
           "Двоичный сам печатает переигрываемый след доказательства для пяти семей тождества — соседи, рефлексивность, длина, элемент, вычислить. До сих пор цепочку ходов умел строить только чекер. Первый сквозной прогон зелёный: двоичный издаёт след, независимый сверщик проигрывает его, «на слово ядра 0». Семя перепечатано. Коммиты `2eb5633e`, `c3d17187`.",
           "Приём «постусловие вызванной»: чекер сам строит инстанцию постусловия по вызову — арность, подстановка параметров аргументами и результата узлом — и закрывает цель модус-поненсом, вместо прежней привязки «имя плюс строка». Приём ловит настоящую подделку: теорема с целью «результат равен 3» при теле, дающем 0, раньше проходила кодом 0, теперь даёт код 1. Коммиты `e5a75366`, `d433f3b2`.",
@@ -721,7 +721,7 @@
         ]
       },
       "en": {
-        "заголовок": "The proof object: the checker verifies the kernel’s finished derivation instead of recomputing it",
+        "заголовок": "A proof is saved as a finished derivation, and the check replays it instead of recomputing it; built-in SHA-256, `хеш256`",
         "появилось": [
           "The binary itself now prints a replayable proof trace for five identity families — neighbours, reflexivity, length, element, compute. Until now only the checker could build the chain of moves. The first end-to-end run is green: the binary emits the trace, the independent checker replays it, «taken on the kernel’s word: 0». The seed was reprinted. Commits `2eb5633e`, `c3d17187`.",
           "The «postcondition of the callee» technique: the checker builds an instance of the callee’s postcondition from the call site itself — arity, parameters substituted by arguments and the result by the node — and closes the goal by modus ponens, instead of the old name-plus-line binding. It catches a real forgery: a theorem claiming «the result equals 3» over a body that yields 0 used to pass with code 0 and now gives code 1. Commits `e5a75366`, `d433f3b2`.",
@@ -749,7 +749,7 @@
     },
     "0.7.12": {
       "ru": {
-        "заголовок": "Установка везёт рантаймы всех девяти целей печати, а не одной",
+        "заголовок": "Установка содержит среды исполнения для всех девяти целей кодогенерации, а не для одной",
         "появилось": [
           "Обходчик примеров `flang/self` и работа CI при нём: 4350 примеров из 4445 под присмотром. До этого их не гонял пофайлово никто — ноль в CI. Полный прогон снят целиком: 55 минут 19 секунд, код 0, 12 530 примеров. Коммиты `a35a4b42`, `ec039e7f`, `3690acf4`.",
           "Второй носитель приёма «разбором по случаям» — `algebra`, с пробами. Коммиты `e11ed933`, `bb1e15a8`.",
@@ -770,7 +770,7 @@
         ]
       },
       "en": {
-        "заголовок": "An install now carries the runtimes of all nine emit targets, not one",
+        "заголовок": "An install carries the runtimes for all nine code output targets, not one",
         "появилось": [
           "A walker over the `flang/self` examples, and a CI job around it: 4350 examples of 4445 are supervised. Before this nobody ran them file by file — zero in CI. The full run was taken end to end: 55 minutes 19 seconds, exit code 0, 12,530 examples. Commits `a35a4b42`, `ec039e7f`, `3690acf4`.",
           "A second carrier for the «by case analysis» technique — `algebra`, with forgery probes. Commits `e11ed933`, `bb1e15a8`.",
@@ -793,7 +793,7 @@
     },
     "0.7.11": {
       "ru": {
-        "заголовок": "Надзор возвращён на dev, и сторожа доказывают прогоном, что умеют краснеть",
+        "заголовок": "Проверки репозитория перед отправкой ветки; архив этого выпуска не опубликован",
         "появилось": [
           "Хук `.githooks/pre-push` гоняет дешёвых сторожей перед пушем и вслух называет то, чего он НЕ проверил. Весь набор стоит около 134 минут раннера — такой хук обходили бы через `--no-verify`, и он был бы хуже никакого. Ставится одной командой: `git config core.hooksPath .githooks`. Коммит `1de3cf23`.",
           "Прибор «у кого показано прогоном, что он краснеет»: сторож без пробы порчи — это сторож, которому верят зря. Коммиты `ff354a73`, `69550a3e`, `dc24ffa3`, `83a838b2`.",
@@ -816,7 +816,7 @@
         ]
       },
       "en": {
-        "заголовок": "Supervision is back on dev, and guards prove by a run that they can redden",
+        "заголовок": "Repository checks before a push; this release's archive was not published",
         "появилось": [
           "The `.githooks/pre-push` hook runs the cheap guards before a push and says out loud what it did NOT check. The full set costs about 134 runner minutes — a hook that long would be bypassed with `--no-verify` and would be worse than none. Installed with one command: `git config core.hooksPath .githooks`. Commit `1de3cf23`.",
           "An instrument for «who has been shown by a run to redden»: a guard without a forgery probe is a guard that is trusted for nothing. Commits `ff354a73`, `69550a3e`, `dc24ffa3`, `83a838b2`.",
@@ -841,7 +841,7 @@
     },
     "0.7.10": {
       "ru": {
-        "заголовок": "Хотфикс: живая оболочка падала на каждой строке ввода",
+        "заголовок": "Исправление: оболочка `flang` падала на каждой введённой строке",
         "изменилось": [
           "REPL (`flang` без доводов) отвечал `FLANG_UNKNOWN_NAME: запись не содержит поле «планировщик заголовок»` на ЛЮБОЙ ввод, включая `1 плюс 1` — не только сложные примеры. Причина: ручной список полей записи «Настройки» в `flang_repl.c` (используется печатью цели «c» для каждой строки живой сессии) отстал от общей таблицы полей на два имени, когда цель «c» выучилась печатать процессы. Починка landed на dev 3 сентября, но приземлилась ПОСЛЕ тега v0.7.3 — в нём баг был живой.",
           "Строка версии в семени (`FLANG_VERSION`) отстала на три релиза (`0.7.0` вместо `0.7.3`) — тот же класс беды, что уже чинил хотфикс 0.7.1, снова закрался и снова починен; заведена задача, чтобы это не повторялось в четвёртый раз."
@@ -851,7 +851,7 @@
         ]
       },
       "en": {
-        "заголовок": "Hotfix: the live shell crashed on every line of input",
+        "заголовок": "Fix: the `flang` shell crashed on every line of input",
         "изменилось": [
           "The REPL (`flang` with no arguments) answered `FLANG_UNKNOWN_NAME: record has no field «scheduler header»` on ANY input, including `1 плюс 1` — not just elaborate examples. Cause: a hand-rolled field list for the «Settings» record in `flang_repl.c` (used by the «c» target's emitter for every line of a live session) fell behind the shared field table by two names when the «c» target learned to emit processes. The fix landed on dev on September 3rd, but after the v0.7.3 tag was already cut — so the bug was live in that release.",
           "The seed's version string (`FLANG_VERSION`) had drifted three releases behind (`0.7.0` instead of `0.7.3`) — the same bug class already fixed once by the 0.7.1 hotfix, recurred, and is fixed again; a task now tracks preventing a fourth recurrence."
@@ -863,13 +863,13 @@
     },
     "0.7.9": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска, то же вышло в 0.7.10",
         "изменилось": [
           "Тот же материал, что вышел как 0.7.10 — шестая подряд непубликация в этой цепочке (после v0.7.4-v0.7.8), пока не нашёлся настоящий путь: у release.yml workflow_dispatch не снят (снят он был только у старого publish-npm.yml), и сухой прогон на ветке даёт настоящий хеш без сожжения тега. Конвейер каждый раз останавливался ДО публикации, ничего битого не вышло; тег не удалялся, просто пропущен."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline",
+        "заголовок": "Not published: the build was stopped by the release check; the same content shipped as 0.7.10",
         "изменилось": [
           "Same content that shipped as 0.7.10 — the sixth publication failure in a row in this chain (after v0.7.4-v0.7.8), before finding the real fix: release.yml's workflow_dispatch was never removed (only the old publish-npm.yml lost it), and a dry run on the branch gives the real hash without burning a tag. The pipeline stopped BEFORE publishing each time, nothing broken went out; the tag was not deleted, simply skipped."
         ]
@@ -877,13 +877,13 @@
     },
     "0.7.8": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером — намеренно",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска",
         "изменилось": [
           "Метка поставлена сознательно с заведомо чужим хешем (архива 0.7.7), чтобы получить настоящий хеш архива 0.7.8 из текста ошибки конвейера. Заодно найдено: конвейер требует точного совпадения версии тега и package.json ДО сборки архива — версию нельзя было оставить прежней, чтобы сохранить силу хеша. Тот же материал реально вышел как 0.7.9."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline — deliberately",
+        "заголовок": "Not published: the build was stopped by the release check",
         "изменилось": [
           "Tagged on purpose with a known-wrong hash (the 0.7.7 archive's) to harvest the real 0.7.8 archive hash from the pipeline's own error text. Also found along the way: the pipeline requires the tag's version to exactly match package.json BEFORE building the archive — the version could not be left unchanged to keep a hash valid. The same content actually shipped as 0.7.9."
         ]
@@ -891,13 +891,13 @@
     },
     "0.7.7": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером — намеренно",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска",
         "изменилось": [
           "Метка поставлена сознательно с заведомо чужим хешем (архива 0.7.6), чтобы получить настоящий хеш архива 0.7.7 из текста ошибки конвейера — тем же приёмом, каким и так уже дважды снимался хеш этой ночью. Тот же материал реально вышел как 0.7.8."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline — deliberately",
+        "заголовок": "Not published: the build was stopped by the release check",
         "изменилось": [
           "Tagged on purpose with a known-wrong hash (the 0.7.6 archive's) specifically to harvest the real 0.7.7 archive hash from the pipeline's own error text — the same technique already used twice tonight. The same content actually shipped as 0.7.8."
         ]
@@ -905,13 +905,13 @@
     },
     "0.7.6": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска",
         "изменилось": [
           "Число в Homebrew-формуле было хешем архива 0.7.5 (координатор перепутал версию содержимого при копировании числа из ошибки конвейера) — при своей же сборке на теге содержимое, разумеется, разошлось. Конвейер остановился ДО публикации, ничего битого не вышло. Тег не удалялся, просто пропущен."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline",
+        "заголовок": "Not published: the build was stopped by the release check",
         "изменилось": [
           "The number in the Homebrew formula was the 0.7.5 archive's hash (the coordinator copied the pipeline-reported hash for the wrong content version) — its own build on the tag naturally diverged. The pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped."
         ]
@@ -919,13 +919,13 @@
     },
     "0.7.5": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска",
         "изменилось": [
           "Тот же материал, что вышел как 0.7.6: sha256 в Homebrew-формуле снят локально документированной командой, но местная сборка архива не совпала побайтово с тем, что даёт конвейер (причина не разобрана) — конвейер остановился ДО публикации, ничего битого не вышло. Тег не удалялся, просто пропущен."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline",
+        "заголовок": "Not published: the build was stopped by the release check",
         "изменилось": [
           "Same content that shipped as 0.7.6: the Homebrew formula's sha256 was computed locally with the documented command, but the local archive build didn't byte-match what the pipeline produces (cause undiagnosed) — the pipeline stopped BEFORE publishing, nothing broken went out. The tag was not deleted, simply skipped."
         ]
@@ -933,13 +933,13 @@
     },
     "0.7.4": {
       "ru": {
-        "заголовок": "Метка есть, публикация остановлена конвейером",
+        "заголовок": "Не опубликован: сборка остановлена проверкой выпуска, то же вышло в 0.7.5",
         "изменилось": [
           "Тот же материал, что вышел как 0.7.5: sha256 в Homebrew-формуле стоял от 0.7.3, конвейер выпуска сверил его с архивом, который сам собрал на теге, и остановился ДО публикации — прибор сработал как задуман, ничего битого не вышло. Тег не удалялся (запись запрещена), просто пропущен."
         ]
       },
       "en": {
-        "заголовок": "Tagged, publication stopped by the pipeline",
+        "заголовок": "Not published: the build was stopped by the release check; the same content shipped as 0.7.5",
         "изменилось": [
           "Same content that shipped as 0.7.5: the Homebrew formula's sha256 was still 0.7.3's, the release pipeline checked it against the archive it built on the tag itself, and stopped BEFORE publishing — the safeguard worked as intended, nothing broken went out. The tag was not deleted, simply skipped."
         ]
@@ -947,13 +947,13 @@
     },
     "0.7.3": {
       "ru": {
-        "заголовок": "Хотфикс версии дошёл до публикации",
+        "заголовок": "`flang --version` снова называет верную версию",
         "изменилось": [
           "Тот же хотфикс версии, что метился как 0.7.1 и 0.7.2, наконец опубликован: у обеих меток ручная сборка архива не совпала с тем, что собрал сам конвейер выпуска (0.7.1 — расхождение полное, 0.7.2 — 4 байта из 4 447 763, причина не разобрана), и Homebrew-формула не проходила проверку. Для 0.7.3 sha256 взят напрямую из sha256sum самого конвейера, а не пересчитан вручную — установка проверена целиком: скачивание, сверка хеша, сборка, `flang --version`."
         ]
       },
       "en": {
-        "заголовок": "The version hotfix finally reached publication",
+        "заголовок": "`flang --version` reports the right version again",
         "изменилось": [
           "The same version hotfix tagged as 0.7.1 and 0.7.2 is finally published: for both of those tags the hand-built archive didn't match what the release pipeline itself built (0.7.1 — a full mismatch; 0.7.2 — 4 bytes out of 4,447,763, cause never diagnosed), and the Homebrew formula failed verification. For 0.7.3 the sha256 was taken directly from the pipeline's own sha256sum rather than recomputed by hand — installation was verified end to end: download, hash check, build, `flang --version`."
         ]
@@ -961,13 +961,13 @@
     },
     "0.7.2": {
       "ru": {
-        "заголовок": "Метка есть, публикация снова не дошла",
+        "заголовок": "Не опубликован: исправление версии, вышло в 0.7.3",
         "изменилось": [
           "Вторая попытка опубликовать хотфикс версии 0.7.1: реальный sha256 архива взят с конвейера, а не пересчитан руками. Сборка разошлась с конвейером на 4 байта из 4 447 763 (причина не разобрана) — Homebrew-формула не проходила проверку. Тег не удалялся (запись запрещена), просто пропущен: пользователям, ставившим через Homebrew, эта метка ничего не дала."
         ]
       },
       "en": {
-        "заголовок": "Tagged, but publication failed again",
+        "заголовок": "Not published: the version fix, shipped as 0.7.3",
         "изменилось": [
           "A second attempt to publish the 0.7.1 version hotfix: the archive's real sha256 was taken from the pipeline rather than recomputed by hand. The build still diverged from the pipeline's own by 4 bytes out of 4,447,763 (cause never diagnosed) — the Homebrew formula failed verification. The tag was not deleted (deleting tags is forbidden here), simply skipped: it delivered nothing to anyone installing via Homebrew."
         ]
@@ -975,7 +975,7 @@
     },
     "0.7.1": {
       "ru": {
-        "заголовок": "Хотфикс версии — тег вышел, публикация не дошла",
+        "заголовок": "Не опубликован: исправление версии, вышло в 0.7.3",
         "изменилось": [
           "`flang --version` отвечал «0.6.2» под выпуском 0.7.0 — на два релиза позади: строку версии в семени забыли бампнуть вместе с `package.json`. Задача 9959 чинит её. Заодно исправлена версия Homebrew-формулы (`0.6.2 -> 0.7.0`, пропущенная при первой правке), версия на сайте и часть работ CI, жёгших часы на пуш без имени."
         ],
@@ -984,7 +984,7 @@
         ]
       },
       "en": {
-        "заголовок": "Version hotfix — tagged, but publication didn't land",
+        "заголовок": "Not published: the version fix, shipped as 0.7.3",
         "изменилось": [
           "`flang --version` answered “0.6.2” under the 0.7.0 release — two releases behind: the seed's version string was left un-bumped alongside `package.json`. Task 9959 fixes it. Also fixed along the way: the Homebrew formula's version (`0.6.2 -> 0.7.0`, missed in the first pass), the version shown on the site, and part of a CI job that was burning push-triggered hours running under no name."
         ],
@@ -995,7 +995,7 @@
     },
     "0.7.0": {
       "ru": {
-        "заголовок": "Компилятор перепечатан начисто, а главная работа выпуска — поиск собственных обманов",
+        "заголовок": "Компилятор собран заново из исходников на flang; вывод кода на C++, регулярные выражения, драйверы sqlite и Redis, TLS 1.3 и реестр пакетов",
         "появилось": [
           "Девятой целью печати стал C++; появились регулярные выражения, драйверы sqlite и Redis, TLS 1.3 и реестр пакетов.",
           "У файлов три равноправных расширения; у пределов шагов и глубины — свои ключи; `--no-check` печатает без проверки, а `check --быстро` честно говорит, чего он не смотрел."
@@ -1012,7 +1012,7 @@
         ]
       },
       "en": {
-        "заголовок": "The compiler was reprinted from scratch, and the release’s main work was finding our own self-deceptions",
+        "заголовок": "The compiler is rebuilt from its flang sources; code output in C++, regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry",
         "появилось": [
           "C++ became the ninth print target; regular expressions, sqlite and Redis drivers, TLS 1.3 and a package registry arrived.",
           "Files take three equal extensions; step and depth limits have their own flags; `--no-check` prints without checking, and `check --быстро` says plainly what it did not look at."
@@ -1063,7 +1063,7 @@
     },
     "0.6.1": {
       "ru": {
-        "заголовок": "Правка компилятора, не доехавшая до собранного, теперь краснеет за полсекунды",
+        "заголовок": "Проверка столкновений имён видит все ввозимые модули; чтение файла не обрезает двоичное содержимое",
         "появилось": [
           "Дешёвая сверка исходников компилятора с его переводом на C: `sh scripts/bootstrap-reprint.sh --bystro`. Прежде расхождение ловилось только часовой перепечаткой, и за двое суток работа четырежды уезжала в ствол правилом, которого в собранном компиляторе не было. Теперь это видно сразу и на каждом пуше.",
           "Два новых правила у проверяльщика доказательств: разбор случаев по внутреннему условию цели и правило несовместимых условий. Прибавка измерена и записана числом в самом ядре: +2 и +2 доказанных обещания на шести файлах библиотеки.",
@@ -1079,7 +1079,7 @@
         ]
       },
       "en": {
-        "заголовок": "A compiler change that never reached the built compiler now goes red in half a second",
+        "заголовок": "The name collision check sees every imported module; reading a file no longer truncates binary content",
         "появилось": [
           "A cheap check that the compiler sources match their C translation: `sh scripts/bootstrap-reprint.sh --bystro`. Previously a mismatch was caught only by the hour-long reprint, and over two days work reached the trunk four times carrying a rule the built compiler did not have. It is now visible immediately, on every push.",
           "Two new rules in the proof checker: case analysis over a goal's inner condition, and a rule for incompatible conditions. The gain is measured and written as a number in the kernel itself: +2 and +2 proved obligations across six library files.",
@@ -1097,7 +1097,7 @@
     },
     "0.6.0": {
       "ru": {
-        "заголовок": "Долгие вычисления перестали упираться в память: 15,98 ГиБ ушли в 0,0135",
+        "заголовок": "Долгие вычисления больше не упираются в память: 15,98 ГиБ стали 0,0135 ГиБ",
         "появилось": [
           "Вход в PostgreSQL по `scram-sha-256`: SHA-1, HMAC, PBKDF2 и клиент SCRAM написаны на самом языке, а вход проверен прогоном против настоящей PostgreSQL 17.10, а не заглушки.",
           "Три новых правила вывода у проверяльщика доказательств. Оговорка о конечности: «не число» стоит вне порядка, всякая граница на нём ложна, и оговорка «пока это число» теперь читается фактом. Разбор случаев по дизъюнкции в допущении: «А или Б» не расщепляется, а разбирается надвое, и цель принимается только когда сошлись оба случая. Цель «А и притом Б».",
@@ -1119,7 +1119,7 @@
         ]
       },
       "en": {
-        "заголовок": "Long computations no longer hit a memory wall: 15.98 GiB became 0.0135",
+        "заголовок": "Long computations no longer hit a memory wall: 15.98 GiB became 0.0135 GiB",
         "появилось": [
           "PostgreSQL login over `scram-sha-256`: SHA-1, HMAC, PBKDF2 and the SCRAM client are written in the language itself, and the login is verified by a run against a real PostgreSQL 17.10, not a stub.",
           "Three new inference rules in the proof checker. A finiteness caveat: NaN sits outside the order, every bound over it is false, and the caveat \"while this is a number\" is now read as a fact. Case analysis over a disjunction in an assumption: \"A or B\" is not split, it is taken apart into two cases, and the goal is accepted only when both close. And the goal \"A and also B\".",
@@ -1451,7 +1451,7 @@
     },
     "0.7.18": {
       "ru": {
-        "заголовок": "Проверка стала строже, а дерево — понятнее",
+        "заголовок": "Независимая проверка повторяет 629 доказательств из 651, учебник в терминале — двенадцать уроков",
         "появилось": [
           "Независимая проверка теперь повторяет 629 обязательств из 651 вместо 625 — это 96,62 %. Мест, где она верит компилятору на слово, стало 12 вместо 16. Прибавка получена повторением шагов, а не вычислением: разряд «закрыто вычислением» остался прежним, 6.",
           "Учебник в терминале вырос с пяти уроков до двенадцати. Он больше не просит набрать программу целиком: даёт готовый текст с пропусками и спрашивает их по очереди, а после каждой строки говорит, что понял. Имя можно писать и ёлочками «Удвоить», и прямыми кавычками — компилятор принимает оба вида, и учебник больше не спорит об этом.",
@@ -1470,7 +1470,7 @@
         ]
       },
       "en": {
-        "заголовок": "The checker got stricter, and the tree got clearer",
+        "заголовок": "The independent check replays 629 proofs of 651, and the terminal tutor has twelve lessons",
         "появилось": [
           "The independent checker now replays 629 of 651 obligations instead of 625 — 96.62 %. Places where it takes the compiler's word dropped from 16 to 12. The gain came from replaying steps, not from computing: the «closed by computing» class stayed at 6.",
           "The terminal tutorial grew from five lessons to twelve. It no longer asks you to type a whole program: it gives the text with gaps and asks for them one at a time, saying after each line what it understood. A name may be written with guillemets «Удвоить» or plain quotes — the compiler accepts both, and the tutorial no longer argues about it.",

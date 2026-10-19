@@ -6,6 +6,35 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.30 — 19 October 2026
+
+**Reasoning checks name the logical fallacy; the playground translates into ten languages and from C; the proof checker in every install**
+
+### What appeared
+
+- **Reasoning checks name the logical fallacy.** When a conclusion does not follow, the answer says which formal fallacy it is: affirming the consequent, denying the antecedent, undistributed middle and others. A link to a card with the explanation comes along, for example https://courses.digitable.life/fallacies/#affirming-the-consequent. For «Все люди смертны. Сократ смертен. Значит, Сократ — человек.» (All men are mortal. Socrates is mortal. So Socrates is a man.) the answer is `не следует — это обращение следствия` (does not follow: affirming the consequent) and `силлогизм: не следует (код 1)`. It works in the playground and in `flang repl` run from a clone of the repository: `.syllogism file.txt`.
+- **Arguments that have no formal shape get a hint, not a verdict.** Personal attack, appeal to authority, false dilemma, slippery slope and "everyone does it" are marked with a quote and the words «возможная ошибка, проверьте сами» (possible fallacy, check it yourself). For example, «Профессор Иванов сказал, что вода в реке ядовита. Поэтому вода в реке ядовита.» (Professor Ivanov said the river water is poisonous, so it is) gets `подсказка (возможная ошибка, проверьте сами): апелляция к авторитету` (hint: appeal to authority). The kernel does not judge such fallacies and says so.
+- **The playground editor shows line numbers.** The line with an error is marked both in the text and in its number. Highlighting stays.
+- **The playground shows a program in ten languages.** The "flang → language" tab shows the same program in C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python and C#, the same as `flang emit --target <language>`. A program that does not pass checking is not translated, and the tab says why.
+- **The playground translates C into flang.** The "language → flang" tab reads C functions (int, structs of int, if/else, loops, return), and the kernel checks every translated function. Whatever the kernel did not prove, the tab tries at the int bounds. So `midpoint` with `(lo + hi) / 2` gets `контрпример: «lo» = 2147483647, «hi» = 2147483647` (counterexample), a real overflow. Python is in the language list too, marked "soon".
+- **Python → flang.** A translator reads a program in a subset of Python (functions with type annotations, if, for, recursion) and writes it in flang. You do not have to trust the translator: `flang check` judges the text, and the answers of the translation are compared with the answers of Python itself. Recursion that does not end on every input is written as `функция` (function), not `тотальная функция` (total function), with the reason. From a clone: `bootstrap/flang run-script foreign-python:demo` translates 20 programs and compares 131 answers with Python. Details: `docs/python-to-flang.md`.
+- **A user story becomes a function.** A block `история «потолок скидки»` (story) with the lines `как «менеджер зала»` (as), `хочу «скидка» не больше 30` (I want), `чтобы "…"` (so that), `при …` (given) and `тогда при «скидка» 40 ответ 30` (then) turns into a total function. `хочу` is a postcondition the kernel proves; `тогда` is an example. The independent proof checker does not read stories yet, so `check --proof` on such a file exits with code 3.
+- **List patterns with any names.** In `разбор` (match) you can write `случай первое и остальные` (case first and rest), not only `случай голова и хвост` (head and tail). Names from the pattern can be passed to a call: `«Сложить» от голова и хвост`.
+- **Field types in the instrumental case.** `поле является неотрицательным` (is non-negative) and `поле является целым` (is integer) are now understood, as number, string and flag already were.
+
+### What changed
+
+- **`check --proof` finds the proof checker in every install.** The archive, deb, rpm, install.sh, asdf and Homebrew put it at `libexec/flang/checker` next to `bin/flang`. Before, outside a clone the answer was always «сверщика нет» (no checker). Now, for example: `logic.flang: независимо, сверщиком, проиграно 10 из 13 доказанных` (independently replayed 10 of 13 proved).
+- **`check` warns about the same name in neighbouring files.** If a module in the same directory declares the same function, `check` prints `замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang` (note: declared here and in the neighbouring module) and exits with code 0. Before, this surfaced as an error only where both modules were imported together.
+- **A parse error in a module names the file** and no longer causes false `FLANG_UNKNOWN_NAME` errors in the files that import that module.
+- **Your own `Сбой` (failure) variant no longer clashes with the built-in `Отклик` (response) type** when the module is imported: the author's variant wins.
+- **flangtutor finds its lessons on systems without `/bin/ls`,** such as NixOS.
+
+### What broke
+
+- **A false statement is now refuted, and `check` exits with code 1.** The kernel tries the edges of the types and the numbers from the file's examples. Before, `утверждаем не («Родитель» от а и а)` passed `check` with code 0; now it is `утверждение «антирефлексивность» опровергнуто на входе а = 0` (refuted at input a = 0). How to fix: the input in the message is a counterexample; fix the statement or the function.
+- **An unknown property is a `FLANG_UNKNOWN_PROPERTY` error.** Before, `свойство «повторяемость»` (repeatability) silently passed with code 0. The language checks five properties: distributivity, idempotence, partial order, monotonicity, commutativity. How to fix: name one of the five, or write the law as an `утверждение` (statement).
+
 ## 0.7.29 — 18 October 2026
 
 **Prebuilt binaries for Linux and macOS and a one-command install; monoid, functor and natural transformation laws are proved for all values**

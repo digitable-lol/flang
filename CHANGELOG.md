@@ -11,9 +11,52 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
-## Не выпущено
+## 0.7.30 — 19 октября 2026
 
+**Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке**
+
+- chore(release): sha256 of the 0.7.30 archive (`9354878`)
+- test(probes): a story waits for the checkers to read it, task 8192 (`b729805`)
+- chore(release): version 0.7.30 and its release notes (`9c0231f`)
+- chore(seed): print batch 9a, printed by the 0.7.28 seed (`c45d0fa`)
+- fix(playground): c overflow is refuted at the int bounds, not hidden (`595322a`)
+- fix(tutor): flangtutor lists lessons with ls from PATH, not /bin/ls (`35a8572`)
+- fix(packaging): every install ships the independent proof checker (`4a9a573`)
+- fix(cli): check --proof finds the checker in libexec/flang beside bin (`b7539d7`)
+- feat(playground): every target language, c to flang and line numbers (`c617267`)
+- test(reasoning): fallacy texts are named by English words (`859ed39`)
+- test(reasoning): 63 texts pin fallacy names, hints and false hints (`3da5d99`)
+- feat(reasoning): free text is judged and its formal fallacy named (`eba1610`)
+- chore(numbers): marks, ledgers and site numbers follow print batch 9a (`49e1029`)
+- chore(proof): rule anchors and trust ceilings follow print batch 9a (`5a9bf4e`)
+- fix(emit-c): a name equal to a C word no longer stops the C print (`20cd41f`)
+- fix(parser): a binder named like a keyword is read back as that name (`5c4fba2`)
+- fix(lexer): a u-escape outside the hand table is read by its code (`75a9bb8`)
+- test(proof): strict probe rows for statements over flag records (`b5897e0`)
+- fix(check): refute statements over records of flags field by field (`16baf06`)
+- test(proof): probes for refuted statements and unknown properties (`dec5081`)
+- fix(check): refute statements at type edges, refuse unknown properties (`18b9166`)
+- fix(self): a lost statement is refused with its kind and line (`909a325`)
+- fix(self): a declaration that never reaches the ledger is refused (`b48126e`)
+- fix(self): theorems about categories reach the record, lost kinds fail (`593617f`)
+- feat(self): the kernel checks theorems about every category (`80d93c9`)
+- feat(checker): both checkers replay theorems about every category (`277334c`)
+- feat(lean): soundness lemmas for the laws of a category proof step (`ca83006`)
+- test(link): the namesake rebinding is a known violation until the print (`5544b29`)
+- test(link): probes for namesakes and helpers behind an only list (`0b14653`)
+- fix(link): a call binds where its own module binds it (`4afbb4b`)
+- test(probes): parse and import probes for issues 393 to 414 (`a9023d4`)
+- feat(check): a namesake in the same directory is named on check (`a6a0e5e`)
+- fix(link): parse errors name their file and stop foreign statements (`baecebb`)
+- feat(parse): stories, list pattern names, case types, seed ranges (`9095dbf`)
+- fix(record): the restriction helper no longer shares a name in its file (`012e084`)
+- feat(playground): the host returns parsed answers, not terminal text (`aee6f6e`)
 - chore(release): the tap serves flang-package, the checks follow it (`7936da8`)
+- fix(record): print a restriction whose bracket closes a line later (`c0e76e1`)
+- fix(stdlib): tls, tls-handshake and kdf pass check again (`b9b38d2`)
+- perf(self): field and definition lookups stop at the first match (`77d263a`)
+
+Ещё 34 правки языка снаружи не меняют.
 
 ## 0.7.29 — 18 октября 2026
 

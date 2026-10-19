@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.29",
-  "latest": "0.7.29",
+  "declared": "0.7.30",
+  "latest": "0.7.30",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -11,6 +11,178 @@
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.30",
+      "tag": "v0.7.30",
+      "date": "2026-10-19",
+      "human": "19 октября 2026",
+      "commit": "9354878",
+      "title": "Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.30 archive",
+          "commit": "9354878"
+        },
+        {
+          "text": "test(probes): a story waits for the checkers to read it, task 8192",
+          "commit": "b729805"
+        },
+        {
+          "text": "chore(release): version 0.7.30 and its release notes",
+          "commit": "9c0231f"
+        },
+        {
+          "text": "chore(seed): print batch 9a, printed by the 0.7.28 seed",
+          "commit": "c45d0fa"
+        },
+        {
+          "text": "fix(playground): c overflow is refuted at the int bounds, not hidden",
+          "commit": "595322a"
+        },
+        {
+          "text": "fix(tutor): flangtutor lists lessons with ls from PATH, not /bin/ls",
+          "commit": "35a8572"
+        },
+        {
+          "text": "fix(packaging): every install ships the independent proof checker",
+          "commit": "4a9a573"
+        },
+        {
+          "text": "fix(cli): check --proof finds the checker in libexec/flang beside bin",
+          "commit": "b7539d7"
+        },
+        {
+          "text": "feat(playground): every target language, c to flang and line numbers",
+          "commit": "c617267"
+        },
+        {
+          "text": "test(reasoning): fallacy texts are named by English words",
+          "commit": "859ed39"
+        },
+        {
+          "text": "test(reasoning): 63 texts pin fallacy names, hints and false hints",
+          "commit": "3da5d99"
+        },
+        {
+          "text": "feat(reasoning): free text is judged and its formal fallacy named",
+          "commit": "eba1610"
+        },
+        {
+          "text": "chore(numbers): marks, ledgers and site numbers follow print batch 9a",
+          "commit": "49e1029"
+        },
+        {
+          "text": "chore(proof): rule anchors and trust ceilings follow print batch 9a",
+          "commit": "5a9bf4e"
+        },
+        {
+          "text": "fix(emit-c): a name equal to a C word no longer stops the C print",
+          "commit": "20cd41f"
+        },
+        {
+          "text": "fix(parser): a binder named like a keyword is read back as that name",
+          "commit": "5c4fba2"
+        },
+        {
+          "text": "fix(lexer): a u-escape outside the hand table is read by its code",
+          "commit": "75a9bb8"
+        },
+        {
+          "text": "test(proof): strict probe rows for statements over flag records",
+          "commit": "b5897e0"
+        },
+        {
+          "text": "fix(check): refute statements over records of flags field by field",
+          "commit": "16baf06"
+        },
+        {
+          "text": "test(proof): probes for refuted statements and unknown properties",
+          "commit": "dec5081"
+        },
+        {
+          "text": "fix(check): refute statements at type edges, refuse unknown properties",
+          "commit": "18b9166"
+        },
+        {
+          "text": "fix(self): a lost statement is refused with its kind and line",
+          "commit": "909a325"
+        },
+        {
+          "text": "fix(self): a declaration that never reaches the ledger is refused",
+          "commit": "b48126e"
+        },
+        {
+          "text": "fix(self): theorems about categories reach the record, lost kinds fail",
+          "commit": "593617f"
+        },
+        {
+          "text": "feat(self): the kernel checks theorems about every category",
+          "commit": "80d93c9"
+        },
+        {
+          "text": "feat(checker): both checkers replay theorems about every category",
+          "commit": "277334c"
+        },
+        {
+          "text": "feat(lean): soundness lemmas for the laws of a category proof step",
+          "commit": "ca83006"
+        },
+        {
+          "text": "test(link): the namesake rebinding is a known violation until the print",
+          "commit": "5544b29"
+        },
+        {
+          "text": "test(link): probes for namesakes and helpers behind an only list",
+          "commit": "0b14653"
+        },
+        {
+          "text": "fix(link): a call binds where its own module binds it",
+          "commit": "4afbb4b"
+        },
+        {
+          "text": "test(probes): parse and import probes for issues 393 to 414",
+          "commit": "a9023d4"
+        },
+        {
+          "text": "feat(check): a namesake in the same directory is named on check",
+          "commit": "a6a0e5e"
+        },
+        {
+          "text": "fix(link): parse errors name their file and stop foreign statements",
+          "commit": "baecebb"
+        },
+        {
+          "text": "feat(parse): stories, list pattern names, case types, seed ranges",
+          "commit": "9095dbf"
+        },
+        {
+          "text": "fix(record): the restriction helper no longer shares a name in its file",
+          "commit": "012e084"
+        },
+        {
+          "text": "feat(playground): the host returns parsed answers, not terminal text",
+          "commit": "aee6f6e"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package, the checks follow it",
+          "commit": "7936da8"
+        },
+        {
+          "text": "fix(record): print a restriction whose bracket closes a line later",
+          "commit": "c0e76e1"
+        },
+        {
+          "text": "fix(stdlib): tls, tls-handshake and kdf pass check again",
+          "commit": "b9b38d2"
+        },
+        {
+          "text": "perf(self): field and definition lookups stop at the first match",
+          "commit": "77d263a"
+        }
+      ],
+      "hidden": 34
+    },
     {
       "version": "0.7.29",
       "tag": "v0.7.29",
@@ -13670,11 +13842,6 @@
     }
   ],
   "unreleased": {
-    "entries": [
-      {
-        "text": "chore(release): the tap serves flang-package, the checks follow it",
-        "commit": "7936da8"
-      }
-    ]
+    "entries": []
   }
 }

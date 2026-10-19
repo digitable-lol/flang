@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "7936da8032edfc99c95d4252acebcbb6d9c26b25",
-  "головаКоротко": "7936da803",
-  "головаДата": "2026-10-18",
-  "шаговСтвола": 4102,
-  "всегоКоммитов": 9159,
+  "голова": "93548785d78b0dae58a23edc7dd7707fea1466e4",
+  "головаКоротко": "93548785d",
+  "головаДата": "2026-10-19",
+  "шаговСтвола": 4132,
+  "всегоКоммитов": 9235,
   "измерители": [
     {
       "ключ": "js",
@@ -49,22 +49,22 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 124347,
-    "programm": 1024,
-    "totalnyh": 15036,
-    "obychnyh": 3275,
-    "teorem": 385,
+    "bliznec": 127431,
+    "programm": 1066,
+    "totalnyh": 15487,
+    "obychnyh": 3312,
+    "teorem": 403,
     "proverok": 3,
     "zametok": 0
   },
   "неизвестныеКорни": [
     {
-      "корень": "flang/translation",
-      "путей": 25
+      "корень": "flang/foreign",
+      "путей": 56
     },
     {
-      "корень": "flang/foreign",
-      "путей": 17
+      "корень": "flang/translation",
+      "путей": 25
     },
     {
       "корень": "flang/experimental",
@@ -92,6 +92,7 @@
     }
   ],
   "дни": [
+    "2026-10-19",
     "2026-10-18",
     "2026-10-17",
     "2026-10-16",
@@ -170,6 +171,217 @@
     "2026-08-01"
   ],
   "вливания": [
+    {
+      "коммит": "ab3f9b027",
+      "дата": "2026-10-19",
+      "заголовок": "Merge print batch 9a: the kernel finds fields without copies",
+      "ветка": null,
+      "приехало": 44,
+      "записи": [
+        {
+          "текст": "chore(seed): print batch 9a, printed by the 0.7.28 seed",
+          "коммит": "c45d0faf2"
+        },
+        {
+          "текст": "fix(tutor): flangtutor lists lessons with ls from PATH, not /bin/ls",
+          "коммит": "35a8572a2"
+        },
+        {
+          "текст": "fix(packaging): every install ships the independent proof checker",
+          "коммит": "4a9a573fe"
+        },
+        {
+          "текст": "fix(cli): check --proof finds the checker in libexec/flang beside bin",
+          "коммит": "b7539d7e3"
+        },
+        {
+          "текст": "chore(numbers): marks, ledgers and site numbers follow print batch 9a",
+          "коммит": "49e102946"
+        },
+        {
+          "текст": "chore(proof): rule anchors and trust ceilings follow print batch 9a",
+          "коммит": "5a9bf4ea7"
+        },
+        {
+          "текст": "fix(emit-c): a name equal to a C word no longer stops the C print",
+          "коммит": "20cd41f4f"
+        },
+        {
+          "текст": "fix(parser): a binder named like a keyword is read back as that name",
+          "коммит": "5c4fba2e4"
+        },
+        {
+          "текст": "fix(lexer): a u-escape outside the hand table is read by its code",
+          "коммит": "75a9bb834"
+        },
+        {
+          "текст": "test(proof): strict probe rows for statements over flag records",
+          "коммит": "b5897e06c"
+        },
+        {
+          "текст": "fix(check): refute statements over records of flags field by field",
+          "коммит": "16baf065a"
+        },
+        {
+          "текст": "test(proof): probes for refuted statements and unknown properties",
+          "коммит": "dec508114"
+        },
+        {
+          "текст": "fix(check): refute statements at type edges, refuse unknown properties",
+          "коммит": "18b916648"
+        },
+        {
+          "текст": "fix(self): a lost statement is refused with its kind and line",
+          "коммит": "909a32502"
+        },
+        {
+          "текст": "fix(self): a declaration that never reaches the ledger is refused",
+          "коммит": "b48126e98"
+        },
+        {
+          "текст": "fix(self): theorems about categories reach the record, lost kinds fail",
+          "коммит": "593617f50"
+        },
+        {
+          "текст": "feat(self): the kernel checks theorems about every category",
+          "коммит": "80d93c926"
+        },
+        {
+          "текст": "feat(checker): both checkers replay theorems about every category",
+          "коммит": "277334cf1"
+        },
+        {
+          "текст": "feat(lean): soundness lemmas for the laws of a category proof step",
+          "коммит": "ca83006ef"
+        },
+        {
+          "текст": "test(link): the namesake rebinding is a known violation until the print",
+          "коммит": "5544b29f7"
+        },
+        {
+          "текст": "test(link): probes for namesakes and helpers behind an only list",
+          "коммит": "0b1465316"
+        },
+        {
+          "текст": "fix(link): a call binds where its own module binds it",
+          "коммит": "4afbb4bd6"
+        },
+        {
+          "текст": "test(probes): parse and import probes for issues 393 to 414",
+          "коммит": "a9023d40b"
+        },
+        {
+          "текст": "feat(check): a namesake in the same directory is named on check",
+          "коммит": "a6a0e5e85"
+        },
+        {
+          "текст": "fix(link): parse errors name their file and stop foreign statements",
+          "коммит": "baecebbac"
+        },
+        {
+          "текст": "feat(parse): stories, list pattern names, case types, seed ranges",
+          "коммит": "9095dbfcb"
+        },
+        {
+          "текст": "fix(record): the restriction helper no longer shares a name in its file",
+          "коммит": "012e084f5"
+        },
+        {
+          "текст": "fix(record): print a restriction whose bracket closes a line later",
+          "коммит": "c0e76e137"
+        },
+        {
+          "текст": "fix(stdlib): tls, tls-handshake and kdf pass check again",
+          "коммит": "b9b38d2ec"
+        },
+        {
+          "текст": "perf(self): field and definition lookups stop at the first match",
+          "коммит": "77d263a1a"
+        }
+      ],
+      "скрыто": 13,
+      "числа": {
+        "js": 0,
+        "bliznec": 127431,
+        "programm": 1066,
+        "totalnyh": 15487,
+        "obychnyh": 3312,
+        "teorem": 403,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {
+        "bliznec": {
+          "было": 124347,
+          "стало": 127431
+        },
+        "programm": {
+          "было": 1025,
+          "стало": 1066
+        },
+        "totalnyh": {
+          "было": 15172,
+          "стало": 15487
+        },
+        "obychnyh": {
+          "было": 3275,
+          "стало": 3312
+        },
+        "teorem": {
+          "было": 385,
+          "стало": 403
+        }
+      }
+    },
+    {
+      "коммит": "c08091024",
+      "дата": "2026-10-19",
+      "заголовок": "Merge PR #452: release titles for programmers",
+      "ветка": null,
+      "приехало": 2,
+      "записи": [],
+      "скрыто": 1,
+      "числа": {
+        "js": 0,
+        "bliznec": 124347,
+        "programm": 1025,
+        "totalnyh": 15172,
+        "obychnyh": 3275,
+        "teorem": 385,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {}
+    },
+    {
+      "коммит": "a910cb7e4",
+      "дата": "2026-10-19",
+      "заголовок": "Merge PR #456: Python enters flang through an untrusted translator",
+      "ветка": null,
+      "приехало": 3,
+      "записи": [],
+      "скрыто": 2,
+      "числа": {
+        "js": 0,
+        "bliznec": 124347,
+        "programm": 1025,
+        "totalnyh": 15172,
+        "obychnyh": 3275,
+        "teorem": 385,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {
+        "programm": {
+          "было": 1024,
+          "стало": 1025
+        },
+        "totalnyh": {
+          "было": 15036,
+          "стало": 15172
+        }
+      }
+    },
     {
       "коммит": "f1e954e44",
       "дата": "2026-10-18",
@@ -40936,8 +41148,50 @@
   ],
   "прямые": [
     {
+      "дата": "2026-10-19",
+      "записи": [
+        {
+          "текст": "chore(release): sha256 of the 0.7.30 archive",
+          "коммит": "93548785d"
+        },
+        {
+          "текст": "test(probes): a story waits for the checkers to read it, task 8192",
+          "коммит": "b729805e9"
+        },
+        {
+          "текст": "chore(release): version 0.7.30 and its release notes",
+          "коммит": "9c0231f2f"
+        },
+        {
+          "текст": "fix(playground): c overflow is refuted at the int bounds, not hidden",
+          "коммит": "595322aa3"
+        },
+        {
+          "текст": "feat(playground): every target language, c to flang and line numbers",
+          "коммит": "c61726785"
+        }
+      ],
+      "скрыто": 9
+    },
+    {
       "дата": "2026-10-18",
       "записи": [
+        {
+          "текст": "test(reasoning): fallacy texts are named by English words",
+          "коммит": "859ed39fe"
+        },
+        {
+          "текст": "test(reasoning): 63 texts pin fallacy names, hints and false hints",
+          "коммит": "3da5d991a"
+        },
+        {
+          "текст": "feat(reasoning): free text is judged and its formal fallacy named",
+          "коммит": "eba16106e"
+        },
+        {
+          "текст": "feat(playground): the host returns parsed answers, not terminal text",
+          "коммит": "aee6f6e1c"
+        },
         {
           "текст": "chore(release): the tap serves flang-package, the checks follow it",
           "коммит": "7936da803"
@@ -40979,7 +41233,7 @@
           "коммит": "6882b72de"
         }
       ],
-      "скрыто": 35
+      "скрыто": 44
     },
     {
       "дата": "2026-10-17",

@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/translation` (путей 25), `flang/foreign` (путей 17), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 25), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,20 +33,85 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `7936da803` от 18 октября 2026. Шагов ствола 4102, из них вливаний 1213; коммитов в истории 9159.
+Дерево на коммите `93548785d` от 19 октября 2026. Шагов ствола 4132, из них вливаний 1216; коммитов в истории 9235.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 124347 | +8702 | −7051 |
-| Программ на flang | 1024 | +265 | +463 |
-| Объявлений `тотальная функция` | 15036 | +2415 | +985 |
-| Объявлений `функция` | 3275 | +725 | +833 |
-| Объявлений `теорема` | 385 | +75 | +101 |
+| Эталон компилятора на flang | 127431 | +3084 | −3967 |
+| Программ на flang | 1066 | +41 | +505 |
+| Объявлений `тотальная функция` | 15487 | +315 | +1436 |
+| Объявлений `функция` | 3312 | +37 | +870 |
+| Объявлений `теорема` | 403 | +18 | +119 |
 | Файлов проверок | 3 | 0 | 0 |
-| Заметок базы знаний | 0 | −728 | −672 |
+| Заметок базы знаний | 0 | 0 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 19 октября 2026
+
+**Merge print batch 9a: the kernel finds fields without copies**
+
+`ab3f9b027` · коммитов 44
+
+Сдвинулось: эталон компилятора на flang 124347 → 127431 (+3084); программ на flang 1025 → 1066 (+41); объявлений `тотальная функция` 15172 → 15487 (+315); объявлений `функция` 3275 → 3312 (+37); объявлений `теорема` 385 → 403 (+18).
+
+- chore(seed): print batch 9a, printed by the 0.7.28 seed (`c45d0faf2`)
+- fix(tutor): flangtutor lists lessons with ls from PATH, not /bin/ls (`35a8572a2`)
+- fix(packaging): every install ships the independent proof checker (`4a9a573fe`)
+- fix(cli): check --proof finds the checker in libexec/flang beside bin (`b7539d7e3`)
+- chore(numbers): marks, ledgers and site numbers follow print batch 9a (`49e102946`)
+- chore(proof): rule anchors and trust ceilings follow print batch 9a (`5a9bf4ea7`)
+- fix(emit-c): a name equal to a C word no longer stops the C print (`20cd41f4f`)
+- fix(parser): a binder named like a keyword is read back as that name (`5c4fba2e4`)
+- fix(lexer): a u-escape outside the hand table is read by its code (`75a9bb834`)
+- test(proof): strict probe rows for statements over flag records (`b5897e06c`)
+- fix(check): refute statements over records of flags field by field (`16baf065a`)
+- test(proof): probes for refuted statements and unknown properties (`dec508114`)
+- fix(check): refute statements at type edges, refuse unknown properties (`18b916648`)
+- fix(self): a lost statement is refused with its kind and line (`909a32502`)
+- fix(self): a declaration that never reaches the ledger is refused (`b48126e98`)
+- fix(self): theorems about categories reach the record, lost kinds fail (`593617f50`)
+- feat(self): the kernel checks theorems about every category (`80d93c926`)
+- feat(checker): both checkers replay theorems about every category (`277334cf1`)
+- feat(lean): soundness lemmas for the laws of a category proof step (`ca83006ef`)
+- test(link): the namesake rebinding is a known violation until the print (`5544b29f7`)
+- test(link): probes for namesakes and helpers behind an only list (`0b1465316`)
+- fix(link): a call binds where its own module binds it (`4afbb4bd6`)
+- test(probes): parse and import probes for issues 393 to 414 (`a9023d40b`)
+- feat(check): a namesake in the same directory is named on check (`a6a0e5e85`)
+- fix(link): parse errors name their file and stop foreign statements (`baecebbac`)
+- feat(parse): stories, list pattern names, case types, seed ranges (`9095dbfcb`)
+- fix(record): the restriction helper no longer shares a name in its file (`012e084f5`)
+- fix(record): print a restriction whose bracket closes a line later (`c0e76e137`)
+- fix(stdlib): tls, tls-handshake and kdf pass check again (`b9b38d2ec`)
+- perf(self): field and definition lookups stop at the first match (`77d263a1a`)
+
+Ещё 13 правок языка снаружи не меняют.
+
+**Merge PR #452: release titles for programmers**
+
+`c08091024` · коммитов 2
+
+Ещё 1 правка языка снаружи не меняет.
+
+**Merge PR #456: Python enters flang through an untrusted translator**
+
+`a910cb7e4` · коммитов 3
+
+Сдвинулось: программ на flang 1024 → 1025 (+1); объявлений `тотальная функция` 15036 → 15172 (+136).
+
+Ещё 2 правки языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): sha256 of the 0.7.30 archive (`93548785d`)
+- test(probes): a story waits for the checkers to read it, task 8192 (`b729805e9`)
+- chore(release): version 0.7.30 and its release notes (`9c0231f2f`)
+- fix(playground): c overflow is refuted at the int bounds, not hidden (`595322aa3`)
+- feat(playground): every target language, c to flang and line numbers (`c61726785`)
+
+Ещё 9 правок языка снаружи не меняют.
 
 ## 18 октября 2026
 
@@ -85,6 +150,10 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- test(reasoning): fallacy texts are named by English words (`859ed39fe`)
+- test(reasoning): 63 texts pin fallacy names, hints and false hints (`3da5d991a`)
+- feat(reasoning): free text is judged and its formal fallacy named (`eba16106e`)
+- feat(playground): the host returns parsed answers, not terminal text (`aee6f6e1c`)
 - chore(release): the tap serves flang-package, the checks follow it (`7936da803`)
 - chore(release): sha256 of the 0.7.29 archive and the full notes (`2a71e57b8`)
 - chore(release): version 0.7.29 and its release notes (`2b7b6c5e7`)
@@ -96,7 +165,7 @@
 - build(seed): reseed the runtime mirror after rebase (`a88b960e5`)
 - build(seed): take the runtime mirror of dev before reseeding (`6882b72de`)
 
-Ещё 35 правок языка снаружи не меняют.
+Ещё 44 правки языка снаружи не меняют.
 
 ## 17 октября 2026
 

@@ -1,0 +1,74 @@
+модуль «Formula in the browser»
+  использует «JSON» из "../../stdlib/json.flang"
+  использует «Formula notation» из "notation.fscript"
+  использует «Formula from tree» из "tree.fscript"
+
+примечание "Тот же переводчик формул, что у планов Read и Print, но без файлов и процессов:"
+примечание "строка на входе, запись на выходе. Его печатает в JavaScript сборка песочницы."
+
+объект «Reading»
+  «code»: строка
+  «why»: строка
+  «plain»: строка
+  «tex»: строка
+  «unit»: строка
+
+объект «Printing»
+  «plain»: строка
+  «tex»: строка
+  «why»: строка
+
+тотальная функция «Refused reading»
+  принимает code: строка, why: строка
+  возвращает «Reading»
+  запись «Reading» с «code» равным code и «why» равным why и «plain» равным "" и «tex» равным "" и «unit» равным ""
+
+тотальная функция «Read reading»
+  принимает name: строка, said: «Claim»
+  возвращает «Reading»
+  пусть plain равно («Printed claim» от said и "unicode")
+  пусть tex равно («Printed claim» от said и "latex")
+  пусть unit равно («Flang module» от name и said)
+  запись «Reading» с «code» равным "" и «why» равным "" и «plain» равным plain и «tex» равным tex и «unit» равным unit
+
+функция «Read for page»
+  принимает notation: строка, text: строка, name: строка
+  возвращает «Reading»
+  разбор («Read formula» от notation и text)
+    случай вариант «Claim read» с said как said
+      то «Read reading» от name и said
+    случай вариант «Claim refused» с code как code и message как message
+      то «Refused reading» от code и message
+
+тотальная функция «Outside printing»
+  принимает why: строка
+  возвращает «Printing»
+  пример «A statement outside the notation prints nothing and says why»
+    дано why равно "тип вне записи"
+    ожидается запись «Printing» с «plain» равным "" и «tex» равным "" и «why» равным "тип вне записи"
+  запись «Printing» с «plain» равным "" и «tex» равным "" и «why» равным why
+
+тотальная функция «Printed claim for page»
+  принимает said: «Claim»
+  возвращает «Printing»
+  пусть plain равно («Printed claim» от said и "unicode")
+  пусть tex равно («Printed claim» от said и "latex")
+  запись «Printing» с «plain» равным plain и «tex» равным tex и «why» равным ""
+
+тотальная функция «Printed for page»
+  принимает converted: «Claim converted»
+  возвращает «Printing»
+  разбор converted
+    случай вариант «Claim converted to» с said как said
+      то «Printed claim for page» от said
+    случай вариант «Claim outside» с reason как r
+      то «Outside printing» от r
+
+функция «Print for page»
+  принимает node: строка
+  возвращает «Printing»
+  разбор («Разобрать json» от node)
+    случай вариант «Разобран json» с значение как v
+      то «Printed for page» от («Claim of statement» от v)
+    случай вариант «Не разобран json» с причина как r
+      то «Outside printing» от r

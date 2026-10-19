@@ -37,7 +37,7 @@ fi
 if [ "$prebuilt" = yes ]; then
   # Готовая сборка: bin, share (рантаймы целей, уроки, man), на macOS ещё lib
   # и include — та же раскладка, что кладёт сборка ниже.
-  for dir in bin share lib include; do
+  for dir in bin libexec share lib include; do
     if [ -d "${ASDF_DOWNLOAD_PATH}/${dir}" ]; then
       mkdir -p "${ASDF_INSTALL_PATH}/${dir}"
       cp -R "${ASDF_DOWNLOAD_PATH}/${dir}/." "${ASDF_INSTALL_PATH}/${dir}/"
@@ -65,6 +65,14 @@ else
 
   mkdir -p "${ASDF_INSTALL_PATH}/bin" "${ASDF_INSTALL_PATH}/lib" "${ASDF_INSTALL_PATH}/include"
   install -m 0755 "$built" "${ASDF_INSTALL_PATH}/bin/flang"
+
+  # Независимый сверщик доказательств: `flang check --proof` ищет его в
+  # ../libexec/flang/checker рядом с собой. Архивы до 0.7.30 checker.c не несут.
+  if [ -f "${build}/checker.c" ]; then
+    ${CC:-cc} -std=c99 -O2 -o "${build}/flang-checker" "${build}/checker.c" -lm
+    mkdir -p "${ASDF_INSTALL_PATH}/libexec/flang"
+    install -m 0755 "${build}/flang-checker" "${ASDF_INSTALL_PATH}/libexec/flang/checker"
+  fi
 
   # Проводник по языку — тем же условием, что и в формуле Homebrew: плагин ставит
   # И СТАРЫЕ выпуски, а до 0.7.17 архив проводника не нёс. Найдено владельцем:

@@ -12,8 +12,8 @@
 # with one top directory flang-package-VERSION-OS-ARCH/ holding the layout
 # Homebrew and asdf install today:
 #
-#   bin/flang  bin/flangtutor  share/flang/<target>/  share/flang-tutor/
-#   share/man/man1/flang.1  LICENSE
+#   bin/flang  bin/flangtutor  libexec/flang/checker  share/flang/<target>/
+#   share/flang-tutor/  share/man/man1/flang.1  LICENSE
 #   lib/ include/            macOS only, see below
 #
 # The binary is built from the C archive, not from the tree: the published
@@ -29,6 +29,11 @@
 #
 # macOS: the flags of the Homebrew formula (no -flto), so lib/ and include/ are
 # ordinary objects the system clang links and the shell evaluates expressions.
+#
+# libexec/flang/checker is the independent proof checker, built from checker.c
+# of the archive: `flang check --proof` runs it from ../libexec/flang/checker
+# next to its own binary. Archives before 0.7.30 have no checker.c, and the
+# tarball then has no checker.
 set -eu
 
 if [ "$#" -ne 4 ]; then
@@ -62,14 +67,20 @@ trap 'rm -rf "$work"' EXIT
 mkdir "$work/src"
 tar -xzf "$archive" -C "$work/src"
 
+checker_flags="-std=c99 -O2"
 case "$os" in
   linux)
     make -C "$work/src" -j"$jobs" LDLIBS="-lm -lpthread -static" flang
+    checker_flags="$checker_flags -static"
     ;;
   macos)
     make -C "$work/src" -j"$jobs" CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic -O2"
     ;;
 esac
+if [ -f "$work/src/checker.c" ]; then
+  # shellcheck disable=SC2086 # the flags are words on purpose
+  ${CC:-cc} $checker_flags -o "$work/src/flang-checker" "$work/src/checker.c" -lm
+fi
 
 root="$work/$name"
 mkdir -p "$root/bin" "$root/share/man/man1" "$root/share/flang"
@@ -78,6 +89,11 @@ chmod 0755 "$root/bin/flang"
 if [ -f "$work/src/flangtutor" ]; then
   cp "$work/src/flangtutor" "$root/bin/flangtutor"
   chmod 0755 "$root/bin/flangtutor"
+fi
+if [ -f "$work/src/flang-checker" ]; then
+  mkdir -p "$root/libexec/flang"
+  cp "$work/src/flang-checker" "$root/libexec/flang/checker"
+  chmod 0755 "$root/libexec/flang/checker"
 fi
 if [ -d "$work/src/tutor" ]; then
   mkdir -p "$root/share/flang-tutor"
@@ -94,7 +110,7 @@ if [ "$os" = macos ]; then
   cp "$work/src"/*.h "$root/include/"
 fi
 find "$root" -type d -exec chmod 0755 {} +
-find "$root" -type f ! -path "$root/bin/*" -exec chmod 0644 {} +
+find "$root" -type f ! -path "$root/bin/*" ! -path "$root/libexec/flang/checker" -exec chmod 0644 {} +
 
 # GNU tar when there is one (gtar on macOS): sorted names, zero owners and
 # times, so two packings of the same files give the same bytes.

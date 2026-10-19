@@ -1,0 +1,1955 @@
+модуль «Reasoning check»
+  использует «Rules» из "../../../../../scripts/rules.fscript"
+  использует «Lists» только «Соединить списки»
+  использует «Reasoning sentences» из "translator.flang"
+  использует «Russian morphology» из "../../../../experimental/ru-morphology.flang"
+  использует «Russian pregroup» из "../../../../ct/russian/pregroup.flang"
+
+примечание "Проверка рассуждения человека целиком. Свободный текст из нескольких
+предложений делится на посылки и вывод по словам «следовательно», «значит»,
+«поэтому», «так как», «потому что»; словарь понятий, свойств и имён, которого
+человек не написал, наполняет морфология (ADR-0060); переводчик предложений
+печатает программу, ядро её судит. Когда вывод не следует, здесь же называется
+формальная ошибка по правилам силлогистики. Неформальные ошибки здесь не
+доказываются: для пяти узнаваемых образцов есть подсказки, и каждая помечена
+«возможная ошибка, проверьте сами» — вердиктом подсказка не бывает никогда."
+
+примечание "Модуль стоит вне компилятора, как переводчик формул (ADR-0106): он
+ничего не доказывает сам. Приговор «следует» или «не следует» говорит ядро;
+имя ошибки — это разбор той же формы по правилам распределения терминов, и
+он называет, какое правило нарушено, а не решает, нарушено ли."
+
+объект «Claim line»
+  «text»: строка
+  «concludes»: признак
+
+тотальная функция «Conclusion words»
+  возвращает список строки
+  пример «The words that open a conclusion»
+    ожидается ["следовательно", "значит", "поэтому", "итак", "отсюда", "выходит"]
+  ["следовательно", "значит", "поэтому", "итак", "отсюда", "выходит"]
+
+тотальная функция «Reason joints»
+  возвращает список строки
+  пример «The words that bring a reason behind the claim»
+    ожидается [", так как ", ", потому что ", ", поскольку ", ", ибо "]
+  [", так как ", ", потому что ", ", поскольку ", ", ибо "]
+
+тотальная функция «Conclusion joints»
+  возвращает список строки
+  пример «The words that bring a conclusion behind the reason»
+    ожидается [", значит, ", ", следовательно, ", ", поэтому ", " — значит, ", ", значит "]
+  [", значит, ", ", следовательно, ", ", поэтому ", " — значит, ", ", значит "]
+
+тотальная функция «Bare word»
+  принимает token: строка
+  возвращает строка
+  пример «A comma and a capital are dropped»
+    дано token равно "Значит,"
+    ожидается "значит"
+  «Lowered» от («Replaced» от («Replaced» от token и "," и "") и ":" и "")
+
+тотальная функция «Words behind the first»
+  принимает sentence: строка
+  возвращает строка
+  пример «The opening word and its comma are dropped»
+    дано sentence равно "Значит, Сократ смертен"
+    ожидается "Сократ смертен"
+  соединить («Without the first» от («Spaced words» от sentence)) по " "
+
+тотальная функция «Opens with a conclusion word»
+  принимает sentence: строка
+  возвращает признак
+  пример «"Значит" opens a conclusion»
+    дано sentence равно "Значит, Сократ смертен"
+    ожидается да
+  пример «A premise opens with its subject»
+    дано sentence равно "Все люди смертны"
+    ожидается нет
+  («Conclusion words») содержит («Bare word» от («First of» от («Spaced words» от sentence)))
+
+тотальная функция «Cut at»
+  принимает text: строка, joint: строка
+  возвращает список строки
+  пример «The text is cut once, at the first joint»
+    дано text равно "А, так как Б, так как В"
+    дано joint равно ", так как "
+    ожидается ["А", "Б, так как В"]
+  пример «Without the joint there is no cut»
+    дано text равно "А и Б"
+    дано joint равно ", так как "
+    ожидается пустой список
+  разбор (разделить text по joint)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если пусто хвост то пустой список иначе [«Trimmed» от голова, «Trimmed» от (соединить хвост по joint)])
+
+тотальная функция «First cut»
+  принимает text: строка, joints: список строки
+  возвращает список строки
+  пример «The first joint that cuts wins»
+    дано text равно "Сократ смертен, потому что он человек"
+    дано joints равно [", так как ", ", потому что "]
+    ожидается ["Сократ смертен", "он человек"]
+  (свёртка joints начиная с (пустой список) как found и joint → если пусто found то («Cut at» от text
+      и joint) иначе found)
+
+тотальная функция «Premise line»
+  принимает text: строка
+  возвращает «Claim line»
+  пример «A premise keeps its words»
+    дано text равно "Все люди смертны"
+    ожидается запись «Claim line» с «text» равным "Все люди смертны" и «concludes» равным нет
+  запись «Claim line» с «text» равным text и «concludes» равным нет
+
+тотальная функция «Conclusion line»
+  принимает text: строка
+  возвращает «Claim line»
+  пример «A conclusion is spelt with the mark the translator reads»
+    дано text равно "Сократ смертен"
+    ожидается запись «Claim line» с «text» равным "Следовательно, Сократ смертен" и «concludes» равным да
+  запись «Claim line» с «text» равным (соединить ["Следовательно, ", text] по "") и «concludes» равным да
+
+тотальная функция «Reasons of»
+  принимает text: строка
+  возвращает список «Claim line»
+  пример «Two reasons joined by "и" are two premises»
+    дано text равно "все люди смертны и Сократ — человек"
+    ожидается ([(запись «Claim line» с «text» равным "все люди смертны" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Сократ — человек" и «concludes» равным нет)])
+  (отобразить (отфильтровать (отобразить (разделить text
+      по " и ") как piece → «Trimmed» от piece) где piece → не (пусто piece)) как piece → «Premise line» от piece)
+
+тотальная функция «Since lead»
+  принимает sentence: строка
+  возвращает строка
+  пример «"Так как" leads the reason»
+    дано sentence равно "Так как все люди смертны, то Сократ смертен"
+    ожидается "все люди смертны, то Сократ смертен"
+  пример «"Поскольку" leads the reason»
+    дано sentence равно "Поскольку все люди смертны, Сократ смертен"
+    ожидается "все люди смертны, Сократ смертен"
+  пример «Any other sentence has no lead»
+    дано sentence равно "Все люди смертны"
+    ожидается ""
+  («Chosen» от [(«When» от ((sentence начинается с "Так как ") или (sentence начинается с "так как "))
+      и («Words behind the first» от («Words behind the first» от sentence))),
+      («When» от ((sentence начинается с "Поскольку ") или (sentence начинается с "поскольку "))
+      и («Words behind the first» от sentence))] и "")
+
+тотальная функция «Since lines»
+  принимает body: строка
+  возвращает список «Claim line»
+  пример «"Так как А, то Б" gives the reason first and the conclusion last»
+    дано body равно "все люди смертны, то Сократ смертен"
+    ожидается ([(запись «Claim line» с «text» равным "все люди смертны" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, Сократ смертен" и «concludes» равным да)])
+  пусть parts равно («First cut» от body и [", то ", ", "])
+  если (длина parts) равен 2
+    то добавить («Conclusion line» от («Form at» от parts и 2)) к («Reasons of» от («Form at» от parts и 1))
+    иначе [«Premise line» от body]
+
+тотальная функция «Claim lines of sentence»
+  принимает sentence: строка
+  возвращает список «Claim line»
+  пример «A conclusion word opens the conclusion»
+    дано sentence равно "Значит, Сократ смертен"
+    ожидается [запись «Claim line» с «text» равным "Следовательно, Сократ смертен" и «concludes» равным да]
+  пример «A reason behind the claim makes the claim the conclusion»
+    дано sentence равно "Сократ смертен, так как все люди смертны и Сократ — человек"
+    ожидается ([(запись «Claim line» с «text» равным "все люди смертны" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Сократ — человек" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, Сократ смертен" и «concludes» равным да)])
+  пример «A conclusion behind the reason in one sentence»
+    дано sentence равно "Ты не разбираешься в физике, значит, ты неправ"
+    ожидается ([(запись «Claim line» с «text» равным "Ты не разбираешься в физике" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да)])
+  пример «A plain sentence is a premise»
+    дано sentence равно "Все люди смертны"
+    ожидается [запись «Claim line» с «text» равным "Все люди смертны" и «concludes» равным нет]
+  пусть reasoned равно («First cut» от sentence и («Reason joints»))
+  пусть concluded равно («First cut» от sentence и («Conclusion joints»))
+  («Chosen» от [(«When» от («Opens with a conclusion word» от sentence)
+      и [«Conclusion line» от («Words behind the first» от sentence)]),
+      («When» от (не (пусто («Since lead» от sentence))) и («Since lines» от («Since lead» от sentence))),
+      («When» от ((длина reasoned) равен 2) и (добавить («Conclusion line» от («Form at» от reasoned
+      и 1)) к («Reasons of» от («Form at» от reasoned и 2)))),
+      («When» от ((длина concluded) равен 2) и [«Premise line» от («Form at» от concluded и 1),
+      «Conclusion line» от («Form at» от concluded и 2)])] и [«Premise line» от sentence])
+
+тотальная функция «Text sentences»
+  принимает text: строка
+  возвращает список строки
+  пример «Exclamation and question marks end a sentence too»
+    дано text равно "Все так делают! Разве нет? Значит, это нормально."
+    ожидается ["Все так делают", "Разве нет", "Значит, это нормально"]
+  «Sentences of» от («Replaced» от («Replaced» от («Replaced» от text и "!" и ".") и "?" и ".") и "…" и ".")
+
+тотальная функция «Claim lines of»
+  принимает text: строка
+  возвращает список «Claim line»
+  пример «Premises come first and the conclusion last, whatever the order in the text»
+    дано text равно "Понятие: человек, люди. Сократ смертен, так как все люди смертны и Сократ — человек."
+    ожидается ([(запись «Claim line» с «text» равным "все люди смертны" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Сократ — человек" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, Сократ смертен" и «concludes» равным да)])
+  пусть every равно (свёртка (отфильтровать («Text sentences» от text) где sentence → пусто («Kind of» от sentence))
+      начиная с (пустой список) как gathered и sentence → «Соединить списки» от gathered
+      и («Claim lines of sentence» от sentence))
+  («Соединить списки» от (отфильтровать every где line → не (line.«concludes»))
+      и (отфильтровать every где line → line.«concludes»))
+
+тотальная функция «Declaration lines of»
+  принимает text: строка
+  возвращает список строки
+  пример «Only the dictionary lines are kept»
+    дано text равно "Понятие: человек, люди. Все люди смертны."
+    ожидается ["Понятие: человек, люди"]
+  отфильтровать («Text sentences» от text) где sentence → не (пусто («Kind of» от sentence))
+
+объект «Slot»
+  «form»: строка
+  «kind»: строка
+  «many»: признак
+  «opens»: признак
+
+тотальная функция «Words kept with dashes»
+  принимает sentence: строка
+  возвращает список строки
+  пример «The dash stays a word»
+    дано sentence равно "Следовательно, Сократ — человек"
+    ожидается ["Следовательно", "Сократ", "—", "человек"]
+  «Spaced words» от («Replaced» от sentence и "," и " ")
+
+тотальная функция «Is a dash»
+  принимает token: строка
+  возвращает признак
+  пример «Three dashes»
+    дано token равно "–"
+    ожидается да
+  ["—", "–", "-"] содержит token
+
+тотальная функция «Slot»
+  принимает form: строка, kind: строка, many: признак, opens: признак
+  возвращает «Slot»
+  пример «A slot names its form and its place»
+    дано form равно "люди"
+    дано kind равно "понятие"
+    дано many равно да
+    дано opens равно нет
+    ожидается запись «Slot» с «form» равным "люди" и «kind» равным "понятие" и «many» равным да и «opens» равным нет
+  запись «Slot» с «form» равным form и «kind» равным kind и «many» равным many и «opens» равным opens
+
+тотальная функция «Claim words of»
+  принимает tokens: список строки
+  возвращает список строки
+  пример «The conclusion mark is not a word of the claim»
+    дано tokens равно ["Следовательно", "Сократ", "смертен"]
+    ожидается ["Сократ", "смертен"]
+  если («Conclusion words») содержит («Bare word» от
+      («First of» от tokens)) то («Without the first» от tokens) иначе tokens
+
+тотальная функция «Slots of claim»
+  принимает sentence: строка
+  возвращает список «Slot»
+  пример «A universal premise asks for a notion in the plural and a property in the plural»
+    дано sentence равно "Все люди смертны"
+    ожидается ([(запись «Slot» с «form» равным "люди" и «kind» равным "понятие" и «many» равным да
+        и «opens» равным нет), (запись «Slot» с «form» равным "смертны" и «kind» равным "свойство" и «many» равным да
+        и «opens» равным нет), (запись «Slot» с «form» равным "смертны" и «kind» равным "понятие" и «many» равным да
+        и «opens» равным нет)])
+  пример «A sentence about one asks for a name and a notion behind the dash»
+    дано sentence равно "Следовательно, Барсик — мохнатый"
+    ожидается ([(запись «Slot» с «form» равным "Барсик" и «kind» равным "имя" и «many» равным нет
+        и «opens» равным нет), (запись «Slot» с «form» равным "мохнатый" и «kind» равным "понятие" и «many» равным нет
+        и «opens» равным нет)])
+  пример «"Ни один" asks for the singular, and only the form decides its predicate»
+    дано sentence равно "Ни один кит не рыба"
+    ожидается ([(запись «Slot» с «form» равным "кит" и «kind» равным "понятие" и «many» равным нет
+        и «opens» равным нет), (запись «Slot» с «form» равным "рыба" и «kind» равным "свойство?" и «many» равным нет
+        и «opens» равным нет), (запись «Slot» с «form» равным "рыба" и «kind» равным "понятие?" и «many» равным нет
+        и «opens» равным нет)])
+  пусть tokens равно («Words kept with dashes» от sentence)
+  пусть bared равно («Claim words of» от tokens)
+  пусть marked равно (не ((длина bared) равен (длина tokens)))
+  пусть opening равно («Lowered» от («First of» от bared))
+  пусть pattern равно («Chosen» от [(«When» от (opening равен "все") и "all"),
+      («When» от (opening равен "некоторые") и "some"), («When» от (opening равен "ни") и "none")] и "one")
+  пусть rest равно («Chosen» от [(«When» от (pattern равен "none")
+      и («Without the first» от («Without the first» от bared))),
+      («When» от (pattern равен "one") и bared)] и («Without the first» от bared))
+  пусть subject равно («First of» от rest)
+  пусть behind равно («Without the first» от rest)
+  пусть dashed равно («Is a dash» от («First of» от behind))
+  пусть opener равно (если dashed то («Without the first» от behind) иначе behind)
+  пусть spoken равно (если («First of» от opener) равен "не" то («First of» от («Without the first» от opener)) иначе
+      («First of» от opener))
+  пусть plural равно ((pattern равен "all") или (pattern равен "some"))
+  пусть head равно («Slot» от subject и (если pattern равен "one" то "имя" иначе "понятие") и plural
+      и ((pattern равен "one") и притом (не marked)))
+  пусть loose равно (если pattern равен "none" то "?" иначе "")
+  пусть said равно («Slot» от spoken и (если dashed то "понятие" иначе (соединить ["свойство",
+      loose] по "")) и plural и нет)
+  пусть also равно («Slot» от (если dashed то "" иначе spoken) и (соединить ["понятие", loose] по "") и plural и нет)
+  отфильтровать [head, said, also] где slot → не (пусто (slot.«form»))
+
+тотальная функция «Settled readings of»
+  принимает slot: «Slot»
+  возвращает список «Candidate»
+  пример «A full adjective is read as a notion with both forms»
+    дано slot равно (запись «Slot» с «form» равным "мохнатый" и «kind» равным "понятие" и «many» равным нет
+        и «opens» равным нет)
+    ожидается ([(запись «Candidate» с «entry» равным (запись «Entry» с «kind» равным "понятие"
+        и «forms» равным (запись «Forms» с «one» равным "мохнатый" и «many» равным "мохнатые" и «she» равным ""
+        и «it» равным "") и «gender» равным "он") и «gaps» равным пустой список)])
+  пример «A form that also reads as a verb is not taken for a property»
+    дано slot равно (запись «Slot» с «form» равным "светит" и «kind» равным "свойство" и «many» равным нет
+        и «opens» равным нет)
+    ожидается пустой список
+  пример «Where the place does not decide, a form with two classes is left to the human»
+    дано slot равно (запись «Slot» с «form» равным "кит" и «kind» равным "свойство?" и «many» равным нет
+        и «opens» равным нет)
+    ожидается пустой список
+  пусть every равно («Candidates of» от (slot.«form») и (slot.«opens»))
+  пусть kind равно («Base kind» от (slot.«kind»))
+  пусть strict равно (не (kind равен (slot.«kind»)))
+  пусть rival равно (свёртка every начиная с нет как found и cand → found или (не (((cand.«entry»).«kind») равен kind)))
+  пусть verbal равно ((kind равен "свойство") и притом (не (пусто («Verb types by ending» от (slot.«form»)))))
+  если (strict и притом rival) или verbal
+    то пустой список
+    иначе отфильтровать every где cand → (((cand.«entry»).«kind») равен kind) и притом (пусто (cand.«gaps»))
+
+тотальная функция «Base kind»
+  принимает kind: строка
+  возвращает строка
+  пример «A question mark asks the form to decide alone»
+    дано kind равно "свойство?"
+    ожидается "свойство"
+  пример «A plain kind stays»
+    дано kind равно "понятие"
+    ожидается "понятие"
+  если kind начинается с "свойство" то "свойство" иначе (если kind начинается с "понятие" то "понятие" иначе kind)
+
+тотальная функция «Reading covers»
+  принимает cand: «Candidate», slot: «Slot»
+  возвращает признак
+  пример «The plural cell covers a plural slot»
+    дано cand равно (запись «Candidate» с «entry» равным (запись «Entry» с «kind» равным "понятие"
+        и «forms» равным (запись «Forms» с «one» равным "мохнатый" и «many» равным "мохнатые" и «she» равным ""
+        и «it» равным "") и «gender» равным "он") и «gaps» равным пустой список)
+    дано slot равно (запись «Slot» с «form» равным "мохнатые" и «kind» равным "понятие" и «many» равным да
+        и «opens» равным нет)
+    ожидается да
+  (((cand.«entry»).«kind») равен («Base kind» от (slot.«kind»))) и притом ((если slot.«many» то
+      (((cand.«entry»).«forms»).«many») иначе (((cand.«entry»).«forms»).«one»)) равен (slot.«form»))
+
+тотальная функция «Gender tail»
+  принимает who: строка
+  возвращает строка
+  пример «A feminine word names its pronoun»
+    дано who равно "она"
+    ожидается "; она"
+  пример «A masculine word says nothing»
+    дано who равно "он"
+    ожидается ""
+  если (who равен "она") или (who равен "оно") то соединить ["; ", who] по "" иначе ""
+
+тотальная функция «Agreeing tail»
+  принимает shapes: «Forms»
+  возвращает строка
+  пример «The forms for she and it follow»
+    дано shapes равно (запись «Forms» с «one» равным "тих" и «many» равным "тихи" и «she» равным "тиха"
+        и «it» равным "тихо")
+    ожидается "; она тиха; оно тихо"
+  (соединить («Applying» от [(«When» от (не (пусто (shapes.«she»))) и (соединить ["; она ", (shapes.«she»)] по "")),
+      («When» от (не (пусто (shapes.«it»))) и (соединить ["; оно ", (shapes.«it»)] по ""))]) по "")
+
+тотальная функция «Dictionary line of»
+  принимает cand: «Candidate»
+  возвращает строка
+  пример «A short adjective becomes a property line»
+    дано cand равно (запись «Candidate» с «entry» равным (запись «Entry» с «kind» равным "свойство"
+        и «forms» равным (запись «Forms» с «one» равным "тих" и «many» равным "тихи" и «she» равным "тиха"
+        и «it» равным "тихо") и «gender» равным "он") и «gaps» равным пустой список)
+    ожидается "Свойство: тих, тихи; она тиха; оно тихо"
+  пример «A name becomes a name line»
+    дано cand равно (запись «Candidate» с «entry» равным (запись «Entry» с «kind» равным "имя"
+        и «forms» равным (запись «Forms» с «one» равным "Барсик" и «many» равным "" и «she» равным "" и «it» равным "")
+        и «gender» равным "он") и «gaps» равным пустой список)
+    ожидается "Имя: Барсик"
+  пусть made равно (cand.«entry»)
+  пусть shapes равно (made.«forms»)
+  («Chosen» от [(«When» от ((made.«kind») равен "имя") и (соединить ["Имя: ", (shapes.«one»),
+      («Gender tail» от (made.«gender»))] по "")), («When» от ((made.«kind») равен "понятие")
+      и (соединить ["Понятие: ", (shapes.«one»), ", ", (shapes.«many»), («Gender tail» от (made.«gender»))] по "")),
+      («When» от ((made.«kind») равен "свойство") и (соединить ["Свойство: ", (shapes.«one»), ", ", (shapes.«many»),
+      («Agreeing tail» от shapes)] по ""))] и "")
+
+тотальная функция «Kept once»
+  принимает lines: список строки
+  возвращает список строки
+  пример «A repeated line is kept once»
+    дано lines равно ["Имя: Барсик", "", "Имя: Барсик"]
+    ожидается ["Имя: Барсик"]
+  (свёртка lines начиная с (пустой список) как kept
+      и line → если (kept содержит line) или (пусто line) то kept иначе добавить line к kept)
+
+тотальная функция «Dictionary from slots»
+  принимает slots: список «Slot»
+  возвращает список строки
+  пример «Every settled reading that covers a slot gives one line»
+    дано slots равно ([(запись «Slot» с «form» равным "Барсик" и «kind» равным "имя" и «many» равным нет
+        и «opens» равным нет), (запись «Slot» с «form» равным "тих" и «kind» равным "свойство" и «many» равным нет
+        и «opens» равным нет)])
+    ожидается ["Имя: Барсик", "Свойство: тих, тихи; она тиха; оно тихо"]
+  пусть pool равно (свёртка slots начиная с (пустой список) как got и slot → «Соединить списки» от got
+      и («Settled readings of» от slot))
+  («Kept once» от (отобразить (отфильтровать pool где cand → свёртка slots начиная с нет как found
+      и slot → found или («Reading covers» от cand и slot)) как cand → «Dictionary line of» от cand))
+
+тотальная функция «Known words of»
+  принимает declared: список строки
+  возвращает список строки
+  пример «Every word of every declared form is known»
+    дано declared равно ["Свойство: проводит ток, проводят ток"]
+    ожидается ["проводит", "ток", "проводят", "ток"]
+  (свёртка («All forms» от (отобразить declared как line → «Declared word» от line)) начиная с (пустой список) как got
+      и form → «Соединить списки» от got и («Spaced words» от form))
+
+тотальная функция «Line is new»
+  принимает known: список строки, line: строка
+  возвращает признак
+  пример «A line whose forms are all unknown is new»
+    дано known равно ["человек", "люди"]
+    дано line равно "Имя: Барсик"
+    ожидается да
+  пример «A line that repeats a known form is not»
+    дано known равно ["человек", "люди"]
+    дано line равно "Понятие: человек, люди"
+    ожидается нет
+  (не (свёртка («All forms» от [«Declared word» от line]) начиная с нет как found
+      и form → found или (свёртка («Spaced words» от form) начиная с нет как seen
+      и token → seen или (known содержит token))))
+
+тотальная функция «Derived dictionary of»
+  принимает text: строка
+  возвращает список строки
+  пример «Morphology reads the whole dictionary of a plain text»
+    дано text равно "Все мохнатые тихи. Барсик — мохнатый. Значит, Барсик тих."
+    ожидается ["Имя: Барсик", "Понятие: мохнатый, мохнатые", "Свойство: тих, тихи; она тиха; оно тихо"]
+  пример «A declared word is not read again»
+    дано text равно "Имя: Барсик. Все мохнатые тихи. Барсик — мохнатый. Значит, Барсик тих."
+    ожидается ["Понятие: мохнатый, мохнатые", "Свойство: тих, тихи; она тиха; оно тихо"]
+  пусть known равно («Known words of» от («Declaration lines of» от text))
+  пусть slots равно (свёртка («Claim lines of» от text) начиная с (пустой список) как got
+      и line → «Соединить списки» от got
+      и (отфильтровать («Slots of claim» от (line.«text»)) где slot → не (known содержит (slot.«form»))))
+  отфильтровать («Dictionary from slots» от slots) где line → «Line is new» от known и line
+
+тотальная функция «Prepared text»
+  принимает text: строка
+  возвращает строка
+  пример «Free text becomes the text the translator reads: dictionary, premises, conclusion»
+    дано text равно "Имя: Барсик. Свойство: тих, тихи. Барсик тих, так как Барсик тих."
+    ожидается "Имя: Барсик.\nСвойство: тих, тихи.\n\nБарсик тих. Следовательно, Барсик тих.\n"
+  пусть lines равно («Соединить списки» от («Declaration lines of» от text) и («Derived dictionary of» от text))
+  (соединить [(соединить (отобразить lines как line → соединить [line, ".\n"] по "") по ""), "\n",
+      (соединить (отобразить («Claim lines of» от text) как line → соединить [(line.«text»), "."] по "") по " "),
+      "\n"] по "")
+
+тотальная функция «Prepared reading»
+  принимает text: строка
+  возвращает «Reading»
+  пример «A plain text without a dictionary is read»
+    дано text равно "Все мохнатые тихи. Барсик — мохнатый. Значит, Барсик тих."
+    ожидается (вариант «Read» с words равным [(запись «Word» с «kind» равным "name" и «singular» равным "Барсик"
+        и «plural» равным "" и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"),
+        (запись «Word» с «kind» равным "notion" и «singular» равным "мохнатый" и «plural» равным "мохнатые"
+        и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"),
+        (запись «Word» с «kind» равным "property" и «singular» равным "тих" и «plural» равным "тихи"
+        и «feminine» равным "тиха" и «neuter» равным "тихо" и «gender» равным "он")]
+        и sentences равным [(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "мохнатый"
+        и «predicate» равным "тих")), (запись «Sentence» с «number» равным 2 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Барсик"
+        и «predicate» равным "мохнатый")), (запись «Sentence» с «number» равным 3 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Барсик"
+        и «predicate» равным "тих"))])
+  «Read text» от («Prepared text» от text)
+
+объект «Fallacy»
+  «id»: строка
+  «name»: строка
+  «slug»: строка
+  «why»: строка
+
+тотальная функция «No fallacy»
+  возвращает «Fallacy»
+  пример «Nothing is named»
+    ожидается запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным ""
+  запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным ""
+
+тотальная функция «Named fallacy»
+  принимает id: строка, name: строка, slug: строка, why: строка
+  возвращает «Fallacy»
+  пример «A fallacy carries its card»
+    дано id равно "circular-reasoning"
+    дано name равно "круг в доказательстве"
+    дано slug равно "circular-reasoning"
+    дано why равно "вывод повторяет посылку"
+    ожидается (запись «Fallacy» с «id» равным "circular-reasoning" и «name» равным "круг в доказательстве"
+        и «slug» равным "circular-reasoning" и «why» равным "вывод повторяет посылку")
+  запись «Fallacy» с «id» равным id и «name» равным name и «slug» равным slug и «why» равным why
+
+тотальная функция «Catalog address»
+  возвращает строка
+  пример «The catalog of fallacies on the portal»
+    ожидается "https://courses.digitable.life/fallacies/"
+  "https://courses.digitable.life/fallacies/"
+
+тотальная функция «Card address»
+  принимает fallacy: «Fallacy»
+  возвращает строка
+  пример «A card is an anchor of the catalog»
+    дано fallacy равно (запись «Fallacy» с «id» равным "affirming-the-consequent" и «name» равным "обращение следствия"
+        и «slug» равным "affirming-the-consequent" и «why» равным "")
+    ожидается "https://courses.digitable.life/fallacies/#affirming-the-consequent"
+  пример «A rule of the syllogism without a card has no address»
+    дано fallacy равно (запись «Fallacy» с «id» равным "illicit-major"
+        и «name» равным "недопустимое расширение большего термина" и «slug» равным "" и «why» равным "")
+    ожидается ""
+  если пусто (fallacy.«slug») то "" иначе соединить [(«Catalog address»), "#", (fallacy.«slug»)] по ""
+
+тотальная функция «Letter of form»
+  принимает judgment: «Judgment»
+  возвращает строка
+  пример «"Все" is the universal affirmative»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    ожидается "A"
+  пример «A sentence about one denied is the small "e"»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Is not») и «subject» равным "Сократ"
+        и «predicate» равным "смертен")
+    ожидается "e"
+  разбор (judgment.«form»)
+    случай вариант «All»
+      то "A"
+    случай вариант «None»
+      то "E"
+    случай вариант «Some»
+      то "I"
+    случай вариант «Some not»
+      то "O"
+    случай вариант «Is»
+      то "a"
+    случай вариант «Is not»
+      то "e"
+
+тотальная функция «Denies»
+  принимает judgment: «Judgment»
+  возвращает признак
+  пример «"Ни один" denies»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "кит"
+        и «predicate» равным "рыба")
+    ожидается да
+  ["E", "O", "e"] содержит («Letter of form» от judgment)
+
+тотальная функция «Speaks of some»
+  принимает judgment: «Judgment»
+  возвращает признак
+  пример «"Некоторые" speaks of some»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Some») и «subject» равным "грек"
+        и «predicate» равным "смертен")
+    ожидается да
+  пример «A sentence about one name is not particular»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "смертен")
+    ожидается нет
+  ["I", "O"] содержит («Letter of form» от judgment)
+
+тотальная функция «Takes whole»
+  принимает judgment: «Judgment», term: строка
+  возвращает признак
+  пример «The subject of "все" is taken whole»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано term равно "человек"
+    ожидается да
+  пример «The predicate of "все" is taken in part»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано term равно "смертен"
+    ожидается нет
+  пример «The predicate of a denial is taken whole»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "грек"
+        и «predicate» равным "смертен")
+    дано term равно "смертен"
+    ожидается да
+  (((judgment.«subject») равен term) и притом (["A", "E", "a",
+      "e"] содержит («Letter of form» от judgment))) или (((judgment.«predicate») равен term) и притом (["E", "O",
+      "e"] содержит («Letter of form» от judgment)))
+
+тотальная функция «Mentions»
+  принимает judgment: «Judgment», term: строка
+  возвращает признак
+  пример «The predicate is mentioned»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано term равно "смертен"
+    ожидается да
+  ((judgment.«subject») равен term) или ((judgment.«predicate») равен term)
+
+тотальная функция «Says the same»
+  принимает one: «Judgment», other: «Judgment»
+  возвращает признак
+  пример «The same sentence says the same»
+    дано one равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано other равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    ожидается да
+  пример «"Ни один" read backwards says the same»
+    дано one равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "кит"
+        и «predicate» равным "рыба")
+    дано other равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "рыба"
+        и «predicate» равным "кит")
+    ожидается да
+  пример «"Все" read backwards does not»
+    дано one равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано other равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "смертен"
+        и «predicate» равным "человек")
+    ожидается нет
+  пусть same равно ((«Letter of form» от one) равен («Letter of form» от other))
+  пусть straight равно (((one.«subject») равен (other.«subject»))
+      и притом ((one.«predicate») равен (other.«predicate»)))
+  пусть turned равно (((one.«subject») равен (other.«predicate»)) и притом ((one.«predicate») равен (other.«subject»))
+      и притом (["E", "I"] содержит («Letter of form» от one)))
+  same и притом (straight или turned)
+
+тотальная функция «Terms of»
+  принимает judgments: список «Judgment»
+  возвращает список строки
+  пример «Every term once, in the order of first use»
+    дано judgments равно ([(запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен"), (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "человек")])
+    ожидается ["человек", "смертен", "Сократ"]
+  (свёртка judgments начиная с (пустой список) как got и judgment → свёртка [(judgment.«subject»),
+      (judgment.«predicate»)] начиная с got как kept
+      и term → если kept содержит term то kept иначе добавить term к kept)
+
+тотальная функция «Judgment at»
+  принимает judgments: список «Judgment», position: число
+  возвращает «Judgment»
+  пример «A missing judgment is no judgment»
+    дано judgments равно пустой список
+    дано position равно 1
+    ожидается запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "" и «predicate» равным ""
+  если (position не меньше 1) и притом (position не больше (длина judgments))
+    то элемент position в judgments
+    иначе «No judgment»
+
+тотальная функция «Premise judgments»
+  принимает sentences: список «Sentence»
+  возвращает список «Judgment»
+  пример «The conclusion is not a premise»
+    дано sentences равно ([(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")), (запись «Sentence» с «number» равным 2 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "смертен"
+        и «predicate» равным "человек"))])
+    ожидается ([(запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")])
+  отобразить (отфильтровать sentences где sentence → не (sentence.«concludes»)) как sentence → sentence.«judgment»
+
+тотальная функция «Quoted list»
+  принимает terms: список строки
+  возвращает строка
+  пример «Terms are quoted and joined»
+    дано terms равно ["кошка", "собака"]
+    ожидается "«кошка», «собака»"
+  соединить (отобразить terms как term → соединить ["«", term, "»"] по "") по ", "
+
+тотальная функция «Repeated premise»
+  принимает sentences: список «Sentence»
+  возвращает число
+  пример «The number of the premise the conclusion repeats»
+    дано sentences равно ([(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")), (запись «Sentence» с «number» равным 2 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен"))])
+    ожидается 1
+  пример «No premise is repeated»
+    дано sentences равно ([(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")), (запись «Sentence» с «number» равным 2 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "смертен"
+        и «predicate» равным "человек"))])
+    ожидается 0
+  пусть conclusion равно ((«Conclusion sentence» от sentences).«judgment»)
+  (свёртка (отфильтровать sentences где sentence → не (sentence.«concludes»)) начиная с 0 как found
+      и sentence → если (found равен 0) и притом («Says the same» от (sentence.«judgment»)
+      и conclusion) то sentence.«number» иначе found)
+
+тотальная функция «Cases left out»
+  принимает premises: список «Judgment», conclusion: «Judgment»
+  возвращает признак
+  пример «Cats and dogs are not every animal»
+    дано premises равно ([(запись «Judgment» с «form» равным (вариант «All») и «subject» равным "кошка"
+        и «predicate» равным "смертен"), (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "собака"
+        и «predicate» равным "смертен")])
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "животное"
+        и «predicate» равным "смертен")
+    ожидается да
+  пример «One case is not a case analysis»
+    дано premises равно ([(запись «Judgment» с «form» равным (вариант «All») и «subject» равным "кошка"
+        и «predicate» равным "смертен")])
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "животное"
+        и «predicate» равным "смертен")
+    ожидается нет
+  пусть subjects равно (отобразить premises как judgment → judgment.«subject»)
+  пусть alike равно (свёртка premises начиная с да как every и judgment → every
+      и притом (((«Letter of form» от judgment) равен "A")
+      и притом ((judgment.«predicate») равен (conclusion.«predicate»))))
+  пусть apart равно ((длина («Terms of» от premises)) равен ((длина premises) плюс 1))
+  пусть outside равно (не (subjects содержит (conclusion.«subject»)))
+  ((длина premises) больше 1) и притом (alike и притом (((«Letter of form» от conclusion) равен "A") и притом (outside
+      и притом apart)))
+
+тотальная функция «Single premise fallacy»
+  принимает premise: «Judgment», conclusion: «Judgment»
+  возвращает «Fallacy»
+  пусть turned равно (((premise.«subject») равен (conclusion.«predicate»))
+      и притом ((premise.«predicate») равен (conclusion.«subject»)))
+  если (turned и притом ((«Letter of form» от premise) равен («Letter of form» от conclusion)) и притом (["A",
+      "O"] содержит («Letter of form» от premise)))
+    то («Named fallacy» от "illicit-conversion" и "обращение следствия в одной посылке" и "affirming-the-consequent"
+        и (соединить ["посылку нельзя прочесть в обратную сторону: термин «", (conclusion.«subject»),
+        "» в посылке взят только частью, а в выводе — целиком"] по ""))
+    иначе «No fallacy»
+
+
+тотальная функция «Single premise fallacy id»
+  принимает premise: «Judgment», conclusion: «Judgment»
+  возвращает строка
+  пример «"Все люди смертны" does not turn into "все смертные — люди"»
+    дано premise равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "смертен"
+        и «predicate» равным "человек")
+    ожидается "illicit-conversion"
+  («Single premise fallacy» от premise и conclusion).«id»
+
+тотальная функция «Middle term of»
+  принимает terms: список строки, small: строка, large: строка
+  возвращает строка
+  пример «The term that is neither in the subject nor in the predicate of the conclusion»
+    дано terms равно ["человек", "смертен", "Сократ"]
+    дано small равно "Сократ"
+    дано large равно "смертен"
+    ожидается "человек"
+  «First of» от (отфильтровать terms где term → не ((term равен small) или (term равен large)))
+
+тотальная функция «Two premise fallacy»
+  принимает one_p: «Judgment», two_p: «Judgment», conclusion: «Judgment»
+  возвращает «Fallacy»
+  пусть small равно (conclusion.«subject»)
+  пусть large равно (conclusion.«predicate»)
+  пусть terms равно («Terms of» от [one_p, two_p, conclusion])
+  пусть major равно (если «Mentions» от one_p и large то one_p иначе two_p)
+  пусть minor равно (если «Mentions» от one_p и large то two_p иначе one_p)
+  пусть middle равно («Middle term of» от terms и small и large)
+  пусть cl равно («Letter of form» от conclusion)
+  пусть jl равно («Letter of form» от major)
+  пусть nl равно («Letter of form» от minor)
+  пусть placed равно («Mentions» от major и large) и притом («Mentions» от minor и small) и притом («Mentions» от major
+      и middle) и притом («Mentions» от minor и middle)
+  пусть consequent равно (jl равен "A") и притом ((major.«subject») равен large) и притом (nl равен
+      "a") и притом ((minor.«predicate») равен middle) и притом (cl равен "a")
+  пусть antecedent равно (jl равен "A") и притом ((major.«subject») равен middle) и притом (nl равен
+      "e") и притом ((minor.«predicate») равен middle) и притом (cl равен "e")
+  пусть middle_part равно (не («Takes whole» от major и middle)) и притом (не («Takes whole» от minor и middle))
+  пусть major_grows равно («Takes whole» от conclusion и large) и притом (не («Takes whole» от major и large))
+  пусть minor_grows равно («Takes whole» от conclusion и small) и притом (не («Takes whole» от minor и small))
+  пусть negatives равно («Denies» от major) и притом («Denies» от minor)
+  пусть from_negative равно ((«Denies» от major) или («Denies» от minor)) и притом (не («Denies» от conclusion))
+  пусть from_affirmatives равно («Denies» от conclusion) и притом (не («Denies» от major)) и притом (не
+      («Denies» от minor))
+  пусть particulars равно («Speaks of some» от major) и притом («Speaks of some» от minor)
+  пусть existential равно («Speaks of some» от conclusion) и притом (не («Speaks of some» от major)) и притом (не
+      («Speaks of some» от minor))
+  «Chosen» от [
+    («When» от ((длина terms) больше 3) и («Named fallacy» от "four-terms" и "учетверение термина" и "equivocation"
+        и (соединить ["терминов четыре, а не три: ", («Quoted list» от terms),
+        (соединить ["; посылки не связаны общим средним термином. Если одно слово ",
+        "стоит в двух значениях, это та же ошибка в скрытом виде — ", "двусмысленность"] по "")] по ""))),
+    («When» от (не placed) и («No fallacy»)),
+    («When» от consequent и («Named fallacy» от "affirming-the-consequent" и "обращение следствия"
+        и "affirming-the-consequent" и (соединить ["«", middle, "» бывает и у того, кто не «", large,
+        "»: из того, что «", small, "» — «", middle, "», не следует, что «", small, "» — «", large,
+        "»; средний термин «", middle, "» ни в одной посылке не взят целиком"] по ""))),
+    («When» от antecedent и («Named fallacy» от "denying-the-antecedent" и "отрицание основания"
+        и "denying-the-antecedent" и (соединить ["посылка говорит, что всякий «", middle, "» — «", large,
+        "», но не говорит, что «", large, "» бывает только у того, кто «", middle, "»: из того, что «", small,
+        "» не «", middle, "», о «", large, "» ничего не следует"] по ""))),
+    («When» от negatives и («Named fallacy» от "two-negative-premises" и "две отрицательные посылки" и ""
+        и (соединить ["обе посылки отрицают: они говорят, чем «", small, "» и «", large, "» не связаны с «", middle,
+        "», и ничего — о связи между ними"] по ""))),
+    («When» от middle_part и («Named fallacy» от "undistributed-middle" и "нераспределённый средний термин" и ""
+        и (соединить ["средний термин «", middle, "» ни в одной посылке не взят целиком: обе говорят лишь о части «",
+        middle, "», и связи между «", small, "» и «", large, "» через него нет"] по ""))),
+    («When» от major_grows и («Named fallacy» от "illicit-major" и "недопустимое расширение большего термина" и ""
+        и (соединить ["больший термин «", large, "» в выводе взят целиком, а в посылке — только частью"] по ""))),
+    («When» от minor_grows и («Named fallacy» от "illicit-minor" и "недопустимое расширение меньшего термина" и ""
+        и (соединить ["меньший термин «", small, "» в выводе взят целиком, а в посылке — только частью"] по ""))),
+    («When» от from_negative и («Named fallacy» от "affirmative-from-negative"
+        и "утвердительный вывод из отрицательной посылки" и ""
+        и (соединить ["одна посылка отрицает, а вывод утверждает: из отрицания ", "утверждение не выводится"] по ""))),
+    («When» от from_affirmatives и («Named fallacy» от "negative-from-affirmatives"
+        и "отрицательный вывод из утвердительных посылок" и ""
+        и (соединить ["обе посылки утверждают, а вывод отрицает: отрицанию в посылках ",
+        "не на что опереться"] по ""))),
+    («When» от particulars и («Named fallacy» от "two-particular-premises" и "две частные посылки" и ""
+        и (соединить ["обе посылки говорят только о «некоторых»: из двух частных ", "суждений вывода нет"] по ""))),
+    («When» от existential и («Named fallacy» от "existential-fallacy" и "частный вывод из общих посылок"
+        и "vacuous-truth" и (соединить ["обе посылки общие, а вывод частный: общее суждение о «", small,
+        "» верно и тогда, когда ни одного «", small, "» нет, а «некоторые …» утверждает, что они есть"]
+        по "")))] и («No fallacy»)
+
+
+тотальная функция «Two premise fallacy id»
+  принимает one_p: «Judgment», two_p: «Judgment», conclusion: «Judgment»
+  возвращает строка
+  пример «Affirming the consequent: "Все люди смертны. Сократ смертен. Следовательно, Сократ — человек"»
+    дано one_p равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано two_p равно (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "смертен")
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "человек")
+    ожидается "affirming-the-consequent"
+  пример «Denying the antecedent: "Все люди смертны. Сократ не человек. Следовательно, Сократ не смертен"»
+    дано one_p равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")
+    дано two_p равно (запись «Judgment» с «form» равным (вариант «Is not») и «subject» равным "Сократ"
+        и «predicate» равным "человек")
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «Is not») и «subject» равным "Сократ"
+        и «predicate» равным "смертен")
+    ожидается "denying-the-antecedent"
+  пример «Two negative premises»
+    дано one_p равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "металл"
+        и «predicate» равным "прозрачен")
+    дано two_p равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "алмаз"
+        и «predicate» равным "металл")
+    дано conclusion равно (запись «Judgment» с «form» равным (вариант «None») и «subject» равным "алмаз"
+        и «predicate» равным "прозрачен")
+    ожидается "two-negative-premises"
+  («Two premise fallacy» от one_p и two_p и conclusion).«id»
+
+тотальная функция «Formal fallacy of»
+  принимает sentences: список «Sentence», holds_up: признак
+  возвращает «Fallacy»
+  пример «A conclusion that repeats a premise follows and is still a circle»
+    дано sentences равно ([(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")), (запись «Sentence» с «number» равным 2 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен"))])
+    дано holds_up равно да
+    ожидается (запись «Fallacy» с «id» равным "circular-reasoning" и «name» равным "круг в доказательстве"
+        и «slug» равным "circular-reasoning"
+        и «why» равным
+        "вывод повторяет посылку 1: из неё он, конечно, следует, но опоры, которой не было, не добавляет")
+  пример «A sound syllogism has no fallacy»
+    дано sentences равно ([(запись «Sentence» с «number» равным 1 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "человек"
+        и «predicate» равным "смертен")), (запись «Sentence» с «number» равным 2 и «concludes» равным нет
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "человек")), (запись «Sentence» с «number» равным 3 и «concludes» равным да
+        и «judgment» равным (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным "Сократ"
+        и «predicate» равным "смертен"))])
+    дано holds_up равно да
+    ожидается запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным ""
+  пусть premises равно («Premise judgments» от sentences)
+  пусть conclusion равно ((«Conclusion sentence» от sentences).«judgment»)
+  пусть circle равно («Repeated premise» от sentences)
+  «Chosen» от [
+    («When» от (circle больше 0) и («Named fallacy» от "circular-reasoning" и "круг в доказательстве"
+        и "circular-reasoning" и (соединить ["вывод повторяет посылку ", (к строке circle),
+        ": из неё он, конечно, следует, но опоры, которой не было, не добавляет"] по ""))),
+    («When» от holds_up и («No fallacy»)),
+    («When» от («Cases left out» от premises и conclusion) и («Named fallacy» от "incomplete-cases"
+        и "неполный разбор случаев" и "false-dilemma" и (соединить ["посылки разбирают случаи ",
+        («Quoted list» от (отобразить premises как judgment → judgment.«subject»)),
+        ", но нигде не сказано, что всякий «", (conclusion.«subject»),
+        "» — один из них: других случаев посылки не исключают"] по ""))),
+    («When» от ((длина premises) равен 1) и («Single premise fallacy» от («Judgment at» от premises и 1) и conclusion)),
+    («When» от ((длина premises) равен 2) и («Two premise fallacy» от («Judgment at» от premises и 1)
+        и («Judgment at» от premises и 2) и conclusion))] и («No fallacy»)
+
+объект «Unparsed»
+  «number»: число
+  «sentence»: строка
+  «reason»: строка
+
+объект «Hint»
+  «id»: строка
+  «name»: строка
+  «slug»: строка
+  «phrase»: строка
+  «why»: строка
+
+объект «Check report»
+  «language»: строка
+  «verdict»: строка
+  «fallacy»: «Fallacy»
+  «premises»: список строки
+  «conclusion»: строка
+  «counterexample»: строка
+  «unparsed»: список «Unparsed»
+  «hints»: список «Hint»
+  «dictionary»: список строки
+  «kernel»: строка
+  «boundary»: строка
+
+тотальная функция «Claim message»
+  принимает words: список «Word», text: строка
+  возвращает строка
+  пример «A sentence that is read has no message»
+    дано words равно ([(запись «Word» с «kind» равным "notion" и «singular» равным "человек" и «plural» равным "люди"
+        и «feminine» равным "" и «neuter» равным "" и «gender» равным "он"),
+        (запись «Word» с «kind» равным "property" и «singular» равным "смертен" и «plural» равным "смертны"
+        и «feminine» равным "" и «neuter» равным "" и «gender» равным "он")])
+    дано text равно "Все люди смертны"
+    ожидается ""
+  пример «An unknown word is named»
+    дано words равно пустой список
+    дано text равно "Ты неправ"
+    ожидается "слово «Ты» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"
+  разбор («Read claim» от words и («Claim tokens» от («Tokens of» от text)))
+    случай вариант «Misread» с weight как weight и message как message
+      то message
+    случай любое
+      то ""
+
+тотальная функция «Word of the message»
+  принимает message: строка
+  возвращает строка
+  пример «The word the translator could not read»
+    дано message равно "слово «Ты» не объявлено: впишите его"
+    ожидается "Ты"
+  пример «Another message names no word»
+    дано message равно "в рассуждении нет заключения"
+    ожидается ""
+  если message начинается с "слово «"
+    то «First of» от (разделить («Words after the cut» от message и "слово «") по "»")
+    иначе ""
+
+тотальная функция «Words after the cut»
+  принимает text: строка, cut: строка
+  возвращает строка
+  пример «What stands after the cut»
+    дано text равно "слово «Ты» не объявлено"
+    дано cut равно "слово «"
+    ожидается "Ты» не объявлено"
+  соединить («Without the first» от (разделить text по cut)) по cut
+
+тотальная функция «Plain reason»
+  принимает message: строка
+  возвращает строка
+  пример «A pronoun is named as a pronoun, not as an undeclared word»
+    дано message равно "слово «Ты» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"
+    ожидается "«Ты» — местоимение: силлогизм говорит о понятиях и именах, а не о собеседнике"
+  пример «Any other reason stays the translator's»
+    дано message равно "слово «мудры» не объявлено"
+    ожидается "слово «мудры» не объявлено"
+  пусть word равно («Word of the message» от message)
+  если (не (пусто word)) и притом (не (пусто («Pronoun types» от word)))
+    то соединить ["«", word, "» — местоимение: силлогизм говорит о понятиях и именах, а не о собеседнике"] по ""
+    иначе message
+
+тотальная функция «Unparsed of»
+  принимает prepared: строка
+  возвращает список «Unparsed»
+  пусть words равно («Words of» от prepared)
+  пусть said равно (отфильтровать (отобразить («Numbered ones» от («Statements of» от prepared)) как phrase → запись
+      «Unparsed» с «number» равным (phrase.«number») и «sentence» равным (phrase.«text»)
+      и «reason» равным («Plain reason» от («Claim message» от words
+      и (phrase.«text»)))) где found → не (пусто (found.«reason»)))
+  пусть whole равно (отобразить (отфильтровать («Text faults» от prepared) где fault → не (fault начинается с
+      "предложение ")) как fault → запись «Unparsed» с «number» равным 0 и «sentence» равным "" и «reason» равным fault)
+  «Соединить списки» от said и whole
+
+
+тотальная функция «Verdict word»
+  принимает verdict: «Verdict»
+  возвращает строка
+  пример «A verdict that follows»
+    дано verdict равно вариант «Follows» с report равным ""
+    ожидается "follows"
+  разбор verdict
+    случай вариант «Follows» с report как report
+      то "follows"
+    случай вариант «Does not follow» с report как report
+      то "does-not-follow"
+    случай вариант «Not judged» с report как report
+      то "not-judged"
+
+тотальная функция «Kernel line of»
+  принимает output: строка
+  возвращает строка
+  пример «The line where the kernel gives its verdict»
+    дано output равно "── ведомость ──\nfile.flang: ДОКАЗАНО — утверждений 1: доказано 1 — код возврата 0\n"
+    ожидается "ДОКАЗАНО — утверждений 1: доказано 1 — код возврата 0"
+  пример «A failed step is the kernel line»
+    дано output равно "FLANG_PROOF_STEP в файле x, строка 16: цель не выведена из допущений теоремы\nитог"
+    ожидается "FLANG_PROOF_STEP — цель не выведена из допущений теоремы"
+  пример «No output says nothing»
+    дано output равно ""
+    ожидается ""
+  пусть lines равно (разделить output по "\n")
+  пусть proved равно (отфильтровать lines где line → line содержит "ДОКАЗАНО — ")
+  пусть failed равно (отфильтровать lines где line → line начинается с "FLANG_PROOF")
+  пусть code равно («First of» от (разделить («First of» от (разделить («First of» от failed) по ",")) по " "))
+  пусть plain равно (если («First of» от failed) содержит "цель не выведена из допущений теоремы" то соединить [code,
+      " — цель не выведена из допущений теоремы"] по "" иначе code)
+  («Chosen» от [(«When» от (не (пусто proved)) и («After the mark» от («First of» от proved) и "ДОКАЗАНО — ")),
+      («When» от (не (пусто failed)) и plain)] и "")
+
+тотальная функция «Boundary words»
+  принимает verdict: строка
+  возвращает строка
+  («Chosen» от [(«When» от (verdict равен "follows")
+      и (соединить ["по форме вывод следует; содержательные ошибки вида переход на ",
+      "личность, соломенное чучело, апелляция к авторитету формой не ",
+      "определяются: истинность посылок и честность спора ядро не ", "проверяет"] по "")),
+      («When» от (verdict равен "does-not-follow")
+      и (соединить ["по форме вывод не следует; содержательные ошибки вида переход на ",
+      "личность, соломенное чучело, апелляция к авторитету формой не ",
+      "определяются: о них ядро не говорит ни в ту, ни в другую сторону"] по ""))]
+      и (соединить ["по форме вывод не судим: не все предложения прочитаны; ",
+      "содержательные ошибки вида переход на личность, соломенное ",
+      "чучело, апелляция к авторитету формой не определяются вовсе"] по ""))
+
+тотальная функция «Language words»
+  принимает language: строка
+  возвращает строка
+  пример «Russian is read here»
+    дано language равно "ru"
+    ожидается ""
+  пример «Another language is named»
+    дано language равно "en"
+    ожидается "язык «en» этим переводчиком не читается: он читает только русский текст (ru)"
+  если language равен "ru" то "" иначе соединить ["язык «", language,
+      "» этим переводчиком не читается: он читает только русский текст (ru)"] по ""
+
+тотальная функция «Kernel program of»
+  принимает language: строка, text: строка
+  возвращает строка
+  пример «An unread text gives no program to judge»
+    дано language равно "ru"
+    дано text равно "Ты неправ."
+    ожидается ""
+  пример «Another language gives no program»
+    дано language равно "en"
+    дано text равно "All men are mortal."
+    ожидается ""
+  если не (language равен "ru")
+    то ""
+    иначе разбор («Prepared reading» от text)
+      случай вариант «Read» с words как words и sentences как sentences
+        то «Program of» от words и sentences
+      случай любое
+        то ""
+
+тотальная функция «Read report»
+  принимает lang: строка, text: строка, words: список «Word», said: список «Sentence», output: строка, verdict: строка
+  возвращает «Check report»
+  пусть fallacy равно (если verdict равен "not-judged" то («No fallacy») иначе («Formal fallacy of» от said
+      и (verdict равен "follows")))
+  пусть against равно (если verdict равен "does-not-follow" то («Counterexample» от words и said) иначе "")
+  (запись «Check report» с «language» равным lang и «verdict» равным verdict и «fallacy» равным fallacy
+      и «premises» равным (отобразить («Premises of» от said) как sentence → «Sentence text» от words и sentence)
+      и «conclusion» равным («Sentence text» от words и («Conclusion sentence» от said))
+      и «counterexample» равным against и «unparsed» равным пустой список и «hints» равным («Hints of» от text)
+      и «dictionary» равным («Derived dictionary of» от text) и «kernel» равным («Kernel line of» от output)
+      и «boundary» равным («Boundary words» от verdict))
+
+тотальная функция «Check report of»
+  принимает language: строка, text: строка, output: строка
+  возвращает «Check report»
+  пусть prepared равно («Prepared text» от text)
+  пусть lines равно («Claim lines of» от text)
+  пусть told равно (отобразить (отфильтровать lines где line → не (line.«concludes»)) как line → line.«text»)
+  пусть drawn равно («Trimmed» от (соединить (отобразить (отфильтровать lines где line → line.«concludes»)
+      как line → line.«text») по " "))
+  если не (language равен "ru")
+    то (запись «Check report» с «language» равным language и «verdict» равным "not-judged"
+        и «fallacy» равным («No fallacy») и «premises» равным пустой список и «conclusion» равным ""
+        и «counterexample» равным "" и «unparsed» равным [(запись «Unparsed» с «number» равным 0 и «sentence» равным ""
+        и «reason» равным («Language words» от language))] и «hints» равным пустой список
+        и «dictionary» равным пустой список и «kernel» равным "" и «boundary» равным («Boundary words» от "not-judged"))
+    иначе разбор («Read text» от prepared)
+      случай вариант «Read» с words как words и sentences как sentences
+        то («Read report» от language и text и words и sentences и output и («Verdict word» от («Verdict of» от words
+            и sentences и output)))
+      случай любое
+        то (запись «Check report» с «language» равным language и «verdict» равным "not-judged"
+            и «fallacy» равным («No fallacy») и «premises» равным told и «conclusion» равным drawn
+            и «counterexample» равным "" и «unparsed» равным («Unparsed of» от prepared)
+            и «hints» равным («Hints of» от text) и «dictionary» равным («Derived dictionary of» от text)
+            и «kernel» равным "" и «boundary» равным («Boundary words» от "not-judged"))
+
+тотальная функция «Json string»
+  принимает text: строка
+  возвращает строка
+  пример «Quotes, backslashes and line ends are escaped»
+    дано text равно "а \"б\"\nв\\г"
+    ожидается "\"а \\\"б\\\"\\nв\\\\г\""
+  (соединить ["\"", («Replaced» от («Replaced» от («Replaced» от («Replaced» от («Replaced» от text и "\\" и "\\\\")
+      и "\"" и "\\\"") и "\n" и "\\n") и "\r" и "\\r") и "\t" и "\\t"), "\""] по "")
+
+тотальная функция «Json strings»
+  принимает texts: список строки
+  возвращает строка
+  пример «A list of strings»
+    дано texts равно ["а", "б"]
+    ожидается "[\"а\", \"б\"]"
+  соединить ["[", (соединить (отобразить texts как text → «Json string» от text) по ", "), "]"] по ""
+
+тотальная функция «Json field»
+  принимает name: строка, value: строка
+  возвращает строка
+  пример «A field is a quoted name and a value»
+    дано name равно "verdict"
+    дано value равно "\"follows\""
+    ожидается "\"verdict\": \"follows\""
+  соединить [(«Json string» от name), ": ", value] по ""
+
+тотальная функция «Json object»
+  принимает fields: список строки
+  возвращает строка
+  пример «Fields are joined in braces»
+    дано fields равно ["\"a\": 1"]
+    ожидается "{\"a\": 1}"
+  соединить ["{", (соединить fields по ", "), "}"] по ""
+
+тотальная функция «Fallacy json»
+  принимает fallacy: «Fallacy»
+  возвращает строка
+  если пусто (fallacy.«id») то "null" иначе «Json object» от [(«Json field» от "id"
+      и («Json string» от (fallacy.«id»))), («Json field» от "name" и («Json string» от (fallacy.«name»))),
+      («Json field» от "slug" и («Json string» от (fallacy.«slug»))),
+      («Json field» от "url" и («Json string» от («Card address» от fallacy))),
+      («Json field» от "why" и («Json string» от (fallacy.«why»)))]
+
+тотальная функция «Hint note»
+  возвращает строка
+  пример «Every hint carries the same note»
+    ожидается "возможная ошибка, проверьте сами"
+  "возможная ошибка, проверьте сами"
+
+тотальная функция «Hint json»
+  принимает hint: «Hint»
+  возвращает строка
+  («Json object» от [(«Json field» от "id" и («Json string» от (hint.«id»))),
+      («Json field» от "name" и («Json string» от (hint.«name»))),
+      («Json field» от "slug" и («Json string» от (hint.«slug»))),
+      («Json field» от "url" и («Json string» от (если пусто (hint.«slug») то "" иначе соединить [(«Catalog address»),
+      "#", (hint.«slug»)] по ""))), («Json field» от "phrase" и («Json string» от (hint.«phrase»))),
+      («Json field» от "why" и («Json string» от (hint.«why»))),
+      («Json field» от "note" и («Json string» от («Hint note»))), («Json field» от "verdict" и "false")])
+
+тотальная функция «Unparsed json»
+  принимает found: «Unparsed»
+  возвращает строка
+  пример «An unread sentence with its number and reason»
+    дано found равно (запись «Unparsed» с «number» равным 2 и «sentence» равным "Ты неправ"
+        и «reason» равным "слово «Ты» не объявлено")
+    ожидается "{\"sentence\": 2, \"text\": \"Ты неправ\", \"reason\": \"слово «Ты» не объявлено\"}"
+  («Json object» от [(«Json field» от "sentence" и (к строке (found.«number»))),
+      («Json field» от "text" и («Json string» от (found.«sentence»))),
+      («Json field» от "reason" и («Json string» от (found.«reason»)))])
+
+тотальная функция «Report json»
+  принимает report: «Check report»
+  возвращает строка
+  («Json object» от [(«Json field» от "language" и («Json string» от (report.«language»))),
+      («Json field» от "verdict" и («Json string» от (report.«verdict»))),
+      («Json field» от "fallacy" и («Fallacy json» от (report.«fallacy»))),
+      («Json field» от "premises" и («Json strings» от (report.«premises»))),
+      («Json field» от "conclusion" и («Json string» от (report.«conclusion»))),
+      («Json field» от "counterexample" и («Json string» от (report.«counterexample»))),
+      («Json field» от "unparsed" и (соединить ["[",
+      (соединить (отобразить (report.«unparsed») как found → «Unparsed json» от found) по ", "), "]"] по "")),
+      («Json field» от "hints" и (соединить ["[",
+      (соединить (отобразить (report.«hints») как hint → «Hint json» от hint) по ", "), "]"] по "")),
+      («Json field» от "dictionary" и («Json strings» от (report.«dictionary»))),
+      («Json field» от "kernel" и («Json string» от (report.«kernel»))),
+      («Json field» от "boundary" и («Json string» от (report.«boundary»)))])
+
+тотальная функция «Reasoning json»
+  принимает language: строка, text: строка, output: строка
+  возвращает строка
+  «Report json» от («Check report of» от language и text и output)
+
+тотальная функция «Fallacy words»
+  принимает report: «Check report»
+  возвращает список строки
+  пример «A named fallacy and its card»
+    дано report равно (запись «Check report» с «language» равным "ru" и «verdict» равным "does-not-follow"
+        и «fallacy» равным (запись «Fallacy» с «id» равным "affirming-the-consequent"
+        и «name» равным "обращение следствия" и «slug» равным "affirming-the-consequent"
+        и «why» равным "средний термин не взят целиком") и «premises» равным пустой список и «conclusion» равным ""
+        и «counterexample» равным "" и «unparsed» равным пустой список и «hints» равным пустой список
+        и «dictionary» равным пустой список и «kernel» равным "" и «boundary» равным "")
+    ожидается (["не следует — это обращение следствия: средний термин не взят целиком",
+        "карточка ошибки: https://courses.digitable.life/fallacies/#affirming-the-consequent"])
+  пусть fallacy равно (report.«fallacy»)
+  пусть card равно («Card address» от fallacy)
+  «Applying» от [
+    («When» от (((report.«verdict») равен "does-not-follow") и притом (пусто (fallacy.«id»)))
+        и (соединить ["не следует — имени ошибки правила силлогистики здесь не дают: ",
+        "смотрите пример против"] по "")),
+    («When» от (((report.«verdict») равен "does-not-follow") и притом (не (пусто (fallacy.«id»))))
+        и (соединить ["не следует — это ", (fallacy.«name»), ": ", (fallacy.«why»)] по "")),
+    («When» от (((report.«verdict») равен "follows") и притом (не (пусто (fallacy.«id»))))
+        и (соединить ["по форме следует, но это ", (fallacy.«name»), ": ", (fallacy.«why»)] по "")),
+    («When» от (не (пусто card)) и (соединить ["карточка ошибки: ", card] по ""))]
+
+тотальная функция «Hint words»
+  принимает hint: «Hint»
+  возвращает строка
+  (соединить ["подсказка (", («Hint note»), "): ", (hint.«name»), " — на словах «", (hint.«phrase»), "»: ",
+      (hint.«why»), (если пусто (hint.«slug») то "" иначе соединить ["; карточка: ", («Catalog address»), "#",
+      (hint.«slug»)] по "")] по "")
+
+тотальная функция «Report extras»
+  принимает report: «Check report»
+  возвращает список строки
+  пример «A report not judged says the boundary and the reason»
+    дано report равно (запись «Check report» с «language» равным "ru" и «verdict» равным "not-judged"
+        и «fallacy» равным (запись «Fallacy» с «id» равным "" и «name» равным "" и «slug» равным "" и «why» равным "")
+        и «premises» равным пустой список и «conclusion» равным "" и «counterexample» равным ""
+        и «unparsed» равным пустой список и «hints» равным пустой список и «dictionary» равным ["Имя: Барсик"]
+        и «kernel» равным "" и «boundary» равным "граница")
+    ожидается ["словарь, прочитанный морфологией: Имя: Барсик", "граница: граница"]
+  («Соединить списки» от («Соединить списки» от («Fallacy words» от report)
+      и («Applying» от [(«When» от (не (пусто (report.«dictionary»)))
+      и (соединить ["словарь, прочитанный морфологией: ", (соединить (report.«dictionary») по "; ")] по "")),
+      («When» от да и (соединить ["граница: ", (report.«boundary»)] по ""))]))
+      и (отобразить (report.«hints») как hint → «Hint words» от hint))
+
+тотальная функция «Reasoning words»
+  принимает language: строка, text: строка, output: строка
+  возвращает строка
+  соединить («Report extras» от («Check report of» от language и text и output)) по "\n"
+
+примечание "Подсказки. Неформальная ошибка формой не доказывается, и здесь её не
+доказывают: для пяти узнаваемых образцов из каталога ошибок подсказка называет
+фразу, на которой образец сработал, и объясняет, что проверить. Образец читает
+строение предложения, а не голые слова: кто подлежащее и согласовано ли с ним
+сказуемое, решает прегруппа (flang/ct/russian/pregroup.flang) над типами, которые
+даёт морфология: лицо и число глагола по окончанию, род и число краткой формы,
+число существительного по словарной записи. Служебные слова (местоимения,
+«если … то», «либо … либо», «что» после глагола речи) — закрытые списки, и это
+сказано здесь, а не спрятано."
+
+тотальная функция «Noun type»
+  принимает gender: строка, count: строка, person: строка
+  возвращает «Тип»
+  пример «A noun phrase in the nominative»
+    дано gender равно "ж"
+    дано count равно "ед"
+    дано person равно "3"
+    ожидается ([(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "ж" и число равным "ед"
+        и лицо равным "3" и сопряжение равным 0)])
+  [«Именная» от "им" и gender и count и person]
+
+тотальная функция «Verb type»
+  принимает gender: строка, count: строка, person: строка
+  возвращает «Тип»
+  пример «A predicate waits for its subject on the left»
+    дано gender равно "*"
+    дано count равно "ед"
+    дано person равно "2"
+    ожидается ([(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "*" и число равным "ед"
+        и лицо равным "2" и сопряжение равным 1), (запись «Простой тип» с вид равным "s" и падеж равным "*"
+        и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным 0)])
+  [«Сопряжённый» от («Именная» от "им" и gender и count и person) и 1, «Предложение»]
+
+тотальная функция «Pronoun types»
+  принимает word: строка
+  возвращает список «Тип»
+  пример «"ты" may be either gender»
+    дано word равно "ты"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "м" и число равным "ед"
+        и лицо равным "2" и сопряжение равным 0)], [(запись «Простой тип» с вид равным "n" и падеж равным "им"
+        и род равным "ж" и число равным "ед" и лицо равным "2" и сопряжение равным 0)]])
+  пример «A noun is not a pronoun»
+    дано word равно "кит"
+    ожидается пустой список
+  пусть w равно («Lowered» от word)
+  «Chosen» от [
+    («When» от (w равен "я") и [«Noun type» от "м" и "ед" и "1", «Noun type» от "ж" и "ед" и "1"]),
+    («When» от (w равен "ты") и [«Noun type» от "м" и "ед" и "2", «Noun type» от "ж" и "ед" и "2"]),
+    («When» от (w равен "он") и [«Noun type» от "м" и "ед" и "3"]),
+    («When» от (w равен "она") и [«Noun type» от "ж" и "ед" и "3"]),
+    («When» от (w равен "оно") и [«Noun type» от "ср" и "ед" и "3"]),
+    («When» от (w равен "мы") и [«Noun type» от "*" и "мн" и "1"]),
+    («When» от (w равен "вы") и [«Noun type» от "*" и "мн" и "2"]),
+    («When» от (w равен "они") и [«Noun type» от "*" и "мн" и "3"]),
+    («When» от ((w равен "все") или (w равен "многие")) и [«Noun type» от "*" и "мн" и "3"]),
+    («When» от (w равен "большинство") и [«Noun type» от "ср" и "ед" и "3"]),
+    («When» от ((w равен "каждый") или (w равен "никто")) и [«Noun type» от "м" и "ед" и "3"])] и (пустой список)
+
+тотальная функция «Person words»
+  возвращает список строки
+  пример «Pronouns that name a person»
+    ожидается ["я", "ты", "он", "она", "мы", "вы", "они"]
+  ["я", "ты", "он", "она", "мы", "вы", "они"]
+
+тотальная функция «Gender letter»
+  принимает who: строка
+  возвращает строка
+  пример «"она" is feminine»
+    дано who равно "она"
+    ожидается "ж"
+  («Chosen» от [(«When» от (who равен "он") и "м"), («When» от (who равен "она") и "ж"),
+      («When» от (who равен "оно") и "ср")] и "*")
+
+тотальная функция «Notion types»
+  принимает token: строка
+  возвращает список «Тип»
+  пример «A full adjective in the plural is a plural noun phrase»
+    дано token равно "мохнатые"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "*" и число равным "мн"
+        и лицо равным "3" и сопряжение равным 0)]])
+  (свёртка («Candidates of» от token и нет) начиная с (пустой список) как got и cand → «Соединить списки» от got
+      и («Applying» от [(«When» от ((((cand.«entry»).«kind») равен "понятие")
+      и притом ((((cand.«entry»).«forms»).«one») равен token))
+      и («Noun type» от («Gender letter» от ((cand.«entry»).«gender»)) и "ед" и "3")),
+      («When» от ((((cand.«entry»).«kind») равен "понятие") и притом ((((cand.«entry»).«forms»).«many») равен token))
+      и («Noun type» от "*" и "мн" и "3"))]))
+
+тотальная функция «Subject types»
+  принимает token: строка
+  возвращает список «Тип»
+  пример «A capitalised word may be a name of either gender, and a notion as well»
+    дано token равно "Иван"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "м" и число равным "ед"
+        и лицо равным "3" и сопряжение равным 0)], [(запись «Простой тип» с вид равным "n" и падеж равным "им"
+        и род равным "ж" и число равным "ед" и лицо равным "3" и сопряжение равным 0)],
+        [(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "м" и число равным "ед"
+        и лицо равным "3" и сопряжение равным 0)]])
+  пусть pronoun равно («Pronoun types» от token)
+  если не (пусто pronoun)
+    то pronoun
+    иначе («Соединить списки» от (если «Written with a capital» от token то [«Noun type» от "м" и "ед" и "3",
+        «Noun type» от "ж" и "ед" и "3"] иначе пустой список) и («Notion types» от token))
+
+тотальная функция «Without the reflexive»
+  принимает token: строка
+  возвращает строка
+  пример «"ошибаешься" loses "ся"»
+    дано token равно "ошибаешься"
+    ожидается "ошибаешь"
+  пример «A plain verb stays»
+    дано token равно "говорит"
+    ожидается "говорит"
+  если ((«Ends with» от token и "ся") или («Ends with» от token и "сь")) и притом ((длина token) больше 3)
+    то подстрока token с 1 по ((длина token) минус 2)
+    иначе token
+
+тотальная функция «Ends with one of»
+  принимает token: строка, tails: список строки
+  возвращает признак
+  пример «One of the tails ends the word»
+    дано token равно "говоришь"
+    дано tails равно ["ешь", "ишь"]
+    ожидается да
+  свёртка tails начиная с нет как found и tail → found или («Ends with» от token и tail)
+
+тотальная функция «Verb types by ending»
+  принимает token: строка
+  возвращает список «Тип»
+  пример «"-ешь" is the second person singular»
+    дано token равно "разбираешься"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "*" и число равным "ед"
+        и лицо равным "2" и сопряжение равным 1), (запись «Простой тип» с вид равным "s" и падеж равным "*"
+        и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным 0)]])
+  пример «"-ли" is the plural of the past»
+    дано token равно "сказали"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "*" и число равным "мн"
+        и лицо равным "*" и сопряжение равным 1), (запись «Простой тип» с вид равным "s" и падеж равным "*"
+        и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным 0)]])
+  пусть v равно («Without the reflexive» от («Lowered» от token))
+  «Chosen» от [
+    («When» от («Ends with one of» от v и ["ешь", "ёшь", "ишь"]) и [«Verb type» от "*" и "ед" и "2"]),
+    («When» от («Ends with one of» от v и ["ете", "ёте", "ите"]) и [«Verb type» от "*" и "мн" и "2"]),
+    («When» от («Ends with one of» от v и ["ет", "ёт", "ит"]) и [«Verb type» от "*" и "ед" и "3"]),
+    («When» от («Ends with one of» от v и ["ем", "ём", "им"]) и [«Verb type» от "*" и "мн" и "1"]),
+    («When» от («Ends with one of» от v и ["ут", "ют", "ат", "ят"]) и [«Verb type» от "*" и "мн" и "3"]),
+    («When» от («Ends with» от v и "ла") и [«Verb type» от "ж" и "ед" и "*"]),
+    («When» от («Ends with» от v и "ло") и [«Verb type» от "ср" и "ед" и "*"]),
+    («When» от («Ends with» от v и "ли") и [«Verb type» от "*" и "мн" и "*"]),
+    («When» от («Ends with» от v и "л") и [«Verb type» от "м" и "ед" и "*"])] и (пустой список)
+
+тотальная функция «Predicate types»
+  принимает token: строка
+  возвращает список «Тип»
+  пример «"неправа" agrees with a feminine subject of any person»
+    дано token равно "неправа"
+    ожидается ([[(запись «Простой тип» с вид равным "n" и падеж равным "им" и род равным "ж" и число равным "ед"
+        и лицо равным "*" и сопряжение равным 1), (запись «Простой тип» с вид равным "s" и падеж равным "*"
+        и род равным "*" и число равным "*" и лицо равным "*" и сопряжение равным 0)]])
+  пусть w равно («Lowered» от token)
+  «Chosen» от [
+    («When» от ((w равен "прав") или (w равен "неправ")) и [«Verb type» от "м" и "ед" и "*"]),
+    («When» от ((w равен "права") или (w равен "неправа")) и [«Verb type» от "ж" и "ед" и "*"]),
+    («When» от ((w равен "правы") или (w равен "неправы"))
+        и [«Verb type» от "*" и "мн" и "*"])] и («Verb types by ending» от token)
+
+тотальная функция «Forms a sentence»
+  принимает subject: строка, predicate: строка
+  возвращает признак
+  пример «"ты неправ" is a sentence»
+    дано subject равно "ты"
+    дано predicate равно "неправ"
+    ожидается да
+  пример «"вы неправ" is not: the number does not agree»
+    дано subject равно "вы"
+    дано predicate равно "неправ"
+    ожидается нет
+  пример «"учёные говорят" is a sentence»
+    дано subject равно "учёные"
+    дано predicate равно "говорят"
+    ожидается да
+  пример «"все делает" is not»
+    дано subject равно "все"
+    дано predicate равно "делает"
+    ожидается нет
+  пусть words равно ([(запись «Слово с типами» с номер равным 1 и типы равным («Subject types» от subject)),
+      (запись «Слово с типами» с номер равным 2 и типы равным («Predicate types» от predicate))])
+  разбор («Разобрать типы» от words и («Предложение»))
+    случай вариант «Сводится» с выбор как выбор и связи как связи
+      то да
+    случай любое
+      то нет
+
+тотальная функция «Fillers»
+  возвращает список строки
+  пример «Particles that do not change who is judged»
+    ожидается ["не", "просто", "конечно", "явно", "опять", "тоже", "снова", "точно", "же", "ведь", "совершенно", "и"]
+  ["не", "просто", "конечно", "явно", "опять", "тоже", "снова", "точно", "же", "ведь", "совершенно", "и"]
+
+тотальная функция «Clause words»
+  принимает text: строка
+  возвращает список строки
+  пример «The mark of the conclusion and the commas go»
+    дано text равно "Следовательно, ты, конечно, неправ"
+    ожидается ["ты", "конечно", "неправ"]
+  «Claim words of» от («Words kept with dashes» от text)
+
+тотальная функция «Core words»
+  принимает tokens: список строки
+  возвращает список строки
+  пример «Particles are dropped»
+    дано tokens равно ["ты", "конечно", "не", "прав"]
+    ожидается ["ты", "прав"]
+  отфильтровать tokens где token → не ((«Fillers») содержит («Lowered» от token))
+
+тотальная функция «Evaluation word»
+  принимает token: строка
+  возвращает признак
+  пример «"неправ" says a claim is false»
+    дано token равно "неправ"
+    ожидается да
+  пример «"ошибаешься" says it too»
+    дано token равно "ошибаешься"
+    ожидается да
+  пример «"устал" does not»
+    дано token равно "устал"
+    ожидается нет
+  пусть w равно («Lowered» от token)
+  (["прав", "права", "правы", "неправ", "неправа", "неправы", "лжёт", "лжёшь", "лжёте", "лгут", "врёт", "врёшь",
+      "врёте", "врут"] содержит w) или (w начинается с "ошиба") или (w начинается с "заблужда")
+
+тотальная функция «Plain claim»
+  принимает line: «Claim line»
+  возвращает строка
+  пример «The mark of the conclusion is not part of the phrase»
+    дано line равно запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да
+    ожидается "ты неправ"
+  если line.«concludes» то («Words behind the first» от (line.«text»)) иначе line.«text»
+
+тотальная функция «Hint»
+  принимает id: строка, name: строка, slug: строка, phrase: строка, why: строка
+  возвращает «Hint»
+  пример «A hint with its card»
+    дано id равно "false-dilemma"
+    дано name равно "ложная дилемма"
+    дано slug равно "false-dilemma"
+    дано phrase равно "либо со мной, либо против меня"
+    дано why равно "третий путь не исключён"
+    ожидается (запись «Hint» с «id» равным "false-dilemma" и «name» равным "ложная дилемма"
+        и «slug» равным "false-dilemma" и «phrase» равным "либо со мной, либо против меня"
+        и «why» равным "третий путь не исключён")
+  запись «Hint» с «id» равным id и «name» равным name и «slug» равным slug и «phrase» равным phrase и «why» равным why
+
+тотальная функция «Judged person»
+  принимает line: «Claim line»
+  возвращает строка
+  пример «"ты неправ" judges "ты"»
+    дано line равно запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да
+    ожидается "ты"
+  пример «"расчёт неверен" judges no person»
+    дано line равно запись «Claim line» с «text» равным "Следовательно, расчёт неверен" и «concludes» равным да
+    ожидается ""
+  пусть core равно («Core words» от («Clause words» от (line.«text»)))
+  пусть who равно («Form at» от core и 1)
+  пусть person равно ((«Person words») содержит («Lowered» от who)) или («Written with a capital» от who)
+  если (((длина core) равен 2) и притом (person и притом ((«Evaluation word» от («Form at» от core и 2))
+      и притом («Forms a sentence» от who и («Form at» от core и 2)))))
+    то who
+    иначе ""
+
+тотальная функция «Speaks of»
+  принимает line: «Claim line», who: строка
+  возвращает признак
+  пример «"Ты не разбираешься в физике" speaks of "ты"»
+    дано line равно запись «Claim line» с «text» равным "Ты не разбираешься в физике" и «concludes» равным нет
+    дано who равно "ты"
+    ожидается да
+  пример «"Она ничего не понимает в экономике" speaks of "она": the verb agrees with her»
+    дано line равно запись «Claim line» с «text» равным "Она ничего не понимает в экономике" и «concludes» равным нет
+    дано who равно "она"
+    ожидается да
+  пример «"В расчёте две ошибки" does not»
+    дано line равно запись «Claim line» с «text» равным "В расчёте две ошибки" и «concludes» равным нет
+    дано who равно "ты"
+    ожидается нет
+  пусть core равно («Core words» от («Clause words» от (line.«text»)))
+  пусть head равно («Form at» от core и 1)
+  пусть said равно («Form at» от core и 2)
+  пусть judged равно (свёртка core начиная с нет как found и token → found или («Evaluation word» от token))
+  пусть spoken равно (свёртка («Without the first» от core) начиная с нет как found
+      и token → found или («Forms a sentence» от head и token))
+  ((«Lowered» от head) равен («Lowered» от who)) и притом ((не judged) и притом ((«Is a dash» от said) или spoken))
+
+тотальная функция «Ad hominem hints»
+  принимает lines: список «Claim line»
+  возвращает список «Hint»
+  (свёртка (отфильтровать lines где line → line.«concludes») начиная с (пустой список) как got
+      и drawn → «Соединить списки» от got
+      и (если пусто («Judged person» от drawn) то пустой список иначе (отобразить («First of premises» от
+      («Premises about» от lines и («Judged person» от drawn))) как told → «Hint» от "ad-hominem"
+      и "переход на личность" и "ad-hominem" и (соединить [(told.«text»), " → ",
+      («Plain claim» от drawn)] по "") и (соединить ["вывод «", («Plain claim» от drawn),
+      (соединить ["» сделан о том, кто говорит, из сведений о нём самом, а не из ",
+      "оснований его утверждения: уберите характеристику человека — ", "останется ли довод?"] по "")] по ""))))
+
+тотальная функция «Ad hominem hints ids»
+  принимает lines: список «Claim line»
+  возвращает список строки
+  пример «"Ты не разбираешься в физике, значит, ты неправ"»
+    дано lines равно ([(запись «Claim line» с «text» равным "Ты не разбираешься в физике" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да)])
+    ожидается ["ad-hominem"]
+  пример «A reason about the claim is not about the person»
+    дано lines равно ([(запись «Claim line» с «text» равным "В расчёте две ошибки" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да)])
+    ожидается пустой список
+  отобразить («Ad hominem hints» от lines) как hint → hint.«id»
+
+тотальная функция «Premises about»
+  принимает lines: список «Claim line», who: строка
+  возвращает список «Claim line»
+  пример «The premises that speak of the judged person»
+    дано lines равно ([(запись «Claim line» с «text» равным "Ты не разбираешься в физике" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да)])
+    дано who равно "ты"
+    ожидается [запись «Claim line» с «text» равным "Ты не разбираешься в физике" и «concludes» равным нет]
+  отфильтровать lines где line → «Spoken about» от line и who
+
+тотальная функция «Spoken about»
+  принимает line: «Claim line», who: строка
+  возвращает признак
+  пример «A conclusion is not a premise about anyone»
+    дано line равно запись «Claim line» с «text» равным "Следовательно, ты неправ" и «concludes» равным да
+    дано who равно "ты"
+    ожидается нет
+  (не (line.«concludes»)) и притом («Speaks of» от line и who)
+
+тотальная функция «First of premises»
+  принимает lines: список «Claim line»
+  возвращает список «Claim line»
+  пример «Only the first line is kept»
+    дано lines равно ([(запись «Claim line» с «text» равным "а" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "б" и «concludes» равным нет)])
+    ожидается [запись «Claim line» с «text» равным "а" и «concludes» равным нет]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [голова]
+
+тотальная функция «Report parts»
+  принимает line: «Claim line»
+  возвращает список строки
+  пример «Who said, the verb of saying and what was said»
+    дано line равно (запись «Claim line» с «text» равным "Профессор Иванов сказал, что вода ядовита"
+        и «concludes» равным нет)
+    ожидается ["Иванов", "сказал", "вода ядовита"]
+  пример «A sentence without "что" reports nothing»
+    дано line равно запись «Claim line» с «text» равным "Все люди смертны" и «concludes» равным нет
+    ожидается пустой список
+  пусть plain равно («Trimmed» от («Replaced» от (line.«text») и "," и " "))
+  пусть parts равно («Cut at» от (соединить [" ", plain, " "] по "") и " что ")
+  пусть before равно («Spaced words» от («Form at» от parts и 1))
+  пусть said равно («Trimmed» от («Form at» от parts и 2))
+  пусть spot равно («Last speech verb at» от before)
+  если ((длина parts) равен 2) и притом ((spot больше 1) и притом (не (пусто said)))
+    то [(«Form at» от before и (spot минус 1)), («Form at» от before и spot), said]
+    иначе пустой список
+
+тотальная функция «Last speech verb at»
+  принимает tokens: список строки
+  возвращает число
+  пример «The verb of saying may stand before the one it was said to»
+    дано tokens равно ["Профессор", "Иванов", "сказал", "студентам"]
+    ожидается 3
+  пример «No verb of saying is no place»
+    дано tokens равно ["Врач", "измерил", "давление"]
+    ожидается 0
+  (свёртка («Numbered ones» от tokens) начиная с 0 как found
+      и word → если («Speech verb» от (word.«text»)) то word.«number» иначе found)
+
+
+тотальная функция «Speech verb»
+  принимает token: строка
+  возвращает признак
+  пример «"утверждают" is a verb of saying»
+    дано token равно "утверждают"
+    ожидается да
+  пример «"измерил" is not»
+    дано token равно "измерил"
+    ожидается нет
+  пусть w равно («Lowered» от token)
+  (свёртка ["говор", "сказа", "счита", "утвержда", "доказа", "заяви", "заявля", "пиш", "написа", "полага", "уверя",
+      "сообщ", "подтверд", "объяви"] начиная с нет как found и stem → found или (w начинается с stem))
+
+тотальная функция «Reported»
+  принимает line: «Claim line»
+  возвращает строка
+  пример «What the authority said, when the subject agrees with the verb»
+    дано line равно запись «Claim line» с «text» равным "Учёные доказали, что кофе полезен" и «concludes» равным нет
+    ожидается "кофе полезен"
+  пример «Not a report of words»
+    дано line равно запись «Claim line» с «text» равным "Врач измерил давление" и «concludes» равным нет
+    ожидается ""
+  пусть parts равно («Report parts» от line)
+  если (((длина parts) равен 3) и притом ((«Speech verb» от («Form at» от parts и 2))
+      и притом («Forms a sentence» от («Form at» от parts и 1) и («Form at» от parts и 2))))
+    то «Form at» от parts и 3
+    иначе ""
+
+тотальная функция «Same words»
+  принимает one: строка, other: строка
+  возвращает признак
+  пример «A capital and commas do not matter»
+    дано one равно "Кофе полезен"
+    дано other равно "кофе, полезен"
+    ожидается да
+  (соединить (отобразить («Spaced words» от («Replaced» от one и "," и " ")) как token → «Lowered» от token)
+      по " ") равен (соединить (отобразить («Spaced words» от («Replaced» от other и ","
+      и " ")) как token → «Lowered» от token) по " ")
+
+тотальная функция «Authority hints»
+  принимает lines: список «Claim line»
+  возвращает список «Hint»
+  пусть told равно (отфильтровать lines где line → не (line.«concludes»))
+  пусть reports равно (отфильтровать told где line → не (пусто («Reported» от line)))
+  пусть drawn равно (отфильтровать lines где line → line.«concludes»)
+  если ((длина reports) равен (длина told)) и притом (не (пусто told))
+    то (свёртка drawn начиная с (пустой список) как got и conclusion → «Соединить списки» от got
+        и (отобразить («First of premises» от (отфильтровать reports где line → «Same words» от («Reported» от line)
+        и («Plain claim» от conclusion))) как line → «Hint» от "appeal-to-authority" и "апелляция к авторитету"
+        и "appeal-to-authority" и (line.«text») и (соединить ["вывод «", («Plain claim» от conclusion),
+        (соединить ["» повторяет чужие слова, и других оснований в тексте нет: ссылка ",
+        "заняла место довода — каковы данные, на которые опирается «"] по ""),
+        («Form at» от («Report parts» от line) и 1), "»?"] по "")))
+    иначе пустой список
+
+тотальная функция «Authority hints ids»
+  принимает lines: список «Claim line»
+  возвращает список строки
+  пример «Only the words of an authority hold the conclusion up»
+    дано lines равно ([(запись «Claim line» с «text» равным "Учёные доказали, что кофе полезен"
+        и «concludes» равным нет), (запись «Claim line» с «text» равным "Следовательно, кофе полезен"
+        и «concludes» равным да)])
+    ожидается ["appeal-to-authority"]
+  пример «Testimony with its own evidence is not flagged»
+    дано lines равно ([(запись «Claim line» с «text» равным "Врач сказал, что у Ани грипп" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Анализ показал вирус гриппа" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, у Ани грипп" и «concludes» равным да)])
+    ожидается пустой список
+  отобразить («Authority hints» от lines) как hint → hint.«id»
+
+тотальная функция «Choice pieces»
+  принимает text: строка, mark: строка
+  возвращает список строки
+  пример «Two alternatives after the paired mark»
+    дано text равно "Ты либо со мной, либо против меня"
+    дано mark равно "либо"
+    ожидается ["со мной", "против меня"]
+  пример «A single mark is no pair»
+    дано text равно "Можно ехать поездом или автобусом"
+    дано mark равно "или"
+    ожидается пустой список
+  пусть pieces равно (разделить (соединить [" ", («Replaced» от («Lowered» от text) и "," и " "),
+      " "] по "") по (соединить [" ", mark, " "] по ""))
+  если (длина pieces) равен 3
+    то [«Trimmed» от («Form at» от pieces и 2), «Trimmed» от («Form at» от pieces и 3)]
+    иначе пустой список
+
+тотальная функция «Covers every case»
+  принимает one: строка, other: строка
+  возвращает признак
+  пример «"чётное" or "нечётное" is every case»
+    дано one равно "чётное"
+    дано other равно "нечётное"
+    ожидается да
+  пример «"со мной" or "против меня" is not»
+    дано one равно "со мной"
+    дано other равно "против меня"
+    ожидается нет
+  пример «"придёт" or "нет" is every case»
+    дано one равно "придёт"
+    дано other равно "нет"
+    ожидается да
+  пусть a равно («First of» от («Spaced words» от one))
+  пусть b равно («First of» от («Spaced words» от other))
+  (other равен "нет") или (one равен "нет") или (other равен (соединить ["не ",
+      one] по "")) или (one равен (соединить ["не ", other] по "")) или (b равен (соединить ["не",
+      a] по "")) или (a равен (соединить ["не", b] по ""))
+
+тотальная функция «Dilemma pieces»
+  принимает line: «Claim line»
+  возвращает список строки
+  пример «"Или … или" pairs as well»
+    дано line равно (запись «Claim line» с «text» равным "Или мы снижаем цены, или фирма разорится"
+        и «concludes» равным нет)
+    ожидается ["мы снижаем цены", "фирма разорится"]
+  пусть either равно («Choice pieces» от (line.«text») и "либо")
+  если пусто either то («Choice pieces» от (line.«text») и "или") иначе either
+
+тотальная функция «Dilemma hints»
+  принимает lines: список «Claim line»
+  возвращает список «Hint»
+  если пусто (отфильтровать lines где line → line.«concludes»)
+    то пустой список
+    иначе (отобразить (отфильтровать lines где line → ((длина («Dilemma pieces» от line)) равен 2)
+        и притом (не («Covers every case» от («Form at» от («Dilemma pieces» от line) и 1)
+        и («Form at» от («Dilemma pieces» от line) и 2)))) как line → «Hint» от "false-dilemma" и "ложная дилемма"
+        и "false-dilemma" и (line.«text») и (соединить ["выбор сведён к двум вариантам — «",
+        («Form at» от («Dilemma pieces» от line) и 1), "» и «", («Form at» от («Dilemma pieces» от line) и 2),
+        "», — и ничто в тексте не исключает третьего"] по ""))
+
+тотальная функция «Dilemma hints ids»
+  принимает lines: список «Claim line»
+  возвращает список строки
+  пример «Two options named as if there were no third»
+    дано lines равно ([(запись «Claim line» с «text» равным "Ты либо со мной, либо против меня"
+        и «concludes» равным нет), (запись «Claim line» с «text» равным "Ты не со мной" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, ты против меня" и «concludes» равным да)])
+    ожидается ["false-dilemma"]
+  пример «A choice between a thing and its denial covers every case»
+    дано lines равно ([(запись «Claim line» с «text» равным "Число либо чётное, либо нечётное"
+        и «concludes» равным нет), (запись «Claim line» с «text» равным "Следовательно, оно делится на два или нет"
+        и «concludes» равным да)])
+    ожидается пустой список
+  отобразить («Dilemma hints» от lines) как hint → hint.«id»
+
+тотальная функция «Whole words»
+  возвращает список строки
+  пример «Words of inevitability and of everything at once»
+    ожидается ["вообще", "никогда", "навсегда", "совсем", "окончательно", "неизбежно"]
+  ["вообще", "никогда", "навсегда", "совсем", "окончательно", "неизбежно"]
+
+тотальная функция «Small step words»
+  возвращает список строки
+  пример «Words of one small first step»
+    ожидается ["раз", "однажды", "сегодня", "немного", "чуть-чуть", "разок"]
+  ["раз", "однажды", "сегодня", "немного", "чуть-чуть", "разок"]
+
+тотальная функция «Condition parts»
+  принимает line: «Claim line»
+  возвращает список строки
+  пример «"Если …, то …" gives the step and its end»
+    дано line равно (запись «Claim line» с «text» равным
+        "Если разрешить ему опоздать сегодня, то он вообще перестанет приходить вовремя" и «concludes» равным нет)
+    ожидается ["разрешить ему опоздать сегодня", "он вообще перестанет приходить вовремя"]
+  пример «A dash and "и" join the step and its end»
+    дано line равно (запись «Claim line» с «text» равным "Разрешишь один раз — и он никогда не будет ложиться вовремя"
+        и «concludes» равным нет)
+    ожидается ["разрешишь один раз", "он никогда не будет ложиться вовремя"]
+  пусть plain равно (соединить [" ", («Replaced» от («Lowered» от («Plain claim» от line)) и "," и " "), " "] по "")
+  пусть conditioned равно («Cut at» от plain и " то ")
+  пусть dashed равно («Cut at» от plain и " — и ")
+  («Chosen» от [(«When» от ((plain начинается с " если ") и притом ((длина conditioned) равен 2))
+      и [«Trimmed» от («Words behind the first» от («Form at» от conditioned и 1)),
+      «Trimmed» от («Form at» от conditioned и 2)]), («When» от ((длина dashed) равен 2)
+      и [«Trimmed» от («Form at» от dashed и 1), «Trimmed» от («Form at» от dashed и 2)])] и (пустой список))
+
+тотальная функция «Has one of»
+  принимает text: строка, words: список строки
+  возвращает признак
+  пример «A word of the list stands in the text»
+    дано text равно "он вообще перестанет"
+    дано words равно ["вообще"]
+    ожидается да
+  свёртка («Spaced words» от text) начиная с нет как found и token → found или (words содержит token)
+
+тотальная функция «Slope hints»
+  принимает lines: список «Claim line»
+  возвращает список «Hint»
+  (отобразить (отфильтровать lines где line → ((длина («Condition parts» от line)) равен 2)
+      и притом ((«Has one of» от («Form at» от («Condition parts» от line) и 1) и («Small step words»))
+      и притом («Has one of» от («Form at» от («Condition parts» от line) и 2)
+      и («Whole words»)))) как line → «Hint» от "slippery-slope" и "скользкая дорожка" и "slippery-slope"
+      и («Plain claim» от line) и (соединить ["от первого шага «", («Form at» от («Condition parts» от line) и 1),
+      "» сразу сделан вывод о конце «", («Form at» от («Condition parts» от line) и 2),
+      (соединить ["», а промежуточные переходы и то, что могло бы цепочку ", "остановить, не названы"] по "")] по ""))
+
+тотальная функция «Slope hints ids»
+  принимает lines: список «Claim line»
+  возвращает список строки
+  пример «From one small step straight to the very end»
+    дано lines равно ([(запись «Claim line» с «text» равным
+        "Разрешишь один раз — и он никогда не будет ложиться вовремя" и «concludes» равным нет)])
+    ожидается ["slippery-slope"]
+  пример «A condition with its plain consequence»
+    дано lines равно ([(запись «Claim line» с «text» равным "Если не полить цветок неделю, то он засохнет"
+        и «concludes» равным нет)])
+    ожидается пустой список
+  отобразить («Slope hints» от lines) как hint → hint.«id»
+
+тотальная функция «Crowd words»
+  возвращает список строки
+  пример «Subjects that stand for many people at once»
+    ожидается ["все", "многие", "большинство", "каждый", "никто"]
+  ["все", "многие", "большинство", "каждый", "никто"]
+
+тотальная функция «Rightness words»
+  возвращает список строки
+  пример «Words that call a deed right»
+    ожидается ["правильно", "нормально", "верно", "можно", "хорошо", "допустимо", "прилично"]
+  ["правильно", "нормально", "верно", "можно", "хорошо", "допустимо", "прилично"]
+
+тотальная функция «Crowd does it»
+  принимает line: «Claim line»
+  возвращает признак
+  пример «"Все так делают"»
+    дано line равно запись «Claim line» с «text» равным "Все так делают" и «concludes» равным нет
+    ожидается да
+  пример «"Все люди смертны" is a claim about everyone, not a custom»
+    дано line равно запись «Claim line» с «text» равным "Все люди смертны" и «concludes» равным нет
+    ожидается нет
+  пусть core равно (отобразить («Core words» от («Clause words» от (line.«text»))) как token → «Lowered» от token)
+  пусть who равно («Form at» от core и 1)
+  пусть pointed равно ((core содержит "так") или (core содержит "это"))
+  пусть done равно (свёртка core начиная с нет как found и token → found или ((не (token равен who))
+      и притом («Forms a sentence» от who и token)))
+  (не (line.«concludes»)) и притом (((«Crowd words») содержит who) и притом (pointed и притом done))
+
+тотальная функция «Crowd hints»
+  принимает lines: список «Claim line»
+  возвращает список «Hint»
+  пусть crowd равно («First of premises» от (отфильтровать lines где line → «Crowd does it» от line))
+  пусть drawn равно (отфильтровать lines где line → (line.«concludes»)
+      и притом («Has one of» от («Lowered» от («Plain claim» от line)) и («Rightness words»)))
+  (свёртка crowd начиная с (пустой список) как got и told → «Соединить списки» от got
+      и (отобразить («First of premises» от drawn) как line → «Hint» от "appeal-to-popularity"
+      и "апелляция к большинству («все так делают»)" и "" и (соединить [(told.«text»), " → ",
+      («Plain claim» от line)] по "")
+      и (соединить ["из того, как поступают многие, выведено, что так и надо; сколько ",
+      "людей так делает, не говорит, правильно ли это. Отдельной ", "карточки этой ошибки в каталоге нет"] по "")))
+
+тотальная функция «Crowd hints ids»
+  принимает lines: список «Claim line»
+  возвращает список строки
+  пример «Everyone does it, so it is right»
+    дано lines равно ([(запись «Claim line» с «text» равным "Все так делают" и «concludes» равным нет),
+        (запись «Claim line» с «text» равным "Следовательно, это нормально" и «concludes» равным да)])
+    ожидается ["appeal-to-popularity"]
+  отобразить («Crowd hints» от lines) как hint → hint.«id»
+
+тотальная функция «Hints of»
+  принимает text: строка
+  возвращает список «Hint»
+  пример «A syllogism gives no hint»
+    дано text равно "Все люди смертны. Сократ — человек. Значит, Сократ смертен."
+    ожидается пустой список
+  пусть lines равно («Claim lines of» от text)
+  («Соединить списки» от («Соединить списки» от («Соединить списки» от («Ad hominem hints» от lines)
+      и («Authority hints» от lines)) и («Соединить списки» от («Dilemma hints» от lines) и («Slope hints» от lines)))
+      и («Crowd hints» от lines))
+
+тотальная функция «Plain fault»
+  принимает fault: строка
+  возвращает строка
+  пусть parts равно (разделить fault по "»: слово «")
+  если (длина parts) больше 1
+    то (соединить [(«First of» от parts), "»: ", («Plain reason» от (соединить ["слово «",
+        (соединить («Without the first» от parts) по "»: слово «")] по ""))] по "")
+    иначе fault
+
+тотальная функция «Catalog slugs»
+  возвращает список строки
+  пример «The 67 cards of the catalog as the portal served them on 18 October 2026»
+    ожидается (["ad-hominem", "tu-quoque", "straw-man", "genetic-fallacy", "psychologists-fallacy",
+        "circumstantial-ad-hominem", "tone-policing", "guilt-by-association", "appeal-to-accomplishment",
+        "courtiers-reply", "bulverism", "red-herring", "loaded-question", "appeal-to-emotion",
+        "quoting-out-of-context", "conflict-inflation", "appeal-to-morality", "thought-terminating-cliche",
+        "appeal-to-the-stone", "two-wrongs-make-a-right", "special-pleading", "circular-reasoning",
+        "affirming-the-consequent", "shifting-the-burden-of-proof", "affirming-a-disjunct", "appeal-to-ignorance",
+        "denying-the-antecedent", "proof-by-assertion", "ignoratio-elenchi", "entitled-to-my-opinion", "vacuous-truth",
+        "fallacy-fallacy", "hasty-generalisation", "slippery-slope", "false-dilemma", "composition", "division",
+        "no-true-scotsman", "middle-ground", "continuum-fallacy", "false-analogy", "false-equivalence",
+        "nirvana-fallacy", "anecdotal-evidence", "texas-sharpshooter", "correlation-not-causation", "sunk-cost",
+        "post-hoc", "ecological-fallacy", "historians-fallacy", "incomplete-comparison", "gamblers-fallacy",
+        "cherry-picking", "retrospective-determinism", "single-cause", "appeal-to-authority", "appeal-to-nature",
+        "argument-from-incredulity", "equivocation", "appeal-to-tradition", "moving-the-goalposts", "definist-fallacy",
+        "etymological-fallacy", "reification", "appeal-to-consequences", "appeal-to-novelty", "chronological-snobbery"])
+  ["ad-hominem", "tu-quoque", "straw-man", "genetic-fallacy", "psychologists-fallacy", "circumstantial-ad-hominem",
+      "tone-policing", "guilt-by-association", "appeal-to-accomplishment", "courtiers-reply", "bulverism",
+      "red-herring", "loaded-question", "appeal-to-emotion", "quoting-out-of-context", "conflict-inflation",
+      "appeal-to-morality", "thought-terminating-cliche", "appeal-to-the-stone", "two-wrongs-make-a-right",
+      "special-pleading", "circular-reasoning", "affirming-the-consequent", "shifting-the-burden-of-proof",
+      "affirming-a-disjunct", "appeal-to-ignorance", "denying-the-antecedent", "proof-by-assertion",
+      "ignoratio-elenchi", "entitled-to-my-opinion", "vacuous-truth", "fallacy-fallacy", "hasty-generalisation",
+      "slippery-slope", "false-dilemma", "composition", "division", "no-true-scotsman", "middle-ground",
+      "continuum-fallacy", "false-analogy", "false-equivalence", "nirvana-fallacy", "anecdotal-evidence",
+      "texas-sharpshooter", "correlation-not-causation", "sunk-cost", "post-hoc", "ecological-fallacy",
+      "historians-fallacy", "incomplete-comparison", "gamblers-fallacy", "cherry-picking", "retrospective-determinism",
+      "single-cause", "appeal-to-authority", "appeal-to-nature", "argument-from-incredulity", "equivocation",
+      "appeal-to-tradition", "moving-the-goalposts", "definist-fallacy", "etymological-fallacy", "reification",
+      "appeal-to-consequences", "appeal-to-novelty", "chronological-snobbery"]
+
+тотальная функция «Slugs named here»
+  возвращает список строки
+  пример «Every card this module links to»
+    ожидается (["circular-reasoning", "affirming-the-consequent", "denying-the-antecedent", "equivocation",
+        "false-dilemma", "vacuous-truth", "ad-hominem", "appeal-to-authority", "slippery-slope"])
+  ["circular-reasoning", "affirming-the-consequent", "denying-the-antecedent", "equivocation", "false-dilemma",
+      "vacuous-truth", "ad-hominem", "appeal-to-authority", "slippery-slope"]
+
+тотальная функция «Every named card is in the catalog»
+  возвращает признак
+  пример «No link points past the cards of the catalog»
+    ожидается да
+  свёртка («Slugs named here») начиная с да как every и slug → every и притом ((«Catalog slugs») содержит slug)

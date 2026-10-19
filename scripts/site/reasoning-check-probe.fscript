@@ -1,0 +1,194 @@
+модуль «Reasoning check in the tab»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Lists» только «Соединить списки»
+
+примечание "Проба того, что проверка рассуждения работает во вкладке так же, как
+в терминале. Переводчик, напечатанный в JavaScript (reasoning.js), читает текст
+и печатает программу; её судит компилятор, собранный в WebAssembly (flang.wasm),
+тем же хозяином WASI, что и песочница; приговор, имя ошибки и подсказки снова
+даёт reasoning.js. Сверяется с той же таблицей, что и прогон двоичным:
+flang/proof/probes/syllogism/fallacies/expected.tsv. Нужна сборка песочницы:
+bootstrap/flang run-script playground:build."
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Table»
+  возвращает строка
+  пример «The table of the binary run is the table here too»
+    ожидается "../../flang/proof/probes/syllogism/fallacies/expected.tsv"
+  "../../flang/proof/probes/syllogism/fallacies/expected.tsv"
+
+тотальная функция «Node script»
+  возвращает строка
+  (соединить ["const [dir, texts, ...names] = process.argv.slice(1); const { ",
+      "readFile } = await import('node:fs/promises'); const { ",
+      "pathToFileURL } = await import('node:url'); const host = await ",
+      "import(pathToFileURL(dir + '/flang_host_browser.js').href); ", "const r = await import(pathToFileURL(dir + ",
+      "'/reasoning.js').href); const wasm = await ", "WebAssembly.compile(await readFile(dir + '/flang.wasm')); for ",
+      "(const name of names) { const text = await readFile(texts + '/' ",
+      "+ name, 'utf8'); const program = r.kernelProgramOf('ru', text); ",
+      "let output = ''; if (program !== '') { const files = ",
+      "host.файлыWasi({ '/tmp/.keep': '', '/reasoning.flang': program ",
+      "}); output = host.запуститьWasi(wasm, { доводы: ['flang', ",
+      "'check', '/reasoning.flang', '--proof', '--strict'], файлы: ",
+      "files, окружение: { LC_ALL: 'C.UTF-8', FLANG_TMP: '/tmp', HOME: ",
+      "'/tmp' } }).вывод; } const d = JSON.parse(r.reasoningJson('ru', ",
+      "text, output)); console.log([name, d.verdict, d.fallacy ? ",
+      "d.fallacy.id : '-', d.hints.length ? d.hints.map((h) => ", "h.id).join(',') : '-'].join('\\t')); }"] по "")
+
+тотальная функция «Data rows»
+  принимает table: строка
+  возвращает список список строки
+  пример «The header is skipped and empty lines too»
+    дано table равно "text\tverdict\tfallacy\thints\tkind\na.txt\tfollows\t-\t-\tsound\n"
+    ожидается [["a.txt", "follows", "-", "-", "sound"]]
+  (отобразить (отфильтровать («Below the header» от (разделить table
+      по "\n")) где line → не (line равен "")) как line → разделить line по "\t")
+
+тотальная функция «Below the header»
+  принимает lines: список строки
+  возвращает список строки
+  пример «The first line is the header»
+    дано lines равно ["text", "a.txt"]
+    ожидается ["a.txt"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Cell»
+  принимает row: список строки, position: число
+  возвращает строка
+  пример «A missing cell is empty»
+    дано row равно ["a"]
+    дано position равно 2
+    ожидается ""
+  если (position не меньше 1) и притом (position не больше (длина row))
+    то элемент position в row
+    иначе ""
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The table is read first»
+    дано stages равно 1
+    дано answers равно пустой список
+    ожидается ([(запись «Question» с «name» равным "table"
+        и «order» равным (вариант «Прочитать файл» с путь равным
+        "../../flang/proof/probes/syllogism/fallacies/expected.tsv"))])
+  («Chosen» от [(«When» от (stages равен 1) и [(«Read» от "table" и («Table»))])] и [(«Run from» от "tab" и («Root»)
+      и "node" и («Соединить списки» от ["--input-type=module", "-e", («Node script»), "docs/site/out/playground",
+      "flang/proof/probes/syllogism/fallacies/texts"] и (отобразить («Data rows» от («Output of» от "table"
+      и answers)) как row → «Cell» от row и 1)))])
+
+тотальная функция «Seen line»
+  принимает lines: список строки, name: строка
+  возвращает строка
+  пример «The line the tab printed for the text»
+    дано lines равно ["a.txt\tfollows\t-\t-", "b.txt\tnot-judged\t-\t-"]
+    дано name равно "b.txt"
+    ожидается "b.txt\tnot-judged\t-\t-"
+  (свёртка lines начиная с "" как found и line → если (пусто found) и притом (line начинается с (соединить [name,
+      "\t"] по "")) то line иначе found)
+
+тотальная функция «Complaints»
+  принимает rows: список список строки, printed: строка
+  возвращает список строки
+  пример «A row that matches has no complaint»
+    дано rows равно [["a.txt", "follows", "-", "-", "sound"]]
+    дано printed равно "a.txt\tfollows\t-\t-\n"
+    ожидается пустой список
+  пример «A row the tab answered otherwise is named»
+    дано rows равно [["a.txt", "follows", "-", "-", "sound"]]
+    дано printed равно "a.txt\tdoes-not-follow\tillicit-major\t-\n"
+    ожидается ["a.txt — ждали follows / - / -, во вкладке вышло does-not-follow / illicit-major / -"]
+  пусть lines равно (разделить printed по "\n")
+  (свёртка rows начиная с (пустой список) как got и row → «Соединить списки» от got и («Row complaint» от row
+      и («Seen line» от lines и («Cell» от row и 1))))
+
+тотальная функция «Row complaint»
+  принимает row: список строки, line: строка
+  возвращает список строки
+  пример «A text the tab did not answer is named»
+    дано row равно ["a.txt", "follows", "-", "-", "sound"]
+    дано line равно ""
+    ожидается ["a.txt — ждали follows / - / -, во вкладке ответа нет"]
+  пусть wanted равно [(«Cell» от row и 2), («Cell» от row и 3), («Cell» от row и 4)]
+  пусть seen равно (разделить line по "\t")
+  пусть got равно [(«Cell» от seen и 2), («Cell» от seen и 3), («Cell» от seen и 4)]
+  («Chosen» от [(«When» от (пусто line) и [(соединить [(«Cell» от row и 1), " — ждали ", (соединить wanted по " / "),
+      ", во вкладке ответа нет"] по "")]), («When» от (wanted равен got) и (пустой список))]
+      и [(соединить [(«Cell» от row и 1), " — ждали ", (соединить wanted по " / "), ", во вкладке вышло ",
+      (соединить got по " / ")] по "")])
+
+тотальная функция «Judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пример «Without the playground files the tab cannot be looked at»
+    дано answers равно пустой список
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_REASONING_TAB_CANNOT_LOOK"
+        и сообщение равным
+        "reasoning in the tab: нет таблицы или ответа node — соберите песочницу: run-script playground:build")
+  пусть rows равно («Data rows» от («Output of» от "table" и answers))
+  пусть printed равно («Output of» от "tab" и answers)
+  пусть complaints равно («Complaints» от rows и printed)
+  («Chosen» от [(«When» от ((пусто rows) или ((«Exit code of» от "tab" и answers) больше 0) или (пусто printed))
+      и (вариант «Не проверено» с код равным "FLANG_PROBE_REASONING_TAB_CANNOT_LOOK"
+      и сообщение равным (соединить ["reasoning in the tab: нет таблицы или ответа node — соберите ",
+      "песочницу: run-script playground:build"] по ""))),
+      («When» от (пусто complaints)
+      и (вариант «Конец работы» с значение равным (соединить ["reasoning in the tab: текстов ",
+      (к строке (длина rows)), (соединить [", разошлось 0 — переводчик в JavaScript и ядро в WebAssembly ",
+      "отвечают как двоичный"] по "")] по "")))] и (вариант «Провал» с код равным "FLANG_PROBE_REASONING_TAB"
+      и сообщение равным (соединить (приписать (соединить ["reasoning in the tab: текстов ", (к строке (длина rows)),
+      ", разошлось ", (к строке (длина complaints))] по "") к complaints) по "\n")))
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A question in the queue is asked before anything else»
+    дано queue равно ([(запись «Question» с «name» равным "table"
+        и «order» равным (вариант «Прочитать файл» с путь равным "x"))])
+    дано stages равно 1
+    дано answers равно пустой список
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "x")
+        и потом равным (запись «Inquiry» с «asked» равным "table" и «queue» равным пустой список и «stages» равным 1
+        и «answers» равным пустой список))
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Judged» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «Two stages: the table, then the tab»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 2
+        и «answers» равным пустой список)
+  «Begin with» от 2
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn reads the table»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 2
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным
+        "../../flang/proof/probes/syllogism/fallacies/expected.tsv")
+        и потом равным (запись «Inquiry» с «asked» равным "table" и «queue» равным пустой список и «stages» равным 1
+        и «answers» равным пустой список))
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Probe»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

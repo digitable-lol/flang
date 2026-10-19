@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "4cf15a31f408ac8ead2e2b67bd5c37da66870a00",
-  "головаКоротко": "4cf15a31f",
-  "головаДата": "2026-10-14",
-  "шаговСтвола": 3923,
-  "всегоКоммитов": 8927,
+  "голова": "7936da8032edfc99c95d4252acebcbb6d9c26b25",
+  "головаКоротко": "7936da803",
+  "головаДата": "2026-10-18",
+  "шаговСтвола": 4102,
+  "всегоКоммитов": 9159,
   "измерители": [
     {
       "ключ": "js",
@@ -49,18 +49,18 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 122924,
-    "programm": 876,
-    "totalnyh": 14304,
-    "obychnyh": 3221,
-    "teorem": 355,
+    "bliznec": 124347,
+    "programm": 1024,
+    "totalnyh": 15036,
+    "obychnyh": 3275,
+    "teorem": 385,
     "proverok": 3,
     "zametok": 0
   },
   "неизвестныеКорни": [
     {
       "корень": "flang/translation",
-      "путей": 24
+      "путей": 25
     },
     {
       "корень": "flang/foreign",
@@ -85,15 +85,23 @@
     {
       "корень": "flangtutor",
       "путей": 1
+    },
+    {
+      "корень": "install.sh",
+      "путей": 1
     }
   ],
   "дни": [
+    "2026-10-18",
+    "2026-10-17",
+    "2026-10-16",
+    "2026-10-08",
+    "2026-10-15",
     "2026-10-14",
     "2026-10-13",
     "2026-10-12",
     "2026-10-11",
     "2026-10-09",
-    "2026-10-08",
     "2026-10-07",
     "2026-10-04",
     "2026-10-02",
@@ -162,6 +170,148 @@
     "2026-08-01"
   ],
   "вливания": [
+    {
+      "коммит": "f1e954e44",
+      "дата": "2026-10-18",
+      "заголовок": "chore(merge): print batch eight (PR 438) into dev",
+      "ветка": null,
+      "приехало": 54,
+      "записи": [
+        {
+          "текст": "test(probes): run on a refused record field answers code 1, not 3",
+          "коммит": "992a621ef"
+        },
+        {
+          "текст": "fix(checker): the second checker keeps the reader of dev for its laws",
+          "коммит": "6fa568ac2"
+        },
+        {
+          "текст": "chore(seed): reseed the shell over dev and take the fingerprint",
+          "коммит": "117fb384d"
+        },
+        {
+          "текст": "chore(seed): print batch eight",
+          "коммит": "0f531a8d0"
+        },
+        {
+          "текст": "docs(adr): adr-0121 makes a declared law a statement of the kernel",
+          "коммит": "e5f2c0759"
+        },
+        {
+          "текст": "fix(ct): the bifunctor court keys a pair of names on one line",
+          "коммит": "f9507c6cd"
+        },
+        {
+          "текст": "feat(ct): a declared law is a statement the kernel judges for all values",
+          "коммит": "6382b998c"
+        },
+        {
+          "текст": "fix(ct): nine programs declare the translations and equalities they lack",
+          "коммит": "de94145e9"
+        },
+        {
+          "текст": "fix(cli): check --proof asks the checked program what was not counted",
+          "коммит": "99ade27f6"
+        },
+        {
+          "текст": "feat(checker): checkers derive the declared laws past the source end",
+          "коммит": "a1203f83b"
+        },
+        {
+          "текст": "chore(guards): ledgers and prose numbers follow the new probe files",
+          "коммит": "d69a3df22"
+        },
+        {
+          "текст": "feat(record): proved statements carry moves read off the function body",
+          "коммит": "0ccdf7a2c"
+        },
+        {
+          "текст": "fix(record): the move-form derivation reaches the reader",
+          "коммит": "c0b95cd2c"
+        },
+        {
+          "текст": "fix(checker): the fields move and an unfold of a whole call only",
+          "коммит": "b091f875e"
+        },
+        {
+          "текст": "fix(parser): a nested object line is refused as an old word",
+          "коммит": "f56349bf0"
+        },
+        {
+          "текст": "fix(test): the compiler imports the scheduler after its own lists",
+          "коммит": "ac45af6ef"
+        },
+        {
+          "текст": "feat(test): run blocks are executed and their expectations checked",
+          "коммит": "62d501d85"
+        },
+        {
+          "текст": "fix(bounded): the step estimate counts the postcondition check",
+          "коммит": "429a7a73d"
+        },
+        {
+          "текст": "refactor(conc): scheduler names no longer clash with the compiler",
+          "коммит": "1364adc40"
+        },
+        {
+          "текст": "fix(link): a name outside an only list is refused in any import order",
+          "коммит": "71729dcdd"
+        },
+        {
+          "текст": "fix(run): consent to the unproven no longer runs an unlinked program",
+          "коммит": "47f7160e1"
+        },
+        {
+          "текст": "fix(link): an exported function may call a helper its module hides",
+          "коммит": "704a05f77"
+        },
+        {
+          "текст": "fix(emit-c): the printed makefile names the tls client of the shell",
+          "коммит": "d37931b84"
+        },
+        {
+          "текст": "feat(self): make install lays down share/flang",
+          "коммит": "8733178f6"
+        }
+      ],
+      "скрыто": 29,
+      "числа": {
+        "js": 0,
+        "bliznec": 124347,
+        "programm": 1024,
+        "totalnyh": 15036,
+        "obychnyh": 3275,
+        "teorem": 385,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {
+        "bliznec": {
+          "было": 115645,
+          "стало": 124347
+        },
+        "programm": {
+          "было": 759,
+          "стало": 1024
+        },
+        "totalnyh": {
+          "было": 12621,
+          "стало": 15036
+        },
+        "obychnyh": {
+          "было": 2550,
+          "стало": 3275
+        },
+        "teorem": {
+          "было": 310,
+          "стало": 385
+        },
+        "zametok": {
+          "было": 728,
+          "стало": 0
+        }
+      }
+    },
     {
       "коммит": "97c319105",
       "дата": "2026-10-06",
@@ -40786,8 +40936,394 @@
   ],
   "прямые": [
     {
+      "дата": "2026-10-18",
+      "записи": [
+        {
+          "текст": "chore(release): the tap serves flang-package, the checks follow it",
+          "коммит": "7936da803"
+        },
+        {
+          "текст": "chore(release): sha256 of the 0.7.29 archive and the full notes",
+          "коммит": "2a71e57b8"
+        },
+        {
+          "текст": "chore(release): version 0.7.29 and its release notes",
+          "коммит": "2b7b6c5e7"
+        },
+        {
+          "текст": "feat(checker): both checkers replay exploration records",
+          "коммит": "0d48131ab"
+        },
+        {
+          "текст": "feat(temporal): explore always-properties of a finite process model",
+          "коммит": "f376a6ecf"
+        },
+        {
+          "текст": "feat(lean): reference answers on witnesses for translation validation",
+          "коммит": "e5db23a40"
+        },
+        {
+          "текст": "chore(seed): reseed the shell after statements and syllogisms",
+          "коммит": "e11d342aa"
+        },
+        {
+          "текст": "chore(seed): reseed the shell after the verdict change",
+          "коммит": "7399e70dd"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "a88b960e5"
+        },
+        {
+          "текст": "build(seed): take the runtime mirror of dev before reseeding",
+          "коммит": "6882b72de"
+        }
+      ],
+      "скрыто": 35
+    },
+    {
+      "дата": "2026-10-17",
+      "записи": [
+        {
+          "текст": "test(repl): probes for statements and syllogisms fed on stdin",
+          "коммит": "6e483b50c"
+        },
+        {
+          "текст": "fix(repl): judge statements and syllogisms in the shell",
+          "коммит": "fc4978f45"
+        },
+        {
+          "текст": "chore(proof): ratchets follow the new forgeries and probes",
+          "коммит": "ae470e5fa"
+        },
+        {
+          "текст": "docs(adr): 0160 the checker reads what the kernel proves",
+          "коммит": "68b859f59"
+        },
+        {
+          "текст": "fix(checker): a match after a multi-line example still opens the body",
+          "коммит": "8cec90256"
+        },
+        {
+          "текст": "fix(checker): count postconditions in code, not in text blocks",
+          "коммит": "75785639d"
+        },
+        {
+          "текст": "fix(checker): monad blocks call their unit and join, quotes in names",
+          "коммит": "a7d40f812"
+        },
+        {
+          "текст": "fix(checker): examples by value, joined restrictions, more readers",
+          "коммит": "cff9908e1"
+        },
+        {
+          "текст": "fix(checker): a claim's place is its line, names keep their and",
+          "коммит": "189bbea26"
+        },
+        {
+          "текст": "fix(checker): read calls in code, sums over a segment, true counts",
+          "коммит": "7cc2eed0d"
+        },
+        {
+          "текст": "feat(checker): read foreign surfaces, compare numbers as the language",
+          "коммит": "75c9fa09a"
+        },
+        {
+          "текст": "fix(checker): a case is read only from the body's own match",
+          "коммит": "74decc8dc"
+        },
+        {
+          "текст": "fix(guards): falsifier and word guard follow the code contract",
+          "коммит": "063d65be3"
+        },
+        {
+          "текст": "test(unicode): official conformance tests and a ten target probe",
+          "коммит": "ff0e13405"
+        },
+        {
+          "текст": "feat(stdlib): explicit decoding of bytes with an honest refusal",
+          "коммит": "f75a8ca0c"
+        },
+        {
+          "текст": "feat(stdlib): normalization, grapheme clusters and case folding",
+          "коммит": "6b7424d41"
+        },
+        {
+          "текст": "feat(stdlib): unicode 17.0.0 tables generated from the UCD files",
+          "коммит": "90e31cb52"
+        },
+        {
+          "текст": "feat(site): a playground checks flang and syllogisms in the tab",
+          "коммит": "0b0d423b7"
+        },
+        {
+          "текст": "chore(seed): reseed the shell and the runtime for wasm32-wasi",
+          "коммит": "d2fb4da8d"
+        },
+        {
+          "текст": "fix(emit-c): the shell and the runtime build for wasm32-wasi",
+          "коммит": "e0130e7a0"
+        },
+        {
+          "текст": "feat(proof): the reference semantics is compared with the binary",
+          "коммит": "48b772847"
+        },
+        {
+          "текст": "feat(lean): a reference semantics of the language core with theorems",
+          "коммит": "1340d783e"
+        },
+        {
+          "текст": "feat(lean): the model rounds integers in binary64",
+          "коммит": "43591bd58"
+        },
+        {
+          "текст": "chore(seed): refresh the copied runtime with carried memo pins",
+          "коммит": "3415002fc"
+        },
+        {
+          "текст": "perf(runtime): memo pins follow moved values, inline field read",
+          "коммит": "4a87587ee"
+        },
+        {
+          "текст": "docs(adr): 0145 unfolding takes the arguments and names what Lean misses",
+          "коммит": "c667fa8a1"
+        },
+        {
+          "текст": "fix(checker): unfolding refuses a parameter the substitution misses",
+          "коммит": "924070c9a"
+        },
+        {
+          "текст": "chore(asdf): the plugin submodule counts only target directories",
+          "коммит": "ff9468e78"
+        }
+      ],
+      "скрыто": 34
+    },
+    {
+      "дата": "2026-10-16",
+      "записи": [
+        {
+          "текст": "chore(proof): register the forgery programs and refresh the counts",
+          "коммит": "a24e075ba"
+        },
+        {
+          "текст": "test(proof): the strict probe names its import helper apart",
+          "коммит": "a66c325a5"
+        },
+        {
+          "текст": "fix(cli): the shell speaks plain words in seven more messages",
+          "коммит": "c49a29e73"
+        },
+        {
+          "текст": "fix(proof): grid and checker disagreement give code 3, not 0",
+          "коммит": "23f613593"
+        },
+        {
+          "текст": "fix(proof): the exit code of check --proof says what was proved",
+          "коммит": "c3ef7f093"
+        },
+        {
+          "текст": "docs(ct): the resolver module and the corpus plan get distinct names",
+          "коммит": "d435bae2a"
+        },
+        {
+          "текст": "docs(ct): specify proofs about every category, with a Lean corpus",
+          "коммит": "8c138b709"
+        },
+        {
+          "текст": "fix(checker): the compute move reads string literals in escaped form",
+          "коммит": "4b33bb081"
+        },
+        {
+          "текст": "fix(checker): unfolding puts the call arguments in place of parameters",
+          "коммит": "c5b70f94b"
+        },
+        {
+          "текст": "fix(packaging): the parity probe of the library fits the lint limits",
+          "коммит": "de827a986"
+        },
+        {
+          "текст": "feat(release): ship the standard library with every install",
+          "коммит": "c501f7b44"
+        },
+        {
+          "текст": "feat(proof): measure the prover against lean on forty tasks",
+          "коммит": "1b8f9fe79"
+        },
+        {
+          "текст": "docs(adr): 0127 lifts the checker ceiling by the half moves",
+          "коммит": "02e1b60d9"
+        }
+      ],
+      "скрыто": 30
+    },
+    {
+      "дата": "2026-10-08",
+      "записи": [
+        {
+          "текст": "fix(checker): evaluator no longer computes element and symbol",
+          "коммит": "fdc2af8b6"
+        },
+        {
+          "текст": "feat(lean): rules guard counts the half moves",
+          "коммит": "20fdcaee2"
+        },
+        {
+          "текст": "feat(lean): every half move of the checker has a soundness theorem",
+          "коммит": "6e8deff68"
+        },
+        {
+          "текст": "fix(checker): half moves keep facts out of pattern scopes",
+          "коммит": "cb36663a1"
+        },
+        {
+          "текст": "style(emit): the chunked map lock in C# follows dotnet format too",
+          "коммит": "d728f8677"
+        },
+        {
+          "текст": "chore(ledgers): rule anchors and share rows follow the merged batch",
+          "коммит": "3dc92d9e5"
+        },
+        {
+          "текст": "feat(self): lay out printed C and C++ the way clang-format LLVM does",
+          "коммит": "39d82d0d1"
+        },
+        {
+          "текст": "feat(self): print C# arrays and lists as collection expressions",
+          "коммит": "ede306a19"
+        },
+        {
+          "текст": "style(emit): lay out the C and C++ runtimes with clang-format LLVM",
+          "коммит": "1d78d954a"
+        },
+        {
+          "текст": "style(emit): the C# runtime follows dotnet format at severity info",
+          "коммит": "56ca59543"
+        },
+        {
+          "текст": "test(bench): a gate for the parallel map and the monoid fold",
+          "коммит": "1aa961380"
+        },
+        {
+          "текст": "feat(emit): map and fold in chunks in Go, Java, C# and Elixir too",
+          "коммит": "13058c3bd"
+        },
+        {
+          "текст": "feat(check): the kernel judges monoid laws and marks the folds they cut",
+          "коммит": "0692c99e2"
+        },
+        {
+          "текст": "feat(kernel): the exact ring drops a written empty list from a sum",
+          "коммит": "e63dfdbfb"
+        },
+        {
+          "текст": "feat(emit): print a total map and a monoid fold in chunks in C",
+          "коммит": "7c2173903"
+        },
+        {
+          "текст": "chore(ledgers): pattern-shadow probes get English names and share rows",
+          "коммит": "5b17b4812"
+        },
+        {
+          "текст": "test(proof): register the pattern-shadow hole with probes and a template",
+          "коммит": "b2ee86685"
+        },
+        {
+          "текст": "fix(kernel): a pattern name that shadows a parameter refuses induction",
+          "коммит": "fe25a76aa"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror for the plain check messages",
+          "коммит": "ee5404123"
+        },
+        {
+          "текст": "fix(cli): check messages name the proof report in plain words",
+          "коммит": "3190d01e7"
+        },
+        {
+          "текст": "fix(checker): the literal law reads a zero in parentheses",
+          "коммит": "9f0181997"
+        },
+        {
+          "текст": "chore(proof): forgery-probes ratchet follows the verdict",
+          "коммит": "5da1af503"
+        },
+        {
+          "текст": "fix(checker): close the gaps the second checker found",
+          "коммит": "d9a885669"
+        },
+        {
+          "текст": "feat(checker): the second checker gives a verdict on every record",
+          "коммит": "b99af39db"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "6df405902"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror after rebase",
+          "коммит": "ce2d4d12c"
+        },
+        {
+          "текст": "build(seed): reseed the runtime mirror for the cost report",
+          "коммит": "3585b88c9"
+        },
+        {
+          "текст": "feat(run): flang run --cost and the runner's cost field report the price",
+          "коммит": "9a807e1e5"
+        },
+        {
+          "текст": "test(probes): keep the conditional syllogism premise unproved",
+          "коммит": "7ca01eba8"
+        }
+      ],
+      "скрыто": 39
+    },
+    {
+      "дата": "2026-10-15",
+      "записи": [
+        {
+          "текст": "chore(asdf): the plugin submodule points at the prebuilt-first plugin",
+          "коммит": "24e0c060a"
+        },
+        {
+          "текст": "fix(asdf): the c archive fallback builds with the makefile flags",
+          "коммит": "e52119d69"
+        },
+        {
+          "текст": "fix(packaging): the parity instrument runs on an installed flang",
+          "коммит": "700a85181"
+        },
+        {
+          "текст": "feat(packaging): the parity instrument compares any number of installs",
+          "коммит": "68de7add5"
+        },
+        {
+          "текст": "test(probes): 71 russian sentences are judged by the pregroup parser",
+          "коммит": "208d78f7f"
+        },
+        {
+          "текст": "feat(ct): a russian sentence is checked by a pregroup of typed words",
+          "коммит": "91192abed"
+        }
+      ],
+      "скрыто": 11
+    },
+    {
       "дата": "2026-10-14",
       "записи": [
+        {
+          "текст": "feat(asdf): the plugin installs the prebuilt build and falls back to C",
+          "коммит": "38ba44e5e"
+        },
+        {
+          "текст": "build(packaging): homebrew and aur manifests for flang-package",
+          "коммит": "033a1f363"
+        },
+        {
+          "текст": "ci(release): four prebuilt tarballs, deb, rpm and one sha256sums",
+          "коммит": "b02a1cc24"
+        },
         {
           "текст": "chore(release): point the Homebrew tap at 0.7.28",
           "коммит": "4cf15a31f"
@@ -40845,7 +41381,7 @@
           "коммит": "181ba1f7f"
         }
       ],
-      "скрыто": 25
+      "скрыто": 29
     },
     {
       "дата": "2026-10-13",
@@ -41234,112 +41770,6 @@
         }
       ],
       "скрыто": 2
-    },
-    {
-      "дата": "2026-10-08",
-      "записи": [
-        {
-          "текст": "style(emit): the chunked map lock in C# follows dotnet format too",
-          "коммит": "d728f8677"
-        },
-        {
-          "текст": "chore(ledgers): rule anchors and share rows follow the merged batch",
-          "коммит": "3dc92d9e5"
-        },
-        {
-          "текст": "feat(self): lay out printed C and C++ the way clang-format LLVM does",
-          "коммит": "39d82d0d1"
-        },
-        {
-          "текст": "feat(self): print C# arrays and lists as collection expressions",
-          "коммит": "ede306a19"
-        },
-        {
-          "текст": "style(emit): lay out the C and C++ runtimes with clang-format LLVM",
-          "коммит": "1d78d954a"
-        },
-        {
-          "текст": "style(emit): the C# runtime follows dotnet format at severity info",
-          "коммит": "56ca59543"
-        },
-        {
-          "текст": "test(bench): a gate for the parallel map and the monoid fold",
-          "коммит": "1aa961380"
-        },
-        {
-          "текст": "feat(emit): map and fold in chunks in Go, Java, C# and Elixir too",
-          "коммит": "13058c3bd"
-        },
-        {
-          "текст": "feat(check): the kernel judges monoid laws and marks the folds they cut",
-          "коммит": "0692c99e2"
-        },
-        {
-          "текст": "feat(kernel): the exact ring drops a written empty list from a sum",
-          "коммит": "e63dfdbfb"
-        },
-        {
-          "текст": "feat(emit): print a total map and a monoid fold in chunks in C",
-          "коммит": "7c2173903"
-        },
-        {
-          "текст": "chore(ledgers): pattern-shadow probes get English names and share rows",
-          "коммит": "5b17b4812"
-        },
-        {
-          "текст": "test(proof): register the pattern-shadow hole with probes and a template",
-          "коммит": "b2ee86685"
-        },
-        {
-          "текст": "fix(kernel): a pattern name that shadows a parameter refuses induction",
-          "коммит": "fe25a76aa"
-        },
-        {
-          "текст": "build(seed): reseed the runtime mirror for the plain check messages",
-          "коммит": "ee5404123"
-        },
-        {
-          "текст": "fix(cli): check messages name the proof report in plain words",
-          "коммит": "3190d01e7"
-        },
-        {
-          "текст": "fix(checker): the literal law reads a zero in parentheses",
-          "коммит": "9f0181997"
-        },
-        {
-          "текст": "chore(proof): forgery-probes ratchet follows the verdict",
-          "коммит": "5da1af503"
-        },
-        {
-          "текст": "fix(checker): close the gaps the second checker found",
-          "коммит": "d9a885669"
-        },
-        {
-          "текст": "feat(checker): the second checker gives a verdict on every record",
-          "коммит": "b99af39db"
-        },
-        {
-          "текст": "build(seed): reseed the runtime mirror after rebase",
-          "коммит": "6df405902"
-        },
-        {
-          "текст": "build(seed): reseed the runtime mirror after rebase",
-          "коммит": "ce2d4d12c"
-        },
-        {
-          "текст": "build(seed): reseed the runtime mirror for the cost report",
-          "коммит": "3585b88c9"
-        },
-        {
-          "текст": "feat(run): flang run --cost and the runner's cost field report the price",
-          "коммит": "9a807e1e5"
-        },
-        {
-          "текст": "test(probes): keep the conditional syllogism premise unproved",
-          "коммит": "7ca01eba8"
-        }
-      ],
-      "скрыто": 39
     },
     {
       "дата": "2026-10-07",

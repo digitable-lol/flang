@@ -2,6 +2,7 @@
   использует «Rules» из "../../../../../scripts/rules.fscript"
   использует «Inquiry» из "../../../../../scripts/inquiry.fscript"
   использует «Reasoning sentences» из "translator.flang"
+  использует «Reasoning check» из "reasoning-check.flang"
   использует «Таблица проб» из "../../table.fscript"
 
 тотальная функция «Root»
@@ -75,26 +76,36 @@
     дано stages равно 0
     дано answers равно пустой список
     ожидается пустой список
-  «Chosen» от [(«When» от (stages равен 2) и [(«Arguments» от "arguments")]), («When» от ((stages равен 1) и притом (не (пусто («Text path» от answers)))) и [(«Read from» от "text" и («Root») и («Text path» от answers))]), («When» от ((stages равен 0) и притом («Text was read» от answers)) и («Check question» от («Read text» от («Output of» от "text" и answers))))] и (пустой список)
+  «Chosen» от [(«When» от (stages равен 2) и [(«Arguments» от "arguments")]), («When» от ((stages равен 1) и притом (не (пусто («Text path» от answers)))) и [(«Read from» от "text" и («Root») и («Text path» от answers))]), («When» от ((stages равен 0) и притом («Text was read» от answers)) и («Check question» от («Prepared reading» от («Output of» от "text" и answers))))] и (пустой список)
+
+тотальная функция «With extras»
+  принимает report: строка, extras: список строки
+  возвращает строка
+  пример «The lines about the fallacy, the boundary and the hints follow the verdict»
+    дано report равно "СЛЕДУЕТ"
+    дано extras равно ["граница: по форме"]
+    ожидается "СЛЕДУЕТ\nграница: по форме"
+  соединить (приписать report к extras) по "\n"
 
 тотальная функция «Judged»
-  принимает reading: «Reading», output: строка
+  принимает text: строка, output: строка
   возвращает «Продолжение»
-  пример «Faults of the text are a failure that lists them»
-    дано reading равно вариант «Unread» с faults равным ["слово «мудр» не объявлено", "в рассуждении нет заключения"]
-    дано output равно ""
-    ожидается вариант «Провал» с код равным "FLANG_REASONING_TEXT" и сообщение равным "текст не прочитан:\nслово «мудр» не объявлено\nв рассуждении нет заключения"
-  разбор reading
+  пусть extras равно («Report extras» от («Check report of» от "ru" и text и output))
+  разбор («Prepared reading» от text)
     случай вариант «Unread» с faults как faults
-      то вариант «Провал» с код равным "FLANG_REASONING_TEXT" и сообщение равным (соединить (приписать "текст не прочитан:" к faults) по "\n")
+      то (вариант «Провал» с код равным "FLANG_REASONING_TEXT"
+          и сообщение равным (соединить (приписать "текст не прочитан:" к («Соединить списки» от
+          (отобразить faults как fault → «Plain fault» от fault) и extras)) по "\n"))
     случай вариант «Read» с words как words и sentences как sentences
       то разбор («Verdict of» от words и sentences и output)
         случай вариант «Follows» с report как report
-          то вариант «Конец работы» с значение равным report
+          то вариант «Конец работы» с значение равным («With extras» от report и extras)
         случай вариант «Does not follow» с report как report
-          то вариант «Провал» с код равным "FLANG_REASONING_DOES_NOT_FOLLOW" и сообщение равным report
+          то (вариант «Провал» с код равным "FLANG_REASONING_DOES_NOT_FOLLOW"
+              и сообщение равным («With extras» от report и extras))
         случай вариант «Not judged» с report как report
-          то вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным report
+          то (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK"
+              и сообщение равным («With extras» от report и extras))
 
 тотальная функция «Judgment given»
   принимает answers: список «Answer»
@@ -105,7 +116,7 @@
   пример «A text that cannot be read is named»
     дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["texts/none.txt"]), запись «Answer» с «name» равным "text" и «reply» равным (вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "файл не прочитан")]
     ожидается вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным "текст не прочитан: texts/none.txt"
-  «Chosen» от [(«When» от (пусто («Text path» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным («Usage»))), («When» от (не («Text was read» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным (соединить ["текст не прочитан: ", («Text path» от answers)] по "")))] и («Judged» от («Read text» от («Output of» от "text" и answers)) и («Output of» от "check" и answers))
+  «Chosen» от [(«When» от (пусто («Text path» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным («Usage»))), («When» от (не («Text was read» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным (соединить ["текст не прочитан: ", («Text path» от answers)] по "")))] и («Judged» от («Output of» от "text" и answers) и («Output of» от "check" и answers))
 
 тотальная функция «Proceed with judging»
   принимает queue: список «Question», stages: число, answers: список «Answer»
@@ -143,6 +154,68 @@
   начинает с «Begin judging»
   обрабатывает «Next judging question»
 
+тотальная функция «Language given»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The second argument names the language»
+    дано answers равно ([(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["texts/socrates.txt", "en"]))])
+    ожидается "en"
+  пример «Without it the text is Russian»
+    дано answers равно ([(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["texts/socrates.txt"]))])
+    ожидается "ru"
+  пусть told равно («Given of» от "arguments" и answers)
+  если ((длина told) больше 1) то («Form at» от told и 2) иначе "ru"
+
+тотальная функция «Check given»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  («Chosen» от [(«When» от (пусто («Text path» от answers))
+      и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK"
+      и сообщение равным (соединить ["звать: bootstrap/flang io ",
+      "flang/proof/probes/syllogism/sentences/run.fscript --plan Check ",
+      "-- <текст от корня дерева> [ru] печатает ответ одной строкой JSON"] по ""))),
+      («When» от (не («Text was read» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK"
+      и сообщение равным (соединить ["текст не прочитан: ", («Text path» от answers)] по "")))]
+      и (вариант «Конец работы» с значение равным («Reasoning json» от («Language given» от answers)
+      и («Output of» от "text" и answers) и («Output of» от "check" и answers))))
+
+тотальная функция «Proceed with checking»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пример «A question in the queue is asked before anything else»
+    дано queue равно [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)]
+    дано stages равно 2
+    дано answers равно пустой список
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы»)
+        и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список
+        и «stages» равным 2 и «answers» равным пустой список))
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Check given» от answers
+        иначе «Proceed with checking» от («Judge stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Next checking question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn asks for the arguments»
+    дано inquiry равно (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 3
+        и «answers» равным пустой список)
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы»)
+        и потом равным (запись «Inquiry» с «asked» равным "arguments" и «queue» равным пустой список
+        и «stages» равным 2 и «answers» равным пустой список))
+  «Proceed with checking» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin judging»
+  обрабатывает «Next checking question»
+
 тотальная функция «Translation given»
   принимает answers: список «Answer»
   возвращает «Продолжение»
@@ -152,7 +225,7 @@
   пример «A read text gives the program the kernel will judge»
     дано answers равно [запись «Answer» с «name» равным "arguments" и «reply» равным (вариант «Доводы» с доводы равным ["texts/socrates.txt"]), запись «Answer» с «name» равным "text" и «reply» равным (вариант «Прочитано» с содержимое равным "Понятие: человек, люди. Имя: Сократ. Сократ — человек. Следовательно, Сократ — человек.")]
     ожидается вариант «Конец работы» с значение равным "модуль «Reasoning»\n\nобъект «Предмет»\n  «человек»: признак\n\nутверждение «Сократ — человек»\n  для всех «Сократ»: «Предмет» таких что «Сократ».«человек»\n  утверждаем «Сократ».«человек»\n\nследует «Сократ — человек»\n  дано «Сократ»: «Предмет»\n  дано «Сократ».«человек»\n  утверждаем «Сократ».«человек»\n  по предположению\n"
-  «Chosen» от [(«When» от (пусто («Text path» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным («Usage»))), («When» от (не («Text was read» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным (соединить ["текст не прочитан: ", («Text path» от answers)] по "")))] и («Translated» от («Read text» от («Output of» от "text" и answers)))
+  «Chosen» от [(«When» от (пусто («Text path» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным («Usage»))), («When» от (не («Text was read» от answers)) и (вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным (соединить ["текст не прочитан: ", («Text path» от answers)] по "")))] и («Translated» от («Prepared reading» от («Output of» от "text" и answers)))
 
 тотальная функция «Translated»
   принимает reading: «Reading»
@@ -222,7 +295,7 @@
     дано stages равно 1
     дано answers равно [запись «Answer» с «name» равным "table" и «reply» равным (вариант «Прочитано» с содержимое равным "text\tcode\tword\nsocrates.txt\t0\tСЛЕДУЕТ\n")]
     ожидается [запись «Question» с «name» равным "text socrates.txt" и «order» равным (вариант «Прочитать файл» с путь равным "texts/socrates.txt")]
-  «Chosen» от [(«When» от (stages равен 2) и [(«Read» от "table" и "expected.tsv"), («List» от "texts" и "texts")]), («When» от (stages равен 1) и (отобразить («Rows of» от answers) как row → «Read» от (соединить ["text ", («Поле» от row и 1)] по "") и (соединить ["texts/", («Поле» от row и 1)] по "")))] и (свёртка («Rows of» от answers) начиная с (пустой список) как gathered и row → «Соединить списки» от gathered и (отобразить («Check question» от («Read text» от («Output of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers))) как question → запись «Question» с «name» равным (соединить ["check ", («Поле» от row и 1)] по "") и «order» равным (question.«order»)))
+  «Chosen» от [(«When» от (stages равен 2) и [(«Read» от "table" и "expected.tsv"), («List» от "texts" и "texts")]), («When» от (stages равен 1) и (отобразить («Rows of» от answers) как row → «Read» от (соединить ["text ", («Поле» от row и 1)] по "") и (соединить ["texts/", («Поле» от row и 1)] по "")))] и (свёртка («Rows of» от answers) начиная с (пустой список) как gathered и row → «Соединить списки» от gathered и (отобразить («Check question» от («Prepared reading» от («Output of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers))) как question → запись «Question» с «name» равным (соединить ["check ", («Поле» от row и 1)] по "") и «order» равным (question.«order»)))
 
 тотальная функция «Code of»
   принимает outcome: «Продолжение»
@@ -271,7 +344,7 @@
     дано answers равно пустой список
     ожидается вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным "текст не прочитан: socrates.txt"
   если («Exit code of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers) равен 0
-    то «Judged» от («Read text» от («Output of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers)) и («Output of» от (соединить ["check ", («Поле» от row и 1)] по "") и answers)
+    то «Judged» от («Output of» от (соединить ["text ", («Поле» от row и 1)] по "") и answers) и («Output of» от (соединить ["check ", («Поле» от row и 1)] по "") и answers)
     иначе вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным (соединить ["текст не прочитан: ", («Поле» от row и 1)] по "")
 
 тотальная функция «Complaints of row»
@@ -298,10 +371,14 @@
   возвращает «Продолжение»
   пример «Without a table there is nothing to look at»
     дано answers равно пустой список
-    ожидается вариант «Не проверено» с код равным "FLANG_PROBE_SENTENCES_CANNOT_LOOK" и сообщение равным "syllogism/sentences: в expected.tsv нет ни одной строки данных"
+    ожидается (вариант «Не проверено» с код равным "FLANG_PROBE_SENTENCES_CANNOT_LOOK"
+        и сообщение равным "syllogism/sentences: в expected.tsv нет ни одной строки данных")
   если (длина («Rows of» от answers)) равен 0
     то «Нечем смотреть» от («This set») и "в expected.tsv нет ни одной строки данных"
-    иначе «Итог» от («This set») и (свёртка («Rows of» от answers) начиная с («Texts without a row» от answers) как gathered и row → «Соединить списки» от gathered и («Complaints of row» от row и answers)) и (длина («Rows of» от answers))
+    иначе («Итог» от («This set»)
+        и (свёртка («Rows of» от answers) начиная с («Texts without a row» от answers) как gathered
+        и row → «Соединить списки» от gathered и («Complaints of row» от row и answers))
+        и (длина («Rows of» от answers)))
 
 тотальная функция «Proceed with probes»
   принимает queue: список «Question», stages: число, answers: список «Answer»

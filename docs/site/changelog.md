@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/translation` (путей 24), `flang/foreign` (путей 17), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/translation` (путей 25), `flang/foreign` (путей 17), `flang/experimental` (путей 5), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,25 +33,182 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `4cf15a31f` от 14 октября 2026. Шагов ствола 3923, из них вливаний 1212; коммитов в истории 8927.
+Дерево на коммите `7936da803` от 18 октября 2026. Шагов ствола 4102, из них вливаний 1213; коммитов в истории 9159.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 122924 | −17986 | −8448 |
-| Программ на flang | 876 | +135 | +315 |
-| Объявлений `тотальная функция` | 14304 | +677 | +254 |
-| Объявлений `функция` | 3221 | +53 | +779 |
-| Объявлений `теорема` | 355 | +22 | +71 |
+| Эталон компилятора на flang | 124347 | +8702 | −7051 |
+| Программ на flang | 1024 | +265 | +463 |
+| Объявлений `тотальная функция` | 15036 | +2415 | +985 |
+| Объявлений `функция` | 3275 | +725 | +833 |
+| Объявлений `теорема` | 385 | +75 | +101 |
 | Файлов проверок | 3 | 0 | 0 |
-| Заметок базы знаний | 0 | +8 | −672 |
+| Заметок базы знаний | 0 | −728 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 18 октября 2026
+
+**chore(merge): print batch eight (PR 438) into dev**
+
+`f1e954e44` · коммитов 54
+
+Сдвинулось: эталон компилятора на flang 115645 → 124347 (+8702); программ на flang 759 → 1024 (+265); объявлений `тотальная функция` 12621 → 15036 (+2415); объявлений `функция` 2550 → 3275 (+725); объявлений `теорема` 310 → 385 (+75); заметок базы знаний 728 → 0 (−728).
+
+- test(probes): run on a refused record field answers code 1, not 3 (`992a621ef`)
+- fix(checker): the second checker keeps the reader of dev for its laws (`6fa568ac2`)
+- chore(seed): reseed the shell over dev and take the fingerprint (`117fb384d`)
+- chore(seed): print batch eight (`0f531a8d0`)
+- docs(adr): adr-0121 makes a declared law a statement of the kernel (`e5f2c0759`)
+- fix(ct): the bifunctor court keys a pair of names on one line (`f9507c6cd`)
+- feat(ct): a declared law is a statement the kernel judges for all values (`6382b998c`)
+- fix(ct): nine programs declare the translations and equalities they lack (`de94145e9`)
+- fix(cli): check --proof asks the checked program what was not counted (`99ade27f6`)
+- feat(checker): checkers derive the declared laws past the source end (`a1203f83b`)
+- chore(guards): ledgers and prose numbers follow the new probe files (`d69a3df22`)
+- feat(record): proved statements carry moves read off the function body (`0ccdf7a2c`)
+- fix(record): the move-form derivation reaches the reader (`c0b95cd2c`)
+- fix(checker): the fields move and an unfold of a whole call only (`b091f875e`)
+- fix(parser): a nested object line is refused as an old word (`f56349bf0`)
+- fix(test): the compiler imports the scheduler after its own lists (`ac45af6ef`)
+- feat(test): run blocks are executed and their expectations checked (`62d501d85`)
+- fix(bounded): the step estimate counts the postcondition check (`429a7a73d`)
+- refactor(conc): scheduler names no longer clash with the compiler (`1364adc40`)
+- fix(link): a name outside an only list is refused in any import order (`71729dcdd`)
+- fix(run): consent to the unproven no longer runs an unlinked program (`47f7160e1`)
+- fix(link): an exported function may call a helper its module hides (`704a05f77`)
+- fix(emit-c): the printed makefile names the tls client of the shell (`d37931b84`)
+- feat(self): make install lays down share/flang (`8733178f6`)
+
+Ещё 29 правок языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): the tap serves flang-package, the checks follow it (`7936da803`)
+- chore(release): sha256 of the 0.7.29 archive and the full notes (`2a71e57b8`)
+- chore(release): version 0.7.29 and its release notes (`2b7b6c5e7`)
+- feat(checker): both checkers replay exploration records (`0d48131ab`)
+- feat(temporal): explore always-properties of a finite process model (`f376a6ecf`)
+- feat(lean): reference answers on witnesses for translation validation (`e5db23a40`)
+- chore(seed): reseed the shell after statements and syllogisms (`e11d342aa`)
+- chore(seed): reseed the shell after the verdict change (`7399e70dd`)
+- build(seed): reseed the runtime mirror after rebase (`a88b960e5`)
+- build(seed): take the runtime mirror of dev before reseeding (`6882b72de`)
+
+Ещё 35 правок языка снаружи не меняют.
+
+## 17 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- test(repl): probes for statements and syllogisms fed on stdin (`6e483b50c`)
+- fix(repl): judge statements and syllogisms in the shell (`fc4978f45`)
+- chore(proof): ratchets follow the new forgeries and probes (`ae470e5fa`)
+- docs(adr): 0160 the checker reads what the kernel proves (`68b859f59`)
+- fix(checker): a match after a multi-line example still opens the body (`8cec90256`)
+- fix(checker): count postconditions in code, not in text blocks (`75785639d`)
+- fix(checker): monad blocks call their unit and join, quotes in names (`a7d40f812`)
+- fix(checker): examples by value, joined restrictions, more readers (`cff9908e1`)
+- fix(checker): a claim's place is its line, names keep their and (`189bbea26`)
+- fix(checker): read calls in code, sums over a segment, true counts (`7cc2eed0d`)
+- feat(checker): read foreign surfaces, compare numbers as the language (`75c9fa09a`)
+- fix(checker): a case is read only from the body's own match (`74decc8dc`)
+- fix(guards): falsifier and word guard follow the code contract (`063d65be3`)
+- test(unicode): official conformance tests and a ten target probe (`ff0e13405`)
+- feat(stdlib): explicit decoding of bytes with an honest refusal (`f75a8ca0c`)
+- feat(stdlib): normalization, grapheme clusters and case folding (`6b7424d41`)
+- feat(stdlib): unicode 17.0.0 tables generated from the UCD files (`90e31cb52`)
+- feat(site): a playground checks flang and syllogisms in the tab (`0b0d423b7`)
+- chore(seed): reseed the shell and the runtime for wasm32-wasi (`d2fb4da8d`)
+- fix(emit-c): the shell and the runtime build for wasm32-wasi (`e0130e7a0`)
+- feat(proof): the reference semantics is compared with the binary (`48b772847`)
+- feat(lean): a reference semantics of the language core with theorems (`1340d783e`)
+- feat(lean): the model rounds integers in binary64 (`43591bd58`)
+- chore(seed): refresh the copied runtime with carried memo pins (`3415002fc`)
+- perf(runtime): memo pins follow moved values, inline field read (`4a87587ee`)
+- docs(adr): 0145 unfolding takes the arguments and names what Lean misses (`c667fa8a1`)
+- fix(checker): unfolding refuses a parameter the substitution misses (`924070c9a`)
+- chore(asdf): the plugin submodule counts only target directories (`ff9468e78`)
+
+Ещё 34 правки языка снаружи не меняют.
+
+## 16 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(proof): register the forgery programs and refresh the counts (`a24e075ba`)
+- test(proof): the strict probe names its import helper apart (`a66c325a5`)
+- fix(cli): the shell speaks plain words in seven more messages (`c49a29e73`)
+- fix(proof): grid and checker disagreement give code 3, not 0 (`23f613593`)
+- fix(proof): the exit code of check --proof says what was proved (`c3ef7f093`)
+- docs(ct): the resolver module and the corpus plan get distinct names (`d435bae2a`)
+- docs(ct): specify proofs about every category, with a Lean corpus (`8c138b709`)
+- fix(checker): the compute move reads string literals in escaped form (`4b33bb081`)
+- fix(checker): unfolding puts the call arguments in place of parameters (`c5b70f94b`)
+- fix(packaging): the parity probe of the library fits the lint limits (`de827a986`)
+- feat(release): ship the standard library with every install (`c501f7b44`)
+- feat(proof): measure the prover against lean on forty tasks (`1b8f9fe79`)
+- docs(adr): 0127 lifts the checker ceiling by the half moves (`02e1b60d9`)
+
+Ещё 30 правок языка снаружи не меняют.
+
+## 8 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(checker): evaluator no longer computes element and symbol (`fdc2af8b6`)
+- feat(lean): rules guard counts the half moves (`20fdcaee2`)
+- feat(lean): every half move of the checker has a soundness theorem (`6e8deff68`)
+- fix(checker): half moves keep facts out of pattern scopes (`cb36663a1`)
+- style(emit): the chunked map lock in C# follows dotnet format too (`d728f8677`)
+- chore(ledgers): rule anchors and share rows follow the merged batch (`3dc92d9e5`)
+- feat(self): lay out printed C and C++ the way clang-format LLVM does (`39d82d0d1`)
+- feat(self): print C# arrays and lists as collection expressions (`ede306a19`)
+- style(emit): lay out the C and C++ runtimes with clang-format LLVM (`1d78d954a`)
+- style(emit): the C# runtime follows dotnet format at severity info (`56ca59543`)
+- test(bench): a gate for the parallel map and the monoid fold (`1aa961380`)
+- feat(emit): map and fold in chunks in Go, Java, C# and Elixir too (`13058c3bd`)
+- feat(check): the kernel judges monoid laws and marks the folds they cut (`0692c99e2`)
+- feat(kernel): the exact ring drops a written empty list from a sum (`e63dfdbfb`)
+- feat(emit): print a total map and a monoid fold in chunks in C (`7c2173903`)
+- chore(ledgers): pattern-shadow probes get English names and share rows (`5b17b4812`)
+- test(proof): register the pattern-shadow hole with probes and a template (`b2ee86685`)
+- fix(kernel): a pattern name that shadows a parameter refuses induction (`fe25a76aa`)
+- build(seed): reseed the runtime mirror for the plain check messages (`ee5404123`)
+- fix(cli): check messages name the proof report in plain words (`3190d01e7`)
+- fix(checker): the literal law reads a zero in parentheses (`9f0181997`)
+- chore(proof): forgery-probes ratchet follows the verdict (`5da1af503`)
+- fix(checker): close the gaps the second checker found (`d9a885669`)
+- feat(checker): the second checker gives a verdict on every record (`b99af39db`)
+- build(seed): reseed the runtime mirror after rebase (`6df405902`)
+- build(seed): reseed the runtime mirror after rebase (`ce2d4d12c`)
+- build(seed): reseed the runtime mirror for the cost report (`3585b88c9`)
+- feat(run): flang run --cost and the runner's cost field report the price (`9a807e1e5`)
+- test(probes): keep the conditional syllogism premise unproved (`7ca01eba8`)
+
+Ещё 39 правок языка снаружи не меняют.
+
+## 15 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(asdf): the plugin submodule points at the prebuilt-first plugin (`24e0c060a`)
+- fix(asdf): the c archive fallback builds with the makefile flags (`e52119d69`)
+- fix(packaging): the parity instrument runs on an installed flang (`700a85181`)
+- feat(packaging): the parity instrument compares any number of installs (`68de7add5`)
+- test(probes): 71 russian sentences are judged by the pregroup parser (`208d78f7f`)
+- feat(ct): a russian sentence is checked by a pregroup of typed words (`91192abed`)
+
+Ещё 11 правок языка снаружи не меняют.
 
 ## 14 октября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- feat(asdf): the plugin installs the prebuilt build and falls back to C (`38ba44e5e`)
+- build(packaging): homebrew and aur manifests for flang-package (`033a1f363`)
+- ci(release): four prebuilt tarballs, deb, rpm and one sha256sums (`b02a1cc24`)
 - chore(release): point the Homebrew tap at 0.7.28 (`4cf15a31f`)
 - chore(release): the Homebrew formula knows the 0.7.28 archive hash (`48ca7c399`)
 - chore(release): version 0.7.28 and its release notes (`b4e30f74d`)
@@ -67,7 +224,7 @@
 - test(probes): the batch six binary meets the probes it was printed for (`c85424b50`)
 - chore(seed): print batch six with the record lines broken (`181ba1f7f`)
 
-Ещё 25 правок языка снаружи не меняют.
+Ещё 29 правок языка снаружи не меняют.
 
 ## 13 октября 2026
 
@@ -187,38 +344,6 @@
 - chore(licenses): drop SPDX header lines from source files (`1149c78f7`)
 
 Ещё 2 правки языка снаружи не меняют.
-
-## 8 октября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- style(emit): the chunked map lock in C# follows dotnet format too (`d728f8677`)
-- chore(ledgers): rule anchors and share rows follow the merged batch (`3dc92d9e5`)
-- feat(self): lay out printed C and C++ the way clang-format LLVM does (`39d82d0d1`)
-- feat(self): print C# arrays and lists as collection expressions (`ede306a19`)
-- style(emit): lay out the C and C++ runtimes with clang-format LLVM (`1d78d954a`)
-- style(emit): the C# runtime follows dotnet format at severity info (`56ca59543`)
-- test(bench): a gate for the parallel map and the monoid fold (`1aa961380`)
-- feat(emit): map and fold in chunks in Go, Java, C# and Elixir too (`13058c3bd`)
-- feat(check): the kernel judges monoid laws and marks the folds they cut (`0692c99e2`)
-- feat(kernel): the exact ring drops a written empty list from a sum (`e63dfdbfb`)
-- feat(emit): print a total map and a monoid fold in chunks in C (`7c2173903`)
-- chore(ledgers): pattern-shadow probes get English names and share rows (`5b17b4812`)
-- test(proof): register the pattern-shadow hole with probes and a template (`b2ee86685`)
-- fix(kernel): a pattern name that shadows a parameter refuses induction (`fe25a76aa`)
-- build(seed): reseed the runtime mirror for the plain check messages (`ee5404123`)
-- fix(cli): check messages name the proof report in plain words (`3190d01e7`)
-- fix(checker): the literal law reads a zero in parentheses (`9f0181997`)
-- chore(proof): forgery-probes ratchet follows the verdict (`5da1af503`)
-- fix(checker): close the gaps the second checker found (`d9a885669`)
-- feat(checker): the second checker gives a verdict on every record (`b99af39db`)
-- build(seed): reseed the runtime mirror after rebase (`6df405902`)
-- build(seed): reseed the runtime mirror after rebase (`ce2d4d12c`)
-- build(seed): reseed the runtime mirror for the cost report (`3585b88c9`)
-- feat(run): flang run --cost and the runner's cost field report the price (`9a807e1e5`)
-- test(probes): keep the conditional syllogism premise unproved (`7ca01eba8`)
-
-Ещё 39 правок языка снаружи не меняют.
 
 ## 7 октября 2026
 

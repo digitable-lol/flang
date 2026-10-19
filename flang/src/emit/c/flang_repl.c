@@ -11017,7 +11017,20 @@ static char *proof_checker_path(void) {
   if (self_dir == NULL) {
     return NULL;
   }
+  /* In the source tree the checker is built next to its source; an install
+   * (Homebrew, deb, rpm, prebuilt tarball, install.sh, asdf) puts it into
+   * libexec/flang/checker beside bin/. When neither is there, the tree path
+   * is returned, so the "no checker" message names where to build it. */
   found = repl_join(self_dir, "../flang/proof/checker/сверщик");
+  if (access(found, X_OK) != 0) {
+    char *installed = repl_join(self_dir, "../libexec/flang/checker");
+    if (access(installed, X_OK) == 0) {
+      free(found);
+      found = installed;
+    } else {
+      free(installed);
+    }
+  }
   free(self_dir);
   return found;
 }

@@ -5,7 +5,8 @@
 #
 # Checks: `flang --version` names <version> on its first line, `flang check`
 # accepts a module and rejects a broken one, `flang emit` prints into every
-# target the binary names in `--help`, and flangtutor finds its lessons.
+# target the binary names in `--help`, `check --proof` runs the proof checker,
+# and flangtutor finds its lessons.
 set -eu
 
 if [ "$#" -ne 2 ]; then
@@ -59,6 +60,17 @@ for target in $targets; do
     fail=1
   fi
 done
+
+# The independent proof checker must be found by an installed flang: without
+# it `check --proof` says "сверщика нет" and every proved claim rests on the
+# kernel alone.
+printf 'модуль «Проба большего»\n\nтотальная функция «Большее»\n  принимает а: неотрицательное, б: неотрицательное\n  возвращает неотрицательное\n  обеспечивает «не меньше первого» результат не меньше а\n  если а больше б то а иначе б\n' > "$probe/larger.flang"
+proved=$(env -u FLANG_CHECKER "$flang" check "$probe/larger.flang" --proof 2>&1 || true)
+case "$proved" in
+  *"сверщика нет"*) echo "FAIL check --proof finds no proof checker (libexec/flang/checker)" >&2; fail=1 ;;
+  *"независимо, сверщиком"*) echo "ok   check --proof runs the proof checker" ;;
+  *) echo "FAIL check --proof said nothing about the proof checker" >&2; fail=1 ;;
+esac
 
 if [ -x "$dir/bin/flangtutor" ]; then
   if "$dir/bin/flangtutor" --список 2>/dev/null | grep -q '^урок 1 '; then

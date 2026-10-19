@@ -667,11 +667,37 @@ for (const с of страницы) {
   }
 }
 
+// ── Слова языка для редактора песочницы ─────────────────────────────────────
+// Подсветка в редакторе песочницы красит ключевые слова — и берёт их ровно
+// оттуда же, откуда их берёт язык: из таблицы лексера (функция «Куски таблицы»
+// в flang/self/lexer.flang). Второго списка нет; таблица не нашлась или
+// оказалась пустой — сборка отказывает, а не кладёт на страницу пустой список.
+function словаЛексера() {
+  const путь = join(КОРЕНЬ, 'flang', 'self', 'lexer.flang');
+  const текст = readFileSync(путь, 'utf8');
+  const начало = текст.indexOf('тотальная функция «Куски таблицы»');
+  if (начало < 0) return { слова: [], беда: 'в flang/self/lexer.flang нет функции «Куски таблицы»' };
+  const конец = текст.indexOf('\nтотальная функция', начало + 1);
+  const тело = текст.slice(начало, конец < 0 ? текст.length : конец);
+  const слова = new Set();
+  for (const кусок of тело.matchAll(/"(\|[^"]*)"/gu)) {
+    for (const пара of кусок[1].split('|')) {
+      const место = пара.lastIndexOf(':');
+      if (место > 0) слова.add(пара.slice(0, место));
+    }
+  }
+  if (слова.size < 100) return { слова: [], беда: `таблица лексера дала слов ${слова.size} — меньше сотни, разбор таблицы сломан` };
+  return { слова: [...слова].sort((а, б) => б.length - а.length || (а < б ? -1 : 1)), беда: null };
+}
+const ЛЕКСИКОН = словаЛексера();
+if (ЛЕКСИКОН.беда) беды.push(ЛЕКСИКОН.беда);
+const естьПесочница = (с) => с.html.includes('<pre class="lang-playground">');
+
 // ── Ссылки по собранному сайту ──────────────────────────────────────────────
 // Сторож не по исходнику, а по тому, что увидит читатель: каждый href и src
 // на странице либо внешний, либо ведёт на страницу или файл сборки. Считается
 // от каталога страницы, как считает браузер.
-const файлыСборки = new Set([...адресаСтраниц, 'style.css', 'search.js']);
+const файлыСборки = new Set([...адресаСтраниц, 'style.css', 'search.js', 'playground.js']);
 for (const с of страницы) {
   for (const м of с.html.matchAll(/\b(?:href|src)="([^"]*)"/gu)) {
     const адрес = м[1];
@@ -988,7 +1014,9 @@ function страницаЦеликом(с) {
   });
 })();
 </script>
-<script src="${корень}search.js" defer></script>
+<script src="${корень}search.js" defer></script>${естьПесочница(с) ? `
+<script type="application/json" id="flang-lexicon">${JSON.stringify(ЛЕКСИКОН.слова).replace(/</g, '\\u003c')}</script>
+<script src="${корень}playground.js" defer></script>` : ''}
 </body>
 </html>
 `;
@@ -1047,6 +1075,7 @@ for (const с of страницы) {
 }
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'style.css'), join(ВЫХОД, 'style.css'));
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'search.js'), join(ВЫХОД, 'search.js'));
+copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'playground.js'), join(ВЫХОД, 'playground.js'));
 
 // Указатель поиска кладётся ОДНИМ файлом в корень сайта: страница из `en/`
 // берёт его через `../`, и второй копии нет.

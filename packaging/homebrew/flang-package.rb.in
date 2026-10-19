@@ -34,6 +34,10 @@ class FlangPackage < Formula
   def install
     bin.install "bin/flang"
     bin.install "bin/flangtutor" if File.exist?("bin/flangtutor")
+    # The independent proof checker: `flang check --proof` runs it from
+    # ../libexec/flang/checker next to bin/flang. Every prebuilt build since
+    # 0.7.30 carries it; without it every proved claim rests on the kernel alone.
+    (libexec/"flang").install "libexec/flang/checker"
     lib.install Dir["lib/*"] if Dir.exist?("lib")
     include.install Dir["include/*"] if Dir.exist?("include")
     (share/"flang").install Dir["share/flang/*"]
@@ -62,5 +66,18 @@ class FlangPackage < Formula
     system bin/"flang", "check", "probe.flang"
     system bin/"flang", "emit", "probe.flang", "--target", "c", "--out", "out"
     assert_path_exists testpath/"out/flang_runtime.c"
+
+    (testpath/"larger.flang").write <<~FLANG
+      модуль «Проба большего»
+
+      тотальная функция «Большее»
+        принимает а: неотрицательное, б: неотрицательное
+        возвращает неотрицательное
+        обеспечивает «не меньше первого» результат не меньше а
+        если а больше б то а иначе б
+    FLANG
+    proved = shell_output("#{bin}/flang check larger.flang --proof 2>&1")
+    refute_match "сверщика нет", proved
+    assert_match "независимо, сверщиком", proved
   end
 end

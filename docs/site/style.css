@@ -52,6 +52,8 @@
   --good-bg:   #E6F2EC;
   --bad:       #A6472F;
   --bad-bg:    #F7EAE6;
+  --pg-warn:    #8A5A00;
+  --pg-warn-bg: #FBF1DC;
 
   /* ── Слой 2: палитра КАРТОЧКИ КОДА ────────────────────────────────────────
      Своих чисел здесь нет — одни псевдонимы фирменных токенов. Раньше на этом
@@ -130,6 +132,8 @@
     --good-bg:   #17271F;
     --bad:       #E08A6E;
     --bad-bg:    #2A1B16;
+    --pg-warn:    #E2B04F;
+    --pg-warn-bg: #2A2312;
 
     /* Палитра карточки кода — целиком, а не «то, что изменилось». Довод
        записан у первого объявления в `:root`: подложка обязана ехать вместе
@@ -163,6 +167,8 @@
   --good-bg:   #17271F;
   --bad:       #E08A6E;
   --bad-bg:    #2A1B16;
+  --pg-warn:    #E2B04F;
+  --pg-warn-bg: #2A2312;
 
   /* То же и здесь, и по той же причине: это ветка живого переключателя в
      шапке. Пропусти её — и кнопка «тёмная» дала бы половину темы: страница
@@ -413,8 +419,10 @@ body {
 }
 
 /* Подсветка flang. Классы ставит СБОРКА настоящим лексером языка
-   (docs/site/highlighting.mjs) — в браузере не красится ничего, скрипта на это
-   нет и не будет. Красятся ровно пять видов токенов; имена без ёлочек, знаки
+   (docs/site/highlighting.mjs) — в браузере не красятся блоки страниц.
+   Исключение одно — редактор песочницы: там текст меняет читатель, и
+   красит его `playground.js` словами из той же таблицы лексера, которые
+   сборка кладёт на страницу. Красятся ровно пять видов токенов; имена без ёлочек, знаки
    и стрелки остаются цветом текста карточки.
    Роли розданы не заново: сопоставление взято у Digitable как есть
    (`--course-syn-*` в courses-v2.css) — ключевое слово синий, имя циан,
@@ -592,17 +600,128 @@ body {
 .content .playground-bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
 .content .playground-examples, .content .playground-check, .content .playground-share {
   font: inherit; font-size: .9em; padding: .3rem .6rem; border: 1px solid var(--rule);
-  border-radius: 4px; background: var(--surface); color: var(--ink);
+  border-radius: 4px; background: var(--surface); color: var(--ink); cursor: pointer;
 }
+.content .playground-examples { flex: 1 1 14rem; max-width: 30rem; min-width: 0; }
 .content .playground-check { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-.content .playground-check:disabled { opacity: .6; }
+.content .playground-check:disabled { opacity: .6; cursor: progress; }
 .content .playground-status { color: var(--muted); font-size: .85em; }
-.content .playground-input {
-  box-sizing: border-box; width: 100%; font-family: var(--mono); font-size: .87em; line-height: 1.45;
-  padding: .75rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--code-bg); color: var(--ink);
+
+/* Редактор: под прозрачным полем ввода лежит раскрашенная копия того же
+   текста. Шрифт, кегль, интерлиньяж и отступы у обоих обязаны совпадать до
+   пикселя — иначе курсор уедет от букв; поэтому они заданы одним правилом, а
+   жирного у имён здесь нет (жирное начертание шире). Карточка тёмная в обеих
+   темах — как каждый блок кода на сайте. */
+.content .pg-editor { position: relative; }
+.content .pg-editor pre, .content .pg-editor pre ~ .playground-input {
+  box-sizing: border-box; margin: 0; border: 0; padding: .8rem 1rem .8rem calc(1rem + 2px);
+  font-family: var(--mono); font-size: .85rem; line-height: 1.45; letter-spacing: 0; tab-size: 2;
+  white-space: pre; overflow: auto; width: 100%;
 }
-.content .playground-output { min-height: 3rem; white-space: pre-wrap; }
-.content .playground[data-playground-verdict="следует"] .playground-output,
-.content .playground[data-playground-verdict="проверено"] .playground-output { border-left: 3px solid var(--good); }
-.content .playground[data-playground-verdict="не следует"] .playground-output,
-.content .playground[data-playground-verdict="не проверено"] .playground-output { border-left: 3px solid var(--bad); }
+.content .pg-editor pre {
+  position: absolute; inset: 0; pointer-events: none; scrollbar-width: none;
+  background: var(--flang-kod-fon); color: var(--flang-kod-tekst); border-left: 2px solid var(--flang-kod-ramka);
+}
+.content .pg-editor pre::-webkit-scrollbar { display: none; }
+.content .pg-editor pre ~ .playground-input {
+  position: relative; display: block; resize: vertical; min-height: 12em;
+  background: transparent; color: transparent; caret-color: var(--flang-kod-tekst); outline: none;
+}
+.content .pg-editor pre ~ .playground-input:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.content .pg-editor pre ~ .playground-input::selection { background: var(--flang-kod-ramka); color: transparent; }
+.content .pg-editor pre .pg-line, .content pre code .pg-line { display: block; min-height: 1.45em; }
+.content .pg-editor pre .pg-line-bad { background: var(--flang-kod-ramka); box-shadow: inset 4px 0 0 #ff5b5b; }
+.content .pg-editor pre .tok-slovo { color: var(--flang-syn-slovo); }
+.content .pg-editor pre .tok-imya { color: var(--flang-syn-imya); }
+.content .pg-editor pre .tok-stroka { color: var(--flang-syn-stroka); }
+.content .pg-editor pre .tok-chislo { color: var(--flang-syn-chislo); }
+.content .pg-editor pre .tok-kommentariy { color: var(--flang-syn-zametka); }
+.content .pg-marks { list-style: none; margin: .4rem 0 0; padding: 0; font-size: .88em; color: var(--bad); }
+.content .pg-marks li { margin: .15rem 0; }
+.content .pg-mark-line {
+  font: inherit; font-family: var(--mono); font-size: .9em; padding: 0 .35rem; cursor: pointer;
+  border: 1px solid var(--bad); border-radius: 3px; background: var(--bad-bg); color: var(--bad);
+}
+
+/* Вкладки вывода. */
+.content .pg-tabs { display: flex; flex-wrap: wrap; gap: .2rem; margin: 1rem 0 0; border-bottom: 1px solid var(--rule); }
+.content .pg-tab {
+  font: inherit; font-size: .9em; padding: .4rem .8rem; cursor: pointer; color: var(--muted);
+  background: none; border: 1px solid transparent; border-bottom: 0; border-radius: 4px 4px 0 0; margin-bottom: -1px;
+}
+.content .pg-tab[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--rule); border-bottom: 1px solid var(--surface); }
+.content .pg-panel { padding: 1rem 0 0; }
+.content .pg-hint { color: var(--muted); }
+
+/* Итог: одна карточка, цвет — по исходу. */
+.content .pg-verdict { border-left: 4px solid var(--rule); background: var(--surface); padding: .7rem 1rem; margin: 0 0 1rem; border-radius: 0 4px 4px 0; }
+.content .pg-verdict p { margin: 0; }
+.content .pg-verdict-title { font-size: 1.15em; font-weight: 650; }
+.content .pg-verdict-lead { margin-top: .3rem !important; color: var(--muted); }
+.content .pg-counter { margin-top: .5rem !important; }
+.content .pg-counter code { white-space: pre-wrap; }
+.content .pg-verdict.pg-proved { border-color: var(--good); background: var(--good-bg); }
+.content .pg-verdict.pg-proved .pg-verdict-title { color: var(--good); }
+.content .pg-verdict.pg-examples { border-color: var(--pg-warn); background: var(--pg-warn-bg); }
+.content .pg-verdict.pg-examples .pg-verdict-title { color: var(--pg-warn); }
+.content .pg-verdict.pg-violated, .content .pg-verdict.pg-error { border-color: var(--bad); background: var(--bad-bg); }
+.content .pg-verdict.pg-violated .pg-verdict-title, .content .pg-verdict.pg-error .pg-verdict-title { color: var(--bad); }
+.content .pg-verdict.pg-unproved { border-color: var(--faint); }
+.content .pg-items { list-style: none; padding: 0; margin: 0 0 1rem; }
+.content .pg-item { position: relative; padding: .15rem 0 .15rem 1.4rem; }
+.content .pg-item::before { position: absolute; left: .1rem; top: .15rem; font-weight: 700; }
+.content .pg-item.pg-proved::before { content: "✓"; color: var(--good); }
+.content .pg-item.pg-examples::before { content: "≈"; color: var(--pg-warn); }
+.content .pg-item.pg-violated::before, .content .pg-item.pg-error::before { content: "✗"; color: var(--bad); }
+.content .pg-item.pg-unproved::before, .content .pg-item.pg-conditional::before, .content .pg-item.pg-unknown::before { content: "?"; color: var(--muted); }
+.content .pg-details { margin: .5rem 0 0; }
+.content .pg-details > summary, .content .pg-nested > summary { cursor: pointer; color: var(--accent); }
+.content .pg-nested { margin: .6rem 0 0 .2rem; }
+.content .pg-details .playground-output { white-space: pre-wrap; font-size: .78rem; max-height: 28rem; }
+.content .pg-sentences { margin: .5rem 0; }
+
+/* Формулы. */
+.content .pg-formula { border: 1px solid var(--rule); border-radius: 4px; padding: .6rem .9rem; margin: 0 0 .8rem; background: var(--surface); }
+.content .pg-formula p { margin: 0 0 .3rem; }
+.content .pg-formula-name { font-weight: 600; }
+.content .pg-formula-plain { font-family: var(--mono); font-size: .92em; }
+.content .pg-formula-why { color: var(--muted); font-size: .9em; }
+.content .pg-tex-shown { overflow-x: auto; color: var(--ink); }
+.content .pg-tex-source { display: block; white-space: pre-wrap; font-size: .82em; }
+.content .pg-tex-raw summary { cursor: pointer; color: var(--muted); font-size: .85em; }
+.content .pg-formula-input {
+  box-sizing: border-box; width: 100%; font-family: var(--mono); font-size: .9em; padding: .6rem .8rem;
+  border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); color: var(--ink);
+}
+.content .pg-formula-preview { min-height: 1.5rem; margin: .4rem 0; }
+.content .pg-formula-out { margin-top: 1rem; }
+
+/* Рисунки: SVG рисуется на странице, цвета — переменные темы. */
+.content .pg-figure { margin: 0 0 1.3rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+.content .pg-figure figcaption { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .5rem .8rem; border-bottom: 1px solid var(--rule-soft); font-size: .92em; }
+.content .pg-figure-title { font-weight: 600; }
+.content .pg-figure-body { overflow-x: auto; padding: .6rem; }
+.content .pg-figure-note { margin: 0; padding: 0 .8rem .6rem; color: var(--muted); font-size: .85em; }
+.content .pg-figure .pg-items { padding: 0 .8rem .4rem; margin: 0; }
+.content .pg-mark { font-size: .8em; padding: .05rem .45rem; border-radius: 999px; border: 1px solid currentColor; }
+.content .pg-mark.pg-proved { color: var(--good); }
+.content .pg-mark.pg-examples { color: var(--pg-warn); }
+.content .pg-mark.pg-violated { color: var(--bad); }
+.content .pg-mark.pg-unknown, .content .pg-mark.pg-unproved { color: var(--muted); }
+.content .pg-svg { display: block; max-width: none; font-family: var(--sans); font-size: 13px; }
+.content .pg-svg .pg-node rect { fill: var(--code-bg); stroke: var(--quote-bar); stroke-width: 1.2; }
+.content .pg-svg .pg-node text { fill: var(--ink); }
+.content .pg-svg .pg-node-proved rect { stroke: var(--good); fill: var(--good-bg); }
+.content .pg-svg .pg-node-unproved rect { stroke: var(--bad); }
+.content .pg-svg .pg-tree-node text { font-size: 12.5px; }
+.content .pg-svg .pg-tree-sub { fill: var(--muted) !important; }
+.content .pg-svg .pg-edge { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+.content .pg-svg .pg-dashed { stroke-dasharray: 5 4; }
+.content .pg-svg .pg-arrowhead { fill: var(--muted); }
+.content .pg-svg .pg-edge-label { fill: var(--accent); font-size: 12px; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.content .pg-svg .pg-set { stroke-width: 1.5; fill-opacity: .14; }
+.content .pg-svg .pg-set-a { fill: var(--accent); stroke: var(--accent); }
+.content .pg-svg .pg-set-b { fill: var(--good); stroke: var(--good); }
+.content .pg-svg .pg-set-c { fill: var(--pg-warn); stroke: var(--pg-warn); }
+.content .pg-svg .pg-set-name { fill: var(--ink); font-weight: 600; }
+.content .pg-svg .pg-set-item { fill: var(--ink); font-family: var(--mono); font-size: 13px; }

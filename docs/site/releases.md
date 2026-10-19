@@ -6,6 +6,38 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.29 — 18 October 2026
+
+**Prebuilt binaries and a one-command install, category laws are proved**
+
+### What appeared
+
+- **Prebuilt binaries for Linux and macOS, installed with one command.** No C compiler and no sudo: `curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh | sh` puts `flang` into `~/.local/bin` and checks the archive against the release `SHA256SUMS`. Other ways: `brew install digitable-lol/tap/flang-package`, asdf, deb and rpm packages.
+- **A playground in the browser.** On https://digitable-lol.github.io/flang/en/playground.html a program or a syllogism is checked right in the tab: the compiler is built to WebAssembly, nothing to install.
+- **An installed flang finds the standard library.** `использует «Lists» только «Длина»` (uses Lists, only Length) works in a program in any directory: the library sits in `share/flang/stdlib` next to the binary. Before, this worked only inside a clone of the repository.
+- **The kernel proves the laws of a monoid, functor, isomorphism and natural transformation** — for all values, not on a grid. `check --proof` prints them in a section of their own, for example on `flang/ct/yoneda-preorder.flang`: `законов утверждениями 9: доказано ядром 9, не доказано 0` (laws as statements 9: proved by the kernel 9, not proved 0); in `--json` it is the `lawClaims` field. A law that is not proved is named. Monad laws are still computed on a grid.
+- **`flang test` runs `прогон` (run) blocks** and checks their expectations. Each block counts as an example: a wrong expectation is exit code 1 and the message `у процесса «Счётчик» состояние {"всего":5}, а ожидалось {"всего":999}` (process Counter has state 5, expected 999).
+- **`check --proof` prints the proof steps for most statements:** which field or which call was unfolded and on which source line, for example `ход 1 поля ⟨«Пополнить» от ( счёт ) и сумма⟩ строка 15 …` (step 1, fields, line 15). Some statements still show only the rule name.
+- **`always` properties of processes are checked by exploring a finite model.** A model is processes, their states and rules "on this letter, move to that state and send these letters"; the exploration walks every order up to a given depth. The answer is either the shortest counterexample run or "not violated … this is not a proof". For the model `flang/concurrency/temporal/models/deadlock.flang` the answer is `НАРУШЕНО, встречный прогон, шагов 6` (violated, counterexample of 6 steps). Both proof checkers (in C and in Lean 4) replay such records on their own: `ПЕРЕБОР СВЕРЕН: встречный прогон переигран, шагов 6, в конце свойство «без тупика» ложно`.
+- **The printed C is checked against a reference.** `flang run-script translation:validate` prints examples to C, builds them and compares the answers of the programs with the answers of a reference semantics in Lean 4: `СООТВЕТСТВИЕ ПРОВЕРЕНО для 146 функций, вне валидации 4 … расхождений 0` (146 functions agree, 0 differences). It rejects six deliberately broken versions of the printed C.
+- **A grammar of Russian sentences on typed words.** `flang run flang/ct/russian/parse.flang --function «Разобрать» --args '{"предложение":"мама читает книгу"}'` answers `грамматично: … связи: мама—читает, читает—книгу` (grammatical, with the links), and for «мама читает книга» it answers `не грамматично: неверный падеж` (wrong case).
+- **Unicode 17 in the standard library:** normalization (`NFC`, `NFD`), grapheme clusters, case-insensitive comparison and explicit decoding of bytes. `«Графемы» от "👨‍👩‍👧🇷🇺"` gives two graphemes; `«Равны без учёта регистра» от "STRASSE" и "straße"` gives `да` (true); `«Раскодировать байты» от "UTF-8" и [104, 255]` gives a refusal at position 2 with the reason «байт не может начинать знак UTF-8» (this byte cannot start a UTF-8 character).
+- **In the `flang repl` shell you can write statements, theorems and syllogisms.** The shell answers at once: `утверждение «сложение перестановочно»: доказано (код 0)` (proved), refuted with a counterexample, or not proved with the reason.
+- **A reference semantics of the language core is written in Lean 4,** and for every step the independent proof checker replays there is a Lean proof that the step is sound.
+
+### What changed
+
+- **An exported function may call a hidden helper of its own module.** A program that imported such a module used to fail `check`; now it passes, and calling the hidden function directly is a `FLANG_UNKNOWN_NAME` error that says the module declares it but does not export it.
+- **A nested object is a clear error instead of a crash.** The line `вложен объект` (nested object) gives `FLANG_PARSE … старое слово` (an old word): declare the nested record as an object of its own and refer to it by a field.
+- **Linking errors name the file,** not only the line and column.
+- **`make install` from a clone of the repository does not install the standard library yet,** so a program with `использует «Lists»` outside the clone will not find it. Install flang with `install.sh`, brew, asdf, deb or rpm instead: those carry the library.
+
+### What broke
+
+- **`run` on a program that does not pass checking exits with code 1, not 3.** The same with `--на-веру` (on trust): consent to unproved code does not lift parse, link and type errors. If a script waited for code 3, test for a non-zero code or fix the error the message names.
+- **A name missing from an `только` (only) list is now a `FLANG_UNKNOWN_NAME` error,** whatever the order of the `использует` (uses) lines. Before, it sometimes passed when another file imported the same module more widely. Add the name to the `только` list or remove the call.
+- **`check --proof` exits with code 3 when some statements rest only on examples or on a grid of values.** Before, this was code 0 with the words "verified with a support". For example, `flang/stdlib/lists.flang` (42 proved, 24 on the grid) now answers `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ` (not proved, the support was not judged) with code 3. If your build treated only 0 as success, prove the remaining statements or accept 3 as "not everything was checked".
+
 ## 0.7.28 — 14 October 2026
 
 **Examples inside laws run, mistakes in categories are caught at compile time**

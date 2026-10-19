@@ -677,6 +677,11 @@ body {
 .content .pg-fn { border-top: 1px solid var(--rule-soft); padding: .8rem 0 0; margin: .8rem 0 0; }
 .content .pg-fn-name { margin: 0 0 .5rem; font-family: var(--mono); font-size: .95em; }
 .content .pg-foreign-out { margin-top: 1rem; }
+/* На вкладке «язык → flang» свой редактор; главный и его кнопки прячутся,
+   чтобы наверху не стоял текст, к которому вкладка не относится. */
+.content .playground[data-tab="foreign"] > .pg-editor, .content .playground[data-tab="foreign"] > .pg-marks,
+.content .playground[data-tab="foreign"] .playground-bar .playground-check,
+.content .playground[data-tab="foreign"] .playground-bar .playground-share { display: none; }
 .content .pg-panel > .playground-check { margin: .6rem 0 0; }
 .content .pg-fallacy { margin-top: .5rem !important; }
 .content .pg-boundary { font-size: .9em; }

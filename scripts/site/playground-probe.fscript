@@ -236,15 +236,19 @@
 
 тотальная функция «C translation»
   возвращает «Probe case»
-  пример «clamp is proved, midpoint keeps its overflow open»
+  пример «clamp is proved, midpoint is refuted at the int bounds»
     ожидается (запись «Probe case» с «name» равным "c translation"
-      и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 3
-      и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»", "(lo + hi) не выше INT_MAX",
+      и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
+      и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
+        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
         "ПРОВЕРЕНО — запись сошлась"]
       и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
   (запись «Probe case» с «name» равным "c translation"
-    и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 3
-    и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»", "(lo + hi) не выше INT_MAX",
+    и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
+    и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
+        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
       "ПРОВЕРЕНО — запись сошлась"]
     и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
 
@@ -489,10 +493,11 @@
       print csharp: ждали код 0, вышел 127
       print csharp: в выводе нет «── Privet.cs ──»
       print csharp: в выводе нет «печать совпала с двоичным компилятором»
-      c translation: ждали код 3, вышел 127
+      c translation: ждали код 1, вышел 127
       c translation: в выводе нет «модуль «Перевод clamp»»
       c translation: в выводе нет «модуль «Перевод midpoint»»
-      c translation: в выводе нет «(lo + hi) не выше INT_MAX»
+      c translation: в выводе нет «контрпример: «lo» = 2147483647, «hi» = 2147483647»
+      c translation: в выводе нет «нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»»
       c translation: в выводе нет «ПРОВЕРЕНО — запись сошлась»
       c refusal: ждали код 1, вышел 127
       c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: «long» здесь не читается»

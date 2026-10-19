@@ -284,8 +284,9 @@ A formula with quantifiers in Unicode: multiplication of integers commutes.
 ```
 
 A C function translated to flang. `clamp` is proved in full. For `midpoint` the kernel
-finds that `lo + hi` can overflow `int`: this is a real C bug, and the translation does
-not hide it.
+does not prove the promise "`lo + hi` is at most INT_MAX", so the playground computes the
+function at the `int` bounds: with `lo = hi = 2147483647` the promise is broken. This is
+a real C bug, and the translation does not hide it.
 
 ```c playground A C function — translated to flang
 int clamp(int x, int lo, int hi)

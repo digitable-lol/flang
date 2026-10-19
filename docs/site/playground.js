@@ -33,7 +33,11 @@
     foreignLead: 'Write a function in another language. A translator turns it into flang, and the kernel checks the result right away. The translator is not trusted: whatever it writes, the kernel judges.',
     translateGo: 'Translate and check', translating: 'translating…', soon: 'soon', soonNote: 'The Python translator is not in this build yet.',
     readFailed: 'The text was not read', notTranslated: 'Not translated', fnProved: 'Translated and proved', fnUnproved: 'Translated, not everything is proved',
-    fnFailed: 'Translated, the check failed', noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
+    fnFailed: 'Translated, the check failed', fnRefuted: 'Translated: a counterexample is found',
+    refutedLead: function (c) { return 'The promise «' + c.обещание + '» is broken on ' + inputs(c.входы) + '. flang itself computed this at the int bounds.'; },
+    refuted: function (c) { return 'refuted: ' + inputs(c.входы); }, boundsClean: 'not proved; no violation at the int bounds, but that is not a proof',
+    intNote: 'The result is declared «число»: in flang a sum of «целое» values is «число», so the translator always writes «возвращает число» and states the int bounds as promises.',
+    noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
     cSubset: 'The C subset: int and struct of int fields, if/else, while, for, return, + − * / % and comparisons. Overflow and division by zero become obligations the kernel has to prove.',
     foreignLabel: 'source in another language', fallacy: 'Fallacy: ', card: 'fallacy card', hints: 'Possible fallacies (check them yourself): ', boundary: 'What the form does not decide: ', unparsedSentence: 'Not read: sentence ',
     lineNo: 'line numbers',
@@ -83,7 +87,11 @@
     foreignLead: 'Напишите функцию на другом языке. Переводчик сделает из неё программу на flang, и ядро сразу её проверит. Переводчику не доверяют: что бы он ни написал, судит ядро.',
     translateGo: 'Перевести и проверить', translating: 'перевожу…', soon: 'скоро', soonNote: 'Переводчика с Python в этой сборке ещё нет.',
     readFailed: 'Текст не прочитан', notTranslated: 'Не переведена', fnProved: 'Переведена и доказана', fnUnproved: 'Переведена, доказано не всё',
-    fnFailed: 'Переведена, проверка не прошла', noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
+    fnFailed: 'Переведена, проверка не прошла', fnRefuted: 'Переведена: найден контрпример',
+    refutedLead: function (c) { return 'Обещание «' + c.обещание + '» нарушено на входе ' + inputs(c.входы) + '. Это посчитал сам flang на границах int.'; },
+    refuted: function (c) { return 'опровергнуто: ' + inputs(c.входы); }, boundsClean: 'не доказано; на границах int нарушений не нашлось, но это не доказательство',
+    intNote: 'Результат объявлен числом: в flang сумма целых — число, поэтому переводчик всегда пишет «возвращает число», а границы int записывает обещаниями.',
+    noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
     cSubset: 'Подмножество C: int и struct из полей int, if/else, while, for, return, + − * / % и сравнения. Переполнение и деление на ноль становятся обязательствами, которые ядро должно доказать.',
     foreignLabel: 'исходник на другом языке', fallacy: 'Ошибка: ', card: 'карточка ошибки', hints: 'Возможные ошибки (проверьте сами): ', boundary: 'Чего форма не решает: ', unparsedSentence: 'Не прочитано предложение ',
     lineNo: 'номера строк',
@@ -124,6 +132,7 @@
   };
 
   /* ── мелочи ─────────────────────────────────────────────────────────────── */
+  function inputs(map) { return Object.keys(map || {}).map(function (k) { return k + ' = ' + map[k]; }).join(', '); }
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -909,6 +918,8 @@
     function translate() {
       var text = ed.input.value;
       if (!text.trim()) return Promise.resolve(null);
+      var started0 = Date.now();
+      status.textContent = T.translating;
       go.disabled = true; out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.translating));
       root.removeAttribute('data-foreign-verdict');
       ed.mark([]);
@@ -944,20 +955,32 @@
             return;
           }
           var s = summarize(f);
-          var st = f.код === 0 ? 'proved' : f.код === 3 ? 'unproved' : 'error';
-          if (st === 'error') verdict = 'error';
+          var refuted = f.контрпримеры || [];
+          var st = refuted.length ? 'violated' : f.код === 0 ? 'proved' : f.код === 3 ? 'unproved' : 'error';
+          if (st === 'error' || st === 'violated') verdict = verdict === 'error' ? 'error' : 'violated';
           else if (st === 'unproved' && verdict === 'proved') verdict = 'unproved';
           var c2 = el('div', 'pg-verdict pg-' + st);
-          c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'unproved' ? T.fnUnproved : T.fnFailed));
-          if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
+          c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'violated' ? T.fnRefuted : st === 'unproved' ? T.fnUnproved : T.fnFailed));
+          if (st === 'violated') refuted.forEach(function (c) { c2.appendChild(el('p', 'pg-verdict-lead', T.refutedLead(c))); });
+          else if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
           box.appendChild(c2);
-          if (s.items.length) {
+          var claims = ((f.разбор && f.разбор.ведомость && f.разбор.ведомость.claims) || []);
+          var fnItems = claims.length ? claims.map(function (c) {
+            var who = (T.kinds[c.kind] || c.kind) + ' «' + c.name + '»';
+            var hit = refuted.filter(function (r) { return r.обещание === c.name; })[0];
+            if (hit) return { state: 'violated', text: who + ' — ' + T.refuted(hit) };
+            var cs = claimState(c);
+            if (cs === 'unproved' && /^обязательство /.test(c.name)) return { state: 'unproved', text: who + ' — ' + T.boundsClean };
+            return { state: cs, text: who + ' — ' + claimWords(c) };
+          }) : s.items;
+          if (fnItems.length) {
             var items = el('ul', 'pg-items');
-            s.items.forEach(function (it) { items.appendChild(el('li', 'pg-item pg-' + it.state, it.text)); });
+            fnItems.forEach(function (it) { items.appendChild(el('li', 'pg-item pg-' + it.state, it.text)); });
             box.appendChild(items);
           }
           box.appendChild(el('p', 'pg-formula-name', T.inFlang));
           box.appendChild(codeBlock(f.исходник, 'flang'));
+          box.appendChild(el('p', 'pg-hint', T.intNote));
           var open = el('button', 'playground-share', T.toEditor); open.type = 'button';
           open.addEventListener('click', function () { setText(f.исходник); showTab('result'); input.focus(); });
           box.appendChild(open);
@@ -965,6 +988,8 @@
         });
         if (badLines.length) ed.mark(badLines);
         root.setAttribute('data-foreign-verdict', verdict);
+        var titles = { proved: T.fnProved, violated: T.fnRefuted, unproved: T.fnUnproved, error: answer.отказ ? T.readFailed : T.fnFailed };
+        status.textContent = (answer.функции || []).length || answer.отказ ? titles[verdict] + ' · ' + (Date.now() - started0) + ' ' + T.ms : '';
         root.setAttribute('data-foreign-functions', String((answer.функции || []).length));
         var td = el('details', 'pg-details');
         td.appendChild(el('summary', null, T.terminal));
@@ -1356,12 +1381,16 @@
     var ex = examples[j];
     if (!ex) return;
     select.value = String(j);
+    root.setAttribute('data-example-lang', ex.lang);
+    status.textContent = '';
     if (ex.lang !== 'flang') {
       foreignState.choose(ex.lang); foreignState.editor.set(ex.text); showTab('foreign');
-      return;
+      return foreignState.translate();
     }
     setText(ex.text);
-    if (root.getAttribute('data-tab') === 'emit') showTab('emit');
+    var tab = root.getAttribute('data-tab');
+    if (tab === 'emit') showTab('emit');
+    else if (tab === 'foreign') showTab('result');
   }
   select.addEventListener('change', function () { chooseExample(Number(select.value)); });
   shareButton.addEventListener('click', function () {

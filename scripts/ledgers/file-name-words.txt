@@ -540,6 +540,7 @@ equals
 errand
 escapes
 estimate
+eta
 evaluator
 even
 event

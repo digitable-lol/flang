@@ -549,6 +549,172 @@ def «поДлинам» (t : String) : Option Bool :=
       | _ => if «лт» then some true else if «ге» then some false else none
     | _, _ => none
 
+/-!
+Имена цели по объявленным типам (задачи 7312, 7851, 8806) — зеркало сверщика на
+C (`задать_типы_цели`). Тип имени знают ровно две строки: «для всех «x» ⟨Т⟩»
+записи и «принимает» функции, чьё постусловие доказывается.
+— признак: цель со свободным именем-признаком закрыта, когда закрыты обе
+  подстановки «да» и «нет» (не больше восьми подряд);
+— точный тип: «Т равен Т» знак в знак — истина, когда Т — имя точного типа;
+— запись: две построенные записи одного вида с одними полями равны, когда равны
+  поля; построенная из всех полей «п» — та же «п»; «п» и «д» одного вида равны,
+  когда на пути истинны факты «п.ф равно д.ф» по каждому полю.
+-/
+
+def «точныйТипЦели» (t0 : String) : Bool :=
+  let t := «обрезать» t0
+  ["неотрицательное", "нат", "натуральное", "nat", "naturo", "自然数", "целое", "точное целое",
+   "точное дробное", "сотых", "тысячных", "признак", "строка"].contains t
+
+def «Счёт».«типИмени» (c : «Счёт») (x : String) : Option String :=
+  (c.«имена».find? (·.1 = x)).map (·.2)
+
+def «тождествоНаТочном» (c : «Счёт») («атом» : String) : Bool :=
+  if c.«имена».isEmpty then false else
+  let t := «безВнешних» «атом»
+  match «найтиСв» t [" равен ", " равно ", " равна "] with
+  | none => false
+  | some (g, _) =>
+    let l := «ужатьТ» («доЗнака» t g)
+    let p := «ужатьТ» («отЗнака» t (g + 7))
+    l = p && !((l.splitOn " ").length > 1) && !((l.splitOn "(").length > 1) && !((l.splitOn ".").length > 1) &&
+      (match c.«типИмени» («голо» l) with | some w => «точныйТипЦели» w | none => false)
+
+/-- Слово `x` заменяется по пробельным и скобочным краям, мимо кавычек и ёлочек;
+    имя поля перед « равным » и имя перед « как » — не значение. -/
+def «заменитьСловоЦели» (t x «на» : String) : String := Id.run do
+  let cs := t.toList.toArray
+  let xc := x.toList
+  let d := xc.length
+  let «одето» := («вСкобки» «на»).toList.toArray
+  let mut out : Array Char := #[]
+  let mut q := false
+  let mut el : Nat := 0
+  let mut i := 0
+  while i < cs.size do
+    let c := cs[i]!
+    if q then
+      out := out.push c
+      if c = '\\' && i + 1 < cs.size then
+        out := out.push cs[i + 1]!
+        i := i + 2
+        continue
+      else if c = '"' then q := false
+      i := i + 1
+      continue
+    if c = '"' then
+      q := true
+      out := out.push c
+      i := i + 1
+      continue
+    if el = 0 && d > 0 && «стоитНа» cs i xc && (i = 0 || cs[i - 1]! = ' ' || cs[i - 1]! = '(') &&
+        (i + d = cs.size || cs[i + d]! = ' ' || cs[i + d]! = ')') &&
+        !«стоитНа» cs (i + d) " равным ".toList && !«стоитНа» cs (i + d) " как ".toList then
+      out := out ++ «одето»
+      i := i + d
+      continue
+    if c = '«' then el := el + 1
+    if c = '»' && el > 0 then el := el - 1
+    out := out.push c
+    i := i + 1
+  return String.ofList out.toList
+
+def «первыйПризнакЦели» (c : «Счёт») (t : String) : Option String :=
+  (c.«имена».find? (fun (x, w) => w = "признак" && «заменитьСловоЦели» t x "да" ≠ t)).map (·.1)
+
+/-- Поля выписанной записи `запись «Т» с ф1 равным З1 и …`: имя поля — одно
+    слово без ёлочек, значение — справа от первого « равным », куски — по « и »
+    верхнего уровня; кусок без « равным » или повтор имени — отказ. -/
+def «поляПостроенной» (t0 : String) : Option (String × List (String × String)) := Id.run do
+  let t := «ужатьТ» t0
+  if !t.startsWith "запись «" then return none
+  let «вид» := «ёлочка» t 1
+  let «голова» := s!"запись «{«вид»}» с "
+  if «вид» = "" || («вид».splitOn " ").length > 1 || !t.startsWith «голова» then return none
+  let «ч» := «сверху» ((t.drop «голова».length).toString) "и"
+  if «ч».isEmpty then return none
+  let mut r : List (String × String) := []
+  for k in «ч» do
+    let kk := «обрезать» k
+    match (kk.splitOn " равным ") with
+    | a :: b :: rest =>
+      let «имя» := «голо» («обрезать» a)
+      let «зн» := «обрезать» (" равным ".intercalate (b :: rest))
+      if «имя» = "" || («имя».splitOn " ").length > 1 || «зн» = "" || r.any (·.1 = «имя») then return none
+      r := r ++ [(«имя», «зн»)]
+    | _ => return none
+  return some («вид», r)
+
+/-- Поля объявленного `объект «Т»` без параметров; есть `иногда является` — `none`. -/
+def «Исх».«поляОбъявленного» (s : «Исх») («вид» : String) : Option (List String) := Id.run do
+  let «нач» := s.«номера».find? (fun i => s.«строка» i = s!"объект «{«вид»}»" && !(s.«сырая» i).startsWith " ")
+  let some n := «нач» | return none
+  let mut r : List String := []
+  for i in List.range' (n + 1) (s.«число» - n) do
+    let raw := s.«сырая» i
+    if raw ≠ "" && !raw.startsWith " " then break
+    let l := s.«строка» i
+    if l = "" || l.startsWith "//" then continue
+    if (l.splitOn " иногда является ").length > 1 then return none
+    let «имя» := «голо» («обрезать» (if (l.splitOn ":").length > 1 then (l.splitOn ":").headD "" else if (l.splitOn " является ").length > 1 then (l.splitOn " является ").headD "" else ""))
+    if «имя» = "" || («имя».splitOn " ").length > 1 then return none
+    r := r ++ [«имя»]
+  return if r.isEmpty then none else some r
+
+def «полеСлитно» (t : String) : String := «заменить» («заменить» («заменить» («ужатьТ» t) " " "") "«" "") "»" ""
+
+def «полеИмениЛи» («знач» «имя» «поле» : String) : Bool := «полеСлитно» «знач» = s!"{«имя»}.{«поле»}"
+
+def «этаЗаписи» (c : «Счёт») («запись» «имя0» : String) : Bool :=
+  match «поляПостроенной» «запись» with
+  | none => false
+  | some («вид», ps) =>
+    let «имя» := «ужатьТ» «имя0»
+    if («имя».splitOn " ").length > 1 || («имя».splitOn "(").length > 1 then false else
+    match c.«типИмени» («голо» «имя»), c.«исх».«поляОбъявленного» «вид» with
+    | some w, some fs =>
+      w = s!"«{«вид»}»" && fs.length = ps.length &&
+        fs.all (fun f => match ps.find? (·.1 = f) with
+          | some (_, v) => «полеИмениЛи» v («голо» «имя») f
+          | none => false)
+    | _, _ => false
+
+partial def «фактПоля» (l p f «факт» : String) : Bool :=
+  let t := «безВнешних» «факт»
+  match «найтиСв» t [" и притом "] with
+  | some (g, _) => «фактПоля» l p f («доЗнака» t g) || «фактПоля» l p f («отЗнака» t (g + 10))
+  | none =>
+    match «найтиСв» t [" равен ", " равно ", " равна "] with
+    | none => false
+    | some (g, _) =>
+      let a := «доЗнака» t g
+      let b := «отЗнака» t (g + 7)
+      («полеИмениЛи» a l f && «полеИмениЛи» b p f) || («полеИмениЛи» a p f && «полеИмениЛи» b l f)
+
+def «поляРавныФактами» (c : «Счёт») («сл» «сп» : String) («факты» : List (String × Bool)) : Bool :=
+  let l := «голо» («ужатьТ» «сл»)
+  let p := «голо» («ужатьТ» «сп»)
+  if (l.splitOn " ").length > 1 || (p.splitOn " ").length > 1 || l = p then false else
+  match c.«типИмени» l, c.«типИмени» p with
+  | some wl, some wp =>
+    let «вид» := «ёлочка» wl 1
+    if wl ≠ wp || wl ≠ s!"«{«вид»}»" then false else
+    match c.«исх».«поляОбъявленного» «вид» with
+    | some fs => fs.all (fun f => «факты».any (fun (u, v) => v && «фактПоля» l p f u))
+    | none => false
+  | _, _ => false
+
+def «равенстваПолей» («сл» «сп» : String) : Option String := Id.run do
+  let some (vl, pl) := «поляПостроенной» «сл» | return none
+  let some (vp, pp) := «поляПостроенной» «сп» | return none
+  if vl ≠ vp || pl.length ≠ pp.length then return none
+  let mut r : Option String := none
+  for (f, x) in pl.reverse do
+    let some (_, y) := pp.find? (·.1 = f) | return none
+    let e := s!"{«вСкобки» x} равно {«вСкобки» y}"
+    r := some (match r with | none => e | some q => s!"( {e} ) и притом ( {q} )")
+  return r
+
 mutual
 
 partial def «половинаЗакрыта» (c : «Счёт») («сырой» : String) («делений» : Nat) («конечен» : Option String)
@@ -565,6 +731,7 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
     | .«приз» v => «половинаЗакрыта» c (if v then a else b) «делений» «конечен» «факты»
     | _ =>
       let (au, par) := «атомУсловия» uu
+      if «тождествоНаТочном» c au then «половинаЗакрыта» c (if par then b else a) «делений» «конечен» «факты» else
       if au = "да" || au = "нет" then
         let lit := au = "да"
         «половинаЗакрыта» c (if lit == par then b else a) «делений» «конечен» «факты»
@@ -596,10 +763,27 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
             let p := «отЗнака» t (g + 7)
             «простойС» l && «простойС» p && «тождественны» c l p 0
           | none => false
-        if viaEq then true
+        if viaEq then true else
+        let viaRec := match «найтиСв» t [" равен ", " равно ", " равна "] with
+          | some (g, k) =>
+            let l := «доЗнака» t g
+            let p := «отЗнака» t (g + 7)
+            let w := if k = 0 then "равен" else if k = 1 then "равно" else "равна"
+            if «тождествоНаТочном» c t then true
+            else if «тождествоНаТочном» c l || «тождествоНаТочном» c p then
+              «половинаЗакрыта» c s!"{if «тождествоНаТочном» c l then "да" else l} {w} {if «тождествоНаТочном» c p then "да" else p}" «делений» «конечен» «факты»
+            else if «этаЗаписи» c l p || «этаЗаписи» c p l then true
+            else if «поляРавныФактами» c l p «факты» then true
+            else match «равенстваПолей» l p with
+              | some e => «половинаЗакрыта» c e «делений» «конечен» «факты»
+              | none => false
+          | none => false
+        if viaRec then true
         else if «поДлинам» t = some true then true
         else if «мераНеотрицательна» t then true
         else if «началоПоПостроению» c t then true
+        else if c.«признаковПодряд» < 8 && !«естьСвязыватель» t && («первыйПризнакЦели» c t).isSome then
+          «делениеПризнаком» c t «делений» «конечен» «факты» 0
         else if (match «первоеУсловие» t with
             | some u => «деление» c t («атомУсловия» u).1 «делений» «конечен» «факты»
             | none => false) then true
@@ -607,9 +791,23 @@ partial def «половинаЗакрыта» (c : «Счёт») («сырой�
           | some u => «деление» c t u «делений» «конечен» «факты»
           | none => false
 
+partial def «делениеПризнаком» (c : «Счёт») (t : String) («делений» : Nat) («конечен» : Option String)
+    («факты» : List (String × Bool)) («подряд» : Nat) : Bool :=
+  if «подряд» ≥ 8 || c.«признаковПодряд» ≥ 8 || «естьСвязыватель» t then false else
+  match «первыйПризнакЦели» c t with
+  | none => false
+  | some x =>
+    let c1 := { c with «признаковПодряд» := c.«признаковПодряд» + 1 }
+    «половинаЗакрыта» c1 («заменитьСловоЦели» t x "да") «делений» «конечен» «факты» &&
+    «половинаЗакрыта» c1 («заменитьСловоЦели» t x "нет") «делений» «конечен» «факты»
+
 partial def «деление» (c : «Счёт») (t u : String) («делений» : Nat) («конечен» : Option String)
     («факты» : List (String × Bool)) : Bool :=
   if «делений» ≥ 4 || «естьСвязыватель» t then false else
+  if «тождествоНаТочном» c u then
+    let (s1, n1) := «подставитьУсловие» t u "да"
+    n1 ≥ 1 && «половинаЗакрыта» c s1 «делений» «конечен» «факты»
+  else
   match «поФактам» «факты» u with
   | some v =>
     let (s1, n1) := «подставитьУсловие» t u (if v then "да" else "нет")
@@ -646,6 +844,10 @@ partial def «Исх».«выражениеСтрок» (s : «Исх») («го
   match ls.head? with
   | none => return «т» h
   | some k0 =>
+    -- Незакрытая скобка продолжается строками подгруппы (ADR-0105), как читает язык.
+    if «скобокОткрыто» h > 0 then
+      let t := ls.foldl (fun acc k => acc ++ " " ++ s.«строка» k) h
+      return if «скобокОткрыто» t = 0 then «т» t else ""
     let d1 := «отступСтроки» (s.«сырая» k0)
     if !h.startsWith "если " || («найтиСв» (h.«сн» 5) [" то "]).isSome || d1 ≤ «над» then return ""
     let u := h.«сн» 5
@@ -937,7 +1139,12 @@ def «Исх».«развернутьВызовыРаз» (s : «Исх») (t «
     if !changed then break
   return r
 
-def «разборомЦели» (c : «Счёт») («свои» : List String) («чья» «цель» : String) : Bool :=
+def «именаЦели» (s : «Исх») («свои» : List String) («чья» : String) : List (String × String) :=
+  («свои».filter (·.startsWith "для всех «")).map (fun l => («ёлочка» l 1, «обрезать» («уголок» l 1))) ++
+  (if «чья» = "" then [] else (s.«подпись» «чья»).map (fun p => («голо» p.1, «обрезать» p.2)))
+
+def «разборомЦели» (c0 : «Счёт») («свои» : List String) («чья» «цель» : String) : Bool :=
+  let c := { c0 with «имена» := «именаЦели» c0.«исх» «свои» «чья» }
   let s := c.«исх»
   if «свои».any (·.startsWith "принцип тип ") || «свои».any (·.startsWith "посылка ") then false
   else if «цель» = "" || !«кавычкиЧисты» «цель» then false

@@ -135,7 +135,7 @@ structure «Теорема» where
 def «Теорема».«первая» (t : «Теорема») (p : String) : String := (t.«обр».find? (·.startsWith p)).getD ""
 def «Теорема».«все» (t : «Теорема») (p : String) : List String := t.«обр».filter (·.startsWith p)
 def «Теорема».«гв» (t : «Теорема») : Nat := t.«исх».«высказывание» t.«место»
-def «Теорема».«счёт» (t : «Теорема») : «Счёт» := ⟨t.«исх», t.«огл»⟩
+def «Теорема».«счёт» (t : «Теорема») : «Счёт» := { «исх» := t.«исх», «огл» := t.«огл» }
 
 def «безТо» (s : String) : String := if s.startsWith "то " then «словаС» s 1 else s
 

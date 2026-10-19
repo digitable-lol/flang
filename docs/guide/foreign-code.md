@@ -10,6 +10,9 @@ tree. All the files are in the tree, and every run is repeatable.
 For a subset of C the translation is done by a machine, and the link between the translation
 and the source is held by printing the translation back into C and comparing it on a grid of
 inputs — [C code in flang](c-into-flang.md).
+For a subset of Python the translation is done by a machine too, and the link is held by
+comparing the answers of the translation with the answers of Python on a set of inputs —
+[Python in flang](../python-to-flang.md).
 
 ## 1. A correction first: errors are found by the rewriting, not by the check
 

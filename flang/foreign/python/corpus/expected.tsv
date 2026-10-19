@@ -1,0 +1,55 @@
+square	square	total	
+square	sum_of_squares	total	
+sign	sign	total	
+sign	absolute	total	
+sign	clamp	total	
+gcd	gcd	total	шаг Евклида
+gcd	lcm	total	
+factorial	factorial	total	постоянный шаг
+factorial	factorial_loop	total	
+fibonacci	fib	total	постоянный шаг
+fibonacci	fib_loop	total	
+average	total	total	
+average	mean	total	
+average	positive_share	total	
+maximum	largest	total	
+maximum	position_of_largest	total	
+comprehensions	squares	total	
+comprehensions	evens	total	
+comprehensions	count_between	total	
+reverse	reverse	total	
+reverse	is_palindrome	total	
+insertion_sort	insert	total	хвосту списка
+insertion_sort	sort	total	
+quicksort	quicksort	total	часть хвоста
+binary_search	search	partial	не уменьшает ни один параметр
+binary_search	find	partial	вызывает «search»
+collatz	steps	partial	не уменьшает ни один параметр
+countdown	countdown	partial	не ограничивает «n» снизу
+countdown	countdown_safe	total	постоянный шаг
+strings	repeat	total	
+strings	count_letter	total	
+strings	shout	total	
+primes	is_prime	total	
+primes	primes_below	total	
+power	power	total	постоянный шаг
+power	cube	total	
+power	powers_of_two	total	
+grades	grade	total	
+grades	report	total	
+grades	passed	total	
+matrix	row_sums	total	
+matrix	trace	total	
+division	floor_div	total	
+division	remainder	total	
+division	ratio	total	
+counter_class	-	refused	FLANG_PYTHON_CLASS
+global_total	-	refused	FLANG_PYTHON_GLOBAL
+safe_divide	-	refused	FLANG_PYTHON_EXCEPTION
+greet	-	refused	FLANG_PYTHON_IO
+digits_while	-	refused	FLANG_PYTHON_LOOP
+collect	-	refused	FLANG_PYTHON_MUTATION
+untyped	-	refused	FLANG_PYTHON_TYPE
+first_negative	-	refused	FLANG_PYTHON_LOOP
+maybe_none	-	refused	FLANG_PYTHON_RETURN
+uses_math	-	refused	FLANG_PYTHON_IMPORT

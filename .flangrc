@@ -92,6 +92,7 @@ script.translation:check = bootstrap/flang io flang/translation/run.fscript --pl
 script.translation:validate = bootstrap/flang io flang/translation/validation.fscript --timeout 1800000
 script.foreign-c:demo = bootstrap/flang io flang/foreign/c/run.fscript --plan Demo --timeout 1800000 --max-steps 4000000000
 script.foreign-c:census = bootstrap/flang io flang/foreign/c/run.fscript --plan Census --timeout 3600000 --max-steps 40000000000
+script.foreign-python:demo = bootstrap/flang io flang/foreign/python/run.fscript --plan Demo --timeout 3600000 --max-steps 40000000000
 script.formula:read = bootstrap/flang io flang/foreign/formula/run.fscript --plan Read --timeout 600000 --max-steps 4000000000 --на-веру --
 script.formula:print = bootstrap/flang io flang/foreign/formula/run.fscript --plan Print --timeout 600000 --max-steps 4000000000 --на-веру --
 script.formula:probes = bootstrap/flang io flang/foreign/formula/run.fscript --plan Probes --timeout 600000 --max-steps 4000000000 --на-веру
@@ -216,6 +217,7 @@ script.contrast:check = bootstrap/flang io docs/site/contrast-guard.flang
 script.playground:library = d=docs/site/out/playground && mkdir -p "$d" && tar --format=ustar -cf "$d/library.tar" flang/stdlib/*.flang flang/core/*.flang && cp flang/src/emit/js/flang_host_browser.js "$d/flang_host_browser.js"
 script.playground:translator = d=docs/site/out/playground && t="${FLANG_TMP:-${TMPDIR:-/tmp}}/playground-translator" && bootstrap/flang emit flang/proof/probes/syllogism/sentences/translator.flang --target js --out "$t" && mkdir -p "$d" && cp "$t/reasoning_sentences.js" "$d/reasoning.js"
 script.playground:formula = d=docs/site/out/playground && t="${FLANG_TMP:-${TMPDIR:-/tmp}}/playground-formula" && bootstrap/flang emit flang/foreign/formula/browser.fscript --target js --out "$t" && mkdir -p "$d" && cp "$t/formula_in_the_browser.js" "$d/formula.js"
+script.playground:python = d=docs/site/out/playground && t="${FLANG_TMP:-${TMPDIR:-/tmp}}/playground-python" && bootstrap/flang emit flang/foreign/python/browser.fscript --target js --out "$t" && mkdir -p "$d" && cp "$t/python_in_the_browser.js" "$d/python.js"
 script.playground:checker = d=docs/site/out/playground && mkdir -p "$d" && clang --target=wasm32-wasi --sysroot="${WASI_SYSROOT:-/usr}" -std=c99 -O2 -Wl,--strip-all -o "$d/checker.wasm" flang/proof/checker/checker.c
 script.playground:compiler = d=docs/site/out/playground && mkdir -p "$d" && TMPDIR="${FLANG_TMP:-${TMPDIR:-/tmp}}" clang --target=wasm32-wasi --sysroot="${WASI_SYSROOT:-/usr}" -std=c99 -O2 -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID -Wl,-z,stack-size=67108864 -Wl,--strip-all -o "$d/flang.wasm" bootstrap/flang_cli.c bootstrap/flang_repl.c bootstrap/flang_runtime.c bootstrap/compiler_flang.c -lm -lwasi-emulated-signal -lwasi-emulated-process-clocks -lwasi-emulated-getpid
 script.playground:build = bootstrap/flang run-script playground:library && bootstrap/flang run-script playground:translator && bootstrap/flang run-script playground:formula && bootstrap/flang run-script playground:checker && bootstrap/flang run-script playground:compiler

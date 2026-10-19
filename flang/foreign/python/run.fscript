@@ -1,0 +1,566 @@
+модуль «Foreign Python run»
+  использует «Python translator» из "translator.fscript"
+  использует «Python reading» из "reading.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+
+примечание "План Demo: каждая программа корпуса переводится, перевод судит flang check, а ответы перевода"
+примечание "сверяются с ответами самого Python на наборе входов. Python нужен только здесь, для сверки."
+
+объект «Batch»
+  «names»: список строки
+  «orders»: список «Поручение»
+
+объект «Call row»
+  «program»: строка
+  «function»: строка
+  «arguments»: строка
+
+объект «Expected row»
+  «program»: строка
+  «function»: строка
+  «verdict»: строка
+  «words»: строка
+
+объект «Answer line»
+  «place»: число
+  «code»: число
+  «value»: строка
+
+объект «Program report»
+  «lines»: список строки
+  «failures»: список строки
+  «inputs»: число
+  «agreed»: число
+  «forged»: число
+  «caught»: число
+  «total»: число
+  «partial»: число
+  «checked»: признак
+
+тотальная функция «Corpus»
+  возвращает список строки
+  пример «Twenty programs of the corpus»
+    ожидается ["square", "sign", "gcd", "factorial", "fibonacci", "average", "maximum", "comprehensions", "reverse",
+      "insertion_sort", "quicksort", "binary_search", "collatz", "countdown", "strings", "primes", "power", "grades",
+        "matrix",
+      "division"]
+  ["square", "sign", "gcd", "factorial", "fibonacci", "average", "maximum", "comprehensions", "reverse",
+    "insertion_sort",
+    "quicksort", "binary_search", "collatz", "countdown", "strings", "primes", "power", "grades", "matrix", "division"]
+
+тотальная функция «Refused corpus»
+  возвращает список строки
+  пример «Ten programs outside the subset»
+    ожидается ["counter_class", "global_total", "safe_divide", "greet", "digits_while", "collect", "untyped",
+      "first_negative",
+      "maybe_none", "uses_math"]
+  ["counter_class", "global_total", "safe_divide", "greet", "digits_while", "collect", "untyped", "first_negative",
+    "maybe_none",
+    "uses_math"]
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «The binary of the tree, seen from this directory»
+    ожидается "../../../bootstrap/flang"
+  "../../../bootstrap/flang"
+
+тотальная функция «Batch of»
+  принимает names: список строки, orders: список «Поручение»
+  возвращает «Batch»
+  запись «Batch» с «names» равным names и «orders» равным orders
+
+тотальная функция «Joined batches»
+  принимает batches: список «Batch»
+  возвращает «Batch»
+  пусть names равно («Flat» от (отобразить batches как batch → batch.«names»))
+  пусть orders равно («Flat» от (отобразить batches как batch → batch.«orders»))
+  «Batch of» от names и orders
+
+тотальная функция «Questions of»
+  принимает batch: «Batch»
+  возвращает список «Question»
+  пусть names равно (batch.«names»)
+  свёртка (batch.«orders») начиная с (пустой список) как made и order → «Question added» от made и names и order
+
+тотальная функция «Question added»
+  принимает made: список «Question», names: список строки, order: «Поручение»
+  возвращает список «Question»
+  пусть place равно ((длина made) плюс 1)
+  пусть name равно (если place не больше (длина names) то элемент place в names иначе "")
+  добавить (запись «Question» с «name» равным name и «order» равным order) к made
+
+тотальная функция «Shell order»
+  принимает script: строка, arguments: список строки
+  возвращает «Поручение»
+  пример «A shell line with its arguments»
+    дано script равно "\"$0\" check \"$1\""
+    дано arguments равно ["flang", "/w/a.flang"]
+    ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "\"$0\" check \"$1\"",
+      "flang",
+      "/w/a.flang"]
+  (вариант «Запустить процесс» с программа равным "sh" и аргументы равным (приписать "-c" к
+    (приписать script к arguments)))
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Made of» от "work" и answers
+
+тотальная функция «Work path»
+  принимает answers: список «Answer», name: строка
+  возвращает строка
+  пример «A file in the work directory»
+    дано answers равно []
+    дано name равно "square.flang"
+    ожидается "/square.flang"
+  «Joined» от [«Work» от answers, "/", name]
+
+тотальная функция «Fields»
+  принимает line: строка
+  возвращает список строки
+  разделить line по "\t"
+
+тотальная функция «Field»
+  принимает fields: список строки, place: число
+  возвращает строка
+  пример «A missing field is empty»
+    дано fields равно ["a"]
+    дано place равно 2
+    ожидается ""
+  если place не больше (длина fields) то элемент place в fields иначе ""
+
+тотальная функция «Rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «Lines of tab-separated fields; empty lines dropped»
+    дано text равно "a\tb\n\nc\td\n"
+    ожидается [["a", "b"], ["c", "d"]]
+  отобразить (отфильтровать (разделить text по "\n") где line → не (пусто line)) как line → «Fields» от line
+
+тотальная функция «Calls»
+  принимает answers: список «Answer»
+  возвращает список «Call row»
+  отобразить («Rows» от («Output of» от "inputs" и answers)) как row → «Call of» от row
+
+тотальная функция «Call of»
+  принимает row: список строки
+  возвращает «Call row»
+  (запись «Call row» с «program» равным («Field» от row и 1) и «function» равным («Field» от row и 2) и
+    «arguments» равным («Field» от row и 3))
+
+тотальная функция «Expectations»
+  принимает answers: список «Answer»
+  возвращает список «Expected row»
+  отобразить («Rows» от («Output of» от "expected" и answers)) как row → «Expected of» от row
+
+тотальная функция «Expected of»
+  принимает row: список строки
+  возвращает «Expected row»
+  (запись «Expected row» с «program» равным («Field» от row и 1) и «function» равным («Field» от row и 2) и
+    «verdict» равным («Field» от row и 3) и «words» равным («Field» от row и 4))
+
+тотальная функция «Calls for»
+  принимает calls: список «Call row», program: строка
+  возвращает список «Call row»
+  отфильтровать calls где call → (call.«program») равен program
+
+функция «Translated»
+  принимает answers: список «Answer», program: строка, mode: строка
+  возвращает «Translation»
+  «Translate» от («Output of» от (соединить "source " с program) и answers) и program и mode
+
+функция «Answer text»
+  принимает place: число, call: «Call row», signatures: список «Signature»
+  возвращает строка
+  пусть own равно («Signature named» от signatures и (call.«function»))
+  пусть items равно («Literal items» от (call.«arguments»))
+  пусть bad равно (отфильтровать items где part → (part.«code») не равен "")
+  пусть outcome равно (если пусто own то "число" иначе «Flang type» от ((элемент 1 в own).«outcome»))
+  пусть texts равно (отобразить items как part → part.«text»)
+  пусть body равно (если (пусто own) или (не (пусто bad))
+    то "к числу \"FLANG_PYTHON_INPUT: вход не читается\""
+    иначе «Joined» от ["«", call.«function», "» от ", соединить texts по " и "])
+  «Joined» от ["функция «Answer ", к строке place, "»\n  возвращает ", outcome, "\n  ", body]
+
+функция «Answers module»
+  принимает program: строка, file: строка, translation: «Translation», calls: список «Call row»
+  возвращает строка
+  пусть head равно («Joined» от ["модуль «", program, " answers»\n  использует «", program, " from Python» из \"",
+    file, "\""])
+  пусть places равно («Positions» от (длина calls))
+  пусть bodies равно (отобразить places как place → «Answer text» от place и (элемент place в calls) и
+    (translation.«signatures»))
+  «Joined» от [соединить (приписать head к bodies) по "\n\n", "\n"]
+
+тотальная функция «Inputs text»
+  принимает calls: список «Call row»
+  возвращает строка
+  пример «One call per line for the Python side»
+    дано calls равно [(запись «Call row» с «program» равным "square" и «function» равным "square" и
+      «arguments» равным "[3]")]
+    ожидается "square\t[3]\n"
+  соединить (отобразить calls как call → «Joined» от [call.«function», "\t", call.«arguments», "\n"]) по ""
+
+тотальная функция «Write order»
+  принимает path: строка, content: строка
+  возвращает «Поручение»
+  вариант «Записать файл» с путь равным path и содержимое равным content
+
+функция «Program files»
+  принимает answers: список «Answer», calls: список «Call row», program: строка
+  возвращает «Batch»
+  пусть own равно («Calls for» от calls и program)
+  пусть honest равно («Translated» от answers и program и "honest")
+  пусть forged равно («Flat» от (отобразить («Forgery modes») как mode →
+    «Forged files» от answers и own и program и mode))
+  пусть file равно (соединить program с ".flang")
+  пусть names равно (отобразить ["unit", "answers", "inputs"] как part → «Joined» от ["write ", part, " ", program])
+  пусть orders равно [«Write order» от («Work path» от answers и file) и (honest.«unit»),
+    «Write order» от («Work path» от answers и (соединить program с
+      "-answers.flang")) и («Answers module» от program и file и honest и own),
+    «Write order» от («Work path» от answers и (соединить program с ".inputs")) и («Inputs text» от own)]
+  если (honest.«code») равен ""
+    то («Batch of» от («Flat» от [names, отобразить forged как order → соединить "write forged " с program]) и
+      («Flat» от [orders, forged]))
+    иначе «Batch of» от пустой список и пустой список
+
+функция «Forged files»
+  принимает answers: список «Answer», calls: список «Call row», program: строка, mode: строка
+  возвращает список «Поручение»
+  пусть forged равно («Translated» от answers и program и mode)
+  пусть stem равно («Joined» от [program, "-", mode])
+  пусть file равно (соединить stem с ".flang")
+  пусть usable равно (forged.«forged») и притом ((forged.«code») равен "")
+  если usable
+    то [«Write order» от («Work path» от answers и file) и (forged.«unit»),
+      «Write order» от («Work path» от answers и (соединить stem с
+        "-answers.flang")) и («Answers module» от program и file и forged и
+        calls)]
+    иначе пустой список
+
+функция «Writing»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пусть calls равно («Calls» от answers)
+  «Joined batches» от (отобразить («Corpus») как program → «Program files» от answers и calls и program)
+
+тотальная функция «Answers script»
+  возвращает строка
+  «Joined» от ["k=1; while [ \"$k\" -le \"$1\" ]; do ", "v=$(\"$0\" run \"$2\" --function \"«Answer $k»\" ",
+    "--max-steps 5000000 ",
+    "--max-depth 3000 2>/dev/null); c=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$c\" \"$v\"; k=$((k+1)); done"]
+
+функция «Program runs»
+  принимает answers: список «Answer», calls: список «Call row», program: строка
+  возвращает «Batch»
+  пусть own равно к строке (длина («Calls for» от calls и program))
+  пусть honest равно («Translated» от answers и program и "honest")
+  пусть modes равно (отфильтровать («Forgery modes») где mode → «Forgery usable» от answers и program и mode)
+  пусть answersfile равно («Work path» от answers и (соединить program с "-answers.flang"))
+  пусть names равно (добавить (соединить "python " с program) к [соединить "check " с program,
+    соединить "flang " с program])
+  пусть orders равно [«Shell order» от "\"$0\" check \"$1\"" и [«Binary»,
+    «Work path» от answers и (соединить program с ".flang")],
+    «Shell order» от («Answers script») и [«Binary», own, answersfile],
+    «Shell order» от "python3 -I -B \"$0\" \"$1\" \"$2\"" и ["reference.py", «Joined» от ["corpus/", program, ".py"],
+      «Work path» от answers и (соединить program с ".inputs")]]
+  пусть forgednames равно (отобразить modes как mode → «Joined» от ["forged ", program, " ", mode])
+  пусть forgedorders равно (отобразить modes как mode → «Shell order» от («Answers script») и [«Binary», own,
+    «Work path» от answers и («Joined» от [program, "-", mode, "-answers.flang"])])
+  если (honest.«code») равен ""
+    то «Batch of» от («Соединить» от names и forgednames) и («Соединить» от orders и forgedorders)
+    иначе «Batch of» от пустой список и пустой список
+
+функция «Forgery usable»
+  принимает answers: список «Answer», program: строка, mode: строка
+  возвращает признак
+  пусть forged равно («Translated» от answers и program и mode)
+  (forged.«forged») и притом ((forged.«code») равен "")
+
+функция «Running»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пусть calls равно («Calls» от answers)
+  «Joined batches» от (отобразить («Corpus») как program → «Program runs» от answers и calls и program)
+
+тотальная функция «Setup»
+  возвращает «Batch»
+  «Batch of» от ["temporary"] и [вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"]
+
+тотальная функция «Making work»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пусть place равно (соединить («Setting of» от "temporary" и "/srv/tmp" и answers) с "/fo-foreign-python.")
+  «Batch of» от ["work"] и [вариант «Завести временный каталог» с образец равным place]
+
+тотальная функция «Reading»
+  возвращает «Batch»
+  пусть sources равно (отобразить («Corpus») как p → «Read order» от («Joined» от ["corpus/", p, ".py"]))
+  пусть refused равно (отобразить («Refused corpus») как p → «Read order» от («Joined» от ["corpus/refused/", p,
+    ".py"]))
+  пусть names равно (отобразить («Соединить» от («Corpus») и («Refused corpus»)) как p → соединить "source " с p)
+  пусть tables равно [«Read order» от "corpus/inputs.tsv", «Read order» от "corpus/expected.tsv"]
+  «Batch of» от («Соединить» от ["inputs", "expected"] и names) и («Flat» от [tables, sources, refused])
+
+тотальная функция «Read order»
+  принимает path: строка
+  возвращает «Поручение»
+  вариант «Прочитать файл» с путь равным path
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает «Batch»
+  пусть work равно («Work» от answers)
+  если пусто work то «Batch of» от [] и [] иначе «Batch of» от ["cleaned"] и [«Shell order» от "rm -rf \"$0\"" и [work]]
+
+тотальная функция «Answer of line»
+  принимает fields: список строки
+  возвращает «Answer line»
+  пусть place равно (к числу или беда («Field» от fields и 1))
+  пусть code равно (к числу или беда («Field» от fields и 2))
+  (запись «Answer line» с «place» равным («Number or zero» от place) и «code» равным («Number or zero» от code) и
+    «value» равным («Field» от fields и 3))
+
+тотальная функция «Number or zero»
+  принимает read: «Исход числа»
+  возвращает число
+  разбор read
+    случай вариант «Разобрано» с значение как n
+      то n
+    случай вариант «Не разобрано» с код как c и сообщение как m
+      то 0
+
+тотальная функция «Flang answers»
+  принимает text: строка
+  возвращает список «Answer line»
+  отобразить («Rows» от text) как row → «Answer of line» от row
+
+тотальная функция «Python answer»
+  принимает rows: список список строки, place: число
+  возвращает строка
+  пусть found равно (отфильтровать rows где row → («Field» от row и 1) равен (к строке place))
+  если пусто found то "нет ответа" иначе «Field» от (элемент 1 в found) и 2
+
+тотальная функция «Flang answer»
+  принимает lines: список «Answer line», place: число
+  возвращает список «Answer line»
+  отфильтровать lines где line → (line.«place») равен place
+
+тотальная функция «Agrees»
+  принимает python: строка, flang: список «Answer line»
+  возвращает признак
+  пример «Both refuse»
+    дано python равно "error ZeroDivisionError"
+    дано flang равно [запись «Answer line» с «place» равным 1 и «code» равным 1 и «value» равным ""]
+    ожидается да
+  пример «The same value»
+    дано python равно "[1,2]"
+    дано flang равно [запись «Answer line» с «place» равным 1 и «code» равным 0 и «value» равным "[1,2]"]
+    ожидается да
+  пример «A value against a refusal»
+    дано python равно "3"
+    дано flang равно [запись «Answer line» с «place» равным 1 и «code» равным 1 и «value» равным ""]
+    ожидается нет
+  пусть line равно (если пусто flang то запись «Answer line» с «place» равным 0 и «code» равным -1 и «value» равным
+    "" иначе
+    элемент 1 в flang)
+  пусть refused равно (python начинается с "error ") и притом ((line.«code») больше 0)
+  пусть same равно ((line.«code») равен 0) и притом ((line.«value») равен python)
+  (не (пусто flang)) и притом (refused или same)
+
+тотальная функция «Shown flang»
+  принимает flang: список «Answer line»
+  возвращает строка
+  пусть line равно (если пусто flang то запись «Answer line» с «place» равным 0 и «code» равным -1 и «value» равным
+    "" иначе
+    элемент 1 в flang)
+  если (line.«code») равен 0 то line.«value» иначе «Joined» от ["отказ, код ", к строке (line.«code»)]
+
+функция «Disagreements»
+  принимает calls: список «Call row», python: строка, flang: строка
+  возвращает список строки
+  пусть rows равно («Rows» от python)
+  пусть lines равно («Flang answers» от flang)
+  пусть places равно («Positions» от (длина calls))
+  пусть wrong равно (отфильтровать places где place → не («Agrees» от («Python answer» от rows и place) и
+    («Flang answer» от lines и place)))
+  (отобразить wrong как place → «Disagreement» от (элемент place в calls) и («Python answer» от rows и place) и
+    («Shown flang» от («Flang answer» от lines и place)))
+
+тотальная функция «Disagreement»
+  принимает call: «Call row», python: строка, flang: строка
+  возвращает строка
+  «Joined» от [call.«function», "(", call.«arguments», "): Python ", python, ", перевод ", flang]
+
+функция «Verdict check»
+  принимает verdict: «Verdict line», program: строка, expectations: список «Expected row»
+  возвращает список строки
+  пусть wanted равно (отфильтровать expectations где row → ((row.«program») равен program) и притом
+    ((row.«function») равен
+    (verdict.«name»)))
+  пусть said равно (если verdict.«total» то "total" иначе "partial")
+  пусть row равно (если пусто wanted то запись «Expected row» с «program» равным program и «function» равным "" и
+    «verdict» равным "" и
+    «words» равным "" иначе элемент 1 в wanted)
+  пусть named равно («Joined» от [program, ": «", verdict.«name», "»"])
+  пусть what равно («Chosen» от [(«Option of» от (пусто wanted) и "missing"), («Option of» от
+    ((row.«verdict») не равен said) и "verdict"),
+    («Option of» от (не ((verdict.«reason») содержит (row.«words»))) и "words")] и "ok")
+  разбор what
+    случай "missing" то [«Joined» от [named, ": функции нет в expected.tsv"]]
+    случай "verdict" то [«Joined» от [named, ": завершение ", said, ", а ждали ", row.«verdict»]]
+    случай "words" то [«Joined» от [named, ": в объяснении нет слов «", row.«words», "»"]]
+    случай любое то пустой список
+
+тотальная функция «Verdict line text»
+  принимает verdict: «Verdict line»
+  возвращает строка
+  пусть word равно (если verdict.«total» то "тотальная функция" иначе "функция без «тотальная»")
+  пусть reason равно (если (verdict.«reason») равен "" то "" иначе соединить " — " с (verdict.«reason»))
+  «Joined» от ["    «", verdict.«name», "»: ", word, reason]
+
+функция «Forgery outcome»
+  принимает answers: список «Answer», calls: список «Call row», program: строка, mode: строка
+  возвращает список строки
+  пусть forged равно («Translated» от answers и program и mode)
+  пусть python равно («Output of» от (соединить "python " с program) и answers)
+  пусть flang равно («Output of» от («Joined» от ["forged ", program, " ", mode]) и answers)
+  пусть differs равно не (пусто («Disagreements» от calls и python и flang))
+  пусть what равно («Chosen» от [(«Option of» от (не (forged.«forged»)) и "idle"), («Option of» от
+    ((forged.«code») не равен "") и "refused"),
+    («Option of» от differs и "caught")] и "missed")
+  разбор what
+    случай "idle" то ["idle"]
+    случай "refused" то ["caught"]
+    случай "caught" то ["caught"]
+    случай любое то ["missed"]
+
+функция «Program judged»
+  принимает answers: список «Answer», calls: список «Call row», expectations: список «Expected row», program: строка
+  возвращает «Program report»
+  пусть own равно («Calls for» от calls и program)
+  пусть honest равно («Translated» от answers и program и "honest")
+  пусть checkcode равно («Exit code of» от (соединить "check " с program) и answers)
+  пусть python равно («Output of» от (соединить "python " с program) и answers)
+  пусть flang равно («Output of» от (соединить "flang " с program) и answers)
+  пусть outcomes равно (отобразить («Forgery modes») как mode → «Joined» от [mode, " ",
+    элемент 1 в («Forgery outcome» от answers и own и program и mode)])
+  пусть forged равно (отфильтровать outcomes где o → не (o содержит " idle"))
+  пусть missed равно (отфильтровать outcomes где o → o содержит " missed")
+  пусть verdicts равно (honest.«verdicts»)
+  пусть totals равно (длина (отфильтровать verdicts где v → v.«total»))
+  пусть checks равно («Flat» от (отобразить verdicts как v → «Verdict check» от v и program и expectations))
+  пусть refused равно (honest.«code») не равен ""
+  пусть failures равно («Flat» от [(если refused то [«Joined» от [program, ": перевод отказал: ", honest.«code», " ",
+    honest.«message»]] иначе
+    пустой список), (если (checkcode не равен 0) и притом (не refused) то [«Joined» от [program, ": flang check код ",
+    к строке checkcode, " — ", «Errors of» от (соединить "check " с program) и answers]] иначе пустой список),
+    отобразить («Disagreements» от own и python и flang) как d → «Joined» от [program, ": расхождение ", d],
+    отобразить missed как m → «Joined» от [program, ": подделка не поймана сверкой: ", m], checks])
+  пусть agreed равно ((длина own) минус (длина («Disagreements» от own и python и flang)))
+  пусть head равно («Joined» от ["  ", program, ": функций ", к строке (длина verdicts), ", тотальных ",
+    к строке totals,
+    "; flang check код ", к строке checkcode, "; входов ", к строке (длина own), ", сошлось с Python ", к строке agreed,
+    "; подделок поймано ", к строке ((длина forged) минус (длина missed)), " из ", к строке (длина forged)])
+  (запись «Program report» с «lines» равным (приписать head к (отобразить verdicts как v → «Verdict line text» от v)) и
+    «failures» равным failures и «inputs» равным (длина own) и «agreed» равным agreed и «forged» равным (длина forged) и
+    «caught» равным ((длина forged) минус (длина missed)) и «total» равным totals и «partial» равным
+      ((длина verdicts) минус totals) и
+    «checked» равным ((checkcode равен 0) и притом (не refused)))
+
+функция «Refusal judged»
+  принимает answers: список «Answer», expectations: список «Expected row», program: строка
+  возвращает список строки
+  пусть translated равно («Translated» от answers и program и "honest")
+  пусть wanted равно (отфильтровать expectations где row → (row.«program») равен program)
+  пусть code равно (если пусто wanted то "" иначе (элемент 1 в wanted).«words»)
+  пусть line равно («Joined» от ["  отказ ", program, ": ", translated.«code», " ", translated.«message»])
+  если (translated.«code») равен code
+    то [line]
+    иначе [line, «Joined» от ["НЕ СОШЛОСЬ ", program, ": ждали отказ ", code]]
+
+тотальная функция «Sum of»
+  принимает numbers: список число
+  возвращает число
+  свёртка numbers начиная с 0 как s и n → s плюс n
+
+функция «Report»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть calls равно («Calls» от answers)
+  пусть expectations равно («Expectations» от answers)
+  пусть reports равно (отобразить («Corpus») как p → «Program judged» от answers и calls и expectations и p)
+  пусть refusals равно («Flat» от (отобразить («Refused corpus») как p →
+    «Refusal judged» от answers и expectations и p))
+  пусть refusalfailures равно (отфильтровать refusals где line → line начинается с "НЕ СОШЛОСЬ")
+  пусть failures равно («Соединить» от («Flat» от (отобразить reports как r → r.«failures»)) и refusalfailures)
+  пусть checked равно (длина (отфильтровать reports где r → r.«checked»))
+  пусть inputs равно («Sum of» от (отобразить reports как r → r.«inputs»))
+  пусть agreed равно («Sum of» от (отобразить reports как r → r.«agreed»))
+  пусть forged равно («Sum of» от (отобразить reports как r → r.«forged»))
+  пусть caught равно («Sum of» от (отобразить reports как r → r.«caught»))
+  пусть totals равно («Sum of» от (отобразить reports как r → r.«total»))
+  пусть partials равно («Sum of» от (отобразить reports как r → r.«partial»))
+  пусть head равно («Joined» от ["ПЕРЕВОД Python → flang: программ корпуса ", к строке (длина («Corpus»)),
+    ", переведено и прошло flang check ",
+    к строке checked])
+  пусть tail равно [«Joined» от ["ИТОГ: программ ", к строке (длина («Corpus»)), ", переведено ", к строке checked,
+    "; сверка с Python: входов ", к строке inputs, ", сошлось ", к строке agreed, "; функций тотальных ",
+      к строке totals,
+    ", без «тотальная» ", к строке partials, "; подделок переводчика поймано ", к строке caught, " из ",
+      к строке forged,
+    "; отказов по ожиданию ", к строке ((длина («Refused corpus»)) минус (длина refusalfailures)), " из ",
+    к строке (длина («Refused corpus»))]]
+  пусть lines равно («Flat» от [[head], «Flat» от (отобразить reports как r → r.«lines»), refusals, [""], tail])
+  пусть few равно (если checked меньше 15 то ["переведено меньше 15 программ"] иначе пустой список)
+  пусть all равно («Соединить» от failures и few)
+  пусть text равно (соединить lines по "\n")
+  если пусто all
+    то вариант «Конец работы» с значение равным text
+    иначе вариант «Провал» с код равным "FLANG_FOREIGN_PYTHON" и сообщение равным («Joined» от [text,
+      "\nНЕ СОШЛОСЬ:\n  ",
+      соединить all по "\n  "])
+
+функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает «Batch»
+  разбор stages
+    случай 5 то «Setup»
+    случай 4 то «Making work» от answers
+    случай 3 то «Reading»
+    случай 2 то «Writing» от answers
+    случай 1 то «Running» от answers
+    случай 0 то «Cleaning» от answers
+    случай любое то «Batch of» от [] и []
+
+функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай пусто
+      то если stages не больше 0 то «Report» от answers иначе «Advance» от stages и answers
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+
+функция «Advance»
+  принимает stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пусть questions равно («Questions of» от («Stage» от (stages минус 1) и answers))
+  «Proceed» от questions и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 6
+
+функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  если ((inquiry.«asked») равен "work") и притом (пусто («Work» от answers))
+    то вариант «Не проверено» с код равным "FLANG_FOREIGN_PYTHON_WORK" и сообщение равным "временный каталог не заведён"
+    иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Demo»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

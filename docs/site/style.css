@@ -614,7 +614,7 @@ body {
    темах — как каждый блок кода на сайте. */
 .content .pg-editor { position: relative; }
 .content .pg-editor pre, .content .pg-editor pre ~ .playground-input {
-  box-sizing: border-box; margin: 0; border: 0; padding: .8rem 1rem .8rem calc(1rem + 2px);
+  box-sizing: border-box; margin: 0; border: 0; padding: .8rem 1rem .8rem calc(3.6rem + 2px);
   font-family: var(--mono); font-size: .85rem; line-height: 1.45; letter-spacing: 0; tab-size: 2;
   white-space: pre; overflow: auto; width: 100%;
 }
@@ -636,6 +636,15 @@ body {
 .content .pg-editor pre .tok-stroka { color: var(--flang-syn-stroka); }
 .content .pg-editor pre .tok-chislo { color: var(--flang-syn-chislo); }
 .content .pg-editor pre .tok-kommentariy { color: var(--flang-syn-zametka); }
+/* Номера строк: отдельный столбец поверх раскрашенной копии, той же высоты
+   строки; прокручивается вместе с полем ввода. */
+.content .pg-editor pre.pg-gutter {
+  inset: 0 auto 0 0; width: 3rem; z-index: 1; overflow: hidden; border-left: 0;
+  padding: .8rem .5rem .8rem 0; user-select: none; text-align: right;
+  color: var(--flang-syn-zametka); background: var(--flang-kod-fon); border-right: 1px solid var(--flang-kod-ramka);
+}
+.content .pg-editor pre.pg-gutter .pg-num { display: block; min-height: 1.45em; }
+.content .pg-editor pre.pg-gutter .pg-num-bad { color: var(--flang-kod-tekst); background: var(--flang-kod-ramka); font-weight: 700; box-shadow: inset 3px 0 0 #ff5b5b; }
 .content .pg-marks { list-style: none; margin: .4rem 0 0; padding: 0; font-size: .88em; color: var(--bad); }
 .content .pg-marks li { margin: .15rem 0; }
 .content .pg-mark-line {
@@ -652,6 +661,25 @@ body {
 .content .pg-tab[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--rule); border-bottom: 1px solid var(--surface); }
 .content .pg-panel { padding: 1rem 0 0; }
 .content .pg-hint { color: var(--muted); }
+
+/* Выбор языка и файла: ряд кнопок, нажатая — цветом акцента. */
+.content .pg-langs, .content .pg-files { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0 0 .7rem; }
+.content .pg-lang, .content .pg-file {
+  font: inherit; font-size: .85em; padding: .25rem .6rem; cursor: pointer; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--surface); color: var(--ink);
+}
+.content .pg-file { font-family: var(--mono); font-size: .78em; }
+.content .pg-lang[aria-pressed="true"], .content .pg-file[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.content .pg-lang:disabled { cursor: not-allowed; color: var(--muted); border-style: dashed; }
+.content .pg-emit-code pre, .content .pg-fn pre { max-height: 32rem; overflow: auto; }
+.content .pg-stale { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.content .pg-stale[hidden] { display: none; }
+.content .pg-fn { border-top: 1px solid var(--rule-soft); padding: .8rem 0 0; margin: .8rem 0 0; }
+.content .pg-fn-name { margin: 0 0 .5rem; font-family: var(--mono); font-size: .95em; }
+.content .pg-foreign-out { margin-top: 1rem; }
+.content .pg-panel > .playground-check { margin: .6rem 0 0; }
+.content .pg-fallacy { margin-top: .5rem !important; }
+.content .pg-boundary { font-size: .9em; }
 
 /* Итог: одна карточка, цвет — по исходу. */
 .content .pg-verdict { border-left: 4px solid var(--rule); background: var(--surface); padding: .7rem 1rem; margin: 0 0 1rem; border-radius: 0 4px 4px 0; }

@@ -59,6 +59,7 @@ on:
       - 'flang/ct/russian/pregroup.flang'
       - 'scripts/site/reasoning-check-probe.fscript'
       - 'flang/foreign/formula/**'
+      - 'flang/foreign/c/**'
       - 'scripts/site/playground-probe.fscript'
       - '.flangrc'
   # На КАЖДОМ запросе слияния, без фильтра `paths`. Ссылки сайта ведут не
@@ -297,6 +298,7 @@ jobs:
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:library
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:translator
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:formula
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:c
 
       - name: Probe the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe

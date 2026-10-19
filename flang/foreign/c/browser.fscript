@@ -1,0 +1,53 @@
+модуль «C translator in the browser»
+  использует «C translator» из "translator.fscript"
+
+примечание "Тот же переводчик C, что у планов Demo и Census, но без файлов и процессов:"
+примечание "на входе дерево разбора C в записи clang -ast-dump, на выходе тексты на flang."
+примечание "Его печатает в JavaScript сборка песочницы; переведённое судит ядро в WebAssembly."
+
+объект «C function for page»
+  «name»: строка
+  «line»: число
+  «unit»: строка
+  «refusals»: список строки
+
+тотальная функция «Function for page»
+  принимает translated: «Function»
+  возвращает «C function for page»
+  пример «A translated function gives its module text and no refusals»
+    дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
+      "x"] и «flow» равным (запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [
+      ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным ["int"]
+    ожидается запись «C function for page» с «name» равным "f" и «line» равным 1 и «unit» равным """
+      модуль «Перевод f»
+
+      тотальная функция «f»
+        принимает «x»: целое
+        возвращает число
+        требует «x — значение int, не ниже INT_MIN» «x» не меньше -2147483648
+        требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647
+        «x»
+      """ и «refusals» равным []
+  пример «A refused function gives no text, only the reasons»
+    дано translated равно запись «Function» с «name» равным "g" и «line» равным 3 и «parameters» равным [
+      ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
+      ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
+      "цикл без меры"] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+    ожидается (запись «C function for page» с «name» равным "g" и «line» равным 3 и «unit» равным ""
+      и «refusals» равным ["цикл без меры"])
+  пусть refusals равно (translated.«refusals»)
+  пусть lines равно («Translation text» от translated и пустой список)
+  пусть unit равно (если пусто refusals то (соединить (добавить "" к lines) по "\n") иначе "")
+  (запись «C function for page» с «name» равным (translated.«name») и «line» равным (translated.«line»)
+    и «unit» равным unit и «refusals» равным refusals)
+
+функция «Translate for page»
+  принимает dump: строка
+  возвращает список «C function for page»
+  пример «An empty dump has no functions»
+    дано dump равно ""
+    ожидается []
+  пусть nodes равно («Kids» от («Tree of» от dump))
+  пусть defined равно (отфильтровать («Translated all» от nodes) где each → each.«defined»)
+  отобразить defined как each → «Function for page» от each

@@ -13,7 +13,11 @@ checks are done by the binary compiler: flang check file.flang --proof.
 
 ## What you see
 
-The answer is split into four tabs.
+The editor highlights language words, strings, numbers, names in «guillemets» and
+comments; line numbers are on the left. The line where the compiler found an error is
+marked both in the text and in its number.
+
+The answer is split into six tabs.
 
 - **Result** — one line about what matters and the list of statements with marks:
   - "Proved for all values" — every statement holds for every input, not only for the
@@ -29,6 +33,15 @@ The answer is split into four tabs.
   Under the result, the details are folded: what the independent proof check said, and
   the full compiler output as in a terminal.
 - **Formulas** — every statement of the program written with quantifiers and in LaTeX.
+- **flang → language** — the same program printed by `flang emit` into C, C++, Go, Rust,
+  Java, JavaScript, TypeScript, Elixir, Python and C#. The same compiler in the tab does
+  the printing. The program's files are shown; runtime files are copied into the output
+  as they are, and only their names are listed here. If the editor holds a formula or a
+  reasoning, the flang program it became is printed.
+- **language → flang** — a field for a C function. The translator (`flang/foreign/c`)
+  turns it into a flang program, and the kernel checks it right away: `int` overflow and
+  division by zero become promises that have to be proved. Python comes when its
+  translator is in the build; until then its button says "soon".
 - **Formula → flang** — a field for a formula with ∀ / ∃ or in LaTeX: it is translated
   to flang and checked right away.
 - **Pictures** — diagrams of what is declared: objects and arrows of a category, functor
@@ -264,6 +277,32 @@ formula can be entered on the "Formula → flang" tab.
 Affirming the consequent: from "all men are mortal" and "Socrates is mortal" it does not
 follow that Socrates is a man. The playground shows a counterexample.
 
+A formula with quantifiers in Unicode: multiplication of integers commutes.
+
+```text playground Formula with ∀ — multiplication commutes
+∀ x ∈ ℤ, ∀ y ∈ ℤ, x * y = y * x
+```
+
+A C function translated to flang. `clamp` is proved in full. For `midpoint` the kernel
+finds that `lo + hi` can overflow `int`: this is a real C bug, and the translation does
+not hide it.
+
+```c playground A C function — translated to flang
+int clamp(int x, int lo, int hi)
+{
+    if (x < lo)
+        return lo;
+    if (x > hi)
+        return hi;
+    return x;
+}
+
+int midpoint(int lo, int hi)
+{
+    return (lo + hi) / 2;
+}
+```
+
 ```text playground Affirming the consequent — does not follow
 Понятие: человек, люди.
 Свойство: смертен, смертны.
@@ -341,6 +380,7 @@ playground" link: it opens this page with the block's text in the address.
 | independent proof check | `playground/checker.wasm` | `flang/proof/checker/checker.c`, the same `clang` |
 | reasoning translator | `playground/reasoning.js` | `bootstrap/flang emit --target js` |
 | formula translator | `playground/formula.js` | `flang/foreign/formula/browser.fscript`, `bootstrap/flang emit --target js` |
+| C translator | `playground/c.js` | `flang/foreign/c/browser.fscript`, `bootstrap/flang emit --target js` |
 | library | `playground/library.tar` | `flang/stdlib/*.flang` and `flang/core/*.flang` |
 | WASI host | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
 | playground page | `playground.js` | `docs/site/playground.js` |
@@ -350,6 +390,12 @@ The files of the `playground/` directory are built by a step of the site build
 keeps a file system in the tab's memory: the user's source, the library (downloaded only
 when the text has `использует`) and a temporary directory `/tmp`. The compiler runs in a
 separate thread (a Web Worker), so the page does not freeze.
+
+C text is read by the host: it builds the same tree that `clang -Xclang -ast-dump`
+prints, only for the subset the translator knows. The probe compares this tree with
+clang's on the nine files of `flang/foreign/c/corpus`, line by line. What the subset does
+not have (pointers, `long`, `switch`, the preprocessor except `#include`) the host names
+with its line instead of guessing a translation.
 
 The editor takes its keywords from the lexer's table (`flang/self/lexer.flang`, the
 function «Куски таблицы»): the site build puts them on the page, and there is no second
@@ -363,6 +409,8 @@ The same host runs under Node, without a browser:
 ```sh
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground "$(cat text.txt)"
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --json "$(cat text.txt)"
+node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --на go "$(cat program.flang)"
+node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --из c "$(cat function.c)"
 ```
 
 Its exit code is the check's: 0 — follows or proved, 1 — does not follow, 3 — not proved.
@@ -374,7 +422,9 @@ playground:probe`, the plan `scripts/site/playground-probe.fscript`): Barbara mu
 follow and the independent check must match the record; affirming the consequent must
 give "does not follow" with code 1; the false statement must give code 3 and nothing
 proved; the LaTeX formula must be translated to flang, proved and matched by the
-independent check.
+independent check; printing into all ten languages must give the same program files the
+binary compiler prints; a C function must be translated and checked by the kernel; the
+playground's C reading must give clang's tree on every file of the corpus.
 
 ## What the playground does not have
 

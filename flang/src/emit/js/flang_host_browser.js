@@ -846,6 +846,7 @@ export const ПЕСОЧНИЦА_ФАЙЛЫ = Object.freeze({
   библиотека: "library.tar",
   рассуждения: "reasoning.js",
   формулы: "formula.js",
+  переводC: "c.js",
 })
 
 /* Формула с кванторами узнаётся по первому знаку: «∀», «∃» или их запись в
@@ -919,7 +920,508 @@ function высказанное(ведомость, дерево) {
   return из
 }
 
-export function песочница({ достать, модульРассуждений, модульФормул }) {
+/* ── Печать во все цели ──────────────────────────────────────────────────────
+   Та же команда, что в терминале: `flang emit --target <цель>`. Исходники
+   рантайма каждая цель кладёт в вывод ДОСЛОВНО, поэтому во вкладку они не
+   едут (вместе — 3,3 МБ): на их месте лежат заглушки с меткой, а файлы вывода
+   с меткой страница называет «файлами рантайма» и не показывает. Напечатанная
+   программа от содержимого рантайма не зависит — проба песочницы сверяет её с
+   печатью двоичного компилятора байт в байт. Список файлов — тот же, что
+   `EMIT_TARGET_TABLE` в bootstrap/flang_repl.c; разойдётся — печать ответит
+   «не хватает …», и проба покраснеет на этой цели. */
+export const ЗАГЛУШКА_РАНТАЙМА = "flang playground: the runtime file is copied as is and is not shipped to the browser\n"
+
+export const ЦЕЛИ_ПЕЧАТИ = Object.freeze([
+  { цель: "c", название: "C", каталог: "c", рантайм: ["flang_runtime.h", "flang_runtime.c", "flang_cli.c", "flang_repl.c", "flang_conc.h", "flang_conc.c"] },
+  { цель: "cpp", название: "C++", каталог: "", рантайм: ["cpp/flang_cpp.hpp", "c/flang_runtime.h", "c/flang_runtime.c", "c/flang_cli.c"] },
+  { цель: "go", название: "Go", каталог: "go", рантайм: ["flang_runtime.go", "flang_cli.go"] },
+  { цель: "rust", название: "Rust", каталог: "rust", рантайм: ["flang_runtime.rs", "flang_cli.rs"] },
+  { цель: "java", название: "Java", каталог: "java", рантайм: ["Value.java", "Field.java", "FlangError.java", "Ctx.java", "Flang.java", "FlangCli.java"] },
+  { цель: "js", название: "JavaScript", каталог: "js", рантайм: ["flang_conc.js", "flang_cli.js", "flang_io.js", "flang_host_node.js"] },
+  { цель: "ts", название: "TypeScript", каталог: "", рантайм: ["js/flang_conc.js", "js/flang_cli.js", "js/flang_io.js", "ts/tsconfig.json", "js/flang_host_node.js"] },
+  { цель: "elixir", название: "Elixir", каталог: "elixir", рантайм: ["flang_runtime.ex", "flang_cli.ex", "flang_conc.ex"] },
+  { цель: "python", название: "Python", каталог: "python", рантайм: ["flang_runtime.py", "flang_cli.py", "flang_io.py"] },
+  { цель: "csharp", название: "C#", каталог: "csharp", рантайм: ["Value.cs", "Field.cs", "FlangError.cs", "Ctx.cs", "Flang.cs", "FlangCli.cs"] },
+])
+
+/* Разбор C для песочницы: подмножество, которое понимает переводчик
+   flang/foreign/c (int, struct из int, if/else, циклы, return), печатается
+   деревом в записи `clang -Xclang -ast-dump`, уже отрезанной так, как режет
+   её план Demo. Переводчик читает именно эту запись; судит перевод ядро. */
+export function дампC(исходник) {
+  const text = String(исходник)
+  const fail = (line, why) => {
+    const e = new Error(why)
+    e.строка = line
+    throw e
+  }
+  /* ── лексер ── */
+  const toks = []
+  {
+    let i = 0, line = 1, col = 1
+    const adv = (n) => {
+      for (let k = 0; k < n; k++) {
+        const code = text.codePointAt(i)
+        if (code === 10) { line += 1; col = 1 } else col += code < 0x80 ? 1 : code < 0x800 ? 2 : code < 0x10000 ? 3 : 4
+        i += code > 0xffff ? 2 : 1
+      }
+    }
+    const ops = ["<<=", ">>=", "...", "->", "++", "--", "<<", ">>", "<=", ">=", "==", "!=", "&&", "||", "+=", "-=", "*=", "/=", "%=", "&=", "^=", "|="]
+    while (i < text.length) {
+      const c = text[i]
+      if (c === "\n" || c === " " || c === "\t" || c === "\r" || c === "\f" || c === "\v") { adv(1); continue }
+      if (c === "/" && text[i + 1] === "/") { while (i < text.length && text[i] !== "\n") adv(1); continue }
+      if (c === "/" && text[i + 1] === "*") {
+        const end = text.indexOf("*/", i + 2)
+        if (end < 0) fail(line, "комментарий /* не закрыт")
+        adv(end + 2 - i); continue
+      }
+      if (c === "#" && toks.every((t) => t.line !== line)) {
+        const rest = text.slice(i, text.indexOf("\n", i) < 0 ? text.length : text.indexOf("\n", i))
+        if (!/^#\s*include\s*[<"][^>"]+[>"]\s*$/u.test(rest)) fail(line, "директивы препроцессора, кроме #include, здесь не читаются")
+        while (i < text.length && text[i] !== "\n") adv(1)
+        continue
+      }
+      const at = { line, col }
+      let m
+      if ((m = /^[A-Za-z_][A-Za-z_0-9]*/u.exec(text.slice(i, i + 64)))) { toks.push({ k: "id", v: m[0], ...at }); adv(m[0].length); continue }
+      if ((m = /^[0-9][A-Za-z0-9_.]*/u.exec(text.slice(i, i + 64)))) {
+        if (!/^(0|[1-9][0-9]*)$/u.test(m[0])) fail(line, `число «${m[0]}» не разобрать: читаются только десятичные целые без суффиксов`)
+        if (Number(m[0]) > 2147483647) fail(line, `число ${m[0]} больше INT_MAX`)
+        toks.push({ k: "num", v: m[0], ...at }); adv(m[0].length); continue
+      }
+      const op = ops.find((o) => text.startsWith(o, i)) ?? (/[-+*/%<>=!~&|^?:;,.(){}\[\]]/u.test(c) ? c : null)
+      if (op === null) fail(line, `знак «${c}» не разобрать`)
+      toks.push({ k: "op", v: op, ...at }); adv(op.length)
+    }
+    toks.push({ k: "end", v: "", line, col })
+  }
+  /* ── разбор ── */
+  let p = 0
+  const peek = (n = 0) => toks[p + n]
+  const is = (v, n = 0) => toks[p + n].k !== "end" && toks[p + n].v === v && toks[p + n].k !== "num"
+  const next = () => toks[p++]
+  const expect = (v) => {
+    const t = next()
+    if (t.v !== v || t.k === "num") fail(t.line, t.k === "end" ? `текст кончился, а ждали «${v}»` : `ждали «${v}», а стоит «${t.v}»`)
+    return t
+  }
+  const UNSUPPORTED = new Set(["char", "short", "long", "unsigned", "signed", "float", "double", "void", "_Bool", "bool", "const", "static", "extern", "volatile", "typedef", "enum", "union", "goto", "switch", "case", "default", "sizeof", "inline", "register", "auto"])
+  const ident = () => {
+    const t = next()
+    if (t.k !== "id") fail(t.line, t.k === "end" ? "текст кончился, а ждали имя" : `ждали имя, а стоит «${t.v}»`)
+    return t
+  }
+  let address = 0x1000
+  const addr = () => `0x${(address += 0x18).toString(16)}`
+  const records = new Map()
+  const functions = new Map()
+  const tops = []
+  /* тип: «int» или «struct имя» */
+  const typeAt = () => {
+    const t = peek()
+    if (t.k === "id" && t.v === "int") { next(); return { name: "int", begin: t } }
+    if (t.k === "id" && t.v === "struct") {
+      next()
+      const n = ident()
+      return { name: `struct ${n.v}`, begin: t, tag: n }
+    }
+    if (t.k === "id" && UNSUPPORTED.has(t.v)) fail(t.line, `«${t.v}» здесь не читается: переводчик знает только int и struct из полей int`)
+    return null
+  }
+  const node = (kind, begin, end, rest, kids = [], extra = {}) => ({ kind, begin, end, rest, kids, addr: addr(), ...extra })
+  const rvalue = (e) => (e.lvalue ? node("ImplicitCastExpr", e.begin, e.end, `'${e.type}' <LValueToRValue>`, [e], { type: e.type, lvalue: false }) : e)
+  const intOnly = (e, t) => {
+    if (e.type !== "int") fail(t.line, `значение типа «${e.type}» здесь не годится: ждали int`)
+    return e
+  }
+  /* ── выражения ── */
+  let scope = null
+  const primary = () => {
+    const t = peek()
+    if (t.k === "num") { next(); return node("IntegerLiteral", t, t, `'int' ${t.v}`, [], { type: "int" }) }
+    if (is("(")) {
+      next()
+      const inner = expression()
+      const close = expect(")")
+      return node("ParenExpr", t, close, `'${inner.type}'${inner.lvalue ? " lvalue" : ""}`, [inner], { type: inner.type, lvalue: inner.lvalue })
+    }
+    if (t.k === "id") {
+      if (UNSUPPORTED.has(t.v) || t.v === "int" || t.v === "struct") fail(t.line, `«${t.v}» здесь не читается`)
+      next()
+      const local = scope?.find(t.v)
+      if (local) return node("DeclRefExpr", t, t, `'${local.type}' lvalue ${local.param ? "ParmVar" : "Var"} ${local.addr} '${t.v}' '${local.type}'`, [], { type: local.type, lvalue: true })
+      const fn = functions.get(t.v)
+      if (fn) return node("DeclRefExpr", t, t, `'${fn.type}' Function ${fn.addr} '${t.v}' '${fn.type}'`, [], { type: fn.type, fn })
+      fail(t.line, `имя «${t.v}» не объявлено выше`)
+    }
+    fail(t.line, t.k === "end" ? "текст кончился посреди выражения" : `«${t.v}» здесь не ждали`)
+  }
+  const postfix = () => {
+    let e = primary()
+    for (;;) {
+      const t = peek()
+      if (is("(")) {
+        if (!e.fn) fail(t.line, "вызывать можно только функцию, объявленную выше")
+        next()
+        const args = []
+        if (!is(")")) {
+          for (;;) {
+            args.push(rvalue(assignment()))
+            if (!is(",")) break
+            next()
+          }
+        }
+        const close = expect(")")
+        if (args.length !== e.fn.params.length) fail(t.line, `функция «${e.fn.name}» ждёт доводов ${e.fn.params.length}, а дано ${args.length}`)
+        args.forEach((a, n) => { if (a.type !== e.fn.params[n]) fail(t.line, `довод ${n + 1} функции «${e.fn.name}» — ${a.type}, а ждали ${e.fn.params[n]}`) })
+        const callee = node("ImplicitCastExpr", e.begin, e.end, `'${e.fn.type.replace(" (", " (*)(")}' <FunctionToPointerDecay>`, [e], { type: "" })
+        e = node("CallExpr", e.begin, close, "'int'", [callee, ...args], { type: "int" })
+        continue
+      }
+      if (is(".")) {
+        next()
+        const member = ident()
+        const record = records.get(e.type)
+        if (!record) fail(member.line, "поле берётся только у struct")
+        const field = record.fields.find((f) => f.name === member.v)
+        if (!field) fail(member.line, `у «${e.type}» нет поля «${member.v}»`)
+        e = node("MemberExpr", e.begin, member, `'int'${e.lvalue ? " lvalue" : ""} .${member.v} ${field.addr}`, [e], { type: "int", lvalue: e.lvalue })
+        continue
+      }
+      if (is("->") || is("[")) fail(t.line, `«${t.v}» здесь не читается: указателей и массивов в подмножестве нет`)
+      if (is("++") || is("--")) {
+        if (!e.lvalue) fail(t.line, `«${t.v}» применим только к переменной`)
+        next()
+        e = node("UnaryOperator", e.begin, t, `'int' postfix '${t.v}'`, [intOnly(e, t)], { type: "int" })
+        continue
+      }
+      return e
+    }
+  }
+  const unary = () => {
+    const t = peek()
+    if (t.k === "op" && ["-", "+", "!", "~"].includes(t.v)) {
+      next()
+      const e = intOnly(rvalue(unary()), t)
+      return node("UnaryOperator", t, e.end, `'int' prefix '${t.v}'${t.v === "-" ? "" : " cannot overflow"}`, [e], { type: "int" })
+    }
+    if (t.k === "op" && (t.v === "++" || t.v === "--")) {
+      next()
+      const e = unary()
+      if (!e.lvalue) fail(t.line, `«${t.v}» применим только к переменной`)
+      return node("UnaryOperator", t, e.end, `'int' prefix '${t.v}'`, [intOnly(e, t)], { type: "int" })
+    }
+    if (t.k === "op" && (t.v === "&" || t.v === "*")) fail(t.line, `«${t.v}» здесь не читается: указателей в подмножестве нет`)
+    return postfix()
+  }
+  const LEVELS = [["||"], ["&&"], ["|"], ["^"], ["&"], ["==", "!="], ["<", ">", "<=", ">="], ["<<", ">>"], ["+", "-"], ["*", "/", "%"]]
+  const binary = (level) => {
+    if (level === LEVELS.length) return unary()
+    let left = binary(level + 1)
+    while (peek().k === "op" && LEVELS[level].includes(peek().v)) {
+      const t = next()
+      const right = binary(level + 1)
+      left = node("BinaryOperator", left.begin, right.end, `'int' '${t.v}'`, [intOnly(rvalue(left), t), intOnly(rvalue(right), t)], { type: "int" })
+    }
+    return left
+  }
+  const conditional = () => {
+    const c = binary(0)
+    if (!is("?")) return c
+    const t = next()
+    const a = rvalue(expression())
+    expect(":")
+    const b = rvalue(conditional())
+    return node("ConditionalOperator", c.begin, b.end, "'int'", [intOnly(rvalue(c), t), intOnly(a, t), intOnly(b, t)], { type: "int" })
+  }
+  const ASSIGN = ["=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "^=", "|="]
+  const assignment = () => {
+    const left = conditional()
+    const t = peek()
+    if (t.k === "op" && ASSIGN.includes(t.v)) {
+      if (!left.lvalue) fail(t.line, "присвоить можно только переменной")
+      next()
+      const right = intOnly(rvalue(assignment()), t)
+      intOnly(left, t)
+      return t.v === "="
+        ? node("BinaryOperator", left.begin, right.end, "'int' '='", [left, right], { type: "int" })
+        : node("CompoundAssignOperator", left.begin, right.end, `'int' '${t.v}' ComputeLHSTy='int' ComputeResultTy='int'`, [left, right], { type: "int" })
+    }
+    return left
+  }
+  const expression = () => {
+    const e = assignment()
+    if (is(",")) fail(peek().line, "оператор «,» здесь не читается")
+    return e
+  }
+  /* ── операторы ── */
+  const Scope = (up) => {
+    const names = new Map()
+    return { up, names, find: (n) => names.get(n) ?? up?.find(n) ?? null, add: (n, d) => names.set(n, d) }
+  }
+  const declaration = (spec) => {
+    /* «int a = 1, b;» — спецификатор уже прочитан */
+    if (spec.name !== "int") fail(spec.begin.line, "локальные переменные читаются только типа int")
+    const decls = []
+    for (;;) {
+      const name = ident()
+      let init = null
+      if (is("=")) {
+        next()
+        init = intOnly(rvalue(assignment()), name)
+      }
+      const d = { type: "int", addr: addr() }
+      decls.push(node("VarDecl", spec.begin, init ? init.end : name, null, init ? [init] : [], { addr: d.addr, nameTok: name, after: `${name.v} 'int'${init ? " cinit" : ""}` }))
+      scope.add(name.v, d)
+      if (!is(",")) break
+      next()
+    }
+    const semi = expect(";")
+    return node("DeclStmt", spec.begin, semi, "", decls)
+  }
+  const statement = () => {
+    const t = peek()
+    if (is("{")) return block()
+    if (is(";")) { next(); return node("NullStmt", t, t, "") }
+    if (t.k === "id") {
+      switch (t.v) {
+        case "return": {
+          next()
+          if (is(";")) fail(t.line, "return без значения: функция обязана вернуть int")
+          const e = intOnly(rvalue(expression()), t)
+          expect(";")
+          return node("ReturnStmt", t, e.end, "", [e])
+        }
+        case "if": {
+          next(); expect("(")
+          const c = intOnly(rvalue(expression()), t)
+          expect(")")
+          const then = statement()
+          if (is("else")) {
+            next()
+            const other = statement()
+            return node("IfStmt", t, other.end, "has_else", [c, then, other])
+          }
+          return node("IfStmt", t, then.end, "", [c, then])
+        }
+        case "while": {
+          next(); expect("(")
+          const c = intOnly(rvalue(expression()), t)
+          expect(")")
+          const body = statement()
+          return node("WhileStmt", t, body.end, "", [c, body])
+        }
+        case "do": {
+          next()
+          const body = statement()
+          expect("while"); expect("(")
+          const c = intOnly(rvalue(expression()), t)
+          const close = expect(")")
+          expect(";")
+          return node("DoStmt", t, close, "", [body, c])
+        }
+        case "for": {
+          next(); expect("(")
+          const outer = scope
+          scope = Scope(outer)
+          let init = null
+          if (is(";")) next()
+          else {
+            const spec = typeAt()
+            if (spec) init = declaration(spec)
+            else { init = expression(); expect(";") }
+          }
+          const c = is(";") ? null : intOnly(rvalue(expression()), t)
+          expect(";")
+          const step = is(")") ? null : expression()
+          expect(")")
+          const body = statement()
+          scope = outer
+          return node("ForStmt", t, body.end, "", [init, null, c, step, body])
+        }
+        case "break":
+        case "continue": {
+          next(); expect(";")
+          return node(t.v === "break" ? "BreakStmt" : "ContinueStmt", t, t, "")
+        }
+        default: {
+          const spec = typeAt()
+          if (spec) return declaration(spec)
+          if (UNSUPPORTED.has(t.v)) fail(t.line, `«${t.v}» здесь не читается`)
+        }
+      }
+    }
+    const e = expression()
+    expect(";")
+    return e
+  }
+  const block = () => {
+    const open = expect("{")
+    const outer = scope
+    scope = Scope(outer)
+    const kids = []
+    while (!is("}")) {
+      if (peek().k === "end") fail(open.line, "блок { не закрыт")
+      kids.push(statement())
+    }
+    const close = expect("}")
+    scope = outer
+    return node("CompoundStmt", open, close, "", kids)
+  }
+  /* ── объявления верхнего уровня ── */
+  while (peek().k !== "end") {
+    const t = peek()
+    if (is("struct") && peek(1).k === "id" && toks[p + 2].v === "{") {
+      next()
+      const tag = ident()
+      expect("{")
+      const fields = []
+      while (!is("}")) {
+        const ft = typeAt()
+        if (!ft || ft.name !== "int") fail(peek().line, "поля struct читаются только типа int")
+        for (;;) {
+          const name = ident()
+          fields.push({ name: name.v, addr: addr(), begin: ft.begin, nameTok: name })
+          if (!is(",")) break
+          next()
+        }
+        expect(";")
+      }
+      const close = expect("}")
+      expect(";")
+      const kids = fields.map((f) => ({ kind: "FieldDecl", begin: f.begin, end: f.nameTok, rest: null, kids: [], addr: f.addr, nameTok: f.nameTok, after: `${f.name} 'int'` }))
+      records.set(`struct ${tag.v}`, { fields })
+      tops.push({ kind: "RecordDecl", begin: t, end: close, rest: null, kids, addr: addr(), nameTok: tag, after: `struct ${tag.v} definition` })
+      continue
+    }
+    const ret = typeAt()
+    if (!ret) fail(t.line, t.k === "id" ? `«${t.v}» здесь не ждали: на верхнем уровне читаются struct и функции, возвращающие int` : `«${t.v}» здесь не ждали`)
+    if (ret.name !== "int") fail(t.line, "функции читаются только с результатом int")
+    const name = ident()
+    expect("(")
+    const params = []
+    let voidOnly = false
+    if (is("void") && toks[p + 1].v === ")") { next(); voidOnly = true }
+    else if (!is(")")) {
+      for (;;) {
+        const pt = typeAt()
+        if (!pt) fail(peek().line, `тип параметра «${peek().v}» не читается: только int и struct`)
+        if (pt.name !== "int" && !records.has(pt.name)) fail(pt.begin.line, `«${pt.name}» не объявлен выше`)
+        const pn = ident()
+        params.push({ type: pt.name, begin: pt.begin, nameTok: pn, addr: addr() })
+        if (!is(",")) break
+        next()
+      }
+    }
+    const closeParen = expect(")")
+    const type = `int (${params.length ? params.map((x) => x.type).join(", ") : voidOnly ? "void" : ""})`
+    const known = functions.get(name.v)
+    const fn = known ?? { name: name.v, type, params: params.map((x) => x.type), addr: addr() }
+    if (known && known.type !== type) fail(name.line, `«${name.v}» объявлена выше с другими параметрами`)
+    functions.set(name.v, fn)
+    const kids = params.map((x) => ({ kind: "ParmVarDecl", begin: x.begin, end: x.nameTok, rest: null, kids: [], addr: x.addr, nameTok: x.nameTok, after: `${x.nameTok.v} '${x.type}'` }))
+    let end = closeParen
+    if (is(";")) next()
+    else {
+      scope = Scope(null)
+      params.forEach((x) => scope.add(x.nameTok.v, { type: x.type, addr: x.addr, param: true }))
+      const body = block()
+      scope = null
+      kids.push(body)
+      end = body.end
+    }
+    tops.push({ kind: "FunctionDecl", begin: ret.begin, end, rest: null, kids, addr: known ? addr() : fn.addr, prev: known ? known.addr : null, nameTok: name, after: `${name.v} '${type}'`, type })
+  }
+  /* ── печать в записи clang ── */
+  let lastLine = 0
+  let first = true
+  const loc = (t) => {
+    let s
+    if (first) { s = `input.c:${t.line}:${t.col}`; first = false }
+    else if (t.line !== lastLine) s = `line:${t.line}:${t.col}`
+    else s = `col:${t.col}`
+    lastLine = t.line
+    return s
+  }
+  const range = (n) => {
+    const b = loc(n.begin)
+    if (n.end === n.begin) return `<${b}>`
+    return `<${b}, ${loc(n.end)}>`
+  }
+  const out = []
+  const WHOLE = /'int \((int|struct [A-Za-z_0-9]+)(, (int|struct [A-Za-z_0-9]+))*\)'/u
+  const print = (n, prefix, last, depth, whole) => {
+    const lead = prefix + (last ? "`-" : "|-")
+    if (n === null) {
+      if (whole || depth <= 1) out.push(`${lead}<<<NULL>>>`)
+      return
+    }
+    let line = `${n.kind} ${n.addr}${n.prev ? ` prev ${n.prev}` : ""} ${range(n)}`
+    if (n.nameTok) line += ` ${loc(n.nameTok)} ${n.after}`
+    else if (n.rest) line += ` ${n.rest}`
+    if (whole || depth <= 1) out.push(lead + line)
+    n.kids.forEach((k, j) => print(k, prefix + (last ? "  " : "| "), j === n.kids.length - 1, depth + 1, whole))
+  }
+  tops.forEach((n, j) => print(n, "", j === tops.length - 1, 0, n.kind === "RecordDecl" || WHOLE.test(n.after)))
+  return out.join("\n") + (out.length ? "\n" : "")
+}
+
+/* Отказ разбора — строка и причина, для отметки в редакторе. */
+export function прочитатьC(исходник) {
+  try {
+    return { вход: дампC(исходник), строка: null, причина: "" }
+  } catch (беда) {
+    return { вход: "", строка: беда.строка ?? null, причина: беда.message }
+  }
+}
+
+/* Запись `clang -Xclang -ast-dump`, отрезанная так же, как режет её план Demo
+   (flang/foreign/c/run.fscript, «Dump filter»): только объявления главного
+   файла, у функций не из int — одна верхняя строка с детьми. Нужна сверке
+   разбора песочницы с clang: `--сверить-c`. */
+export function отрезатьДампClang(дамп, главный) {
+  const строки = []
+  let держать = false
+  let целиком = false
+  let файл = ""
+  for (const строка of String(дамп).split("\n")) {
+    if (/^[|`]-/u.test(строка)) { держать = false; целиком = false }
+    const место = /<[^<>, ]+\.[ch]:[0-9]+/u.exec(строка)
+    if (место) файл = место[0].slice(1).replace(/:[0-9]+$/u, "")
+    if (/^[|`]-FunctionDecl/u.test(строка)) {
+      держать = файл === главный && !/ implicit /u.test(строка)
+      целиком = /'int \((int|struct [A-Za-z_0-9]+)(, (int|struct [A-Za-z_0-9]+))*\)'/u.test(строка)
+    }
+    if (/^[|`]-RecordDecl/u.test(строка)) { держать = файл === главный; целиком = true }
+    if (держать && (целиком || /^[|`]-/u.test(строка) || /^[| ] [|`]-/u.test(строка))) строки.push(строка)
+  }
+  return строки.length ? `${строки.join("\n")}\n` : ""
+}
+
+/* Две записи дерева равны, если отличаются только адресами узлов, пометками
+   «used»/«referenced» и именем файла. Ответ — первая несовпавшая строка. */
+export function сверитьДампы(наш, clang) {
+  const ровно = (т) => String(т).replace(/0x[0-9a-f]+/gu, "0x").replace(/ (used|referenced)(?= )/gu, "").replace(/<[^<>:, ]+\.[ch]:/u, "<file:").split("\n")
+  const а = ровно(наш)
+  const б = ровно(clang)
+  for (let н = 0; н < Math.max(а.length, б.length); н += 1) {
+    if (а[н] !== б[н]) return { совпало: false, строк: б.length - 1, строка: н + 1, наш: а[н] ?? "", clang: б[н] ?? "" }
+  }
+  return { совпало: true, строк: б.length - 1 }
+}
+
+/* ── Переводчики с чужих языков ─────────────────────────────────────────────
+   Один язык — одна строка: файл переводчика рядом с песочницей и чтение
+   исходника в то, что переводчик принимает. Договор переводчика один:
+   `translateForPage(вход)` отдаёт список функций { name, line, unit,
+   refusals }, где `unit` — модуль на flang, а `refusals` — почему функция
+   не переведена. Переведённое судит ядро, как любую программу. */
+export const ПЕРЕВОДЧИКИ = Object.freeze({
+  c: { файл: ПЕСОЧНИЦА_ФАЙЛЫ.переводC, прочитать: прочитатьC },
+})
+
+export function песочница({ достать, модульРассуждений, модульФормул, модульПеревода }) {
   const модули = new Map()
   let библиотека = null
   const модуль = (имя) => {
@@ -993,6 +1495,77 @@ export function песочница({ достать, модульРассужд�
         ловушка: ответ.сбой === null ? null : текст(ответ.сбой),
       },
     }
+  }
+  /* Программа на flang за любым текстом песочницы: сам текст, перевод
+     формулы или программа, в которую превратилось рассуждение. */
+  const исходникFlang = async (текстПечати) => {
+    const вид = видТекста(текстПечати)
+    if (вид === "flang") return { вид, текст: текстПечати }
+    if (вид === "формула") {
+      const ф = await формулы()
+      if (ф === null) return { вид, отказ: "FLANG_PLAYGROUND переводчик формул не загружен" }
+      const чтение = ф.readForPage(/\\/u.test(текстПечати) ? "latex" : "unicode", текстПечати.trim(), "формула")
+      return чтение.code !== "" ? { вид, отказ: `${чтение.code} ${чтение.why}` } : { вид, текст: чтение.unit }
+    }
+    const р = await модульРассуждений()
+    const чтение = (р.preparedReading ?? р.readText)(текстПечати)
+    if (чтение.variant !== "Read") return { вид, отказ: ["FLANG_REASONING_TEXT текст не прочитан:", ...чтение.fields.faults].join("\n") }
+    return { вид, текст: р.programOf(чтение.fields.words, чтение.fields.sentences) }
+  }
+  const напечататьFlang = async (исходник, слово) => {
+    const цель = ЦЕЛИ_ПЕЧАТИ.find((ц) => ц.цель === слово)
+    if (цель === undefined) return { код: 2, цель: слово, итог: "сбой", вывод: `FLANG_PLAYGROUND цели «${слово}» нет: есть ${ЦЕЛИ_ПЕЧАТИ.map((ц) => ц.цель).join(", ")}`, файлы: [], рантайм: [], замечания: [] }
+    const путь = "/playground.flang"
+    const рантайм = цель.каталог ? `/runtime/${цель.каталог}` : "/runtime"
+    const файлы = await файлыПрогона(путь, исходник)
+    for (const имя of цель.рантайм) файлы.положить(`${рантайм}/${имя}`, ЗАГЛУШКА_РАНТАЙМА)
+    const доводы = ["flang", "emit", путь, "--target", цель.цель, "--runtime", рантайм, "--out", "/out"]
+    const ответ = await прогнать(ПЕСОЧНИЦА_ФАЙЛЫ.компилятор, доводы, файлы)
+    const декодер = new TextDecoder()
+    const напечатано = []
+    const заглушки = []
+    for (const [место, узел] of файлы.узлы) {
+      if (!место.startsWith("/out/") || узел.тип !== "файл") continue
+      const текстФайла = декодер.decode(узел.байты)
+      if (текстФайла.includes(ЗАГЛУШКА_РАНТАЙМА.trim())) заглушки.push(место.slice(5))
+      else напечатано.push({ путь: место.slice(5), текст: текстФайла })
+    }
+    напечатано.sort((а, б) => а.путь.localeCompare(б.путь))
+    const строки = [строкаКоманды(доводы), ответ.вывод.replace(/\n$/u, ""), ...хвостКода(ответ.код)]
+    if (ответ.сбой !== null) строки.push(`ЛОВУШКА WebAssembly: ${текст(ответ.сбой)}`)
+    return {
+      код: ответ.код,
+      цель: цель.цель,
+      итог: ответ.код === 0 ? "напечатано" : "не напечатано",
+      вывод: строки.join("\n"),
+      файлы: напечатано,
+      рантайм: заглушки.sort(),
+      замечания: замечанияИз(ответ.ошибки),
+    }
+  }
+  const перевестиС = async (язык, исходник) => {
+    const переводчик = ПЕРЕВОДЧИКИ[язык]
+    if (переводчик === undefined) return { код: 2, итог: "сбой", вывод: `FLANG_PLAYGROUND переводчика с языка «${язык}» здесь нет`, функции: [] }
+    const чтение = переводчик.прочитать(исходник)
+    if (чтение.причина) return { код: 1, итог: "не прочитано", вывод: `FLANG_FOREIGN_READ строка ${чтение.строка}: ${чтение.причина}`, отказ: { строка: чтение.строка, причина: чтение.причина }, функции: [] }
+    if (typeof модульПеревода !== "function") return { код: 2, итог: "сбой", вывод: "FLANG_PLAYGROUND переводчик не загружен", функции: [] }
+    const м = await модульПеревода(переводчик.файл)
+    const функции = []
+    const строки = []
+    for (const ф of м.translateForPage(чтение.вход)) {
+      if (ф.refusals.length > 0) {
+        функции.push({ имя: ф.name, строка: ф.line, отказы: [...ф.refusals], исходник: "", код: 1 })
+        строки.push(`── ${ф.name}: не переведена ──`, ...ф.refusals)
+        continue
+      }
+      const итог = await проверитьFlang(ф.unit)
+      функции.push({ имя: ф.name, строка: ф.line, отказы: [], исходник: ф.unit, код: итог.код, итог: итог.итог, сверщик: итог.сверщик, разбор: итог.разбор })
+      строки.push(`── ${ф.name} ──`, ф.unit.replace(/\n$/u, ""), итог.вывод)
+    }
+    if (функции.length === 0) строки.push("в тексте нет определений функций")
+    const коды = функции.map((ф) => ф.код)
+    const код = функции.length === 0 ? 1 : коды.includes(1) ? 1 : коды.includes(3) ? 3 : коды.includes(2) ? 2 : 0
+    return { код, итог: { 0: "переведено и проверено", 1: "переведено не всё", 2: "проверено не всё", 3: "переведено, не всё доказано" }[код], вывод: строки.join("\n"), функции }
   }
   const проверитьФормулу = async (запись) => {
     const ф = await формулы()
@@ -1073,28 +1646,80 @@ export function песочница({ достать, модульРассужд�
         : await проверитьРассуждение(текстПроверки)
       return { ...итог, вид, мс: Date.now() - начало }
     },
+    /* Скачать и собрать оба модуля заранее, пока человек пишет текст. */
+    async прогреть() {
+      const начало = Date.now()
+      await Promise.all([модуль(ПЕСОЧНИЦА_ФАЙЛЫ.компилятор), модуль(ПЕСОЧНИЦА_ФАЙЛЫ.сверщик)])
+      return { код: 0, итог: "готово", мс: Date.now() - начало }
+    },
+    async напечатать(текстПечати, цель) {
+      const начало = Date.now()
+      const исходник = await исходникFlang(текстПечати)
+      if (исходник.отказ) return { код: 1, цель, итог: "не прочитано", вывод: исходник.отказ, файлы: [], рантайм: [], замечания: [], мс: Date.now() - начало }
+      return { ...(await напечататьFlang(исходник.текст, цель)), вид: исходник.вид, исходник: исходник.текст, мс: Date.now() - начало }
+    },
+    async перевести(язык, текстПеревода) {
+      const начало = Date.now()
+      return { ...(await перевестиС(язык, String(текстПеревода))), язык, мс: Date.now() - начало }
+    },
   }
 }
 
-function песочницаПоАдресу(база) {
+/* Скачивание кусками: странице сообщается, сколько байт уже пришло, — первый
+   прогон качает компилятор, и без этого вкладка молчала бы несколько секунд. */
+async function скачать(адрес, имя, сообщить) {
+  const ответ = await fetch(адрес)
+  if (!ответ.ok) throw new Error(`${имя}: ${ответ.status} ${ответ.statusText}`)
+  if (typeof сообщить !== "function" || ответ.body === null || typeof ответ.body.getReader !== "function") return new Uint8Array(await ответ.arrayBuffer())
+  const сжато = ответ.headers.get("content-encoding")
+  const длина = сжато ? 0 : Number(ответ.headers.get("content-length") ?? 0)
+  const читатель = ответ.body.getReader()
+  const куски = []
+  let байт = 0
+  let сказано = 0
+  for (;;) {
+    const { done, value } = await читатель.read()
+    if (done) break
+    куски.push(value)
+    байт += value.length
+    if (байт - сказано >= 1 << 20) {
+      сказано = байт
+      сообщить({ файл: имя, байт, всего: длина })
+    }
+  }
+  const всё = new Uint8Array(байт)
+  let место = 0
+  for (const кусок of куски) {
+    всё.set(кусок, место)
+    место += кусок.length
+  }
+  сообщить({ файл: имя, байт, всего: длина || байт, готово: true })
+  return всё
+}
+
+function песочницаПоАдресу(база, сообщить) {
   return песочница({
-    достать: async (имя) => {
-      const ответ = await fetch(new URL(имя, база))
-      if (!ответ.ok) throw new Error(`${имя}: ${ответ.status} ${ответ.statusText}`)
-      return new Uint8Array(await ответ.arrayBuffer())
-    },
+    достать: (имя) => скачать(new URL(имя, база), имя, сообщить),
     модульРассуждений: () => import(new URL(ПЕСОЧНИЦА_ФАЙЛЫ.рассуждения, база).href),
     модульФормул: () => import(new URL(ПЕСОЧНИЦА_ФАЙЛЫ.формулы, база).href),
+    модульПеревода: (файл) => import(new URL(файл, база).href),
   })
 }
 
 function завестиПоток() {
   const песочницы = new Map()
   globalThis.addEventListener("message", async (событие) => {
-    const { номер, текст: текстПроверки, база } = событие.data ?? {}
+    const { номер, текст: текстПроверки, база, действие, цель, язык } = событие.data ?? {}
     try {
-      if (!песочницы.has(база)) песочницы.set(база, песочницаПоАдресу(база))
-      globalThis.postMessage({ номер, ...(await песочницы.get(база).проверить(String(текстПроверки ?? ""))) })
+      if (!песочницы.has(база)) песочницы.set(база, песочницаПоАдресу(база, (прогресс) => globalThis.postMessage({ прогресс })))
+      const п = песочницы.get(база)
+      const вход = String(текстПроверки ?? "")
+      const итог =
+        действие === "прогреть" ? await п.прогреть()
+        : действие === "напечатать" ? await п.напечатать(вход, String(цель ?? ""))
+        : действие === "перевести" ? await п.перевести(String(язык ?? ""), вход)
+        : await п.проверить(вход)
+      globalThis.postMessage({ номер, ...итог })
     } catch (беда) {
       globalThis.postMessage({ номер, код: 2, итог: "сбой", вывод: `FLANG_PLAYGROUND ${текст(беда)}` })
     }
@@ -1106,21 +1731,60 @@ async function запуститьИзКоманднойСтроки() {
   if (process.argv[1] === undefined || pathToFileURL(process.argv[1]).href !== import.meta.url) return
   const { readFile } = await import(["node:", "fs/promises"].join(""))
   const [каталог, ...доводы] = process.argv.slice(2)
-  const машинно = доводы[0] === "--json"
-  const слова = машинно ? доводы.slice(1) : доводы
+  /* Ключи до текста: «--json», «--на <цель>» (печать), «--из <язык>»
+     (перевод во flang), «--сверить-c <файл C>» (разбор C песочницы против
+     записи clang, которая идёт текстом), «--сверить-с <каталог>» (вместе с
+     «--на»: файлы программы против печати двоичного компилятора в каталоге). */
+  const ключи = {}
+  let слова = доводы
+  while (слова[0] === "--json" || ((слова[0] === "--на" || слова[0] === "--из" || слова[0] === "--сверить-c" || слова[0] === "--сверить-с") && слова.length > 1)) {
+    if (слова[0] === "--json") {
+      ключи.json = true
+      слова = слова.slice(1)
+    } else {
+      ключи[слова[0].slice(2)] = слова[1]
+      слова = слова.slice(2)
+    }
+  }
+  const машинно = ключи.json === true
   if (каталог === undefined || слова.length === 0) {
-    process.stderr.write("звать: node flang_host_browser.js <каталог песочницы> [--json] <текст>\n")
+    process.stderr.write("звать: node flang_host_browser.js <каталог песочницы> [--json] [--на <цель> | --из <язык> | --сверить-c <файл.c>] <текст>\n")
     process.exitCode = 2
+    return
+  }
+  if (ключи["сверить-c"] !== undefined) {
+    const главный = ключи["сверить-c"]
+    const чтение = прочитатьC(await readFile(главный, "utf8"))
+    const ответ = чтение.причина ? { совпало: false, строка: чтение.строка, наш: чтение.причина, clang: "" } : сверитьДампы(чтение.вход, отрезатьДампClang(слова.join(" "), главный))
+    process.stdout.write(ответ.совпало ? `${главный}: разбор совпал с clang, строк ${ответ.строк}\n` : `${главный}: разбор разошёлся с clang в строке ${ответ.строка}\n  песочница: ${ответ.наш}\n  clang:     ${ответ.clang}\n`)
+    process.exitCode = ответ.совпало ? 0 : 1
     return
   }
   const п = песочница({
     достать: (имя) => readFile(`${каталог}/${имя}`),
     модульРассуждений: () => import(pathToFileURL(`${каталог}/${ПЕСОЧНИЦА_ФАЙЛЫ.рассуждения}`).href),
     модульФормул: () => import(pathToFileURL(`${каталог}/${ПЕСОЧНИЦА_ФАЙЛЫ.формулы}`).href),
+    модульПеревода: (файл) => import(pathToFileURL(`${каталог}/${файл}`).href),
   })
-  const итог = await п.проверить(слова.join(" ")).catch((беда) => ({ код: 2, вид: "?", итог: "сбой", мс: 0, вывод: `FLANG_PLAYGROUND ${текст(беда)}` }))
+  const вход = слова.join(" ")
+  const работа =
+    ключи["на"] !== undefined ? п.напечатать(вход, ключи["на"]).then((ответ) => ({ ...ответ, вывод: [ответ.вывод, ...ответ.файлы.map((ф) => `── ${ф.путь} ──\n${ф.текст.replace(/\n$/u, "")}`), ...(ответ.рантайм.length ? [`── рантайм, копируется как есть: ${ответ.рантайм.join(", ")}`] : [])].join("\n") }))
+    : ключи["из"] !== undefined ? п.перевести(ключи["из"], вход)
+    : п.проверить(вход)
+  const итог = await работа.catch((беда) => ({ код: 2, вид: "?", итог: "сбой", мс: 0, вывод: `FLANG_PLAYGROUND ${текст(беда)}` }))
+  if (ключи["сверить-с"] !== undefined && ключи["на"] !== undefined && итог.код === 0) {
+    const разные = []
+    for (const файл of итог.файлы) {
+      const родной = await readFile(`${ключи["сверить-с"]}/${файл.путь}`, "utf8").catch(() => null)
+      if (родной !== файл.текст) разные.push(родной === null ? `${файл.путь}: у двоичного такого файла нет` : `${файл.путь}: текст разный`)
+    }
+    итог.вывод += разные.length
+      ? `\nпечать разошлась с двоичным компилятором:\n${разные.join("\n")}`
+      : `\nпечать совпала с двоичным компилятором: файлов программы ${итог.файлы.length}`
+    if (разные.length) итог.код = 1
+  }
   process.stdout.write(машинно ? `${JSON.stringify(итог)}\n` : `${итог.вывод}\n`)
-  process.stderr.write(`песочница: ${итог.вид}, ${итог.итог}, ${итог.мс} мс\n`)
+  process.stderr.write(`песочница: ${итог.вид ?? итог.цель ?? итог.язык}, ${итог.итог}, ${итог.мс} мс\n`)
   process.exitCode = итог.код
 }
 

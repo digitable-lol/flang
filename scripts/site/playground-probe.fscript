@@ -157,6 +157,180 @@
         и «absent» равным ["FLANG_FORMULA", "FLANG_PLAYGROUND"])]
   [(«Barbara»), («Consequent»), («Falsehood»), («Formula»)]
 
+тотальная функция «Printed program»
+  возвращает строка
+  пример «A function with a postcondition, as on the playground page»
+    ожидается """
+      модуль «Привет»
+
+      тотальная функция «Удвоить»
+        принимает н: неотрицательное
+        возвращает число
+        обеспечивает «удвоенное не меньше исходного» результат не меньше н
+        н плюс н
+      """
+  """
+  модуль «Привет»
+
+  тотальная функция «Удвоить»
+    принимает н: неотрицательное
+    возвращает число
+    обеспечивает «удвоенное не меньше исходного» результат не меньше н
+    н плюс н
+  """
+
+тотальная функция «Print case»
+  принимает target: строка, file: строка
+  возвращает «Probe case»
+  пример «Printing to Go must give the binary compiler's files»
+    дано target равно "go"
+    дано file равно "flang/privet.go"
+    ожидается (запись «Probe case» с «name» равным "print go" и «text file» равным ""
+      и «text» равным """
+        модуль «Привет»
+
+        тотальная функция «Удвоить»
+          принимает н: неотрицательное
+          возвращает число
+          обеспечивает «удвоенное не меньше исходного» результат не меньше н
+          н плюс н
+        """
+      и «code» равным 0
+      и «present» равным ["── flang/privet.go ──", "печать совпала с двоичным компилятором"]
+      и «absent» равным ["FLANG_PLAYGROUND", "не хватает", "разошлась"])
+  (запись «Probe case» с «name» равным (соединить ["print ", target] по "") и «text file» равным ""
+    и «text» равным («Printed program») и «code» равным 0
+    и «present» равным [(соединить ["── ", file, " ──"] по ""), "печать совпала с двоичным компилятором"]
+    и «absent» равным ["FLANG_PLAYGROUND", "не хватает", "разошлась"])
+
+тотальная функция «Print cases»
+  возвращает список «Probe case»
+  [(«Print case» от "c" и "privet.c"), («Print case» от "cpp" и "privet.cpp"),
+    («Print case» от "go" и "flang/privet.go"), («Print case» от "rust" и "src/privet.rs"),
+    («Print case» от "java" и "Privet.java"), («Print case» от "js" и "privet.js"),
+    («Print case» от "ts" и "privet.ts"), («Print case» от "elixir" и "privet.ex"),
+    («Print case» от "python" и "privet.py"), («Print case» от "csharp" и "Privet.cs")]
+
+тотальная функция «Target of»
+  принимает probe: «Probe case»
+  возвращает строка
+  пример «The target is the name after the word print»
+    дано probe равно (запись «Probe case» с «name» равным "print go" и «text file» равным "" и «text» равным ""
+      и «code» равным 0 и «present» равным пустой список и «absent» равным пустой список)
+    ожидается "go"
+  подстрока (probe.«name») с 7 по (длина (probe.«name»))
+
+тотальная функция «Through native print»
+  возвращает строка
+  соединить ["cd \"$0\" && t=$(mktemp -d \"${FLANG_TMP:-${TMPDIR:-/tmp}}/playground-print.XXXXXX\") && printf ",
+    "'%s' \"$4\" > \"$t/in.flang\" && bootstrap/flang emit \"$t/in.flang\" --target \"$3\" --out ",
+    "\"$t/out\" > /dev/null 2>&1; node \"$1\" \"$2\" --на \"$3\" --сверить-с \"$t/out\" \"$4\"; ",
+    "c=$?; rm -rf \"$t\"; exit $c"] по ""
+
+тотальная функция «Question of print»
+  принимает probe: «Probe case»
+  возвращает «Question»
+  («Run» от (probe.«name») и "sh"
+    и ["-c", («Through native print»), («Root»), («Host»), («Playground directory»),
+      («Target of» от probe), (probe.«text»)])
+
+тотальная функция «C translation»
+  возвращает «Probe case»
+  пример «clamp is proved, midpoint keeps its overflow open»
+    ожидается (запись «Probe case» с «name» равным "c translation"
+      и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 3
+      и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»", "(lo + hi) не выше INT_MAX",
+        "ПРОВЕРЕНО — запись сошлась"]
+      и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
+  (запись «Probe case» с «name» равным "c translation"
+    и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 3
+    и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»", "(lo + hi) не выше INT_MAX",
+      "ПРОВЕРЕНО — запись сошлась"]
+    и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
+
+тотальная функция «C refusal»
+  возвращает «Probe case»
+  пример «long is outside the subset and is named with its line»
+    ожидается (запись «Probe case» с «name» равным "c refusal" и «text file» равным ""
+      и «text» равным "int f(long x) { return x; }" и «code» равным 1
+      и «present» равным ["FLANG_FOREIGN_READ строка 1: «long» здесь не читается"]
+      и «absent» равным ["модуль «Перевод"])
+  (запись «Probe case» с «name» равным "c refusal" и «text file» равным ""
+    и «text» равным "int f(long x) { return x; }" и «code» равным 1
+    и «present» равным ["FLANG_FOREIGN_READ строка 1: «long» здесь не читается"]
+    и «absent» равным ["модуль «Перевод"])
+
+тотальная функция «Through cat from C»
+  возвращает строка
+  пример «The C text goes to the host after the key that names the language»
+    ожидается "cd \"$0\" && exec node \"$1\" \"$2\" --из c \"$(cat \"$3\")\""
+  "cd \"$0\" && exec node \"$1\" \"$2\" --из c \"$(cat \"$3\")\""
+
+тотальная функция «Question of C»
+  принимает probe: «Probe case»
+  возвращает «Question»
+  пример «A C file is read by the shell»
+    дано probe равно (запись «Probe case» с «name» равным "c" и «text file» равным "a.c" и «text» равным ""
+      и «code» равным 0 и «present» равным пустой список и «absent» равным пустой список)
+    ожидается (запись «Question» с «name» равным "c"
+      и «order» равным (вариант «Запустить процесс» с программа равным "sh"
+        и аргументы равным ["-c", "cd \"$0\" && exec node \"$1\" \"$2\" --из c \"$(cat \"$3\")\"", "../..",
+          "flang/src/emit/js/flang_host_browser.js", "docs/site/out/playground", "a.c"]))
+  пример «A C text in place goes to the host as it is»
+    дано probe равно (запись «Probe case» с «name» равным "c" и «text file» равным "" и «text» равным "int f"
+      и «code» равным 1 и «present» равным пустой список и «absent» равным пустой список)
+    ожидается (запись «Question» с «name» равным "c"
+      и «order» равным (вариант «Запустить процесс» с программа равным "sh"
+        и аргументы равным ["-c", "cd \"$0\" && exec \"$@\"", "../..", "node",
+          "flang/src/emit/js/flang_host_browser.js", "docs/site/out/playground", "--из", "c", "int f"]))
+  если пусто (probe.«text file»)
+    то («Run from» от (probe.«name») и («Root») и "node"
+      и [(«Host»), («Playground directory»), "--из", "c", (probe.«text»)])
+    иначе («Run» от (probe.«name») и "sh"
+      и ["-c", («Through cat from C»), («Root»), («Host»), («Playground directory»), (probe.«text file»)])
+
+тотальная функция «Clang case»
+  принимает file: строка
+  возвращает «Probe case»
+  пример «The playground reads a corpus file into clang's tree»
+    дано file равно "calendar"
+    ожидается (запись «Probe case» с «name» равным "clang calendar"
+      и «text file» равным "flang/foreign/c/corpus/calendar.c" и «text» равным "" и «code» равным 0
+      и «present» равным ["разбор совпал с clang"] и «absent» равным ["разошёлся"])
+  (запись «Probe case» с «name» равным (соединить ["clang ", file] по "")
+    и «text file» равным (соединить ["flang/foreign/c/corpus/", file, ".c"] по "") и «text» равным "" и «code» равным 0
+    и «present» равным ["разбор совпал с clang"] и «absent» равным ["разошёлся"])
+
+тотальная функция «Clang cases»
+  возвращает список «Probe case»
+  пусть files равно ["stats", "ranges", "pagination", "grading", "calendar", "steps", "loops", "calls", "spans"]
+  отобразить files как file → «Clang case» от file
+
+тотальная функция «Through clang»
+  возвращает строка
+  соединить ["cd \"$0\" && exec node \"$1\" \"$2\" --сверить-c \"$3\" \"$(clang -Xclang -ast-dump -fsyntax-only ",
+    "\"$3\")\""] по ""
+
+тотальная функция «Question of clang»
+  принимает probe: «Probe case»
+  возвращает «Question»
+  («Run» от (probe.«name») и "sh"
+    и ["-c", («Through clang»), («Root»), («Host»), («Playground directory»), (probe.«text file»)])
+
+тотальная функция «All cases»
+  возвращает список «Probe case»
+  пусть checks равно («Соединить списки» от («Cases») и («Print cases»))
+  пусть foreign равно («Соединить списки» от [(«C translation»), («C refusal»)] и («Clang cases»))
+  «Соединить списки» от checks и foreign
+
+тотальная функция «Questions»
+  возвращает список «Question»
+  пусть checks равно (отобразить («Cases») как probe → «Question of» от probe)
+  пусть prints равно (отобразить («Print cases») как probe → «Question of print» от probe)
+  пусть translations равно (отобразить [(«C translation»), («C refusal»)] как probe → «Question of C» от probe)
+  пусть readings равно (отобразить («Clang cases») как probe → «Question of clang» от probe)
+  «Соединить списки» от («Соединить списки» от checks и prints) и («Соединить списки» от translations и readings)
+
 тотальная функция «Question of»
   принимает probe: «Probe case»
   возвращает «Question»
@@ -236,7 +410,7 @@
     дано stages равно 1
     ожидается пустой список
   если stages равен 0
-    то отобразить («Cases») как probe → «Question of» от probe
+    то «Questions»
     иначе пустой список
 
 тотальная функция «Proceed with probing»
@@ -254,7 +428,7 @@
       то «Ask» от (голова) и (хвост) и stages и answers
     случай пусто
       то если stages не больше 0
-        то «Verdict of cases» от («Cases») и answers
+        то «Verdict of cases» от («All cases») и answers
         иначе «Proceed with probing» от («Probe stage» от (stages минус 1)) и (stages минус 1) и answers
 
 тотальная функция «Begin probing»
@@ -284,7 +458,62 @@
       false statement: в выводе нет «объявлено, не доказано»
       formula: ждали код 0, вышел 127
       formula: в выводе нет «утверждаем («x» плюс «y») равен («y» плюс «x»)»
-      formula: в выводе нет «ПРОВЕРЕНО — запись сошлась»"""
+      formula: в выводе нет «ПРОВЕРЕНО — запись сошлась»
+      print c: ждали код 0, вышел 127
+      print c: в выводе нет «── privet.c ──»
+      print c: в выводе нет «печать совпала с двоичным компилятором»
+      print cpp: ждали код 0, вышел 127
+      print cpp: в выводе нет «── privet.cpp ──»
+      print cpp: в выводе нет «печать совпала с двоичным компилятором»
+      print go: ждали код 0, вышел 127
+      print go: в выводе нет «── flang/privet.go ──»
+      print go: в выводе нет «печать совпала с двоичным компилятором»
+      print rust: ждали код 0, вышел 127
+      print rust: в выводе нет «── src/privet.rs ──»
+      print rust: в выводе нет «печать совпала с двоичным компилятором»
+      print java: ждали код 0, вышел 127
+      print java: в выводе нет «── Privet.java ──»
+      print java: в выводе нет «печать совпала с двоичным компилятором»
+      print js: ждали код 0, вышел 127
+      print js: в выводе нет «── privet.js ──»
+      print js: в выводе нет «печать совпала с двоичным компилятором»
+      print ts: ждали код 0, вышел 127
+      print ts: в выводе нет «── privet.ts ──»
+      print ts: в выводе нет «печать совпала с двоичным компилятором»
+      print elixir: ждали код 0, вышел 127
+      print elixir: в выводе нет «── privet.ex ──»
+      print elixir: в выводе нет «печать совпала с двоичным компилятором»
+      print python: ждали код 0, вышел 127
+      print python: в выводе нет «── privet.py ──»
+      print python: в выводе нет «печать совпала с двоичным компилятором»
+      print csharp: ждали код 0, вышел 127
+      print csharp: в выводе нет «── Privet.cs ──»
+      print csharp: в выводе нет «печать совпала с двоичным компилятором»
+      c translation: ждали код 3, вышел 127
+      c translation: в выводе нет «модуль «Перевод clamp»»
+      c translation: в выводе нет «модуль «Перевод midpoint»»
+      c translation: в выводе нет «(lo + hi) не выше INT_MAX»
+      c translation: в выводе нет «ПРОВЕРЕНО — запись сошлась»
+      c refusal: ждали код 1, вышел 127
+      c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: «long» здесь не читается»
+      clang stats: ждали код 0, вышел 127
+      clang stats: в выводе нет «разбор совпал с clang»
+      clang ranges: ждали код 0, вышел 127
+      clang ranges: в выводе нет «разбор совпал с clang»
+      clang pagination: ждали код 0, вышел 127
+      clang pagination: в выводе нет «разбор совпал с clang»
+      clang grading: ждали код 0, вышел 127
+      clang grading: в выводе нет «разбор совпал с clang»
+      clang calendar: ждали код 0, вышел 127
+      clang calendar: в выводе нет «разбор совпал с clang»
+      clang steps: ждали код 0, вышел 127
+      clang steps: в выводе нет «разбор совпал с clang»
+      clang loops: ждали код 0, вышел 127
+      clang loops: в выводе нет «разбор совпал с clang»
+      clang calls: ждали код 0, вышел 127
+      clang calls: в выводе нет «разбор совпал с clang»
+      clang spans: ждали код 0, вышел 127
+      clang spans: в выводе нет «разбор совпал с clang»"""
   «Proceed with probing» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
 
 план «Probe»

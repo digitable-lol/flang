@@ -24,7 +24,19 @@
   var T = EN ? {
     example: 'Example', check: 'Check', share: 'Share', checking: 'checking… (the first run downloads the compiler)',
     linkCopied: 'the link carries the text; nothing is sent to a server', ms: 'ms',
-    tabs: { result: 'Result', formula: 'Formulas', input: 'Formula → flang', picture: 'Pictures' },
+    tabs: { result: 'Result', formula: 'Formulas', emit: 'flang → language', foreign: 'language → flang', input: 'Formula → flang', picture: 'Pictures' },
+    loading: function (mb) { return 'downloading the compiler: ' + mb + ' MB'; }, ready: 'compiler loaded',
+    emitLead: 'The same program printed by «flang emit» into every target language. The compiler in this tab prints it, nothing is sent anywhere.',
+    emitting: 'printing…', emitFailed: 'Not printed', runtimeNote: 'Runtime files are copied into the output as they are and are not shown here: ',
+    emitFrom: { 'формула': 'The formula was first translated to flang; this is that program.', 'рассуждение': 'The reasoning was first turned into a flang program; this is that program.' },
+    buildHow: 'Compiler output', emitStale: 'The text in the editor changed. Press «Print» to print it again.', print: 'Print',
+    foreignLead: 'Write a function in another language. A translator turns it into flang, and the kernel checks the result right away. The translator is not trusted: whatever it writes, the kernel judges.',
+    translateGo: 'Translate and check', translating: 'translating…', soon: 'soon', soonNote: 'The Python translator is not in this build yet.',
+    readFailed: 'The text was not read', notTranslated: 'Not translated', fnProved: 'Translated and proved', fnUnproved: 'Translated, not everything is proved',
+    fnFailed: 'Translated, the check failed', noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
+    cSubset: 'The C subset: int and struct of int fields, if/else, while, for, return, + − * / % and comparisons. Overflow and division by zero become obligations the kernel has to prove.',
+    foreignLabel: 'source in another language', fallacy: 'Fallacy: ', card: 'fallacy card', hints: 'Possible fallacies (check them yourself): ', boundary: 'What the form does not decide: ', unparsedSentence: 'Not read: sentence ',
+    lineNo: 'line numbers',
     editor: 'flang source or reasoning', press: 'Press «Check» or Ctrl+Enter.',
     proved: 'Proved for all values', examples: 'Checked on examples only', counter: 'Does not follow: here is a counterexample',
     unproved: 'Not proved', error: 'Error', errorAt: 'Error on line ', clean: 'No errors', partial: 'Not everything was checked',
@@ -62,7 +74,19 @@
   } : {
     example: 'Пример', check: 'Проверить', share: 'Поделиться', checking: 'проверяю… (первый прогон скачивает компилятор)',
     linkCopied: 'текст едет в адресе; на сервер не уходит ничего', ms: 'мс',
-    tabs: { result: 'Итог', formula: 'Формулы', input: 'Формула → flang', picture: 'Рисунки' },
+    tabs: { result: 'Итог', formula: 'Формулы', emit: 'flang → язык', foreign: 'язык → flang', input: 'Формула → flang', picture: 'Рисунки' },
+    loading: function (mb) { return 'скачиваю компилятор: ' + mb + ' МБ'; }, ready: 'компилятор загружен',
+    emitLead: 'Та же программа, напечатанная командой «flang emit» во все целевые языки. Печатает компилятор в этой вкладке, на сервер не уходит ничего.',
+    emitting: 'печатаю…', emitFailed: 'Не напечатано', runtimeNote: 'Файлы рантайма копируются в вывод как есть и здесь не показаны: ',
+    emitFrom: { 'формула': 'Формулу сначала перевели на flang; напечатана эта программа.', 'рассуждение': 'Рассуждение сначала превратили в программу на flang; напечатана она.' },
+    buildHow: 'Вывод компилятора', emitStale: 'Текст в редакторе изменился. Нажмите «Напечатать», чтобы напечатать его заново.', print: 'Напечатать',
+    foreignLead: 'Напишите функцию на другом языке. Переводчик сделает из неё программу на flang, и ядро сразу её проверит. Переводчику не доверяют: что бы он ни написал, судит ядро.',
+    translateGo: 'Перевести и проверить', translating: 'перевожу…', soon: 'скоро', soonNote: 'Переводчика с Python в этой сборке ещё нет.',
+    readFailed: 'Текст не прочитан', notTranslated: 'Не переведена', fnProved: 'Переведена и доказана', fnUnproved: 'Переведена, доказано не всё',
+    fnFailed: 'Переведена, проверка не прошла', noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
+    cSubset: 'Подмножество C: int и struct из полей int, if/else, while, for, return, + − * / % и сравнения. Переполнение и деление на ноль становятся обязательствами, которые ядро должно доказать.',
+    foreignLabel: 'исходник на другом языке', fallacy: 'Ошибка: ', card: 'карточка ошибки', hints: 'Возможные ошибки (проверьте сами): ', boundary: 'Чего форма не решает: ', unparsedSentence: 'Не прочитано предложение ',
+    lineNo: 'номера строк',
     editor: 'исходник на flang или рассуждение', press: 'Нажмите «Проверить» или Ctrl+Enter.',
     proved: 'Доказано для всех значений', examples: 'Проверено только на примерах', counter: 'Не следует: вот контрпример',
     unproved: 'Не доказано', error: 'Ошибка', errorAt: 'Ошибка в строке ', clean: 'Ошибок нет', partial: 'Проверено не всё',
@@ -193,11 +217,69 @@
     return out;
   }
 
-  function highlightHtml(src, badLines) {
+  function highlightHtml(src, badLines) { return linesHtml(segments(src), badLines); }
+
+  /* Подсветка напечатанного и чужих языков: пять тех же видов токенов, что у
+     flang (слово, строка, число, комментарий), по таблице слов языка. Это не
+     разбор языка, а раскраска: ошибка в ней меняет цвет, а не смысл. */
+  var C_WORDS = 'auto break case char const continue default do double else enum extern float for goto if inline int long register return short signed sizeof static struct switch typedef union unsigned void volatile while bool true false NULL';
+  var LANGS = {
+    c: { line: '//', block: true, quotes: '"\'', words: C_WORDS + ' include define ifndef ifdef endif pragma' },
+    cpp: { line: '//', block: true, quotes: '"\'', words: C_WORDS + ' class namespace template typename public private protected virtual override new delete using nullptr auto constexpr noexcept std this throw try catch operator explicit friend mutable include define ifndef endif pragma' },
+    go: { line: '//', block: true, quotes: '"\'`', words: 'break case chan const continue default defer else fallthrough for func go goto if import interface map package range return select struct switch type var nil true false error string int int64 bool' },
+    rust: { line: '//', block: true, quotes: '"', words: 'as break const continue crate else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while Some None Ok Err Box Vec String Option Result' },
+    java: { line: '//', block: true, quotes: '"\'', words: 'abstract boolean break byte case catch char class continue default do double else enum extends final finally float for if implements import instanceof int interface long new null package private protected public return short static super switch this throw throws try void while true false var String' },
+    js: { line: '//', block: true, quotes: '"\'`', words: 'async await break case catch class const continue default delete do else export extends false finally for function if import in instanceof let new null of return static super switch this throw true try typeof undefined var void while yield' },
+    ts: { line: '//', block: true, quotes: '"\'`', words: 'async await break case catch class const continue default delete do else export extends false finally for function if import in instanceof let new null of return static super switch this throw true try typeof undefined var void while yield type interface readonly number string boolean unknown any never as' },
+    elixir: { line: '#', block: false, quotes: '"', atoms: true, words: 'def defp defmodule defstruct defmacro do end if else unless case cond with fn when and or not in true false nil import alias require use raise rescue try after receive' },
+    python: { line: '#', block: false, quotes: '"\'', triple: true, words: 'False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield self' },
+    csharp: { line: '//', block: true, quotes: '"\'', words: 'abstract as bool break byte case catch char class const continue decimal default delegate do double else enum false finally for foreach if in int interface internal is long namespace new null object out override params private protected public readonly ref return sealed short static string struct switch this throw true try typeof using var virtual void while' },
+    make: { line: '#', block: false, quotes: '', words: '' },
+    text: { line: '', block: false, quotes: '', words: '' }
+  };
+  Object.keys(LANGS).forEach(function (k) { var set = new Set(); LANGS[k].words.split(' ').forEach(function (w) { if (w) set.add(w); }); LANGS[k].set = set; });
+  function langOfPath(path) {
+    var m = /\.([A-Za-z]+)$/.exec(path), ext = m ? m[1].toLowerCase() : '';
+    if (/(^|\/)Makefile$/.test(path) || ext === 'toml' || ext === 'mod') return 'make';
+    return { c: 'c', h: 'c', cpp: 'cpp', hpp: 'cpp', go: 'go', rs: 'rust', java: 'java', js: 'js', mjs: 'js', ts: 'ts', ex: 'elixir', exs: 'elixir', py: 'python', cs: 'csharp' }[ext] || 'text';
+  }
+  function codeSegments(src, lang) {
+    var L = LANGS[lang] || LANGS.text, out = [], i = 0, n = src.length, plain = '';
+    function flush() { if (plain) { out.push([plain, '']); plain = ''; } }
+    function push(t, cls) { flush(); out.push([t, cls]); }
+    while (i < n) {
+      var c = src[i], e;
+      if (L.line && src.startsWith(L.line, i)) { e = src.indexOf('\n', i); if (e < 0) e = n; push(src.slice(i, e), 'tok-kommentariy'); i = e; continue; }
+      if (L.block && c === '/' && src[i + 1] === '*') { e = src.indexOf('*/', i + 2); e = e < 0 ? n : e + 2; push(src.slice(i, e), 'tok-kommentariy'); i = e; continue; }
+      if (L.quotes.indexOf(c) >= 0 && c) {
+        if (L.triple && src.startsWith(c + c + c, i)) { e = src.indexOf(c + c + c, i + 3); e = e < 0 ? n : e + 3; }
+        else {
+          e = i + 1;
+          while (e < n && src[e] !== c && (c === '`' || src[e] !== '\n')) e += src[e] === '\\' ? 2 : 1;
+          if (src[e] === c) e += 1;
+        }
+        push(src.slice(i, e), 'tok-stroka'); i = e; continue;
+      }
+      var prev = i > 0 && /[\p{L}\p{N}_]/u.test(src[i - 1]);
+      if (L.atoms && c === ':' && /[a-z_]/.test(src[i + 1] || '') && !prev && src[i - 1] !== ':') {
+        var am = /^:[a-z_][A-Za-z0-9_]*[?!]?/.exec(src.slice(i, i + 80)); push(am[0], 'tok-stroka'); i += am[0].length; continue;
+      }
+      if (/[0-9]/.test(c) && !prev) { var nm = /^(0x[0-9a-fA-F_]+|[0-9][0-9_]*(\.[0-9_]+)?([eE][-+]?[0-9]+)?)[A-Za-z0-9]*/.exec(src.slice(i, i + 60)); push(nm[0], 'tok-chislo'); i += nm[0].length; continue; }
+      if (/[\p{L}_#]/u.test(c) && !prev) {
+        var wm = /^[#]?[\p{L}\p{N}_]+[?!]?/u.exec(src.slice(i, i + 120));
+        var w = wm ? wm[0] : c;
+        if (L.set.has(w.replace(/^#/, ''))) push(w, 'tok-slovo'); else plain += w;
+        i += w.length; continue;
+      }
+      plain += c; i += 1;
+    }
+    flush();
+    return out;
+  }
+  function linesHtml(segs, badLines) {
     var lines = [[]];
-    segments(src).forEach(function (s) {
-      var parts = s[0].split('\n');
-      parts.forEach(function (part, j) {
+    segs.forEach(function (s) {
+      s[0].split('\n').forEach(function (part, j) {
         if (j > 0) lines.push([]);
         if (part) lines[lines.length - 1].push(s[1] ? '<span class="' + s[1] + '">' + esc(part) + '</span>' : esc(part));
       });
@@ -206,6 +288,13 @@
       var bad = badLines && badLines.has(j + 1);
       return '<span class="pg-line' + (bad ? ' pg-line-bad' : '') + '">' + (parts.join('') || ' ') + '</span>';
     }).join('');
+  }
+  function codeHtml(src, lang, badLines) { return lang === 'flang' ? highlightHtml(src, badLines) : linesHtml(codeSegments(src, lang), badLines); }
+  function codeBlock(src, lang) {
+    var pre = el('pre', 'lang-' + lang), code = el('code');
+    code.innerHTML = codeHtml(src, lang, null);
+    pre.appendChild(code);
+    return pre;
   }
 
   /* ── KaTeX с CDN, по требованию ─────────────────────────────────────────── */
@@ -246,18 +335,26 @@
   }
 
   /* ── разметка песочницы ─────────────────────────────────────────────────── */
+  /* Языки, с которых песочница переводит во flang. Один язык — одна строка;
+     готовым язык делает переводчик в сборке песочницы (`ПЕРЕВОДЧИКИ` в
+     обвязке). Неготовый показан честно — кнопкой с подписью «скоро». */
+  var FOREIGN = [
+    { lang: 'c', name: 'C', ready: true, note: function () { return T.cSubset; } },
+    { lang: 'python', name: 'Python', ready: false, note: function () { return T.soonNote; } }
+  ];
   var examples = [];
   var blocks = document.querySelectorAll('main pre');
   for (var b = 0; b < blocks.length; b++) {
     var blk = blocks[b];
     if (blk === holder) continue;
     var txt = blk.textContent;
-    var ok = blk.classList.contains('lang-text') || (blk.classList.contains('lang-flang') && /^\s*(модуль|категория)\s/.test(txt));
+    var foreign = FOREIGN.filter(function (f) { return f.ready && blk.classList.contains('lang-' + f.lang) && blk.hasAttribute('data-playground-title'); })[0];
+    var ok = foreign || blk.classList.contains('lang-text') || (blk.classList.contains('lang-flang') && /^\s*(модуль|категория)\s/.test(txt));
     if (!ok) continue;
     var before = blk.previousElementSibling;
     var name = blk.getAttribute('data-playground-title') ||
       (before && before.tagName === 'P' ? before.textContent.split(/[:.]/)[0].trim() : '');
-    examples.push({ name: name || (T.example + ' ' + (examples.length + 1)), text: txt });
+    examples.push({ name: name || (T.example + ' ' + (examples.length + 1)), text: txt, lang: foreign ? foreign.lang : 'flang' });
   }
 
   var root = el('div', 'playground');
@@ -272,18 +369,64 @@
   var status = el('span', 'playground-status'); status.setAttribute('role', 'status');
   bar.appendChild(select); bar.appendChild(checkButton); bar.appendChild(shareButton); bar.appendChild(status);
 
-  var editor = el('div', 'pg-editor');
-  var paint = el('pre', 'pg-paint'); paint.setAttribute('aria-hidden', 'true');
-  var input = el('textarea', 'playground-input');
-  input.spellcheck = false; input.setAttribute('wrap', 'off'); input.setAttribute('aria-label', T.editor);
-  input.setAttribute('autocapitalize', 'off'); input.setAttribute('autocomplete', 'off');
-  editor.appendChild(paint); editor.appendChild(input);
+  /* Редактор: прозрачное поле ввода над раскрашенной копией текста и столбец
+     номеров строк слева. Строка с ошибкой отмечена и в тексте, и в номере. */
+  function makeEditor(lang, label, onRun) {
+    var box = el('div', 'pg-editor');
+    var gutter = el('pre', 'pg-gutter'); gutter.setAttribute('aria-hidden', 'true');
+    var paintLayer = el('pre', 'pg-paint'); paintLayer.setAttribute('aria-hidden', 'true');
+    var area = el('textarea', 'playground-input');
+    area.spellcheck = false; area.setAttribute('wrap', 'off'); area.setAttribute('aria-label', label);
+    area.setAttribute('autocapitalize', 'off'); area.setAttribute('autocomplete', 'off');
+    box.appendChild(gutter); box.appendChild(paintLayer); box.appendChild(area);
+    var ed = { root: box, input: area, bad: new Set(), lang: lang };
+    ed.repaint = function () {
+      paintLayer.innerHTML = codeHtml(area.value, ed.lang, ed.bad) + '<span class="pg-line"> </span>';
+      var count = area.value.split('\n').length, html = '';
+      for (var j = 1; j <= count; j++) html += '<span class="pg-num' + (ed.bad.has(j) ? ' pg-num-bad' : '') + '">' + j + '</span>';
+      gutter.innerHTML = html + '<span class="pg-num"> </span>';
+      ed.sync();
+    };
+    ed.sync = function () {
+      paintLayer.scrollTop = area.scrollTop; paintLayer.scrollLeft = area.scrollLeft;
+      gutter.scrollTop = area.scrollTop;
+    };
+    ed.fit = function () {
+      var lines = area.value.split('\n').length;
+      area.style.height = Math.min(Math.max(lines + 1, 8), 30) * 1.45 + 1.6 + 'em';
+    };
+    ed.set = function (text) { area.value = text; ed.bad = new Set(); ed.fit(); ed.repaint(); };
+    ed.mark = function (lines) { ed.bad = new Set(lines); ed.repaint(); };
+    ed.goTo = function (line) {
+      var all = area.value.split('\n'), pos = 0;
+      for (var j = 0; j < line - 1 && j < all.length; j++) pos += all[j].length + 1;
+      area.focus(); area.selectionStart = area.selectionEnd = pos;
+      var lh = parseFloat(getComputedStyle(area).lineHeight) || 18;
+      area.scrollTop = Math.max(0, (line - 3) * lh);
+    };
+    area.addEventListener('input', function () { ed.bad = new Set(); ed.fit(); ed.repaint(); if (ed.onEdit) ed.onEdit(); });
+    area.addEventListener('scroll', ed.sync);
+    area.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); onRun(); }
+      else if (ev.key === 'Tab' && !ev.shiftKey && !ev.ctrlKey) {
+        ev.preventDefault();
+        var s = area.selectionStart, e = area.selectionEnd;
+        area.value = area.value.slice(0, s) + '  ' + area.value.slice(e);
+        area.selectionStart = area.selectionEnd = s + 2; ed.repaint();
+      }
+    });
+    return ed;
+  }
+
+  var main = makeEditor('flang', T.editor, function () { run(main.input.value); });
+  var input = main.input;
+  var editor = main.root;
   var marks = el('ul', 'pg-marks'); marks.hidden = true;
 
   var tabs = el('div', 'pg-tabs'); tabs.setAttribute('role', 'tablist');
   var panels = {};
   var tabButtons = {};
-  ['result', 'formula', 'input', 'picture'].forEach(function (key) {
+  ['result', 'formula', 'emit', 'foreign', 'input', 'picture'].forEach(function (key) {
     var t = el('button', 'pg-tab', T.tabs[key]);
     t.type = 'button'; t.setAttribute('role', 'tab'); t.id = 'pg-tab-' + key;
     t.setAttribute('aria-controls', 'pg-panel-' + key);
@@ -292,6 +435,7 @@
     t.addEventListener('click', function () { showTab(key); });
     tabs.appendChild(t); tabButtons[key] = t; panels[key] = p;
   });
+  var tabShown = {};
   function showTab(key) {
     Object.keys(panels).forEach(function (k) {
       panels[k].hidden = k !== key;
@@ -299,6 +443,7 @@
       tabButtons[k].tabIndex = k === key ? 0 : -1;
     });
     root.setAttribute('data-tab', key);
+    if (tabShown[key]) tabShown[key]();
   }
   tabs.addEventListener('keydown', function (ev) {
     var keys = Object.keys(panels), now = keys.indexOf(root.getAttribute('data-tab'));
@@ -313,42 +458,15 @@
   panels.result.appendChild(el('p', 'pg-hint', T.press));
   panels.formula.appendChild(el('p', 'pg-hint', T.noFormula));
   panels.picture.appendChild(el('p', 'pg-hint', T.noPicture));
-  showTab('result');
 
   /* ── редактор ───────────────────────────────────────────────────────────── */
-  var badLines = new Set();
-  function repaint() {
-    paint.innerHTML = highlightHtml(input.value, badLines) + '<span class="pg-line"> </span>';
-    paint.scrollTop = input.scrollTop; paint.scrollLeft = input.scrollLeft;
-  }
-  function fitHeight() {
-    var lines = input.value.split('\n').length;
-    input.style.height = Math.min(Math.max(lines + 1, 8), 30) * 1.45 + 1.6 + 'em';
-  }
+  function repaint() { main.repaint(); }
   function setText(text) {
-    input.value = text; badLines = new Set(); marks.hidden = true; marks.textContent = '';
-    fitHeight(); repaint();
+    main.set(text); marks.hidden = true; marks.textContent = '';
   }
-  input.addEventListener('input', function () { badLines = new Set(); marks.hidden = true; fitHeight(); repaint(); });
-  input.addEventListener('scroll', function () { paint.scrollTop = input.scrollTop; paint.scrollLeft = input.scrollLeft; });
-  input.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); run(input.value, 'main'); }
-    else if (ev.key === 'Tab' && !ev.shiftKey && !ev.ctrlKey) {
-      ev.preventDefault();
-      var s = input.selectionStart, e = input.selectionEnd;
-      input.value = input.value.slice(0, s) + '  ' + input.value.slice(e);
-      input.selectionStart = input.selectionEnd = s + 2; repaint();
-    }
-  });
-  function goToLine(line) {
-    var lines = input.value.split('\n'), pos = 0;
-    for (var j = 0; j < line - 1 && j < lines.length; j++) pos += lines[j].length + 1;
-    input.focus(); input.selectionStart = input.selectionEnd = pos;
-    var lh = parseFloat(getComputedStyle(input).lineHeight) || 18;
-    input.scrollTop = Math.max(0, (line - 3) * lh);
-  }
+  main.onEdit = function () { marks.hidden = true; emitStale(); };
+  function goToLine(line) { main.goTo(line); }
   function markLines(list) {
-    badLines = new Set(list.filter(function (m) { return m.line; }).map(function (m) { return m.line; }));
     marks.textContent = '';
     list.forEach(function (m) {
       var li = el('li');
@@ -363,15 +481,23 @@
       marks.appendChild(li);
     });
     marks.hidden = list.length === 0;
-    repaint();
+    main.mark(list.filter(function (m) { return m.line; }).map(function (m) { return m.line; }));
   }
 
   /* ── поток с компилятором ───────────────────────────────────────────────── */
-  var worker = null, counter = 0, waiting = {};
+  var worker = null, counter = 0, waiting = {}, loadedOnce = false;
   function ensureWorker() {
     if (worker) return worker;
     worker = new Worker(ROOT + 'playground/flang_host_browser.js', { type: 'module' });
     worker.addEventListener('message', function (ev) {
+      if (ev.data && ev.data.прогресс) {
+        var pr = ev.data.прогресс;
+        if (pr.файл === 'flang.wasm' && !loadedOnce) {
+          status.textContent = pr.готово ? T.ready : T.loading((pr.байт / 1048576).toFixed(1));
+          if (pr.готово) loadedOnce = true;
+        }
+        return;
+      }
       var cb = waiting[ev.data.номер];
       if (cb) { delete waiting[ev.data.номер]; cb(ev.data); }
     });
@@ -383,13 +509,25 @@
     });
     return worker;
   }
-  function ask(text) {
+  function ask(text, extra) {
     return new Promise(function (resolve) {
       counter += 1;
       waiting[counter] = resolve;
-      ensureWorker().postMessage({ номер: counter, текст: text, база: new URL(ROOT + 'playground/', location.href).href });
+      var msg = { номер: counter, текст: text, база: new URL(ROOT + 'playground/', location.href).href };
+      Object.keys(extra || {}).forEach(function (k) { msg[k] = extra[k]; });
+      ensureWorker().postMessage(msg);
     });
   }
+  /* Компилятор весит десятки мегабайт, поэтому качается не при открытии
+     страницы, а при первом касании песочницы: пока человек правит текст,
+     модуль уже едет и собирается. */
+  var warmed = false;
+  function warm() {
+    if (warmed) return;
+    warmed = true;
+    ask('', { действие: 'прогреть' });
+  }
+  ['pointerdown', 'focusin', 'keydown'].forEach(function (evName) { root.addEventListener(evName, warm, { once: true }); });
 
   /* ── раскладка ответа ───────────────────────────────────────────────────── */
   function claimState(c) {
@@ -527,6 +665,8 @@
     }
     panel.appendChild(card);
     var r = answer.разбор || {};
+    var rc = r.рассуждение && r.рассуждение.проверка;
+    if (rc) reasoningCheck(card, panel, rc);
     if (r.формула && !r.формула.code) panel.appendChild(formulaCard({ name: '', plain: r.формула.plain, tex: r.формула.tex }));
     if (s.items.length) {
       var ul = el('ul', 'pg-items');
@@ -553,6 +693,37 @@
     panel.appendChild(details);
     markLines(s.marks.filter(function (m) { return m.text; }));
     return s;
+  }
+
+  /* Разбор рассуждения: имя ошибки формы со ссылкой на карточку, возможные
+     ошибки содержания (только подсказкой) и граница того, что форма решает. */
+  function reasoningCheck(card, panel, rc) {
+    if (rc.fallacy && rc.fallacy.name) {
+      var f = el('p', 'pg-fallacy');
+      f.appendChild(el('strong', null, T.fallacy + rc.fallacy.name));
+      if (rc.fallacy.why) f.appendChild(document.createTextNode(' — ' + rc.fallacy.why));
+      if (rc.fallacy.url) {
+        f.appendChild(document.createTextNode(' '));
+        var a = el('a', null, T.card); a.href = rc.fallacy.url; a.target = '_blank'; a.rel = 'noopener';
+        f.appendChild(a);
+      }
+      card.appendChild(f);
+    }
+    (rc.unparsed || []).forEach(function (u) { card.appendChild(el('p', 'pg-verdict-lead', T.unparsedSentence + u.sentence + ': «' + u.text + '» — ' + u.reason)); });
+    if ((rc.hints || []).length) {
+      var h = el('div', 'pg-hints');
+      h.appendChild(el('p', 'pg-formula-name', T.hints));
+      var ul = el('ul', 'pg-items');
+      rc.hints.forEach(function (x) {
+        var li = el('li', 'pg-item pg-unknown');
+        li.appendChild(document.createTextNode(x.name + (x.phrase ? ' — «' + x.phrase + '»' : '') + (x.why ? ': ' + x.why : '') + ' '));
+        if (x.url) { var a = el('a', null, T.card); a.href = x.url; a.target = '_blank'; a.rel = 'noopener'; li.appendChild(a); }
+        ul.appendChild(li);
+      });
+      h.appendChild(ul);
+      panel.appendChild(h);
+    }
+    if (rc.boundary) panel.appendChild(el('p', 'pg-hint pg-boundary', T.boundary + rc.boundary));
   }
 
   function formulaCard(f) {
@@ -621,6 +792,189 @@
     }
     go.addEventListener('click', translate);
     area.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); translate(); } });
+  })();
+
+  /* ── flang → язык ───────────────────────────────────────────────────────── */
+  var TARGETS = [
+    { target: 'c', name: 'C' }, { target: 'cpp', name: 'C++' }, { target: 'go', name: 'Go' }, { target: 'rust', name: 'Rust' },
+    { target: 'java', name: 'Java' }, { target: 'js', name: 'JavaScript' }, { target: 'ts', name: 'TypeScript' },
+    { target: 'elixir', name: 'Elixir' }, { target: 'python', name: 'Python' }, { target: 'csharp', name: 'C#' }
+  ];
+  var emitState = { target: 'go', text: null, cache: {}, file: {} };
+  var emitStale = function () {};
+  (function buildEmit() {
+    var p = panels.emit;
+    p.appendChild(el('p', 'pg-hint', T.emitLead));
+    var picker = el('div', 'pg-langs'); picker.setAttribute('role', 'group'); picker.setAttribute('aria-label', T.tabs.emit);
+    var buttons = {};
+    TARGETS.forEach(function (t) {
+      var bt = el('button', 'pg-lang', t.name); bt.type = 'button'; bt.setAttribute('data-target', t.target);
+      bt.addEventListener('click', function () { emitState.target = t.target; refresh(); });
+      picker.appendChild(bt); buttons[t.target] = bt;
+    });
+    var again = el('button', 'playground-share', T.print); again.type = 'button';
+    var note = el('p', 'pg-hint pg-stale'); note.hidden = true; note.textContent = T.emitStale;
+    var out = el('div', 'pg-emit-out');
+    p.appendChild(picker); p.appendChild(note); p.appendChild(out);
+    again.addEventListener('click', function () { emitState.cache = {}; emitState.text = input.value; refresh(); });
+    emitStale = function () { if (emitState.text !== null && emitState.text !== input.value) { note.hidden = false; note.appendChild(again); } };
+    function show(answer) {
+      out.textContent = '';
+      root.setAttribute('data-emit-target', answer.цель || emitState.target);
+      root.setAttribute('data-emit-code', String(answer.код));
+      if (answer.код !== 0 || !(answer.файлы || []).length) {
+        var card = el('div', 'pg-verdict pg-error');
+        card.appendChild(el('p', 'pg-verdict-title', T.emitFailed));
+        var first = (answer.замечания || [])[0];
+        if (first) card.appendChild(el('p', 'pg-verdict-lead', (first.строка ? T.line + first.строка + ': ' : '') + first.текст));
+        out.appendChild(card);
+        if (first && first.строка) markLines((answer.замечания || []).map(function (d) { return { line: d.строка, text: d.текст }; }));
+      } else {
+        if (T.emitFrom[answer.вид]) out.appendChild(el('p', 'pg-hint', T.emitFrom[answer.вид]));
+        var files = answer.файлы;
+        var mainFile = files.filter(function (f) { return langOfPath(f.путь) !== 'make' && langOfPath(f.путь) !== 'text'; })[0] || files[0];
+        var chosen = files.filter(function (f) { return f.путь === emitState.file[answer.цель]; })[0] || mainFile;
+        var fileBar = el('div', 'pg-files'); fileBar.setAttribute('role', 'group');
+        var code = el('div', 'pg-emit-code');
+        files.forEach(function (f) {
+          var fb = el('button', 'pg-file', f.путь); fb.type = 'button';
+          fb.setAttribute('aria-pressed', f === chosen ? 'true' : 'false');
+          fb.addEventListener('click', function () {
+            emitState.file[answer.цель] = f.путь;
+            Array.prototype.forEach.call(fileBar.children, function (x) { x.setAttribute('aria-pressed', x === fb ? 'true' : 'false'); });
+            code.textContent = ''; code.appendChild(codeBlock(f.текст, langOfPath(f.путь)));
+          });
+          fileBar.appendChild(fb);
+        });
+        code.appendChild(codeBlock(chosen.текст, langOfPath(chosen.путь)));
+        out.appendChild(fileBar); out.appendChild(code);
+        if ((answer.рантайм || []).length) out.appendChild(el('p', 'pg-hint', T.runtimeNote + answer.рантайм.join(', ')));
+      }
+      var d = el('details', 'pg-details');
+      d.appendChild(el('summary', null, T.buildHow));
+      d.appendChild(el('pre', 'playground-output', (answer.вывод || '').trim()));
+      out.appendChild(d);
+    }
+    function refresh() {
+      Object.keys(buttons).forEach(function (k) { buttons[k].setAttribute('aria-pressed', k === emitState.target ? 'true' : 'false'); });
+      if (emitState.text === null) emitState.text = input.value;
+      note.hidden = emitState.text === input.value;
+      var key = emitState.target, text = emitState.text, cached = emitState.cache[key];
+      if (cached) { show(cached); return Promise.resolve(cached); }
+      out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.emitting));
+      root.removeAttribute('data-emit-code');
+      return ask(text, { действие: 'напечатать', цель: key }).then(function (answer) {
+        if (emitState.text !== text) return answer;
+        emitState.cache[key] = answer;
+        if (emitState.target === key) show(answer);
+        return answer;
+      });
+    }
+    emitState.refresh = refresh;
+    emitState.reset = function () { emitState.cache = {}; emitState.text = null; note.hidden = true; };
+    tabShown.emit = function () { if (emitState.text !== input.value) { emitState.cache = {}; emitState.text = input.value; } refresh(); };
+  })();
+
+  /* ── язык → flang ───────────────────────────────────────────────────────── */
+  var foreignState = { lang: 'c', editor: null };
+  (function buildForeign() {
+    var p = panels.foreign;
+    p.appendChild(el('p', 'pg-hint', T.foreignLead));
+    var picker = el('div', 'pg-langs'); picker.setAttribute('role', 'group'); picker.setAttribute('aria-label', T.tabs.foreign);
+    var buttons = {};
+    var ed = makeEditor('c', T.foreignLabel, function () { translate(); });
+    foreignState.editor = ed;
+    var note = el('p', 'pg-hint');
+    var go = el('button', 'playground-check', T.translateGo); go.type = 'button';
+    var out = el('div', 'pg-foreign-out');
+    FOREIGN.forEach(function (f) {
+      var bt = el('button', 'pg-lang', f.name + (f.ready ? '' : ' · ' + T.soon)); bt.type = 'button';
+      bt.setAttribute('data-lang', f.lang);
+      if (!f.ready) { bt.disabled = true; bt.title = f.note(); }
+      bt.addEventListener('click', function () { choose(f.lang); });
+      picker.appendChild(bt); buttons[f.lang] = bt;
+    });
+    function choose(lang) {
+      var f = FOREIGN.filter(function (x) { return x.lang === lang; })[0];
+      foreignState.lang = lang; ed.lang = lang; ed.repaint();
+      Object.keys(buttons).forEach(function (k) { buttons[k].setAttribute('aria-pressed', k === lang ? 'true' : 'false'); });
+      note.textContent = f.note();
+    }
+    p.appendChild(picker); p.appendChild(note); p.appendChild(ed.root); p.appendChild(go); p.appendChild(out);
+    FOREIGN.filter(function (f) { return !f.ready; }).forEach(function (f) { p.insertBefore(el('p', 'pg-hint pg-soon', f.name + ': ' + f.note()), ed.root); });
+    choose('c');
+    var firstC = examples.filter(function (x) { return x.lang === 'c'; })[0];
+    ed.set(firstC ? firstC.text : '');
+    function translate() {
+      var text = ed.input.value;
+      if (!text.trim()) return Promise.resolve(null);
+      go.disabled = true; out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.translating));
+      root.removeAttribute('data-foreign-verdict');
+      ed.mark([]);
+      return ask(text, { действие: 'перевести', язык: foreignState.lang }).then(function (answer) {
+        go.disabled = false; out.textContent = '';
+        var verdict = 'proved';
+        if (answer.отказ) {
+          verdict = 'error';
+          var card = el('div', 'pg-verdict pg-error');
+          card.appendChild(el('p', 'pg-verdict-title', answer.отказ.строка ? T.errorAt + answer.отказ.строка : T.readFailed));
+          card.appendChild(el('p', 'pg-verdict-lead', answer.отказ.причина));
+          out.appendChild(card);
+          if (answer.отказ.строка) ed.mark([answer.отказ.строка]);
+        } else if (!(answer.функции || []).length) {
+          verdict = answer.код === 2 ? 'error' : 'unproved';
+          out.appendChild(el('p', 'pg-hint', answer.код === 2 ? answer.вывод : T.noFunctions));
+        }
+        var badLines = [];
+        (answer.функции || []).forEach(function (f) {
+          var box = el('section', 'pg-fn');
+          var head = el('h4', 'pg-fn-name', f.имя + ' · ' + T.line + f.строка);
+          box.appendChild(head);
+          if (f.отказы.length) {
+            verdict = verdict === 'error' ? 'error' : 'unproved';
+            badLines.push(f.строка);
+            var c1 = el('div', 'pg-verdict pg-unproved');
+            c1.appendChild(el('p', 'pg-verdict-title', T.notTranslated));
+            var ul = el('ul', 'pg-items');
+            f.отказы.filter(function (x, j, all) { return all.indexOf(x) === j; }).forEach(function (r) { ul.appendChild(el('li', 'pg-item pg-error', r)); });
+            c1.appendChild(ul);
+            box.appendChild(c1);
+            out.appendChild(box);
+            return;
+          }
+          var s = summarize(f);
+          var st = f.код === 0 ? 'proved' : f.код === 3 ? 'unproved' : 'error';
+          if (st === 'error') verdict = 'error';
+          else if (st === 'unproved' && verdict === 'proved') verdict = 'unproved';
+          var c2 = el('div', 'pg-verdict pg-' + st);
+          c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'unproved' ? T.fnUnproved : T.fnFailed));
+          if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
+          box.appendChild(c2);
+          if (s.items.length) {
+            var items = el('ul', 'pg-items');
+            s.items.forEach(function (it) { items.appendChild(el('li', 'pg-item pg-' + it.state, it.text)); });
+            box.appendChild(items);
+          }
+          box.appendChild(el('p', 'pg-formula-name', T.inFlang));
+          box.appendChild(codeBlock(f.исходник, 'flang'));
+          var open = el('button', 'playground-share', T.toEditor); open.type = 'button';
+          open.addEventListener('click', function () { setText(f.исходник); showTab('result'); input.focus(); });
+          box.appendChild(open);
+          out.appendChild(box);
+        });
+        if (badLines.length) ed.mark(badLines);
+        root.setAttribute('data-foreign-verdict', verdict);
+        root.setAttribute('data-foreign-functions', String((answer.функции || []).length));
+        var td = el('details', 'pg-details');
+        td.appendChild(el('summary', null, T.terminal));
+        td.appendChild(el('pre', 'playground-output', (answer.вывод || '').trim()));
+        out.appendChild(td);
+        return answer;
+      });
+    }
+    go.addEventListener('click', translate);
+    foreignState.translate = translate;
+    foreignState.choose = choose;
   })();
 
   /* ── рисунки (SVG своими руками) ────────────────────────────────────────── */
@@ -997,7 +1351,18 @@
     });
   }
   checkButton.addEventListener('click', function () { run(input.value); });
-  select.addEventListener('change', function () { setText(examples[Number(select.value)].text); });
+  function chooseExample(j) {
+    var ex = examples[j];
+    if (!ex) return;
+    select.value = String(j);
+    if (ex.lang !== 'flang') {
+      foreignState.choose(ex.lang); foreignState.editor.set(ex.text); showTab('foreign');
+      return;
+    }
+    setText(ex.text);
+    if (root.getAttribute('data-tab') === 'emit') showTab('emit');
+  }
+  select.addEventListener('change', function () { chooseExample(Number(select.value)); });
   shareButton.addEventListener('click', function () {
     var address = location.href.replace(/#.*$/, '') + '#text=' + toAddress(input.value);
     history.replaceState(null, '', address);
@@ -1010,9 +1375,16 @@
     return t !== null;
   }
   window.addEventListener('hashchange', fromHash);
-  if (!fromHash() && examples.length) setText(examples[0].text);
+  showTab('result');
+  var firstFlang = examples.filter(function (x) { return x.lang === 'flang'; })[0];
+  if (!fromHash() && firstFlang) setText(firstFlang.text);
   if (/(?:^#|&)run(?:&|$)/.test(location.hash)) run(input.value);
 
   /* Для проб из браузера без рук. */
-  window.флангПесочница = { run: run, setText: setText, showTab: showTab, examples: examples, highlight: highlightHtml };
+  window.флангПесочница = {
+    run: run, setText: setText, showTab: showTab, examples: examples, highlight: highlightHtml, code: codeHtml,
+    choose: chooseExample,
+    print: function (target) { emitState.target = target; showTab('emit'); return emitState.refresh(); },
+    translate: function (text, lang) { if (lang) foreignState.choose(lang); if (text !== undefined) foreignState.editor.set(text); showTab('foreign'); return foreignState.translate(); }
+  };
 })();

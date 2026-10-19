@@ -7,12 +7,12 @@
   "evaluatorCode": 2823,
   "emitCCode": 4044,
   "typeCheckCode": 5565,
-  "runtimeCode": 27770,
+  "runtimeCode": 27779,
   "runtimeFiles": 4,
   "printedCCode": 977595,
   "printedCFiles": 8,
   "checkerCode": 11355,
   "inferenceRules": 135,
-  "totalSources": 112790,
+  "totalSources": 112799,
   "totalPrinted": 977595
 }

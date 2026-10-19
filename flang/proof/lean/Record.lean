@@ -108,6 +108,19 @@ structure «Обязательство» where
   «строка» : Nat
 deriving Repr
 
+/-- Звено разбора списка, под которым стоит вызов снятия (Зв0, задача 4024): строка
+    случая «случай голова и хвост», разбираемое имя, имена головы и хвоста. -/
+structure «Звено» where
+  «строка» : Nat
+  «список» : String
+  «голова» : String
+  «хвост» : String
+deriving Repr
+
+/-- Равенство звена: «Л равен приписать Г к Х». -/
+def «Звено».«формула» (z : «Звено») : «Форм» :=
+  .«равенС» (.«имяС» z.«список») (.«приписать» (.«имя» z.«голова») (.«имяС» z.«хвост»))
+
 /-- Утверждение записи — постусловие функции. -/
 structure «Утверждение» where
   «имя» : String
@@ -122,6 +135,8 @@ structure «Утверждение» where
   «вывод» : Option «Вывод»
   /-- функции исходника с телом одной строкой (Разв3) -/
   «определения» : List «Определение»
+  /-- звенья разбора, охватывающие вызов снятия (Зв0); у постусловия — пусто -/
+  «звенья» : List «Звено» := []
 deriving Repr
 
 /-- Запись: исходник и утверждения. -/
@@ -200,12 +215,13 @@ def «окружение» (u : «Утверждение») : List («Факт»
    | some (_, t) => [«результат-есть» t]
    | none => []) ++
   u.«определения».map «определение-есть» ++
-  [«числа-представимы», «списки-коротки»]
+  [«числа-представимы», «списки-коротки»] ++
+  u.«звенья».map (fun z => «Факт-из» z.«формула»)
 
 theorem «допущение-в-окружении» (u : «Утверждение») (n : Nat) (f : «Форм»)
     (h : u.«допущение» n = some f) : «Факт-из» f ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
   unfold «Утверждение».«допущение» «Функция».«строка» at h
   simp only [«Утверждение».«допущения», List.mem_map, List.mem_filterMap]
@@ -226,7 +242,7 @@ theorem «дно-в-окружении» (u : «Утверждение») (n : N
     (h : u.«довод» n x = some d) (hd : d.«сДном» = true) :
     «Факт-из» («≥0» (.«имя» x)) ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   unfold «Утверждение».«довод» «Функция».«строка» at h
   simp only [«Утверждение».«доводыСДном», List.mem_map, List.mem_flatMap]
@@ -252,28 +268,33 @@ theorem «дно-в-окружении» (u : «Утверждение») (n : N
 theorem «обязательство-в-окружении» (u : «Утверждение») (o : «Обязательство»)
     (h : o ∈ u.«обязательства») : «Факт-из» o.«формула» ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_right
   exact List.mem_map.mpr ⟨o, h, rfl⟩
 
 theorem «результат-в-окружении» (u : «Утверждение») (n : Nat) (t : «Тело»)
     (h : u.«функция».«тело» = some (n, t)) : «результат-есть» t ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_left; apply List.mem_append_right
   rw [h]; simp
 
 theorem «определение-в-окружении» (u : «Утверждение») (d : «Определение»)
     (h : d ∈ u.«определения») : «определение-есть» d ∈ «окружение» u := by
   simp only [«окружение»]
-  apply List.mem_append_left
+  apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_right
   exact List.mem_map.mpr ⟨d, h, rfl⟩
 
 theorem «числа-в-окружении» (u : «Утверждение») : «числа-представимы» ∈ «окружение» u := by
   simp only [«окружение»]
-  exact List.mem_append_right _ List.mem_cons_self
+  exact List.mem_append_left _ (List.mem_append_right _ List.mem_cons_self)
 
 theorem «списки-в-окружении» (u : «Утверждение») : «списки-коротки» ∈ «окружение» u := by
   simp only [«окружение»]
-  exact List.mem_append_right _ (List.mem_cons_of_mem _ (List.mem_singleton.mpr rfl))
+  exact List.mem_append_left _ (List.mem_append_right _ (List.mem_cons_of_mem _ (List.mem_singleton.mpr rfl)))
+
+theorem «звено-в-окружении» (u : «Утверждение») (z : «Звено») (h : z ∈ u.«звенья») :
+    «Факт-из» z.«формула» ∈ «окружение» u := by
+  simp only [«окружение»]
+  exact List.mem_append_right _ (List.mem_map.mpr ⟨z, h, rfl⟩)

@@ -71,6 +71,11 @@ name	family	kind	kernel-rule	anchor	status
 Э4	Э	rule	все элементы по построению	proof-kernel.flang:5527 «Все элементы по построению», случай "if"	code
 Э5	Э	rule	все элементы по построению	proof-kernel.flang:5551 «Прибавленное всё», член — голова выписанного списка (случай "list" в «Все элементы по построению»)	code
 Э6	Э	rule	все элементы по построению	proof-kernel.flang:5568 «Отображённое всё»	code
+Зв0	Зв	rule	цель есть допущение|все элементы по построению	proof-kernel.flang:5510 «Факты звена из факта»	code
+Зв1	Зв	rule	все элементы по построению	proof-kernel.flang:5510 «Факты звена из факта»	code
+Зв2	Зв	rule	цель есть допущение	proof-kernel.flang:5510 «Факты звена из факта»	code
+Вкл1	Вкл	rule	все элементы по построению	proof-kernel.flang:5529 «Включено по построению»	code
+Вкл2	Вкл	rule	все элементы по построению	proof-kernel.flang:5538 «Носитель включает»	code
 Св1	Св	rule	—	proof-kernel.flang:5612 «Свести свидетелем»	code
 Св2	Св	rule	—	proof-kernel.flang:6573 «Свидетели из подтермов»	code
 Ч1	Ч	rule	начало по построению	proof-kernel.flang:3906 «Начинается по построению», случай «Одинаковы»	code

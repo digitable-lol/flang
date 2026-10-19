@@ -1,0 +1,9 @@
+program	surface	code	word	контракт ADR-0175: слова и коды сняты 19 октября 2026 двоичным, собранным из исходников flang/self этой ветки печатью без ядра (emit --no-check; только для замера); семя до перепечатки расходится на строках forall-to-the-tail, forall-to-the-head, list-inclusion и narrow-fold — это и есть снятая граница
+forall-to-the-tail.flang	proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+forall-about-another-list.flang	check	1	FLANG_PRECONDITION_CALL
+forall-to-the-head.flang	proof	0	доказано 1
+head-shadowed-by-the-pattern.flang	check	1	FLANG_PRECONDITION_CALL
+list-inclusion.flang	proof	3	доказано 5
+list-inclusion-false.flang	proof	3	доказано 0
+narrow-fold.flang	check	0	замечаний нет
+fold-sum-widens.flang	check	1	тело даёт число

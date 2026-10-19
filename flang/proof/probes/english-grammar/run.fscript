@@ -1,0 +1,131 @@
+модуль «English grammar probes»
+  использует «Inquiry» из "../../../../scripts/inquiry.fscript"
+  использует «Lists» только «Соединить списки»
+  использует «English morphology» из "../../../ct/english/morphology.flang"
+  использует «English parser» из "../../../ct/english/parse.flang"
+
+примечание "Пробы английской грамматики (ADR-0166). Каждая строка expected.tsv — предложение, ожидаемый
+вердикт (grammatical или not grammatical) и слово, которое обязано стоять в ответе разбора: связь,
+тип слова или названная причина отказа. Разбор идёт в этом же процессе, словарь собирается один раз.
+План Binary сверяет все строки; план Forgery переворачивает каждый ожидаемый вердикт и обязан
+увидеть расхождение в каждой строке — иначе набор ничего не проверяет."
+
+тотальная функция «Data rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «заголовок и пустые строки пропущены»
+    дано text равно "sentence\tverdict\tword\nThe dog sleeps.\tgrammatical\tlinks\n\n"
+    ожидается [["The dog sleeps.", "grammatical", "links"]]
+  (отобразить (отфильтровать («Rest after» от (разделить text по "\n")
+    и 1) где line → (длина line) больше 0) как line →
+    разделить line по "\t")
+
+тотальная функция «Cell»
+  принимает row: список строки, place: число
+  возвращает строка
+  если place не больше (длина row) то элемент place в row иначе ""
+
+тотальная функция «Wanted grammatical»
+  принимает row: список строки, flipped: признак
+  возвращает признак
+  пусть wanted равно («Cell» от row и 2) равен "grammatical"
+  если flipped то не wanted иначе wanted
+
+тотальная функция «Row complaint»
+  принимает dictionary: «English dictionary», row: список строки, flipped: признак
+  возвращает список строки
+  пусть told равно «Parse with» от dictionary и («Cell» от row и 1)
+  пусть grammatical равно told начинается с "grammatical"
+  пусть fits равно (grammatical равен («Wanted grammatical» от row и flipped)) и притом (told содержит («Cell» от row
+    и 3))
+  если fits
+    то пустой список
+    иначе [(соединить [«Cell» от row и 1, " — wanted ", (если «Wanted grammatical» от row и flipped то "grammatical"
+      иначе "not grammatical"), " with «", «Cell» от row и 3, "», got: ", told] по "")]
+
+тотальная функция «Complaints»
+  принимает rows: список список строки, flipped: признак
+  возвращает список строки
+  пусть dictionary равно «Dictionary»
+  (свёртка rows начиная с пустой список как collected и row → «Соединить списки» от collected
+    и («Row complaint» от dictionary
+    и row и flipped))
+
+тотальная функция «Counted»
+  принимает rows: список список строки
+  возвращает строка
+  пример «грамматичные и нет»
+    дано rows равно [["a", "grammatical", "x"], ["b", "not grammatical", "y"]]
+    ожидается "grammatical 1, not grammatical 1"
+  (соединить ["grammatical ", к строке (длина (отфильтровать rows где row → («Cell» от row и 2) равен "grammatical")),
+    ", not grammatical ", к строке (длина (отфильтровать rows где row → не ((«Cell» от row
+    и 2) равен "grammatical")))] по "")
+
+тотальная функция «Probes judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть rows равно «Data rows» от («Output of» от "table" и answers)
+  пусть complaints равно «Complaints» от rows и нет
+  если (длина rows) равен 0
+    то (вариант «Не проверено» с код равным "FLANG_PROBE_ENGLISH_GRAMMAR_CANNOT_LOOK"
+      и сообщение равным "english-grammar: expected.tsv has no data rows")
+    иначе (если (длина complaints) равен 0
+      то вариант «Конец работы» с значение равным (соединить ["english-grammar: probes ", к строке (длина rows),
+        ", mismatched 0; ", «Counted» от rows] по "")
+      иначе вариант «Провал» с код равным "FLANG_PROBE_ENGLISH_GRAMMAR"
+      и сообщение равным (соединить (приписать (соединить
+        ["english-grammar: probes ", к строке (длина rows), ", mismatched ",
+        к строке (длина complaints)] по "") к complaints)
+        по "\n"))
+
+тотальная функция «Forgery judged»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть rows равно «Data rows» от («Output of» от "table" и answers)
+  пусть caught равно длина («Complaints» от rows и да)
+  если (длина rows) равен 0
+    то (вариант «Не проверено» с код равным "FLANG_PROBE_ENGLISH_GRAMMAR_CANNOT_LOOK"
+      и сообщение равным "english-grammar: expected.tsv has no data rows")
+    иначе (если caught равен (длина rows)
+      то вариант «Конец работы» с значение равным (соединить [
+          "english-grammar: forgery caught — every expected verdict turned over, ", "mismatched ",
+        к строке caught, " of ", к строке (длина rows)] по "")
+      иначе вариант «Провал» с код равным "FLANG_PROBE_ENGLISH_GRAMMAR_BLIND" и сообщение равным (соединить
+        ["english-grammar: forgery NOT caught — expected verdicts turned over, yet ",
+        к строке ((длина rows) минус caught),
+        " of ", к строке (длина rows), " rows still agree"] по ""))
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  пример «одна стадия: таблица»
+    ожидается (запись «Inquiry» с «asked» равным "" и «queue» равным пустой список и «stages» равным 1
+      и «answers» равным пустой список)
+  «Begin with» от 1
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик», flipped: признак
+  возвращает «Продолжение»
+  пусть answers равно «Heard» от inquiry и reply
+  если inquiry.«stages» больше 0
+    то «Ask» от («Read» от "table" и "expected.tsv") и пустой список и 0 и answers
+    иначе (если flipped то «Forgery judged» от answers иначе «Probes judged» от answers)
+
+тотальная функция «Next probe»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Next» от inquiry и reply и нет
+
+тотальная функция «Next forgery»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Next» от inquiry и reply и да
+
+план «Binary»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next probe»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next forgery»

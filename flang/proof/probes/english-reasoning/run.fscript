@@ -1,0 +1,303 @@
+модуль «English reasoning probes»
+  использует «Inquiry» из "../../../../scripts/inquiry.fscript"
+  использует «Lists» только «Соединить списки»
+  использует «English morphology» из "../../../ct/english/morphology.flang"
+  использует «English argument map» из "../../../ct/english/argument.flang"
+
+примечание "Рассуждения на английском (ADR-0166). План Judge читает один текст (путь от корня дерева),
+строит программу для ядра и судит её `flang check --proof --strict`; ответ — JSON того же вида, что у
+проверки рассуждений на русском. План Binary проходит texts/ по expected.tsv: имя текста, вердикт ядра
+(follows, does-not-follow, not-judged) и код формальной ошибки или «-». План Forgery сдвигает
+ожидания на строку вниз и обязан увидеть расхождения — иначе набор ничего не проверяет."
+
+тотальная функция «Root»
+  возвращает строка
+  пример «корень дерева от этого плана»
+    ожидается "../../../.."
+  "../../../.."
+
+тотальная функция «Kernel script»
+  возвращает строка
+  (соединить ["box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" english.XXXXXX) && ",
+    "printf '%s' \"$1\" > \"$box/reasoning.flang\" && ",
+    "\"${FLANG_BIN:-$0/bootstrap/flang}\" check \"$box/reasoning.flang\" --proof --strict 2>&1; ",
+    "code=$?; rm -rf \"$box\"; exit $code"] по "")
+
+тотальная функция «Kernel question»
+  принимает name: строка, program: строка
+  возвращает список «Question»
+  пример «без программы ядро не спрашивают»
+    дано name равно "check x"
+    дано program равно ""
+    ожидается пустой список
+  если (длина program) равен 0
+    то пустой список
+    иначе [(«Run» от name и "sh" и ["-c", «Kernel script», «Root», program])]
+
+тотальная функция «Usage»
+  возвращает строка
+  (соединить ["call: bootstrap/flang io flang/proof/probes/english-reasoning/run.fscript --plan Judge ",
+    "--max-steps 100000000000 -- <text, path from the root of the tree>"] по "")
+
+тотальная функция «Text path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть given_paths равно «Given of» от "arguments" и answers
+  если (длина given_paths) больше 0 то элемент 1 в given_paths иначе ""
+
+тотальная функция «Report outcome»
+  принимает report: строка
+  возвращает «Продолжение»
+  пример «следует — конец работы»
+    дано report равно "{\"language\": \"en\", \"verdict\": \"follows\"}"
+    ожидается вариант «Конец работы» с значение равным "{\"language\": \"en\", \"verdict\": \"follows\"}"
+  если report содержит "\"verdict\": \"follows\""
+    то вариант «Конец работы» с значение равным report
+    иначе (если report содержит "\"verdict\": \"does-not-follow\""
+      то вариант «Провал» с код равным "FLANG_REASONING_DOES_NOT_FOLLOW" и сообщение равным report
+      иначе вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным report)
+
+тотальная функция «Judge next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно «Heard» от inquiry и reply
+  пусть path равно «Text path» от answers
+  если inquiry.«stages» равен 3
+    то «Ask» от («Arguments» от "arguments") и пустой список и 2 и answers
+    иначе (если inquiry.«stages» равен 2 то «Read the text» от path и answers иначе «Judge the text» от inquiry.«stages»
+      и answers)
+
+тотальная функция «Read the text»
+  принимает path: строка, answers: список «Answer»
+  возвращает «Продолжение»
+  если (длина path) равен 0
+    то вариант «Не проверено» с код равным "FLANG_REASONING_CANNOT_LOOK" и сообщение равным («Usage»)
+    иначе «Ask» от («Read from» от "text" и («Root») и path) и пустой список и 1 и answers
+
+тотальная функция «Judge the text»
+  принимает stage: число, answers: список «Answer»
+  возвращает «Продолжение»
+  пусть text равно «Output of» от "text" и answers
+  пусть dictionary равно «Dictionary»
+  если stage равен 1
+    то «After reading» от answers и («Kernel question» от "check" и («Kernel program» от dictionary и text))
+    иначе «Report outcome» от («Report json of» от dictionary и text и («Output of» от "check" и answers))
+
+тотальная функция «After reading»
+  принимает answers: список «Answer», questions: список «Question»
+  возвращает «Продолжение»
+  разбор questions
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и 0 и answers
+    случай пусто
+      то «Report outcome» от («Report json of» от («Dictionary») и («Output of» от "text" и answers) и "")
+
+тотальная функция «Data rows»
+  принимает text: строка
+  возвращает список список строки
+  пример «заголовок и пустые строки пропущены»
+    дано text равно "text\tverdict\tfallacy\nbarbara.txt\tfollows\t-\n\n"
+    ожидается [["barbara.txt", "follows", "-"]]
+  (отобразить (отфильтровать («Rest after» от (разделить text по "\n")
+    и 1) где line → (длина line) больше 0) как line →
+    разделить line по "\t")
+
+тотальная функция «Cell»
+  принимает row: список строки, place: число
+  возвращает строка
+  если place не больше (длина row) то элемент place в row иначе ""
+
+тотальная функция «Text name»
+  принимает row: список строки
+  возвращает строка
+  соединить ["text ", «Cell» от row и 1] по ""
+
+тотальная функция «Check name»
+  принимает row: список строки
+  возвращает строка
+  соединить ["check ", «Cell» от row и 1] по ""
+
+тотальная функция «Kernel questions of rows»
+  принимает rows: список список строки, answers: список «Answer»
+  возвращает список «Question»
+  пусть dictionary равно «Dictionary»
+  (свёртка rows начиная с пустой список как collected и row → «Соединить списки» от collected и («Kernel question»
+    от («Check name» от row) и («Kernel program» от dictionary и («Output of» от («Text name» от row) и answers))))
+
+тотальная функция «Fallacy id in»
+  принимает report: строка
+  возвращает строка
+  пример «код ошибки из отчёта»
+    дано report равно "{\"verdict\": \"does-not-follow\", \"fallacy\": {\"id\": \"illicit-major\", \"name\": \"x\"}}"
+    ожидается "illicit-major"
+  пример «ошибки нет»
+    дано report равно "{\"verdict\": \"follows\", \"fallacy\": null}"
+    ожидается "-"
+  пусть parts равно разделить report по "\"fallacy\": {\"id\": \""
+  если (длина parts) больше 1
+    то элемент 1 в (разделить (элемент 2 в parts) по "\"")
+    иначе "-"
+
+тотальная функция «Verdict in»
+  принимает report: строка
+  возвращает строка
+  пример «вердикт из отчёта»
+    дано report равно "{\"language\": \"en\", \"verdict\": \"does-not-follow\", \"fallacy\": null}"
+    ожидается "does-not-follow"
+  пусть parts равно разделить report по "\"verdict\": \""
+  если (длина parts) больше 1
+    то элемент 1 в (разделить (элемент 2 в parts) по "\"")
+    иначе ""
+
+тотальная функция «Row report»
+  принимает row: список строки, answers: список «Answer»
+  возвращает строка
+  «Report json of» от («Dictionary») и («Output of» от («Text name» от row)
+    и answers) и («Output of» от («Check name» от row) и answers)
+
+тотальная функция «Row complaint»
+  принимает row: список строки, wanted: список строки, answers: список «Answer»
+  возвращает список строки
+  пусть report равно «Row report» от row и answers
+  пусть verdict равно «Verdict in» от report
+  пусть fallacy равно «Fallacy id in» от report
+  если (verdict равен («Cell» от wanted и 2)) и притом (fallacy равен («Cell» от wanted и 3))
+    то пустой список
+    иначе ([(соединить [«Cell» от row и 1, " — wanted ", «Cell» от wanted и 2, " / ", «Cell» от wanted и 3, ", got ",
+      verdict,
+      " / ", fallacy] по "")])
+
+тотальная функция «Shifted»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «ожидания сдвинуты на строку вниз, первая берёт последнюю»
+    дано rows равно [["a", "follows", "-"], ["b", "does-not-follow", "x"]]
+    ожидается [["a", "does-not-follow", "x"], ["b", "follows", "-"]]
+  (свёртка rows начиная с пустой список как collected и row → добавить («Shifted row» от rows и row
+    и (длина collected)) к collected)
+
+тотальная функция «Shifted row»
+  принимает rows: список список строки, row: список строки, before: число
+  возвращает список строки
+  пусть source равно элемент (если before равен 0 то длина rows иначе before) в rows
+  [«Cell» от row и 1, «Cell» от source и 2, «Cell» от source и 3]
+
+тотальная функция «Complaints»
+  принимает rows: список список строки, wanted: список список строки, answers: список «Answer»
+  возвращает список строки
+  (свёртка rows начиная с (запись «Row walk» с «at» равным 0 и «said» равным пустой список) как walk и row →
+    запись «Row walk» с «at» равным (walk.«at» плюс 1) и «said» равным («Соединить списки» от walk.«said»
+    и («Row complaint»
+    от row и (элемент (walk.«at» плюс 1) в wanted) и answers))).«said»
+
+объект «Row walk»
+  «at»: число
+  «said»: список строки
+
+тотальная функция «Counted»
+  принимает rows: список список строки
+  возвращает строка
+  (соединить ["follows ", к строке (длина (отфильтровать rows где row → («Cell» от row и 2) равен "follows")),
+    ", does-not-follow ",
+    к строке (длина (отфильтровать rows где row → («Cell» от row и 2) равен "does-not-follow")), ", not-judged ",
+    к строке (длина (отфильтровать rows где row → («Cell» от row и 2) равен "not-judged"))] по "")
+
+тотальная функция «Texts without a row»
+  принимает rows: список список строки, answers: список «Answer»
+  возвращает список строки
+  (отобразить (отфильтровать («Listed of» от "texts"
+    и answers) где name → не ((отобразить rows как row → «Cell» от row и 1)
+    содержит name)) как name → соединить [name,
+    " — the text lies in texts/, but expected.tsv has no row for it"] по "")
+
+тотальная функция «Probes judged»
+  принимает answers: список «Answer», forged: признак
+  возвращает «Продолжение»
+  пусть rows равно «Data rows» от («Output of» от "table" и answers)
+  пусть wanted равно (если forged то «Shifted» от rows иначе rows)
+  пусть complaints равно «Соединить списки» от («Texts without a row» от rows и answers) и («Complaints» от rows
+    и wanted и answers)
+  если (длина rows) равен 0
+    то (вариант «Не проверено» с код равным "FLANG_PROBE_ENGLISH_REASONING_CANNOT_LOOK"
+      и сообщение равным "english-reasoning: expected.tsv has no data rows")
+    иначе (если forged то «Forgery outcome» от rows и complaints иначе «Probe outcome» от rows и complaints)
+
+тотальная функция «Forgery outcome»
+  принимает rows: список список строки, complaints: список строки
+  возвращает «Продолжение»
+  если (длина complaints) больше 0
+    то (вариант «Конец работы» с значение равным (соединить [
+      "english-reasoning: forgery caught — expectations shifted one row down, ", "mismatched ",
+      к строке (длина complaints), " of ", к строке (длина rows)] по ""))
+    иначе (вариант «Провал» с код равным "FLANG_PROBE_ENGLISH_REASONING_BLIND"
+      и сообщение равным (соединить ["english-reasoning: forgery NOT caught — ",
+      "expectations shifted one row down, yet the set is green"] по ""))
+
+тотальная функция «Probe outcome»
+  принимает rows: список список строки, complaints: список строки
+  возвращает «Продолжение»
+  если (длина complaints) равен 0
+    то (вариант «Конец работы» с значение равным (соединить ["english-reasoning: probes ", к строке (длина rows),
+      ", mismatched 0; ", «Counted» от rows] по ""))
+    иначе (вариант «Провал» с код равным "FLANG_PROBE_ENGLISH_REASONING"
+      и сообщение равным (соединить (приписать (соединить ["english-reasoning: probes ", к строке (длина rows),
+      ", mismatched ", к строке (длина complaints)] по "") к complaints) по "\n"))
+
+тотальная функция «Probe questions»
+  принимает stage: число, answers: список «Answer»
+  возвращает список «Question»
+  пусть rows равно «Data rows» от («Output of» от "table" и answers)
+  если stage равен 3
+    то [(«Read» от "table" и "expected.tsv"), («List» от "texts" и "texts")]
+    иначе «Later probe questions» от stage и rows и answers
+
+тотальная функция «Later probe questions»
+  принимает stage: число, rows: список список строки, answers: список «Answer»
+  возвращает список «Question»
+  если stage равен 2
+    то (отобразить rows как row → «Read» от («Text name» от row) и (соединить ["texts/", «Cell» от row и 1] по ""))
+    иначе (если stage равен 1 то «Kernel questions of rows» от rows и answers иначе пустой список)
+
+тотальная функция «Probe walk»
+  принимает queue: список «Question», stages: число, answers: список «Answer», forged: признак
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то (если stages не больше 0
+        то «Probes judged» от answers и forged
+        иначе «Probe walk» от («Probe questions» от stages и answers) и (stages минус 1) и answers и forged)
+
+тотальная функция «Begin judging»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Begin probes»
+  возвращает «Inquiry»
+  «Begin with» от 3
+
+тотальная функция «Next probe»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Probe walk» от inquiry.«queue» и inquiry.«stages» и («Heard» от inquiry и reply) и нет
+
+тотальная функция «Next forgery»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Probe walk» от inquiry.«queue» и inquiry.«stages» и («Heard» от inquiry и reply) и да
+
+план «Judge»
+  состояние «Inquiry»
+  начинает с «Begin judging»
+  обрабатывает «Judge next»
+
+план «Binary»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next probe»
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin probes»
+  обрабатывает «Next forgery»

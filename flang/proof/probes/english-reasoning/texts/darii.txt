@@ -1,0 +1,1 @@
+All mammals are animals. Some pets are mammals. Therefore, some pets are animals.

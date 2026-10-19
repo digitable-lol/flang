@@ -1,0 +1,1 @@
+All dogs are animals. All cats are animals. Therefore, all cats are dogs.

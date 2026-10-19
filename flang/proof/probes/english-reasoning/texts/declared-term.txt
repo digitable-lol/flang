@@ -1,0 +1,2 @@
+Term: lepton, leptons.
+All leptons are fermions. The electron is a lepton. Therefore, the electron is a fermion.

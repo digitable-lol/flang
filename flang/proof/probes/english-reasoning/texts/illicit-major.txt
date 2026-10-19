@@ -1,0 +1,1 @@
+All dogs are animals. No cats are dogs. Therefore, no cats are animals.

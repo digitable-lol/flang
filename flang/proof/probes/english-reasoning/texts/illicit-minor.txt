@@ -1,0 +1,1 @@
+All cats are mammals. All cats are animals. Therefore, all animals are mammals.

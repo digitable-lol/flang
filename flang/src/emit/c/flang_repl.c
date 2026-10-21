@@ -19013,6 +19013,117 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
  * для «https», — а отклик у поручения «Запросить» обязан быть один и тот же.
  * Две копии этого разбора разошлись бы молча.
  */
+/* Буква ASCII строчной: имена заголовков HTTP сравниваются без учёта регистра. */
+static char io_http_lower(char letter) {
+  return letter >= 'A' && letter <= 'Z' ? (char)(letter - 'A' + 'a') : letter;
+}
+
+/*
+ * Объявлено ли тело кусками: среди заголовков от `head` до `end` есть
+ * «Transfer-Encoding», и последнее кодирование в нём — «chunked» (RFC 9112,
+ * 6.1). Регистр имени и значения не важен.
+ */
+static bool io_http_chunked(const char *head, const char *end) {
+  static const char name[] = "transfer-encoding:";
+  const size_t name_length = sizeof(name) - 1;
+  bool chunked = false;
+  const char *line = head;
+  while (line < end) {
+    const char *line_end = line;
+    size_t index = 0;
+    while (line_end < end && *line_end != '\r' && *line_end != '\n') {
+      line_end += 1;
+    }
+    while (index < name_length && line + index < line_end && io_http_lower(line[index]) == name[index]) {
+      index += 1;
+    }
+    if (index == name_length) {
+      const char *value = line + name_length;
+      const char *value_end = line_end;
+      const char *last = NULL;
+      while (value_end > value && (value_end[-1] == ' ' || value_end[-1] == '\t')) {
+        value_end -= 1;
+      }
+      last = value_end;
+      while (last > value && last[-1] != ',' && last[-1] != ' ' && last[-1] != '\t') {
+        last -= 1;
+      }
+      chunked = value_end - last == 7;
+      for (index = 0; chunked && index < 7; index += 1) {
+        chunked = io_http_lower(last[index]) == "chunked"[index];
+      }
+    }
+    line = line_end;
+    while (line < end && (*line == '\r' || *line == '\n')) {
+      line += 1;
+    }
+  }
+  return chunked;
+}
+
+/*
+ * Тело, присланное кусками (RFC 9112, 7.1): строка с длиной куска в
+ * шестнадцатеричной записи (расширения после «;» не смотрятся), CRLF, сам
+ * кусок, CRLF; кусок длины 0 — конец, хвостовые заголовки после него
+ * отбрасываются. Куски склеиваются в `out` октетами: граница куска может
+ * пройти посреди буквы UTF-8, и склеенное тело её восстанавливает.
+ * Испорченная запись или оборванная связь — false с причиной в `why`.
+ */
+static bool io_http_dechunk(const char *at, const char *end, repl_buf *out, const char **why) {
+  for (;;) {
+    size_t size = 0;
+    int digits = 0;
+    while (at < end) {
+      const char letter = io_http_lower(*at);
+      int digit = -1;
+      if (letter >= '0' && letter <= '9') {
+        digit = letter - '0';
+      } else if (letter >= 'a' && letter <= 'f') {
+        digit = letter - 'a' + 10;
+      }
+      if (digit < 0) {
+        break;
+      }
+      if (size > ((size_t)-1 >> 4)) {
+        *why = "длина куска не помещается в число";
+        return false;
+      }
+      size = (size << 4) | (size_t)digit;
+      digits += 1;
+      at += 1;
+    }
+    if (digits == 0) {
+      *why = at < end ? "строка куска не начинается с шестнадцатеричной длины" : "связь оборвалась до конца тела";
+      return false;
+    }
+    while (at < end && *at != '\n') {
+      at += 1;
+    }
+    if (at >= end) {
+      *why = "связь оборвалась до конца тела";
+      return false;
+    }
+    at += 1;
+    if (size == 0) {
+      return true;
+    }
+    if ((size_t)(end - at) < size) {
+      *why = "связь оборвалась посреди куска";
+      return false;
+    }
+    buf_add(out, at, size);
+    at += size;
+    if (end - at >= 2 && at[0] == '\r' && at[1] == '\n') {
+      at += 2;
+    } else if (at < end && at[0] == '\n') {
+      at += 1;
+    } else {
+      *why = at < end ? "после куска нет перевода строки" : "связь оборвалась до конца тела";
+      return false;
+    }
+  }
+}
+
 static fl_value io_http_answer(const repl_buf *answer) {
   int code = 0;
   const char *split = NULL;
@@ -19024,8 +19135,23 @@ static fl_value io_http_answer(const repl_buf *answer) {
   {
     fl_value fields[2];
     const char *start = split == NULL ? answer->data + answer->used : split + 4;
+    const char *end = answer->data + answer->used;
     fields[0] = io_pair("код", io_number((double)code));
-    fields[1] = io_pair("тело", io_text(start, (size_t)(answer->data + answer->used - start)));
+    if (split != NULL && io_http_chunked(answer->data, split)) {
+      repl_buf body;
+      const char *why = NULL;
+      buf_init(&body);
+      if (!io_http_dechunk(start, end, &body, &why)) {
+        char say[256];
+        buf_free(&body);
+        snprintf(say, sizeof(say), "тело ответа кусками (Transfer-Encoding: chunked) испорчено: %s", why);
+        return io_fail("FLANG_IO_NET", say);
+      }
+      fields[1] = io_pair("тело", io_text(body.data, body.used));
+      buf_free(&body);
+    } else {
+      fields[1] = io_pair("тело", io_text(start, (size_t)(end - start)));
+    }
     return io_variant("Ответ сети", fields, 2);
   }
 }

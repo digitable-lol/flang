@@ -633,9 +633,10 @@ static const char HELP_RUN[] =
     "«unproven» в «.flangrc» — раз и навсегда.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
-    "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
-    "                     Списка или вложенного объекта здесь не принимают —\n"
-    "                     функцию со списком зовут её примеры: flang test <файл>\n"
+    "  --args '{…}'       аргументы объектом JSON по именам параметров, вроде\n"
+    "                     '{\"н\":10}' или '{\"элементы\":[1,2,3]}'. Списки, записи\n"
+    "                     и варианты ({\"variant\":\"Имя\",\"fields\":{…}}) — любой\n"
+    "                     вложенности; не тот тип — FLANG_TYPE до вычисления\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
@@ -11713,9 +11714,9 @@ static int test_file(int argc, char **argv) {
  * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
  * прогонщик, и его разборщик (`flang_cli.c`) говорит на своём языке тегов
  * («{"n":…}», «{"s":…}»), заведённом для передачи готовых значений рантайма, а
- * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому здесь
- * лежит маленький разбор ровно этого: плоский объект скаляров. Вложенности нет
- * намеренно — она понадобится, когда понадобится, а не «на всякий случай».
+ * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому `--args`
+ * читает обычный JSON — тем же `facts_json`, что и факты `flang facts`: скаляры,
+ * списки, записи и варианты `{"variant": …, "fields": …}` (задача #460).
  */
 
 /** Вариант с одним полем: «Значение записи» и «Значение списка» строятся так. */
@@ -11977,89 +11978,27 @@ static bool run_value(const char *text, size_t *at, fl_value *out) {
 }
 
 /**
- * `--args` в «Значение записи». Пустая строка и отсутствие ключа дают пустую
- * запись — функция без параметров зовётся без `--args`, и требовать `{}` от
- * человека было бы обрядом.
+ * `--args` в «Значение записи»: объект JSON, ключи — имена параметров,
+ * значения — скаляры, списки `[…]`, записи `{…}` и варианты
+ * `{"variant": "Имя", "fields": {…}}` любой вложенности. Разбирает тот же
+ * `facts_json`, что читает факты `flang facts` и сообщения языкового сервера.
+ * Сверку с объявленным типом делает не разбор, а «Проверить аргументы вызова»:
+ * неверный тип — FLANG_TYPE до вычисления. Пустая строка и отсутствие ключа
+ * дают пустую запись — функция без параметров зовётся без `--args`, и
+ * требовать `{}` от человека было бы обрядом.
  */
 static bool run_args(const char *text, fl_value *out) {
   size_t at = 0;
-  size_t count = 0;
-  size_t capacity = 8;
-  fl_value *fields = (fl_value *)malloc(capacity * sizeof(fl_value));
-  bool ok = true;
-  if (fields == NULL) {
-    repl_oom();
-  }
   if (text == NULL) {
-    free(fields);
     *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
     return true;
   }
   run_spaces(text, &at);
-  if (text[at] != '{') {
-    free(fields);
+  if (text[at] != '{' || !facts_json(text, &at, out)) {
     return false;
   }
-  at += 1;
   run_spaces(text, &at);
-  if (text[at] != '}') {
-    for (;;) {
-      char *key = NULL;
-      size_t bytes = 0;
-      fl_value value = fl_nothing();
-      if (!run_text(text, &at, &key, &bytes)) {
-        ok = false;
-        break;
-      }
-      run_spaces(text, &at);
-      if (text[at] != ':') {
-        free(key);
-        ok = false;
-        break;
-      }
-      at += 1;
-      if (!run_value(text, &at, &value)) {
-        free(key);
-        ok = false;
-        break;
-      }
-      if (count == capacity) {
-        fl_value *bigger = (fl_value *)realloc(fields, capacity * 2 * sizeof(fl_value));
-        if (bigger == NULL) {
-          free(key);
-          repl_oom();
-        }
-        fields = bigger;
-        capacity *= 2;
-      }
-      {
-        const char *names[2];
-        fl_value values[2];
-        names[0] = "ключ";
-        values[0] = repl_value_text(key, bytes);
-        names[1] = "значение";
-        values[1] = value;
-        fields[count] = repl_value_record(names, values, 2);
-        count += 1;
-      }
-      free(key);
-      run_spaces(text, &at);
-      if (text[at] == ',') {
-        at += 1;
-        continue;
-      }
-      break;
-    }
-  }
-  if (ok) {
-    run_spaces(text, &at);
-    ok = text[at] == '}';
-  }
-  if (ok) {
-    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, count));
-  }
-  free(fields);
-  return ok;
+  return text[at] == '\0';
 }
 
 /**
@@ -14150,7 +14089,8 @@ static int run_file(int argc, char **argv) {
   }
 
   if (!run_args(given, &bound)) {
-    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
+    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался объект JSON, вроде '{\"н\":10}' или "
+                    "'{\"элементы\":[1,2,3]}'\n");
     code = 2;
   } else if (!run_checked(sources, full, path, paths.count, &linked)) {
     code = 1;
@@ -17147,11 +17087,9 @@ static int lint_command(int argc, char **argv) {
 /* ═════════════════════ проверка суждений: `flang facts` ══════════════════ */
 
 /*
- * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров, и разбирает их отдельная
- * функция, а не `run_value`. Причина не в аккуратности: утверждение умеет
- * говорить `поле «x» факта «y»`, то есть факт бывает записью, — а разбор
- * `--args` объектов и списков не знает намеренно (см. его шапку) и знать не
- * должен: аргумент вызова у `flang run` скаляр по контракту.
+ * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров: утверждение умеет
+ * говорить `поле «x» факта «y»`, то есть факт бывает записью. Тот же разбор
+ * читает и `--args` у `flang run`; скаляр внутри него — `run_value`.
  */
 static bool facts_json(const char *text, size_t *at, fl_value *out);
 

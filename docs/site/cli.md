@@ -364,6 +364,7 @@ flang emit <файл.flang> --target c|cpp|go|rust|java|js|ts|elixir|python|csha
 | `--index-base 0\|1` | declare the index base of the program |
 | `--max-steps N` | the step limit written into the generated code |
 | `--max-depth N` | the depth limit written into the generated code |
+| `--freestanding` | target `c` only: C without libc, for an OS kernel or firmware — see [embedding](embedding.md#c-without-libc-for-an-os-kernel) |
 | `--no-check` | do not run the prover. Parsing, types and termination are still checked |
 | `--no-postconditions` | do not generate runtime checks of postconditions. They are still proved; this flag changes only the generated code, and its header says so. Preconditions, termination checks and step and depth limits stay. Measurements: `flang emit --help` |
 

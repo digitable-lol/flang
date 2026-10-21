@@ -55,6 +55,12 @@ use one of the library ones: a list of pairs with linear lookup
 (`flang/stdlib/tree.flang`), or a hash trie (HAMT) whose depth is bounded by
 the hash length (`flang/stdlib/hashmap.flang`).
 
+**Printing C for an OS kernel covers a part of the language.** `flang emit
+--target c --freestanding` prints C without libc, threads or memory allocation,
+but only for records, sum types, `признак` and whole numbers; on strings, lists,
+fractions, division, plans and processes it refuses with
+`FLANG_FREESTANDING_UNSUPPORTED`. Details: [C without libc](../site/embedding.md#c-without-libc-for-an-os-kernel).
+
 **There are no bitwise operators.** Use the library functions that implement
 them with arithmetic, for example `«Исключающее или байтов»` (XOR of bytes) in
 `flang/stdlib/aes.flang`.

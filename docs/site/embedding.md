@@ -417,6 +417,93 @@ direct call `factorial("x")` — «сравнения порядка допус�
 not match the type"; a type check before the call exists only on the `c` target
 at the `enter` door (see [the host boundary](host-boundary.html)).
 
+## C without libc: for an OS kernel
+
+A kernel, a boot loader or firmware has no C library: no `malloc`, no threads,
+no files, no `abort`. The ordinary C print needs all of them — the four-function
+module `права.flang` from issue #383 pulled in 54 outside functions, `pthread_create`
+and `sigaction` among them. The `--freestanding` flag prints C for such a place:
+
+```bash
+flang emit права.flang --target c --freestanding --out k
+cd k && cc -std=c99 -O2 -ffreestanding -nostdlib -c *.c && ld -r -o all.o *.o
+nm -u all.o     # prints nothing: the code calls no outside function
+```
+
+Measured on that module with gcc 15: no outside functions, 449 bytes of machine
+code, no warnings under `-Wall -Wextra -pedantic`. The same files build with
+clang for `riscv64-unknown-elf`.
+
+Three files arrive:
+
+| file | what is in it |
+|---|---|
+| `fl_freestanding.h` | status codes and checked arithmetic, about a hundred lines |
+| `<module>.h` | the types and the function declarations |
+| `<module>.c` | the functions |
+
+They include only `<stdint.h>`, `<stddef.h>` and `<stdbool.h>`, which the C
+compiler gives even without a C library.
+
+How the program looks in C:
+
+| flang | C |
+|---|---|
+| `признак` | `bool` |
+| `неотрицательное` | `uint64_t`, at most 2⁵³ − 1 |
+| `целое` | `int64_t`, from −(2⁵³ − 1) to 2⁵³ − 1 |
+| `число` | `int64_t`: a whole number only, see below |
+| `точное целое` | `uint64_t`; a result past 64 bits gives `FL_FS_OVERFLOW` |
+| a record | a `struct` with its fields at fixed places |
+| a sum type | a `struct` with a `tag` and the variant's fields in `as` |
+
+A function returns a status, and the answer goes to its last argument:
+
+```c
+fl_fs_status prava_oslabit(prava_mandat_t p0_m, prava_prava_t p1_maska,
+                           prava_mandat_t *out);
+```
+
+`FL_FS_OK` is zero. Any other code names the reason: a `требует` your call broke
+(`FL_FS_PRECONDITION`), a number outside its type (`FL_FS_RANGE`), an exact
+integer that would go below zero (`FL_FS_NEGATIVE`) or past 64 bits
+(`FL_FS_OVERFLOW`), `остаток от` zero, a sum value with an unknown tag
+(`FL_FS_BAD_TAG`). Nothing calls `abort`. Nothing takes memory either: every
+value is a fixed-size `struct` on the caller's stack, so there is no allocator
+to pass in.
+
+What is checked while the code runs:
+
+- a postcondition that `flang check` proved for every input is not printed; any
+  other `обеспечивает` is checked and answers `FL_FS_POSTCONDITION`;
+- `требует` is always checked: the prover showed that calls inside the module
+  keep it, but a call from your C code is out of its reach;
+- arguments are checked against their types on the way in: a `неотрицательное`
+  above 2⁵³ − 1 answers `FL_FS_RANGE`;
+- there is no step counter: only `тотальная` functions are printed, and the
+  check before printing has proved that they end. Recursion uses the C stack,
+  and how deep it goes is yours to watch.
+
+**Why `число` is allowed.** In flang `число` is a double. Printed without libc,
+it is a 64-bit integer, and the two agree because the printer refuses
+everything that makes a fraction: a fractional literal, `делить на`, percent.
+Whole numbers stay exact in a double up to 2⁵³, and a result past that answers
+`FL_FS_RANGE` instead of a rounded value. So whenever the C code answers
+`FL_FS_OK`, it gives the same number as `flang run`.
+
+**What the first version refuses.** Strings, lists, fractions and division,
+`вес` and `сотых`, a type that contains itself (a tree or a list needs memory),
+generic types, functions as values, calls of library functions, `план` and
+processes. The refusal names the function and exits with code `1`:
+
+```text
+$ flang emit hello.flang --target c --freestanding --out k
+flang emit: печать отказала — FLANG_FREESTANDING_UNSUPPORTED: функция «Привет», параметр «имя»: печатаются признак, число (только целое), неотрицательное, целое, точное целое и записи и суммы из них; строки, списки, вес, доли и параметры типов — нет
+```
+
+A C compiler may call `memcpy` or `memset` on its own to copy a large `struct`;
+every kernel has both.
+
 ## What is not promised
 
 - **the bytes of the emitted code.** The promise is behavioural: the same

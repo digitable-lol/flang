@@ -590,6 +590,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_INTERNAL` | сломался сам компилятор | сообщить: это ошибка инструмента, а не вашей программы |
 | `FLANG_SELF_REPL_UNSUPPORTED` | оболочка не принимает эту конструкцию, например `использует` | положить код в файл и запустить `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` не получил значения для вызова | добавить значение в факты |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit --freestanding`: в программе есть то, чего C без libc не вмещает, — строки, списки, дроби, деление, планы, процессы | переписать эту функцию над записями, суммами типов, `признак` и целыми числами или печатать без `--freestanding` |
 
 ```text insert output: check --неткого
 $ flang check --неткого
@@ -650,6 +651,7 @@ $ echo $?
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit-c-freestanding.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |

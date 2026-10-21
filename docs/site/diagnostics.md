@@ -597,6 +597,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_INTERNAL` | the compiler itself failed | report it: this is a bug in the tool, not in your program |
 | `FLANG_SELF_REPL_UNSUPPORTED` | the shell does not accept this construct, `использует` for example | put the code in a file and run `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` got no value for a call | add the value to the facts |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit --freestanding`: the program uses something that C without libc cannot hold — strings, lists, fractions, division, plans, processes | write that function over records, sum types, `признак` and whole numbers, or print without `--freestanding` |
 
 ```text insert output: check --неткого
 $ flang check --неткого
@@ -657,6 +658,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit-c-freestanding.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |

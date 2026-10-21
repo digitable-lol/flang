@@ -226,13 +226,37 @@ body {
    Шапка от него не растёт: строка `flang` и без знака выше 24 пикселей. */
 .brand .znak { width: 24px; height: 24px; flex: none; }
 
-.tagline { color: var(--faint); font-size: .85rem; flex: 1; }
+.tagline {
+  color: var(--faint); font-size: .85rem; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .version, .github {
   font-size: .8rem; text-decoration: none; white-space: nowrap;
   padding: .15rem .5rem; border: 1px solid var(--line); border-radius: 999px;
   color: var(--faint);
 }
 .version:hover, .github:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Кнопка песочницы — единственная залитая кнопка шапки: это первое, что можно
+   сделать на сайте, ничего не устанавливая. Текст цвета --surface на --accent:
+   8,3:1 в светлой теме (#FFFFFF на #2B4C8C) и 7,7:1 в тёмной (#171B23 на
+   #8FADE9), норма 4,5:1. */
+.try {
+  font-size: .82rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+  padding: .3rem .8rem; border-radius: 999px;
+  background: var(--accent); color: var(--surface); border: 1px solid var(--accent);
+}
+.try:hover, .try:focus-visible { filter: brightness(1.12); color: var(--surface); }
+.try .try-short { display: none; }
+
+/* Первый экран главной: «попробовать» и «установить» рядом, под заголовком. */
+.content .cta { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin: 0 0 1.6rem; }
+.content .cta a { text-decoration: none; font-weight: 600; border-radius: 6px; padding: .6rem 1.15rem; white-space: nowrap; }
+.content .cta .cta-try { background: var(--accent); color: var(--surface); border: 1px solid var(--accent); font-size: 1.05rem; }
+.content .cta .cta-try:hover, .content .cta .cta-try:focus-visible { filter: brightness(1.12); color: var(--surface); }
+.content .cta .cta-install { border: 1px solid var(--rule); color: var(--accent); background: var(--surface); }
+.content .cta .cta-install:hover { background: var(--accent-bg); }
+.content .cta .cta-note { flex-basis: 100%; color: var(--muted); font-size: .88rem; }
 
 /* Переключатель языка. Стоит рядом с переключателем темы и выглядит как он же:
    это две кнопки одного рода — «показать то же самое иначе». */
@@ -587,6 +611,13 @@ body {
   .content { padding: 1.8rem 1.2rem 4rem; }
   .tagline { display: none; }
   .version, .github { display: none; }
+  .try { padding: .25rem .65rem; margin-right: auto; }
+  .try .try-long { display: none; }
+  .try .try-short { display: inline; }
+  /* С кнопкой песочницы шапка в строку не влезает: поиск уходит второй
+     строкой во всю ширину, а первая — знак, «Попробовать», язык и тема. */
+  .top { flex-wrap: wrap; gap: .6rem .8rem; padding: .7rem 1rem; }
+  .poisk { order: 10; flex-basis: 100%; }
   /* Подзаголовок ушёл — поле поиска забирает освободившуюся ширину и остаётся
      тем, ради чего в шапку смотрят с телефона. */
   .poisk { flex: 1; }
@@ -636,6 +667,14 @@ body {
 .content .pg-editor pre .tok-stroka { color: var(--flang-syn-stroka); }
 .content .pg-editor pre .tok-chislo { color: var(--flang-syn-chislo); }
 .content .pg-editor pre .tok-kommentariy { color: var(--flang-syn-zametka); }
+/* Рассуждение и формула в редакторе — те же пять цветов карточки кода, что у
+   flang (контраст их меряет contrast-guard.flang), другие только имена классов. */
+.content .pg-editor pre .tok-connective { color: var(--flang-syn-slovo); }
+.content .pg-editor pre .tok-term { color: var(--flang-syn-stroka); }
+.content .pg-editor pre .tok-name { color: var(--flang-syn-imya); }
+.content .pg-editor pre .tok-heading { color: var(--flang-syn-zametka); }
+.content .pg-editor pre .tok-quantifier { color: var(--flang-syn-slovo); }
+.content .pg-editor pre .tok-sign { color: var(--flang-syn-chislo); }
 /* Номера строк: отдельный столбец поверх раскрашенной копии, той же высоты
    строки; прокручивается вместе с полем ввода. */
 .content .pg-editor pre.pg-gutter {

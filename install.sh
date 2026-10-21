@@ -122,4 +122,4 @@ elif [ -n "$found" ] && [ "$found" != "$prefix/bin/flang" ]; then
   say "Put $prefix/bin first on PATH, or call $prefix/bin/flang directly."
 fi
 extra="$(cd "$src" && find lib include -type f 2>/dev/null | sed "s|^|$prefix/|" | tr '\n' ' ')"
-say "to uninstall: rm -rf $prefix/bin/flang $prefix/bin/flangtutor $prefix/libexec/flang $prefix/share/flang $prefix/share/flang-tutor $prefix/share/man/man1/flang.1 $prefix/share/doc/flang-package $extra"
+say "to uninstall: rm -rf $prefix/bin/flang $prefix/bin/flangtutor $prefix/libexec/flang $prefix/share/flang $prefix/share/flang-tutor $prefix/share/flang-fspec $prefix/share/man/man1/flang.1 $prefix/share/doc/flang-package $extra"

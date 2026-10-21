@@ -22828,15 +22828,19 @@ static bool new_refuse(const char *say) {
 /**
  * Каталог с образцом `fspec/`: сперва `$FLANG_FSPEC_TEMPLATE_DIR`, иначе
  * `<каталог двоичного>/../fspec` — на дереве исходников это и есть корневой
- * `fspec/`, рядом с `bootstrap/`. Не найден ни один — NULL, и пакет не
- * заводится вовсе: пробел лучше спеки, скопированной ниоткуда.
+ * `fspec/`, рядом с `bootstrap/`, — иначе `<каталог двоичного>/../share/flang-fspec`,
+ * куда образец кладут установки (архив, deb, rpm, install.sh, asdf, Homebrew).
+ * Не найден ни один — NULL, и пакет не заводится вовсе: пробел лучше спеки,
+ * скопированной ниоткуда.
  */
 static char *new_template_dir(const char *self) {
+  static const char *const below_parent[] = {"fspec", "share/flang-fspec"};
   const char *env = getenv(NEW_TEMPLATE_ENV);
   char *self_dir = NULL;
   char *parent = NULL;
   char *candidate = NULL;
   char *probe = NULL;
+  size_t index = 0;
   if (env != NULL && env[0] != '\0') {
     probe = repl_join(env, "guard.flang");
     if (repl_exists(probe)) {
@@ -22851,15 +22855,18 @@ static char *new_template_dir(const char *self) {
   }
   parent = repl_dirname(self_dir);
   free(self_dir);
-  candidate = repl_join(parent, "fspec");
-  free(parent);
-  probe = repl_join(candidate, "guard.flang");
-  if (repl_exists(probe)) {
+  for (index = 0; index < sizeof(below_parent) / sizeof(below_parent[0]); index += 1) {
+    candidate = repl_join(parent, below_parent[index]);
+    probe = repl_join(candidate, "guard.flang");
+    if (repl_exists(probe)) {
+      free(probe);
+      free(parent);
+      return candidate;
+    }
     free(probe);
-    return candidate;
+    free(candidate);
   }
-  free(probe);
-  free(candidate);
+  free(parent);
   return NULL;
 }
 
@@ -23050,6 +23057,7 @@ static bool new_write_all(const char *target, const char *fspec_dir, const char 
 
   ok = new_copy_template(template_dir, "guard.flang", fspec_dir) && ok;
   ok = new_copy_template(template_dir, "policy.flang", fspec_dir) && ok;
+  ok = new_copy_template(template_dir, "snapshot.flang", fspec_dir) && ok;
 
   free(title);
   return ok;
@@ -23118,7 +23126,8 @@ static int new_project(int argc, char **argv, const char *self) {
   if (template_dir == NULL) {
     fprintf(stderr,
             "FLANG_NEW: не найден образец fspec/ (guard.flang рядом с policy.flang) — искали\n"
-            "в $%s и в <каталог двоичного>/../fspec. Пакет не создан.\n",
+            "в $%s, в <каталог двоичного>/../fspec и в <каталог двоичного>/../share/flang-fspec.\n"
+            "Пакет не создан.\n",
             NEW_TEMPLATE_ENV);
     free(target);
     return 1;

@@ -89,6 +89,14 @@ else
       find "${ASDF_INSTALL_PATH}/share/flang-tutor" -type d -exec chmod 0755 {} +
     fi
   fi
+  # Образец спек, который `flang new` копирует в новый пакет: двоичный ищет его
+  # в ../share/flang-fspec. Своим каталогом по той же причине, что и уроки.
+  # Архивы до 0.7.31 его не несут.
+  if [ -d "${build}/fspec" ]; then
+    mkdir -p "${ASDF_INSTALL_PATH}/share/flang-fspec"
+    cp -R "${build}"/fspec/* "${ASDF_INSTALL_PATH}/share/flang-fspec/"
+    find "${ASDF_INSTALL_PATH}/share/flang-fspec" -type f -exec chmod 0644 {} +
+  fi
   # Библиотека зовётся по имени модуля компилятора, а имя это менялось: до 0.5.2
   # модуль звался «Компилятор flang» и печать давала `libkompilyator_flang.a`,
   # с 0.5.2 он «Compiler flang» и печать даёт `libcompiler_flang.a` (транслит в

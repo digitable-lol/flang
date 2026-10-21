@@ -47,6 +47,11 @@ contents:
   - src: ./share/flang-tutor
     dst: /usr/share/flang-tutor
     type: tree
+  # The spec template `flang new` copies into a new package: it looks for it
+  # in ../share/flang-fspec next to the binary.
+  - src: ./share/flang-fspec
+    dst: /usr/share/flang-fspec
+    type: tree
   - src: ./share/man/man1/flang.1
     dst: /usr/share/man/man1/flang.1
   - src: ./LICENSE

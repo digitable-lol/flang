@@ -16,3 +16,14 @@ syllogism-affirming-the-consequent.txt	1	пример против, подска
 syllogism-without-a-dictionary.txt	1	силлогизм: не следует (код 1)
 syllogism-without-a-dictionary.txt	1	«Барсик»: тих — да, мохнатый — нет
 syllogism-the-dictionary-is-asked-for.txt	3	допишите одну строку: Понятие: человек, люди
+text-reasoning-names-the-fallacy.txt	1	вид текста: рассуждение — судит судья силлогизмов, как в песочнице
+text-reasoning-names-the-fallacy.txt	1	не следует — это обращение следствия
+text-reasoning-names-the-fallacy.txt	1	карточка ошибки: https://courses.digitable.life/fallacies/#affirming-the-consequent
+text-formula-proved.txt	0	утверждаем («x» умножить на «y») равен («y» умножить на «x»)
+text-formula-proved.txt	0	формула: доказано всё (код 0)
+text-formula-refused.txt	1	формула не прочитана: ℝ в flang нет
+text-program-refuted.txt	1	утверждение «удвоение всегда больше» опровергнуто на входе н = 0
+text-program-refuted.txt	1	программа: опровергнуто или не прочитано — причина выше (код 1)
+text-category.txt	3	вид текста: программа с категорией
+text-category.txt	3	категория «Рубли»: сетка 2 значений на 2 объектах, троек стрелок 0, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+text-category.txt	3	категория: не всё доказано — что именно, сказано выше (код 3)

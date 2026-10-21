@@ -1254,9 +1254,17 @@ defmodule Flang.Rt do
 
       true ->
         {a, b, _} = arithmetic("mul", left, right)
-        {:num, num_mul(a, b)}
+        {:num, unsigned_zero(num_mul(a, b))}
     end
   end
+
+  @doc """
+  Нулевой итог произведения, частного и остатка — +0, а не -0, как у вычислителя
+  flang и всех целей печати. `-0.0 == 0.0` истинно, а образец `0.0` на -0.0 не
+  ложится, поэтому сравнение, а не сопоставление.
+  """
+  def unsigned_zero(x) when is_float(x) and x == 0.0, do: 0.0
+  def unsigned_zero(x), do: x
 
   def divide(left, right) do
     if exact_fraction?(left) and exact_fraction?(right) do
@@ -1274,7 +1282,7 @@ defmodule Flang.Rt do
       fraction_value(a * d, b * c)
     else
       {a, b, _} = arithmetic("div", left, right)
-      {:num, num_div(a, b)}
+      {:num, unsigned_zero(num_div(a, b))}
     end
   end
 
@@ -1293,7 +1301,7 @@ defmodule Flang.Rt do
       exact_value(rem(a, b))
     else
       {a, b, _} = arithmetic("mod", left, right)
-      {:num, num_rem(a, b)}
+      {:num, unsigned_zero(num_rem(a, b))}
     end
   end
 
@@ -1985,7 +1993,7 @@ defmodule Flang.Rt do
   def b_remainder(left, right) do
     a = expect_number("остаток от", left, "делимое")
     b = expect_number("остаток от", right, "делитель")
-    {:num, num_rem(a, b)}
+    {:num, unsigned_zero(num_rem(a, b))}
   end
 
   @doc "«процентов от»: (процент / 100) * значение, порядок ядра."

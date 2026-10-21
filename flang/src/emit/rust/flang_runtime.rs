@@ -1293,7 +1293,17 @@ pub fn mul(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
         return Ok(nat_value(&nat_mul(&exact_canon(&left), &exact_canon(&right))));
     }
     let (a, b) = arithmetic("mul", &left, &right)?;
-    Ok(number(a * b))
+    Ok(number(unsigned_zero(a * b)))
+}
+
+/// Нулевой итог произведения, частного и остатка — +0, а не -0, как у
+/// вычислителя flang и всех целей печати.
+fn unsigned_zero(x: f64) -> f64 {
+    if x == 0.0 {
+        0.0
+    } else {
+        x
+    }
 }
 
 pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
@@ -1313,7 +1323,7 @@ pub fn div(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
         return Ok(fraction_value(&nat_mul(&a, &d), &nat_mul(&b, &c)));
     }
     let (a, b) = arithmetic("div", &left, &right)?;
-    Ok(number(a / b))
+    Ok(number(unsigned_zero(a / b)))
 }
 
 pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
@@ -1330,7 +1340,7 @@ pub fn modulo(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
         return Ok(nat_value(&rest));
     }
     let (a, b) = arithmetic("mod", &left, &right)?;
-    Ok(number(a % b))
+    Ok(number(unsigned_zero(a % b)))
 }
 
 pub fn b_integer_part(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
@@ -2019,7 +2029,7 @@ pub fn b_prepend(_ctx: &Ctx, item: Value, value: Value) -> Result<Value, Error> 
 pub fn b_remainder(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     let a = expect_number("остаток от", &left, "делимое")?;
     let b = expect_number("остаток от", &right, "делитель")?;
-    Ok(number(a % b))
+    Ok(number(unsigned_zero(a % b)))
 }
 
 /// «процентов от»: (процент / 100) * значение, порядок ядра.

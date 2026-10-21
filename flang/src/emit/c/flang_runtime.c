@@ -5086,7 +5086,9 @@ fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
     return fl_exact_mul(ctx, left, right, out, error);
   }
   FL_TRY(fl_numbers(ctx, "mul", left, right, error));
-  *out = fl_number(left.as.number * right.as.number);
+  /* + 0.0: нулевое произведение, частное и остаток — +0, а не -0 (как у
+     вычислителя flang и всех целей печати); прочие значения не меняются. */
+  *out = fl_number(left.as.number * right.as.number + 0.0);
   return FL_OK;
 }
 
@@ -5096,7 +5098,7 @@ fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
     return fl_frac_div(ctx, left, right, out, error);
   }
   FL_TRY(fl_numbers(ctx, "div", left, right, error));
-  *out = fl_number(left.as.number / right.as.number);
+  *out = fl_number(left.as.number / right.as.number + 0.0);
   return FL_OK;
 }
 
@@ -5106,7 +5108,7 @@ fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
     return fl_exact_mod(ctx, left, right, out, error);
   }
   FL_TRY(fl_numbers(ctx, "mod", left, right, error));
-  *out = fl_number(fmod(left.as.number, right.as.number));
+  *out = fl_number(fmod(left.as.number, right.as.number) + 0.0);
   return FL_OK;
 }
 
@@ -6379,7 +6381,7 @@ fl_status fl_b_ostatok_ot(fl_ctx *ctx, fl_value left, fl_value right,
                           fl_value *out, fl_error *error) {
   FL_TRY(fl_expect_number(ctx, "остаток от", left, "делимое", error));
   FL_TRY(fl_expect_number(ctx, "остаток от", right, "делитель", error));
-  *out = fl_number(fmod(left.as.number, right.as.number));
+  *out = fl_number(fmod(left.as.number, right.as.number) + 0.0);
   return FL_OK;
 }
 

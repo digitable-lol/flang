@@ -58,10 +58,10 @@
 конец узла
 часть сверка строк 1
       if (pervoe.tag != FL_NUMBER || vtoroe.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "mod", pervoe, vtoroe, error));
-значение fl_number(fmod(pervoe.as.number, vtoroe.as.number))
+значение fl_number(fmod(pervoe.as.number, vtoroe.as.number) + 0.0)
 конец узла
 часть объявление строк 1
-      const fl_value dovod_2 = fl_number(fmod(pervoe.as.number, vtoroe.as.number)); /* пусть «довод 2» */
+      const fl_value dovod_2 = fl_number(fmod(pervoe.as.number, vtoroe.as.number) + 0.0); /* пусть «довод 2» */
 узел let строка 17 столбец 11 правило «хвост-пусть» имя «мера витка»
 узел var строка 6 столбец 11 правило «переменная» имя «второе»
 значение vtoroe

@@ -449,6 +449,14 @@ Limit: `divided by` leaves the exact type — the result becomes `number`. There
 no rounding in the language, neither explicit nor silent. Each type in full:
 [Language specification](../spec.html), section "Types" (in Russian).
 
+Signed zero. `equals` on numbers compares like `Object.is`: `NaN` equals `NaN`,
+and `0` does not equal `-0`. So that a check like `if b equals 0` does not miss,
+arithmetic never produces `-0`: a product, a quotient and a remainder whose result
+is zero give `+0` (`(-12) modulo 6`, `0 times -5` and `0 divided by -5` are all
+`0`). The evaluator and all ten print targets compute it the same way. A `-0` that
+comes in as a literal or an input stays `-0` and differs from `0`: `-0 equals 0`
+is `no`.
+
 ### Which numeric type to take
 
 | What the number is | Type | What you get for it |

@@ -76,8 +76,8 @@ export const РАЗДЕЛЫ = [
     страницы: [
       /* ПОРЯДОК ЗДЕСЬ — ОТ ТОГО, ЧТО ПИШУТ, К ТОМУ, ЧЕМ ЭТО ЗАКРЕПЛЕНО.
          Спецификация стояла первой и была первым, что видел пришедший в раздел
-         «Язык». Она не введение: это контракт на 2086 строк, где рядом с формой
-         СНЯТО 2026-10-18 строк docs/flang/SPEC.md = 2086 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 2040, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 2015, снято 2026-10-11) (ADR-0094: запрет Св✗, проба кванторов внутри формулы; до них 2011, снято 2026-10-08) (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17)
+         «Язык». Она не введение: это контракт на 2156 строк, где рядом с формой
+         СНЯТО 2026-10-20 строк docs/flang/SPEC.md = 2156 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 2086, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 2040, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 2015, снято 2026-10-11) (ADR-0094: запрет Св✗, проба кванторов внутри формулы; до них 2011, снято 2026-10-08) (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17)
          языка стоят границы правила и коды отказа. Читателю,
          который пришёл писать, раньше неё нужны операции и словарь;
          спецификация нужна ему потом — и стоит теперь потом. */
@@ -284,8 +284,8 @@ export const РАЗДЕЛЫ = [
     страницы: [
       /* СПЕЦИФИКАЦИЯ ЯДРА ПЕРЕЕХАЛА СЮДА ИЗ РАЗДЕЛА «ДОКАЗАТЕЛЬСТВА», где стояла
          третьим пунктом — на дорожке читателя. Жанр у неё тот же, что у трёх
-         соседей по этому разделу: контракт на 1324 строки, где рядом с правилом
-         СНЯТО 2026-10-18 строк docs/flang/proof/SPEC.md = 1324 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 1317, снято 2026-10-18) (print batch eight over dev 51d92cf31; до них 1316, снято 2026-10-17)
+         соседей по этому разделу: контракт на 1339 строк, где рядом с правилом
+         СНЯТО 2026-10-20 строк docs/flang/proof/SPEC.md = 1339 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 1324, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 1317, снято 2026-10-18) (print batch eight over dev 51d92cf31; до них 1316, снято 2026-10-17)
          ядра стоят пути к файлам реализации, имена проверок и разбор
          отвергнутых редакций. Читателю на тот же вопрос отвечают «Что доказано,
          а что нет» и «Зачем и как». Адрес не сменился. */
@@ -293,8 +293,8 @@ export const РАЗДЕЛЫ = [
       { адрес: 'spec-cat.html', имя: 'Категории и функторы — контракт', из: 'docs/ct/spec.md', безПары: 'английской редакции ещё нет — долг задачи 7660' },
       { адрес: 'spec-conc.html', имя: 'Процессы и отказоустойчивость — контракт', из: 'docs/flang/concurrency/SPEC.md', безПары: 'английской редакции ещё нет — долг задачи 7660' }, // источник переехал, адрес прежний нарочно: задача 9233
       /* Спецификация языка стояла в разделе «Язык» последним пунктом и читалась
-         как справка для пишущего. Это не справка: контракт на 2086 строк, где
-         СНЯТО 2026-10-18 строк docs/flang/SPEC.md = 2086 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 2040, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 2015, снято 2026-10-11) (ADR-0094: запрет Св✗, проба кванторов внутри формулы; до них 2011, снято 2026-10-08) (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17)
+         как справка для пишущего. Это не справка: контракт на 2156 строк, где
+         СНЯТО 2026-10-20 строк docs/flang/SPEC.md = 2156 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 2086, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 2040, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 2015, снято 2026-10-11) (ADR-0094: запрет Св✗, проба кванторов внутри формулы; до них 2011, снято 2026-10-08) (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17)
          рядом с формой языка стоят коды отказа, границы обещаний и раздел «Слои
          реализации» с прямой пометкой «для тех, кто развивает сам язык». Жанр
          рабочего документа, а не витрины; на витрине его место заняли

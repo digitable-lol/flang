@@ -1586,6 +1586,7 @@ morphism «refund payment» from «Payment» to «Payment»
 
 identity «Order»
 identity «Payment»
+identity «Receipt»
 
 category «Orders»
   morphism «cancel order»
@@ -1867,6 +1868,12 @@ these values, not proved. A violation fails the check with exit code 1 and shows
 the values that break the law, and no code is generated. The same holds for a
 natural transformation: `FLANG_TRANSFORM_NOT_NATURAL` with both paths and their
 values.
+
+The structure of an isomorphism and of a functor is checked without values, with
+exit code 1: an arrow of an isomorphism that is undeclared or does not go between
+its two objects gives `FLANG_ISO_MISMATCH`; an object of an isomorphism without an
+`identity` line gives `FLANG_ISO_IDENTITY_MISSING`; an arrow the functor maps, with
+an end that has no image, gives `FLANG_FUNCTOR_OBJECT_MISSING` naming that object.
 
 **Not checked: the shape of the declarations.** Closure under composition,
 identities on objects, matching ends of composed arrows, the shape of a functor —

@@ -522,6 +522,7 @@ $ echo $?
 | `FLANG_COMPOSE_MISMATCH` | концы композиции не сходятся |
 | `FLANG_MORPHISM_SHAPE` | морфизм объявлен неверно |
 | `FLANG_FUNCTOR_SQUARE` | квадрат функтора не коммутирует |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | стрелка отображена, а у её конца нет образа |
 | `FLANG_TRANSFORM_NOT_NATURAL` | квадрат естественности не коммутирует |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | бифунктор отображает одну пару объектов дважды |
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | пара стрелок отображена, а у пары их концов образа нет |
@@ -529,6 +530,8 @@ $ echo $?
 | `FLANG_BIFUNCTOR_IDENTITY` | пара единиц отображена в стрелку, которая не единица |
 | `FLANG_BIFUNCTOR_COMPOSITION` | пара композиций отображена не в композицию образов частей |
 | `FLANG_ISO_NOT_INVERSE` | две стрелки не обратны друг другу |
+| `FLANG_ISO_MISMATCH` | стрелка изоморфизма не объявлена или идёт не между его объектами |
+| `FLANG_ISO_IDENTITY_MISSING` | у объекта изоморфизма не объявлена единица |
 | `FLANG_EMBED_SHAPE` | вложение объявлено неверно |
 | `FLANG_EMBED_NOT_INJECTIVE` | вложение переводит разные значения в одно |
 | `FLANG_MONOID` | объявление моноида неполно |

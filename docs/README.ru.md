@@ -140,8 +140,8 @@ docs/tasks/     открытая и закрытая работа дерева, 
 
 <!-- КАРТА-КОНЕЦ -->
 
-Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 66 файлов на flang —
-<!-- СНЯТО 2026-10-18 файлов flang/self/*.flang = 66 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
+Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 67 файлов на flang —
+<!-- СНЯТО 2026-10-21 файлов flang/self/*.flang = 67 (c printer without libc, flang/self/emit-c-freestanding.flang; до них 66, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
 [`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **64 модуля, 1793 функции и 4144
 примеров**, которые прогоняются при каждой проверке:

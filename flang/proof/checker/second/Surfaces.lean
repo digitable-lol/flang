@@ -329,7 +329,7 @@ def «поРусски» (l : String) («язык» : String) : String := Id.run
 
 def «строкиПоРусски» («строки» : List String) : List String :=
   match «языкИсходника» «строки» with
-  | some y => «строки».map (fun l => «поРусски» l y)
-  | none => «строки»
+  | some y => «историиФункциями» («строки».map (fun l => «поРусски» l y))
+  | none => «историиФункциями» «строки»
 
 end «Второй»

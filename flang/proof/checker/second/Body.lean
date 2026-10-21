@@ -270,6 +270,13 @@ def «подставитьУсловие» (t u «на» : String) : String × N
       out := out.push c
       i := i + 1
       continue
+    -- 8192: условие может начинаться с имени в ёлочках («скидка» не больше 30) — оно
+    -- ищется до того, как ёлочка уводит чтение внутрь имени.
+    if c = '«' && el = 0 && «стоитНа» cs i uc && «местоЗамены» cs i d then
+      out := out ++ «на».toList.toArray
+      n := n + 1
+      i := i + d
+      continue
     if c = '«' then
       el := el + 1
       out := out.push c

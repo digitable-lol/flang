@@ -667,7 +667,7 @@ static const char HELP_EMIT[] =
     "                        [--out каталог | --file имя] [--cli|--no-cli] [--repl]\n"
     "                        [--runtime каталог] [--index-base 0|1]\n"
     "                        [--max-steps N] [--max-depth N] [--no-check]\n"
-    "                        [--no-postconditions]\n"
+    "                        [--no-postconditions] [--freestanding]\n"
     "\n"
     "Печатает программу без Node — во все десять целей. Каталог из «--out»\n"
     "заводится сам, вместе с промежуточными и с подкаталогами, которых просит цель\n"
@@ -793,6 +793,21 @@ static const char HELP_EMIT_POST[] =
     "\n";
 
 /* Четвёртая часть: разрез там же и по той же причине. */
+/* Часть про «--freestanding» — отдельным литералом по той же причине: 4095 знаков C99. */
+static const char HELP_EMIT_FREE[] =
+    "«--freestanding» (только у цели «c») печатает C без libc — для ядра ОС,\n"
+    "загрузчика и прошивки. Напечатанное собирается «cc -ffreestanding -nostdlib»\n"
+    "и не зовёт ни одной внешней функции: только <stdint.h>, <stddef.h> и\n"
+    "<stdbool.h>, ни потоков, ни файлов, ни выделения памяти. Запись становится\n"
+    "структурой C, сумма типов — структурой с меткой, признак — bool, числа —\n"
+    "64-битными словами. Каждая функция возвращает код (FL_FS_OK или причину\n"
+    "отказа), ответ кладёт в последний аргумент. Недоказанные «обеспечивает» и\n"
+    "все «требует» проверяются и отвечают кодом, доказанные не печатаются.\n"
+    "Чего первая версия не умеет — строк, списков, дробных чисел и деления,\n"
+    "планов и процессов, — на том печать отказывает кодом\n"
+    "FLANG_FREESTANDING_UNSUPPORTED и называет функцию.\n"
+    "\n";
+
 static const char HELP_EMIT_4[] =
     "РАНТАЙМ ЦЕЛИ уезжает в вывод ДОСЛОВНО, поэтому читается с диска: от двух\n"
     "файлов у go, rust, js и python до шести у java и csharp, у cpp четыре (три\n"
@@ -1173,7 +1188,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "run") == 0) {
     printf("%s\n", HELP_RUN);
   } else if (strcmp(topic, "emit") == 0) {
-    printf("%s\n%s%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_POST, HELP_EMIT_4);
+    printf("%s\n%s%s%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_POST, HELP_EMIT_FREE, HELP_EMIT_4);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "lsp") == 0) {
@@ -14588,6 +14603,24 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      NULL, NULL},
 };
 
+/*
+ * ПЕЧАТЬ В C БЕЗ LIBC: «--target c --freestanding» (задача 8576, issue #383).
+ *
+ * Не строка таблицы, а её двойник: слово цели остаётся «c», ключ выбирает другую
+ * точку входа на flang — «Печать без libc» (flang/self/emit-c-freestanding.flang).
+ * Напечатанное собирается «-ffreestanding -nostdlib» и не зовёт ни libc, ни
+ * потоков, ни сигналов, ни выделения памяти: записи — структуры C, суммы типов —
+ * структура с меткой, ошибка — код возврата.
+ *
+ * Файлов рантайма с диска ей не нужно: заголовок fl_freestanding.h короткий, и
+ * печать держит его в себе литералом. Поэтому runtime_count равен нулю и каталог
+ * рантайма не ищется вовсе — установленному flang не нужен для этой печати
+ * ни один новый файл в share/flang.
+ */
+static const emit_target EMIT_FREESTANDING = {
+    "c", "C без libc", "", {"", ""}, "Печать без libc", false, 2, {"путь", "есть путь"}, 0, {""},
+    NULL, {"cc", NULL, NULL}, NULL, "Столкновения имён"};
+
 /** Ключи командной строки печати — одни на все цели. */
 typedef struct {
   const char *own;
@@ -15547,6 +15580,9 @@ static int emit_file(int argc, char **argv, const char *self) {
    */
   bool postconditions = true;
   size_t dropped_by_key = 0;
+  /* «--freestanding»: печать в C без libc (EMIT_FREESTANDING выше). */
+  bool freestanding = false;
+  const emit_target *row = NULL;
 
   wish.own = "";
   wish.steps = "1000000";
@@ -15594,6 +15630,8 @@ static int emit_file(int argc, char **argv, const char *self) {
       kernel = false;
     } else if (strcmp(argv[argument], "--no-postconditions") == 0) {
       postconditions = false;
+    } else if (strcmp(argv[argument], "--freestanding") == 0) {
+      freestanding = true;
     } else if (argv[argument][0] != '-' && path == NULL) {
       path = argv[argument];
     } else {
@@ -15635,6 +15673,19 @@ static int emit_file(int argc, char **argv, const char *self) {
           stderr);
     return 2;
   }
+  if (freestanding && (chosen != EMIT_TARGET_C || wish.shell || protocol != NULL)) {
+    fputs("flang emit: «--freestanding» есть только у цели «c» и не сочетается с «--repl» и\n"
+          "«--protocol»: код без libc печатается без прогонщика и без протокола перевода\n",
+          stderr);
+    return 2;
+  }
+  row = freestanding ? &EMIT_FREESTANDING : &EMIT_TARGET_TABLE[chosen];
+  if (freestanding && !repl_has_function(EMIT_FREESTANDING.entry)) {
+    fputs("flang emit: этот двоичный печати без libc не несёт — семя ещё не перепечатано с\n"
+          "flang/self/emit-c-freestanding.flang (задача 8576). Возьмите выпуск новее.\n",
+          stderr);
+    return 2;
+  }
   if (protocol != NULL && protocol[0] == '\0') {
     fputs("flang emit: «--протокол» назван пустым именем файла — назовите, куда класть протокол\n", stderr);
     return 2;
@@ -15647,8 +15698,8 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_target_dir(self_dir, given_runtime, EMIT_TARGET_TABLE[chosen].probe,
-                            EMIT_TARGET_TABLE[chosen].places);
+  runtime = row->runtime_count == 0 ? repl_say("")
+                                    : emit_target_dir(self_dir, given_runtime, row->probe, row->places);
   free(self_dir);
   if (runtime == NULL) {
     fprintf(stderr,
@@ -15893,9 +15944,8 @@ static int emit_file(int argc, char **argv, const char *self) {
             sha256_init(&sha);
             sha256_add(&sha, text, bytes);
             sha256_hex(&sha, source_sha);
-            code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, program, fits, table,
-                             runtime, &wish, with_plans, &files, protocol, path, source_sha);
+            code = emit_call(row, row->from_linked ? linked : program, program, fits, table, runtime, &wish,
+                             with_plans, &files, protocol, path, source_sha);
           }
           if (code == 0 && protocol != NULL) {
             code = emit_take_protocol(&files, protocol);

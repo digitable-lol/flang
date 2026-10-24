@@ -51,9 +51,9 @@ $ grep -n 'run:.*\${{ *github\.' .github/workflows/*.yml | cut -c1-150
 $ grep -c 'pull_request_target' .github/workflows/*.yml | grep -v ':0'
                                                                     код 1
 $ grep -n 'runs-on:.*self-hosted' .github/workflows/*.yml
-.github/workflows/binary.yml:1336:    runs-on: [self-hosted, bolshaya-pamyat]
-.github/workflows/reprint.yml:323:    runs-on: [self-hosted, bolshaya-pamyat]
-.github/workflows/reprint.yml:453:    runs-on: [self-hosted, bolshaya-pamyat]
+.github/workflows/binary.yml:1336:    runs-on: [self-hosted, big-memory]
+.github/workflows/reprint.yml:323:    runs-on: [self-hosted, big-memory]
+.github/workflows/reprint.yml:453:    runs-on: [self-hosted, big-memory]
 $ grep -A4 '^permissions:' .github/workflows/*.yml | grep 'write'
 .github/workflows/pages.yml-  pages: write
 .github/workflows/pages.yml-  id-token: write

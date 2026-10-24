@@ -1,0 +1,6 @@
+self-hosted-runner:
+  # Метка раннера с большой памятью: печать семени и две печати одного дерева
+  # (.github/workflows/reprint.yml, binary.yml). Без этой строки actionlint
+  # считает метку неизвестной.
+  labels:
+    - big-memory

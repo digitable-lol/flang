@@ -732,6 +732,7 @@ $ echo $?
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | у 'если' нет ветки 'иначе' · не разобрана конструкция: неожиданное '{word}' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («{word.quoted}») или переименуйте; а если слово попало в форму лишним — уберите его |
 | `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |

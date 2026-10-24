@@ -739,6 +739,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | 'если' has no 'иначе' branch · construct not parsed: unexpected '{word}' — this word is taken by the language and cannot be a name: write the name in guillemets («{word.quoted}») or rename it; and if the word got into the form by mistake, remove it |
 | `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |

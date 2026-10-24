@@ -1,0 +1,2 @@
+version	printer	reader	programs	taken
+1	50f33cdf7bb8346ed2a78955a88b346f1277f36ca53c9c8ae982638beacfc3ab	971a7a854e1c71e7acab26c410b3ca507f9efb25fe40b776ca3b53c5af2ba2d0	flang/proof/examples/corpus-natural.flang flang/proof/examples/subtraction-under-precondition.flang flang/proof/examples/traffic-light.flang flang/proof/examples/precondition-discharge-reads-proved-facts.flang docs/examples/guide/statement.flang	2026-10-24

@@ -1,0 +1,9 @@
+# Проба здоровья службы реестра: одна строка в health.log за прогон.
+# Зовётся таймером flang-registry-health.timer; ставится планом registry-deploy.fscript.
+
+[Unit]
+Description=flang registry: health probe
+
+[Service]
+Type=oneshot
+ExecStart=@HOME_DIR@/bin/flang io @HOME_DIR@/service/health.fscript --plan "Проба здоровья" --trust -- @PORT@ @HOME_DIR@/health.log

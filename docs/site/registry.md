@@ -35,14 +35,29 @@ unchanged — put there by the same build that prints this page.
 | name | the package name — what stands in `использует` |
 | version | three numbers: major, minor, patch |
 | fingerprint | `sha256` of the package file |
-| address | where the package file lies |
+| address | where the package file lies: a full URL, or a path relative to the list's own directory |
 | needs | what the package requires of other names; empty means nothing |
 
 A need reads `name: range`, needs are separated by semicolons. There are four
 ranges: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. Parsing the
 list and choosing a version are written and proved in
-[`flang/stdlib/registry.flang`](../../flang/stdlib/registry.flang); the choice is
-made by running a plan, not by a command of the binary.
+[`flang/stdlib/registry.flang`](../../flang/stdlib/registry.flang). The whole file
+format, for whoever writes or serves it, is
+[registry-ledger-format.md](../registry-ledger-format.md).
+
+## Install a package by name
+
+```
+flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'
+```
+
+The command takes this list, picks the greatest version that satisfies the needs
+of the project and of the packages themselves, downloads the files, checks their
+`sha256` before writing, puts them next to the program and writes `flang.lock`.
+Details are on the [packages page](packages.html); the list address comes from
+`--registry` or from the `registry` key in `.flangrc`. Installing again into an
+empty directory gives the same lock byte for byte — the check
+`package-install:check` and the CI job of the same name hold that.
 
 ## The records as they stand
 

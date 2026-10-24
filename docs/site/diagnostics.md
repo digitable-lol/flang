@@ -578,6 +578,23 @@ Permissions are taken away one at a time; by default everything is allowed:
 flang io план.flang --plan 'Разбор' --no-net --in-dir
 ```
 
+## Installing packages
+
+Refusals of `flang run-script package:install`, the installer that fetches a
+package by name from the registry. It is a plan written in flang
+(`scripts/package-install.fscript`), not a command of the binary, so it prints
+these codes itself; the exit code is 1 for all of them.
+
+| Code | What it means | What to do |
+|---|---|---|
+| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang run-script package:install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-ledger-format.md` |
+| `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
+| `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
+| `FLANG_INSTALL_FINGERPRINT` | the `sha256` of the received body differs from the registry record; nothing was written to disk | a substituted or damaged package: do not install it, tell the keeper of the list |
+| `FLANG_INSTALL_UNPROVED` | the package carries a `закон` or a claim "declared, not proved" and would widen the trusted base | read the named lines; if you agree, repeat with `--accept-unproven` |
+| `FLANG_INSTALL_BUILD` | after installing, `flang check` or `flang lock` over the program answered non-zero | read their answer in the message; usually the program lacks the line `использует «Имя» из "file.flang-package"` |
+
 ## Processes
 
 | Code | What it means | What to do |

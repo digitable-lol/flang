@@ -2057,7 +2057,7 @@ jobs:
         run: |
           ledger=scripts/registry-example/registry.list
           cp "$ledger" "$RUNNER_TEMP/registry.list"
-          sed -i '2s/| 1dc6/| Xdc6/' "$ledger"
+          sed -i '2s/\(| [0-9.]* | \)./\1X/' "$ledger"
           if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
             cp "$RUNNER_TEMP/registry.list" "$ledger"
             echo "the forged fingerprint did not land, nothing to probe" >&2

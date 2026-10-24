@@ -756,7 +756,7 @@ theorem «теорема-по-частям» (t : «Теорема») («заг�
     a.«суд».«чист» ∧ («судитьЗакрытие» t).«чист» ∧ p.«беды» = [] ∧ p.«неВзялся» = [] ∧
     («судитьПосылки» t.«исх» t.«обр» t.«имяТ» t.«чья» t.«вердикт» t.«место» s!"теорема «{t.«имяТ»}»" («узелПроигран» «узел») true).«чист» ∧
     (a.«закон» = [] ∨ (t.«выводЗаконов?» a.«закон» = true ∧ (t.«выводСуд» «заг» «строки» «опр»).«чист»)) ∧
-    (a.«тело» = [] ∨ «узелПроигран» «узел» = true) := by
+    (a.«тело» = [] ∨ «узелПроигран» «узел» = true ∨ (p.«ходамиВсе» t.«обр» = true ∧ a.«тело».all «поПредположению» = true)) := by
   intro «цель» a p «узел»
   unfold «судитьТеорему» at hc
   obtain ⟨h5, hx⟩ := «слово-приписано-чисто» hc
@@ -787,11 +787,15 @@ theorem «теорема-по-частям» (t : «Теорема») («заг�
       exact this
   · by_cases hu : «узелПроигран» (if t.«вердикт» = "доказано" then some («проигратьУзел» t.«счёт» («местоТеоремы» t t.«цельСтроки»))
         else none) = true
-    · exact Or.inr hu
-    · left
-      have := hx.2
-      simp only [hu, Bool.false_eq_true, ↓reduceIte] at this
-      exact this
+    · exact Or.inr (Or.inl hu)
+    · by_cases hw : ((«проигратьБлок» («обстТеоремы» t t.«цельСтроки»)).«ходамиВсе» t.«обр» &&
+          (t.«судитьШаги» t.«цельСтроки»).«тело».all «поПредположению») = true
+      · simp only [Bool.and_eq_true] at hw
+        exact Or.inr (Or.inr hw)
+      · left
+        have := hx.2
+        simp only [hu, hw, Bool.false_or, Bool.false_eq_true, ↓reduceIte] at this
+        exact this
 
 /-! ## Тотальность: модель зовов и фундированность
 
@@ -1190,7 +1194,9 @@ theorem «суд-доказанного» (u : «ФормаУтв») («к» : �
         («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] ∧ («проигратьБлок» (u.«обстХодов» «к»)).«проиграно» > 0) ∨
      (u.«пр» = some "правило «кольцо точного целого»" ∧ «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» = .ok ()) ∨
      (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
-      h.«беды» = [] ∧ h.«снял» ≠ "")) := by
+      h.«беды» = [] ∧ h.«снял» ≠ "") ∨
+     (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
+      h.«беды» = [] ∧ u.«ходамиСписка» «к» = true)) := by
   unfold «судДоказанного» at hc
   simp only [hd, Bool.true_and] at hc
   by_cases hv : u.«есть» "вывод " = true
@@ -1236,28 +1242,41 @@ theorem «суд-доказанного» (u : «ФормаУтв») («к» : �
         · simp only [hx, ↓reduceIte] at hc
           obtain ⟨h2, _⟩ := «еслиНе-чисто» hc
           by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
-          · simp only [hs, ↓reduceIte] at h2
-            exact absurd h2 («чист-слово» _ _)
-          · simp only [hs, ↓reduceIte] at h2
+          · by_cases hl : u.«ходамиСписка» «к» = true
+            · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at h2
+              obtain ⟨hb, hn, hw⟩ := h2
+              simp only [List.append_eq_nil_iff] at hb
+              exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
+            · simp only [Bool.not_eq_true] at hl
+              simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at h2
+              exact absurd h2 («чист-слово» _ _)
+          · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at h2
             obtain ⟨hb, hn, hw⟩ := h2
             simp only [List.append_eq_nil_iff] at hb
-            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr ⟨hb.2, hs⟩))⟩
+            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
         · simp only [hx, Bool.false_eq_true, ↓reduceIte] at hc
           by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
-          · simp only [hs, ↓reduceIte] at hc
-            exact absurd hc («чист-слово» _ _)
-          · simp only [hs, ↓reduceIte] at hc
+          · by_cases hl : u.«ходамиСписка» «к» = true
+            · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at hc
+              obtain ⟨hb, hn, hw⟩ := hc
+              simp only [List.append_eq_nil_iff] at hb
+              exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
+            · simp only [Bool.not_eq_true] at hl
+              simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at hc
+              exact absurd hc («чист-слово» _ _)
+          · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at hc
             obtain ⟨hb, hn, hw⟩ := hc
             simp only [List.append_eq_nil_iff] at hb
-            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr ⟨hb.2, hs⟩))⟩
+            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
 
 /-- **Доказанное утверждение принимается только путями решения.** Если путь
     `«судитьУтверждение»` принял утверждение с вердиктом «доказано», то либо запись назвала
     теорему исходника, и её принял путь `«судитьТеорему»` (теорема «теорема-по-частям»),
     либо обязательства входа приняты, посылки приняты, и принял один из путей решения:
     блок вывода приёмкой модели (`«Суд».«выводом»`, теорема «выводом-по-модели»), прогон
-    ходов (`«проигратьБлок»`), кольцо точного целого (`«кольцоТочногоЦелого»`) либо крюки
-    по телу (`«крюкиПоТелу»`). Пути без модели — строки долга. -/
+    ходов (`«проигратьБлок»`), кольцо точного целого (`«кольцоТочногоЦелого»`), крюки
+    по телу (`«крюкиПоТелу»`) либо ходы под посылками списка (`«ходыПодПосылками»`). Пути
+    без модели — строки долга. -/
 theorem «утверждение-по-путям» («к» : «Контекст») («блок» : String)
     (hc : («судитьУтверждение» «к» «блок»).«чист») :
     let u := («формаУтверждения» «к» «блок»).1
@@ -1272,7 +1291,9 @@ theorem «утверждение-по-путям» («к» : «Контекст�
           («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] ∧ («проигратьБлок» (u.«обстХодов» «к»)).«проиграно» > 0) ∨
        (u.«пр» = some "правило «кольцо точного целого»" ∧ «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» = .ok ()) ∨
        (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
-        h.«беды» = [] ∧ h.«снял» ≠ ""))) := by
+        h.«беды» = [] ∧ h.«снял» ≠ "") ∨
+       (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
+        h.«беды» = [] ∧ u.«ходамиСписка» «к» = true))) := by
   intro u o hd
   have hu : u = («формаУтверждения» «к» «блок»).1 := rfl
   unfold «судитьУтверждение» at hc

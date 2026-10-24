@@ -22,7 +22,7 @@
 // то, ради чего этот проект вообще существует.
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync, copyFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync, copyFileSync, cpSync, statSync } from 'node:fs';
 import { join, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -713,6 +713,15 @@ for (const с of страницы) {
   }
 }
 
+// Кнопка «Попробовать в браузере» стоит в шапке каждой страницы и ведёт в
+// песочницу своего языка; «Установить» на главной — на установку. Страниц нет —
+// кнопки вели бы в никуда, и сборка отказывает так же, как на битой ссылке.
+for (const язык of ['ru', 'en']) {
+  for (const адрес of [адресПесочницы(язык), адресУстановки(язык)]) {
+    if (!адресаСтраниц.has(адрес)) беды.push(`кнопка шапки или главной ведёт в никуда: ${адрес}`);
+  }
+}
+
 // ── Указатель поиска ────────────────────────────────────────────────────────
 // Собирается ЗДЕСЬ, из тех же разобранных страниц, что печатаются в HTML:
 // второго списка страниц нет, и разъехаться указателю с сайтом не в чем.
@@ -865,6 +874,10 @@ const СЛОВА = {
     разделы: 'Разделы',
     тема: 'Сменить тему',
     другой: 'English',
+    попробовать: 'Попробовать в браузере',
+    попробоватьКратко: 'Попробовать',
+    попробоватьЧто: 'Песочница: проверить силлогизм, формулу или программу прямо во вкладке, ничего не устанавливая',
+    установить: 'Установить',
     поиск: 'Поиск по документации',
     поискКратко: 'Поиск',
     документация: 'Документация flang',
@@ -889,6 +902,10 @@ const СЛОВА = {
     разделы: 'Sections',
     тема: 'Switch theme',
     другой: 'Русский',
+    попробовать: 'Try in the browser',
+    попробоватьКратко: 'Try it',
+    попробоватьЧто: 'Playground: check a syllogism, a formula or a program right in the tab, nothing to install',
+    установить: 'Install',
     поиск: 'Search the documentation',
     поискКратко: 'Search',
     документация: 'flang documentation',
@@ -953,6 +970,32 @@ function происхождениеСтроки(с, сл) {
   return части.join(' · ');
 }
 
+/**
+ * Кнопка песочницы. В шапке она на каждой странице, кроме самой песочницы:
+ * там она вела бы туда же, где человек уже стоит. На главной под заголовком
+ * стоят две кнопки — «попробовать» и «установить»: первый экран отвечает на
+ * вопрос «что сделать прямо сейчас», и попробовать можно, ничего не ставя.
+ */
+function адресПесочницы(язык) { return язык === 'en' ? 'en/playground.html' : 'playground.html'; }
+function адресУстановки(язык) { return язык === 'en' ? 'en/install.html' : 'install.html'; }
+function попробовать(с, сл) {
+  const язык = с.язык ?? 'ru';
+  if (с.адрес === адресПесочницы(язык)) return '';
+  return `<a class="try" href="${относительно(с.адрес, адресПесочницы(язык))}" title="${экранировать(сл.попробоватьЧто)}"><span class="try-long">${экранировать(сл.попробовать)}</span><span class="try-short">${экранировать(сл.попробоватьКратко)}</span></a>`;
+}
+function сПризывом(с, сл) {
+  const язык = с.язык ?? 'ru';
+  if (с.адрес !== (язык === 'en' ? 'en/index.html' : 'index.html')) return с.html;
+  const конец = с.html.indexOf('</h1>');
+  if (конец < 0) return с.html;
+  const призыв =
+    `\n<p class="cta">` +
+    `<a class="cta-try" href="${относительно(с.адрес, адресПесочницы(язык))}">${экранировать(сл.попробовать)} →</a>` +
+    `<a class="cta-install" href="${относительно(с.адрес, адресУстановки(язык))}">${экранировать(сл.установить)}</a>` +
+    `<span class="cta-note">${экранировать(сл.попробоватьЧто)}</span></p>`;
+  return с.html.slice(0, конец + 5) + призыв + с.html.slice(конец + 5);
+}
+
 function страницаЦеликом(с) {
   const язык = с.язык ?? 'ru';
   const сл = СЛОВА[язык];
@@ -987,13 +1030,14 @@ function страницаЦеликом(с) {
   <span class="tagline">${сл.подзаголовок}</span>
   <a class="version" href="${относительно(с.адрес, язык === 'en' ? 'en/releases.html' : 'releases.html')}" title="${экранировать(сл.выпуск)} ${ВЕРСИЯ}">${ВЕРСИЯ}</a>
   <a class="github" href="https://github.com/digitable-lol/flang" rel="noopener" aria-label="${экранировать(сл.исходники)}" title="${экранировать(сл.исходники)}">GitHub</a>
+  ${попробовать(с, сл)}
   ${поиск}
   ${переключатель}
   <button class="theme" type="button" aria-label="${сл.тема}">◐</button>
 </header>
 <div class="shell">
   <nav class="side" aria-label="${сл.разделы}">${боковое(с.адрес, язык)}</nav>
-  <main id="soderzhanie" class="content">${с.html}</main>
+  <main id="soderzhanie" class="content">${сПризывом(с, сл)}</main>
   ${оглавлениеСправа(с.оглавление, язык)}
 </div>
 <footer class="bottom">
@@ -1076,6 +1120,8 @@ for (const с of страницы) {
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'style.css'), join(ВЫХОД, 'style.css'));
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'search.js'), join(ВЫХОД, 'search.js'));
 copyFileSync(join(КОРЕНЬ, 'docs', 'site', 'playground.js'), join(ВЫХОД, 'playground.js'));
+// KaTeX для формул песочницы — из дерева, не со стороннего адреса.
+cpSync(join(КОРЕНЬ, 'docs', 'site', 'vendor'), join(ВЫХОД, 'vendor'), { recursive: true });
 
 // Указатель поиска кладётся ОДНИМ файлом в корень сайта: страница из `en/`
 // берёт его через `../`, и второй копии нет.

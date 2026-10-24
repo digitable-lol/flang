@@ -1,0 +1,3 @@
+.text
+∀ x ∈ ℤ, ∀ y ∈ ℤ, x * y = y * x
+.end

@@ -3,8 +3,10 @@
 # The shell: statements and syllogisms
 
 The `flang` shell (`flang repl`) judges a claim as soon as it is entered. There
-are two ways to enter one: declare a statement in the language, or type an
-argument in Russian sentences with the `.syllogism` command. The decision and
+are three ways to enter one: declare a statement in the language, type an
+argument in Russian sentences with the `.syllogism` command, or paste any text
+with the `.text` command — the shell works out whether it is a program, a
+formula or a piece of reasoning. The decision and
 its limits are in
 [ADR-0148](../adr/0148-the-shell-judges-statements-and-syllogisms.md).
 
@@ -304,10 +306,116 @@ The judge and the morphology are looked up next to the binary, in the source
 tree (`../flang/…` from the `bootstrap` directory). When they are not there,
 the command says so and judges nothing.
 
+## The `.text` command
+
+`.text` (`.текст`) takes a text of any kind and decides by itself what it is:
+a flang program, a formula with `∀`/`∃` (LaTeX too), a piece of reasoning or a
+program with a category. It answers the way the
+[site playground](../site/playground.md) does: both use one rule for the kind,
+`flang/proof/probes/syllogism/sentences/text-kind.flang`.
+
+Paste the text after `.text`, as many lines as needed, blank lines included,
+and finish with a line `.end` (`.конец`). To read the text from a file, write
+`.text reasoning.txt`.
+
+- **Reasoning** goes to the same judge as `.syllogism`. The dictionary may be
+  left out: the morphology reads the missing words, as in the playground. The
+  answer lists the premises and the conclusion by number and gives the verdict,
+  a counterexample, the name of the formal fallacy and a link to its card.
+- **A formula** is translated to flang by the formula translator
+  (`flang/foreign/formula/run.fscript`), and `flang check --proof` checks the
+  translation. The translator is outside the trusted base and runs with
+  `--trust`: the kernel judges what it wrote.
+- **A program** and **a program with a category** are checked by
+  `flang check --proof`. The shell shows the verdicts on statements and laws.
+  Such a text does not enter the session; to declare it in the session, use
+  `.load`.
+
+A formula:
+
+```
+.text
+∀ x ∈ ℤ, ∀ y ∈ ℤ, x * y = y * x
+.end
+.текст
+∀ x ∈ ℝ, x + 0 = x
+.конец
+```
+
+```
+вид текста: формула — её переводит на flang переводчик формул (вне доверенной основы, запуск --trust), а судит ядро
+перевод на flang:
+модуль «Formula»
+
+примечание "ℤ читается как «целое»: отрезок [−(2⁵³−1), 2⁵³−1], а не всё ℤ; переполнение уводит в «число»"
+
+утверждение «формула»
+  для всех «x»: целое
+  для всех «y»: целое
+  утверждаем («x» умножить на «y») равен («y» умножить на «x»)
+ядро (flang check --proof):
+    утверждение «формула» — доказано сведением цели с телом функции: правило «тождество после переписки допущением», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+    утверждение «формула» строка 5
+  формула: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
+формула: доказано всё (код 0)
+вид текста: формула — её переводит на flang переводчик формул (вне доверенной основы, запуск --trust), а судит ядро
+формула не прочитана: ℝ в flang нет: «число» — double IEEE-754, законы поля на нём ложны (ADR-0036) (код 1)
+```
+
+A program with a false statement:
+
+```
+.text
+модуль «Ложное»
+
+утверждение «удвоение всегда больше»
+  для всех н: неотрицательное
+  утверждаем (н плюс н) больше н
+.end
+```
+
+```
+вид текста: программа на flang — судит «flang check --proof», как песочница; в сессию текст не попадает, объявить его — «.загрузить»
+ядро (flang check --proof):
+  FLANG_EXAMPLE: FLANG_PROPERTY: утверждение «удвоение всегда больше» опровергнуто на входе н = 0
+программа: опровергнуто или не прочитано — причина выше (код 1)
+```
+
+Reasoning without the `.syllogism` line — the shell recognised its kind by
+itself:
+
+```
+.текст
+Понятие: человек, люди.
+Свойство: смертен, смертны.
+Имя: Сократ.
+
+Все люди смертны. Сократ смертен. Следовательно, Сократ — человек.
+.конец
+```
+
+```
+вид текста: рассуждение — судит судья силлогизмов, как в песочнице
+1. посылка: Все люди смертны.
+2. посылка: Сократ смертен.
+3. заключение: Следовательно, Сократ — человек.
+НЕ СЛЕДУЕТ: предложение 3 «Следовательно, Сократ — человек.» не выведено из посылок 1, 2
+ядро: FLANG_PROOF_STEP, строка 16 проверенной программы — цель не выведена из допущений теоремы
+пример против, подсказка переводчика, ядром не проверена — «Сократ»: человек — нет, смертен — да
+не следует — это обращение следствия: «смертен» бывает и у того, кто не «человек»: из того, что «Сократ» — «смертен», не следует, что «Сократ» — «человек»; средний термин «смертен» ни в одной посылке не взят целиком
+карточка ошибки: https://courses.digitable.life/fallacies/#affirming-the-consequent
+граница: по форме вывод не следует; содержательные ошибки вида переход на личность, соломенное чучело, апелляция к авторитету формой не определяются: о них ядро не говорит ни в ту, ни в другую сторону
+силлогизм: не следует (код 1)
+```
+
+The judge, the formula translator and the rule for the kind are looked up next
+to the binary, as for `.syllogism`.
+
 ## Exit code of a session
 
 Under a pipe (`flang repl < session.txt`) the shell exits with 1 when an input
-was not taken or a syllogism does not follow, with 3 when a claim stayed
+was not taken, a syllogism does not follow or `.text` found a refutation or
+could not read the text, with 3 when a claim stayed
 unproved or a text got no verdict, and with 0 otherwise. At a terminal the
 code is always 0.
 
@@ -316,3 +424,6 @@ code is always 0.
 Every input with a claim is one run of `check --proof` on the whole session; on
 the sessions above it takes less than a second. `.syllogism` takes longer: the
 judge checks its own plan before it works, and one text takes about 8 seconds.
+`.text` on the loaded development machine (256 cores, 21 October 2026): a
+program takes 0.3 s, a formula 6.5 s and 0.5 GB of memory, reasoning 21 s and
+1.4 GB.

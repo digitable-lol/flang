@@ -616,6 +616,20 @@ the message catalog `flang/messages/catalog.tsv`; a dash means the catalog has n
 template for the code and the text is put together where it is raised. A code
 named on this page and not found in the sources fails `docs:check`.
 
+**The promise.** A `FLANG_*` code is part of the contract with whoever reads the
+compiler's output from outside: editors, CI and courses handle it by name. So a
+code does not appear or vanish silently. The table
+`flang/proof/tables/diagnostic-codes.tsv` keeps every code with the release it
+appeared in and a status: **устойчив** (stable) — present in a release and
+staying; **новый** (new) — already raised by the sources, no release with it yet;
+**снят** (removed) — gone, and the row says since which release. The guard
+`bootstrap/flang run-script diagnostic-codes:check` goes red when a stable code
+disappears from the sources, when the sources raise a code the table does not
+know, and when a removed code comes back: each of the three is a row in the
+table, not silence. That the guard itself can go red is shown by
+`diagnostic-codes:forgery`. The same kind of number and promise covers the proof
+record — [the record format](record-format.html).
+
 <!-- insert codes -->
 | Code | Where in the compiler | Message |
 | --- | --- | --- |

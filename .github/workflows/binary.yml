@@ -1889,6 +1889,43 @@ jobs:
       - name: Check prose codes
         run: bootstrap/flang run-script codes:check
 
+      # ── Дорога до 1.0, условия 4 и 5 (docs/road-to-1-0.md). Три сторожа, у
+      # каждого парный подлог: сначала порча обязана покраснеть, потом чистый суд.
+      #   typing-holes — ведомость известных дыр типизации: у каждой строки статус
+      #     и проба, пробы сходятся с двоичным (закрытие дыры роняет пробу вслух);
+      #   record-format — номер версии записи доказательства и два отпечатка формата
+      #     сошлись с ведомостью и журналом страницы;
+      #   diagnostic-codes — коды FLANG_* исходников сошлись с таблицей кодов.
+      # Двоичный уже собран шагами выше; цена трёх пар локально — 4 с.
+      # Подлоги зовутся ФАЙЛОМ и в условии `if` с `exit 1` в том же теле: так прибор
+      # проб порчи (scripts/guards/guards-without-forgery-probe.fscript) относит
+      # пробу к сторожу. План «Подлог» кончается кодом 0, когда все порчи
+      # покраснели, и кодом 1, когда хоть одна прошла, — отсюда `if !`.
+      - name: Typing holes guard goes red on forgery
+        run: |
+          if ! bootstrap/flang io scripts/guards/typing-holes-guard.fscript --plan Подлог --timeout 600000; then
+            echo "сторож дыр типизации промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Typing holes have probes, and the probes still catch
+        run: bootstrap/flang run-script typing-holes:check
+      - name: Record format guard goes red on forgery
+        run: |
+          if ! bootstrap/flang io scripts/guards/record-format-guard.fscript --plan Подлог --timeout 600000; then
+            echo "сторож формата записи промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: The proof record format is versioned and journaled
+        run: bootstrap/flang run-script record-format:check
+      - name: Diagnostic codes guard goes red on forgery
+        run: |
+          if ! bootstrap/flang io scripts/guards/diagnostic-codes-guard.fscript --plan Подлог --timeout 600000; then
+            echo "сторож кодов промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: Diagnostic codes neither appear nor vanish silently
+        run: bootstrap/flang run-script diagnostic-codes:check
+
       # ── Каталог сообщений (ADR-0102): у каждой строки шаблон на каждом языке,
       # подстановки совпадают по именам, опорный кусок русского шаблона есть в
       # исходниках; подлог — три порчи каталога обязаны покраснеть. Двоичный не

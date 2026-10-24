@@ -42,7 +42,7 @@ https://digitable-lol.github.io/flang/registry.list
 Разбор списка и выбор версии написаны и доказаны в
 [`flang/stdlib/registry.flang`](../../flang/stdlib/registry.flang). Формат файла
 целиком, для тех, кто его пишет или раздаёт, —
-[registry-ledger-format.md](../registry-ledger-format.md).
+[registry-list-format.md](../registry-list-format.md).
 
 ## Поставить пакет по имени
 
@@ -86,5 +86,5 @@ flang run-script package:install проба/proba.flang 'Множество ст
 
 Проверка заведена не впрок: отпечатки в примере однажды разошлись с
 файлами, и увидеть это было некому — реестр не звала ни одна работа сборки
-(задача 4909, сделана: сторож `scripts/guards/registry-resolution-guard.fscript`
+(задача 4909, сделана: проверка `scripts/guards/registry-resolution-guard.fscript`
 и работа CI `registry-resolution`).

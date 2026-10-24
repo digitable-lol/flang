@@ -63,7 +63,7 @@ $ echo $?
    программы (так работает `run-script`).
 
 4. **Относительный адрес пакета в списке считается от каталога самого списка**
-   — одно правило в сети и на диске (`docs/registry-ledger-format.md`). Поэтому
+   — одно правило в сети и на диске (`docs/registry-list-format.md`). Поэтому
    образец `scripts/registry-example/` раздаётся любым файловым сервером из
    своего каталога без переписывания адресов, и поэтому адреса образца стали
    голыми именами файлов (`logic-1.2.0.flang-package`), а не путями от `scripts/`.
@@ -87,7 +87,7 @@ $ echo $?
 8. **Коды отказа — свои, английскими словами:** `FLANG_INSTALL_USAGE`,
    `FLANG_INSTALL_LEDGER`, `FLANG_INSTALL_NEEDS`, `FLANG_INSTALL_CONFLICT`,
    `FLANG_INSTALL_FINGERPRINT`, `FLANG_INSTALL_UNPROVED`, `FLANG_INSTALL_BUILD`;
-   таблица — `docs/site/diagnostics.ru.md`, раздел «Установка пакетов». Прежние
+   таблица — `docs/site/packages.ru.md`, раздел «Коды отказов установщика». Прежние
    коды инструмента реестра (`FLANG_REESTR_*`) этим решением не переименованы —
    они в чужих сторожах и на странице реестра, и смена их — отдельная правка.
 

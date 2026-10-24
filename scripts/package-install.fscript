@@ -21,11 +21,11 @@
 
 примечание "АДРЕС СПИСКА: ключ --registry, иначе ключ «registry» в .flangrc дерева, иначе"
 примечание "постоянный адрес ниже. Относительный адрес пакета считается от каталога списка"
-примечание "(docs/registry-ledger-format.md)."
+примечание "(docs/registry-list-format.md)."
 
 примечание "КОДЫ ОТКАЗА: FLANG_INSTALL_USAGE, FLANG_INSTALL_LEDGER, FLANG_INSTALL_NEEDS,"
 примечание "FLANG_INSTALL_CONFLICT, FLANG_INSTALL_FINGERPRINT, FLANG_INSTALL_UNPROVED,"
-примечание "FLANG_INSTALL_BUILD — docs/site/diagnostics.ru.md, раздел «Установка пакетов»."
+примечание "FLANG_INSTALL_BUILD — docs/site/packages.ru.md, раздел «Коды отказов установщика»."
 
 объект «Ask»
   «program»: строка

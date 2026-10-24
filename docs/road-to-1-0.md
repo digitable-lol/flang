@@ -118,7 +118,7 @@
 
 **Что есть.** `flang package` и `flang lock`: замок с самими зависимостями, а не со
 ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)) —
-один текстовый файл, формат закреплён в [registry-ledger-format.md](registry-ledger-format.md),
+один текстовый файл, формат закреплён в [registry-list-format.md](registry-list-format.md),
 образец — `scripts/registry-example/`. Установка по имени из сети одной командой:
 `flang run-script package:install <программа.flang> <имя>[: <диапазон>]` берёт список по
 адресу (`https://`, `http://` или файл), выбирает наибольшую годную версию по нуждам проекта и

@@ -43,7 +43,7 @@ ranges: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в преде�
 list and choosing a version are written and proved in
 [`flang/stdlib/registry.flang`](../../flang/stdlib/registry.flang). The whole file
 format, for whoever writes or serves it, is
-[registry-ledger-format.md](../registry-ledger-format.md).
+[registry-list-format.md](../registry-list-format.md).
 
 ## Install a package by name
 
@@ -56,7 +56,7 @@ of the project and of the packages themselves, downloads the files, checks their
 `sha256` before writing, puts them next to the program and writes `flang.lock`.
 Details are on the [packages page](packages.html); the list address comes from
 `--registry` or from the `registry` key in `.flangrc`. Installing again into an
-empty directory gives the same lock byte for byte — the check
+empty directory gives exactly the same lock — the check
 `package-install:check` and the CI job of the same name hold that.
 
 ## The records as they stand

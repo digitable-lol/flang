@@ -105,10 +105,24 @@ Installing again into an empty directory gives the same `flang.lock` byte for
 byte — `flang run-script package-install:check` verifies this, and the CI job
 `package-install` does the same on a clean image. Ranges are written in words,
 not symbols: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. The refusal
-codes are in the [diagnostics reference](diagnostics.html#installing-packages).
+codes are in the table below.
 
 There is no `flang install` command of the binary yet: the installer is a flang
 program (`scripts/package-install.fscript`) run from the flang tree.
+
+### Refusal codes of the installer
+
+The exit code is 1 for all of them; the code stands in the answer with the reason.
+
+| Code | What it means | What to do |
+|---|---|---|
+| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang run-script package:install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
+| `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
+| `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
+| `FLANG_INSTALL_FINGERPRINT` | the `sha256` of the received body differs from the registry record; nothing was written to disk | a substituted or damaged package: do not install it, tell the keeper of the list |
+| `FLANG_INSTALL_UNPROVED` | the package carries a `закон` (law) or a claim "declared, not proved" and would widen the trusted base | read the named lines; if you agree, repeat with `--accept-unproven` |
+| `FLANG_INSTALL_BUILD` | after installing, `flang check` or `flang lock` over the program answered non-zero | read their answer in the message; usually the program lacks the line `использует «Имя» из "file.flang-package"` |
 
 ## Make a package
 

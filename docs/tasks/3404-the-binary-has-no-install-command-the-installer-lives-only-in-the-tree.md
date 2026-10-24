@@ -48,7 +48,7 @@ flang run-script: файла «.flangrc» нет ни в рабочем ката
 [--accept-unproven]` — та же дорога, что у плана: нужды в `flang.needs`, список
 реестра по адресу, выбор версии, сверка `sha256` до записи, файлы рядом с
 программой, `flang check`, `flang lock`. Коды отказа те же `FLANG_INSTALL_*`
-(`docs/site/diagnostics.ru.md`, «Установка пакетов»).
+(`docs/site/packages.ru.md`, «Коды отказов установщика»).
 
 ## Обходной путь
 

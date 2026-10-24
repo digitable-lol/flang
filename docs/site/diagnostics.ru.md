@@ -654,6 +654,7 @@ $ echo $?
 | `FLANG_EXAMPLE` | `compiler.flang` | пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |
 | `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
@@ -693,6 +694,8 @@ $ echo $?
 | `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
 | `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
 | `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
+| `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |

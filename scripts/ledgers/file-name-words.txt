@@ -17,6 +17,7 @@ accumulating
 accumulator
 across
 action
+actionlint
 actions
 added
 addend

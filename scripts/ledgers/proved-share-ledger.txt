@@ -1344,7 +1344,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/declared-properties.flang
-05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
+47c06e87986fe2f910ce3eebc2f58993|191|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
 d328a6015287755e0bf7082b88afdd29|460|291|8|107|0|flang/self/emit-c.flang

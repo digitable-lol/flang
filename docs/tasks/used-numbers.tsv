@@ -430,3 +430,4 @@ number	state	title
 8161	done	Messages live in the binary so a new language costs a reprint
 1412	done	Ring rules only for the exact integer
 6480	done	Broken links in docs are repaired by instrument
+7685	done	The print cost is broken down by stage

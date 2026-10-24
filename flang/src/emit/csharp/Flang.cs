@@ -686,7 +686,7 @@ public static class Flang
             return ExactValue(ExactCanon(left) * ExactCanon(right));
         }
         Arithmetic("mul", left, right);
-        return Value.Number(left.Num * right.Num);
+        return Value.Number(UnsignedZero(left.Num * right.Num));
     }
 
     public static Value Div(Ctx ctx, Value left, Value right)
@@ -704,7 +704,7 @@ public static class Flang
             return FractionValue(l[0] * r[1], l[1] * r[0]);
         }
         Arithmetic("div", left, right);
-        return Value.Number(left.Num / right.Num);
+        return Value.Number(UnsignedZero(left.Num / right.Num));
     }
 
     public static Value Mod(Ctx ctx, Value left, Value right)
@@ -722,7 +722,7 @@ public static class Flang
             return ExactValue(a % b);
         }
         Arithmetic("mod", left, right);
-        return Value.Number(left.Num % right.Num);
+        return Value.Number(UnsignedZero(left.Num % right.Num));
     }
 
     public static Value BIntegerPart(Ctx ctx, Value value)
@@ -1647,7 +1647,13 @@ public static class Flang
     {
         double a = ExpectNumber("остаток от", left, "делимое");
         double b = ExpectNumber("остаток от", right, "делитель");
-        return Value.Number(a % b);
+        return Value.Number(UnsignedZero(a % b));
+    }
+
+    /// <summary>Нулевой итог произведения, частного и остатка — +0, а не -0, как у вычислителя flang.</summary>
+    internal static double UnsignedZero(double x)
+    {
+        return x == 0.0 ? 0.0 : x;
     }
 
     /// <summary>«процентов от»: (процент / 100) * значение, порядок ядра.</summary>

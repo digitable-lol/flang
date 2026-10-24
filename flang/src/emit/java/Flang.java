@@ -647,7 +647,7 @@ public final class Flang {
       return exactValue(exactCanon(left).multiply(exactCanon(right)));
     }
     arithmetic("mul", left, right);
-    return Value.number(left.num * right.num);
+    return Value.number(unsignedZero(left.num * right.num));
   }
 
   public static Value div(Ctx ctx, Value left, Value right) {
@@ -662,7 +662,7 @@ public final class Flang {
       return fractionValue(l[0].multiply(r[1]), l[1].multiply(r[0]));
     }
     arithmetic("div", left, right);
-    return Value.number(left.num / right.num);
+    return Value.number(unsignedZero(left.num / right.num));
   }
 
   public static Value mod(Ctx ctx, Value left, Value right) {
@@ -677,7 +677,7 @@ public final class Flang {
       return exactValue(a.mod(b));
     }
     arithmetic("mod", left, right);
-    return Value.number(left.num % right.num);
+    return Value.number(unsignedZero(left.num % right.num));
   }
 
   public static Value bIntegerPart(Ctx ctx, Value value) {
@@ -1468,7 +1468,12 @@ public final class Flang {
   public static Value bRemainder(Ctx ctx, Value left, Value right) {
     double a = expectNumber("остаток от", left, "делимое");
     double b = expectNumber("остаток от", right, "делитель");
-    return Value.number(a % b);
+    return Value.number(unsignedZero(a % b));
+  }
+
+  /** Нулевой итог произведения, частного и остатка — +0, а не -0, как у вычислителя flang. */
+  static double unsignedZero(double x) {
+    return x == 0.0 ? 0.0 : x;
   }
 
   /** «процентов от»: (процент / 100) * значение, порядок ядра. */

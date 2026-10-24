@@ -84,7 +84,7 @@ $ flang run чётное.flang --function Удвоить --args '{"н": 21}' 2>/
 
 ```
 $ flang emit привет.flang --target c --out out-c 2>/dev/null
-$ grep -A 4 '^fl_status privet_udvoit' out-c/privet.c
+$ grep -A 4 '^fl_status privet_udvoit' out-c/program.c
 fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *error) {
   if (n.tag != FL_NUMBER || n.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
   *result = fl_number(n.as.number + n.as.number);

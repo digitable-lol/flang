@@ -24019,11 +24019,15 @@ static char *mcp_text_of(fl_value node, const char *key) {
   return repl_say("");
 }
 
-/** Входящее сообщение → запись «Сообщение MCP», как её ждёт `self/mcp.flang`. */
+/**
+ * Входящее сообщение → запись «Сообщение MCP», как её ждёт `self/mcp.flang`.
+ * «версия службы» — та же FLANG_VERSION, что печатает `flang --version`: своего
+ * числа у службы нет, и отстать от выпуска ей нечем.
+ */
 static fl_value mcp_message(fl_value json) {
-  static const char *const names[7] = {"метод",   "есть номер", "номер текстом", "версия клиента",
-                                       "средство", "исходник",   "обещание"};
-  fl_value values[7];
+  static const char *const names[8] = {"метод",    "есть номер", "номер текстом", "версия клиента",
+                                       "средство", "исходник",   "обещание",      "версия службы"};
+  fl_value values[8];
   fl_value params = fl_nothing();
   fl_value arguments = fl_nothing();
   bool has_id = false;
@@ -24054,13 +24058,14 @@ static fl_value mcp_message(fl_value json) {
   values[4] = repl_value_say(tool);
   values[5] = repl_value_say(source);
   values[6] = repl_value_say(claim);
+  values[7] = repl_value_say(FLANG_VERSION);
   free(method);
   free(id);
   free(version);
   free(tool);
   free(source);
   free(claim);
-  return repl_value_record(names, values, 7);
+  return repl_value_record(names, values, 8);
 }
 
 /*

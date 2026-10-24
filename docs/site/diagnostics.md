@@ -774,7 +774,7 @@ named on this page and not found in the sources fails `docs:check`.
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
-| `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
+| `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |

@@ -1335,7 +1335,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|42|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|44|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
@@ -1686,6 +1686,14 @@ b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/probes/strict/programs/pr
 ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/honest.flang
 358a850cf63c9be805e6523f1f3c4bd1|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no.flang
 6ed9f3b3df26c560a9a63dcc2d042639|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no-with-import.flang
+// Шесть программ опровержения на краях (заявка 409, 21 октября 2026): у трёх
+// постусловие ложно на краю, и после печати 9b пример ломается — приговора нет, «×».
+e8389d3a5bce1247fa5f32363ff20f64|1|1|0|0|0|flang/proof/probes/strict/programs/true-bound-on-the-same-edges.flang
+53d4c858ebd9d78539d283eb14d352e3|1|0|1|0|0|flang/proof/probes/strict/programs/false-bound-away-from-the-edges.flang
+0119d90929bd696417103b8afad562a6|1|0|1|0|1|flang/proof/probes/strict/programs/bound-held-under-requires.flang
+5638b397691727d5a9aa86b14946fdad|1|×|×|×|0|flang/proof/probes/strict/programs/false-bound-refuted-at-the-edge.flang
+4657153e8b0941bab8a9bee8992cf250|1|×|×|×|1|flang/proof/probes/strict/programs/bound-refuted-at-the-requires-edge.flang
+4e12bccd37880ea160fe7ab2a0f704d2|3|×|×|×|4|flang/proof/probes/strict/programs/int-midpoint-overflows.flang
 8941e87345e668233fabaf1ffc7cffbe|1|1|0|0|0|flang/proof/probes/strict/programs/imported-module.flang
 655219cf6d2a957f59ec25fe64750d3b|1|0|0|1|0|flang/proof/probes/strict/programs/refuted-statement.flang
 f84ca35166f09e0b6aa713f960ec37fa|2|2|0|0|0|flang/proof/probes/strict/programs/statement-holds-on-the-edge.flang

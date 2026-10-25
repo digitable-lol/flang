@@ -15,12 +15,13 @@
 
 ## Шаги воспроизведения
 
-1. Работы `sverka` и `dve-pechati` в `.github/workflows/reprint.yml` включаются
-   переменной репозитория и идут только на своём раннере:
+1. Работы `reprint-check` и `two-prints` в `.github/workflows/reprint.yml` идут только на
+   своём раннере; без переменной репозитория работа `big-memory-runner` падает и дорогие
+   работы в очередь не встают:
 
 ```
-grep -c "vars.BOLSHAYA_PAMYAT == 'da'" .github/workflows/reprint.yml
-grep -c 'self-hosted, bolshaya-pamyat' .github/workflows/reprint.yml
+grep -c 'vars.BIG_MEMORY_RUNNER' .github/workflows/reprint.yml
+grep -c 'self-hosted, big-memory' .github/workflows/reprint.yml
 ```
 
 2. Спросить у GitHub, есть ли переменная и раннер:
@@ -48,15 +49,16 @@ $ bootstrap/flang io scripts/seed/reprint-freshness.fscript --на-веру
 2026-09-08, входы печати правились 2026-10-11                           код 1
 ```
 
-Прогон 11 октября 2026, flang 0.7.25, дерево 1149c78f7; оба `grep` по
-`.github/workflows/reprint.yml` отвечают 2 и 2. Ответы `gh api` — с прошлого
-замера: без сети здесь не повторены.
+Прогон 24 октября 2026, flang 0.7.30, дерево ce6a2cb42; `grep` по
+`.github/workflows/reprint.yml` отвечают 3 и 7. Ответы `gh api` сняты заново
+24 октября 2026: раннеров 0, переменных 0.
 
 Саму сверку (`sh scripts/bootstrap-reprint.sh --check`) здесь не запускают:
 она идёт сутки.
 
-Переменной нет, раннера нет — обе работы (`sverka`, `dve-pechati`)
-пропускаются при каждом запуске по расписанию. Сверка печатает компилятор заново
+Переменной нет, раннера нет — обе работы (`reprint-check`, `two-prints`) не идут:
+с 24 октября 2026 это не серое «Skipped», а красная работа `big-memory-runner` на
+каждом push в `dev` с правкой входов печати и по расписанию. Сверка печатает компилятор заново
 из сегодняшних исходников и сравнивает с каталогом `bootstrap` байт в байт; до
 конца она доходила только при ручном запуске.
 
@@ -82,9 +84,10 @@ $ gh api repos/digitable-lol/flang --jq .permissions
 {"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}
 ```
 
-Завести переменную `BOLSHAYA_PAMYAT` правами можно. Заводить её **нельзя, пока
-нет раннера**: работа, поставленная в очередь к несуществующему раннеру, висит до
-отмены и выглядит идущей.
+Завести переменную `BIG_MEMORY_RUNNER` правами можно. Заводить её **нельзя, пока
+нет раннера**: работа встанет в очередь, и через 30 минут её снимет работа
+`runner-watch` с красным сообщением — честнее, чем висеть сутки, но это всё равно
+прогон впустую.
 
 ## Что должно быть
 
@@ -105,10 +108,10 @@ env -u FLANG_MODULE_DIR LC_ALL=C.UTF-8 FLANG_TMP=<каталог вне дере
 ## Когда задача сделана
 
 - `gh api repos/digitable-lol/flang/actions/runners` показывает раннер с
-  меткой `bolshaya-pamyat`, переменная `BOLSHAYA_PAMYAT` равна `da`;
+  меткой `big-memory`, переменная `BIG_MEMORY_RUNNER` равна `da`;
 - работа `reprint-check` прошла по расписанию до конца с кодом 0, и в
   `docs/reprint-ledger.tsv` появилась строка «сверка дошла» этого прогона;
-- работа `svezhest` того же файла краснеет, если входы печати правили позже
+- работа `freshness` того же файла краснеет, если входы печати правили позже
   последней дошедшей сверки.
 
 ## Где живёт правка

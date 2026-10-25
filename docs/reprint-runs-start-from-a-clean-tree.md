@@ -108,7 +108,7 @@ sh scripts/bootstrap-reprint.sh --bystro    # обязан ответить ко
 ```
 
 Код 1 значит, что ствол обогнал заход и печатать надо ещё раз. Тот же вопрос
-стоит в `.github/workflows/reprint.yml` (работа `sverka`, шаг «Check seed
+стоит в `.github/workflows/reprint.yml` (работа `reprint-check`, шаг «Check seed
 against the trunk») **до** печати: он отвечает за секунды, а печать идёт часами.
 
 ## Чем эта страница НЕ является

@@ -1,0 +1,560 @@
+модуль «Print stages»
+  использует «Lists» только «Соединить списки»
+  использует «Rules» из "../rules.fscript"
+  использует «Inquiry» из "../inquiry.fscript"
+  использует «Reading» из "../reading.fscript"
+
+объект «Stage»
+  «name»: строка
+  «marks»: число
+  «steps»: число
+  «peak»: число
+
+объект «Charge»
+  «name»: строка
+  «charge»: число
+
+объект «Grouping»
+  «at»: число
+  «text»: строка
+
+тотальная функция «Usage»
+  возвращает строка
+  соединить ["звать: bootstrap/flang io scripts/seed/print-stages.fscript --plan Check",
+    " -- <журнал печати> [<файл тиков FLANG_TICKS_OUT>]"] по ""
+
+тотальная функция «Seconds per mark»
+  возвращает число
+  30
+
+тотальная функция «Top charges»
+  возвращает число
+  12
+
+тотальная функция «Absolute»
+  принимает path: строка, answers: список «Answer»
+  возвращает строка
+  пример «A path from the root stays as it is»
+    дано path равно "/srv/print.log"
+    дано answers равно пустой список
+    ожидается "/srv/print.log"
+  если path начинается с "/"
+    то path
+    иначе соединить [(«Setting of» от "caller" и "." и answers), "/", path] по ""
+
+тотальная функция «Journal path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть named равно («Given of» от "arguments" и answers)
+  если (пусто named)
+    то ""
+    иначе «Absolute» от (элемент 1 в named) и answers
+
+тотальная функция «Ticks path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть named равно («Given of» от "arguments" и answers)
+  если (длина named) равен 2
+    то «Absolute» от (элемент 2 в named) и answers
+    иначе ""
+
+тотальная функция «Wrong call»
+  принимает answers: список «Answer»
+  возвращает признак
+  пусть named равно («Given of» от "arguments" и answers)
+  (пусто named) или ((длина named) больше 2)
+
+тотальная функция «Is a mark»
+  принимает line: строка
+  возвращает признак
+  пример «A progress mark names its stage»
+    дано line равно "шагов 3 619 227 108 из 8 000 000 000 000 (0 %), идёт «Связать исходники», 2,0 ГиБ"
+    ожидается да
+  пример «A compiler line is not a mark»
+    дано line равно "компилятор: flang/self/bootstrap/compiler.flang"
+    ожидается нет
+  (line начинается с "шагов ") и притом (line содержит ", идёт «")
+
+тотальная функция «Marks»
+  принимает text: строка
+  возвращает список строки
+  отфильтровать (разделить text по "\n") где line → «Is a mark» от line
+
+тотальная функция «Stage of»
+  принимает line: строка
+  возвращает строка
+  пример «The stage stands between the quotes»
+    дано line равно "шагов 3 619 227 108 из 8 000 000 000 000 (0 %), идёт «Связать исходники», 2,0 ГиБ"
+    ожидается "Связать исходники"
+  пример «A line without a stage names nothing»
+    дано line равно "компилятор: flang/self/bootstrap/compiler.flang"
+    ожидается ""
+  разбор (разделить line по ", идёт «")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «First of» от (разделить (соединить хвост по ", идёт «") по "»")
+
+тотальная функция «First of»
+  принимает parts: список строки
+  возвращает строка
+  пример «The first of two»
+    дано parts равно ["a", "b"]
+    ожидается "a"
+  пример «Nothing has no first»
+    дано parts равно пустой список
+    ожидается ""
+  разбор parts
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Steps of»
+  принимает line: строка
+  возвращает число
+  пример «Steps are read with their thousands groups»
+    дано line равно "шагов 3 619 227 108 из 8 000 000 000 000 (0 %), идёт «Связать исходники», 2,0 ГиБ"
+    ожидается 3619227108
+  пример «A print without a step limit counts no steps»
+    дано line равно "шагов не считают (предел снят), идёт «Связать исходники», 2,0 ГиБ"
+    ожидается 0
+  «Count» от («Without blanks» от («First of» от (разделить («After» от "шагов " и line) по " из ")))
+
+тотальная функция «Is a decimal»
+  принимает text: строка
+  возвращает признак
+  пример «Digits with one point»
+    дано text равно "67.2"
+    ожидается да
+  пример «A comma is not accepted»
+    дано text равно "67,2"
+    ожидается нет
+  пример «Nothing is not a number»
+    дано text равно ""
+    ожидается нет
+  пусть strange равно (отфильтровать (разложить text на символы) где sign → не ("0123456789." содержит sign))
+  (не (пусто text)) и притом ((длина strange) равен 0)
+
+тотальная функция «Decimal»
+  принимает text: строка
+  возвращает число
+  пример «A comma is read as the decimal point»
+    дано text равно "67,2"
+    ожидается 67.2
+  пример «Thousands groups are joined»
+    дано text равно "1 006"
+    ожидается 1006
+  пример «Words are zero»
+    дано text равно "нет"
+    ожидается 0
+  пусть plain равно (соединить (разделить («Without blanks» от text) по ",") по ".")
+  если «Is a decimal» от plain то (к числу plain) иначе 0
+
+тотальная функция «Memory of»
+  принимает line: строка
+  возвращает число
+  пример «Gibibytes are kept as mebibytes»
+    дано line равно "шагов 3 619 227 108 из 8 000 000 000 000 (0 %), идёт «Связать исходники», 2,0 ГиБ"
+    ожидается 2048
+  пример «Mebibytes are kept as they are»
+    дано line равно "шагов 1 316 289 329 142 из 8 000 000 000 000 (16 %), идёт «Проверить доказательства», 115 МиБ"
+    ожидается 115
+  пример «A mark without memory has none»
+    дано line равно "шагов 3 619 227 108 из 8 000 000 000 000 (0 %), идёт «Связать исходники»"
+    ожидается 0
+  пусть ending равно («Last of» от (разделить line по "», "))
+  пусть words равно («Words» от ending)
+  пусть unit равно («Last of» от words)
+  пусть amount равно («Decimal» от (соединить («Without last» от words) по ""))
+  «Chosen» от [(«When» от (unit равен "ГиБ") и (amount умножить на 1024)),
+    («When» от (unit равен "МиБ") и amount)] и 0
+
+тотальная функция «Last of»
+  принимает values: список строки
+  возвращает строка
+  пример «The last of three»
+    дано values равно ["one", "two", "three"]
+    ожидается "three"
+  пример «Nothing has no last»
+    дано values равно пустой список
+    ожидается ""
+  свёртка values начиная с "" как last и value → value
+
+тотальная функция «Without last»
+  принимает values: список строки
+  возвращает список строки
+  пример «The last word is dropped»
+    дано values равно ["1", "006", "МиБ"]
+    ожидается ["1", "006"]
+  пример «Nothing stays nothing»
+    дано values равно пустой список
+    ожидается пустой список
+  если (длина values) меньше 2
+    то пустой список
+    иначе отфильтровать values где value → не (value равен («Last of» от values))
+
+тотальная функция «Larger»
+  принимает one: число, two: число
+  возвращает число
+  пример «The larger of two»
+    дано one равно 3
+    дано two равно 5
+    ожидается 5
+  если one больше two то one иначе two
+
+тотальная функция «Known stage»
+  принимает stages: список «Stage», name: строка
+  возвращает признак
+  (длина (отфильтровать stages где stage → (stage.«name») равен name)) больше 0
+
+тотальная функция «Grown»
+  принимает stage: «Stage», name: строка, steps: число, memory: число
+  возвращает «Stage»
+  пример «The named stage takes one more mark, the last steps and the larger peak»
+    дано stage равно (запись «Stage» с «name» равным "Связать исходники" и «marks» равным 2
+      и «steps» равным 10 и «peak» равным 2048)
+    дано name равно "Связать исходники"
+    дано steps равно 20
+    дано memory равно 1024
+    ожидается (запись «Stage» с «name» равным "Связать исходники" и «marks» равным 3
+      и «steps» равным 20 и «peak» равным 2048)
+  пример «Another stage is left as it is»
+    дано stage равно (запись «Stage» с «name» равным "Связать исходники" и «marks» равным 2
+      и «steps» равным 10 и «peak» равным 2048)
+    дано name равно "Проверить типы"
+    дано steps равно 20
+    дано memory равно 1024
+    ожидается (запись «Stage» с «name» равным "Связать исходники" и «marks» равным 2
+      и «steps» равным 10 и «peak» равным 2048)
+  если (stage.«name») равен name
+    то (запись «Stage» с «name» равным name и «marks» равным ((stage.«marks») плюс 1)
+      и «steps» равным steps и «peak» равным («Larger» от (stage.«peak») и memory))
+    иначе stage
+
+тотальная функция «With mark»
+  принимает stages: список «Stage», line: строка
+  возвращает список «Stage»
+  пусть name равно («Stage of» от line)
+  пусть steps равно («Steps of» от line)
+  пусть memory равно («Memory of» от line)
+  если «Known stage» от stages и name
+    то отобразить stages как stage → «Grown» от stage и name и steps и memory
+    иначе добавить (запись «Stage» с «name» равным name и «marks» равным 1
+      и «steps» равным steps и «peak» равным memory) к stages
+
+тотальная функция «Stages»
+  принимает lines: список строки
+  возвращает список «Stage»
+  пример «Two marks of one stage and one of the next»
+    дано lines равно ["шагов 1 000 из 8 000 (0 %), идёт «Связать исходники», 2,0 ГиБ",
+      "шагов 2 000 из 8 000 (0 %), идёт «Связать исходники», 1,0 ГиБ",
+      "шагов 300 из 8 000 (0 %), идёт «Проверить типы», 115 МиБ"]
+    ожидается [(запись «Stage» с «name» равным "Связать исходники" и «marks» равным 2
+        и «steps» равным 2000 и «peak» равным 2048),
+      (запись «Stage» с «name» равным "Проверить типы" и «marks» равным 1 и «steps» равным 300 и «peak» равным 115)]
+  свёртка lines начиная с (пустой список) как stages и line → «With mark» от stages и line
+
+тотальная функция «Whole»
+  принимает amount: число, divisor: число
+  возвращает число
+  пример «A hundred by three»
+    дано amount равно 100
+    дано divisor равно 3
+    ожидается 33
+  пример «Nothing divides by zero»
+    дано amount равно 100
+    дано divisor равно 0
+    ожидается 0
+  если divisor равен 0
+    то 0
+    иначе (amount минус (amount остаток от divisor)) делить на divisor
+
+тотальная функция «Grouped step»
+  принимает count: число, step: «Grouping», sign: строка
+  возвращает «Grouping»
+  пример «A space goes leading a group of three counted from the right»
+    дано count равно 4
+    дано step равно запись «Grouping» с «at» равным 1 и «text» равным "1"
+    дано sign равно "2"
+    ожидается запись «Grouping» с «at» равным 2 и «text» равным "1 2"
+  пример «The first digit takes no space»
+    дано count равно 4
+    дано step равно запись «Grouping» с «at» равным 0 и «text» равным ""
+    дано sign равно "1"
+    ожидается запись «Grouping» с «at» равным 1 и «text» равным "1"
+  пусть inside равно ((step.«at») больше 0)
+  пусть aligned равно (((count минус (step.«at»)) остаток от 3) равен 0)
+  пусть space равно (если inside и притом aligned то " " иначе "")
+  запись «Grouping» с «at» равным ((step.«at») плюс 1) и «text» равным (соединить [(step.«text»), space, sign] по "")
+
+тотальная функция «Grouped digits»
+  принимает digits: строка
+  возвращает строка
+  пример «Three groups»
+    дано digits равно "3619227108"
+    ожидается "3 619 227 108"
+  пример «A short number is left alone»
+    дано digits равно "108"
+    ожидается "108"
+  пусть start равно (запись «Grouping» с «at» равным 0 и «text» равным "")
+  пусть signs равно (разложить digits на символы)
+  (свёртка signs начиная с start как step и sign → «Grouped step» от (длина digits) и step и sign).«text»
+
+тотальная функция «Grouped»
+  принимает amount: число
+  возвращает строка
+  пример «A count is printed in groups of three»
+    дано amount равно 2281355844107
+    ожидается "2 281 355 844 107"
+  «Grouped digits» от (к строке («Whole» от amount и 1))
+
+тотальная функция «Tenths»
+  принимает amount: число, divisor: число
+  возвращает строка
+  пример «Mebibytes become gibibytes with one decimal»
+    дано amount равно 68812
+    дано divisor равно 1024
+    ожидается "67,2"
+  пример «A whole number keeps its zero»
+    дано amount равно 2048
+    дано divisor равно 1024
+    ожидается "2,0"
+  пример «Nothing by zero is nothing»
+    дано amount равно 5
+    дано divisor равно 0
+    ожидается "0,0"
+  пусть tenths равно («Whole» от ((amount умножить на 20) плюс divisor) и (divisor умножить на 2))
+  соединить [(к строке («Whole» от tenths и 10)), ",", (к строке (tenths остаток от 10))] по ""
+
+тотальная функция «Hundredths»
+  принимает amount: число, divisor: число
+  возвращает строка
+  пример «A share with two decimals»
+    дано amount равно 877598757447
+    дано divisor равно 2148028907502
+    ожидается "40,85"
+  пример «A small share keeps its leading zero»
+    дано amount равно 1
+    дано divisor равно 1000
+    ожидается "0,10"
+  пусть hundredths равно («Whole» от (amount умножить на 10000) и divisor)
+  пусть remainder равно (hundredths остаток от 100)
+  соединить [(к строке («Whole» от hundredths и 100)), ",",
+    (если remainder меньше 10 то "0" иначе ""), (к строке remainder)] по ""
+
+тотальная функция «Marks sum»
+  принимает stages: список «Stage»
+  возвращает число
+  свёртка stages начиная с 0 как sum и stage → sum плюс (stage.«marks»)
+
+тотальная функция «Peak sum»
+  принимает stages: список «Stage»
+  возвращает число
+  свёртка stages начиная с 0 как peak и stage → «Larger» от peak и (stage.«peak»)
+
+тотальная функция «Stage row»
+  принимает stage: «Stage», sum_all: число
+  возвращает строка
+  пример «One row of the table»
+    дано stage равно (запись «Stage» с «name» равным "Связать исходники" и «marks» равным 10
+      и «steps» равным 29265775403 и «peak» равным 10547)
+    дано sum_all равно 1000
+    ожидается "| Связать исходники | 10 | 300 | 1 % | 29 265 775 403 | 10,3 |"
+  пусть seconds равно (к строке ((stage.«marks») умножить на («Seconds per mark»)))
+  пусть share равно (к строке («Whole» от ((stage.«marks») умножить на 100) и sum_all))
+  соединить ["| ", (stage.«name»), " | ", (к строке (stage.«marks»)), " | ", seconds, " | ", share, " % | ",
+    («Grouped» от (stage.«steps»)), " | ", («Tenths» от (stage.«peak») и 1024), " |"] по ""
+
+тотальная функция «Stage table»
+  принимает stages: список «Stage»
+  возвращает список строки
+  пусть sum_all равно («Marks sum» от stages)
+  пусть header равно "| стадия | отсчётов | секунд, не меньше | доля | шагов на последнем отсчёте | пик, ГиБ |"
+  пусть divider равно "|---|---:|---:|---:|---:|---:|"
+  пусть rows равно (отобразить stages как stage → «Stage row» от stage и sum_all)
+  пусть seconds равно (к строке (sum_all умножить на («Seconds per mark»)))
+  пусть whole равно (соединить ["| всего | ", (к строке sum_all), " | ", seconds, " | 100 % | — | ",
+    («Tenths» от («Peak sum» от stages) и 1024), " |"] по "")
+  «Соединить списки» от (приписать header к (приписать divider к rows)) и [whole]
+
+тотальная функция «Stage notes»
+  принимает stages: список «Stage»
+  возвращает список строки
+  пусть sum_all равно («Marks sum» от stages)
+  пусть minutes равно (к строке («Whole» от (sum_all умножить на («Seconds per mark»)) и 60))
+  [(соединить ["Отсчёт печати встаёт раз в ", (к строке («Seconds per mark»)),
+      " с работы стадии (flang_repl.c, REPL_HOD_SECONDS), поэтому секунды стадии — нижняя граница:",
+      " стадия короче полуминуты отсчёта не оставляет и в таблицу не попадает."] по ""),
+    (соединить ["Счётчик шагов у каждой стадии свой; столбец «шагов» — последний отсчёт стадии,",
+      " то есть тоже снизу. Всего отсчётов ", (к строке sum_all), ", то есть не меньше ", minutes,
+      " мин работы стадий; сборка семени, пробы и копирование идут вне отсчётов."] по "")]
+
+тотальная функция «Is a charge»
+  принимает line: строка
+  возвращает признак
+  пример «A charge row»
+    дано line равно "заряд\t877598757447\tПервое определение по имени"
+    ожидается да
+  пример «A loop row is not a charge»
+    дано line равно "виток\t116247483425\tПервое определение по имени"
+    ожидается нет
+  line начинается с "заряд\t"
+
+тотальная функция «Charge of»
+  принимает line: строка
+  возвращает «Charge»
+  пример «The count and the name are read from the row»
+    дано line равно "заряд\t877598757447\tПервое определение по имени"
+    ожидается запись «Charge» с «name» равным "Первое определение по имени" и «charge» равным 877598757447
+  пусть parts равно (разделить line по "\t")
+  если (длина parts) меньше 3
+    то запись «Charge» с «name» равным "" и «charge» равным 0
+    иначе запись «Charge» с «name» равным (элемент 3 в parts) и «charge» равным («Count» от (элемент 2 в parts))
+
+тотальная функция «Placed»
+  принимает top: список «Charge», charge: «Charge»
+  возвращает список «Charge»
+  пример «A larger charge goes leading a smaller one»
+    дано top равно [запись «Charge» с «name» равным "a" и «charge» равным 5]
+    дано charge равно запись «Charge» с «name» равным "b" и «charge» равным 7
+    ожидается [запись «Charge» с «name» равным "b" и «charge» равным 7,
+      запись «Charge» с «name» равным "a" и «charge» равным 5]
+  пример «A smaller charge goes trailing»
+    дано top равно [запись «Charge» с «name» равным "a" и «charge» равным 5]
+    дано charge равно запись «Charge» с «name» равным "b" и «charge» равным 3
+    ожидается [запись «Charge» с «name» равным "a" и «charge» равным 5,
+      запись «Charge» с «name» равным "b" и «charge» равным 3]
+  пусть leading равно (отфильтровать top где kept → (kept.«charge») не меньше (charge.«charge»))
+  пусть trailing равно (отфильтровать top где kept → (kept.«charge») меньше (charge.«charge»))
+  «Соединить списки» от («Соединить списки» от leading и [charge]) и trailing
+
+тотальная функция «Above»
+  принимает top: список «Charge», kept: «Charge»
+  возвращает число
+  длина (отфильтровать top где other → (other.«charge») больше (kept.«charge»))
+
+тотальная функция «Trimmed»
+  принимает top: список «Charge»
+  возвращает список «Charge»
+  если (длина top) не больше («Top charges»)
+    то top
+    иначе отфильтровать top где kept → («Above» от top и kept) меньше («Top charges»)
+
+тотальная функция «Top of»
+  принимает lines: список строки
+  возвращает список «Charge»
+  пусть rows равно (отфильтровать lines где line → «Is a charge» от line)
+  свёртка rows начиная с (пустой список) как top и line → «Trimmed» от («Placed» от top и («Charge of» от line))
+
+тотальная функция «Charge sum»
+  принимает lines: список строки
+  возвращает число
+  «Count» от («Value after» от "заряда всего\t" и (соединить lines по "\n"))
+
+тотальная функция «Charge row»
+  принимает charge: «Charge», sum_all: число
+  возвращает строка
+  соединить ["| ", («Hundredths» от (charge.«charge») и sum_all), " % | ", («Grouped» от (charge.«charge»)),
+    " | ", (charge.«name»), " |"] по ""
+
+тотальная функция «Charge table»
+  принимает text: строка
+  возвращает список строки
+  пусть lines равно (разделить text по "\n")
+  пусть sum_all равно («Charge sum» от lines)
+  пусть steps равно («Grouped» от («Count» от («Value after» от "шагов всего\t" и text)))
+  пусть loops равно («Grouped» от («Count» от («Value after» от "витков всего\t" и text)))
+  пусть lost равно («Value after» от "не поместилось\t" и text)
+  «Соединить списки» от [
+    "",
+    (соединить ["Ведомость FLANG_TICKS_OUT: шагов всего ", steps, ", витков всего ", loops,
+      ", заряда всего ", («Grouped» от sum_all), ", не поместилось ", lost,
+      ". Заряд считается на всю печать, по стадиям он не делится."] по ""),
+    "",
+    "| доля заряда | заряд | функция |",
+    "|---:|---:|---|"] и (отобразить («Top of» от lines) как charge → «Charge row» от charge и sum_all)
+
+тотальная функция «Report»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть journal равно («Output of» от "journal" и answers)
+  пусть stages равно («Stages» от («Marks» от journal))
+  пусть ticks равно («Output of» от "ticks" и answers)
+  пусть head равно [(соединить ["Журнал: ", («Journal path» от answers)] по ""), ""]
+  пусть body равно («Соединить списки» от head и («Stage table» от stages))
+  пусть notes равно (приписать "" к («Stage notes» от stages))
+  пусть charges равно (если пусто ticks то пустой список иначе («Charge table» от ticks))
+  соединить («Соединить списки» от body и («Соединить списки» от notes и charges)) по "\n"
+
+тотальная функция «Refusal»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть journal равно («Journal path» от answers)
+  пусть ticks равно («Ticks path» от answers)
+  пусть journal_unread равно (не ((«Exit code of» от "journal" и answers) равен 0))
+  пусть ticks_unread равно ((не (пусто ticks)) и притом (не ((«Exit code of» от "ticks" и answers) равен 0)))
+  пусть no_marks равно (пусто («Marks» от («Output of» от "journal" и answers)))
+  пусть journal_error равно («Errors of» от "journal" и answers)
+  пусть ticks_error равно («Errors of» от "ticks" и answers)
+  «Chosen» от [(«When» от («Wrong call» от answers) и ["FLANG_PRINT_STAGES_CALL", («Usage»)]),
+    («When» от journal_unread и ["FLANG_PRINT_STAGES_NO_JOURNAL",
+      (соединить ["журнал печати не прочитан: ", journal, " — ", journal_error] по "")]),
+    («When» от no_marks и ["FLANG_PRINT_STAGES_NO_MARKS",
+      (соединить ["в журнале нет отметок «шагов … идёт «…»»: ", journal,
+        "\n  отметки идут в stderr (flang_repl.c, repl_hod_say);",
+        " журнал снят без «2>&1» либо печать не дошла до первой стадии"] по "")]),
+    («When» от ticks_unread и ["FLANG_PRINT_STAGES_NO_TICKS",
+      (соединить ["файл тиков не прочитан: ", ticks, " — ", ticks_error] по "")])] и (пустой список)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  разбор («Refusal» от answers)
+    случай пусто
+      то вариант «Конец работы» с значение равным («Report» от answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным голова и сообщение равным (соединить хвост по "\n")
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "caller" и "PWD")]
+
+тотальная функция «Reads»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть journal равно («Read» от "journal" и («Journal path» от answers))
+  пусть ticks равно («Read» от "ticks" и («Ticks path» от answers))
+  «Chosen» от [(«When» от («Wrong call» от answers) и (пустой список)),
+    («When» от (пусто («Ticks path» от answers)) и [journal])] и [journal, ticks]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  «Chosen» от [(«When» от (stages равен 1) и («Setup»)),
+    («When» от (stages равен 0) и («Reads» от answers))] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 2
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»

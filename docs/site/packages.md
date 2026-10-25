@@ -59,6 +59,79 @@ FLANG_PRECONDITION_CALL, строка 34, столбец 3: вызов «Ски�
 shop.flang: не проверено — замечаний 1
 ```
 
+## Install a package by name from the registry
+
+A package listed in the [registry](registry.html) is installed with one command.
+Name your program file and the package, with a version range if you want one:
+
+```bash
+$ flang install проба/proba.flang 'Множество строк: не ниже 1.1'
+поставлено пакетов: 3 рядом с проба/proba.flang; замок проба/flang.lock — 65547 знаков:
+  · Множество строк 1.1.0 → sets.flang-package: доказано 4 из 18 обязательств
+  · Списки 1.4.2 → lists.flang-package: доказано 15 из 39 обязательств
+  · Логика 1.2.0 → logic.flang-package: доказано 4 из 7 обязательств
+$ echo $?
+0
+```
+
+The `flang install` command reaches the binary with the next reprint (batch
+9c). In the 0.7.30 binary the same command is the shortcut of the flang tree,
+`flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'`;
+that shortcut is the engine `flang install` calls inside.
+
+What happens behind that line:
+
+1. the need is appended to `flang.needs` next to the program (one need per line:
+   `Логика: не ниже 1.0`); without a name on the command line everything in the
+   file is installed;
+2. the registry list is fetched — from the address in `--registry`, else from the
+   `registry` key in `.flangrc`, else from the stable address on GitHub;
+3. from the needs of the project and the needs of the packages themselves the
+   greatest version of each name that satisfies all of them is chosen; one name,
+   one version; needs that cannot be met together are refused with
+   `FLANG_INSTALL_CONFLICT`, which names every range and who asked for it;
+4. each package is downloaded and the `sha256` of the body is compared with the
+   list record **before** anything is written: a mismatch is
+   `FLANG_INSTALL_FINGERPRINT`, and no file is written;
+5. the files land next to the program under the list name without the version
+   (`sets-1.1.0.flang-package` → `sets.flang-package`), so the line `использует
+   «Множество строк» из "sets.flang-package"` does not change when the version
+   moves;
+6. the program is checked with `flang check` and locked with `flang lock`: the
+   sources themselves go into `flang.lock`, and the build never touches the
+   network again.
+
+A package carrying a `закон` (law) or a claim "declared, not proved" widens what
+you trust without proof. Such a package is shown on its own line and is installed
+only with `--accept-unproven`. The proved share is printed for every package.
+
+Installing again into an empty directory gives the same `flang.lock` byte for
+byte — `flang run-script package-install:check` verifies this, and the CI job
+`package-install` does the same on a clean image. Ranges are written in words,
+not symbols: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. The refusal
+codes are in the table below.
+
+How it works inside: the installer is a flang program
+(`scripts/package-install.fscript`) that `flang install` finds next to the
+binary (`scripts/` in the tree, `share/flang/scripts/` when installed) and runs
+with its own plan executor. From the flang tree the same plan is called by the
+shortcut `flang run-script package:install`; that is how it is tested and how
+it works until reprint 9c.
+
+### Refusal codes of the installer
+
+The exit code is 1 for all of them; the code stands in the answer with the reason.
+
+| Code | What it means | What to do |
+|---|---|---|
+| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
+| `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
+| `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
+| `FLANG_INSTALL_FINGERPRINT` | the `sha256` of the received body differs from the registry record; nothing was written to disk | a substituted or damaged package: do not install it, tell the keeper of the list |
+| `FLANG_INSTALL_UNPROVED` | the package carries a `закон` (law) or a claim "declared, not proved" and would widen the trusted base | read the named lines; if you agree, repeat with `--accept-unproven` |
+| `FLANG_INSTALL_BUILD` | after installing, `flang check` or `flang lock` over the program answered non-zero | read their answer in the message; usually the program lacks the line `использует «Имя» из "file.flang-package"` |
+
 ## Make a package
 
 **Step 1. Write the manifest.** Put `flang.package` next to the library's entry
@@ -145,8 +218,9 @@ $ git commit -m "Скидка 1.0.0"
 $ git push
 ```
 
-Users download **that file** by any means: a raw link, a release asset, mail.
-There is no registry and no `flang publish`.
+Users download **that file** by any means: a raw link, a release asset, mail —
+or install it by name once the file and its `sha256` are recorded in the
+[registry list](registry.html). There is no `flang publish`.
 
 ## A library of several modules
 
@@ -197,8 +271,9 @@ $ echo $?
 1
 ```
 
-There are no version ranges (`^1.2`, `~> 1.2`). Your program uses exactly the
-file next to it, and nothing updates by itself.
+There are no version ranges in symbols (`^1.2`, `~> 1.2`). Your program uses
+exactly the file next to it, and nothing updates by itself; the installer picks
+the version from the worded ranges in `flang.needs` (see above).
 
 ## Build offline
 
@@ -263,9 +338,12 @@ A program can have a `flang.lock` and packages at the same time.
 
 ## What is missing
 
-- **A registry and search.** You cannot look a package up by name; there is no
-  `flang publish`, `flang add` or `flang search`.
-- **Version ranges and dependency resolution.** No `^`, no `~>`, no `latest`.
+- **`flang install` in the 0.7.30 binary.** The command arrives with reprint
+  9c; until then installing runs the same plan from the flang tree (`flang
+  run-script package:install`). There is no `flang publish` or `flang search` —
+  publishing is a commit of the file and a line in the registry list.
+- **Other people's packages in the registry.** The list holds only the example
+  packages.
 - **Two versions of one library** in one program: imports merge into one flat
   namespace.
 - **Partial updates.** To update, run `flang package` again.

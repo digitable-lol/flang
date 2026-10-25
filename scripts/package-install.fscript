@@ -1,0 +1,914 @@
+модуль «Package installer»
+  использует «Registry» из "../flang/stdlib/registry.flang"
+
+примечание "УСТАНОВЩИК ПАКЕТОВ ПО ИМЕНИ ИЗ РЕЕСТРА (ADR-0021, ADR-0059, ADR-0168). Одна команда:"
+примечание "  bootstrap/flang run-script package:install <программа.flang> [<имя>[: <диапазон>]]..."
+примечание "      [--registry <адрес списка>] [--accept-unproven]"
+примечание "Путь программы считается от корня дерева (там работает run-script) или абсолютный."
+примечание "Нужды проекта живут в файле flang.needs рядом с программой, по нужде на строку, в"
+примечание "синтаксисе registry.flang («Логика: не ниже 1.0»); имена из команды дописываются туда."
+
+примечание "ДОРОГА — ровно та, что обещана в ADR-0021 п. 2: прочитать нужды → взять список реестра"
+примечание "(«Запросить» по http/https либо «Прочитать файл») → разрешить версии (registry.flang:"
+примечание "наибольшая годная, одна на имя) → скачать каждый пакет → хеш256 тела сверить с"
+примечание "отпечатком ДО записи → положить файлы рядом с программой → flang check → flang lock →"
+примечание "записать flang.lock. Подменённое тело — отказ, и ни один файл на диск не ложится:"
+примечание "все тела держатся в памяти, пока не сверено последнее."
+
+примечание "СОГЛАСИЕ. Пакет, несущий «закон» или «объявлено, не доказано», расширяет доверенную"
+примечание "базу (ADR-0021, обязанность 4): он показывается отдельной строкой и ставится только"
+примечание "с ключом --accept-unproven. Доля доказанного каждого пакета печатается всегда."
+
+примечание "АДРЕС СПИСКА: ключ --registry, иначе ключ «registry» в .flangrc дерева, иначе"
+примечание "постоянный адрес ниже. Относительный адрес пакета считается от каталога списка"
+примечание "(docs/registry-list-format.md)."
+
+примечание "КОДЫ ОТКАЗА: FLANG_INSTALL_USAGE, FLANG_INSTALL_LEDGER, FLANG_INSTALL_NEEDS,"
+примечание "FLANG_INSTALL_CONFLICT, FLANG_INSTALL_FINGERPRINT, FLANG_INSTALL_UNPROVED,"
+примечание "FLANG_INSTALL_BUILD — docs/site/packages.ru.md, раздел «Коды отказов установщика»."
+
+объект «Ask»
+  «program»: строка
+  «shown»: строка
+  «folder»: строка
+  «wanted»: список строки
+  «ledger»: строка
+  «consent»: признак
+  «binary»: строка
+  «needs»: строка
+  «stale»: признак
+
+объект «Got»
+  «name»: строка
+  «version»: строка
+  «file»: строка
+  «body»: строка
+  «proved»: число
+  «claims»: число
+  «risky»: признак
+
+объект «Parse»
+  «program»: строка
+  «wanted»: список строки
+  «ledger»: строка
+  «consent»: признак
+  «pending»: признак
+  «trouble»: строка
+
+тип «Step»
+  вариант «Reading arguments»
+  вариант «Reading binary» содержит ask: «Ask»
+  вариант «Reading settings» содержит ask: «Ask»
+  вариант «Reading needs» содержит ask: «Ask»
+  вариант «Reading ledger» содержит ask: «Ask»
+  вариант «Writing needs» содержит ask: «Ask», got: список «Got»
+  вариант «Fetching» содержит ask: «Ask», now: «Выбор», rest: список «Выбор», got: список «Got»
+  вариант «Writing» содержит ask: «Ask», rest: список «Got», got: список «Got»
+  вариант «Checking» содержит ask: «Ask», got: список «Got»
+  вариант «Locking» содержит ask: «Ask», got: список «Got»
+  вариант «Writing lock» содержит ask: «Ask», got: список «Got»
+
+тотальная функция «Default ledger»
+  возвращает строка
+  пример «Список по умолчанию — файл ветки dev на GitHub»
+    ожидается "https://raw.githubusercontent.com/digitable-lol/flang/dev/scripts/registry-example/registry.list"
+  "https://raw.githubusercontent.com/digitable-lol/flang/dev/scripts/registry-example/registry.list"
+
+тотальная функция «Default binary»
+  возвращает строка
+  пример «Двоичный дерева назван путём от каталога плана»
+    ожидается "../bootstrap/flang"
+  "../bootstrap/flang"
+
+тотальная функция «Needs file»
+  возвращает строка
+  пример «Нужды проекта лежат рядом с программой»
+    ожидается "flang.needs"
+  "flang.needs"
+
+тотальная функция «Lock file»
+  возвращает строка
+  пример «Замок лежит рядом с программой под именем, которое читает двоичный»
+    ожидается "flang.lock"
+  "flang.lock"
+
+тотальная функция «Fuel»
+  возвращает число
+  пример «Топлива столько же, сколько у инструмента реестра»
+    ожидается 32
+  32
+
+тотальная функция «Usage»
+  возвращает строка
+  соединить ["звать: flang run-script package:install <программа.flang> [<имя>[: <диапазон>]]... ",
+    "[--registry <адрес>] [--accept-unproven]"] по ""
+
+тотальная функция «Failed»
+  принимает code: строка, words: строка
+  возвращает «Продолжение»
+  вариант «Провал» с код равным code и сообщение равным words
+
+тотальная функция «Doing»
+  принимает order: «Поручение», onward: «Step»
+  возвращает «Продолжение»
+  вариант «Сделать» с поручение равным order и потом равным onward
+
+тотальная функция «Is web»
+  принимает address: строка
+  возвращает признак
+  пример «http — сеть»
+    дано address равно "http://127.0.0.1:8765/registry.list"
+    ожидается да
+  пример «Путь — не сеть»
+    дано address равно "scripts/registry-example/registry.list"
+    ожидается нет
+  (address начинается с "http://") или (address начинается с "https://")
+
+тотальная функция «Backwards» от «А»
+  принимает items: список «А»
+  возвращает список «А»
+  пример «Три элемента наоборот»
+    дано items равно [1, 2, 3]
+    ожидается [3, 2, 1]
+  свёртка items начиная с (пустой список) как kept и one → приписать one к kept
+
+тотальная функция «Without last» от «А»
+  принимает items: список «А»
+  возвращает список «А»
+  пример «Последний снят»
+    дано items равно [1, 2, 3]
+    ожидается [1, 2]
+  пример «Пустой остаётся пустым»
+    дано items равно пустой список
+    ожидается пустой список
+  разбор («Backwards» от items)
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Backwards» от хвост
+
+тотальная функция «Last of»
+  принимает items: список строки
+  возвращает строка
+  пример «Последний элемент»
+    дано items равно ["а", "б"]
+    ожидается "б"
+  пример «Пустой список — пустая строка»
+    дано items равно пустой список
+    ожидается ""
+  разбор («Backwards» от items)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Folder of»
+  принимает path: строка
+  возвращает строка
+  пример «Каталог с косой чертой на конце»
+    дано path равно "../проба/proba.flang"
+    ожидается "../проба/"
+  пример «Файл без каталога — пусто»
+    дано path равно "proba.flang"
+    ожидается ""
+  если не (path содержит "/")
+    то ""
+    иначе соединить [(соединить («Without last» от (разделить path по "/")) по "/"), "/"] по ""
+
+тотальная функция «Base name»
+  принимает path: строка
+  возвращает строка
+  пример «Имя файла после последней черты»
+    дано path равно "a/b/logic-1.2.0.flang-package"
+    ожидается "logic-1.2.0.flang-package"
+  пример «Без черты — целиком»
+    дано path равно "logic.flang-package"
+    ожидается "logic.flang-package"
+  «Last of» от (разделить path по "/")
+
+тотальная функция «From root»
+  принимает path: строка
+  возвращает строка
+  пример «Относительный путь считается от корня дерева, план лежит в scripts»
+    дано path равно "проба/proba.flang"
+    ожидается "../проба/proba.flang"
+  пример «Абсолютный путь остаётся собой»
+    дано path равно "/tmp/p/proba.flang"
+    ожидается "/tmp/p/proba.flang"
+  если path начинается с "/" то path иначе соединить ["../", path] по ""
+
+тотальная функция «Resolve address»
+  принимает ledger: строка, address: строка
+  возвращает строка
+  пример «Полный адрес берётся как есть»
+    дано ledger равно "http://h/registry.list"
+    дано address равно "https://other/p.flang-package"
+    ожидается "https://other/p.flang-package"
+  пример «Относительный адрес считается от каталога списка в сети»
+    дано ledger равно "http://h/flang/registry.list"
+    дано address равно "logic-1.2.0.flang-package"
+    ожидается "http://h/flang/logic-1.2.0.flang-package"
+  пример «И от каталога списка на диске»
+    дано ledger равно "../scripts/registry-example/registry.list"
+    дано address равно "logic-1.2.0.flang-package"
+    ожидается "../scripts/registry-example/logic-1.2.0.flang-package"
+  если «Is web» от address
+    то address
+    иначе соединить [(«Folder of» от ledger), address] по ""
+
+тотальная функция «Fetch order»
+  принимает address: строка
+  возвращает «Поручение»
+  пример «Сеть — поручение Запросить»
+    дано address равно "http://h/registry.list"
+    ожидается вариант «Запросить» с способ равным "GET" и адрес равным "http://h/registry.list" и тело равным ""
+  пример «Диск — поручение Прочитать файл»
+    дано address равно "../scripts/registry-example/registry.list"
+    ожидается вариант «Прочитать файл» с путь равным "../scripts/registry-example/registry.list"
+  если «Is web» от address
+    то вариант «Запросить» с способ равным "GET" и адрес равным address и тело равным ""
+    иначе вариант «Прочитать файл» с путь равным address
+
+тотальная функция «Count of»
+  принимает text: строка, mark: строка
+  возвращает число
+  пример «Две метки»
+    дано text равно "a:b:c"
+    дано mark равно ":"
+    ожидается 2
+  пример «Ни одной»
+    дано text равно "abc"
+    дано mark равно ":"
+    ожидается 0
+  (длина (разделить text по mark)) минус 1
+
+тотальная функция «Live lines»
+  принимает text: строка
+  возвращает список строки
+  пример «Пустые строки и комментарии выброшены, края обрезаны»
+    дано text равно "# шапка\n Логика: любая \n\nСписки: в пределах 1.x\n"
+    ожидается ["Логика: любая", "Списки: в пределах 1.x"]
+  отфильтровать (отобразить (разделить text по "\n") как line → «Обрезать» от line) где line → «Live» от line
+
+тотальная функция «Live»
+  принимает line: строка
+  возвращает признак
+  пример «Пустая строка не живая»
+    дано line равно ""
+    ожидается нет
+  пример «Комментарий не живой»
+    дано line равно "# шапка"
+    ожидается нет
+  пример «Нужда живая»
+    дано line равно "Логика: любая"
+    ожидается да
+  (не (line равен "")) и притом (не (line начинается с "#"))
+
+тотальная функция «Name of need»
+  принимает need: строка
+  возвращает строка
+  пример «Имя до двоеточия»
+    дано need равно "Логика: не ниже 1.0"
+    ожидается "Логика"
+  пример «Без двоеточия — всё слово»
+    дано need равно "Логика"
+    ожидается "Логика"
+  «Обрезать» от (голова (разделить need по ":"))
+
+тотальная функция «Full need»
+  принимает word: строка
+  возвращает строка
+  пример «Имя без диапазона значит любую версию»
+    дано word равно "Логика"
+    ожидается "Логика: любая"
+  пример «Нужда с диапазоном остаётся собой»
+    дано word равно "Логика: не ниже 1.0"
+    ожидается "Логика: не ниже 1.0"
+  если word содержит ":" то «Обрезать» от word иначе соединить [(«Обрезать» от word), ": любая"] по ""
+
+тотальная функция «Merge need»
+  принимает lines: список строки, word: строка
+  возвращает список строки
+  пример «Новое имя дописывается»
+    дано lines равно ["Логика: любая"]
+    дано word равно "Списки"
+    ожидается ["Логика: любая", "Списки: любая"]
+  пример «Знакомое имя заменяется»
+    дано lines равно ["Логика: любая", "Списки: любая"]
+    дано word равно "Логика: не ниже 1.2"
+    ожидается ["Логика: не ниже 1.2", "Списки: любая"]
+  пусть name равно («Name of need» от word)
+  пусть kept равно (отфильтровать lines где line → не ((«Name of need» от line) равен name))
+  если (длина kept) равен (длина lines)
+    то добавить («Full need» от word) к lines
+    иначе отобразить lines как line → «Replaced need» от line и word
+
+тотальная функция «Replaced need»
+  принимает line: строка, word: строка
+  возвращает строка
+  пример «Одноимённая строка заменяется»
+    дано line равно "Логика: любая"
+    дано word равно "Логика: не ниже 1.2"
+    ожидается "Логика: не ниже 1.2"
+  пример «Чужая остаётся»
+    дано line равно "Списки: любая"
+    дано word равно "Логика: не ниже 1.2"
+    ожидается "Списки: любая"
+  если («Name of need» от line) равен («Name of need» от word) то «Full need» от word иначе line
+
+тотальная функция «Merged needs»
+  принимает text: строка, wanted: список строки
+  возвращает список строки
+  пример «Нужды из файла и из команды вместе»
+    дано text равно "Логика: любая\n"
+    дано wanted равно ["Множество строк: не ниже 1.1"]
+    ожидается ["Логика: любая", "Множество строк: не ниже 1.1"]
+  свёртка wanted начиная с («Live lines» от text) как lines и word → «Merge need» от lines и word
+
+тотальная функция «Needs text»
+  принимает lines: список строки
+  возвращает строка
+  пример «По нужде на строку, перевод строки в конце»
+    дано lines равно ["Логика: любая", "Списки: любая"]
+    ожидается "Логика: любая\nСписки: любая\n"
+  пример «Пусто — пустой файл»
+    дано lines равно пустой список
+    ожидается ""
+  если (длина lines) равен 0 то "" иначе соединить [(соединить lines по "\n"), "\n"] по ""
+
+тотальная функция «Settings value»
+  принимает text: строка, key: строка
+  возвращает строка
+  пример «Значение ключа после знака равенства»
+    дано text равно "language = ru\nregistry = http://h/registry.list\n"
+    дано key равно "registry"
+    ожидается "http://h/registry.list"
+  пример «Ключа нет — пусто»
+    дано text равно "language = ru\n"
+    дано key равно "registry"
+    ожидается ""
+  пусть found равно (отфильтровать («Live lines» от text) где line → «Names key» от line и key)
+  разбор found
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Обрезать» от («После метки» от голова и "=")
+
+тотальная функция «Names key»
+  принимает line: строка, key: строка
+  возвращает признак
+  пример «Строка настроек называет ключ»
+    дано line равно "registry = http://h"
+    дано key равно "registry"
+    ожидается да
+  пример «Другой ключ — нет»
+    дано line равно "language = ru"
+    дано key равно "registry"
+    ожидается нет
+  (line содержит "=") и притом ((«Обрезать» от (голова (разделить line по "="))) равен key)
+
+тотальная функция «Package file»
+  принимает address: строка, version: строка
+  возвращает строка
+  пример «Версия снимается с имени файла, чтобы импорт не менялся при подъёме версии»
+    дано address равно "logic-1.2.0.flang-package"
+    дано version равно "1.2.0"
+    ожидается "logic.flang-package"
+  пример «Имя без версии остаётся собой»
+    дано address равно "p/logic.flang-package"
+    дано version равно "1.2.0"
+    ожидается "logic.flang-package"
+  пусть name равно («Base name» от address)
+  пусть tail равно (соединить ["-", version, ".flang-package"] по "")
+  если name содержит tail
+    то соединить [(голова (разделить name по tail)), ".flang-package"] по ""
+    иначе name
+
+тотальная функция «Proved mark»
+  возвращает строка
+  пример «Так пакет пишет доказанное обязательство»
+    ожидается "\"сила\":\"доказано\""
+  "\"сила\":\"доказано\""
+
+тотальная функция «Claim mark»
+  возвращает строка
+  пример «Так начинается сила любого обязательства»
+    ожидается "\"сила\":"
+  "\"сила\":"
+
+тотальная функция «Risky»
+  принимает body: строка
+  возвращает признак
+  пример «Закон расширяет доверенную базу»
+    дано body равно "{\"исходник\":\"морфизм «м»\\n  закон «а»\\n\"}"
+    ожидается да
+  пример «Объявленное и не доказанное — тоже»
+    дано body равно "{\"сила\":\"объявлено, не доказано\"}"
+    ожидается да
+  пример «Доказанное и недоказанное без слов — нет»
+    дано body равно "{\"сила\":\"доказано\"},{\"сила\":null}"
+    ожидается нет
+  (body содержит "закон «") или (body содержит "\"сила\":\"объявлено, не доказано\"")
+
+тотальная функция «Got of»
+  принимает choice: «Выбор», body: строка
+  возвращает «Got»
+  (запись «Got» с «name» равным (choice.«имя») и «version» равным («Версия строкой» от (choice.«версия»))
+    и «file» равным («Package file» от (choice.«адрес») и («Версия строкой» от (choice.«версия»)))
+    и «body» равным body и «proved» равным («Count of» от body и («Proved mark»))
+    и «claims» равным («Count of» от body и («Claim mark»)) и «risky» равным («Risky» от body))
+
+тотальная функция «Share words»
+  принимает one: «Got»
+  возвращает строка
+  пример «Доля названа числами, а не процентом»
+    дано one равно (запись «Got» с «name» равным "Логика" и «version» равным "1.2.0"
+      и «file» равным "logic.flang-package" и «body» равным "" и «proved» равным 4 и «claims» равным 7
+      и «risky» равным нет)
+    ожидается "Логика 1.2.0 → logic.flang-package: доказано 4 из 7 обязательств"
+  соединить [(one.«name»), " ", (one.«version»), " → ", (one.«file»), ": доказано ", (к строке (one.«proved»)),
+    " из ", (к строке (one.«claims»)), " обязательств"] по ""
+
+тотальная функция «Risky words»
+  принимает one: «Got»
+  возвращает строка
+  соединить [(«Share words» от one), "; несёт закон или «объявлено, не доказано»"] по ""
+
+тотальная функция «Parse step»
+  принимает parse: «Parse», word: строка
+  возвращает «Parse»
+  пример «Ключ --registry берёт следующее слово»
+    дано parse равно (запись «Parse» с «program» равным "p" и «wanted» равным пустой список и «ledger» равным ""
+      и «consent» равным нет и «pending» равным да и «trouble» равным "")
+    дано word равно "http://h/r.list"
+    ожидается (запись «Parse» с «program» равным "p" и «wanted» равным пустой список
+      и «ledger» равным "http://h/r.list" и «consent» равным нет и «pending» равным нет и «trouble» равным "")
+  пример «Первое слово — программа, следующие — нужды»
+    дано parse равно (запись «Parse» с «program» равным "p" и «wanted» равным пустой список и «ledger» равным ""
+      и «consent» равным нет и «pending» равным нет и «trouble» равным "")
+    дано word равно "Логика"
+    ожидается (запись «Parse» с «program» равным "p" и «wanted» равным ["Логика"] и «ledger» равным ""
+      и «consent» равным нет и «pending» равным нет и «trouble» равным "")
+  если parse.«pending»
+    то (запись «Parse» с «program» равным (parse.«program») и «wanted» равным (parse.«wanted») и «ledger» равным word
+      и «consent» равным (parse.«consent») и «pending» равным нет и «trouble» равным (parse.«trouble»))
+    иначе если word равен "--registry"
+      то (запись «Parse» с «program» равным (parse.«program») и «wanted» равным (parse.«wanted»)
+        и «ledger» равным (parse.«ledger») и «consent» равным (parse.«consent») и «pending» равным да
+        и «trouble» равным (parse.«trouble»))
+      иначе «Parse word» от parse и word
+
+тотальная функция «Parse word»
+  принимает parse: «Parse», word: строка
+  возвращает «Parse»
+  если word равен "--accept-unproven"
+    то (запись «Parse» с «program» равным (parse.«program») и «wanted» равным (parse.«wanted»)
+      и «ledger» равным (parse.«ledger») и «consent» равным да и «pending» равным нет
+      и «trouble» равным (parse.«trouble»))
+    иначе если word начинается с "--"
+      то (запись «Parse» с «program» равным (parse.«program») и «wanted» равным (parse.«wanted»)
+        и «ledger» равным (parse.«ledger») и «consent» равным (parse.«consent») и «pending» равным нет
+        и «trouble» равным (соединить ["неизвестный ключ «", word, "». ", («Usage»)] по ""))
+      иначе «Parse plain» от parse и word
+
+тотальная функция «Parse plain»
+  принимает parse: «Parse», word: строка
+  возвращает «Parse»
+  если (parse.«program») равен ""
+    то (запись «Parse» с «program» равным word и «wanted» равным (parse.«wanted») и «ledger» равным (parse.«ledger»)
+      и «consent» равным (parse.«consent») и «pending» равным нет и «trouble» равным (parse.«trouble»))
+    иначе (запись «Parse» с «program» равным (parse.«program») и «wanted» равным (добавить word к (parse.«wanted»))
+      и «ledger» равным (parse.«ledger») и «consent» равным (parse.«consent») и «pending» равным нет
+      и «trouble» равным (parse.«trouble»))
+
+тотальная функция «Parsed»
+  принимает words: список строки
+  возвращает «Parse»
+  пример «Полная команда разобрана»
+    дано words равно ["проба/proba.flang", "Логика", "--registry", "http://h/r.list", "--accept-unproven"]
+    ожидается (запись «Parse» с «program» равным "проба/proba.flang" и «wanted» равным ["Логика"]
+      и «ledger» равным "http://h/r.list" и «consent» равным да и «pending» равным нет и «trouble» равным "")
+  свёртка words начиная с («Blank parse») как parse и word → «Parse step» от parse и word
+
+тотальная функция «Ask of»
+  принимает parse: «Parse»
+  возвращает «Ask»
+  (запись «Ask» с «program» равным («From root» от (parse.«program»)) и «shown» равным (parse.«program»)
+    и «folder» равным («Folder of» от («From root» от (parse.«program»))) и «wanted» равным (parse.«wanted»)
+    и «ledger» равным (parse.«ledger») и «consent» равным (parse.«consent») и «binary» равным («Default binary»)
+    и «needs» равным "" и «stale» равным нет)
+
+тотальная функция «Parse trouble»
+  принимает parse: «Parse»
+  возвращает строка
+  если не ((parse.«trouble») равен "") то parse.«trouble» иначе «Parse trouble tail» от parse
+
+тотальная функция «Parse trouble tail»
+  принимает parse: «Parse»
+  возвращает строка
+  если parse.«pending»
+    то соединить ["за --registry должен стоять адрес списка. ", («Usage»)] по ""
+    иначе если (parse.«program») равен ""
+      то соединить ["не назван файл программы. ", («Usage»)] по ""
+      иначе ""
+
+тотальная функция «Blank parse»
+  возвращает «Parse»
+  пример «Пустой разбор: ничего не названо»
+    ожидается (запись «Parse» с «program» равным "" и «wanted» равным пустой список и «ledger» равным ""
+      и «consent» равным нет и «pending» равным нет и «trouble» равным "")
+  (запись «Parse» с «program» равным "" и «wanted» равным пустой список и «ledger» равным ""
+    и «consent» равным нет и «pending» равным нет и «trouble» равным "")
+
+тотальная функция «With binary»
+  принимает ask: «Ask», binary: строка
+  возвращает «Ask»
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
+    и «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent»)
+    и «binary» равным binary и «needs» равным (ask.«needs») и «stale» равным (ask.«stale»))
+
+тотальная функция «With ledger»
+  принимает ask: «Ask», ledger: строка
+  возвращает «Ask»
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
+    и «wanted» равным (ask.«wanted») и «ledger» равным ledger и «consent» равным (ask.«consent»)
+    и «binary» равным (ask.«binary») и «needs» равным (ask.«needs») и «stale» равным (ask.«stale»))
+
+тотальная функция «With needs»
+  принимает ask: «Ask», needs: строка, stale: признак
+  возвращает «Ask»
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
+    и «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent»)
+    и «binary» равным (ask.«binary») и «needs» равным needs и «stale» равным stale)
+
+тотальная функция «Ledger from settings»
+  принимает ask: «Ask», text: строка
+  возвращает строка
+  пусть value равно («Settings value» от text и "registry")
+  если value равен "" то («Default ledger») иначе value
+
+тотальная функция «Ledger given»
+  принимает ask: «Ask»
+  возвращает «Ask»
+  пример «Названный адрес остаётся; относительный путь считается от корня дерева»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным ""
+      и «wanted» равным пустой список и «ledger» равным "scripts/registry-example/registry.list"
+      и «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет)
+    ожидается (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным ""
+      и «wanted» равным пустой список и «ledger» равным "../scripts/registry-example/registry.list"
+      и «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет)
+  если «Is web» от (ask.«ledger»)
+    то ask
+    иначе «With ledger» от ask и («From root» от (ask.«ledger»))
+
+тотальная функция «Read needs»
+  принимает ask: «Ask»
+  возвращает «Продолжение»
+  («Doing» от (вариант «Прочитать файл» с путь равным (соединить [(ask.«folder»), («Needs file»)] по ""))
+    и (вариант «Reading needs» с ask равным ask))
+
+тотальная функция «Start»
+  возвращает «Step»
+  пример «Установка начинается с чтения доводов»
+    ожидается вариант «Reading arguments»
+  вариант «Reading arguments»
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то «Doing» от (вариант «Прочитать доводы») и (вариант «Reading arguments»)
+    случай вариант «Доводы» с доводы как words
+      то «Take arguments» от («Parsed» от words)
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали доводы команды"
+
+тотальная функция «Take arguments»
+  принимает parse: «Parse»
+  возвращает «Продолжение»
+  пусть trouble равно («Parse trouble» от parse)
+  если не (trouble равен "")
+    то «Failed» от "FLANG_INSTALL_USAGE" и trouble
+    иначе («Doing» от (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
+      и (вариант «Reading binary» с ask равным («Ask of» от parse)))
+
+тотальная функция «After binary»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как value
+      то «Find ledger» от («With binary» от ask и value)
+    случай вариант «Переменной среды нет»
+      то «Find ledger» от ask
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали переменную среды FLANG_BINARY"
+
+тотальная функция «Find ledger»
+  принимает ask: «Ask»
+  возвращает «Продолжение»
+  если (ask.«ledger») равен ""
+    то «Doing» от (вариант «Прочитать файл» с путь равным "../.flangrc") и (вариант «Reading settings» с ask равным ask)
+    иначе «Read needs» от («Ledger given» от ask)
+
+тотальная функция «After settings»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Read needs» от («Ledger given» от («With ledger» от ask и («Ledger from settings» от ask и text)))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Read needs» от («With ledger» от ask и («Default ledger»))
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали файл настроек"
+
+тотальная функция «Fetch ledger»
+  принимает ask: «Ask»
+  возвращает «Продолжение»
+  «Doing» от («Fetch order» от (ask.«ledger»)) и (вариант «Reading ledger» с ask равным ask)
+
+тотальная функция «Needs taken»
+  принимает ask: «Ask», before: строка
+  возвращает «Продолжение»
+  пусть text равно («Needs text» от («Merged needs» от before и (ask.«wanted»)))
+  «Fetch ledger» от («With needs» от ask и text и (не (text равен before)))
+
+тотальная функция «After needs»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Needs taken» от ask и text
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Needs taken» от ask и ""
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали файл нужд"
+
+тотальная функция «Check order»
+  принимает ask: «Ask», got: список «Got»
+  возвращает «Продолжение»
+  «Doing» от (вариант «Запустить процесс» с программа равным (ask.«binary»)
+    и аргументы равным ["check", (ask.«program»)]) и (вариант «Checking» с ask равным ask и got равным got)
+
+тотальная функция «After writing needs»
+  принимает ask: «Ask», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то «Check order» от ask и got
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Failed» от code и (соединить [(ask.«folder»), («Needs file»), ": ", words] по "")
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали запись файла нужд"
+
+тип «Fetched»
+  вариант «Fetched body» содержит body: строка
+  вариант «Fetch failed» содержит words: строка
+
+тотальная функция «Body of»
+  принимает what: строка, reply: «Отклик»
+  возвращает «Fetched»
+  пример «Ответ сети 200 — тело»
+    дано what равно "список"
+    дано reply равно вариант «Ответ сети» с код равным 200 и тело равным "т"
+    ожидается вариант «Fetched body» с body равным "т"
+  пример «Другой код — причина названа»
+    дано what равно "список"
+    дано reply равно вариант «Ответ сети» с код равным 404 и тело равным ""
+    ожидается вариант «Fetch failed» с words равным "список: адрес ответил кодом 404"
+  пример «Файл с диска — тело»
+    дано what равно "список"
+    дано reply равно вариант «Прочитано» с содержимое равным "т"
+    ожидается вариант «Fetched body» с body равным "т"
+  разбор reply
+    случай вариант «Ответ сети» с код как code и тело как body
+      то «Web body» от what и code и body
+    случай вариант «Прочитано» с содержимое как body
+      то вариант «Fetched body» с body равным body
+    случай вариант «Сбой» с код как code и сообщение как words
+      то вариант «Fetch failed» с words равным (соединить [what, ": ", code, ": ", words] по "")
+    случай любое
+      то вариант «Fetch failed» с words равным (соединить [what, ": ждали тело ответа"] по "")
+
+тотальная функция «Web body»
+  принимает what: строка, code: число, body: строка
+  возвращает «Fetched»
+  если code равен 200
+    то вариант «Fetched body» с body равным body
+    иначе вариант «Fetch failed» с words равным (соединить [what, ": адрес ответил кодом ", (к строке code)] по "")
+
+тотальная функция «Trouble list»
+  принимает head: строка, items: список строки
+  возвращает строка
+  пример «Шапка и строки списком»
+    дано head равно "бед 2:"
+    дано items равно ["раз", "два"]
+    ожидается "бед 2:\n  · раз\n  · два"
+  соединить (приписать head к items) по "\n  · "
+
+тотальная функция «After ledger»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор («Body of» от (соединить ["список реестра ", (ask.«ledger»)] по "") и reply)
+    случай вариант «Fetch failed» с words как words
+      то «Failed» от "FLANG_INSTALL_LEDGER" и words
+    случай вариант «Fetched body» с body как text
+      то «Resolve» от ask и text
+
+тотальная функция «Resolve»
+  принимает ask: «Ask», text: строка
+  возвращает «Продолжение»
+  пусть registry равно («Разобрать реестр» от text)
+  если (длина (registry.«беды»)) больше 0
+    то «Failed» от "FLANG_INSTALL_LEDGER" и («Trouble list» от (соединить ["список реестра ", (ask.«ledger»),
+      " не разобран, строк с бедой ", (к строке (длина (registry.«беды»))), ":"] по "") и (registry.«беды»))
+    иначе «Resolve needs» от ask и (registry.«записи»)
+
+тотальная функция «Resolve needs»
+  принимает ask: «Ask», records: список «Запись реестра»
+  возвращает «Продолжение»
+  пусть asked равно («Разобрать нужды» от (соединить («Live lines» от (ask.«needs»)) по "; ") и "проект")
+  если не ((asked.«беда») равен "")
+    то «Failed» от "FLANG_INSTALL_NEEDS" и (соединить [(ask.«folder»), («Needs file»), ": ", (asked.«беда»)] по "")
+    иначе «Resolved» от ask и («Разрешить» от records и (asked.«нужды») и («Fuel»))
+
+тотальная функция «Resolved»
+  принимает ask: «Ask», outcome: «Исход разрешения»
+  возвращает «Продолжение»
+  разбор outcome
+    случай вариант «Не разрешено» с причина как words
+      то «Failed» от "FLANG_INSTALL_CONFLICT" и (соединить ["нужды проекта ", (ask.«shown»), " вместе не выполнимы: ",
+        words] по "")
+    случай вариант «Разрешено» с выбор как choices
+      то «Fetch next» от ask и choices и пустой список
+
+тотальная функция «Fetch next»
+  принимает ask: «Ask», rest: список «Выбор», got: список «Got»
+  возвращает «Продолжение»
+  разбор rest
+    случай пусто
+      то «All fetched» от ask и got
+    случай голова и хвост
+      то («Doing» от («Fetch order» от («Resolve address» от (ask.«ledger») и (голова.«адрес»)))
+        и (вариант «Fetching» с ask равным ask и now равным голова и rest равным хвост и got равным got))
+
+тотальная функция «Who»
+  принимает choice: «Выбор»
+  возвращает строка
+  соединить [(choice.«имя»), " ", («Версия строкой» от (choice.«версия»)), " (", (choice.«адрес»), ")"] по ""
+
+тотальная функция «After fetching»
+  принимает ask: «Ask», now: «Выбор», rest: список «Выбор», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор («Body of» от (соединить ["пакет ", («Who» от now)] по "") и reply)
+    случай вариант «Fetch failed» с words как words
+      то «Failed» от "FLANG_INSTALL_LEDGER" и words
+    случай вариант «Fetched body» с body как body
+      то «Verified» от ask и now и rest и got и body
+
+тотальная функция «Verified»
+  принимает ask: «Ask», now: «Выбор», rest: список «Выбор», got: список «Got», body: строка
+  возвращает «Продолжение»
+  пусть print равно (хеш256 body)
+  если print равен (now.«отпечаток»)
+    то «Fetch next» от ask и rest и (добавить («Got of» от now и body) к got)
+    иначе «Failed» от "FLANG_INSTALL_FINGERPRINT" и (соединить ["пакет ", («Who» от now),
+      ": отпечаток тела не сошёлся — в списке ", (now.«отпечаток»), ", у полученного ", print,
+      "; на диск ничего не записано"] по "")
+
+тотальная функция «All fetched»
+  принимает ask: «Ask», got: список «Got»
+  возвращает «Продолжение»
+  если (длина got) равен 0
+    то вариант «Конец работы» с значение равным (соединить ["нужд у ", (ask.«shown»), " нет — ставить нечего"] по "")
+    иначе «Consented» от ask и got
+
+тотальная функция «Consented»
+  принимает ask: «Ask», got: список «Got»
+  возвращает «Продолжение»
+  пусть risky равно (отфильтровать got где one → one.«risky»)
+  если ((длина risky) больше 0) и притом (не (ask.«consent»))
+    то «Failed» от "FLANG_INSTALL_UNPROVED" и («Trouble list» от (соединить ["пакетов, которые расширяют ",
+      "доверенную базу: ", (к строке (длина risky)), "; ставятся только с ключом --accept-unproven:"] по "")
+      и (отобразить risky как one → «Risky words» от one))
+    иначе «Write next» от ask и got и got
+
+тотальная функция «Write next»
+  принимает ask: «Ask», rest: список «Got», got: список «Got»
+  возвращает «Продолжение»
+  разбор rest
+    случай пусто
+      то «Packages written» от ask и got
+    случай голова и хвост
+      то («Doing» от (вариант «Записать файл» с путь равным (соединить [(ask.«folder»), (голова.«file»)] по "")
+        и содержимое равным (голова.«body»))
+        и (вариант «Writing» с ask равным ask и rest равным хвост и got равным got))
+
+тотальная функция «Packages written»
+  принимает ask: «Ask», got: список «Got»
+  возвращает «Продолжение»
+  если ask.«stale»
+    то («Doing» от (вариант «Записать файл» с путь равным (соединить [(ask.«folder»), («Needs file»)] по "")
+      и содержимое равным (ask.«needs»)) и (вариант «Writing needs» с ask равным ask и got равным got))
+    иначе «Check order» от ask и got
+
+тотальная функция «After writing»
+  принимает ask: «Ask», rest: список «Got», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то «Write next» от ask и rest и got
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Failed» от code и (соединить ["файл пакета не записан: ", words] по "")
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали запись файла пакета"
+
+тотальная функция «Tool words»
+  принимает tool: строка, code: число, output: строка, errors: строка
+  возвращает строка
+  пример «Код и обе струи вывода, обрезанные»
+    дано tool равно "flang check"
+    дано code равно 1
+    дано output равно "о\n"
+    дано errors равно "FLANG_TYPE: беда\n"
+    ожидается "flang check ответил кодом 1: FLANG_TYPE: беда о"
+  соединить [tool, " ответил кодом ", (к строке code), ": ",
+    («Обрезать» от (соединить [errors, " ", output] по ""))] по ""
+
+тотальная функция «After checking»
+  принимает ask: «Ask», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0
+        то («Doing» от (вариант «Запустить процесс» с программа равным (ask.«binary»)
+          и аргументы равным ["lock", (ask.«program»)]) и (вариант «Locking» с ask равным ask и got равным got))
+        иначе «Failed» от "FLANG_INSTALL_BUILD" и («Tool words» от "flang check" и code и output и errors)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Failed» от "FLANG_INSTALL_BUILD" и (соединить ["flang check не запустился: ", words] по "")
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали ответ flang check"
+
+тотальная функция «After locking»
+  принимает ask: «Ask», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то если code равен 0
+        то («Doing» от (вариант «Записать файл» с путь равным (соединить [(ask.«folder»), («Lock file»)] по "")
+          и содержимое равным output) и (вариант «Writing lock» с ask равным ask и got равным got))
+        иначе «Failed» от "FLANG_INSTALL_BUILD" и («Tool words» от "flang lock" и code и output и errors)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Failed» от "FLANG_INSTALL_BUILD" и (соединить ["flang lock не запустился: ", words] по "")
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали ответ flang lock"
+
+тотальная функция «Summary»
+  принимает ask: «Ask», got: список «Got», bytes: число
+  возвращает строка
+  пусть head равно (соединить ["поставлено пакетов: ", (к строке (длина got)), " рядом с ", (ask.«shown»),
+    "; замок ", (ask.«folder»), («Lock file»), " — ", (к строке bytes), " знаков:"] по "")
+  «Trouble list» от head и (отобразить got как one → «Share words» от one)
+
+тотальная функция «After lock written»
+  принимает ask: «Ask», got: список «Got», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то вариант «Конец работы» с значение равным («Summary» от ask и got и bytes)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Failed» от code и (соединить ["замок не записан: ", words] по "")
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали запись замка"
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Reading arguments»
+      то «After arguments» от reply
+    случай вариант «Reading binary» с ask как ask
+      то «After binary» от ask и reply
+    случай вариант «Reading settings» с ask как ask
+      то «After settings» от ask и reply
+    случай вариант «Reading needs» с ask как ask
+      то «After needs» от ask и reply
+    случай вариант «Reading ledger» с ask как ask
+      то «After ledger» от ask и reply
+    случай вариант «Writing needs» с ask как ask и got как got
+      то «After writing needs» от ask и got и reply
+    случай вариант «Fetching» с ask как ask и now как now и rest как rest и got как got
+      то «After fetching» от ask и now и rest и got и reply
+    случай вариант «Writing» с ask как ask и rest как rest и got как got
+      то «After writing» от ask и rest и got и reply
+    случай вариант «Checking» с ask как ask и got как got
+      то «After checking» от ask и got и reply
+    случай вариант «Locking» с ask как ask и got как got
+      то «After locking» от ask и got и reply
+    случай вариант «Writing lock» с ask как ask и got как got
+      то «After lock written» от ask и got и reply
+
+план «Поставить»
+  состояние «Step»
+  начинает с «Start»
+  обрабатывает «Next»

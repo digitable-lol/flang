@@ -15,6 +15,7 @@ import «Приёмка»
 | правило | лемма `Rules.lean` | через |
 |---|---|---|
 | Т1, Н2, Н3 | «Т1» | «Т1-терм», «Н2-терм», «Н3-терм» |
+| Сл1, Сл2 | «Сл1», «Сл2» (`BitVec.isLt`) | «Сл1-терм», «Сл2-терм» здесь: факт окружения «слово-есть» (`«слово-в-окружении»`) |
 | ГипО, ГипД | «ГипО», «ГипД» (гипотеза под собой; снятие — «Р1», «Р4») | у ГипД — факт «Л или П» из окружения через «или-разбор» |
 | Кон1, Кон3 | «Кон1», «Кон2» (значение) | «Кон1-терм», «Кон3-терм» |
 | Кон2 | «Р1» | своё «не-или» |
@@ -58,7 +59,7 @@ import «Приёмка»
 
 ## Подмножество — числом
 
-Теорема доказана для всех 89 приёмов `шаг_вывода` (`«покрыто» = 89`, проверено
+Теорема доказана для всех 91 приёма `шаг_вывода` (`«покрыто» = 91`, проверено
 `decide`); Разв1 — и для разбора выписанного конструктора суммы, и для разбора
 выписанного списка в теле функции. Что приёмов у сверщика ровно столько и у каждого
 есть приёмка, стережёт `rules-guard.fscript` (ADR-0064). Чего модель не читает и где
@@ -143,6 +144,7 @@ theorem «допущение-любое-в-окружении» (u : «Утве�
   simp only [«окружение»]
   apply List.mem_append_left; apply List.mem_append_left
   apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left; apply List.mem_append_left
+  apply List.mem_append_right
   exact List.mem_map.mpr ⟨f, h, rfl⟩
 
 theorem «шагПо-в» {«преж» : List «Принятый»} {k : Nat} {p : «Принятый»}
@@ -733,6 +735,13 @@ theorem «замЧ-верно» (H : «Тело» → «Тело» → Bool) (w 
         simp only [«оценить»]
         rw [«замСм-верно» H w HH x1 y1 h1]
   | .«ярлык» x1, b, h => by
+      unfold «замЧ» at h
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+      rcases h with (hH | he) | hs
+      · exact «попаданиеЧ» HH hH
+      · subst he; rfl
+      · cases b <;> simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.false_eq_true] at hs
+  | .«кЧислу» x1, b, h => by
       unfold «замЧ» at h
       simp only [Bool.or_eq_true, decide_eq_true_eq] at h
       rcases h with (hH | he) | hs
@@ -1813,6 +1822,25 @@ theorem «ветвьСписка?-значение» {b t : «Тело»} (h : �
 
 /-! ## Инвариант блока и случай на правило -/
 
+/-- Сл1 на термах: «к числу x» неотрицательно по факту «слово-есть» — лемма
+    «Сл1» (`toNat` слова). -/
+theorem «Сл1-терм» (Γ : List («Факт» «Мир»)) (x : String) (n : Nat)
+    (h : «слово-есть» x n ∈ Γ) : «Выводится» Γ («≥0» (.«кЧислу» (.«имя» x))) := by
+  intro w hw
+  obtain ⟨b, hb⟩ := hw _ h
+  rw [«факт-неотр», hb]
+  exact «Сл1» b
+
+/-- Сл2 на термах: «к числу x» не больше К при К ≥ 2^n − 1 — лемма «Сл2»
+    (`BitVec.isLt`). -/
+theorem «Сл2-терм» (Γ : List («Факт» «Мир»)) (x : String) (n : Nat) (k : Int)
+    (hk : (2 ^ n : Int) - 1 ≤ k)
+    (h : «слово-есть» x n ∈ Γ) : «Выводится» Γ («≤К» (.«кЧислу» (.«имя» x)) k) := by
+  intro w hw
+  obtain ⟨b, hb⟩ := hw _ h
+  rw [«факт-потолок», hb]
+  exact «Сл2» b k hk
+
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
 def «Инв» (u : «Утверждение») («преж» : List «Принятый») : Prop :=
   ∀ p ∈ «преж», «Судим» («гип» p.«откр» ++ «окружение» u) («Факт-из» p.«формула»)
@@ -1897,6 +1925,12 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
   | «Н3» n x d ho hp hf hd hdno =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
     rw [hf]; exact «Н3-терм» _ _ («дно-в-окружении» u n x d hd hdno)
+  | «Сл1» n x d ho hp hf hd hw =>
+    simp only [«итог», «гип», List.map_nil, List.nil_append]
+    rw [hf]; exact «Сл1-терм» _ x _ («слово-в-окружении» u n x d hd hw)
+  | «Сл2» n x d k ho hp hf hd hw hk =>
+    simp only [«итог», «гип», List.map_nil, List.nil_append]
+    rw [hf]; exact «Сл2-терм» _ x _ k hk («слово-в-окружении» u n x d hd hw)
   | «Н4» l ho hp hf =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
     rw [hf]; exact «Н4-терм» _ l
@@ -2407,4 +2441,4 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
   «состоятельность» u («принят?-верно» u h)
 
 /-- Число покрытых правил; сверщик именует 81 приём в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 89 := by decide
+theorem «покрыто-число» : «покрыто» = 91 := by decide

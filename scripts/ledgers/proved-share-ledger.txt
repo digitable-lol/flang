@@ -2157,3 +2157,7 @@ fb81c00853e3b7291316d8dc04d3ace1|1|1|0|0|0|flang/proof/checker/tests/families/bo
 187925358f1ee7a6f07659431b7d872f|1|0|0|1|0|flang/proof/examples/forgery-unfold-inside-a-list.flang
 fe6ae44b60de761e120eefd61c6708b5|1|0|0|1|0|flang/proof/examples/forgery-unfold-of-a-whole-comparison.flang
 98be78cf0ec7a467da2d21e77981647e|1|0|0|1|0|flang/proof/examples/forgery-unfold-without-arguments.flang
+41dabfc9d393f9edbace41f0e692fc5f|32|20|12|0|0|flang/services/registry/core.flang
+65f167b474bdaeb8e9cbf4250e8594cc|1|0|1|0|0|flang/services/registry/serve.flang
+d3cfc89221ee2f27d7ba27355767227b|4|2|2|0|0|flang/services/registry/health.fscript
+e5992562d857253c1e0172dca36c2d37|10|7|3|0|0|scripts/services/registry-deploy.fscript

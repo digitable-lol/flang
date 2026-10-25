@@ -1298,6 +1298,8 @@ f5a8ef6df0c4f1421f459afe0984d24d|2|×|×|×|0|flang/proof/checker/tests/families
 6364cd4b39b55966314908c75988bf37|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/zero-without-premise.flang
 e18d79716b7e9d989ea2d6fdf38b6c14|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/zero-plus-one.flang
 da4b77e73c558c72c9dec94fa8a7725c|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/f05k-fold-not-by-the-argument.flang
+e7b887a0ec4270fad11a93a7a8956538|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/optional-empty-case-lies.flang
+5d8dae8d4dd1f4033eaf05d2fb3ac33b|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/optional-multiply-adds.flang
 fa3fb9a5955db0b82f480047ad83bf04|2|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-by-postcondition.flang
 6878457c28ff1862039bad5cf01c3b61|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-socrates.flang
 9ee2cd59eeca8e29bd5985c51b49e252|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-follows.flang

@@ -70,6 +70,8 @@ def «развернутьЛистКольца» (s : «Исх») (t : String) :
   | none => none
   | some (a, b) =>
     let body := s.«телоРазбора» a b
+    -- тело-разбор многочлен не читает: лист остаётся неразвёрнутым
+    let body := if (body.splitOn "разбор ").length > 1 && s.«телоБезПуст» a b = "" then "" else body
     let ps := s.«именаДоводовФункции» f
     let args := «сверху» ((t.drop s!"«{f}» от ".length).toString) "и"
     if body = "" || ps.isEmpty || ps.length ≠ args.length then none else

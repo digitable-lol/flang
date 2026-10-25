@@ -13,44 +13,6 @@ inductive «Узел» where
 def «правилоПосылки» (l : String) : String := «ёлочка» l 3
 def «вариантПосылки» (l : String) : String := «ёлочка» l 2
 
-def «вариантСлучая» («хвост» : String) : String :=
-  if «хвост».startsWith "вариант " then «имяВарианта» «хвост»
-  else if «хвост».startsWith "голова " then "голова и хвост"
-  else if «хвост» = s!"«{«ёлочка» «хвост» 1}»" then «ёлочка» «хвост» 1
-  else «слово» «хвост» 1
-
-def «Исх».«случайРазбора» (s : «Исх») (r b : Nat) («вариант» : String) : Option Nat := Id.run do
-  let dr := «отступ» (s.«сырая» r)
-  let mut d : Option Nat := none
-  for i in s.«меж» r b do
-    let l := s.«строка» i
-    if l = "" then continue
-    let o := «отступ» (s.«сырая» i)
-    if o ≤ dr then return none
-    if !l.startsWith "случай " then continue
-    if d.isNone then d := some o
-    if d = some o && «вариантСлучая» («словаС» l 1) = «вариант» then return some i
-  return none
-
-def «общийПрефиксБайт» (a b : String) : Nat :=
-  let x := a.toUTF8
-  let y := b.toUTF8
-  ((List.range (min x.size y.size)).takeWhile (fun i => x.get! i = y.get! i)).length
-
-def «тоЖеИмяРазбора» («что» «по» : String) («доводы» : List String) : Bool :=
-  let «ч» := «голо» «что»
-  let «п» := «голо» «по»
-  if «ч» = «п» then true
-  else if («ч».splitOn " ").length > 1 || «п».utf8ByteSize < 6 then false
-  else if «общийПрефиксБайт» «ч» «п» + 4 < «п».utf8ByteSize then false
-  else if «доводы».any (fun «д» => «голо» «д» = «ч») then false
-  else («доводы».filter (fun «д» => let dd := «голо» «д»; dd.utf8ByteSize ≥ 6 && «общийПрефиксБайт» «ч» dd + 4 ≥ dd.utf8ByteSize)).length = 1
-
-def «Исх».«случайТела» (s : «Исх») («чья» : String) (a b : Nat) («по» «вариант» : String) : Option Nat :=
-  match s.«строкаРазбора» a b with
-  | some (r, «что») => if «тоЖеИмяРазбора» «что» «по» (s.«именаДоводовФункции» «чья») then s.«случайРазбора» r b «вариант» else none
-  | none => none
-
 def «образецКакТерм» («хвост» «тип» : String) : String :=
   let str := «тип» = "строка"
   if «хвост» = "пусто" then (if str then "\"\"" else "пустой список")
@@ -182,105 +144,6 @@ def «Исх».«развернутьПлоское» (s : «Исх») (t «чь
   let fs := «сверху» tail "и"
   if body = "" || ds.isEmpty || ds.length ≠ fs.length then t
   else (ds.zip fs).foldl (fun acc (d, f) => «вместо» acc d («т» («обрезать» f))) body
-
-def «Исх».«развернутьВариантом» (s : «Исх») (t «чья» : String) : String := Id.run do
-  let g := «т» t
-  let n := «ёлочка» g 1
-  if n = "" || n = «чья» || !g.startsWith s!"«{n}» от " then return t
-  let some (a, b) := s.«блокС» n | return t
-  let ds := s.«именаДоводовФункции» n
-  let args := «доводыВызоваС» («обрезать» («после» g s!"«{n}» от "))
-  if ds.isEmpty || ds.length ≠ args.length then return t
-  let razb := (List.range' a (b - a)).filter (fun i => (s.«строка» i).startsWith "разбор ")
-  let mut kr : Option Nat := none
-  for i in razb do
-    for k in [0:ds.length] do
-      if «обрезать» («словаС» (s.«строка» i) 1) = ds.getD k "" then kr := some k
-  if razb.length ≠ 1 then return t
-  let some k0 := kr | return t
-  let dv := «ужатьТ» («обрезать» (args.getD k0 ""))
-  if !dv.startsWith "вариант «" then return t
-  let var := «ёлочка» dv 1
-  if var = "" then return t
-  let some ci := s.«случайТела» n a b (ds.getD k0 "") var | return t
-  let mut body := s.«телоСлучая» ci b
-  if body = "" then return t
-  let hs := «словаС» (s.«строка» ci) 1
-  let mut pk : Array String := #[]
-  let mut nk : Array String := #[]
-  let r1 := («разрез» hs "с").«право»
-  if r1 ≠ "" then
-    for part in «сверху» r1 "и" do
-      let f := «обрезать» («разрез» part "как").«лево»
-      let nm := «обрезать» («разрез» part "как").«право»
-      if f = "" || nm = "" then return t
-      pk := pk.push f
-      nk := nk.push nm
-  let mut pv : Array String := #[]
-  let mut vv : Array String := #[]
-  let r2 := («разрез» dv "с").«право»
-  if r2 ≠ "" then
-    for part in «сверху» r2 "и" do
-      let f := «обрезать» («разрез» part "равным").«лево»
-      let v := «обрезать» («разрез» part "равным").«право»
-      if f = "" || v = "" then return t
-      pv := pv.push f
-      vv := vv.push v
-  if pk.size ≠ pv.size then return t
-  let mut marks : Array String := #[]
-  let mut vals : Array String := #[]
-  for k in [0:pk.size] do
-    match (List.range pv.size).find? (fun j => pv[j]! = pk[k]!) with
-    | none => return t
-    | some j =>
-      marks := marks.push s!"%п{k}%"
-      vals := vals.push («т» vv[j]!)
-  for k in [0:nk.size] do
-    body := «вместо» body nk[k]! marks[k]!
-  for k in [0:ds.length] do
-    if k = k0 then continue
-    marks := marks.push s!"%д{k}%"
-    vals := vals.push («т» («обрезать» (args.getD k "")))
-    body := «вместо» body (ds.getD k "") marks[marks.size - 1]!
-  for k in [0:marks.size] do
-    body := «вместо» body marks[k]! vals[k]!
-  return «т» body
-
-def «закрывающая» (cs : Array Char) (p : Nat) : Option Nat := Id.run do
-  let mut gl : Int := 0
-  let mut q := p
-  while q < cs.size do
-    if cs[q]! = '(' then gl := gl + 1
-    else if cs[q]! = ')' then
-      gl := gl - 1
-      if gl = 0 then return some q
-    q := q + 1
-  return none
-
-def «Исх».«развернутьВезде» (s : «Исх») (t «чья» : String) : String := Id.run do
-  let mut r := «т» t
-  for _ in [0:24] do
-    let r2 := s.«развернутьВариантом» r «чья»
-    if r2 ≠ r then
-      r := «т» r2
-      continue
-    let cs := r.toList.toArray
-    let pat := "( «".toList
-    let mut changed := false
-    let mut p := 0
-    while p < cs.size && !changed do
-      if «стоитНа» cs p pat then
-        match «закрывающая» cs p with
-        | none => p := cs.size
-        | some q =>
-          let inner := «обрезать» (String.ofList (cs.extract (p + 1) q).toList)
-          let nn := s.«развернутьВариантом» inner «чья»
-          if nn ≠ inner then
-            r := «т» (String.ofList (cs.extract 0 p).toList ++ «вСкобки» nn ++ String.ofList (cs.extract (q + 1) cs.size).toList)
-            changed := true
-      p := p + 1
-    if !changed then break
-  return r
 
 def «свестиДопущением» (o : «Порядок») (t : String) («лево» «право» : List String) : String := Id.run do
   let mut r := «свестиПорядком» o (o.«исх».«развернутьВезде» t o.«чья») 6
@@ -471,10 +334,21 @@ def «Исх».«узелАлгебры» (s : «Исх») (c : «Счёт») (�
     if «правилоПосылки» l = "" then continue
     n := n + 1
     let v := «вариантПосылки» l
-    let some ci := s.«случайТела» «чья» a b po v | return .«не» s!"случай варианта «{v}» не найден в разборе «{po}», которым тело функции «{«чья»}» начинается"
+    -- ADR-0133: своей ветви нет — ветвь «любое» того же разбора; вариант при этом обязан быть объявлен и без полей.
+    let (ci, «любое») ← match s.«случайТела» «чья» a b po v with
+      | some ci => pure (ci, false)
+      | none => match s.«найтиЛюбое» a b po with
+        | some ci => pure (ci, true)
+        | none => return .«не» s!"случай варианта «{v}» не найден в разборе «{po}», которым тело функции «{«чья»}» начинается"
+    if «любое» then
+      let «строкаВ» := ((s.«строкиВариантов» tip).find? (fun l => «имяВарианта» l = v)).getD ""
+      if «строкаВ» = "" || («строкаВ».splitOn " содержит ").length > 1 then
+        return .«не» s!"вариант «{v}» идёт в ветвь «любое», а поля у него есть либо объявления нет"
     let body := s.«телоСлучая» ci b
     if body = "" then return .«не» s!"тело случая «{v}» не читается одним термом"
-    let hs := «словаС» (s.«строка» ci) 1
+    -- краткая запись образца «Имя» читается как `вариант «Имя»` (задача 9337), как в сверщике на C
+    let hs0 := if «любое» then s!"вариант «{v}»" else «словаС» (s.«строка» ci) 1
+    let hs := if hs0.startsWith "«" then "вариант " ++ hs0 else hs0
     if d.«неотр» || d.«дно» > 0 then
       let bnd := s.«допущенияИндукции» «чья» po («связанныеСлучая» hs)
       let bnd := if d.«неотр» then s.«сДномПоОбъявлению» bnd «чья» a b v hs else bnd
@@ -491,7 +365,7 @@ def «Исх».«узелАлгебры» (s : «Исх») (c : «Счёт») (�
       | .ok _ => pure ()
     else
       let mut g := «вместо» («т» «цель») "результат" body
-      let obr := «образецКакТерм» (if hs.startsWith "«" then "вариант " ++ hs else hs) tip
+      let obr := «образецКакТерм» hs tip
       let clean := obr ≠ "" && po ≠ "" && !((«связанныеСлучая» hs).any («естьТ» («т» «цель») ·))
       if clean then g := «вместо» g po obr
       if «естьСвязыватель» g || !«закрыта» c g then return .«не» s!"случай «{v}»: булева цель «{g}» не замкнулась"
@@ -857,9 +731,6 @@ def «приписатьВ» (l : String) : Option (String × String) :=
 def «вместоУЗапятой» (t «что» «на» : String) : String :=
   «заменить» («вместо» («заменить» t "," " ,") «что» «на») " ," ","
 
-def «связывательКромеРазбора» (t : String) : Bool :=
-  «естьСвязыватель» («обрезать» («заменить» («заменить» (" " ++ t ++ " ") " разбор " " ") " случай " " "))
-
 partial def «Исх».«подСвязкойЗакрыто» (s : «Исх») (c : «Счёт») («сырой» «тело» «чья» : String)
     («факты» «дно» : List String) («гл» : Nat) : Bool :=
   let t := «безВнешних» («т» «сырой»)
@@ -913,7 +784,7 @@ def «кванторПодСвязкойПроигран» (c : «Счёт») (m
   | none => (0, "")
   | some (a, b) =>
     let body := s.«телоРазбора» a b
-    if body = "" || !«кавычкиЧисты» body then (0, "") else
+    if body = "" || !«кавычкиЧисты» body || ((body.splitOn "разбор ").length > 1 && s.«телоБезПуст» a b = "") then (0, "") else
     let dno := (s.«именаДоводовФункции» m.«чья»).filter (s.«доводСДном» a b ·)
     if s.«подСвязкойЗакрыто» c m.«цель» body m.«чья» (s.«требованияФункции» a b) dno 0 then (1, "") else (0, "")
 
@@ -940,7 +811,8 @@ def «крюкиПоТелу» (c : «Счёт») (m : «Место») : «Ит�
   | none => pure ()
   if !m.«свои».any (·.startsWith "посылка ") && s.«цельЕстьОграничение» m.«высказывание» m.«имя» m.«чья» m.«цель» then
     return { r with «снял» := "цель_есть_ограничение" }
-  if «разборомЦели» c m.«свои» m.«чья» m.«цель» then return { r with «снял» := "разбор" }
+  -- факты цели — только постусловию своей функции: у утверждения функции нет (как у сверщика на C)
+  if «разборомЦели» c m.«свои» m.«чья» m.«цель» (if m.«высказывание».isSome then none else some m.«доказанные») then return { r with «снял» := "разбор" }
   if s.«разборомСлучаев» c m.«свои» m.«чья» m.«цель» then return { r with «снял» := "разбор_случаев" }
   if m.«свои».any (·.startsWith "посылка ") then return r
   if s.«свёрткаНеДлиннее» m.«чья» m.«цель» then return { r with «снял» := "свёртка" }

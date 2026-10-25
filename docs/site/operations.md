@@ -282,10 +282,9 @@ parameter name exactly as written in `принимает`, the value is the valu
 | `число`, `неотрицательное`, `целое` | a number | `21`, `-3`, `2.5` |
 | `строка` | a string in double quotes | `"раз два три"` |
 | `признак` | `true` or `false` | `true` |
-
-**Lists and records do not go through `--args`, and that is a boundary, not a
-typo.** The key takes a FLAT object of scalars — number, string, `true`, `false`,
-`null`:
+| `список …` | a JSON array | `[3, 1, 2]` |
+| a record (`объект`) | a JSON object, keys are the field names | `{"икс": 1, "имя": "А"}` |
+| a sum type (`тип`) | `{"variant": "Имя", "fields": {…}}` | `{"variant": "Круг", "fields": {"радиус": 2}}` |
 
 ```bash
 flang run docs/examples/operations.flang \
@@ -293,14 +292,26 @@ flang run docs/examples/operations.flang \
 ```
 
 ```
-flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
+6
 ```
 
-The refusal goes to the error stream, exit code 2. The language itself accepts
-such values — they just cannot be passed through `--args` today.
+Every value is checked against the declared type before the call, down to each
+list element and record field. A value of the wrong type is refused with
+`FLANG_TYPE` and exit code 1, and nothing is computed:
 
-A compound value goes in through the shell, written in the words of the language
-rather than JSON, and read by the compiler itself:
+```bash
+flang run docs/examples/operations.flang \
+  --function "Сумма без повторов" --args '{"элементы": [3, "один"]}'
+```
+
+```
+FLANG_TYPE: вызов функции «Сумма без повторов»: аргумент «элементы»[1] не соответствует типу число
+```
+
+JSON that does not parse is a bad invocation: exit code 2.
+
+The same value can also go in through the shell, written in the words of the
+language rather than JSON:
 
 ```bash
 echo '«Сумма без повторов» от [3, 1, 3, 2, 1]' | flang repl docs/examples/operations.flang

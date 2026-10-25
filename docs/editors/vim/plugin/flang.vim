@@ -10,12 +10,12 @@
 " Neovim сюда не заходит: у него встроенный vim.lsp, и он настраивается в
 " plugin/flang.lua. Два клиента на один буфер дали бы две одинаковые
 " диагностики на каждую строку.
-if has('nvim') || exists('g:loaded_flang_vimlsp') || get(g:, 'flang_ne_nastraivat', 0)
+if has('nvim') || exists('g:loaded_flang_vimlsp') || get(g:, 'flang_no_setup', get(g:, 'flang_ne_nastraivat', 0))
   finish
 endif
 let g:loaded_flang_vimlsp = 1
 
-function! s:Registrirovat() abort
+function! s:Register() abort
   " Проверяем НАЛИЧИЕ ФАЙЛА, а не функции: `exists('*lsp#register_server')`
   " здесь лжёт. Автозагружаемая функция не «существует», пока её файл не
   " прочитан, а прочитан он будет только при первом вызове — то есть проверка
@@ -27,20 +27,20 @@ function! s:Registrirovat() abort
     " молча делать вид, что подсказки будут, — беда.
     return
   endif
-  let l:komanda = flang#Server()
-  if empty(l:komanda)
-    call flang#Poplakat()
+  let l:command = flang#Server()
+  if empty(l:command)
+    call flang#WarnOnce()
     return
   endif
   call lsp#register_server({
         \ 'name': 'flang',
-        \ 'cmd': {server_info -> l:komanda},
+        \ 'cmd': {server_info -> l:command},
         \ 'allowlist': ['flang'],
-        \ 'root_uri': {server_info -> lsp#utils#path_to_uri(flang#Koren())},
+        \ 'root_uri': {server_info -> lsp#utils#path_to_uri(flang#ProjectRoot())},
         \ })
 endfunction
 
 augroup flang_vimlsp
   autocmd!
-  autocmd User lsp_setup call s:Registrirovat()
+  autocmd User lsp_setup call s:Register()
 augroup END

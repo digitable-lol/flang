@@ -580,7 +580,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 
 ## Installing packages
 
-Refusals of the package installer (`flang run-script package:install`) are
+Refusals of the package installer (`flang install`) are
 printed by the installer itself, a plan written in flang, not by the compiler;
 their codes and what to do about them are listed on the
 [packages page](packages.html#refusal-codes-of-the-installer).

@@ -48,9 +48,10 @@ format, for whoever writes or serves it, is
 ## Install a package by name
 
 ```
-flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'
+flang install проба/proba.flang 'Множество строк: не ниже 1.1'
 ```
 
+(until reprint 9c, `flang run-script package:install` from the flang tree — the same engine).
 The command takes this list, picks the greatest version that satisfies the needs
 of the project and of the packages themselves, downloads the files, checks their
 `sha256` before writing, puts them next to the program and writes `flang.lock`.

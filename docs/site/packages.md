@@ -61,12 +61,11 @@ shop.flang: не проверено — замечаний 1
 
 ## Install a package by name from the registry
 
-A package listed in the [registry](registry.html) is installed with one command
-run from the flang tree. Name your program file and the package, with a version
-range if you want one:
+A package listed in the [registry](registry.html) is installed with one command.
+Name your program file and the package, with a version range if you want one:
 
 ```bash
-$ flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'
+$ flang install проба/proba.flang 'Множество строк: не ниже 1.1'
 поставлено пакетов: 3 рядом с проба/proba.flang; замок проба/flang.lock — 65547 знаков:
   · Множество строк 1.1.0 → sets.flang-package: доказано 4 из 18 обязательств
   · Списки 1.4.2 → lists.flang-package: доказано 15 из 39 обязательств
@@ -74,6 +73,11 @@ $ flang run-script package:install проба/proba.flang 'Множество с
 $ echo $?
 0
 ```
+
+The `flang install` command reaches the binary with the next reprint (batch
+9c). In the 0.7.30 binary the same command is the shortcut of the flang tree,
+`flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'`;
+that shortcut is the engine `flang install` calls inside.
 
 What happens behind that line:
 
@@ -107,8 +111,12 @@ byte — `flang run-script package-install:check` verifies this, and the CI job
 not symbols: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. The refusal
 codes are in the table below.
 
-There is no `flang install` command of the binary yet: the installer is a flang
-program (`scripts/package-install.fscript`) run from the flang tree.
+How it works inside: the installer is a flang program
+(`scripts/package-install.fscript`) that `flang install` finds next to the
+binary (`scripts/` in the tree, `share/flang/scripts/` when installed) and runs
+with its own plan executor. From the flang tree the same plan is called by the
+shortcut `flang run-script package:install`; that is how it is tested and how
+it works until reprint 9c.
 
 ### Refusal codes of the installer
 
@@ -116,7 +124,7 @@ The exit code is 1 for all of them; the code stands in the answer with the reaso
 
 | Code | What it means | What to do |
 |---|---|---|
-| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang run-script package:install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
 | `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
 | `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
 | `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
@@ -330,10 +338,10 @@ A program can have a `flang.lock` and packages at the same time.
 
 ## What is missing
 
-- **A command of the binary.** There is no `flang install`: installing is a plan
-  run from the flang tree (`flang run-script package:install`); there is no
-  `flang publish` or `flang search` — publishing is a commit of the file and a
-  line in the registry list.
+- **`flang install` in the 0.7.30 binary.** The command arrives with reprint
+  9c; until then installing runs the same plan from the flang tree (`flang
+  run-script package:install`). There is no `flang publish` or `flang search` —
+  publishing is a commit of the file and a line in the registry list.
 - **Other people's packages in the registry.** The list holds only the example
   packages.
 - **Two versions of one library** in one program: imports merge into one flat

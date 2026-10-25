@@ -47,9 +47,10 @@ https://digitable-lol.github.io/flang/registry.list
 ## Поставить пакет по имени
 
 ```
-flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'
+flang install проба/proba.flang 'Множество строк: не ниже 1.1'
 ```
 
+(до печати 9c — `flang run-script package:install` из дерева flang, тот же движок).
 Команда берёт этот список, выбирает наибольшую годную версию по нуждам проекта
 и нуждам самих пакетов, скачивает файлы, сверяет `sha256` до записи на диск,
 кладёт их рядом с программой и пишет `flang.lock`. Подробно — на странице

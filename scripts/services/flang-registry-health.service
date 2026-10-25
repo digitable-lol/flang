@@ -7,3 +7,7 @@ Description=flang registry: health probe
 [Service]
 Type=oneshot
 ExecStart=@HOME_DIR@/bin/flang io @HOME_DIR@/service/health.fscript --plan "Проба здоровья" --trust -- @PORT@ @HOME_DIR@/health.log
+# Журнал поручений пробы (в нём весь health.log дважды) в journald не нужен:
+# итог пробы — строка в health.log, отказ — код 1 и строка systemd в journald.
+StandardOutput=null
+StandardError=journal

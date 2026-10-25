@@ -11,11 +11,15 @@
 # тысяч запросов, а служба живёт месяцами.
 #
 # Хозяин `flang io` слушает 0.0.0.0: адреса привязки у поручения «Принять
-# соединение» нет. IPAddressDeny/IPAddressAllow в пользовательской единице не
-# действуют (systemd: «unit configures an IP firewall, but not running as
-# root» — проверено 24.10.2026, порт отвечал по внешнему адресу машины), поэтому
-# их здесь нет: закрыть порт снаружи может только брандмауэр машины или
-# обратный прокси владельца. См. docs/services-in-production.md.
+# соединение» нет, а IPAddressDeny/IPAddressAllow и PrivateNetwork в
+# пользовательской единице не действуют (systemd: «unit configures an IP
+# firewall, but not running as root»; проверено 24 и 25.10.2026 — порт отвечал
+# по внешнему адресу машины). Поэтому служба живёт в своём сетевом пространстве
+# под pasta: снаружи её порт виден только как 127.0.0.1:@PORT@ машины, внешний
+# адрес отвечает отказом соединения. sh между pasta и flang нужен надзору:
+# pasta отдаёт код выхода ребёнка, но гибель ребёнка от сигнала превращает в 0,
+# а sh — в 128+сигнал, и Restart=on-failure срабатывает.
+# См. docs/services-in-production.md.
 
 [Unit]
 Description=flang registry: name ledger of packages over HTTP
@@ -23,7 +27,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=@HOME_DIR@/service
-ExecStart=@HOME_DIR@/bin/flang io @HOME_DIR@/service/serve.flang --trust --in-dir --max-orders 1000000000 -- @PORT@
+ExecStart=/usr/bin/pasta --config-net -t 127.0.0.1/@PORT@ -u none -T none -U none -f -q -- /bin/sh -c '"$$@"; exit $$?' run @HOME_DIR@/bin/flang io @HOME_DIR@/service/serve.flang --trust --in-dir --max-orders 1000000000 -- @PORT@
 Restart=on-failure
 RestartSec=5
 MemoryMax=4G

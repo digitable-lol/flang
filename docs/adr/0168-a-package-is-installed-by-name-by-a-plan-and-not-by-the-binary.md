@@ -109,8 +109,8 @@ $ echo $?
 9. **Коды отказа — свои, английскими словами:** `FLANG_INSTALL_USAGE`,
    `FLANG_INSTALL_LEDGER`, `FLANG_INSTALL_NEEDS`, `FLANG_INSTALL_CONFLICT`,
    `FLANG_INSTALL_FINGERPRINT`, `FLANG_INSTALL_UNPROVED`, `FLANG_INSTALL_BUILD`;
-   у команды двоичного — ещё отказ «движка рядом с двоичным нет», своим кодом
-   (ветка `a/flang-install-command`). Таблица — `docs/site/packages.ru.md`, раздел «Коды отказов
+   у команды двоичного — ещё `FLANG_INSTALL_ENGINE` (движка рядом с двоичным
+   нет). Таблица — `docs/site/packages.ru.md`, раздел «Коды отказов
    установщика» (страница отказов принимает только коды компилятора). Прежние
    коды инструмента реестра (`FLANG_REESTR_*`) этим решением не переименованы.
 
@@ -175,8 +175,8 @@ $ echo $?
   `<каталог двоичного>/../share/flang/scripts/package-install.fscript` у
   поставленного. Тарболл выпуска, формула Homebrew, плагин asdf и `install.sh`
   уже кладут `share/flang/` рядом с `bin/flang`; план едет туда же, как едет
-  библиотека (`scripts/release/release-in-c.fscript`). Нет файла — названный
-  отказ своим кодом, а не тишина.
+  библиотека (`scripts/release/release-in-c.fscript`, «Копия движка установки»).
+  Нет файла — названный отказ `FLANG_INSTALL_ENGINE`, а не тишина.
 - **План ввозит `Registry` по имени**, а не путём `../flang/stdlib/registry.flang`:
   по имени модуль находится и в дереве (подъём до корня), и у поставленного
   (`share/flang/stdlib`), а путь верен только в дереве.

@@ -451,6 +451,7 @@ static const char FLANG_HELP[] =
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
+    "  flang install <файл> [<имя>…]      поставить пакеты по имени из реестра и записать замок\n"
     "  flang run-script <имя>             короткая команда проекта из «.flangrc»\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
@@ -1027,6 +1028,31 @@ static const char HELP_NEW[] =
     "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
     "FLANG_NEW, код 1, и каталог не заводится вовсе.";
 
+static const char HELP_INSTALL[] =
+    "flang install <файл.flang> [<имя>[: <ограничение>]]... [--registry <адрес>]\n"
+    "              [--accept-unproven]\n"
+    "\n"
+    "Ставит пакеты по имени из реестра и записывает замок. Нужды проекта живут в\n"
+    "файле flang.needs рядом с программой (по нужде на строку: «Логика: не ниже 1.0»);\n"
+    "имена из команды дописываются туда после удачной установки. Список реестра\n"
+    "берётся по адресу (http://, https:// или путь), версии разрешаются по нуждам\n"
+    "проекта и самих пакетов (наибольшая годная, одна на имя), тело каждого пакета\n"
+    "сверяется с отпечатком sha256 из списка ДО записи на диск, файлы ложатся рядом\n"
+    "с программой под именем из списка без версии, затем flang check и flang lock.\n"
+    "\n"
+    "  flang install проба/proba.flang 'Множество строк: не ниже 1.1'\n"
+    "\n"
+    "Ограничения: любая, ровно 1.2.3, не ниже 1.2.3, в пределах 1.x. Адрес списка:\n"
+    "ключ --registry, иначе ключ «registry» в ближайшем .flangrc, иначе список ветки\n"
+    "dev на GitHub. Пакет, несущий закон или «объявлено, не доказано», ставится\n"
+    "только с --accept-unproven; доля доказанного печатается у каждого пакета.\n"
+    "\n"
+    "Команда зовёт движок — план scripts/package-install.fscript, который лежит рядом\n"
+    "с двоичным (в дереве — scripts/, у поставленного — share/flang/scripts/); нет его\n"
+    "— отказ FLANG_INSTALL_ENGINE. Отказы движка — FLANG_INSTALL_USAGE, _LEDGER,\n"
+    "_NEEDS, _CONFLICT, _FINGERPRINT, _UNPROVED, _BUILD; код возврата 1. Из дерева\n"
+    "тот же движок зовётся словами «flang run-script package:install …».";
+
 static const char HELP_RUN_SCRIPT[] =
     "flang run-script [<имя> [доводы…]]\n"
     "\n"
@@ -1198,6 +1224,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
+  } else if (strcmp(topic, "install") == 0) {
+    printf("%s\n", HELP_INSTALL);
   } else if (strcmp(topic, "new") == 0) {
     printf("%s\n", HELP_NEW);
   } else {
@@ -20792,8 +20820,21 @@ static fl_value io_perform(io_host *host, fl_value order) {
  * диагностика одна и несёт код и сообщение. Идёт он в stderr, а не в stdout, —
  * там, где у удачи стоит вердикт.
  */
+/*
+ * КРАТКИЙ ОТВЕТ — для команды, за которой человек, а не свидетель: `flang install`
+ * зовёт исполнителя планов внутри процесса, и человеку нужен итог строками, а не
+ * вердикт JSON с журналом поручений, в котором лежат тела всех скачанных пакетов.
+ * Удача — текст итога в stdout; отказ — «КОД: причина» в stderr. Коды возврата те
+ * же, что у `flang io`: решает по-прежнему план, а не способ печати.
+ */
+static bool io_brief = false;
+
 static void io_print_error(const char *code, const char *message, double line, double column, bool pretty) {
   fl_value diagnostic[4];
+  if (io_brief) {
+    fprintf(stderr, "%s: %s\n", code, message);
+    return;
+  }
   fl_value list[1];
   fl_value pairs[2];
   fl_value printed = fl_nothing();
@@ -20840,6 +20881,15 @@ static void io_report(fl_value plan, fl_value result, const fl_value *log, size_
   const char *utf8 = NULL;
   size_t bytes = 0;
   char *name = NULL;
+  if (io_brief) {
+    if (zn_text(result, &utf8, &bytes) || val_text(result, &utf8, &bytes)) {
+      fwrite(utf8, 1, bytes, stdout);
+      fputc('\n', stdout);
+    } else {
+      fputs("готово\n", stdout);
+    }
+    return;
+  }
   val_field(plan, "имя", &field);
   name = val_copy(field);
   pairs[0] = io_pair("plan", io_say(name));
@@ -22787,7 +22837,7 @@ static int package_file(int argc, char **argv) {
 
 static const char *const NEW_RESERVED[] = {"check", "ast",  "tokens",  "run",     "test", "facts", "emit",
                                            "io",    "repl", "lock",    "package", "new",  "lsp",   "help",
-                                           "version", "flang", "fspec"};
+                                           "version", "flang", "fspec", "install"};
 #define NEW_RESERVED_COUNT (sizeof(NEW_RESERVED) / sizeof(NEW_RESERVED[0]))
 
 /** Запрещённые куски имени пакета — та же строка, что «Запрещённые куски
@@ -24547,6 +24597,180 @@ static void human_memory_said(const char *command) {
           command);
 }
 
+/* ═══════════════════ установка пакетов: `flang install` ══════════════════ */
+
+/*
+ * КОМАНДА НЕ НЕСЁТ УСТАНОВЩИКА (ADR-0168 §6). Движок — план
+ * `scripts/package-install.fscript`; он лежит рядом с двоичным там же, где
+ * библиотека: в дереве — `<каталог двоичного>/../scripts/`, у поставленного —
+ * `<каталог двоичного>/../share/flang/scripts/`. Команда готовит движку доводы и
+ * зовёт исполнителя планов внутри процесса: путь программы делается абсолютным
+ * (пути поручений план считает от СВОЕГО каталога, а не от каталога человека),
+ * адрес списка берётся из ближайшего `.flangrc` вверх от рабочего каталога тем
+ * же разбором, что у `run-script`, а свой путь двоичный отдаёт в FLANG_BINARY,
+ * чтобы `check` и `lock` звались им же, а не `../bootstrap/flang`.
+ *
+ * Почему не текст плана в C-строке: он менялся бы только печатью семени, а файл
+ * рядом с двоичным меняется коммитом и едет к поставленному с выпуском, как едет
+ * библиотека. Нет файла — названный отказ FLANG_INSTALL_ENGINE, не тишина.
+ */
+#define INSTALL_ENGINE "package-install.fscript"
+
+static char *install_engine_path(const char *self) {
+  static const char *const SUBS[2] = {"scripts", "share/flang/scripts"};
+  char *self_dir = repl_self_dir(self);
+  char *parent = NULL;
+  char *found = NULL;
+  size_t index = 0;
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  parent = repl_dirname(self_dir);
+  for (index = 0; index < 2 && found == NULL; index += 1) {
+    char *directory = repl_join(parent, SUBS[index]);
+    char *candidate = repl_join(directory, INSTALL_ENGINE);
+    if (repl_exists(candidate)) {
+      found = candidate;
+    } else {
+      free(candidate);
+    }
+    free(directory);
+  }
+  free(parent);
+  free(self_dir);
+  return found;
+}
+
+/** Абсолютный путь: относительный считается от рабочего каталога человека. */
+static char *install_absolute(const char *path) {
+  char cwd[4096];
+  if (path[0] == '/') {
+    return repl_dup(path, strlen(path));
+  }
+  if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    return repl_dup(path, strlen(path));
+  }
+  return repl_resolve(cwd, path);
+}
+
+/** Адрес списка: сеть — как есть, путь — абсолютный от названного каталога. */
+static char *install_address(const char *given, const char *base) {
+  if (strncmp(given, "http://", 7) == 0 || strncmp(given, "https://", 8) == 0 || given[0] == '/') {
+    return repl_dup(given, strlen(given));
+  }
+  return repl_resolve(base, given);
+}
+
+/** Ключ «registry» ближайшего `.flangrc`; путь считается от каталога файла. Нет — NULL. */
+static char *install_registry_from_settings(void) {
+  char path[4352];
+  size_t bytes = 0;
+  size_t at = 0;
+  char *text = NULL;
+  char *found = NULL;
+  char *value = NULL;
+  char *base = NULL;
+  flangrc_pair pair;
+  if (!flangrc_project(path, sizeof(path))) {
+    return NULL;
+  }
+  text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    return NULL;
+  }
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (pair.key_bytes == strlen("registry") && memcmp(pair.key, "registry", pair.key_bytes) == 0 &&
+        pair.value_bytes > 0) {
+      free(value);
+      value = repl_dup(pair.value, pair.value_bytes);
+    }
+  }
+  free(text);
+  if (value == NULL) {
+    return NULL;
+  }
+  base = repl_dirname(path);
+  found = install_address(value, base);
+  free(base);
+  free(value);
+  return found;
+}
+
+static int install_command(int argc, char **argv, const char *self) {
+  char *engine = NULL;
+  char *program = NULL;
+  char *registry = NULL;
+  char *binary = NULL;
+  char **words = NULL;
+  char *given_registry = NULL;
+  int count = 0;
+  int index = 0;
+  int code = 0;
+  bool registry_given = false;
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--registry") == 0) {
+      registry_given = true;
+    }
+  }
+  if (argc < 3 || argv[2][0] == '-') {
+    fputs("FLANG_INSTALL_USAGE: не назван файл программы. Звать: flang install <файл.flang> "
+          "[<имя>[: <ограничение>]]... [--registry <адрес>] [--accept-unproven]\n",
+          stderr);
+    return 1;
+  }
+  engine = install_engine_path(self);
+  if (engine == NULL) {
+    fputs("FLANG_INSTALL_ENGINE: рядом с двоичным нет движка установки " INSTALL_ENGINE
+          " (ни в <каталог двоичного>/../scripts, ни в ../share/flang/scripts). Поставьте flang целиком — "
+          "тарболлом, install.sh, Homebrew или asdf; из дерева зовите «flang run-script package:install»\n",
+          stderr);
+    return 1;
+  }
+  program = install_absolute(argv[2]);
+  binary = install_absolute(self);
+  if (!registry_given) {
+    registry = install_registry_from_settings();
+  }
+  setenv("FLANG_BINARY", binary, 1);
+  /* flang io <движок> --plan Поставить --timeout 600000 -- <программа> <доводы> [--registry <из .flangrc>] */
+  words = (char **)repl_alloc((size_t)(argc + 10) * sizeof(char *));
+  words[count++] = argv[0];
+  words[count++] = (char *)"io";
+  words[count++] = engine;
+  words[count++] = (char *)"--plan";
+  words[count++] = (char *)"Поставить";
+  words[count++] = (char *)"--timeout";
+  words[count++] = (char *)"600000";
+  words[count++] = (char *)"--";
+  words[count++] = program;
+  for (index = 3; index < argc; index += 1) {
+    if (index > 3 && strcmp(argv[index - 1], "--registry") == 0) {
+      /* Путь списка человек называет от своего каталога, а план считает пути от
+         своего — поэтому путь делается абсолютным здесь, адрес сети не трогается. */
+      char cwd[4096];
+      free(given_registry);
+      given_registry = install_address(argv[index], getcwd(cwd, sizeof(cwd)) == NULL ? "." : cwd);
+      words[count++] = given_registry;
+    } else {
+      words[count++] = argv[index];
+    }
+  }
+  if (registry != NULL) {
+    words[count++] = (char *)"--registry";
+    words[count++] = registry;
+  }
+  io_brief = true;
+  code = io_file(count, words);
+  io_brief = false;
+  free(words);
+  free(given_registry);
+  free(registry);
+  free(binary);
+  free(program);
+  free(engine);
+  return code;
+}
+
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
   proof_cache_argv = argv;
@@ -24625,6 +24849,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = package_file(argc, argv);
   } else if (strcmp(command, "new") == 0) {
     code = new_project(argc, argv, self);
+  } else if (strcmp(command, "install") == 0) {
+    code = install_command(argc, argv, self);
   } else if (scripted) {
     code = script_command(argc, argv);
   } else if (strcmp(command, "lsp") == 0) {

@@ -74,8 +74,9 @@ $ echo $?
 0
 ```
 
-The `flang install` command reaches the binary with the next reprint (batch
-9c). In the 0.7.30 binary the same command is the shortcut of the flang tree,
+The `flang install` command reaches the binary with the reprint of the seed
+(batch 9c); it is in the sources. In the 0.7.30 binary the same command is the
+shortcut of the flang tree,
 `flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'`;
 that shortcut is the engine `flang install` calls inside.
 
@@ -125,6 +126,7 @@ The exit code is 1 for all of them; the code stands in the answer with the reaso
 | Code | What it means | What to do |
 |---|---|---|
 | `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_ENGINE` | no engine `package-install.fscript` next to the binary (neither in `scripts/` nor in `share/flang/scripts/`) | install flang whole — tarball, `install.sh`, Homebrew or asdf; from the tree call `flang run-script package:install` |
 | `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
 | `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
 | `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |

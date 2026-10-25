@@ -256,6 +256,7 @@ script.registry-prints:check = bootstrap/flang io scripts/registry-tool.fscript 
 script.package:install = bootstrap/flang io scripts/package-install.fscript --plan Поставить --timeout 600000 --
 script.package-install:check = bootstrap/flang io scripts/guards/package-install-guard.fscript --plan Check --timeout 600000 --
 script.package-install:forgery = bootstrap/flang io scripts/guards/package-install-guard.fscript --plan Forgery --timeout 600000 --
+script.package-install:command = bootstrap/flang io scripts/guards/package-install-guard.fscript --plan Command --timeout 600000 --
 script.lock-forms:check = bootstrap/flang io scripts/guards/lock-closes-every-form.fscript --plan Check
 script.lock-forms:forgery = bootstrap/flang io scripts/guards/lock-closes-every-form.fscript --plan Forgery
 script.reprint = sh scripts/bootstrap-reprint.sh

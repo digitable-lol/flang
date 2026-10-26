@@ -2169,6 +2169,8 @@ fe6ae44b60de761e120eefd61c6708b5|1|0|0|1|0|flang/proof/examples/forgery-unfold-o
 98be78cf0ec7a467da2d21e77981647e|1|0|0|1|0|flang/proof/examples/forgery-unfold-without-arguments.flang
 bdbd25eab3957aaf7faaccb3dbc19db2|1|×|×|×|2|flang/proof/checker/tests/families/case-link/case-link.flang
 194d9d9b1fe9894149ae221229f8b70c|3|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds.flang
+dcbb2e0f5c7fd33b00bc00ba6aae90ef|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds-wide.flang
+a2a36ce6a1d1eeebe0787c2f390f1e81|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/wide-ceiling-below-word-bound.flang
 57702e40e7a0d22f109e613bfb7afbdd|6|2|4|0|0|flang/proof/checker/tests/families/list-inclusion/inclusion.flang
 afef0441b80315d6e7b66e8c0f5f0680|12|7|5|0|2|flang/proof/checker/tests/families/unfold-on-constructor/built-constructor.flang
 408249d6e22a41b1fa862c0a5e22a5f4|8|1|0|7|1|flang/proof/checker/tests/families/unfold-on-constructor/false-forms.flang

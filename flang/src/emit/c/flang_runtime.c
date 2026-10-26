@@ -3683,6 +3683,7 @@ static bool fl_js_space(unsigned long code) {
 
 fl_value fl_nothing(void) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_NOTHING;
   value.as.number = 0.0;
   return value;
@@ -3690,6 +3691,7 @@ fl_value fl_nothing(void) {
 
 fl_value fl_number(double number) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_NUMBER;
   value.as.number = number;
   return value;
@@ -3697,6 +3699,7 @@ fl_value fl_number(double number) {
 
 fl_value fl_flag(bool flag) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_FLAG;
   value.as.flag = flag;
   return value;
@@ -3704,6 +3707,7 @@ fl_value fl_flag(bool flag) {
 
 fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_STRING;
   value.as.string.utf8 = utf8;
   value.as.string.bytes = bytes;
@@ -3752,6 +3756,7 @@ struct fl_grow {
 
 fl_value fl_list(const fl_value *items, size_t count) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_LIST;
   value.as.list.items = items;
   value.as.list.count = count;
@@ -4112,6 +4117,7 @@ static uint64_t fl_word_sign_bit(unsigned width) {
 
 fl_value fl_word(unsigned width, bool sign, uint64_t bits) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_WORD;
   value.as.word.bits = bits & fl_word_mask(width);
   value.as.word.width = (unsigned char)width;

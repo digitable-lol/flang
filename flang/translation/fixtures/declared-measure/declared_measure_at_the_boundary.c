@@ -21,7 +21,7 @@ static fl_status declared_measure_at_the_boundary_nod_body(fl_ctx *ctx, fl_value
     } else {
       const fl_value dovod_1 = vtoroe; /* пусть «довод 1» */
       if (pervoe.tag != FL_NUMBER || vtoroe.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "mod", pervoe, vtoroe, error));
-      const fl_value dovod_2 = fl_number(fmod(pervoe.as.number, vtoroe.as.number)); /* пусть «довод 2» */
+      const fl_value dovod_2 = fl_number(fmod(pervoe.as.number, vtoroe.as.number) + 0.0); /* пусть «довод 2» */
       const fl_value mera_vitka = vtoroe; /* пусть «мера витка» */
       const fl_value mera_shaga = dovod_2; /* пусть «мера шага» */
       fl_value fl_t2 = fl_nothing();

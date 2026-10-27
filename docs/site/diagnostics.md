@@ -529,6 +529,7 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_COMPOSE_MISMATCH` | the ends of a composition do not meet |
 | `FLANG_MORPHISM_SHAPE` | the morphism is declared wrong |
 | `FLANG_FUNCTOR_SQUARE` | the functor square does not commute |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | an arrow is mapped, but one of its ends has no image |
 | `FLANG_TRANSFORM_NOT_NATURAL` | the naturality square does not commute |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | the bifunctor maps one pair of objects twice |
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | a pair of arrows is mapped, but the pair of their ends has no image |
@@ -536,6 +537,8 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_BIFUNCTOR_IDENTITY` | a pair of identities is mapped to an arrow that is not an identity |
 | `FLANG_BIFUNCTOR_COMPOSITION` | a pair of composites is mapped to an arrow that is not the composite of the images |
 | `FLANG_ISO_NOT_INVERSE` | the two arrows are not inverse to each other |
+| `FLANG_ISO_MISMATCH` | an arrow of the isomorphism is undeclared or does not go between its two objects |
+| `FLANG_ISO_IDENTITY_MISSING` | an object of the isomorphism has no declared identity |
 | `FLANG_EMBED_SHAPE` | the embedding is declared wrong |
 | `FLANG_EMBED_NOT_INJECTIVE` | the embedding maps different values to the same one |
 | `FLANG_MONOID` | the monoid declaration is incomplete |
@@ -680,6 +683,7 @@ record — [the record format](record-format.html).
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |
 | `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
@@ -719,6 +723,8 @@ record — [the record format](record-format.html).
 | `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
 | `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
 | `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
+| `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |

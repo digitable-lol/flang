@@ -412,14 +412,16 @@ $ flang emit привет.flang --target c --out вывод
 flang test <файл>
 
 $ ls вывод
-Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  privet.c  privet.h
+Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  program.c  program.h
 ```
 
 The output says: 6 files written; the program was checked before generation;
 the unit tests were not run. The generated runner checks arguments against the
 declared types the same way `flang run` does: for `−3` given to a
-`неотрицательное` parameter it answers `FLANG_TYPE`. File names are the
-module name in Latin letters («Привет» → `privet.c`).
+`неотрицательное` parameter it answers `FLANG_TYPE`. The files take the module
+name when it is written in Latin letters («Report» → `report.c`). A Cyrillic name
+is not transliterated: the files of module «Привет» are called `program.*`, and the
+Java and C# class is `FlangProgram`. `--file` gives a file a name of your own.
 
 An unknown target is exit code `2`, with the list of targets:
 

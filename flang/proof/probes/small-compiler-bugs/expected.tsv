@@ -1,0 +1,32 @@
+program	command	code	word
+library-only-helper.flang	check @	0	замечаний нет
+library-only-helper.flang	run @ --function «Проба» --trust	0	6
+library-only-helper.flang	check docs/examples/reference/ru/report-only.flang	0	замечаний нет
+library-only-helper.flang	check docs/examples/reference/en/report-only.flang	0	замечаний нет
+no-returns.flang	check @	1	нет строки 'возвращает': тип результата обязателен
+iso-swapped.flang	check @	1	FLANG_ISO_MISMATCH
+iso-swapped.flang	check @	1	прямая стрелка «по накладной» идёт из «Накладная» в «Заказ», а положено из «Заказ» в «Накладная»
+iso-no-unit.flang	check @	1	FLANG_ISO_IDENTITY_MISSING
+iso-no-unit.flang	check @	1	у объекта «Накладная» не объявлена единица
+functor-object-missing.flang	check @	1	FLANG_FUNCTOR_OBJECT_MISSING
+functor-object-missing.flang	check @	1	у объекта «Отгрузка» образа нет, а стрелка «отгрузить» в него ведёт
+functor-full.flang	check @	2	функтор «Заказ в счёт»: НЕ СЧИТАЛСЯ
+forever.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target c --out "$d/p" > /dev/null 2>&1 && make -s -C "$d/p" > "$d/log" 2>&1; r=$?; grep -m1 error "$d/log"; rm -rf "$d"; echo "make c $r"; exit $r' $flang @	0	make c 0
+forever.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target cpp --out "$d/p" > /dev/null 2>&1 && make -s -C "$d/p" > "$d/log" 2>&1; r=$?; grep -m1 error "$d/log"; rm -rf "$d"; echo "make cpp $r"; exit $r' $flang @	0	make cpp 0
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target c --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./program.c 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target cpp --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./program.cpp 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target go --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./flang/program.go 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target rust --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./src/program.rs 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target java --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./FlangProgram.java 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target js --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./program.js 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target ts --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./program.ts 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target elixir --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./flang_program.ex 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target python --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./program.py 
+hello.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target csharp --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./FlangProgram.cs 
+forever.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target c --out "$d/p" > /dev/null 2>&1; n=$(cd "$d/p" && find . -type f | LC_ALL=C sort | tr "\n" " "); rm -rf "$d"; echo "files: $n"; case "$n" in *rivet*) exit 1;; esac' $flang @	0	./forever.c 
+negative-zero.flang	test @	0	примеров 5, прошло 5, не прошло 0
+negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target c --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | make -s -C "$d/p" > /dev/null 2>&1 && (cd "$d/p" && ./flang_cli); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
+negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target cpp --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | make -s -C "$d/p" > /dev/null 2>&1 && (cd "$d/p" && ./flang_cli); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
+negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target js --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | (cd "$d/p" && node flang_cli.js negative_zero.js); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
+negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target python --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | (cd "$d/p" && python3 -B flang_cli.py negative_zero); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
+-	sh -c 'v=$("$0" --version | head -1 | cut -d" " -f2); printf "%s\n" "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}" | "$0" --mcp-mode | grep -c "\"version\":\"$v\""' $flang	0	1

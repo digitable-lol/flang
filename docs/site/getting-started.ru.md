@@ -195,15 +195,16 @@ make -C ./вывод
 ```
 make: Entering directory '…/вывод'
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_runtime.o flang_runtime.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o privet.o privet.c
-ar rcs libprivet.a flang_runtime.o privet.o
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o program.o program.c
+ar rcs libprogram.a flang_runtime.o program.o
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_cli.o flang_cli.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o privet.o -lm -lpthread
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o program.o -lm -lpthread
 make: Leaving directory '…/вывод'
 ```
 
 Ни одного предупреждения при `-Wall -Wextra -Werror -pedantic`. Имя модуля
-«Привет» в файлах на C стало `privet`.
+«Привет» записано кириллицей, а транслита в именах файлов нет — файлы зовутся
+`program.*`; модуль «Report» дал бы `report.c`.
 
 Одна ловушка: ваши имена становятся идентификаторами целевого языка, и
 совпадение — ошибка, а не тихое переименование. Назовите функцию `«Double»` —

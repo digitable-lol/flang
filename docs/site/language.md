@@ -449,6 +449,14 @@ Limit: `divided by` leaves the exact type — the result becomes `number`. There
 no rounding in the language, neither explicit nor silent. Each type in full:
 [Language specification](../spec.html), section "Types" (in Russian).
 
+Signed zero. `equals` on numbers compares like `Object.is`: `NaN` equals `NaN`,
+and `0` does not equal `-0`. So that a check like `if b equals 0` does not miss,
+arithmetic never produces `-0`: a product, a quotient and a remainder whose result
+is zero give `+0` (`(-12) modulo 6`, `0 times -5` and `0 divided by -5` are all
+`0`). The evaluator and all ten print targets compute it the same way. A `-0` that
+comes in as a literal or an input stays `-0` and differs from `0`: `-0 equals 0`
+is `no`.
+
 ### Which numeric type to take
 
 | What the number is | Type | What you get for it |
@@ -1595,6 +1603,7 @@ morphism «refund payment» from «Payment» to «Payment»
 
 identity «Order»
 identity «Payment»
+identity «Receipt»
 
 category «Orders»
   morphism «cancel order»
@@ -1876,6 +1885,12 @@ these values, not proved. A violation fails the check with exit code 1 and shows
 the values that break the law, and no code is generated. The same holds for a
 natural transformation: `FLANG_TRANSFORM_NOT_NATURAL` with both paths and their
 values.
+
+The structure of an isomorphism and of a functor is checked without values, with
+exit code 1: an arrow of an isomorphism that is undeclared or does not go between
+its two objects gives `FLANG_ISO_MISMATCH`; an object of an isomorphism without an
+`identity` line gives `FLANG_ISO_IDENTITY_MISSING`; an arrow the functor maps, with
+an end that has no image, gives `FLANG_FUNCTOR_OBJECT_MISSING` naming that object.
 
 **Not checked: the shape of the declarations.** Closure under composition,
 identities on objects, matching ends of composed arrows, the shape of a functor —

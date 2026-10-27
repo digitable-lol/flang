@@ -72,6 +72,7 @@ public sealed class Value
     public const int TagList = 4;
     public const int TagRecord = 5;
     public const int TagVariant = 6;
+    public const int TagWord = 7;
 
     /// <summary>
     /// Отметка «сколько ячеек общего массива уже занято» — одна на все списки,
@@ -151,6 +152,8 @@ public sealed class Value
     /// <summary>Поля записи или варианта в порядке объявления.</summary>
     public readonly Field[] Fields;
 
+    public readonly ulong Bits;
+
     private static readonly Value[] NoItems = [];
     private static readonly Field[] NoFields = [];
 
@@ -171,6 +174,40 @@ public sealed class Value
         Count = count;
         Spare = spare;
         Fields = fields;
+    }
+
+    private Value(string name, ulong bits)
+        : this(TagWord, 0.0, false, name, NoItems, 0, null, NoFields)
+    {
+        Bits = bits;
+    }
+
+    public static int WordWidth(string name) => int.Parse(name.AsSpan(1), CultureInfo.InvariantCulture);
+
+    public static ulong WordMask(int width) => width >= 64 ? ulong.MaxValue : (1UL << width) - 1UL;
+
+    public static Value Word(string name, ulong bits) => new(name, bits & WordMask(WordWidth(name)));
+
+    public static BigInteger WordInt(Value value)
+    {
+        int width = WordWidth(value.Str);
+        var unsigned = new BigInteger(value.Bits);
+        bool negative = value.Str[0] == 'i' && ((value.Bits >> (width - 1)) & 1UL) != 0UL;
+        return negative ? unsigned - (BigInteger.One << width) : unsigned;
+    }
+
+    public static bool WordEqual(Value left, Value right)
+    {
+        if (left.Tag == TagWord && right.Tag == TagWord)
+        {
+            return left.Str == right.Str && left.Bits == right.Bits;
+        }
+        Value word = left.Tag == TagWord ? left : right;
+        Value other = left.Tag == TagWord ? right : left;
+        BigInteger whole = WordInt(word);
+        return other.Tag == TagNumber
+            && BigInteger.Abs(whole) <= new BigInteger(9007199254740991L)
+            && (double)whole == other.Num;
     }
 
     /// <summary>«ничто» — единственное на всю программу.</summary>
@@ -315,6 +352,7 @@ public sealed class Value
             TagList => "список",
             TagVariant => "вариант «" + value.Str + "»",
             TagRecord => "запись",
+            TagWord => value.Str,
             _ => "неизвестное значение",
         };
     }
@@ -337,6 +375,7 @@ public sealed class Value
             TagRecord => "запись {" + FieldNames(value.Fields) + "}",
             TagNothing => "ничто",
             TagFlag => value.Bit ? "да" : "нет",
+            TagWord => WordInt(value).ToString(CultureInfo.InvariantCulture),
             _ => NumberText(value.Num),
         };
     }
@@ -378,6 +417,10 @@ public sealed class Value
     /// </summary>
     public static bool Equal(Value left, Value right)
     {
+        if (left.Tag == TagWord || right.Tag == TagWord)
+        {
+            return WordEqual(left, right);
+        }
         if (IsScalar(left) || IsScalar(right))
         {
             if (!IsScalar(left) || !IsScalar(right) || left.Tag != right.Tag)

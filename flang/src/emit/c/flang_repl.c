@@ -1240,9 +1240,14 @@ static const char REPL_HELP[] =
     "                             «Свойство:», «Имя:» и предложения; пустая\n"
     "                             строка заканчивает ввод; без словаря слова\n"
     "                             читает морфология\n"
+    "  .текст [<файл>]            вставить текст любого вида и закончить строкой\n"
+    "                             «.конец»: оболочка сама поймёт, что это —\n"
+    "                             программа, формула с ∀/∃ (или LaTeX),\n"
+    "                             рассуждение или категория, — и ответит, как\n"
+    "                             песочница сайта\n"
     "  .очистить                  очистить экран\n"
     "  .выход                     закончить работу\n"
-    "По-английски: .help .list .source .save .load .reset .syllogism .clear .quit\n"
+    "По-английски: .help .list .source .save .load .reset .syllogism .text (.end) .clear .quit\n"
     "Утверждения и силлогизмы с живыми сеансами: docs/guide/repl-statements.ru.md\n";
 
 static const char REPL_HELP_2[] =
@@ -8774,6 +8779,7 @@ static void repl_reset(repl_session *session) {
 }
 
 static bool repl_trimmed_empty(const char *text);
+static bool repl_trimmed_empty_line(const char *text);
 
 static bool repl_has_dictionary(const char *text) {
   const char *scan = text;
@@ -8813,7 +8819,7 @@ static const char *repl_syllogism_word(bool dictionary, int code, const char *sa
   return "не проверено (код 3)";
 }
 
-static bool repl_command_syllogism(repl_session *session, const char *argument) {
+static bool repl_judge_text(repl_session *session, const char *argument, bool always_judge) {
   char *given = NULL;
   char *text = NULL;
   size_t bytes = 0;
@@ -8834,7 +8840,7 @@ static bool repl_command_syllogism(repl_session *session, const char *argument) 
   if (text == NULL) {
     text = repl_say(argument);
   }
-  dictionary = repl_has_dictionary(text);
+  dictionary = repl_has_dictionary(text) || always_judge;
   plan = repl_beside_self(dictionary ? "../flang/proof/probes/syllogism/sentences/run.fscript"
                                      : "../flang/experimental/ru-syllogism-demo.fscript");
   if (repl_trimmed_empty(text)) {
@@ -8883,6 +8889,8 @@ static bool repl_command_syllogism(repl_session *session, const char *argument) 
     }
     if (!dictionary) {
       printf("словаря в тексте нет: слова читает морфология (flang/experimental/ru-syllogism-demo.fscript)\n");
+    } else if (always_judge && !repl_has_dictionary(text)) {
+      printf("словаря в тексте нет: слова читает морфология, как в песочнице\n");
     }
     if (said != NULL) {
       size_t end = strlen(said);
@@ -8937,6 +8945,267 @@ static bool repl_syllogism_name(const char *text, size_t bytes) {
   return true;
 }
 
+static bool repl_command_syllogism(repl_session *session, const char *argument) {
+  return repl_judge_text(session, argument, false);
+}
+
+/*
+ * «.text» («.текст»): текст любого вида — программа, формула, рассуждение,
+ * объявление категории. Вид называет то же правило, что у песочницы сайта:
+ * flang/proof/probes/syllogism/sentences/text-kind.flang (план «Kind» рядом,
+ * text-kind.fscript). Отвечает та дорога, которой этот вид судит песочница:
+ * рассуждение — судья силлогизмов, формула — переводчик формул и «flang check
+ * --proof», программа — «flang check --proof». Сессию «.text» не меняет:
+ * объявить программу в сессии — «.загрузить». Текст идёт многими строками до
+ * строки «.end» («.конец»): в программе законны пустые строки.
+ */
+static bool repl_named(const char *text, size_t bytes, const char *latin, const char *cyrillic) {
+  size_t index = 0;
+  if (bytes == strlen(cyrillic) && memcmp(text, cyrillic, bytes) == 0) {
+    return true;
+  }
+  if (bytes != strlen(latin)) {
+    return false;
+  }
+  for (index = 0; index < bytes; index += 1) {
+    const char symbol = text[index] >= 'A' && text[index] <= 'Z' ? (char)(text[index] - 'A' + 'a') : text[index];
+    if (symbol != latin[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool repl_text_name(const char *text, size_t bytes) { return repl_named(text, bytes, ".text", ".текст"); }
+
+/** Строка «.end» («.конец»), пробелы по краям не в счёт. */
+static bool repl_text_end(const char *line) {
+  size_t start = 0;
+  size_t end = 0;
+  while (line[start] == ' ' || line[start] == '\t') {
+    start += 1;
+  }
+  end = start;
+  while (line[end] != '\0' && line[end] != '\n' && line[end] != '\r' && line[end] != ' ' && line[end] != '\t') {
+    end += 1;
+  }
+  return repl_trimmed_empty_line(line + end) && repl_named(line + start, end - start, ".end", ".конец");
+}
+
+static char *repl_run_capture(repl_session *session, char *const *words, int *code) {
+  char *self = repl_self_binary();
+  char *out_path = repl_tmp_file(session, "text.out");
+  char *err_path = repl_tmp_file(session, "text.err");
+  char *out = NULL;
+  char *err = NULL;
+  size_t out_bytes = 0;
+  size_t err_bytes = 0;
+  repl_buf both;
+  buf_init(&both);
+  *code = -1;
+  if (self != NULL && out_path != NULL && err_path != NULL) {
+    char *own[16];
+    size_t index = 0;
+    own[0] = self;
+    for (index = 1; words[index] != NULL && index < 15; index += 1) {
+      own[index] = words[index];
+    }
+    own[index] = NULL;
+    *code = repl_run_self(own, self, out_path, err_path);
+    out = repl_read_file(out_path, &out_bytes);
+    err = repl_read_file(err_path, &err_bytes);
+  }
+  if (out != NULL) {
+    buf_put(&both, out);
+  }
+  if (err != NULL) {
+    buf_char(&both, '\n');
+    buf_put(&both, err);
+  }
+  if (out_path != NULL) {
+    remove(out_path);
+  }
+  if (err_path != NULL) {
+    remove(err_path);
+  }
+  free(self);
+  free(out_path);
+  free(err_path);
+  free(out);
+  free(err);
+  {
+    char *said = repl_dup(both.data == NULL ? "" : both.data, both.used);
+    buf_free(&both);
+    return said;
+  }
+}
+
+/** Ответ плана «flang io»: строка «result», а если её нет — «error». */
+static char *repl_plan_answer(const char *said) {
+  const char *brace = strstr(said, "{\"");
+  char *answer = NULL;
+  while (brace != NULL && answer == NULL) {
+    answer = json_plain_field(said, (size_t)(brace - said), strlen(said), "result");
+    if (answer == NULL) {
+      answer = json_plain_field(said, (size_t)(brace - said), strlen(said), "error");
+    }
+    brace = strstr(brace + 2, "{\"");
+  }
+  return answer;
+}
+
+/* Строки ведомости, которые песочница показывает итогом: приговоры
+   утверждениям и законам, отказы с кодом и последняя строка о файле. */
+static bool repl_kernel_line(const char *line) {
+  static const char *const marks[] = {"утверждение «", "теорема «", "закон «", "категория «", "функтор «",
+                                      "моноид «", "FLANG_", "ПРОВЕРЕНО", "ДОКАЗАНО", "пример против", NULL};
+  size_t index = 0;
+  for (index = 0; marks[index] != NULL; index += 1) {
+    if (strstr(line, marks[index]) != NULL) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static int repl_text_check(repl_session *session, const char *file, const char *shown) {
+  int code = -1;
+  char *words[] = {NULL, (char *)"check", (char *)file, (char *)"--proof", NULL};
+  char *said = repl_run_capture(session, words, &code);
+  char *line = said;
+  printf("ядро (flang check --proof):\n");
+  while (line != NULL && *line != '\0') {
+    char *next = strchr(line, '\n');
+    if (next != NULL) {
+      *next = '\0';
+    }
+    if (repl_kernel_line(line)) {
+      char *named = strstr(line, file);
+      if (named != NULL) {
+        printf("  %.*s%s%s\n", (int)(named - line), line, shown, named + strlen(file));
+      } else {
+        printf("  %s\n", line);
+      }
+    }
+    line = next == NULL ? NULL : next + 1;
+  }
+  free(said);
+  return code;
+}
+
+static const char *repl_text_verdict(int code) {
+  return code == 0   ? "доказано всё (код 0)"
+         : code == 1 ? "опровергнуто или не прочитано — причина выше (код 1)"
+         : code == 3 ? "не всё доказано — что именно, сказано выше (код 3)"
+                     : "проверка не запустилась (код 2)";
+}
+
+static bool repl_command_text(repl_session *session, const char *argument) {
+  repl_buf body;
+  char *given = NULL;
+  char *text = NULL;
+  char *kind = NULL;
+  char *kind_plan = repl_beside_self("../flang/proof/probes/syllogism/sentences/text-kind.fscript");
+  char *file = repl_tmp_file(session, "text.txt");
+  size_t bytes = 0;
+  bool ok = false;
+  buf_init(&body);
+  if (argument[0] != '\0' && strchr(argument, '\n') == NULL && !repl_text_end(argument)) {
+    given = repl_resolve(session->base, argument);
+    text = access(given, R_OK) == 0 ? repl_read_file(given, &bytes) : NULL;
+  }
+  if (text == NULL) {
+    /* Довесок без последней строки «.end». */
+    const char *last = strrchr(argument, '\n');
+    const char *tail = last == NULL ? argument : last + 1;
+    text = repl_text_end(tail) ? repl_dup(argument, (size_t)(tail - argument)) : repl_say(argument);
+  }
+  buf_put(&body, text);
+  buf_char(&body, '\n');
+  if (repl_trimmed_empty(text)) {
+    printf("текст: текста нет — после «.text» вставьте программу, формулу или рассуждение и закончите строкой "
+           "«.end»; или «.text <файл>»\n");
+  } else if (kind_plan == NULL || file == NULL || !repl_write_text(file, body.data, body.used)) {
+    printf("текст: правила вида рядом с этим двоичным нет "
+           "(flang/proof/probes/syllogism/sentences/text-kind.fscript)\n");
+  } else {
+    int code = -1;
+    char *words[] = {NULL, (char *)"io", kind_plan, (char *)"--plan", (char *)"Kind", (char *)"--", file, NULL};
+    char *said = repl_run_capture(session, words, &code);
+    kind = code == 0 ? repl_plan_answer(said) : NULL;
+    free(said);
+    if (kind == NULL) {
+      printf("текст: вид не определён (код %d)\n", code);
+    } else if (strcmp(kind, "рассуждение") == 0) {
+      printf("вид текста: рассуждение — судит судья силлогизмов, как в песочнице\n");
+      ok = repl_judge_text(session, text, true);
+    } else if (strcmp(kind, "формула") == 0) {
+      char *plan = repl_beside_self("../flang/foreign/formula/run.fscript");
+      char *unit = repl_tmp_file(session, "formula.flang");
+      repl_buf flat;
+      size_t index = 0;
+      buf_init(&flat);
+      for (index = 0; text[index] != '\0'; index += 1) {
+        buf_char(&flat, text[index] == '\n' || text[index] == '\r' || text[index] == '\t' ? ' ' : text[index]);
+      }
+      printf("вид текста: формула — её переводит на flang переводчик формул (вне доверенной основы, "
+             "запуск --trust), а судит ядро\n");
+      if (plan == NULL || unit == NULL) {
+        printf("формула: переводчика формул рядом с этим двоичным нет (flang/foreign/formula/run.fscript)\n");
+      } else {
+        const bool latex = strchr(flat.data, '\\') != NULL;
+        char *read[] = {NULL, (char *)"io", plan, (char *)"--plan", (char *)"Read", (char *)"--trust", (char *)"--",
+                        (char *)"--out", unit, latex ? (char *)"--latex" : flat.data, latex ? flat.data : NULL, NULL};
+        char *answer = NULL;
+        remove(unit);
+        said = repl_run_capture(session, read, &code);
+        answer = repl_plan_answer(said);
+        free(said);
+        if (access(unit, R_OK) != 0) {
+          printf("формула не прочитана: %s (код 1)\n", answer == NULL ? "переводчик причины не назвал" : answer);
+        } else {
+          char *translated = repl_read_file(unit, &bytes);
+          printf("перевод на flang:\n%s", translated == NULL ? "" : translated);
+          free(translated);
+          code = repl_text_check(session, unit, "формула");
+          printf("формула: %s\n", repl_text_verdict(code));
+          ok = code == 0 || code == 3;
+          session->syllogisms_open = session->syllogisms_open || code == 3;
+          remove(unit);
+        }
+        free(answer);
+      }
+      buf_free(&flat);
+      free(plan);
+      free(unit);
+    } else {
+      char *unit = repl_tmp_file(session, "text.flang");
+      const bool category = strcmp(kind, "категория") == 0;
+      printf("вид текста: %s — судит «flang check --proof», как песочница; в сессию текст не попадает, "
+             "объявить его — «.загрузить»\n",
+             category ? "программа с категорией" : "программа на flang");
+      if (unit != NULL && repl_write_text(unit, body.data, body.used)) {
+        code = repl_text_check(session, unit, "текст");
+        printf("%s: %s\n", category ? "категория" : "программа", repl_text_verdict(code));
+        ok = code == 0 || code == 3;
+        session->syllogisms_open = session->syllogisms_open || code == 3;
+        remove(unit);
+      }
+      free(unit);
+    }
+  }
+  if (file != NULL) {
+    remove(file);
+  }
+  buf_free(&body);
+  free(given);
+  free(text);
+  free(kind);
+  free(kind_plan);
+  free(file);
+  return ok;
+}
+
 /** Команда: разбор имени и довеска. Регистр латиницы не важен, как в свидетеле. */
 static bool repl_command(repl_session *session, const char *line, bool *quit) {
   repl_buf name;
@@ -8963,6 +9232,8 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
     repl_say_build(session->why_no_eval);
   } else if (repl_syllogism_name(name.data, name.used)) {
     ok = repl_command_syllogism(session, argument);
+  } else if (repl_text_name(name.data, name.used)) {
+    ok = repl_command_text(session, argument);
   } else if (strcmp(name.data, ".объявления") == 0 || strcmp(name.data, ".list") == 0) {
     ok = repl_command_list(session);
   } else if (strcmp(name.data, ".исходник") == 0 || strcmp(name.data, ".source") == 0) {
@@ -9165,6 +9436,9 @@ static bool repl_needs_more(repl_session *session, const char *text) {
     const size_t first = strcspn(scan, " \t\r\n");
     const bool bare = scan[first] == '\0' || scan[first] == '\n' || scan[first] == '\r' ||
                       repl_trimmed_empty_line(scan + first);
+    if (repl_text_name(scan, first) && bare) {
+      return last == NULL || !repl_text_end(last + 1);
+    }
     return repl_syllogism_name(scan, first) && bare && (last == NULL || !repl_blank(last + 1));
   }
   if (last != NULL && repl_blank(last + 1)) {
@@ -9552,7 +9826,7 @@ static void repl_recall(repl_editor *editor, size_t at) {
 static const char *const REPL_COMMANDS[] = {
     ".помощь",  ".объявления", ".исходник", ".сохранить", ".загрузить", ".сбросить", ".очистить", ".выход",
     ".help",    ".list",       ".source",   ".save",      ".load",      ".reset",    ".clear",    ".quit",
-    ".силлогизм", ".syllogism", NULL};
+    ".силлогизм", ".syllogism", ".текст", ".text", NULL};
 
 /** Начаток имени в ёлочках: смещение первого байта после незакрытой «, или -1. */
 static size_t repl_name_from(const char *text, size_t at) {

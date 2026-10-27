@@ -347,6 +347,10 @@ public final class FlangCli {
       case Value.TAG_STRING:
         out.append("{\"s\":").append(Value.quoteJson(value.str)).append('}');
         return;
+      case Value.TAG_WORD:
+        out.append("{\"w\":").append(Value.quoteJson(value.str));
+        out.append(",\"v\":").append(Value.quoteJson(Value.describe(value))).append('}');
+        return;
       case Value.TAG_LIST:
         out.append("{\"l\":[");
         for (int index = 0; index < Value.size(value); index++) {

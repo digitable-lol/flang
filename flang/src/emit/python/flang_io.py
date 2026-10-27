@@ -96,7 +96,7 @@ IO_NOT_CHECKED = "Не проверено"
 # языка, правая — сам этот список; разойдись они, и сторож назовёт файл и
 # строку.
 #
-# поручений в словаре языка 27 — СНЯТО 2026-10-12 список flang/self/parser.flang:6533 = 27
+# поручений в словаре языка 27 — СНЯТО 2026-10-12 список flang/self/parser.flang:6542 = 27
 # поручений в этом списке   27 — СНЯТО 2026-10-12 список flang/src/emit/python/flang_io.py:101 = 27
 IO_ORDERS = [
     "Прочитать файл",
@@ -131,7 +131,7 @@ IO_ORDERS = [
 # Отклики словаря языка. Тот же набор, с той же стороны договора, и те же
 # ворота: отклик, которого здесь нет, объявляется НЕ откликом, чей бы он ни был.
 #
-# откликов в словаре языка 23 — СНЯТО 2026-10-12 список flang/self/parser.flang:6555 = 23
+# откликов в словаре языка 23 — СНЯТО 2026-10-12 список flang/self/parser.flang:6564 = 23
 # откликов в этом списке   23 — СНЯТО 2026-10-12 список flang/src/emit/python/flang_io.py:136 = 23
 IO_RESPONSES = [
     "Пока ничего",
@@ -480,6 +480,8 @@ def io_plain(value):
         return io_number(value.data)
     if tag == rt.TAG_STRING:
         return value.data
+    if tag == rt.TAG_WORD:
+        return rt.word_int(value)
     if tag == rt.TAG_LIST:
         return [io_plain(item) for item in rt.list_items(value)]
     if tag == rt.TAG_RECORD:

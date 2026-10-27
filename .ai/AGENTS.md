@@ -542,7 +542,8 @@ flang check <файл> --proof   ведомость: чем несётся ка�
 Метка `vX.Y.Z` на этом дереве публикует архив на GitHub и обновляет
 `packaging/homebrew/flang.rb` — но это НЕ то, откуда ставит `brew`.
 Настоящий адрес установки — отдельный репозиторий-кран,
-`digitable-lol/homebrew-tap` (`Formula/flang.rb`). Синхронизация была
+`digitable-lol/homebrew-tap` (с 0.7.29 — `Formula/flang-package.rb`, `Aliases/flang`
+ведёт на неё). Синхронизация была
 РУЧНОЙ и ничем не принуждённой — и однажды (4 сентября 2026, версии
 0.7.4–0.7.10) шесть релизов подряд ушли без неё: тег и формула в основном
 репозитории были верны, а `brew install` ставил протухшую 0.7.3, и никто
@@ -579,13 +580,13 @@ asdf не отстал от дерева» в `release.yml` — ДО выкла�
 **Порядок выпуска с краном** (кран правится ТОЛЬКО через сабмодуль, коммит и
 push в кране — руками владельца, автоматики нет по-прежнему):
 
-1. `bootstrap/flang run-script version X.Y.Z` — поднимает version/url в формуле дерева И в
-   рабочей копии крана; sha256 в обеих остаётся старый.
+1. `bootstrap/flang run-script version X.Y.Z` — поднимает version/url в формуле дерева;
+   кран не трогает: формулу крана с суммами сборок даёт только прогон по тегу.
 2. Сухой прогон `release.yml` (`workflow_dispatch` с ветки) даёт sha256
    свежего архива — вписать его в `packaging/homebrew/flang.rb`.
-3. Кран, тем же файлом:
+3. Кран — после прогона `release.yml` по тегу: `flang-package.rb` из артефакта
+   `package-manifests` этого прогона кладётся в `packaging/homebrew-tap/Formula/flang-package.rb`:
    ```
-   cp packaging/homebrew/flang.rb packaging/homebrew-tap/Formula/flang.rb
    git -C packaging/homebrew-tap commit -am "flang X.Y.Z: url, sha256, version"
    git -C packaging/homebrew-tap push origin main
    git add packaging/homebrew-tap      # указатель сабмодуля — в коммит выпуска
@@ -606,7 +607,7 @@ push в кране — руками владельца, автоматики н�
 `release.yml`), оставляет кран впереди опубликованного: вернуть коммит
 крана (`git -C packaging/homebrew-tap revert HEAD` и push) и указатель —
 кран обязан указывать на последнюю ДЕЙСТВИТЕЛЬНО опубликованную версию.
-Проверка, что дошло: `curl -sL https://raw.githubusercontent.com/digitable-lol/homebrew-tap/main/Formula/flang.rb | grep version`
+Проверка, что дошло: `curl -sL https://raw.githubusercontent.com/digitable-lol/homebrew-tap/main/Formula/flang-package.rb | grep version`
 называет только что выпущенную версию, не старую.
 
 **Тело релиза на GitHub пишется НЕ руками.** С 8 сентября 2026 шаг «Тело

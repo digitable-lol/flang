@@ -1246,8 +1246,8 @@ imena_yadra() {
 }
 
 # ИМЯ В СЕМЕНИ — блок-комментарий ` * Функция flang «Имя».`, за которым сразу
-# идёт определение `compiler_flang_<транслит>(`. Признак найден ячейкой Ч54
-# (/srv/tmp/dokazuemyy/Ч54-otkat/sem/pairs.awk) и взят здесь дословно: печать
+# идёт определение `compiler_flang_<транслит>(`; тип длинной подписи — строкой выше (7419).
+# Признак найден ячейкой Ч54 (/srv/tmp/dokazuemyy/Ч54-otkat/sem/pairs.awk), взят дословно: печать
 # метит этим комментарием КАЖДУЮ функцию, которую вынесла в C, и другого места,
 # где имя в ёлочках доживает до напечатанного байта, в семени нет.
 #
@@ -1260,8 +1260,8 @@ imena_semeni() {
     /^ \* Функция flang «/ {
       line = $0; sub(/^ \* Функция flang «/, "", line); sub(/».*$/, "", line)
       nm = line; want = 1; next }
-    want && /^(static )?[A-Za-z_][A-Za-z0-9_]* \**compiler_flang_[A-Za-z0-9_]+\(/ {
-      print nm; want = 0; next }
+    want && (/^(static )?[A-Za-z_][A-Za-z0-9_]* \**compiler_flang_[A-Za-z0-9_]+\(/ || (/^\**compiler_flang_[A-Za-z0-9_]+\(/ && prev ~ /^(static )?[A-Za-z_][A-Za-z0-9_]*$/)) {
+      print nm; want = 0 } { prev = $0 }
   ' "$MROOT/$DIR/compiler_flang.c" 2>/dev/null | LC_ALL=C sort -u
 }
 

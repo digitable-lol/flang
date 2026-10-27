@@ -405,6 +405,10 @@ public static class FlangCli
             case Value.TagString:
                 output.Append("{\"s\":").Append(Value.QuoteJson(value.Str)).Append('}');
                 return;
+            case Value.TagWord:
+                output.Append("{\"w\":").Append(Value.QuoteJson(value.Str));
+                output.Append(",\"v\":").Append(Value.QuoteJson(Value.Describe(value))).Append('}');
+                return;
             case Value.TagList:
                 output.Append("{\"l\":[");
                 for (int index = 0; index < Value.Size(value); index++)

@@ -1,0 +1,188 @@
+модуль «Text kind»
+
+примечание "Какой текст перед нами: программа на flang, формула с кванторами или
+рассуждение словами. Одно правило на всех: песочница сайта (через reasoning.js,
+напечатанный из reasoning-check.flang) и оболочка «flang repl» (команда «.text»,
+план text-kind.fscript) спрашивают вид здесь, и разойтись им не в чем."
+
+примечание "Правило смотрит на первую значащую строку — пустые строки и
+комментарии «//» не в счёт. «∀», «∃», «\\forall», «\\exists», «forall», «exists»
+открывают формулу; «модуль», «module», «категория», «category» открывают
+программу. Программа, в которой на верхнем уровне объявлена категория, — вид
+«категория»: проверяется она так же, как программа. Всё остальное — рассуждение."
+
+тотальная функция «Flattened»
+  принимает text: строка
+  возвращает строка
+  пример «Tabs become spaces and carriage returns go»
+    дано text равно "\tмодуль\r\n"
+    ожидается " модуль\n"
+  соединить (разделить (соединить (разделить text по "\r") по "") по "\t") по " "
+
+тотальная функция «Kept sign»
+  принимает kept: строка, sign: строка
+  возвращает строка
+  пример «A leading space is dropped»
+    дано kept равно ""
+    дано sign равно " "
+    ожидается ""
+  пример «A space after a letter stays»
+    дано kept равно "а"
+    дано sign равно " "
+    ожидается "а "
+  если (kept равен "") и притом (sign равен " ") то "" иначе соединить [kept, sign] по ""
+
+тотальная функция «Says something»
+  принимает line: строка
+  возвращает признак
+  пример «A comment says nothing»
+    дано line равно "// заметка"
+    ожидается нет
+  не ((line равен "") или (line начинается с "//"))
+
+тотальная функция «Begins with one of»
+  принимает line: строка, prefixes: список строки
+  возвращает признак
+  пример «One of the signs»
+    дано line равно "∃ x, x = 0"
+    дано prefixes равно ["∀", "∃"]
+    ожидается да
+  длина (отфильтровать prefixes где prefix → line начинается с prefix) больше 0
+
+тотальная функция «Without leading spaces»
+  принимает line: строка
+  возвращает строка
+  пример «Leading spaces go, inner ones stay»
+    дано line равно "   ∀ x, x = x"
+    ожидается "∀ x, x = x"
+  пример «A blank line becomes empty»
+    дано line равно "   "
+    ожидается ""
+  свёртка (разложить line на символы) начиная с "" как kept и sign → «Kept sign» от kept и sign
+
+тотальная функция «Meaningful lines»
+  принимает text: строка
+  возвращает список строки
+  пример «Blank lines and comments do not count»
+    дано text равно "\n// заметка\n  модуль «М»\n"
+    ожидается ["модуль «М»"]
+  пусть lines равно разделить («Flattened» от text) по "\n"
+  отфильтровать (отобразить lines как line → «Without leading spaces» от line) где line → «Says something» от line
+
+тотальная функция «First meaningful line»
+  принимает text: строка
+  возвращает строка
+  пример «The first line that says something»
+    дано text равно "\n\n∀ x ∈ ℤ, x = x"
+    ожидается "∀ x ∈ ℤ, x = x"
+  пример «An empty text has none»
+    дано text равно "  \n"
+    ожидается ""
+  разбор («Meaningful lines» от text)
+    случай голова и хвост
+      то голова
+    случай пусто
+      то ""
+
+тотальная функция «Opens with a word»
+  принимает line: строка, word: строка
+  возвращает признак
+  пример «The word and then a space»
+    дано line равно "модуль «М»"
+    дано word равно "модуль"
+    ожидается да
+  пример «A longer word is another word»
+    дано line равно "модульный подход"
+    дано word равно "модуль"
+    ожидается нет
+  пример «The word alone»
+    дано line равно "forall"
+    дано word равно "forall"
+    ожидается да
+  пусть spaced равно соединить [word, " "] по ""
+  пусть quoted равно соединить [word, "«"] по ""
+  (line равен word) или («Begins with one of» от line и [spaced, quoted])
+
+тотальная функция «Opens with one word of»
+  принимает line: строка, words: список строки
+  возвращает признак
+  пример «One of the words»
+    дано line равно "category «C»"
+    дано words равно ["категория", "category"]
+    ожидается да
+  длина (отфильтровать words где word → «Opens with a word» от line и word) больше 0
+
+тотальная функция «Opens a formula»
+  принимает line: строка
+  возвращает признак
+  пример «A quantifier sign»
+    дано line равно "∀ x ∈ ℤ, x + 0 = x"
+    ожидается да
+  пример «A quantifier in LaTeX»
+    дано line равно "\\forall x \\in ℤ, x = x"
+    ожидается да
+  пример «A quantifier in ASCII»
+    дано line равно "exists x in Z, x = 0"
+    ожидается да
+  пример «A sentence»
+    дано line равно "Все люди смертны."
+    ожидается нет
+  («Begins with one of» от line и ["∀", "∃", "\\forall", "\\exists"]) или («Opens with one word of» от line и [
+      "forall", "exists"])
+
+тотальная функция «Opens a program»
+  принимает line: строка
+  возвращает признак
+  пример «A module»
+    дано line равно "модуль «Заказы»"
+    ожидается да
+  пример «A category on its own»
+    дано line равно "category «Orders»"
+    ожидается да
+  пример «A sentence about a module»
+    дано line равно "Модуль Сократа смертен."
+    ожидается нет
+  «Opens with one word of» от line и ["модуль", "module", "категория", "category"]
+
+тотальная функция «Declares a category»
+  принимает text: строка
+  возвращает признак
+  пример «A category at the top level»
+    дано text равно "модуль «М»\n\nкатегория «Заказы»\n  объекты «А»"
+    ожидается да
+  пример «Only a module»
+    дано text равно "модуль «М»\n\nобъект «А»"
+    ожидается нет
+  пусть lines равно разделить («Flattened» от text) по "\n"
+  длина (отфильтровать lines где line → «Opens with one word of» от line и ["категория", "category"]) больше 0
+
+тотальная функция «Program kind»
+  принимает text: строка
+  возвращает строка
+  пример «A program with a category»
+    дано text равно "модуль «М»\n\nкатегория «Заказы»\n"
+    ожидается "категория"
+  если «Declares a category» от text то "категория" иначе "flang"
+
+тотальная функция «Text kind»
+  принимает text: строка
+  возвращает строка
+  пример «A formula»
+    дано text равно "\n∃ x ∈ ℤ, x + 0 = x"
+    ожидается "формула"
+  пример «A program»
+    дано text равно "// пример\nмодуль «М»\n\nобъект «А»\n  «х»: число\n"
+    ожидается "flang"
+  пример «A program with a category»
+    дано text равно "модуль «М»\n\nкатегория «Заказы»\n"
+    ожидается "категория"
+  пример «A reasoning»
+    дано text равно "Понятие: человек, люди.\n\nВсе люди смертны. Следовательно, ..."
+    ожидается "рассуждение"
+  пример «An empty text is read as a reasoning»
+    дано text равно ""
+    ожидается "рассуждение"
+  пусть opening равно («First meaningful line» от text)
+  если «Opens a formula» от opening
+    то "формула"
+    иначе (если «Opens a program» от opening то «Program kind» от text иначе "рассуждение")

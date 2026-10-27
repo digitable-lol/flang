@@ -229,6 +229,10 @@ defmodule Flang.Rt do
   @code_builtin_args "FLANG_BUILTIN_ARGS"
   @code_recursion_limit "FLANG_RECURSION_LIMIT"
   @code_property "FLANG_PROPERTY"
+  @code_overflow "FLANG_OVERFLOW"
+  @word_ceiling 9_007_199_254_740_991
+
+  defguardp is_word(value) when is_tuple(value) and elem(value, 0) == :word
 
   def code_type, do: @code_type
   def code_unknown_name, do: @code_unknown_name
@@ -365,6 +369,7 @@ defmodule Flang.Rt do
   def type_name({:list, _, _}), do: "список"
   def type_name({:var, name, _}), do: "вариант «" <> name <> "»"
   def type_name({:rec, _}), do: "запись"
+  def type_name({:word, name, _}), do: name
   def type_name(_), do: "неизвестное значение"
 
   @doc """
@@ -382,6 +387,7 @@ defmodule Flang.Rt do
   def describe({:flag, true}), do: "да"
   def describe({:flag, false}), do: "нет"
   def describe({:num, value}), do: number_text(value)
+  def describe({:word, _, _} = value), do: Integer.to_string(word_int(value))
 
   defp field_names(fields), do: Enum.map_join(fields, ", ", fn {name, _} -> name end)
 
@@ -445,6 +451,9 @@ defmodule Flang.Rt do
   Рекурсия здесь по данным, а не по программе: её глубина ограничена
   вложенностью значения, а не длиной вычисления.
   """
+  def equal({:word, a, x}, {:word, b, y}), do: a == b and x == y
+  def equal({:num, number}, {:word, _, _} = word), do: word_equal_number(word, number)
+  def equal({:word, _, _} = word, {:num, number}), do: word_equal_number(word, number)
   def equal({:num, a}, {:num, b}), do: same_number(a, b)
   def equal({:flag, a}, {:flag, b}), do: a === b
   def equal({:str, a}, {:str, b}), do: a === b
@@ -1190,6 +1199,8 @@ defmodule Flang.Rt do
     end
   end
 
+  def add(left, right) when is_word(left) or is_word(right), do: word_arith("add", left, right)
+
   def add(left, right) do
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
@@ -1205,6 +1216,8 @@ defmodule Flang.Rt do
         {:num, num_add(a, b)}
     end
   end
+
+  def sub(left, right) when is_word(left) or is_word(right), do: word_arith("sub", left, right)
 
   def sub(left, right) do
     cond do
@@ -1242,6 +1255,8 @@ defmodule Flang.Rt do
     end
   end
 
+  def mul(left, right) when is_word(left) or is_word(right), do: word_arith("mul", left, right)
+
   def mul(left, right) do
     cond do
       exact_fraction?(left) and exact_fraction?(right) ->
@@ -1257,6 +1272,8 @@ defmodule Flang.Rt do
         {:num, num_mul(a, b)}
     end
   end
+
+  def divide(left, right) when is_word(left) or is_word(right), do: word_arith("div", left, right)
 
   def divide(left, right) do
     if exact_fraction?(left) and exact_fraction?(right) do
@@ -1277,6 +1294,8 @@ defmodule Flang.Rt do
       {:num, num_div(a, b)}
     end
   end
+
+  def mod(left, right) when is_word(left) or is_word(right), do: word_arith("mod", left, right)
 
   def mod(left, right) do
     if exact_digits?(left) and exact_digits?(right) do
@@ -1323,15 +1342,19 @@ defmodule Flang.Rt do
   end
 
   @doc "«больше»."
+  def gt(left, right) when is_word(left) or is_word(right), do: {:flag, word_order(left, right) == :gt}
   def gt(left, right), do: {:flag, order_of(left, right) == :gt}
 
   @doc "«меньше»."
+  def lt(left, right) when is_word(left) or is_word(right), do: {:flag, word_order(left, right) == :lt}
   def lt(left, right), do: {:flag, order_of(left, right) == :lt}
 
   @doc "«не меньше»."
+  def gte(left, right) when is_word(left) or is_word(right), do: {:flag, word_order(left, right) in [:gt, :eq]}
   def gte(left, right), do: {:flag, order_of(left, right) in [:gt, :eq]}
 
   @doc "«не больше»."
+  def lte(left, right) when is_word(left) or is_word(right), do: {:flag, word_order(left, right) in [:lt, :eq]}
   def lte(left, right), do: {:flag, order_of(left, right) in [:lt, :eq]}
 
   @doc "«соединить» как двуместная операция над строками."
@@ -1743,7 +1766,223 @@ defmodule Flang.Rt do
 
   defp take_exponent(codes), do: codes == []
 
+  def word(name, bits), do: {:word, name, Bitwise.band(bits, Bitwise.bsl(1, word_width(name)) - 1)}
+
+  defp word_width(name), do: String.to_integer(binary_part(name, 1, byte_size(name) - 1))
+
+  def word_int({:word, "i" <> _ = name, bits}) do
+    width = word_width(name)
+    if Bitwise.band(bits, Bitwise.bsl(1, width - 1)) != 0, do: bits - Bitwise.bsl(1, width), else: bits
+  end
+
+  def word_int({:word, _, bits}), do: bits
+
+  defp word_fits(whole, "i" <> _ = name) do
+    half = Bitwise.bsl(1, word_width(name) - 1)
+    whole >= -half and whole < half
+  end
+
+  defp word_fits(whole, name), do: whole >= 0 and whole < Bitwise.bsl(1, word_width(name))
+
+  defp word_from_number(name, number) do
+    shown = number_text(number)
+
+    if not is_float(number) or number != Float.floor(number) do
+      raise fail(@code_overflow, shown <> " не целое и в " <> name <> " не переводится")
+    end
+
+    whole = trunc(number)
+    if not word_fits(whole, name), do: raise(fail(@code_overflow, shown <> " не помещается в " <> name))
+    word(name, whole)
+  end
+
+  defp word_from_digits(name, value, digits) do
+    {negative, body} =
+      case digits do
+        "-" <> rest -> {true, rest}
+        _ -> {false, digits}
+      end
+
+    if not Regex.match?(~r/\A[0-9]+\z/, body) do
+      raise fail(@code_builtin_args, "«" <> name <> "»: строка " <> describe(value) <> " — не десятичное целое")
+    end
+
+    whole = if negative, do: -String.to_integer(body), else: String.to_integer(body)
+    if not word_fits(whole, name), do: raise(fail(@code_overflow, digits <> " не помещается в " <> name))
+    word(name, whole)
+  end
+
+  defp word_convert(name, {:num, number}), do: word_from_number(name, number)
+  defp word_convert(name, {:str, digits} = value), do: word_from_digits(name, value, digits)
+
+  defp word_convert(name, {:word, _, _} = value) do
+    whole = word_int(value)
+    if not word_fits(whole, name), do: raise(fail(@code_overflow, describe(value) <> " не помещается в " <> name))
+    word(name, whole)
+  end
+
+  defp word_convert(name, value) do
+    raise fail(@code_builtin_args, "«" <> name <> "»: переводится число или слово, получено " <> type_name(value))
+  end
+
+  defp word_pair({:word, name, _} = left, right), do: {left, word_other(name, right)}
+  defp word_pair(left, {:word, name, _} = right), do: {word_other(name, left), right}
+
+  defp word_other(name, {:num, number}), do: word_from_number(name, number)
+  defp word_other(name, {:word, name, _} = other), do: other
+
+  defp word_other(name, {:word, other, _}) do
+    raise fail(@code_type, name <> " и " <> other <> " не смешиваются")
+  end
+
+  defp word_other(name, other), do: raise(fail(@code_type, name <> " и " <> type_name(other) <> " не смешиваются"))
+
+  defp word_checked(op, {:word, name, _} = left, right, whole) do
+    if not word_fits(whole, name) do
+      raise fail(
+              @code_overflow,
+              describe(left) <> " «" <> op <> "» " <> describe(right) <> " не помещается в " <> name
+            )
+    end
+
+    word(name, whole)
+  end
+
+  defp word_divide(op, left, right) do
+    a = word_int(left)
+    b = word_int(right)
+    if b == 0, do: raise(fail(@code_overflow, Integer.to_string(a) <> " «" <> op <> "» 0: деление на ноль"))
+    word_checked(op, left, right, if(op == "mod", do: rem(a, b), else: div(a, b)))
+  end
+
+  defp word_halves({:word, name, a}, {:word, _, b}) do
+    product = a * b
+    {:rec, [{"старшая", word(name, Bitwise.bsr(product, word_width(name)))}, {"младшая", word(name, product)}]}
+  end
+
+  defp word_step("add", left, right), do: word_checked("add", left, right, word_int(left) + word_int(right))
+  defp word_step("sub", left, right), do: word_checked("sub", left, right, word_int(left) - word_int(right))
+  defp word_step("mul", left, right), do: word_checked("mul", left, right, word_int(left) * word_int(right))
+  defp word_step("div", left, right), do: word_divide("div", left, right)
+  defp word_step("mod", left, right), do: word_divide("mod", left, right)
+  defp word_step("addWrap", {:word, name, a}, {:word, _, b}), do: word(name, a + b)
+  defp word_step("subWrap", {:word, name, a}, {:word, _, b}), do: word(name, a - b)
+  defp word_step("mulWrap", {:word, name, a}, {:word, _, b}), do: word(name, a * b)
+  defp word_step("mulWide", left, right), do: word_halves(left, right)
+  defp word_step("bitAnd", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.band(a, b))
+  defp word_step("bitOr", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.bor(a, b))
+  defp word_step("bitXor", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.bxor(a, b))
+
+  defp word_arith(op, left, right) do
+    {a, b} = word_pair(left, right)
+    word_step(op, a, b)
+  end
+
+  defp word_order(left, right) do
+    {a, b} = word_pair(left, right)
+
+    cond do
+      word_int(a) < word_int(b) -> :lt
+      word_int(a) > word_int(b) -> :gt
+      true -> :eq
+    end
+  end
+
+  defp word_count({:num, number}), do: number
+  defp word_count({:word, _, _} = value), do: word_count_int(word_int(value))
+  defp word_count(_), do: -1.0
+
+  defp word_count_int(whole) when abs(whole) <= @word_ceiling, do: whole * 1.0
+  defp word_count_int(_), do: @word_ceiling * 1.0
+
+  defp word_shift_count(op, {:word, name, _}, right) do
+    count = word_count(right)
+
+    if not is_float(count) or count < 0 or count != Float.floor(count) do
+      raise fail(
+              @code_builtin_args,
+              "«" <> op <> "»: величина сдвига — целое не меньше нуля, получено " <> describe(right)
+            )
+    end
+
+    width = word_width(name)
+
+    if String.starts_with?(op, "shift") and count >= width do
+      raise fail(@code_builtin_args, "«" <> op <> "»: сдвиг на " <> number_text(count) <> " не меньше ширины " <> name)
+    end
+
+    rem(trunc(count), width)
+  end
+
+  defp word_shift_count(op, left, right) do
+    raise fail(
+            @code_builtin_args,
+            "«" <> op <> "»: сдвиг на " <> describe(right) <> " не меньше ширины " <> type_name(left)
+          )
+  end
+
+  defp word_shift(op, left, right) do
+    step = word_shift_count(op, left, right)
+    {:word, name, bits} = left
+    width = word_width(name)
+
+    case op do
+      "shiftLeft" -> word(name, Bitwise.bsl(bits, step))
+      "shiftRight" -> word(name, Bitwise.bsr(word_int(left), step))
+      "rotateLeft" -> word_rotate(name, bits, step, width)
+      "rotateRight" -> word_rotate(name, bits, rem(width - step, width), width)
+    end
+  end
+
+  defp word_rotate(name, bits, turn, width) do
+    word(name, Bitwise.bor(Bitwise.bsl(bits, turn), Bitwise.bsr(bits, width - turn)))
+  end
+
+  defp word_equal_number(word, number) do
+    whole = word_int(word)
+    is_float(number) and abs(whole) <= @word_ceiling and whole * 1.0 == number
+  end
+
+  defp word_to_number(value) do
+    whole = word_int(value)
+
+    if abs(whole) > @word_ceiling do
+      raise fail(@code_overflow, Integer.to_string(whole) <> " за потолком точных чисел 9007199254740991")
+    end
+
+    {:num, whole * 1.0}
+  end
+
+  def add_wrap(left, right), do: word_arith("addWrap", left, right)
+  def sub_wrap(left, right), do: word_arith("subWrap", left, right)
+  def mul_wrap(left, right), do: word_arith("mulWrap", left, right)
+  def mul_wide(left, right), do: word_arith("mulWide", left, right)
+  def bit_and(left, right), do: word_arith("bitAnd", left, right)
+  def bit_or(left, right), do: word_arith("bitOr", left, right)
+  def bit_xor(left, right), do: word_arith("bitXor", left, right)
+  def shift_left(left, right), do: word_shift("shiftLeft", left, right)
+  def shift_right(left, right), do: word_shift("shiftRight", left, right)
+  def rotate_left(left, right), do: word_shift("rotateLeft", left, right)
+  def rotate_right(left, right), do: word_shift("rotateRight", left, right)
+
+  def b_bit_not({:word, name, bits}), do: word(name, Bitwise.bnot(bits))
+
+  def b_bit_not(value) do
+    raise fail(@code_builtin_args, "«bitNot»: аргумент должен быть словом, получено " <> type_name(value))
+  end
+
+  def b_u8(value), do: word_convert("u8", value)
+  def b_u16(value), do: word_convert("u16", value)
+  def b_u32(value), do: word_convert("u32", value)
+  def b_u64(value), do: word_convert("u64", value)
+  def b_i8(value), do: word_convert("i8", value)
+  def b_i16(value), do: word_convert("i16", value)
+  def b_i32(value), do: word_convert("i32", value)
+  def b_i64(value), do: word_convert("i64", value)
+
   @doc "«к числу»."
+  def b_to_number({:word, _, _} = source), do: word_to_number(source)
+
   def b_to_number(source) do
     value = expect_string("к числу", source, "строка")
     trimmed = trim_js(value)
@@ -1799,6 +2038,7 @@ defmodule Flang.Rt do
   def b_to_string({:flag, true}), do: {:str, "да"}
   def b_to_string({:flag, false}), do: {:str, "нет"}
   def b_to_string(:nothing), do: {:str, "ничто"}
+  def b_to_string({:word, _, _} = value), do: {:str, describe(value)}
 
   def b_to_string(value) do
     raise fail(@code_builtin_args, "«к строке»: ожидается скаляр, получено " <> type_name(value))

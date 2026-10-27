@@ -259,6 +259,7 @@ $ echo $?
 | `FLANG_TYPE_PARAM` | параметр типа объявлен дважды, без имени или назван как встроенный либо объявленный тип | переименовать параметр |
 | `FLANG_APPLY` | вызов не подходит: не то число аргументов или вызывают не функцию | сверить вызов с сигнатурой |
 | `FLANG_BUILTIN_ARGS` | встроенной операции дали не то число аргументов | свериться с описанием операции |
+| `FLANG_OVERFLOW` | действие над словом фиксированной ширины (`u8` … `i64`) не помещается в тип или делит на ноль | написать `с переполнением`, где заворот задуман, или взять слово шире |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | pattern matching покрывает не все случаи | добавить недостающий `случай` |
 | `FLANG_MATCH_UNREACHABLE` | случай покрыт более ранним и не сработает никогда | убрать его или поднять выше |
 | `FLANG_EXAMPLE` | unit-тест не прошёл: значение не совпало с ожидаемым | поправить тело или ожидание |
@@ -745,6 +746,7 @@ $ echo $?
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | у 'если' нет ветки 'иначе' · не разобрана конструкция: неожиданное '{word}' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («{word.quoted}») или переименуйте; а если слово попало в форму лишним — уберите его |
 | `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |
@@ -779,7 +781,7 @@ $ echo $?
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | нарушено свойство «{claim}» функции «{function}» |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
-| `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
+| `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |

@@ -66,8 +66,8 @@ draft: false
 **Полноценной сети нет.** Ходить в сеть язык умеет — есть поручения «Запросить»,
 «Открыть соединение», «Принять соединение», — но это примитивы, а не библиотека.
 
-**Библиотека невелика:** 64 файла, 63 393 строки
-<!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --><!-- СНЯТО 2026-10-18 строк-в flang/stdlib/*.flang = 63393 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 63380, снято 2026-10-17) -->
+**Библиотека невелика:** 64 файла, 63 397 строки
+<!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --><!-- СНЯТО 2026-10-26 строк-в flang/stdlib/*.flang = 63397 (партия печати 9b: три утверждения sqlite, опровергнутые новой проверкой, названы со своей областью; до неё 63393, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 63380, снято 2026-10-17) -->
 (`ls flang/stdlib/*.flang | wc -l`, `cat flang/stdlib/*.flang | wc -l`).
 Есть списки, строки, числа, словари, деревья, множества, JSON,
 HTTP-разбор, SHA-256, Base64, UTF-8, дата и время, функции высшего порядка.

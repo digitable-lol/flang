@@ -77,6 +77,7 @@ public final class Value {
   public static final int TAG_LIST = 4;
   public static final int TAG_RECORD = 5;
   public static final int TAG_VARIANT = 6;
+  public static final int TAG_WORD = 7;
 
   /**
    * Отметка «сколько ячеек общего массива уже занято» — одна на все списки,
@@ -145,6 +146,7 @@ public final class Value {
   public final Grow grow;
   /** Поля записи или варианта в порядке объявления; у остальных null. */
   public final Field[] fields;
+  public final long bits;
 
   private Value(int tag, double num, boolean bit, String str, Value[] items, Field[] fields) {
     this(tag, num, bit, str, items, items == null ? 0 : items.length, null, fields);
@@ -161,6 +163,38 @@ public final class Value {
     this.count = count;
     this.grow = grow;
     this.fields = fields;
+    this.bits = 0L;
+  }
+
+  private Value(String name, long bits) {
+    this.tag = TAG_WORD;
+    this.num = 0.0;
+    this.bit = false;
+    this.str = name;
+    this.items = null;
+    this.count = 0;
+    this.grow = null;
+    this.fields = null;
+    this.bits = bits;
+  }
+
+  public static int wordWidth(String name) {
+    return Integer.parseInt(name.substring(1));
+  }
+
+  public static long wordMask(int width) {
+    return width >= 64 ? -1L : (1L << width) - 1L;
+  }
+
+  public static Value word(String name, long bits) {
+    return new Value(name, bits & wordMask(wordWidth(name)));
+  }
+
+  public static java.math.BigInteger wordInt(Value value) {
+    int width = wordWidth(value.str);
+    java.math.BigInteger unsigned = new java.math.BigInteger(Long.toUnsignedString(value.bits));
+    boolean negative = value.str.charAt(0) == 'i' && ((value.bits >>> (width - 1)) & 1L) != 0L;
+    return negative ? unsigned.subtract(java.math.BigInteger.ONE.shiftLeft(width)) : unsigned;
   }
 
   private static final Value[] NO_ITEMS = new Value[0];
@@ -338,6 +372,8 @@ public final class Value {
         return "вариант «" + value.str + "»";
       case TAG_RECORD:
         return "запись";
+      case TAG_WORD:
+        return value.str;
       default:
         return "неизвестное значение";
     }
@@ -367,6 +403,8 @@ public final class Value {
         return "ничто";
       case TAG_FLAG:
         return value.bit ? "да" : "нет";
+      case TAG_WORD:
+        return wordInt(value).toString();
       default:
         return numberText(value.num);
     }
@@ -411,6 +449,9 @@ public final class Value {
    * вложенностью значения, а не длиной вычисления.
    */
   public static boolean equal(Value left, Value right) {
+    if (left.tag == TAG_WORD || right.tag == TAG_WORD) {
+      return wordEqual(left, right);
+    }
     if (isScalar(left) || isScalar(right)) {
       if (!isScalar(left) || !isScalar(right) || left.tag != right.tag) {
         return false;
@@ -444,6 +485,18 @@ public final class Value {
       return fieldsEqual(left.fields, right.fields);
     }
     return false;
+  }
+
+  public static boolean wordEqual(Value left, Value right) {
+    if (left.tag == TAG_WORD && right.tag == TAG_WORD) {
+      return left.str.equals(right.str) && left.bits == right.bits;
+    }
+    Value word = left.tag == TAG_WORD ? left : right;
+    Value other = left.tag == TAG_WORD ? right : left;
+    java.math.BigInteger whole = wordInt(word);
+    return other.tag == TAG_NUMBER
+        && whole.abs().compareTo(java.math.BigInteger.valueOf(9007199254740991L)) <= 0
+        && whole.doubleValue() == other.num;
   }
 
   /** Равенство записей: по именам полей, а не по их порядку. */

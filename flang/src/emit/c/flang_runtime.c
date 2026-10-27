@@ -3683,6 +3683,7 @@ static bool fl_js_space(unsigned long code) {
 
 fl_value fl_nothing(void) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_NOTHING;
   value.as.number = 0.0;
   return value;
@@ -3690,6 +3691,7 @@ fl_value fl_nothing(void) {
 
 fl_value fl_number(double number) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_NUMBER;
   value.as.number = number;
   return value;
@@ -3697,6 +3699,7 @@ fl_value fl_number(double number) {
 
 fl_value fl_flag(bool flag) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_FLAG;
   value.as.flag = flag;
   return value;
@@ -3704,6 +3707,7 @@ fl_value fl_flag(bool flag) {
 
 fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_STRING;
   value.as.string.utf8 = utf8;
   value.as.string.bytes = bytes;
@@ -3752,6 +3756,7 @@ struct fl_grow {
 
 fl_value fl_list(const fl_value *items, size_t count) {
   fl_value value;
+  memset(&value, 0, sizeof value);
   value.tag = FL_LIST;
   value.as.list.items = items;
   value.as.list.count = count;
@@ -3921,7 +3926,7 @@ bool fl_is_variant(fl_value value) { return value.tag == FL_VARIANT; }
 
 bool fl_is_scalar(fl_value value) {
   return value.tag == FL_NOTHING || value.tag == FL_NUMBER ||
-         value.tag == FL_FLAG || value.tag == FL_STRING;
+         value.tag == FL_FLAG || value.tag == FL_STRING || value.tag == FL_WORD;
 }
 
 bool fl_variant_is(fl_value value, const char *name) {
@@ -4102,6 +4107,575 @@ static bool fl_buffer_text(fl_ctx *ctx, fl_buffer *buffer, const char *text) {
 
 /* ═════════════════════════ описание значений ═════════════════════════ */
 
+static uint64_t fl_word_mask(unsigned width) {
+  return width >= 64u ? UINT64_MAX : ((UINT64_C(1) << width) - 1u);
+}
+
+static uint64_t fl_word_sign_bit(unsigned width) {
+  return UINT64_C(1) << (width - 1u);
+}
+
+fl_value fl_word(unsigned width, bool sign, uint64_t bits) {
+  fl_value value;
+  memset(&value, 0, sizeof value);
+  value.tag = FL_WORD;
+  value.as.word.bits = bits & fl_word_mask(width);
+  value.as.word.width = (unsigned char)width;
+  value.as.word.sign = sign;
+  return value;
+}
+
+static const char *fl_word_name(unsigned width, bool sign) {
+  switch (width) {
+  case 8u:
+    return sign ? "i8" : "u8";
+  case 16u:
+    return sign ? "i16" : "u16";
+  case 32u:
+    return sign ? "i32" : "u32";
+  default:
+    return sign ? "i64" : "u64";
+  }
+}
+
+static bool fl_word_negative(fl_value value) {
+  return value.as.word.sign &&
+         (value.as.word.bits & fl_word_sign_bit(value.as.word.width)) != 0u;
+}
+
+static uint64_t fl_word_magnitude(fl_value value) {
+  if (fl_word_negative(value)) {
+    return ((~value.as.word.bits) & fl_word_mask(value.as.word.width)) + 1u;
+  }
+  return value.as.word.bits;
+}
+
+static void fl_word_text(fl_value value, char *buffer, size_t size) {
+  if (fl_word_negative(value)) {
+    snprintf(buffer, size, "-%" PRIu64, fl_word_magnitude(value));
+    return;
+  }
+  snprintf(buffer, size, "%" PRIu64, value.as.word.bits);
+}
+
+static bool fl_word_exact(fl_value value) {
+  return fl_word_magnitude(value) <= UINT64_C(9007199254740991);
+}
+
+static double fl_word_number(fl_value value) {
+  const double magnitude = (double)fl_word_magnitude(value);
+  return fl_word_negative(value) ? -magnitude : magnitude;
+}
+
+static bool fl_word_fits(uint64_t magnitude, bool negative, unsigned width,
+                         bool sign) {
+  if (!sign) {
+    return negative ? magnitude == 0u : magnitude <= fl_word_mask(width);
+  }
+  if (negative) {
+    return magnitude <= fl_word_sign_bit(width);
+  }
+  return magnitude < fl_word_sign_bit(width);
+}
+
+static uint64_t fl_word_from_magnitude(uint64_t magnitude, bool negative,
+                                       unsigned width) {
+  return negative ? ((~magnitude) + 1u) & fl_word_mask(width)
+                  : magnitude & fl_word_mask(width);
+}
+
+static fl_status fl_word_from_number(fl_ctx *ctx, unsigned width, bool sign,
+                                     double number, fl_value *out,
+                                     fl_error *error) {
+  char text[FL_NUMBER_TEXT_MAX];
+  const bool negative = number < 0.0;
+  const double magnitude = negative ? -number : number;
+  fl_number_text(number, text);
+  if (number != floor(number) || isinf(number)) {
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW,
+                   "%s не целое и в %s не переводится", text,
+                   fl_word_name(width, sign));
+  }
+  if (magnitude >= 18446744073709551616.0 ||
+      !fl_word_fits((uint64_t)magnitude, negative, width, sign)) {
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW, "%s не помещается в %s", text,
+                   fl_word_name(width, sign));
+  }
+  *out = fl_word(width, sign,
+                 fl_word_from_magnitude((uint64_t)magnitude, negative, width));
+  return FL_OK;
+}
+
+static fl_status fl_word_from_digits(fl_ctx *ctx, const char *form,
+                                     unsigned width, bool sign, fl_value value,
+                                     fl_value *out, fl_error *error) {
+  const char *digits = value.as.string.utf8;
+  size_t bytes = value.as.string.bytes;
+  size_t index = 0;
+  bool negative = false;
+  bool spilled = false;
+  uint64_t magnitude = 0u;
+  if (bytes > 0u && digits[0] == '-') {
+    negative = true;
+    index = 1u;
+  }
+  if (index == bytes) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: строка %s — не десятичное целое", form,
+                   fl_describe(ctx, value));
+  }
+  for (; index < bytes; index += 1u) {
+    const unsigned digit =
+        (unsigned)(unsigned char)digits[index] - (unsigned)'0';
+    if (digit > 9u) {
+      return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                     "«%s»: строка %s — не десятичное целое", form,
+                     fl_describe(ctx, value));
+    }
+    if (magnitude > (UINT64_MAX - digit) / 10u) {
+      spilled = true;
+    }
+    magnitude = magnitude * 10u + digit;
+  }
+  if (spilled || !fl_word_fits(magnitude, negative, width, sign)) {
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW, "%.*s не помещается в %s",
+                   (int)bytes, digits, fl_word_name(width, sign));
+  }
+  *out =
+      fl_word(width, sign, fl_word_from_magnitude(magnitude, negative, width));
+  return FL_OK;
+}
+
+static fl_status fl_word_convert(fl_ctx *ctx, const char *form, unsigned width,
+                                 bool sign, fl_value value, fl_value *out,
+                                 fl_error *error) {
+  char text[32];
+  if (value.tag == FL_NUMBER) {
+    return fl_word_from_number(ctx, width, sign, value.as.number, out, error);
+  }
+  if (value.tag == FL_STRING) {
+    return fl_word_from_digits(ctx, form, width, sign, value, out, error);
+  }
+  if (value.tag != FL_WORD) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: переводится число или слово, получено %s", form,
+                   fl_type_name(ctx, value));
+  }
+  if (!fl_word_fits(fl_word_magnitude(value), fl_word_negative(value), width,
+                    sign)) {
+    fl_word_text(value, text, sizeof text);
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW, "%s не помещается в %s", text,
+                   fl_word_name(width, sign));
+  }
+  *out = fl_word(width, sign,
+                 fl_word_from_magnitude(fl_word_magnitude(value),
+                                        fl_word_negative(value), width));
+  return FL_OK;
+}
+
+static fl_status fl_word_pair(fl_ctx *ctx, fl_value *left, fl_value *right,
+                              fl_error *error) {
+  const fl_value pattern = left->tag == FL_WORD ? *left : *right;
+  fl_value *other = left->tag == FL_WORD ? right : left;
+  const unsigned width = pattern.as.word.width;
+  const bool sign = pattern.as.word.sign;
+  if (other->tag == FL_NUMBER) {
+    return fl_word_from_number(ctx, width, sign, other->as.number, other,
+                               error);
+  }
+  if (other->tag != FL_WORD) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s и %s не смешиваются",
+                   fl_word_name(width, sign), fl_type_name(ctx, *other));
+  }
+  if (other->as.word.width != width || other->as.word.sign != sign) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s и %s не смешиваются",
+                   fl_word_name(width, sign),
+                   fl_word_name(other->as.word.width, other->as.word.sign));
+  }
+  return FL_OK;
+}
+
+static void fl_word_wide(uint64_t left, uint64_t right, uint64_t *high,
+                         uint64_t *low) {
+  const uint64_t a0 = left & UINT64_C(0xffffffff);
+  const uint64_t a1 = left >> 32;
+  const uint64_t b0 = right & UINT64_C(0xffffffff);
+  const uint64_t b1 = right >> 32;
+  const uint64_t p00 = a0 * b0;
+  const uint64_t p01 = a0 * b1;
+  const uint64_t p10 = a1 * b0;
+  const uint64_t p11 = a1 * b1;
+  const uint64_t middle =
+      (p00 >> 32) + (p01 & UINT64_C(0xffffffff)) + (p10 & UINT64_C(0xffffffff));
+  *low = (middle << 32) | (p00 & UINT64_C(0xffffffff));
+  *high = p11 + (p01 >> 32) + (p10 >> 32) + (middle >> 32);
+}
+
+static fl_status fl_word_overflow(fl_ctx *ctx, const char *op, fl_value left,
+                                  fl_value right, fl_error *error) {
+  char left_text[32];
+  char right_text[32];
+  fl_word_text(left, left_text, sizeof left_text);
+  fl_word_text(right, right_text, sizeof right_text);
+  return fl_fail(ctx, error, FL_CODE_OVERFLOW, "%s «%s» %s не помещается в %s",
+                 left_text, op, right_text,
+                 fl_word_name(left.as.word.width, left.as.word.sign));
+}
+
+static fl_status fl_word_result(fl_ctx *ctx, const char *op, fl_value left,
+                                fl_value right, uint64_t magnitude,
+                                bool negative, bool spilled, fl_value *out,
+                                fl_error *error) {
+  const unsigned width = left.as.word.width;
+  const bool sign = left.as.word.sign;
+  if (spilled || !fl_word_fits(magnitude, negative, width, sign)) {
+    return fl_word_overflow(ctx, op, left, right, error);
+  }
+  *out =
+      fl_word(width, sign, fl_word_from_magnitude(magnitude, negative, width));
+  return FL_OK;
+}
+
+static fl_status fl_word_sum(fl_ctx *ctx, const char *op, fl_value left,
+                             fl_value right, bool subtract, fl_value *out,
+                             fl_error *error) {
+  const uint64_t a = fl_word_magnitude(left);
+  const uint64_t b = fl_word_magnitude(right);
+  const bool a_negative = fl_word_negative(left);
+  const bool b_negative =
+      fl_word_negative(right) != subtract && fl_word_magnitude(right) != 0u;
+  if (a_negative == b_negative) {
+    const uint64_t sum = a + b;
+    return fl_word_result(ctx, op, left, right, sum, a_negative, sum < a, out,
+                          error);
+  }
+  if (a >= b) {
+    return fl_word_result(ctx, op, left, right, a - b, a_negative, false, out,
+                          error);
+  }
+  return fl_word_result(ctx, op, left, right, b - a, b_negative, false, out,
+                        error);
+}
+
+static fl_status fl_word_product(fl_ctx *ctx, const char *op, fl_value left,
+                                 fl_value right, fl_value *out,
+                                 fl_error *error) {
+  uint64_t high = 0u;
+  uint64_t low = 0u;
+  fl_word_wide(fl_word_magnitude(left), fl_word_magnitude(right), &high, &low);
+  return fl_word_result(ctx, op, left, right, low,
+                        fl_word_negative(left) != fl_word_negative(right),
+                        high != 0u, out, error);
+}
+
+static fl_status fl_word_divide(fl_ctx *ctx, const char *op, fl_value left,
+                                fl_value right, bool remainder, fl_value *out,
+                                fl_error *error) {
+  const uint64_t a = fl_word_magnitude(left);
+  const uint64_t b = fl_word_magnitude(right);
+  char text[32];
+  if (b == 0u) {
+    fl_word_text(left, text, sizeof text);
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW, "%s «%s» 0: деление на ноль",
+                   text, op);
+  }
+  if (remainder) {
+    return fl_word_result(ctx, op, left, right, a % b, fl_word_negative(left),
+                          false, out, error);
+  }
+  return fl_word_result(ctx, op, left, right, a / b,
+                        fl_word_negative(left) != fl_word_negative(right),
+                        false, out, error);
+}
+
+static int fl_word_order(fl_value left, fl_value right) {
+  const bool a_negative = fl_word_negative(left);
+  const bool b_negative = fl_word_negative(right);
+  const uint64_t a = fl_word_magnitude(left);
+  const uint64_t b = fl_word_magnitude(right);
+  if (a_negative != b_negative) {
+    return a_negative ? -1 : 1;
+  }
+  if (a == b) {
+    return 0;
+  }
+  if (a_negative) {
+    return a > b ? -1 : 1;
+  }
+  return a < b ? -1 : 1;
+}
+
+static bool fl_word_any(fl_value left, fl_value right) {
+  return left.tag == FL_WORD || right.tag == FL_WORD;
+}
+
+static fl_status fl_word_arith(fl_ctx *ctx, const char *op, fl_value left,
+                               fl_value right, fl_value *out, fl_error *error) {
+  uint64_t high = 0u;
+  uint64_t low = 0u;
+  unsigned width = 0u;
+  FL_TRY(fl_word_pair(ctx, &left, &right, error));
+  width = left.as.word.width;
+  if (strcmp(op, "add") == 0) {
+    return fl_word_sum(ctx, op, left, right, false, out, error);
+  }
+  if (strcmp(op, "sub") == 0) {
+    return fl_word_sum(ctx, op, left, right, true, out, error);
+  }
+  if (strcmp(op, "mul") == 0) {
+    return fl_word_product(ctx, op, left, right, out, error);
+  }
+  if (strcmp(op, "div") == 0) {
+    return fl_word_divide(ctx, op, left, right, false, out, error);
+  }
+  if (strcmp(op, "mod") == 0) {
+    return fl_word_divide(ctx, op, left, right, true, out, error);
+  }
+  if (strcmp(op, "addWrap") == 0) {
+    *out = fl_word(width, left.as.word.sign,
+                   left.as.word.bits + right.as.word.bits);
+    return FL_OK;
+  }
+  if (strcmp(op, "subWrap") == 0) {
+    *out = fl_word(width, left.as.word.sign,
+                   left.as.word.bits - right.as.word.bits);
+    return FL_OK;
+  }
+  if (strcmp(op, "mulWrap") == 0) {
+    fl_word_wide(left.as.word.bits, right.as.word.bits, &high, &low);
+    *out = fl_word(width, left.as.word.sign, low);
+    return FL_OK;
+  }
+  if (strcmp(op, "bitAnd") == 0) {
+    *out = fl_word(width, left.as.word.sign,
+                   left.as.word.bits & right.as.word.bits);
+    return FL_OK;
+  }
+  if (strcmp(op, "bitOr") == 0) {
+    *out = fl_word(width, left.as.word.sign,
+                   left.as.word.bits | right.as.word.bits);
+    return FL_OK;
+  }
+  if (strcmp(op, "bitXor") == 0) {
+    *out = fl_word(width, left.as.word.sign,
+                   left.as.word.bits ^ right.as.word.bits);
+    return FL_OK;
+  }
+  return fl_fail(ctx, error, FL_CODE_TYPE, "над %s «%s» не определено",
+                 fl_word_name(width, left.as.word.sign), op);
+}
+
+static fl_status fl_word_ordered(fl_ctx *ctx, fl_value left, fl_value right,
+                                 int *order, fl_error *error) {
+  FL_TRY(fl_word_pair(ctx, &left, &right, error));
+  *order = fl_word_order(left, right);
+  return FL_OK;
+}
+
+static fl_status fl_word_shift(fl_ctx *ctx, const char *op, fl_value left,
+                               fl_value right, fl_value *out, fl_error *error) {
+  double count = -1.0;
+  unsigned width = 0u;
+  uint64_t bits = 0u;
+  uint64_t step = 0u;
+  bool rotate = strcmp(op, "rotateLeft") == 0 || strcmp(op, "rotateRight") == 0;
+  if (left.tag != FL_WORD) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: сдвиг на %s не меньше ширины %s", op,
+                   fl_describe(ctx, right), fl_type_name(ctx, left));
+  }
+  width = left.as.word.width;
+  bits = left.as.word.bits;
+  if (right.tag == FL_NUMBER) {
+    count = right.as.number;
+  } else if (right.tag == FL_WORD) {
+    count = fl_word_exact(right) ? fl_word_number(right) : 9007199254740991.0;
+  }
+  if (count < 0.0 || count != floor(count) || isinf(count)) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: величина сдвига — целое не меньше нуля, получено %s",
+                   op, fl_describe(ctx, right));
+  }
+  if (!rotate && count >= (double)width) {
+    char text[FL_NUMBER_TEXT_MAX];
+    fl_number_text(count, text);
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«%s»: сдвиг на %s не меньше ширины %s", op, text,
+                   fl_word_name(width, left.as.word.sign));
+  }
+  step = (uint64_t)fmod(count, (double)width);
+  if (strcmp(op, "shiftLeft") == 0) {
+    *out = fl_word(width, left.as.word.sign, bits << step);
+    return FL_OK;
+  }
+  if (strcmp(op, "shiftRight") == 0) {
+    if (fl_word_negative(left)) {
+      *out = fl_word(width, true, ~(((~bits) & fl_word_mask(width)) >> step));
+      return FL_OK;
+    }
+    *out = fl_word(width, left.as.word.sign, bits >> step);
+    return FL_OK;
+  }
+  if (strcmp(op, "rotateRight") == 0) {
+    step = (width - step) % width;
+  }
+  *out =
+      fl_word(width, left.as.word.sign,
+              step == 0u ? bits : ((bits << step) | (bits >> (width - step))));
+  return FL_OK;
+}
+
+static bool fl_word_equal(fl_value left, fl_value right) {
+  if (left.tag == FL_WORD && right.tag == FL_WORD) {
+    return left.as.word.width == right.as.word.width &&
+           left.as.word.sign == right.as.word.sign &&
+           left.as.word.bits == right.as.word.bits;
+  }
+  if (left.tag == FL_NUMBER) {
+    return fl_word_exact(right) && fl_word_number(right) == left.as.number;
+  }
+  if (right.tag == FL_NUMBER) {
+    return fl_word_exact(left) && fl_word_number(left) == right.as.number;
+  }
+  return false;
+}
+
+fl_status fl_add_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error) {
+  return fl_word_arith(ctx, "addWrap", left, right, out, error);
+}
+
+fl_status fl_sub_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error) {
+  return fl_word_arith(ctx, "subWrap", left, right, out, error);
+}
+
+fl_status fl_mul_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error) {
+  return fl_word_arith(ctx, "mulWrap", left, right, out, error);
+}
+
+fl_status fl_mul_wide(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error) {
+  static const char *const names[2] = {"старшая", "младшая"};
+  fl_value halves[2];
+  uint64_t high = 0u;
+  uint64_t low = 0u;
+  unsigned width = 0u;
+  FL_TRY(fl_word_pair(ctx, &left, &right, error));
+  width = left.as.word.width;
+  fl_word_wide(left.as.word.bits, right.as.word.bits, &high, &low);
+  if (width < 64u) {
+    high = low >> width;
+  }
+  halves[0] = fl_word(width, left.as.word.sign, high);
+  halves[1] = fl_word(width, left.as.word.sign, low);
+  return fl_record_new(ctx, names, halves, 2u, out, error);
+}
+
+fl_status fl_bit_and(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                     fl_error *error) {
+  return fl_word_arith(ctx, "bitAnd", left, right, out, error);
+}
+
+fl_status fl_bit_or(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                    fl_error *error) {
+  return fl_word_arith(ctx, "bitOr", left, right, out, error);
+}
+
+fl_status fl_bit_xor(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                     fl_error *error) {
+  return fl_word_arith(ctx, "bitXor", left, right, out, error);
+}
+
+fl_status fl_shift_left(fl_ctx *ctx, fl_value left, fl_value right,
+                        fl_value *out, fl_error *error) {
+  return fl_word_shift(ctx, "shiftLeft", left, right, out, error);
+}
+
+fl_status fl_shift_right(fl_ctx *ctx, fl_value left, fl_value right,
+                         fl_value *out, fl_error *error) {
+  return fl_word_shift(ctx, "shiftRight", left, right, out, error);
+}
+
+fl_status fl_rotate_left(fl_ctx *ctx, fl_value left, fl_value right,
+                         fl_value *out, fl_error *error) {
+  return fl_word_shift(ctx, "rotateLeft", left, right, out, error);
+}
+
+fl_status fl_rotate_right(fl_ctx *ctx, fl_value left, fl_value right,
+                          fl_value *out, fl_error *error) {
+  return fl_word_shift(ctx, "rotateRight", left, right, out, error);
+}
+
+fl_status fl_b_bit_not(fl_ctx *ctx, fl_value value, fl_value *out,
+                       fl_error *error) {
+  if (value.tag != FL_WORD) {
+    return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
+                   "«bitNot»: аргумент должен быть словом, получено %s",
+                   fl_type_name(ctx, value));
+  }
+  *out = fl_word(value.as.word.width, value.as.word.sign, ~value.as.word.bits);
+  return FL_OK;
+}
+
+fl_status fl_b_u8(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  return fl_word_convert(ctx, "u8", 8u, false, value, out, error);
+}
+
+fl_status fl_b_u16(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "u16", 16u, false, value, out, error);
+}
+
+fl_status fl_b_u32(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "u32", 32u, false, value, out, error);
+}
+
+fl_status fl_b_u64(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "u64", 64u, false, value, out, error);
+}
+
+fl_status fl_b_i8(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error) {
+  return fl_word_convert(ctx, "i8", 8u, true, value, out, error);
+}
+
+fl_status fl_b_i16(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "i16", 16u, true, value, out, error);
+}
+
+fl_status fl_b_i32(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "i32", 32u, true, value, out, error);
+}
+
+fl_status fl_b_i64(fl_ctx *ctx, fl_value value, fl_value *out,
+                   fl_error *error) {
+  return fl_word_convert(ctx, "i64", 64u, true, value, out, error);
+}
+
+static fl_status fl_word_to_number(fl_ctx *ctx, fl_value value, fl_value *out,
+                                   fl_error *error) {
+  char text[32];
+  if (!fl_word_exact(value)) {
+    fl_word_text(value, text, sizeof text);
+    return fl_fail(ctx, error, FL_CODE_OVERFLOW,
+                   "%s за потолком точных чисел 9007199254740991", text);
+  }
+  *out = fl_number(fl_word_number(value));
+  return FL_OK;
+}
+
+static fl_status fl_word_to_text(fl_ctx *ctx, fl_value value, fl_value *out,
+                                 fl_error *error) {
+  char text[32];
+  fl_word_text(value, text, sizeof text);
+  return fl_text(ctx, text, strlen(text), out, error);
+}
+
 const char *fl_type_name(fl_ctx *ctx, fl_value value) {
   switch (value.tag) {
   case FL_NOTHING:
@@ -4110,6 +4684,8 @@ const char *fl_type_name(fl_ctx *ctx, fl_value value) {
     return "строка";
   case FL_NUMBER:
     return "число";
+  case FL_WORD:
+    return fl_word_name(value.as.word.width, value.as.word.sign);
   case FL_FLAG:
     return "признак";
   case FL_LIST:
@@ -4227,6 +4803,9 @@ static bool fl_describe_into(fl_ctx *ctx, fl_buffer *buffer, fl_value value) {
     return fl_buffer_text(ctx, buffer, value.as.flag ? "да" : "нет");
   case FL_NUMBER:
     fl_number_text(value.as.number, number);
+    return fl_buffer_text(ctx, buffer, number);
+  case FL_WORD:
+    fl_word_text(value, number, sizeof number);
     return fl_buffer_text(ctx, buffer, number);
   }
   return fl_buffer_text(ctx, buffer, "неизвестное значение");
@@ -4357,6 +4936,9 @@ static bool fl_fields_equal(const fl_field *left, size_t left_count,
  * разной длины, — разные списки, и длина проверяется первой.
  */
 bool fl_equal(fl_value left, fl_value right) {
+  if (left.tag == FL_WORD || right.tag == FL_WORD) {
+    return fl_word_equal(left, right);
+  }
   if (fl_is_scalar(left) || fl_is_scalar(right)) {
     if (!fl_is_scalar(left) || !fl_is_scalar(right) || left.tag != right.tag) {
       return false;
@@ -5024,6 +5606,9 @@ static fl_status fl_frac_compare(fl_ctx *ctx, fl_value left, fl_value right,
 static fl_status fl_exact_order(fl_ctx *ctx, fl_value left, fl_value right,
                                 bool *exact, int *out, fl_error *error) {
   *exact = true;
+  if (fl_word_any(left, right)) {
+    return fl_word_ordered(ctx, left, right, out, error);
+  }
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_compare(ctx, left, right, out, error);
   }
@@ -5053,6 +5638,9 @@ fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
 
 fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "add", left, right, out, error);
+  }
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_add(ctx, left, right, out, error);
   }
@@ -5066,6 +5654,9 @@ fl_status fl_add(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "sub", left, right, out, error);
+  }
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_sub(ctx, left, right, out, error);
   }
@@ -5079,6 +5670,9 @@ fl_status fl_sub(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "mul", left, right, out, error);
+  }
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_mul(ctx, left, right, out, error);
   }
@@ -5092,6 +5686,9 @@ fl_status fl_mul(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "div", left, right, out, error);
+  }
   if (fl_exact_fraction(left) && fl_exact_fraction(right)) {
     return fl_frac_div(ctx, left, right, out, error);
   }
@@ -5102,6 +5699,9 @@ fl_status fl_div(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
 
 fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "mod", left, right, out, error);
+  }
   if (fl_exact_digits(left) && fl_exact_digits(right)) {
     return fl_exact_mod(ctx, left, right, out, error);
   }
@@ -5114,6 +5714,9 @@ fl_status fl_mod(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
    нельзя — меняется последний бит мантиссы. */
 fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                      fl_error *error) {
+  if (fl_word_any(left, right)) {
+    return fl_word_arith(ctx, "percent", left, right, out, error);
+  }
   FL_TRY(fl_numbers(ctx, "percent", left, right, error));
   *out = fl_number((left.as.number / 100.0) * right.as.number);
   return FL_OK;
@@ -5963,6 +6566,9 @@ fl_status fl_b_k_chislu(fl_ctx *ctx, fl_value text, fl_value *out,
   size_t width = 0;
   char *copy = NULL;
   double number = 0.0;
+  if (text.tag == FL_WORD) {
+    return fl_word_to_number(ctx, text, out, error);
+  }
   FL_TRY(fl_expect_string(ctx, "к числу", text, "строка", error));
 
   /* Пробелы с краёв и сама проверка вида числа читают строку целиком. */
@@ -6067,6 +6673,8 @@ fl_status fl_b_k_stroke(fl_ctx *ctx, fl_value value, fl_value *out,
   case FL_NOTHING:
     *out = fl_text_static("ничто");
     return FL_OK;
+  case FL_WORD:
+    return fl_word_to_text(ctx, value, out, error);
   default:
     return fl_fail(ctx, error, FL_CODE_BUILTIN_ARGS,
                    "«к строке»: ожидается скаляр, получено %s",
@@ -6768,6 +7376,11 @@ static void fl_memo_write(fl_memo_buffer *buffer, fl_value value) {
       fl_memo_put_text(buffer, value.as.variant->fields[index].name);
       fl_memo_write(buffer, value.as.variant->fields[index].value);
     }
+    break;
+  case FL_WORD:
+    fl_memo_put_byte(buffer, value.as.word.width);
+    fl_memo_put_byte(buffer, value.as.word.sign ? 1u : 0u);
+    fl_memo_put(buffer, &value.as.word.bits, sizeof value.as.word.bits);
     break;
   case FL_NOTHING:
   default:
@@ -7710,6 +8323,20 @@ static bool fl_memo_read_value(fl_memo_reader *reader, fl_value *out,
     out->as.variant = variant;
     return true;
   }
+  case FL_WORD: {
+    unsigned char width = 0;
+    unsigned char sign = 0;
+    if (!fl_memo_read_raw(reader, &width, 1u) ||
+        !fl_memo_read_raw(reader, &sign, 1u) || sign > 1u ||
+        (width != 8u && width != 16u && width != 32u && width != 64u)) {
+      reader->failed = true;
+      return false;
+    }
+    out->as.word.width = width;
+    out->as.word.sign = sign == 1u;
+    return fl_memo_read_raw(reader, &out->as.word.bits,
+                            sizeof out->as.word.bits);
+  }
   default:
     reader->failed = true;
     return false;
@@ -8388,6 +9015,7 @@ static bool fl_par_copy(fl_ctx *ctx, fl_ctx *probe, fl_value value,
   case FL_NOTHING:
   case FL_NUMBER:
   case FL_FLAG:
+  case FL_WORD:
     *out = value;
     return true;
   case FL_STRING: {

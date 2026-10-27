@@ -1,7 +1,7 @@
 program	surface	code	word
 record-field-negative.flang	check	1	FLANG_TYPE
-fold-keeps-narrow.flang	check	1	FLANG_TYPE
-number-narrows-by-condition.flang	check	1	FLANG_TYPE
+fold-keeps-narrow.flang	check	0	замечаний нет
+number-narrows-by-condition.flang	check	0	замечаний нет
 function-without-returns.flang	check	0	замечаний нет
 results.flang	check	0	замечаний нет
 variant-clash-on-import.flang	check	0	замечаний нет

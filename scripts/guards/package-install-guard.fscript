@@ -1,0 +1,733 @@
+модуль «Package install guard»
+
+примечание "ПРОБА УСТАНОВЩИКА ПАКЕТОВ — условие 6 дороги к 1.0: пакет ставится одной командой на"
+примечание "чистой машине, и повторная установка даёт тот же замок. Зовут тремя способами:"
+примечание "  bootstrap/flang run-script package-install:check              список реестра — файл дерева"
+примечание "  bootstrap/flang run-script package-install:check <адрес списка>  тот же прогон по сети"
+примечание "  bootstrap/flang run-script package-install:forgery            подлог: сторож обязан покраснеть"
+примечание "  bootstrap/flang run-script package-install:command [<адрес>]  команда flang install против движка:"
+примечание "      двоичный из FLANG_BINARY (иначе ../../bootstrap/flang) ставит тот же пакет под пустым HOME,"
+примечание "      и его замок обязан сойтись знак в знак с замком движка, позванного через flang io."
+
+примечание "ЧТО ДЕЛАЕТСЯ. Шесть временных каталогов: пустой HOME и пять пустых проектов. В каждый"
+примечание "проект кладётся программа, и установщик (scripts/package-install.fscript) зовётся как"
+примечание "один процесс под env -i с пустым HOME — так выглядит чистая машина. Случаи:"
+примечание "  1–2. «Множество строк: не ниже 1.1» в два пустых каталога: код 0 оба раза, три файла"
+примечание "       пакетов и замок на месте, замки сравниваются ЗНАК В ЗНАК; потом файлы пакетов из"
+примечание "       первого каталога удаляются, и flang check собирает программу из одного замка."
+примечание "  3.   Пакет с законом (packaging/registry/cases/install/law.list): без согласия —"
+примечание "       FLANG_INSTALL_UNPROVED и ни одного файла на диске; с --accept-unproven — код 0."
+примечание "  4.   Подменённое тело (substituted.list: отпечаток подлинного файла, файл правлен) —"
+примечание "       FLANG_INSTALL_FINGERPRINT, на диске ничего."
+примечание "  5.   Невыполнимые вместе нужды и неизвестное имя — FLANG_INSTALL_CONFLICT."
+
+примечание "ПОДЛОГ (план Forgery). Случай 4 идёт по substituted-forged.list, где отпечаток подогнан"
+примечание "под подменённый файл: сверка отпечатка его не ловит, ожидаемого отказа нет, и сторож"
+примечание "обязан покраснеть. Зелёный Forgery значил бы, что сторож не смотрит на код отказа."
+
+примечание "ВРЕМЕННЫЕ КАТАЛОГИ заводятся в FLANG_TMP, иначе в TMPDIR, иначе в /tmp, и убираются"
+примечание "в конце; пути поручений считаются от каталога плана (scripts/guards)."
+
+объект «Walk»
+  «forged»: признак
+  «direct»: признак
+  «binary»: строка
+  «ledger»: строка
+  «root»: строка
+  «home»: строка
+  «dirs»: список строки
+  «now»: «Act»
+  «rest»: список «Act»
+  «troubles»: список строки
+  «done»: число
+
+тип «Act»
+  вариант «Nothing»
+  вариант «Make dir» содержит slot: число
+  вариант «Put program» содержит slot: число, text: строка
+  вариант «Install» содержит slot: число, needs: список строки, list: строка, ok: признак, code: строка
+  вариант «Command» содержит slot: число, needs: список строки, list: строка
+  вариант «Lock left» содержит left: число, right: число
+  вариант «Lock right» содержит right: число, text: строка
+  вариант «Present» содержит slot: число, file: строка
+  вариант «Absent» содержит slot: число, file: строка
+  вариант «Remove» содержит slot: число, file: строка
+  вариант «Check program» содержит slot: число
+  вариант «Remove dir» содержит slot: число
+
+тип «Step»
+  вариант «Reading arguments» содержит forged: признак, direct: признак
+  вариант «Reading temp» содержит forged: признак, direct: признак, ledger: строка
+  вариант «Reading tmpdir» содержит forged: признак, direct: признак, ledger: строка
+  вариант «Reading binary» содержит forged: признак, direct: признак, ledger: строка, root: строка
+  вариант «Walking» содержит walk: «Walk»
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «Двоичный назван путём от каталога сторожа»
+    ожидается "../../bootstrap/flang"
+  "../../bootstrap/flang"
+
+тотальная функция «Installer»
+  возвращает строка
+  пример «Установщик лежит на уровень выше»
+    ожидается "../package-install.fscript"
+  "../package-install.fscript"
+
+тотальная функция «Tree ledger»
+  возвращает строка
+  пример «Список реестра дерева назван путём от корня — так его ждёт установщик»
+    ожидается "scripts/registry-example/registry.list"
+  "scripts/registry-example/registry.list"
+
+тотальная функция «Cases dir»
+  возвращает строка
+  пример «Пробы установщика лежат в packaging»
+    ожидается "packaging/registry/cases/install/"
+  "packaging/registry/cases/install/"
+
+тотальная функция «Program»
+  возвращает строка
+  соединить ["модуль «Проба»", "  использует «Множество строк» из \"sets.flang-package\"",
+    "  использует «Списки» из \"lists.flang-package\"", "  использует «Логика» из \"logic.flang-package\"", "",
+    "тотальная функция «Главное»", "  возвращает признак", "  пример «Истина»", "    ожидается да",
+    "  «Оба верны» от да и да", ""] по "\n"
+
+тотальная функция «Law program»
+  возвращает строка
+  соединить ["модуль «Проба закона»", "  использует «Order shipment» из \"law.flang-package\"", "",
+    "тотальная функция «Главное»", "  возвращает число", "  пример «Единица»", "    ожидается 1", "  1", ""] по "\n"
+
+тотальная функция «Main need»
+  возвращает строка
+  пример «Запрос тот же, что в образце реестра»
+    ожидается "Множество строк: не ниже 1.1"
+  "Множество строк: не ниже 1.1"
+
+тотальная функция «Package files»
+  возвращает список строки
+  пример «Три файла пакетов, которые ставит главный запрос»
+    ожидается ["sets.flang-package", "lists.flang-package", "logic.flang-package"]
+  ["sets.flang-package", "lists.flang-package", "logic.flang-package"]
+
+тотальная функция «Substituted ledger»
+  принимает forged: признак
+  возвращает строка
+  пример «Честная проба читает список с отпечатком подлинника»
+    дано forged равно нет
+    ожидается "packaging/registry/cases/install/substituted.list"
+  пример «Подлог читает список с подогнанным отпечатком»
+    дано forged равно да
+    ожидается "packaging/registry/cases/install/substituted-forged.list"
+  если forged
+    то соединить [(«Cases dir»), "substituted-forged.list"] по ""
+    иначе соединить [(«Cases dir»), "substituted.list"] по ""
+
+тотальная функция «Law ledger»
+  возвращает строка
+  соединить [(«Cases dir»), "law.list"] по ""
+
+тотальная функция «Install act»
+  принимает slot: число, words: список строки, ledger: строка, consent: признак, expect: строка
+  возвращает «Act»
+  (вариант «Install» с slot равным slot и needs равным words и list равным ledger и ok равным consent
+    и code равным expect)
+
+тотальная функция «Cleanup of»
+  принимает slot: число, files: список строки
+  возвращает список «Act»
+  пример «Файлы снимаются, потом каталог»
+    дано slot равно 1
+    дано files равно ["a"]
+    ожидается [вариант «Remove» с slot равным 1 и file равным "a", вариант «Remove dir» с slot равным 1]
+  пусть removals равно (отобразить files как file → вариант «Remove» с slot равным slot и file равным file)
+  добавить (вариант «Remove dir» с slot равным slot) к removals
+
+тотальная функция «Project files»
+  принимает packages: список строки
+  возвращает список строки
+  пример «Программа, нужды, замок и пакеты»
+    дано packages равно ["a"]
+    ожидается ["proba.flang", "flang.needs", "flang.lock", "a"]
+  свёртка packages начиная с ["proba.flang", "flang.needs", "flang.lock"] как kept и one → добавить one к kept
+
+тотальная функция «Joined» от «А»
+  принимает left: список «А», right: список «А»
+  возвращает список «А»
+  пример «Два списка подряд»
+    дано left равно [1]
+    дано right равно [2]
+    ожидается [1, 2]
+  свёртка right начиная с left как kept и one → добавить one к kept
+
+тотальная функция «Main acts»
+  принимает ledger: строка
+  возвращает список «Act»
+  [вариант «Put program» с slot равным 1 и text равным («Program»),
+   («Install act» от 1 и [(«Main need»)] и ledger и нет и ""),
+   вариант «Present» с slot равным 1 и file равным "sets.flang-package",
+   вариант «Present» с slot равным 1 и file равным "lists.flang-package",
+   вариант «Present» с slot равным 1 и file равным "logic.flang-package",
+   вариант «Present» с slot равным 1 и file равным "flang.lock",
+   вариант «Present» с slot равным 1 и file равным "flang.needs",
+   вариант «Put program» с slot равным 2 и text равным («Program»),
+   («Install act» от 2 и [(«Main need»)] и ledger и нет и ""),
+   вариант «Lock left» с left равным 1 и right равным 2,
+   вариант «Remove» с slot равным 1 и file равным "sets.flang-package",
+   вариант «Remove» с slot равным 1 и file равным "lists.flang-package",
+   вариант «Remove» с slot равным 1 и file равным "logic.flang-package",
+   вариант «Check program» с slot равным 1]
+
+тотальная функция «Law acts»
+  возвращает список «Act»
+  [вариант «Put program» с slot равным 3 и text равным («Law program»),
+   («Install act» от 3 и ["Order shipment"] и («Law ledger») и нет и "FLANG_INSTALL_UNPROVED"),
+   вариант «Absent» с slot равным 3 и file равным "law.flang-package",
+   вариант «Absent» с slot равным 3 и file равным "flang.needs",
+   («Install act» от 3 и ["Order shipment"] и («Law ledger») и да и ""),
+   вариант «Present» с slot равным 3 и file равным "law.flang-package",
+   вариант «Present» с slot равным 3 и file равным "flang.lock"]
+
+тотальная функция «Refusal acts»
+  принимает forged: признак, ledger: строка
+  возвращает список «Act»
+  [вариант «Put program» с slot равным 4 и text равным («Program»),
+   («Install act» от 4 и ["Логика"] и («Substituted ledger» от forged) и нет и "FLANG_INSTALL_FINGERPRINT"),
+   вариант «Absent» с slot равным 4 и file равным "logic.flang-package",
+   вариант «Absent» с slot равным 4 и file равным "flang.needs",
+   вариант «Put program» с slot равным 5 и text равным («Program»),
+   («Install act» от 5 и [(«Main need»), "Опциональное значение"] и ledger и нет и "FLANG_INSTALL_CONFLICT"),
+   вариант «Absent» с slot равным 5 и file равным "flang.needs",
+   («Install act» от 5 и ["Нетакого"] и ledger и нет и "FLANG_INSTALL_CONFLICT")]
+
+тотальная функция «Cleanup acts»
+  возвращает список «Act»
+  пусть head равно («Joined» от («Cleanup of» от 1 и («Project files» от («Package files»)))
+    и («Cleanup of» от 2 и («Project files» от («Package files»))))
+  пусть middle равно («Joined» от («Cleanup of» от 3 и («Project files» от ["law.flang-package"]))
+    и («Cleanup of» от 4 и («Project files» от ["substituted.flang-package"])))
+  пусть last равно («Joined» от («Cleanup of» от 5 и («Project files» от пустой список))
+    и [вариант «Remove dir» с slot равным 0])
+  «Joined» от («Joined» от head и middle) и last
+
+тотальная функция «Dir acts»
+  возвращает список «Act»
+  отобразить [0, 1, 2, 3, 4, 5] как slot → вариант «Make dir» с slot равным slot
+
+тотальная функция «Command acts»
+  принимает ledger: строка
+  возвращает список «Act»
+  [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1, вариант «Make dir» с slot равным 2,
+   вариант «Put program» с slot равным 1 и text равным («Program»),
+   («Install act» от 1 и [(«Main need»)] и ledger и нет и ""),
+   вариант «Put program» с slot равным 2 и text равным («Program»),
+   вариант «Command» с slot равным 2 и needs равным [(«Main need»)] и list равным ledger,
+   вариант «Present» с slot равным 2 и file равным "sets.flang-package",
+   вариант «Lock left» с left равным 1 и right равным 2]
+
+тотальная функция «Command cleanup»
+  возвращает список «Act»
+  («Joined» от («Joined» от («Cleanup of» от 1 и («Project files» от («Package files»)))
+    и («Cleanup of» от 2 и («Project files» от («Package files»)))) и [вариант «Remove dir» с slot равным 0])
+
+тотальная функция «All acts»
+  принимает forged: признак, direct: признак, ledger: строка
+  возвращает список «Act»
+  если direct
+    то «Joined» от («Command acts» от ledger) и («Command cleanup»)
+    иначе («Joined» от («Joined» от («Dir acts») и («Main acts» от ledger))
+      и («Joined» от («Joined» от («Law acts») и («Refusal acts» от forged и ledger)) и («Cleanup acts»)))
+
+тотальная функция «Dir of»
+  принимает walk: «Walk», slot: число
+  возвращает строка
+  пример «Каталог по номеру, нумерация с нуля»
+    дано walk равно (запись «Walk» с «forged» равным нет и «direct» равным нет и «binary» равным "b"
+      и «ledger» равным "" и «root» равным "/t"
+      и «home» равным "/t/h" и «dirs» равным ["/t/h", "/t/a"] и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список
+      и «troubles» равным пустой список и «done» равным 0)
+    дано slot равно 1
+    ожидается "/t/a"
+  если ((длина (walk.«dirs»)) больше slot) и притом (slot не меньше 0)
+    то элемент (slot плюс 1) в (walk.«dirs»)
+    иначе ""
+
+тотальная функция «Path in»
+  принимает walk: «Walk», slot: число, file: строка
+  возвращает строка
+  соединить [(«Dir of» от walk и slot), "/", file] по ""
+
+тотальная функция «Set dir»
+  принимает dirs: список строки, slot: число, path: строка
+  возвращает список строки
+  пример «Каталог записывается в свою ячейку»
+    дано dirs равно ["", "", "", "", "", ""]
+    дано slot равно 1
+    дано path равно "/t/a"
+    ожидается ["", "/t/a", "", "", "", ""]
+  отобразить [0, 1, 2, 3, 4, 5] как n → «Dir or path» от dirs и n и slot и path
+
+тотальная функция «Dir or path»
+  принимает dirs: список строки, n: число, slot: число, path: строка
+  возвращает строка
+  если n равен slot
+    то path
+    иначе если ((длина dirs) больше n) и притом (n не меньше 0)
+      то элемент (n плюс 1) в dirs
+      иначе ""
+
+тотальная функция «With dirs»
+  принимает walk: «Walk», dirs: список строки
+  возвращает «Walk»
+  (запись «Walk» с «forged» равным (walk.«forged») и «direct» равным (walk.«direct») и «binary» равным (walk.«binary»)
+    и «ledger» равным (walk.«ledger») и «root» равным (walk.«root»)
+    и «home» равным (walk.«home»)
+    и «dirs» равным dirs и «now» равным (walk.«now») и «rest» равным (walk.«rest») и «troubles» равным (walk.«troubles»)
+    и «done» равным (walk.«done»))
+
+тотальная функция «Trouble»
+  принимает walk: «Walk», words: строка
+  возвращает «Walk»
+  (запись «Walk» с «forged» равным (walk.«forged») и «direct» равным (walk.«direct») и «binary» равным (walk.«binary»)
+    и «ledger» равным (walk.«ledger») и «root» равным (walk.«root»)
+    и «home» равным (walk.«home»)
+    и «dirs» равным (walk.«dirs») и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «troubles» равным (добавить words к (walk.«troubles»)) и «done» равным (walk.«done»))
+
+тотальная функция «Taking»
+  принимает walk: «Walk», act: «Act», rest: список «Act»
+  возвращает «Walk»
+  (запись «Walk» с «forged» равным (walk.«forged») и «direct» равным (walk.«direct») и «binary» равным (walk.«binary»)
+    и «ledger» равным (walk.«ledger») и «root» равным (walk.«root»)
+    и «home» равным (walk.«home»)
+    и «dirs» равным (walk.«dirs») и «now» равным act и «rest» равным rest и «troubles» равным (walk.«troubles»)
+    и «done» равным ((walk.«done») плюс 1))
+
+тотальная функция «Pushed»
+  принимает walk: «Walk», act: «Act»
+  возвращает «Walk»
+  (запись «Walk» с «forged» равным (walk.«forged») и «direct» равным (walk.«direct») и «binary» равным (walk.«binary»)
+    и «ledger» равным (walk.«ledger») и «root» равным (walk.«root»)
+    и «home» равным (walk.«home»)
+    и «dirs» равным (walk.«dirs») и «now» равным (walk.«now») и «rest» равным (приписать act к (walk.«rest»))
+    и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
+
+тотальная функция «Install words»
+  принимает walk: «Walk», slot: число, words: список строки, ledger: строка, consent: признак
+  возвращает список строки
+  пусть head равно ["-i", (соединить ["HOME=", (walk.«home»)] по ""), "PATH=/usr/bin:/bin", (walk.«binary»), "io",
+    («Installer»), "--plan", "Поставить", "--timeout", "600000", "--", («Path in» от walk и slot и "proba.flang")]
+  пусть tail равно (если consent то ["--registry", ledger, "--accept-unproven"] иначе ["--registry", ledger])
+  «Joined» от («Joined» от head и words) и tail
+
+тотальная функция «Command words»
+  принимает walk: «Walk», slot: число, words: список строки, ledger: строка
+  возвращает список строки
+  пусть head равно ["-i", (соединить ["HOME=", (walk.«home»)] по ""), "PATH=/usr/bin:/bin", (walk.«binary»),
+    "install", («Path in» от walk и slot и "proba.flang")]
+  «Joined» от («Joined» от head и words) и ["--registry", («From the guard» от ledger)]
+
+тотальная функция «From the guard»
+  принимает ledger: строка
+  возвращает строка
+  пример «Сетевой адрес остаётся собой»
+    дано ledger равно "http://127.0.0.1:18765/registry.list"
+    ожидается "http://127.0.0.1:18765/registry.list"
+  пример «Путь от корня дерева считается от каталога сторожа: команда делает его абсолютным от рабочего каталога»
+    дано ledger равно "scripts/registry-example/registry.list"
+    ожидается "../../scripts/registry-example/registry.list"
+  если (ledger начинается с "http://") или (ledger начинается с "https://")
+    то ledger
+    иначе соединить ["../../", ledger] по ""
+
+тотальная функция «Order of»
+  принимает walk: «Walk», act: «Act»
+  возвращает «Поручение»
+  разбор act
+    случай вариант «Make dir» с slot как slot
+      то вариант «Завести временный каталог» с образец равным («Temp pattern» от (walk.«root») и slot)
+    случай вариант «Put program» с slot как slot и text как text
+      то вариант «Записать файл» с путь равным («Path in» от walk и slot и "proba.flang") и содержимое равным text
+    случай вариант «Install» с slot как slot и needs как words и list как ledger и ok как consent и code как expect
+      то (вариант «Запустить процесс» с программа равным "env"
+        и аргументы равным («Install words» от walk и slot и words и ledger и consent))
+    случай вариант «Command» с slot как slot и needs как words и list как ledger
+      то (вариант «Запустить процесс» с программа равным "env"
+        и аргументы равным («Command words» от walk и slot и words и ledger))
+    случай вариант «Lock left» с left как left и right как right
+      то вариант «Прочитать файл» с путь равным («Path in» от walk и left и "flang.lock")
+    случай вариант «Lock right» с right как right и text как text
+      то вариант «Прочитать файл» с путь равным («Path in» от walk и right и "flang.lock")
+    случай вариант «Present» с slot как slot и file как file
+      то вариант «Прочитать файл» с путь равным («Path in» от walk и slot и file)
+    случай вариант «Absent» с slot как slot и file как file
+      то вариант «Прочитать файл» с путь равным («Path in» от walk и slot и file)
+    случай вариант «Remove» с slot как slot и file как file
+      то вариант «Удалить файл» с путь равным («Path in» от walk и slot и file)
+    случай вариант «Check program» с slot как slot
+      то (вариант «Запустить процесс» с программа равным («Binary»)
+        и аргументы равным ["check", («Path in» от walk и slot и "proba.flang")])
+    случай вариант «Remove dir» с slot как slot
+      то вариант «Удалить файл» с путь равным («Dir of» от walk и slot)
+    случай вариант «Nothing»
+      то вариант «Прочитать доводы»
+
+тотальная функция «Temp pattern»
+  принимает root: строка, slot: число
+  возвращает строка
+  пример «Образец имени временного каталога»
+    дано root равно "/tmp"
+    дано slot равно 1
+    ожидается "/tmp/flang-install-probe-1-"
+  соединить [root, "/flang-install-probe-", (к строке slot), "-"] по ""
+
+тотальная функция «Perform»
+  принимает walk: «Walk»
+  возвращает «Продолжение»
+  разбор (walk.«rest»)
+    случай пусто
+      то «Verdict» от walk
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Order of» от walk и голова)
+        и потом равным (вариант «Walking» с walk равным («Taking» от walk и голова и хвост)))
+
+тотальная функция «Case name»
+  принимает act: «Act»
+  возвращает строка
+  разбор act
+    случай вариант «Install» с slot как slot и needs как words и list как ledger и ok как consent и code как expect
+      то соединить ["установка в каталог ", (к строке slot), " (", (соединить words по "; "), ") по ", ledger] по ""
+    случай вариант «Command» с slot как slot и needs как words и list как ledger
+      то соединить ["flang install в каталог ", (к строке slot), " (", (соединить words по "; "), ") по ", ledger] по ""
+    случай вариант «Present» с slot как slot и file как file
+      то соединить ["файл ", file, " в каталоге ", (к строке slot)] по ""
+    случай вариант «Absent» с slot как slot и file как file
+      то соединить ["файл ", file, " в каталоге ", (к строке slot)] по ""
+    случай вариант «Check program» с slot как slot
+      то соединить ["flang check из одного замка в каталоге ", (к строке slot)] по ""
+    случай любое
+      то "шаг пробы"
+
+тотальная функция «Install verdict»
+  принимает expect: строка, code: число, output: строка, errors: строка
+  возвращает строка
+  пример «Ждали успех — получили успех»
+    дано expect равно ""
+    дано code равно 0
+    дано output равно "{\"result\":\"поставлено пакетов: 3\"}"
+    дано errors равно ""
+    ожидается ""
+  пример «Ждали отказ — получили его код»
+    дано expect равно "FLANG_INSTALL_FINGERPRINT"
+    дано code равно 1
+    дано output равно "{\"error\":\"x\",\"diagnostics\":[{\"code\":\"FLANG_INSTALL_FINGERPRINT\"}]}"
+    дано errors равно ""
+    ожидается ""
+  пример «Ждали отказ — установка прошла»
+    дано expect равно "FLANG_INSTALL_FINGERPRINT"
+    дано code равно 0
+    дано output равно "{\"result\":\"поставлено\"}"
+    дано errors равно ""
+    ожидается "ждали отказ FLANG_INSTALL_FINGERPRINT, а установщик ответил кодом 0: {\"result\":\"поставлено\"}"
+  если expect равен ""
+    то «Success verdict» от code и output и errors
+    иначе если (code равен 1) и притом ((соединить [errors, output] по "") содержит («Code mark» от expect))
+      то ""
+      иначе соединить ["ждали отказ ", expect, ", а установщик ответил кодом ", (к строке code), ": ",
+        («Tail of» от (соединить [errors, output] по ""))] по ""
+
+тотальная функция «Code mark»
+  принимает expect: строка
+  возвращает строка
+  пример «Так код стоит в ответе установщика»
+    дано expect равно "FLANG_INSTALL_FINGERPRINT"
+    ожидается "\"code\":\"FLANG_INSTALL_FINGERPRINT\""
+  соединить ["\"code\":\"", expect, "\""] по ""
+
+тотальная функция «Success verdict»
+  принимает code: число, output: строка, errors: строка
+  возвращает строка
+  если (code равен 0) и притом (output содержит "поставлено пакетов")
+    то ""
+    иначе соединить ["ждали код 0 и «поставлено пакетов», а установщик ответил кодом ", (к строке code), ": ",
+      («Tail of» от (соединить [errors, output] по ""))] по ""
+
+тотальная функция «Tail of»
+  принимает text: строка
+  возвращает строка
+  пример «Короткий текст целиком»
+    дано text равно "абв"
+    ожидается "абв"
+  пусть words равно (разделить text по " ")
+  если (длина words) не больше 60
+    то text
+    иначе соединить (приписать "…" к («Dropped» от words и ((длина words) минус 60))) по " "
+
+тотальная функция «Dropped» от «А»
+  принимает items: список «А», count: число
+  возвращает список «А»
+  пример «Отбросить два»
+    дано items равно [1, 2, 3, 4]
+    дано count равно 2
+    ожидается [3, 4]
+  разбор items
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если count не больше 0 то items иначе «Dropped» от хвост и (count минус 1)
+
+тотальная функция «Noted»
+  принимает walk: «Walk», words: строка
+  возвращает «Walk»
+  если words равен "" то walk иначе «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": ", words] по "")
+
+тотальная функция «After process»
+  принимает walk: «Walk», code: число, output: строка, errors: строка
+  возвращает «Walk»
+  разбор (walk.«now»)
+    случай вариант «Install» с slot как slot и needs как words и list как ledger и ok как consent и code как expect
+      то «Noted» от walk и («Install verdict» от expect и code и output и errors)
+    случай вариант «Check program» с slot как slot
+      то «Noted» от walk и («Check verdict» от code и output и errors)
+    случай вариант «Command» с slot как slot и needs как words и list как ledger
+      то «Noted» от walk и («Success verdict» от code и output и errors)
+    случай любое
+      то «Trouble» от walk и "процесс пришёл не к тому шагу"
+
+тотальная функция «Check verdict»
+  принимает code: число, output: строка, errors: строка
+  возвращает строка
+  если (code равен 0) и притом (output содержит "замечаний нет")
+    то ""
+    иначе соединить ["ждали код 0 и «замечаний нет», а flang check ответил кодом ", (к строке code), ": ",
+      («Tail of» от (соединить [errors, output] по ""))] по ""
+
+тотальная функция «After read»
+  принимает walk: «Walk», text: строка
+  возвращает «Walk»
+  разбор (walk.«now»)
+    случай вариант «Lock left» с left как left и right как right
+      то «Pushed» от walk и (вариант «Lock right» с right равным right и text равным text)
+    случай вариант «Absent» с slot как slot и file как file
+      то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": файл есть, а его быть не должно"] по "")
+    случай любое
+      то walk
+
+тотальная функция «Lock verdict»
+  принимает left: строка, right: строка
+  возвращает строка
+  пример «Одинаковые замки»
+    дано left равно "{}"
+    дано right равно "{}"
+    ожидается ""
+  пример «Разные замки»
+    дано left равно "{}"
+    дано right равно "{ }"
+    ожидается "замки двух установок разошлись: 2 и 3 знаков"
+  если left равен right
+    то ""
+    иначе соединить ["замки двух установок разошлись: ", (к строке (длина left)), " и ", (к строке (длина right)),
+      " знаков"] по ""
+
+тотальная функция «Lock right text»
+  принимает walk: «Walk», text: строка
+  возвращает «Walk»
+  разбор (walk.«now»)
+    случай вариант «Lock right» с right как right и text как left
+      то «Noted» от walk и («Lock verdict» от left и text)
+    случай любое
+      то «After read» от walk и text
+
+тотальная функция «After failure»
+  принимает walk: «Walk», code: строка, words: строка
+  возвращает «Walk»
+  разбор (walk.«now»)
+    случай вариант «Absent» с slot как slot и file как file
+      то walk
+    случай вариант «Remove» с slot как slot и file как file
+      то walk
+    случай вариант «Remove dir» с slot как slot
+      то «Trouble» от walk и (соединить ["каталог ", (к строке slot), " не убран: ", words] по "")
+    случай любое
+      то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": ", code, ": ", words] по "")
+
+тотальная функция «After reply»
+  принимает walk: «Walk», reply: «Отклик»
+  возвращает «Walk»
+  разбор reply
+    случай вариант «Заведено» с путь как path
+      то «Dir made» от walk и path
+    случай вариант «Записано» с сколько как bytes
+      то walk
+    случай вариант «Убрано»
+      то walk
+    случай вариант «Прочитано» с содержимое как text
+      то «Lock right text» от walk и text
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «After process» от walk и code и output и errors
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «After failure» от walk и code и words
+    случай любое
+      то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": хозяин ответил не тем откликом"] по "")
+
+тотальная функция «Dir made»
+  принимает walk: «Walk», path: строка
+  возвращает «Walk»
+  разбор (walk.«now»)
+    случай вариант «Make dir» с slot как slot
+      то «Home set» от («With dirs» от walk и («Set dir» от (walk.«dirs») и slot и path)) и slot и path
+    случай любое
+      то «Trouble» от walk и "каталог заведён не на том шаге"
+
+тотальная функция «Home set»
+  принимает walk: «Walk», slot: число, path: строка
+  возвращает «Walk»
+  если slot равен 0
+    то (запись «Walk» с «forged» равным (walk.«forged») и «direct» равным (walk.«direct»)
+      и «binary» равным (walk.«binary») и «ledger» равным (walk.«ledger») и «root» равным (walk.«root»)
+      и «home» равным path
+      и «dirs» равным (walk.«dirs») и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+      и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
+    иначе walk
+
+тотальная функция «Verdict»
+  принимает walk: «Walk»
+  возвращает «Продолжение»
+  пусть tail равно (если walk.«direct»
+    то "; flang install и движок дали один замок знак в знак"
+    иначе "; две установки дали один замок знак в знак, отказы названы кодами")
+  пусть head равно (соединить ["установка по имени: шагов ", (к строке (walk.«done»)), ", список ", (walk.«ledger»),
+    tail] по "")
+  если (длина (walk.«troubles»)) равен 0
+    то вариант «Конец работы» с значение равным head
+    иначе вариант «Провал» с код равным "FLANG_INSTALL_PROBE" и сообщение равным (соединить (приписать (соединить [
+      "проба установщика: бед ", (к строке (длина (walk.«troubles»))), " из ", (к строке (walk.«done»)),
+      " шагов:"] по "")
+      к (walk.«troubles»)) по "\n  · ")
+
+тотальная функция «Start check»
+  возвращает «Step»
+  пример «Проверка начинается с доводов»
+    ожидается вариант «Reading arguments» с forged равным нет и direct равным нет
+  вариант «Reading arguments» с forged равным нет и direct равным нет
+
+тотальная функция «Start forgery»
+  возвращает «Step»
+  пример «Подлог начинается так же»
+    ожидается вариант «Reading arguments» с forged равным да и direct равным нет
+  вариант «Reading arguments» с forged равным да и direct равным нет
+
+тотальная функция «Start command»
+  возвращает «Step»
+  пример «Проба команды начинается так же»
+    ожидается вариант «Reading arguments» с forged равным нет и direct равным да
+  вариант «Reading arguments» с forged равным нет и direct равным да
+
+тотальная функция «Ledger from»
+  принимает words: список строки
+  возвращает строка
+  пример «Без доводов — список дерева»
+    дано words равно пустой список
+    ожидается "scripts/registry-example/registry.list"
+  пример «Первый довод — адрес списка»
+    дано words равно ["http://127.0.0.1:18765/registry.list"]
+    ожидается "http://127.0.0.1:18765/registry.list"
+  разбор words
+    случай пусто
+      то «Tree ledger»
+    случай голова и хвост
+      то голова
+
+тотальная функция «After arguments»
+  принимает forged: признак, direct: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Пока ничего»
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать доводы»)
+        и потом равным (вариант «Reading arguments» с forged равным forged и direct равным direct))
+    случай вариант «Доводы» с доводы как words
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")
+        и потом равным (вариант «Reading temp» с forged равным forged и direct равным direct
+          и ledger равным («Ledger from» от words)))
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали доводы"
+
+тотальная функция «Fresh walk»
+  принимает forged: признак, direct: признак, binary: строка, ledger: строка, root: строка
+  возвращает «Walk»
+  (запись «Walk» с «forged» равным forged и «direct» равным direct и «binary» равным binary и «ledger» равным ledger
+    и «root» равным root и «home» равным "" и «dirs» равным ["", "", "", "", "", ""]
+    и «now» равным (вариант «Nothing») и «rest» равным («All acts» от forged и direct и ledger)
+    и «troubles» равным пустой список и «done» равным 0)
+
+тотальная функция «Root known»
+  принимает forged: признак, direct: признак, ledger: строка, root: строка
+  возвращает «Продолжение»
+  (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
+    и потом равным (вариант «Reading binary» с forged равным forged и direct равным direct и ledger равным ledger
+      и root равным root))
+
+тотальная функция «After binary»
+  принимает forged: признак, direct: признак, ledger: строка, root: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как binary
+      то «Perform» от («Fresh walk» от forged и direct и binary и ledger и root)
+    случай вариант «Переменной среды нет»
+      то «Perform» от («Fresh walk» от forged и direct и («Binary») и ledger и root)
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали переменную среды FLANG_BINARY"
+
+тотальная функция «After temp»
+  принимает forged: признак, direct: признак, ledger: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как root
+      то «Root known» от forged и direct и ledger и root
+    случай вариант «Переменной среды нет»
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "TMPDIR")
+        и потом равным (вариант «Reading tmpdir» с forged равным forged и direct равным direct и ledger равным ledger))
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали переменную среды FLANG_TMP"
+
+тотальная функция «After tmpdir»
+  принимает forged: признак, direct: признак, ledger: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Значение среды» с значение как root
+      то «Root known» от forged и direct и ledger и root
+    случай вариант «Переменной среды нет»
+      то «Root known» от forged и direct и ledger и "/tmp"
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали переменную среды TMPDIR"
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор step
+    случай вариант «Reading arguments» с forged как forged и direct как direct
+      то «After arguments» от forged и direct и reply
+    случай вариант «Reading temp» с forged как forged и direct как direct и ledger как ledger
+      то «After temp» от forged и direct и ledger и reply
+    случай вариант «Reading tmpdir» с forged как forged и direct как direct и ledger как ledger
+      то «After tmpdir» от forged и direct и ledger и reply
+    случай вариант «Reading binary» с forged как forged и direct как direct и ledger как ledger и root как root
+      то «After binary» от forged и direct и ledger и root и reply
+    случай вариант «Walking» с walk как walk
+      то «Perform» от («After reply» от walk и reply)
+
+план «Check»
+  состояние «Step»
+  начинает с «Start check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Start forgery»
+  обрабатывает «Next»
+
+план «Command»
+  состояние «Step»
+  начинает с «Start command»
+  обрабатывает «Next»

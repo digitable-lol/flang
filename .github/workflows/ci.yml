@@ -2057,7 +2057,7 @@ jobs:
         run: |
           ledger=scripts/registry-example/registry.list
           cp "$ledger" "$RUNNER_TEMP/registry.list"
-          sed -i '2s/| 1dc6/| Xdc6/' "$ledger"
+          sed -i '2s/\(| [0-9.]* | \)./\1X/' "$ledger"
           if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
             cp "$RUNNER_TEMP/registry.list" "$ledger"
             echo "the forged fingerprint did not land, nothing to probe" >&2
@@ -2073,6 +2073,7 @@ jobs:
           cmp "$ledger" "$RUNNER_TEMP/registry.list"
       - name: Check registry fingerprints
         run: bootstrap/flang run-script registry-prints:check
+
       - name: Probe lock forms by a forged measurement
         run: |
           if bootstrap/flang run-script lock-forms:forgery; then
@@ -2101,3 +2102,64 @@ jobs:
           make -C bootstrap -j"$(nproc)"
       - name: Check lock forms
         run: bootstrap/flang run-script lock-forms:check
+
+  # УСТАНОВКА ПАКЕТА ПО ИМЕНИ НА ЧИСТОЙ МАШИНЕ — условие 6 дороги к 1.0: пакет
+  # ставится одной командой, повторная установка даёт тот же замок знак в знак.
+  # Список реестра раздаётся с localhost обычным файловым сервером из каталога
+  # образца: сеть настоящая (поручение «Запросить» по http), адрес свой, секретов
+  # нет. Сторож сам заводит пустой HOME и пустые каталоги проектов и зовёт
+  # установщик под env -i. Сначала подлог: список с отпечатком, подогнанным под
+  # подменённый файл, — сторож ОБЯЗАН покраснеть; иначе зелёная проверка
+  # неотличима от выключенной.
+  package-install:
+    name: package-install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Serve the example registry on localhost
+        run: |
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory scripts/registry-example > "$RUNNER_TEMP/registry-server.log" 2>&1 &
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sf -o /dev/null http://127.0.0.1:18765/registry.list; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/registry-server.log" >&2
+          echo "the registry server did not come up" >&2
+          exit 1
+      - name: Probe the installer by a forged fingerprint
+        run: |
+          if bootstrap/flang run-script package-install:forgery; then
+            echo "the guard stayed green on a forged fingerprint" >&2
+            exit 1
+          fi
+      # ПРОБА СНАРУЖИ: в раздаваемом списке подкручен один знак отпечатка той
+      # версии, которую выбирает установка (Логика 1.2.0). Сторож ОБЯЗАН
+      # покраснеть — установщик отвечает FLANG_INSTALL_FINGERPRINT; список
+      # возвращается и сличается с копией.
+      - name: Probe the installer by a bent fingerprint in the served list
+        run: |
+          ledger=scripts/registry-example/registry.list
+          cp "$ledger" "$RUNNER_TEMP/registry.list"
+          sed -i '/^Логика | 1\.2\.0 /s/\(| [0-9.]* | \)./\1X/' "$ledger"
+          if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
+            echo "the bent fingerprint did not land, nothing to probe" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list; then
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
+            echo "the guard stayed green on a bent fingerprint in the list" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/registry.list" "$ledger"
+          cmp "$ledger" "$RUNNER_TEMP/registry.list"
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Install a package by name on a clean machine, twice
+        run: bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+

@@ -30,9 +30,25 @@
 
 тотальная функция «Allowed to be refused»
   возвращает список строки
-  пример «Two forgeries whose program the kernel itself refuses since 0.7.24»
-    ожидается ["forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition"]
-  ["forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition"]
+  пример «Forgeries refused by the check itself: two since 0.7.24, twenty-one since 0.7.31 at the type edges»
+    ожидается ["forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
+      "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
+      "forgery-case-split-captures-a-bound-name", "poddelka-dno-proizvedeniya", "poddelka-element-po-nomeru",
+      "poddelka-integrality-from-fact", "poddelka-istinnaya-vetv", "poddelka-lozhnaya-polovina",
+      "poddelka-ogovorka-o-konechnosti", "poddelka-order-arithmetic", "poddelka-protivorechie",
+      "poddelka-razbor-sluchaev", "poddelka-razbor-spiska", "poddelka-razbor-vnutrennim",
+      "poddelka-razdvoenie-diz", "poddelka-raznost-bez-poryadka", "poddelka-razv2-sebya",
+      "poddelka-razv3-raznost", "poddelka-strict-order", "poddelka-svyortka-nad-pustym",
+      "negative-zero-zero-times-a"]
+  ["forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
+    "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
+    "forgery-case-split-captures-a-bound-name", "poddelka-dno-proizvedeniya", "poddelka-element-po-nomeru",
+    "poddelka-integrality-from-fact", "poddelka-istinnaya-vetv", "poddelka-lozhnaya-polovina",
+    "poddelka-ogovorka-o-konechnosti", "poddelka-order-arithmetic", "poddelka-protivorechie",
+    "poddelka-razbor-sluchaev", "poddelka-razbor-spiska", "poddelka-razbor-vnutrennim",
+    "poddelka-razdvoenie-diz", "poddelka-raznost-bez-poryadka", "poddelka-razv2-sebya",
+    "poddelka-razv3-raznost", "poddelka-strict-order", "poddelka-svyortka-nad-pustym",
+    "negative-zero-zero-times-a"]
 
 тотальная функция «Print command»
   возвращает строка

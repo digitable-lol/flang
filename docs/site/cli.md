@@ -308,7 +308,7 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | Flag | What it does |
 | --- | --- |
 | `--function «Имя»` | the function to compute. Required |
-| `--args '{…}'` | arguments as a flat JSON object of scalars. Lists and nested objects are not accepted |
+| `--args '{…}'` | arguments as a JSON object keyed by parameter name; values may be lists, records and variants, checked against the declared types |
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit of the program being evaluated (the binary's own limit is `--depth-limit`) |
 | `--memory-limit N` | memory limit; exit `5` at the limit |

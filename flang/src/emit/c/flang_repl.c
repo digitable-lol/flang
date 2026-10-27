@@ -634,9 +634,10 @@ static const char HELP_RUN[] =
     "«unproven» в «.flangrc» — раз и навсегда.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
-    "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
-    "                     Списка или вложенного объекта здесь не принимают —\n"
-    "                     функцию со списком зовут её примеры: flang test <файл>\n"
+    "  --args '{…}'       аргументы объектом JSON по именам параметров, вроде\n"
+    "                     '{\"н\":10}' или '{\"элементы\":[1,2,3]}'. Списки, записи\n"
+    "                     и варианты ({\"variant\":\"Имя\",\"fields\":{…}}) — любой\n"
+    "                     вложенности; не тот тип — FLANG_TYPE до вычисления\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
@@ -12015,9 +12016,9 @@ static int test_file(int argc, char **argv) {
  * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
  * прогонщик, и его разборщик (`flang_cli.c`) говорит на своём языке тегов
  * («{"n":…}», «{"s":…}»), заведённом для передачи готовых значений рантайма, а
- * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому здесь
- * лежит маленький разбор ровно этого: плоский объект скаляров. Вложенности нет
- * намеренно — она понадобится, когда понадобится, а не «на всякий случай».
+ * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому `--args`
+ * читает обычный JSON — тем же `facts_json`, что и факты `flang facts`: скаляры,
+ * списки, записи и варианты `{"variant": …, "fields": …}` (задача #460).
  */
 
 /** Вариант с одним полем: «Значение записи» и «Значение списка» строятся так. */
@@ -12279,89 +12280,27 @@ static bool run_value(const char *text, size_t *at, fl_value *out) {
 }
 
 /**
- * `--args` в «Значение записи». Пустая строка и отсутствие ключа дают пустую
- * запись — функция без параметров зовётся без `--args`, и требовать `{}` от
- * человека было бы обрядом.
+ * `--args` в «Значение записи»: объект JSON, ключи — имена параметров,
+ * значения — скаляры, списки `[…]`, записи `{…}` и варианты
+ * `{"variant": "Имя", "fields": {…}}` любой вложенности. Разбирает тот же
+ * `facts_json`, что читает факты `flang facts` и сообщения языкового сервера.
+ * Сверку с объявленным типом делает не разбор, а «Проверить аргументы вызова»:
+ * неверный тип — FLANG_TYPE до вычисления. Пустая строка и отсутствие ключа
+ * дают пустую запись — функция без параметров зовётся без `--args`, и
+ * требовать `{}` от человека было бы обрядом.
  */
 static bool run_args(const char *text, fl_value *out) {
   size_t at = 0;
-  size_t count = 0;
-  size_t capacity = 8;
-  fl_value *fields = (fl_value *)malloc(capacity * sizeof(fl_value));
-  bool ok = true;
-  if (fields == NULL) {
-    repl_oom();
-  }
   if (text == NULL) {
-    free(fields);
     *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
     return true;
   }
   run_spaces(text, &at);
-  if (text[at] != '{') {
-    free(fields);
+  if (text[at] != '{' || !facts_json(text, &at, out)) {
     return false;
   }
-  at += 1;
   run_spaces(text, &at);
-  if (text[at] != '}') {
-    for (;;) {
-      char *key = NULL;
-      size_t bytes = 0;
-      fl_value value = fl_nothing();
-      if (!run_text(text, &at, &key, &bytes)) {
-        ok = false;
-        break;
-      }
-      run_spaces(text, &at);
-      if (text[at] != ':') {
-        free(key);
-        ok = false;
-        break;
-      }
-      at += 1;
-      if (!run_value(text, &at, &value)) {
-        free(key);
-        ok = false;
-        break;
-      }
-      if (count == capacity) {
-        fl_value *bigger = (fl_value *)realloc(fields, capacity * 2 * sizeof(fl_value));
-        if (bigger == NULL) {
-          free(key);
-          repl_oom();
-        }
-        fields = bigger;
-        capacity *= 2;
-      }
-      {
-        const char *names[2];
-        fl_value values[2];
-        names[0] = "ключ";
-        values[0] = repl_value_text(key, bytes);
-        names[1] = "значение";
-        values[1] = value;
-        fields[count] = repl_value_record(names, values, 2);
-        count += 1;
-      }
-      free(key);
-      run_spaces(text, &at);
-      if (text[at] == ',') {
-        at += 1;
-        continue;
-      }
-      break;
-    }
-  }
-  if (ok) {
-    run_spaces(text, &at);
-    ok = text[at] == '}';
-  }
-  if (ok) {
-    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, count));
-  }
-  free(fields);
-  return ok;
+  return text[at] == '\0';
 }
 
 /**
@@ -14452,7 +14391,8 @@ static int run_file(int argc, char **argv) {
   }
 
   if (!run_args(given, &bound)) {
-    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
+    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался объект JSON, вроде '{\"н\":10}' или "
+                    "'{\"элементы\":[1,2,3]}'\n");
     code = 2;
   } else if (!run_checked(sources, full, path, paths.count, &linked)) {
     code = 1;
@@ -17449,11 +17389,9 @@ static int lint_command(int argc, char **argv) {
 /* ═════════════════════ проверка суждений: `flang facts` ══════════════════ */
 
 /*
- * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров, и разбирает их отдельная
- * функция, а не `run_value`. Причина не в аккуратности: утверждение умеет
- * говорить `поле «x» факта «y»`, то есть факт бывает записью, — а разбор
- * `--args` объектов и списков не знает намеренно (см. его шапку) и знать не
- * должен: аргумент вызова у `flang run` скаляр по контракту.
+ * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров: утверждение умеет
+ * говорить `поле «x» факта «y»`, то есть факт бывает записью. Тот же разбор
+ * читает и `--args` у `flang run`; скаляр внутри него — `run_value`.
  */
 static bool facts_json(const char *text, size_t *at, fl_value *out);
 
@@ -19315,6 +19253,117 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
  * для «https», — а отклик у поручения «Запросить» обязан быть один и тот же.
  * Две копии этого разбора разошлись бы молча.
  */
+/* Буква ASCII строчной: имена заголовков HTTP сравниваются без учёта регистра. */
+static char io_http_lower(char letter) {
+  return letter >= 'A' && letter <= 'Z' ? (char)(letter - 'A' + 'a') : letter;
+}
+
+/*
+ * Объявлено ли тело кусками: среди заголовков от `head` до `end` есть
+ * «Transfer-Encoding», и последнее кодирование в нём — «chunked» (RFC 9112,
+ * 6.1). Регистр имени и значения не важен.
+ */
+static bool io_http_chunked(const char *head, const char *end) {
+  static const char name[] = "transfer-encoding:";
+  const size_t name_length = sizeof(name) - 1;
+  bool chunked = false;
+  const char *line = head;
+  while (line < end) {
+    const char *line_end = line;
+    size_t index = 0;
+    while (line_end < end && *line_end != '\r' && *line_end != '\n') {
+      line_end += 1;
+    }
+    while (index < name_length && line + index < line_end && io_http_lower(line[index]) == name[index]) {
+      index += 1;
+    }
+    if (index == name_length) {
+      const char *value = line + name_length;
+      const char *value_end = line_end;
+      const char *last = NULL;
+      while (value_end > value && (value_end[-1] == ' ' || value_end[-1] == '\t')) {
+        value_end -= 1;
+      }
+      last = value_end;
+      while (last > value && last[-1] != ',' && last[-1] != ' ' && last[-1] != '\t') {
+        last -= 1;
+      }
+      chunked = value_end - last == 7;
+      for (index = 0; chunked && index < 7; index += 1) {
+        chunked = io_http_lower(last[index]) == "chunked"[index];
+      }
+    }
+    line = line_end;
+    while (line < end && (*line == '\r' || *line == '\n')) {
+      line += 1;
+    }
+  }
+  return chunked;
+}
+
+/*
+ * Тело, присланное кусками (RFC 9112, 7.1): строка с длиной куска в
+ * шестнадцатеричной записи (расширения после «;» не смотрятся), CRLF, сам
+ * кусок, CRLF; кусок длины 0 — конец, хвостовые заголовки после него
+ * отбрасываются. Куски склеиваются в `out` октетами: граница куска может
+ * пройти посреди буквы UTF-8, и склеенное тело её восстанавливает.
+ * Испорченная запись или оборванная связь — false с причиной в `why`.
+ */
+static bool io_http_dechunk(const char *at, const char *end, repl_buf *out, const char **why) {
+  for (;;) {
+    size_t size = 0;
+    int digits = 0;
+    while (at < end) {
+      const char letter = io_http_lower(*at);
+      int digit = -1;
+      if (letter >= '0' && letter <= '9') {
+        digit = letter - '0';
+      } else if (letter >= 'a' && letter <= 'f') {
+        digit = letter - 'a' + 10;
+      }
+      if (digit < 0) {
+        break;
+      }
+      if (size > ((size_t)-1 >> 4)) {
+        *why = "длина куска не помещается в число";
+        return false;
+      }
+      size = (size << 4) | (size_t)digit;
+      digits += 1;
+      at += 1;
+    }
+    if (digits == 0) {
+      *why = at < end ? "строка куска не начинается с шестнадцатеричной длины" : "связь оборвалась до конца тела";
+      return false;
+    }
+    while (at < end && *at != '\n') {
+      at += 1;
+    }
+    if (at >= end) {
+      *why = "связь оборвалась до конца тела";
+      return false;
+    }
+    at += 1;
+    if (size == 0) {
+      return true;
+    }
+    if ((size_t)(end - at) < size) {
+      *why = "связь оборвалась посреди куска";
+      return false;
+    }
+    buf_add(out, at, size);
+    at += size;
+    if (end - at >= 2 && at[0] == '\r' && at[1] == '\n') {
+      at += 2;
+    } else if (at < end && at[0] == '\n') {
+      at += 1;
+    } else {
+      *why = at < end ? "после куска нет перевода строки" : "связь оборвалась до конца тела";
+      return false;
+    }
+  }
+}
+
 static fl_value io_http_answer(const repl_buf *answer) {
   int code = 0;
   const char *split = NULL;
@@ -19326,8 +19375,23 @@ static fl_value io_http_answer(const repl_buf *answer) {
   {
     fl_value fields[2];
     const char *start = split == NULL ? answer->data + answer->used : split + 4;
+    const char *end = answer->data + answer->used;
     fields[0] = io_pair("код", io_number((double)code));
-    fields[1] = io_pair("тело", io_text(start, (size_t)(answer->data + answer->used - start)));
+    if (split != NULL && io_http_chunked(answer->data, split)) {
+      repl_buf body;
+      const char *why = NULL;
+      buf_init(&body);
+      if (!io_http_dechunk(start, end, &body, &why)) {
+        char say[256];
+        buf_free(&body);
+        snprintf(say, sizeof(say), "тело ответа кусками (Transfer-Encoding: chunked) испорчено: %s", why);
+        return io_fail("FLANG_IO_NET", say);
+      }
+      fields[1] = io_pair("тело", io_text(body.data, body.used));
+      buf_free(&body);
+    } else {
+      fields[1] = io_pair("тело", io_text(start, (size_t)(end - start)));
+    }
     return io_variant("Ответ сети", fields, 2);
   }
 }
@@ -23152,15 +23216,19 @@ static bool new_refuse(const char *say) {
 /**
  * Каталог с образцом `fspec/`: сперва `$FLANG_FSPEC_TEMPLATE_DIR`, иначе
  * `<каталог двоичного>/../fspec` — на дереве исходников это и есть корневой
- * `fspec/`, рядом с `bootstrap/`. Не найден ни один — NULL, и пакет не
- * заводится вовсе: пробел лучше спеки, скопированной ниоткуда.
+ * `fspec/`, рядом с `bootstrap/`, — иначе `<каталог двоичного>/../share/flang-fspec`,
+ * куда образец кладут установки (архив, deb, rpm, install.sh, asdf, Homebrew).
+ * Не найден ни один — NULL, и пакет не заводится вовсе: пробел лучше спеки,
+ * скопированной ниоткуда.
  */
 static char *new_template_dir(const char *self) {
+  static const char *const below_parent[] = {"fspec", "share/flang-fspec"};
   const char *env = getenv(NEW_TEMPLATE_ENV);
   char *self_dir = NULL;
   char *parent = NULL;
   char *candidate = NULL;
   char *probe = NULL;
+  size_t index = 0;
   if (env != NULL && env[0] != '\0') {
     probe = repl_join(env, "guard.flang");
     if (repl_exists(probe)) {
@@ -23175,15 +23243,18 @@ static char *new_template_dir(const char *self) {
   }
   parent = repl_dirname(self_dir);
   free(self_dir);
-  candidate = repl_join(parent, "fspec");
-  free(parent);
-  probe = repl_join(candidate, "guard.flang");
-  if (repl_exists(probe)) {
+  for (index = 0; index < sizeof(below_parent) / sizeof(below_parent[0]); index += 1) {
+    candidate = repl_join(parent, below_parent[index]);
+    probe = repl_join(candidate, "guard.flang");
+    if (repl_exists(probe)) {
+      free(probe);
+      free(parent);
+      return candidate;
+    }
     free(probe);
-    return candidate;
+    free(candidate);
   }
-  free(probe);
-  free(candidate);
+  free(parent);
   return NULL;
 }
 
@@ -23374,6 +23445,7 @@ static bool new_write_all(const char *target, const char *fspec_dir, const char 
 
   ok = new_copy_template(template_dir, "guard.flang", fspec_dir) && ok;
   ok = new_copy_template(template_dir, "policy.flang", fspec_dir) && ok;
+  ok = new_copy_template(template_dir, "snapshot.flang", fspec_dir) && ok;
 
   free(title);
   return ok;
@@ -23442,7 +23514,8 @@ static int new_project(int argc, char **argv, const char *self) {
   if (template_dir == NULL) {
     fprintf(stderr,
             "FLANG_NEW: не найден образец fspec/ (guard.flang рядом с policy.flang) — искали\n"
-            "в $%s и в <каталог двоичного>/../fspec. Пакет не создан.\n",
+            "в $%s, в <каталог двоичного>/../fspec и в <каталог двоичного>/../share/flang-fspec.\n"
+            "Пакет не создан.\n",
             NEW_TEMPLATE_ENV);
     free(target);
     return 1;

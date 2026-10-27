@@ -12,24 +12,24 @@
 
 local M = {}
 
-local nachato = false
+local started = false
 
 -- Запустить сервер для этого буфера. Возвращает идентификатор клиента или nil.
-function M.zapustit(bufnr)
+function M.start(bufnr)
   local cmd = vim.fn["flang#Server"]()
   if type(cmd) ~= "table" or vim.tbl_isempty(cmd) then
-    vim.notify(vim.fn["flang#Pochemu"](), vim.log.levels.WARN)
+    vim.notify(vim.fn["flang#WhyNoServer"](), vim.log.levels.WARN)
     return nil
   end
   return vim.lsp.start({
     name = "flang",
     cmd = cmd,
-    root_dir = vim.fn["flang#Koren"](),
+    root_dir = vim.fn["flang#ProjectRoot"](),
   }, { bufnr = bufnr })
 end
 
 -- Что за команда нашлась — для проверки и для `:checkhealth`-подобных вопросов.
-function M.chem_zapuskaem()
+function M.server_command()
   local cmd = vim.fn["flang#Server"]()
   if type(cmd) ~= "table" or vim.tbl_isempty(cmd) then
     return nil
@@ -38,10 +38,10 @@ function M.chem_zapuskaem()
 end
 
 function M.setup(opts)
-  if nachato then
+  if started then
     return
   end
-  nachato = true
+  started = true
   opts = opts or {}
 
   -- Расширение → тип файла. То же самое делает ftdetect/flang.vim; здесь оно
@@ -60,8 +60,8 @@ function M.setup(opts)
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("flang_lsp", { clear = true }),
     pattern = "flang",
-    callback = function(sobytie)
-      M.zapustit(sobytie.buf)
+    callback = function(event)
+      M.start(event.buf)
     end,
   })
 end

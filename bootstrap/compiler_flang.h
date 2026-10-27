@@ -15076,6 +15076,17 @@ fl_status compiler_flang_razobrat_pervichnoe(fl_ctx *ctx, fl_value r,
                                              fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Узел первичного числа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param token — «токен»: «Токен»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_pervichnogo_chisla(fl_ctx *ctx, fl_value token,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
  * Функция flang «Первичное числом».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -92116,12 +92127,14 @@ fl_status compiler_flang_granica_dopuscheniya_goditsya(fl_ctx *ctx,
  * @param fakty — «факты»: список: «Значение»
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param potolok — «потолок»: число
+ * @param cifry_potolka — «цифры потолка»: строка
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_izvestnoe_sverhu(fl_ctx *ctx, fl_value fakty,
                                           fl_value obyavleniya,
-                                          fl_value potolok, fl_value *result,
-                                          fl_error *error);
+                                          fl_value potolok,
+                                          fl_value cifry_potolka,
+                                          fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Разность ограничена».
@@ -101344,16 +101357,113 @@ fl_status compiler_flang_slova_snizu(fl_ctx *ctx, fl_value obyavleniya,
                                      fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Верх беззнакового слова цифрами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_verh_bezznakovogo_slova_ciframi(fl_ctx *ctx,
+                                                         fl_value tip,
+                                                         fl_value *result,
+                                                         fl_error *error);
+
+/*
+ * Функция flang «Без ведущих нулей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cifry — «цифры»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_veduschih_nuley(fl_ctx *ctx, fl_value cifry,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Шаг без ведущих нулей».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: строка
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shag_bez_veduschih_nuley(fl_ctx *ctx, fl_value akk,
+                                                  fl_value znak,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Одни цифры ядра».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение
+ */
+fl_status compiler_flang_odni_cifry_yadra(fl_ctx *ctx, fl_value tekst,
+                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Цифры не меньше».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: строка
+ * @param pravye — «правые»: строка
+ * @return значение
+ */
+fl_status compiler_flang_cifry_ne_menshe(fl_ctx *ctx, fl_value levye,
+                                         fl_value pravye, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Старшие и младшие не меньше».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: строка
+ * @param pravye — «правые»: строка
+ * @param starshih — «старших»: число
+ * @return значение
+ */
+fl_status
+compiler_flang_starshie_i_mladshie_ne_menshe(fl_ctx *ctx, fl_value levye,
+                                             fl_value pravye, fl_value starshih,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Число цифр ядра».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cifry — «цифры»: строка
+ * @return значение: число
+ */
+fl_status compiler_flang_chislo_cifr_yadra(fl_ctx *ctx, fl_value cifry,
+                                           fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Запись потолка не меньше верха».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapis — «запись»: строка
+ * @param verh — «верх»: строка
+ * @return значение
+ */
+fl_status compiler_flang_zapis_potolka_ne_menshe_verha(fl_ctx *ctx,
+                                                       fl_value zapis,
+                                                       fl_value verh,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
  * Функция flang «Слово под потолком».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param obyavlenie — «объявление»: «Значение»
  * @param potolok — «потолок»: число
+ * @param cifry_potolka — «цифры потолка»: строка
  * @return значение
  */
 fl_status compiler_flang_slovo_pod_potolkom(fl_ctx *ctx, fl_value obyavlenie,
-                                            fl_value potolok, fl_value *result,
-                                            fl_error *error);
+                                            fl_value potolok,
+                                            fl_value cifry_potolka,
+                                            fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Ограниченное по типу или слову».
@@ -101361,11 +101471,13 @@ fl_status compiler_flang_slovo_pod_potolkom(fl_ctx *ctx, fl_value obyavlenie,
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param obyavleniya — «объявления»: список: «Значение»
  * @param potolok — «потолок»: число
+ * @param cifry_potolka — «цифры потолка»: строка
  * @return значение: список: «Значение»
  */
 fl_status compiler_flang_ogranichennoe_po_tipu_ili_slovu(fl_ctx *ctx,
                                                          fl_value obyavleniya,
                                                          fl_value potolok,
+                                                         fl_value cifry_potolka,
                                                          fl_value *result,
                                                          fl_error *error);
 
@@ -115802,6 +115914,88 @@ fl_status compiler_flang_verh_slova_v_podpisi_zapisi(fl_ctx *ctx,
                                                      fl_value dovod,
                                                      fl_value *result,
                                                      fl_error *error);
+
+/*
+ * Функция flang «Верх слова в подписи записи цифрами».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param podpis — «подпись»: строка
+ * @param dovod — «довод»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_verh_slova_v_podpisi_zapisi_ciframi(fl_ctx *ctx,
+                                                             fl_value podpis,
+                                                             fl_value dovod,
+                                                             fl_value *result,
+                                                             fl_error *error);
+
+/*
+ * Функция flang «Шаг верха цифрами записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param naydeno — «найдено»: строка
+ * @param para — «пара»: список: строка
+ * @param podpis — «подпись»: строка
+ * @param dovod — «довод»: строка
+ * @return значение: строка
+ */
+fl_status
+compiler_flang_shag_verha_ciframi_zapisi(fl_ctx *ctx, fl_value naydeno,
+                                         fl_value para, fl_value podpis,
+                                         fl_value dovod, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Без нулей впереди записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cifry — «цифры»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_nuley_vperedi_zapisi(fl_ctx *ctx, fl_value cifry,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Шаг без нулей записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: строка
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_shag_bez_nuley_zapisi(fl_ctx *ctx, fl_value akk,
+                                               fl_value znak, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Потолок записи не ниже верха».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param potolok — «потолок»: строка
+ * @param verh — «верх»: строка
+ * @return значение
+ */
+fl_status compiler_flang_potolok_zapisi_ne_nizhe_verha(fl_ctx *ctx,
+                                                       fl_value potolok,
+                                                       fl_value verh,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
+ * Функция flang «Старшие записи не ниже».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param p — «п»: строка
+ * @param verh — «верх»: строка
+ * @param starshih — «старших»: число
+ * @return значение
+ */
+fl_status compiler_flang_starshie_zapisi_ne_nizhe(fl_ctx *ctx, fl_value p,
+                                                  fl_value verh,
+                                                  fl_value starshih,
+                                                  fl_value *result,
+                                                  fl_error *error);
 
 /*
  * Функция flang «Верх пары слова записи».
@@ -163821,6 +164015,18 @@ fl_status compiler_flang_razobrat_pervichnoe_bez_proverok(fl_ctx *ctx,
                                                           fl_value r,
                                                           fl_value *result,
                                                           fl_error *error);
+
+/*
+ * Функция flang «Узел первичного числа без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param token — «токен»: «Токен»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_pervichnogo_chisla_bez_proverok(fl_ctx *ctx,
+                                                              fl_value token,
+                                                              fl_value *result,
+                                                              fl_error *error);
 
 /*
  * Функция flang «Первичное числом без проверок».

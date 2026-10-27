@@ -236,20 +236,20 @@
 
 тотальная функция «C translation»
   возвращает «Probe case»
-  пример «clamp is proved, midpoint is refuted at the int bounds»
+  пример «clamp is checked, the kernel refutes midpoint at the int bounds»
     ожидается (запись «Probe case» с «name» равным "c translation"
       и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
       и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
-        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "контрпример: «lo» = 1, «hi» = 2147483647",
         "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
-        "ПРОВЕРЕНО — запись сошлась"]
+        "ПРОВЕРЕНО — утверждений в записи нет"]
       и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
   (запись «Probe case» с «name» равным "c translation"
     и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
     и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
-        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "контрпример: «lo» = 1, «hi» = 2147483647",
         "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
-      "ПРОВЕРЕНО — запись сошлась"]
+      "ПРОВЕРЕНО — утверждений в записи нет"]
     и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
 
 тотальная функция «C refusal»
@@ -496,9 +496,9 @@
       c translation: ждали код 1, вышел 127
       c translation: в выводе нет «модуль «Перевод clamp»»
       c translation: в выводе нет «модуль «Перевод midpoint»»
-      c translation: в выводе нет «контрпример: «lo» = 2147483647, «hi» = 2147483647»
+      c translation: в выводе нет «контрпример: «lo» = 1, «hi» = 2147483647»
       c translation: в выводе нет «нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»»
-      c translation: в выводе нет «ПРОВЕРЕНО — запись сошлась»
+      c translation: в выводе нет «ПРОВЕРЕНО — утверждений в записи нет»
       c refusal: ждали код 1, вышел 127
       c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: «long» здесь не читается»
       clang stats: ждали код 0, вышел 127

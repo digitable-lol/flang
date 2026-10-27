@@ -1082,6 +1082,7 @@ fd7ebc29409ae75ab82bd0b48345589e|1|0|0|1|0|flang/proof/probes/branch-condition-a
 c516038d4d659e5e8b1c5c45c4551f5a|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal.flang
 c3f8f76fb04c59f18e25a52133487f98|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-equal.flang
 17e31c2c96a2eaad4a92c212fb725ef6|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-zero.flang
+e82c4cf72147caa8968060dd07f92844|1|×|×|×|0|flang/proof/probes/typing-holes/programs/restricted-postcondition-outside-domain.flang
 0dbd8c3aca5c041211fc3702f1a64840|52|52|0|0|0|flang/proof/small-reducer.flang
 a075e8a26bed6fd0228f15824bad848a|1|0|0|1|0|flang/proof/forgeries/by-division.flang
 ab1156261b804cb48ee0df2e25cad46f|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang
@@ -1459,6 +1460,15 @@ d8a87ed173e940e95b91df6ac27123c5|0|×|×|×|1|flang/test/fixtures/binary-rules/e
 ebf918c1133a06dab715e03c08f1ce4f|0|×|×|×|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
 ed30c9fa927c5a19ab032b137ef07edf|7|0|7|0|0|flang/test/fixtures/element-po-nomeru-chestnaya.flang
 fc83fbc21ff40f2acebe2ea4f49eefdd|4|1|0|3|1|flang/test/fixtures/granica-nad-chislom-chestnaya.flang
+0bc4cfdebe6a59057d35526d3872558d|2|×|×|×|2|flang/test/fixtures/honest-halves/case-split-honest.flang
+a5f07ba9b8d0c456484fceb748e56d6e|1|×|×|×|2|flang/test/fixtures/honest-halves/contradiction-honest.flang
+cdff78121ce705d604a4c91ff3dbb11e|4|×|×|×|0|flang/test/fixtures/honest-halves/fold-over-empty-honest.flang
+c8288759eb7867b1ec114d3a673e4459|2|×|×|×|0|flang/test/fixtures/honest-halves/inner-case-split-honest.flang
+14084af770a43a6c763238cf3579b459|4|×|×|×|0|flang/test/fixtures/honest-halves/integrality-from-fact-honest.flang
+dd5b92bc8d039261789911a13f5e023b|6|×|×|×|0|flang/test/fixtures/honest-halves/list-match-honest.flang
+1ae9df659600211379d40b24380001be|5|×|×|×|0|flang/test/fixtures/honest-halves/order-arithmetic-honest.flang
+ea6522b9a55441b91b011dfd3c7e4b7b|4|×|×|×|0|flang/test/fixtures/honest-halves/product-floor-honest.flang
+a006d05278b799b7c14b69e94f5db5ef|4|×|×|×|0|flang/test/fixtures/honest-halves/strict-order-honest.flang
 12e4a6f0e40bd10b5d179e7dffc95e4f|3|0|3|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
 052d07f9abd740282567e21a713e2995|7|1|6|0|0|flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
 a21b59921919e74faa90a69b8090d9d8|1|0|0|1|0|flang/test/fixtures/ohrana-daet-fakt.flang

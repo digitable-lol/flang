@@ -332,6 +332,11 @@ fn zakodirovat(znachenie: &rt::Value) -> Json {
             Json::Stroka(vnutri.name.to_string()),
             Json::Zapis(vnutri.fields.iter().map(|p| (p.name.to_string(), zakodirovat(&p.value))).collect()),
         ]),
+        rt::Value::Word(_, _) => {
+            // У слова фиксированной ширины метки на проводе нет (DISTRIBUTED.md), как и у хозяина на Python.
+            eprintln!("нечего кодировать: слово {}", rt::describe(znachenie));
+            std::process::exit(1)
+        }
     }
 }
 

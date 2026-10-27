@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.30",
-  "latest": "0.7.30",
+  "declared": "0.7.31",
+  "latest": "0.7.31",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -12,14 +12,234 @@
   ],
   "releases": [
     {
+      "version": "0.7.31",
+      "tag": "v0.7.31",
+      "date": "2026-10-27",
+      "human": "27 октября 2026",
+      "commit": "b2e4ac9",
+      "title": "Ядро доказывает записи по полям и остаток в кольце; слова u8…u64 и битовые операции; контрпример постусловия на краях типов",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.31 archive",
+          "commit": "b2e4ac9"
+        },
+        {
+          "text": "chore(release): version 0.7.31 and its release notes",
+          "commit": "d5caada"
+        },
+        {
+          "text": "test(guards): the honest halves stand alone, issue 481 is a known hole",
+          "commit": "20eb8be"
+        },
+        {
+          "text": "test(guards): ledgers follow the holes 9b closed and its new refusals",
+          "commit": "cacfdb2"
+        },
+        {
+          "text": "fix(playground): the counterexample comes from the kernel answer",
+          "commit": "044300d"
+        },
+        {
+          "text": "test(records): corpus records follow the 9b kernel and check",
+          "commit": "fea39cf"
+        },
+        {
+          "text": "chore(proof): rule anchors and trust ceilings follow the 9b merge",
+          "commit": "140cc7e"
+        },
+        {
+          "text": "chore(seed): print batch 9b again, printed by the 0.7.28 seed",
+          "commit": "3e40eea"
+        },
+        {
+          "text": "chore(numbers): line references and counts follow the kernel fix",
+          "commit": "541230a"
+        },
+        {
+          "text": "fix(kernel): the word bound ceiling is compared exactly",
+          "commit": "7dd03bd"
+        },
+        {
+          "text": "fix(stdlib): base64 and sha256 claims name their domain",
+          "commit": "4b7e263"
+        },
+        {
+          "text": "test(checker): the u64 pair records are printed by the 9b binary",
+          "commit": "0d4982d"
+        },
+        {
+          "text": "fix(stdlib): sqlite claims refuted by the 9b check name their domain",
+          "commit": "79c6f58"
+        },
+        {
+          "text": "chore(seed): print batch 9b, printed by the 0.7.28 seed",
+          "commit": "d7351d0"
+        },
+        {
+          "text": "fix(runtime): value constructors zero the whole value",
+          "commit": "5a16e54"
+        },
+        {
+          "text": "fix(checker): the word bound ceiling is compared exactly",
+          "commit": "3df66cc"
+        },
+        {
+          "text": "feat(checker): the lean acceptance replays the word bound steps",
+          "commit": "0f75a27"
+        },
+        {
+          "text": "fix(checker): second checker replays match bodies in a goal half",
+          "commit": "277a08c"
+        },
+        {
+          "text": "feat(guards): typing holes ledger and record format promise",
+          "commit": "34ce8a2"
+        },
+        {
+          "text": "fix(proof): both checkers read the story block",
+          "commit": "f2fb97d"
+        },
+        {
+          "text": "fix(self): two postconditions of the compiler name their domain",
+          "commit": "f160048"
+        },
+        {
+          "text": "test(checker): the two-argument unfolding forgery ends with code 3",
+          "commit": "663e00d"
+        },
+        {
+          "text": "chore(seed): reseed the shell runtime after the text command",
+          "commit": "9269515"
+        },
+        {
+          "text": "feat(site): try-in-the-browser button, katex from the tree, text colours",
+          "commit": "614479f"
+        },
+        {
+          "text": "feat(repl): the text command judges a program, formula or reasoning",
+          "commit": "d7f6f08"
+        },
+        {
+          "text": "feat(reasoning): one flang rule names the kind of a text",
+          "commit": "4b482b0"
+        },
+        {
+          "text": "chore(proof): rule anchors follow the kernel of batch 9b",
+          "commit": "3e102cc"
+        },
+        {
+          "text": "chore(marks): prose numbers and ledgers count the list rules",
+          "commit": "f2f4d40"
+        },
+        {
+          "text": "feat(kernel): a list precondition reaches the head and the tail",
+          "commit": "1da5f72"
+        },
+        {
+          "text": "test(proof): probes for postconditions refuted at edges and bounds",
+          "commit": "c0b653b"
+        },
+        {
+          "text": "fix(check): refute a postcondition at type edges and requires bounds",
+          "commit": "a7be356"
+        },
+        {
+          "text": "fix(types): a fold keeps the narrow type its context expects",
+          "commit": "283852c"
+        },
+        {
+          "text": "test(proof): records and arithmetic probes and checker records",
+          "commit": "39a7cfd"
+        },
+        {
+          "text": "feat(lean): lemmas for the record, self-equality and remainder rules",
+          "commit": "3443def"
+        },
+        {
+          "text": "feat(checker): both checkers replay records, self-equality and remainder",
+          "commit": "4fca48e"
+        },
+        {
+          "text": "feat(types): a number narrows to an integer segment under a full check",
+          "commit": "6136ebc"
+        },
+        {
+          "text": "feat(kernel): records by fields, self-equality and remainder in the ring",
+          "commit": "5b8048c"
+        },
+        {
+          "text": "feat(checker): both checkers replay a branch fact as a record move",
+          "commit": "f936325"
+        },
+        {
+          "text": "feat(kernel): a strict order fact closes the non-strict goal",
+          "commit": "0826ee3"
+        },
+        {
+          "text": "fix(proof): word bound steps stay outside the Lean acceptance model",
+          "commit": "af26a5e"
+        },
+        {
+          "text": "feat(emit): double-width product and words in every print target",
+          "commit": "89f0790"
+        },
+        {
+          "text": "feat(kernel): bounds of unsigned words by their declaration",
+          "commit": "3cc02b3"
+        },
+        {
+          "text": "feat(self): fixed-width words and bit operations in the language",
+          "commit": "3007fa5"
+        },
+        {
+          "text": "docs(totality): size-change cycles in the cards and the refusal",
+          "commit": "f2cc315"
+        },
+        {
+          "text": "feat(totality): size-change termination for cycles of calls",
+          "commit": "8784572"
+        },
+        {
+          "text": "docs(proof): task 2241, wave three cards and the false forms probe",
+          "commit": "33399a4"
+        },
+        {
+          "text": "chore(checker): the line ceiling counts the statement step replay",
+          "commit": "334d60c"
+        },
+        {
+          "text": "feat(proof): four unfolding rules and one ban with Lean lemmas",
+          "commit": "a62b934"
+        },
+        {
+          "text": "feat(checker): replay calls unfolded on a built constructor",
+          "commit": "847bb8e"
+        },
+        {
+          "text": "fix(kernel): unfold a call on a built constructor without capture",
+          "commit": "71c576e"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.30",
+          "commit": "ce6a2cb"
+        }
+      ],
+      "hidden": 29
+    },
+    {
       "version": "0.7.30",
       "tag": "v0.7.30",
       "date": "2026-10-19",
       "human": "19 октября 2026",
-      "commit": "9354878",
+      "commit": "b4950b6",
       "title": "Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке",
       "note": [],
       "entries": [
+        {
+          "text": "chore(release): the asdf plugin installs the proof checker",
+          "commit": "b4950b6"
+        },
         {
           "text": "chore(release): sha256 of the 0.7.30 archive",
           "commit": "9354878"
@@ -181,7 +401,7 @@
           "commit": "77d263a"
         }
       ],
-      "hidden": 34
+      "hidden": 35
     },
     {
       "version": "0.7.29",

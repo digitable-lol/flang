@@ -33,20 +33,91 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `93548785d` от 19 октября 2026. Шагов ствола 4132, из них вливаний 1216; коммитов в истории 9235.
+Дерево на коммите `b2e4ac918` от 27 октября 2026. Шагов ствола 4152, из них вливаний 1217; коммитов в истории 9320.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 127431 | +3084 | −3967 |
-| Программ на flang | 1066 | +41 | +505 |
-| Объявлений `тотальная функция` | 15487 | +315 | +1436 |
-| Объявлений `функция` | 3312 | +37 | +870 |
-| Объявлений `теорема` | 403 | +18 | +119 |
+| Эталон компилятора на flang | 133364 | +5933 | +1966 |
+| Программ на flang | 1136 | +60 | +575 |
+| Объявлений `тотальная функция` | 16046 | +527 | +1995 |
+| Объявлений `функция` | 3441 | +129 | +999 |
+| Объявлений `теорема` | 404 | +1 | +120 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | 0 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 27 октября 2026
+
+**Merge print batch 9b: record fields, fixed-width words, list tails**
+
+`45261f7fc` · коммитов 66
+
+Сдвинулось: эталон компилятора на flang 127431 → 133364 (+5933); программ на flang 1066 → 1126 (+60); объявлений `тотальная функция` 15487 → 16014 (+527); объявлений `функция` 3312 → 3441 (+129); объявлений `теорема` 403 → 404 (+1).
+
+- chore(seed): print batch 9b again, printed by the 0.7.28 seed (`3e40eea48`)
+- chore(numbers): line references and counts follow the kernel fix (`541230a7e`)
+- fix(kernel): the word bound ceiling is compared exactly (`7dd03bd67`)
+- fix(stdlib): base64 and sha256 claims name their domain (`4b7e26339`)
+- test(checker): the u64 pair records are printed by the 9b binary (`0d4982db2`)
+- fix(stdlib): sqlite claims refuted by the 9b check name their domain (`79c6f58b2`)
+- chore(seed): print batch 9b, printed by the 0.7.28 seed (`d7351d091`)
+- fix(runtime): value constructors zero the whole value (`5a16e54e6`)
+- fix(checker): the word bound ceiling is compared exactly (`3df66ccda`)
+- feat(checker): the lean acceptance replays the word bound steps (`0f75a27b1`)
+- fix(checker): second checker replays match bodies in a goal half (`277a08c59`)
+- fix(self): two postconditions of the compiler name their domain (`f16004813`)
+- test(proof): probes for postconditions refuted at edges and bounds (`c0b653bc0`)
+- fix(check): refute a postcondition at type edges and requires bounds (`a7be3562d`)
+- chore(seed): reseed the shell runtime after the text command (`926951524`)
+- feat(site): try-in-the-browser button, katex from the tree, text colours (`614479f17`)
+- feat(repl): the text command judges a program, formula or reasoning (`d7f6f088c`)
+- feat(reasoning): one flang rule names the kind of a text (`4b482b068`)
+- fix(proof): both checkers read the story block (`f2fb97d55`)
+- test(checker): the two-argument unfolding forgery ends with code 3 (`663e00d52`)
+- chore(proof): rule anchors follow the kernel of batch 9b (`3e102cc20`)
+- chore(marks): prose numbers and ledgers count the list rules (`f2f4d404f`)
+- feat(kernel): a list precondition reaches the head and the tail (`1da5f72e2`)
+- fix(types): a fold keeps the narrow type its context expects (`283852ce2`)
+- test(proof): records and arithmetic probes and checker records (`39a7cfd5d`)
+- feat(lean): lemmas for the record, self-equality and remainder rules (`3443def46`)
+- feat(checker): both checkers replay records, self-equality and remainder (`4fca48ef8`)
+- feat(types): a number narrows to an integer segment under a full check (`6136ebc78`)
+- feat(kernel): records by fields, self-equality and remainder in the ring (`5b8048c03`)
+- feat(checker): both checkers replay a branch fact as a record move (`f936325d5`)
+- feat(kernel): a strict order fact closes the non-strict goal (`0826ee3c7`)
+- fix(proof): word bound steps stay outside the Lean acceptance model (`af26a5e50`)
+- feat(emit): double-width product and words in every print target (`89f0790dd`)
+- feat(kernel): bounds of unsigned words by their declaration (`3cc02b30e`)
+- feat(self): fixed-width words and bit operations in the language (`3007fa53e`)
+- docs(totality): size-change cycles in the cards and the refusal (`f2cc31584`)
+- feat(totality): size-change termination for cycles of calls (`878457266`)
+- docs(proof): task 2241, wave three cards and the false forms probe (`33399a4ae`)
+- chore(checker): the line ceiling counts the statement step replay (`334d60c3c`)
+- feat(proof): four unfolding rules and one ban with Lean lemmas (`a62b934f0`)
+- feat(checker): replay calls unfolded on a built constructor (`847bb8eb3`)
+- fix(kernel): unfold a call on a built constructor without capture (`71c576e7e`)
+
+Ещё 23 правки языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): sha256 of the 0.7.31 archive (`b2e4ac918`)
+- chore(release): version 0.7.31 and its release notes (`d5caada70`)
+- test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be4f`)
+- test(guards): ledgers follow the holes 9b closed and its new refusals (`cacfdb2af`)
+- fix(playground): the counterexample comes from the kernel answer (`044300d05`)
+- test(records): corpus records follow the 9b kernel and check (`fea39cf13`)
+- chore(proof): rule anchors and trust ceilings follow the 9b merge (`140cc7e27`)
+
+Ещё 8 правок языка снаружи не меняют.
+
+## 24 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(guards): typing holes ledger and record format promise (`34ce8a2ac`)
 
 ## 19 октября 2026
 
@@ -105,13 +176,15 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- chore(release): the tap serves flang-package 0.7.30 (`ce6a2cb42`)
+- chore(release): the asdf plugin installs the proof checker (`b4950b663`)
 - chore(release): sha256 of the 0.7.30 archive (`93548785d`)
 - test(probes): a story waits for the checkers to read it, task 8192 (`b729805e9`)
 - chore(release): version 0.7.30 and its release notes (`9c0231f2f`)
 - fix(playground): c overflow is refuted at the int bounds, not hidden (`595322aa3`)
 - feat(playground): every target language, c to flang and line numbers (`c61726785`)
 
-Ещё 9 правок языка снаружи не меняют.
+Ещё 10 правок языка снаружи не меняют.
 
 ## 18 октября 2026
 

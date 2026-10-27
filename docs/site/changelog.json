@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "93548785d78b0dae58a23edc7dd7707fea1466e4",
-  "головаКоротко": "93548785d",
-  "головаДата": "2026-10-19",
-  "шаговСтвола": 4132,
-  "всегоКоммитов": 9235,
+  "голова": "b2e4ac91831d6792cec68b1f34eeec9b77f3def9",
+  "головаКоротко": "b2e4ac918",
+  "головаДата": "2026-10-27",
+  "шаговСтвола": 4152,
+  "всегоКоммитов": 9320,
   "измерители": [
     {
       "ключ": "js",
@@ -49,11 +49,11 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 127431,
-    "programm": 1066,
-    "totalnyh": 15487,
-    "obychnyh": 3312,
-    "teorem": 403,
+    "bliznec": 133364,
+    "programm": 1136,
+    "totalnyh": 16046,
+    "obychnyh": 3441,
+    "teorem": 404,
     "proverok": 3,
     "zametok": 0
   },
@@ -92,6 +92,8 @@
     }
   ],
   "дни": [
+    "2026-10-27",
+    "2026-10-24",
     "2026-10-19",
     "2026-10-18",
     "2026-10-17",
@@ -171,6 +173,216 @@
     "2026-08-01"
   ],
   "вливания": [
+    {
+      "коммит": "45261f7fc",
+      "дата": "2026-10-27",
+      "заголовок": "Merge print batch 9b: record fields, fixed-width words, list tails",
+      "ветка": null,
+      "приехало": 66,
+      "записи": [
+        {
+          "текст": "chore(seed): print batch 9b again, printed by the 0.7.28 seed",
+          "коммит": "3e40eea48"
+        },
+        {
+          "текст": "chore(numbers): line references and counts follow the kernel fix",
+          "коммит": "541230a7e"
+        },
+        {
+          "текст": "fix(kernel): the word bound ceiling is compared exactly",
+          "коммит": "7dd03bd67"
+        },
+        {
+          "текст": "fix(stdlib): base64 and sha256 claims name their domain",
+          "коммит": "4b7e26339"
+        },
+        {
+          "текст": "test(checker): the u64 pair records are printed by the 9b binary",
+          "коммит": "0d4982db2"
+        },
+        {
+          "текст": "fix(stdlib): sqlite claims refuted by the 9b check name their domain",
+          "коммит": "79c6f58b2"
+        },
+        {
+          "текст": "chore(seed): print batch 9b, printed by the 0.7.28 seed",
+          "коммит": "d7351d091"
+        },
+        {
+          "текст": "fix(runtime): value constructors zero the whole value",
+          "коммит": "5a16e54e6"
+        },
+        {
+          "текст": "fix(checker): the word bound ceiling is compared exactly",
+          "коммит": "3df66ccda"
+        },
+        {
+          "текст": "feat(checker): the lean acceptance replays the word bound steps",
+          "коммит": "0f75a27b1"
+        },
+        {
+          "текст": "fix(checker): second checker replays match bodies in a goal half",
+          "коммит": "277a08c59"
+        },
+        {
+          "текст": "fix(self): two postconditions of the compiler name their domain",
+          "коммит": "f16004813"
+        },
+        {
+          "текст": "test(proof): probes for postconditions refuted at edges and bounds",
+          "коммит": "c0b653bc0"
+        },
+        {
+          "текст": "fix(check): refute a postcondition at type edges and requires bounds",
+          "коммит": "a7be3562d"
+        },
+        {
+          "текст": "chore(seed): reseed the shell runtime after the text command",
+          "коммит": "926951524"
+        },
+        {
+          "текст": "feat(site): try-in-the-browser button, katex from the tree, text colours",
+          "коммит": "614479f17"
+        },
+        {
+          "текст": "feat(repl): the text command judges a program, formula or reasoning",
+          "коммит": "d7f6f088c"
+        },
+        {
+          "текст": "feat(reasoning): one flang rule names the kind of a text",
+          "коммит": "4b482b068"
+        },
+        {
+          "текст": "fix(proof): both checkers read the story block",
+          "коммит": "f2fb97d55"
+        },
+        {
+          "текст": "test(checker): the two-argument unfolding forgery ends with code 3",
+          "коммит": "663e00d52"
+        },
+        {
+          "текст": "chore(proof): rule anchors follow the kernel of batch 9b",
+          "коммит": "3e102cc20"
+        },
+        {
+          "текст": "chore(marks): prose numbers and ledgers count the list rules",
+          "коммит": "f2f4d404f"
+        },
+        {
+          "текст": "feat(kernel): a list precondition reaches the head and the tail",
+          "коммит": "1da5f72e2"
+        },
+        {
+          "текст": "fix(types): a fold keeps the narrow type its context expects",
+          "коммит": "283852ce2"
+        },
+        {
+          "текст": "test(proof): records and arithmetic probes and checker records",
+          "коммит": "39a7cfd5d"
+        },
+        {
+          "текст": "feat(lean): lemmas for the record, self-equality and remainder rules",
+          "коммит": "3443def46"
+        },
+        {
+          "текст": "feat(checker): both checkers replay records, self-equality and remainder",
+          "коммит": "4fca48ef8"
+        },
+        {
+          "текст": "feat(types): a number narrows to an integer segment under a full check",
+          "коммит": "6136ebc78"
+        },
+        {
+          "текст": "feat(kernel): records by fields, self-equality and remainder in the ring",
+          "коммит": "5b8048c03"
+        },
+        {
+          "текст": "feat(checker): both checkers replay a branch fact as a record move",
+          "коммит": "f936325d5"
+        },
+        {
+          "текст": "feat(kernel): a strict order fact closes the non-strict goal",
+          "коммит": "0826ee3c7"
+        },
+        {
+          "текст": "fix(proof): word bound steps stay outside the Lean acceptance model",
+          "коммит": "af26a5e50"
+        },
+        {
+          "текст": "feat(emit): double-width product and words in every print target",
+          "коммит": "89f0790dd"
+        },
+        {
+          "текст": "feat(kernel): bounds of unsigned words by their declaration",
+          "коммит": "3cc02b30e"
+        },
+        {
+          "текст": "feat(self): fixed-width words and bit operations in the language",
+          "коммит": "3007fa53e"
+        },
+        {
+          "текст": "docs(totality): size-change cycles in the cards and the refusal",
+          "коммит": "f2cc31584"
+        },
+        {
+          "текст": "feat(totality): size-change termination for cycles of calls",
+          "коммит": "878457266"
+        },
+        {
+          "текст": "docs(proof): task 2241, wave three cards and the false forms probe",
+          "коммит": "33399a4ae"
+        },
+        {
+          "текст": "chore(checker): the line ceiling counts the statement step replay",
+          "коммит": "334d60c3c"
+        },
+        {
+          "текст": "feat(proof): four unfolding rules and one ban with Lean lemmas",
+          "коммит": "a62b934f0"
+        },
+        {
+          "текст": "feat(checker): replay calls unfolded on a built constructor",
+          "коммит": "847bb8eb3"
+        },
+        {
+          "текст": "fix(kernel): unfold a call on a built constructor without capture",
+          "коммит": "71c576e7e"
+        }
+      ],
+      "скрыто": 23,
+      "числа": {
+        "js": 0,
+        "bliznec": 133364,
+        "programm": 1126,
+        "totalnyh": 16014,
+        "obychnyh": 3441,
+        "teorem": 404,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {
+        "bliznec": {
+          "было": 127431,
+          "стало": 133364
+        },
+        "programm": {
+          "было": 1066,
+          "стало": 1126
+        },
+        "totalnyh": {
+          "было": 15487,
+          "стало": 16014
+        },
+        "obychnyh": {
+          "было": 3312,
+          "стало": 3441
+        },
+        "teorem": {
+          "было": 403,
+          "стало": 404
+        }
+      }
+    },
     {
       "коммит": "ab3f9b027",
       "дата": "2026-10-19",
@@ -41148,8 +41360,60 @@
   ],
   "прямые": [
     {
+      "дата": "2026-10-27",
+      "записи": [
+        {
+          "текст": "chore(release): sha256 of the 0.7.31 archive",
+          "коммит": "b2e4ac918"
+        },
+        {
+          "текст": "chore(release): version 0.7.31 and its release notes",
+          "коммит": "d5caada70"
+        },
+        {
+          "текст": "test(guards): the honest halves stand alone, issue 481 is a known hole",
+          "коммит": "20eb8be4f"
+        },
+        {
+          "текст": "test(guards): ledgers follow the holes 9b closed and its new refusals",
+          "коммит": "cacfdb2af"
+        },
+        {
+          "текст": "fix(playground): the counterexample comes from the kernel answer",
+          "коммит": "044300d05"
+        },
+        {
+          "текст": "test(records): corpus records follow the 9b kernel and check",
+          "коммит": "fea39cf13"
+        },
+        {
+          "текст": "chore(proof): rule anchors and trust ceilings follow the 9b merge",
+          "коммит": "140cc7e27"
+        }
+      ],
+      "скрыто": 8
+    },
+    {
+      "дата": "2026-10-24",
+      "записи": [
+        {
+          "текст": "feat(guards): typing holes ledger and record format promise",
+          "коммит": "34ce8a2ac"
+        }
+      ],
+      "скрыто": 0
+    },
+    {
       "дата": "2026-10-19",
       "записи": [
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.30",
+          "коммит": "ce6a2cb42"
+        },
+        {
+          "текст": "chore(release): the asdf plugin installs the proof checker",
+          "коммит": "b4950b663"
+        },
         {
           "текст": "chore(release): sha256 of the 0.7.30 archive",
           "коммит": "93548785d"
@@ -41171,7 +41435,7 @@
           "коммит": "c61726785"
         }
       ],
-      "скрыто": 9
+      "скрыто": 10
     },
     {
       "дата": "2026-10-18",

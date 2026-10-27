@@ -11,10 +11,69 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.31 — 27 октября 2026
+
+**Ядро доказывает записи по полям и остаток в кольце; слова u8…u64 и битовые операции; контрпример постусловия на краях типов**
+
+- chore(release): sha256 of the 0.7.31 archive (`b2e4ac9`)
+- chore(release): version 0.7.31 and its release notes (`d5caada`)
+- test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be`)
+- test(guards): ledgers follow the holes 9b closed and its new refusals (`cacfdb2`)
+- fix(playground): the counterexample comes from the kernel answer (`044300d`)
+- test(records): corpus records follow the 9b kernel and check (`fea39cf`)
+- chore(proof): rule anchors and trust ceilings follow the 9b merge (`140cc7e`)
+- chore(seed): print batch 9b again, printed by the 0.7.28 seed (`3e40eea`)
+- chore(numbers): line references and counts follow the kernel fix (`541230a`)
+- fix(kernel): the word bound ceiling is compared exactly (`7dd03bd`)
+- fix(stdlib): base64 and sha256 claims name their domain (`4b7e263`)
+- test(checker): the u64 pair records are printed by the 9b binary (`0d4982d`)
+- fix(stdlib): sqlite claims refuted by the 9b check name their domain (`79c6f58`)
+- chore(seed): print batch 9b, printed by the 0.7.28 seed (`d7351d0`)
+- fix(runtime): value constructors zero the whole value (`5a16e54`)
+- fix(checker): the word bound ceiling is compared exactly (`3df66cc`)
+- feat(checker): the lean acceptance replays the word bound steps (`0f75a27`)
+- fix(checker): second checker replays match bodies in a goal half (`277a08c`)
+- feat(guards): typing holes ledger and record format promise (`34ce8a2`)
+- fix(proof): both checkers read the story block (`f2fb97d`)
+- fix(self): two postconditions of the compiler name their domain (`f160048`)
+- test(checker): the two-argument unfolding forgery ends with code 3 (`663e00d`)
+- chore(seed): reseed the shell runtime after the text command (`9269515`)
+- feat(site): try-in-the-browser button, katex from the tree, text colours (`614479f`)
+- feat(repl): the text command judges a program, formula or reasoning (`d7f6f08`)
+- feat(reasoning): one flang rule names the kind of a text (`4b482b0`)
+- chore(proof): rule anchors follow the kernel of batch 9b (`3e102cc`)
+- chore(marks): prose numbers and ledgers count the list rules (`f2f4d40`)
+- feat(kernel): a list precondition reaches the head and the tail (`1da5f72`)
+- test(proof): probes for postconditions refuted at edges and bounds (`c0b653b`)
+- fix(check): refute a postcondition at type edges and requires bounds (`a7be356`)
+- fix(types): a fold keeps the narrow type its context expects (`283852c`)
+- test(proof): records and arithmetic probes and checker records (`39a7cfd`)
+- feat(lean): lemmas for the record, self-equality and remainder rules (`3443def`)
+- feat(checker): both checkers replay records, self-equality and remainder (`4fca48e`)
+- feat(types): a number narrows to an integer segment under a full check (`6136ebc`)
+- feat(kernel): records by fields, self-equality and remainder in the ring (`5b8048c`)
+- feat(checker): both checkers replay a branch fact as a record move (`f936325`)
+- feat(kernel): a strict order fact closes the non-strict goal (`0826ee3`)
+- fix(proof): word bound steps stay outside the Lean acceptance model (`af26a5e`)
+- feat(emit): double-width product and words in every print target (`89f0790`)
+- feat(kernel): bounds of unsigned words by their declaration (`3cc02b3`)
+- feat(self): fixed-width words and bit operations in the language (`3007fa5`)
+- docs(totality): size-change cycles in the cards and the refusal (`f2cc315`)
+- feat(totality): size-change termination for cycles of calls (`8784572`)
+- docs(proof): task 2241, wave three cards and the false forms probe (`33399a4`)
+- chore(checker): the line ceiling counts the statement step replay (`334d60c`)
+- feat(proof): four unfolding rules and one ban with Lean lemmas (`a62b934`)
+- feat(checker): replay calls unfolded on a built constructor (`847bb8e`)
+- fix(kernel): unfold a call on a built constructor without capture (`71c576e`)
+- chore(release): the tap serves flang-package 0.7.30 (`ce6a2cb`)
+
+Ещё 29 правок языка снаружи не меняют.
+
 ## 0.7.30 — 19 октября 2026
 
 **Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке**
 
+- chore(release): the asdf plugin installs the proof checker (`b4950b6`)
 - chore(release): sha256 of the 0.7.30 archive (`9354878`)
 - test(probes): a story waits for the checkers to read it, task 8192 (`b729805`)
 - chore(release): version 0.7.30 and its release notes (`9c0231f`)
@@ -56,7 +115,7 @@
 - fix(stdlib): tls, tls-handshake and kdf pass check again (`b9b38d2`)
 - perf(self): field and definition lookups stop at the first match (`77d263a`)
 
-Ещё 34 правки языка снаружи не меняют.
+Ещё 35 правок языка снаружи не меняют.
 
 ## 0.7.29 — 18 октября 2026
 

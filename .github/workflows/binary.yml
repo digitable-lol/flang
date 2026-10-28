@@ -1778,13 +1778,17 @@ jobs:
           grep -o '"\(result\|error\)":"[^"]*' "$RUNNER_TEMP/falsifier.out"
           exit "$kod"
 
-  # Потолок 25 минут, а не 20: на двоичном партии 8 проба русской грамматики
-  # идёт 369 с против 238 (медленнее печатник — задача 6425), и прибавился шаг
-  # вложенного объекта (137 с); заход 39138924496 упёрся в 20 минут.
+  # ДВЕ ПОЛОВИНЫ, А НЕ ОДНА РАБОТА С ПОТОЛКОМ ПОБОЛЬШЕ. Одной работой сторожа шли
+  # 24,5 мин при потолке 25 (прогон 40557924880, 27 октября 2026, снят на 25-й
+  # минуте), и каждый новый шаг грозил тем же. Разрез — перед пробой русской
+  # грамматики: по тому прогону первая половина — около 780 с (сборка и сторожа
+  # до «закона категорий»), вторая — около 810 с (грамматика 411 с, вложенный
+  # объект 159 с, кеш ядра 104 с и прочее). Потолок каждой — полтора замера с
+  # запасом: 20 и 21 минута.
   storozha:
     name: guards-selftest
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       # Полная история не нужна: сторож спрашивает `git ls-files`, а не журнал.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -2176,6 +2180,38 @@ jobs:
         # ADR-0088: expectations are those of a binary printed from these sources;
         # with an older binary the set must diverge (negative control through FLANG_BIN).
         run: bootstrap/flang io flang/proof/probes/ct-laws/run.fscript --plan Binary --timeout 900000
+
+  # Вторая половина сторожей (разрез и замер — над работой `storozha`). Двоичный
+  # и чекер берутся тем же путём: кеш по хешу входов сборки, иначе сборка.
+  storozha-2:
+    name: guards-selftest-2
+    runs-on: ubuntu-latest
+    timeout-minutes: 21
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: kesh-dvoichnogo
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.kesh-dvoichnogo.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.kesh-dvoichnogo.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      - name: Build proof checker
+        run: make -C flang/proof/checker
 
       - name: Check the russian pregroup grammar on its probe sentences
         # ADR-0109: 71 sentences, each answered by flang run on flang/ct/russian/parse.flang.

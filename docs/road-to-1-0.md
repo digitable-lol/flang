@@ -58,21 +58,47 @@
 <!-- СНЯТО 2026-10-26 строк flang/proof/checker/checker.c = 14727 (issue 477: the C checker compares the ceiling of an unsigned word exactly, an honest u64 pair and a forgery in flang/proof/checker/tests/families/fixed-width-words; до них 14724, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 14051, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 13516, снято 2026-10-18) (print batch eight over dev 03bab0c1c; до них 13206, снято 2026-10-18) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 12192, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 12122, снято 2026-10-13) (batch five over dev 4222c7083; до них 12012, снято 2026-10-12) (ADR-0103: сверщик переигрывает постусловие с ограничением, цель, равную ограничению, и шаг «по предположению» у теоремы над постусловием; до него 11872, снято 2026-10-11) (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 14 727 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
-<!-- СНЯТО 2026-10-18 файлов flang/proof/lean/*.lean = 20 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 20 файлов,
-<!-- СНЯТО 2026-10-25 строк-в flang/proof/lean/*.lean = 19693 (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 19 693 строк,
+<!-- СНЯТО 2026-10-28 файлов flang/proof/lean/*.lean = 24 (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 24 файла,
+<!-- СНЯТО 2026-10-28 строк-в flang/proof/lean/*.lean = 20607 (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 20 607 строк,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
-`bootstrap/flang run-script lean-rules:numbers`: приёмов 83, все 83 в приёмке Lean, таблица
+`bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
 даёт появиться приёму без теоремы молча. Сверка вердиктов C и Lean
-(`bootstrap/flang io flang/proof/lean/run.fscript`) расхождений не находит; блоки, которые
-модель не читает (разбор текста по символам, реестр доказанных постусловий), считаются
-«вне модели». Почему в ядре нет аксиом — [`flang/proof/axioms.md`](flang/proof/axioms.md).
+(`bootstrap/flang io flang/proof/lean/run.fscript`) расхождений не находит. Почему в ядре
+нет аксиом — [`flang/proof/axioms.md`](flang/proof/axioms.md).
 
-**Чего нет.** Модели разбора текста по символам и реестра доказанных постусловий.
-Теоремы о самом `checker.c`: код связан с моделью сверкой вердиктов на наборе проб, а не
-выводом. Модель значений округляет не по binary64, и её совпадение с вычислителем не
-доказано (ADR-0041 §2.3). Чтение текста записи (`flang/proof/lean/RecordReader.lean`)
-стоит вне теоремы.
+Сколько записи модель читает, печатает перепись `bootstrap/flang run-script lean-model:blocks`
+по корпусу `flang/proof/checker/tests/records/corpus/` (100 записей): из 601 блока с
+доказательством модель читает 80 — блоки `вывод`, — а 521 (86,69 %) стоит вне её: 329
+тотальностей, 75 утверждений ходами, 57 утверждений «на слове», 44 утверждения посылками
+индукции, 14 таблиц, 2 снятия. Внутри читаемых блоков 3 шага вне модели (Р5 2, М2 1).
+Потолок 521 держит шаг CI: блок вне модели сверх него красит прогон.
+
+Реестр доказанных постусловий — в модели: шаг М2, чей шаг свёртки — вызов функции с
+постусловием «плюс одно звено», принятым раньше в этой записи или в записи ввезённого
+файла, судит приёмка (лемма «М2-реестр», теорема «набор-состоятелен» в
+`flang/proof/lean/Soundness.lean`); сторож `lean-rules:check` красит, если их нет. Форма
+записи — функция Lean (`flang/proof/lean/RecordFormat.lean`): что читатель режет запись на
+утверждения ровно по ней и требует ровно её строй блока `вывод`, доказано выводом; чтение
+строки шага и формул сверено на корпусе (утверждений по шапке 375, нарезано 375; шагов в
+тексте 318, прочитано 318; не прочтено 0).
+
+О коде второго сверщика на Lean доказано выводом: принятый им блок `вывод` принят
+приёмкой модели, и цель следует из окружения, — либо его принял запасной прогон по тексту
+(«выводом-по-модели»); снятие блоком `вывод` принимает только приёмка модели
+(«выводСнятия-по-модели»). Остальные пути его приёмки — строки таблицы
+`flang/proof/tables/lean-soundness-debt.tsv`; сторож `bootstrap/flang run-script
+lean-soundness:check` печатает: путей 50, с теоремой 1, без модели 49, `sorry` 0, — и
+красит путь без строки, «доказано» без названной теоремы и рост строк без модели выше
+потолка 49.
+
+**Чего нет.** Модели ходов теорем, посылок индукции, тотальностей, таблиц и снятий
+ходами: это 521 блок вне модели, и пути второго сверщика, которые их судят, стоят строками
+«нет модели». Теоремы о самом `checker.c`: код связан с моделью сверкой вердиктов на
+наборе проб и с опорным сверщиком на Lean на корпусе (`checker:second`), а не выводом.
+Модель значений округляет не по binary64, и её совпадение с вычислителем не доказано
+(ADR-0041 §2.3). Чтение формул (`partial def` в `flang/proof/lean/RecordReader.lean`) стоит
+вне теоремы.
 
 **Как узнаем, что взято.** Блоков «вне модели» нет, и утверждение о состоятельности
 самого сверщика доказано выводом.
@@ -204,7 +230,7 @@ PostgreSQL и SQLite, HTTP, TLS.
 | квантор внутри формулы, существование без свидетеля | кванторы — обычные термы | в двоичном 0.7.26 квантор под `и притом` и под `если` и вложенный доказывается (ADR-0094), оба сверщика переигрывают его по исходнику (ADR-0107); `есть такой м, что …` без свидетеля — свидетель из подтермов (Св2), негодный названный — `FLANG_PROOF_STEP` (Св✗); `или`/`не` с квантором не мерены | 1177, 1188 (закрыты 13 октября 2026) | да |
 | законы кольца | `ring` | доказывается перестановка операндов одного узла | 1412 | да |
 | суд над категорной записью | классы типов с законами | моноиды, монады, функторы и блоки `закон` не судятся, код 2 | 6752, 9963 | да |
-| модель всех блоков записи | ядро Lean проверено само | разбор текста по символам и реестр доказанного вне модели | — | нет |
+| модель всех блоков записи | ядро Lean проверено само | `lean-model:blocks` 27 октября 2026: вне модели 521 блок из 601 (ходы, посылки, тотальности); реестр доказанного и форма записи в модели | 4572 | нет |
 | вторая реализация сличителя | `lean4lean`, `lean4export` | вторая на Lean судит всю запись (ADR-0076, ADR-0096); `checker:second` 11 октября 2026: записей 686, сличено 634, расхождений 0 после доучки по описанию формата (первый прогон того дня — 7, все на правилах, выученных C в тот же день) | — | нет |
 
 «Нужна перепечатка» — правка под `flang/self/**` доезжает до двоичного только

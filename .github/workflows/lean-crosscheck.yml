@@ -74,6 +74,8 @@ jobs:
         run: |
           bootstrap/flang run-script lean-rules:forgery
           bootstrap/flang run-script lean-rules:check
+          bootstrap/flang run-script lean-soundness:check
+          bootstrap/flang run-script lean-soundness:forgery
 
       # ПОЧЕМУ ЗДЕСЬ FLANG_TMP. План просит временный каталог по образцу
       # «FLANG_TMP, а если переменной нет — /srv/tmp». `/srv/tmp` есть на машине
@@ -109,6 +111,20 @@ jobs:
         run: |
           bootstrap/flang run-script checker:second-forgery
           bootstrap/flang run-script checker:second
+
+      # Перепись блоков записи (задача 4572): сколько блоков корпуса модель Lean
+      # читает и сколько стоит вне её. Потолок — число с прогона 27 октября 2026;
+      # блок вне модели сверх него красит шаг, снять потолок вниз — правкой здесь.
+      # Проба: с потолком на единицу ниже тот же план обязан покраснеть.
+      - name: Blocks outside the Lean model do not grow
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 521
+          if bootstrap/flang run-script lean-model:blocks -- --ceiling 520; then
+            echo "перепись блоков промолчала на потолке ниже факта" >&2
+            exit 1
+          fi
 
       - name: Replay exploration records under both checkers
         env:

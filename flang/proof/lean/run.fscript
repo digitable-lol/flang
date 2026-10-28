@@ -50,19 +50,23 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Seventeen files in the order of their imports»
+  пример «Twenty files in the order of their imports»
     ожидается [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
       ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-      ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
+      ["RecordReader", "RecordReader"], ["Verdicts", "Verdicts"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval",
+        "Semantics/Eval"],
       ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
       ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-      ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"]]
+      ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"],
+      ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
   [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
     ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
-    ["RecordReader", "RecordReader"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval", "Semantics/Eval"],
+    ["RecordReader", "RecordReader"], ["Verdicts", "Verdicts"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval",
+      "Semantics/Eval"],
     ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
     ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-    ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"]]
+    ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"],
+    ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки
@@ -222,7 +226,8 @@
   пример «Nothing is tried until everything is built»
     дано answers равно пустой список
     ожидается пустой список
-  пусть text равно (соединить ["import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\n",
+  пусть text равно (соединить [
+      "import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\nimport RecordFormat\nimport Soundness\n",
     "#print axioms «состоятельность»\n",
     "#print axioms «половина-верно»\n",
     "#print axioms «Эталон».«развёртка-доводами»\n",
@@ -231,7 +236,11 @@
     "#print axioms «Эталон».«топливо-моно»\n",
     "#print axioms «окр64-это-д64»\n",
     "#print axioms «вД64-плюс»\n",
-    "#print axioms «умножить-кон-кон»\n"] по "")
+    "#print axioms «умножить-кон-кон»\n",
+    "#print axioms «Опора».«вывод-по-модели»\n",
+    "#print axioms «Опора».«запись-состоятельна»\n",
+    "#print axioms «Форма».«собрать-по-форме»\n",
+    "#print axioms «Опора».«набор-состоятелен»\n"] по "")
   пусть axioms равно [(«Write» от "axioms file" и («In work» от "axioms.lean" и answers) и text),
     («Lean run» от "axioms" и "axioms.lean" и answers)]
   пусть compiler равно («Setting of» от "compiler" и "cc" и answers)

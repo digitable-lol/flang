@@ -1,0 +1,453 @@
+модуль «Lean soundness guard»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Statuses»
+  возвращает список строки
+  пример «Three states a path may be in»
+    ожидается ["доказано", "нет модели", "sorry"]
+  ["доказано", "нет модели", "sorry"]
+
+тотальная функция «Paths command»
+  возвращает строка
+  (соединить ["cd ../checker/second || exit 2; for f in *.lean; do grep -o ",
+      "'^def «\\(судить[^»]*\\|проиграть[^»]*\\|прогонР\\|крюкиПоТелу\\|кольцоТочногоЦелого\\",
+      ")»\\|^def «Суд».«выводом»' \"$f\"; done | sed 's/^def //' | ",
+      "LC_ALL=C sort -u"] по "")
+
+тотальная функция «Moves command»
+  возвращает строка
+  (соединить ["grep -o '^    | \"[а-яё]*\" =>' ../checker/second/Moves.lean ",
+      "| sed 's/^    | \"//; s/\" =>$//; s/^/ход /' | LC_ALL=C sort -u"] по "")
+
+тотальная функция «Sorry command»
+  возвращает строка
+  (соединить ["cd .. || exit 2; for f in lean/*.lean checker/second/*.lean; ",
+      "do awk -v F=\"$f\" '/^theorem «/{t=$0; sub(/^theorem «/,\"\",t); ",
+      "sub(/».*/,\"\",t)} /(^|[^`[:alnum:]])sorry([^`[:alnum:]]|$)/{print ",
+      "F \"\\t\" t}' \"$f\"; done"] по "")
+
+тотальная функция «Theorems command»
+  возвращает строка
+  (соединить ["cd .. || exit 2; for f in lean/*.lean checker/second/*.lean; ",
+      "do sed -n 's/^theorem «\\([^»]*\\)».*/\\1/p' \"$f\"; done"] по "")
+
+тотальная функция «Ceiling»
+  возвращает число
+  пример «Paths without a model, at most; it grows only by an edit here, with a reason»
+    ожидается 49
+  49
+
+тотальная функция «Has»
+  принимает word: строка, words: список строки
+  возвращает признак
+  пример «A word in the list»
+    дано word равно "б"
+    дано words равно ["а", "б"]
+    ожидается да
+  не (пусто (отфильтровать words где other → other равен word))
+
+тотальная функция «Named»
+  принимает head: строка, names: список строки, tail: строка
+  возвращает список строки
+  пример «Each name is wrapped in the same words»
+    дано head равно "путь «"
+    дано names равно ["а"]
+    дано tail равно "» без строки"
+    ожидается ["путь «а» без строки"]
+  отобразить names как name → соединить [head, name, tail] по ""
+
+тотальная функция «Status of»
+  принимает row: список строки
+  возвращает строка
+  пример «The second cell is the status»
+    дано row равно ["«а»", "доказано", "x"]
+    ожидается "доказано"
+  «Cell» от 2 и row
+
+тотальная функция «Cited theorem»
+  принимает reason: строка
+  возвращает строка
+  пример «The theorem a proved row cites»
+    дано reason равно "блок вывода судит приёмка: теорема «выводом-по-модели» (Theorem.lean)"
+    ожидается "выводом-по-модели"
+  пример «No theorem cited»
+    дано reason равно "просто так"
+    ожидается ""
+  «Cell» от 1 и (разделить («Cell» от 2 и (разделить reason по "теорема «")) по "»")
+
+тотальная функция «Cited by»
+  принимает row: список строки
+  возвращает строка
+  пример «The theorem the reason of a row cites»
+    дано row равно ["«а»", "доказано", "теорема «т»"]
+    ожидается "т"
+  «Cited theorem» от («Cell» от 3 и row)
+
+тотальная функция «Unnamed line»
+  принимает row: список строки
+  возвращает строка
+  пример «A proved row that names no theorem»
+    дано row равно ["«в»", "доказано", "без имени"]
+    ожидается "строка ««в»»: доказано, но теорема не названа (нужно «теорема «…»» в причине)"
+  соединить ["строка «", («Cell» от 1 и row), "»: доказано, но теорема не названа",
+    " (нужно «теорема «…»» в причине)"] по ""
+
+тотальная функция «Absent line»
+  принимает row: список строки
+  возвращает строка
+  пример «A proved row whose theorem the files lack»
+    дано row равно ["«б»", "доказано", "теорема «нет»"]
+    ожидается "строка ««б»»: доказано, но теоремы «нет» в файлах модели и сверщика нет"
+  соединить ["строка «", («Cell» от 1 и row), "»: доказано, но теоремы «", («Cited by» от row),
+    "» в файлах модели и сверщика нет"] по ""
+
+тотальная функция «Is absent»
+  принимает row: список строки, theorems: список строки
+  возвращает признак
+  пример «A cited theorem the files do not declare»
+    дано row равно ["«б»", "доказано", "теорема «нет»"]
+    дано theorems равно ["есть"]
+    ожидается да
+  (не (пусто («Cited by» от row))) и притом (не («Has» от («Cited by» от row) и theorems))
+
+тотальная функция «Proof troubles»
+  принимает rows: список список строки, theorems: список строки
+  возвращает список строки
+  пример «A proved row must cite a theorem that the files declare»
+    дано rows равно [["«а»", "доказано", "теорема «есть»"], ["«б»", "доказано", "теорема «нет»"],
+      ["«в»", "доказано", "без имени"], ["«г»", "нет модели", "x"]]
+    дано theorems равно ["есть"]
+    ожидается ["строка ««б»»: доказано, но теоремы «нет» в файлах модели и сверщика нет",
+      "строка ««в»»: доказано, но теорема не названа (нужно «теорема «…»» в причине)"]
+  пусть proved равно (отфильтровать rows где row → («Status of» от row) равен "доказано")
+  пусть bare равно (отфильтровать proved где row → пусто («Cited by» от row))
+  пусть gone равно (отфильтровать proved где row → «Is absent» от row и theorems)
+  пусть unnamed равно (отобразить bare как row → «Unnamed line» от row)
+  пусть absent равно (отобразить gone как row → «Absent line» от row)
+  «Соединить списки» от absent и unnamed
+
+тотальная функция «Counted»
+  принимает rows: список список строки, status: строка
+  возвращает число
+  пример «Rows in a state»
+    дано rows равно [["а", "доказано", "x"], ["б", "нет модели", "y"]]
+    дано status равно "доказано"
+    ожидается 1
+  длина (отфильтровать rows где row → («Status of» от row) равен status)
+
+тотальная функция «Ceiling troubles»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «Paths without a model under the ceiling are not red»
+    дано rows равно [["«а»", "нет модели", "x"]]
+    ожидается пустой список
+  пусть count равно («Counted» от rows и "нет модели")
+  пусть line равно (соединить ["путей без модели ", (к строке count), " — выше потолка ",
+    (к строке («Ceiling»)), ": новый путь без модели поднимает потолок правкой сторожа, с доводом"] по "")
+  если count больше («Ceiling») то [line] иначе (пустой список)
+
+тотальная функция «Reading»
+  возвращает список «Question»
+  [(«Run» от "paths" и "sh" и ["-c", («Paths command»)]),
+    («Run» от "moves" и "sh" и ["-c", («Moves command»)]),
+    («Run» от "sorries" и "sh" и ["-c", («Sorry command»)]),
+    («Run» от "theorems" и "sh" и ["-c", («Theorems command»)]),
+    («Read» от "debt" и "../tables/lean-soundness-debt.tsv")]
+
+тотальная функция «State line»
+  принимает row: список строки
+  возвращает строка
+  пример «A row in a state the table does not know»
+    дано row равно ["ход б", "как-то", "w"]
+    ожидается "строка «ход б»: состояние «как-то» — допустимы доказано, нет модели, sorry"
+  соединить ["строка «", («Cell» от 1 и row), "»: состояние «", («Status of» от row),
+    "» — допустимы доказано, нет модели, sorry"] по ""
+
+тотальная функция «Loud line»
+  принимает sorry: список строки
+  возвращает строка
+  пример «A sorry without a row»
+    дано sorry равно ["lean/Soundness.lean", "у"]
+    ожидается "sorry в lean/Soundness.lean у теоремы «у» без строки долга"
+  соединить ["sorry в ", («Cell» от 1 и sorry), " у теоремы «", («Cell» от 2 и sorry), "» без строки долга"] по ""
+
+тотальная функция «Troubles»
+  принимает paths: список строки, rows: список список строки, sorries: список список строки
+  возвращает список строки
+  пример «A path without a row, a row without a path, a sorry without a row and a paid row are red»
+    дано paths равно ["«судитьА»", "ход б"]
+    дано rows равно [["«судитьА»", "доказано", "x"], ["«судитьВ»", "нет модели", "y"], ["т", "sorry", "z"],
+      ["ход б", "как-то", "w"]]
+    дано sorries равно [["lean/Soundness.lean", "у"]]
+    ожидается ["строка ««судитьВ»» о пути, которого во втором сверщике нет",
+      "строка «ход б»: состояние «как-то» — допустимы доказано, нет модели, sorry",
+      "sorry в lean/Soundness.lean у теоремы «у» без строки долга",
+      "долг «т» уплачен — sorry в файлах нет, строку снять"]
+  пример «Everything matched»
+    дано paths равно ["«судитьА»"]
+    дано rows равно [["«судитьА»", "нет модели", "x"]]
+    дано sorries равно пустой список
+    ожидается пустой список
+  пусть plain равно (отфильтровать rows где row → не ((«Status of» от row) равен "sorry"))
+  пусть listed равно (отобразить plain как row → «Cell» от 1 и row)
+  пусть unlisted равно (отфильтровать paths где path → не («Has» от path и listed))
+  пусть missing равно («Named» от "путь приёмки «" и unlisted и "» без строки в lean-soundness-debt.tsv")
+  пусть stray равно (отфильтровать listed где path → не («Has» от path и paths))
+  пусть extra равно («Named» от "строка «" и stray и "» о пути, которого во втором сверщике нет")
+  пусть odd равно (отфильтровать rows где row → не («Has» от («Status of» от row) и («Statuses»)))
+  пусть states равно (отобразить odd как row → «State line» от row)
+  пусть owing равно (отфильтровать rows где row → («Status of» от row) равен "sorry")
+  пусть owed равно (отобразить owing как row → «Cell» от 1 и row)
+  пусть found равно (отобразить sorries как s → «Cell» от 2 и s)
+  пусть rowless равно (отфильтровать sorries где s → не («Has» от («Cell» от 2 и s) и owed))
+  пусть loud равно (отобразить rowless как s → «Loud line» от s)
+  пусть settled равно (отфильтровать owed где t → не («Has» от t и found))
+  пусть paid равно («Named» от "долг «" и settled и "» уплачен — sorry в файлах нет, строку снять")
+  пусть tail равно («Соединить списки» от states и («Соединить списки» от loud и paid))
+  «Соединить списки» от missing и («Соединить списки» от extra и tail)
+
+тотальная функция «Numbers line»
+  принимает paths: список строки, rows: список список строки, sorries: список список строки
+  возвращает строка
+  пример «The numbers of the debt»
+    дано paths равно ["а", "б"]
+    дано rows равно [["а", "доказано", "x"], ["б", "нет модели", "y"]]
+    дано sorries равно пустой список
+    ожидается "путей приёмки второго сверщика 2: доказано 1, нет модели 1, sorry 0; sorry в файлах модели и сверщика 0"
+  соединить ["путей приёмки второго сверщика ", (к строке (длина paths)), ": доказано ",
+    (к строке («Counted» от rows и "доказано")), ", нет модели ", (к строке («Counted» от rows и "нет модели")),
+    ", sorry ", (к строке («Counted» от rows и "sorry")), "; sorry в файлах модели и сверщика ",
+    (к строке (длина sorries))] по ""
+
+тотальная функция «Broken»
+  принимает paths: список строки
+  возвращает список строки
+  пример «Too few paths means the reading broke»
+    дано paths равно ["«судитьА»"]
+    ожидается ["путей приёмки вычитано меньше двадцати — разбор второго сверщика сломан"]
+  если (длина paths) меньше 20
+    то ["путей приёмки вычитано меньше двадцати — разбор второго сверщика сломан"]
+    иначе пустой список
+
+тотальная функция «All troubles»
+  принимает paths: список строки, rows: список список строки, sorries: список список строки, theorems: список строки
+  возвращает список строки
+  пример «A clean reading has no troubles but the short one»
+    дано paths равно ["«судитьА»"]
+    дано rows равно [["«судитьА»", "доказано", "теорема «т»"]]
+    дано sorries равно пустой список
+    дано theorems равно ["т"]
+    ожидается ["путей приёмки вычитано меньше двадцати — разбор второго сверщика сломан"]
+  пусть named равно («Troubles» от paths и rows и sorries)
+  пусть proofs равно («Proof troubles» от rows и theorems)
+  пусть rest равно («Соединить списки» от proofs и («Ceiling troubles» от rows))
+  «Соединить списки» от («Broken» от paths) и («Соединить списки» от named и rest)
+
+тотальная функция «Paths of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть entries равно («Lines» от («Output of» от "paths" и answers))
+  «Соединить списки» от entries и («Lines» от («Output of» от "moves" и answers))
+
+тотальная функция «Sorries of»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  отобразить («Lines» от («Output of» от "sorries" и answers)) как line → разделить line по "\t"
+
+тотальная функция «Rows of»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  «Rows» от («Output of» от "debt" и answers)
+
+тотальная функция «Theorems of»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Lines» от («Output of» от "theorems" и answers)
+
+тотальная функция «Without first»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «The first row is dropped»
+    дано rows равно [["а"], ["б"]]
+    ожидается [["б"]]
+  разбор rows
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Forgery probe»
+  принимает number: строка, what: строка, clean: список строки, forged: список строки
+  возвращает строка
+  пример «A forgery that adds a red line is caught»
+    дано number равно "1"
+    дано what равно "снята строка"
+    дано clean равно пустой список
+    дано forged равно ["x"]
+    ожидается "СОШЛОСЬ  подлог 1 (снята строка) — красных 1"
+  пример «A forgery that adds nothing is missed»
+    дано number равно "2"
+    дано what равно "ничего"
+    дано clean равно ["x"]
+    дано forged равно ["x"]
+    ожидается "ПРОВАЛ   подлог 2 (ничего) — сторож остался зелёным"
+  пусть added равно (длина (отфильтровать forged где t → не («Has» от t и clean)))
+  пусть caught равно (соединить ["СОШЛОСЬ  подлог ", number, " (", what, ") — красных ", (к строке added)] по "")
+  пусть missed равно (соединить ["ПРОВАЛ   подлог ", number, " (", what, ") — сторож остался зелёным"] по "")
+  если added больше 0 то caught иначе missed
+
+тотальная функция «First path»
+  принимает paths: список строки
+  возвращает строка
+  пример «The first path, or a made-up one when there is none»
+    дано paths равно пустой список
+    ожидается "ход поддельный"
+  разбор paths
+    случай пусто
+      то "ход поддельный"
+    случай голова и хвост
+      то голова
+
+тотальная функция «Fifty copies»
+  принимает row: список строки
+  возвращает список список строки
+  пример «Fifty copies of one row»
+    дано row равно ["а"]
+    ожидается [["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"],
+      ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"],
+      ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"],
+      ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"], ["а"]]
+  пусть ten равно [row, row, row, row, row, row, row, row, row, row]
+  пусть twenty равно («Соединить списки» от ten и ten)
+  «Соединить списки» от twenty и («Соединить списки» от twenty и ten)
+
+тотальная функция «Forgery lines»
+  принимает paths: список строки, rows: список список строки, sorries: список список строки, theorems: список строки
+  возвращает список строки
+  пример «Four forgeries on an empty reading: only the ones that add a line are caught»
+    дано paths равно пустой список
+    дано rows равно пустой список
+    дано sorries равно пустой список
+    дано theorems равно пустой список
+    ожидается ["── четыре подлога на КОПИЯХ, дерево не тронуто ──",
+      "ПРОВАЛ   подлог 1 (снята первая строка долга) — сторож остался зелёным",
+      "СОШЛОСЬ  подлог 2 (строка «доказано» называет теорему, которой нет) — красных 2",
+      "СОШЛОСЬ  подлог 3 (пятьдесят лишних строк «нет модели» — выше потолка) — красных 51",
+      "СОШЛОСЬ  подлог 4 (sorry в файле без строки долга) — красных 1"]
+  пусть clean равно («All troubles» от paths и rows и sorries и theorems)
+  пусть shorter равно («All troubles» от paths и («Without first» от rows) и sorries и theorems)
+  пусть one равно («Forgery probe» от "1" и "снята первая строка долга" и clean и shorter)
+  пусть fake равно ["«поддельный»", "доказано", "теорема «нет-такой-теоремы»"]
+  пусть faked равно («All troubles» от paths и (приписать fake к rows) и sorries и theorems)
+  пусть two равно («Forgery probe» от "2" и "строка «доказано» называет теорему, которой нет" и clean и faked)
+  пусть copy равно [(«First path» от paths), "нет модели", "подлог: тот же путь ещё раз"]
+  пусть grown равно («Соединить списки» от rows и («Fifty copies» от copy))
+  пусть ceiled равно («All troubles» от paths и grown и sorries и theorems)
+  пусть three равно («Forgery probe» от "3" и "пятьдесят лишних строк «нет модели» — выше потолка" и clean и ceiled)
+  пусть stray равно (приписать ["lean/Поддельный.lean", "поддельная"] к sorries)
+  пусть loud равно («All troubles» от paths и rows и stray и theorems)
+  пусть four равно («Forgery probe» от "4" и "sorry в файле без строки долга" и clean и loud)
+  ["── четыре подлога на КОПИЯХ, дерево не тронуто ──", one, two, three, four]
+
+тотальная функция «Forgery verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть paths равно («Paths of» от answers)
+  пусть rows равно («Rows of» от answers)
+  пусть lines равно («Forgery lines» от paths и rows и («Sorries of» от answers) и («Theorems of» от answers))
+  пусть missed равно (длина (отфильтровать lines где line → line начинается с "ПРОВАЛ"))
+  пусть done равно (вариант «Конец работы» с значение равным (соединить (добавить "сошлось" к lines) по "\n"))
+  пусть code равно "FLANG_LEAN_SOUNDNESS_FORGERY"
+  если missed равен 0 то done иначе вариант «Провал» с код равным code и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть paths равно («Paths of» от answers)
+  пусть rows равно («Rows of» от answers)
+  пусть sorries равно («Sorries of» от answers)
+  пусть troubles равно («All troubles» от paths и rows и sorries и («Theorems of» от answers))
+  пусть reds равно (отобразить troubles как t → соединить ["КРАСНО  ", t] по "")
+  пусть numbers равно (соединить [«Numbers line» от paths и rows и sorries, "; потолок без модели ",
+    (к строке («Ceiling»))] по "")
+  пусть lines равно (добавить numbers к reds)
+  пусть head равно (соединить ["РАЗОШЛОСЬ: красных ", (к строке (длина reds))] по "")
+  пусть done равно (вариант «Конец работы» с значение равным (соединить (добавить "сошлось" к lines) по "\n"))
+  пусть message равно (соединить (добавить head к lines) по "\n")
+  если пусто reds то done иначе вариант «Провал» с код равным "FLANG_LEAN_SOUNDNESS" и сообщение равным message
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «Nothing asked, nothing in the way»
+    дано asked равно ""
+    дано answers равно пустой список
+    ожидается пустой список
+  если (пусто asked) или ((«Exit code of» от asked и answers) равен 0)
+    то пустой список
+    иначе [(соединить ["не прочитано: ", asked] по "")]
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Reading») и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 1
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_LEAN_SOUNDNESS_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Proceed forgery»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Forgery verdict» от answers
+        иначе «Proceed forgery» от («Reading») и (stages минус 1) и answers
+
+тотальная функция «Next forgery»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то вариант «Не проверено» с код равным "FLANG_LEAN_SOUNDNESS_NOT_MEASURED" и сообщение равным голова
+    случай пусто
+      то «Proceed forgery» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Forgery»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next forgery»
+
+тотальная функция «Объявление короткой команды lean-soundness:check»
+  возвращает строка
+  (соединить ["bootstrap/flang io --plan Check — у каждого пути приёмки второго сверщика строка долга, ",
+      "у каждого sorry — строка; долг не растёт молча"] по "")

@@ -13,3 +13,5 @@ run-argument-outside-type.flang	run-negative	1	-1 вне неотрицател�
 run-argument-outside-type.flang	run-inside	0	42
 restricted-postcondition-outside-domain.flang	check	1	нарушено на входе н = -1
 restricted-postcondition-false-inside-domain.flang	check	1	нарушено на входе н = 2147483647
+word-literal-above-two-to-the-53.flang	check	1	аргумент «а» не соответствует типу u64
+assumption-bound-near-two-to-the-64.flang	proof	0	доказано 1, условно 0

@@ -57,12 +57,12 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
    строка на правило) есть лемма в `flang/proof/lean/Rules.lean` или `Term.lean`;
 2. сколько приёмов проверяющей программы покрыто отношением приёмки
    `flang/proof/lean/Acceptance.lean` — то есть сколько шагов Lean может РАЗОБРАТЬ в записи
-   доказательства. Покрыты все приёмы `шаг_вывода`; шаг, на котором модель не читает нужного
-   (тело функции не собрано в терм, мера свёртки через реестр доказанного), уходит «вне модели»
-   вместе со всем блоком.
+   доказательства. Покрыты все приёмы `шаг_вывода`, мера свёртки через реестр доказанных
+   постусловий — тоже; шаг, на котором модель не читает нужного (тело функции не собрано в
+   терм, функции шага нет в реестре модели), уходит «вне модели» вместе со всем блоком.
 
-Файлов Lean в дереве 20.
-<!-- СНЯТО 2026-10-18 файлов flang/proof/lean/*.lean = 20 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) -->
+Файлов Lean в дереве 24.
+<!-- СНЯТО 2026-10-28 файлов flang/proof/lean/*.lean = 24 (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) -->
 Снимается целиком: `bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000` (нужен Lean в PATH, версия — в
 `flang/proof/lean/lean-toolchain`). Первый из двух вопросов прибор четырёх покрытий считает и без
 Lean: это счёт текста, а не доказательство.
@@ -81,7 +81,10 @@ Lean: это счёт текста, а не доказательство.
   их шагов в блоке «вывод» нет. Чего модель не читает у приёмов сверщика — в шапке
   `Acceptance.lean`, раздел «Чего модель не читает».
 - Сколько БЛОКОВ записи уходит «вне модели», без прогона Lean не снять. На машине без `lean`
-  прибор говорит об этом вслух и отвечает кодом 2, а не печатает ноль.
+  прибор говорит об этом вслух и отвечает кодом 2, а не печатает ноль. Перепись по блокам —
+  `bootstrap/flang run-script lean-model:blocks`: модель читает только блоки `вывод`, а ходы,
+  посылки индукции, тотальности, таблицы и снятия ходами стоят вне её (27 октября 2026 — 521
+  блок из 601 с доказательством).
 
 ---
 

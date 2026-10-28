@@ -19,6 +19,11 @@
 # адрес отвечает отказом соединения. sh между pasta и flang нужен надзору:
 # pasta отдаёт код выхода ребёнка, но гибель ребёнка от сигнала превращает в 0,
 # а sh — в 128+сигнал, и Restart=on-failure срабатывает.
+# --host-lo-to-ns-lo: с выпуска 0.7.32 хозяин слушает 127.0.0.1 своего
+# пространства (FLANG_LISTEN_ADDRESS не задан), а pasta без этого ключа
+# передаёт соединение с петли машины на внешний адрес пространства — там
+# никто не слушает, и соединение сбрасывается. С ключом оно приходит на
+# петлю пространства; хозяину до 0.7.32, слушающему 0.0.0.0, ключ не мешает.
 # См. docs/services-in-production.md.
 
 [Unit]
@@ -27,7 +32,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=@HOME_DIR@/service
-ExecStart=/usr/bin/pasta --config-net -t 127.0.0.1/@PORT@ -u none -T none -U none -f -q -- /bin/sh -c '"$$@"; exit $$?' run @HOME_DIR@/bin/flang io @HOME_DIR@/service/serve.flang --trust --in-dir --max-orders 1000000000 -- @PORT@
+ExecStart=/usr/bin/pasta --config-net --host-lo-to-ns-lo -t 127.0.0.1/@PORT@ -u none -T none -U none -f -q -- /bin/sh -c '"$$@"; exit $$?' run @HOME_DIR@/bin/flang io @HOME_DIR@/service/serve.flang --trust --in-dir --max-orders 1000000000 -- @PORT@
 Restart=on-failure
 RestartSec=5
 MemoryMax=4G

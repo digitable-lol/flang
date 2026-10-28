@@ -1909,6 +1909,18 @@ jobs:
           fi
       - name: Typing holes have probes, and the probes still catch
         run: bootstrap/flang run-script typing-holes:check
+      # Адрес привязки «Принять соединение» (issue 475): без FLANG_LISTEN_ADDRESS
+      # порт слушается только на 127.0.0.1, с 0.0.0.0 — на всех адресах, негодный
+      # адрес отказан. Что слушается, читает ss; подлог пускает первого слушателя на
+      # 0.0.0.0, как делал двоичный 0.7.31, и сторож обязан покраснеть.
+      - name: Listen address guard goes red on forgery
+        run: |
+          if ! bootstrap/flang io scripts/guards/listen-address-guard.fscript --plan Forgery --timeout 120000; then
+            echo "сторож адреса привязки промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: A port opened by a program listens on loopback unless told otherwise
+        run: bootstrap/flang run-script listen-address:check
       - name: Record format guard goes red on forgery
         run: |
           if ! bootstrap/flang io scripts/guards/record-format-guard.fscript --plan Подлог --timeout 600000; then

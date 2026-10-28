@@ -18817,11 +18817,30 @@ static fl_value io_screen_key(void) {
 
 /* ── связи ───────────────────────────────────────────────────────────────── */
 
+/*
+ * АДРЕС ПРИВЯЗКИ «Принять соединение». По умолчанию 127.0.0.1: программа,
+ * открывшая порт, слушает только эту машину. До 0.7.32 сокет привязывался к
+ * INADDR_ANY, и служба реестра на flang сутки отвечала на внешнем адресе
+ * (issue 475). Наружу порт открывают явно: FLANG_LISTEN_ADDRESS=0.0.0.0 или
+ * адрес нужного интерфейса. Негодный адрес — отказ поручения, а не тихий
+ * откат на loopback и не INADDR_ANY.
+ */
+static int io_listen_address(struct in_addr *bound, char *why, size_t why_size) {
+  const char *named = getenv("FLANG_LISTEN_ADDRESS");
+  const char *text = (named != NULL && named[0] != '\0') ? named : "127.0.0.1";
+  if (inet_pton(AF_INET, text, bound) != 1) {
+    snprintf(why, why_size, "адрес привязки «%s» из FLANG_LISTEN_ADDRESS не годится: нужен адрес IPv4, вроде 127.0.0.1 или 0.0.0.0", text);
+    return 0;
+  }
+  return 1;
+}
+
 static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   size_t index = 0;
   int fd = -1;
   int yes = 1;
   struct sockaddr_in address;
+  struct in_addr bound;
   for (index = 0; index < host->listen_count; index += 1) {
     if (host->listens[index].port == port) {
       return host->listens[index].fd;
@@ -18829,6 +18848,9 @@ static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   }
   if (host->listen_count == IO_MAX_PORTS) {
     snprintf(why, why_size, "хозяин слушает уже %d портов — больше некуда", IO_MAX_PORTS);
+    return -1;
+  }
+  if (!io_listen_address(&bound, why, why_size)) {
     return -1;
   }
   fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -18839,7 +18861,7 @@ static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
   memset(&address, 0, sizeof(address));
   address.sin_family = AF_INET;
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_addr = bound;
   address.sin_port = htons((unsigned short)port);
   if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0 || listen(fd, 16) != 0) {
     snprintf(why, why_size, "порт %d не занят хозяином: %s", port, strerror(errno));

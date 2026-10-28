@@ -12,3 +12,4 @@ run-argument-outside-type.flang	check	0	замечаний нет
 run-argument-outside-type.flang	run-negative	1	-1 вне неотрицательное
 run-argument-outside-type.flang	run-inside	0	42
 restricted-postcondition-outside-domain.flang	check	1	нарушено на входе н = -1
+restricted-postcondition-false-inside-domain.flang	check	1	нарушено на входе н = 2147483647

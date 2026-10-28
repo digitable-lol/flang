@@ -1,0 +1,635 @@
+модуль «Model blocks»
+  использует «Rules» из "../../../scripts/rules.fscript"
+  использует «Inquiry» из "../../../scripts/inquiry.fscript"
+  использует «Reading» из "../../../scripts/reading.fscript"
+  использует «Tables» из "../../../scripts/tables.fscript"
+  использует «Kernel verdict» из "../kernel-verdict.fscript" только «Key value», «Pick», «Picked»
+  использует «Lists» только «Соединить списки»
+
+объект «Kind»
+  «name»: строка
+  «counts»: список число
+
+тотальная функция «Corpus»
+  возвращает строка
+  пример «The corpus of the records the compiler printed about its own examples»
+    ожидается "flang/proof/checker/tests/records/corpus"
+  "flang/proof/checker/tests/records/corpus"
+
+тотальная функция «Oleans»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «The modules the second checker builds, unless another place is named by --oleans»
+    дано answers равно пустой список
+    ожидается "../checker/second/out"
+  пусть named равно («Key value» от "--oleans" и («Given of» от "arguments" и answers))
+  если пусто named то "../checker/second/out" иначе named
+
+тотальная функция «Ceiling»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No ceiling unless named by --ceiling»
+    дано answers равно пустой список
+    ожидается ""
+  «Leading digits» от («Key value» от "--ceiling" и («Given of» от "arguments" и answers))
+
+тотальная функция «Verbose»
+  принимает answers: список «Answer»
+  возвращает признак
+  пример «Block lines are printed only on request»
+    дано answers равно пустой список
+    ожидается нет
+  («Given of» от "arguments" и answers) содержит "--verbose"
+
+тотальная функция «Lean»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «Lean is looked for on the path»
+    дано answers равно пустой список
+    ожидается "lean"
+  «Setting of» от "lean" и "lean" и answers
+
+тотальная функция «Work»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No directory was made»
+    дано answers равно пустой список
+    ожидается ""
+  «Made of» от "work" и answers
+
+тотальная функция «List parts»
+  возвращает список строки
+  пример «Every record of the corpus with its source, or a dash when the source is not in the tree»
+    ожидается ["cd \"$0\" || exit 2", "for z in $1/*.record; do b=$(basename \"$z\" .record)",
+      "d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+      "if [ -f \"$d\" ]; then printf '%s\\t%s/%s\\t%s/%s\\n' \"$b\" \"$PWD\" \"$d\" \"$PWD\" \"$z\"",
+      "else printf '%s\\t-\\t%s/%s\\n' \"$b\" \"$PWD\" \"$z\"; fi; done > \"$2\""]
+  ["cd \"$0\" || exit 2", "for z in $1/*.record; do b=$(basename \"$z\" .record)",
+    "d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+    "if [ -f \"$d\" ]; then printf '%s\\t%s/%s\\t%s/%s\\n' \"$b\" \"$PWD\" \"$d\" \"$PWD\" \"$z\"",
+    "else printf '%s\\t-\\t%s/%s\\n' \"$b\" \"$PWD\" \"$z\"; fi; done > \"$2\""]
+
+тотальная функция «Compile parts»
+  возвращает список строки
+  пример «The verdict module is compiled into the work directory against the built modules»
+    ожидается ["LEAN_PATH=\"$0\"", "exec $1 -o \"$2/Verdicts.olean\" Verdicts.lean 2>&1"]
+  ["LEAN_PATH=\"$0\"", "exec $1 -o \"$2/Verdicts.olean\" Verdicts.lean 2>&1"]
+
+тотальная функция «Census parts»
+  возвращает список строки
+  пример «The census runs on the list and writes its rows and its errors into the work directory»
+    ожидается ["LEAN_PATH=\"$0:$1\"", "exec $2 --run ModelBlocks.lean \"$1/list\"",
+      "> \"$1/blocks.tsv\" 2> \"$1/blocks.err\""]
+  ["LEAN_PATH=\"$0:$1\"", "exec $2 --run ModelBlocks.lean \"$1/list\"",
+    "> \"$1/blocks.tsv\" 2> \"$1/blocks.err\""]
+
+тотальная функция «Setup»
+  возвращает список «Question»
+  [(«Arguments» от "arguments"), («Environment» от "temporary" и "FLANG_TMP"),
+    («Environment» от "lean" и "LEAN")]
+
+тотальная функция «Start»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть oleans равно (соединить [(«Oleans» от answers), "/RecordReader.olean"] по "")
+  пусть place равно (соединить [(«Setting of» от "temporary" и "/srv/tmp" и answers), "/model-blocks."] по "")
+  [(«Run» от "oleans" и "test" и ["-f", oleans]),
+    («Run» от "found" и "sh" и ["-c", "command -v ${0%% *}", («Lean» от answers)]),
+    («Temporary directory» от "work" и place)]
+
+тотальная функция «Listing»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Without a work directory nothing is listed»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть target равно (соединить [(«Work» от answers), "/list"] по "")
+  пусть listed равно («Run» от "listed" и "sh" и ["-c", (соединить («List parts») по "; "), "../../..",
+    («Corpus»), target])
+  пусть compiled равно («Run» от "compiled" и "sh" и ["-c", (соединить («Compile parts») по " "),
+    («Oleans» от answers), («Lean» от answers), («Work» от answers)])
+  если пусто («Work» от answers) то пустой список иначе [listed, compiled]
+
+тотальная функция «Running»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «Nothing compiled, nothing run»
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть ran равно («Run» от "ran" и "sh" и ["-c", (соединить («Census parts») по " "), («Oleans» от answers),
+    («Work» от answers), («Lean» от answers)])
+  пусть blocks равно («Read» от "blocks" и (соединить [(«Work» от answers), "/blocks.tsv"] по ""))
+  пусть errors равно («Read» от "errors" и (соединить [(«Work» от answers), "/blocks.err"] по ""))
+  если не («Answered» от "compiled" и answers) то пустой список иначе [ran, blocks, errors]
+
+тотальная функция «Cleaning»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пример «No work directory, nothing to clean»
+    дано answers равно пустой список
+    ожидается пустой список
+  если пусто («Work» от answers) то пустой список иначе [(«Run» от "cleaned" и "rm" и ["-rf", («Work» от answers)])]
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «A stage outside the plan asks nothing»
+    дано stages равно 9
+    дано answers равно пустой список
+    ожидается пустой список
+  разбор stages
+    случай 5
+      то «Setup»
+    случай 4
+      то «Start» от answers
+    случай 3
+      то «Listing» от answers
+    случай 2
+      то «Running» от answers
+    случай 1
+      то «Cleaning» от answers
+    случай любое
+      то пустой список
+
+тотальная функция «Printed rows»
+  принимает answers: список «Answer»
+  возвращает список список строки
+  пример «No run, no rows»
+    дано answers равно пустой список
+    ожидается пустой список
+  отобразить («Lines» от («Output of» от "blocks" и answers)) как line → разделить line по "\t"
+
+тотальная функция «Block rows»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «Form and source-less lines are not blocks»
+    дано rows равно [["a", "утверждение-вывод", "У1", "ЧИТАЕТ", "ПРИНЯЛ", ""], ["a", "#форма", "x"],
+      ["b", "#нет-исходника"]]
+    ожидается [["a", "утверждение-вывод", "У1", "ЧИТАЕТ", "ПРИНЯЛ", ""]]
+  отфильтровать rows где row → ((длина row) равен 6) и притом (не ((«Cell» от 2 и row) начинается с "#"))
+
+тотальная функция «Seen»
+  принимает seen: список строки, name: строка
+  возвращает список строки
+  пример «A new name is kept once»
+    дано seen равно ["а"]
+    дано name равно "б"
+    ожидается ["а", "б"]
+  пример «A known name is not kept twice»
+    дано seen равно ["а"]
+    дано name равно "а"
+    ожидается ["а"]
+  если seen содержит name то seen иначе (добавить name к seen)
+
+тотальная функция «Kind names»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «Each kind once, in the order of first sight»
+    дано rows равно [["a", "тотальность", "Т", "НЕ ЧИТАЕТ", "", ""],
+      ["a", "утверждение-вывод", "У", "ЧИТАЕТ", "ПРИНЯЛ", ""], ["b", "тотальность", "Т2", "НЕ ЧИТАЕТ", "", ""]]
+    ожидается ["тотальность", "утверждение-вывод"]
+  свёртка rows начиная с (пустой список) как seen и row → «Seen» от seen и («Cell» от 2 и row)
+
+тотальная функция «Counted»
+  принимает rows: список список строки, kind: строка, verdict: строка
+  возвращает число
+  пример «Accepted blocks of a kind»
+    дано rows равно [["a", "утверждение-вывод", "У", "ЧИТАЕТ", "ПРИНЯЛ", ""],
+      ["a", "утверждение-вывод", "В", "ЧИТАЕТ", "ВНЕ", "Р5"]]
+    дано kind равно "утверждение-вывод"
+    дано verdict равно "ПРИНЯЛ"
+    ожидается 1
+  длина (отфильтровать rows где row → ((«Cell» от 2 и row) равен kind) и притом ((«Cell» от 5 и row) равен verdict))
+
+тотальная функция «Count of»
+  принимает place: число, kind: «Kind»
+  возвращает число
+  пример «The second count is the accepted blocks»
+    дано place равно 2
+    дано kind равно запись «Kind» с «name» равным "а" и «counts» равным [3, 2, 1, 0, 0]
+    ожидается 2
+  если (place меньше 1) или (place больше (длина (kind.«counts»))) то 0 иначе элемент place в (kind.«counts»)
+
+тотальная функция «Kind of»
+  принимает rows: список список строки, name: строка
+  возвращает «Kind»
+  пример «A kind the model reads carries its verdicts»
+    дано rows равно [["a", "утверждение-вывод", "У", "ЧИТАЕТ", "ПРИНЯЛ", ""],
+      ["a", "утверждение-вывод", "В", "ЧИТАЕТ", "ВНЕ", "Р5"], ["a", "тотальность", "Т", "НЕ ЧИТАЕТ", "", ""]]
+    дано name равно "утверждение-вывод"
+    ожидается запись «Kind» с «name» равным "утверждение-вывод" и «counts» равным [2, 1, 0, 1, 0]
+  пусть blocks равно (длина (отфильтровать rows где row → («Cell» от 2 и row) равен name))
+  пусть accepted равно («Counted» от rows и name и "ПРИНЯЛ")
+  пусть refused равно («Counted» от rows и name и "ОТВЕРГ")
+  пусть outside равно («Counted» от rows и name и "ВНЕ")
+  пусть unread равно («Counted» от rows и name и "НЕ ПРОЧЁЛ")
+  запись «Kind» с «name» равным name и «counts» равным [blocks, accepted, refused, outside, unread]
+
+тотальная функция «Read by the model»
+  принимает kind: «Kind»
+  возвращает признак
+  пример «Totalities are not read»
+    дано kind равно запись «Kind» с «name» равным "тотальность" и «counts» равным [2, 0, 0, 0, 0]
+    ожидается нет
+  (kind.«name») равен "утверждение-вывод"
+
+тотальная функция «Is a proof»
+  принимает kind: «Kind»
+  возвращает признак
+  пример «A totality block is judged by the checker»
+    дано kind равно запись «Kind» с «name» равным "тотальность" и «counts» равным [1, 0, 0, 0, 0]
+    ожидается да
+  не ((kind.«name») равен "утверждение-без-доказательства")
+
+тотальная функция «Blanks»
+  возвращает строка
+  пример «Forty-eight blanks»
+    ожидается "                                                "
+  "                                                "
+
+тотальная функция «Padded»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «Short text gets blanks on the right»
+    дано text равно "ab"
+    дано width равно 4
+    ожидается "ab  "
+  пример «Long text stays»
+    дано text равно "abcde"
+    дано width равно 4
+    ожидается "abcde"
+  если (длина text) не меньше width то text иначе (соединить [text,
+      (подстрока («Blanks») с 1 по (width минус (длина text)))] по "")
+
+тотальная функция «Left padded»
+  принимает text: строка, width: число
+  возвращает строка
+  пример «Short text gets blanks on the left»
+    дано text равно "7"
+    дано width равно 3
+    ожидается "  7"
+  если (длина text) не меньше width то text иначе (соединить [
+      (подстрока («Blanks») с 1 по (width минус (длина text))), text] по "")
+
+тотальная функция «Verdict words»
+  принимает kind: «Kind»
+  возвращает строка
+  пример «The four verdicts of a read kind»
+    дано kind равно запись «Kind» с «name» равным "утверждение-вывод" и «counts» равным [82, 70, 8, 4, 0]
+    ожидается "читает: ПРИНЯЛ 70, ОТВЕРГ 8, ВНЕ 4, НЕ ПРОЧЁЛ 0"
+  соединить ["читает: ПРИНЯЛ ", (к строке («Count of» от 2 и kind)), ", ОТВЕРГ ", (к строке («Count of» от 3 и kind)),
+    ", ВНЕ ", (к строке («Count of» от 4 и kind)), ", НЕ ПРОЧЁЛ ", (к строке («Count of» от 5 и kind))] по ""
+
+тотальная функция «Kind line»
+  принимает kind: «Kind»
+  возвращает строка
+  пример «A kind outside the model says so»
+    дано kind равно запись «Kind» с «name» равным "тотальность" и «counts» равным [329, 0, 0, 0, 0]
+    ожидается "  тотальность                       329  вне модели"
+  пусть head равно (соединить ["  ", («Padded» от (kind.«name») и 32),
+      («Left padded» от (к строке («Count of» от 1 и kind)) и 5),
+    "  "] по "")
+  пусть tail равно («Chosen» от [(«When» от («Read by the model» от kind) и («Verdict words» от kind)),
+    («When» от (не («Is a proof» от kind)) и "не доказательство — не считается")] и "вне модели")
+  соединить [head, tail] по ""
+
+тотальная функция «Rule count»
+  принимает outside: список список строки, name: строка
+  возвращает список строки
+  пример «How many steps a rule left outside»
+    дано outside равно [["a", "утверждение-вывод", "В", "ЧИТАЕТ", "ВНЕ", "Р5"]]
+    дано name равно "Р5"
+    ожидается ["1", "Р5"]
+  [(к строке (длина (отфильтровать outside где row → («Cell» от 6 и row) равен name))), name]
+
+тотальная функция «Inserted»
+  принимает pair: список строки, sorted: список список строки
+  возвращает список список строки
+  пример «A bigger count goes before a smaller one»
+    дано pair равно ["3", "Р5"]
+    дано sorted равно [["5", "М2"], ["1", "Разв1"]]
+    ожидается [["5", "М2"], ["3", "Р5"], ["1", "Разв1"]]
+  пусть mine равно (к числу («Cell» от 1 и pair))
+  пусть bigger равно (отфильтровать sorted где other → (к числу («Cell» от 1 и other)) не меньше mine)
+  пусть smaller равно (отфильтровать sorted где other → (к числу («Cell» от 1 и other)) меньше mine)
+  «Соединить списки» от bigger и (приписать pair к smaller)
+
+тотальная функция «Rule counts»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «Steps outside the model by rule, most first»
+    дано rows равно [["a", "утверждение-вывод", "В", "ЧИТАЕТ", "ВНЕ", "Р5"],
+      ["a", "утверждение-вывод", "Г", "ЧИТАЕТ", "ВНЕ", "М2"], ["b", "утверждение-вывод", "Д", "ЧИТАЕТ", "ВНЕ", "Р5"]]
+    ожидается ["Р5 2", "М2 1"]
+  пример «Nothing outside»
+    дано rows равно пустой список
+    ожидается пустой список
+  пусть outside равно (отфильтровать rows где row → («Cell» от 5 и row) равен "ВНЕ")
+  пусть names равно (свёртка outside начиная с (пустой список) как seen и row → «Seen» от seen и («Cell» от 6 и row))
+  пусть counted равно (отобразить names как name → «Rule count» от outside и name)
+  пусть sorted равно (свёртка counted начиная с (пустой список) как sorted и pair → «Inserted» от pair и sorted)
+  отобразить sorted как pair → соединить [(«Cell» от 2 и pair), " ", («Cell» от 1 и pair)] по ""
+
+тотальная функция «Whole»
+  принимает value: число
+  возвращает число
+  пример «The fraction is dropped»
+    дано value равно 7.75
+    ожидается 7
+  value минус (value остаток от 1)
+
+тотальная функция «Two digits»
+  принимает value: число
+  возвращает строка
+  пример «A digit gets its zero»
+    дано value равно 7
+    ожидается "07"
+  пример «Two digits stay»
+    дано value равно 42
+    ожидается "42"
+  если value меньше 10 то (соединить ["0", (к строке value)] по "") иначе (к строке value)
+
+тотальная функция «Percent»
+  принимает part: число, whole: число
+  возвращает строка
+  пример «Two decimals»
+    дано part равно 513
+    дано whole равно 595
+    ожидается "86.22"
+  пример «No whole, no share»
+    дано part равно 0
+    дано whole равно 0
+    ожидается "—"
+  пусть base равно (если whole равен 0 то 1 иначе whole)
+  пусть hundredths равно («Whole» от (((part умножить на 10000) делить на base) плюс 0.5))
+  пусть text равно (соединить [(к строке («Whole» от (hundredths делить на 100))), ".",
+    («Two digits» от (hundredths остаток от 100))] по "")
+  если whole равен 0 то "—" иначе text
+
+тотальная функция «Record names»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «Each record once»
+    дано rows равно [["a", "тотальность", "Т", "НЕ ЧИТАЕТ", "", ""], ["b", "#форма", "x"], ["a", "#форма", "y"]]
+    ожидается ["a", "b"]
+  свёртка rows начиная с (пустой список) как seen и row → «Seen» от seen и («Cell» от 1 и row)
+
+тотальная функция «Record line»
+  принимает rows: список список строки, name: строка
+  возвращает строка
+  пример «A record whose source is not in the tree»
+    дано rows равно [["b", "#нет-исходника"]]
+    дано name равно "b"
+    ожидается "b\tисходника в дереве нет — не судится"
+  пусть own равно («Block rows» от (отфильтровать rows где row → («Cell» от 1 и row) равен name))
+  пусть proofs равно (отфильтровать own где row → не ((«Cell» от 2 и row) равен "утверждение-без-доказательства"))
+  пусть read равно (отфильтровать proofs где row → («Cell» от 4 и row) равен "ЧИТАЕТ")
+  пусть beyond равно (отфильтровать read где row → («Cell» от 5 и row) равен "ВНЕ")
+  пусть missing равно (отфильтровать rows где row → ((«Cell» от 1 и row) равен name)
+    и притом ((«Cell» от 2 и row) равен "#нет-исходника"))
+  пусть counted равно (соединить [name, "\tблоков ", (к строке (длина proofs)), "\tчитает ", (к строке (длина read)),
+    "\tвне модели ", (к строке ((длина proofs) минус (длина read))), "\tшагом ВНЕ ", (к строке (длина beyond)),
+    "\tбез доказательства ", (к строке ((длина own) минус (длина proofs)))] по "")
+  если пусто missing то counted иначе (соединить [name, "\tисходника в дереве нет — не судится"] по "")
+
+тотальная функция «Number of»
+  принимает text: строка
+  возвращает число
+  пример «The leading digits as a number»
+    дано text равно "12 x"
+    ожидается 12
+  пример «No digits is zero»
+    дано text равно "x"
+    ожидается 0
+  пусть digits равно («Leading digits» от text)
+  если пусто digits то 0 иначе (к числу digits)
+
+тотальная функция «Labelled»
+  принимает row: список строки, label: строка
+  возвращает число
+  пример «The number after the label in the row»
+    дано row равно ["a", "#форма", "утверждений-по-шапке 3", "блоков-утверждений 2"]
+    дано label равно "блоков-утверждений "
+    ожидается 2
+  пример «No such label is zero»
+    дано row равно ["a", "#форма"]
+    дано label равно "блоков-утверждений "
+    ожидается 0
+  пусть found равно (отфильтровать row где cell → cell начинается с label)
+  «Number of» от (соединить (отобразить found как cell → «After» от label и cell) по "")
+
+тотальная функция «Form rows»
+  принимает rows: список список строки
+  возвращает список список строки
+  пример «Only the form lines»
+    дано rows равно [["a", "#форма", "утверждений-по-шапке 3"], ["a", "тотальность", "Т", "НЕ ЧИТАЕТ", "", ""]]
+    ожидается [["a", "#форма", "утверждений-по-шапке 3"]]
+  отфильтровать rows где row → ((длина row) не меньше 2) и притом ((«Cell» от 2 и row) равен "#форма")
+
+тотальная функция «Form cell»
+  принимает rows: список список строки, label: строка
+  возвращает число
+  пример «The sum of a form number over the records»
+    дано rows равно [["a", "#форма", "утверждений-по-шапке 3", "блоков-утверждений 3", "шагов-в-тексте 7"],
+      ["b", "#форма", "утверждений-по-шапке 2", "блоков-утверждений 2", "шагов-в-тексте 1"]]
+    дано label равно "шагов-в-тексте "
+    ожидается 8
+  свёртка («Form rows» от rows) начиная с 0 как sum и row → sum плюс («Labelled» от row и label)
+
+тотальная функция «Form differs»
+  принимает row: список строки
+  возвращает признак
+  пример «A record read whole»
+    дано row равно ["a", "#форма", "утверждений-по-шапке 3", "блоков-утверждений 3", "шагов-в-тексте 7",
+      "шагов-прочитано 7", "не-прочёл 0"]
+    ожидается нет
+  пример «A record whose reader cut fewer statements than the header names»
+    дано row равно ["a", "#форма", "утверждений-по-шапке 3", "блоков-утверждений 2", "шагов-в-тексте 7",
+      "шагов-прочитано 7", "не-прочёл 0"]
+    ожидается да
+  пусть declared равно («Labelled» от row и "утверждений-по-шапке ")
+  пусть statements равно (не (declared равен («Labelled» от row и "блоков-утверждений ")))
+  пусть steps равно (не ((«Labelled» от row и "шагов-в-тексте ") равен («Labelled» от row и "шагов-прочитано ")))
+  пусть unread равно (не ((«Labelled» от row и "не-прочёл ") равен 0))
+  statements или (steps или unread)
+
+тотальная функция «Form troubles»
+  принимает rows: список список строки
+  возвращает список строки
+  пример «No form lines, no troubles»
+    дано rows равно пустой список
+    ожидается пустой список
+  пусть bad равно (отфильтровать («Form rows» от rows) где row → ((длина row) равен 7) и притом («Form differs» от row))
+  отобразить bad как row → соединить ["  ФОРМА РАЗОШЛАСЬ: ", («Cell» от 1 и row), " — ",
+    (соединить [(«Cell» от 3 и row), («Cell» от 4 и row), («Cell» от 5 и row), («Cell» от 6 и row),
+      («Cell» от 7 и row)] по ", ")] по ""
+
+тотальная функция «Form line»
+  принимает rows: список список строки
+  возвращает строка
+  пример «The form of nothing»
+    дано rows равно пустой список
+    ожидается "форма: утверждений по шапке 0, нарезано 0; шагов в тексте 0, прочитано 0; не прочёл 0; расхождений 0"
+  соединить ["форма: утверждений по шапке ", (к строке («Form cell» от rows и "утверждений-по-шапке ")),
+    ", нарезано ", (к строке («Form cell» от rows и "блоков-утверждений ")),
+    "; шагов в тексте ", (к строке («Form cell» от rows и "шагов-в-тексте ")),
+    ", прочитано ", (к строке («Form cell» от rows и "шагов-прочитано ")),
+    "; не прочёл ", (к строке («Form cell» от rows и "не-прочёл ")),
+    "; расхождений ", (к строке (длина («Form troubles» от rows)))] по ""
+
+тотальная функция «Sum of»
+  принимает kinds: список «Kind», what: строка
+  возвращает число
+  пример «Blocks of the kinds»
+    дано kinds равно [
+        запись «Kind» с «name» равным "тотальность" и «counts» равным [2, 0, 0, 0, 0]]
+    дано what равно "blocks"
+    ожидается 2
+  разбор what
+    случай "blocks"
+      то свёртка kinds начиная с 0 как sum и kind → sum плюс («Count of» от 1 и kind)
+    случай любое
+      то свёртка kinds начиная с 0 как sum и kind → sum плюс («Count of» от 4 и kind)
+
+тотальная функция «Report lines»
+  принимает rows: список список строки, ceiling: строка, verbose: признак, said: строка
+  возвращает список строки
+  пример «An empty run prints its zeros»
+    дано rows равно пустой список
+    дано ceiling равно ""
+    дано verbose равно нет
+    дано said равно ""
+    ожидается ["записей корпуса 0, исходника в дереве нет у 0",
+      "блоков с доказательством 0: модель читает 0 (блок вывода), вне модели 0", "ВНЕ по правилам: —",
+      "вне модели: 0 блоков из 0 с доказательством (— %), и 0 шагов ВНЕ внутри читаемых",
+      "форма: утверждений по шапке 0, нарезано 0; шагов в тексте 0, прочитано 0; не прочёл 0; расхождений 0"]
+  пусть blocks равно («Block rows» от rows)
+  пусть kinds равно (отобразить («Kind names» от blocks) как name → «Kind of» от blocks и name)
+  пусть proofs равно (отфильтровать kinds где kind → «Is a proof» от kind)
+  пусть total равно («Sum of» от proofs и "blocks")
+  пусть read равно («Sum of» от (отфильтровать proofs где kind → «Read by the model» от kind) и "blocks")
+  пусть beyond равно («Sum of» от kinds и "outside")
+  пусть names равно («Record names» от rows)
+  пусть missing равно (длина (отфильтровать rows где row → ((длина row) не меньше 2)
+    и притом ((«Cell» от 2 и row) равен "#нет-исходника")))
+  пусть head равно [(соединить ["записей корпуса ", (к строке (длина names)), ", исходника в дереве нет у ",
+      (к строке missing)] по ""),
+    (соединить ["блоков с доказательством ", (к строке total), ": модель читает ", (к строке read),
+      " (блок вывода), вне модели ", (к строке (total минус read))] по "")]
+  пусть counts равно («Rule counts» от blocks)
+  пусть rules равно [(соединить ["ВНЕ по правилам: ",
+      (если пусто counts то "—" иначе (соединить counts по ", "))] по "")]
+  пусть share равно [(соединить ["вне модели: ", (к строке (total минус read)), " блоков из ", (к строке total),
+    " с доказательством (", («Percent» от (total минус read) и total), " %), и ", (к строке beyond),
+    " шагов ВНЕ внутри читаемых"] по "")]
+  пусть exceeded равно ((total минус read) больше (к числу (если пусто ceiling то "0" иначе ceiling)))
+  пусть ceilings равно (если пусто ceiling то (пустой список) иначе [(соединить ["потолок вне модели ", ceiling, ": ",
+    (если exceeded то "ПРЕВЫШЕН" иначе "не превышен")] по "")])
+  пусть records равно (если пусто names то (пустой список) иначе («Соединить списки» от ["", "-- по записям --"]
+    и (отобразить names как name → «Record line» от rows и name)))
+  пусть detail равно (если verbose то («Соединить списки» от ["", "-- по блокам --"]
+    и (отобразить blocks как row → соединить row по "\t")) иначе (пустой список))
+  пусть lean равно (если пусто said то (пустой список) иначе («Соединить списки» от ["", "-- Lean сказал --"]
+    и («Lines» от said)))
+  пусть middle равно («Соединить списки» от (отобразить kinds как kind → «Kind line» от kind)
+    и («Соединить списки» от rules и («Соединить списки» от share и [(«Form line» от rows)])))
+  пусть tail равно («Соединить списки» от («Form troubles» от rows) и («Соединить списки» от ceilings
+    и («Соединить списки» от records и («Соединить списки» от detail и lean))))
+  «Соединить списки» от head и («Соединить списки» от middle и tail)
+
+тотальная функция «Verdict»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть rows равно («Printed rows» от answers)
+  пусть blocks равно («Block rows» от rows)
+  пусть proofs равно (отфильтровать blocks где row → не ((«Cell» от 2 и row) равен "утверждение-без-доказательства"))
+  пусть read равно (отфильтровать proofs где row → («Cell» от 4 и row) равен "ЧИТАЕТ")
+  пусть ceiling равно («Ceiling» от answers)
+  пусть lines равно («Report lines» от rows и ceiling и («Verbose» от answers) и («Output of» от "errors" и answers))
+  пусть troubles равно («Form troubles» от rows)
+  пусть exceeded равно (не (пусто ceiling)) и притом (((длина proofs) минус (длина read)) больше (к числу ceiling))
+  если (пусто troubles) и притом (не exceeded)
+    то вариант «Конец работы» с значение равным (соединить lines по "\n")
+    иначе вариант «Провал» с код равным "FLANG_LEAN_MODEL_BLOCKS" и сообщение равным (соединить lines по "\n")
+
+тотальная функция «Failed»
+  принимает asked: строка, name: строка, answers: список «Answer»
+  возвращает признак
+  пример «Another question asked is not this failure»
+    дано asked равно "found"
+    дано name равно "listed"
+    дано answers равно пустой список
+    ожидается нет
+  (asked равен name) и притом (не ((«Exit code of» от asked и answers) равен 0))
+
+тотальная функция «Obstacles»
+  принимает asked: строка, answers: список «Answer»
+  возвращает список строки
+  пример «Nothing asked, no obstacle»
+    дано asked равно ""
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть oleans равно (соединить ["модули модели не собраны: нет ", («Oleans» от answers),
+    "/RecordReader.olean — собрать: make -C flang/proof/checker second (либо назвать каталог ключом --oleans)"] по "")
+  пусть lean равно (соединить ["Lean не найден: ", («Lean» от answers),
+    " (версия — flang/proof/lean/lean-toolchain; другой путь — переменная LEAN)"] по "")
+  пусть work равно (соединить ["временный каталог не заведён: каталога из FLANG_TMP (по умолчанию ",
+      "/srv/tmp) нет либо он не для записи"] по "")
+  пусть compiled равно (соединить ["Verdicts.lean не собрался:\n", («Output of» от asked и answers)] по "")
+  пусть ran равно "перепись на Lean сорвалась — смотрите blocks.err в рабочем каталоге"
+  «Chosen» от [(«When» от («Failed» от asked и "oleans" и answers) и [oleans]),
+    («When» от («Failed» от asked и "found" и answers) и [lean]),
+    («When» от ((asked равен "work") и притом (пусто («Work» от answers))) и [work]),
+    («When» от («Failed» от asked и "listed" и answers) и ["корпус записей не перечислен"]),
+    («When» от («Failed» от asked и "compiled" и answers) и [compiled]),
+    («When» от («Failed» от asked и "ran" и answers) и [ran])] и (пустой список)
+
+тотальная функция «Proceed»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Verdict» от answers
+        иначе «Proceed» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin»
+  возвращает «Inquiry»
+  «Begin with» от 6
+
+тотальная функция «Stopped»
+  принимает answers: список «Answer», why: строка
+  возвращает «Продолжение»
+  пусть order равно (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf",
+      («Work» от answers)])
+  пусть later равно (запись «Inquiry» с «asked» равным (соединить ["stopped: ",
+      why] по "") и «queue» равным пустой список
+    и «stages» равным 0 и «answers» равным answers)
+  если пусто («Work» от answers)
+    то вариант «Не проверено» с код равным "FLANG_LEAN_MODEL_BLOCKS_NOT_MEASURED" и сообщение равным why
+    иначе вариант «Сделать» с поручение равным order и потом равным later
+
+тотальная функция «Next»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть answers равно («Heard» от inquiry и reply)
+  пусть why равно («After» от "stopped: " и (inquiry.«asked»))
+  разбор («Obstacles» от (inquiry.«asked») и answers)
+    случай голова и хвост
+      то «Stopped» от answers и голова
+    случай пусто
+      то если (inquiry.«asked») начинается с "stopped: "
+        то вариант «Не проверено» с код равным "FLANG_LEAN_MODEL_BLOCKS_NOT_MEASURED" и сообщение равным why
+        иначе «Proceed» от (inquiry.«queue») и (inquiry.«stages») и answers
+
+план «Blocks»
+  состояние «Inquiry»
+  начинает с «Begin»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды lean-model:blocks»
+  возвращает строка
+  (соединить ["bootstrap/flang io --plan Blocks --timeout 900000 — перепись ",
+      "блоков корпуса записей: что читает модель Lean, что вне её"] по "")

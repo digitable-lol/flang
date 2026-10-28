@@ -1161,6 +1161,33 @@ jobs:
       - name: Check non-flang files
         run: sh scripts/guards/published-vs-tree.sh --перепись
 
+  # УЗЕЛ НА RUST — ДО МЕТКИ, А НЕ НА НЕЙ. Набор `run-script tests` (ci.yml, работа
+  # `test`) ходит только на метке: в 0.7.31 прогон по метке встал на «Run all
+  # checks», потому что кодировщик провода узла на Rust (flang/concurrency/bin/node.rs)
+  # не знал нового значения Word, а rustc отвечал E0004 — за пять часов до этого
+  # dev был зелёным. Здесь из всего набора берётся одна проба надзора на цели
+  # rust: она собирает напечатанную программу с узлом cargo под `-D warnings` и
+  # гоняет её с опорой на Python. FTS_REQUIRE_TOOLCHAINS=cargo делает пропуск без
+  # cargo отказом. Цена локально — 99 с; без починки a5890e700 проба красна
+  # (E0004), с ней — зелена.
+  rust-node:
+    name: rust-node
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: The Rust node builds and keeps supervision over the wire
+        run: node --test --test-timeout=1200000 --test-name-pattern='надзор на rust' flang/test/nadzor-uzla.test.mjs
+        env:
+          FTS_REQUIRE_TOOLCHAINS: cargo
+          FTS_REQUIRE_BINARY: 1
+
   imena:
     name: link-collisions
     runs-on: ubuntu-latest

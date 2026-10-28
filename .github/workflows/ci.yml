@@ -1263,12 +1263,25 @@ jobs:
       # покраснели, и кодом 1, когда хоть одна прошла, — отсюда `if !`.
       - name: Forgery goes red
         run: |
-          if ! bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Forgery; then
+          if ! bootstrap/flang io flang/proof/lean/rules-guard.fscript --plan Forgery --max-steps 100000000; then
             echo "сторож приёмов промолчал на подлоге — проверять им нечего" >&2
             exit 1
           fi
       - name: Every checker move has a theorem or a debt row
         run: bootstrap/flang run-script lean-rules:check
+      # Долг состоятельности опорного сверщика (ADR-0193): у каждого пути приёмки
+      # второго сверщика строка таблицы, у каждого sorry — строка. Lean не нужен.
+      - name: Every acceptance path of the reference checker has a debt row
+        run: bootstrap/flang run-script lean-soundness:check
+      # Проба порчи того же сторожа: четыре подлога на копиях прочитанного (снята
+      # строка, «доказано» без теоремы, рост «нет модели» выше потолка, sorry без
+      # строки); план кончается кодом 1, когда хоть один подлог прошёл.
+      - name: Soundness debt forgery goes red
+        run: |
+          if ! bootstrap/flang io flang/proof/lean/soundness-guard.fscript --plan Forgery; then
+            echo "сторож долга состоятельности промолчал на подлоге" >&2
+            exit 1
+          fi
 
   # ВТОРАЯ ПОЛОВИНА — ЖИВОЙ ПРОГОН — на метке, и без ключа: там зовутся ОБЕ.
   # 19 мин 37 с со сборкой против границы в пять минут; на пуш она не идёт, и

@@ -74,6 +74,8 @@ jobs:
         run: |
           bootstrap/flang run-script lean-rules:forgery
           bootstrap/flang run-script lean-rules:check
+          bootstrap/flang run-script lean-soundness:check
+          bootstrap/flang run-script lean-soundness:forgery
 
       # ПОЧЕМУ ЗДЕСЬ FLANG_TMP. План просит временный каталог по образцу
       # «FLANG_TMP, а если переменной нет — /srv/tmp». `/srv/tmp` есть на машине

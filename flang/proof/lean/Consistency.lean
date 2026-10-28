@@ -1320,6 +1320,132 @@ theorem «оценитьД-списком» (w : «Мир») :
       simp only [«оценитьД», «доводыСписком», List.map_cons]
       rw [«оценитьД-списком» w r]
 
+/-! ## М2 по реестру доказанных постусловий (задача 4572) -/
+
+theorem «списокД-это-доводыСписком» : ∀ (d : «Доводы»), «списокД» d = «доводыСписком» d
+  | .«нет» => rfl
+  | .«ещё» t r => by simp [«списокД», «доводыСписком», «списокД-это-доводыСписком» r]
+
+/-- Округление мира не меняется связыванием имён. -/
+theorem «связатьВсе-о» (w : «Мир») (ps : List String) (vs : List «Значение») :
+    («связатьВсе» w ps vs).«о» = w.«о» := by
+  unfold «связатьВсе»
+  induction ps.zip vs with
+  | nil => rfl
+  | cons q r ih => simp only [List.foldr_cons, «связать-о», ih]
+
+/-- Место довода — его место. -/
+theorem «местоДовода-верно» (t : «Тело») : ∀ (ds : List «Тело») (k : Nat),
+    «местоДовода» t ds = some k → ds[k]? = some t
+  | [], k, h => by simp [«местоДовода»] at h
+  | x :: r, k, h => by
+      simp only [«местоДовода»] at h
+      split at h
+      · rename_i hx; cases h; simp [hx]
+      · simp only [Option.map_eq_some_iff] at h
+        obtain ⟨k', hk', rfl⟩ := h
+        simp [«местоДовода-верно» t r k' hk']
+
+/-- Имя-параметр на месте k, первое среди параметров, носит довод на месте k. -/
+theorem «связатьВсе-имя» (w : «Мир») : ∀ (ps : List String) (vs : List «Значение») (k : Nat)
+    («П» : String) (v : «Значение»), ps[k]? = some «П» → vs[k]? = some v → ¬ «П» ∈ ps.take k →
+    («связатьВсе» w ps vs).«имя» «П» = v
+  | [], _, k, «П», v, h, _, _ => by simp at h
+  | _ :: _, [], k, «П», v, _, hv, _ => by simp at hv
+  | x :: ps, u :: vs, 0, «П», v, h, hv, _ => by
+      simp only [List.getElem?_cons_zero, Option.some.injEq] at h hv
+      subst h; subst hv
+      simp [«связатьВсе»]
+  | x :: ps, u :: vs, k + 1, «П», v, h, hv, hn => by
+      simp only [List.getElem?_cons_succ] at h hv
+      simp only [List.take_succ_cons, List.mem_cons, not_or] at hn
+      have ih := «связатьВсе-имя» w ps vs k «П» v h hv hn.2
+      simp only [«связатьВсе», List.zip_cons_cons, List.foldr_cons] at ih ⊢
+      rw [«связать-имя»]
+      simp [hn.1, ih]
+
+/-- Шаг свёртки по реестру растит накопитель ровно на одно звено — пока длина накопителя
+    плюс один не выше порога: постусловие взято в арифметике с округлением. -/
+theorem «растит?-шаг» (R : List «Постусловие») (g a e : String) (d : «Доводы») (w : «Мир»)
+    (hr : «растит?» R g a d = true) (hg : «объявленное» g = true) (hae : a ≠ e)
+    (hp : ∀ p ∈ R, «постусловие-есть» p w) :
+    ∀ (acc : «Список») (v : «Знач»), (acc.length : Int) + 1 ≤ «порог» →
+      («оценитьС» (.«вызовС» g d) («обновить» («обновитьС» w a acc) e v)).length = acc.length + 1 := by
+  intro acc v hb
+  simp only [«растит?»] at hr
+  split at hr
+  · cases hr
+  · rename_i k hk
+    rw [List.any_eq_true] at hr
+    obtain ⟨p, hpR, hc⟩ := hr
+    simp only [Bool.and_eq_true, decide_eq_true_eq] at hc
+    obtain ⟨⟨hpg, hlen⟩, hc⟩ := hc
+    split at hc
+    · rename_i «П» hP
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at hc
+      obtain ⟨⟨hPr, hPn'⟩, hf⟩ := hc
+      -- мир шага и доводы шага — именами
+      obtain ⟨w', hw'⟩ : ∃ w', w' = «обновить» («обновитьС» w a acc) e v := ⟨_, rfl⟩
+      obtain ⟨vs, hvs⟩ : ∃ vs, vs = «оценитьД» d w' := ⟨_, rfl⟩
+      rw [← hw']
+      have hfun : w'.«функции» = w.«функции» := by rw [hw']; rfl
+      have hcall : «вызываемая» w' g = g := «вызываемая-объявленная» w' hg
+      have hvsl : vs = («доводыСписком» d).map (fun t => «значение» t w') := by
+        rw [hvs]; exact «оценитьД-списком» w' d
+      have hvsL : vs.length = p.«параметры».length := by
+        rw [hvsl, List.length_map, ← «списокД-это-доводыСписком»]; exact hlen.symm
+      have hk' : («списокД» d)[k]? = some («Тело».«список» (.«имяС» a)) := «местоДовода-верно» _ _ _ hk
+      have hvk : vs[k]? = some (.«список» acc) := by
+        rw [hvsl, List.getElem?_map, ← «списокД-это-доводыСписком», hk']
+        simp only [Option.map_some, «значение», «оценитьС», Option.some.injEq, «Значение».«список».injEq]
+        rw [hw']
+        simp [hae]
+      -- факт реестра на этих доводах
+      have hfact := hp p hpR vs hvsL
+      rw [hf, hpg] at hfact
+      simp only [«Факт-из», «растётНаОдин», «оценитьФ», «оценить», «оценитьС»] at hfact
+      have hres : («связать» («связатьВсе» w p.«параметры» vs) "результат" (w.«функции» g vs)).«имя» "результат" = w.«функции» g vs := by
+        simp
+      have hpar : («связать» («связатьВсе» w p.«параметры» vs) "результат" (w.«функции» g vs)).«имя» «П» = .«список» acc := by
+        rw [«связать-имя»]; simp only [hPr, ↓reduceIte]
+        exact «связатьВсе-имя» w _ _ k «П» _ hP hvk hPn'
+      rw [hres, hpar] at hfact
+      simp only [«какСписок-список», «связать-о», «связатьВсе-о»] at hfact
+      -- «плюс» модели на малых целых точен
+      have hplus : «плюс» w.«о» («кон» (acc.length : Int)) («кон» 1) = «кон» ((acc.length : Int) + 1) := by
+        simp only [«плюс», «чис»]
+        exact w.«о».«точно» _ (by unfold «порог»; omega) hb
+      rw [hplus] at hfact
+      simp only [«равен», decide_eq_true_eq, «Знач».«кон».injEq] at hfact
+      -- итог шага
+      simp only [«оценитьС», hcall, hfun, ← hvs]
+      omega
+    · cases hc
+
+/-- Стороны М2 по реестру равны значением: «длина Л» и мера свёртки, чей шаг растит
+    накопитель на звено по доказанному постусловию; список Л — имя, и он короче порога. -/
+theorem «мера2р-значение» {R : List «Постусловие»} {x y : «ТермЧ»} (hm : «мера2р» R x y = true)
+    (w : «Мир») (hp : ∀ p ∈ R, «постусловие-есть» p w) (hl : «списки-коротки» w) :
+    «оценить» x w = «оценить» y w := by
+  unfold «мера2р» at hm
+  split at hm
+  · rename_i l l' a e g d
+    simp only [Bool.and_eq_true, decide_eq_true_eq] at hm
+    obtain ⟨⟨⟨rfl, hae⟩, hg⟩, hr⟩ := hm
+    have hs := «растит?-шаг» R g a e d w hr hg hae hp
+    have hL : ((«какСписок» (w.«имя» l)).length : Int) < «порог» := hl l
+    have hfold := «М2-реестр» (fun acc v => «оценитьС» (.«вызовС» g d) («обновить» («обновитьС» w a acc) e v))
+      «порог» hs («какСписок» (w.«имя» l)) []
+      (by simp only [List.length_nil]; omega)
+    have hraz : «оценитьС» (.«свёрткаС» (.«имяС» l) .«пустой» a e (.«вызовС» g d)) w =
+        «свёрткаС» (fun acc v => «оценитьС» (.«вызовС» g d) («обновить» («обновитьС» w a acc) e v)) []
+          («какСписок» (w.«имя» l)) := by
+      simp only [«оценитьС»]
+    simp only [«оценить»]
+    rw [hraz, hfold]
+    simp [«оценитьС»]
+  · cases hm
+
 theorem «связатьВсе-пары» (w : «Мир») (g : «Тело» → «Значение») :
     ∀ (ps : List String) (dl : List «Тело»),
     «связатьВсе» w ps (dl.map g) = (ps.zip dl).foldr (fun q w' => «связать» w' q.1 (g q.2)) w
@@ -2328,6 +2454,17 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     rcases hm with ⟨rfl, hm⟩ | ⟨rfl, hm⟩
     · exact «собрать2-замена» c x y x y' w rfl («мера2-значение» hm w) (hq w hw)
     · exact «собрать2-замена» c x y x' y w («мера2-значение» hm w) rfl (hq w hw)
+  | «М2-реестр» n q c x y x' y' ho hp h1 hp1 hf hm =>
+    simp only [«итог»]
+    rw [hf]
+    have hq := hp1 ▸ hinv q («шагПо-в» h1)
+    intro w hw
+    have hR : ∀ p ∈ u.«реестр», «постусловие-есть» p w :=
+      fun p hpu => hw _ (List.mem_append_right _ («постусловие-в-окружении» u p hpu))
+    have hL : «списки-коротки» w := hw _ (List.mem_append_right _ («списки-в-окружении» u))
+    rcases hm with ⟨rfl, hm⟩ | ⟨rfl, hm⟩
+    · exact «собрать2-замена» c x y x y' w rfl («мера2р-значение» hm w hR hL) (hq w hw)
+    · exact «собрать2-замена» c x y x' y w («мера2р-значение» hm w hR hL) rfl (hq w hw)
   | «К↑» n q c x y x' y' ho hp h1 hp1 hf hm =>
     simp only [«итог»]
     rw [hf]

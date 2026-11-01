@@ -401,16 +401,17 @@
 
 тотальная функция «Доводы заведения»
   возвращает список строки
-  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 13
-  пример «Ключ, каталог уроков, каталог образца спек и десять каталогов целей»
-    ожидается ["-p", "../../output/release-c/tutor", "../../output/release-c/fspec", "../../output/release-c/runtime/c",
+  обеспечивает «длина постоянного списка — Доводы заведения» (длина результат) равен 14
+  пример «Ключ, каталог уроков, каталог образца спек, каталог движка установки и десять каталогов целей»
+    ожидается ["-p", "../../output/release-c/tutor", "../../output/release-c/fspec",
+      "../../output/release-c/runtime/scripts", "../../output/release-c/runtime/c",
       "../../output/release-c/runtime/cpp", "../../output/release-c/runtime/csharp",
       "../../output/release-c/runtime/elixir", "../../output/release-c/runtime/go",
       "../../output/release-c/runtime/java", "../../output/release-c/runtime/js",
       "../../output/release-c/runtime/python", "../../output/release-c/runtime/rust",
       "../../output/release-c/runtime/ts"]
   свёртка («Цели печати») начиная с ["-p", («Каталог уроков в архиве»),
-    («Каталог образца спек в архиве»)] как всё и цель
+    («Каталог образца спек в архиве»), («Каталог цели в архиве» от "scripts")] как всё и цель
     добавить («Каталог цели в архиве» от цель) к всё
 
 тотальная функция «Завести каталоги целей»

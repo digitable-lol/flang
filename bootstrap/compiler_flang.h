@@ -38303,6 +38303,18 @@ fl_status compiler_flang_pechat_makefile_rust(fl_ctx *ctx, fl_value progonschik,
                                               fl_error *error);
 
 /*
+ * Функция flang «Второе имя модуля программы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param fayl — «файл»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_vtoroe_imya_modulya_programmy(fl_ctx *ctx,
+                                                       fl_value fayl,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
  * Функция flang «Печать lib».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

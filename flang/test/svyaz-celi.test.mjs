@@ -58,7 +58,7 @@ mkdirSync(печатьСвидетеля, { recursive: true })
   if (итог.код !== 0) throw new Error(`свидетель flang/concurrency/link.flang не напечатался в js: ${итог.ошибки}`)
   writeFileSync(join(печатьСвидетеля, "package.json"), '{"type":"module"}\n')
 }
-const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "svyaz_uzlov.js")).href)
+const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "program.js")).href)
 
 /* ─────────────────── значения прогонщика ─────────────────── */
 

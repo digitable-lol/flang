@@ -966,7 +966,12 @@ def mul(ctx, left, right):
     if _exact_digits(left) and _exact_digits(right):
         return _exact_value(_exact_canon(left) * _exact_canon(right))
     a, b = _arithmetic("mul", left, right)
-    return Value(TAG_NUMBER, a * b)
+    return Value(TAG_NUMBER, unsigned_zero(a * b))
+
+
+def unsigned_zero(x):
+    """Нулевой итог произведения, частного и остатка — +0, а не -0, как у вычислителя flang."""
+    return 0.0 if x == 0.0 else x
 
 
 def divide_raw(a, b):
@@ -1000,7 +1005,7 @@ def div(ctx, left, right):
             )
         return _fraction_value(a * d, b * c)
     a, b = _arithmetic("div", left, right)
-    return Value(TAG_NUMBER, divide_raw(a, b))
+    return Value(TAG_NUMBER, unsigned_zero(divide_raw(a, b)))
 
 
 def remainder_raw(a, b):
@@ -1015,7 +1020,7 @@ def remainder_raw(a, b):
         return math.nan
     if math.isinf(b):
         return a
-    return math.fmod(a, b)
+    return unsigned_zero(math.fmod(a, b))
 
 
 def mod(ctx, left, right):

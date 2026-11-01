@@ -308,7 +308,7 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | Flag | What it does |
 | --- | --- |
 | `--function «Имя»` | the function to compute. Required |
-| `--args '{…}'` | arguments as a flat JSON object of scalars. Lists and nested objects are not accepted |
+| `--args '{…}'` | arguments as a JSON object keyed by parameter name; values may be lists, records and variants, checked against the declared types |
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit of the program being evaluated (the binary's own limit is `--depth-limit`) |
 | `--memory-limit N` | memory limit; exit `5` at the limit |
@@ -412,14 +412,16 @@ $ flang emit привет.flang --target c --out вывод
 flang test <файл>
 
 $ ls вывод
-Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  privet.c  privet.h
+Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  program.c  program.h
 ```
 
 The output says: 6 files written; the program was checked before generation;
 the unit tests were not run. The generated runner checks arguments against the
 declared types the same way `flang run` does: for `−3` given to a
-`неотрицательное` parameter it answers `FLANG_TYPE`. File names are the
-module name in Latin letters («Привет» → `privet.c`).
+`неотрицательное` parameter it answers `FLANG_TYPE`. The files take the module
+name when it is written in Latin letters («Report» → `report.c`). A Cyrillic name
+is not transliterated: the files of module «Привет» are called `program.*`, and the
+Java and C# class is `FlangProgram`. `--file` gives a file a name of your own.
 
 An unknown target is exit code `2`, with the list of targets:
 
@@ -1082,6 +1084,7 @@ flang 0.7.31 — язык, проверяемый до запуска: типы 
   flang lock <файл>                  замок: сами зависимости, а не ссылки на них
   flang package <файл>               пакет: замок с именем, версией и ведомостью
   flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест
+  flang install <файл> [<имя>…]      поставить пакеты по имени из реестра и записать замок
   flang run-script <имя>             короткая команда проекта из «.flangrc»
   flang repl [файл]                  та же оболочка, названная по имени
   flang lsp [--stdio]                языковой сервер для редактора (LSP)
@@ -1270,9 +1273,10 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 «unproven» в «.flangrc» — раз и навсегда.
 
   --function «Имя»   что вычислять
-  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{"н":10}'.
-                     Списка или вложенного объекта здесь не принимают —
-                     функцию со списком зовут её примеры: flang test <файл>
+  --args '{…}'       аргументы объектом JSON по именам параметров, вроде
+                     '{"н":10}' или '{"элементы":[1,2,3]}'. Списки, записи
+                     и варианты ({"variant":"Имя","fields":{…}}) — любой
+                     вложенности; не тот тип — FLANG_TYPE до вычисления
   --max-steps N      предел шагов вычислителя
   --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого
                      бинарника — другой счётчик и другой ключ:

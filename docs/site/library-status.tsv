@@ -386,9 +386,9 @@ flang/stdlib/automaton.flang		Шаг строк		доказано компози
 flang/stdlib/automaton.flang		Номера строк с образцом		доказано композицией
 flang/stdlib/automaton.flang		Строк с образцом		доказано композицией
 flang/stdlib/automaton.flang		Это тупик	тупик признаётся тупиком	доказано
-flang/stdlib/automaton.flang		Это тупик	всё, что не тупик, тупиком не зовётся	сетка
+flang/stdlib/automaton.flang		Это тупик	всё, что не тупик, тупиком не зовётся	доказано
 flang/stdlib/automaton.flang		Это пустое слово	пустое слово признаётся пустым словом	доказано
-flang/stdlib/automaton.flang		Это пустое слово	всё, что не пустое слово, пустым словом не зовётся	сетка
+flang/stdlib/automaton.flang		Это пустое слово	всё, что не пустое слово, пустым словом не зовётся	доказано
 flang/stdlib/automaton.flang		Слить в ряд	тупик в ряду поглощает всё	доказано
 flang/stdlib/automaton.flang		Слить в ряд	ряд с тупиком — тупик	доказано
 flang/stdlib/automaton.flang		Повторить много	повтор пустого — пустое слово	доказано
@@ -2141,7 +2141,7 @@ flang/stdlib/math-classics-lists.flang		Есть в склейке	вхожде�
 flang/stdlib/math-classics-lists.flang		Есть в склейке	вхождение во вторую часть даёт вхождение в склейку	сетка
 flang/stdlib/math-classics-lists.flang		Элемент по номеру	элемент по номеру внутри списка принадлежит списку	сетка
 flang/stdlib/math-classics-lists.flang		Приписать к вошедшему	приписывание не теряет вошедшего	сетка
-flang/stdlib/math-classics.flang	743c7ab2d80b16eb5b16c481857a0c412d160969eb57dad6b33d2d075dfc3fba	Сумма		доказано композицией
+flang/stdlib/math-classics.flang	47f3bfb0272d25b2f816a5c719c9351daa8b781769e8aba266cd5e1252bbaaa1	Сумма		доказано композицией
 flang/stdlib/math-classics.flang		Сумма трёх		доказано композицией
 flang/stdlib/math-classics.flang		Прибавить ноль		доказано композицией
 flang/stdlib/math-classics.flang		Ноль слева		доказано композицией
@@ -2293,7 +2293,7 @@ flang/stdlib/number-format.flang		С точностью	со знаками по
 flang/stdlib/number-format.flang		С точностью	знаков после точки не меньше заказанных	сетка
 flang/stdlib/number-format.flang		С точностью	целое до половины потолка точных без знаков печатается как встроенной печатью	сетка
 flang/stdlib/number-format.flang		Круг основания десять держится	круг держится на всяком точном неотрицательном	сетка
-flang/stdlib/numbers.flang	7dc8a12e15db06591b662728f37d56ed9ae4e0d89821b9a06548a6dfff3a5d1d	Абсолютное значение		доказано композицией
+flang/stdlib/numbers.flang	8f4e300158ee11061ec0c1a493d63347e0d9e9931ccd7778f6f201722fd8e606	Абсолютное значение		доказано композицией
 flang/stdlib/numbers.flang		Знак		доказано композицией
 flang/stdlib/numbers.flang		Минимум двух		доказано композицией
 flang/stdlib/numbers.flang		Максимум двух		доказано композицией
@@ -2598,14 +2598,14 @@ flang/stdlib/postgres.flang		Шаг поиска отказа	однажды н�
 flang/stdlib/postgres.flang		Шаг поиска отказа	пока не найдено, отвечает сама весть	доказано
 flang/stdlib/postgres.flang		Есть отказ	у пустого списка отказа нет	сетка
 flang/stdlib/postgres.flang		Есть отказ	на одной вести отказ — это отказ самой вести	сетка
-flang/stdlib/postgres.flang		Это отказ	отказ узнаётся по варианту вести, и только по нему	сетка
+flang/stdlib/postgres.flang		Это отказ	отказ узнаётся по варианту вести, и только по нему	доказано
 flang/stdlib/postgres.flang		Это отказ	весть об отказе базы отказом и зовётся	доказано
 flang/stdlib/postgres.flang		Это отказ	весть о том, что данных не будет, отказом не зовётся	доказано
 flang/stdlib/postgres.flang		Шаг поиска разрешения	однажды найденное разрешение уже не теряется	доказано
 flang/stdlib/postgres.flang		Шаг поиска разрешения	пока не найдено, отвечает сама весть	доказано
 flang/stdlib/postgres.flang		Вход прошёл	у пустого списка разрешения нет	сетка
 flang/stdlib/postgres.flang		Вход прошёл	на одной вести оно — разрешение самой вести	сетка
-flang/stdlib/postgres.flang		Это разрешение	разрешение узнаётся по варианту вести, и только по нему	сетка
+flang/stdlib/postgres.flang		Это разрешение	разрешение узнаётся по варианту вести, и только по нему	доказано
 flang/stdlib/postgres.flang		Это разрешение	разрешение входа узнаётся по варианту вести	доказано
 flang/stdlib/postgres.flang		Это разрешение	весть о том, что данных не будет, разрешением не зовётся	доказано
 flang/stdlib/postgres.flang		Строки ответа	строк выходит ровно столько, сколько среди вестей строк данных	сетка
@@ -2884,7 +2884,7 @@ flang/stdlib/redis.flang		Ответ числом	разобранное цел�
 flang/stdlib/redis.flang		Груз с краем	край сразу за телом даёт груз с тем же текстом, край с лишними знаками — названную порчу, а отсутствие края — нехватку	сетка
 flang/stdlib/redis.flang		Груз с краем	без края груза нет — байты ещё едут	доказано
 flang/stdlib/redis.flang		Груз с краем	лишние знаки между телом и краем названы порчей	доказано
-flang/stdlib/redis.flang		Груз по набору	недобранные байты значат нехватку, а не порчу	сетка
+flang/stdlib/redis.flang		Груз по набору	недобранные байты значат нехватку, а не порчу	доказано
 flang/stdlib/redis.flang		Груз по набору	нехватка байтов груза значит нехватку ответа	доказано
 flang/stdlib/redis.flang		Груз по набору	знак поперёк границы груза значит нехватку ответа	доказано
 flang/stdlib/redis.flang		Ответ грузом	отрицательная длина даёт отсутствие значения, неразобранная — названную порчу	сетка
@@ -5059,7 +5059,7 @@ flang/stdlib/utf8.flang		Байты годны как UTF-8	один байт г
 flang/stdlib/utf8.flang		Круговой ход держится	круговой ход держится ровно там, где одиноких суррогатов нет	сетка
 flang/stdlib/utf8.flang		Списки точек равны	равные списки одной длины и с одной головой	доказано
 flang/stdlib/utf8.flang		Списки точек равны	на одиночках ответ — сравнение голов	сетка
-flang/stdlib/uuid.flang	9bf0efcd8ebcb9788faf1579aceb492b42e7146d83ab4cb7dbfb661cb16b7d71	Нулевой УУИД		доказано композицией
+flang/stdlib/uuid.flang	cd15f0d84291d353508d17d7305172987cfca2c0c4fef00e248ac9f23d8b60d9	Нулевой УУИД		доказано композицией
 flang/stdlib/uuid.flang		Пространство имён DNS		доказано композицией
 flang/stdlib/uuid.flang		Пространство имён URL		доказано композицией
 flang/stdlib/uuid.flang		Свести к октету		доказано композицией
@@ -5099,7 +5099,7 @@ flang/stdlib/uuid.flang		Пространство имён URL	простран�
 flang/stdlib/uuid.flang		Свести к октету	октет не меньше нуля	сетка
 flang/stdlib/uuid.flang		Свести к октету	октет меньше двухсот пятидесяти шести	сетка
 flang/stdlib/uuid.flang		Свести к октету	октет — целое	сетка
-flang/stdlib/uuid.flang		Свести к октету	байт остаётся собой	сетка
+flang/stdlib/uuid.flang		Свести к октету	байт остаётся собой, минус ноль — нулём	сетка
 flang/stdlib/uuid.flang		Первые октеты	первых не больше, чем просили	сетка
 flang/stdlib/uuid.flang		Первые октеты	первых не больше, чем было	доказано
 flang/stdlib/uuid.flang		Первые октеты	если октетов хватает, взято ровно столько, сколько просили	сетка

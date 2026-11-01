@@ -85,6 +85,7 @@ flang: /work/.flangrc: запись «недоказанное = разреше�
 | `unproven` | `refuse` `warn` `allow` | `refuse` | сам двоичный: `flang run` и `flang io` (`flang/src/emit/c/flang_repl.c`) |
 | `profile` | имя профиля или несколько через запятую | нет — библиотека без ограничений | сам двоичный при поиске модуля по имени (`flang/src/emit/c/flang_repl.c`) |
 | `modules` | имена модулей библиотеки через запятую | нет | то же |
+| `registry` | адрес списка реестра пакетов: `http://`, `https://` или путь от корня дерева | `https://raw.githubusercontent.com/digitable-lol/flang/dev/scripts/registry-example/registry.list` | установщик пакетов `scripts/package-install.fscript` (`flang run-script package:install`); ключ `--registry` команды старше файла |
 | `profile.<имя>` | имена модулей через запятую — объявление профиля | профили `flang/stdlib/profiles.flangrc` | то же |
 | `max-line-length` | целое число больше нуля | нет: длина не ограничена | `flang lint` |
 | `max-conditional-depth` | целое число больше нуля | нет: глубина не ограничена | `flang lint` |

@@ -63,7 +63,7 @@ export const ЦЕЛИ = [
        не бывает вовсе — модуль называют при запуске. */
     собрать: () => [
       "elixirc",
-      ["--warnings-as-errors", "-o", "_build", "flang_runtime.ex", "uzel_zamera.ex", "flang_cli.ex", "node.ex"],
+      ["--warnings-as-errors", "-o", "_build", "flang_runtime.ex", "flang_program.ex", "flang_cli.ex", "node.ex"],
       ".",
     ],
     запуск: (каталог, чем) => [чем, ["-pa", "_build", "-e", "HozyainUzla.main(System.argv())", "--"]],
@@ -123,14 +123,14 @@ export const ЦЕЛИ = [
        `node.c`, что у цели «c», и собирается он тем же напечатанным Makefile —
        только компилятором C++ и с явным `-x c++`, потому что расширение файла
        осталось `.c`. Заголовок модуля и имя цели приходят ключами: у печати в
-       cpp модуль зовётся `uzel_zamera.hpp`, а не `.h`. Ровно так же эту цель
+       cpp модуль зовётся `program.hpp`, а не `.h`. Ровно так же эту цель
        описывают flang-двойники (`flang/scripts/node-across-targets.fscript`,
        `flang/scripts/supervisor-across-targets.fscript`) — описание цели у JS и
        у flang обязано быть одно. */
     рядом: {
       "node.mk":
         "include Makefile\n\n"
-        + "node.o: node.c\n\t$(CXX) $(CXXFLAGS) -x c++ -DZAGOLOVOK_MODULYA=\\\"uzel_zamera.hpp\\\" -DCEL=\\\"cpp\\\" -c -o $@ node.c\n\n"
+        + "node.o: node.c\n\t$(CXX) $(CXXFLAGS) -x c++ -DZAGOLOVOK_MODULYA=\\\"program.hpp\\\" -DCEL=\\\"cpp\\\" -c -o $@ node.c\n\n"
         + "flang_node: node.o $(OBJECTS)\n\t$(CXX) $(CXXFLAGS) -o $@ node.o $(OBJECTS) $(LDLIBS)\n",
     },
     собрать: () => ["make", ["-f", "node.mk", "flang_node"], "."],

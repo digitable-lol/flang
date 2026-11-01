@@ -37,8 +37,11 @@
 [`reprint-ledger.tsv`](reprint-ledger.tsv): секунды, пик памяти, размер семени.
 Как читать ведомость и откуда берётся цена — [`reprint-cost.md`](reprint-cost.md).
 Заход идёт на одном ядре и упирается во время, а не в память.
+Три последние печати — 28 октября и 1 ноября 2026: 4492, 4481 и 4504 с (75 мин),
+пик до 98,0 ГиБ, с кешем суда ядра 16 ГиБ (прежняя печать шла около 8,5 ч).
 
-**Чего нет.** Разбора, на какие стадии печати уходит время, по каждой стадии.
+**Чего нет.** Часа: 4504 с больше 3600 с, условие не взято. Разбора, на какие
+стадии печати уходит время, по каждой стадии.
 
 **Как узнаем, что взято.** Печать укладывается в час на тихой машине, и это
 записано строкой ведомости.
@@ -51,7 +54,7 @@
 только пробы, которые ложь отвергают.
 
 **Что есть.** Ядро решений — `flang/self/proof-kernel.flang`,
-<!-- СНЯТО 2026-10-26 строк flang/self/proof-kernel.flang = 7763 (reprint input of batch 9b: exact word bound ceiling in the kernel, issue 479; до них 7645, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 6927, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 6886, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 6881, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 6696, снято 2026-10-13) (batch five over dev 4222c7083; до них 6346, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные», и четыре примера к ним; до них 5811, снято 2026-10-04) --> 7 763 строки.
+<!-- СНЯТО 2026-10-28 строк flang/self/proof-kernel.flang = 7777 (print batch 9c: flang install, small compiler fixes, installs and io, restricted postconditions, listen address, u64 literals; до них 7763, снято 2026-10-26) (reprint input of batch 9b: exact word bound ceiling in the kernel, issue 479; до них 7645, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 6927, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 6886, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 6881, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 6696, снято 2026-10-13) (batch five over dev 4222c7083; до них 6346, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные», и четыре примера к ним; до них 5811, снято 2026-10-04) --> 7 777 строк.
 Список правил вывода закрыт: `flang/proof/tables/inference-rules.tsv`,
 <!-- СНЯТО 2026-10-20 строк flang/proof/tables/inference-rules.tsv = 156 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 136, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 129, снято 2026-10-13) (batch five over dev 4222c7083; до них 124, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные» — две строки таблицы; до них 113, снято 2026-10-04) --> 156 строк
 с шапкой. Независимая проверяющая программа на C — `flang/proof/checker/checker.c`,
@@ -143,12 +146,25 @@
 **Что значит.** Чужой человек ставит пакет одной командой, и сборка воспроизводима.
 
 **Что есть.** `flang package` и `flang lock`: замок с самими зависимостями, а не со
-ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)),
-образец описания пакета — `scripts/registry-example/`. Профили в `.flangrc`
-выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --> 64 файла, <!-- СНЯТО 2026-10-26 строк-в flang/stdlib/*.flang = 63397 (партия печати 9b: три утверждения sqlite, опровергнутые новой проверкой, названы со своей областью; до неё 63393, снято 2026-10-18) (партия печати 9a: поиск без копий, починка stdlib, разбор и ввоз, тёзки при связывании, теоремы о категориях, опровержение утверждений, мелкие правки; до неё 63380, снято 2026-10-17) --> 63 397 строки.
+ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)) —
+один текстовый файл, формат закреплён в [registry-list-format.md](registry-list-format.md),
+образец — `scripts/registry-example/`. Установка по имени из сети одной командой:
+`flang install <программа.flang> <имя>[: <диапазон>]` (в двоичном 0.7.31 — ярлык
+`flang run-script package:install` из дерева, тот же движок) берёт список по
+адресу (`https://`, `http://` или файл), выбирает наибольшую годную версию по нуждам проекта и
+нуждам самих пакетов (`flang/stdlib/registry.flang`), скачивает, сверяет `sha256` до записи на
+диск, кладёт файлы рядом с программой и пишет `flang.lock`
+([ADR-0168](adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md)).
+Проверка `package-install:check` ставит пакет дважды в пустые каталоги под пустым окружением и
+сравнивает замки побайтно; работа CI `package-install` гоняет её на чистом образе. Профили в
+`.flangrc` выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --> 64 файла, <!-- СНЯТО 2026-11-01 строк-в flang/stdlib/*.flang = 63398 (the gcd claim of math-classics names its domain on two lines; до них 63397, снято 2026-10-26) (партия печати 9b: три утверждения sqlite, опровергнутые новой проверкой, названы со своей областью; до неё 63393, снято 2026-10-18) (партия печати 9a: поиск без копий, починка stdlib, разбор и ввоз, тёзки при связывании, теоремы о категориях, опровержение утверждений, мелкие правки; до неё 63380, снято 2026-10-17) --> 63 398 строки.
 
-**Чего нет.** Установки пакета по имени из сети и разрешения версий.
+**Чего нет.** Команды `flang install` в напечатанном двоичном 0.7.31 — она в исходниках
+(cli.flang, flang_repl.c) и доезжает печатью 9c (задача 3404); до неё установщик зовётся
+только из дерева flang. Подписи автора: отпечаток говорит «файл не правили», а не
+«файл от того, о ком вы думаете». Реестра с чужими пакетами: в списке лежат только пакеты примера.
+Изоляции поиска модулей по имени ниже корня проекта (ADR-0021 п. 5).
 
 **Как узнаем, что взято.** Пакет ставится одной командой на чистой машине, и
 повторная установка даёт тот же замок.

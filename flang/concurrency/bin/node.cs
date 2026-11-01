@@ -331,7 +331,7 @@ public static class HozyainUzla
         internal int Srok;
         internal int Puls;
         internal int Pauza;
-        internal Ctx Kontekst = UzelZamera.NewContext();
+        internal Ctx Kontekst = FlangProgram.NewContext();
         internal Value Sostoyanie = Value.Nothing();
         internal Dictionary<string, Value> Sostoyaniya = new Dictionary<string, Value>();
         internal Dictionary<string, Kanal> Kanaly = new Dictionary<string, Kanal>();
@@ -350,7 +350,7 @@ public static class HozyainUzla
 
     private static Value Pozvat(Uzel u, string imya, params Value[] dovody)
     {
-        return UzelZamera.Call(u.Kontekst, imya, dovody);
+        return FlangProgram.Call(u.Kontekst, imya, dovody);
     }
 
     private static Uzel Zavesti(
@@ -889,7 +889,7 @@ public static class HozyainUzla
         Value itog;
         try
         {
-            itog = UzelZamera.Call(u.Kontekst, imya, new Value[] { u.Sostoyaniya[kto], gruz });
+            itog = FlangProgram.Call(u.Kontekst, imya, new Value[] { u.Sostoyaniya[kto], gruz });
         }
         catch (FlangError beda)
         {

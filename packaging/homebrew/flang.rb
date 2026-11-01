@@ -38,6 +38,10 @@ class Flang < Formula
       (share/"flang-tutor").install Dir["tutor/*"] if Dir.exist?("tutor")
     end
 
+    # Образец спек, который `flang new` копирует в новый пакет: двоичный ищет
+    # его в ../share/flang-fspec. Своим каталогом по той же причине, что и уроки.
+    (share/"flang-fspec").install Dir["fspec/*"] if Dir.exist?("fspec")
+
     lib.install Dir["lib*.a"]
     include.install Dir["*.h"]
     if Dir.exist?("runtime")
@@ -134,7 +138,7 @@ class Flang < Formula
     цели.each do |цель|
       assert_predicate share/"flang/#{цель}", :directory?
     end
-    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) && File.basename(путь) != "stdlib" }
+    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) && !%w[stdlib scripts].include?(File.basename(путь)) }
 
     return unless (share/"flang/stdlib").directory?
 

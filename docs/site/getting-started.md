@@ -104,19 +104,15 @@ value.
 On the command line the function name is written **without guillemets**.
 
 `--args` takes a JSON object whose keys are the parameter names from
-`accepts`. It accepts **only a flat object of scalars**: numbers, strings,
-`true`, `false`, `null`. A list is rejected:
+`accepts`. Values are numbers, strings, `true`, `false`, `null`, lists and
+records, nested as deep as the declared type needs:
 
 ```bash
 flang run sum.flang --function Sum --args '{"items": [1,2,3]}'
 ```
 
-```
-flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
-```
-
-Exit code 2. How to pass a list or a record: [Operations](operations.html),
-the `--args` section.
+Each value is checked against the declared type before anything is computed.
+More in [Operations](operations.html), the `--args` section.
 
 `flang run` checks argument types. `«Factorial»` is declared over `nat`; called
 with −3 it answers, with exit code 1:

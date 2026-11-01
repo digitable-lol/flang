@@ -912,7 +912,16 @@ func Mul(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number(a * b), nil
+	return Number(unsignedZero(a * b)), nil
+}
+
+// unsignedZero: нулевой итог произведения, частного и остатка — +0, а не -0,
+// как у вычислителя flang и всех целей печати.
+func unsignedZero(x float64) float64 {
+	if x == 0 {
+		return 0
+	}
+	return x
 }
 
 func Div(ctx *Ctx, left, right Value) (Value, error) {
@@ -932,7 +941,7 @@ func Div(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number(a / b), nil
+	return Number(unsignedZero(a / b)), nil
 }
 
 func Mod(ctx *Ctx, left, right Value) (Value, error) {
@@ -952,7 +961,7 @@ func Mod(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number(math.Mod(a, b)), nil
+	return Number(unsignedZero(math.Mod(a, b))), nil
 }
 
 func BIntegerPart(ctx *Ctx, value Value) (Value, error) {
@@ -2054,7 +2063,7 @@ func BRemainder(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number(math.Mod(a, b)), nil
+	return Number(unsignedZero(math.Mod(a, b))), nil
 }
 
 // BPercentOf — «процентов от»: (процент / 100) * значение, порядок ядра.

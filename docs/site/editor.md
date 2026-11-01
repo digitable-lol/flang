@@ -172,9 +172,9 @@ tree, and that mechanism does not take subdirectories — so you point a symlink
 at it:
 
 ```bash
-git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
 mkdir -p ~/.vim/pack/flang/start
-ln -s ~/.local/share/flang/editors/vim ~/.vim/pack/flang/start/flang
+ln -s ~/.local/share/flang-src/docs/editors/vim ~/.vim/pack/flang/start/flang
 ```
 
 Two lines are needed in `~/.vimrc`. Without them Vim reads neither the
@@ -226,9 +226,9 @@ not found, Vim says so once per session and lists where it looked.
 The same plugin and the same subdirectory, only the package directory differs:
 
 ```bash
-git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
 mkdir -p ~/.config/nvim/pack/flang/start
-ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
+ln -s ~/.local/share/flang-src/docs/editors/vim ~/.config/nvim/pack/flang/start/flang
 ```
 
 A plugin manager takes the subdirectory as a key:
@@ -237,7 +237,7 @@ A plugin manager takes the subdirectory as a key:
 {
   "digitable-lol/flang",
   config = function(plugin)
-    vim.opt.runtimepath:prepend(plugin.dir .. "/editors/vim")
+    vim.opt.runtimepath:prepend(plugin.dir .. "/docs/editors/vim")
     vim.cmd("runtime! ftdetect/*.vim")
     require("flang").setup()
   end,
@@ -252,11 +252,20 @@ the file type to all four extensions itself and starts the server through the
 built-in `vim.lsp`. A second client on the same buffer would give two identical
 diagnostics on every line.
 
+The server is `flang lsp` from the `flang` on your `PATH`, version 0.7.25 or
+newer — the one `install.sh` or a package puts there. Older releases answer
+only after their input is closed and would look hung in an editor, so the
+plugin skips them and says so once. `let g:flang_binary_lsp = 1` takes the
+binary whatever its version, `let g:flang_binary_lsp = 0` never takes it.
+
+The clone goes to `~/.local/share/flang-src`, not `~/.local/share/flang`:
+the latter is where `install.sh` puts the standard library.
+
 To turn the server off — either of two ways, in `init.lua` before the plugin
 loads:
 
 ```lua
-vim.g.flang_ne_nastraivat = 1            -- do not start the server at all
+vim.g.flang_no_setup = 1                 -- do not start the server at all
 require("flang").setup({ lsp = false })  -- the same, but assign the file type
 ```
 

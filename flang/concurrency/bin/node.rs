@@ -63,7 +63,7 @@ use std::net::{TcpListener, TcpStream};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use flangprogram::runtime as rt;
-use flangprogram::uzel_zamera as resh;
+use flangprogram::program as resh;
 
 const CEL: &str = "rust";
 

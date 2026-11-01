@@ -42,6 +42,8 @@ class FlangPackage < Formula
     include.install Dir["include/*"] if Dir.exist?("include")
     (share/"flang").install Dir["share/flang/*"]
     (share/"flang-tutor").install Dir["share/flang-tutor/*"] if Dir.exist?("share/flang-tutor")
+    # The spec template `flang new` copies into a new package (0.7.31 and newer).
+    (share/"flang-fspec").install Dir["share/flang-fspec/*"] if Dir.exist?("share/flang-fspec")
     man1.install "share/man/man1/flang.1"
   end
 

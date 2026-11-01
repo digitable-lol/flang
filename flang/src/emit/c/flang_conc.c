@@ -88,6 +88,7 @@
 #ifdef FL_CONC_NET
 #include <errno.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
@@ -1569,6 +1570,11 @@ static int fl_conc_net_listen(fl_conc_sched *sched, int port, char *why,
   int fd = -1;
   int yes = 1;
   struct sockaddr_in address;
+  struct in_addr bound;
+  const char *named = getenv("FLANG_LISTEN_ADDRESS");
+  /* Адрес привязки — как у хозяина планов (flang_repl.c, io_listen_address):
+     по умолчанию 127.0.0.1, наружу только явным FLANG_LISTEN_ADDRESS. */
+  const char *text = (named != NULL && named[0] != '\0') ? named : "127.0.0.1";
   for (index = 0; index < sched->port_count; index += 1) {
     if (sched->ports[index].port == port) {
       return sched->ports[index].fd;
@@ -1579,6 +1585,13 @@ static int fl_conc_net_listen(fl_conc_sched *sched, int port, char *why,
              FL_CONC_NET_PORTS);
     return -1;
   }
+  if (inet_pton(AF_INET, text, &bound) != 1) {
+    snprintf(why, why_size,
+             "адрес привязки «%s» из FLANG_LISTEN_ADDRESS не годится: нужен "
+             "адрес IPv4, вроде 127.0.0.1 или 0.0.0.0",
+             text);
+    return -1;
+  }
   fd = socket(AF_INET, SOCK_STREAM, 0);
   if (fd < 0) {
     snprintf(why, why_size, "сокет не заведён: %s", strerror(errno));
@@ -1587,7 +1600,7 @@ static int fl_conc_net_listen(fl_conc_sched *sched, int port, char *why,
   (void)setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
   memset(&address, 0, sizeof(address));
   address.sin_family = AF_INET;
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_addr = bound;
   address.sin_port = htons((unsigned short)port);
   if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0 ||
       listen(fd, 16) != 0) {

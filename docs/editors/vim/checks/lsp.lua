@@ -36,7 +36,7 @@ end
 
 -- Шаг 1: сервер нашёлся и прицепился к буферу.
 function M.privyazka(bufnr)
-  local chem = require("flang").chem_zapuskaem()
+  local chem = require("flang").server_command()
   skazat("команда сервера: " .. (chem and table.concat(chem, " ") or "НЕ НАЙДЕНА"))
   local est = dozhdatsya(function()
     return #klienty(bufnr) > 0

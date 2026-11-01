@@ -3453,15 +3453,13 @@ case "$KOMMIT" in
     err "docs/reprint-runs-start-from-a-clean-tree.md"
     exit 2 ;;
 esac
-# `--runtime` НАЗЫВАЕТСЯ, а не оставляется на поиск. Рантайм, прогонщик и
-# оболочка уезжают в вывод дословно, и печать читает их с диска; сама она ищет
-# их рядом с СОБОЙ (`<каталог двоичного>/../flang/src/emit/c`, затем
-# `share/flang/c`), а не рядом с исходником. Двоичный из `bootstrap/` попадает
-# туда случайно — на один уровень выше как раз корень дерева. Любой другой не
-# попадает: `FLANG=` на собранный в стороне двоичный отвечал
-# «не найдены исходники рантайма C» кодом 2. Названный путь снимает эту
-# случайность и делает рецепт полным.
-( cd "$ROOT" && if [ -n "$REPRINT_TICKS_OUT" ]; then FLANG_TICKS_OUT=$REPRINT_TICKS_OUT; export FLANG_TICKS_OUT; fi && "$BINARY" emit "$INPUT" --target c --out "$TMP" \
+# `--runtime` НАЗЫВАЕТСЯ: рантайм уезжает в вывод дословно, а печать ищет его рядом
+# с СОБОЙ (`<двоичный>/../flang/src/emit/c`, затем `share/flang/c`); `FLANG=` на
+# двоичный в стороне отвечал «не найдены исходники рантайма C» кодом 2.
+# FLANG_MEMO_BYTES — 16 ГиБ кеша суда ядра вместо 4 (FL_MEMO_CAP): с 0.7.27 ему нужно ~6 ГиБ, на
+# 4 ГиБ печать шла ~29 000 с вместо ~6 000; вывод тот же (7/7 md5, замер 27.10.2026),
+# пик ~105 ГБ. Вход печати не трогает: размер кеша в напечатанный байт не уходит.
+( cd "$ROOT" && if [ -n "$REPRINT_TICKS_OUT" ]; then FLANG_TICKS_OUT=$REPRINT_TICKS_OUT; export FLANG_TICKS_OUT; fi && FLANG_MEMO_BYTES=${FLANG_MEMO_BYTES:-17179869184} "$BINARY" emit "$INPUT" --target c --out "$TMP" \
     --cli --repl --runtime "$ROOT/$RUNTIME" \
     --max-steps "$MAX_STEPS" --max-depth "$MAX_DEPTH" && unset FLANG_TICKS_OUT && "$BINARY" emit "$ENGINE_INPUT" --target c --out "$TMP/tls-engine" --no-check --no-postconditions && mv "$TMP/tls-engine/tls_client.c" "$TMP/tls-engine/tls_client.h" "$TMP/" && rm -rf "$TMP/tls-engine" ) >&2
 [ -z "$REPRINT_TICKS_OUT" ] || say "поимённая ведомость расхода печати компилятора: $REPRINT_TICKS_OUT"

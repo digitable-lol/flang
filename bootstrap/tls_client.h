@@ -3844,29 +3844,31 @@ fl_status tls_client_znachenie_znaka_16(fl_ctx *ctx, fl_value znak,
                                         fl_value *result, fl_error *error);
 
 /*
- * Функция flang «Байт по счёту».
+ * Функция flang «Байты из знаков».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param tekst — «текст»: строка
- * @param nomer — «номер»: число
- * @return значение: число
- */
-fl_status tls_client_bayt_po_schyotu(fl_ctx *ctx, fl_value tekst,
-                                     fl_value nomer, fl_value *result,
-                                     fl_error *error);
-
-/*
- * Функция flang «Байты до места».
  *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param tekst — «текст»: строка
- * @param mesto — «место»: число
+ * @param znaki — «знаки»: список: строка
+ * @param akk — «акк»: список: число
  * @return значение: список: число
  */
-fl_status tls_client_bayty_do_mesta(fl_ctx *ctx, fl_value tekst, fl_value mesto,
-                                    fl_value *result, fl_error *error);
+fl_status tls_client_bayty_iz_znakov(fl_ctx *ctx, fl_value znaki, fl_value akk,
+                                     fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Байт из пары».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param starshiy — «старший»: строка
+ * @param mladshiy — «младший»: строка
+ * @return значение: число
+ */
+fl_status tls_client_bayt_iz_pary(fl_ctx *ctx, fl_value starshiy,
+                                  fl_value mladshiy, fl_value *result,
+                                  fl_error *error);
 
 /*
  * Функция flang «Байты из шестнадцатеричного».
@@ -9061,17 +9063,6 @@ fl_status tls_client_mera_ubyvaet_7(fl_ctx *ctx, fl_value shag, fl_value mera,
  * @return значение: число
  */
 fl_status tls_client_mera_ubyvaet_8(fl_ctx *ctx, fl_value shag, fl_value mera,
-                                    fl_value *result, fl_error *error);
-
-/*
- * Функция flang «мера убывает 9».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param shag — «шаг»: число
- * @param mera — «мера»: число
- * @return значение: число
- */
-fl_status tls_client_mera_ubyvaet_9(fl_ctx *ctx, fl_value shag, fl_value mera,
                                     fl_value *result, fl_error *error);
 
 /*

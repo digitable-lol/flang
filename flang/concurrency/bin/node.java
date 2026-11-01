@@ -483,7 +483,7 @@ final class HozyainUzla {
     private final double pauza;
     private boolean rabotaet = true;
     private int semya;
-    private final Ctx ctx = UzelZamera.newContext();
+    private final Ctx ctx = FlangProgram.newContext();
     private final Map<String, Value> sostoyaniya = new LinkedHashMap<>();
     private Value uzel;
     private final List<Kanal> kanaly = new ArrayList<>();
@@ -510,15 +510,15 @@ final class HozyainUzla {
         Process process = plan.get(nomer);
         String gde = tekstPolya(razmeschenie, process.imya, "");
         boolean svoy = gde.equals(imya);
-        processy[nomer] = UzelZamera.fn_process_uzla(ctx, Value.text(process.imya),
+        processy[nomer] = FlangProgram.fn_process_uzla(ctx, Value.text(process.imya),
             Value.text(process.obrabotchik), Value.flag(svoy),
             Value.text(svoy ? "" : gde), Value.flag(true), Value.text(""),
             Value.number(process.yaschik), Value.number(0), Value.emptyList());
         if (svoy) {
-          sostoyaniya.put(process.imya, UzelZamera.call(ctx, process.nachalnoe, new Value[] {}));
+          sostoyaniya.put(process.imya, FlangProgram.call(ctx, process.nachalnoe, new Value[] {}));
         }
       }
-      uzel = UzelZamera.fn_uzel_zanovo(ctx, Value.text(imya), Value.list(processy),
+      uzel = FlangProgram.fn_uzel_zanovo(ctx, Value.text(imya), Value.list(processy),
           Value.emptyList(), Value.text(""), Value.number(0), Value.flag(true));
 
       /* Соседи считаются по ПРЕДСТАВИТЕЛЯМ, а не по «звонить»: узел, которого
@@ -530,7 +530,7 @@ final class HozyainUzla {
         if (gde.equals(imya) || najti(gde) >= 0) {
           continue;
         }
-        Value svyaz = UzelZamera.fn_svyaz_uzla_zanovo(ctx, Value.text(gde), Value.flag(false),
+        Value svyaz = FlangProgram.fn_svyaz_uzla_zanovo(ctx, Value.text(gde), Value.flag(false),
             Value.flag(false), Value.flag(false), Value.flag(false), Value.flag(false), Value.number(0));
         kanaly.add(new Kanal(gde, tekstPolya(zvonit, gde, ""), svyaz));
       }
@@ -543,14 +543,14 @@ final class HozyainUzla {
       if (nadzory instanceof List<?> chleny) {
         for (Object n : chleny) {
           String imyaNadzora = tekstPolya(n, "имя", "");
-          nadzirateli.add(UzelZamera.fn_nadziratel_uzla(ctx, Value.text(imyaNadzora),
+          nadzirateli.add(FlangProgram.fn_nadziratel_uzla(ctx, Value.text(imyaNadzora),
               Value.number(chisloPolya(n, "порог")), Value.number(chisloPolya(n, "окно")),
               Value.text(tekstPolya(n, "иначе", "остановить"))));
           svyaziNadzora(nadProcessom, pole(n, "процессы"), imyaNadzora);
           svyaziNadzora(nadNadzorom, pole(n, "надзоры"), imyaNadzora);
         }
       }
-      derevo = UzelZamera.fn_derevo_nadzora_uzla(ctx,
+      derevo = FlangProgram.fn_derevo_nadzora_uzla(ctx,
           Value.list(nadzirateli.toArray(new Value[0])),
           Value.list(nadProcessom.toArray(new Value[0])),
           Value.list(nadNadzorom.toArray(new Value[0])));
@@ -561,14 +561,14 @@ final class HozyainUzla {
         return;
       }
       for (Object svyaz : chleny) {
-        kuda.add(UzelZamera.fn_svyaz_nadzora_uzla(ctx, Value.text(tekstPolya(svyaz, "кто", "")),
+        kuda.add(FlangProgram.fn_svyaz_nadzora_uzla(ctx, Value.text(tekstPolya(svyaz, "кто", "")),
             Value.text(imyaNadzora), Value.text(tekstPolya(svyaz, "стратегия", ""))));
       }
     }
 
     // ── единственная дорога от отказа к решению надзора ────────────────────
     private void nadzorSluchilsya(String kto, String kod) {
-      Value hod = UzelZamera.fn_shag_nadzora_uzla(ctx, derevo, Value.text(kto), Value.text(kod),
+      Value hod = FlangProgram.fn_shag_nadzora_uzla(ctx, derevo, Value.text(kto), Value.text(kod),
           Value.number(chasy()));
       derevo = Flang.fieldGet(ctx, hod, "дерево");
       for (Value velenie : Value.elements(Flang.fieldGet(ctx, hod, "веления"))) {
@@ -582,17 +582,17 @@ final class HozyainUzla {
         case "Поднять" -> {
           /* Перезапуск трогает состояние и не трогает ящик — это решено на
              flang; здесь состояние берётся тем же путём, что при подъёме узла. */
-          uzel = UzelZamera.fn_podnyat_process_uzla(ctx, uzel, Value.text(kto));
+          uzel = FlangProgram.fn_podnyat_process_uzla(ctx, uzel, Value.text(kto));
           for (Process process : plan) {
             if (process.imya.equals(kto)) {
-              sostoyaniya.put(kto, UzelZamera.call(ctx, process.nachalnoe, new Value[] {}));
+              sostoyaniya.put(kto, FlangProgram.call(ctx, process.nachalnoe, new Value[] {}));
             }
           }
           skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
               "что", tekst("поднят"), "кто", tekst(kto));
         }
         case "Уложить" -> {
-          uzel = UzelZamera.fn_ulozhit_process_uzla(ctx, uzel, Value.text(kto),
+          uzel = FlangProgram.fn_ulozhit_process_uzla(ctx, uzel, Value.text(kto),
               Value.text("остановлен надзором"));
           skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
               "что", tekst("уложен"), "кто", tekst(kto),
@@ -603,7 +603,7 @@ final class HozyainUzla {
             "надзор", tekst(vzyatTekst(velenie, "надзор")),
             "стратегия", tekst(vzyatTekst(velenie, "стратегия")));
         case "Некому надзирать" -> {
-          uzel = UzelZamera.fn_ostanovit_uzel_celikom(ctx, uzel);
+          uzel = FlangProgram.fn_ostanovit_uzel_celikom(ctx, uzel);
           rabotaet = false;
           skazat("в", tekst("надзор"), "узел", tekst(imya), "цель", tekst(CEL),
               "что", tekst("некому"), "кто", tekst(kto),
@@ -646,9 +646,9 @@ final class HozyainUzla {
         sok.setTcpNoDelay(true); // МИР
         sok.setSoTimeout(1); // МИР
         kanal.soket = sok;
-        svyazSluchilas(nomer, UzelZamera.v_soket_zavyolsya(Value.number(chasy())));
+        svyazSluchilas(nomer, FlangProgram.v_soket_zavyolsya(Value.number(chasy())));
       } catch (IOException beda) {
-        svyazSluchilas(nomer, UzelZamera.v_zvonok_ne_udalsya());
+        svyazSluchilas(nomer, FlangProgram.v_zvonok_ne_udalsya());
       }
     }
 
@@ -683,7 +683,7 @@ final class HozyainUzla {
         return;
       }
       kanaly.get(svobodnyy).soket = sok;
-      svyazSluchilas(svobodnyy, UzelZamera.v_soket_zavyolsya(Value.number(chasy())));
+      svyazSluchilas(svobodnyy, FlangProgram.v_soket_zavyolsya(Value.number(chasy())));
     }
 
     private static void zakryt(Socket sok) {
@@ -712,7 +712,7 @@ final class HozyainUzla {
         kuda.write((zapis(polya) + "\n").getBytes(StandardCharsets.UTF_8)); // МИР
         kuda.flush(); // МИР
       } catch (IOException beda) {
-        svyazSluchilas(nomer, UzelZamera.v_soket_otkazal(Value.text("запись в сокет отказала")));
+        svyazSluchilas(nomer, FlangProgram.v_soket_otkazal(Value.text("запись в сокет отказала")));
       }
     }
 
@@ -731,14 +731,14 @@ final class HozyainUzla {
       } catch (SocketTimeoutException tishina) {
         return false;
       } catch (IOException beda) {
-        svyazSluchilas(nomer, UzelZamera.v_soket_otkazal(Value.text("сокет отказал")));
+        svyazSluchilas(nomer, FlangProgram.v_soket_otkazal(Value.text("сокет отказал")));
         return true;
       }
       if (dlina < 0) {
-        svyazSluchilas(nomer, UzelZamera.v_soket_otkazal(Value.text("сокет закрыт")));
+        svyazSluchilas(nomer, FlangProgram.v_soket_otkazal(Value.text("сокет закрыт")));
         return true;
       }
-      svyazSluchilas(nomer, UzelZamera.v_bayty_prishli(Value.number(chasy())));
+      svyazSluchilas(nomer, FlangProgram.v_bayty_prishli(Value.number(chasy())));
       kanal.hvost = kanal.hvost + new String(kusok, 0, dlina, StandardCharsets.UTF_8);
       while (kanal.soket != null) {
         int kray = kanal.hvost.indexOf('\n');
@@ -754,7 +754,7 @@ final class HozyainUzla {
         try {
           kadr = razobrat(strokaKadra);
         } catch (RuntimeException beda) {
-          svyazSluchilas(nomer, UzelZamera.v_soket_otkazal(Value.text("кадр не разобран")));
+          svyazSluchilas(nomer, FlangProgram.v_soket_otkazal(Value.text("кадр не разобран")));
           return true;
         }
         posledniyKadr = kadr;
@@ -777,13 +777,13 @@ final class HozyainUzla {
       String vid = tekstPolya(kadr, "в", "");
       Value sobytie;
       switch (vid) {
-        case "привет" -> sobytie = UzelZamera.v_prishyol_privet(
+        case "привет" -> sobytie = FlangProgram.v_prishyol_privet(
             Value.text(tekstPolya(kadr, "узел", "")), Value.text(tekstPolya(kadr, "хэш", "")));
-        case "пульс" -> sobytie = UzelZamera.v_prishyol_puls();
-        case "письмо" -> sobytie = UzelZamera.v_prishlo_pismo(Value.text(tekstPolya(kadr, "кому", "")));
-        case "отбой" -> sobytie = UzelZamera.v_prishyol_otboy(
+        case "пульс" -> sobytie = FlangProgram.v_prishyol_puls();
+        case "письмо" -> sobytie = FlangProgram.v_prishlo_pismo(Value.text(tekstPolya(kadr, "кому", "")));
+        case "отбой" -> sobytie = FlangProgram.v_prishyol_otboy(
             Value.text(tekstPolya(kadr, "почему", "без причины")));
-        default -> sobytie = UzelZamera.v_prishyol_chuzhoy_kadr(Value.text(vid));
+        default -> sobytie = FlangProgram.v_prishyol_chuzhoy_kadr(Value.text(vid));
       }
       svyazSluchilas(nomer, sobytie);
     }
@@ -791,7 +791,7 @@ final class HozyainUzla {
     // ── единственная дорога от мира к решению о связи ──────────────────────
     private void svyazSluchilas(int nomer, Value sobytie) {
       Kanal kanal = kanaly.get(nomer);
-      Value hod = UzelZamera.fn_shag_svyazi_uzla(ctx, kanal.sostoyanie, sobytie, Value.text(hesh),
+      Value hod = FlangProgram.fn_shag_svyazi_uzla(ctx, kanal.sostoyanie, sobytie, Value.text(hesh),
           Value.number(srok), Value.number(pauza), Value.flag(rabotaet));
       kanal.sostoyanie = Flang.fieldGet(ctx, hod, "связь");
       for (Value velenie : Value.elements(Flang.fieldGet(ctx, hod, "веления"))) {
@@ -815,12 +815,12 @@ final class HozyainUzla {
         case "Послать привет" -> poslat(nomer, "привет", "узел", tekst(imya), "хэш", tekst(hesh));
         case "Прибрать" -> {
           pribrat(nomer);
-          uzelSluchilsya(UzelZamera.v_svyaz_poteryana(Value.text(kanal.kto), Value.text("сокет прибран")));
+          uzelSluchilsya(FlangProgram.v_svyaz_poteryana(Value.text(kanal.kto), Value.text("сокет прибран")));
         }
         case "Связь заведена" -> {
           skazat("в", tekst("связь"), "узел", tekst(imya), "цель", tekst(CEL),
               "сосед", tekst(kanal.kto), "что", tekst("заведена"));
-          uzelSluchilsya(UzelZamera.v_svyaz_gotova(Value.text(kanal.kto)));
+          uzelSluchilsya(FlangProgram.v_svyaz_gotova(Value.text(kanal.kto)));
         }
         case "Связь отвергнута" -> skazat("в", tekst("связь"), "узел", tekst(imya), "цель", tekst(CEL),
             "сосед", tekst(vzyatTekst(velenie, "сосед")), "что", tekst("отвергнута"),
@@ -832,7 +832,7 @@ final class HozyainUzla {
         case "Доставить письмо" -> {
           /* Эталон связи назвал АДРЕСАТА, груз оставил узлу — вот он. */
           Value gruz = raskodirovat(pole(posledniyKadr, "что"));
-          uzelSluchilsya(UzelZamera.v_pismo_snaruzhi(
+          uzelSluchilsya(FlangProgram.v_pismo_snaruzhi(
               Value.text(vzyatTekst(velenie, "кому")), Value.number(novyyBilet(gruz))));
         }
         default -> throw new IllegalStateException("узел не знает веления связи «" + velenie.str + "»");
@@ -845,7 +845,7 @@ final class HozyainUzla {
     private void dokladOSvyazi(Kanal kanal, String chto, String pochemu) {
       skazat("в", tekst("связь"), "узел", tekst(imya), "цель", tekst(CEL),
           "сосед", tekst(kanal.kto), "что", tekst(chto), "почему", tekst(pochemu));
-      uzelSluchilsya(UzelZamera.v_uzel_propal(Value.text(kanal.kto), Value.text(pochemu)));
+      uzelSluchilsya(FlangProgram.v_uzel_propal(Value.text(kanal.kto), Value.text(pochemu)));
     }
 
     // ── билеты: груз живёт у хозяина, в таблице едет число ─────────────────
@@ -857,7 +857,7 @@ final class HozyainUzla {
 
     // ── единственная дорога от мира к решению о процессах ──────────────────
     private void uzelSluchilsya(Value sobytie) {
-      Value hod = UzelZamera.fn_shag_uzla_celikom(ctx, uzel, sobytie);
+      Value hod = FlangProgram.fn_shag_uzla_celikom(ctx, uzel, sobytie);
       uzel = Flang.fieldGet(ctx, hod, "узел");
       for (Value velenie : Value.elements(Flang.fieldGet(ctx, hod, "веления"))) {
         ispolnitUzel(velenie);
@@ -907,15 +907,15 @@ final class HozyainUzla {
       Value gruz = gruzy.get(nomerBileta);
       Value sostoyanie = sostoyaniya.get(kto);
       if (obrabotchik == null || gruz == null || sostoyanie == null) {
-        uzelSluchilsya(UzelZamera.v_obrabotchik_otkazal(
+        uzelSluchilsya(FlangProgram.v_obrabotchik_otkazal(
             Value.text("FLANG_PROCESS"), Value.text("обработчика или груза нет")));
         return;
       }
       Value itog;
       try {
-        itog = UzelZamera.call(ctx, obrabotchik, new Value[] {sostoyanie, gruz});
+        itog = FlangProgram.call(ctx, obrabotchik, new Value[] {sostoyanie, gruz});
       } catch (FlangError beda) {
-        uzelSluchilsya(UzelZamera.v_obrabotchik_otkazal(
+        uzelSluchilsya(FlangProgram.v_obrabotchik_otkazal(
             Value.text(beda.code()), Value.text(beda.text())));
         return;
       }
@@ -925,7 +925,7 @@ final class HozyainUzla {
       for (int nomer = 0; nomer < deystviya.length; nomer += 1) {
         velenya[nomer] = vDeystvie(deystviya[nomer]);
       }
-      uzelSluchilsya(UzelZamera.v_obrabotchik_vernul(Value.list(velenya)));
+      uzelSluchilsya(FlangProgram.v_obrabotchik_vernul(Value.list(velenya)));
     }
 
     /** Действие языка → действие планировщика. Перевод, а не решение: имена
@@ -936,21 +936,21 @@ final class HozyainUzla {
       Value chto = Value.lookup(deystvie.fields, "что");
       switch (deystvie.str) {
         case "отправить":
-          return UzelZamera.v_veleno_slat(komu == null ? Value.text("") : komu,
+          return FlangProgram.v_veleno_slat(komu == null ? Value.text("") : komu,
               Value.number(novyyBilet(chto == null ? Value.nothing() : chto)));
         case "через": {
           Value zaderzhka = Value.lookup(deystvie.fields, "задержка");
-          return UzelZamera.v_veleno_slat_pozzhe(komu == null ? Value.text("") : komu,
+          return FlangProgram.v_veleno_slat_pozzhe(komu == null ? Value.text("") : komu,
               Value.number(novyyBilet(chto == null ? Value.nothing() : chto)),
               zaderzhka == null ? Value.number(0) : zaderzhka);
         }
         case "отложить":
-          return UzelZamera.v_veleno_otlozhit();
+          return FlangProgram.v_veleno_otlozhit();
         case "продолжить":
-          return UzelZamera.v_veleno_prodolzhit();
+          return FlangProgram.v_veleno_prodolzhit();
         case "остановить": {
           Value pochemu = Value.lookup(deystvie.fields, "почему");
-          return UzelZamera.v_veleno_ostanovit(pochemu == null ? Value.text("") : pochemu);
+          return FlangProgram.v_veleno_ostanovit(pochemu == null ? Value.text("") : pochemu);
         }
         default:
           throw new IllegalStateException("узел не знает действия «" + deystvie.str + "»");
@@ -1018,7 +1018,7 @@ final class HozyainUzla {
         taymery.clear();
         taymery.addAll(ostalnye);
         for (Taymer taymer : sozrevshie) {
-          uzelSluchilsya(UzelZamera.v_taymer_srabotal(Value.text(taymer.komu), Value.number(taymer.bilet)));
+          uzelSluchilsya(FlangProgram.v_taymer_srabotal(Value.text(taymer.komu), Value.number(taymer.bilet)));
         }
 
         for (int nomer = 0; nomer < kanaly.size(); nomer += 1) {
@@ -1035,7 +1035,7 @@ final class HozyainUzla {
           sleduyuschiyStorozh = seychas + period();
           for (int nomer = 0; nomer < kanaly.size(); nomer += 1) {
             if (kanaly.get(nomer).soket != null) {
-              svyazSluchilas(nomer, UzelZamera.v_storozh_prosnulsya(Value.number(seychas)));
+              svyazSluchilas(nomer, FlangProgram.v_storozh_prosnulsya(Value.number(seychas)));
             }
           }
         }
@@ -1043,7 +1043,7 @@ final class HozyainUzla {
         // Пробеги — до покоя, но с уступкой миру после каждого витка.
         for (int shag = 0; shag < 64; shag += 1) {
           Value bylo = uzel;
-          uzelSluchilsya(UzelZamera.v_pora_bezhat(Value.number(zhrebiy())));
+          uzelSluchilsya(FlangProgram.v_pora_bezhat(Value.number(zhrebiy())));
           if (Value.equal(uzel, bylo)) {
             break;
           }
@@ -1147,7 +1147,7 @@ final class HozyainUzla {
     if (vbrosy instanceof List<?> chleny) {
       for (Object vbros : chleny) {
         Value gruz = raskodirovat(pole(vbros, "что"));
-        uzel.uzelSluchilsya(UzelZamera.v_pismo_snaruzhi(
+        uzel.uzelSluchilsya(FlangProgram.v_pismo_snaruzhi(
             Value.text(tekstPolya(vbros, "кому", "")), Value.number(uzel.novyyBilet(gruz))));
       }
     }

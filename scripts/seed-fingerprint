@@ -4,7 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
-коммит 5142d96a4f8fb4444237bc8bbbd527101dfd5e2c
+коммит dee5599c496d18a18203475134eac72b361373c6
 e200119e04672d9c574cd22cb41f6358a9508a1810f8a4f43ad287a8add8f923  flang/core/evaluate.flang
 363ef4fdf66c10a13853083b3aa4aea6b6308c21045171cf5196e02c7871991f  flang/core/json.flang
 f5ad638722ae5790b333257ad0b0d67d5533858160d36b174ea33027267e3b39  flang/self/bootstrap/compiler.flang
@@ -72,7 +72,7 @@ c6c1bfd767e06207d8ff25ec61b172e1f376859963f60a1fb7efce8f1ff00972  flang/stdlib/c
 796348fdb1c6915180421f0090c3d6dec6a8c5b3b5f26c61dbc062357f2654f9  flang/stdlib/hmac.flang
 c95ba663dc8e21ab95c0489896979f7698e762df808bc98c9ead79d8690c98a1  flang/stdlib/kdf.flang
 811cfe8260bd600ca8dc4721b80ef3ad0cda92ebbadb800a6986e9a79a84f6c7  flang/stdlib/lists.flang
-7dc8a12e15db06591b662728f37d56ed9ae4e0d89821b9a06548a6dfff3a5d1d  flang/stdlib/numbers.flang
+8f4e300158ee11061ec0c1a493d63347e0d9e9931ccd7778f6f201722fd8e606  flang/stdlib/numbers.flang
 f46fd99374fa49dbaa0a2dc2d66348d5cbe1fa216b4e55fb4e20b4027ad09318  flang/stdlib/rsa.flang
 bc675cce69b843b6396fc713901df5f924a5972cbe6340e89f9e688d4674f80a  flang/stdlib/sha1.flang
 3264cfd533f418781915632394350786bcf96166a2d74d77ba3e6df94ce1ab9d  flang/stdlib/sha256.flang

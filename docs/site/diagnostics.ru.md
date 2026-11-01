@@ -645,6 +645,7 @@ $ echo $?
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
+| `FLANG_BINARY` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
@@ -687,6 +688,8 @@ $ echo $?
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
+| `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
+| `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
 | `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
@@ -723,6 +726,7 @@ $ echo $?
 | `FLANG_LEX` | `lexer.flang` | — |
 | `FLANG_LIB_DIR` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
 | `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | `interpret.flang`, `types.flang` | разбор {subject} не покрывает {cases} · разбор без случаев не покрывает ничего |

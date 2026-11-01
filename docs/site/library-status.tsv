@@ -3016,7 +3016,7 @@ flang/stdlib/result.flang		Разобрать цифру	разбор успеш
 flang/stdlib/result.flang		Разобрать цифру	на цифре разбирается именно её число	доказано
 flang/stdlib/result.flang		Цифра или запасное	цифра разбирается в своё число, прочее даёт запасное	доказано
 flang/stdlib/result.flang		Ошибка разбора	сообщение называет причину: не одна — так не цифра	доказано
-flang/stdlib/rsa.flang	f46fd99374fa49dbaa0a2dc2d66348d5cbe1fa216b4e55fb4e20b4027ad09318	Нулей		доказано постоянным шагом
+flang/stdlib/rsa.flang	3fe485e55c9cb219d9dab56d92afe1d52091c6636e3bed012e30f5b0477e91c7	Нулей		доказано постоянным шагом
 flang/stdlib/rsa.flang		Повторить октет		доказано постоянным шагом
 flang/stdlib/rsa.flang		Разряд RSA		доказано структурой
 flang/stdlib/rsa.flang		Отбросить RSA		доказано структурой
@@ -3074,8 +3074,8 @@ flang/stdlib/rsa.flang		Подпись PSS верна		доказано комп
 flang/stdlib/rsa.flang		Строчные шестнадцать		доказано композицией
 flang/stdlib/rsa.flang		Прописные шестнадцать		доказано композицией
 flang/stdlib/rsa.flang		Значение знака 16		доказано композицией
-flang/stdlib/rsa.flang		Байт по счёту		доказано композицией
-flang/stdlib/rsa.flang		Байты до места		доказано постоянным шагом
+flang/stdlib/rsa.flang		Байты из знаков		доказано структурой
+flang/stdlib/rsa.flang		Байт из пары		доказано композицией
 flang/stdlib/rsa.flang		Байты из шестнадцатеричного		доказано композицией
 flang/stdlib/rsa.flang		Нулей	нулей не просили — список пуст	доказано
 flang/stdlib/rsa.flang		Отбросить RSA	отброшенное не удлиняет	доказано

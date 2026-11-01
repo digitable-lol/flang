@@ -236,15 +236,18 @@ jobs:
       # весь этот файл по замыслу шапки: тело собирается и на сухом прогоне,
       # только применять его там некуда.
       #
-      # `--max-steps 80000000` — не запас на глаз, а то же число, что стоит у
+      # `--max-steps 160000000` — не запас на глаз, а то же число, что стоит у
       # печати страницы выпусков (`.flangrc`, «releases:page»): у `flang
       # io` умолчание предела 10 000 000 шагов, и разбор `docs/release-notes.json`
       # в него не влезает.
+      # С заметкой 0.7.32 (320 КБ) не влезло и в 80 000 000: «функция «Закрыть
+      # рамку json» исчерпала лимит шагов (80000000)»; на 120 000 000 доходит,
+      # 160 000 000 — запас вдвое к прежнему числу.
       - name: Build release body
         run: |
           set -eu
           mkdir -p output
-          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 80000000
+          LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 160000000
           echo "имя релиза: $(cat output/release-title.txt)"
           echo "знаков в теле: $(wc -c < output/release-body.md)"
 
@@ -272,7 +275,7 @@ jobs:
             exit 1
           fi
           rm -f "$podlog.do"
-          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 80000000 >/dev/null 2>&1; then
+          if LC_ALL=C.UTF-8 bootstrap/flang io scripts/site/release-body.fscript --на-веру --max-steps 160000000 >/dev/null 2>&1; then
             git checkout -- "$podlog"
             echo "::error::проба не сработала: тело собралось для версии 0.0.0, о которой заметки нет."
             echo "::error::Значит шаг «Build release body» пропустит выпуск без заметки — сторожа нет."

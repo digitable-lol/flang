@@ -475,7 +475,9 @@ jobs:
   # outside the container: a binary that needed the container's libc would
   # fail right there. macOS: the flags of the Homebrew formula on the native
   # runner; macos-15-intel stands for x86_64 because macos-13 was retired on
-  # 4 December 2025 (ADR-0067, section 1.5).
+  # 4 December 2025 (ADR-0067, section 1.5), and macos-15 stands for arm64
+  # because macos-14 images retire on 2 November 2026: on 1 November the
+  # arm64 job of run 41355297990 was cancelled by a scheduled brownout.
   #
   # A manual run builds and checks everything and publishes nothing: the
   # upload step below runs only on a tag.
@@ -490,7 +492,7 @@ jobs:
         include:
           - { os: linux, arch: x86_64, runner: ubuntu-24.04 }
           - { os: linux, arch: aarch64, runner: ubuntu-24.04-arm }
-          - { os: macos, arch: arm64, runner: macos-14 }
+          - { os: macos, arch: arm64, runner: macos-15 }
           - { os: macos, arch: x86_64, runner: macos-15-intel }
     env:
       ARCHIVE: ${{ needs.release.outputs.archive }}
@@ -687,7 +689,7 @@ jobs:
       matrix:
         include:
           - { os: linux, arch: x86_64, runner: ubuntu-24.04 }
-          - { os: macos, arch: arm64, runner: macos-14 }
+          - { os: macos, arch: arm64, runner: macos-15 }
     env:
       HOMEBREW_NO_AUTO_UPDATE: "1"
       HOMEBREW_NO_INSTALL_FROM_API: "1"

@@ -1222,16 +1222,16 @@
 
 тотальная функция «Объявление короткой команды forgery-probe:check»
   возвращает строка
-  "bootstrap/flang io --plan Check — сторожа без пробы порчи сходятся с ведомостью в обе стороны"
+  "bootstrap/flang io --plan Check --max-steps 100000000 — сторожа без пробы порчи сходятся с ведомостью в обе стороны"
 
 тотальная функция «Объявление короткой команды forgery-probe:census»
   возвращает строка
-  "bootstrap/flang io --plan Census — перепись проб порчи целиком, код всегда 0"
+  "bootstrap/flang io --plan Census --max-steps 100000000 — перепись проб порчи целиком, код всегда 0"
 
 тотальная функция «Объявление короткой команды forgery-probe:list»
   возвращает строка
-  "bootstrap/flang io --plan List — только имена беспробных, по одному в строке"
+  "bootstrap/flang io --plan List --max-steps 100000000 — только имена беспробных, по одному в строке"
 
 тотальная функция «Объявление короткой команды forgery-probe:forgery»
   возвращает строка
-  "bootstrap/flang io --plan Forgery — пять порч переписи в памяти краснят сверку, код 1"
+  "bootstrap/flang io --plan Forgery --max-steps 100000000 — пять порч переписи в памяти краснят сверку, код 1"

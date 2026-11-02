@@ -1585,7 +1585,7 @@ jobs:
       # of», возвращающая пустой список на любом входе): она даёт шагу код 0.
       - name: Probe guards without forgery probe
         run: |
-          if bootstrap/flang io scripts/guards/guards-without-forgery-probe.fscript --plan Forgery; then
+          if bootstrap/flang io scripts/guards/guards-without-forgery-probe.fscript --plan Forgery --max-steps 100000000; then
             echo "сверка промолчала на порченой переписи — проверять ею нечего" >&2
             exit 1
           fi

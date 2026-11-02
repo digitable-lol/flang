@@ -35,3 +35,6 @@ negative-zero-in-run-answer.flang	run-negative-zero-answer	0	[0]
 parametric-argument-at-printed-entry.flang	check	0	замечаний нет
 parametric-argument-at-printed-entry.flang	emit-c-parametric-entry	0	{"ok":true,"value":{"n":"-3"}}
 negative-zero-from-percent.flang	run-percent-zero	0	"минус"
+exact-integer-off-canon-at-printed-entry.flang	check	0	замечаний нет
+exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1 отрицателен
+exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":true,"value":{"l":[{"n":"-1"}]}}

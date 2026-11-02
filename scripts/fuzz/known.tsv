@@ -20,3 +20,7 @@ hole	oracle	detail
 21	b-go	outside IZ): evaluator {"error":"FLANG_TYPE"}
 21	b-java	outside IZ): evaluator {"error":"FLANG_TYPE"}
 21	b-rust	outside IZ): evaluator {"error":"FLANG_TYPE"}
+23	b-c	outside X): evaluator {"error":"FLANG_TYPE"}
+23	b-go	outside X): evaluator {"error":"FLANG_TYPE"}
+23	b-java	outside X): evaluator {"error":"FLANG_TYPE"}
+23	b-rust	outside X): evaluator {"error":"FLANG_TYPE"}

@@ -186,6 +186,175 @@ theorem «планы-по-исходнику» (s : «Исх») («блоки» 
     ∀ b ∈ «блоки», («судитьПлан» s s.«хозяева» b).«чист» :=
   («свёртка-и-чиста» («судитьПлан» s s.«хозяева») «блоки» {} hc).2
 
+/-! ## Снятие предусловия в точке вызова -/
+
+/-- Решение о снятии с принятой формой: принято — значит вердикт «доказано», цель —
+    снимаемое требование на доводах вызова, и принял блок вывода моделью либо ходы. -/
+theorem «решение-снятия» (s : «Исх») (h : Array String) («строки» : List String)
+    («опр» : List «Определение») («доказанные» «объявленные» : List String) (c : «Снятие») (r : «Суд»)
+    (hr : («решениеСнятия» s h «строки» «опр» «доказанные» «объявленные» c r).«чист») :
+    ∃ «цель», «цельСнятия» s c = some «цель» ∧
+      c.«внутри».filter (fun l => l.startsWith "вердикт " || l = "вердикт") = ["вердикт доказано"] ∧
+      («выводСнятия» c «цель» «строки» «опр» («звеньяВызоваЗв» s h c.«функция» c.«строка») = .ok none ∨
+       let p := «проигратьБлок» («обстСнятия» s c «цель» «доказанные» «объявленные»)
+       p.«беды» = [] ∧ p.«неВзялся» = [] ∧ p.«проиграно» ≠ 0) := by
+  by_cases h1 : «хозяинИз» h c.«строка» ≠ c.«функция»
+  · simp only [«решениеСнятия», ne_eq, h1, not_false_eq_true, ↓reduceIte] at hr
+    exact absurd hr («чист-беда» _ _)
+  by_cases h2 : (!(«вызовСнятия» s c).«с».startsWith s!"«{c.«зовёт»}»") = true
+  · simp only [«решениеСнятия», h1, h2, ↓reduceIte] at hr
+    exact absurd hr («чист-беда» _ _)
+  by_cases h3 : («вызовСнятия» s c).«треб».isEmpty = true
+  · simp only [«решениеСнятия», h1, h2, h3, ↓reduceIte] at hr
+    exact absurd hr («чист-слово» _ _)
+  cases hu : («вызовСнятия» s c).«у» with
+  | none =>
+    simp only [«решениеСнятия», h1, h2, h3, hu, Bool.false_eq_true, ↓reduceIte] at hr
+    exact absurd hr («чист-беда» _ _)
+  | some «у» =>
+  by_cases h4 : («вызовСнятия» s c).«арги».length ≠ («вызовСнятия» s c).«парам».length
+  · simp only [«решениеСнятия», ne_eq, not_false_eq_true, h1, h2, h3, hu, h4, Bool.false_eq_true, ↓reduceIte] at hr
+    exact absurd hr («чист-беда» _ _)
+  by_cases h5 : c.«внутри».filter (fun l => l.startsWith "вердикт " || l = "вердикт") ≠ ["вердикт доказано"]
+  · simp only [«решениеСнятия», ne_eq, not_false_eq_true, h1, h2, h3, hu, h4, h5, Bool.false_eq_true, ↓reduceIte] at hr
+    exact absurd hr («чист-слово» _ _)
+  have hcel : «цельСнятия» s c = some («подставитьДоводы» «у» («вызовСнятия» s c).«парам» («вызовСнятия» s c).«арги») := by
+    simp only [ne_eq, Decidable.not_not] at h4
+    simp only [«цельСнятия», hu, h4, ↓reduceIte]
+  refine ⟨_, hcel, by simpa using h5, ?_⟩
+  by_cases h6 : «связаноВТеле» s h c.«функция» c.«строка»
+      («подставитьДоводы» «у» («вызовСнятия» s c).«парам» («вызовСнятия» s c).«арги») = true
+  · simp only [«решениеСнятия», h1, h2, h3, hu, h4, h5, h6, Bool.false_eq_true, ↓reduceIte] at hr
+    exact absurd hr («чист-слово» _ _)
+  by_cases h7 : (c.«внутри».any (·.startsWith "вывод ")) = true
+  · left
+    simp only [«решениеСнятия», h1, h2, h3, hu, h4, h5, h6, h7, Bool.false_eq_true, ↓reduceIte] at hr
+    revert hr
+    cases «выводСнятия» c («подставитьДоводы» «у» («вызовСнятия» s c).«парам» («вызовСнятия» s c).«арги»)
+        «строки» «опр» («звеньяВызоваЗв» s h c.«функция» c.«строка») with
+    | error e =>
+      intro hr
+      by_cases h8 : «строемВывода?» e = true
+      · simp only [h8, ↓reduceIte] at hr; exact absurd hr («чист-беда» _ _)
+      · simp only [h8, Bool.false_eq_true, ↓reduceIte] at hr; exact absurd hr («чист-не» _ _)
+    | ok o =>
+      cases o with
+      | none => intro _; rfl
+      | some e => intro hr; exact absurd hr («чист-беда» _ _)
+  · right
+    simp only [«решениеСнятия», ne_eq, h1, h2, h3, hu, h4, h5, h6, h7, Bool.false_eq_true, ↓reduceIte] at hr
+    split at hr <;>
+    · split at hr
+      · exact absurd hr («чист-слово» _ _)
+      split at hr
+      · exact absurd hr («чист-слово» _ _)
+      split at hr
+      · exact absurd hr («чист-слово» _ _)
+      rename_i h10
+      intro p
+      obtain ⟨hb, _, hw⟩ := hr
+      simp only [List.append_eq_nil_iff, List.map_eq_nil_iff] at hw
+      simp only [«Суд».«еслиНе»] at hb
+      split at hb
+      · rename_i h11
+        refine ⟨List.isEmpty_iff.mp h11, hw.2, ?_⟩
+        intro h12
+        apply h10
+        simp [h11, hw.2, h12, p]
+      · exact absurd hb («беда-не-пуста» _ _)
+
+/-- **Снятие принимает модель либо прогон ходов.** Если путь `«судитьСнятие»` принял
+    блок снятия, то вердикт блока — «доказано», цель снятия — снимаемое требование
+    зовомой на доводах этого вызова (`«цельСнятия»`), и либо блок `вывод` принят приёмкой
+    модели (`«выводСнятия»` дал «принято»; тогда по теореме «выводСнятия-по-модели» цель
+    следует из окружения), либо ходы свели цель прогоном `«проигратьБлок»` без беды и без
+    места на слове — третьего пути к принятию нет. Ходы судит строка долга
+    `«проигратьБлок»`. -/
+theorem «снятие-по-модели-или-ходам» (s : «Исх») (h : Array String) («строки» : List String)
+    («опр» : List «Определение») («правила» «доказанные» «объявленные» : List String) («блок» : List String)
+    (hc : («судитьСнятие» s h «строки» «опр» «правила» «доказанные» «объявленные» «блок»).«чист») :
+    ∃ «цель», «цельСнятия» s («прочестьСнятие» «блок») = some «цель» ∧
+      («прочестьСнятие» «блок»).«внутри».filter (fun l => l.startsWith "вердикт " || l = "вердикт") = ["вердикт доказано"] ∧
+      («выводСнятия» («прочестьСнятие» «блок») «цель» «строки» «опр»
+          («звеньяВызоваЗв» s h («прочестьСнятие» «блок»).«функция» («прочестьСнятие» «блок»).«строка») = .ok none ∨
+       let p := «проигратьБлок» («обстСнятия» s («прочестьСнятие» «блок») «цель» «доказанные» «объявленные»)
+       p.«беды» = [] ∧ p.«неВзялся» = [] ∧ p.«проиграно» ≠ 0) := by
+  unfold «судитьСнятие» at hc
+  dsimp only at hc
+  split at hc
+  · rename_i hf
+    rw [hc.1] at hf
+    exact absurd hf (by decide)
+  · exact «решение-снятия» s h «строки» «опр» «доказанные» «объявленные» _ _ hc
+
+/-! ## Обязательства входа -/
+
+/-- **Обязательство входа закрыто зовущими.** Если путь `«судитьОбязательства»` не нашёл
+    ни беды, ни обязательства, закрыть которое нечем, то каждая строка обязательства
+    утверждения — обязательство входа по форме записи над доводом функции, его заключение
+    — «x не больше К_предст» либо «x : цел», строка, на которую оно указывает, стоит в
+    функции и объявляет довод точной сеткой, и проверка зовущих `«закрытиеВхода»` закрыла
+    его: на каждом вызове стоит литерал под К_предст (для «цел» — целый) либо довод
+    зовущей под её обязательством, и примеры дают литерал. -/
+theorem «обязательства-закрыты» (s : «Исх») («строки» «обр» : List String) («имя» «чья» : String)
+    (hb : («судитьОбязательства» s «строки» «обр» «имя» «чья»).1.«беды» = [])
+    (hn : («судитьОбязательства» s «строки» «обр» «имя» «чья»).2 = 0) :
+    ∀ l ∈ «обр», l.startsWith "обязательство " = true →
+      let x := «ёлочка» l 1
+      let f := «т» («уголок» l 1)
+      let k := «номерПосле» («после» l "⟩") "строка "
+      l = s!"обязательство вход «{x}» ⟨{«уголок» l 1}⟩ строка {k} на зовущем" ∧ «имяВывода?» x = true ∧
+        (f = s!"{x} : цел" ∨ f = s!"{x} не больше {«Кпредст»}") ∧
+        (k ≥ 1 ∧ k ≤ s.«число» ∧ «хозяинИз» s.«хозяева» k = «чья») ∧
+        «точныйВСтроке?» «строки» (s.«строка» k) x = true ∧
+        «закрытиеВхода» s s.«хозяева» «строки» «чья» x (f = s!"{x} : цел") = none := by
+  intro l hl hs
+  simp only [«судитьОбязательства», List.flatMap_eq_nil_iff, List.mem_map, List.mem_filter,
+    List.length_eq_zero_iff, List.filter_eq_nil_iff] at hb hn
+  have hlb := hb _ ⟨l, ⟨hl, hs⟩, rfl⟩
+  have hln := hn _ ⟨l, ⟨hl, hs⟩, rfl⟩
+  unfold «обязательствоВхода» at hlb hln
+  by_cases hv : (!l.startsWith "обязательство вход «") = true
+  · simp [hv] at hlb
+  simp only [hv, Bool.false_eq_true, ↓reduceIte, List.append_eq_nil_iff, «если-пусто»] at hlb hln
+  obtain ⟨⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩, h6⟩ := hlb
+  simp only [Bool.and_eq_true, decide_eq_true_eq, Bool.or_eq_true] at h1 h3 h4 h5
+  refine ⟨h1, h2, h3, ⟨h4.1.1, h4.1.2, h4.2⟩, ?_, ?_⟩
+  · rcases h5 with h5 | h5
+    · simp [h4.1.1, h4.1.2, h4.2] at h5
+    · exact h5
+  · revert h6 hln
+    cases «закрытиеВхода» s s.«хозяева» «строки» «чья» («ёлочка» l 1) (decide («т» («уголок» l 1) = s!"{«ёлочка» l 1} : цел")) with
+    | none => intro _ _; simp
+    | some q =>
+      obtain ⟨p, b⟩ := q
+      cases b <;> simp
+
+/-! ## Места строк записи -/
+
+/-- **Каждая строка стоит на своём месте.** Если путь `«судитьМеста»` принял запись, то
+    каждая её строка, начатая словами из `«местаСтрок»` («для всех», «таких что»,
+    «свидетель», «после подстановки», «прогон»), стоит не первой и сразу под строкой,
+    после которой ей место по описанию формата. -/
+theorem «места-по-форме» («зап» : String) (hc : («судитьМеста» «зап»).«чист») :
+    let v := («зап».splitOn "\n").map «обрезать»
+    ∀ i < v.length, ∀ pm ∈ «местаСтрок», (v.getD i "").startsWith pm.1 = true →
+      i > 0 ∧ pm.2.any ((v.getD (i - 1) "").startsWith ·) = true := by
+  intro v i hi pm hpm hs
+  have h := hc.1
+  simp only [«судитьМеста», List.flatMap_eq_nil_iff, List.mem_range] at h
+  have := h i hi pm hpm
+  have key : ¬ (((v.getD i "").startsWith pm.1 &&
+      !(decide (i > 0) && pm.2.any ((if i > 0 then v.getD (i - 1) "" else "").startsWith ·))) = true) := by
+    intro hk
+    simp only [v] at hk
+    simp only [hk, ↓reduceIte] at this
+    exact List.cons_ne_nil _ _ this
+  rw [hs, Bool.true_and, Bool.not_eq_true, Bool.not_eq_false', Bool.and_eq_true, decide_eq_true_eq] at key
+  obtain ⟨h0, h1⟩ := key
+  simp only [h0, ↓reduceIte] at h1
+  exact ⟨h0, h1⟩
+
 /-! ## Тотальность: модель зовов и фундированность
 
 Модель: зов `зов (g, b) (f, a)` — вычисление функции `f` на значении `a` зовёт `g` на

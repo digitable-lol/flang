@@ -400,16 +400,14 @@ def «местаСтрок» : List (String × List String) :=
    ("после подстановки ", ["свидетель "]),
    ("прогон «", ["для всех ", "таких что ", "вид statement"])]
 
-def «судитьМеста» («зап» : String) : «Суд» := Id.run do
+def «судитьМеста» («зап» : String) : «Суд» :=
   let v := («зап».splitOn "\n").map «обрезать»
-  let mut r : «Суд» := {}
-  for i in List.range v.length do
-    let l := v.getD i ""
-    let «над» := if i > 0 then v.getD (i - 1) "" else ""
-    for (p, «можно») in «местаСтрок» do
-      if l.startsWith p && !(i > 0 && «можно».any («над».startsWith ·)) then
-        r := r.«беда» s!"строка записи {i + 1} «{l}» стоит не на своём месте"
-  return r
+  { «беды» := (List.range v.length).flatMap fun i =>
+      let l := v.getD i ""
+      let «над» := if i > 0 then v.getD (i - 1) "" else ""
+      «местаСтрок».flatMap fun (p, «можно») =>
+        if l.startsWith p && !(i > 0 && «можно».any («над».startsWith ·)) then
+          [s!"строка записи {i + 1} «{l}» стоит не на своём месте"] else [] }
 
 def «сверить» («исх» : String) («путь» : String) («зап» : String) («каталог» : String) : «Итог» := Id.run do
   let «строки» := «строкиПоРусски» («исх».splitOn "\n")

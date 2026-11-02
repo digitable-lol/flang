@@ -50,7 +50,7 @@ name: Reprint
 #      команду регистрации раннера. Дорогие работы её ждут (`needs:`) и без неё
 #      в очередь не встают.
 #   2. `runner-watch` (ubuntu-latest): переменная есть, а раннер выключен —
-#      через 30 минут ожидания работа ПАДАЕТ с сообщением и снимает прогон,
+#      через час ожидания работа ПАДАЕТ с сообщением и снимает прогон,
 #      чтобы он не висел сутки. Снятый прогон несёт её ошибку в аннотациях и
 #      в сводке; сделать из очереди «провал» иначе GitHub не умеет.
 #   3. Сама печать идёт под `timeout` и `ulimit -v`: не дошла за срок —
@@ -72,9 +72,23 @@ on:
     # разъезд дерева и семени, и на каждый пуш её не зовут.
     - cron: "0 2 * * 0"
   workflow_dispatch:
+    inputs:
+      two_prints_only:
+        description: "Only the two prints of one tree, without the seed check"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+
+# ОДИН ПРОГОН ЗА РАЗ. Раннер с большой памятью один, и две печати одного
+# прогона идут на нём подряд. Второй прогон ждёт целиком, а не работой в
+# очереди: иначе `runner-watch` снял бы его через полчаса как «раннер не
+# взял». Ждущий прогон один — новый пуш заменяет прежний ждущий, а идущий
+# не трогает.
+concurrency:
+  group: reprint-big-memory
+  cancel-in-progress: false
 
 jobs:
   # ── Дёшево и всегда: состояние побайтовой сверки, вслух ───────────────────
@@ -274,7 +288,7 @@ jobs:
   # Переменная говорит «раннер есть», а раннер может быть выключен. Тогда
   # `two-prints` стоит в очереди, прогон «идёт», и так — сутки, пока GitHub не
   # снимет работу сам. Эта работа спрашивает у GitHub состояние `two-prints`
-  # раз в минуту и через 30 минут очереди ПАДАЕТ с сообщением и снимает прогон.
+  # раз в минуту и через час очереди ПАДАЕТ с сообщением и снимает прогон.
   # Снятый прогон несёт её ошибку в аннотациях и сводке — сделать из очереди
   # «провал» иначе нельзя: у работы, которая не началась, нет кода возврата.
   # Право `actions: write` нужно только этой работе и только ради `cancel`.
@@ -282,7 +296,7 @@ jobs:
     name: runner-watch
     needs: big-memory-runner
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     permissions:
       actions: write
       contents: read
@@ -291,16 +305,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           WATCHED: reprint-reproducibility
-          MINUTES: "30"
+          MINUTES: "60"
         run: |
           set -u
           minute=0
           while [ "$minute" -lt "$MINUTES" ]; do
             status=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" \
-              --jq ".jobs[] | select(.name == \"${WATCHED}\") | .status" 2>/dev/null | head -1)
+              --jq ".jobs[] | select((.name == \"${WATCHED}\" or .name == \"reprint-check\") and .conclusion != \"skipped\") | .status" 2>/dev/null \
+              | grep -m1 -E '^(in_progress|completed)$' || true)
             case "${status:-}" in
               in_progress|completed)
-                echo "работа «${WATCHED}» взята раннером: ${status} (через ${minute} мин)"
+                # Раннер один: по расписанию он может сперва взять
+                # reprint-check, и тогда две печати ждут её законно.
+                echo "раннер взял работу этого прогона: ${status} (через ${minute} мин)"
                 exit 0
                 ;;
             esac
@@ -331,13 +348,16 @@ jobs:
   reprint-check:
     name: reprint-check
     needs: [c99-limits, id-collisions, big-memory-runner]
-    # Раннер общий с хозяином, и защита не должна держаться на одном отсутствии
-    # триггера pull_request (задача 9971) — она держится ещё и здесь, на каждой
-    # self-hosted работе одинаково.
+    # ТОЛЬКО ДОВЕРЕННЫЙ КОД. Раннер стоит на машине владельца, а репозиторий
+    # публичный: работа идёт только по пушу в dev или main, по кнопке и по
+    # расписанию, и никогда — по pull_request, даже из ветки этого же
+    # репозитория. Тот же запрет держит и сам раннер, крюком перед каждой
+    # работой (ACTIONS_RUNNER_HOOK_JOB_STARTED): правка этого файла в чужом
+    # форке его не снимает.
     if: >-
-      github.event_name != 'push' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event_name == 'schedule' ||
+       (github.event_name == 'workflow_dispatch' && !inputs.two_prints_only)) &&
+      (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
     runs-on: [self-hosted, big-memory]
     # Одна печать: 16 ч — вдвое дольше самой долгой дошедшей печати октября
     # 2026 (7 ч 48 мин, партия 8); сборка семени и пробы — ещё час.
@@ -415,11 +435,16 @@ jobs:
   two-prints:
     name: reprint-reproducibility
     needs: [c99-limits, big-memory-runner]
-    # Тот же довод, что у `reprint-check` выше и у задачи 9971 для binary.yml —
-    # защита не должна держаться на одном отсутствии триггера pull_request.
+    # ТОЛЬКО ДОВЕРЕННЫЙ КОД. Раннер стоит на машине владельца, а репозиторий
+    # публичный: работа идёт только по пушу в dev или main, по кнопке и по
+    # расписанию, и никогда — по pull_request, даже из ветки этого же
+    # репозитория. Тот же запрет держит и сам раннер, крюком перед каждой
+    # работой (ACTIONS_RUNNER_HOOK_JOB_STARTED): правка этого файла в чужом
+    # форке его не снимает.
     if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event_name == 'push' || github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch') &&
+      (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
     runs-on: [self-hosted, big-memory]
     # ДВЕ ПЕЧАТИ ПОДРЯД, И ПОТОЛОК СЧИТАН ОТ ИЗМЕРЕННОГО, А НЕ ОТ ОКРУГЛОГО.
     # На печать даётся 16 ч (`PRINT_SECONDS` ниже) — вдвое дольше самой долгой
@@ -436,6 +461,10 @@ jobs:
       # уводит раннер в подкачку. Переопределяется переменной репозитория.
       MEMORY_CEILING_GB: ${{ vars.PRINT_MEMORY_CEILING_GB || '140' }}
       PRINT_SECONDS: "57600"
+      # Кеш суда ядра 16 ГиБ вместо 4: с 0.7.27 он не влезает в 4, и печать
+      # идёт около 8,5 ч вместо 75 мин; вывод тот же. Сказано явно, а не
+      # оставлено умолчанию scripts/bootstrap-reprint.sh.
+      FLANG_MEMO_BYTES: "17179869184"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
@@ -487,8 +516,19 @@ jobs:
           # `2>&1` ОБЯЗАТЕЛЬНО: отметки хода печать пишет в stderr
           # (flang/src/emit/c/flang_repl.c, repl_hod_say), и без него по журналу
           # нечего будет разложить по стадиям (scripts/seed/print-stages.fscript).
-          timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1
-          code=$?
+          # ОЧЕРЕДЬ ТЯЖЁЛЫХ ПРОГОНОВ МАШИНЫ. Если раннер объявил свою очередь
+          # (FLANG_HEAVY_WRAPPER в .env раннера), печать встаёт в неё как
+          # всякий тяжёлый прогон: ждёт свободного места, под тем же потолком
+          # памяти и сроком. Без неё — как прежде, под ulimit и timeout здесь.
+          # `|| code=$?`: шаг идёт под `bash -e`, и голый отказ команды
+          # оборвал бы его раньше, чем код запишется.
+          code=0
+          if [ -n "${FLANG_HEAVY_WRAPPER:-}" ]; then
+            HEAVY_MEM_GB=$MEMORY_CEILING_GB HEAVY_HOURS=$((PRINT_SECONDS / 3600)) \
+              timeout "$PRINT_SECONDS" sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+          else
+            timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+          fi
           # Строку пишем САМИ и настоящим кодом — её не пишет никто (см. выше).
           printf 'ПЕЧАТЬ КОД=%s\n' "$code" >> "$LOG"
           if [ "$code" -eq 124 ]; then
@@ -519,8 +559,19 @@ jobs:
             exit 2
           fi
           ulimit -v $((MEMORY_CEILING_GB * 1024 * 1024))
-          timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1
-          code=$?
+          # ОЧЕРЕДЬ ТЯЖЁЛЫХ ПРОГОНОВ МАШИНЫ. Если раннер объявил свою очередь
+          # (FLANG_HEAVY_WRAPPER в .env раннера), печать встаёт в неё как
+          # всякий тяжёлый прогон: ждёт свободного места, под тем же потолком
+          # памяти и сроком. Без неё — как прежде, под ulimit и timeout здесь.
+          # `|| code=$?`: шаг идёт под `bash -e`, и голый отказ команды
+          # оборвал бы его раньше, чем код запишется.
+          code=0
+          if [ -n "${FLANG_HEAVY_WRAPPER:-}" ]; then
+            HEAVY_MEM_GB=$MEMORY_CEILING_GB HEAVY_HOURS=$((PRINT_SECONDS / 3600)) \
+              timeout "$PRINT_SECONDS" sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+          else
+            timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+          fi
           printf 'ПЕЧАТЬ КОД=%s\n' "$code" >> "$LOG"
           if [ "$code" -eq 124 ]; then
             echo "ПЕЧАТЬ ВТОРАЯ УБИТА ПО ВРЕМЕНИ: $PRINT_SECONDS с вышли, печать не кончилась." >&2
@@ -571,10 +622,11 @@ jobs:
           fi
           echo "журнал первой печати:  $LOG1"
           echo "журнал второй печати:  $LOG2"
-          # Опять В ФАЙЛ и `code=$?` СЛЕДУЮЩЕЙ СТРОКОЙ. Прибор различает 0/1/2/3,
-          # и весь смысл работы в том, чтобы этот код дошёл до приговора целым.
-          FLANG_PRINT_LOG_1="$LOG1" FLANG_PRINT_LOG_2="$LOG2" timeout 1800 bootstrap/flang io scripts/seed/two-prints-identical.fscript --plan Check --timeout 1800000 -- "$BASE/first/tree" "$BASE/second/tree" > "$VERDICT.raw" 2>&1
-          code=$?
+          # Опять В ФАЙЛ и код через `|| code=$?` (шаг идёт под `bash -e`).
+          # Прибор различает 0/1/2/3, и весь смысл работы в том, чтобы этот
+          # код дошёл до приговора целым.
+          code=0
+          FLANG_PRINT_LOG_1="$LOG1" FLANG_PRINT_LOG_2="$LOG2" timeout 1800 bootstrap/flang io scripts/seed/two-prints-identical.fscript --plan Check --timeout 1800000 -- "$BASE/first/tree" "$BASE/second/tree" > "$VERDICT.raw" 2>&1 || code=$?
           grep '^{' "$VERDICT.raw" | jq -r '.result // .error' > "$VERDICT"
           [ -s "$VERDICT" ] || cp "$VERDICT.raw" "$VERDICT"
           cat "$VERDICT"

@@ -1409,15 +1409,17 @@ jobs:
   # тут нужнее, чем кажется.
   srashchivanie:
     name: merge-splicing
-    # На self-hosted раннере: неограниченный `pull_request` на публичном
-    # репозитории собирал бы и исполнял чужой код на этой машине без
-    # проверки источника. Найдено Ч402 (задача 9971) — гейт ниже пускает
-    # PR из ветки этого же репозитория (доверенной, там пишут только с
-    # правом записи), но не из чужого форка.
+    # На self-hosted раннере: `pull_request` на публичном репозитории
+    # исполнял бы непроверенный код на машине владельца (задача 9971). Работа
+    # идёт ТОЛЬКО по пушу в dev или main и по кнопке на них — не по
+    # pull_request вовсе, даже из ветки этого же репозитория, и не по пушу в
+    # рабочие ветки. Тот же запрет держит сам раннер крюком перед каждой
+    # работой (ACTIONS_RUNNER_HOOK_JOB_STARTED), и правка этого файла в
+    # чужом форке его не снимает.
     if: >-
       vars.BIG_MEMORY_RUNNER == 'yes' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
     runs-on: [self-hosted, big-memory]
     timeout-minutes: 30
     steps:

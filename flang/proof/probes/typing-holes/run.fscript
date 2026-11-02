@@ -83,6 +83,8 @@
     случай "emit-c-parametric-entry"
       то («Вход печати на C» от "th-parametric-entry" и
         "{\"fn\":\"Значение или ноль\",\"args\":[{\"v\":\"Нечто\",\"f\":[[\"значение\",{\"n\":\"-3\"}]]}]}")
+    случай "run-percent-zero"
+      то " --function '«Знак процентов от нуля»' --args '{\"а\":0}'"
     случай "run-generic-field"
       то " --function '«Минус семь неотрицательным»'"
     случай "run-word-answer"

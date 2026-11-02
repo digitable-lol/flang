@@ -1,0 +1,18 @@
+hole	oracle	detail
+12	a-value	type IZ, value {"вариант":"Нечто","значение":
+13	a-value	type u8, value null
+13	a-value	type i8, value null
+13	a-value	type u32, value null
+13	a-value	type i64, value null
+13	a-value	type u64, value null
+14	a-value	type W, value -
+14	a-value	type W, value "nan"
+15	a-boundary	requirement false
+14	a-value	type W, value "-inf"
+18	a-value	type LN, value [-
+18	a-value	type LN, value [0.
+18	a-value	type LZ, value [0.
+19	b-c	evaluator {"error":"FLANG_OVERFLOW"}
+19	b-go	evaluator {"error":"FLANG_OVERFLOW"}
+19	b-java	evaluator {"error":"FLANG_OVERFLOW"}
+19	b-rust	evaluator {"error":"FLANG_OVERFLOW"}

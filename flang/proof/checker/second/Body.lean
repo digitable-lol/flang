@@ -1,4 +1,4 @@
-import Evaluator
+import Order
 
 open «Разбор»
 
@@ -1204,6 +1204,15 @@ def «Исх».«телоБезПуст» (s : «Исх») (a b : Nat) : String 
     t := «вместо» t n («т» v)
   return t
 
+/-- Тела всех функций из строк — вычислителю, который `Body.lean` не видит. -/
+def «Исх».«сМногострочными» (s : «Исх») : «Исх» :=
+  let hs := s.«номера».filterMap fun i =>
+    let f := «имяФункции» (s.«сырая» i)
+    if f = "" then none else match s.«блокС» f with
+      | some (a, b) => if a = i then some (a, s.«телоМногострочное» a b) else none
+      | none => none
+  { s with «многострочные» := hs.filter (·.2 ≠ "") }
+
 def «Исх».«телоРазбора» (s : «Исх») (a b : Nat) : String :=
   let t := s.«телоБезПуст» a b
   if t ≠ "" then t else s.«телоМногострочное» a b
@@ -2124,7 +2133,8 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
   if n = "" || n = «чья» || !g.startsWith s!"«{n}» от " then return t
   let some (a, b) := s.«блокС» n | return t
   let ds := s.«именаДоводовФункции» n
-  let args := «доводыВызоваС» («обрезать» («после» g s!"«{n}» от "))
+  -- хвост — всё после головы вызова: `после` отдал бы кусок до второго вхождения головы
+  let args := «доводыВызоваС» («обрезать» («отЗнака» g (s!"«{n}» от ").length))
   if ds.isEmpty || ds.length ≠ args.length then return t
   let razb := (List.range' a (b - a)).filter (fun i => (s.«строка» i).startsWith "разбор ")
   let mut kr : Option Nat := none
@@ -2134,7 +2144,7 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
       if w = ds.getD k "" || w = s!"«{ds.getD k ""}»" then kr := some k
   if razb.length ≠ 1 then return t
   let some k0 := kr | return t
-  let dv := «ужатьТ» («обрезать» (args.getD k0 ""))
+  let dv := «ужатьТ» («безВнешних» (args.getD k0 ""))
   if !dv.startsWith "вариант «" then return t
   let var := «ёлочка» dv 1
   if var = "" then return t
@@ -2322,6 +2332,8 @@ def «разборомЦели» (c0 : «Счёт») («свои» : List String
            fs.contains («т» g) ||
            (let g4 := fs.foldl (fun acc f => («подставитьУсловие» acc f "да").1) g
             g4 ≠ g && «закрыта» c g4))) ||
+        -- выбор по условиям и замыкание сравнений (`порядок_разбором` на C, линия wReplay)
+        «порядокРазбором» c.«имена» g (s.«фактыЦели» g «чья» («доказанные?».getD [])) [] 0 ||
         s.«изОбъявленного» c g a b || s.«невыполнимаяПосылка» c a b
 
 end «Второй»

@@ -789,6 +789,53 @@ def «кванторПодСвязкойПроигран» (c : «Счёт») (m
     let dno := (s.«именаДоводовФункции» m.«чья»).filter (s.«доводСДном» a b ·)
     if s.«подСвязкойЗакрыто» c m.«цель» body m.«чья» (s.«требованияФункции» a b) dno 0 then (1, "") else (0, "")
 
+/-- Контрпример (`пф_контрпример` на C, линия wReplay): значения 0…3 имён из их типа —
+    квантора утверждения либо доводов функции постусловия, все типа-отрезка, не больше
+    четырёх, — при которых допущения (`таких что` либо `требует`) верны, а цель ложна;
+    `результат` — тело функции на этих значениях. Найден — ложь записи. -/
+def «контрпример» (c : «Счёт») («свои» : List String) («чья» «цель» : String) : Option String := Id.run do
+  let s := c.«исх»
+  let G := «т» «цель»
+  if (G.splitOn "\"").length > 1 then return none
+  let (ns, ts, dop) :=
+    if «чья» ≠ "" then
+      let ps := (s.«подпись» «чья»).map (fun p => («голо» p.1, «обрезать» p.2))
+      let tr := match s.«блокС» «чья» with
+        | some (a, b) => s.«требованияФункции» a b
+        | none => []
+      (ps.map (·.1), ps.map (·.2), tr)
+    else
+      let kv := «свои».filter (·.startsWith "для всех «")
+      (kv.map (fun l => «ёлочка» l 1), kv.map (fun l => «обрезать» («уголок» l 1)),
+       («свои».filter (·.startsWith "таких что ")).map (fun l => «т» («уголок» l 1)))
+  if «чья» ≠ "" && ns.isEmpty then return none
+  if !ts.all «пфНатуральное» then return none
+  let n := ns.length
+  if n > 4 then return none
+  for k in [0:4 ^ n] do
+    let vals := (List.range n).map (fun i => (k / 4 ^ i) % 4)
+    let mut e : «Среда» := {}
+    let mut ok := true
+    for (nm, v) in ns.zip vals do
+      match e.«связать» nm (.«чис» v.toFloat) with
+      | some e2 => e := e2
+      | none => ok := false
+    for d in dop do
+      if ok then
+        match ((«оценить» c e d 0).run' 0) with
+        | .«приз» true => pure ()
+        | _ => ok := false
+    let mut rez : «Зн» := .«нет»
+    if ok && «чья» ≠ "" then
+      rez := ((«применить» c e «чья» (vals.map toString) 0).run' 0)
+      if !rez.«есть» then ok := false
+    if ok then
+      match ((«оценить» c { e with «рез» := rez } G 0).run' 0) with
+      | .«приз» false =>
+        return some (if n = 0 then "любых значениях: имён нет" else ", ".intercalate ((ns.zip vals).map (fun (a, v) => s!"{a} = {v}")))
+      | _ => pure ()
+  return none
+
 structure «ИтогКрюков» where
   «снял» : String := ""
   «беды» : List String := []
@@ -802,6 +849,10 @@ def «крюкиПоТелу» (c : «Счёт») (m : «Место») : «Ит�
     | (1, _) => return { r with «снял» := "разбор" }
     | (2, b) => return { r with «беды» := [b] }
     | _ => pure ()
+  -- свободное утверждение со сравнениями (линия wReplay): замыкание порядка по
+  -- ограничению, иначе — поиск контрпримера; найденный — ложь записи
+  if m.«чья» = "" && !m.«свои».any (·.startsWith "посылка ") && m.«свои».contains "вид statement" &&
+     «порядокУтверждения» m.«свои» m.«чья» m.«цель» then return { r with «снял» := "порядок" }
   match «проигратьУзел» c m with
   | .«проигран» _ => return { r with «снял» := "узел" }
   | .«ложь» bs => r := { r with «беды» := bs }
@@ -823,6 +874,10 @@ def «крюкиПоТелу» (c : «Счёт») (m : «Место») : «Ит�
   if s.«началоПоТелу» m.«чья» m.«цель» then return { r with «снял» := "начало_по_телу" }
   if «ужатьТ» («т» m.«цель») = "результат не меньше 0" && s.«прямаяПоПредположению» m.«чья» then return { r with «снял» := "прямая" }
   if s.«неотрицательноУтверждение» m.«высказывание» m.«цель» then return { r with «снял» := "неотр_утв" }
+  -- не взял никто — поиск контрпримера (линия wReplay); найденный — ложь записи
+  if !m.«свои».any (fun l => l.startsWith "принцип " || l = "ход цель" || l = "вывод цель") then
+    if let some k := «контрпример» c m.«свои» m.«чья» m.«цель» then
+      return { r with «беды» := r.«беды» ++ [s!"утверждение «{m.«имя»}» записано доказанным, а оно ЛОЖНО: при {k} допущения верны, а цель «{«т» m.«цель»}» ложна"] }
   return r
 
 end «Второй»

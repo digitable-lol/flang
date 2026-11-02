@@ -15,7 +15,7 @@
   возвращает строка
   (соединить ["cd ../checker/second || exit 2; for f in *.lean; do grep -o ",
       "'^def «\\(судить[^»]*\\|проиграть[^»]*\\|прогонР\\|крюкиПоТелу\\|кольцоТочногоЦелого\\",
-      ")»\\|^def «Суд».«выводом»' \"$f\"; done | sed 's/^def //' | ",
+      ")»\\|^def «Суд».«выводом»\\|^def «[^»]*».«\\(судить\\|проиграть\\)[^»]*»' \"$f\"; done | sed 's/^def //' | ",
       "LC_ALL=C sort -u"] по "")
 
 тотальная функция «Moves command»
@@ -32,14 +32,19 @@
 
 тотальная функция «Theorems command»
   возвращает строка
-  (соединить ["cd .. || exit 2; for f in lean/*.lean checker/second/*.lean; ",
-      "do sed -n 's/^theorem «\\([^»]*\\)».*/\\1/p' \"$f\"; done"] по "")
+  (соединить ["cd .. || exit 2; m=$(sed -n 's/^MODULES = //p' checker/Makefile); ",
+      "q=$(sed -n 's/^SECOND = //p' checker/Makefile); [ -n \"$m\" ] && [ -n \"$q\" ] || exit 3; ",
+      "for f in $(for p in $m; do echo \"lean/${p%%:*}.lean\"; done; ",
+      "for x in $q; do echo \"checker/second/$x.lean\"; done); ",
+      "do awk '/^theorem «/{i=1; n=$0; sub(/^theorem «/,\"\",n); sub(/».*/,\"\",n); t=\"\"} ",
+      "i{t=t \" \" $0; if ($0 ~ /:=/ && $0 !~ /^[[:space:]]*let /)",
+      "{gsub(/\\t/,\" \",t); print n \"\\t\" t; i=0}}' \"$f\"; done"] по "")
 
 тотальная функция «Ceiling»
   возвращает число
   пример «Paths without a model, at most; it grows only by an edit here, with a reason»
-    ожидается 49
-  49
+    ожидается 46
+  46
 
 тотальная функция «Has»
   принимает word: строка, words: список строки
@@ -112,7 +117,65 @@
     дано row равно ["«б»", "доказано", "теорема «нет»"]
     дано theorems равно ["есть"]
     ожидается да
-  (не (пусто («Cited by» от row))) и притом (не («Has» от («Cited by» от row) и theorems))
+  пусть names равно (отобразить theorems как t → «Cell» от 1 и (разделить t по "\t"))
+  (не (пусто («Cited by» от row))) и притом (не («Has» от («Cited by» от row) и names))
+
+тотальная функция «Path key»
+  принимает path: строка
+  возвращает строка
+  пример «The last guillemet name of a path»
+    дано path равно "«Суд».«выводом»"
+    ожидается "«выводом»"
+  пример «A path without guillemets is its own key»
+    дано path равно "ход цель"
+    ожидается "ход цель"
+  пусть parts равно (разделить path по "«")
+  если (длина parts) больше 1
+    то соединить ["«", (элемент (длина parts) в parts)] по ""
+    иначе path
+
+тотальная функция «Statement of»
+  принимает name: строка, theorems: список строки
+  возвращает строка
+  пример «The statement of a named theorem»
+    дано name равно "т"
+    дано theorems равно ["у\tтеорема у", "т\ttheorem «т» (h : «судитьА» x) :="]
+    ожидается "theorem «т» (h : «судитьА» x) :="
+  пример «No such theorem»
+    дано name равно "ф"
+    дано theorems равно ["т\tx"]
+    ожидается ""
+  пусть rows равно (отобразить theorems как t → разделить t по "\t")
+  пусть mine равно (отфильтровать rows где row → («Cell» от 1 и row) равен name)
+  разбор mine
+    случай пусто
+      то ""
+    случай голова и хвост
+      то «Cell» от 2 и голова
+
+тотальная функция «Is off path»
+  принимает row: список строки, theorems: список строки
+  возвращает признак
+  пример «A cited theorem whose statement does not name the path»
+    дано row равно ["«судитьА»", "доказано", "теорема «т»"]
+    дано theorems равно ["т\ttheorem «т» (h : «судитьБ» x) :="]
+    ожидается да
+  пример «A cited theorem about the path»
+    дано row равно ["«Суд».«выводом»", "доказано", "теорема «т»"]
+    дано theorems равно ["т\ttheorem «т» (h : r.«выводом» x) :="]
+    ожидается нет
+  пусть said равно («Statement of» от («Cited by» от row) и theorems)
+  пусть mark равно («Path key» от («Cell» от 1 и row))
+  (не (пусто said)) и притом (не ((длина (разделить said по mark)) больше 1))
+
+тотальная функция «Off path line»
+  принимает row: список строки
+  возвращает строка
+  пример «A proved row whose theorem is about something else»
+    дано row равно ["«судитьА»", "доказано", "теорема «т»"]
+    ожидается "строка ««судитьА»»: доказано, но теорема «т» в своём утверждении путь «судитьА» не называет"
+  соединить ["строка «", («Cell» от 1 и row), "»: доказано, но теорема «", («Cited by» от row),
+    "» в своём утверждении путь ", («Path key» от («Cell» от 1 и row)), " не называет"] по ""
 
 тотальная функция «Proof troubles»
   принимает rows: список список строки, theorems: список строки
@@ -120,15 +183,21 @@
   пример «A proved row must cite a theorem that the files declare»
     дано rows равно [["«а»", "доказано", "теорема «есть»"], ["«б»", "доказано", "теорема «нет»"],
       ["«в»", "доказано", "без имени"], ["«г»", "нет модели", "x"]]
-    дано theorems равно ["есть"]
+    дано theorems равно ["есть\ttheorem «есть» (h : «а» x) :="]
     ожидается ["строка ««б»»: доказано, но теоремы «нет» в файлах модели и сверщика нет",
       "строка ««в»»: доказано, но теорема не названа (нужно «теорема «…»» в причине)"]
+  пример «A proved row must cite a theorem about its own path»
+    дано rows равно [["«а»", "доказано", "теорема «есть»"]]
+    дано theorems равно ["есть\ttheorem «есть» (h : «б» x) :="]
+    ожидается ["строка ««а»»: доказано, но теорема «есть» в своём утверждении путь «а» не называет"]
   пусть proved равно (отфильтровать rows где row → («Status of» от row) равен "доказано")
   пусть bare равно (отфильтровать proved где row → пусто («Cited by» от row))
   пусть gone равно (отфильтровать proved где row → «Is absent» от row и theorems)
+  пусть astray равно (отфильтровать proved где row → «Is off path» от row и theorems)
   пусть unnamed равно (отобразить bare как row → «Unnamed line» от row)
   пусть absent равно (отобразить gone как row → «Absent line» от row)
-  «Соединить списки» от absent и unnamed
+  пусть off равно (отобразить astray как row → «Off path line» от row)
+  «Соединить списки» от absent и («Соединить списки» от unnamed и off)
 
 тотальная функция «Counted»
   принимает rows: список список строки, status: строка
@@ -240,7 +309,7 @@
     дано paths равно ["«судитьА»"]
     дано rows равно [["«судитьА»", "доказано", "теорема «т»"]]
     дано sorries равно пустой список
-    дано theorems равно ["т"]
+    дано theorems равно ["т\ttheorem «т» (h : («судитьА» x)) :="]
     ожидается ["путей приёмки вычитано меньше двадцати — разбор второго сверщика сломан"]
   пусть named равно («Troubles» от paths и rows и sorries)
   пусть proofs равно («Proof troubles» от rows и theorems)
@@ -328,16 +397,17 @@
 тотальная функция «Forgery lines»
   принимает paths: список строки, rows: список список строки, sorries: список список строки, theorems: список строки
   возвращает список строки
-  пример «Four forgeries on an empty reading: only the ones that add a line are caught»
+  пример «Five forgeries on an empty reading: only the ones that add a line are caught»
     дано paths равно пустой список
     дано rows равно пустой список
     дано sorries равно пустой список
     дано theorems равно пустой список
-    ожидается ["── четыре подлога на КОПИЯХ, дерево не тронуто ──",
+    ожидается ["── пять подлогов на КОПИЯХ, дерево не тронуто ──",
       "ПРОВАЛ   подлог 1 (снята первая строка долга) — сторож остался зелёным",
       "СОШЛОСЬ  подлог 2 (строка «доказано» называет теорему, которой нет) — красных 2",
       "СОШЛОСЬ  подлог 3 (пятьдесят лишних строк «нет модели» — выше потолка) — красных 51",
-      "СОШЛОСЬ  подлог 4 (sorry в файле без строки долга) — красных 1"]
+      "СОШЛОСЬ  подлог 4 (sorry в файле без строки долга) — красных 1",
+      "СОШЛОСЬ  подлог 5 (строка «доказано» называет теорему не о своём пути) — красных 2"]
   пусть clean равно («All troubles» от paths и rows и sorries и theorems)
   пусть shorter равно («All troubles» от paths и («Without first» от rows) и sorries и theorems)
   пусть one равно («Forgery probe» от "1" и "снята первая строка долга" и clean и shorter)
@@ -351,7 +421,11 @@
   пусть stray равно (приписать ["lean/Поддельный.lean", "поддельная"] к sorries)
   пусть loud равно («All troubles» от paths и rows и stray и theorems)
   пусть four равно («Forgery probe» от "4" и "sorry в файле без строки долга" и clean и loud)
-  ["── четыре подлога на КОПИЯХ, дерево не тронуто ──", one, two, three, four]
+  пусть alien равно [(«First path» от paths), "доказано", "теорема «поддельная-не-о-пути»"]
+  пусть said равно (приписать "поддельная-не-о-пути\ttheorem «поддельная-не-о-пути» : True :=" к theorems)
+  пусть aside равно («All troubles» от paths и (приписать alien к rows) и sorries и said)
+  пусть five равно («Forgery probe» от "5" и "строка «доказано» называет теорему не о своём пути" и clean и aside)
+  ["── пять подлогов на КОПИЯХ, дерево не тронуто ──", one, two, three, four, five]
 
 тотальная функция «Forgery verdict»
   принимает answers: список «Answer»

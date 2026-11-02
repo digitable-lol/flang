@@ -3,6 +3,7 @@
   использует «Lists» только «Соединить списки»
   использует «Reasoning sentences» из "translator.flang"
   использует «Russian morphology» из "../../../../experimental/ru-morphology.flang"
+  использует «Text kind» из "text-kind.flang"
   использует «Russian pregroup» из "../../../../ct/russian/pregroup.flang"
 
 примечание "Проверка рассуждения человека целиком. Свободный текст из нескольких
@@ -1953,3 +1954,17 @@
   пример «No link points past the cards of the catalog»
     ожидается да
   свёртка («Slugs named here») начиная с да как every и slug → every и притом ((«Catalog slugs») содержит slug)
+
+примечание "Вид текста для песочницы — то же правило, что у «flang repl»
+(text-kind.flang): напечатанный reasoning.js отдаёт его обвязке как kindOfText."
+
+тотальная функция «Kind of text»
+  принимает text: строка
+  возвращает строка
+  пример «A reasoning is a reasoning»
+    дано text равно "Все люди смертны. Сократ — человек. Значит, Сократ смертен."
+    ожидается "рассуждение"
+  пример «A module is a program»
+    дано text равно "модуль «М»\n"
+    ожидается "flang"
+  «Text kind» от text

@@ -62,7 +62,7 @@ mkdirSync(печатьСвидетеля, { recursive: true })
   if (итог.код !== 0) throw new Error(`свидетель flang/concurrency/scheduler.flang не напечатался в js: ${итог.ошибки}`)
   writeFileSync(join(печатьСвидетеля, "package.json"), '{"type":"module"}\n')
 }
-const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "planirovschik_uzla.js")).href)
+const свидетель = await import(pathToFileURL(join(печатьСвидетеля, "program.js")).href)
 
 /* ─────────────────── значения прогонщика ───────────────────
    Протокол ровно тот же, что у соседа (`svyaz-celi.test.mjs`), и это не

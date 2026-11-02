@@ -33,20 +33,159 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `93548785d` от 19 октября 2026. Шагов ствола 4132, из них вливаний 1216; коммитов в истории 9235.
+Дерево на коммите `e04a09de2` от 1 ноября 2026. Шагов ствола 4164, из них вливаний 1219; коммитов в истории 9404.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 127431 | +3084 | −3967 |
-| Программ на flang | 1066 | +41 | +505 |
-| Объявлений `тотальная функция` | 15487 | +315 | +1436 |
-| Объявлений `функция` | 3312 | +37 | +870 |
-| Объявлений `теорема` | 403 | +18 | +119 |
+| Эталон компилятора на flang | 133640 | 0 | +2242 |
+| Программ на flang | 1150 | 0 | +589 |
+| Объявлений `тотальная функция` | 16087 | 0 | +2036 |
+| Объявлений `функция` | 3453 | 0 | +1011 |
+| Объявлений `теорема` | 404 | 0 | +120 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | 0 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 1 ноября 2026
+
+**Merge print batch 9c, fourth print: rust lib, tls hex loop, archive**
+
+`1a44f79e4` · коммитов 9
+
+- chore(packaging): the asdf plugin points at its merged spec template (`751875f35`)
+- chore(seed): print batch 9c, fourth print, with the hex loop of tls (`9c74984e9`)
+- test(probes): an https answer of 30000 bytes, deeper than the old limit (`fc226d9d8`)
+- fix(stdlib): hex to bytes runs in a loop, not one call per byte (`7cde2ace9`)
+
+Ещё 4 правки языка снаружи не меняют.
+
+**Merge print batch 9c: flang install, loopback by default, small fixes**
+
+`760813990` · коммитов 65
+
+Сдвинулось: эталон компилятора на flang 133364 → 133640 (+276); программ на flang 1126 → 1150 (+24); объявлений `тотальная функция` 16014 → 16087 (+73); объявлений `функция` 3441 → 3453 (+12).
+
+- fix(concurrency): node hosts read the printed module by its new name (`3f82c04b6`)
+- chore(seed): print batch 9c, third print, with the rust lib fix (`4233ea31c`)
+- chore(ledgers): the codes table names four names the 9c sources raise (`ba75fd040`)
+- fix(release): the archive has runtime/scripts for the install engine (`e03453d26`)
+- fix(ct): a double left adjoint contracts by parity, as -2 is even (`e6fa4e42a`)
+- fix(emit-rust): a module named program gets no second name program (`115386c8a`)
+- fix(stdlib): two claims refuted on the 9c binary name their domain (`9fa8e8183`)
+- fix(stdlib): the whole part of minus zero is minus zero, as trunc (`dee5599c4`)
+- test(probes): the C and C++ rows of negative zero feed the program (`f5956022e`)
+- test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed (`33eb4d58b`)
+- chore(seed): print batch 9c, printed by the 0.7.28 seed (`5142d96a4`)
+- test(probes): syllogism probes keep the answer of the binary until print (`d7b8eec91`)
+- chore(proof): rule anchors and trust ceilings follow the kernel of 9c (`35be99393`)
+- chore(numbers): counts and ledgers follow print batch 9c (`67049e606`)
+- chore(ledgers): the codes table names three refusals of pr 470 (`e2e7e0e85`)
+- fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds (`d87efdfb4`)
+- fix(io): a port opened by a program listens on loopback by default (`e33e5a6a1`)
+- fix(refute): an input outside a restricted postcondition is skipped (`25a136d11`)
+- feat(run): arguments take lists, records and variants checked by type (`b225d0d05`)
+- fix(io): a chunked http or https response body is put back together (`005b3e246`)
+- fix(new): every install ships the spec template flang new copies (`3f3ca63b1`)
+- test(probes): the small bugs run from source one program at a time (`540d0519d`)
+- refactor(parser): the result type refusal sits at the end of the parser (`732687a68`)
+- test(probes): one probe set for the small compiler bugs of batch 9b (`b9de428ac`)
+- fix(arith): a zero product, quotient or remainder is +0 everywhere (`8c3fc4886`)
+- fix(emit-c): a function that never returns still builds with -Werror (`4fcaf9262`)
+- fix(emit): printed files never get a transliterated name (`c8b6e75c9`)
+- fix(ct): a broken isomorphism or functor is refused with its name (`e20b1e3e4`)
+- fix(mcp): the service reports the version of the binary it runs in (`22f77c94f`)
+- fix(parser): a function without a returns line is refused (`683f8e3bd`)
+- feat(cli): flang install puts packages by name, the plan is its engine (`5ed5590ba`)
+- test(packages): the installer is probed on a clean machine, twice (`974feddf0`)
+
+Ещё 32 правки языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): sha256 of the 0.7.32 archive (`c6a32a71e`)
+- chore(release): version 0.7.32 and its release notes (`651f20fb0`)
+
+Ещё 5 правок языка снаружи не меняют.
+
+## 28 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): the tap serves flang-package 0.7.31 (`f1fdce2d1`)
+
+## 27 октября 2026
+
+**Merge print batch 9b: record fields, fixed-width words, list tails**
+
+`45261f7fc` · коммитов 66
+
+Сдвинулось: эталон компилятора на flang 127431 → 133364 (+5933); программ на flang 1066 → 1126 (+60); объявлений `тотальная функция` 15487 → 16014 (+527); объявлений `функция` 3312 → 3441 (+129); объявлений `теорема` 403 → 404 (+1).
+
+- chore(seed): print batch 9b again, printed by the 0.7.28 seed (`3e40eea48`)
+- chore(numbers): line references and counts follow the kernel fix (`541230a7e`)
+- fix(kernel): the word bound ceiling is compared exactly (`7dd03bd67`)
+- fix(stdlib): base64 and sha256 claims name their domain (`4b7e26339`)
+- test(checker): the u64 pair records are printed by the 9b binary (`0d4982db2`)
+- fix(stdlib): sqlite claims refuted by the 9b check name their domain (`79c6f58b2`)
+- chore(seed): print batch 9b, printed by the 0.7.28 seed (`d7351d091`)
+- fix(runtime): value constructors zero the whole value (`5a16e54e6`)
+- fix(checker): the word bound ceiling is compared exactly (`3df66ccda`)
+- feat(checker): the lean acceptance replays the word bound steps (`0f75a27b1`)
+- fix(checker): second checker replays match bodies in a goal half (`277a08c59`)
+- fix(self): two postconditions of the compiler name their domain (`f16004813`)
+- test(proof): probes for postconditions refuted at edges and bounds (`c0b653bc0`)
+- fix(check): refute a postcondition at type edges and requires bounds (`a7be3562d`)
+- chore(seed): reseed the shell runtime after the text command (`926951524`)
+- feat(site): try-in-the-browser button, katex from the tree, text colours (`614479f17`)
+- feat(repl): the text command judges a program, formula or reasoning (`d7f6f088c`)
+- feat(reasoning): one flang rule names the kind of a text (`4b482b068`)
+- fix(proof): both checkers read the story block (`f2fb97d55`)
+- test(checker): the two-argument unfolding forgery ends with code 3 (`663e00d52`)
+- chore(proof): rule anchors follow the kernel of batch 9b (`3e102cc20`)
+- chore(marks): prose numbers and ledgers count the list rules (`f2f4d404f`)
+- feat(kernel): a list precondition reaches the head and the tail (`1da5f72e2`)
+- fix(types): a fold keeps the narrow type its context expects (`283852ce2`)
+- test(proof): records and arithmetic probes and checker records (`39a7cfd5d`)
+- feat(lean): lemmas for the record, self-equality and remainder rules (`3443def46`)
+- feat(checker): both checkers replay records, self-equality and remainder (`4fca48ef8`)
+- feat(types): a number narrows to an integer segment under a full check (`6136ebc78`)
+- feat(kernel): records by fields, self-equality and remainder in the ring (`5b8048c03`)
+- feat(checker): both checkers replay a branch fact as a record move (`f936325d5`)
+- feat(kernel): a strict order fact closes the non-strict goal (`0826ee3c7`)
+- fix(proof): word bound steps stay outside the Lean acceptance model (`af26a5e50`)
+- feat(emit): double-width product and words in every print target (`89f0790dd`)
+- feat(kernel): bounds of unsigned words by their declaration (`3cc02b30e`)
+- feat(self): fixed-width words and bit operations in the language (`3007fa53e`)
+- docs(totality): size-change cycles in the cards and the refusal (`f2cc31584`)
+- feat(totality): size-change termination for cycles of calls (`878457266`)
+- docs(proof): task 2241, wave three cards and the false forms probe (`33399a4ae`)
+- chore(checker): the line ceiling counts the statement step replay (`334d60c3c`)
+- feat(proof): four unfolding rules and one ban with Lean lemmas (`a62b934f0`)
+- feat(checker): replay calls unfolded on a built constructor (`847bb8eb3`)
+- fix(kernel): unfold a call on a built constructor without capture (`71c576e7e`)
+
+Ещё 23 правки языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(concurrency): the rust node refuses a fixed-width word on the wire (`a5890e700`)
+- chore(release): sha256 of the 0.7.31 archive (`b2e4ac918`)
+- chore(release): version 0.7.31 and its release notes (`d5caada70`)
+- test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be4f`)
+- test(guards): ledgers follow the holes 9b closed and its new refusals (`cacfdb2af`)
+- fix(playground): the counterexample comes from the kernel answer (`044300d05`)
+- test(records): corpus records follow the 9b kernel and check (`fea39cf13`)
+- chore(proof): rule anchors and trust ceilings follow the 9b merge (`140cc7e27`)
+
+Ещё 9 правок языка снаружи не меняют.
+
+## 24 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(guards): typing holes ledger and record format promise (`34ce8a2ac`)
 
 ## 19 октября 2026
 
@@ -105,13 +244,15 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- chore(release): the tap serves flang-package 0.7.30 (`ce6a2cb42`)
+- chore(release): the asdf plugin installs the proof checker (`b4950b663`)
 - chore(release): sha256 of the 0.7.30 archive (`93548785d`)
 - test(probes): a story waits for the checkers to read it, task 8192 (`b729805e9`)
 - chore(release): version 0.7.30 and its release notes (`9c0231f2f`)
 - fix(playground): c overflow is refuted at the int bounds, not hidden (`595322aa3`)
 - feat(playground): every target language, c to flang and line numbers (`c61726785`)
 
-Ещё 9 правок языка снаружи не меняют.
+Ещё 10 правок языка снаружи не меняют.
 
 ## 18 октября 2026
 

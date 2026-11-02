@@ -1,8 +1,8 @@
 program	keys	code	word
-false-postcondition.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
-false-postcondition.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
-false-postcondition-without-examples.flang	--proof	3	НЕ ПРОВЕРЕНО
-false-postcondition-without-examples.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
+false-postcondition.flang	--proof	1	постусловие «удвоенное мало» функции «Удвоить» нарушено на входе н = 2147483647
+false-postcondition.flang	--proof --строго	1	постусловие «удвоенное мало» функции «Удвоить» нарушено на входе н = 2147483647
+false-postcondition-without-examples.flang	--proof	1	постусловие «удвоенное мало» функции «Удвоить» нарушено на входе н = 2147483647
+false-postcondition-without-examples.flang	--proof --строго	1	постусловие «удвоенное мало» функции «Удвоить» нарушено на входе н = 2147483647
 honest.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 honest.flang	--proof --строго	0	ДОКАЗАНО
 no-obligations.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
@@ -29,7 +29,7 @@ checker-says-no-with-import.flang	--proof --строго	0	ДОКАЗАНО
 honest.flang	--строго	2	осмыслен только рядом с «--proof»
 honest.flang	--быстро	4	часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0
 honest.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
-false-postcondition.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+false-postcondition.flang	-	1	постусловие «удвоенное мало» функции «Удвоить» нарушено на входе н = 2147483647
 no-obligations.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
 refuted-statement.flang	-	1	утверждение «антирефлексивность» опровергнуто на входе а = 0
 statement-holds-on-the-edge.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
@@ -37,3 +37,11 @@ unknown-property.flang	-	1	FLANG_UNKNOWN_PROPERTY
 known-property.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
 refuted-flag-record.flang	-	1	утверждение «Сократ — человек» опровергнуто на входе кто = {человек: нет, смертен: да}
 flag-record-holds.flang	-	0	проверено — разбор, типы, завершаемость, ядро и примеры
+false-bound-refuted-at-the-edge.flang	-	1	постусловие «ложная граница прямо» функции «Прямо» нарушено на входе значение = 2147483647
+false-bound-refuted-at-the-edge.flang	--proof	1	FLANG_PROPERTY: постусловие «ложная граница прямо» функции «Прямо» нарушено на входе
+true-bound-on-the-same-edges.flang	--proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+false-bound-away-from-the-edges.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
+false-bound-away-from-the-edges.flang	--proof	3	нарушений на них нет: проверка прогнала каждый пример
+bound-held-under-requires.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
+bound-refuted-at-the-requires-edge.flang	-	1	постусловие «удвоенное меньше двухсот» функции «Удвоить малое» нарушено на входе н = 100
+int-midpoint-overflows.flang	-	1	функции «midpoint» нарушено на входе lo = 1, hi = 2147483647

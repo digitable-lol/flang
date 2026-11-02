@@ -17,6 +17,15 @@ The editor highlights language words, strings, numbers, names in «guillemets» 
 comments; line numbers are on the left. The line where the compiler found an error is
 marked both in the text and in its number.
 
+Reasoning and formulas get their own highlighting. In reasoning the editor marks the
+connectives («все», «некоторые», «ни один», «не», «следовательно», «значит», «если … то»
+— all, some, no, not, therefore, so, if … then), the terms — words of the dictionary
+and of the sentences, the names (the `Имя:` line and capitalised words that do not open
+a sentence) and the dictionary headings. In a formula it marks the quantifiers, signs
+and LaTeX commands, the sets ℕ, ℤ, ℚ and the variables. Which highlighting to use is
+decided by the same rule that picks the check (next section), so the colour in the
+editor always tells how the text will be checked.
+
 The answer is split into six tabs.
 
 - **Result** — one line about what matters and the list of statements with marks:
@@ -32,7 +41,10 @@ The answer is split into six tabs.
 
   Under the result, the details are folded: what the independent proof check said, and
   the full compiler output as in a terminal.
-- **Formulas** — every statement of the program written with quantifiers and in LaTeX.
+- **Formulas** — every statement of the program as a typeset formula, with its LaTeX
+  source folded below it. KaTeX does the typesetting, and the site serves it itself, from
+  no third-party address. If it did not load, the formula stays in plain quantifier
+  notation.
 - **flang → language** — the same program printed by `flang emit` into C, C++, Go, Rust,
   Java, JavaScript, TypeScript, Elixir, Python and C#. The same compiler in the tab does
   the printing. The program's files are shown; runtime files are copied into the output
@@ -50,12 +62,18 @@ The answer is split into six tabs.
 
 ## What becomes what
 
-The playground decides what it is looking at by the start of the text.
+The playground decides what it is looking at by the first meaningful line of the text:
+blank lines and `//` comments do not count. The rule is shared by the playground and the
+`flang repl` shell (the `.text` command): the function `«Text kind»` in
+`flang/proof/probes/syllogism/sentences/text-kind.flang`.
 
-- A text that starts with `модуль` or `категория` is a flang program. `flang check
+- A line that starts with `модуль`, `module`, `категория` or `category` is a flang
+  program (when a category is declared at the top level, the kind is called "category"
+  and it is checked the same way). `flang check
   --proof --json` checks it; the result is built from the compiler's machine-readable
   answer, not from its text.
-- A text that starts with `∀`, `∃`, `\forall` or `\exists` is a formula. The formula
+- A line that starts with `∀`, `∃`, `\forall`, `\exists`, `forall` or `exists` is a
+  formula. The formula
   translator (`flang/foreign/formula`) turns it into a flang statement, and the kernel
   checks it. When a formula cannot be read, the translator names the reason: "a chain of
   comparisons without parentheses is ambiguous", "there is no ℝ in flang" and so on.
@@ -386,6 +404,7 @@ playground" link: it opens this page with the block's text in the address.
 | library | `playground/library.tar` | `flang/stdlib/*.flang` and `flang/core/*.flang` |
 | WASI host | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
 | playground page | `playground.js` | `docs/site/playground.js` |
+| formula typesetting | `vendor/katex/` | KaTeX 0.16.11 (MIT licence), kept in the tree: `docs/site/vendor/katex` |
 
 The files of the `playground/` directory are built by a step of the site build
 (`bootstrap/flang run-script playground:build`); they are not in the tree. The WASI host

@@ -332,7 +332,7 @@ static char *repl_read_all(FILE *stream, size_t *length) {
  * СОБРАННОГО бинарника. Иначе `flang --version` однажды назвал бы версию,
  * которой нет ни в одном релизе.
  */
-#define FLANG_VERSION "0.7.30"
+#define FLANG_VERSION "0.7.32"
 
 /*
  * ОТПЕЧАТОК ОБОЛОЧКИ: восемь знаков sha256 этого файла без самой этой строки.
@@ -462,6 +462,7 @@ static const char FLANG_HELP[] =
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
+    "  flang install <файл> [<имя>…]      поставить пакеты по имени из реестра и записать замок\n"
     "  flang run-script <имя>             короткая команда проекта из «.flangrc»\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
@@ -644,9 +645,10 @@ static const char HELP_RUN[] =
     "«unproven» в «.flangrc» — раз и навсегда.\n"
     "\n"
     "  --function «Имя»   что вычислять\n"
-    "  --args '{…}'       аргументы: ПЛОСКИЙ объект скаляров, вроде '{\"н\":10}'.\n"
-    "                     Списка или вложенного объекта здесь не принимают —\n"
-    "                     функцию со списком зовут её примеры: flang test <файл>\n"
+    "  --args '{…}'       аргументы объектом JSON по именам параметров, вроде\n"
+    "                     '{\"н\":10}' или '{\"элементы\":[1,2,3]}'. Списки, записи\n"
+    "                     и варианты ({\"variant\":\"Имя\",\"fields\":{…}}) — любой\n"
+    "                     вложенности; не тот тип — FLANG_TYPE до вычисления\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
@@ -1038,6 +1040,31 @@ static const char HELP_NEW[] =
     "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
     "FLANG_NEW, код 1, и каталог не заводится вовсе.";
 
+static const char HELP_INSTALL[] =
+    "flang install <файл.flang> [<имя>[: <ограничение>]]... [--registry <адрес>]\n"
+    "              [--accept-unproven]\n"
+    "\n"
+    "Ставит пакеты по имени из реестра и записывает замок. Нужды проекта живут в\n"
+    "файле flang.needs рядом с программой (по нужде на строку: «Логика: не ниже 1.0»);\n"
+    "имена из команды дописываются туда после удачной установки. Список реестра\n"
+    "берётся по адресу (http://, https:// или путь), версии разрешаются по нуждам\n"
+    "проекта и самих пакетов (наибольшая годная, одна на имя), тело каждого пакета\n"
+    "сверяется с отпечатком sha256 из списка ДО записи на диск, файлы ложатся рядом\n"
+    "с программой под именем из списка без версии, затем flang check и flang lock.\n"
+    "\n"
+    "  flang install проба/proba.flang 'Множество строк: не ниже 1.1'\n"
+    "\n"
+    "Ограничения: любая, ровно 1.2.3, не ниже 1.2.3, в пределах 1.x. Адрес списка:\n"
+    "ключ --registry, иначе ключ «registry» в ближайшем .flangrc, иначе список ветки\n"
+    "dev на GitHub. Пакет, несущий закон или «объявлено, не доказано», ставится\n"
+    "только с --accept-unproven; доля доказанного печатается у каждого пакета.\n"
+    "\n"
+    "Команда зовёт движок — план scripts/package-install.fscript, который лежит рядом\n"
+    "с двоичным (в дереве — scripts/, у поставленного — share/flang/scripts/); нет его\n"
+    "— отказ FLANG_INSTALL_ENGINE. Отказы движка — FLANG_INSTALL_USAGE, _LEDGER,\n"
+    "_NEEDS, _CONFLICT, _FINGERPRINT, _UNPROVED, _BUILD; код возврата 1. Из дерева\n"
+    "тот же движок зовётся словами «flang run-script package:install …».";
+
 static const char HELP_RUN_SCRIPT[] =
     "flang run-script [<имя> [доводы…]]\n"
     "\n"
@@ -1209,6 +1236,8 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
+  } else if (strcmp(topic, "install") == 0) {
+    printf("%s\n", HELP_INSTALL);
   } else if (strcmp(topic, "new") == 0) {
     printf("%s\n", HELP_NEW);
   } else {
@@ -1251,9 +1280,14 @@ static const char REPL_HELP[] =
     "                             «Свойство:», «Имя:» и предложения; пустая\n"
     "                             строка заканчивает ввод; без словаря слова\n"
     "                             читает морфология\n"
+    "  .текст [<файл>]            вставить текст любого вида и закончить строкой\n"
+    "                             «.конец»: оболочка сама поймёт, что это —\n"
+    "                             программа, формула с ∀/∃ (или LaTeX),\n"
+    "                             рассуждение или категория, — и ответит, как\n"
+    "                             песочница сайта\n"
     "  .очистить                  очистить экран\n"
     "  .выход                     закончить работу\n"
-    "По-английски: .help .list .source .save .load .reset .syllogism .clear .quit\n"
+    "По-английски: .help .list .source .save .load .reset .syllogism .text (.end) .clear .quit\n"
     "Утверждения и силлогизмы с живыми сеансами: docs/guide/repl-statements.ru.md\n";
 
 static const char REPL_HELP_2[] =
@@ -8785,6 +8819,7 @@ static void repl_reset(repl_session *session) {
 }
 
 static bool repl_trimmed_empty(const char *text);
+static bool repl_trimmed_empty_line(const char *text);
 
 static bool repl_has_dictionary(const char *text) {
   const char *scan = text;
@@ -8824,7 +8859,7 @@ static const char *repl_syllogism_word(bool dictionary, int code, const char *sa
   return "не проверено (код 3)";
 }
 
-static bool repl_command_syllogism(repl_session *session, const char *argument) {
+static bool repl_judge_text(repl_session *session, const char *argument, bool always_judge) {
   char *given = NULL;
   char *text = NULL;
   size_t bytes = 0;
@@ -8845,7 +8880,7 @@ static bool repl_command_syllogism(repl_session *session, const char *argument) 
   if (text == NULL) {
     text = repl_say(argument);
   }
-  dictionary = repl_has_dictionary(text);
+  dictionary = repl_has_dictionary(text) || always_judge;
   plan = repl_beside_self(dictionary ? "../flang/proof/probes/syllogism/sentences/run.fscript"
                                      : "../flang/experimental/ru-syllogism-demo.fscript");
   if (repl_trimmed_empty(text)) {
@@ -8894,6 +8929,8 @@ static bool repl_command_syllogism(repl_session *session, const char *argument) 
     }
     if (!dictionary) {
       printf("словаря в тексте нет: слова читает морфология (flang/experimental/ru-syllogism-demo.fscript)\n");
+    } else if (always_judge && !repl_has_dictionary(text)) {
+      printf("словаря в тексте нет: слова читает морфология, как в песочнице\n");
     }
     if (said != NULL) {
       size_t end = strlen(said);
@@ -8948,6 +8985,267 @@ static bool repl_syllogism_name(const char *text, size_t bytes) {
   return true;
 }
 
+static bool repl_command_syllogism(repl_session *session, const char *argument) {
+  return repl_judge_text(session, argument, false);
+}
+
+/*
+ * «.text» («.текст»): текст любого вида — программа, формула, рассуждение,
+ * объявление категории. Вид называет то же правило, что у песочницы сайта:
+ * flang/proof/probes/syllogism/sentences/text-kind.flang (план «Kind» рядом,
+ * text-kind.fscript). Отвечает та дорога, которой этот вид судит песочница:
+ * рассуждение — судья силлогизмов, формула — переводчик формул и «flang check
+ * --proof», программа — «flang check --proof». Сессию «.text» не меняет:
+ * объявить программу в сессии — «.загрузить». Текст идёт многими строками до
+ * строки «.end» («.конец»): в программе законны пустые строки.
+ */
+static bool repl_named(const char *text, size_t bytes, const char *latin, const char *cyrillic) {
+  size_t index = 0;
+  if (bytes == strlen(cyrillic) && memcmp(text, cyrillic, bytes) == 0) {
+    return true;
+  }
+  if (bytes != strlen(latin)) {
+    return false;
+  }
+  for (index = 0; index < bytes; index += 1) {
+    const char symbol = text[index] >= 'A' && text[index] <= 'Z' ? (char)(text[index] - 'A' + 'a') : text[index];
+    if (symbol != latin[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool repl_text_name(const char *text, size_t bytes) { return repl_named(text, bytes, ".text", ".текст"); }
+
+/** Строка «.end» («.конец»), пробелы по краям не в счёт. */
+static bool repl_text_end(const char *line) {
+  size_t start = 0;
+  size_t end = 0;
+  while (line[start] == ' ' || line[start] == '\t') {
+    start += 1;
+  }
+  end = start;
+  while (line[end] != '\0' && line[end] != '\n' && line[end] != '\r' && line[end] != ' ' && line[end] != '\t') {
+    end += 1;
+  }
+  return repl_trimmed_empty_line(line + end) && repl_named(line + start, end - start, ".end", ".конец");
+}
+
+static char *repl_run_capture(repl_session *session, char *const *words, int *code) {
+  char *self = repl_self_binary();
+  char *out_path = repl_tmp_file(session, "text.out");
+  char *err_path = repl_tmp_file(session, "text.err");
+  char *out = NULL;
+  char *err = NULL;
+  size_t out_bytes = 0;
+  size_t err_bytes = 0;
+  repl_buf both;
+  buf_init(&both);
+  *code = -1;
+  if (self != NULL && out_path != NULL && err_path != NULL) {
+    char *own[16];
+    size_t index = 0;
+    own[0] = self;
+    for (index = 1; words[index] != NULL && index < 15; index += 1) {
+      own[index] = words[index];
+    }
+    own[index] = NULL;
+    *code = repl_run_self(own, self, out_path, err_path);
+    out = repl_read_file(out_path, &out_bytes);
+    err = repl_read_file(err_path, &err_bytes);
+  }
+  if (out != NULL) {
+    buf_put(&both, out);
+  }
+  if (err != NULL) {
+    buf_char(&both, '\n');
+    buf_put(&both, err);
+  }
+  if (out_path != NULL) {
+    remove(out_path);
+  }
+  if (err_path != NULL) {
+    remove(err_path);
+  }
+  free(self);
+  free(out_path);
+  free(err_path);
+  free(out);
+  free(err);
+  {
+    char *said = repl_dup(both.data == NULL ? "" : both.data, both.used);
+    buf_free(&both);
+    return said;
+  }
+}
+
+/** Ответ плана «flang io»: строка «result», а если её нет — «error». */
+static char *repl_plan_answer(const char *said) {
+  const char *brace = strstr(said, "{\"");
+  char *answer = NULL;
+  while (brace != NULL && answer == NULL) {
+    answer = json_plain_field(said, (size_t)(brace - said), strlen(said), "result");
+    if (answer == NULL) {
+      answer = json_plain_field(said, (size_t)(brace - said), strlen(said), "error");
+    }
+    brace = strstr(brace + 2, "{\"");
+  }
+  return answer;
+}
+
+/* Строки ведомости, которые песочница показывает итогом: приговоры
+   утверждениям и законам, отказы с кодом и последняя строка о файле. */
+static bool repl_kernel_line(const char *line) {
+  static const char *const marks[] = {"утверждение «", "теорема «", "закон «", "категория «", "функтор «",
+                                      "моноид «", "FLANG_", "ПРОВЕРЕНО", "ДОКАЗАНО", "пример против", NULL};
+  size_t index = 0;
+  for (index = 0; marks[index] != NULL; index += 1) {
+    if (strstr(line, marks[index]) != NULL) {
+      return true;
+    }
+  }
+  return false;
+}
+
+static int repl_text_check(repl_session *session, const char *file, const char *shown) {
+  int code = -1;
+  char *words[] = {NULL, (char *)"check", (char *)file, (char *)"--proof", NULL};
+  char *said = repl_run_capture(session, words, &code);
+  char *line = said;
+  printf("ядро (flang check --proof):\n");
+  while (line != NULL && *line != '\0') {
+    char *next = strchr(line, '\n');
+    if (next != NULL) {
+      *next = '\0';
+    }
+    if (repl_kernel_line(line)) {
+      char *named = strstr(line, file);
+      if (named != NULL) {
+        printf("  %.*s%s%s\n", (int)(named - line), line, shown, named + strlen(file));
+      } else {
+        printf("  %s\n", line);
+      }
+    }
+    line = next == NULL ? NULL : next + 1;
+  }
+  free(said);
+  return code;
+}
+
+static const char *repl_text_verdict(int code) {
+  return code == 0   ? "доказано всё (код 0)"
+         : code == 1 ? "опровергнуто или не прочитано — причина выше (код 1)"
+         : code == 3 ? "не всё доказано — что именно, сказано выше (код 3)"
+                     : "проверка не запустилась (код 2)";
+}
+
+static bool repl_command_text(repl_session *session, const char *argument) {
+  repl_buf body;
+  char *given = NULL;
+  char *text = NULL;
+  char *kind = NULL;
+  char *kind_plan = repl_beside_self("../flang/proof/probes/syllogism/sentences/text-kind.fscript");
+  char *file = repl_tmp_file(session, "text.txt");
+  size_t bytes = 0;
+  bool ok = false;
+  buf_init(&body);
+  if (argument[0] != '\0' && strchr(argument, '\n') == NULL && !repl_text_end(argument)) {
+    given = repl_resolve(session->base, argument);
+    text = access(given, R_OK) == 0 ? repl_read_file(given, &bytes) : NULL;
+  }
+  if (text == NULL) {
+    /* Довесок без последней строки «.end». */
+    const char *last = strrchr(argument, '\n');
+    const char *tail = last == NULL ? argument : last + 1;
+    text = repl_text_end(tail) ? repl_dup(argument, (size_t)(tail - argument)) : repl_say(argument);
+  }
+  buf_put(&body, text);
+  buf_char(&body, '\n');
+  if (repl_trimmed_empty(text)) {
+    printf("текст: текста нет — после «.text» вставьте программу, формулу или рассуждение и закончите строкой "
+           "«.end»; или «.text <файл>»\n");
+  } else if (kind_plan == NULL || file == NULL || !repl_write_text(file, body.data, body.used)) {
+    printf("текст: правила вида рядом с этим двоичным нет "
+           "(flang/proof/probes/syllogism/sentences/text-kind.fscript)\n");
+  } else {
+    int code = -1;
+    char *words[] = {NULL, (char *)"io", kind_plan, (char *)"--plan", (char *)"Kind", (char *)"--", file, NULL};
+    char *said = repl_run_capture(session, words, &code);
+    kind = code == 0 ? repl_plan_answer(said) : NULL;
+    free(said);
+    if (kind == NULL) {
+      printf("текст: вид не определён (код %d)\n", code);
+    } else if (strcmp(kind, "рассуждение") == 0) {
+      printf("вид текста: рассуждение — судит судья силлогизмов, как в песочнице\n");
+      ok = repl_judge_text(session, text, true);
+    } else if (strcmp(kind, "формула") == 0) {
+      char *plan = repl_beside_self("../flang/foreign/formula/run.fscript");
+      char *unit = repl_tmp_file(session, "formula.flang");
+      repl_buf flat;
+      size_t index = 0;
+      buf_init(&flat);
+      for (index = 0; text[index] != '\0'; index += 1) {
+        buf_char(&flat, text[index] == '\n' || text[index] == '\r' || text[index] == '\t' ? ' ' : text[index]);
+      }
+      printf("вид текста: формула — её переводит на flang переводчик формул (вне доверенной основы, "
+             "запуск --trust), а судит ядро\n");
+      if (plan == NULL || unit == NULL) {
+        printf("формула: переводчика формул рядом с этим двоичным нет (flang/foreign/formula/run.fscript)\n");
+      } else {
+        const bool latex = strchr(flat.data, '\\') != NULL;
+        char *read[] = {NULL, (char *)"io", plan, (char *)"--plan", (char *)"Read", (char *)"--trust", (char *)"--",
+                        (char *)"--out", unit, latex ? (char *)"--latex" : flat.data, latex ? flat.data : NULL, NULL};
+        char *answer = NULL;
+        remove(unit);
+        said = repl_run_capture(session, read, &code);
+        answer = repl_plan_answer(said);
+        free(said);
+        if (access(unit, R_OK) != 0) {
+          printf("формула не прочитана: %s (код 1)\n", answer == NULL ? "переводчик причины не назвал" : answer);
+        } else {
+          char *translated = repl_read_file(unit, &bytes);
+          printf("перевод на flang:\n%s", translated == NULL ? "" : translated);
+          free(translated);
+          code = repl_text_check(session, unit, "формула");
+          printf("формула: %s\n", repl_text_verdict(code));
+          ok = code == 0 || code == 3;
+          session->syllogisms_open = session->syllogisms_open || code == 3;
+          remove(unit);
+        }
+        free(answer);
+      }
+      buf_free(&flat);
+      free(plan);
+      free(unit);
+    } else {
+      char *unit = repl_tmp_file(session, "text.flang");
+      const bool category = strcmp(kind, "категория") == 0;
+      printf("вид текста: %s — судит «flang check --proof», как песочница; в сессию текст не попадает, "
+             "объявить его — «.загрузить»\n",
+             category ? "программа с категорией" : "программа на flang");
+      if (unit != NULL && repl_write_text(unit, body.data, body.used)) {
+        code = repl_text_check(session, unit, "текст");
+        printf("%s: %s\n", category ? "категория" : "программа", repl_text_verdict(code));
+        ok = code == 0 || code == 3;
+        session->syllogisms_open = session->syllogisms_open || code == 3;
+        remove(unit);
+      }
+      free(unit);
+    }
+  }
+  if (file != NULL) {
+    remove(file);
+  }
+  buf_free(&body);
+  free(given);
+  free(text);
+  free(kind);
+  free(kind_plan);
+  free(file);
+  return ok;
+}
+
 /** Команда: разбор имени и довеска. Регистр латиницы не важен, как в свидетеле. */
 static bool repl_command(repl_session *session, const char *line, bool *quit) {
   repl_buf name;
@@ -8974,6 +9272,8 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
     repl_say_build(session->why_no_eval);
   } else if (repl_syllogism_name(name.data, name.used)) {
     ok = repl_command_syllogism(session, argument);
+  } else if (repl_text_name(name.data, name.used)) {
+    ok = repl_command_text(session, argument);
   } else if (strcmp(name.data, ".объявления") == 0 || strcmp(name.data, ".list") == 0) {
     ok = repl_command_list(session);
   } else if (strcmp(name.data, ".исходник") == 0 || strcmp(name.data, ".source") == 0) {
@@ -9176,6 +9476,9 @@ static bool repl_needs_more(repl_session *session, const char *text) {
     const size_t first = strcspn(scan, " \t\r\n");
     const bool bare = scan[first] == '\0' || scan[first] == '\n' || scan[first] == '\r' ||
                       repl_trimmed_empty_line(scan + first);
+    if (repl_text_name(scan, first) && bare) {
+      return last == NULL || !repl_text_end(last + 1);
+    }
     return repl_syllogism_name(scan, first) && bare && (last == NULL || !repl_blank(last + 1));
   }
   if (last != NULL && repl_blank(last + 1)) {
@@ -9563,7 +9866,7 @@ static void repl_recall(repl_editor *editor, size_t at) {
 static const char *const REPL_COMMANDS[] = {
     ".помощь",  ".объявления", ".исходник", ".сохранить", ".загрузить", ".сбросить", ".очистить", ".выход",
     ".help",    ".list",       ".source",   ".save",      ".load",      ".reset",    ".clear",    ".quit",
-    ".силлогизм", ".syllogism", NULL};
+    ".силлогизм", ".syllogism", ".текст", ".text", NULL};
 
 /** Начаток имени в ёлочках: смещение первого байта после незакрытой «, или -1. */
 static size_t repl_name_from(const char *text, size_t at) {
@@ -11724,9 +12027,9 @@ static int test_file(int argc, char **argv) {
  * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
  * прогонщик, и его разборщик (`flang_cli.c`) говорит на своём языке тегов
  * («{"n":…}», «{"s":…}»), заведённом для передачи готовых значений рантайма, а
- * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому здесь
- * лежит маленький разбор ровно этого: плоский объект скаляров. Вложенности нет
- * намеренно — она понадобится, когда понадобится, а не «на всякий случай».
+ * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому `--args`
+ * читает обычный JSON — тем же `facts_json`, что и факты `flang facts`: скаляры,
+ * списки, записи и варианты `{"variant": …, "fields": …}` (задача #460).
  */
 
 /** Вариант с одним полем: «Значение записи» и «Значение списка» строятся так. */
@@ -11988,89 +12291,27 @@ static bool run_value(const char *text, size_t *at, fl_value *out) {
 }
 
 /**
- * `--args` в «Значение записи». Пустая строка и отсутствие ключа дают пустую
- * запись — функция без параметров зовётся без `--args`, и требовать `{}` от
- * человека было бы обрядом.
+ * `--args` в «Значение записи»: объект JSON, ключи — имена параметров,
+ * значения — скаляры, списки `[…]`, записи `{…}` и варианты
+ * `{"variant": "Имя", "fields": {…}}` любой вложенности. Разбирает тот же
+ * `facts_json`, что читает факты `flang facts` и сообщения языкового сервера.
+ * Сверку с объявленным типом делает не разбор, а «Проверить аргументы вызова»:
+ * неверный тип — FLANG_TYPE до вычисления. Пустая строка и отсутствие ключа
+ * дают пустую запись — функция без параметров зовётся без `--args`, и
+ * требовать `{}` от человека было бы обрядом.
  */
 static bool run_args(const char *text, fl_value *out) {
   size_t at = 0;
-  size_t count = 0;
-  size_t capacity = 8;
-  fl_value *fields = (fl_value *)malloc(capacity * sizeof(fl_value));
-  bool ok = true;
-  if (fields == NULL) {
-    repl_oom();
-  }
   if (text == NULL) {
-    free(fields);
     *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
     return true;
   }
   run_spaces(text, &at);
-  if (text[at] != '{') {
-    free(fields);
+  if (text[at] != '{' || !facts_json(text, &at, out)) {
     return false;
   }
-  at += 1;
   run_spaces(text, &at);
-  if (text[at] != '}') {
-    for (;;) {
-      char *key = NULL;
-      size_t bytes = 0;
-      fl_value value = fl_nothing();
-      if (!run_text(text, &at, &key, &bytes)) {
-        ok = false;
-        break;
-      }
-      run_spaces(text, &at);
-      if (text[at] != ':') {
-        free(key);
-        ok = false;
-        break;
-      }
-      at += 1;
-      if (!run_value(text, &at, &value)) {
-        free(key);
-        ok = false;
-        break;
-      }
-      if (count == capacity) {
-        fl_value *bigger = (fl_value *)realloc(fields, capacity * 2 * sizeof(fl_value));
-        if (bigger == NULL) {
-          free(key);
-          repl_oom();
-        }
-        fields = bigger;
-        capacity *= 2;
-      }
-      {
-        const char *names[2];
-        fl_value values[2];
-        names[0] = "ключ";
-        values[0] = repl_value_text(key, bytes);
-        names[1] = "значение";
-        values[1] = value;
-        fields[count] = repl_value_record(names, values, 2);
-        count += 1;
-      }
-      free(key);
-      run_spaces(text, &at);
-      if (text[at] == ',') {
-        at += 1;
-        continue;
-      }
-      break;
-    }
-  }
-  if (ok) {
-    run_spaces(text, &at);
-    ok = text[at] == '}';
-  }
-  if (ok) {
-    *out = repl_value_variant_fields("Значение записи", "поля", repl_value_list(fields, count));
-  }
-  free(fields);
-  return ok;
+  return text[at] == '\0';
 }
 
 /**
@@ -14161,7 +14402,8 @@ static int run_file(int argc, char **argv) {
   }
 
   if (!run_args(given, &bound)) {
-    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{\"н\":10}'\n");
+    fprintf(stderr, "flang run: «--args» разобрать не удалось — ждался объект JSON, вроде '{\"н\":10}' или "
+                    "'{\"элементы\":[1,2,3]}'\n");
     code = 2;
   } else if (!run_checked(sources, full, path, paths.count, &linked)) {
     code = 1;
@@ -17158,11 +17400,9 @@ static int lint_command(int argc, char **argv) {
 /* ═════════════════════ проверка суждений: `flang facts` ══════════════════ */
 
 /*
- * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров, и разбирает их отдельная
- * функция, а не `run_value`. Причина не в аккуратности: утверждение умеет
- * говорить `поле «x» факта «y»`, то есть факт бывает записью, — а разбор
- * `--args` объектов и списков не знает намеренно (см. его шапку) и знать не
- * должен: аргумент вызова у `flang run` скаляр по контракту.
+ * ФАКТЫ ПРИЕЗЖАЮТ ПОЛНЫМ JSON, а не набором скаляров: утверждение умеет
+ * говорить `поле «x» факта «y»`, то есть факт бывает записью. Тот же разбор
+ * читает и `--args` у `flang run`; скаляр внутри него — `run_value`.
  */
 static bool facts_json(const char *text, size_t *at, fl_value *out);
 
@@ -18588,11 +18828,30 @@ static fl_value io_screen_key(void) {
 
 /* ── связи ───────────────────────────────────────────────────────────────── */
 
+/*
+ * АДРЕС ПРИВЯЗКИ «Принять соединение». По умолчанию 127.0.0.1: программа,
+ * открывшая порт, слушает только эту машину. До 0.7.32 сокет привязывался к
+ * INADDR_ANY, и служба реестра на flang сутки отвечала на внешнем адресе
+ * (issue 475). Наружу порт открывают явно: FLANG_LISTEN_ADDRESS=0.0.0.0 или
+ * адрес нужного интерфейса. Негодный адрес — отказ поручения, а не тихий
+ * откат на loopback и не INADDR_ANY.
+ */
+static int io_listen_address(struct in_addr *bound, char *why, size_t why_size) {
+  const char *named = getenv("FLANG_LISTEN_ADDRESS");
+  const char *text = (named != NULL && named[0] != '\0') ? named : "127.0.0.1";
+  if (inet_pton(AF_INET, text, bound) != 1) {
+    snprintf(why, why_size, "адрес привязки «%s» из FLANG_LISTEN_ADDRESS не годится: нужен адрес IPv4, вроде 127.0.0.1 или 0.0.0.0", text);
+    return 0;
+  }
+  return 1;
+}
+
 static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   size_t index = 0;
   int fd = -1;
   int yes = 1;
   struct sockaddr_in address;
+  struct in_addr bound;
   for (index = 0; index < host->listen_count; index += 1) {
     if (host->listens[index].port == port) {
       return host->listens[index].fd;
@@ -18600,6 +18859,9 @@ static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   }
   if (host->listen_count == IO_MAX_PORTS) {
     snprintf(why, why_size, "хозяин слушает уже %d портов — больше некуда", IO_MAX_PORTS);
+    return -1;
+  }
+  if (!io_listen_address(&bound, why, why_size)) {
     return -1;
   }
   fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -18610,7 +18872,7 @@ static int io_listen_on(io_host *host, int port, char *why, size_t why_size) {
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
   memset(&address, 0, sizeof(address));
   address.sin_family = AF_INET;
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_addr = bound;
   address.sin_port = htons((unsigned short)port);
   if (bind(fd, (struct sockaddr *)&address, sizeof(address)) != 0 || listen(fd, 16) != 0) {
     snprintf(why, why_size, "порт %d не занят хозяином: %s", port, strerror(errno));
@@ -19024,6 +19286,117 @@ static fl_value io_spawn(io_host *host, const char *program, char *const *argv,
  * для «https», — а отклик у поручения «Запросить» обязан быть один и тот же.
  * Две копии этого разбора разошлись бы молча.
  */
+/* Буква ASCII строчной: имена заголовков HTTP сравниваются без учёта регистра. */
+static char io_http_lower(char letter) {
+  return letter >= 'A' && letter <= 'Z' ? (char)(letter - 'A' + 'a') : letter;
+}
+
+/*
+ * Объявлено ли тело кусками: среди заголовков от `head` до `end` есть
+ * «Transfer-Encoding», и последнее кодирование в нём — «chunked» (RFC 9112,
+ * 6.1). Регистр имени и значения не важен.
+ */
+static bool io_http_chunked(const char *head, const char *end) {
+  static const char name[] = "transfer-encoding:";
+  const size_t name_length = sizeof(name) - 1;
+  bool chunked = false;
+  const char *line = head;
+  while (line < end) {
+    const char *line_end = line;
+    size_t index = 0;
+    while (line_end < end && *line_end != '\r' && *line_end != '\n') {
+      line_end += 1;
+    }
+    while (index < name_length && line + index < line_end && io_http_lower(line[index]) == name[index]) {
+      index += 1;
+    }
+    if (index == name_length) {
+      const char *value = line + name_length;
+      const char *value_end = line_end;
+      const char *last = NULL;
+      while (value_end > value && (value_end[-1] == ' ' || value_end[-1] == '\t')) {
+        value_end -= 1;
+      }
+      last = value_end;
+      while (last > value && last[-1] != ',' && last[-1] != ' ' && last[-1] != '\t') {
+        last -= 1;
+      }
+      chunked = value_end - last == 7;
+      for (index = 0; chunked && index < 7; index += 1) {
+        chunked = io_http_lower(last[index]) == "chunked"[index];
+      }
+    }
+    line = line_end;
+    while (line < end && (*line == '\r' || *line == '\n')) {
+      line += 1;
+    }
+  }
+  return chunked;
+}
+
+/*
+ * Тело, присланное кусками (RFC 9112, 7.1): строка с длиной куска в
+ * шестнадцатеричной записи (расширения после «;» не смотрятся), CRLF, сам
+ * кусок, CRLF; кусок длины 0 — конец, хвостовые заголовки после него
+ * отбрасываются. Куски склеиваются в `out` октетами: граница куска может
+ * пройти посреди буквы UTF-8, и склеенное тело её восстанавливает.
+ * Испорченная запись или оборванная связь — false с причиной в `why`.
+ */
+static bool io_http_dechunk(const char *at, const char *end, repl_buf *out, const char **why) {
+  for (;;) {
+    size_t size = 0;
+    int digits = 0;
+    while (at < end) {
+      const char letter = io_http_lower(*at);
+      int digit = -1;
+      if (letter >= '0' && letter <= '9') {
+        digit = letter - '0';
+      } else if (letter >= 'a' && letter <= 'f') {
+        digit = letter - 'a' + 10;
+      }
+      if (digit < 0) {
+        break;
+      }
+      if (size > ((size_t)-1 >> 4)) {
+        *why = "длина куска не помещается в число";
+        return false;
+      }
+      size = (size << 4) | (size_t)digit;
+      digits += 1;
+      at += 1;
+    }
+    if (digits == 0) {
+      *why = at < end ? "строка куска не начинается с шестнадцатеричной длины" : "связь оборвалась до конца тела";
+      return false;
+    }
+    while (at < end && *at != '\n') {
+      at += 1;
+    }
+    if (at >= end) {
+      *why = "связь оборвалась до конца тела";
+      return false;
+    }
+    at += 1;
+    if (size == 0) {
+      return true;
+    }
+    if ((size_t)(end - at) < size) {
+      *why = "связь оборвалась посреди куска";
+      return false;
+    }
+    buf_add(out, at, size);
+    at += size;
+    if (end - at >= 2 && at[0] == '\r' && at[1] == '\n') {
+      at += 2;
+    } else if (at < end && at[0] == '\n') {
+      at += 1;
+    } else {
+      *why = at < end ? "после куска нет перевода строки" : "связь оборвалась до конца тела";
+      return false;
+    }
+  }
+}
+
 static fl_value io_http_answer(const repl_buf *answer) {
   int code = 0;
   const char *split = NULL;
@@ -19035,8 +19408,23 @@ static fl_value io_http_answer(const repl_buf *answer) {
   {
     fl_value fields[2];
     const char *start = split == NULL ? answer->data + answer->used : split + 4;
+    const char *end = answer->data + answer->used;
     fields[0] = io_pair("код", io_number((double)code));
-    fields[1] = io_pair("тело", io_text(start, (size_t)(answer->data + answer->used - start)));
+    if (split != NULL && io_http_chunked(answer->data, split)) {
+      repl_buf body;
+      const char *why = NULL;
+      buf_init(&body);
+      if (!io_http_dechunk(start, end, &body, &why)) {
+        char say[256];
+        buf_free(&body);
+        snprintf(say, sizeof(say), "тело ответа кусками (Transfer-Encoding: chunked) испорчено: %s", why);
+        return io_fail("FLANG_IO_NET", say);
+      }
+      fields[1] = io_pair("тело", io_text(body.data, body.used));
+      buf_free(&body);
+    } else {
+      fields[1] = io_pair("тело", io_text(start, (size_t)(end - start)));
+    }
     return io_variant("Ответ сети", fields, 2);
   }
 }
@@ -20803,8 +21191,21 @@ static fl_value io_perform(io_host *host, fl_value order) {
  * диагностика одна и несёт код и сообщение. Идёт он в stderr, а не в stdout, —
  * там, где у удачи стоит вердикт.
  */
+/*
+ * КРАТКИЙ ОТВЕТ — для команды, за которой человек, а не свидетель: `flang install`
+ * зовёт исполнителя планов внутри процесса, и человеку нужен итог строками, а не
+ * вердикт JSON с журналом поручений, в котором лежат тела всех скачанных пакетов.
+ * Удача — текст итога в stdout; отказ — «КОД: причина» в stderr. Коды возврата те
+ * же, что у `flang io`: решает по-прежнему план, а не способ печати.
+ */
+static bool io_brief = false;
+
 static void io_print_error(const char *code, const char *message, double line, double column, bool pretty) {
   fl_value diagnostic[4];
+  if (io_brief) {
+    fprintf(stderr, "%s: %s\n", code, message);
+    return;
+  }
   fl_value list[1];
   fl_value pairs[2];
   fl_value printed = fl_nothing();
@@ -20851,6 +21252,15 @@ static void io_report(fl_value plan, fl_value result, const fl_value *log, size_
   const char *utf8 = NULL;
   size_t bytes = 0;
   char *name = NULL;
+  if (io_brief) {
+    if (zn_text(result, &utf8, &bytes) || val_text(result, &utf8, &bytes)) {
+      fwrite(utf8, 1, bytes, stdout);
+      fputc('\n', stdout);
+    } else {
+      fputs("готово\n", stdout);
+    }
+    return;
+  }
   val_field(plan, "имя", &field);
   name = val_copy(field);
   pairs[0] = io_pair("plan", io_say(name));
@@ -22798,7 +23208,7 @@ static int package_file(int argc, char **argv) {
 
 static const char *const NEW_RESERVED[] = {"check", "ast",  "tokens",  "run",     "test", "facts", "emit",
                                            "io",    "repl", "lock",    "package", "new",  "lsp",   "help",
-                                           "version", "flang", "fspec"};
+                                           "version", "flang", "fspec", "install"};
 #define NEW_RESERVED_COUNT (sizeof(NEW_RESERVED) / sizeof(NEW_RESERVED[0]))
 
 /** Запрещённые куски имени пакета — та же строка, что «Запрещённые куски
@@ -22839,15 +23249,19 @@ static bool new_refuse(const char *say) {
 /**
  * Каталог с образцом `fspec/`: сперва `$FLANG_FSPEC_TEMPLATE_DIR`, иначе
  * `<каталог двоичного>/../fspec` — на дереве исходников это и есть корневой
- * `fspec/`, рядом с `bootstrap/`. Не найден ни один — NULL, и пакет не
- * заводится вовсе: пробел лучше спеки, скопированной ниоткуда.
+ * `fspec/`, рядом с `bootstrap/`, — иначе `<каталог двоичного>/../share/flang-fspec`,
+ * куда образец кладут установки (архив, deb, rpm, install.sh, asdf, Homebrew).
+ * Не найден ни один — NULL, и пакет не заводится вовсе: пробел лучше спеки,
+ * скопированной ниоткуда.
  */
 static char *new_template_dir(const char *self) {
+  static const char *const below_parent[] = {"fspec", "share/flang-fspec"};
   const char *env = getenv(NEW_TEMPLATE_ENV);
   char *self_dir = NULL;
   char *parent = NULL;
   char *candidate = NULL;
   char *probe = NULL;
+  size_t index = 0;
   if (env != NULL && env[0] != '\0') {
     probe = repl_join(env, "guard.flang");
     if (repl_exists(probe)) {
@@ -22862,15 +23276,18 @@ static char *new_template_dir(const char *self) {
   }
   parent = repl_dirname(self_dir);
   free(self_dir);
-  candidate = repl_join(parent, "fspec");
-  free(parent);
-  probe = repl_join(candidate, "guard.flang");
-  if (repl_exists(probe)) {
+  for (index = 0; index < sizeof(below_parent) / sizeof(below_parent[0]); index += 1) {
+    candidate = repl_join(parent, below_parent[index]);
+    probe = repl_join(candidate, "guard.flang");
+    if (repl_exists(probe)) {
+      free(probe);
+      free(parent);
+      return candidate;
+    }
     free(probe);
-    return candidate;
+    free(candidate);
   }
-  free(probe);
-  free(candidate);
+  free(parent);
   return NULL;
 }
 
@@ -23061,6 +23478,7 @@ static bool new_write_all(const char *target, const char *fspec_dir, const char 
 
   ok = new_copy_template(template_dir, "guard.flang", fspec_dir) && ok;
   ok = new_copy_template(template_dir, "policy.flang", fspec_dir) && ok;
+  ok = new_copy_template(template_dir, "snapshot.flang", fspec_dir) && ok;
 
   free(title);
   return ok;
@@ -23129,7 +23547,8 @@ static int new_project(int argc, char **argv, const char *self) {
   if (template_dir == NULL) {
     fprintf(stderr,
             "FLANG_NEW: не найден образец fspec/ (guard.flang рядом с policy.flang) — искали\n"
-            "в $%s и в <каталог двоичного>/../fspec. Пакет не создан.\n",
+            "в $%s, в <каталог двоичного>/../fspec и в <каталог двоичного>/../share/flang-fspec.\n"
+            "Пакет не создан.\n",
             NEW_TEMPLATE_ENV);
     free(target);
     return 1;
@@ -24030,11 +24449,15 @@ static char *mcp_text_of(fl_value node, const char *key) {
   return repl_say("");
 }
 
-/** Входящее сообщение → запись «Сообщение MCP», как её ждёт `self/mcp.flang`. */
+/**
+ * Входящее сообщение → запись «Сообщение MCP», как её ждёт `self/mcp.flang`.
+ * «версия службы» — та же FLANG_VERSION, что печатает `flang --version`: своего
+ * числа у службы нет, и отстать от выпуска ей нечем.
+ */
 static fl_value mcp_message(fl_value json) {
-  static const char *const names[7] = {"метод",   "есть номер", "номер текстом", "версия клиента",
-                                       "средство", "исходник",   "обещание"};
-  fl_value values[7];
+  static const char *const names[8] = {"метод",    "есть номер", "номер текстом", "версия клиента",
+                                       "средство", "исходник",   "обещание",      "версия службы"};
+  fl_value values[8];
   fl_value params = fl_nothing();
   fl_value arguments = fl_nothing();
   bool has_id = false;
@@ -24065,13 +24488,14 @@ static fl_value mcp_message(fl_value json) {
   values[4] = repl_value_say(tool);
   values[5] = repl_value_say(source);
   values[6] = repl_value_say(claim);
+  values[7] = repl_value_say(FLANG_VERSION);
   free(method);
   free(id);
   free(version);
   free(tool);
   free(source);
   free(claim);
-  return repl_value_record(names, values, 7);
+  return repl_value_record(names, values, 8);
 }
 
 /*
@@ -24558,6 +24982,180 @@ static void human_memory_said(const char *command) {
           command);
 }
 
+/* ═══════════════════ установка пакетов: `flang install` ══════════════════ */
+
+/*
+ * КОМАНДА НЕ НЕСЁТ УСТАНОВЩИКА (ADR-0168 §6). Движок — план
+ * `scripts/package-install.fscript`; он лежит рядом с двоичным там же, где
+ * библиотека: в дереве — `<каталог двоичного>/../scripts/`, у поставленного —
+ * `<каталог двоичного>/../share/flang/scripts/`. Команда готовит движку доводы и
+ * зовёт исполнителя планов внутри процесса: путь программы делается абсолютным
+ * (пути поручений план считает от СВОЕГО каталога, а не от каталога человека),
+ * адрес списка берётся из ближайшего `.flangrc` вверх от рабочего каталога тем
+ * же разбором, что у `run-script`, а свой путь двоичный отдаёт в FLANG_BINARY,
+ * чтобы `check` и `lock` звались им же, а не `../bootstrap/flang`.
+ *
+ * Почему не текст плана в C-строке: он менялся бы только печатью семени, а файл
+ * рядом с двоичным меняется коммитом и едет к поставленному с выпуском, как едет
+ * библиотека. Нет файла — названный отказ FLANG_INSTALL_ENGINE, не тишина.
+ */
+#define INSTALL_ENGINE "package-install.fscript"
+
+static char *install_engine_path(const char *self) {
+  static const char *const SUBS[2] = {"scripts", "share/flang/scripts"};
+  char *self_dir = repl_self_dir(self);
+  char *parent = NULL;
+  char *found = NULL;
+  size_t index = 0;
+  if (self_dir == NULL) {
+    return NULL;
+  }
+  parent = repl_dirname(self_dir);
+  for (index = 0; index < 2 && found == NULL; index += 1) {
+    char *directory = repl_join(parent, SUBS[index]);
+    char *candidate = repl_join(directory, INSTALL_ENGINE);
+    if (repl_exists(candidate)) {
+      found = candidate;
+    } else {
+      free(candidate);
+    }
+    free(directory);
+  }
+  free(parent);
+  free(self_dir);
+  return found;
+}
+
+/** Абсолютный путь: относительный считается от рабочего каталога человека. */
+static char *install_absolute(const char *path) {
+  char cwd[4096];
+  if (path[0] == '/') {
+    return repl_dup(path, strlen(path));
+  }
+  if (getcwd(cwd, sizeof(cwd)) == NULL) {
+    return repl_dup(path, strlen(path));
+  }
+  return repl_resolve(cwd, path);
+}
+
+/** Адрес списка: сеть — как есть, путь — абсолютный от названного каталога. */
+static char *install_address(const char *given, const char *base) {
+  if (strncmp(given, "http://", 7) == 0 || strncmp(given, "https://", 8) == 0 || given[0] == '/') {
+    return repl_dup(given, strlen(given));
+  }
+  return repl_resolve(base, given);
+}
+
+/** Ключ «registry» ближайшего `.flangrc`; путь считается от каталога файла. Нет — NULL. */
+static char *install_registry_from_settings(void) {
+  char path[4352];
+  size_t bytes = 0;
+  size_t at = 0;
+  char *text = NULL;
+  char *found = NULL;
+  char *value = NULL;
+  char *base = NULL;
+  flangrc_pair pair;
+  if (!flangrc_project(path, sizeof(path))) {
+    return NULL;
+  }
+  text = repl_read_file(path, &bytes);
+  if (text == NULL) {
+    return NULL;
+  }
+  while (flangrc_next(text, bytes, &at, &pair)) {
+    if (pair.key_bytes == strlen("registry") && memcmp(pair.key, "registry", pair.key_bytes) == 0 &&
+        pair.value_bytes > 0) {
+      free(value);
+      value = repl_dup(pair.value, pair.value_bytes);
+    }
+  }
+  free(text);
+  if (value == NULL) {
+    return NULL;
+  }
+  base = repl_dirname(path);
+  found = install_address(value, base);
+  free(base);
+  free(value);
+  return found;
+}
+
+static int install_command(int argc, char **argv, const char *self) {
+  char *engine = NULL;
+  char *program = NULL;
+  char *registry = NULL;
+  char *binary = NULL;
+  char **words = NULL;
+  char *given_registry = NULL;
+  int count = 0;
+  int index = 0;
+  int code = 0;
+  bool registry_given = false;
+  for (index = 2; index < argc; index += 1) {
+    if (strcmp(argv[index], "--registry") == 0) {
+      registry_given = true;
+    }
+  }
+  if (argc < 3 || argv[2][0] == '-') {
+    fputs("FLANG_INSTALL_USAGE: не назван файл программы. Звать: flang install <файл.flang> "
+          "[<имя>[: <ограничение>]]... [--registry <адрес>] [--accept-unproven]\n",
+          stderr);
+    return 1;
+  }
+  engine = install_engine_path(self);
+  if (engine == NULL) {
+    fputs("FLANG_INSTALL_ENGINE: рядом с двоичным нет движка установки " INSTALL_ENGINE
+          " (ни в <каталог двоичного>/../scripts, ни в ../share/flang/scripts). Поставьте flang целиком — "
+          "тарболлом, install.sh, Homebrew или asdf; из дерева зовите «flang run-script package:install»\n",
+          stderr);
+    return 1;
+  }
+  program = install_absolute(argv[2]);
+  binary = install_absolute(self);
+  if (!registry_given) {
+    registry = install_registry_from_settings();
+  }
+  setenv("FLANG_BINARY", binary, 1);
+  /* flang io <движок> --plan Поставить --timeout 600000 -- <программа> <доводы> [--registry <из .flangrc>] */
+  words = (char **)repl_alloc((size_t)(argc + 10) * sizeof(char *));
+  words[count++] = argv[0];
+  words[count++] = (char *)"io";
+  words[count++] = engine;
+  words[count++] = (char *)"--plan";
+  words[count++] = (char *)"Поставить";
+  words[count++] = (char *)"--timeout";
+  words[count++] = (char *)"600000";
+  words[count++] = (char *)"--";
+  words[count++] = program;
+  for (index = 3; index < argc; index += 1) {
+    if (index > 3 && strcmp(argv[index - 1], "--registry") == 0) {
+      /* Путь списка человек называет от своего каталога, а план считает пути от
+         своего — поэтому путь делается абсолютным здесь, адрес сети не трогается. */
+      char cwd[4096];
+      free(given_registry);
+      given_registry = install_address(argv[index], getcwd(cwd, sizeof(cwd)) == NULL ? "." : cwd);
+      words[count++] = given_registry;
+    } else {
+      words[count++] = argv[index];
+    }
+  }
+  if (registry != NULL) {
+    words[count++] = (char *)"--registry";
+    words[count++] = registry;
+  }
+  io_brief = true;
+  code = io_file(count, words);
+  io_brief = false;
+  free(words);
+  free(given_registry);
+  free(registry);
+  free(binary);
+  free(program);
+  free(engine);
+  return code;
+}
+
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
   proof_cache_argv = argv;
@@ -24636,6 +25234,8 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = package_file(argc, argv);
   } else if (strcmp(command, "new") == 0) {
     code = new_project(argc, argv, self);
+  } else if (strcmp(command, "install") == 0) {
+    code = install_command(argc, argv, self);
   } else if (scripted) {
     code = script_command(argc, argv);
   } else if (strcmp(command, "lsp") == 0) {

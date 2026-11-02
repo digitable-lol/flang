@@ -9,7 +9,7 @@ parse-error-imported.flang	check	0	замечаний нет
 parse-error-base.flang	check	0	замечаний нет
 result-with-failure-variant.flang	check	0	замечаний нет
 failure-variant-imported.flang	check	0	замечаний нет
-story-discount-cap.flang	proof	3	НЕ СОШЛОСЬ СО СВЕРЩИКОМ	сверщики не читают блок «история»: docs/tasks/8192-the-checkers-read-story-blocks.md
+story-discount-cap.flang	proof	0	постусловие «хочу: скидка не больше 30» функции «потолок скидки» — доказано
 story-undeclared-role.flang	check	1	запись «Роль» не имеет поля «завсклад»
 namesake-first.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang
 namesake-second.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-first.flang

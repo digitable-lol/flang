@@ -57,7 +57,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import uzel_zamera as реш  # печать компилятора: все решения узла
+import program as реш  # печать компилятора: все решения узла
 import flang_runtime as rt
 
 ЦЕЛЬ = "python"

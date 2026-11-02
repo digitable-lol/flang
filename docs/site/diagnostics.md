@@ -265,6 +265,7 @@ $ echo $?
 | `FLANG_TYPE_PARAM` | a type parameter is declared twice, has no name, or is named like a built-in or declared type | rename the parameter |
 | `FLANG_APPLY` | the call does not fit: wrong number of arguments, or the callee is not a function | compare the call with the signature |
 | `FLANG_BUILTIN_ARGS` | a built-in operation got the wrong number of arguments | check the operation's description |
+| `FLANG_OVERFLOW` | an operation on a fixed-width word (`u8` … `i64`) does not fit the type, or divides by zero | write `с переполнением` where wrapping is meant, or widen the type |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | the pattern match does not cover every case | add the missing `случай` |
 | `FLANG_MATCH_UNREACHABLE` | a case is covered by an earlier one and never runs | remove it or move it up |
 | `FLANG_EXAMPLE` | a unit test failed: the value differs from the expected one | fix the body or the expected value |
@@ -528,6 +529,7 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_COMPOSE_MISMATCH` | the ends of a composition do not meet |
 | `FLANG_MORPHISM_SHAPE` | the morphism is declared wrong |
 | `FLANG_FUNCTOR_SQUARE` | the functor square does not commute |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | an arrow is mapped, but one of its ends has no image |
 | `FLANG_TRANSFORM_NOT_NATURAL` | the naturality square does not commute |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | the bifunctor maps one pair of objects twice |
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | a pair of arrows is mapped, but the pair of their ends has no image |
@@ -535,6 +537,8 @@ error means a violation was found, so there is always a counterexample.
 | `FLANG_BIFUNCTOR_IDENTITY` | a pair of identities is mapped to an arrow that is not an identity |
 | `FLANG_BIFUNCTOR_COMPOSITION` | a pair of composites is mapped to an arrow that is not the composite of the images |
 | `FLANG_ISO_NOT_INVERSE` | the two arrows are not inverse to each other |
+| `FLANG_ISO_MISMATCH` | an arrow of the isomorphism is undeclared or does not go between its two objects |
+| `FLANG_ISO_IDENTITY_MISSING` | an object of the isomorphism has no declared identity |
 | `FLANG_EMBED_SHAPE` | the embedding is declared wrong |
 | `FLANG_EMBED_NOT_INJECTIVE` | the embedding maps different values to the same one |
 | `FLANG_MONOID` | the monoid declaration is incomplete |
@@ -577,6 +581,13 @@ Permissions are taken away one at a time; by default everything is allowed:
 ```bash
 flang io план.flang --plan 'Разбор' --no-net --in-dir
 ```
+
+## Installing packages
+
+Refusals of the package installer (`flang install`) are
+printed by the installer itself, a plan written in flang, not by the compiler;
+their codes and what to do about them are listed on the
+[packages page](packages.html#refusal-codes-of-the-installer).
 
 ## Processes
 
@@ -642,6 +653,7 @@ record — [the record format](record-format.html).
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
+| `FLANG_BINARY` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
@@ -672,6 +684,7 @@ record — [the record format](record-format.html).
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |
 | `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
@@ -683,6 +696,8 @@ record — [the record format](record-format.html).
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
+| `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
+| `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
 | `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
@@ -711,12 +726,15 @@ record — [the record format](record-format.html).
 | `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
 | `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
 | `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
+| `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
 | `FLANG_LIB_DIR` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
 | `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | `interpret.flang`, `types.flang` | the match on {subject} does not cover {cases} · a match without cases covers nothing |
@@ -752,6 +770,7 @@ record — [the record format](record-format.html).
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | 'если' has no 'иначе' branch · construct not parsed: unexpected '{word}' — this word is taken by the language and cannot be a name: write the name in guillemets («{word.quoted}») or rename it; and if the word got into the form by mistake, remove it |
 | `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |
@@ -786,7 +805,7 @@ record — [the record format](record-format.html).
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
-| `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
+| `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |

@@ -736,6 +736,19 @@ static void write_value(fl_value value) {
     }
     putchar('}');
     return;
+  case FL_WORD: {
+    const uint64_t mask = value.as.word.width >= 64u
+                              ? UINT64_MAX
+                              : ((UINT64_C(1) << value.as.word.width) - 1u);
+    const bool negative =
+        value.as.word.sign &&
+        (value.as.word.bits & (UINT64_C(1) << (value.as.word.width - 1u))) != 0u;
+    printf("{\"w\":\"%c%u\",\"v\":\"%s%" PRIu64 "\"}",
+           value.as.word.sign ? 'i' : 'u', (unsigned)value.as.word.width,
+           negative ? "-" : "",
+           negative ? ((~value.as.word.bits) & mask) + 1u : value.as.word.bits);
+    return;
+  }
   case FL_STRING:
     fputs("{\"s\":", stdout);
     write_text(value.as.string.utf8, value.as.string.bytes);
@@ -1680,6 +1693,17 @@ static void cli_io_plain(fl_value value, FILE *sink) {
     fl_number_text(value.as.number, number);
     fputs(number, sink);
     return;
+  case FL_WORD: {
+    const uint64_t mask = value.as.word.width >= 64u
+                              ? UINT64_MAX
+                              : ((UINT64_C(1) << value.as.word.width) - 1u);
+    const bool negative =
+        value.as.word.sign &&
+        (value.as.word.bits & (UINT64_C(1) << (value.as.word.width - 1u))) != 0u;
+    fprintf(sink, "%s%" PRIu64, negative ? "-" : "",
+            negative ? ((~value.as.word.bits) & mask) + 1u : value.as.word.bits);
+    return;
+  }
   case FL_STRING:
     write_text(value.as.string.utf8, value.as.string.bytes);
     return;

@@ -13,7 +13,7 @@
 # Homebrew and asdf install today:
 #
 #   bin/flang  bin/flangtutor  libexec/flang/checker  share/flang/<target>/
-#   share/flang-tutor/  share/man/man1/flang.1  LICENSE
+#   share/flang-tutor/  share/flang-fspec/  share/man/man1/flang.1  LICENSE
 #   lib/ include/            macOS only, see below
 #
 # The binary is built from the C archive, not from the tree: the published
@@ -98,6 +98,12 @@ fi
 if [ -d "$work/src/tutor" ]; then
   mkdir -p "$root/share/flang-tutor"
   cp -R "$work/src/tutor/." "$root/share/flang-tutor/"
+fi
+# The spec template `flang new` copies into a new package; the binary looks for
+# it in ../share/flang-fspec. Archives before 0.7.31 have no fspec/.
+if [ -d "$work/src/fspec" ]; then
+  mkdir -p "$root/share/flang-fspec"
+  cp -R "$work/src/fspec/." "$root/share/flang-fspec/"
 fi
 # Runtime sources of every emit target: `flang emit` copies them into its output
 # and looks for them in ../share/flang next to the binary.

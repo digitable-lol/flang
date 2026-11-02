@@ -646,6 +646,9 @@
 // 782 → 783 (обещания вида «Вид точного», счёта над точным целым, сложения
 // разрядов и узла типа exactInt); md5 и числитель НЕ ТРОНУТЫ — они датируют
 // прежний приговор, а новый переснимет перепечатка семени.
+// ⚑ 26 октября 2026, вход перепечатки 9b (issue 479): у flang/self/parser.flang
+// пересчитано только «написано»: 809 → 810 (обещание «Узел первичного числа»);
+// md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
 // Задача 4722 завела семью `flang/proof/checker/tests/families/rewrite/`: законы склейки
 // строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
 // ведомости у проб нет — «×», как у соседних семей сверщика.
@@ -1079,6 +1082,9 @@ fd7ebc29409ae75ab82bd0b48345589e|1|0|0|1|0|flang/proof/probes/branch-condition-a
 c516038d4d659e5e8b1c5c45c4551f5a|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal.flang
 c3f8f76fb04c59f18e25a52133487f98|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-equal.flang
 17e31c2c96a2eaad4a92c212fb725ef6|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-zero.flang
+df782774fb84cf23cb9c3e9d3c23b891|1|×|×|×|0|flang/proof/probes/typing-holes/programs/assumption-bound-at-two-to-the-64.flang
+fc7490ed4b923e46a34b0eaabc4f1ffa|1|×|×|×|0|flang/proof/probes/typing-holes/programs/restricted-postcondition-false-inside-domain.flang
+e82c4cf72147caa8968060dd07f92844|1|×|×|×|0|flang/proof/probes/typing-holes/programs/restricted-postcondition-outside-domain.flang
 0dbd8c3aca5c041211fc3702f1a64840|52|52|0|0|0|flang/proof/small-reducer.flang
 a075e8a26bed6fd0228f15824bad848a|1|0|0|1|0|flang/proof/forgeries/by-division.flang
 ab1156261b804cb48ee0df2e25cad46f|1|1|0|0|0|flang/proof/forgeries/base-with-field.flang
@@ -1298,6 +1304,8 @@ f5a8ef6df0c4f1421f459afe0984d24d|2|×|×|×|0|flang/proof/checker/tests/families
 6364cd4b39b55966314908c75988bf37|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/zero-without-premise.flang
 e18d79716b7e9d989ea2d6fdf38b6c14|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/zero-plus-one.flang
 da4b77e73c558c72c9dec94fa8a7725c|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/f05k-fold-not-by-the-argument.flang
+e7b887a0ec4270fad11a93a7a8956538|2|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/optional-empty-case-lies.flang
+5d8dae8d4dd1f4033eaf05d2fb3ac33b|1|×|×|×|0|flang/proof/checker/tests/families/statement/corrupt/optional-multiply-adds.flang
 fa3fb9a5955db0b82f480047ad83bf04|2|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-by-postcondition.flang
 6878457c28ff1862039bad5cf01c3b61|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-socrates.flang
 9ee2cd59eeca8e29bd5985c51b49e252|3|×|×|×|0|flang/proof/checker/tests/families/statement/syllogism-follows.flang
@@ -1335,27 +1343,27 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|42|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|44|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
 b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
-87efd53b3cad17320ce7282d24440d59|81|53|8|17|0|flang/self/cli.flang
+87efd53b3cad17320ce7282d24440d59|82|53|8|17|0|flang/self/cli.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/declared-properties.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|460|291|8|107|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|462|291|8|109|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
-29a749a897421f9f3b89dd7f1c372746|663|551|30|78|0|flang/self/emit-csharp.flang
+29a749a897421f9f3b89dd7f1c372746|664|551|30|79|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|144|88|4|50|0|flang/self/emit-elixir.flang
 a21cc98b06700c8c8fb3a0f414a84f23|197|148|7|39|0|flang/self/emit-go.flang
-b1818a43c9906c906ad3d8521756d44b|213|137|7|61|0|flang/self/emit-java.flang
-d716fe052f0b062a45a29f4156e34603|172|152|0|4|0|flang/self/emit-js.flang
+b1818a43c9906c906ad3d8521756d44b|214|137|7|62|0|flang/self/emit-java.flang
+d716fe052f0b062a45a29f4156e34603|178|152|0|5|0|flang/self/emit-js.flang
 dc0f3f20e387d3a5db3813d2ae137694|18|17|0|0|0|flang/self/emit-layout.flang
-f13484b53a5c82fb325806ab879986a2|644|584|24|38|0|flang/self/emit-python.flang
+f13484b53a5c82fb325806ab879986a2|645|584|24|39|0|flang/self/emit-python.flang
 3ce042a5f1a0c6f91894e71ae4c7452e|114|79|0|35|0|flang/self/emit-rust.flang
 72150e5aad967e98fb24fdecbaedd803|1|1|0|0|0|flang/self/emit-ts.flang
 44e846ef996390de2dc8f73b3fab2bf4|156|79|24|53|0|flang/self/factcheck.flang
@@ -1365,14 +1373,14 @@ e408818a261e1abb800309bbb6550470|2|2|0|0|0|flang/self/functor.flang
 2aa0890af1f39b383cdb0d890405c80c|21|21|0|0|0|flang/self/grid.flang
 77a1b2038be162508f2e4c621bdcbe6b|85|55|2|28|0|flang/self/hotswap.flang
 4f79a3955aaebc4cd45d401b8dbba3e2|18|11|0|7|0|flang/self/idempotent.flang
-6b887e3137c1eee1b3ac07816837f436|286|146|31|76|0|flang/self/interpret.flang
+6b887e3137c1eee1b3ac07816837f436|301|146|31|76|0|flang/self/interpret.flang
 732fafea03a19a84be8b371d78d0ba2e|19|19|0|0|0|flang/self/io.flang
 cf285bfaf06251404d184ecee764f85f|24|10|10|4|0|flang/self/iso.flang
 b25da330b06be21a87c8a500d8a24ff5|43|12|30|1|0|flang/self/law-oracle.flang
-fb537024bd9a6899533d6a3233e3b092|102|97|4|0|0|flang/self/lexer.flang
+fb537024bd9a6899533d6a3233e3b092|108|97|4|0|0|flang/self/lexer.flang
 ef419036ed7ae00578750c7972e9c62f|7|×|×|×|0|flang/self/link.flang
 7bc86c81be652752a5964593865681ae|224|96|13|115|0|flang/self/lsp.flang
-b3c135fc13de8e40e182c230215a3ab5|27|17|4|6|0|flang/self/mcp.flang
+b3c135fc13de8e40e182c230215a3ab5|28|17|4|7|0|flang/self/mcp.flang
 8b54bf00afa4ab0bf7959bfa73175e82|117|62|49|6|0|flang/self/monad-expand.flang
 c6f52bf7867e5ee7500f3accc6cc949c|37|21|0|16|0|flang/self/monad.flang
 e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
@@ -1380,11 +1388,11 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|56|44|0|0|0|flang/self/obligations.flang
 3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
-54cfb1a8e907051aafea33efa6ac337d|808|446|22|261|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|811|446|22|262|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
-0671f904ac2c1b423ee51e1562ed2a08|91|44|0|0|0|flang/self/proof-kernel.flang
+0671f904ac2c1b423ee51e1562ed2a08|98|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|247|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
 ef9ed6468f2ee47584e2653aefa44b54|188|46|1|91|0|flang/self/proofterm.flang
@@ -1395,9 +1403,9 @@ a443c4646dc571ca4545e3c5775f3733|13|3|0|10|0|flang/self/sets-oracle.flang
 2c8ea5e4a5fe329bc74c90238b627639|42|42|0|0|0|flang/self/sets.flang
 bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
-5244f474a7f26171786a1690f79a98e9|319|257|16|42|0|flang/self/totality.flang
+5244f474a7f26171786a1690f79a98e9|317|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
-6f5995562eb91e54ecbcd9bde4c4853e|433|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|457|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1454,6 +1462,15 @@ d8a87ed173e940e95b91df6ac27123c5|0|×|×|×|1|flang/test/fixtures/binary-rules/e
 ebf918c1133a06dab715e03c08f1ce4f|0|×|×|×|3|flang/test/fixtures/binary-rules/iso-mismatch.flang
 ed30c9fa927c5a19ab032b137ef07edf|7|0|7|0|0|flang/test/fixtures/element-po-nomeru-chestnaya.flang
 fc83fbc21ff40f2acebe2ea4f49eefdd|4|1|0|3|1|flang/test/fixtures/granica-nad-chislom-chestnaya.flang
+0bc4cfdebe6a59057d35526d3872558d|2|×|×|×|2|flang/test/fixtures/honest-halves/case-split-honest.flang
+a5f07ba9b8d0c456484fceb748e56d6e|1|×|×|×|2|flang/test/fixtures/honest-halves/contradiction-honest.flang
+cdff78121ce705d604a4c91ff3dbb11e|4|×|×|×|0|flang/test/fixtures/honest-halves/fold-over-empty-honest.flang
+c8288759eb7867b1ec114d3a673e4459|2|×|×|×|0|flang/test/fixtures/honest-halves/inner-case-split-honest.flang
+14084af770a43a6c763238cf3579b459|4|×|×|×|0|flang/test/fixtures/honest-halves/integrality-from-fact-honest.flang
+dd5b92bc8d039261789911a13f5e023b|6|×|×|×|0|flang/test/fixtures/honest-halves/list-match-honest.flang
+1ae9df659600211379d40b24380001be|5|×|×|×|0|flang/test/fixtures/honest-halves/order-arithmetic-honest.flang
+ea6522b9a55441b91b011dfd3c7e4b7b|4|×|×|×|0|flang/test/fixtures/honest-halves/product-floor-honest.flang
+a006d05278b799b7c14b69e94f5db5ef|4|×|×|×|0|flang/test/fixtures/honest-halves/strict-order-honest.flang
 12e4a6f0e40bd10b5d179e7dffc95e4f|3|0|3|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
 052d07f9abd740282567e21a713e2995|7|1|6|0|0|flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
 a21b59921919e74faa90a69b8090d9d8|1|0|0|1|0|flang/test/fixtures/ohrana-daet-fakt.flang
@@ -1627,7 +1644,7 @@ d25c2b3399f45c84d4b13bf0ec83ba1a|6|3|2|0|0|scripts/guards/tab-host-guard.fscript
 68dc1ca8f2d8213dfacf881c0a77ac16|60|20|22|0|0|scripts/guards/traceability-guard.fscript
 32abb506d7825a5a941106acc8419d59|11|11|0|0|0|scripts/guards/translit-file-names-guard.fscript
 0eb8181532ae602de4c212cbde33749e|33|19|5|1|0|scripts/guards/tree-inventory.fscript
-bec73f74945e3fab75a9ae2b31098c1c|15|15|0|0|0|scripts/guards/version-derivations-guard.fscript
+bec73f74945e3fab75a9ae2b31098c1c|16|15|0|1|0|scripts/guards/version-derivations-guard.fscript
 19037f1b3d31fce728a4bd55fa1a4835|23|8|7|8|0|scripts/guards/version-guard.fscript
 a781034b78cf3d516bd825fa2dfd3b93|10|8|2|0|0|scripts/guards/darwin-guard.fscript
 7d1f997307fb3dbad80e57933ee0f3fd|20|20|0|0|0|scripts/registry-tool.fscript
@@ -1635,7 +1652,7 @@ cb83af3366e1aedcf2980e68974f26bc|21|20|1|0|0|scripts/release/asdf-plugin-publish
 1ada44f6de654f4caad9cc2ebd440616|10|10|0|0|0|scripts/release/asdf-version-list.fscript
 a98d9e712b2f955014f8cbb920a0249c|36|36|0|0|0|scripts/release/bump-version.fscript
 9da7ac83e58dcd6ede242456ab630ee4|14|14|0|0|0|scripts/release/path-without-node.fscript
-a0738ba8b035da99fa3ecc7c0f7d6f39|32|30|2|0|0|scripts/release/release-in-c.fscript
+fb0df2415e8ee9e464fcffe59feb93e6|35|33|2|0|0|scripts/release/release-in-c.fscript
 55039b46f2e76c84ceab33604185618c|8|7|1|0|0|scripts/seed/bootstrap-point-by-binary.fscript
 db31494881cf584b97db52db42409f8f|3|3|0|0|0|scripts/seed/makefile-headers-probe.fscript
 8904a075824162e91c466ab52d01d502|4|0|0|4|0|scripts/seed/new-binary-acceptance-probe.flang
@@ -1686,6 +1703,14 @@ b3354987e51cf0bddcae03cb92ec49e6|2|0|1|1|0|flang/proof/probes/strict/programs/pr
 ff1f78446cbbec240bb14f7676bd91d0|1|1|0|0|0|flang/proof/probes/strict/programs/honest.flang
 358a850cf63c9be805e6523f1f3c4bd1|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no.flang
 6ed9f3b3df26c560a9a63dcc2d042639|1|1|0|0|0|flang/proof/probes/strict/programs/checker-says-no-with-import.flang
+// Шесть программ опровержения на краях (заявка 409, 21 октября 2026): у трёх
+// постусловие ложно на краю, и после печати 9b пример ломается — приговора нет, «×».
+e8389d3a5bce1247fa5f32363ff20f64|1|1|0|0|0|flang/proof/probes/strict/programs/true-bound-on-the-same-edges.flang
+53d4c858ebd9d78539d283eb14d352e3|1|0|1|0|0|flang/proof/probes/strict/programs/false-bound-away-from-the-edges.flang
+0119d90929bd696417103b8afad562a6|1|0|1|0|1|flang/proof/probes/strict/programs/bound-held-under-requires.flang
+5638b397691727d5a9aa86b14946fdad|1|×|×|×|0|flang/proof/probes/strict/programs/false-bound-refuted-at-the-edge.flang
+4657153e8b0941bab8a9bee8992cf250|1|×|×|×|1|flang/proof/probes/strict/programs/bound-refuted-at-the-requires-edge.flang
+4e12bccd37880ea160fe7ab2a0f704d2|3|×|×|×|4|flang/proof/probes/strict/programs/int-midpoint-overflows.flang
 8941e87345e668233fabaf1ffc7cffbe|1|1|0|0|0|flang/proof/probes/strict/programs/imported-module.flang
 655219cf6d2a957f59ec25fe64750d3b|1|0|0|1|0|flang/proof/probes/strict/programs/refuted-statement.flang
 f84ca35166f09e0b6aa713f960ec37fa|2|2|0|0|0|flang/proof/probes/strict/programs/statement-holds-on-the-edge.flang
@@ -2161,3 +2186,25 @@ fe6ae44b60de761e120eefd61c6708b5|1|0|0|1|0|flang/proof/examples/forgery-unfold-o
 65f167b474bdaeb8e9cbf4250e8594cc|1|0|1|0|0|flang/services/registry/serve.flang
 d3cfc89221ee2f27d7ba27355767227b|4|2|2|0|0|flang/services/registry/health.fscript
 e5992562d857253c1e0172dca36c2d37|10|7|3|0|0|scripts/services/registry-deploy.fscript
+bdbd25eab3957aaf7faaccb3dbc19db2|1|×|×|×|2|flang/proof/checker/tests/families/case-link/case-link.flang
+194d9d9b1fe9894149ae221229f8b70c|3|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds.flang
+dcbb2e0f5c7fd33b00bc00ba6aae90ef|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds-wide.flang
+a2a36ce6a1d1eeebe0787c2f390f1e81|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/wide-ceiling-below-word-bound.flang
+57702e40e7a0d22f109e613bfb7afbdd|6|2|4|0|0|flang/proof/checker/tests/families/list-inclusion/inclusion.flang
+afef0441b80315d6e7b66e8c0f5f0680|12|7|5|0|2|flang/proof/checker/tests/families/unfold-on-constructor/built-constructor.flang
+408249d6e22a41b1fa862c0a5e22a5f4|8|1|0|7|1|flang/proof/checker/tests/families/unfold-on-constructor/false-forms.flang
+b205efbd4be14caef921ae8d6c40c3ba|1|1|0|0|0|flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang
+4e8304bd34a18688e885fa234d71379f|1|×|×|×|0|flang/proof/checker/tests/families/unfold-on-constructor/two-argument-match.flang
+b31e0e8c97ef5430b004a92af4ecc305|3|0|2|1|0|flang/proof/checker/tests/programs/records-arith/equal-to-itself-number.flang
+b54fba392b4f560c6fd3063aa11cebc4|2|2|0|0|0|flang/proof/checker/tests/programs/records-arith/equal-to-itself.flang
+cd0afad3dcc1dbd5249a70eba65cfe77|4|0|0|4|0|flang/proof/checker/tests/programs/records-arith/record-eta-refused.flang
+9c41ec34b17be1269bbcedcb7cb91a04|3|3|0|0|0|flang/proof/checker/tests/programs/records-arith/record-eta.flang
+ff29e953fb02bbc50fc03b65d6e944cc|3|3|0|0|0|flang/proof/checker/tests/programs/records-arith/record-fields.flang
+eebdc6bd8fa9a00bb25456c8e6012b90|2|1|0|1|0|flang/proof/checker/tests/programs/records-arith/record-four-fields.flang
+26d141486ba6a4db7cbc291388f52459|6|4|0|2|0|flang/proof/checker/tests/programs/records-arith/ring-under-remainder.flang
+ceba84542e71cafd6a77a57dd4873246|0|×|×|×|1|flang/proof/probes/lists-and-cases/programs/all-elements-of-another-list.flang
+5c758f7b5ab128cd745155b5cb673f3c|1|×|×|×|3|flang/proof/probes/lists-and-cases/programs/all-elements-to-the-head.flang
+9bc873b7d74f329fc9495adc01c583bb|0|×|×|×|1|flang/proof/probes/lists-and-cases/programs/all-elements-to-the-tail.flang
+31780bf5feda7c6e9cf4728922748c35|0|×|×|×|2|flang/proof/probes/lists-and-cases/programs/head-shadowed-by-the-pattern.flang
+d02ac6c439bb0a76cb7bb409edcae0aa|2|0|2|0|0|flang/proof/probes/lists-and-cases/programs/list-inclusion-false.flang
+d7aefa09cd3ea850a35c652932cd9db7|6|2|4|0|0|flang/proof/probes/lists-and-cases/programs/list-inclusion.flang

@@ -12,3 +12,4 @@ checker-refuses-a-conjunction-as-a-hypothesis	open
 kernel-proves-a-pattern-name-shadowing-a-parameter	closed
 unfold-ignores-call-arguments	closed
 link-binds-a-call-to-a-namesake-of-another-module	open
+kernel-unfolds-a-field-twice-under-the-callee-names	open

@@ -1782,10 +1782,13 @@ static int replay_numeric(const node_t *n, const char *box, const char *checker)
   value_of(child_at(n, 1), r, sizeof r);
   value_of(n, value, sizeof value);
   {
-    /* «Прямая арифметика» печатника: остаток — fmod, процент — (l / 100.0) * r. */
+    /* «Прямая арифметика» печатника: остаток — fmod, процент — (l / 100.0) * r;
+       у произведения, частного и остатка хвост « + 0.0»: нулевой итог — +0, а не -0. */
     char inner[2100];
-    if (strcmp(op, "mod") == 0) snprintf(inner, sizeof inner, "fmod(%s, %s)", l, r);
+    if (strcmp(op, "mod") == 0) snprintf(inner, sizeof inner, "fmod(%s, %s) + 0.0", l, r);
     else if (strcmp(op, "percent") == 0) snprintf(inner, sizeof inner, "(%s / 100.0) * %s", l, r);
+    else if (strcmp(op, "mul") == 0 || strcmp(op, "div") == 0)
+      snprintf(inner, sizeof inner, "%s %s %s + 0.0", l, sign, r);
     else snprintf(inner, sizeof inner, "%s %s %s", l, sign, r);
     if (box[0] != '\0') snprintf(want, sizeof want, "%s(%s)", box, inner);
     else snprintf(want, sizeof want, "(%s)", inner);

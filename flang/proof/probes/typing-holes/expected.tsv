@@ -1,8 +1,8 @@
 program	surface	code	word
 record-field-negative.flang	check	1	FLANG_TYPE
-fold-keeps-narrow.flang	check	1	FLANG_TYPE
-number-narrows-by-condition.flang	check	1	FLANG_TYPE
-function-without-returns.flang	check	0	замечаний нет
+fold-keeps-narrow.flang	check	0	замечаний нет
+number-narrows-by-condition.flang	check	0	замечаний нет
+function-without-returns.flang	check	1	FLANG_PARSE
 results.flang	check	0	замечаний нет
 variant-clash-on-import.flang	check	0	замечаний нет
 instrumental-field-type.flang	check	0	замечаний нет
@@ -11,3 +11,7 @@ only-import-hidden-helper.flang	check	0	замечаний нет
 run-argument-outside-type.flang	check	0	замечаний нет
 run-argument-outside-type.flang	run-negative	1	-1 вне неотрицательное
 run-argument-outside-type.flang	run-inside	0	42
+restricted-postcondition-outside-domain.flang	check	0	замечаний нет
+restricted-postcondition-false-inside-domain.flang	check	1	нарушено на входе н = 2147483647
+word-literal-above-two-to-the-53.flang	check	0	замечаний нет
+assumption-bound-at-two-to-the-64.flang	proof	3	доказано 0, условно 0

@@ -306,12 +306,12 @@
     ожидается """
     cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
     o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
-    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | iconv -c -f UTF-8 -t UTF-8 | sed "s/^/    /")
     printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}"""
   """
   cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
   o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
-  d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+  d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | iconv -c -f UTF-8 -t UTF-8 | sed "s/^/    /")
   printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}"""
 
 тотальная функция «Number of»
@@ -452,7 +452,7 @@
     ожидается (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", """
     cd ../.. && printf '%s\\n' "$@" | xargs -P "${PARALLEL:-$(nproc)}" -I{} sh -c '
     o=$(bootstrap/flang check "flang/stdlib/$1" 2>&1); k=$?
-    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | sed "s/^/    /")
+    d=$(printf "%s\\n" "$o" | grep "^FLANG_" | head -3 | cut -c1-240 | iconv -c -f UTF-8 -t UTF-8 | sed "s/^/    /")
     printf "%s\\t%s\\n%s\\n" "$1" "$k" "$d"' sh {}""", "sh", "der.flang"])
   (вариант «Запустить процесс» с программа равным "sh" и
     аргументы равным (приписать "-c" к (приписать («Probe script») к (приписать "sh" к wanted))))

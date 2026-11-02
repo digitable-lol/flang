@@ -55,7 +55,7 @@
 import { readFileSync } from "node:fs"
 import { createConnection, createServer } from "node:net"
 
-import * as реш from "./uzel_zamera.js"
+import * as реш from "./program.js"
 
 const ЦЕЛЬ = "js"
 

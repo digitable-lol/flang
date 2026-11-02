@@ -259,6 +259,7 @@ $ echo $?
 | `FLANG_TYPE_PARAM` | параметр типа объявлен дважды, без имени или назван как встроенный либо объявленный тип | переименовать параметр |
 | `FLANG_APPLY` | вызов не подходит: не то число аргументов или вызывают не функцию | сверить вызов с сигнатурой |
 | `FLANG_BUILTIN_ARGS` | встроенной операции дали не то число аргументов | свериться с описанием операции |
+| `FLANG_OVERFLOW` | действие над словом фиксированной ширины (`u8` … `i64`) не помещается в тип или делит на ноль | написать `с переполнением`, где заворот задуман, или взять слово шире |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | pattern matching покрывает не все случаи | добавить недостающий `случай` |
 | `FLANG_MATCH_UNREACHABLE` | случай покрыт более ранним и не сработает никогда | убрать его или поднять выше |
 | `FLANG_EXAMPLE` | unit-тест не прошёл: значение не совпало с ожидаемым | поправить тело или ожидание |
@@ -522,6 +523,7 @@ $ echo $?
 | `FLANG_COMPOSE_MISMATCH` | концы композиции не сходятся |
 | `FLANG_MORPHISM_SHAPE` | морфизм объявлен неверно |
 | `FLANG_FUNCTOR_SQUARE` | квадрат функтора не коммутирует |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | стрелка отображена, а у её конца нет образа |
 | `FLANG_TRANSFORM_NOT_NATURAL` | квадрат естественности не коммутирует |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | бифунктор отображает одну пару объектов дважды |
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | пара стрелок отображена, а у пары их концов образа нет |
@@ -529,6 +531,8 @@ $ echo $?
 | `FLANG_BIFUNCTOR_IDENTITY` | пара единиц отображена в стрелку, которая не единица |
 | `FLANG_BIFUNCTOR_COMPOSITION` | пара композиций отображена не в композицию образов частей |
 | `FLANG_ISO_NOT_INVERSE` | две стрелки не обратны друг другу |
+| `FLANG_ISO_MISMATCH` | стрелка изоморфизма не объявлена или идёт не между его объектами |
+| `FLANG_ISO_IDENTITY_MISSING` | у объекта изоморфизма не объявлена единица |
 | `FLANG_EMBED_SHAPE` | вложение объявлено неверно |
 | `FLANG_EMBED_NOT_INJECTIVE` | вложение переводит разные значения в одно |
 | `FLANG_MONOID` | объявление моноида неполно |
@@ -570,6 +574,12 @@ $ echo $?
 ```bash
 flang io план.flang --plan 'Разбор' --no-net --in-dir
 ```
+
+## Установка пакетов
+
+Отказы установщика пакетов (`flang install`) печатает не
+компилятор, а сам установщик — план на flang; их коды и что с ними делать
+перечислены на [странице пакетов](packages.html#коды-отказов-установщика).
 
 ## Процессы
 
@@ -635,6 +645,7 @@ $ echo $?
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
+| `FLANG_BINARY` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
@@ -665,6 +676,7 @@ $ echo $?
 | `FLANG_EXAMPLE` | `compiler.flang` | пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
+| `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |
 | `FLANG_GROUP_INVERSE` | `monoid.flang` | — |
 | `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
@@ -676,6 +688,8 @@ $ echo $?
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
+| `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
+| `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
 | `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
@@ -704,12 +718,15 @@ $ echo $?
 | `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
 | `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
 | `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
+| `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
 | `FLANG_LIB_DIR` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
 | `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | `interpret.flang`, `types.flang` | разбор {subject} не покрывает {cases} · разбор без случаев не покрывает ничего |
@@ -745,6 +762,7 @@ $ echo $?
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
+| `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | у 'если' нет ветки 'иначе' · не разобрана конструкция: неожиданное '{word}' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («{word.quoted}») или переименуйте; а если слово попало в форму лишним — уберите его |
 | `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |
@@ -779,7 +797,7 @@ $ echo $?
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | нарушено свойство «{claim}» функции «{function}» |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
-| `FLANG_RECURSION_LIMIT` | `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
+| `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |

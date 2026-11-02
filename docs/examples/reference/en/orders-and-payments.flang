@@ -66,6 +66,7 @@ morphism «refund payment» from «Payment» to «Payment»
 
 identity «Order»
 identity «Payment»
+identity «Receipt»
 
 category «Orders»
   morphism «cancel order»

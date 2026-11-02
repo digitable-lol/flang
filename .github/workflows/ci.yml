@@ -164,8 +164,8 @@ permissions:
 
 jobs:
   # ДИСЦИПЛИНА СЕМЕНИ идёт ПЕРВОЙ. Она читает `.flang` дерева и `bootstrap/*.c`
-  # планом на flang — 1565 файлов; разбор в задаче 5821.
-  # СНЯТО 2026-10-25 файлов *.flang = 1565 (the registry service: flang/services/registry; до них 1563, снято 2026-10-24) (typing holes probes, task 1666: ten programs in flang/proof/probes/typing-holes; до них 1553, снято 2026-10-19) (merge of PR 454 and dev da569378c into print batch 9a: the installs ship the checker, the reasoning check; до них 1552, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 1511, снято 2026-10-18) (print batch eight over dev f2e0fad89; до них 1493, снято 2026-10-18) (russian pregroup grammar: four programs in flang/ct/russian (ADR-0109); до них 1260, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 1254, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 1219, снято 2026-10-13) (второй сверщик переигрывает кольцо точного целого: две подделки в flang/proof/checker/tests/families/exact-ring/forged/; до них 1217, снято 2026-10-13) (batch five over dev 4222c7083; до них 1201, снято 2026-10-12) (язык сообщений по настройкам (ADR-0102); до них 1197, снято 2026-10-12) (сличитель перевода переигрывает сторож меры (ADR-0104); до них 1196, снято 2026-10-12) (ADR-0103: две честные пробы сверщика в flang/proof/checker/tests/families/citation/; до них 1194, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 1184, снято 2026-10-11) (ADR-0085..0087 поверх сторожа навыков; до них 1176, снято 2026-10-11) (заявка 293: сторож scripts/guards/skills-follow-the-page.flang; до него 1162, снято 2026-10-08) (задача 4791: программа-проба захвата под связывателем; до них 1152, снято 2026-10-05) (задача 5243: тринадцать программ набора проб точного дробного; до них 1139, снято 2026-10-04) (партия печати 2: десять программ проб точного целого и одна проба кольцевых законов; до них 1128, снято 2026-10-04) (модуль русской морфологии; до него
+  # планом на flang — 1639 файлов; разбор в задаче 5821.
+  # СНЯТО 2026-11-02 файлов *.flang = 1639 (merge of dev 0.7.32 into the registry service: core.flang and serve.flang; до них 1637, снято 2026-10-28) (print batch 9c: flang install, small compiler fixes, installs and io, restricted postconditions, listen address, u64 literals; до них 1623, снято 2026-10-27) (nine honest halves of the kernel forgery fixtures in flang/test/fixtures/honest-halves and the probe of issue 481 in flang/proof/probes/typing-holes; до них 1613, снято 2026-10-27) (merge of print batch 9b into dev 34ce8a2ac: ten typing holes probes in flang/proof/probes/typing-holes from dev, task 1666; до них 1603, снято 2026-10-26) (issue 477: the C checker compares the ceiling of an unsigned word exactly, an honest u64 pair and a forgery in flang/proof/checker/tests/families/fixed-width-words; до них 1601, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 1553, снято 2026-10-19) (merge of PR 454 and dev da569378c into print batch 9a: the installs ship the checker, the reasoning check; до них 1552, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 1511, снято 2026-10-18) (print batch eight over dev f2e0fad89; до них 1493, снято 2026-10-18) (russian pregroup grammar: four programs in flang/ct/russian (ADR-0109); до них 1260, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 1254, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 1219, снято 2026-10-13) (второй сверщик переигрывает кольцо точного целого: две подделки в flang/proof/checker/tests/families/exact-ring/forged/; до них 1217, снято 2026-10-13) (batch five over dev 4222c7083; до них 1201, снято 2026-10-12) (язык сообщений по настройкам (ADR-0102); до них 1197, снято 2026-10-12) (сличитель перевода переигрывает сторож меры (ADR-0104); до них 1196, снято 2026-10-12) (ADR-0103: две честные пробы сверщика в flang/proof/checker/tests/families/citation/; до них 1194, снято 2026-10-11) (партия 4: починка ввоза ADR-0090; до них 1184, снято 2026-10-11) (ADR-0085..0087 поверх сторожа навыков; до них 1176, снято 2026-10-11) (заявка 293: сторож scripts/guards/skills-follow-the-page.flang; до него 1162, снято 2026-10-08) (задача 4791: программа-проба захвата под связывателем; до них 1152, снято 2026-10-05) (задача 5243: тринадцать программ набора проб точного дробного; до них 1139, снято 2026-10-04) (партия печати 2: десять программ проб точного целого и одна проба кольцевых законов; до них 1128, снято 2026-10-04) (модуль русской морфологии; до него
   # 1127, снято 2026-10-04) (задача 1116: три программы пробы
   # поверхностей вердикта о прогонах и задача 1113: семь программ пробы
   # порядка списков ввоза; до них 1117, снято 2026-10-04) (две честные пары
@@ -2057,7 +2057,7 @@ jobs:
         run: |
           ledger=scripts/registry-example/registry.list
           cp "$ledger" "$RUNNER_TEMP/registry.list"
-          sed -i '2s/| 1dc6/| Xdc6/' "$ledger"
+          sed -i '2s/\(| [0-9.]* | \)./\1X/' "$ledger"
           if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
             cp "$RUNNER_TEMP/registry.list" "$ledger"
             echo "the forged fingerprint did not land, nothing to probe" >&2
@@ -2073,6 +2073,7 @@ jobs:
           cmp "$ledger" "$RUNNER_TEMP/registry.list"
       - name: Check registry fingerprints
         run: bootstrap/flang run-script registry-prints:check
+
       - name: Probe lock forms by a forged measurement
         run: |
           if bootstrap/flang run-script lock-forms:forgery; then
@@ -2101,3 +2102,64 @@ jobs:
           make -C bootstrap -j"$(nproc)"
       - name: Check lock forms
         run: bootstrap/flang run-script lock-forms:check
+
+  # УСТАНОВКА ПАКЕТА ПО ИМЕНИ НА ЧИСТОЙ МАШИНЕ — условие 6 дороги к 1.0: пакет
+  # ставится одной командой, повторная установка даёт тот же замок знак в знак.
+  # Список реестра раздаётся с localhost обычным файловым сервером из каталога
+  # образца: сеть настоящая (поручение «Запросить» по http), адрес свой, секретов
+  # нет. Сторож сам заводит пустой HOME и пустые каталоги проектов и зовёт
+  # установщик под env -i. Сначала подлог: список с отпечатком, подогнанным под
+  # подменённый файл, — сторож ОБЯЗАН покраснеть; иначе зелёная проверка
+  # неотличима от выключенной.
+  package-install:
+    name: package-install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - run: make -C bootstrap -j"$(nproc)"
+      - name: Serve the example registry on localhost
+        run: |
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory scripts/registry-example > "$RUNNER_TEMP/registry-server.log" 2>&1 &
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sf -o /dev/null http://127.0.0.1:18765/registry.list; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/registry-server.log" >&2
+          echo "the registry server did not come up" >&2
+          exit 1
+      - name: Probe the installer by a forged fingerprint
+        run: |
+          if bootstrap/flang run-script package-install:forgery; then
+            echo "the guard stayed green on a forged fingerprint" >&2
+            exit 1
+          fi
+      # ПРОБА СНАРУЖИ: в раздаваемом списке подкручен один знак отпечатка той
+      # версии, которую выбирает установка (Логика 1.2.0). Сторож ОБЯЗАН
+      # покраснеть — установщик отвечает FLANG_INSTALL_FINGERPRINT; список
+      # возвращается и сличается с копией.
+      - name: Probe the installer by a bent fingerprint in the served list
+        run: |
+          ledger=scripts/registry-example/registry.list
+          cp "$ledger" "$RUNNER_TEMP/registry.list"
+          sed -i '/^Логика | 1\.2\.0 /s/\(| [0-9.]* | \)./\1X/' "$ledger"
+          if cmp -s "$ledger" "$RUNNER_TEMP/registry.list"; then
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
+            echo "the bent fingerprint did not land, nothing to probe" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list; then
+            cp "$RUNNER_TEMP/registry.list" "$ledger"
+            echo "the guard stayed green on a bent fingerprint in the list" >&2
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/registry.list" "$ledger"
+          cmp "$ledger" "$RUNNER_TEMP/registry.list"
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Install a package by name on a clean machine, twice
+        run: bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+

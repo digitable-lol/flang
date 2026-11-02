@@ -164,9 +164,9 @@ code --install-extension flang-0.1.0.vsix
 поэтому на него кладётся ссылка:
 
 ```bash
-git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
 mkdir -p ~/.vim/pack/flang/start
-ln -s ~/.local/share/flang/editors/vim ~/.vim/pack/flang/start/flang
+ln -s ~/.local/share/flang-src/docs/editors/vim ~/.vim/pack/flang/start/flang
 ```
 
 В `~/.vimrc` нужны две строки. Без них Vim не прочитает ни подсветку, ни
@@ -218,9 +218,9 @@ Node — а вся затея в том, чтобы редактору Node не
 Тот же плагин и тот же подкаталог, только каталог пакетов свой:
 
 ```bash
-git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang
+git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
 mkdir -p ~/.config/nvim/pack/flang/start
-ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
+ln -s ~/.local/share/flang-src/docs/editors/vim ~/.config/nvim/pack/flang/start/flang
 ```
 
 Менеджером плагинов подкаталог задаётся ключом:
@@ -229,7 +229,7 @@ ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
 {
   "digitable-lol/flang",
   config = function(плагин)
-    vim.opt.runtimepath:prepend(плагин.dir .. "/editors/vim")
+    vim.opt.runtimepath:prepend(плагин.dir .. "/docs/editors/vim")
     vim.cmd("runtime! ftdetect/*.vim")
     require("flang").setup()
   end,
@@ -244,10 +244,19 @@ ln -s ~/.local/share/flang/editors/vim ~/.config/nvim/pack/flang/start/flang
 Второй клиент на тот же буфер дал бы две одинаковые диагностики на каждую
 строку.
 
+Сервер — `flang lsp` из того `flang`, что лежит в `PATH`, версии 0.7.25 и новее;
+его туда кладёт `install.sh` или пакет. Выпуски постарше отвечают только после
+закрытия ввода и в редакторе выглядели бы зависшими, поэтому плагин их не
+берёт и один раз об этом говорит. `let g:flang_binary_lsp = 1` — брать двоичный
+любой версии, `let g:flang_binary_lsp = 0` — не брать никогда.
+
+Клон кладётся в `~/.local/share/flang-src`, а не в `~/.local/share/flang`:
+второй каталог занимает `install.sh` — там стандартная библиотека.
+
 Выключить сервер — одним из двух способов, в `init.lua` до загрузки плагина:
 
 ```lua
-vim.g.flang_ne_nastraivat = 1        -- не поднимать сервер вовсе
+vim.g.flang_no_setup = 1             -- не поднимать сервер вовсе
 require("flang").setup({ lsp = false })  -- то же, но тип файла назначить
 ```
 

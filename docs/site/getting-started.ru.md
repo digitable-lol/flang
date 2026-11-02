@@ -102,20 +102,16 @@ flang run hello.flang --function Удвоить --args '{"н": 21}'
 
 В командной строке имя функции пишется **без ёлочек**.
 
-`--args` принимает JSON-объект, ключи — имена параметров из `принимает`. Он
-понимает **только плоский объект скаляров**: числа, строки, `true`, `false`,
-`null`. Список отвергается:
+`--args` принимает JSON-объект, ключи — имена параметров из `принимает`.
+Значения — числа, строки, `true`, `false`, `null`, списки и записи любой
+вложенности, какую требует объявленный тип:
 
 ```bash
 flang run summa.flang --function Сумма --args '{"элементы": [1,2,3]}'
 ```
 
-```
-flang run: «--args» разобрать не удалось — ждался плоский объект скаляров, вроде '{"н":10}'
-```
-
-Код возврата 2. Как передать список или запись — [Операции
-языка](operations.html), раздел про `--args`.
+Каждое значение сверяется с объявленным типом до вычисления. Подробнее —
+[Операции языка](operations.html), раздел про `--args`.
 
 Типы аргументов `flang run` проверяет. Функция `«Факториал»` объявлена на
 `неотрицательное`; на −3 она отвечает так, код возврата 1:
@@ -195,15 +191,16 @@ make -C ./вывод
 ```
 make: Entering directory '…/вывод'
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_runtime.o flang_runtime.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o privet.o privet.c
-ar rcs libprivet.a flang_runtime.o privet.o
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o program.o program.c
+ar rcs libprogram.a flang_runtime.o program.o
 cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_cli.o flang_cli.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o privet.o -lm -lpthread
+cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o program.o -lm -lpthread
 make: Leaving directory '…/вывод'
 ```
 
 Ни одного предупреждения при `-Wall -Wextra -Werror -pedantic`. Имя модуля
-«Привет» в файлах на C стало `privet`.
+«Привет» записано кириллицей, а транслита в именах файлов нет — файлы зовутся
+`program.*`; модуль «Report» дал бы `report.c`.
 
 Одна ловушка: ваши имена становятся идентификаторами целевого языка, и
 совпадение — ошибка, а не тихое переименование. Назовите функцию `«Double»` —

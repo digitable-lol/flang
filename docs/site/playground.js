@@ -19,7 +19,10 @@
 
   var EN = document.documentElement.lang === 'en';
   var ROOT = (document.querySelector('.poisk') || { getAttribute: function () { return ''; } }).getAttribute('data-koren') || '';
-  var KATEX = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/';
+  /* KaTeX 0.16.11 лежит в дереве (docs/site/vendor/katex, лицензия MIT рядом):
+     со стороннего адреса формулы пропадали там, где он закрыт, а без стилей и
+     шрифтов разметка KaTeX показывает формулу дважды и вперемешку. */
+  var KATEX = ROOT + 'vendor/katex/';
 
   var T = EN ? {
     example: 'Example', check: 'Check', share: 'Share', checking: 'checking… (the first run downloads the compiler)',
@@ -298,7 +301,88 @@
       return '<span class="pg-line' + (bad ? ' pg-line-bad' : '') + '">' + (parts.join('') || ' ') + '</span>';
     }).join('');
   }
-  function codeHtml(src, lang, badLines) { return lang === 'flang' ? highlightHtml(src, badLines) : linesHtml(codeSegments(src, lang), badLines); }
+  /* Подсветка рассуждения и формулы. Какой текст в редакторе, решает не эта
+     раскраска, а то же правило, что выбирает проверку (text-kind.flang через
+     обвязку): страница спрашивает вид у потока с компилятором. Раскраска —
+     не разбор: ошибка в ней меняет цвет, а не приговор.
+     Рассуждение: связки (все, некоторые, ни один, не, следовательно, значит,
+     если…то…) — tok-connective; слова словаря «Понятие:»/«Свойство:» и прочие
+     слова предложений — термины (tok-term); «Имя:» и слова с заглавной буквы
+     не в начале предложения — имена (tok-name); заголовки словаря — tok-heading.
+     Формула: кванторы — tok-quantifier; знаки и команды LaTeX — tok-sign;
+     ℕ ℤ ℚ ℝ и \mathbb{…} — tok-term; переменные — tok-name; числа — tok-chislo. */
+  var CONNECTIVES = ['ни один', 'ни одна', 'ни одно', 'ни одни', 'так как', 'потому что', 'если', 'то', 'все', 'всё', 'всякий', 'всякая',
+    'всякое', 'каждый', 'каждая', 'каждое', 'любой', 'любая', 'любое', 'некоторые', 'некоторый', 'некоторая', 'некоторое', 'не',
+    'нет', 'следовательно', 'значит', 'поэтому', 'отсюда', 'итак', 'поскольку', 'и', 'или', 'является', 'являются', 'есть', 'это',
+    'all', 'every', 'some', 'no', 'not', 'therefore', 'so', 'hence', 'if', 'then', 'is', 'are', 'and', 'or'];
+  var CONNECTIVE_SET = new Set(CONNECTIVES);
+  var CONNECTIVE_PHRASES = CONNECTIVES.filter(function (w) { return w.indexOf(' ') > 0; });
+  var DICTIONARY = /^(\s*)(Понятие|Свойство|Имя|Concept|Property|Name):/;
+  function reasoningSegments(src) {
+    var out = [], terms = new Set(), names = new Set();
+    src.split('\n').forEach(function (line) {
+      var d = DICTIONARY.exec(line);
+      if (!d) return;
+      var into = /Имя|Name/.test(d[2]) ? names : terms;
+      line.slice(d[0].length).split(/[,.;]/).forEach(function (w) { w = w.trim().toLowerCase(); if (w) into.add(w); });
+    });
+    var lines = src.split('\n');
+    lines.forEach(function (line, j) {
+      if (j > 0) out.push(['\n', '']);
+      var d = DICTIONARY.exec(line);
+      var rest = line, cls = null;
+      if (d) {
+        out.push([d[1], '']); out.push([d[2] + ':', 'tok-heading']);
+        rest = line.slice(d[0].length); cls = /Имя|Name/.test(d[2]) ? 'tok-name' : 'tok-term';
+      }
+      var i = 0, startOfSentence = !d && (j === 0 || /[.!?]\s*$/.test(lines[j - 1]) || !lines[j - 1].trim());
+      while (i < rest.length) {
+        var c = rest[i];
+        if (!LETTER.test(c)) {
+          var k = i; while (k < rest.length && !LETTER.test(rest[k])) k += 1;
+          var gap = rest.slice(i, k);
+          out.push([gap, /—/.test(gap) && !cls ? 'tok-connective' : '']);
+          if (/[.!?]/.test(gap)) startOfSentence = true;
+          i = k; continue;
+        }
+        var wm = /^[\p{L}\p{N}_-]+/u.exec(rest.slice(i, i + 80)), word = wm[0], low = word.toLowerCase();
+        if (cls) { out.push([word, cls]); i += word.length; continue; }
+        var phrase = null;
+        for (var q = 0; q < CONNECTIVE_PHRASES.length && !phrase; q++) {
+          var ph = CONNECTIVE_PHRASES[q];
+          if (rest.slice(i, i + ph.length).toLowerCase() === ph && !LETTER.test(rest[i + ph.length] || '')) phrase = rest.slice(i, i + ph.length);
+        }
+        if (phrase) { out.push([phrase, 'tok-connective']); i += phrase.length; startOfSentence = false; continue; }
+        var kind = CONNECTIVE_SET.has(low) ? 'tok-connective'
+          : names.has(low) || (!startOfSentence && /^\p{Lu}/u.test(word)) ? 'tok-name'
+          : 'tok-term';
+        out.push([word, kind]); i += word.length; startOfSentence = false;
+      }
+    });
+    return out;
+  }
+  var QUANTIFIER = /^(∀|∃|\\forall\b|\\exists\b|forall\b|exists\b)/;
+  var SETS = /^(ℕ|ℤ|ℚ|ℝ|\\mathbb\{[A-Za-z]\})/;
+  function formulaSegments(src) {
+    var out = [], i = 0;
+    while (i < src.length) {
+      var rest = src.slice(i, i + 40), m;
+      if ((m = QUANTIFIER.exec(rest))) { out.push([m[0], 'tok-quantifier']); i += m[0].length; continue; }
+      if ((m = SETS.exec(rest))) { out.push([m[0], 'tok-term']); i += m[0].length; continue; }
+      if ((m = /^\\[A-Za-z]+|^\\[,;! ]/.exec(rest))) { out.push([m[0], 'tok-sign']); i += m[0].length; continue; }
+      if ((m = /^[0-9]+(?:\.[0-9]+)?/.exec(rest))) { out.push([m[0], 'tok-chislo']); i += m[0].length; continue; }
+      if ((m = /^[\p{L}_][\p{L}\p{N}_']*/u.exec(rest))) { out.push([m[0], CONNECTIVE_SET.has(m[0]) ? 'tok-connective' : 'tok-name']); i += m[0].length; continue; }
+      if (/\s/.test(src[i])) { out.push([src[i], '']); i += 1; continue; }
+      out.push([src[i], 'tok-sign']); i += 1;
+    }
+    return out;
+  }
+  function codeHtml(src, lang, badLines) {
+    if (lang === 'flang') return highlightHtml(src, badLines);
+    if (lang === 'reasoning') return linesHtml(reasoningSegments(src), badLines);
+    if (lang === 'formula') return linesHtml(formulaSegments(src), badLines);
+    return linesHtml(codeSegments(src, lang), badLines);
+  }
   function codeBlock(src, lang) {
     var pre = el('pre', 'lang-' + lang), code = el('code');
     code.innerHTML = codeHtml(src, lang, null);
@@ -306,40 +390,51 @@
     return pre;
   }
 
-  /* ── KaTeX с CDN, по требованию ─────────────────────────────────────────── */
+  /* ── KaTeX из дерева, по требованию ─────────────────────────────────────
+     Формула показывается вёрсткой только когда пришли и скрипт, и стили:
+     разметка KaTeX без стилей читается как мусор. Не пришло что-то одно —
+     остаётся запись формулы обычным текстом (запасной вид), исходник LaTeX
+     свёрнут под ней. */
   var katexLoading = null;
   function katex() {
-    if (window.katex) return Promise.resolve(window.katex);
+    if (window.katex && katexStyled) return Promise.resolve(window.katex);
     if (!katexLoading) {
       katexLoading = new Promise(function (resolve, reject) {
+        var left = 2, failed = false;
+        function done() { left -= 1; if (left === 0 && !failed) { katexStyled = true; resolve(window.katex); } }
+        function fail() { if (!failed) { failed = true; katexLoading = null; reject(new Error('katex')); } }
         var css = document.createElement('link');
         css.rel = 'stylesheet'; css.href = KATEX + 'katex.min.css';
+        css.onload = done; css.onerror = fail;
         document.head.appendChild(css);
         var s = document.createElement('script');
         s.src = KATEX + 'katex.min.js';
-        s.onload = function () { resolve(window.katex); };
-        s.onerror = function () { katexLoading = null; reject(new Error('katex')); };
+        s.onload = function () { if (window.katex) done(); else fail(); };
+        s.onerror = fail;
         document.head.appendChild(s);
       });
     }
     return katexLoading;
   }
-  function texBlock(tex) {
+  var katexStyled = false;
+  function texBlock(tex, plain) {
     var box = el('div', 'pg-tex');
-    var code = el('code', 'pg-tex-source', tex);
-    box.appendChild(code);
+    var fallback = el('p', 'pg-formula-plain', plain || tex);
+    box.appendChild(fallback);
+    var d = el('details', 'pg-tex-raw');
+    d.appendChild(el('summary', null, T.latexSource));
+    d.appendChild(el('code', 'pg-tex-source', tex));
+    if (plain) box.appendChild(d);
     katex().then(function (k) {
       var shown = el('div', 'pg-tex-shown');
       try {
-        k.render(tex, shown, { throwOnError: false, displayMode: true });
-        box.insertBefore(shown, code);
-        var d = el('details', 'pg-tex-raw');
-        d.appendChild(el('summary', null, T.latexSource));
-        box.removeChild(code);
-        d.appendChild(code);
-        box.appendChild(d);
-      } catch (e) { /* остаётся исходник */ }
-    }, function () { /* без сети остаётся исходник */ });
+        k.render(tex, shown, { throwOnError: true, displayMode: true, strict: 'ignore', output: 'htmlAndMathml' });
+      } catch (e) { return; /* формула вне KaTeX — остаётся текст */ }
+      box.insertBefore(shown, box.firstChild);
+      fallback.hidden = true;
+      if (!d.parentNode) box.appendChild(d);
+      box.setAttribute('data-tex', 'rendered');
+    }, function () { box.setAttribute('data-tex', 'text'); });
     return box;
   }
 
@@ -472,8 +567,23 @@
   function repaint() { main.repaint(); }
   function setText(text) {
     main.set(text); marks.hidden = true; marks.textContent = '';
+    kindSoon();
   }
-  main.onEdit = function () { marks.hidden = true; emitStale(); };
+  main.onEdit = function () { marks.hidden = true; emitStale(); kindSoon(); };
+  /* Вид текста для подсветки спрашивается у потока с компилятором — там то же
+     правило, что выбирает проверку. Пока ответа нет (или песочница не
+     собрана), текст красится как flang. */
+  var KIND_LANG = { 'flang': 'flang', 'категория': 'flang', 'рассуждение': 'reasoning', 'формула': 'formula' };
+  var kindAsked = 0, kindTimer = null;
+  function askKind() {
+    var n = ++kindAsked;
+    ask(main.input.value, { действие: 'вид' }).then(function (a) {
+      if (n !== kindAsked || !a || !KIND_LANG[a.вид]) return;
+      root.setAttribute('data-text-kind', a.вид);
+      if (main.lang !== KIND_LANG[a.вид]) { main.lang = KIND_LANG[a.вид]; main.repaint(); }
+    });
+  }
+  function kindSoon() { clearTimeout(kindTimer); kindTimer = setTimeout(askKind, 150); }
   function goToLine(line) { main.goTo(line); }
   function markLines(list) {
     marks.textContent = '';
@@ -738,8 +848,8 @@
   function formulaCard(f) {
     var box = el('div', 'pg-formula');
     if (f.name) box.appendChild(el('p', 'pg-formula-name', f.name));
-    if (f.plain) box.appendChild(el('p', 'pg-formula-plain', f.plain));
-    if (f.tex) box.appendChild(texBlock(f.tex));
+    if (f.tex) box.appendChild(texBlock(f.tex, f.plain));
+    else if (f.plain) box.appendChild(el('p', 'pg-formula-plain', f.plain));
     if (f.why) box.appendChild(el('p', 'pg-formula-why', T.outside + f.why));
     return box;
   }

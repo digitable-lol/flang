@@ -143,9 +143,11 @@
 #define FL_MAX_ARGS 16
 #endif
 
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* ───────────────────────────── арена ───────────────────────────── */
 
@@ -279,7 +281,8 @@ typedef enum fl_tag {
   FL_STRING,      /* строка — UTF-8, длина в байтах и в кодовых точках */
   FL_LIST,        /* список — однородный по типу, но не по представлению */
   FL_RECORD,      /* запись — объект FTS */
-  FL_VARIANT      /* вариант — конструктор суммы типов */
+  FL_VARIANT,     /* вариант — конструктор суммы типов */
+  FL_WORD
 } fl_tag;
 
 typedef struct fl_value fl_value;
@@ -319,6 +322,11 @@ struct fl_value {
     } list;
     const fl_record *record;
     const fl_variant *variant;
+    struct {
+      uint64_t bits;
+      unsigned char width;
+      bool sign;
+    } word;
   } as;
 };
 
@@ -365,6 +373,7 @@ const char *fl_status_text(fl_status status);
 #define FL_CODE_BUILTIN_ARGS "FLANG_BUILTIN_ARGS"
 #define FL_CODE_RECURSION_LIMIT "FLANG_RECURSION_LIMIT"
 #define FL_CODE_PROPERTY "FLANG_PROPERTY"
+#define FL_CODE_OVERFLOW "FLANG_OVERFLOW"
 #define FL_CODE_PARSE "FLANG_PARSE"
 /* Не из SPEC: у интерпретатора кончиться памяти не может, у программы на C —
  * да. */
@@ -757,6 +766,7 @@ void fl_charge(fl_ctx *ctx, size_t count);
 fl_value fl_nothing(void);
 fl_value fl_number(double number);
 fl_value fl_flag(bool flag);
+fl_value fl_word(unsigned width, bool sign, uint64_t bits);
 
 /** Строка без копирования: годится для литералов и для срезов. */
 fl_value fl_text_borrow(const char *utf8, size_t bytes, size_t points);
@@ -992,6 +1002,28 @@ fl_status fl_gte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error);
 fl_status fl_lte(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                  fl_error *error);
+fl_status fl_add_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error);
+fl_status fl_sub_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error);
+fl_status fl_mul_wrap(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error);
+fl_status fl_mul_wide(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                      fl_error *error);
+fl_status fl_bit_and(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                     fl_error *error);
+fl_status fl_bit_or(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                    fl_error *error);
+fl_status fl_bit_xor(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
+                     fl_error *error);
+fl_status fl_shift_left(fl_ctx *ctx, fl_value left, fl_value right,
+                        fl_value *out, fl_error *error);
+fl_status fl_shift_right(fl_ctx *ctx, fl_value left, fl_value right,
+                         fl_value *out, fl_error *error);
+fl_status fl_rotate_left(fl_ctx *ctx, fl_value left, fl_value right,
+                         fl_value *out, fl_error *error);
+fl_status fl_rotate_right(fl_ctx *ctx, fl_value left, fl_value right,
+                          fl_value *out, fl_error *error);
 fl_status fl_concat(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
                     fl_error *error);
 
@@ -1042,6 +1074,16 @@ fl_status fl_b_hesh256(fl_ctx *ctx, fl_value text, fl_value *out,
                        fl_error *error);
 fl_status fl_b_integer_part(fl_ctx *ctx, fl_value value, fl_value *out,
                             fl_error *error);
+fl_status fl_b_bit_not(fl_ctx *ctx, fl_value value, fl_value *out,
+                       fl_error *error);
+fl_status fl_b_u8(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_u16(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_u32(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_u64(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_i8(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_i16(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_i32(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+fl_status fl_b_i64(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right,
                          fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix,

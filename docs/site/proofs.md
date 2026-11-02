@@ -66,7 +66,7 @@ proof by hand**, as in Coq or Isabelle. A `теорема` (theorem) is written 
 steps: `дано` (given), `утверждаем` (we claim), `затем … по свойству «…»` (then
 … by property …), `индукция по …` (induction on …), `следовательно доказано`
 (hence proved). It reads like Isar in Isabelle, and the prover checks each step;
-it searches for nothing. There are 403 such theorems in the repository, 55 of
+it searches for nothing. There are 404 such theorems in the repository, 55 of
 them in the standard library (`grep -rac '^\s*теорема ' flang
 --include='*.flang'`). Most postconditions need no theorem: the proof report
 shows, as a separate number, how many were proved **without a written proof**.
@@ -126,9 +126,9 @@ lists the known soundness problems by name.
 
 ## How the prover is built
 
-The prover has fifteen decision rules, each short enough to read in one
+The prover has eighteen decision rules, each short enough to read in one
 sitting; refusals name them. The count comes from the prover itself
-(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 15).
+(`grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang` → 18).
 Each rule proves one shape of goal: non-negativity, an upper bound, equality
 after substituting an assumption, order, strict order, membership, a prefix,
 order of neighbouring elements, an equality decided by computing closed parts,

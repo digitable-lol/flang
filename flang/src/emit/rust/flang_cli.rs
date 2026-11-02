@@ -375,6 +375,13 @@ fn write_value(out: &mut String, value: &rt::Value) {
             out.push_str(&rt::quote_json(item));
             out.push('}');
         }
+        rt::Value::Word(name, _) => {
+            out.push_str("{\"w\":");
+            out.push_str(&rt::quote_json(name));
+            out.push_str(",\"v\":");
+            out.push_str(&rt::quote_json(&rt::describe(value)));
+            out.push('}');
+        }
         rt::Value::List(items) => {
             out.push_str("{\"l\":[");
             for (index, item) in items.as_slice().iter().enumerate() {
@@ -1101,6 +1108,7 @@ fn write_plain(out: &mut String, value: &rt::Value) {
         rt::Value::Flag(item) => out.push_str(if *item { "true" } else { "false" }),
         rt::Value::Number(item) => out.push_str(&rt::number_text(*item)),
         rt::Value::Text(item) => out.push_str(&rt::quote_json(item)),
+        rt::Value::Word(_, _) => out.push_str(&rt::describe(value)),
         rt::Value::List(items) => {
             out.push('[');
             for (index, item) in items.as_slice().iter().enumerate() {

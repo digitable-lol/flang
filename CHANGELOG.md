@@ -11,10 +11,116 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.32 — 2 ноября 2026
+
+**Пакеты ставятся командой flang install; сервер по умолчанию слушает только 127.0.0.1; верное постусловие «для всех … таких что» снова проходит**
+
+- chore(release): sha256 of the 0.7.32 archive (`c6a32a7`)
+- chore(release): version 0.7.32 and its release notes (`651f20f`)
+- chore(packaging): the asdf plugin points at its merged spec template (`751875f`)
+- chore(seed): print batch 9c, fourth print, with the hex loop of tls (`9c74984`)
+- test(probes): an https answer of 30000 bytes, deeper than the old limit (`fc226d9`)
+- fix(stdlib): hex to bytes runs in a loop, not one call per byte (`7cde2ac`)
+- fix(concurrency): node hosts read the printed module by its new name (`3f82c04`)
+- chore(seed): print batch 9c, third print, with the rust lib fix (`4233ea3`)
+- chore(ledgers): the codes table names four names the 9c sources raise (`ba75fd0`)
+- fix(release): the archive has runtime/scripts for the install engine (`e03453d`)
+- fix(ct): a double left adjoint contracts by parity, as -2 is even (`e6fa4e4`)
+- fix(emit-rust): a module named program gets no second name program (`115386c`)
+- fix(stdlib): two claims refuted on the 9c binary name their domain (`9fa8e81`)
+- fix(stdlib): the whole part of minus zero is minus zero, as trunc (`dee5599`)
+- test(probes): the C and C++ rows of negative zero feed the program (`f595602`)
+- test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed (`33eb4d5`)
+- chore(seed): print batch 9c, printed by the 0.7.28 seed (`5142d96`)
+- test(probes): syllogism probes keep the answer of the binary until print (`d7b8eec`)
+- chore(proof): rule anchors and trust ceilings follow the kernel of 9c (`35be993`)
+- chore(numbers): counts and ledgers follow print batch 9c (`67049e6`)
+- chore(ledgers): the codes table names three refusals of pr 470 (`e2e7e0e`)
+- fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds (`d87efdf`)
+- chore(release): the tap serves flang-package 0.7.31 (`f1fdce2`)
+- fix(io): a port opened by a program listens on loopback by default (`e33e5a6`)
+- fix(refute): an input outside a restricted postcondition is skipped (`25a136d`)
+- feat(cli): flang install puts packages by name, the plan is its engine (`5ed5590`)
+- test(packages): the installer is probed on a clean machine, twice (`974fedd`)
+- test(probes): the small bugs run from source one program at a time (`540d051`)
+- refactor(parser): the result type refusal sits at the end of the parser (`732687a`)
+- test(probes): one probe set for the small compiler bugs of batch 9b (`b9de428`)
+- fix(arith): a zero product, quotient or remainder is +0 everywhere (`8c3fc48`)
+- fix(emit-c): a function that never returns still builds with -Werror (`4fcaf92`)
+- fix(emit): printed files never get a transliterated name (`c8b6e75`)
+- fix(ct): a broken isomorphism or functor is refused with its name (`e20b1e3`)
+- fix(mcp): the service reports the version of the binary it runs in (`22f77c9`)
+- fix(parser): a function without a returns line is refused (`683f8e3`)
+- feat(run): arguments take lists, records and variants checked by type (`b225d0d`)
+- fix(io): a chunked http or https response body is put back together (`005b3e2`)
+- fix(new): every install ships the spec template flang new copies (`3f3ca63`)
+
+Ещё 37 правок языка снаружи не меняют.
+
+## 0.7.31 — 27 октября 2026
+
+**Ядро доказывает записи по полям и остаток в кольце; слова u8…u64 и битовые операции; контрпример постусловия на краях типов**
+
+- fix(concurrency): the rust node refuses a fixed-width word on the wire (`a5890e7`)
+- chore(release): sha256 of the 0.7.31 archive (`b2e4ac9`)
+- chore(release): version 0.7.31 and its release notes (`d5caada`)
+- test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be`)
+- test(guards): ledgers follow the holes 9b closed and its new refusals (`cacfdb2`)
+- fix(playground): the counterexample comes from the kernel answer (`044300d`)
+- test(records): corpus records follow the 9b kernel and check (`fea39cf`)
+- chore(proof): rule anchors and trust ceilings follow the 9b merge (`140cc7e`)
+- chore(seed): print batch 9b again, printed by the 0.7.28 seed (`3e40eea`)
+- chore(numbers): line references and counts follow the kernel fix (`541230a`)
+- fix(kernel): the word bound ceiling is compared exactly (`7dd03bd`)
+- fix(stdlib): base64 and sha256 claims name their domain (`4b7e263`)
+- test(checker): the u64 pair records are printed by the 9b binary (`0d4982d`)
+- fix(stdlib): sqlite claims refuted by the 9b check name their domain (`79c6f58`)
+- chore(seed): print batch 9b, printed by the 0.7.28 seed (`d7351d0`)
+- fix(runtime): value constructors zero the whole value (`5a16e54`)
+- fix(checker): the word bound ceiling is compared exactly (`3df66cc`)
+- feat(checker): the lean acceptance replays the word bound steps (`0f75a27`)
+- fix(checker): second checker replays match bodies in a goal half (`277a08c`)
+- feat(guards): typing holes ledger and record format promise (`34ce8a2`)
+- fix(proof): both checkers read the story block (`f2fb97d`)
+- fix(self): two postconditions of the compiler name their domain (`f160048`)
+- test(checker): the two-argument unfolding forgery ends with code 3 (`663e00d`)
+- chore(seed): reseed the shell runtime after the text command (`9269515`)
+- feat(site): try-in-the-browser button, katex from the tree, text colours (`614479f`)
+- feat(repl): the text command judges a program, formula or reasoning (`d7f6f08`)
+- feat(reasoning): one flang rule names the kind of a text (`4b482b0`)
+- chore(proof): rule anchors follow the kernel of batch 9b (`3e102cc`)
+- chore(marks): prose numbers and ledgers count the list rules (`f2f4d40`)
+- feat(kernel): a list precondition reaches the head and the tail (`1da5f72`)
+- test(proof): probes for postconditions refuted at edges and bounds (`c0b653b`)
+- fix(check): refute a postcondition at type edges and requires bounds (`a7be356`)
+- fix(types): a fold keeps the narrow type its context expects (`283852c`)
+- test(proof): records and arithmetic probes and checker records (`39a7cfd`)
+- feat(lean): lemmas for the record, self-equality and remainder rules (`3443def`)
+- feat(checker): both checkers replay records, self-equality and remainder (`4fca48e`)
+- feat(types): a number narrows to an integer segment under a full check (`6136ebc`)
+- feat(kernel): records by fields, self-equality and remainder in the ring (`5b8048c`)
+- feat(checker): both checkers replay a branch fact as a record move (`f936325`)
+- feat(kernel): a strict order fact closes the non-strict goal (`0826ee3`)
+- fix(proof): word bound steps stay outside the Lean acceptance model (`af26a5e`)
+- feat(emit): double-width product and words in every print target (`89f0790`)
+- feat(kernel): bounds of unsigned words by their declaration (`3cc02b3`)
+- feat(self): fixed-width words and bit operations in the language (`3007fa5`)
+- docs(totality): size-change cycles in the cards and the refusal (`f2cc315`)
+- feat(totality): size-change termination for cycles of calls (`8784572`)
+- docs(proof): task 2241, wave three cards and the false forms probe (`33399a4`)
+- chore(checker): the line ceiling counts the statement step replay (`334d60c`)
+- feat(proof): four unfolding rules and one ban with Lean lemmas (`a62b934`)
+- feat(checker): replay calls unfolded on a built constructor (`847bb8e`)
+- fix(kernel): unfold a call on a built constructor without capture (`71c576e`)
+- chore(release): the tap serves flang-package 0.7.30 (`ce6a2cb`)
+
+Ещё 30 правок языка снаружи не меняют.
+
 ## 0.7.30 — 19 октября 2026
 
 **Проверка рассуждений называет логическую ошибку; песочница переводит в десять языков и из C; сверщик доказательств в каждой установке**
 
+- chore(release): the asdf plugin installs the proof checker (`b4950b6`)
 - chore(release): sha256 of the 0.7.30 archive (`9354878`)
 - test(probes): a story waits for the checkers to read it, task 8192 (`b729805`)
 - chore(release): version 0.7.30 and its release notes (`9c0231f`)
@@ -56,7 +162,7 @@
 - fix(stdlib): tls, tls-handshake and kdf pass check again (`b9b38d2`)
 - perf(self): field and definition lookups stop at the first match (`77d263a`)
 
-Ещё 34 правки языка снаружи не меняют.
+Ещё 35 правок языка снаружи не меняют.
 
 ## 0.7.29 — 18 октября 2026
 

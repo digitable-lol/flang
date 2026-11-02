@@ -93,6 +93,37 @@ declare — the compiler sees it. Half the library is written this way; here is
 
 `хвоста` is a part of `элементов`, not a new value. That is enough.
 
+Functions that call each other in a circle are read the same way, by the
+size-change principle: every call gives a graph of which argument comes from
+which parameter and whether it is a part of it. The circle terminates when every
+way around it that repeats itself makes some parameter a part of itself. The
+positions need not match: here `таблица` goes as a tail into «Прочитать в» and
+comes back unchanged, so each turn shortens the list.
+
+```flang
+тотальная функция «Прочитать»
+  принимает таблица: список неотрицательное, номер: «Номер»
+  возвращает неотрицательное
+  разбор таблица
+    случай пусто
+      то 0
+    случай голова и хвост
+      то «Прочитать в» от хвост и номер и голова
+
+тотальная функция «Прочитать в»
+  принимает ост: список неотрицательное, номер: «Номер», г: неотрицательное
+  возвращает неотрицательное
+  разбор номер
+    случай «Первый»
+      то г
+    случай вариант «Следующий» с пред как п
+      то «Прочитать» от ост и п
+```
+
+A call through a function value counts too. `функция «Ф» с п равным хвост`
+bound to one strict part of a parameter is no larger than that parameter, and
+applying it hands `хвост` to «Ф» as a part of the applied value.
+
 ### 2. A constant step with a floor
 
 A number that shrinks by a constant, plus a branch that stops the descent. Both
@@ -114,7 +145,10 @@ floor it runs to minus infinity. `«Факториал»` from
 ```
 
 A parameter works as the step too (`н минус ш`) — provided it arrives in the call
-unchanged in its own position and is known to be strictly `ш больше 0`. Without
+unchanged in its own position and is known to be strictly `ш больше 0`, by a
+branch or by `требует ш не меньше 1`. A parameter declared `неотрицательное`
+has its floor from the type, and `н минус ш` under `если н не меньше ш` stays
+`неотрицательное`. Without
 the strict bound the step may be zero, and a changing step never reaches the
 floor at all: `ш`, `ш делить на 2`, … add up to less than `2ш`.
 

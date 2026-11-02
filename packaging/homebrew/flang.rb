@@ -1,10 +1,10 @@
 class Flang < Formula
   desc "Проверяемый язык: исполняемая спецификация, печатается в восемь языков"
   homepage "https://github.com/digitable-lol/flang"
-  url "https://github.com/digitable-lol/flang/releases/download/v0.7.30/flang-0.7.30-c.tar.gz"
-  sha256 "d20063e02570daae4879c2f9d23ba52ac508a7b2de5b8639d66b02f5c80bc6ff"
+  url "https://github.com/digitable-lol/flang/releases/download/v0.7.32/flang-0.7.32-c.tar.gz"
+  sha256 "1b3857d6f7b11da58722c20e4de883ed1c7465e8254131c40ccc5af9a1b46850"
   license "BSD-2-Clause"
-  version "0.7.30"
+  version "0.7.32"
 
   depends_on "make" => :build
 
@@ -37,6 +37,10 @@ class Flang < Formula
       bin.install "flangtutor"
       (share/"flang-tutor").install Dir["tutor/*"] if Dir.exist?("tutor")
     end
+
+    # Образец спек, который `flang new` копирует в новый пакет: двоичный ищет
+    # его в ../share/flang-fspec. Своим каталогом по той же причине, что и уроки.
+    (share/"flang-fspec").install Dir["fspec/*"] if Dir.exist?("fspec")
 
     lib.install Dir["lib*.a"]
     include.install Dir["*.h"]
@@ -134,7 +138,7 @@ class Flang < Formula
     цели.each do |цель|
       assert_predicate share/"flang/#{цель}", :directory?
     end
-    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) && File.basename(путь) != "stdlib" }
+    assert_equal цели.length, Dir[share/"flang/*"].count { |путь| File.directory?(путь) && !%w[stdlib scripts].include?(File.basename(путь)) }
 
     return unless (share/"flang/stdlib").directory?
 

@@ -182,6 +182,12 @@ func writeValue(out *strings.Builder, value rt.Value) {
 		out.WriteString("{\"s\":")
 		out.WriteString(rt.QuoteJSON(value.Str))
 		out.WriteString("}")
+	case rt.TagWord:
+		out.WriteString("{\"w\":")
+		out.WriteString(rt.QuoteJSON(value.Str))
+		out.WriteString(",\"v\":")
+		out.WriteString(rt.QuoteJSON(rt.Describe(value)))
+		out.WriteString("}")
 	case rt.TagList:
 		out.WriteString("{\"l\":[")
 		for index, item := range value.List {
@@ -710,6 +716,8 @@ func writePlain(out *strings.Builder, value rt.Value) {
 		out.WriteString(rt.NumberText(value.Num))
 	case rt.TagString:
 		out.WriteString(rt.QuoteJSON(value.Str))
+	case rt.TagWord:
+		out.WriteString(rt.Describe(value))
 	case rt.TagList:
 		out.WriteString("[")
 		for index, item := range value.List {

@@ -184,7 +184,7 @@
   возвращает «Probe case»
   пример «Printing to Go must give the binary compiler's files»
     дано target равно "go"
-    дано file равно "flang/privet.go"
+    дано file равно "flang/program.go"
     ожидается (запись «Probe case» с «name» равным "print go" и «text file» равным ""
       и «text» равным """
         модуль «Привет»
@@ -196,7 +196,7 @@
           н плюс н
         """
       и «code» равным 0
-      и «present» равным ["── flang/privet.go ──", "печать совпала с двоичным компилятором"]
+      и «present» равным ["── flang/program.go ──", "печать совпала с двоичным компилятором"]
       и «absent» равным ["FLANG_PLAYGROUND", "не хватает", "разошлась"])
   (запись «Probe case» с «name» равным (соединить ["print ", target] по "") и «text file» равным ""
     и «text» равным («Printed program») и «code» равным 0
@@ -205,11 +205,11 @@
 
 тотальная функция «Print cases»
   возвращает список «Probe case»
-  [(«Print case» от "c" и "privet.c"), («Print case» от "cpp" и "privet.cpp"),
-    («Print case» от "go" и "flang/privet.go"), («Print case» от "rust" и "src/privet.rs"),
-    («Print case» от "java" и "Privet.java"), («Print case» от "js" и "privet.js"),
-    («Print case» от "ts" и "privet.ts"), («Print case» от "elixir" и "privet.ex"),
-    («Print case» от "python" и "privet.py"), («Print case» от "csharp" и "Privet.cs")]
+  [(«Print case» от "c" и "program.c"), («Print case» от "cpp" и "program.cpp"),
+    («Print case» от "go" и "flang/program.go"), («Print case» от "rust" и "src/program.rs"),
+    («Print case» от "java" и "FlangProgram.java"), («Print case» от "js" и "program.js"),
+    («Print case» от "ts" и "program.ts"), («Print case» от "elixir" и "flang_program.ex"),
+    («Print case» от "python" и "program.py"), («Print case» от "csharp" и "FlangProgram.cs")]
 
 тотальная функция «Target of»
   принимает probe: «Probe case»
@@ -236,20 +236,20 @@
 
 тотальная функция «C translation»
   возвращает «Probe case»
-  пример «clamp is proved, midpoint is refuted at the int bounds»
+  пример «clamp is checked, the kernel refutes midpoint at the int bounds»
     ожидается (запись «Probe case» с «name» равным "c translation"
       и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
       и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
-        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "контрпример: «lo» = 1, «hi» = 2147483647",
         "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
-        "ПРОВЕРЕНО — запись сошлась"]
+        "ПРОВЕРЕНО — утверждений в записи нет"]
       и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
   (запись «Probe case» с «name» равным "c translation"
     и «text file» равным "flang/foreign/c/corpus/ranges.c" и «text» равным "" и «code» равным 1
     и «present» равным ["модуль «Перевод clamp»", "модуль «Перевод midpoint»",
-        "контрпример: «lo» = 2147483647, «hi» = 2147483647",
+        "контрпример: «lo» = 1, «hi» = 2147483647",
         "нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»",
-      "ПРОВЕРЕНО — запись сошлась"]
+      "ПРОВЕРЕНО — утверждений в записи нет"]
     и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND"])
 
 тотальная функция «C refusal»
@@ -464,41 +464,41 @@
       formula: в выводе нет «утверждаем («x» плюс «y») равен («y» плюс «x»)»
       formula: в выводе нет «ПРОВЕРЕНО — запись сошлась»
       print c: ждали код 0, вышел 127
-      print c: в выводе нет «── privet.c ──»
+      print c: в выводе нет «── program.c ──»
       print c: в выводе нет «печать совпала с двоичным компилятором»
       print cpp: ждали код 0, вышел 127
-      print cpp: в выводе нет «── privet.cpp ──»
+      print cpp: в выводе нет «── program.cpp ──»
       print cpp: в выводе нет «печать совпала с двоичным компилятором»
       print go: ждали код 0, вышел 127
-      print go: в выводе нет «── flang/privet.go ──»
+      print go: в выводе нет «── flang/program.go ──»
       print go: в выводе нет «печать совпала с двоичным компилятором»
       print rust: ждали код 0, вышел 127
-      print rust: в выводе нет «── src/privet.rs ──»
+      print rust: в выводе нет «── src/program.rs ──»
       print rust: в выводе нет «печать совпала с двоичным компилятором»
       print java: ждали код 0, вышел 127
-      print java: в выводе нет «── Privet.java ──»
+      print java: в выводе нет «── FlangProgram.java ──»
       print java: в выводе нет «печать совпала с двоичным компилятором»
       print js: ждали код 0, вышел 127
-      print js: в выводе нет «── privet.js ──»
+      print js: в выводе нет «── program.js ──»
       print js: в выводе нет «печать совпала с двоичным компилятором»
       print ts: ждали код 0, вышел 127
-      print ts: в выводе нет «── privet.ts ──»
+      print ts: в выводе нет «── program.ts ──»
       print ts: в выводе нет «печать совпала с двоичным компилятором»
       print elixir: ждали код 0, вышел 127
-      print elixir: в выводе нет «── privet.ex ──»
+      print elixir: в выводе нет «── flang_program.ex ──»
       print elixir: в выводе нет «печать совпала с двоичным компилятором»
       print python: ждали код 0, вышел 127
-      print python: в выводе нет «── privet.py ──»
+      print python: в выводе нет «── program.py ──»
       print python: в выводе нет «печать совпала с двоичным компилятором»
       print csharp: ждали код 0, вышел 127
-      print csharp: в выводе нет «── Privet.cs ──»
+      print csharp: в выводе нет «── FlangProgram.cs ──»
       print csharp: в выводе нет «печать совпала с двоичным компилятором»
       c translation: ждали код 1, вышел 127
       c translation: в выводе нет «модуль «Перевод clamp»»
       c translation: в выводе нет «модуль «Перевод midpoint»»
-      c translation: в выводе нет «контрпример: «lo» = 2147483647, «hi» = 2147483647»
+      c translation: в выводе нет «контрпример: «lo» = 1, «hi» = 2147483647»
       c translation: в выводе нет «нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»»
-      c translation: в выводе нет «ПРОВЕРЕНО — запись сошлась»
+      c translation: в выводе нет «ПРОВЕРЕНО — утверждений в записи нет»
       c refusal: ждали код 1, вышел 127
       c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: «long» здесь не читается»
       clang stats: ждали код 0, вышел 127

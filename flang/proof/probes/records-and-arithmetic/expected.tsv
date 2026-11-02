@@ -1,0 +1,17 @@
+program	judge	code	word
+record-eta.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 3: доказано 3
+record-eta-refused.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 4: доказано 0
+record-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 3: доказано 3
+record-two-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1
+record-three-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1
+record-four-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1
+record-five-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1
+record-six-fields.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 1
+ring-under-remainder.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 3: доказано 3
+ring-under-remainder-refused.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 6: доказано 4
+equal-to-itself.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 2: доказано 2
+equal-to-itself-number.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	утверждений 3: доказано 0
+number-to-natural.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	функций 2: тотальных 2
+number-to-natural-forms.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	функций 3: тотальных 3
+number-to-natural-refused.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_TYPE: функция «Остаток не тот» объявлена как неотрицательное
+number-without-integrality.flang	run --trust --max-steps 100000000000 --предел-шагов 100000000000 --function "Свод"	0	FLANG_TYPE: функция «Сузить» объявлена как неотрицательное

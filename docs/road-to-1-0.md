@@ -37,8 +37,11 @@
 [`reprint-ledger.tsv`](reprint-ledger.tsv): секунды, пик памяти, размер семени.
 Как читать ведомость и откуда берётся цена — [`reprint-cost.md`](reprint-cost.md).
 Заход идёт на одном ядре и упирается во время, а не в память.
+Четыре последние печати — 28 октября и 1 ноября 2026: 4492, 4481, 4504 и 4482 с
+(75 мин), пик до 98,1 ГиБ, с кешем суда ядра 16 ГиБ (прежняя печать шла около 8,5 ч).
 
-**Чего нет.** Разбора, на какие стадии печати уходит время, по каждой стадии.
+**Чего нет.** Часа: 4482 с больше 3600 с, условие не взято. Разбора, на какие
+стадии печати уходит время, по каждой стадии.
 
 **Как узнаем, что взято.** Печать укладывается в час на тихой машине, и это
 записано строкой ведомости.
@@ -51,15 +54,15 @@
 только пробы, которые ложь отвергают.
 
 **Что есть.** Ядро решений — `flang/self/proof-kernel.flang`,
-<!-- СНЯТО 2026-10-18 строк flang/self/proof-kernel.flang = 6927 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 6886, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 6881, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 6696, снято 2026-10-13) (batch five over dev 4222c7083; до них 6346, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные», и четыре примера к ним; до них 5811, снято 2026-10-04) --> 6 927 строк.
+<!-- СНЯТО 2026-10-28 строк flang/self/proof-kernel.flang = 7777 (print batch 9c: flang install, small compiler fixes, installs and io, restricted postconditions, listen address, u64 literals; до них 7763, снято 2026-10-26) (reprint input of batch 9b: exact word bound ceiling in the kernel, issue 479; до них 7645, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 6927, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 6886, снято 2026-10-14) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 6881, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 6696, снято 2026-10-13) (batch five over dev 4222c7083; до них 6346, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные», и четыре примера к ним; до них 5811, снято 2026-10-04) --> 7 777 строк.
 Список правил вывода закрыт: `flang/proof/tables/inference-rules.tsv`,
-<!-- СНЯТО 2026-10-13 строк flang/proof/tables/inference-rules.tsv = 136 (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 129, снято 2026-10-13) (batch five over dev 4222c7083; до них 124, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные» — две строки таблицы; до них 113, снято 2026-10-04) --> 136 строк
+<!-- СНЯТО 2026-10-20 строк flang/proof/tables/inference-rules.tsv = 156 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 136, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 129, снято 2026-10-13) (batch five over dev 4222c7083; до них 124, снято 2026-10-11) (задача 1412: над точным целым заведены правило Кол1 «Сумма точных сошлась» и запрет Кол✗ «Листья кольца точные» — две строки таблицы; до них 113, снято 2026-10-04) --> 156 строк
 с шапкой. Независимая проверяющая программа на C — `flang/proof/checker/checker.c`,
-<!-- СНЯТО 2026-10-18 строк flang/proof/checker/checker.c = 14051 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 13516, снято 2026-10-18) (print batch eight over dev 03bab0c1c; до них 13206, снято 2026-10-18) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 12192, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 12122, снято 2026-10-13) (batch five over dev 4222c7083; до них 12012, снято 2026-10-12) (ADR-0103: сверщик переигрывает постусловие с ограничением, цель, равную ограничению, и шаг «по предположению» у теоремы над постусловием; до него 11872, снято 2026-10-11) (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 14 051 строка;
+<!-- СНЯТО 2026-10-26 строк flang/proof/checker/checker.c = 14727 (issue 477: the C checker compares the ceiling of an unsigned word exactly, an honest u64 pair and a forgery in flang/proof/checker/tests/families/fixed-width-words; до них 14724, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 14051, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 13516, снято 2026-10-18) (print batch eight over dev 03bab0c1c; до них 13206, снято 2026-10-18) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 12192, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 12122, снято 2026-10-13) (batch five over dev 4222c7083; до них 12012, снято 2026-10-12) (ADR-0103: сверщик переигрывает постусловие с ограничением, цель, равную ограничению, и шаг «по предположению» у теоремы над постусловием; до него 11872, снято 2026-10-11) (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 14 727 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-10-18 файлов flang/proof/lean/*.lean = 20 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 20 файлов,
-<!-- СНЯТО 2026-10-18 строк-в flang/proof/lean/*.lean = 18817 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 18 817 строк,
+<!-- СНЯТО 2026-10-25 строк-в flang/proof/lean/*.lean = 19693 (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 19 693 строк,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 83, все 83 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -143,12 +146,23 @@
 **Что значит.** Чужой человек ставит пакет одной командой, и сборка воспроизводима.
 
 **Что есть.** `flang package` и `flang lock`: замок с самими зависимостями, а не со
-ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)),
-образец описания пакета — `scripts/registry-example/`. Профили в `.flangrc`
-выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --> 64 файла, <!-- СНЯТО 2026-10-18 строк-в flang/stdlib/*.flang = 63393 (партия печати 9a: поиск без копий, починка stdlib, разбор и ввоз, тёзки при связывании, теоремы о категориях, опровержение утверждений, мелкие правки; до неё 63380, снято 2026-10-17) --> 63 393 строки.
+ссылками; реестр имён ([ADR-0059](adr/0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md)) —
+один текстовый файл, формат закреплён в [registry-list-format.md](registry-list-format.md),
+образец — `scripts/registry-example/`. Установка по имени из сети одной командой:
+`flang install <программа.flang> <имя>[: <диапазон>]` (с 0.7.32 — команда двоичного;
+`flang run-script package:install` из дерева — тот же движок) берёт список по
+адресу (`https://`, `http://` или файл), выбирает наибольшую годную версию по нуждам проекта и
+нуждам самих пакетов (`flang/stdlib/registry.flang`), скачивает, сверяет `sha256` до записи на
+диск, кладёт файлы рядом с программой и пишет `flang.lock`
+([ADR-0168](adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md)).
+Проверка `package-install:check` ставит пакет дважды в пустые каталоги под пустым окружением и
+сравнивает замки побайтно; работа CI `package-install` гоняет её на чистом образе. Профили в
+`.flangrc` выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --> 64 файла, <!-- СНЯТО 2026-11-01 строк-в flang/stdlib/*.flang = 63403 (the gcd claim on two lines and the hex loop of rsa; до них 63397, снято 2026-10-26) (партия печати 9b: три утверждения sqlite, опровергнутые новой проверкой, названы со своей областью; до неё 63393, снято 2026-10-18) (партия печати 9a: поиск без копий, починка stdlib, разбор и ввоз, тёзки при связывании, теоремы о категориях, опровержение утверждений, мелкие правки; до неё 63380, снято 2026-10-17) --> 63 403 строки.
 
-**Чего нет.** Установки пакета по имени из сети и разрешения версий.
+**Чего нет.** Подписи автора: отпечаток говорит «файл не правили», а не
+«файл от того, о ком вы думаете». Реестра с чужими пакетами: в списке лежат только пакеты примера.
+Изоляции поиска модулей по имени ниже корня проекта (ADR-0021 п. 5).
 
 **Как узнаем, что взято.** Пакет ставится одной командой на чистой машине, и
 повторная установка даёт тот же замок.

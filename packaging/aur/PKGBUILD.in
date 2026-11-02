@@ -27,6 +27,10 @@ package() {
   install -d "${pkgdir}/usr/share/flang" "${pkgdir}/usr/share/flang-tutor"
   cp -R share/flang/. "${pkgdir}/usr/share/flang/"
   cp -R share/flang-tutor/. "${pkgdir}/usr/share/flang-tutor/"
+  if [ -d share/flang-fspec ]; then
+    install -d "${pkgdir}/usr/share/flang-fspec"
+    cp -R share/flang-fspec/. "${pkgdir}/usr/share/flang-fspec/"
+  fi
   install -Dm644 share/man/man1/flang.1 "${pkgdir}/usr/share/man/man1/flang.1"
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

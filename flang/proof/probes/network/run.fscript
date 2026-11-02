@@ -37,7 +37,8 @@
     "-extfile \"$w/leaf.ext\" -out \"$w/old.pem\" 2>/dev/null && ",
     "openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes -keyout \"$w/rogue.key\" -out \"$w/rogue.pem\" ",
     "-subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost' 2>/dev/null && ",
-    "printf 'flang speaks tls itself\\n' > \"$w/page.txt\""] по ""
+    "printf 'flang speaks tls itself\\n' > \"$w/page.txt\" && ",
+    "head -c 30000 /dev/zero | tr '\\0' 'z' > \"$w/big.txt\""] по ""
 
 тотальная функция «Сертификат сценария»
   принимает сценарий: строка
@@ -95,7 +96,20 @@
   соединить ["mkdir \"$w/bin\" && PATH=\"$w/bin\" \"$flang\" io ",
     "flang/proof/probes/network/programs/secure-request.fscript ",
     "--на-веру --timeout 20000 --trust-roots \"$w/root.pem\" -- \"https://", («Имя сценария» от сценарий),
-    ":$p/page.txt\"; c=$?; kill $s 2>/dev/null; rm -rf \"$w\"; exit $c"] по ""
+    ":$p/", («Страница сценария» от сценарий), "\"; c=$?; kill $s 2>/dev/null; rm -rf \"$w\"; exit $c"] по ""
+
+тотальная функция «Страница сценария»
+  принимает сценарий: строка
+  возвращает строка
+  пример «большой ответ — тридцать тысяч байт, глубже прежнего предела 20000»
+    дано сценарий равно "large"
+    ожидается "big.txt"
+  пример «прочие сценарии — короткая страница»
+    дано сценарий равно "honest"
+    ожидается "page.txt"
+  если сценарий равен "large"
+    то "big.txt"
+    иначе "page.txt"
 
 тотальная функция «Вызов»
   принимает сценарий: строка

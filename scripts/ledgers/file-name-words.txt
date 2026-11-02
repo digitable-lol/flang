@@ -2178,3 +2178,6 @@ bypassed
 shortest
 tie
 rust
+equalities
+includes
+capture

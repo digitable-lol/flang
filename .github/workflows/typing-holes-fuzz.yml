@@ -46,6 +46,12 @@ on:
   schedule:
     - cron: "41 3 * * *"
     - cron: "41 4 * * 0"
+  # Правка самого поиска или ведомости проверяется на ветке, а не назавтра.
+  pull_request:
+    paths:
+      - "scripts/fuzz/**"
+      - ".github/workflows/typing-holes-fuzz.yml"
+      - "flang/proof/tables/typing-holes.tsv"
   workflow_dispatch:
     inputs:
       seed:

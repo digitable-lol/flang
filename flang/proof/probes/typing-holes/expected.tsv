@@ -32,3 +32,5 @@ empty-list-by-let.flang	check	0	замечаний нет
 empty-list-by-let.flang	run-empty-list	0	[-2]
 negative-zero-to-word.flang	run-negative-zero-word	1	0 не целое и в u8 не переводится
 negative-zero-in-run-answer.flang	run-negative-zero-answer	0	[0]
+parametric-argument-at-printed-entry.flang	check	0	замечаний нет
+parametric-argument-at-printed-entry.flang	emit-c-parametric-entry	0	{"ok":true,"value":{"n":"-3"}}

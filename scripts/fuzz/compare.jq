@@ -6,7 +6,9 @@
 # `flang run`, type code, the printed value with Infinity/NaN made strings,
 # the first FLANG_ code, and «да» when the call was outside the requirement.
 # ans: a runner answer per call, in the same order. Out: a line
-# "differs call <n>: evaluator <v>, <t> <v>" per call that differs; nothing
+# "differs call <n>: evaluator <v>, <t> <v>" per call that differs (a call
+# with an argument outside its type — type code "!<result>:<kind>" — says
+# "(outside <kind>)" after its number); nothing
 # when all agree. Calls outside the requirement (ledger hole 15), runs the
 # evaluator refused as unproven (code 3) and fixed-width words the evaluator
 # prints as null (ledger hole 13) are not compared.
@@ -40,4 +42,5 @@ def words: ["u8", "i8", "u32", "i64", "u64"];
 | select(($row[1] as $ty | words | index($ty)) == null or $mine != null)
 | (($a[$i] // {ok: false, code: "NO ANSWER"}) | theirs) as $their
 | select($mine != $their)
-| "differs call \($i + 1): evaluator \($mine | tojson), \($t) \($their | tojson)"
+| (if ($row[1] | contains(":")) then " (outside \($row[1] | split(":") | .[1]))" else "" end) as $outside
+| "differs call \($i + 1)\($outside): evaluator \($mine | tojson), \($t) \($their | tojson)"

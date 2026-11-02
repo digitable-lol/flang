@@ -16,3 +16,7 @@ hole	oracle	detail
 19	b-go	evaluator {"error":"FLANG_OVERFLOW"}
 19	b-java	evaluator {"error":"FLANG_OVERFLOW"}
 19	b-rust	evaluator {"error":"FLANG_OVERFLOW"}
+21	b-c	outside IZ): evaluator {"error":"FLANG_TYPE"}
+21	b-go	outside IZ): evaluator {"error":"FLANG_TYPE"}
+21	b-java	outside IZ): evaluator {"error":"FLANG_TYPE"}
+21	b-rust	outside IZ): evaluator {"error":"FLANG_TYPE"}

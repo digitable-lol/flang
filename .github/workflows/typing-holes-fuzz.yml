@@ -1,0 +1,132 @@
+name: Typing holes search
+
+# ПОИСК ДЫР ТИПИЗАЦИИ ГЕНЕРАТОРОМ ПРОГРАММ, РАЗ В СУТКИ.
+#
+# Условие 4 дороги до 1.0 (docs/road-to-1-0.md): известные дыры записаны
+# ведомостью flang/proof/tables/typing-holes.tsv. Ведомость ловит то, что нашли
+# руками; эта работа ищет то, чего ещё не нашли. scripts/fuzz/generator.flang
+# печатает из зерна программу и наряд её вызовов, план scripts/fuzz/search.fscript
+# гонит каждую через оракулы:
+#   a  проверка сказала «замечаний нет», а запуск вернул значение вне
+#      объявленного типа, упал FLANG_TYPE или ответил вне требования «требует»;
+#   b  напечатанная программа на C не собирается или отвечает иначе, чем
+#      вычислитель, на тех же доводах;
+#   c  ядро сказало «доказано», а запуск нарушил постусловие;
+#   d  сверщик на C принял запись доказательства, в которой один факт сделан
+#      сильнее, чем его записало ядро.
+#
+# ── Когда работа красна ─────────────────────────────────────────────────────
+# Находка, которой нет в scripts/fuzz/known.tsv, роняет работу кодом 1. Строка
+# known.tsv называет номер строки ведомости; дыра, которую ведомость числит
+# «закрыта», снова становится находкой. Так открытая дыра не держит работу
+# красной вечно, а закрытая не может вернуться молча. Красный — честный
+# результат поиска: чинится не работа, а язык (или находка записывается в
+# ведомость строкой «открыта» с пробой и заявкой).
+#
+# ── Зёрна ───────────────────────────────────────────────────────────────────
+# Половина прогона — неподвижные зёрна 1..600: один и тот же набор программ
+# на каждом прогоне, расхождение с прошлым днём значит, что поменялось дерево.
+# Вторая половина — 600 зёрен от числа секунд прогона: каждый день новые
+# программы. Зерно печатается в сводку, и находку повторяет
+#   bootstrap/flang io scripts/fuzz/search.fscript --plan Campaign --max-orders 100000000 \
+#     --timeout 3600000 -- <абсолютный каталог> <зерно> 1 1
+# По воскресеньям и по запуску рукой работа гонит ещё оракул d над деревом:
+# каждая программа с постусловием, кроме компилятора и семени (около 800).
+#
+# ── Цена ────────────────────────────────────────────────────────────────────
+# Сборка двоичного 5–7 минут; программа стоит около 1,1 с процессора (замер на
+# машине разработки: пачка из 100 программ — 1 мин 20 с), две кампании по 600
+# программ на четырёх ядрах раннера — около 6 минут, самопроверка — полторы.
+# Оракул d над деревом — около 20 минут процессора (791 программа, замер
+# 2 ноября 2026), поэтому он идёт раз в неделю. Час выбран вне окон других
+# расписаний: provability.yml 05:23, install-path.yml и lean-crosscheck.yml
+# 04:17 UTC.
+
+on:
+  schedule:
+    - cron: "41 3 * * *"
+    - cron: "41 4 * * 0"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "first seed of the moving half (empty = from the clock)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: typing-holes-fuzz
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build bootstrap
+        run: make -C bootstrap -j"$(nproc)"
+      - name: Build proof checker
+        run: make -C flang/proof/checker
+
+      # Сторож, которого нельзя покрасить, неотличим от выключенного: каждый
+      # оракул сначала краснеет на подложенной находке.
+      - name: Oracles turn red on planted holes
+        run: bootstrap/flang io scripts/fuzz/search.fscript --plan Selftest --max-orders 1000000 --timeout 600000 -- "$RUNNER_TEMP/selftest"
+
+      - name: Fixed seeds 1..600
+        if: github.event.schedule != '41 4 * * 0'
+        run: |
+          set +e
+          bootstrap/flang io scripts/fuzz/search.fscript --plan Campaign --max-orders 100000000 --timeout 3600000 \
+            -- "$RUNNER_TEMP/fixed" 1 600 "$(nproc)" c 10 5 > "$RUNNER_TEMP/fixed.json" 2>&1
+          kod=$?
+          cat "$RUNNER_TEMP/fixed/summary.txt" 2>/dev/null || cat "$RUNNER_TEMP/fixed.json"
+          { echo "## Неподвижные зёрна 1..600 — код $kod"; echo; echo '```'; cat "$RUNNER_TEMP/fixed/summary.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "$kod" > "$RUNNER_TEMP/fixed.code"
+
+      - name: Moving seeds
+        if: github.event.schedule != '41 4 * * 0'
+        run: |
+          set +e
+          seed="${{ github.event.inputs.seed }}"
+          [ -n "$seed" ] || seed=$(( $(date +%s) % 2000000000 + 1000 ))
+          bootstrap/flang io scripts/fuzz/search.fscript --plan Campaign --max-orders 100000000 --timeout 3600000 \
+            -- "$RUNNER_TEMP/moving" "$seed" 600 "$(nproc)" c 10 5 > "$RUNNER_TEMP/moving.json" 2>&1
+          kod=$?
+          cat "$RUNNER_TEMP/moving/summary.txt" 2>/dev/null || cat "$RUNNER_TEMP/moving.json"
+          { echo "## Зёрна от $seed — код $kod"; echo; echo '```'; cat "$RUNNER_TEMP/moving/summary.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "$kod" > "$RUNNER_TEMP/moving.code"
+
+      - name: Proof records of the tree
+        if: github.event.schedule == '41 4 * * 0' || github.event_name == 'workflow_dispatch'
+        run: |
+          set +e
+          bootstrap/flang io scripts/fuzz/search.fscript --plan Campaign --max-orders 100000000 --timeout 3600000 \
+            -- "$RUNNER_TEMP/corpus" corpus 0 "$(nproc)" > "$RUNNER_TEMP/corpus.json" 2>&1
+          kod=$?
+          cat "$RUNNER_TEMP/corpus/summary.txt" 2>/dev/null || cat "$RUNNER_TEMP/corpus.json"
+          { echo "## Записи доказательств дерева — код $kod"; echo; echo '```'; cat "$RUNNER_TEMP/corpus/summary.txt" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "$kod" > "$RUNNER_TEMP/corpus.code"
+
+      - name: Keep findings
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: typing-holes-findings
+          path: |
+            ${{ runner.temp }}/*/p/*/finding-*.txt
+            ${{ runner.temp }}/*/p/*/prog.flang
+            ${{ runner.temp }}/*/summary.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Verdict
+        run: |
+          bad=0
+          for k in fixed moving corpus; do
+            [ -f "$RUNNER_TEMP/$k.code" ] || continue
+            c=$(cat "$RUNNER_TEMP/$k.code")
+            echo "$k: $c (0 nothing new, 1 findings, 3 the search could not look)"
+            [ "$c" -eq 0 ] || bad=1
+          done
+          exit $bad

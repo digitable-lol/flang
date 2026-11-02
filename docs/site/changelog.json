@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "b2e4ac91831d6792cec68b1f34eeec9b77f3def9",
-  "головаКоротко": "b2e4ac918",
-  "головаДата": "2026-10-27",
-  "шаговСтвола": 4152,
-  "всегоКоммитов": 9320,
+  "голова": "e04a09de2cfb81e6fe70e2f00c3c6ac72b29ea36",
+  "головаКоротко": "e04a09de2",
+  "головаДата": "2026-11-01",
+  "шаговСтвола": 4164,
+  "всегоКоммитов": 9404,
   "измерители": [
     {
       "ключ": "js",
@@ -49,10 +49,10 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 133364,
-    "programm": 1136,
-    "totalnyh": 16046,
-    "obychnyh": 3441,
+    "bliznec": 133640,
+    "programm": 1150,
+    "totalnyh": 16087,
+    "obychnyh": 3453,
     "teorem": 404,
     "proverok": 3,
     "zametok": 0
@@ -92,6 +92,8 @@
     }
   ],
   "дни": [
+    "2026-11-01",
+    "2026-10-28",
     "2026-10-27",
     "2026-10-24",
     "2026-10-19",
@@ -173,6 +175,209 @@
     "2026-08-01"
   ],
   "вливания": [
+    {
+      "коммит": "1a44f79e4",
+      "дата": "2026-11-01",
+      "заголовок": "Merge print batch 9c, fourth print: rust lib, tls hex loop, archive",
+      "ветка": null,
+      "приехало": 9,
+      "записи": [
+        {
+          "текст": "chore(packaging): the asdf plugin points at its merged spec template",
+          "коммит": "751875f35"
+        },
+        {
+          "текст": "chore(seed): print batch 9c, fourth print, with the hex loop of tls",
+          "коммит": "9c74984e9"
+        },
+        {
+          "текст": "test(probes): an https answer of 30000 bytes, deeper than the old limit",
+          "коммит": "fc226d9d8"
+        },
+        {
+          "текст": "fix(stdlib): hex to bytes runs in a loop, not one call per byte",
+          "коммит": "7cde2ace9"
+        }
+      ],
+      "скрыто": 4,
+      "числа": {
+        "js": 0,
+        "bliznec": 133640,
+        "programm": 1150,
+        "totalnyh": 16087,
+        "obychnyh": 3453,
+        "teorem": 404,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {}
+    },
+    {
+      "коммит": "760813990",
+      "дата": "2026-11-01",
+      "заголовок": "Merge print batch 9c: flang install, loopback by default, small fixes",
+      "ветка": null,
+      "приехало": 65,
+      "записи": [
+        {
+          "текст": "fix(concurrency): node hosts read the printed module by its new name",
+          "коммит": "3f82c04b6"
+        },
+        {
+          "текст": "chore(seed): print batch 9c, third print, with the rust lib fix",
+          "коммит": "4233ea31c"
+        },
+        {
+          "текст": "chore(ledgers): the codes table names four names the 9c sources raise",
+          "коммит": "ba75fd040"
+        },
+        {
+          "текст": "fix(release): the archive has runtime/scripts for the install engine",
+          "коммит": "e03453d26"
+        },
+        {
+          "текст": "fix(ct): a double left adjoint contracts by parity, as -2 is even",
+          "коммит": "e6fa4e42a"
+        },
+        {
+          "текст": "fix(emit-rust): a module named program gets no second name program",
+          "коммит": "115386c8a"
+        },
+        {
+          "текст": "fix(stdlib): two claims refuted on the 9c binary name their domain",
+          "коммит": "9fa8e8183"
+        },
+        {
+          "текст": "fix(stdlib): the whole part of minus zero is minus zero, as trunc",
+          "коммит": "dee5599c4"
+        },
+        {
+          "текст": "test(probes): the C and C++ rows of negative zero feed the program",
+          "коммит": "f5956022e"
+        },
+        {
+          "текст": "test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed",
+          "коммит": "33eb4d58b"
+        },
+        {
+          "текст": "chore(seed): print batch 9c, printed by the 0.7.28 seed",
+          "коммит": "5142d96a4"
+        },
+        {
+          "текст": "test(probes): syllogism probes keep the answer of the binary until print",
+          "коммит": "d7b8eec91"
+        },
+        {
+          "текст": "chore(proof): rule anchors and trust ceilings follow the kernel of 9c",
+          "коммит": "35be99393"
+        },
+        {
+          "текст": "chore(numbers): counts and ledgers follow print batch 9c",
+          "коммит": "67049e606"
+        },
+        {
+          "текст": "chore(ledgers): the codes table names three refusals of pr 470",
+          "коммит": "e2e7e0e85"
+        },
+        {
+          "текст": "fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds",
+          "коммит": "d87efdfb4"
+        },
+        {
+          "текст": "fix(io): a port opened by a program listens on loopback by default",
+          "коммит": "e33e5a6a1"
+        },
+        {
+          "текст": "fix(refute): an input outside a restricted postcondition is skipped",
+          "коммит": "25a136d11"
+        },
+        {
+          "текст": "feat(run): arguments take lists, records and variants checked by type",
+          "коммит": "b225d0d05"
+        },
+        {
+          "текст": "fix(io): a chunked http or https response body is put back together",
+          "коммит": "005b3e246"
+        },
+        {
+          "текст": "fix(new): every install ships the spec template flang new copies",
+          "коммит": "3f3ca63b1"
+        },
+        {
+          "текст": "test(probes): the small bugs run from source one program at a time",
+          "коммит": "540d0519d"
+        },
+        {
+          "текст": "refactor(parser): the result type refusal sits at the end of the parser",
+          "коммит": "732687a68"
+        },
+        {
+          "текст": "test(probes): one probe set for the small compiler bugs of batch 9b",
+          "коммит": "b9de428ac"
+        },
+        {
+          "текст": "fix(arith): a zero product, quotient or remainder is +0 everywhere",
+          "коммит": "8c3fc4886"
+        },
+        {
+          "текст": "fix(emit-c): a function that never returns still builds with -Werror",
+          "коммит": "4fcaf9262"
+        },
+        {
+          "текст": "fix(emit): printed files never get a transliterated name",
+          "коммит": "c8b6e75c9"
+        },
+        {
+          "текст": "fix(ct): a broken isomorphism or functor is refused with its name",
+          "коммит": "e20b1e3e4"
+        },
+        {
+          "текст": "fix(mcp): the service reports the version of the binary it runs in",
+          "коммит": "22f77c94f"
+        },
+        {
+          "текст": "fix(parser): a function without a returns line is refused",
+          "коммит": "683f8e3bd"
+        },
+        {
+          "текст": "feat(cli): flang install puts packages by name, the plan is its engine",
+          "коммит": "5ed5590ba"
+        },
+        {
+          "текст": "test(packages): the installer is probed on a clean machine, twice",
+          "коммит": "974feddf0"
+        }
+      ],
+      "скрыто": 32,
+      "числа": {
+        "js": 0,
+        "bliznec": 133640,
+        "programm": 1150,
+        "totalnyh": 16087,
+        "obychnyh": 3453,
+        "teorem": 404,
+        "proverok": 3,
+        "zametok": 0
+      },
+      "сдвиг": {
+        "bliznec": {
+          "было": 133364,
+          "стало": 133640
+        },
+        "programm": {
+          "было": 1126,
+          "стало": 1150
+        },
+        "totalnyh": {
+          "было": 16014,
+          "стало": 16087
+        },
+        "obychnyh": {
+          "было": 3441,
+          "стало": 3453
+        }
+      }
+    },
     {
       "коммит": "45261f7fc",
       "дата": "2026-10-27",
@@ -41360,8 +41565,36 @@
   ],
   "прямые": [
     {
+      "дата": "2026-11-01",
+      "записи": [
+        {
+          "текст": "chore(release): sha256 of the 0.7.32 archive",
+          "коммит": "c6a32a71e"
+        },
+        {
+          "текст": "chore(release): version 0.7.32 and its release notes",
+          "коммит": "651f20fb0"
+        }
+      ],
+      "скрыто": 5
+    },
+    {
+      "дата": "2026-10-28",
+      "записи": [
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.31",
+          "коммит": "f1fdce2d1"
+        }
+      ],
+      "скрыто": 0
+    },
+    {
       "дата": "2026-10-27",
       "записи": [
+        {
+          "текст": "fix(concurrency): the rust node refuses a fixed-width word on the wire",
+          "коммит": "a5890e700"
+        },
         {
           "текст": "chore(release): sha256 of the 0.7.31 archive",
           "коммит": "b2e4ac918"
@@ -41391,7 +41624,7 @@
           "коммит": "140cc7e27"
         }
       ],
-      "скрыто": 8
+      "скрыто": 9
     },
     {
       "дата": "2026-10-24",

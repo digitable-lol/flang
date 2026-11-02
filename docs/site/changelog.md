@@ -33,20 +33,87 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `b2e4ac918` от 27 октября 2026. Шагов ствола 4152, из них вливаний 1217; коммитов в истории 9320.
+Дерево на коммите `e04a09de2` от 1 ноября 2026. Шагов ствола 4164, из них вливаний 1219; коммитов в истории 9404.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 133364 | +5933 | +1966 |
-| Программ на flang | 1136 | +60 | +575 |
-| Объявлений `тотальная функция` | 16046 | +527 | +1995 |
-| Объявлений `функция` | 3441 | +129 | +999 |
-| Объявлений `теорема` | 404 | +1 | +120 |
+| Эталон компилятора на flang | 133640 | 0 | +2242 |
+| Программ на flang | 1150 | 0 | +589 |
+| Объявлений `тотальная функция` | 16087 | 0 | +2036 |
+| Объявлений `функция` | 3453 | 0 | +1011 |
+| Объявлений `теорема` | 404 | 0 | +120 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | 0 | −672 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 1 ноября 2026
+
+**Merge print batch 9c, fourth print: rust lib, tls hex loop, archive**
+
+`1a44f79e4` · коммитов 9
+
+- chore(packaging): the asdf plugin points at its merged spec template (`751875f35`)
+- chore(seed): print batch 9c, fourth print, with the hex loop of tls (`9c74984e9`)
+- test(probes): an https answer of 30000 bytes, deeper than the old limit (`fc226d9d8`)
+- fix(stdlib): hex to bytes runs in a loop, not one call per byte (`7cde2ace9`)
+
+Ещё 4 правки языка снаружи не меняют.
+
+**Merge print batch 9c: flang install, loopback by default, small fixes**
+
+`760813990` · коммитов 65
+
+Сдвинулось: эталон компилятора на flang 133364 → 133640 (+276); программ на flang 1126 → 1150 (+24); объявлений `тотальная функция` 16014 → 16087 (+73); объявлений `функция` 3441 → 3453 (+12).
+
+- fix(concurrency): node hosts read the printed module by its new name (`3f82c04b6`)
+- chore(seed): print batch 9c, third print, with the rust lib fix (`4233ea31c`)
+- chore(ledgers): the codes table names four names the 9c sources raise (`ba75fd040`)
+- fix(release): the archive has runtime/scripts for the install engine (`e03453d26`)
+- fix(ct): a double left adjoint contracts by parity, as -2 is even (`e6fa4e42a`)
+- fix(emit-rust): a module named program gets no second name program (`115386c8a`)
+- fix(stdlib): two claims refuted on the 9c binary name their domain (`9fa8e8183`)
+- fix(stdlib): the whole part of minus zero is minus zero, as trunc (`dee5599c4`)
+- test(probes): the C and C++ rows of negative zero feed the program (`f5956022e`)
+- test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed (`33eb4d58b`)
+- chore(seed): print batch 9c, printed by the 0.7.28 seed (`5142d96a4`)
+- test(probes): syllogism probes keep the answer of the binary until print (`d7b8eec91`)
+- chore(proof): rule anchors and trust ceilings follow the kernel of 9c (`35be99393`)
+- chore(numbers): counts and ledgers follow print batch 9c (`67049e606`)
+- chore(ledgers): the codes table names three refusals of pr 470 (`e2e7e0e85`)
+- fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds (`d87efdfb4`)
+- fix(io): a port opened by a program listens on loopback by default (`e33e5a6a1`)
+- fix(refute): an input outside a restricted postcondition is skipped (`25a136d11`)
+- feat(run): arguments take lists, records and variants checked by type (`b225d0d05`)
+- fix(io): a chunked http or https response body is put back together (`005b3e246`)
+- fix(new): every install ships the spec template flang new copies (`3f3ca63b1`)
+- test(probes): the small bugs run from source one program at a time (`540d0519d`)
+- refactor(parser): the result type refusal sits at the end of the parser (`732687a68`)
+- test(probes): one probe set for the small compiler bugs of batch 9b (`b9de428ac`)
+- fix(arith): a zero product, quotient or remainder is +0 everywhere (`8c3fc4886`)
+- fix(emit-c): a function that never returns still builds with -Werror (`4fcaf9262`)
+- fix(emit): printed files never get a transliterated name (`c8b6e75c9`)
+- fix(ct): a broken isomorphism or functor is refused with its name (`e20b1e3e4`)
+- fix(mcp): the service reports the version of the binary it runs in (`22f77c94f`)
+- fix(parser): a function without a returns line is refused (`683f8e3bd`)
+- feat(cli): flang install puts packages by name, the plan is its engine (`5ed5590ba`)
+- test(packages): the installer is probed on a clean machine, twice (`974feddf0`)
+
+Ещё 32 правки языка снаружи не меняют.
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): sha256 of the 0.7.32 archive (`c6a32a71e`)
+- chore(release): version 0.7.32 and its release notes (`651f20fb0`)
+
+Ещё 5 правок языка снаружи не меняют.
+
+## 28 октября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): the tap serves flang-package 0.7.31 (`f1fdce2d1`)
 
 ## 27 октября 2026
 
@@ -103,6 +170,7 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- fix(concurrency): the rust node refuses a fixed-width word on the wire (`a5890e700`)
 - chore(release): sha256 of the 0.7.31 archive (`b2e4ac918`)
 - chore(release): version 0.7.31 and its release notes (`d5caada70`)
 - test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be4f`)
@@ -111,7 +179,7 @@
 - test(records): corpus records follow the 9b kernel and check (`fea39cf13`)
 - chore(proof): rule anchors and trust ceilings follow the 9b merge (`140cc7e27`)
 
-Ещё 8 правок языка снаружи не меняют.
+Ещё 9 правок языка снаружи не меняют.
 
 ## 24 октября 2026
 

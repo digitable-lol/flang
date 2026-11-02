@@ -11,10 +11,57 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.32 — 2 ноября 2026
+
+**Пакеты ставятся командой flang install; сервер по умолчанию слушает только 127.0.0.1; верное постусловие «для всех … таких что» снова проходит**
+
+- chore(release): sha256 of the 0.7.32 archive (`c6a32a7`)
+- chore(release): version 0.7.32 and its release notes (`651f20f`)
+- chore(packaging): the asdf plugin points at its merged spec template (`751875f`)
+- chore(seed): print batch 9c, fourth print, with the hex loop of tls (`9c74984`)
+- test(probes): an https answer of 30000 bytes, deeper than the old limit (`fc226d9`)
+- fix(stdlib): hex to bytes runs in a loop, not one call per byte (`7cde2ac`)
+- fix(concurrency): node hosts read the printed module by its new name (`3f82c04`)
+- chore(seed): print batch 9c, third print, with the rust lib fix (`4233ea3`)
+- chore(ledgers): the codes table names four names the 9c sources raise (`ba75fd0`)
+- fix(release): the archive has runtime/scripts for the install engine (`e03453d`)
+- fix(ct): a double left adjoint contracts by parity, as -2 is even (`e6fa4e4`)
+- fix(emit-rust): a module named program gets no second name program (`115386c`)
+- fix(stdlib): two claims refuted on the 9c binary name their domain (`9fa8e81`)
+- fix(stdlib): the whole part of minus zero is minus zero, as trunc (`dee5599`)
+- test(probes): the C and C++ rows of negative zero feed the program (`f595602`)
+- test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed (`33eb4d5`)
+- chore(seed): print batch 9c, printed by the 0.7.28 seed (`5142d96`)
+- test(probes): syllogism probes keep the answer of the binary until print (`d7b8eec`)
+- chore(proof): rule anchors and trust ceilings follow the kernel of 9c (`35be993`)
+- chore(numbers): counts and ledgers follow print batch 9c (`67049e6`)
+- chore(ledgers): the codes table names three refusals of pr 470 (`e2e7e0e`)
+- fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds (`d87efdf`)
+- chore(release): the tap serves flang-package 0.7.31 (`f1fdce2`)
+- fix(io): a port opened by a program listens on loopback by default (`e33e5a6`)
+- fix(refute): an input outside a restricted postcondition is skipped (`25a136d`)
+- feat(cli): flang install puts packages by name, the plan is its engine (`5ed5590`)
+- test(packages): the installer is probed on a clean machine, twice (`974fedd`)
+- test(probes): the small bugs run from source one program at a time (`540d051`)
+- refactor(parser): the result type refusal sits at the end of the parser (`732687a`)
+- test(probes): one probe set for the small compiler bugs of batch 9b (`b9de428`)
+- fix(arith): a zero product, quotient or remainder is +0 everywhere (`8c3fc48`)
+- fix(emit-c): a function that never returns still builds with -Werror (`4fcaf92`)
+- fix(emit): printed files never get a transliterated name (`c8b6e75`)
+- fix(ct): a broken isomorphism or functor is refused with its name (`e20b1e3`)
+- fix(mcp): the service reports the version of the binary it runs in (`22f77c9`)
+- fix(parser): a function without a returns line is refused (`683f8e3`)
+- feat(run): arguments take lists, records and variants checked by type (`b225d0d`)
+- fix(io): a chunked http or https response body is put back together (`005b3e2`)
+- fix(new): every install ships the spec template flang new copies (`3f3ca63`)
+
+Ещё 37 правок языка снаружи не меняют.
+
 ## 0.7.31 — 27 октября 2026
 
 **Ядро доказывает записи по полям и остаток в кольце; слова u8…u64 и битовые операции; контрпример постусловия на краях типов**
 
+- fix(concurrency): the rust node refuses a fixed-width word on the wire (`a5890e7`)
 - chore(release): sha256 of the 0.7.31 archive (`b2e4ac9`)
 - chore(release): version 0.7.31 and its release notes (`d5caada`)
 - test(guards): the honest halves stand alone, issue 481 is a known hole (`20eb8be`)
@@ -67,7 +114,7 @@
 - fix(kernel): unfold a call on a built constructor without capture (`71c576e`)
 - chore(release): the tap serves flang-package 0.7.30 (`ce6a2cb`)
 
-Ещё 29 правок языка снаружи не меняют.
+Ещё 30 правок языка снаружи не меняют.
 
 ## 0.7.30 — 19 октября 2026
 

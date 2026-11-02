@@ -6,6 +6,39 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.32 — 1 November 2026
+
+**Packages are installed with flang install; servers listen on 127.0.0.1 by default; a correct «для всех … таких что» postcondition passes again**
+
+### What appeared
+
+- **`flang install` installs a package by name.** `flang install main.flang 'Логика: не ниже 1.0'` (Logic, at least 1.0) reads the registry list, picks the highest matching version, checks the package's sha256, puts the file next to the program, checks it and writes the lock file `flang.lock`. Output: `поставлено пакетов: 1` (1 package installed) and the line `Логика 2.0.0 → logic.flang-package: доказано 4 из 7 обязательств` (4 of 7 obligations proved). The need is added to `flang.needs`, and a later `flang install main.flang` with no names installs everything from it.
+- **Where the package list comes from.** The flag `--registry <address>` (http://, https:// or a file path), else the key `registry` in the nearest `.flangrc`, else the list on GitHub. A package that carries a law or a claim «объявлено, не доказано» (declared, not proved) is installed only with `--accept-unproven`. Install errors are the `FLANG_INSTALL_*` codes, exit code 1.
+- **`flang run --args` takes lists, records and variants.** `flang run sum.flang --function "Сумма" --args '{"числа":[1,2,3,4]}'` prints `10`. Before, it was refused: a flat object of scalars was expected. A value of the wrong type inside a list is `FLANG_TYPE: вызов функции «Сумма»: аргумент «числа»[1] не соответствует типу число` (argument numbers[1] does not match type number), exit code 1.
+- **Errors in isomorphisms and functors name the arrow and the object.** A swapped or undeclared arrow of an isomorphism is `FLANG_ISO_MISMATCH`, an object without `единица` (identity) is `FLANG_ISO_IDENTITY_MISSING`, a functor without the image of an object is `FLANG_FUNCTOR_OBJECT_MISSING`. All three exit with code 1, and the message names the arrow or the object.
+
+### What changed
+
+- **A server opened by a program listens on 127.0.0.1 only.** A port that a program opens under `flang io` accepts connections from the same machine only. To listen on all addresses, set the variable: `FLANG_LISTEN_ADDRESS=0.0.0.0 flang io server.flang`. A wrong value is the error `FLANG_IO_NET`: the bind address «nowhere» from FLANG_LISTEN_ADDRESS is not an IPv4 address such as 127.0.0.1 or 0.0.0.0.
+- **A correct «для всех … таких что» postcondition passes again.** `для всех н таких что н не меньше 0 обеспечивает «сдвиг неотрицателен» результат не меньше 0` (for all n such that n ≥ 0, the result is ≥ 0) on a function whose body is `н` is `проверено … замечаний нет` (checked, no remarks). In 0.7.31 the check tried the input `н = -1`, which the restriction excludes, and refused a correct program. The workaround from the 0.7.31 notes is no longer needed.
+- **A `u64` literal goes up to 2^64 − 1.** `дано а равно u64 18446744073709551615` passes. Before, a literal above 2^53 − 1 gave `FLANG_TYPE` (argument a does not match type u64).
+- **A bound from `требует` (requires) is compared exactly.** `требует а не больше 18446744073709551615` no longer proves `обеспечивает результат не больше 18446744073709550592`: both numbers used to round to 2^64 and count as equal.
+- **A zero product, quotient or remainder is always +0.** `(-12 остаток от 6) равен 0` (remainder equals 0) is `да` (yes) in the check and in printed code; `0 умножить на -5` and `0 делить на -5` give +0 too. A minus zero that comes in as input stays minus zero: «Целая часть» (whole part) of `-0` is `-0`, like `Math.trunc` and C `trunc`.
+- **A function that never returns builds in C and C++ with `-Werror`.** Before, the C compiler refused the printed file with a warning about an unused result.
+- **Names of printed files.** A module with a Latin name gives a file of that name; any other gives `program.*` (`FlangProgram` in Java and C#). Before, the name was transliterated: the module «Привет» was printed to `privet.py`, now to `program.py`.
+- **`flang --mcp-mode` reports the version of the binary.** The answer to `initialize` carries the same version as `flang --version`.
+- **An HTTPS answer above 20 000 bytes is accepted.** Before, such an answer stopped with `FLANG_RECURSION_LIMIT` in the TLS client. Now answers up to 1 MB pass (the limit of an `https` answer is 1 048 576 bytes).
+- **A chunked HTTP or HTTPS response is put back together.** A body with `Transfer-Encoding: chunked` is joined from its chunks; a cut or broken one is the error `FLANG_IO_NET`.
+- **`flang new` works after an install.** The spec template that `flang new` copies is installed with flang (archive, deb, rpm, AUR, Homebrew) into `share/flang-fspec`.
+- **The Neovim and Vim plugin.** By default it uses `flang lsp` from PATH when `flang --version` is 0.7.25 or newer. The settings are `g:flang_binary_lsp` (1 always, 0 never) and `g:flang_no_setup`; the old names are still read. The language server gets the project directory as its root, not `<project>/.git`.
+
+### What broke
+
+- **A function without a `возвращает` (returns) line is an error.** Before, `check` passed it with code 0. Now it is `FLANG_PARSE … у функции «Удвоить без типа» нет строки 'возвращает': тип результата обязателен` (the result type is required), exit code 1. To fix: add `возвращает <type>` after the `принимает` line.
+- **A program's server is not reachable from other machines.** If your server under `flang io` is used from outside, start it with `FLANG_LISTEN_ADDRESS=0.0.0.0`.
+- **An isomorphism with a swapped arrow, and an object without `единица`, are errors.** Before, `check` found no error in them. To fix: the message names the arrow or the object — turn the arrow around or declare `единица`.
+- **Names of printed files changed.** A build that expected `privet.py` or a similar transliteration will find `program.py`. To fix: use the new name or give the module a Latin name.
+
 ## 0.7.31 — 27 October 2026
 
 **The kernel proves records by fields and remainders in the ring; u8…u64 words and bit operations; postcondition counterexamples at the type edges**

@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.31",
-  "latest": "0.7.31",
+  "declared": "0.7.32",
+  "latest": "0.7.32",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -12,14 +12,186 @@
   ],
   "releases": [
     {
+      "version": "0.7.32",
+      "tag": "v0.7.32",
+      "date": "2026-11-02",
+      "human": "2 ноября 2026",
+      "commit": "e04a09d",
+      "title": "Пакеты ставятся командой flang install; сервер по умолчанию слушает только 127.0.0.1; верное постусловие «для всех … таких что» снова проходит",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.32 archive",
+          "commit": "c6a32a7"
+        },
+        {
+          "text": "chore(release): version 0.7.32 and its release notes",
+          "commit": "651f20f"
+        },
+        {
+          "text": "chore(packaging): the asdf plugin points at its merged spec template",
+          "commit": "751875f"
+        },
+        {
+          "text": "chore(seed): print batch 9c, fourth print, with the hex loop of tls",
+          "commit": "9c74984"
+        },
+        {
+          "text": "test(probes): an https answer of 30000 bytes, deeper than the old limit",
+          "commit": "fc226d9"
+        },
+        {
+          "text": "fix(stdlib): hex to bytes runs in a loop, not one call per byte",
+          "commit": "7cde2ac"
+        },
+        {
+          "text": "fix(concurrency): node hosts read the printed module by its new name",
+          "commit": "3f82c04"
+        },
+        {
+          "text": "chore(seed): print batch 9c, third print, with the rust lib fix",
+          "commit": "4233ea3"
+        },
+        {
+          "text": "chore(ledgers): the codes table names four names the 9c sources raise",
+          "commit": "ba75fd0"
+        },
+        {
+          "text": "fix(release): the archive has runtime/scripts for the install engine",
+          "commit": "e03453d"
+        },
+        {
+          "text": "fix(ct): a double left adjoint contracts by parity, as -2 is even",
+          "commit": "e6fa4e4"
+        },
+        {
+          "text": "fix(emit-rust): a module named program gets no second name program",
+          "commit": "115386c"
+        },
+        {
+          "text": "fix(stdlib): two claims refuted on the 9c binary name their domain",
+          "commit": "9fa8e81"
+        },
+        {
+          "text": "fix(stdlib): the whole part of minus zero is minus zero, as trunc",
+          "commit": "dee5599"
+        },
+        {
+          "text": "test(probes): the C and C++ rows of negative zero feed the program",
+          "commit": "f595602"
+        },
+        {
+          "text": "test(guards): typing holes 4, 9, 10 and 11 are closed by the 9c seed",
+          "commit": "33eb4d5"
+        },
+        {
+          "text": "chore(seed): print batch 9c, printed by the 0.7.28 seed",
+          "commit": "5142d96"
+        },
+        {
+          "text": "test(probes): syllogism probes keep the answer of the binary until print",
+          "commit": "d7b8eec"
+        },
+        {
+          "text": "chore(proof): rule anchors and trust ceilings follow the kernel of 9c",
+          "commit": "35be993"
+        },
+        {
+          "text": "chore(numbers): counts and ledgers follow print batch 9c",
+          "commit": "67049e6"
+        },
+        {
+          "text": "chore(ledgers): the codes table names three refusals of pr 470",
+          "commit": "e2e7e0e"
+        },
+        {
+          "text": "fix(words): u64 literals up to 2^64 - 1 and exact assumption bounds",
+          "commit": "d87efdf"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.31",
+          "commit": "f1fdce2"
+        },
+        {
+          "text": "fix(io): a port opened by a program listens on loopback by default",
+          "commit": "e33e5a6"
+        },
+        {
+          "text": "fix(refute): an input outside a restricted postcondition is skipped",
+          "commit": "25a136d"
+        },
+        {
+          "text": "feat(cli): flang install puts packages by name, the plan is its engine",
+          "commit": "5ed5590"
+        },
+        {
+          "text": "test(packages): the installer is probed on a clean machine, twice",
+          "commit": "974fedd"
+        },
+        {
+          "text": "test(probes): the small bugs run from source one program at a time",
+          "commit": "540d051"
+        },
+        {
+          "text": "refactor(parser): the result type refusal sits at the end of the parser",
+          "commit": "732687a"
+        },
+        {
+          "text": "test(probes): one probe set for the small compiler bugs of batch 9b",
+          "commit": "b9de428"
+        },
+        {
+          "text": "fix(arith): a zero product, quotient or remainder is +0 everywhere",
+          "commit": "8c3fc48"
+        },
+        {
+          "text": "fix(emit-c): a function that never returns still builds with -Werror",
+          "commit": "4fcaf92"
+        },
+        {
+          "text": "fix(emit): printed files never get a transliterated name",
+          "commit": "c8b6e75"
+        },
+        {
+          "text": "fix(ct): a broken isomorphism or functor is refused with its name",
+          "commit": "e20b1e3"
+        },
+        {
+          "text": "fix(mcp): the service reports the version of the binary it runs in",
+          "commit": "22f77c9"
+        },
+        {
+          "text": "fix(parser): a function without a returns line is refused",
+          "commit": "683f8e3"
+        },
+        {
+          "text": "feat(run): arguments take lists, records and variants checked by type",
+          "commit": "b225d0d"
+        },
+        {
+          "text": "fix(io): a chunked http or https response body is put back together",
+          "commit": "005b3e2"
+        },
+        {
+          "text": "fix(new): every install ships the spec template flang new copies",
+          "commit": "3f3ca63"
+        }
+      ],
+      "hidden": 37
+    },
+    {
       "version": "0.7.31",
       "tag": "v0.7.31",
       "date": "2026-10-27",
       "human": "27 октября 2026",
-      "commit": "b2e4ac9",
+      "commit": "a5890e7",
       "title": "Ядро доказывает записи по полям и остаток в кольце; слова u8…u64 и битовые операции; контрпример постусловия на краях типов",
       "note": [],
       "entries": [
+        {
+          "text": "fix(concurrency): the rust node refuses a fixed-width word on the wire",
+          "commit": "a5890e7"
+        },
         {
           "text": "chore(release): sha256 of the 0.7.31 archive",
           "commit": "b2e4ac9"
@@ -225,7 +397,7 @@
           "commit": "ce6a2cb"
         }
       ],
-      "hidden": 29
+      "hidden": 30
     },
     {
       "version": "0.7.30",

@@ -355,6 +355,262 @@ theorem «места-по-форме» («зап» : String) (hc : («судит
   simp only [h0, ↓reduceIte] at h1
   exact ⟨h0, h1⟩
 
+/-! ## Посылки индукции -/
+
+theorem «и-чист» {a b : «Суд»} (h : (a.«и» b).«чист») : a.«чист» ∧ b.«чист» := by
+  obtain ⟨hb, hn, hw⟩ := h
+  simp only [«Суд».«и», List.append_eq_nil_iff] at hb hn hw
+  exact ⟨⟨hb.1, hn.1, hw.1⟩, ⟨hb.2, hn.2, hw.2⟩⟩
+
+/-- **Посылки — по своим частям.** Путь `«судитьПосылки»` принял блок посылок ровно
+    тогда, когда приняли все четыре его части: правила посылок, поля посылок, строки
+    сведения и покрытие вариантов (теоремы ниже). -/
+theorem «посылки-по-частям» (s : «Исх») («свои» : List String) («имя_т» «чья» «вердикт» «место» «о_чём» : String)
+    («проигран» «ходыСчитаются» : Bool)
+    (hc : («судитьПосылки» s «свои» «имя_т» «чья» «вердикт» «место» «о_чём» «проигран» «ходыСчитаются»).«чист») :
+    («судитьПравилаПосылок» «свои» «о_чём»).«чист» ∧ («судитьПоляПосылок» s «свои» «имя_т» «чья»).«чист» ∧
+      («судитьСведение» «свои» «имя_т»).«чист» ∧
+      («судитьПокрытие» s «свои» «имя_т» «вердикт» «место» «проигран» «ходыСчитаются»).«чист» := by
+  unfold «судитьПосылки» at hc
+  obtain ⟨h123, h4⟩ := «и-чист» hc
+  obtain ⟨h12, h3⟩ := «и-чист» h123
+  obtain ⟨h1, h2⟩ := «и-чист» h12
+  exact ⟨h1, h2, h3, h4⟩
+
+/-- **Правила посылок — правила ядра.** Если путь `«судитьПравилаПосылок»` принял блок,
+    то каждая посылка закрыта правилом, которое ядро знает (`«правилаЯдра»`). -/
+theorem «правила-посылок-известны» («свои» : List String) («о_чём» : String)
+    (hc : («судитьПравилаПосылок» «свои» «о_чём»).«чист») :
+    ∀ q ∈ «посылкиБлока» «свои», «правилаЯдра».contains q.«правило» = true := by
+  intro q hq
+  have h := hc.1
+  simp only [«судитьПравилаПосылок», «Суд».«еслиНе»] at h
+  split at h
+  · rename_i he
+    simp only [List.isEmpty_iff, List.filter_eq_nil_iff, List.mem_map] at he
+    have := he _ ⟨q, hq, rfl⟩
+    simpa using this
+  · exact absurd h («беда-не-пуста» _ _)
+
+/-- **Вердикт по объявлению стоит один.** Если путь `«судитьОбъявлениеПравила»` принял
+    блок, где назван вердикт правилом либо «по объявлению», то в блоке нет ни посылок,
+    ни принципа индукции. -/
+theorem «объявление-правила-одно» («свои» : List String) («о_чём» : String)
+    (hc : («судитьОбъявлениеПравила» «свои» «о_чём»).«чист») :
+    let «обр» := «свои».map «обрезать»
+    («обр».any (·.startsWith "правило «") || «обр».any (·.startsWith "по объявлению ")) = true →
+      («обр».any (·.startsWith "посылка ")) = false ∧ («обр».any (·.startsWith "принцип тип ")) = false := by
+  intro «обр» hp
+  have h := hc.1
+  simp only [«судитьОбъявлениеПравила»] at h
+  have hp' : ((«свои».map «обрезать»).any (·.startsWith "правило «") ||
+      («свои».map «обрезать»).any (·.startsWith "по объявлению ")) = true := hp
+  simp only [hp', Bool.not_true, Bool.false_eq_true, ↓reduceIte, «Суд».«еслиНе»] at h
+  split at h
+  · split at h
+    · rename_i h1 h2
+      exact ⟨by simpa [«обр»] using h2, by simpa [«обр»] using h1⟩
+    · exact absurd h («беда-не-пуста» _ _)
+  · split at h
+    · exact absurd h («беда-не-пуста» _ _)
+    · exact absurd h («беда-не-пуста» _ _)
+
+/-- **Строки посылок — по образцам формата.** Если путь `«судитьСтрокиПосылок»` принял
+    блок, то каждая его строка, начатая словом из `«образцыПосылок»`, ложится на один из
+    образцов этого слова, и строка «объявление» стоит сразу под строкой «принцип». -/
+theorem «строки-посылок-по-образцам» («свои» : List String) («о_чём» : String)
+    (hc : («судитьСтрокиПосылок» «свои» «о_чём»).«чист») :
+    let «обр» := «свои».map «обрезать»
+    ∀ i < «обр».length,
+      (∀ np ∈ «образцыПосылок», («обр».getD i "").startsWith np.1 = true → np.2.any («поОбразцу» («обр».getD i "")) = true) ∧
+      ((«обр».getD i "").startsWith "объявление" = true → i > 0 ∧ («обр».getD (i - 1) "").startsWith "принцип тип " = true) := by
+  intro «обр» i hi
+  have h := hc.1
+  simp only [«судитьСтрокиПосылок», List.flatMap_eq_nil_iff, List.mem_range, List.append_eq_nil_iff] at h
+  obtain ⟨h1, h2⟩ := h i hi
+  refine ⟨fun np hnp hs => ?_, fun hs => ?_⟩
+  · obtain ⟨n, os⟩ := np
+    have := h1 (n, os) hnp
+    have hs' : ((«свои».map «обрезать»).getD i "").startsWith n = true := hs
+    simp only [hs', ↓reduceIte, «если-пусто»] at this
+    exact this
+  · have hs' : ((«свои».map «обрезать»).getD i "").startsWith "объявление" = true := hs
+    simp only [hs', ↓reduceIte, «если-пусто», Bool.and_eq_true, decide_eq_true_eq] at h2
+    exact h2
+
+/-- **Поля посылок — по форме и по исходнику.** Если путь `«судитьПоляПосылок»` принял
+    блок, то у каждой посылки вид «base» либо «step» и такой, какого ждёт её имя либо
+    вариант типа; посылка, закрытая сведением, шагов не объявляет, и случай на её вариант
+    в функции есть; посылка, закрытая шагами, объявляет их не меньше одного и не больше,
+    чем в случае того же варианта; иначе посылка не закрыта. -/
+theorem «поля-посылок-по-форме» (s : «Исх») («свои» : List String) («имя_т» «чья» : String)
+    (hc : («судитьПоляПосылок» s «свои» «имя_т» «чья»).«чист») :
+    ∀ q ∈ «посылкиБлока» «свои»,
+      (q.«вид» = "base" ∨ q.«вид» = "step") ∧ («видПосылкиЖдём» s «свои» q).all (· = q.«вид») = true ∧
+      ((q.«закрыта» = "reduction" ∧ q.«шагов» = 0 ∧ «сведениеЕсть» s «свои» «чья» q = true) ∨
+       (q.«закрыта» = "term" ∧ q.«шагов» ≥ 1 ∧ («шаговСлучая» s «свои» q.«вариант»).all (q.«шагов» ≤ ·) = true)) := by
+  intro q hq
+  have h := hc.1
+  simp only [«судитьПоляПосылок», List.flatMap_eq_nil_iff] at h
+  have := h q hq
+  unfold «бедыПоляПосылки» at this
+  simp only [List.append_eq_nil_iff, «если-пусто»] at this
+  obtain ⟨⟨h1, h2⟩, h3⟩ := this
+  simp only [Bool.or_eq_true, decide_eq_true_eq] at h1
+  refine ⟨h1, h2, ?_⟩
+  split at h3
+  · rename_i hr
+    simp only [List.append_eq_nil_iff, «если-пусто», decide_eq_true_eq] at h3
+    exact Or.inl ⟨hr, h3.1, h3.2⟩
+  · rename_i ht
+    simp only [List.append_eq_nil_iff, «если-пусто», Bool.and_eq_true, decide_eq_true_eq] at h3
+    exact Or.inr ⟨ht, h3.2.1, h3.2.2⟩
+  · simp at h3
+
+/-- **Сведение названо посылкой.** Если путь `«судитьСведение»` принял блок, то каждое
+    правило, названное строкой «сведение», закрывает хотя бы одну посылку блока. -/
+theorem «сведение-названо-посылкой» («свои» : List String) («имя_т» : String)
+    (hc : («судитьСведение» «свои» «имя_т»).«чист») :
+    ∀ l ∈ («свои».map «обрезать»).filter (·.startsWith "сведение «"),
+      ∃ q ∈ «посылкиБлока» «свои», q.«правило» = «ёлочка» l 1 := by
+  intro l hl
+  have h := hc.1
+  simp only [«судитьСведение», List.flatMap_eq_nil_iff, List.mem_map] at h
+  have := h _ ⟨l, hl, rfl⟩
+  rw [«если-пусто»] at this
+  simpa [List.contains_iff_mem] using this
+
+/-- **Принцип — по объявлению типа.** Если путь `«судитьПринцип»` принял принцип
+    индукции, то под ним ровно одна строка «объявление», и она такая, какую даёт
+    объявление типа довода в исходнике; если исходник тип довода объявил, то по такому
+    типу индукция есть, носитель принципа следует из вида объявления, и принцип назван
+    над этим типом. -/
+theorem «принцип-по-объявлению» (s : «Исх») («свои» : List String) («имя_т» «место» : String) (p : «Принцип»)
+    (hc : («судитьПринцип» s «свои» «имя_т» «место» p).«чист») :
+    let «объявлено» := «объявленоПринципа» s «свои» «место» p
+    let «об» := s.«объявлениеТипа» («имяТипа» «объявлено»)
+    ((«свои».map «обрезать»).filter (·.startsWith "объявление")) = [«объявлениеЖдём» p «об»] ∧
+      («объявлено» ≠ "" → («об».«вид» != .«нет») = true ∧ «носительПоОбъявлению» p «об» = true ∧
+        (p.«тип» = «имяТипа» «объявлено» ∨ p.«тип» = «об».«основа»)) := by
+  intro «объявлено» «об»
+  unfold «судитьПринцип» at hc
+  dsimp only at hc
+  split at hc
+  · exact absurd hc («чист-слово» _ _)
+  · obtain ⟨hb, _, _⟩ := hc
+    simp only [List.append_eq_nil_iff] at hb
+    obtain ⟨⟨h1, h2⟩, h3⟩ := hb
+    rw [«если-пусто»] at h2
+    simp only [h2, ↓reduceIte, List.append_eq_nil_iff, «если-пусто», decide_eq_true_eq, Bool.or_eq_true] at h3
+    obtain ⟨⟨h31, h32⟩, h33⟩ := h3
+    refine ⟨?_, fun hne => ?_⟩
+    · rcases h33 with h | h
+      · exact absurd h h32
+      · revert h2 h31 h
+        generalize List.filter (fun x => x.startsWith "объявление") (List.map «обрезать» «свои») = L
+        intro h2 h31 h
+        match L with
+        | [] => simp at h2
+        | [a] =>
+          simp only [List.headD_cons] at h
+          subst h
+          rfl
+        | _ :: _ :: _ => simp at h31
+    · have hne' : «объявленоПринципа» s «свои» «место» p ≠ "" := hne
+      simp only [ne_eq, hne', not_false_eq_true, ↓reduceIte, List.append_eq_nil_iff, «если-пусто»,
+        Bool.or_eq_true, decide_eq_true_eq] at h1
+      obtain ⟨⟨ha, hb'⟩, hc'⟩ := h1
+      refine ⟨ha, ?_, hc'⟩
+      rcases hb' with hb' | hb'
+      · simp only [bne, hb', Bool.not_true, Bool.false_eq_true] at ha
+      · exact hb'
+
+/-- Принятое покрытие принципа: что `«покрытиеПринципа»` требует, когда принял. -/
+theorem «покрытие-принципа» (s : «Исх») («свои» : List String) («имя_т» «место» : String) (p : «Принцип»)
+    (hc : («покрытиеПринципа» s «свои» «имя_т» «место» p).«чист») :
+    let «посылки» := «посылкиБлока» «свои»
+    («судитьПринцип» s «свои» «имя_т» «место» p).«чист» ∧
+    (∀ w, p.«носитель» ≠ .«чужой» w) ∧
+    ((p.«носитель» == .«отрезокФормой») = true → «посылки».length = 2 ∧
+      («посылки».filter (fun q => q.«имя» = "дно" && q.«вид» = "base")).length = 1 ∧
+      («посылки».filter (fun q => q.«имя» = "спуск" && q.«вид» = "step")).length = 1) ∧
+    ((«свои».map «обрезать»).find? (·.startsWith "индукция по «")).all (fun l => «ёлочка» l 1 = p.«по») = true ∧
+    «доводИндукцииЕсть» s «свои» «место» p = true ∧
+    (∀ q ∈ «посылки», «имяПосылкиСвоё» p q = true) ∧
+    ((p.«носитель» != .«алгебра») = false →
+      (s.«вариантыТипаПринципа» p.«тип»).length = «посылки».length ∧
+      ∀ v ∈ s.«вариантыТипаПринципа» p.«тип», ∃ q ∈ «посылки», q.«вариант» = v) := by
+  intro «посылки»
+  unfold «покрытиеПринципа» at hc
+  dsimp only at hc
+  split at hc
+  · rename_i hw
+    obtain ⟨_, hps⟩ := «и-чист» hc
+    simp [hps.2.2] at hw
+  · obtain ⟨hb, hn, hw⟩ := hc
+    simp only [«Суд».«и», List.append_eq_nil_iff, List.flatMap_eq_nil_iff, «если-пусто»] at hb hn hw
+    obtain ⟨⟨⟨⟨⟨⟨⟨h1, h2⟩, h3⟩, hps⟩, h4⟩, h5⟩, h6⟩, h7⟩ := hb
+    refine ⟨⟨hps, hn.2, hw.2⟩, ?_, ?_, h4, h5, h6, ?_⟩
+    · intro w hw'
+      rw [hw'] at h1
+      simp at h1
+    · intro hf
+      simp only [hf, ↓reduceIte, «если-пусто», Bool.and_eq_true, decide_eq_true_eq] at h3
+      exact ⟨h3.1.1, h3.1.2, h3.2⟩
+    · intro ha
+      simp only [ha, Bool.false_eq_true, ↓reduceIte, List.append_eq_nil_iff, «если-пусто», decide_eq_true_eq,
+        List.isEmpty_iff, List.filter_eq_nil_iff, Bool.not_eq_true', List.any_eq_false] at h7
+      refine ⟨h7.1, fun v hv => ?_⟩
+      have := h7.2 v hv
+      exact Classical.byContradiction fun hne => this (fun x hx hxv => hne ⟨x, hx, hxv⟩)
+
+/-- **Посылки покрывают варианты.** Если путь `«судитьПокрытие»` принял блок с вердиктом
+    «доказано», то каждая посылка доказана; ни одна не сведена правилом без записанного
+    хода, когда утверждение не проиграно; а при принципе индукции — принцип по объявлению
+    типа (теорема «принцип-по-объявлению»), носитель известен, спуск формой — ровно «дно»
+    base и «спуск» step, индукция идёт по доводу, который у места есть, посылки названы
+    своими именами, и у принципа над алгеброй посылок столько же, сколько вариантов типа,
+    и каждый вариант типа покрыт посылкой. Сами посылки судят ходы и крюки — их строки
+    долга. -/
+theorem «посылки-покрывают-варианты» (s : «Исх») («свои» : List String) («имя_т» «вердикт» «место» : String)
+    («проигран» «ходыСчитаются» : Bool)
+    (hc : («судитьПокрытие» s «свои» «имя_т» «вердикт» «место» «проигран» «ходыСчитаются»).«чист»)
+    (hv : «вердикт» = "доказано") :
+    (∀ q ∈ «посылкиБлока» «свои», q.«вердикт» = "доказано") ∧
+    («проигран» = false → «посылкиВДолгу» «свои» «ходыСчитаются» = []) ∧
+    ∀ p, «принципБлока» «свои» = some p → («покрытиеПринципа» s «свои» «имя_т» «место» p).«чист» := by
+  unfold «судитьПокрытие» at hc
+  dsimp only at hc
+  have key : ∀ r : «Суд», (r.«еслиНе» (decide («вердикт» ≠ "доказано") ||
+        decide ((List.filter (fun x => decide (x.«вердикт» ≠ "доказано")) («посылкиБлока» «свои»)).length = 0))
+        (s!"теорема «{«имя_т»}»: вердикт «доказано», а посылок не доказано {(List.filter (fun x => decide (x.«вердикт» ≠ "доказано")) («посылкиБлока» «свои»)).length}")).«чист» →
+      r.«чист» ∧ ∀ q ∈ «посылкиБлока» «свои», q.«вердикт» = "доказано" := by
+    intro r hr
+    unfold «Суд».«еслиНе» at hr
+    split at hr
+    · rename_i hcnd
+      refine ⟨hr, fun q hq => ?_⟩
+      simp only [hv, ne_eq, not_true_eq_false, decide_false, Bool.false_or, decide_eq_true_eq,
+        List.length_eq_zero_iff, List.filter_eq_nil_iff, decide_eq_true_eq, Decidable.not_not] at hcnd
+      exact hcnd q hq
+    · exact absurd hr («чист-беда» _ _)
+  split at hc
+  · obtain ⟨hr0, hq⟩ := key _ hc
+    refine ⟨hq, fun hp => ?_, fun p hp => by rename_i hn; rw [hn] at hp; cases hp⟩
+    have := hr0.2.2
+    simp only [hp, Bool.not_false, ↓reduceIte, List.map_eq_nil_iff] at this
+    exact this
+  · rename_i p0 hp0
+    obtain ⟨h1, h2⟩ := «и-чист» hc
+    obtain ⟨hr0, hq⟩ := key _ h1
+    refine ⟨hq, fun hp => ?_, fun p hp => ?_⟩
+    · have := hr0.2.2
+      simp only [hp, Bool.not_false, ↓reduceIte, List.map_eq_nil_iff] at this
+      exact this
+    · rw [hp0] at hp
+      cases hp
+      exact h2
+
 /-! ## Тотальность: модель зовов и фундированность
 
 Модель: зов `зов (g, b) (f, a)` — вычисление функции `f` на значении `a` зовёт `g` на

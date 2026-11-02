@@ -9,9 +9,8 @@ hole	oracle	detail
 14	a-value	type W, value "nan"
 15	a-boundary	requirement false
 14	a-value	type W, value "-inf"
-18	a-value	type LN, value [-
-18	a-value	type LN, value [0.
-18	a-value	type LZ, value [0.
+18	a-value	type LN, value [
+18	a-value	type LZ, value [
 19	b-c	evaluator {"error":"FLANG_OVERFLOW"}
 19	b-go	evaluator {"error":"FLANG_OVERFLOW"}
 19	b-java	evaluator {"error":"FLANG_OVERFLOW"}

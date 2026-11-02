@@ -43,8 +43,8 @@
 тотальная функция «Ceiling»
   возвращает число
   пример «Paths without a model, at most; it grows only by an edit here, with a reason»
-    ожидается 46
-  46
+    ожидается 44
+  44
 
 тотальная функция «Has»
   принимает word: строка, words: список строки

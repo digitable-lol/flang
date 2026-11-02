@@ -2165,3 +2165,6 @@ fallacy
 edges
 int
 overflows
+equalities
+includes
+capture

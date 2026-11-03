@@ -89,6 +89,8 @@
       то («Вход печати на C» от "th-exact-entry" и "{\"fn\":\"Тот же\",\"args\":[{\"l\":[{\"n\":\"-1\"}]}]}")
     случай "run-exact-entry"
       то " --function '«Тот же»' --args '{\"а\":[-1]}'"
+    случай "run-requirement-bypass"
+      то " --function '«Мимо требования»'"
     случай "run-generic-field"
       то " --function '«Минус семь неотрицательным»'"
     случай "run-word-answer"

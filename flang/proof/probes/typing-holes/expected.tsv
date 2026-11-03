@@ -38,3 +38,5 @@ negative-zero-from-percent.flang	run-percent-zero	0	"минус"
 exact-integer-off-canon-at-printed-entry.flang	check	0	замечаний нет
 exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1 отрицателен
 exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":true,"value":{"l":[{"n":"-1"}]}}
+requirement-bypassed-by-function-value.flang	check	0	замечаний нет
+requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	нарушено свойство «итог больше пяти»

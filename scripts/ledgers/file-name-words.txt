@@ -2172,3 +2172,5 @@ generic
 refinement
 requirement
 tagged
+hypotenuse
+quoted

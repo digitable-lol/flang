@@ -1178,6 +1178,8 @@ c34f68cf98a670c5389bc68248033f74|2|×|×|×|2|flang/proof/checker/tests/families
 f29db17c1c2fcfcbfcffe88b9de73810|2|×|×|×|2|flang/proof/checker/tests/families/precondition-discharge/unpaid-callee.flang
 8b8626f261982ab23a457da5a66d8bec|11|×|×|×|0|flang/proof/checker/tests/families/goal-breakdown/breakdown.flang
 e2e368b9b053bcde70aa3de7278278ba|11|×|×|×|0|flang/proof/checker/tests/families/goal-breakdown/corrupt/lie.flang
+99c3cf6cd5059c56783d3b4e65e0bb6e|4|×|×|×|0|flang/proof/checker/tests/families/quoted-names/hypotenuse.flang
+5702e3ec5f625e7402572250d47fab15|3|×|×|×|0|flang/proof/checker/tests/families/quoted-names/quoted.flang
 dfdac05b06761552a351c1027d6a0698|7|×|×|×|0|flang/proof/checker/tests/families/reflexive.flang
 83fb27659b7bca8f38ee147ae0265850|2|×|×|×|0|flang/proof/checker/tests/families/rewrite/concat-false.flang
 c7dc5e724587c5aa53e44f3bb2f0fe93|3|×|×|×|0|flang/proof/checker/tests/families/rewrite/concat-laws.flang

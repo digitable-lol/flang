@@ -33,7 +33,7 @@ P	подделка tree-7-function-name.record	flang/proof/examples/corpus-tree.
 P	подделка tree-8-statement-place.record	flang/proof/examples/corpus-tree.flang	flang/proof/checker/tests/records/record-fields/tree-8-statement-place.record	-	-	-	-	1	-	-	-
 P	подделка tree-9-theorem-name.record	flang/proof/examples/corpus-tree.flang	flang/proof/checker/tests/records/record-fields/tree-9-theorem-name.record	-	-	-	-	1	-	-	-
 say	── доказательство лжи (Ч40): 4 записи, ни одна не вправе получить код 0 ──	-	-	-	-	-	-	-	-	-	-
-P	ложь-1-вердикт	flang/proof/checker/tests/programs/lie-difference-pure.flang	flang/proof/checker/tests/records/proof-of-a-lie/lie-1-verdict.record	-	-	-	-	3	-	-	-
+P	ложь-1-вердикт	flang/proof/checker/tests/programs/lie-difference-pure.flang	flang/proof/checker/tests/records/proof-of-a-lie/lie-1-verdict.record	-	-	-	-	1	ЛОЖНО	-	-
 P	ложь-2-переадресована	flang/proof/checker/tests/programs/lie-difference-pure.flang	flang/proof/checker/tests/records/proof-of-a-lie/lie-2-readdressed.record	-	-	-	-	1	-	-	-
 P	ложь-4-теорема	flang/proof/checker/tests/programs/lie-tree.flang	flang/proof/checker/tests/records/proof-of-a-lie/lie-4-theorem.record	-	-	-	-	1	-	-	-
 P	ложь-8-столкновение	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/proof-of-a-lie/lie-8-honest-record-natural.record	-	-	-	-	1	-	-	-
@@ -71,7 +71,7 @@ C	О4 чужой путь + отпечаток256 → принимается	fla
 P	О5 та же запись против ДРУГОЙ программы → отказ	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/program-binding/v-honest.record	-	-	-	-	1	-	-	-
 P	О5б отпечаток честного при ложной программе → отказ	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/program-binding/b-with-256.record	-	-	-	-	1	-	-	-
 P	О6 без отпечатка256 чужой путь → отказ	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/records/corpus/corpus-natural.record	-	2s|^исходник |исходник /чужой/клон/|;/^отпечаток256 /d	-	-	1	-	-	-
-P	О6б подмена без отпечатка256 → 3, причина названа	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/program-binding/a-without-256.record	-	-	-	-	3	привязка к программе не криптографическая	-	-
+P	О6б подмена без отпечатка256: ложь места найдена контрпримером, привязки для этого не нужно	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/program-binding/a-without-256.record	-	-	-	-	1	ЛОЖНО	-	-
 C	отпечаток доводом: путь понижен до приметы	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/records/program-binding/v-honest.record	-	-	-	sha256	0	-	-	-
 M	отпечаток доводом засчитан криптопривязкой	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/records/program-binding/relative-path.record	-	-	-	sha256	-	Привязка к программе: SHA-256 сошёлся	-	-
 C	запись без взятого на слово + отпечаток, доказанного нет → ВПУСТУЮ, код 3	flang/test/fixtures/krug-tuda-i-obratno.flang	flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record	-	-	-	sha256	3	-	-	-
@@ -234,7 +234,7 @@ P	2044 algebra: вариант рекурсивен только в примеч
 C	2044 честная запись на том же исходнике с примечанием	flang/proof/checker/tests/records/v1-g2/variant-behind-a-note.flang	flang/proof/checker/tests/records/v1-g2/variant-behind-a-note-honest.record	-	-	-	-	0	-	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── 9999: тип довода несёт границу ДОВОДА, а не любого выражения над ним ──	-	-	-	-	-	-	-	-	-	-
-P	9999 вычитание не сохраняет неотрицательность	flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.flang	flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.record	-	-	-	-	3	-	-	-
+P	9999 вычитание не сохраняет неотрицательность	flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.flang	flang/proof/checker/tests/records/reason-types/subtraction-does-not-keep.record	-	-	-	-	1	ЛОЖНО	-	-
 say		-	-	-	-	-	-	-	-	-	-
 say	── 8615: написанная теорема не роняет долю ──	-	-	-	-	-	-	-	-	-	-
 C	8615 теорема настоящая — доля не падает	flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.flang	flang/proof/checker/tests/records/8615-theorem-keeps/countdown-with-theorem.record	-	-	-	-	0	-	-	-
@@ -955,7 +955,7 @@ P	2748: Н7 — прибавка «длина Х минус 9» не мера	fl
 P	2748: дно выше нуля — вторая прибавка отрицательна	flang/proof/probes/user-programs/programs/tree.flang	flang/proof/checker/tests/families/user-program/tree.record	s/^      то («Листьев» от левое) плюс («Листьев» от правое)$/      то («Листьев» от левое) плюс (0 минус 5)/	-	-	-	3	-	-	-
 P	2748: дно выше нуля — база ниже дна	flang/proof/probes/user-programs/programs/tree.flang	flang/proof/checker/tests/families/user-program/tree.record	/^тотальная функция «Листьев»/,$ s/^      то 1$/      то 0/	-	-	-	3	-	-	-
 P	2748: дно выше нуля — шаг вычитает	flang/proof/probes/user-programs/programs/tree.flang	flang/proof/checker/tests/families/user-program/tree.record	s/^      то («Листьев» от левое) плюс («Листьев» от правое)$/      то («Листьев» от левое) минус («Листьев» от правое)/	-	-	-	3	-	-	-
-P	2748: замкнутое утверждение ложно	flang/proof/probes/user-programs/programs/shopping-cart.flang	flang/proof/checker/tests/families/user-program/shopping-cart.record	s/пустой список) равен 0$/пустой список) равен 1/	-	-	-	3	-	-	-
+P	2748: замкнутое утверждение ложно	flang/proof/probes/user-programs/programs/shopping-cart.flang	flang/proof/checker/tests/families/user-program/shopping-cart.record	s/пустой список) равен 0$/пустой список) равен 1/	-	-	-	1	ЛОЖНО	-	-
 P	2748: строка прогона у замкнутого утверждения сличается с исходником	flang/proof/probes/user-programs/programs/shopping-cart.flang	flang/proof/checker/tests/families/user-program/shopping-cart.record	-	s/шаг «Стоимость позиции» строка 16$/шаг «Чужой шаг» строка 16/	-	-	1	свёртка не зовёт шаг «Чужой шаг»	-	-
 say	── 4573 Б, В: тип из модуля; тёзки в наборе, скрытые списком «только» ──	-	-	-	-	-	-	-	-	-	-
 C	4573 Б: тип из модуля, набор не подан — не берусь	flang/proof/checker/tests/families/module-type-consumer.flang	flang/proof/checker/tests/families/module-type-consumer.record	-	-	-	-	3	объявлен не в этом файле и не в поданном наборе	-	-
@@ -1209,7 +1209,7 @@ C	честная equal-to-itself-number.record	flang/proof/checker/tests/program
 P	подделка ring-under-remainder-forged.record	flang/proof/checker/tests/programs/records-arith/ring-under-remainder.flang	flang/proof/checker/tests/records/records-arith/ring-under-remainder-forged.record	-	-	-	-	1	-	-	-
 P	подделка record-eta-refused-forged.record	flang/proof/checker/tests/programs/records-arith/record-eta-refused.flang	flang/proof/checker/tests/records/records-arith/record-eta-refused-forged.record	-	-	-	-	3	-	-	-
 P	подделка record-four-fields-forged.record	flang/proof/checker/tests/programs/records-arith/record-four-fields.flang	flang/proof/checker/tests/records/records-arith/record-four-fields-forged.record	-	-	-	-	3	-	-	-
-P	подделка equal-to-itself-number-forged.record	flang/proof/checker/tests/programs/records-arith/equal-to-itself-number.flang	flang/proof/checker/tests/records/records-arith/equal-to-itself-number-forged.record	-	-	-	-	3	-	-	-
+P	подделка equal-to-itself-number-forged.record	flang/proof/checker/tests/programs/records-arith/equal-to-itself-number.flang	flang/proof/checker/tests/records/records-arith/equal-to-itself-number-forged.record	-	-	-	-	1	ЛОЖНО	-	-
 say	── звено разбора и включение списков (ADR-0175): 8 подделок → 1, 2 честные → 0 ──	-	-	-	-	-	-	-	-	-	-
 C	звено: голова и хвост по звену разбора (честная, печать ядра)	flang/proof/checker/tests/families/case-link/case-link.flang	flang/proof/checker/tests/families/case-link/case-link.record	-	-	-	-	0	-	-	-
 C	включение: Вкл1, Вкл2, В2 о приписанном (честная, печать ядра)	flang/proof/checker/tests/families/list-inclusion/inclusion.flang	flang/proof/checker/tests/families/list-inclusion/inclusion.record	-	-	-	-	0	-	-	-

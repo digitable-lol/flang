@@ -1189,7 +1189,29 @@ theorem «тотальность-фундирована» {α : Type} (s : «И�
 theorem «суд-доказанного» (u : «ФормаУтв») («к» : «Контекст») («нечем» : Nat) (r : «Суд»)
     (hc : («судДоказанного» u «к» «нечем» r).«чист») (hd : u.«доказано» = true) :
     r.«чист» ∧
-    ((u.«есть» "вывод " = true ∧ (u.«выводСуд» «к»).«чист» ∧ «нечем» = 0) ∨
+    ((u.«пр» = some "правило «линейная арифметика»" ∧ ∃ e, «линейнаяАрифметика» «к».«исх» u.«обр» u.«чья» u.«место» u.«цель0» = .ok (true, e)) ∨
+     ((u.«есть» "вывод " = true ∧ (u.«выводСуд» «к»).«чист» ∧ «нечем» = 0) ∨
+     (u.«ходамиВерх» = true ∧ («проигратьБлок» (u.«обстХодов» «к»)).«беды» = [] ∧
+        («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] ∧ («проигратьБлок» (u.«обстХодов» «к»)).«проиграно» > 0) ∨
+     (u.«пр» = some "правило «кольцо точного целого»" ∧ «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» = .ok ()) ∨
+     (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
+      h.«беды» = [] ∧ h.«снял» ≠ "") ∨
+     (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
+      h.«беды» = [] ∧ u.«ходамиСписка» «к» = true))) := by
+  unfold «судДоказанного» at hc
+  simp only [hd, Bool.true_and] at hc
+  by_cases hl : u.«пр» = some "правило «линейная арифметика»"
+  · simp only [hl, decide_true, ↓reduceIte] at hc
+    unfold «судЛинейный» at hc
+    split at hc
+    · rename_i e hk
+      exact ⟨hc, Or.inl ⟨hl, e, hk⟩⟩
+    · exact absurd hc («чист-слово» _ _)
+    · split at hc
+      · exact absurd hc («чист-слово» _ _)
+      · exact absurd hc («чист-беда» _ _)
+  · simp only [hl, decide_false, Bool.false_eq_true, ↓reduceIte] at hc
+    have key : r.«чист» ∧ ((u.«есть» "вывод " = true ∧ (u.«выводСуд» «к»).«чист» ∧ «нечем» = 0) ∨
      (u.«ходамиВерх» = true ∧ («проигратьБлок» (u.«обстХодов» «к»)).«беды» = [] ∧
         («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] ∧ («проигратьБлок» (u.«обстХодов» «к»)).«проиграно» > 0) ∨
      (u.«пр» = some "правило «кольцо точного целого»" ∧ «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» = .ok ()) ∨
@@ -1197,77 +1219,78 @@ theorem «суд-доказанного» (u : «ФормаУтв») («к» : �
       h.«беды» = [] ∧ h.«снял» ≠ "") ∨
      (let h := «крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)
       h.«беды» = [] ∧ u.«ходамиСписка» «к» = true)) := by
-  unfold «судДоказанного» at hc
-  simp only [hd, Bool.true_and] at hc
-  by_cases hv : u.«есть» "вывод " = true
-  · simp only [hv, ↓reduceIte] at hc
-    by_cases hpx : (!u.«есть» "посылка " && !u.«естьХоды») = true
-    · simp only [hpx, ↓reduceIte] at hc
-      by_cases hn : «нечем» > 0
-      · simp only [hn, ↓reduceIte] at hc
-        exact absurd hc («чист-слово» _ _)
-      · simp only [hn, ↓reduceIte] at hc
-        obtain ⟨hr0, hq⟩ := «и-чист'» hc
-        obtain ⟨hr1, _⟩ := «еслиНе-чисто» hr0
-        obtain ⟨hr2, _⟩ := «еслиНе-чисто» hr1
-        exact ⟨hr2, Or.inl ⟨hv, hq, by omega⟩⟩
-    · simp only [hpx, Bool.false_eq_true, ↓reduceIte] at hc
-      exfalso
-      obtain ⟨hr1, h2⟩ := «еслиНе-чисто» hc
-      obtain ⟨_, h1⟩ := «еслиНе-чисто» hr1
-      exact hpx (by rw [h1, h2]; rfl)
-  · simp only [hv, Bool.false_eq_true, ↓reduceIte] at hc
-    by_cases hm : u.«ходамиВерх» = true
-    · simp only [hm, ↓reduceIte] at hc
-      by_cases hz : ((«проигратьБлок» (u.«обстХодов» «к»)).«беды».isEmpty && decide ((«проигратьБлок» (u.«обстХодов» «к»)).«проиграно» = 0) &&
-          («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся».isEmpty) = true
-      · simp only [hz, ↓reduceIte] at hc
-        exact absurd hc («чист-слово» _ _)
-      · simp only [hz, Bool.false_eq_true, ↓reduceIte] at hc
-        obtain ⟨hr1, hw⟩ := «слово-приписано-чисто» hc
-        obtain ⟨hr2, hb⟩ := «еслиНе-чисто» hr1
-        have hw' : («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] := by simpa using hw
-        refine ⟨hr2, Or.inr (Or.inl ⟨hm, List.isEmpty_iff.mp hb, hw', ?_⟩)⟩
-        simp only [hb, hw', List.isEmpty_nil, Bool.true_and, Bool.and_true, decide_eq_true_eq] at hz
-        omega
-    · simp only [hm, Bool.false_eq_true, ↓reduceIte] at hc
-      by_cases hp : u.«пр» = some "правило «кольцо точного целого»"
-      · simp only [hp, decide_true, ↓reduceIte] at hc
-        revert hc
-        cases hk : «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» with
-        | ok _ => intro hc; exact ⟨hc, Or.inr (Or.inr (Or.inl ⟨hp, rfl⟩))⟩
-        | error e => intro hc; exact absurd hc («чист-беда» _ _)
-      · simp only [hp, decide_false, Bool.false_eq_true, ↓reduceIte] at hc
-        by_cases hx : u.«есть» "ход " = true
-        · simp only [hx, ↓reduceIte] at hc
-          obtain ⟨h2, _⟩ := «еслиНе-чисто» hc
-          by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
-          · by_cases hl : u.«ходамиСписка» «к» = true
-            · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at h2
-              obtain ⟨hb, hn, hw⟩ := h2
-              simp only [List.append_eq_nil_iff] at hb
-              exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
-            · simp only [Bool.not_eq_true] at hl
-              simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at h2
-              exact absurd h2 («чист-слово» _ _)
-          · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at h2
-            obtain ⟨hb, hn, hw⟩ := h2
-            simp only [List.append_eq_nil_iff] at hb
-            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
-        · simp only [hx, Bool.false_eq_true, ↓reduceIte] at hc
-          by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
-          · by_cases hl : u.«ходамиСписка» «к» = true
-            · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at hc
-              obtain ⟨hb, hn, hw⟩ := hc
-              simp only [List.append_eq_nil_iff] at hb
-              exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
-            · simp only [Bool.not_eq_true] at hl
-              simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at hc
-              exact absurd hc («чист-слово» _ _)
-          · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at hc
-            obtain ⟨hb, hn, hw⟩ := hc
-            simp only [List.append_eq_nil_iff] at hb
-            exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
+      unfold «судДоказанногоБезЛинейного» at hc
+      simp only [hd, Bool.true_and] at hc
+      by_cases hv : u.«есть» "вывод " = true
+      · simp only [hv, ↓reduceIte] at hc
+        by_cases hpx : (!u.«есть» "посылка " && !u.«естьХоды») = true
+        · simp only [hpx, ↓reduceIte] at hc
+          by_cases hn : «нечем» > 0
+          · simp only [hn, ↓reduceIte] at hc
+            exact absurd hc («чист-слово» _ _)
+          · simp only [hn, ↓reduceIte] at hc
+            obtain ⟨hr0, hq⟩ := «и-чист'» hc
+            obtain ⟨hr1, _⟩ := «еслиНе-чисто» hr0
+            obtain ⟨hr2, _⟩ := «еслиНе-чисто» hr1
+            exact ⟨hr2, Or.inl ⟨hv, hq, by omega⟩⟩
+        · simp only [hpx, Bool.false_eq_true, ↓reduceIte] at hc
+          exfalso
+          obtain ⟨hr1, h2⟩ := «еслиНе-чисто» hc
+          obtain ⟨_, h1⟩ := «еслиНе-чисто» hr1
+          exact hpx (by rw [h1, h2]; rfl)
+      · simp only [hv, Bool.false_eq_true, ↓reduceIte] at hc
+        by_cases hm : u.«ходамиВерх» = true
+        · simp only [hm, ↓reduceIte] at hc
+          by_cases hz : ((«проигратьБлок» (u.«обстХодов» «к»)).«беды».isEmpty && decide ((«проигратьБлок» (u.«обстХодов» «к»)).«проиграно» = 0) &&
+              («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся».isEmpty) = true
+          · simp only [hz, ↓reduceIte] at hc
+            exact absurd hc («чист-слово» _ _)
+          · simp only [hz, Bool.false_eq_true, ↓reduceIte] at hc
+            obtain ⟨hr1, hw⟩ := «слово-приписано-чисто» hc
+            obtain ⟨hr2, hb⟩ := «еслиНе-чисто» hr1
+            have hw' : («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] := by simpa using hw
+            refine ⟨hr2, Or.inr (Or.inl ⟨hm, List.isEmpty_iff.mp hb, hw', ?_⟩)⟩
+            simp only [hb, hw', List.isEmpty_nil, Bool.true_and, Bool.and_true, decide_eq_true_eq] at hz
+            omega
+        · simp only [hm, Bool.false_eq_true, ↓reduceIte] at hc
+          by_cases hp : u.«пр» = some "правило «кольцо точного целого»"
+          · simp only [hp, decide_true, ↓reduceIte] at hc
+            revert hc
+            cases hk : «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» with
+            | ok _ => intro hc; exact ⟨hc, Or.inr (Or.inr (Or.inl ⟨hp, rfl⟩))⟩
+            | error e => intro hc; exact absurd hc («чист-беда» _ _)
+          · simp only [hp, decide_false, Bool.false_eq_true, ↓reduceIte] at hc
+            by_cases hx : u.«есть» "ход " = true
+            · simp only [hx, ↓reduceIte] at hc
+              obtain ⟨h2, _⟩ := «еслиНе-чисто» hc
+              by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
+              · by_cases hl : u.«ходамиСписка» «к» = true
+                · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at h2
+                  obtain ⟨hb, hn, hw⟩ := h2
+                  simp only [List.append_eq_nil_iff] at hb
+                  exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
+                · simp only [Bool.not_eq_true] at hl
+                  simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at h2
+                  exact absurd h2 («чист-слово» _ _)
+              · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at h2
+                obtain ⟨hb, hn, hw⟩ := h2
+                simp only [List.append_eq_nil_iff] at hb
+                exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
+            · simp only [hx, Bool.false_eq_true, ↓reduceIte] at hc
+              by_cases hs : («крюкиПоТелу» { «исх» := «к».«исх», «огл» := «к».«огл» } (u.«местоКрюков» «к»)).«снял» = ""
+              · by_cases hl : u.«ходамиСписка» «к» = true
+                · simp only [hs, hl, decide_true, Bool.not_true, Bool.and_false, Bool.false_eq_true, ↓reduceIte] at hc
+                  obtain ⟨hb, hn, hw⟩ := hc
+                  simp only [List.append_eq_nil_iff] at hb
+                  exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inr ⟨hb.2, hl⟩)))⟩
+                · simp only [Bool.not_eq_true] at hl
+                  simp only [hs, hl, decide_true, Bool.not_false, Bool.and_true, ↓reduceIte] at hc
+                  exact absurd hc («чист-слово» _ _)
+              · simp only [hs, decide_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte] at hc
+                obtain ⟨hb, hn, hw⟩ := hc
+                simp only [List.append_eq_nil_iff] at hb
+                exact ⟨⟨hb.1, hn, hw⟩, Or.inr (Or.inr (Or.inr (Or.inl ⟨hb.2, hs⟩)))⟩
+    exact ⟨key.1, Or.inr key.2⟩
 
 /-- **Доказанное утверждение принимается только путями решения.** Если путь
     `«судитьУтверждение»` принял утверждение с вердиктом «доказано», то либо запись назвала
@@ -1286,7 +1309,9 @@ theorem «утверждение-по-путям» («к» : «Контекст�
     (u.«есть» "теорема «" = false ∧ o.1.«чист» ∧
       («судитьПосылки» «к».«исх» u.«обр» u.«имя» u.«чья» u.«вердикт» u.«место» s!"утверждение «{u.«имя»}»"
         («проигранДоказанного» u «к» o.2) false).«чист» ∧
-      ((u.«есть» "вывод " = true ∧ (u.«выводСуд» «к»).«чист» ∧ o.2 = 0) ∨
+      ((u.«пр» = some "правило «линейная арифметика»" ∧
+         ∃ e, «линейнаяАрифметика» «к».«исх» u.«обр» u.«чья» u.«место» u.«цель0» = .ok (true, e)) ∨
+       (u.«есть» "вывод " = true ∧ (u.«выводСуд» «к»).«чист» ∧ o.2 = 0) ∨
        (u.«ходамиВерх» = true ∧ («проигратьБлок» (u.«обстХодов» «к»)).«беды» = [] ∧
           («проигратьБлок» (u.«обстХодов» «к»)).«неВзялся» = [] ∧ («проигратьБлок» (u.«обстХодов» «к»)).«проиграно» > 0) ∨
        (u.«пр» = some "правило «кольцо точного целого»" ∧ «кольцоТочногоЦелого» «к».«исх» u.«обр» u.«чья» u.«цель0» = .ok ()) ∨

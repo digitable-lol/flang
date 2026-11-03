@@ -10,7 +10,7 @@ nat-closed-power	nat	decide	auto	-
 nat-double	nat	unfold, omega	none	linear-arithmetic
 nat-sum-formula	nat	induction, simp, omega	none	exact-natural
 nat-factorial-positive	nat	induction, Nat.mul_pos	none	strict-order
-nat-maximum-bound	nat	unfold, split, omega	by-hand	branch-fact
+nat-maximum-bound	nat	unfold, split, omega	auto	-
 nat-even-odd-mutual	nat	mutual, induction, simp	none	mutual-induction
 nat-halving-measure	nat	termination_by, strongRecOn, omega	none	number-to-natural
 nat-order-chain	nat	calc	auto	-
@@ -33,7 +33,7 @@ tree-size-mirror	type	induction, simp, omega	none	exact-natural
 enumeration-next-cycle	type	cases, rfl	auto	-
 option-map-identity	type	cases, rfl	auto	-
 option-map-composition	type	cases, rfl	auto	-
-record-swap-swap	type	cases, rfl	none	record-extensionality
+record-swap-swap	type	cases, rfl	auto	-
 exists-greater	logic	exists, omega	none	strict-order
 and-introduction	logic	constructor, omega	auto	-
 or-elimination-maximum	logic	unfold, split, Or.inl	auto	-

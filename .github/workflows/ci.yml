@@ -1583,11 +1583,22 @@ jobs:
       # всех пяти сторонах; код 0 значит «сверка промолчала хотя бы на одной»
       # либо «порча не собралась». Прогнано на выпотрошенной копии («Troubles
       # of», возвращающая пустой список на любом входе): она даёт шагу код 0.
+      #
+      # ЗЕЛЁНЫЙ — ТОЛЬКО КОД 1. До 3 ноября 2026 шаг проходил на любом коде,
+      # кроме нуля, и код 3 («план упал, смотреть было нечем») читался как
+      # «подлог пойман». Теперь упавший план красит шаг своим кодом. Форма
+      # «if …; then» оставлена: по ней перепись проб узнаёт этот шаг.
       - name: Probe guards without forgery probe
         run: |
           if bootstrap/flang io scripts/guards/guards-without-forgery-probe.fscript --plan Forgery --max-steps 100000000; then
             echo "сверка промолчала на порченой переписи — проверять ею нечего" >&2
             exit 1
+          else
+            kod=$?
+            if [ "$kod" -ne 1 ]; then
+              echo "план подлога кончился кодом $kod, а не 1: подлог не пойман, а не проверен" >&2
+              exit 1
+            fi
           fi
       - name: Check guards without forgery probe
         run: bootstrap/flang run-script forgery-probe:check

@@ -689,6 +689,36 @@ flang/stdlib/bignum.flang		Вычесть с займом	столбцов ра�
 flang/stdlib/bignum.flang		Вычитание	меньшее минус большее — ноль	сетка
 flang/stdlib/bignum.flang		Обратить разряды	обращение длины не меняет	доказано
 flang/stdlib/bignum.flang		Шаг деления	шаг деления ставит ровно одну цифру частного	доказано
+flang/stdlib/blake2b.flang	23e9574efde71c28b174e682f15c787220c872aa13b5fc21bd95e3e478c23a02	Blake2b initial		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b sigma		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b mix		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b round		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b permuted		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b vector of		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b little words		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b gather step		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b rounds		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b compress		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b join		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b join orders		доказано композицией
+flang/stdlib/blake2b.flang		Take orders		доказано структурой
+flang/stdlib/blake2b.flang		Blake2b flagged		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b block step		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b parameter		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b chain		доказано структурой
+flang/stdlib/blake2b.flang		Blake2b digest		доказано композицией
+flang/stdlib/blake2b.flang		Blake2b last block		доказано композицией
+flang/stdlib/blake2b.flang		Without last block		доказано структурой
+flang/stdlib/blake2b.flang		Last block		доказано структурой
+flang/stdlib/blake2b.flang		Pad block		доказано композицией
+flang/stdlib/blake2b.flang		Sha512 state bytes little		доказано композицией
+flang/stdlib/blake2b.flang		Take numbers 64		доказано структурой
+flang/stdlib/blake2b.flang		Blake2b initial	eight words	доказано
+flang/stdlib/blake2b.flang		Blake2b sigma	ten permutations	доказано
+flang/stdlib/blake2b.flang		Blake2b permuted	as many words as places	доказано
+flang/stdlib/blake2b.flang		Blake2b join	lengths add up	доказано
+flang/stdlib/blake2b.flang		Blake2b join orders	lengths add up	доказано
+flang/stdlib/blake2b.flang		Blake2b parameter	eight words	доказано
 flang/stdlib/certificate-path.flang	c6c1bfd767e06207d8ff25ec61b172e1f376859963f60a1fb7efce8f1ff00972	Строчный октет		доказано композицией
 flang/stdlib/certificate-path.flang		Строчные октеты		доказано композицией
 flang/stdlib/certificate-path.flang		Октеты имени		доказано композицией
@@ -1384,6 +1414,124 @@ flang/stdlib/ecdsa.flang		Лестница Шамира	без витков ос
 flang/stdlib/ecdsa.flang		Точка ключа	у точки ключа знаменатель ровно в двенадцать разрядов	доказано
 flang/stdlib/ecdsa.flang		Слово о подписи	верную подпись называют верной	доказано
 flang/stdlib/ecdsa.flang		Слово о подписи	неверную подпись называют неверной	доказано
+flang/stdlib/ed25519-signing.flang	2f5f28eed10182bb4ef1c836969e54e44fb8088eb12832067a174c1cd2490ee5	Ed25519 expand		доказано композицией
+flang/stdlib/ed25519-signing.flang		Ed25519 public key		доказано композицией
+flang/stdlib/ed25519-signing.flang		Ed25519 sign		доказано композицией
+flang/stdlib/ed25519-signing.flang		Times base		доказано композицией
+flang/stdlib/ed25519-vectors.flang	1509e137519e26ec808cf46ea1fa0ee242eb39026905acd39218ce205861d7a6	Rfc 8032 test 1 key		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 1 signature		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 1 verifies		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 2 key		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 2 signature		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 2 verifies		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 3 verifies		доказано композицией
+flang/stdlib/ed25519-vectors.flang		Rfc 8032 test 1 rejects another message		доказано композицией
+flang/stdlib/ed25519.flang	ca331e6c7b5da3b611ebb689491936054de7a0dcdf86220aa2b05009f8929e0b	Failed gate		доказано композицией
+flang/stdlib/ed25519.flang		Low limb		доказано композицией
+flang/stdlib/ed25519.flang		High limb		доказано композицией
+flang/stdlib/ed25519.flang		Fe columns		доказано композицией
+flang/stdlib/ed25519.flang		Fe square columns		доказано композицией
+flang/stdlib/ed25519.flang		Wide carry		доказано композицией
+flang/stdlib/ed25519.flang		Wide fold		доказано композицией
+flang/stdlib/ed25519.flang		Fe carry		доказано композицией
+flang/stdlib/ed25519.flang		Fe carry low		доказано композицией
+flang/stdlib/ed25519.flang		Fe mul		доказано композицией
+flang/stdlib/ed25519.flang		Fe square		доказано композицией
+flang/stdlib/ed25519.flang		Fe add		доказано композицией
+flang/stdlib/ed25519.flang		Fe sub		доказано композицией
+flang/stdlib/ed25519.flang		Fe negate		доказано композицией
+flang/stdlib/ed25519.flang		Fe zero		доказано композицией
+flang/stdlib/ed25519.flang		Fe one		доказано композицией
+flang/stdlib/ed25519.flang		Fe d		доказано композицией
+flang/stdlib/ed25519.flang		Fe d2		доказано композицией
+flang/stdlib/ed25519.flang		Fe root of minus one		доказано композицией
+flang/stdlib/ed25519.flang		Fe limbs		доказано композицией
+flang/stdlib/ed25519.flang		Limb at		доказано структурой
+flang/stdlib/ed25519.flang		Fe of limbs		доказано композицией
+flang/stdlib/ed25519.flang		Floor low		доказано композицией
+flang/stdlib/ed25519.flang		Floor high		доказано композицией
+flang/stdlib/ed25519.flang		Carry walk step		доказано композицией
+flang/stdlib/ed25519.flang		Walk limbs		доказано композицией
+flang/stdlib/ed25519.flang		Settle limbs		доказано композицией
+flang/stdlib/ed25519.flang		Settled		доказано композицией
+flang/stdlib/ed25519.flang		Fold top bits		доказано композицией
+flang/stdlib/ed25519.flang		With last		доказано структурой
+flang/stdlib/ed25519.flang		Fe canonical		доказано композицией
+flang/stdlib/ed25519.flang		Repack step		доказано композицией
+flang/stdlib/ed25519.flang		Repack emit		доказано точным шагом
+flang/stdlib/ed25519.flang		Repack		доказано композицией
+flang/stdlib/ed25519.flang		Take numbers		доказано структурой
+flang/stdlib/ed25519.flang		Drop numbers		доказано структурой
+flang/stdlib/ed25519.flang		Pad numbers		доказано композицией
+flang/stdlib/ed25519.flang		Zeros		доказано точным шагом
+flang/stdlib/ed25519.flang		Fe bytes		доказано композицией
+flang/stdlib/ed25519.flang		Masked bytes		доказано композицией
+flang/stdlib/ed25519.flang		Fe of bytes		доказано композицией
+flang/stdlib/ed25519.flang		Fe is odd		доказано композицией
+flang/stdlib/ed25519.flang		Fe same		доказано композицией
+flang/stdlib/ed25519.flang		Fe squares		доказано точным шагом
+flang/stdlib/ed25519.flang		Fe invert		доказано композицией
+flang/stdlib/ed25519.flang		Fe pow22523		доказано композицией
+flang/stdlib/ed25519.flang		Point identity		доказано композицией
+flang/stdlib/ed25519.flang		Point base		доказано композицией
+flang/stdlib/ed25519.flang		Point cached		доказано композицией
+flang/stdlib/ed25519.flang		Point add		доказано композицией
+flang/stdlib/ed25519.flang		Point of parts		доказано композицией
+flang/stdlib/ed25519.flang		Point double		доказано композицией
+flang/stdlib/ed25519.flang		Point double lean		доказано композицией
+flang/stdlib/ed25519.flang		Point double four		доказано композицией
+flang/stdlib/ed25519.flang		Point negate		доказано композицией
+flang/stdlib/ed25519.flang		Point encode		доказано композицией
+flang/stdlib/ed25519.flang		Point decode		доказано композицией
+flang/stdlib/ed25519.flang		Decode canonical		доказано композицией
+flang/stdlib/ed25519.flang		Decode root		доказано композицией
+flang/stdlib/ed25519.flang		Decode sign		доказано композицией
+flang/stdlib/ed25519.flang		Decoded with x		доказано композицией
+flang/stdlib/ed25519.flang		Table step		доказано композицией
+flang/stdlib/ed25519.flang		Point table		доказано композицией
+flang/stdlib/ed25519.flang		Base table		доказано композицией
+flang/stdlib/ed25519.flang		Cached of points		доказано композицией
+flang/stdlib/ed25519.flang		Cached at		доказано структурой
+flang/stdlib/ed25519.flang		Cached negate		доказано композицией
+flang/stdlib/ed25519.flang		Cached digit		доказано композицией
+flang/stdlib/ed25519.flang		Digit step		доказано композицией
+flang/stdlib/ed25519.flang		Signed digits		доказано композицией
+flang/stdlib/ed25519.flang		Nibbles		доказано композицией
+flang/stdlib/ed25519.flang		Reversed numbers		доказано композицией
+flang/stdlib/ed25519.flang		Ladder step		доказано композицией
+flang/stdlib/ed25519.flang		Ladder minor		доказано композицией
+flang/stdlib/ed25519.flang		Ladder advance		доказано точным шагом
+flang/stdlib/ed25519.flang		Ladder of		доказано композицией
+flang/stdlib/ed25519.flang		Limbs add		доказано структурой
+flang/stdlib/ed25519.flang		Limbs negate		доказано композицией
+flang/stdlib/ed25519.flang		Limbs convolve		доказано структурой
+flang/stdlib/ed25519.flang		Flush carry		доказано точным шагом
+flang/stdlib/ed25519.flang		Trim zeros		доказано композицией
+flang/stdlib/ed25519.flang		Drop leading zeros		доказано структурой
+flang/stdlib/ed25519.flang		Settle scalar		доказано композицией
+flang/stdlib/ed25519.flang		Is below zero		доказано композицией
+flang/stdlib/ed25519.flang		Group order limbs		доказано композицией
+flang/stdlib/ed25519.flang		Group order tail		доказано композицией
+flang/stdlib/ed25519.flang		Reduce rounds		доказано точным шагом
+flang/stdlib/ed25519.flang		Scalar of limbs		доказано композицией
+flang/stdlib/ed25519.flang		Scalar reduce		доказано композицией
+flang/stdlib/ed25519.flang		Scalar is canonical		доказано композицией
+flang/stdlib/ed25519.flang		Scalar mul add		доказано композицией
+flang/stdlib/ed25519.flang		Small order encodings		доказано композицией
+flang/stdlib/ed25519.flang		Is small order		доказано композицией
+flang/stdlib/ed25519.flang		Clamp		доказано композицией
+flang/stdlib/ed25519.flang		Ed25519 check start		доказано композицией
+flang/stdlib/ed25519.flang		Check start sized		доказано композицией
+flang/stdlib/ed25519.flang		Check start decoded		доказано композицией
+flang/stdlib/ed25519.flang		Check ladder		доказано композицией
+flang/stdlib/ed25519.flang		Ed25519 check advance		доказано композицией
+flang/stdlib/ed25519.flang		Check after		доказано композицией
+flang/stdlib/ed25519.flang		Ed25519 verify		доказано композицией
+flang/stdlib/ed25519.flang		Fe limbs	twelve limbs	доказано
+flang/stdlib/ed25519.flang		Base table	nine multiples of the base point	доказано
+flang/stdlib/ed25519.flang		Cached of points	one cached point for every point	доказано
+flang/stdlib/ed25519.flang		Reversed numbers	same length	доказано
+flang/stdlib/ed25519.flang		Small order encodings	seven encodings	доказано
 flang/stdlib/fmath.flang	0a38bde3596b1631f5509a30a8f9441e8bacfec24cc2c196f585ad2a99108875			
 flang/stdlib/hashmap.flang	7bd6e6f32172728767ea9b7a1493638d11c91f349e033769d182fc4d04edbec8	Ключ звена		доказано композицией
 flang/stdlib/hashmap.flang		Значение звена		доказано композицией
@@ -2256,6 +2404,54 @@ flang/stdlib/math-classics.flang		Остаток по два	всякое нат
 flang/stdlib/math-classics.flang		Сумма чётных	сумма двух чётных чётна	сетка
 flang/stdlib/math-classics.flang		Произведение с чётным	произведение с чётным сомножителем чётно	сетка
 flang/stdlib/math-classics.flang		Нечётно	нечётность есть единичный остаток по два	доказано
+flang/stdlib/minisign.flang	61597b8fdc672acb6af648668213a9b173a4f48856e4e52755a861447affa7df	Broken rule		доказано композицией
+flang/stdlib/minisign.flang		Base64 alphabet		доказано композицией
+flang/stdlib/minisign.flang		Base64 letter		доказано композицией
+flang/stdlib/minisign.flang		Base64 pack step		доказано композицией
+flang/stdlib/minisign.flang		Base64 quad		доказано композицией
+flang/stdlib/minisign.flang		Six bits		доказано композицией
+flang/stdlib/minisign.flang		Base64 text		доказано композицией
+flang/stdlib/minisign.flang		Base64 tail		доказано композицией
+flang/stdlib/minisign.flang		Base64 value		доказано композицией
+flang/stdlib/minisign.flang		Base64 unpack step		доказано композицией
+flang/stdlib/minisign.flang		Byte of		доказано композицией
+flang/stdlib/minisign.flang		Base64 bytes		доказано композицией
+flang/stdlib/minisign.flang		Base64 rest		доказано композицией
+flang/stdlib/minisign.flang		Utf8 point		доказано композицией
+flang/stdlib/minisign.flang		Utf8 short		доказано композицией
+flang/stdlib/minisign.flang		Utf8 bytes		доказано композицией
+flang/stdlib/minisign.flang		Hex digit		доказано композицией
+flang/stdlib/minisign.flang		Hex of bytes		доказано композицией
+flang/stdlib/minisign.flang		Upper hex		доказано композицией
+flang/stdlib/minisign.flang		Upper hex letter		доказано композицией
+flang/stdlib/minisign.flang		Key id text		доказано композицией
+flang/stdlib/minisign.flang		Reversed bytes		доказано композицией
+flang/stdlib/minisign.flang		Join bytes		доказано композицией
+flang/stdlib/minisign.flang		Slice bytes		доказано композицией
+flang/stdlib/minisign.flang		Take bytes		доказано структурой
+flang/stdlib/minisign.flang		Skip bytes		доказано структурой
+flang/stdlib/minisign.flang		Algorithm Ed		доказано композицией
+flang/stdlib/minisign.flang		Algorithm prehashed		доказано композицией
+flang/stdlib/minisign.flang		Public key line		доказано композицией
+flang/stdlib/minisign.flang		Public key file		доказано композицией
+flang/stdlib/minisign.flang		Text lines		доказано композицией
+flang/stdlib/minisign.flang		Without carriage return		доказано композицией
+flang/stdlib/minisign.flang		Key text		доказано композицией
+flang/stdlib/minisign.flang		Parse public key		доказано композицией
+flang/stdlib/minisign.flang		Secret checksum		доказано композицией
+flang/stdlib/minisign.flang		Secret key bytes		доказано композицией
+flang/stdlib/minisign.flang		Secret key file		доказано композицией
+flang/stdlib/minisign.flang		Parse secret key		доказано композицией
+flang/stdlib/minisign.flang		Secret of raw		доказано композицией
+flang/stdlib/minisign.flang		Signature file		доказано композицией
+flang/stdlib/minisign.flang		Parse signature		доказано композицией
+flang/stdlib/minisign.flang		Signature of lines		доказано композицией
+flang/stdlib/minisign.flang		Signed message		доказано композицией
+flang/stdlib/minisign.flang		Statement		доказано композицией
+flang/stdlib/minisign.flang		Comment message		доказано композицией
+flang/stdlib/minisign.flang		Package comment		доказано композицией
+flang/stdlib/minisign.flang		Reversed bytes	same length	доказано
+flang/stdlib/minisign.flang		Join bytes	lengths add up	доказано
 flang/stdlib/number-format.flang	a5050ce5f98fba47f3574c64c2b0cc66303f6d0a2755aed2720a60ce77fe6f9d	Цифра в основании		доказано композицией
 flang/stdlib/number-format.flang		Основание годно		доказано композицией
 flang/stdlib/number-format.flang		Цифры в основании		доказано точным шагом
@@ -2926,7 +3122,7 @@ flang/stdlib/redis.flang		Это отказ Redis	набор отказом не
 flang/stdlib/redis.flang		Шаг поиска отказа Redis	однажды найденный отказ уже не теряется	доказано
 flang/stdlib/redis.flang		Шаг поиска отказа Redis	пока не найдено, отвечает сам ответ	доказано
 flang/stdlib/redis.flang		Есть отказ Redis	в пустом списке отказа нет	сетка
-flang/stdlib/registry.flang	c7ea7a143d1900399b847573fdd9f99ebb86d4a1bfd537dac42147bb4f95de1b	Цифра ли		доказано композицией
+flang/stdlib/registry.flang	e026736634ed9c52df319d83c422c2b3f1ef1b84440e0d7416d316ec6145abbb	Цифра ли		доказано композицией
 flang/stdlib/registry.flang		Только цифры		доказано композицией
 flang/stdlib/registry.flang		Число из цифр		доказано композицией
 flang/stdlib/registry.flang		Пробелы вместо переводов		доказано композицией
@@ -2946,6 +3142,8 @@ flang/stdlib/registry.flang		Разобрать диапазон		доказан
 flang/stdlib/registry.flang		Учесть нужду		доказано композицией
 flang/stdlib/registry.flang		Разобрать нужды		доказано композицией
 flang/stdlib/registry.flang		Поле записи		доказано композицией
+flang/stdlib/registry.flang		Ключ годен		доказано композицией
+flang/stdlib/registry.flang		Запись с ключом		доказано композицией
 flang/stdlib/registry.flang		Разобрать строку реестра		доказано композицией
 flang/stdlib/registry.flang		Учесть строку реестра		доказано композицией
 flang/stdlib/registry.flang		Разобрать реестр		доказано композицией
@@ -3535,6 +3733,32 @@ flang/stdlib/sha256.flang		Цифра 16	цифра — ровно один зн
 flang/stdlib/sha256.flang		Слово шестнадцатеричным	слово печатается ровно восемью знаками	сетка
 flang/stdlib/sha256.flang		Свод шестнадцатеричным	хеш печатается ровно шестьюдесятью четырьмя знаками	сетка
 flang/stdlib/sha256.flang		Хеш байтов	хеш — ровно шестьдесят четыре знака	доказано
+flang/stdlib/sha512.flang	3d5ae36c5c1cc64a1bef41557039fe4ea663758ceb8c8effd286dbf65ca568ed	Sha512 constants		доказано композицией
+flang/stdlib/sha512.flang		Sha512 initial		доказано композицией
+flang/stdlib/sha512.flang		Rotate right 64		доказано композицией
+flang/stdlib/sha512.flang		Big sigma zero 512		доказано композицией
+flang/stdlib/sha512.flang		Big sigma one 512		доказано композицией
+flang/stdlib/sha512.flang		Small sigma zero 512		доказано композицией
+flang/stdlib/sha512.flang		Small sigma one 512		доказано композицией
+flang/stdlib/sha512.flang		Choose 512		доказано композицией
+flang/stdlib/sha512.flang		Majority 512		доказано композицией
+flang/stdlib/sha512.flang		Word at		доказано структурой
+flang/stdlib/sha512.flang		Next schedule word		доказано композицией
+flang/stdlib/sha512.flang		Sha512 round step		доказано композицией
+flang/stdlib/sha512.flang		Sha512 compress		доказано композицией
+flang/stdlib/sha512.flang		Append bytes		доказано композицией
+flang/stdlib/sha512.flang		Zero bytes		доказано точным шагом
+flang/stdlib/sha512.flang		Length bytes 512		доказано композицией
+flang/stdlib/sha512.flang		Sha512 padded		доказано композицией
+flang/stdlib/sha512.flang		Sha512 feed step		доказано композицией
+flang/stdlib/sha512.flang		Sha512 word done		доказано композицией
+flang/stdlib/sha512.flang		Word bytes 512		доказано композицией
+flang/stdlib/sha512.flang		Sha512 state bytes		доказано композицией
+flang/stdlib/sha512.flang		Sha512		доказано композицией
+flang/stdlib/sha512.flang		Sha512 constants	eighty round constants	доказано
+flang/stdlib/sha512.flang		Append bytes	lengths add up	доказано
+flang/stdlib/sha512.flang		Length bytes 512	sixteen bytes	доказано
+flang/stdlib/sha512.flang		Word bytes 512	eight bytes	доказано
 flang/stdlib/sqlite.flang	4c1d430ebab4ebbbb50f3c1418b3c63598e7df4617c1437e8400b811b747eea8	Отбросить октеты		доказано структурой
 flang/stdlib/sqlite.flang		Взять октеты		доказано структурой
 flang/stdlib/sqlite.flang		Кусок октетов		доказано постоянным шагом

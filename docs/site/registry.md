@@ -1,7 +1,7 @@
 # The package registry
 
 The flang registry is a **list of names**, not a store of code. The list is a
-line-based file: five fields per line separated by «|», and nothing else. Asked
+line-based file: up to six fields per line separated by «|», and nothing else. Asked
 which version of a package will do, the registry answers with an **address**
 where the package lies, not with the package; a name gets a version here, in the
 list, and nowhere else; the language gains no new word for any of it. No server,
@@ -28,7 +28,7 @@ What the site serves is a copy of the same file from the tree,
 [`scripts/registry-example/registry.list`](../../scripts/registry-example/registry.list),
 unchanged — put there by the same build that prints this page.
 
-## The five fields
+## The six fields
 
 | field | what is in it |
 |---|---|
@@ -37,6 +37,7 @@ unchanged — put there by the same build that prints this page.
 | fingerprint | `sha256` of the package file |
 | address | where the package file lies: a full URL, or a path relative to the list's own directory |
 | needs | what the package requires of other names; empty means nothing |
+| key | the public key of the author, a minisign `RW…` line; empty means an unsigned package |
 
 A need reads `name: range`, needs are separated by semicolons. There are four
 ranges: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. Parsing the
@@ -54,7 +55,7 @@ flang install проба/proba.flang 'Множество строк: не ниж
 (until reprint 9c, `flang run-script package:install` from the flang tree — the same engine).
 The command takes this list, picks the greatest version that satisfies the needs
 of the project and of the packages themselves, downloads the files, checks their
-`sha256` before writing, puts them next to the program and writes `flang.lock`.
+`sha256` and the author's signature before writing, puts them next to the program and writes `flang.lock`.
 Details are on the [packages page](packages.html); the list address comes from
 `--registry` or from the `registry` key in `.flangrc`. Installing again into an
 empty directory gives exactly the same lock — the check

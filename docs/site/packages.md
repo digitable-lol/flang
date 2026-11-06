@@ -106,6 +106,43 @@ A package carrying a `закон` (law) or a claim "declared, not proved" widens
 you trust without proof. Such a package is shown on its own line and is installed
 only with `--accept-unproven`. The proved share is printed for every package.
 
+### The author's signature
+
+A package in the registry list carries the author's public key as its sixth
+field, and next to the package file lies a signature file `<package>.minisig`
+in the minisign format. The installer checks the signature after the `sha256`
+check and before anything is written to disk; what is signed is the fingerprint
+of the file, the key is Ed25519
+([ADR-0200](../adr/0200-a-package-is-signed-by-its-author-and-the-key-is-pinned-on-first-use.md)).
+
+- **The first install pins the key.** `flang.lock` gets a field `"подписи"`:
+  `{"имя": "Логика", "ключ": "RWTrVUCh…"}`. The summary line says so:
+  `подпись: ключ 37F92EEFA14055EB, сошлась за … мс; ключ закреплён при первой установке`.
+- **A changed key is refused.** A later install whose key for the name differs
+  from the pinned one answers `FLANG_INSTALL_KEY_CHANGED` and writes nothing.
+  To re-pin, pass `--repin <name>` or list a trusted key in `.flangrc` (below).
+- **An unsigned package is refused by default** — `FLANG_INSTALL_UNSIGNED`. With
+  `--allow-unsigned` it is installed, and the lock writes `"ключ": "нет"`.
+- **Trusted keys** live in `.flangrc` next to the program, one key per line:
+
+  ```
+  trusted-key = Логика: RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+  ```
+
+  When a name has trusted keys, the key in the list must be one of them
+  (`FLANG_INSTALL_KEY_UNTRUSTED`), and a change to a trusted key passes without
+  `--repin`. A trusted key also protects the first install, which pinning on
+  first use does not.
+
+The key `RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B` is the test
+key of the example: it signs only the packages of `scripts/registry-example/`
+and the installer's probe package, and it is trusted for nothing real. The
+author of a real package makes their own key with
+`flang run-script package:keygen <folder outside the tree>`.
+
+The signature is checked by the flang evaluator and is not fast: one signature takes 11–12 seconds,
+and checking the signature modules adds about forty seconds to the start of an install.
+
 Installing again into an empty directory gives the same `flang.lock` byte for
 byte — `flang run-script package-install:check` verifies this, and the CI job
 `package-install` does the same on a clean image. Ranges are written in words,
@@ -125,12 +162,16 @@ The exit code is 1 for all of them; the code stands in the answer with the reaso
 
 | Code | What it means | What to do |
 |---|---|---|
-| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
+| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven] [--allow-unsigned] [--repin <name>]...` |
 | `FLANG_INSTALL_ENGINE` | no engine `package-install.fscript` next to the binary (neither in `scripts/` nor in `share/flang/scripts/`) | install flang whole — tarball, `install.sh`, Homebrew or asdf; from the tree call `flang run-script package:install` |
 | `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
 | `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
 | `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
 | `FLANG_INSTALL_FINGERPRINT` | the `sha256` of the received body differs from the registry record; nothing was written to disk | a substituted or damaged package: do not install it, tell the keeper of the list |
+| `FLANG_INSTALL_SIGNATURE` | a package with a key has no signature file, the file does not parse, it is signed by another key, or the signature does not match the fingerprint; nothing was written to disk | do not install it; tell the author and the keeper of the list |
+| `FLANG_INSTALL_UNSIGNED` | the package has no author key in the list | install with `--allow-unsigned` if you trust the source; the lock writes `"ключ": "нет"` |
+| `FLANG_INSTALL_KEY_CHANGED` | the key of the name in the list differs from the one pinned in `flang.lock`; the refusal names both key numbers | ask the author about the key change; re-pin with `--repin <name>` or `trusted-key` in `.flangrc` |
+| `FLANG_INSTALL_KEY_UNTRUSTED` | the name has trusted keys in `.flangrc`, and the key in the list is not one of them | do not install until the key is confirmed, or add it as a `trusted-key` |
 | `FLANG_INSTALL_UNPROVED` | the package carries a `закон` (law) or a claim "declared, not proved" and would widen the trusted base | read the named lines; if you agree, repeat with `--accept-unproven` |
 | `FLANG_INSTALL_BUILD` | after installing, `flang check` or `flang lock` over the program answered non-zero | read their answer in the message; usually the program lacks the line `использует «Имя» из "file.flang-package"` |
 
@@ -224,6 +265,28 @@ Users download **that file** by any means: a raw link, a release asset, mail —
 or install it by name once the file and its `sha256` are recorded in the
 [registry list](registry.html). There is no `flang publish`.
 
+**Step 4. Sign it.** A key is made once, outside the project tree:
+
+```bash
+$ flang run-script package:keygen ~/.flang-keys
+key 37F92EEFA14055EB: …/flang-package.key, …/flang-package.pub; list key RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+
+$ flang run-script package:sign skidka/discount.flang-package ~/.flang-keys/flang-package.key
+signed by key 37F92EEFA14055EB: skidka/discount.flang-package.minisig; registry list: fingerprint …, key RWTrVUCh…
+
+$ flang run-script package:verify skidka/discount.flang-package RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+signature and trusted comment verified, key 37F92EEFA14055EB: flang package «Скидка» 1.0.0 sha256 …
+```
+
+The keys are in the minisign format: the secret key without a password (as
+`minisign -G -W` writes it), the public key the `RW…` line. The `minisign`
+program can sign as well: what is signed is the fingerprint, not the file
+(`printf %s <sha256> > statement && minisign -Sm statement`), and the signature
+file goes next to the package as `<package>.minisig`. `Keygen` never overwrites
+an existing key (`FLANG_SIGN_EXISTS`); the secret key does not go into the tree.
+The signature file and the list line with the key are committed next to the
+package.
+
 ## A library of several modules
 
 If the library has several files, all of them go into the package: `flang
@@ -309,8 +372,8 @@ diff -r ./from-package ./from-sources && echo same
 | the source URL | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
 | a module's function count | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
 
-The checksum shows that the file was not edited after it was built. It is not
-a signature: it does not tell you who built the file.
+The checksum shows that the file was not edited after it was built; who built
+the file is told by the author's signature (the section above).
 
 If two packages bring the same module path with different content, the
 compiler stops and names both:
@@ -349,8 +412,9 @@ A program can have a `flang.lock` and packages at the same time.
 - **Two versions of one library** in one program: imports merge into one flat
   namespace.
 - **Partial updates.** To update, run `flang package` again.
-- **A signature of the author.** The checksum only shows the file was not
-  edited.
+- **Key revocation.** An author who changes the key changes the key field of
+  the list; for those who already installed the package, the installer refuses
+  until the key is re-pinned.
 - **Packages in the REPL and the language server.** `flang repl` and `flang
   lsp` resolve imports themselves and do not read packages. In the directory
   where `flang check shop.flang` reports no errors, `flang repl shop.flang`

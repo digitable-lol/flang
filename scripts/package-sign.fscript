@@ -1,0 +1,657 @@
+модуль «Package signer»
+  использует «Minisign»
+  использует «Ed25519»
+  использует «Ed25519 signing»
+  использует «Registry»
+
+объект «Sign ask»
+  «package»: строка
+  «secret file»: строка
+  «key text»: строка
+  «body»: строка
+
+тип «Sign step»
+  вариант «Keygen arguments»
+  вариант «Keygen secret» содержит folder: строка
+  вариант «Keygen id» содержит folder: строка, secret: список числа
+  вариант «Keygen probe» содержит folder: строка, secret: список числа, id: список числа
+  вариант «Keygen writing secret» содержит folder: строка, secret: список числа, id: список числа, key: список числа
+  вариант «Keygen writing public» содержит folder: строка, id: список числа, key: список числа
+  вариант «Sign arguments»
+  вариант «Sign reading key» содержит ask: «Sign ask»
+  вариант «Sign reading package» содержит ask: «Sign ask», id: список числа, secret: список числа, key: список числа
+  вариант «Sign writing» содержит path: строка, id: список числа, key: список числа, fingerprint: строка
+  вариант «Verify arguments»
+  вариант «Verify reading key» содержит ask: «Sign ask»
+  вариант «Verify reading package» содержит ask: «Sign ask»
+  вариант «Verify reading signature» содержит ask: «Sign ask»
+
+тотальная функция «Secret name»
+  возвращает строка
+  пример «The secret key file in the folder the person names»
+    ожидается "flang-package.key"
+  "flang-package.key"
+
+тотальная функция «Public name»
+  возвращает строка
+  пример «The public key file next to it»
+    ожидается "flang-package.pub"
+  "flang-package.pub"
+
+тотальная функция «Signature path»
+  принимает package: строка
+  возвращает строка
+  пример «The signature lies next to the package»
+    дано package равно "../p/logic-1.2.0.flang-package"
+    ожидается "../p/logic-1.2.0.flang-package.minisig"
+  соединить [package, ".minisig"] по ""
+
+тотальная функция «Rooted»
+  принимает path: строка
+  возвращает строка
+  пример «A relative path counts from the root of the tree, the plan lies in scripts»
+    дано path равно "keys"
+    ожидается "../keys"
+  пример «An absolute path stays»
+    дано path равно "/home/me/keys"
+    ожидается "/home/me/keys"
+  если path начинается с "/" то path иначе соединить ["../", path] по ""
+
+тотальная функция «In folder»
+  принимает folder: строка, name: строка
+  возвращает строка
+  пример «A name in a folder»
+    дано folder равно "../keys"
+    дано name равно "flang-package.key"
+    ожидается "../keys/flang-package.key"
+  пример «A trailing slash is not doubled»
+    дано folder равно "../keys/"
+    дано name равно "flang-package.key"
+    ожидается "../keys/flang-package.key"
+  (если ((подстрока folder с (длина folder) по (длина folder)) равен "/") то (соединить [folder, name] по "") иначе
+    (соединить [folder, "/", name] по ""))
+
+тотальная функция «Sign failed»
+  принимает code: строка, words: строка
+  возвращает «Продолжение»
+  пример «A named refusal»
+    дано code равно "FLANG_SIGN_USAGE"
+    дано words равно "x"
+    ожидается вариант «Провал» с код равным "FLANG_SIGN_USAGE" и сообщение равным "x"
+  вариант «Провал» с код равным code и сообщение равным words
+
+тотальная функция «Sign doing»
+  принимает order: «Поручение», onward: «Sign step»
+  возвращает «Продолжение»
+  пример «An order and the next step»
+    дано order равно вариант «Прочитать доводы»
+    дано onward равно вариант «Sign arguments»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным
+      (вариант «Sign arguments»))
+  вариант «Сделать» с поручение равным order и потом равным onward
+
+тотальная функция «Keygen start»
+  возвращает «Sign step»
+  пример «Key generation starts with the arguments»
+    ожидается вариант «Keygen arguments»
+  вариант «Keygen arguments»
+
+тотальная функция «Sign start»
+  возвращает «Sign step»
+  пример «Signing starts with the arguments»
+    ожидается вариант «Sign arguments»
+  вариант «Sign arguments»
+
+тотальная функция «Verify start»
+  возвращает «Sign step»
+  пример «Checking starts with the arguments»
+    ожидается вариант «Verify arguments»
+  вариант «Verify arguments»
+
+тотальная функция «Keygen words»
+  принимает words: список строки
+  возвращает «Продолжение»
+  пример «Without a folder the plan says how to call it»
+    дано words равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_USAGE" и сообщение равным
+      "call: flang run-script package:keygen <folder outside the tree>")
+  разбор words
+    случай пусто
+      то «Sign failed» от "FLANG_SIGN_USAGE" и "call: flang run-script package:keygen <folder outside the tree>"
+    случай голова lead и хвост others
+      то («Sign doing» от (вариант «Случайные октеты» с сколько равным 32) и (вариант «Keygen secret» с folder равным
+        («Rooted» от lead)))
+
+тотальная функция «Keygen after secret»
+  принимает folder: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A refused source of randomness is named»
+    дано folder равно "../keys"
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_ENTROPY" и сообщение равным "под семенем"
+    ожидается (вариант «Провал» с код равным "FLANG_IO_ENTROPY" и сообщение равным
+      "no random bytes for the secret key: под семенем")
+  разбор reply
+    случай вариант «Октеты» с октеты как secret
+      то («Sign doing» от (вариант «Случайные октеты» с сколько равным 8) и
+        (вариант «Keygen id» с folder равным folder и secret равным secret))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить ["no random bytes for the secret key: ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected random bytes"
+
+тотальная функция «Keygen after id»
+  принимает folder: строка, secret: список числа, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A refused source of randomness is named»
+    дано folder равно "../keys"
+    дано secret равно [1]
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_ENTROPY" и сообщение равным "под семенем"
+    ожидается (вариант «Провал» с код равным "FLANG_IO_ENTROPY" и сообщение равным
+      "no random bytes for the key number: под семенем")
+  разбор reply
+    случай вариант «Октеты» с октеты как id
+      то («Sign doing» от (вариант «Прочитать файл» с путь равным («In folder» от folder и («Secret name»))) и
+        (вариант «Keygen probe» с folder равным folder и secret равным secret и id равным id))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить ["no random bytes for the key number: ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected random bytes"
+
+тотальная функция «Keygen after probe»
+  принимает folder: строка, secret: список числа, id: список числа, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «An existing key is never overwritten»
+    дано folder равно "../keys"
+    дано secret равно [1]
+    дано id равно [2]
+    дано reply равно вариант «Прочитано» с содержимое равным "x"
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_EXISTS" и сообщение равным
+      "../keys/flang-package.key already exists; a key is made once and never overwritten")
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то («Sign failed» от "FLANG_SIGN_EXISTS" и (соединить [(«In folder» от folder и («Secret name»)),
+        " already exists; a key is made once and never overwritten"] по ""))
+    случай любое
+      то «Keygen with key» от folder и secret и id и («Ed25519 public key» от secret)
+
+тотальная функция «Keygen with key»
+  принимает folder: строка, secret: список числа, id: список числа, key: список числа
+  возвращает «Продолжение»
+  пример «The secret key file is written first, as octets»
+    дано folder равно "../keys"
+    дано secret равно пустой список
+    дано id равно пустой список
+    дано key равно пустой список
+    ожидается (вариант «Сделать» с поручение равным (вариант «Записать октеты в файл» с путь равным
+      "../keys/flang-package.key" и октеты равным [117, 110, 116, 114, 117, 115, 116, 101, 100, 32, 99, 111, 109, 109,
+      101, 110, 116, 58, 32, 109, 105, 110, 105, 115, 105, 103, 110, 32, 115, 101, 99, 114, 101, 116, 32, 107, 101,
+      121, 44, 32, 110, 111, 116, 32, 101, 110, 99, 114, 121, 112, 116, 101, 100, 10, 82, 87, 81, 65, 65, 69, 73, 121,
+      65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+      65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+      65, 65, 65, 65, 65, 65, 65, 65, 104, 67, 70, 107, 74, 76, 54, 54, 122, 116, 67, 111, 101, 102, 71, 118, 107, 80,
+      90, 86, 49, 57, 47, 56, 67, 103, 102, 43, 88, 52, 70, 78, 74, 73, 116, 85, 99, 99, 113, 68, 88, 121, 119, 61,
+      10]) и потом равным (вариант «Keygen writing secret» с folder равным
+      "../keys" и secret равным пустой список и id равным пустой список и key равным пустой список))
+  («Sign doing» от (вариант «Записать октеты в файл» с путь равным («In folder» от folder и
+    («Secret name»)) и октеты равным («Utf8 bytes» от («Secret key file» от
+    («Secret key bytes» от id и secret и key)))) и
+    (вариант «Keygen writing secret» с folder равным folder и secret равным secret и id равным id и key равным key))
+
+тотальная функция «Keygen after secret written»
+  принимает folder: строка, id: список числа, key: список числа, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A refused write is named»
+    дано folder равно "../keys"
+    дано id равно [2]
+    дано key равно [3]
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_WRITE" и сообщение равным "нет каталога"
+    ожидается (вариант «Провал» с код равным "FLANG_IO_WRITE" и сообщение равным
+      "../keys/flang-package.key: нет каталога")
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то («Sign doing» от (вариант «Записать файл» с путь равным («In folder» от folder и
+        («Public name»)) и содержимое равным («Public key file» от id и key)) и
+        (вариант «Keygen writing public» с folder равным folder и id равным id и key равным key))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить [(«In folder» от folder и («Secret name»)), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the secret key to be written"
+
+тотальная функция «Keygen after public written»
+  принимает folder: строка, id: список числа, key: список числа, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The summary names the key number and the line for the registry»
+    дано folder равно "../keys"
+    дано id равно [17, 34, 51, 68, 85, 102, 119, 136]
+    дано key равно [1, 2]
+    дано reply равно вариант «Записано» с сколько равным 10
+    ожидается (вариант «Конец работы» с значение равным
+      "key 8877665544332211: ../keys/flang-package.key, ../keys/flang-package.pub; list key RWQRIjNEVWZ3iAEC")
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то (вариант «Конец работы» с значение равным (соединить ["key ", («Key id text» от id), ": ",
+        («In folder» от folder и («Secret name»)), ", ", («In folder» от folder и («Public name»)), "; list key ",
+        («Public key line» от id и key)] по ""))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить [(«In folder» от folder и («Public name»)), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the public key to be written"
+
+тотальная функция «Ask of words»
+  принимает words: список строки
+  возвращает «Sign ask»
+  пример «A package and a key»
+    дано words равно ["p/logic.flang-package", "keys/flang-package.key"]
+    ожидается (запись «Sign ask» с «package» равным "../p/logic.flang-package" и «secret file» равным
+      "../keys/flang-package.key" и «key text» равным "" и «body» равным "")
+  пример «A public key line is taken as it is»
+    дано words равно ["p/logic.flang-package", "RWQRIjNEVWZ3iAEC"]
+    ожидается (запись «Sign ask» с «package» равным "../p/logic.flang-package" и «secret file» равным "" и
+      «key text» равным "RWQRIjNEVWZ3iAEC" и «body» равным "")
+  пусть second равно «Second word» от words
+  (запись «Sign ask» с «package» равным («Rooted» от («First word» от words)) и «secret file» равным
+    (если second начинается с "RW" то "" иначе «Rooted» от second) и «key text» равным
+    (если second начинается с "RW" то second иначе "") и «body» равным "")
+
+тотальная функция «First word»
+  принимает words: список строки
+  возвращает строка
+  пример «The first»
+    дано words равно ["a", "b"]
+    ожидается "a"
+  разбор words
+    случай пусто
+      то ""
+    случай голова lead и хвост others
+      то lead
+
+тотальная функция «Second word»
+  принимает words: список строки
+  возвращает строка
+  пример «The second»
+    дано words равно ["a", "b"]
+    ожидается "b"
+  пример «Missing is empty»
+    дано words равно ["a"]
+    ожидается ""
+  разбор words
+    случай пусто
+      то ""
+    случай голова lead и хвост others
+      то «First word» от others
+
+тотальная функция «Sign words»
+  принимает words: список строки
+  возвращает «Продолжение»
+  пример «Two words are needed»
+    дано words равно ["p.flang-package"]
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_USAGE" и сообщение равным
+      "call: flang run-script package:sign <package file> <secret key file>")
+  если (длина words) меньше 2
+    то «Sign failed» от "FLANG_SIGN_USAGE" и "call: flang run-script package:sign <package file> <secret key file>"
+    иначе («Sign doing» от (вариант «Прочитать файл» с путь равным ((«Ask of words» от words).«secret file»)) и
+      (вариант «Sign reading key» с ask равным («Ask of words» от words)))
+
+тотальная функция «Sign after key»
+  принимает ask: «Sign ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A secret key that does not parse is named»
+    дано ask равно (запись «Sign ask» с «package» равным "../p" и «secret file» равным "../k" и «key text» равным "" и
+      «body» равным "")
+    дано reply равно вариант «Прочитано» с содержимое равным "QUJD"
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_KEY" и сообщение равным
+      "../k: a minisign secret key is 158 bytes of base64 starting with Ed")
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Sign with key» от ask и («Parse secret key» от text)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от "FLANG_SIGN_KEY" и (соединить [(ask.«secret file»), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the secret key"
+
+тотальная функция «Sign with key»
+  принимает ask: «Sign ask», parsed: «Secret key»
+  возвращает «Продолжение»
+  пример «A refused key»
+    дано ask равно (запись «Sign ask» с «package» равным "../p" и «secret file» равным "../k" и «key text» равным "" и
+      «body» равным "")
+    дано parsed равно вариант «Bad secret» с reason равным "the checksum of the secret key does not match"
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_KEY" и сообщение равным
+      "../k: the checksum of the secret key does not match")
+  разбор parsed
+    случай вариант «Bad secret» с reason как why
+      то «Sign failed» от "FLANG_SIGN_KEY" и (соединить [(ask.«secret file»), ": ", why] по "")
+    случай вариант «Secret» с id как id и secret как secret и key как key
+      то («Sign doing» от (вариант «Прочитать файл» с путь равным (ask.«package»)) и
+        (вариант «Sign reading package» с ask равным ask и id равным id и secret равным secret и key равным key))
+
+тотальная функция «Package field»
+  принимает text: строка, label: строка
+  возвращает строка
+  пример «The name of a package»
+    дано text равно "{\"схема\":1,\"имя\":\"Логика\",\"версия\":\"1.0.0\"}"
+    дано label равно "версия"
+    ожидается "1.0.0"
+  пример «No such field»
+    дано text равно "{\"схема\":1}"
+    дано label равно "имя"
+    ожидается ""
+  пусть mark равно соединить ["\"", label, "\":\""] по ""
+  если не (text содержит mark) то "" иначе голова (разделить («После метки» от text и mark) по "\"")
+
+тотальная функция «Sign after package»
+  принимает ask: «Sign ask», id: список числа, secret: список числа, key: список числа, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing package is named»
+    дано ask равно (запись «Sign ask» с «package» равным "../p" и «secret file» равным "../k" и «key text» равным "" и
+      «body» равным "")
+    дано id равно [1]
+    дано secret равно [2]
+    дано key равно [3]
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается вариант «Провал» с код равным "FLANG_IO_READ" и сообщение равным "../p: нет файла"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как body
+      то «Sign write» от (ask.«package») и id и key и («Signature parts of» от secret и key и body)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить [(ask.«package»), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the package"
+
+объект «Signature parts»
+  «fingerprint»: строка
+  «main»: список числа
+  «comment»: строка
+  «global»: список числа
+
+тотальная функция «Signature parts of»
+  принимает secret: список числа, key: список числа, body: строка
+  возвращает «Signature parts»
+  пример «Both signatures of a small package»
+    дано secret равно [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+      27, 28, 29, 30, 31, 32]
+    дано key равно [121, 181, 86, 46, 143, 230, 84, 249, 64, 120, 177, 18, 232, 169, 139, 167, 144, 31, 133, 58, 230,
+      149, 190, 215, 224, 227, 145, 11, 173, 4, 150, 100]
+    дано body равно "{\"схема\":1,\"имя\":\"Логика\",\"версия\":\"1.2.0\"}"
+    ожидается (запись «Signature parts» с «fingerprint» равным
+      "ab347597a9c66376301a457345dc1c76bc05b68d212c818cce36b27630d18472" и «main» равным [90, 28, 155, 6, 233, 253,
+      167, 14, 125, 244, 225, 53, 125, 92, 235, 78, 219, 24, 70, 151, 91, 201, 108, 214, 149, 7, 50, 94, 241, 100,
+      228, 160, 48, 44, 118, 205, 250, 0, 39, 139, 247, 50, 211, 182, 52, 53, 148, 69, 219, 86, 144, 85, 104, 63, 161,
+      100, 154, 112, 171, 89, 7, 52, 101, 6] и «comment» равным
+      "flang package «Логика» 1.2.0 sha256 ab347597a9c66376301a457345dc1c76bc05b68d212c818cce36b27630d18472" и
+      «global» равным [240, 169, 230, 91, 96, 42, 211, 40, 225, 255, 22, 204, 78, 174, 128, 45, 124, 29, 19, 122, 206,
+      171, 223, 118, 171, 87, 0, 181, 164, 149, 218, 8, 46, 140, 5, 152, 153, 132, 47, 137, 134, 238, 179, 173, 99,
+      213, 1, 165, 54, 167, 79, 193, 73, 207, 163, 249, 102, 145, 214, 216, 59, 75, 34, 15])
+  пусть fingerprint равно хеш256 body
+  пусть main равно «Ed25519 sign» от secret и key и («Signed message» от "ED" и («Statement» от fingerprint))
+  пусть comment равно («Package comment» от («Package field» от body и "имя") и («Package field» от body и
+    "версия") и fingerprint)
+  (запись «Signature parts» с «fingerprint» равным fingerprint и «main» равным main и «comment» равным comment и
+    «global» равным («Ed25519 sign» от secret и key и («Comment message» от main и comment)))
+
+тотальная функция «Sign write»
+  принимает package: строка, id: список числа, key: список числа, parts: «Signature parts»
+  возвращает «Продолжение»
+  пример «The signature file goes next to the package»
+    дано package равно "../p.flang-package"
+    дано id равно пустой список
+    дано key равно [1, 2]
+    дано parts равно (запись «Signature parts» с «fingerprint» равным "ab" и «main» равным [1] и «comment» равным "" и
+      «global» равным [2])
+    ожидается (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным
+      "../p.flang-package.minisig" и содержимое равным
+      "untrusted comment: signature from a flang package key\nRUQB\ntrusted comment: \nAg==\n") и потом равным
+      (вариант «Sign writing» с path равным "../p.flang-package.minisig" и id равным пустой список и key равным [1,
+      2] и fingerprint равным "ab"))
+  («Sign doing» от (вариант «Записать файл» с путь равным («Signature path» от package) и содержимое равным
+    («Signature file» от да и id и (parts.«main») и (parts.«comment») и (parts.«global»))) и
+    (вариант «Sign writing» с path равным
+    («Signature path» от package) и id равным id и key равным key и fingerprint равным (parts.«fingerprint»)))
+
+тотальная функция «Sign after writing»
+  принимает path: строка, id: список числа, key: список числа, fingerprint: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The summary gives both fields of the registry list»
+    дано path равно "../p.minisig"
+    дано id равно [17, 34, 51, 68, 85, 102, 119, 136]
+    дано key равно [1, 2]
+    дано fingerprint равно "ab"
+    дано reply равно вариант «Записано» с сколько равным 10
+    ожидается (вариант «Конец работы» с значение равным
+      "signed by key 8877665544332211: ../p.minisig; registry list: fingerprint ab, key RWQRIjNEVWZ3iAEC")
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то (вариант «Конец работы» с значение равным (соединить ["signed by key ", («Key id text» от id), ": ", path,
+        "; registry list: fingerprint ", fingerprint, ", key ", («Public key line» от id и key)] по ""))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить [path, ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the signature to be written"
+
+тотальная функция «Verify words»
+  принимает words: список строки
+  возвращает «Продолжение»
+  пример «Two words are needed»
+    дано words равно ["p.flang-package"]
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_USAGE" и сообщение равным
+      "call: flang run-script package:verify <package file> <public key line or file>")
+  пусть ask равно «Ask of words» от words
+  если (длина words) меньше 2
+    то («Sign failed» от "FLANG_SIGN_USAGE" и
+      "call: flang run-script package:verify <package file> <public key line or file>")
+    иначе если (ask.«key text») равен ""
+      то («Sign doing» от (вариант «Прочитать файл» с путь равным (ask.«secret file»)) и
+        (вариант «Verify reading key» с ask равным ask))
+      иначе («Sign doing» от (вариант «Прочитать файл» с путь равным (ask.«package»)) и
+        (вариант «Verify reading package» с ask равным ask))
+
+тотальная функция «With key text»
+  принимает ask: «Sign ask», text: строка
+  возвращает «Sign ask»
+  пример «The key text is kept»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "k" и «key text» равным "" и
+      «body» равным "")
+    дано text равно "RW"
+    ожидается (запись «Sign ask» с «package» равным "p" и «secret file» равным "k" и «key text» равным "RW" и
+      «body» равным "")
+  (запись «Sign ask» с «package» равным (ask.«package») и «secret file» равным (ask.«secret file») и
+    «key text» равным text и «body» равным (ask.«body»))
+
+тотальная функция «With body»
+  принимает ask: «Sign ask», body: строка
+  возвращает «Sign ask»
+  пример «The package body is kept»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "k" и «key text» равным "RW" и
+      «body» равным "")
+    дано body равно "b"
+    ожидается (запись «Sign ask» с «package» равным "p" и «secret file» равным "k" и «key text» равным "RW" и
+      «body» равным "b")
+  (запись «Sign ask» с «package» равным (ask.«package») и «secret file» равным (ask.«secret file») и «key text» равным
+    (ask.«key text») и «body» равным body)
+
+тотальная функция «Verify after key»
+  принимает ask: «Sign ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing key file is named»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "k" и «key text» равным "" и
+      «body» равным "")
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается вариант «Провал» с код равным "FLANG_SIGN_KEY" и сообщение равным "k: нет файла"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то («Sign doing» от (вариант «Прочитать файл» с путь равным (ask.«package»)) и
+        (вариант «Verify reading package» с ask равным («With key text» от ask и text)))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от "FLANG_SIGN_KEY" и (соединить [(ask.«secret file»), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the public key"
+
+тотальная функция «Verify after package»
+  принимает ask: «Sign ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing package is named»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "" и «key text» равным "RW" и
+      «body» равным "")
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается вариант «Провал» с код равным "FLANG_IO_READ" и сообщение равным "p: нет файла"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как body
+      то («Sign doing» от (вариант «Прочитать файл» с путь равным («Signature path» от (ask.«package»))) и
+        (вариант «Verify reading signature» с ask равным («With body» от ask и body)))
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от code и (соединить [(ask.«package»), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the package"
+
+тотальная функция «Verify after signature»
+  принимает ask: «Sign ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing signature is named»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "" и «key text» равным "RW" и
+      «body» равным "")
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается вариант «Провал» с код равным "FLANG_SIGN_MISMATCH" и сообщение равным "p.minisig: нет файла"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Verify all» от ask и («Parse public key» от (ask.«key text»)) и («Parse signature» от text)
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «Sign failed» от "FLANG_SIGN_MISMATCH" и (соединить [(«Signature path» от (ask.«package»)), ": ", words] по "")
+    случай любое
+      то «Sign failed» от "FLANG_IO_ORDER" и "expected the signature"
+
+тотальная функция «Verify all»
+  принимает ask: «Sign ask», pubkey: «Public key», parsed: «Signature»
+  возвращает «Продолжение»
+  пример «A key that does not parse»
+    дано ask равно (запись «Sign ask» с «package» равным "p" и «secret file» равным "" и «key text» равным "RW" и
+      «body» равным "")
+    дано pubkey равно вариант «Bad key» с reason равным "a minisign public key is 42 bytes of base64 starting with Ed"
+    дано parsed равно вариант «Bad signature» с reason равным "a minisign signature file has four lines"
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_KEY" и сообщение равным
+      "a minisign public key is 42 bytes of base64 starting with Ed")
+  разбор pubkey
+    случай вариант «Bad key» с reason как why
+      то «Sign failed» от "FLANG_SIGN_KEY" и why
+    случай вариант «Key» с id как id и key как key
+      то разбор parsed
+        случай вариант «Bad signature» с reason как why
+          то («Sign failed» от "FLANG_SIGN_MISMATCH" и (соединить [(«Signature path» от (ask.«package»)), ": ",
+            why] по ""))
+        случай вариант «Signed» с kind как how и id как who и main как sig и comment как said и global как outer
+          то («Verify verdict» от (хеш256 (ask.«body»)) и id и key и (запись «Received» с «kind» равным how и
+            «who» равным who и «main» равным sig и «comment» равным said и «global» равным outer))
+
+объект «Received»
+  «kind»: строка
+  «who»: список числа
+  «main»: список числа
+  «comment»: строка
+  «global»: список числа
+
+тотальная функция «Verify verdict»
+  принимает fingerprint: строка, id: список числа, key: список числа, got: «Received»
+  возвращает «Продолжение»
+  пример «A signature by another key is refused»
+    дано fingerprint равно "ab"
+    дано id равно [1]
+    дано key равно [2]
+    дано got равно (запись «Received» с «kind» равным "ED" и «who» равным [3] и «main» равным [4] и «comment» равным
+      "c" и «global» равным [5])
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_MISMATCH" и сообщение равным
+      "the signature is by key 03, not by key 01")
+  пусть broken равно («Broken rule» от [(запись «Rule» с «kept» равным ((got.«who») равен id) и «why» равным
+    (соединить ["the signature is by key ", («Key id text» от (got.«who»)), ", not by key ",
+    («Key id text» от id)] по "")), (запись «Rule» с «kept» равным («Ed25519 verify» от key и («Signed message» от
+    (got.«kind») и («Statement» от fingerprint)) и (got.«main»)) и «why» равным (соединить
+    ["the signature does not match the fingerprint ", fingerprint] по "")), (запись «Rule» с «kept» равным
+    («Ed25519 verify» от key и («Comment message» от (got.«main») и (got.«comment»)) и (got.«global»)) и «why» равным
+    "the trusted comment is not signed by this key"), (запись «Rule» с «kept» равным
+    ((got.«comment») содержит fingerprint) и «why» равным (соединить
+    ["the trusted comment does not name the fingerprint ", fingerprint] по ""))])
+  если broken равен ""
+    то (вариант «Конец работы» с значение равным (соединить ["signature and trusted comment verified, key ",
+      («Key id text» от id), ": ", (got.«comment»)] по ""))
+    иначе «Sign failed» от "FLANG_SIGN_MISMATCH" и broken
+
+тотальная функция «Sign next»
+  принимает step: «Sign step», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first step asks for the arguments»
+    дано step равно вариант «Verify arguments»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным
+      (вариант «Verify arguments»))
+  разбор step
+    случай вариант «Keygen arguments»
+      то «Arguments then» от reply и step
+    случай вариант «Keygen secret» с folder как folder
+      то «Keygen after secret» от folder и reply
+    случай вариант «Keygen id» с folder как folder и secret как secret
+      то «Keygen after id» от folder и secret и reply
+    случай вариант «Keygen probe» с folder как folder и secret как secret и id как id
+      то «Keygen after probe» от folder и secret и id и reply
+    случай вариант «Keygen writing secret» с folder как folder и secret как secret и id как id и key как key
+      то «Keygen after secret written» от folder и id и key и reply
+    случай вариант «Keygen writing public» с folder как folder и id как id и key как key
+      то «Keygen after public written» от folder и id и key и reply
+    случай вариант «Sign arguments»
+      то «Arguments then» от reply и step
+    случай вариант «Sign reading key» с ask как ask
+      то «Sign after key» от ask и reply
+    случай вариант «Sign reading package» с ask как ask и id как id и secret как secret и key как key
+      то «Sign after package» от ask и id и secret и key и reply
+    случай вариант «Sign writing» с path как path и id как id и key как key и fingerprint как fingerprint
+      то «Sign after writing» от path и id и key и fingerprint и reply
+    случай вариант «Verify arguments»
+      то «Arguments then» от reply и step
+    случай вариант «Verify reading key» с ask как ask
+      то «Verify after key» от ask и reply
+    случай вариант «Verify reading package» с ask как ask
+      то «Verify after package» от ask и reply
+    случай вариант «Verify reading signature» с ask как ask
+      то «Verify after signature» от ask и reply
+
+тотальная функция «Arguments then»
+  принимает reply: «Отклик», step: «Sign step»
+  возвращает «Продолжение»
+  пример «Before anything the plan asks for its arguments»
+    дано reply равно вариант «Пока ничего»
+    дано step равно вариант «Sign arguments»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным
+      (вариант «Sign arguments»))
+  разбор reply
+    случай вариант «Доводы» с доводы как words
+      то «Words for» от step и words
+    случай любое
+      то «Sign doing» от (вариант «Прочитать доводы») и step
+
+тотальная функция «Words for»
+  принимает step: «Sign step», words: список строки
+  возвращает «Продолжение»
+  пример «Key generation without a folder»
+    дано step равно вариант «Keygen arguments»
+    дано words равно пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_SIGN_USAGE" и сообщение равным
+      "call: flang run-script package:keygen <folder outside the tree>")
+  разбор step
+    случай вариант «Keygen arguments»
+      то «Keygen words» от words
+    случай вариант «Sign arguments»
+      то «Sign words» от words
+    случай любое
+      то «Verify words» от words
+
+план «Keygen»
+  состояние «Sign step»
+  начинает с «Keygen start»
+  обрабатывает «Sign next»
+
+план «Sign»
+  состояние «Sign step»
+  начинает с «Sign start»
+  обрабатывает «Sign next»
+
+план «Verify»
+  состояние «Sign step»
+  начинает с «Verify start»
+  обрабатывает «Sign next»

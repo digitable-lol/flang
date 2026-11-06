@@ -1,0 +1,534 @@
+модуль «Package signature guard»
+
+объект «Probe walk»
+  «binary»: строка
+  «root»: строка
+  «home»: строка
+  «dirs»: список строки
+  «now»: «Probe act»
+  «rest»: список «Probe act»
+  «troubles»: список строки
+  «done»: число
+  «kept»: строка
+
+тип «Probe act»
+  вариант «Idle»
+  вариант «Make dir» содержит slot: число
+  вариант «Put program» содержит slot: число
+  вариант «Install» содержит slot: число, ledger: строка, flags: список строки, expect: строка
+  вариант «Present» содержит slot: число, file: строка
+  вариант «Absent» содержит slot: число, file: строка
+  вариант «Lock holds» содержит slot: число, text: строка
+  вариант «Lock keep» содержит slot: число
+  вариант «Lock same» содержит slot: число
+  вариант «Remove» содержит slot: число, file: строка
+  вариант «Remove dir» содержит slot: число
+
+тип «Probe step»
+  вариант «Starting» содержит forged: признак
+  вариант «Reading temp folder» содержит forged: признак
+  вариант «Reading binary» содержит root: строка, forged: признак
+  вариант «Probing» содержит walk: «Probe walk»
+
+тотальная функция «Probe binary»
+  возвращает строка
+  пример «The binary of the tree, named from the folder of the guard»
+    ожидается "../../bootstrap/flang"
+  "../../bootstrap/flang"
+
+тотальная функция «Probe installer»
+  возвращает строка
+  пример «The installer lies one folder up»
+    ожидается "../package-install.fscript"
+  "../package-install.fscript"
+
+тотальная функция «Case list»
+  принимает name: строка
+  возвращает строка
+  пример «Lists of the probes, named from the root of the tree as the installer expects»
+    дано name равно "honest"
+    ожидается "packaging/registry/cases/signature/honest.list"
+  соединить ["packaging/registry/cases/signature/", name, ".list"] по ""
+
+тотальная функция «Key A»
+  возвращает строка
+  пример «The key that signs the example registry»
+    ожидается "RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B"
+  "RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B"
+
+тотальная функция «Key B»
+  возвращает строка
+  пример «The key the author turns to in the key change probe»
+    ожидается "RWTyppoldXudjj0M2xCCzvcb4wAhNOxtbTihL9MiV02ew/1doSxgKUwv"
+  "RWTyppoldXudjj0M2xCCzvcb4wAhNOxtbTihL9MiV02ew/1doSxgKUwv"
+
+тотальная функция «Probe program»
+  возвращает список строки
+  пример «The lines of a program that uses the package»
+    ожидается ["модуль «Проба подписи»", "  использует «Логика» из \"logic.flang-package\"", "",
+      "тотальная функция «Главное»", "  возвращает признак", "  пример «Истина»", "    ожидается да",
+      "  «Оба верны» от да и да", ""]
+  ["модуль «Проба подписи»", "  использует «Логика» из \"logic.flang-package\"", "", "тотальная функция «Главное»",
+    "  возвращает признак", "  пример «Истина»", "    ожидается да", "  «Оба верны» от да и да", ""]
+
+тотальная функция «Pin text of»
+  принимает key: строка
+  возвращает строка
+  пример «How the lock pins the package to a key»
+    дано key равно "нет"
+    ожидается "{\"имя\":\"Логика\",\"ключ\":\"нет\"}"
+  соединить ["{\"имя\":\"Логика\",\"ключ\":\"", key, "\"}"] по ""
+
+тотальная функция «Probe acts»
+  возвращает список «Probe act»
+  [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1, вариант «Make dir» с slot равным 2,
+    вариант «Make dir» с slot равным 3, вариант «Put program» с slot равным 1, («Install act» от 1 и
+    ("honest") и пустой список и ""), вариант «Present» с slot равным 1 и file равным "logic.flang-package",
+    вариант «Lock holds» с slot равным 1 и text равным («Pin text of» от («Key A»)),
+    вариант «Lock keep» с slot равным 1, («Install act» от 1 и ("rotated") и пустой список и
+    "FLANG_INSTALL_KEY_CHANGED"), вариант «Lock same» с slot равным 1, («Install act» от 1 и ("rotated") и ["--repin",
+    "Логика"] и ""), вариант «Lock holds» с slot равным 1 и text равным («Pin text of» от («Key B»)),
+    вариант «Put program» с slot равным 2, («Install act» от 2 и ("tampered") и пустой список и
+    "FLANG_INSTALL_SIGNATURE"), вариант «Absent» с slot равным 2 и file равным "logic.flang-package",
+    («Install act» от 2 и ("wrong-key") и пустой список и "FLANG_INSTALL_SIGNATURE"),
+    вариант «Absent» с slot равным 2 и file равным "logic.flang-package",
+    вариант «Absent» с slot равным 2 и file равным "flang.lock", вариант «Put program» с slot равным 3,
+    («Install act» от 3 и ("unsigned") и пустой список и "FLANG_INSTALL_UNSIGNED"),
+    вариант «Absent» с slot равным 3 и file равным "logic.flang-package", («Install act» от 3 и ("unsigned") и
+    ["--allow-unsigned"] и ""), вариант «Lock holds» с slot равным 3 и text равным («Pin text of» от "нет"),
+    вариант «Present» с slot равным 3 и file равным "logic.flang-package",
+    вариант «Present» с slot равным 3 и file равным "flang.needs"]
+
+тотальная функция «Install act»
+  принимает slot: число, name: строка, flags: список строки, expect: строка
+  возвращает «Probe act»
+  пример «An install by a list of the probes»
+    дано slot равно 1
+    дано name равно "honest"
+    дано flags равно пустой список
+    дано expect равно ""
+    ожидается (вариант «Install» с slot равным 1 и ledger равным
+      "packaging/registry/cases/signature/honest.list" и flags равным пустой список и expect равным "")
+  вариант «Install» с slot равным slot и ledger равным («Case list» от name) и flags равным flags и expect равным expect
+
+тотальная функция «Cleanup acts»
+  возвращает список «Probe act»
+  [вариант «Remove» с slot равным 1 и file равным "logic.flang-package",
+    вариант «Remove» с slot равным 1 и file равным "flang.lock",
+    вариант «Remove» с slot равным 1 и file равным "flang.needs",
+    вариант «Remove» с slot равным 1 и file равным "proba.flang", вариант «Remove dir» с slot равным 1,
+    вариант «Remove» с slot равным 2 и file равным "logic.flang-package",
+    вариант «Remove» с slot равным 2 и file равным "flang.lock",
+    вариант «Remove» с slot равным 2 и file равным "flang.needs",
+    вариант «Remove» с slot равным 2 и file равным "proba.flang", вариант «Remove dir» с slot равным 2,
+    вариант «Remove» с slot равным 3 и file равным "logic.flang-package",
+    вариант «Remove» с slot равным 3 и file равным "flang.lock",
+    вариант «Remove» с slot равным 3 и file равным "flang.needs",
+    вариант «Remove» с slot равным 3 и file равным "proba.flang", вариант «Remove dir» с slot равным 3,
+    вариант «Remove dir» с slot равным 0]
+
+тотальная функция «All probe acts»
+  принимает forged: признак
+  возвращает список «Probe act»
+  пример «The forgery takes only the tampered package, as if it were honest»
+    дано forged равно да
+    ожидается [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1,
+      вариант «Put program» с slot равным 1, (вариант «Install» с slot равным 1 и ledger равным
+      "packaging/registry/cases/signature/tampered.list" и flags равным пустой список и expect равным ""),
+      вариант «Remove» с slot равным 1 и file равным "proba.flang", вариант «Remove dir» с slot равным 1,
+      вариант «Remove dir» с slot равным 0]
+  если forged
+    то [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1, вариант «Put program» с slot равным 1,
+      («Install act» от 1 и "tampered" и пустой список и ""),
+      вариант «Remove» с slot равным 1 и file равным "proba.flang", вариант «Remove dir» с slot равным 1,
+      вариант «Remove dir» с slot равным 0]
+    иначе свёртка («Cleanup acts») начиная с («Probe acts») как kept и one → добавить one к kept
+
+тотальная функция «Slot dir»
+  принимает walk: «Probe walk», slot: число
+  возвращает строка
+  пример «Folders are numbered from zero»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "/t/h" и
+      «dirs» равным ["/t/h", "/t/a"] и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано slot равно 1
+    ожидается "/t/a"
+  если ((длина (walk.«dirs»)) больше slot) и притом (slot не меньше 0) то элемент (slot плюс 1) в (walk.«dirs») иначе ""
+
+тотальная функция «Slot path»
+  принимает walk: «Probe walk», slot: число, file: строка
+  возвращает строка
+  пример «A file in a folder»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "/t/h" и
+      «dirs» равным ["/t/h", "/t/a"] и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано slot равно 1
+    дано file равно "flang.lock"
+    ожидается "/t/a/flang.lock"
+  соединить [(«Slot dir» от walk и slot), "/", file] по ""
+
+тотальная функция «Install arguments»
+  принимает walk: «Probe walk», slot: число, ledger: строка, flags: список строки
+  возвращает список строки
+  пример «The installer under an empty environment»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "/t/h" и
+      «dirs» равным ["/t/h", "/t/a"] и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано slot равно 1
+    дано ledger равно "l.list"
+    дано flags равно ["--allow-unsigned"]
+    ожидается ["-i", "HOME=/t/h", "PATH=/usr/bin:/bin", "b", "io", "../package-install.fscript", "--plan",
+      "Поставить", "--timeout", "600000", "--", "/t/a/proba.flang", "Логика", "--registry", "l.list",
+      "--allow-unsigned"]
+  пусть head равно ["-i", (соединить ["HOME=", (walk.«home»)] по ""), "PATH=/usr/bin:/bin", (walk.«binary»), "io",
+    («Probe installer»), "--plan", "Поставить", "--timeout", "600000", "--", («Slot path» от walk и slot и
+    "proba.flang"), "Логика", "--registry", ledger]
+  свёртка flags начиная с head как kept и one → добавить one к kept
+
+тотальная функция «Probe order»
+  принимает walk: «Probe walk», act: «Probe act»
+  возвращает «Поручение»
+  пример «A folder is made from a pattern»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и «dirs» равным
+      ["", "", "", ""] и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано act равно вариант «Make dir» с slot равным 2
+    ожидается вариант «Завести временный каталог» с образец равным "/t/flang-signature-probe-2-"
+  разбор act
+    случай вариант «Make dir» с slot как slot
+      то (вариант «Завести временный каталог» с образец равным (соединить [(walk.«root»), "/flang-signature-probe-",
+        (к строке slot), "-"] по ""))
+    случай вариант «Put program» с slot как slot
+      то (вариант «Записать файл» с путь равным («Slot path» от walk и slot и "proba.flang") и содержимое равным
+        (соединить («Probe program») по "\n"))
+    случай вариант «Install» с slot как slot и ledger как ledger и flags как flags и expect как expect
+      то (вариант «Запустить процесс» с программа равным "env" и аргументы равным
+        («Install arguments» от walk и slot и ledger и flags))
+    случай вариант «Present» с slot как slot и file как file
+      то вариант «Прочитать файл» с путь равным («Slot path» от walk и slot и file)
+    случай вариант «Absent» с slot как slot и file как file
+      то вариант «Прочитать файл» с путь равным («Slot path» от walk и slot и file)
+    случай вариант «Lock holds» с slot как slot и text как text
+      то вариант «Прочитать файл» с путь равным («Slot path» от walk и slot и "flang.lock")
+    случай вариант «Lock keep» с slot как slot
+      то вариант «Прочитать файл» с путь равным («Slot path» от walk и slot и "flang.lock")
+    случай вариант «Lock same» с slot как slot
+      то вариант «Прочитать файл» с путь равным («Slot path» от walk и slot и "flang.lock")
+    случай вариант «Remove» с slot как slot и file как file
+      то вариант «Удалить файл» с путь равным («Slot path» от walk и slot и file)
+    случай вариант «Remove dir» с slot как slot
+      то вариант «Удалить файл» с путь равным («Slot dir» от walk и slot)
+    случай вариант «Idle»
+      то вариант «Текущее время»
+
+тотальная функция «Act name»
+  принимает act: «Probe act»
+  возвращает строка
+  пример «An install names its list and flags»
+    дано act равно (вариант «Install» с slot равным 1 и ledger равным "l.list" и flags равным ["--repin",
+      "Логика"] и expect равным "")
+    ожидается "установка в каталог 1 по l.list --repin Логика"
+  разбор act
+    случай вариант «Install» с slot как slot и ledger как ledger и flags как flags и expect как expect
+      то «Joined words» от ["установка в каталог", (к строке slot), "по", ledger] и flags
+    случай вариант «Present» с slot как slot и file как file
+      то соединить ["файл ", file, " в каталоге ", (к строке slot)] по ""
+    случай вариант «Absent» с slot как slot и file как file
+      то соединить ["файл ", file, " в каталоге ", (к строке slot)] по ""
+    случай вариант «Lock holds» с slot как slot и text как text
+      то соединить ["замок каталога ", (к строке slot), " с ", text] по ""
+    случай вариант «Lock same» с slot как slot
+      то соединить ["замок каталога ", (к строке slot), " после отказа"] по ""
+    случай любое
+      то "шаг пробы"
+
+тотальная функция «Joined words»
+  принимает front: список строки, back: список строки
+  возвращает строка
+  пример «Words with spaces»
+    дано front равно ["a", "b"]
+    дано back равно ["c"]
+    ожидается "a b c"
+  соединить (свёртка back начиная с front как kept и one → добавить one к kept) по " "
+
+тотальная функция «Probe trouble»
+  принимает walk: «Probe walk», words: строка
+  возвращает «Probe walk»
+  пример «No words, no trouble»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано words равно ""
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+  если words равен ""
+    то walk
+    иначе (запись «Probe walk» с «binary» равным (walk.«binary») и «root» равным (walk.«root») и «home» равным
+      (walk.«home») и «dirs» равным (walk.«dirs») и «now» равным (walk.«now») и «rest» равным (walk.«rest») и
+      «troubles» равным (добавить (соединить [(«Act name» от (walk.«now»)), ": ", words] по "") к (walk.«troubles»)) и
+      «done» равным (walk.«done») и «kept» равным (walk.«kept»))
+
+тотальная функция «Keeping»
+  принимает walk: «Probe walk», text: строка
+  возвращает «Probe walk»
+  пример «The lock text is kept for the next comparison»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано text равно "{}"
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "{}")
+  (запись «Probe walk» с «binary» равным (walk.«binary») и «root» равным (walk.«root») и «home» равным (walk.«home») и
+    «dirs» равным (walk.«dirs») и «now» равным (walk.«now») и «rest» равным (walk.«rest») и «troubles» равным
+    (walk.«troubles») и «done» равным (walk.«done») и «kept» равным text)
+
+тотальная функция «Stepping»
+  принимает walk: «Probe walk», act: «Probe act», rest: список «Probe act»
+  возвращает «Probe walk»
+  пример «The next act becomes the current one»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано act равно вариант «Make dir» с slot равным 0
+    дано rest равно пустой список
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Make dir» с slot равным 0) и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 1 и «kept» равным "")
+  (запись «Probe walk» с «binary» равным (walk.«binary») и «root» равным (walk.«root») и «home» равным (walk.«home») и
+    «dirs» равным (walk.«dirs») и «now» равным act и «rest» равным rest и «troubles» равным (walk.«troubles») и
+    «done» равным ((walk.«done») плюс 1) и «kept» равным (walk.«kept»))
+
+тотальная функция «With folder»
+  принимает walk: «Probe walk», slot: число, path: строка
+  возвращает «Probe walk»
+  пример «The first folder is the empty home»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано slot равно 0
+    дано path равно "/t/h"
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "/t/h" и «dirs» равным
+      ["/t/h"] и «now» равным (вариант «Idle») и «rest» равным пустой список и «troubles» равным пустой список и
+      «done» равным 0 и «kept» равным "")
+  (запись «Probe walk» с «binary» равным (walk.«binary») и «root» равным (walk.«root») и «home» равным
+    (если slot равен 0 то path иначе walk.«home») и «dirs» равным (добавить path к (walk.«dirs»)) и «now» равным
+    (walk.«now») и «rest» равным (walk.«rest») и «troubles» равным (walk.«troubles») и «done» равным (walk.«done») и
+    «kept» равным (walk.«kept»))
+
+тотальная функция «Install verdict»
+  принимает expect: строка, code: число, output: строка, errors: строка
+  возвращает строка
+  пример «A success was expected and came»
+    дано expect равно ""
+    дано code равно 0
+    дано output равно "{\"result\":\"поставлено пакетов: 1\"}"
+    дано errors равно ""
+    ожидается ""
+  пример «The refusal came with its code»
+    дано expect равно "FLANG_INSTALL_SIGNATURE"
+    дано code равно 1
+    дано output равно "{\"diagnostics\":[{\"code\":\"FLANG_INSTALL_SIGNATURE\"}]}"
+    дано errors равно ""
+    ожидается ""
+  пример «A refusal with another code is a trouble»
+    дано expect равно "FLANG_INSTALL_SIGNATURE"
+    дано code равно 1
+    дано output равно "{}"
+    дано errors равно ""
+    ожидается "ждали FLANG_INSTALL_SIGNATURE, а установщик ответил кодом 1: {}"
+  пусть answer равно соединить [errors, output] по ""
+  пусть fits равно (если (expect равен "") то ((code равен 0) и притом (output содержит "поставлено пакетов")) иначе
+    ((code равен 1) и притом (answer содержит (соединить ["\"code\":\"", expect, "\""] по ""))))
+  (если (fits) то ("") иначе (соединить ["ждали ", (если expect равен "" то "код 0" иначе expect),
+    ", а установщик ответил кодом ", (к строке code), ": ", answer] по ""))
+
+тотальная функция «After probe reply»
+  принимает walk: «Probe walk», reply: «Отклик»
+  возвращает «Probe walk»
+  пример «A written file needs nothing more»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Put program» с slot равным 1) и
+      «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано reply равно вариант «Записано» с сколько равным 10
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Put program» с slot равным 1) и
+      «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+  разбор (walk.«now»)
+    случай вариант «Make dir» с slot как slot
+      то «After folder» от walk и slot и reply
+    случай вариант «Install» с slot как slot и ledger как ledger и flags как flags и expect как expect
+      то «After install» от walk и expect и reply
+    случай вариант «Present» с slot как slot и file как file
+      то «Probe trouble» от walk и («Read failed» от reply)
+    случай вариант «Absent» с slot как slot и file как file
+      то «Probe trouble» от walk и (если «Read failed» от reply равен "" то "файл есть, а его быть не должно" иначе "")
+    случай вариант «Lock holds» с slot как slot и text как text
+      то («Probe trouble» от walk и (если («Read text» от reply) содержит text то "" иначе соединить ["в замке нет ",
+        text] по ""))
+    случай вариант «Lock keep» с slot как slot
+      то «Keeping» от walk и («Read text» от reply)
+    случай вариант «Lock same» с slot как slot
+      то («Probe trouble» от walk и (если («Read text» от reply) равен
+        (walk.«kept») то "" иначе "замок изменился после отказа"))
+    случай вариант «Remove dir» с slot как slot
+      то «Probe trouble» от walk и («Read failed» от reply)
+    случай любое
+      то walk
+
+тотальная функция «Read failed»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «A read file is no trouble»
+    дано reply равно вариант «Прочитано» с содержимое равным "x"
+    ожидается ""
+  пример «A failed read is named»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается "FLANG_IO_READ: нет файла"
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как words
+      то соединить [code, ": ", words] по ""
+    случай любое
+      то ""
+
+тотальная функция «Read text»
+  принимает reply: «Отклик»
+  возвращает строка
+  пример «The text of a read file»
+    дано reply равно вариант «Прочитано» с содержимое равным "x"
+    ожидается "x"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то text
+    случай любое
+      то ""
+
+тотальная функция «After folder»
+  принимает walk: «Probe walk», slot: число, reply: «Отклик»
+  возвращает «Probe walk»
+  пример «A refused folder is a trouble»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Make dir» с slot равным 0) и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано slot равно 0
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_WRITE" и сообщение равным "нет места"
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Make dir» с slot равным 0) и «rest» равным пустой список и
+      «troubles» равным ["шаг пробы: FLANG_IO_WRITE: нет места"] и «done» равным 0 и «kept» равным "")
+  разбор reply
+    случай вариант «Заведено» с путь как path
+      то «With folder» от walk и slot и path
+    случай любое
+      то «Probe trouble» от walk и («Read failed» от reply)
+
+тотальная функция «After install»
+  принимает walk: «Probe walk», expect: строка, reply: «Отклик»
+  возвращает «Probe walk»
+  пример «An installer that did not start is a trouble»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 0 и «kept» равным "")
+    дано expect равно ""
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_SPAWN" и сообщение равным "нет env"
+    ожидается (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и «troubles» равным
+      ["шаг пробы: FLANG_IO_SPAWN: нет env"] и «done» равным 0 и «kept» равным "")
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Probe trouble» от walk и («Install verdict» от expect и code и output и errors)
+    случай любое
+      то «Probe trouble» от walk и («Read failed» от reply)
+
+тотальная функция «Probe verdict»
+  принимает walk: «Probe walk»
+  возвращает «Продолжение»
+  пример «No troubles»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 43 и «kept» равным "")
+    ожидается (вариант «Конец работы» с значение равным "подписи пакетов: шагов 43; отказы названы своими кодами")
+  если (длина (walk.«troubles»)) равен 0
+    то (вариант «Конец работы» с значение равным (соединить ["подписи пакетов: шагов ", (к строке (walk.«done»)),
+      "; отказы названы своими кодами"] по ""))
+    иначе (вариант «Провал» с код равным "FLANG_SIGNATURE_PROBE" и сообщение равным (соединить (приписать (соединить
+      ["проба подписей: бед ", (к строке (длина (walk.«troubles»))), " из ", (к строке (walk.«done»)),
+      " шагов:"] по "") к (walk.«troubles»)) по "\n  · "))
+
+тотальная функция «Probe perform»
+  принимает walk: «Probe walk»
+  возвращает «Продолжение»
+  пример «Nothing left is the verdict»
+    дано walk равно (запись «Probe walk» с «binary» равным "b" и «root» равным "/t" и «home» равным "" и
+      «dirs» равным пустой список и «now» равным (вариант «Idle») и «rest» равным пустой список и
+      «troubles» равным пустой список и «done» равным 1 и «kept» равным "")
+    ожидается (вариант «Конец работы» с значение равным "подписи пакетов: шагов 1; отказы названы своими кодами")
+  разбор (walk.«rest»)
+    случай пусто
+      то «Probe verdict» от walk
+    случай голова lead и хвост others
+      то (вариант «Сделать» с поручение равным («Probe order» от walk и lead) и потом равным
+        (вариант «Probing» с walk равным («Stepping» от walk и lead и others)))
+
+тотальная функция «Probe start»
+  возвращает «Probe step»
+  пример «The probe starts by asking where temporary folders go»
+    ожидается вариант «Starting» с forged равным нет
+  вариант «Starting» с forged равным нет
+
+тотальная функция «Forgery start»
+  возвращает «Probe step»
+  пример «The forgery starts the same way»
+    ожидается вариант «Starting» с forged равным да
+  вариант «Starting» с forged равным да
+
+тотальная функция «Root from»
+  принимает reply: «Отклик», fallback: строка
+  возвращает строка
+  пример «The value of the variable»
+    дано reply равно вариант «Значение среды» с значение равным "/s"
+    дано fallback равно "/tmp"
+    ожидается "/s"
+  пример «No variable, the fallback»
+    дано reply равно вариант «Переменной среды нет»
+    дано fallback равно "/tmp"
+    ожидается "/tmp"
+  разбор reply
+    случай вариант «Значение среды» с значение как value
+      то value
+    случай любое
+      то fallback
+
+тотальная функция «Probe next»
+  принимает step: «Probe step», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first turn reads FLANG_TMP»
+    дано step равно вариант «Starting» с forged равным нет
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
+      "FLANG_TMP") и потом равным (вариант «Reading temp folder» с forged равным нет))
+  разбор step
+    случай вариант «Starting» с forged как forged
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
+        "FLANG_TMP") и потом равным (вариант «Reading temp folder» с forged равным forged))
+    случай вариант «Reading temp folder» с forged как forged
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
+        "FLANG_BINARY") и потом равным (вариант «Reading binary» с root равным («Root from» от reply и
+        "/tmp") и forged равным forged))
+    случай вариант «Reading binary» с root как root и forged как forged
+      то («Probe perform» от (запись «Probe walk» с «binary» равным («Root from» от reply и («Probe binary»)) и
+        «root» равным root и «home» равным "" и «dirs» равным пустой список и «now» равным (вариант «Idle») и
+        «rest» равным («All probe acts» от forged) и «troubles» равным пустой список и «done» равным 0 и «kept» равным
+        ""))
+    случай вариант «Probing» с walk как walk
+      то «Probe perform» от («After probe reply» от walk и reply)
+
+план «Check»
+  состояние «Probe step»
+  начинает с «Probe start»
+  обрабатывает «Probe next»
+
+план «Forgery»
+  состояние «Probe step»
+  начинает с «Forgery start»
+  обрабатывает «Probe next»

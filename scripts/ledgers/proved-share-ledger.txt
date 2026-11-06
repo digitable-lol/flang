@@ -1410,6 +1410,7 @@ a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
 4d0e5016eb5aa11397bdf2416641622c|9|7|2|0|0|flang/stdlib/bignum.flang
+8a92927769172b53f39224056f7f6397|6|6|0|0|0|flang/stdlib/blake2b.flang
 5465e1ce911d0cf83e921282f2ce54ec|53|20|33|0|0|flang/stdlib/cli.flang
 ce0a11a05d50f6c51e9b6376747374d8|68|52|15|1|0|flang/stdlib/crl.flang
 340eacba2d4fd792ddad520878aa7bd3|79|36|43|0|0|flang/stdlib/datetime.flang
@@ -1417,6 +1418,7 @@ d0a59944c937510534f0e02a4969a4fc|71|57|13|1|0|flang/stdlib/der.flang
 02c99ed3c6fd2fc4ed56eb504ee294f7|34|23|8|3|0|flang/stdlib/dictionary.flang
 da0090976d3836d16366e967c2274c43|64|27|37|0|0|flang/stdlib/dns.flang
 16becdf35d073fac6ec30e8a8a047aa3|35|29|1|5|0|flang/stdlib/ecdsa.flang
+8a63a651eb5a2f97b86d7f60e41b6329|5|5|0|0|0|flang/stdlib/ed25519.flang
 e4e633482d82b7dd860e76158575710a|41|26|13|2|0|flang/stdlib/hashmap.flang
 660de674dcffc7ee174667370a303861|62|40|19|3|0|flang/stdlib/higher-order.flang
 328cba9b55b44a1a89939ba2de5819e3|27|9|13|5|0|flang/stdlib/hmac.flang
@@ -1427,6 +1429,7 @@ c2307f1b4a2fc981d6ac01a479496ffa|11|8|3|0|0|flang/stdlib/kdf.flang
 efaae27f0f5763ab87ecf6a4395dba43|16|13|3|0|0|flang/stdlib/logic.flang
 900f7e018973099fe46750bbf4a56f2c|37|16|21|0|3|flang/stdlib/math-classics-lists.flang
 17c0ed7eab4e217ec1c4cc1c7c0865d3|70|32|38|0|14|flang/stdlib/math-classics.flang
+6d9e70ab05b48c84fcae7bd842034a62|2|2|0|0|0|flang/stdlib/minisign.flang
 7132954d30fed089bfdd07bb538d1343|30|14|16|0|0|flang/stdlib/number-format.flang
 80a158ae85073a46080ff9efaa506bbc|58|37|21|0|0|flang/stdlib/numbers.flang
 b015f115126dbc62704689a5a24193be|13|5|6|2|0|flang/stdlib/numtree.flang
@@ -1442,6 +1445,7 @@ e762097dfe6b7486f85ef012ea3cf88d|23|12|9|2|0|flang/stdlib/scram.flang
 caec0e8f9bd5029a3f8b17690491ddc8|43|30|12|1|0|flang/stdlib/sets.flang
 10f573154de900ce6f7318c5e3b91aaf|64|47|8|9|0|flang/stdlib/sha1.flang
 70bb1beb40cc6d5d8ac62cfd2d7b6419|114|46|36|32|0|flang/stdlib/sha256.flang
+70a1993d8504b09b7bd61fb3beaeae7e|4|4|0|0|0|flang/stdlib/sha512.flang
 3cbbec205411ba245986b43e493501be|168|82|38|39|0|flang/stdlib/sqlite.flang
 06c18cc40f427e895e5ba914334f58a0|43|24|19|0|0|flang/stdlib/stats.flang
 37df74872e253c7a6f041a10b133a875|120|60|59|1|0|flang/stdlib/strings.flang

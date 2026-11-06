@@ -344,13 +344,38 @@
     то «Word» от 7 и line
     иначе ""
 
+тотальная функция «Last said»
+  принимает lines: список строки
+  возвращает строка
+  пример «The last line that says something»
+    дано lines равно ["доля", "нет flang/proof/checker/сверщик", ""]
+    ожидается "нет flang/proof/checker/сверщик"
+  пример «Nothing said gives an empty line»
+    дано lines равно ["", ""]
+    ожидается ""
+  свёртка lines начиная с "" как last и line → (если line равен "" то last иначе line)
+
 тотальная функция «Share trouble»
   принимает answers: список «Answer»
   возвращает строка
-  пусть named равно (отфильтровать («Said by» от "share" и answers) где line → (line содержит "РАСХОЖДЕНИЕ") или ((line содержит "не смог") или (line содержит "нет ни одной записи")))
+  пример «A ruler that fails without a share names what it missed»
+    дано answers равно [запись «Answer» с «name» равным "share" и «reply» равным (вариант «Процесс завершён»
+      с код равным 3 и вывод равным "" и ошибки равным "нет flang/proof/checker/сверщик\n")]
+    ожидается "линейка вышла кодом 3 и числа не дала: нет flang/proof/checker/сверщик"
+  пример «A ruler that says nothing is named by its exit code»
+    дано answers равно [запись «Answer» с «name» равным "share" и «reply» равным (вариант «Процесс завершён»
+      с код равным 0 и вывод равным "" и ошибки равным "")]
+    ожидается "линейка вышла кодом 0 и числа не дала, ничего не сказав"
+  пусть said равно («Said by» от "share" и answers)
+  пусть named равно (отфильтровать said где line → (line содержит "РАСХОЖДЕНИЕ") или ((line содержит "не смог")
+    или (line содержит "нет ни одной записи")))
+  пусть last равно («Last said» от said)
+  пусть code равно (к строке («Exit code of» от "share" и answers))
   разбор named
     случай пусто
-      то соединить ["линейка вышла кодом ", (к строке («Exit code of» от "share" и answers)), " и числа не дала"] по ""
+      то (если last равен ""
+        то соединить ["линейка вышла кодом ", code, " и числа не дала, ничего не сказав"] по ""
+        иначе соединить ["линейка вышла кодом ", code, " и числа не дала: ", last] по "")
     случай голова и хвост
       то голова
 
@@ -409,9 +434,13 @@
   принимает answers: список «Answer»
   возвращает «Check»
   пусть line равно («Share line» от answers)
-  запись «Check» с «passed» равным ((к числу («Share» от line)) не меньше («Threshold»)) и «words» равным (соединить [
-    («Share» от line), " %: ", («Word» от 3 и line), " из ", («Word» от 5 и line), "; недостижимых мест вынесено ",
-    (к строке («Count» от («Unreachable» от answers)))] по "")
+  пусть share равно («Share» от line)
+  если share равен ""
+    то запись «Check» с «passed» равным нет и «words» равным (соединить ["доля не измерена: ",
+      («Share trouble» от answers)] по "")
+    иначе запись «Check» с «passed» равным ((к числу share) не меньше («Threshold»)) и «words» равным (соединить [
+      share, " %: ", («Word» от 3 и line), " из ", («Word» от 5 и line), "; недостижимых мест вынесено ",
+      (к строке («Count» от («Unreachable» от answers)))] по "")
 
 тотальная функция «Probes check»
   принимает answers: список «Answer»
@@ -532,6 +561,10 @@
 тотальная функция «Verdict word»
   принимает answers: список «Answer»
   возвращает строка
+  пример «A share the ruler did not give is not measured, and the verdict says so»
+    дано answers равно [запись «Answer» с «name» равным "share" и «reply» равным (вариант «Процесс завершён»
+      с код равным 3 и вывод равным "" и ошибки равным "нет flang/proof/checker/сверщик\n")]
+    ожидается "НЕ СМОГ ИЗМЕРИТЬ"
   «Chosen» от [(«When» от (не («Is measured» от answers)) и "НЕ СМОГ ИЗМЕРИТЬ"),
     («When» от («Is provable» от answers) и "ДОКАЗУЕМ")] и "НЕ ДОКАЗУЕМ"
 

@@ -2208,3 +2208,12 @@ ceba84542e71cafd6a77a57dd4873246|0|×|×|×|1|flang/proof/probes/lists-and-cases
 31780bf5feda7c6e9cf4728922748c35|0|×|×|×|2|flang/proof/probes/lists-and-cases/programs/head-shadowed-by-the-pattern.flang
 d02ac6c439bb0a76cb7bb409edcae0aa|2|0|2|0|0|flang/proof/probes/lists-and-cases/programs/list-inclusion-false.flang
 d7aefa09cd3ea850a35c652932cd9db7|6|2|4|0|0|flang/proof/probes/lists-and-cases/programs/list-inclusion.flang
+7e3cf7315a15f73a9291177f579d408e|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/and-split.flang
+3bb923549962a02116fd6ba4c649bb0a|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/closed-power.flang
+79eabb91d5987777e167f88be7ff6f80|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/contradiction.flang
+6141765d55e425bc9cc2946b3206f895|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/filter-length.flang
+2b707fe4d2710e2cd7cd4f18b76bd600|1|0|1|0|0|flang/proof/checker/tests/families/kernel-replay/maximum-over-number.flang
+a71d2c9aacfc1ff779ae275d73593ef6|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/maximum.flang
+238837f5473135e02e9def50a41ace01|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/mirror.flang
+ed767a93c900347aefba87f2ca4880e5|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/order-chain.flang
+fc0184cc7417a414dc3f3b1182367f63|1|0|0|1|0|flang/proof/checker/tests/families/kernel-replay/reflexive-over-number.flang

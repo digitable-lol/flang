@@ -86,7 +86,7 @@ node:
   `fl_chain_cons`, `fl_chain_head`, `fl_chain_tail`), list literals (`fl_list_alloc`, stores by
   index, `fl_list`), records and variants with fields (`fl_record_new`, `fl_variant_new` with the
   field names read from `static const char *const …[]`), and calls to the builtin forms `fl_b_…`
-  (the 18 forms the reference runs). A fold loop and a filter loop are recognized by their whole
+  (the 19 forms the reference runs). A fold loop and a filter loop are recognized by their whole
   shape (`for` over `.as.list.items`, an accumulator with `fl_region_recycle` or a `fl_keep` flag,
   and `fl_list` after the loop), and the loop body becomes the tree of one step; for a map
   (`fl_par_map`) the tree of one step is the separate C function the print hands the element and
@@ -107,6 +107,13 @@ every function it calls is proved too (by symbols or over its whole domain). Bef
 built, the reference tree is evaluated on every witness and must give the reference answer; a
 mismatch is a fault of the symbolic walk, and the function is left out.
 
+For the fragment of literals, names, binary operations, `если`, `пусть`, calls, preconditions and
+postconditions the reference tree is also built by `«деревоФункции»` of `Semantics/Walk.lean`, and
+the theorem `«дерево-функции-верно»` proves that this tree gives the answer of the reference on
+every input where the expressions of the function evaluate without error. When both trees are
+equal the verdict says «дерево эталона по теореме» and counts the function; `--theorem-floor`
+bounds that count.
+
 A postcondition the kernel proved is not printed in C. Such a postcondition is left out of the
 reference tree too, so the proof stands on the kernel for it, and the verdict counts those
 functions.
@@ -121,6 +128,7 @@ refused. A function it refuses keeps its witnesses.
 СООТВЕТСТВИЕ ПРОВЕРЕНО для N функций, вне валидации M
   доказано для D: перебором всей области P (из них без параметров Z), символьно S
   из символьных опираются на постусловия, доказанные ядром, Y
+  из символьных дерево эталона доказано теоремой (Semantics/Walk.lean), T
   на свидетелях без доказательства W; сличено свидетелей K
   символьно не сошлось X; символьно сошлось, но опирается на недоказанные вызовы V
   причины вне символьной проверки: <reason> — <count>; …
@@ -154,6 +162,7 @@ pull request. It gives the plan floors and ceilings:
 |---|---|
 | `--validated-floor` | functions with СООТВЕТСТВИЕ ПРОВЕРЕНО, at least |
 | `--proved-floor` | functions proved over the whole domain or symbolically, at least |
+| `--theorem-floor` | symbolic proofs whose reference tree comes from the theorem of `Semantics/Walk.lean`, at least |
 | `--outside-ceiling` | functions outside the validation, at most |
 | `--unprinted-ceiling` | files not printed or not built, at most |
 | `--unmodelled-ceiling` | runtime C functions the printed corpus calls that have no model in the reference, at most |

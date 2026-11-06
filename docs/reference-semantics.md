@@ -68,7 +68,7 @@ interpreter does. A call where the totality analysis marked a descent of a decla
 the kernel did not prove it first checks the measure, as the print does: the measure at the
 callee's arguments is smaller than the caller's, not below zero and whole, or the call refuses
 with `FLANG_MEASURE`. A zero product, quotient or remainder is `+0`. A run ends with a value, an error with its code, out of fuel, or outside the
-reference (exact fractions, `к числу`, `хеш256`).
+reference (exact fractions, `хеш256`).
 
 ## Theorems about evaluation
 
@@ -81,6 +81,8 @@ reference (exact fractions, `к числу`, `хеш256`).
 | `«развёртка-доводами»` | a call that evaluates to `v` can be replaced by its body with the argument expressions put in place of the parameters: the result is `v` again |
 | `«развёртка-без-подстановки-ложна»` | unfolding without putting the arguments in place changes the value |
 | `«развёртка-с-захватом-ложна»` | unfolding where a binder of the body captures an argument name changes the value |
+| `«обход-верен»` (`Semantics/Walk.lean`) | the tree the symbolic walk builds from an expression of literals, names, binary operations, `если`, `пусть` and calls gives the value of `выч` whenever `выч` gives a value |
+| `«дерево-функции-верно»` | the tree of a function with preconditions and postconditions gives the answer of the reference — a value or the refusal of a condition — whenever the expressions of the function evaluate without error on the input |
 
 `«развёртка-доводами»` is the reference form of the unfolding move of the checker: it needs the
 count of arguments to match, the free names of the body to be its parameters, and no argument
@@ -107,6 +109,6 @@ The plan fails on any disagreement. The same step runs in the Lean crosscheck wo
 - The unfolding of the model (`«развёртка?»`, `«развернутьВызов?»`) is proved on model terms;
   the translation of model terms into the reference tree, which would carry it over, is not written.
 - The moves of the record (`ход …`) have no theorem in either semantics.
-- Exact fractions, parsing numbers from strings and hashing are outside the reference.
+- Exact fractions and hashing are outside the reference.
 - The sign of a zero sum is not modelled.
 - Reading the text of a record and of the `flang ast` output is trusted.

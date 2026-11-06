@@ -73,8 +73,8 @@
 <!-- СНЯТО 2026-11-06 строк flang/proof/checker/checker.c = 15282 (ADR-0198: both checkers replay kernel places without moves from the source, both read an argument named in guillemets, ADR-0196: the checkers derive monad laws and replay the list map laws, and ADR-0202: both checkers decline substitution, the neutral zero and closing by an equality fact under a binder, and a let is substituted only when it alone binds the name; до них 14790, снято 2026-11-02) (task 5991: three forged totality records under tests/families and the recursion checks of both checkers; до них 14727, снято 2026-10-26) (issue 477: the C checker compares the ceiling of an unsigned word exactly, an honest u64 pair and a forgery in flang/proof/checker/tests/families/fixed-width-words; до них 14724, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 14051, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 13516, снято 2026-10-18) (print batch eight over dev 03bab0c1c; до них 13206, снято 2026-10-18) (batch seven: quantifier replay in both checkers (ADR-0107), the rewrite limit and rule pruning (ADR-0092), law examples and category shape (ADR-0108); до них 12192, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 12122, снято 2026-10-13) (batch five over dev 4222c7083; до них 12012, снято 2026-10-12) (ADR-0103: сверщик переигрывает постусловие с ограничением, цель, равную ограничению, и шаг «по предположению» у теоремы над постусловием; до него 11872, снято 2026-10-11) (задача 4791: разбор случаев отказывает условию под связывателем; до них 10497, снято 2026-10-04) --> 15 282 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
-<!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 25 (translation validation: the symbolic walk of printed C; до них 24, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 25 файлов,
-<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 22213 (translation validation: the symbolic walk of printed C, and ADR-0196: the list map laws are theorems; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 22 213 строки,
+<!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 26 (translation validation: the symbolic walk of printed C; до них 24, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 26 файлов,
+<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 22890 (translation validation: the symbolic walk of printed C, and ADR-0196: the list map laws are theorems; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 22 890 строки,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -298,7 +298,7 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
 
 **Что есть.** Эталонная семантика `flang/proof/lean/Semantics/` (ADR-0136) исполняет ядро языка
 над деревом `flang ast`: числа двойной точности, вызовы с пред- и постусловиями, разбор,
-свёртку, отображение, отбор, записи, варианты и 18 встроенных форм. Проверку перевода —
+свёртку, отображение, отбор, записи, варианты и 19 встроенных форм. Проверку перевода —
 план `flang/translation/validation.fscript`, ярлык `bootstrap/flang run-script translation:validate`,
 описание [`translation-validation.ru.md`](translation-validation.ru.md) — CI гоняет работой
 `translation-validation` на каждый push и каждый pull request, с полом
@@ -324,21 +324,30 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
 
 - *Покрытия всего корпуса.* На корпусе по умолчанию каждая проверенная функция доказана. На
   `docs/examples/leetcode` (ключ `--path`, вместе с файлами подделок) проверено 336 функций,
-  доказано 329, на свидетелях 7, расхождений 0, у трёх файлов эталон не уложился в срок; там же
-  зовётся функция рантайма без модели — `fl_b_k_chislu` (форму `к числу` эталон не исполняет). Весь
+  доказано 332, на свидетелях 4, расхождений 0, функций рантайма без модели 0, у трёх файлов эталон
+  не уложился в срок. Весь
   `docs/examples` одним прогоном не измерен: эталон на примерах `crypto` тратит минуты на файл. Символьное
   сравнение читает печать, только пока она держит форму, которую оно знает; другая форма той же
   печати снимает доказательство без ошибки, и функция остаётся на свидетелях.
 - *Покрытия языка эталоном.* Процессы, ящики и планы эталон не исполняет вовсе; встроенные
-  формы сверх 18 и вызовы функций других модулей эталон отвергает, и такая функция вне
+  формы сверх 19 и вызовы функций других модулей эталон отвергает, и такая функция вне
   проверки. Параметр-функция проверяется на функциях модуля без захвата, а не на всех значениях.
 - *Доказанных контрактов рантайма C.* Корпус по умолчанию зовёт 43 функции рантайма
   `flang/src/emit/c/flang_runtime.{c,h}`; у каждой есть модель в эталоне (таблица плана, 65 строк,
   ADR-0212), и каждая сверена на свидетелях функций, которые её зовут, — потолок функций без модели
   в CI 0. Доказательства для всех входов нет ни у одной (контракты CBMC — ADR-0124, CBMC на машине
   нет), и символьное сравнение принимает модель за смысл функции C.
-- *Доказательства символьного обхода.* Дерево эталона строит отдельный код рядом с `выч`;
-  теоремы, что значение дерева равно `выч`, нет — сверка идёт на свидетелях.
+- *Доказательства символьного обхода для всего языка.* Теорема `«дерево-функции-верно»`
+  (`flang/proof/lean/Semantics/Walk.lean`, без `sorry`, на трёх стандартных аксиомах) доказывает
+  для фрагмента — литералы, имена, двучлены, `если`, `пусть`, вызовы функций модуля, предусловия и
+  постусловия: дерево решений, которое строит обход `«деревоФункции»`, на любом входе даёт тот же
+  ответ, что эталон (значение или отказ условия), если выражения функции на этом входе вычисляются
+  без ошибки. Проверка перевода строит это дерево рядом с рабочим и засчитывает теорему, только когда
+  оба дерева равны: на корпусе по умолчанию так у 56 из 127 функций, доказанных символьно (потолок в
+  CI — `--theorem-floor 56`). У остальных 71 — списки, образцы, свёртки, встроенные формы, записи и
+  варианты, применение функций — дерево эталона по-прежнему сверяется с `выч` только на
+  свидетелях. Что вычисление дерева в плане (`«вычД»`) — то же, что `«значДерева»` теоремы, держит
+  чтение глазами, как и смысл, который символьное исполнение даёт C.
 - *Проверенного компилятора C.* Напечатанное собирает `cc -O2` системы, ему и libc проверка
   доверяет. CompCert собирает напечатанное только после правки рантайма руками (задача 3467).
 - *Проверки при печати.* Свою программу план проверяет ключом `-- --path`, отдельным прогоном;

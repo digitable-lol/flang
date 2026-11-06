@@ -120,9 +120,13 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: |
-          bootstrap/flang run-script lean-model:blocks -- --ceiling 521
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 521 --judged-floor 343
           if bootstrap/flang run-script lean-model:blocks -- --ceiling 520; then
             echo "перепись блоков промолчала на потолке ниже факта" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 344; then
+            echo "перепись блоков промолчала на поле выше факта" >&2
             exit 1
           fi
 

@@ -99,7 +99,7 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
     | none => .error ("имя «" ++ x ++ "» не связано")
   | .«двучлен» "percent" a b =>
     «сим» P ρ n a (fun ta n1 => «сим» P ρ n1 b (fun tb n2 =>
-      k (.«оп» "mul" [.«оп» "div" [ta, .«ч» («изЦелого» 100)], tb]) n2))
+      k (.«оп» "fmul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb]) n2))
   | .«двучлен» op a b =>
     if «операцииИсходника».contains op then
       «сим» P ρ n a (fun ta n1 => «сим» P ρ n1 b (fun tb n2 => k (.«оп» op [ta, tb]) n2))
@@ -280,8 +280,14 @@ structure «СредаC» where
   «числовые» : List String
 
 def «опC» : List (String × String) :=
-  [("+", "add"), ("-", "sub"), ("*", "mul"), ("/", "div"), ("<", "lt"), ("<=", "lte"), (">", "gt"), (">=", "gte"),
+  [("+", "add"), ("-", "sub"), ("*", "fmul"), ("/", "fdiv"), ("<", "lt"), ("<=", "lte"), (">", "gt"), (">=", "gte"),
     ("==", "eq64"), ("!=", "ne64"), ("&&", "and"), ("||", "or")]
+
+def «безМинусНуляC» : «Т» → «Т»
+  | .«оп» "add" [.«оп» "fmul" [a, b], .«ч» (.«кон» false 0)] => .«оп» "mul" [a, b]
+  | .«оп» "add" [.«оп» "fdiv" [a, b], .«ч» (.«кон» false 0)] => .«оп» "div" [a, b]
+  | .«оп» "add" [.«оп» "fmod" [a, b], .«ч» (.«кон» false 0)] => .«оп» "mod" [a, b]
+  | t => t
 
 def «уровни» : List (List String) := [["||"], ["&&"], ["==", "!="], ["<", "<=", ">", ">="], ["+", "-"], ["*", "/"]]
 
@@ -290,7 +296,7 @@ def «помощники» : List String := ["add", "sub", "mul", "div", "mod", 
 def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«ч» _ => true
   | .«имя» x => σ.«числа».contains x
-  | .«оп» o _ => ["add", "sub", "mul", "div", "mod"].contains o
+  | .«оп» o _ => ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«рез» _ => false
   | .«п» _ => false
   | .«с» _ => false
@@ -347,7 +353,7 @@ partial def «уровень» (σ : «СредаC») : List (List String) → L
         let ta ← «уровень» σ (ops :: rest) (ls.take i)
         let tb ← «уровень» σ rest (ls.drop (i + 1))
         match «найти» s «опC» with
-        | some o => pure (.«оп» o [ta, tb])
+        | some o => pure («безМинусНуляC» (.«оп» o [ta, tb]))
         | none => .error ("знак " ++ s)
       | _ => .error "разрез"
 partial def «одночлен» (σ : «СредаC») (ls : List «Лекс») : Except String «Т» :=
@@ -394,7 +400,7 @@ partial def «одночлен» (σ : «СредаC») (ls : List «Лекс»)
       | "fl_number", [t] => pure t
       | "fl_flag", [t] => pure t
       | "fl_equal", [a, b] => pure (.«оп» "eq" [a, b])
-      | "fmod", [a, b] => pure (.«оп» "mod" [a, b])
+      | "fmod", [a, b] => pure (.«оп» "fmod" [a, b])
       | "fl_variant_is", [a, .«с» v] => pure (.«оп» ("is:" ++ v) [a])
       | _, _ => .error ("вызов C " ++ f)
     | _ => .error "скобки вызова"
@@ -607,7 +613,7 @@ where
             | some x => do
               let ta ← «выражениеC» σ a
               let tb ← «выражениеC» σ b
-              let t := if op = "percent" then .«оп» "mul" [.«оп» "div" [ta, .«ч» («изЦелого» 100)], tb] else .«оп» op [ta, tb]
+              let t := if op = "percent" then .«оп» "fmul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb] else .«оп» op [ta, tb]
               «исполнить» { σ with «знач» := (x, t) :: σ.«знач» } n q
             | none => .error h
           | _ => .error h

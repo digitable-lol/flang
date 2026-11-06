@@ -110767,6 +110767,20 @@ fl_status compiler_flang_tekst_utverzhdeniya_zapisi(fl_ctx *ctx,
                                                     fl_error *error);
 
 /*
+ * Функция flang «Текст утверждения обязательства записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_utverzhdeniya_obyazatelstva_zapisi(fl_ctx *ctx,
+                                                                  fl_value stroki,
+                                                                  fl_value obyazatelstvo,
+                                                                  fl_value *result,
+                                                                  fl_error *error);
+
+/*
  * Функция flang «Оператор соседей записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).

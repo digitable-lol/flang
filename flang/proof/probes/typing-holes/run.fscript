@@ -82,6 +82,10 @@
       то («Вход печати на Rust» от "th-shortest-tie" и "{\"fn\":\"Треть степени двойки\",\"args\":[]}")
     случай "run-shortest-tie"
       то " --function '«Треть степени двойки»'"
+    случай "run-fieldless-variant"
+      то " --function '«Пусто ли»' --args '{\"р\":{\"вариант\":\"Пусто\"}}'"
+    случай "run-fieldless-variant-tagged"
+      то " --function '«Пусто ли»' --args '{\"р\":{\"variant\":\"Пусто\",\"fields\":{}}}'"
     случай "run-percent-zero"
       то " --function '«Знак процентов от нуля»' --args '{\"а\":0}'"
     случай "emit-c-exact-entry"

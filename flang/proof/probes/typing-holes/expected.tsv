@@ -43,3 +43,8 @@ requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	наруш
 shortest-number-tie-in-rust.flang	check	0	замечаний нет
 shortest-number-tie-in-rust.flang	run-shortest-tie	0	1501199875790165.2
 shortest-number-tie-in-rust.flang	emit-rust-shortest-tie	0	{"ok":true,"value":{"n":"1501199875790165.2"}}
+fieldless-variant-argument-as-record.flang	check	0	замечаний нет
+fieldless-variant-argument-as-record.flang	run-fieldless-variant	0	false
+fieldless-variant-argument-as-record.flang	run-fieldless-variant-tagged	0	true
+selective-import-in-two-lines.flang	check	1	не входит в список «только»
+selective-import-helpers.flang	check	0	замечаний нет

@@ -2550,14 +2550,14 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
         run: >-
           bootstrap/flang run-script translation:validate --
-          --validated-floor 152 --proved-floor 152 --outside-ceiling 0 --unprinted-ceiling 3
+          --validated-floor 174 --proved-floor 174 --outside-ceiling 0 --unprinted-ceiling 3 --unmodelled-ceiling 0
       - name: Bounds one step tighter turn the validation red
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: |
           set +e
           bootstrap/flang run-script translation:validate -- \
-            --validated-floor 152 --proved-floor 153 --outside-ceiling 0 --unprinted-ceiling 2 \
+            --validated-floor 174 --proved-floor 175 --outside-ceiling 0 --unprinted-ceiling 2 \
             > "$RUNNER_TEMP/tighter.log" 2>&1
           code=$?
           set -e
@@ -2565,5 +2565,5 @@ jobs:
             echo "the validation stayed green on bounds one step tighter" >&2
             exit 1
           fi
-          grep -q 'пол --proved-floor 153 не достигнут' "$RUNNER_TEMP/tighter.log"
+          grep -q 'пол --proved-floor 175 не достигнут' "$RUNNER_TEMP/tighter.log"
           grep -q 'потолок --unprinted-ceiling 2 превышен' "$RUNNER_TEMP/tighter.log"

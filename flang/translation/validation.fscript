@@ -111,9 +111,10 @@
 тотальная функция «Corpus»
   принимает answers: список «Answer»
   возвращает список строки
-  пример «By default the proof examples, the Pythagoras examples and the integer square root»
+  пример «By default the proof examples, the Pythagoras examples, the integer square root and the runtime»
     дано answers равно пустой список
-    ожидается ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang"]
+    ожидается ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang",
+      "flang/translation/runtime-contracts.flang"]
   пример «With --all every example of the documentation»
     дано answers равно [(запись «Answer» с «name» равным "arguments"
         и «reply» равным (вариант «Доводы» с доводы равным ["--all"]))]
@@ -127,7 +128,8 @@
       "docs/examples/pythagoras/euclid-formula.flang", "docs/examples/leetcode/069-sqrtx.flang", "my/program.flang"]
   пусть words равно («Given of» от "arguments" и answers)
   пусть path равно («Key value» от "--path" и words)
-  пусть usual равно ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang"]
+  пусть usual равно ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang",
+      "flang/translation/runtime-contracts.flang"]
   «Chosen» от [(«When» от (не (пусто path)) и (добавить path к («Forgery hosts»))),
       («When» от (words содержит "--all") и ["flang/proof/examples", "docs/examples"])] и usual
 
@@ -139,7 +141,7 @@
 
 тотальная функция «Whole corpus program»
   возвращает строка
-  обеспечивает «the program has twenty-two lines» (длина (разделить результат по "\n")) равен 22
+  обеспечивает «the program has twenty-four lines» (длина (разделить результат по "\n")) равен 24
   соединить ["W=$0; B=$1; shift 1",
       "case $B in /*) ;; *) B=$PWD/$B;; esac",
       "cd ../.. || exit 1",
@@ -161,6 +163,8 @@
       "awk -F'\\t' -v OFS='\\t' -v b=\"$u\" -v c=\"$d/c.txt\" '",
       "$2==\"вне\" || $2==\"символ\" {print b, $1, $2, $3, $4; next}",
       "{x=\"\"; getline x < c; print b, $1, $2, $4, x}' \"$d/plan.tsv\"",
+      "grep -o 'fl_[a-z0-9_]*(' \"$d/module.txt\" | tr -d '(' | sort -u | while read -r h; do",
+      "grep -q \"^[a-z_ *]*$h(\" \"$d\"/flang_runtime.[ch] && say \"$u\" \"$h\" \"рантайм\" \"\"; done",
       "done > \"$W/corpus.tsv\""] по "\n"
 
 тотальная функция «Forgery program»
@@ -434,7 +438,8 @@
     ожидается ([(запись «Summary» с «unit» равным "a" и «function» равным "Ф" и «class» равным "свидетели"
         и «compared» равным 2 и «agreed» равным 2 и «skipped» равным 0 и «reason» равным ""
         и «differ» равным пустой список)])
-  (свёртка (отфильтровать («Lines» от text) где line → не («Symbolic line» от line)) начиная с (пустой список)
+  (свёртка (отфильтровать («Lines» от text) где line → не (((«Symbolic line» от line)) или («Runtime line» от line)))
+      начиная с (пустой список)
       как summaries и line → «Joined» от summaries и («Row of» от line))
 
 тотальная функция «Kind»
@@ -514,6 +519,118 @@
     дано summaries равно пустой список
     ожидается 0
   свёртка summaries начиная с 0 как acc и s → acc плюс (s.«compared»)
+
+тотальная функция «Runtime models»
+  возвращает список (список строки)
+  обеспечивает «sixty-five model rows» (длина результат) равен 65
+  [["fl_b_dlina", "Eval.lean «форма» \"длина\""],
+    ["fl_b_dobavit", "Eval.lean «форма» \"добавить\""],
+    ["fl_b_pripisat", "Eval.lean «форма» \"приписать\""],
+    ["fl_b_razdelit", "Eval.lean «форма» \"разделить\""],
+    ["fl_b_razdelit_dokazano", "Eval.lean «форма» \"разделить\""],
+    ["fl_b_soderzhit", "Eval.lean «форма» \"содержит\""],
+    ["fl_b_soedinit", "Eval.lean «форма» \"соединить\""],
+    ["fl_b_element", "Eval.lean «форма» \"элемент\""],
+    ["fl_b_golova", "Eval.lean «форма» \"голова\""],
+    ["fl_b_golova_dokazano", "Eval.lean «форма» \"голова\""],
+    ["fl_b_hvost", "Eval.lean «форма» \"хвост\""],
+    ["fl_b_hvost_dokazano", "Eval.lean «форма» \"хвост\""],
+    ["fl_b_kod_simvola", "Eval.lean «форма» \"код символа\""],
+    ["fl_b_kod_simvola_dokazano", "Eval.lean «форма» \"код символа\""],
+    ["fl_b_k_stroke", "Eval.lean «форма» \"к строке\""],
+    ["fl_b_nachinaetsya_s", "Eval.lean «форма» \"начинается с\""],
+    ["fl_b_ostatok_ot", "Eval.lean «форма» \"остаток от\""],
+    ["fl_b_podstroka", "Eval.lean «форма» \"подстрока\""],
+    ["fl_b_pusto", "Eval.lean «форма» \"пусто\""],
+    ["fl_b_simvol", "Eval.lean «форма» \"символ\""],
+    ["fl_b_simvol_po_kodu", "Eval.lean «форма» \"символ по коду\""],
+    ["fl_b_simvoly", "Eval.lean «форма» \"символы\""],
+    ["fl_add", "Eval.lean «двучлен» \"add\""],
+    ["fl_sub", "Eval.lean «двучлен» \"sub\""],
+    ["fl_mul", "Eval.lean «двучлен» \"mul\""],
+    ["fl_div", "Eval.lean «двучлен» \"div\""],
+    ["fl_mod", "Eval.lean «двучлен» \"mod\""],
+    ["fl_lt", "Eval.lean «двучлен» \"lt\""],
+    ["fl_lte", "Eval.lean «двучлен» \"lte\""],
+    ["fl_gt", "Eval.lean «двучлен» \"gt\""],
+    ["fl_gte", "Eval.lean «двучлен» \"gte\""],
+    ["fl_concat", "Eval.lean «двучлен» \"concat\""],
+    ["fl_percent", "Eval.lean «двучлен» \"percent\""],
+    ["fl_equal", "Eval.lean «равны»"],
+    ["fl_number", "Eval.lean «Зн».«число»"],
+    ["fl_flag", "Eval.lean «Зн».«признак»"],
+    ["fl_nothing", "Eval.lean «Зн».«ничто»"],
+    ["fl_list", "Eval.lean «Зн».«список»"],
+    ["fl_list_alloc", "Eval.lean «Зн».«список»"],
+    ["fl_record_new", "Eval.lean «Зн».«запись»"],
+    ["fl_variant_new", "Eval.lean «Зн».«вариант»"],
+    ["fl_field_get", "Eval.lean «шаг» «поле»"],
+    ["fl_variant_field", "Eval.lean «подходит» «вариант»"],
+    ["fl_variant_is", "Eval.lean «подходит» «вариант»"],
+    ["fl_chain_empty", "Eval.lean «подходит» «пусто»"],
+    ["fl_chain_cons", "Eval.lean «подходит» «звено»"],
+    ["fl_chain_head", "Eval.lean «подходит» «звено»"],
+    ["fl_chain_tail", "Eval.lean «подходит» «звено»"],
+    ["fl_cond", "Eval.lean «шаг» «если»"],
+    ["fl_keep", "Eval.lean «отбор»"],
+    ["fl_pre", "Validate.lean «проверитьПред»"],
+    ["fl_post", "Eval.lean «вызватьТело» постусловия"],
+    ["fl_fail", "Eval.lean «беда»"],
+    ["fl_match_fail", "Eval.lean «разобрать» FLANG_MATCH_NOT_EXHAUSTIVE"],
+    ["fl_not_numbers", "Eval.lean «двучлен» FLANG_TYPE"],
+    ["fl_not_order", "Eval.lean «двучлен» FLANG_TYPE"],
+    ["fl_require_list", "Eval.lean «шаг» свёртка FLANG_TYPE"],
+    ["fl_par_map", "Eval.lean «образы»"],
+    ["fl_enter", "Eval.lean «выч» топливо"],
+    ["fl_leave", "Eval.lean «выч» топливо"],
+    ["fl_check_entry", "Eval.lean «выч» топливо"],
+    ["fl_tick", "Eval.lean «выч» топливо"],
+    ["fl_region_open", "без значения: память"],
+    ["fl_region_close", "без значения: память"],
+    ["fl_region_recycle", "без значения: память"]]
+
+тотальная функция «Unmodelled»
+  принимает names: список строки
+  возвращает список строки
+  пример «A runtime function without a model is named»
+    дано names равно ["fl_concat", "fl_unknown"]
+    ожидается ["fl_unknown"]
+  пусть modelled равно (отобразить («Runtime models») как row → «Cell» от 1 и row)
+  отфильтровать names где name → не (modelled содержит name)
+
+тотальная функция «Runtime line»
+  принимает line: строка
+  возвращает признак
+  пример «A runtime function the printed C calls»
+    дано line равно "a\tfl_concat\tрантайм\t\t"
+    ожидается да
+  пример «A witness line is not one»
+    дано line равно "a\tФ\tсвидетели\tзначение 1\tзначение 1"
+    ожидается нет
+  («Cell» от 3 и (разделить line по "\t")) равен "рантайм"
+
+тотальная функция «Added once»
+  принимает names: список строки, name: строка
+  возвращает список строки
+  пример «A name already there is not added»
+    дано names равно ["a"]
+    дано name равно "a"
+    ожидается ["a"]
+  пример «A new name goes to the end»
+    дано names равно ["a"]
+    дано name равно "b"
+    ожидается ["a", "b"]
+  если names содержит name то names иначе (добавить name к names)
+
+тотальная функция «Runtime names»
+  принимает text: строка
+  возвращает список строки
+  пример «Each runtime function once»
+    дано text равно "a\tfl_concat\tрантайм\t\t\nb\tfl_concat\tрантайм\t\t\nb\tfl_equal\tрантайм\t\t\n"
+    ожидается ["fl_concat", "fl_equal"]
+  пусть lines равно (отфильтровать («Lines» от text) где line → «Runtime line» от line)
+  пусть all равно (отобразить lines как line → «Cell» от 2 и (разделить line по "\t"))
+  свёртка all начиная с (пустой список) как names и name → «Added once» от names и name
 
 тотальная функция «Symbolic line»
   принимает line: строка
@@ -779,7 +896,10 @@
   пусть upper равно («Соединить списки» от («Bound trouble» от "--outside-ceiling"
       и («Bound» от "--outside-ceiling" и answers) и outside и да)
       и («Bound trouble» от "--unprinted-ceiling" и («Bound» от "--unprinted-ceiling" и answers) и unprinted и да))
-  «Соединить списки» от lower и upper
+  пусть unmodelled равно (длина («Unmodelled» от («Runtime names» от («Output of» от "corpus" и answers))))
+  пусть models равно («Bound trouble» от "--unmodelled-ceiling" и («Bound» от "--unmodelled-ceiling" и answers)
+      и unmodelled и да)
+  «Соединить списки» от («Соединить списки» от lower и upper) и models
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
@@ -798,9 +918,13 @@
   пусть code равно («Exit code of» от "corpus run" и answers)
   пусть cut равно (если code равен 0 то пустой список иначе [(соединить ["прогон корпуса не завершился, код ",
       (к строке code)] по "")])
+  пусть runtime равно («Runtime names» от («Output of» от "corpus" и answers))
+  пусть missing равно («Unmodelled» от runtime)
+  пусть runtimeLine равно (соединить ["функций рантайма C, которые зовёт сличённый C, ", (к строке (длина runtime)),
+      ", из них без модели в эталоне ", (к строке (длина missing)), ": ", (соединить missing по ", ")] по "")
   пусть troubles равно («Соединить списки» от cut и («Bound troubles» от corpus и symbolic и answers))
-  пусть lines равно («Соединить списки» от («Соединить списки» от («Corpus lines» от corpus и symbolic) и troubles)
-      и forgeries)
+  пусть lines равно («Соединить списки» от («Соединить списки» от («Corpus lines» от corpus и symbolic)
+      и (добавить runtimeLine к troubles)) и forgeries)
   пусть validated равно ((длина («Of kind» от "перебор" и corpus)) плюс (длина («Of kind» от "свидетели" и corpus)))
   пусть bad равно (не (пусто («Of kind» от "расхождение" и corpus)))
   пусть unrejected равно (отфильтровать forgeries где line → не («Rejected» от line))

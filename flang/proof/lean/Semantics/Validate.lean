@@ -655,7 +655,7 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
     let iv ← «значТ» vals res i
     match lv with
     | .«список» xs => do
-      let acc ← xs.foldlM (fun acc v => «вычД» P ((a, acc) :: (x, v) :: vals) res st) iv
+      let acc ← xs.foldlM (fun acc v => «вычД» P vals ((k + 1, v) :: (k, acc) :: res) st) iv
       «вычД» P vals ((k, acc) :: res) r
     | _ => «беда» "FLANG_TYPE"
   | .«обход» "отбор" l _ _ x st k r => do

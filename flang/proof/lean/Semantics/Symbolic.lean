@@ -210,11 +210,9 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
   | .«разбор» t cs => «сим» P ρ n t (fun tt n1 => «симСлучаи» P ρ n1 tt cs k)
   | .«свёртка» l i a x s =>
     «сим» P ρ n l (fun tl n1 => «сим» P ρ n1 i (fun ti n2 => do
-      let an := "@a" ++ toString n2
-      let xn := "@x" ++ toString n2
-      let step ← «сим» P ((a, .«имя» an) :: (x, .«имя» xn) :: ρ) (n2 + 1) s (fun t _ => .ok (.«знач» t))
+      let step ← «сим» P ((a, .«рез» n2) :: (x, .«рез» (n2 + 1)) :: ρ) (n2 + 2) s (fun t _ => .ok (.«знач» t))
       let rest ← k (.«рез» n2) (n2 + 1)
-      pure (.«обход» "свёртка" tl ti an xn step n2 rest)))
+      pure (.«обход» "свёртка" tl ti "" "" step n2 rest)))
   | .«отобразить» l x s =>
     «сим» P ρ n l (fun tl n1 => do
       let xn := "@x" ++ toString n1
@@ -813,8 +811,8 @@ where
             .«слово» "fl_region_recycle" :: .«знак» "(" :: .«слово» "FL_TRY" :: before =>
           match «найти» t σ.«знач», «найти» acc σ.«знач» with
           | some tl, some ti =>
-            let an := "@a" ++ toString n
-            let xn := "@x" ++ toString n
+            let an := "#р" ++ toString n
+            let xn := "#р" ++ toString (n + 1)
             let numericAcc := «числовой?» σ ti
             let accFields := match ti with
               | .«оп» "make-record" (.«оп» "fields" ns :: items) =>
@@ -826,12 +824,12 @@ where
             let nums := (if numericAcc then [acc, an] else []) ++ «элементыСписка» σ tl [el, xn] ++
               (if listAcc then ["[]" ++ acc, "[]" ++ an] else []) ++
               accFields.flatMap (fun f => [acc ++ "." ++ f, an ++ "." ++ f]) ++ σ.«числа»
-            let σb : «СредаC» := { σ with «знач» := (acc, .«имя» an) :: (el, .«имя» xn) :: σ.«знач», «числа» := nums }
+            let σb : «СредаC» := { σ with «знач» := (acc, .«рез» n) :: (el, .«рез» (n + 1)) :: σ.«знач», «числа» := nums }
             let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» acc, .«знак» ";",
               .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
             if !(«телоЦиклаЧисто» before.reverse) then .error "тело цикла выходит из функции" else
             if !(«пишетТолькоСвоё» [acc] before.reverse) then .error "тело цикла пишет чужое" else
-            match «исполнить» σb (n + 1) (before.reverse ++ tail) with
+            match «исполнить» σb (n + 2) (before.reverse ++ tail) with
             | .error m => .error m
             | .ok step =>
               let rk := "#р" ++ toString n
@@ -843,7 +841,7 @@ where
                 match «доПары» "(" ")" 0 q [] with
                 | some (_, .«знак» ")" :: .«знак» ";" :: q2) => do
                   let r ← «исполнить» σr (n + 1) q2
-                  pure (.«обход» "свёртка" tl ti an xn step n r)
+                  pure (.«обход» "свёртка" tl ti "" "" step n r)
                 | _ => .error "закрытие области свёртки"
               | _ => .error "свёртка без закрытия области"
           | _, _ => .error "список или начало свёртки не связаны"

@@ -41,7 +41,14 @@ partial def «изД» : «Д» → Option «Дерево»
     let us ← ts.mapM «изТ»
     let rr ← «изД» r
     if f.startsWith "form:" then some (.«форма» (f.drop 5).toString us k rr) else some (.«вызов» f us k rr)
-  | .«обход» _ _ _ _ _ _ _ _ => none
+  | .«обход» w l i _ _ st k r =>
+    if w = "свёртка" then do
+      let tl ← «изТ» l
+      let ti ← «изТ» i
+      let sst ← «изД» st
+      let rr ← «изД» r
+      some (.«свёртка» tl ti sst k rr)
+    else none
 
 def «равноЗн» : «Зн» → «Зн» → Bool
   | .«число» a, .«число» b => decide (a = b)
@@ -122,6 +129,8 @@ def «равноДерева» : «Дерево» → «Дерево» → Bool
   | .«если» c a b, .«если» d x y => «равноТерм» c d && «равноДерева» a x && «равноДерева» b y
   | .«вызов» f ts k r, .«вызов» g us m q => f == g && «равноТермов» ts us && k == m && «равноДерева» r q
   | .«форма» f ts k r, .«форма» g us m q => f == g && «равноТермов» ts us && k == m && «равноДерева» r q
+  | .«свёртка» l i st k r, .«свёртка» l2 i2 st2 k2 r2 =>
+    «равноТерм» l l2 && «равноТерм» i i2 && «равноДерева» st st2 && k == k2 && «равноДерева» r r2
   | _, _ => false
 
 theorem «равноДерева-верно» : ∀ (a b : «Дерево»), «равноДерева» a b = true → a = b := by
@@ -141,6 +150,10 @@ theorem «равноДерева-верно» : ∀ (a b : «Дерево»), «
     intro b h; cases b <;> simp [«равноДерева»] at h
     obtain ⟨⟨⟨h1, h2⟩, h3⟩, h4⟩ := h
     rw [h1, «равноТермов-верно» _ _ h2, h3, ih _ h4]
+  | «свёртка» l i st k r ih1 ih2 =>
+    intro b h; cases b <;> simp [«равноДерева»] at h
+    obtain ⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, h5⟩ := h
+    rw [«равноТерм-верно» _ _ h1, «равноТерм-верно» _ _ h2, ih1 _ h3, h4, ih2 _ h5]
 
 def «деревоПоТеореме?» (pres : List «Условие входа») (g : «Функция») (qs : List «Постусловие») (c : «Д») : Bool :=
   match «деревоФункции» pres g qs, «изД» c with

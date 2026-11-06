@@ -179,6 +179,7 @@ break
 breakage
 breakdown
 breaks
+bridge
 brings
 broke
 broken

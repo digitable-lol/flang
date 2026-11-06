@@ -3,6 +3,7 @@
   использует «Inquiry» из "../../scripts/inquiry.fscript"
   использует «Reading» из "../../scripts/reading.fscript"
   использует «Tables» из "../../scripts/tables.fscript"
+  использует «Kernel verdict» из "../proof/kernel-verdict.fscript" только «Key value», «Pick», «Picked»
   использует «Lists» только «Соединить списки»
 
 объект «Row»
@@ -40,11 +41,11 @@
   пример «A forgery names the unit, the printed file, the edit and the function it must break»
     дано name равно "sign"
     дано unit равно "precondition"
-    дано file равно "preduslovie.c"
+    дано file равно "program.c"
     дано original равно "+"
     дано forged равно "-"
     дано target равно "Удвоить"
-    ожидается (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition" и «file» равным "preduslovie.c"
+    ожидается (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition" и «file» равным "program.c"
         и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
   (запись «Forgery» с «name» равным name и «unit» равным unit и «file» равным file и «original» равным original
       и «forged» равным forged и «function» равным target)
@@ -52,22 +53,22 @@
 тотальная функция «Forgeries»
   возвращает список «Forgery»
   обеспечивает «eight forgeries» (длина результат) равен 8
-  ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "preduslovie.c"
+  ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "program.c"
       и "n.as.number + n.as.number" и "n.as.number - n.as.number" и "Удвоить"),
-    («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "svetofor.c" и "fl_number(500.0)"
+    («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "program.c" и "fl_number(500.0)"
       и "fl_number(501.0)" и "Штраф"),
-    («Forgery of» от "precondition bound" и "flang-proof-examples-precondition" и "preduslovie.c"
+    («Forgery of» от "precondition bound" и "flang-proof-examples-precondition" и "program.c"
       и "args[0].as.number >= 0.0), \"вход" и "args[0].as.number > 0.0), \"вход" и "Удвоить"),
-    («Forgery of» от "recursion step" и "flang-proof-examples-precondition" и "preduslovie.c"
+    («Forgery of» от "recursion step" и "flang-proof-examples-precondition" и "program.c"
       и "fl_t1.as.number + 1.0" и "fl_t1.as.number + 2.0" и "Высота от дна"),
-    («Forgery of» от "text constant" и "flang-proof-examples-corpus-alphabet" и "alfavit_leksera.c"
+    («Forgery of» от "text constant" и "flang-proof-examples-corpus-alphabet" и "program.c"
       и "{\"abcdefg" и "{\"abcdefq" и "Строчные"),
-    («Forgery of» от "swapped operands" и "flang-proof-examples-precondition" и "preduslovie.c"
+    («Forgery of» от "swapped operands" и "flang-proof-examples-precondition" и "program.c"
       и "shirina.as.number - dlina.as.number" и "dlina.as.number - shirina.as.number" и "Сколько дополнить"),
-    («Forgery of» от "hidden point" и "flang-proof-examples-precondition" и "preduslovie.c"
+    («Forgery of» от "hidden point" и "flang-proof-examples-precondition" и "program.c"
       и "fl_flag(fl_t2.as.number >= 0.0)" и "fl_flag(fl_t2.as.number >= 0.0 && fl_t2.as.number != 777.0)"
       и "Сколько дополнить"),
-    («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "formula_evklida.c"
+    («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "program.c"
       и "<= 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\""
       и "< 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\"" и "Гипотенуза")])
 
@@ -628,7 +629,7 @@
   возвращает строка
   пример «A forgery that left no trace is not rejected»
     дано forgery равно (запись «Forgery» с «name» равным "sign" и «unit» равным "precondition"
-        и «file» равным "preduslovie.c" и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
+        и «file» равным "program.c" и «original» равным "+" и «forged» равным "-" и «function» равным "Удвоить")
     дано summaries равно пустой список
     дано rows равно пустой список
     ожидается "подделка «sign» (precondition «Удвоить»): НЕ ОТВЕРГНУТА — нет ни одной строки"
@@ -675,6 +676,75 @@
   пусть asked равно (соединить ["build ", name] по "")
   ((«Exit code of» от asked и answers) равен 0) и притом (пусто («Output of» от asked и answers))
 
+тотальная функция «Bound trouble»
+  принимает key: строка, named: строка, actual: число, upper: признак
+  возвращает список строки
+  пример «A count above its ceiling is named»
+    дано key равно "--outside-ceiling"
+    дано named равно "4"
+    дано actual равно 5
+    дано upper равно да
+    ожидается ["потолок --outside-ceiling 4 превышен: 5"]
+  пример «A count below its floor is named»
+    дано key равно "--validated-floor"
+    дано named равно "146"
+    дано actual равно 145
+    дано upper равно нет
+    ожидается ["пол --validated-floor 146 не достигнут: 145"]
+  пример «A count on its bound is no trouble»
+    дано key равно "--proved-floor"
+    дано named равно "97"
+    дано actual равно 97
+    дано upper равно нет
+    ожидается пустой список
+  пример «No bound named, no trouble»
+    дано key равно "--outside-ceiling"
+    дано named равно ""
+    дано actual равно 9
+    дано upper равно да
+    ожидается пустой список
+  пусть limit равно (к числу (если пусто named то "0" иначе named))
+  пусть beyond равно (если upper то actual больше limit иначе actual меньше limit)
+  пусть line равно (соединить [(если upper то "потолок " иначе "пол "), key, " ", named,
+      (если upper то " превышен: " иначе " не достигнут: "), (к строке actual)] по "")
+  если (не (пусто named)) и притом beyond то [line] иначе пустой список
+
+тотальная функция «Bound»
+  принимает key: строка, answers: список «Answer»
+  возвращает строка
+  пример «No bound unless it is named»
+    дано key равно "--proved-floor"
+    дано answers равно пустой список
+    ожидается ""
+  пример «The digits after the key»
+    дано key равно "--proved-floor"
+    дано answers равно [(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["--proved-floor", "97"]))]
+    ожидается "97"
+  «Leading digits» от («Key value» от key и («Given of» от "arguments" и answers))
+
+тотальная функция «Bound troubles»
+  принимает summaries: список «Summary», rows: список «Row», answers: список «Answer»
+  возвращает список строки
+  пример «An empty corpus is below a floor of one»
+    дано summaries равно пустой список
+    дано rows равно пустой список
+    дано answers равно [(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["--validated-floor", "1", "--outside-ceiling", "0"]))]
+    ожидается ["пол --validated-floor 1 не достигнут: 0"]
+  пусть exhaustive равно (длина («Of kind» от "перебор" и summaries))
+  пусть validated равно (exhaustive плюс (длина («Of kind» от "свидетели" и summaries)))
+  пусть proved равно (exhaustive плюс (длина («Proved symbolically» от summaries и rows)))
+  пусть outside равно ((длина («Of kind» от "вне" и summaries)) плюс (длина («Of kind» от "не сличено" и summaries)))
+  пусть unprinted равно (длина («Of kind» от "файл" и summaries))
+  пусть lower равно («Соединить списки» от («Bound trouble» от "--validated-floor"
+      и («Bound» от "--validated-floor" и answers) и validated и нет)
+      и («Bound trouble» от "--proved-floor" и («Bound» от "--proved-floor" и answers) и proved и нет))
+  пусть upper равно («Соединить списки» от («Bound trouble» от "--outside-ceiling"
+      и («Bound» от "--outside-ceiling" и answers) и outside и да)
+      и («Bound trouble» от "--unprinted-ceiling" и («Bound» от "--unprinted-ceiling" и answers) и unprinted и да))
+  «Соединить списки» от lower и upper
+
 тотальная функция «Verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
@@ -689,11 +759,13 @@
   пусть forged равно («Summaries» от («Output of» от "forgeries" и answers))
   пусть forgedSymbolic равно («Symbolic rows» от («Output of» от "forgeries" и answers))
   пусть forgeries равно (отобразить («Forgeries») как forgery → «Forgery line» от forgery и forged и forgedSymbolic)
-  пусть lines равно («Соединить списки» от («Corpus lines» от corpus и symbolic) и forgeries)
+  пусть troubles равно («Bound troubles» от corpus и symbolic и answers)
+  пусть lines равно («Соединить списки» от («Соединить списки» от («Corpus lines» от corpus и symbolic) и troubles)
+      и forgeries)
   пусть validated равно ((длина («Of kind» от "перебор" и corpus)) плюс (длина («Of kind» от "свидетели" и corpus)))
   пусть bad равно (не (пусто («Of kind» от "расхождение" и corpus)))
   пусть unrejected равно (отфильтровать forgeries где line → не («Rejected» от line))
-  пусть failing равно (bad или ((не (пусто unrejected)) или (validated меньше 1)))
+  пусть failing равно (bad или ((не (пусто unrejected)) или ((validated меньше 1) или (не (пусто troubles)))))
   пусть failed равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
     и сообщение равным (соединить ["не собраны: ", (соединить shortBroken по ",")] по ""))
   пусть differing равно (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"

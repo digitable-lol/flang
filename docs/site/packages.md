@@ -134,6 +134,12 @@ of the file, the key is Ed25519
   `--repin`. A trusted key also protects the first install, which pinning on
   first use does not.
 
+The key `RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B` is the test
+key of the example: it signs only the packages of `scripts/registry-example/`
+and the installer's probe package, and it is trusted for nothing real. The
+author of a real package makes their own key with
+`flang run-script package:keygen <folder outside the tree>`.
+
 The signature is checked by the flang evaluator and is not fast: one signature takes 11–12 seconds,
 and checking the signature modules adds about forty seconds to the start of an install.
 

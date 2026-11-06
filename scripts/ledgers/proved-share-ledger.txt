@@ -2222,3 +2222,4 @@ e7b084dafc3e8918c63881995c0c8a53|1|0|1|0|0|flang/proof/checker/tests/families/bi
 e80fc205ae28ac40583b12a9a9992314|2|1|1|0|1|flang/proof/checker/tests/families/binder-substitution/modus-ponens.flang
 517d325053fbb578aa4d408f2d88ca0b|1|0|0|1|0|flang/proof/checker/tests/families/binder-substitution/neutral-zero.flang
 19b20e4faa0df0e4160db800000f5109|1|0|0|1|0|flang/proof/checker/tests/families/binder-substitution/split.flang
+ed57892d01e14653dbb6b2504c6159bf|2|1|0|1|0|flang/proof/checker/tests/families/stale-fact/fact-from-another-goal.flang

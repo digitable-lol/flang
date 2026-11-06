@@ -2217,3 +2217,8 @@ a71d2c9aacfc1ff779ae275d73593ef6|1|1|0|0|0|flang/proof/checker/tests/families/ke
 238837f5473135e02e9def50a41ace01|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/mirror.flang
 ed767a93c900347aefba87f2ca4880e5|1|1|0|0|0|flang/proof/checker/tests/families/kernel-replay/order-chain.flang
 fc0184cc7417a414dc3f3b1182367f63|1|0|0|1|0|flang/proof/checker/tests/families/kernel-replay/reflexive-over-number.flang
+8e1009fd4125ce3790e4385fc89c81fa|1|0|1|0|0|flang/proof/checker/tests/families/binder-substitution/let-twice.flang
+e7b084dafc3e8918c63881995c0c8a53|1|0|1|0|0|flang/proof/checker/tests/families/binder-substitution/let-under-binder.flang
+e80fc205ae28ac40583b12a9a9992314|2|1|1|0|1|flang/proof/checker/tests/families/binder-substitution/modus-ponens.flang
+517d325053fbb578aa4d408f2d88ca0b|1|0|0|1|0|flang/proof/checker/tests/families/binder-substitution/neutral-zero.flang
+19b20e4faa0df0e4160db800000f5109|1|0|0|1|0|flang/proof/checker/tests/families/binder-substitution/split.flang

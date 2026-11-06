@@ -750,4 +750,225 @@ theorem «ход-закрыть-состоятелен» (I : «Толкован
   · subst hq; exact «закрыть-по-свойству» I p l h3 hfact hok hv
   · subst hq; simp [«беда-оборвана»] at hok
 
+/-! ## Прогон блока ходов целиком -/
+
+/-- Начальная цель посылки верна при верных допущениях индукции этого прогона. -/
+def «Толкование».«верноНачало» (I : «Толкование») (o : «Обст») (p : «Прогон») : Prop :=
+  (∀ d ∈ p.«дано», I.«истинно» d) → I.«истинно» (o.«начальная» p.«вариант»)
+
+/-- Идущий прогон не оборван, и его верность даёт начальную цель посылки. -/
+def «Толкование».«держит» (I : «Толкование») (o : «Обст») (p : «Прогон») : Prop :=
+  p.«идёт» = true → p.«оборван» = false ∧ (I.«верен» p → I.«верноНачало» o p)
+
+theorem «держит-не-идёт» (I : «Толкование») (o : «Обст») (p : «Прогон») (h : p.«идёт» = false) :
+    I.«держит» o p := by
+  intro hi; rw [h] at hi; exact absurd hi (by decide)
+
+theorem «держит-беда» (I : «Толкование») (o : «Обст») (p : «Прогон») (t : String) :
+    I.«держит» o (p.«беда» t) := «держит-не-идёт» I o _ rfl
+
+/-- Сведение без целей верно само: начальная цель доказана. -/
+theorem «конец-доказал» (I : «Толкование») (o : «Обст») (p : «Прогон»)
+    (hi : p.«идёт» = true) (he : p.«цели» = []) (hd : I.«держит» o p) : I.«верноНачало» o p := by
+  apply (hd hi).2
+  intro _ i hlt
+  rw [he] at hlt
+  exact absurd hlt (Nat.not_lt_zero _)
+
+/-- **Ход «цель»**: начальная цель варианта посылки становится единственной целью, и верность
+    прогона даёт её. -/
+theorem «ход-цель-состоятелен» (I : «Толкование») (o : «Обст») (p : «Прогон») (s0 : String)
+    (hp : («обрезать» s0).startsWith "посылка " = false) (hs : («обрезать» s0).startsWith "ход " = true)
+    (hw : «слово» («обрезать» s0) 2 = "цель") : I.«держит» o («шагБлока» o p s0) := by
+  unfold «шагБлока»
+  simp only [hp, hs, hw, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+  split
+  · exact «держит-беда» I o _ _
+  · intro _
+    refine ⟨rfl, fun hv _ => ?_⟩
+    have h0 := hv (by simp) 0 (by simp)
+    simp only [«Толкование».«цельВерна», «Прогон».«условияЦели»] at h0
+    exact h0 (by simpa using I.«метка-пуста»)
+
+/-- **Ход «дано»**: допущение индукции добавляется к допущениям прогона; верность прогона
+    при всех допущениях даёт начальную цель, как и до хода. -/
+theorem «ход-дано-состоятелен» (I : «Толкование») (o : «Обст») (p : «Прогон») (s0 : String)
+    (hp : («обрезать» s0).startsWith "посылка " = false) (hs : («обрезать» s0).startsWith "ход " = true)
+    (hw : «слово» («обрезать» s0) 2 = "дано") (hh : I.«держит» o p) : I.«держит» o («шагБлока» o p s0) := by
+  unfold «шагБлока»
+  simp only [hp, hs, hw, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+  unfold «ходДопущения»
+  dsimp only
+  split
+  · exact «держит-беда» I o _ _
+  split
+  · exact «держит-беда» I o _ _
+  split
+  · exact «держит-беда» I o _ _
+  intro hi
+  obtain ⟨hob, himp⟩ := hh hi
+  refine ⟨hob, fun hv hd => ?_⟩
+  have hv' : I.«верен» p := by
+    intro _ i hlt
+    exact hv hd i hlt
+  exact himp hv' (fun d hdm => hd d (List.mem_append_left _ hdm))
+
+/-- **Ход «конец»** закрывает сведение: прогон перестаёт идти. -/
+theorem «ход-конец-состоятелен» (I : «Толкование») (o : «Обст») (p : «Прогон») (s0 : String)
+    (hp : («обрезать» s0).startsWith "посылка " = false) (hs : («обрезать» s0).startsWith "ход " = true)
+    (hw : «слово» («обрезать» s0) 2 = "конец") : I.«держит» o («шагБлока» o p s0) := by
+  unfold «шагБлока»
+  simp only [hp, hs, hw, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+  split
+  · split
+    · exact «держит-беда» I o _ _
+    · rename_i h1 _
+      exact «держит-не-идёт» I o _ (by simpa using h1)
+  · split
+    · exact «держит-беда» I o _ _
+    · exact «держит-не-идёт» I o _ rfl
+
+/-- Рамка ходов: ход, судимый `«ходШага»`, не трогает вариант посылки, допущения и счёт
+    проигранных, а идущим оставляет прогон, только если тот шёл, с тем же признаком обрыва. -/
+def «рамкаХодов» (o : «Обст») : Prop :=
+  ∀ p l, («ходШага» p l o).«вариант» = p.«вариант» ∧ («ходШага» p l o).«дано» = p.«дано» ∧
+    («ходШага» p l o).«проиграно» = p.«проиграно» ∧
+    ((«ходШага» p l o).«идёт» = true → p.«идёт» = true ∧ («ходШага» p l o).«оборван» = p.«оборван»)
+
+/-- Каждый ход, судимый `«ходШага»`, состоятелен: теоремы родов хода выше дают это для своих
+    родов при своих посылках. -/
+def «ходыСостоятельны» (I : «Толкование») (o : «Обст») : Prop :=
+  ∀ p l, («ходШага» p l o).«оборван» = false → I.«верен» («ходШага» p l o) → I.«верен» p
+
+theorem «шагБлока-прочий» (o : «Обст») (p : «Прогон») (s0 : String)
+    (hp' : («обрезать» s0).startsWith "посылка " = false) (hs : («обрезать» s0).startsWith "ход " = true)
+    (h1 : ¬ «слово» («обрезать» s0) 2 = "цель") (h2 : ¬ «слово» («обрезать» s0) 2 = "дано")
+    (h3 : ¬ «слово» («обрезать» s0) 2 = "конец") :
+    «шагБлока» o p s0 = «ходШага» p («обрезать» s0) o := by
+  unfold «шагБлока»
+  simp only [hp', hs, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+  try (split <;> simp_all)
+
+theorem «шаг-держит» (I : «Толкование») (o : «Обст») (H : «ходыСостоятельны» I o) (F : «рамкаХодов» o)
+    (p : «Прогон») (s0 : String) (hh : I.«держит» o p) : I.«держит» o («шагБлока» o p s0) := by
+  by_cases hp : («обрезать» s0).startsWith "посылка " = true
+  · unfold «шагБлока»; simp only [hp, ↓reduceIte]
+    exact «держит-не-идёт» I o _ rfl
+  have hp' : («обрезать» s0).startsWith "посылка " = false := by simpa using hp
+  by_cases hs : («обрезать» s0).startsWith "ход " = true
+  · by_cases h1 : «слово» («обрезать» s0) 2 = "цель"
+    · exact «ход-цель-состоятелен» I o p s0 hp' hs h1
+    by_cases h2 : «слово» («обрезать» s0) 2 = "дано"
+    · exact «ход-дано-состоятелен» I o p s0 hp' hs h2 hh
+    by_cases h3 : «слово» («обрезать» s0) 2 = "конец"
+    · exact «ход-конец-состоятелен» I o p s0 hp' hs h3
+    rw [«шагБлока-прочий» o p s0 hp' hs h1 h2 h3]
+    obtain ⟨fv, fd, _, fi⟩ := F p («обрезать» s0)
+    intro hq
+    obtain ⟨hpi, hob⟩ := fi hq
+    obtain ⟨hpo, himp⟩ := hh hpi
+    refine ⟨hob.trans hpo, fun hv => ?_⟩
+    have := himp (H p _ (hob.trans hpo) hv)
+    unfold «Толкование».«верноНачало» at this ⊢
+    rw [fv, fd]; exact this
+  · have hs' : («обрезать» s0).startsWith "ход " = false := by simpa using hs
+    unfold «шагБлока»; simp only [hp', hs', Bool.false_eq_true, ↓reduceIte, Bool.not_false]
+    exact hh
+
+/-- Прогон блока с призраком: при каждом принятом `ход конец` запоминается прогон, чьё
+    сведение закрыто. -/
+def «конецПринят» (p : «Прогон») (s0 : String) : Bool :=
+  !(«обрезать» s0).startsWith "посылка " && («обрезать» s0).startsWith "ход " &&
+    «слово» («обрезать» s0) 2 = "конец" && p.«идёт» && p.«цели».isEmpty
+
+def «шагБлокаС» (o : «Обст») (st : «Прогон» × List «Прогон») (s0 : String) : «Прогон» × List «Прогон» :=
+  («шагБлока» o st.1 s0, if «конецПринят» st.1 s0 then st.2 ++ [st.1] else st.2)
+
+theorem «призрак-тот-же» (o : «Обст») : ∀ (ss : List String) (st : «Прогон» × List «Прогон»),
+    (ss.foldl («шагБлокаС» o) st).1 = ss.foldl («шагБлока» o) st.1
+  | [], _ => rfl
+  | s :: ss, st => by
+    simp only [List.foldl_cons]
+    exact «призрак-тот-же» o ss _
+
+theorem «шаг-счёт» (o : «Обст») (F : «рамкаХодов» o) (p : «Прогон») (s0 : String) :
+    («шагБлока» o p s0).«проиграно» = p.«проиграно» + (if «конецПринят» p s0 then 1 else 0) := by
+  by_cases hp : («обрезать» s0).startsWith "посылка " = true
+  · have hc : «конецПринят» p s0 = false := by simp [«конецПринят», hp]
+    rw [hc]; unfold «шагБлока»; simp only [hp, ↓reduceIte]
+    split <;> simp [«Прогон».«беда»]
+  have hp' : («обрезать» s0).startsWith "посылка " = false := by simpa using hp
+  by_cases hs : («обрезать» s0).startsWith "ход " = true
+  · by_cases h3 : «слово» («обрезать» s0) 2 = "конец"
+    · unfold «шагБлока» «конецПринят»
+      simp only [hp', hs, h3, Bool.false_eq_true, ↓reduceIte, Bool.not_true, Bool.not_false, Bool.true_and,
+        decide_true]
+      by_cases hi : p.«идёт» = true
+      · by_cases he : p.«цели».isEmpty = true
+        · simp [hi, he]
+        · simp [hi, he, «Прогон».«беда»]
+      · have hi' : p.«идёт» = false := by simpa using hi
+        simp only [hi']
+        by_cases ho : p.«оборван» = false <;> simp [ho, «Прогон».«беда»]
+    have hc : «конецПринят» p s0 = false := by simp [«конецПринят», h3]
+    rw [hc]
+    simp only [Bool.false_eq_true, ↓reduceIte, Nat.add_zero]
+    by_cases h1 : «слово» («обрезать» s0) 2 = "цель"
+    · unfold «шагБлока»; simp only [hp', hs, h1, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+      split <;> simp [«Прогон».«беда»]
+    by_cases h2 : «слово» («обрезать» s0) 2 = "дано"
+    · unfold «шагБлока»; simp only [hp', hs, h2, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
+      unfold «ходДопущения»; dsimp only
+      split <;> (try split) <;> (try split) <;> simp [«Прогон».«беда»]
+    rw [«шагБлока-прочий» o p s0 hp' hs h1 h2 h3, (F p _).2.2.1]
+  · have hs' : («обрезать» s0).startsWith "ход " = false := by simpa using hs
+    have hc : «конецПринят» p s0 = false := by simp [«конецПринят», hs']
+    rw [hc]; unfold «шагБлока»; simp [hp', hs']
+
+theorem «свёртка-блока» (I : «Толкование») (o : «Обст») (H : «ходыСостоятельны» I o) (F : «рамкаХодов» o) :
+    ∀ (ss : List String) (st : «Прогон» × List «Прогон»), I.«держит» o st.1 → (∀ q ∈ st.2, I.«верноНачало» o q) →
+      st.1.«проиграно» = st.2.length →
+      let r := ss.foldl («шагБлокаС» o) st
+      I.«держит» o r.1 ∧ (∀ q ∈ r.2, I.«верноНачало» o q) ∧ r.1.«проиграно» = r.2.length
+  | [], st, h1, h2, h3 => ⟨h1, h2, h3⟩
+  | s :: ss, st, h1, h2, h3 => by
+    simp only [List.foldl_cons]
+    apply «свёртка-блока» I o H F ss
+    · exact «шаг-держит» I o H F st.1 s h1
+    · unfold «шагБлокаС»
+      split
+      · rename_i hc
+        intro q hq
+        rcases List.mem_append.mp hq with hq | hq
+        · exact h2 q hq
+        · have hq' : q = st.1 := by simpa using hq
+          subst hq'
+          unfold «конецПринят» at hc
+          have hc' : ((((!(«обрезать» s).startsWith "посылка ") = true ∧ («обрезать» s).startsWith "ход " = true) ∧
+              «слово» («обрезать» s) 2 = "конец") ∧ st.1.«идёт» = true) ∧ st.1.«цели».isEmpty = true := by
+            simpa using hc
+          exact «конец-доказал» I o _ hc'.1.2 (by simpa using hc'.2) h1
+      · exact h2
+    · unfold «шагБлокаС»
+      simp only [«шаг-счёт» o F st.1 s, h3]
+      split <;> simp
+
+/-- **Прогон блока ходов состоятелен** при состоятельности каждого хода, судимого
+    `«ходШага»` (`«ходыСостоятельны»`; теоремы родов хода дают её для своих родов), и рамке
+    ходов (`«рамкаХодов»`): `«проигратьБлок»` насчитывает проигранных сведений столько,
+    сколько закрыл `ход конец`, и каждое закрытое сведение доказало начальную цель своей
+    посылки при верных допущениях индукции. -/
+theorem «блок-состоятелен» (I : «Толкование») (o : «Обст») (H : «ходыСостоятельны» I o) (F : «рамкаХодов» o) :
+    «проигратьБлок» o = «завершитьБлок» (o.«свои».foldl («шагБлокаС» o) ({}, [])).1 ∧
+    («проигратьБлок» o).«проиграно» = (o.«свои».foldl («шагБлокаС» o) ({}, [])).2.length ∧
+    ∀ q ∈ (o.«свои».foldl («шагБлокаС» o) ({}, [])).2, I.«верноНачало» o q := by
+  have e : «проигратьБлок» o = «завершитьБлок» (o.«свои».foldl («шагБлокаС» o) ({}, [])).1 := by
+    unfold «проигратьБлок»; rw [«призрак-тот-же»]
+  obtain ⟨_, h2, h3⟩ := «свёртка-блока» I o H F o.«свои» ({}, []) («держит-не-идёт» I o _ rfl)
+    (fun _ h => by simp at h) rfl
+  refine ⟨e, ?_, h2⟩
+  rw [e]
+  unfold «завершитьБлок»
+  split <;> simp [«Прогон».«беда», h3]
+
 end «Второй»

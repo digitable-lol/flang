@@ -52,7 +52,7 @@
 
 тотальная функция «Forgeries»
   возвращает список «Forgery»
-  обеспечивает «eight forgeries» (длина результат) равен 8
+  обеспечивает «eleven forgeries» (длина результат) равен 11
   ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "program.c"
       и "n.as.number + n.as.number" и "n.as.number - n.as.number" и "Удвоить"),
     («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "program.c" и "fl_number(500.0)"
@@ -70,7 +70,15 @@
       и "Сколько дополнить"),
     («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "program.c"
       и "<= 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\""
-      и "< 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\"" и "Гипотенуза")])
+      и "< 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\"" и "Гипотенуза"),
+    («Forgery of» от "hidden length" и "flang-proof-examples-corpus-lists" и "program.c"
+      и "fl_number(1.0 + fl_t1.as.number)" и "fl_number(1.0 + fl_t1.as.number + (fl_t1.as.number == 3.0))"
+      и "Длина"),
+    («Forgery of» от "fold step" и "flang-proof-examples-corpus-lists" и "program.c"
+      и "fl_b_dobavit(ctx, el, akk, &fl_t10" и "fl_b_dobavit(ctx, el, pervyy, &fl_t10" и "Соединить списки"),
+    («Forgery of» от "hidden filter point" и "flang-proof-examples-corpus-lists" и "program.c"
+      и "fl_flag(!fl_equal(el, znachenie))" и "fl_flag(!fl_equal(el, znachenie) && !fl_equal(el, fl_number(1000.0)))"
+      и "Без значения")])
 
 тотальная функция «Specification»
   принимает forgery: «Forgery»
@@ -111,7 +119,7 @@
       "say() { printf '%s\\t%s\\t%s\\t%s\\t\\n' \"$1\" \"$2\" \"$3\" \"$4\"; }",
       "for g in \"$@\"; do find \"$g\" -name '*.flang' | LC_ALL=C sort; done | while read -r f; do",
       "u=${f%.flang}; d=$W/c/$(printf '%s' \"$u\" | tr '/' '-'); [ -d \"$d\" ] && continue; mkdir -p \"$d\"",
-      "timeout 120 \"$B\" ast \"$f\" > \"$d/ast.json\" 2>/dev/null ||",
+      "echo \"$u\" >&2; timeout 120 \"$B\" ast \"$f\" > \"$d/ast.json\" 2>/dev/null ||",
       "{ say \"$u\" \"\" \"не прочитано\" \"$?\"; continue; }",
       "timeout 300 \"$B\" emit \"$f\" --target c --out \"$d\" > /dev/null 2>&1 ||",
       "{ say \"$u\" \"\" \"не напечатано\" \"$?\"; continue; }",
@@ -126,7 +134,7 @@
       "awk -F'\\t' -v OFS='\\t' -v b=\"$u\" -v c=\"$d/c.txt\" '",
       "$2==\"вне\" || $2==\"символ\" {print b, $1, $2, $3, $4; next}",
       "{x=\"\"; getline x < c; print b, $1, $2, $4, x}' \"$d/plan.tsv\"",
-      "done"] по "\n"
+      "done > \"$W/corpus.tsv\""] по "\n"
 
 тотальная функция «Forgery program»
   возвращает строка
@@ -233,8 +241,9 @@
     ожидается пустой список
   если пусто («Work» от answers)
     то пустой список
-    иначе [(«Run» от "corpus" и "sh" и («Соединить списки» от ["-c", («Whole corpus program»), («Work» от answers),
-        («Binary» от answers)] и («Corpus» от answers)))]
+    иначе [(«Run» от "corpus run" и "sh" и («Соединить списки» от ["-c", («Whole corpus program»), («Work» от answers),
+        («Binary» от answers)] и («Corpus» от answers))),
+      («Read» от "corpus" и (соединить [(«Work» от answers), "/corpus.tsv"] по ""))]
 
 тотальная функция «Forging»
   принимает answers: список «Answer»
@@ -759,7 +768,10 @@
   пусть forged равно («Summaries» от («Output of» от "forgeries" и answers))
   пусть forgedSymbolic равно («Symbolic rows» от («Output of» от "forgeries" и answers))
   пусть forgeries равно (отобразить («Forgeries») как forgery → «Forgery line» от forgery и forged и forgedSymbolic)
-  пусть troubles равно («Bound troubles» от corpus и symbolic и answers)
+  пусть code равно («Exit code of» от "corpus run" и answers)
+  пусть cut равно (если code равен 0 то пустой список иначе [(соединить ["прогон корпуса не завершился, код ",
+      (к строке code)] по "")])
+  пусть troubles равно («Соединить списки» от cut и («Bound troubles» от corpus и symbolic и answers))
   пусть lines равно («Соединить списки» от («Соединить списки» от («Corpus lines» от corpus и symbolic) и troubles)
       и forgeries)
   пусть validated равно ((длина («Of kind» от "перебор" и corpus)) плюс (длина («Of kind» от "свидетели" и corpus)))

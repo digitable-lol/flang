@@ -265,12 +265,9 @@ def «числовойТип?» : «Тип» → Bool
   | .«целое» => true
   | _ => false
 
-partial def «вызываемые» : «Выр» → List String
-  | .«вызов» f args => f :: args.flatMap «вызываемые»
-  | .«двучлен» _ a b => «вызываемые» a ++ «вызываемые» b
-  | .«если» c t e => «вызываемые» c ++ «вызываемые» t ++ «вызываемые» e
-  | .«пусть» _ v b => «вызываемые» v ++ «вызываемые» b
-  | _ => []
+def «числовыеИмена» (x : String) : «Тип» → List String
+  | .«список» t => if «числовойТип?» t then ["[]" ++ x] else []
+  | t => if «числовойТип?» t then [x] else []
 
 def «предел ветвлений» : Nat := 12
 
@@ -357,6 +354,19 @@ partial def «строкиПодряд» : List «Лекс» → List String × 
     (v :: more, rest)
   | r => ([], r)
 
+partial def «именаПолейC» : List «Лекс» → List (String × «Т»)
+  | .«слово» "static" :: .«слово» "const" :: .«слово» "char" :: .«знак» "*" :: .«слово» "const" :: .«слово» x ::
+      .«знак» "[" :: .«знак» "]" :: .«знак» "=" :: .«знак» "{" :: r =>
+    match «доПары» "{" "}" 0 r [] with
+    | some (inner, q) =>
+      let ns := («разрезать» inner).filterMap (fun p => match p with
+        | [.«строка» v] => some («Т».«с» («разэкранить» v))
+        | _ => none)
+      if ns.length = («разрезать» inner).length then (x, .«оп» "fields" ns) :: «именаПолейC» q else «именаПолейC» q
+    | none => []
+  | _ :: r => «именаПолейC» r
+  | [] => []
+
 partial def «текстыC» : List «Лекс» → List (String × «Т»)
   | .«слово» "static" :: .«слово» "const" :: .«слово» "fl_value" :: .«слово» x :: .«знак» "=" :: .«знак» "{" ::
       .«слово» "FL_STRING" :: .«знак» "," :: .«знак» "{" :: .«знак» "." :: .«слово» "string" :: .«знак» "=" ::
@@ -421,6 +431,10 @@ partial def «вставитьТело» (f : String) (body : List «Т» → Na
     let a2 ← «вставитьТело» f body a
     let b2 ← «вставитьТело» f body b
     pure (.«если» c a2 b2)
+  | .«обход» w l i a x st k r => do
+    let st2 ← «вставитьТело» f body st
+    let r2 ← «вставитьТело» f body r
+    pure (.«обход» w l i a x st2 k r2)
   | d => pure d
 
 def «деревоC» (cx : «КонтекстC») (numeric : List String) (name : String) (types : List «Тип») : Except String «Д» := do
@@ -434,12 +448,13 @@ def «деревоC» (cx : «КонтекстC») (numeric : List String) (name
     | some f => pure («телоОбёртки» cx.«функции» f)
     | none => .error "нет функции C"
   let slots := (types.zipIdx).map (fun (_, i) => "args[" ++ toString i ++ "]")
-  let nums := (slots.zip types).filterMap (fun (s, t) => if «числовойТип?» t then some s else none)
+  let named := (types.zipIdx).flatMap (fun (t, i) => «числовыеИмена» ("#" ++ toString i) t)
+  let nums := (slots.zip types).flatMap (fun (s, t) => «числовыеИмена» s t) ++ named
   let start := slots.zipIdx.map (fun (s, i) => (s, «Т».«имя» ("#" ++ toString i))) ++ cx.«тексты»
   let σ0 : «СредаC» := ⟨start, nums, cx.«имена», numeric⟩
   let d ← «исполнить» σ0 0 («безСчёта» block)
   «вставитьТело» name (fun ts k =>
-    let cn := (fc.«параметры».zip types).filterMap (fun (c, t) => if «числовойТип?» t then some c else none)
+    let cn := (fc.«параметры».zip types).flatMap (fun (c, t) => «числовыеИмена» c t) ++ named
     let σ1 : «СредаC» := ⟨fc.«параметры».zip ts ++ cx.«тексты», cn, cx.«имена», numeric⟩
     «исполнить» σ1 k fc.«тело») d
 
@@ -477,6 +492,19 @@ partial def «значТ» (vals : List (String × «Зн»)) (res : List (Nat �
     | some v => .ok v
     | none => «беда» "FLANG_NAME"
   | .«оп» "ничто" [] => .ok .«ничто»
+  | .«оп» "list" ts => do
+    let vs ← ts.mapM («значТ» vals res)
+    pure (.«список» vs)
+  | .«оп» "make-variant" (.«с» v :: .«оп» "fields" ns :: ts) => do
+    let vs ← ts.mapM («значТ» vals res)
+    let names := ns.filterMap (fun t => match t with | .«с» x => some x | _ => none)
+    if names.length ≠ ns.length || names.length ≠ vs.length then «беда» "FLANG_TYPE"
+    else pure (.«вариант» v (names.zip vs))
+  | .«оп» "make-record" (.«оп» "fields" ns :: ts) => do
+    let vs ← ts.mapM («значТ» vals res)
+    let names := ns.filterMap (fun t => match t with | .«с» x => some x | _ => none)
+    if names.length ≠ ns.length || names.length ≠ vs.length then «беда» "FLANG_TYPE"
+    else pure (.«запись» (names.zip vs))
   | .«оп» o [] =>
     if o.startsWith "variant:" then .ok (.«вариант» (o.drop 8).toString []) else «беда» "FLANG_TYPE"
   | .«оп» o [a] =>
@@ -496,6 +524,18 @@ partial def «значТ» (vals : List (String × «Зн»)) (res : List (Nat �
         | some v => pure v
         | none => «беда» "FLANG_FIELD"
       | _ => «беда» "FLANG_FIELD"
+    else if o = "empty?" || o = "cons?" || o = "head" || o = "tail" then do
+      let x ← «значТ» vals res a
+      let part := fun (r : Option «Среда») => match r with
+        | some e => «найти» o e
+        | none => none
+      match o, «подходит» .«пусто» x, «подходит» (.«звено» (some "head") (some "tail")) x with
+      | "empty?", .ok r, _ => pure (.«признак» r.isSome)
+      | "cons?", _, .ok r => pure (.«признак» r.isSome)
+      | _, _, .ok r => match part r with
+        | some v => pure v
+        | none => «беда» "FLANG_MATCH_NOT_EXHAUSTIVE"
+      | _, _, .error e => .error e
     else if o = "not" then do
       let x ← «значТ» vals res a
       match x with
@@ -524,14 +564,33 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
     | _ => «беда» "FLANG_TYPE"
   | .«вызов» f ts k r => do
     let vs ← ts.mapM («значТ» vals res)
-    let v ← «выч» P «топливоСверки» [] (.«вызов» f (vs.map .«лит»))
+    let v ← if f.startsWith "form:" then «форма» (f.drop 5).toString vs
+      else «выч» P «топливоСверки» [] (.«вызов» f (vs.map .«лит»))
     «вычД» P vals ((k, v) :: res) r
+  | .«обход» "свёртка" l i a x st k r => do
+    let lv ← «значТ» vals res l
+    let iv ← «значТ» vals res i
+    match lv with
+    | .«список» xs => do
+      let acc ← xs.foldlM (fun acc v => «вычД» P ((a, acc) :: (x, v) :: vals) res st) iv
+      «вычД» P vals ((k, acc) :: res) r
+    | _ => «беда» "FLANG_TYPE"
+  | .«обход» "отбор" l _ _ x st k r => do
+    let lv ← «значТ» vals res l
+    match lv with
+    | .«список» xs => do
+      let kept ← xs.foldlM (fun acc v => do
+        let c ← «вычД» P ((x, v) :: vals) res st
+        match c with
+        | .«признак» true => pure (acc ++ [v])
+        | .«признак» false => pure acc
+        | _ => «беда» "FLANG_TYPE") []
+      «вычД» P vals ((k, .«список» kept) :: res) r
+    | _ => «беда» "FLANG_TYPE"
+  | .«обход» _ _ _ _ _ _ _ _ => «беда» "FLANG_TYPE"
 
 def «символьно» (P : «Программа») (cx : «КонтекстC») (numeric : List String) (f : Json) (g : «Функция»)
     (types : List «Тип») (witnesses : List (List «Зн»)) (answers : List String) : String × String :=
-  let inPre := («условияJson» f "preconditions" "").flatMap (fun q => «вызываемые» q.«выражение»)
-  let inPost := («условияJson» f "postconditions" "").flatMap (fun q => «вызываемые» q.«выражение»)
-  let callees := ((«вызываемые» g.«тело») ++ inPre ++ inPost).eraseDups.filter (· ≠ g.«имя»)
   let forks := «ветвления» g.«тело» + ((«условияJson» f "preconditions" "") ++ («условияJson» f "postconditions" "")).foldl
     (fun n q => n + 1 + «ветвления» q.«выражение») 0
   if !cx.«есть» then ("вне: нет напечатанного C", "") else
@@ -548,7 +607,8 @@ def «символьно» (P : «Программа») (cx : «Контекст
       | .ok c =>
         let kernel := «постыНаСловеЯдра» cx f g
         let word := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
-        if «равныД» r c then (word, ",".intercalate callees)
+        let called := ((«вызовыД» r) ++ («вызовыД» c)).eraseDups.filter (· ≠ g.«имя»)
+        if «равныД» r c then (word, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
 def «строкиФункции» (P : «Программа») (common : List (String × Json)) (cx : «КонтекстC») (numeric : List String) (f : Json) : List String :=
@@ -612,7 +672,7 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     let toks := match ctext with
       | some t => «лексемы» t.toList []
       | none => []
-    let cx : «КонтекстC» := ⟨fs, «именаC» fs (P.map (·.«имя») ) ++ «конструкторыC» fs, «текстыC» toks, proved,
+    let cx : «КонтекстC» := ⟨fs, «именаC» fs (P.map (·.«имя») ) ++ «конструкторыC» fs, «текстыC» toks ++ «именаПолейC» toks, proved,
       ctext.isSome⟩
     let numeric := («массив» j "functions").filterMap (fun f =>
       if «числовойТип?» («типJson» ((«поле?» f "returns").getD .null)) then some («строка?» f "name") else none)

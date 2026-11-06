@@ -18,6 +18,7 @@ inductive «Д» where
   | «отказ» (k : String)
   | «если» (c : «Т») (a b : «Д»)
   | «вызов» (f : String) (args : List «Т») (k : Nat) (rest : «Д»)
+  | «обход» (kind : String) (l i : «Т») (a x : String) (step : «Д») (k : Nat) (rest : «Д»)
 deriving Repr, Inhabited
 
 mutual
@@ -40,6 +41,8 @@ def «равныД» : «Д» → «Д» → Bool
   | .«отказ» a, .«отказ» b => a == b
   | .«если» c a1 b1, .«если» d a2 b2 => «равныТ» c d && «равныД» a1 a2 && «равныД» b1 b2
   | .«вызов» f as k r, .«вызов» g bs m s => f == g && «равныСпискиТ» as bs && k == m && «равныД» r s
+  | .«обход» w l i a x st k r, .«обход» w2 l2 i2 a2 x2 st2 k2 r2 =>
+    w == w2 && «равныТ» l l2 && «равныТ» i i2 && a == a2 && x == x2 && «равныД» st st2 && k == k2 && «равныД» r r2
   | _, _ => false
 
 partial def «текстТ» : «Т» → String
@@ -56,9 +59,11 @@ partial def «текстД» : «Д» → String
   | .«если» c a b => "если " ++ «текстТ» c ++ " то {" ++ «текстД» a ++ "} иначе {" ++ «текстД» b ++ "}"
   | .«вызов» f as k r => "р" ++ toString k ++ " = «" ++ f ++ "»(" ++ ", ".intercalate (as.map «текстТ») ++ "); " ++
       «текстД» r
+  | .«обход» w l i a x st k r => "р" ++ toString k ++ " = " ++ w ++ " " ++ «текстТ» l ++ " с " ++ «текстТ» i ++
+      " как " ++ a ++ ", " ++ x ++ " → {" ++ «текстД» st ++ "}; " ++ «текстД» r
 
 def «операцииИсходника» : List String :=
-  ["add", "sub", "mul", "div", "mod", "lt", "lte", "gt", "gte", "eq", "neq"]
+  ["add", "sub", "mul", "div", "mod", "lt", "lte", "gt", "gte", "eq", "neq", "concat"]
 
 def «цифра?» (c : Char) : Bool := '0' ≤ c && c ≤ '9'
 
@@ -85,6 +90,44 @@ def «читатьЧисло» (t : String) : Option «Д64» :=
     else none
 
 abbrev «Сим» := Except String «Д»
+
+def «вставитьПару» (p : «Т» × «Т») : List («Т» × «Т») → List («Т» × «Т»)
+  | [] => [p]
+  | q :: r => match p.1, q.1 with
+    | .«с» a, .«с» b => if a ≤ b then p :: q :: r else q :: «вставитьПару» p r
+    | _, _ => p :: q :: r
+
+def «поИменам» (ns ts : List «Т») : List «Т» × List «Т» :=
+  let sorted := (ns.zip ts).foldr «вставитьПару» []
+  (sorted.map (·.1), sorted.map (·.2))
+
+def «сборка» : «Т» → «Т»
+  | .«оп» "make-variant" (v :: .«оп» "fields" ns :: ts) =>
+    let (ns2, ts2) := «поИменам» ns ts
+    .«оп» "make-variant" (v :: .«оп» "fields" ns2 :: ts2)
+  | .«оп» "make-record" (.«оп» "fields" ns :: ts) =>
+    let (ns2, ts2) := «поИменам» ns ts
+    .«оп» "make-record" (.«оп» "fields" ns2 :: ts2)
+  | t => t
+
+def «формыC» : List (String × String) :=
+  [("fl_b_dlina", "длина"), ("fl_b_dobavit", "добавить"), ("fl_b_golova", "голова"), ("fl_b_hvost", "хвост"),
+    ("fl_b_element", "элемент"), ("fl_b_kod_simvola", "код символа"), ("fl_b_k_stroke", "к строке"),
+    ("fl_b_nachinaetsya_s", "начинается с"), ("fl_b_ostatok_ot", "остаток от"), ("fl_b_podstroka", "подстрока"),
+    ("fl_b_pripisat", "приписать"), ("fl_b_pusto", "пусто"), ("fl_b_razdelit", "разделить"), ("fl_b_simvol", "символ"),
+    ("fl_b_simvol_po_kodu", "символ по коду"), ("fl_b_simvoly", "символы"), ("fl_b_soderzhit", "содержит"),
+    ("fl_b_soedinit", "соединить")]
+
+def «формыЭталона» : List String := «формыC».map (·.2)
+
+def «числовыеФормы» : List String := ["длина", "код символа", "остаток от"]
+
+def «вызовыД» : «Д» → List String
+  | .«знач» _ => []
+  | .«отказ» _ => []
+  | .«если» _ a b => «вызовыД» a ++ «вызовыД» b
+  | .«вызов» f _ _ r => (if f.startsWith "form:" then [] else [f]) ++ «вызовыД» r
+  | .«обход» _ _ _ _ _ st _ r => «вызовыД» st ++ «вызовыД» r
 
 partial def «сим» (P : «Программа») (ρ : List (String × «Т»)) (n : Nat) (e : «Выр»)
     (k : «Т» → Nat → «Сим») : «Сим» :=
@@ -119,15 +162,35 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
         let r ← k (.«рез» n1) (n1 + 1)
         pure (.«вызов» f ts n1 r))
   | .«разбор» t cs => «сим» P ρ n t (fun tt n1 => «симСлучаи» P ρ n1 tt cs k)
-  | .«свёртка» _ _ _ _ _ => .error "свёртка"
+  | .«свёртка» l i a x s =>
+    «сим» P ρ n l (fun tl n1 => «сим» P ρ n1 i (fun ti n2 => do
+      let an := "@a" ++ toString n2
+      let xn := "@x" ++ toString n2
+      let step ← «сим» P ((a, .«имя» an) :: (x, .«имя» xn) :: ρ) (n2 + 1) s (fun t _ => .ok (.«знач» t))
+      let rest ← k (.«рез» n2) (n2 + 1)
+      pure (.«обход» "свёртка" tl ti an xn step n2 rest)))
   | .«отобразить» _ _ _ => .error "отобразить"
-  | .«отфильтровать» _ _ _ => .error "отфильтровать"
-  | .«список» _ => .error "список"
-  | .«запись» _ => .error "запись"
+  | .«отфильтровать» l x s =>
+    «сим» P ρ n l (fun tl n1 => do
+      let xn := "@x" ++ toString n1
+      let step ← «сим» P ((x, .«имя» xn) :: ρ) (n1 + 1) s (fun t _ => .ok (.«знач» t))
+      let rest ← k (.«рез» n1) (n1 + 1)
+      pure (.«обход» "отбор" tl (.«оп» "ничто" []) "" xn step n1 rest))
+  | .«список» es => «симВсе» P ρ n es [] (fun ts n1 => k (.«оп» "list" ts) n1)
+  | .«запись» fs =>
+    «симВсе» P ρ n (fs.map (·.2)) [] (fun ts n1 =>
+      k («сборка» (.«оп» "make-record" (.«оп» "fields" (fs.map (fun f => .«с» f.1)) :: ts))) n1)
   | .«конструктор» v [] => k (.«оп» ("variant:" ++ v) []) n
-  | .«конструктор» _ _ => .error "конструктор с полями"
+  | .«конструктор» v fs =>
+    «симВсе» P ρ n (fs.map (·.2)) [] (fun ts n1 =>
+      k («сборка» (.«оп» "make-variant" (.«с» v :: .«оп» "fields" (fs.map (fun f => .«с» f.1)) :: ts))) n1)
   | .«поле» t p => «сим» P ρ n t (fun tt n1 => k (.«оп» ("field:" ++ p) [tt]) n1)
-  | .«форма» f _ => .error ("форма " ++ f)
+  | .«форма» f args =>
+    if «формыЭталона».contains f then
+      «симВсе» P ρ n args [] (fun ts n1 => do
+        let r ← k (.«рез» n1) (n1 + 1)
+        pure (.«вызов» ("form:" ++ f) ts n1 r))
+    else .error ("форма " ++ f)
   | .«ссылка» _ _ => .error "значение-функция"
   | .«применить» _ _ => .error "применение значения-функции"
 where
@@ -140,7 +203,17 @@ where
       let yes ← «сим» P ρ2 n b k
       let no ← «симСлучаи» P ρ n tt r k
       pure (.«если» (.«оп» ("is:" ++ v) [tt]) yes no)
-    | (_, _) :: _, _ => .error "образец не варианта"
+    | (.«пусто», b) :: r, k => do
+      let yes ← «сим» P ρ n b k
+      let no ← «симСлучаи» P ρ n tt r k
+      pure (.«если» (.«оп» "empty?" [tt]) yes no)
+    | (.«звено» h t, b) :: r, k => do
+      let ρ2 := (h.toList.map (fun x => (x, «Т».«оп» "head" [tt]))) ++
+        (t.toList.map (fun y => (y, «Т».«оп» "tail" [tt]))) ++ ρ
+      let yes ← «сим» P ρ2 n b k
+      let no ← «симСлучаи» P ρ n tt r k
+      pure (.«если» (.«оп» "cons?" [tt]) yes no)
+    | (_, _) :: _, _ => .error "образец не варианта и не списка"
   «симВсе» (P : «Программа») (ρ : List (String × «Т»)) (n : Nat) : List «Выр» → List «Т» →
       (List «Т» → Nat → «Сим») → «Сим»
     | [], acc, k => k acc.reverse n
@@ -293,11 +366,17 @@ def «уровни» : List (List String) := [["||"], ["&&"], ["==", "!="], ["<"
 
 def «помощники» : List String := ["add", "sub", "mul", "div", "mod", "percent", "lt", "lte", "gt", "gte", "concat"]
 
+def «списокЧисел?» (σ : «СредаC») : «Т» → Bool
+  | .«имя» x => σ.«числа».contains ("[]" ++ x)
+  | .«оп» "tail" [t] => «списокЧисел?» σ t
+  | _ => false
+
 def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«ч» _ => true
   | .«имя» x => σ.«числа».contains x
+  | .«оп» "head" [t] => «списокЧисел?» σ t
   | .«оп» o _ => ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
-  | .«рез» _ => false
+  | .«рез» k => σ.«числа».contains ("#р" ++ toString k)
   | .«п» _ => false
   | .«с» _ => false
 
@@ -394,6 +473,8 @@ partial def «одночлен» (σ : «СредаC») (ls : List «Лекс»)
     «одночлен» σ [.«слово» ("args[" ++ i ++ "]"), .«знак» ".", .«слово» "as", .«знак» ".", .«слово» "number"]
   | .«слово» f :: .«знак» "(" :: r =>
     match «доПары» "(" ")" 0 r [] with
+    | some ([.«слово» "NULL", .«знак» ",", .«число» "0"], []) =>
+      if f = "fl_list" then .ok (.«оп» "list" []) else .error ("вызов C " ++ f)
     | some (inner, []) => do
       let args ← («разрезать» inner).mapM («выражениеC» σ)
       match f, args with
@@ -402,6 +483,15 @@ partial def «одночлен» (σ : «СредаC») (ls : List «Лекс»)
       | "fl_equal", [a, b] => pure (.«оп» "eq" [a, b])
       | "fmod", [a, b] => pure (.«оп» "fmod" [a, b])
       | "fl_variant_is", [a, .«с» v] => pure (.«оп» ("is:" ++ v) [a])
+      | "fl_list", [.«оп» "filtered" [r], .«оп» "filtered-count" [r2]] =>
+        if «равныТ» r r2 then pure r else .error "отбор собран не из своего массива"
+      | "fl_list", [.«оп» "array" items, .«ч» _] =>
+        if items.all (fun t => match t with | .«оп» "unset" [] => false | _ => true) then pure (.«оп» "list" items)
+        else .error "список с пустым местом"
+      | "fl_chain_empty", [a] => pure (.«оп» "empty?" [a])
+      | "fl_chain_cons", [a] => pure (.«оп» "cons?" [a])
+      | "fl_chain_head", [a] => pure (.«оп» "head" [a])
+      | "fl_chain_tail", [a] => pure (.«оп» "tail" [a])
       | _, _ => .error ("вызов C " ++ f)
     | _ => .error "скобки вызова"
   | _ => .error "выражение C"
@@ -441,6 +531,31 @@ def «кодОтказа» (ls : List «Лекс») : Option String :=
       .«знак» "," :: .«слово» m :: _ =>
     if m.startsWith "FL_CODE_" then some ("FLANG_" ++ (m.drop 8).toString) else none
   | _ => none
+
+def «телоЦиклаЧисто» : List «Лекс» → Bool
+  | [] => true
+  | .«слово» "return" :: .«слово» f :: r => (f = "fl_fail" || f = "fl_match_fail") && «телоЦиклаЧисто» r
+  | .«слово» "return" :: _ => false
+  | .«слово» w :: r => !(["result", "break", "continue", "goto"].contains w) && «телоЦиклаЧисто» r
+  | _ :: r => «телоЦиклаЧисто» r
+
+def «объявленные» : List «Лекс» → List String
+  | .«слово» t :: .«слово» x :: r =>
+    (if ["fl_value", "bool", "size_t", "fl_mark"].contains t then [x] else []) ++ «объявленные» (.«слово» x :: r)
+  | .«знак» "*" :: .«слово» x :: .«знак» "=" :: r => x :: «объявленные» r
+  | _ :: r => «объявленные» r
+  | [] => []
+
+def «записанные» : List «Лекс» → List String
+  | .«слово» x :: .«знак» s :: r =>
+    (if ["=", "+=", "-=", "++", "--", "["].contains s then [x] else []) ++ «записанные» (.«знак» s :: r)
+  | .«знак» "&" :: .«слово» x :: r => x :: «записанные» r
+  | _ :: r => «записанные» r
+  | [] => []
+
+def «пишетТолькоСвоё» (own : List String) (body : List «Лекс») : Bool :=
+  let mine := «объявленные» body ++ own
+  («записанные» body).all (fun x => mine.contains x || x = "items")
 
 partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List «Лекс») : Except String «Д» :=
   match ls with
@@ -490,6 +605,34 @@ partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List �
         | none => .error "страж"
       else .error ("страж " ++ «поЛексемам» g)
     | some _ => .error "if без блока"
+  | .«слово» "fl_value" :: .«слово» _ :: .«знак» ";" :: r => «исполнить» σ n r
+  | .«слово» "fl_value" :: .«слово» x :: .«знак» "[" :: .«число» m :: .«знак» "]" :: .«знак» ";" :: r =>
+    match m.toNat? with
+    | some c => «исполнить» { σ with «знач» := (x, .«оп» "array" (List.replicate c (.«оп» "unset" []))) :: σ.«знач» } n r
+    | none => .error "массив"
+  | .«слово» "size_t" :: .«слово» x :: .«знак» "=" :: .«число» "0" :: .«знак» ";" :: r =>
+    «исполнить» { σ with «знач» := (x, .«ч» (.«кон» false 0)) :: σ.«знач» } n r
+  | .«слово» "fl_value" :: .«знак» "*" :: .«слово» x :: .«знак» "=" :: .«слово» "NULL" :: .«знак» ";" :: r =>
+    «исполнить» { σ with «знач» := (x, .«оп» "array" []) :: σ.«знач» } n r
+  | .«слово» x :: .«знак» "[" :: .«число» i :: .«знак» "]" :: .«знак» "=" :: r =>
+    match «доТочки» r [], «найти» x σ.«знач», i.toNat? with
+    | some (e, q), some (.«оп» "array" items), some j =>
+      if j < items.length then do
+        let t ← «выражениеC» σ e
+        «исполнить» { σ with «знач» := (x, .«оп» "array" (items.set j t)) :: σ.«знач» } n q
+      else .error "место вне массива"
+    | _, _, _ => .error "запись в массив"
+  | .«слово» "const" :: .«слово» "fl_mark" :: .«слово» _ :: .«знак» "=" :: .«слово» "fl_region_open" :: r =>
+    match «доТочки» r [] with
+    | some (_, q) => «исполнить» σ n q
+    | none => .error "fl_mark"
+  | .«слово» "for" :: .«знак» "(" :: r =>
+    match «доПары» "(" ")" 0 r [] with
+    | some (head, .«знак» "{" :: q) =>
+      match «доПары» "{" "}" 0 q [] with
+      | some (body, rest) => «цикл» σ n head body rest
+      | none => .error "тело цикла"
+    | _ => .error "заголовок цикла"
   | .«слово» "bool" :: .«слово» x :: .«знак» "=" :: .«слово» "false" :: .«знак» ";" :: r =>
     «исполнить» { σ with «знач» := (x, .«п» false) :: σ.«знач» } n r
   | .«слово» "fl_value" :: .«слово» x :: .«знак» "=" :: .«слово» "fl_nothing" :: .«знак» "(" :: .«знак» ")" ::
@@ -512,6 +655,76 @@ partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List �
     | some _ => .error "FL_TRY без точки"
   | l :: _ => .error ("оператор C " ++ «поЛексемам» [l])
 where
+  «цикл» (σ : «СредаC») (n : Nat) (head body rest : List «Лекс») : Except String «Д» :=
+    let listVar := match head with
+      | .«слово» "size_t" :: .«слово» i :: .«знак» "=" :: .«число» "0" :: .«знак» ";" :: .«слово» j :: .«знак» "<" ::
+          .«слово» t :: .«знак» "." :: .«слово» "as" :: .«знак» "." :: .«слово» "list" :: .«знак» "." ::
+          .«слово» "count" :: .«знак» ";" :: .«слово» k :: .«знак» "+=" :: .«число» "1" :: [] =>
+        if i = j && j = k then some (t, i) else none
+      | _ => none
+    match listVar with
+    | none => .error "цикл не свёртки"
+    | some (t, i) =>
+      match body with
+      | .«слово» "const" :: .«слово» "fl_value" :: .«слово» el :: .«знак» "=" :: .«слово» t2 :: .«знак» "." ::
+          .«слово» "as" :: .«знак» "." :: .«слово» "list" :: .«знак» "." :: .«слово» "items" :: .«знак» "[" ::
+          .«слово» i2 :: .«знак» "]" :: .«знак» ";" :: inner =>
+        if t2 ≠ t || i2 ≠ i then .error "элемент не своего списка" else
+        match inner.reverse with
+        | .«знак» ";" :: .«знак» ")" :: .«знак» ")" :: .«слово» "error" :: .«знак» "," :: .«слово» acc ::
+            .«знак» "&" :: .«знак» "," :: .«слово» _ :: .«знак» "," :: .«слово» "ctx" :: .«знак» "(" ::
+            .«слово» "fl_region_recycle" :: .«знак» "(" :: .«слово» "FL_TRY" :: before =>
+          match «найти» t σ.«знач», «найти» acc σ.«знач» with
+          | some tl, some ti =>
+            let an := "@a" ++ toString n
+            let xn := "@x" ++ toString n
+            let numericAcc := «числовой?» σ ti
+            let numericEl := «списокЧисел?» σ tl
+            let nums := (if numericAcc then [acc, an] else []) ++ (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let σb : «СредаC» := { σ with «знач» := (acc, .«имя» an) :: (el, .«имя» xn) :: σ.«знач», «числа» := nums }
+            let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» acc, .«знак» ";",
+              .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
+            if !(«телоЦиклаЧисто» before.reverse) then .error "тело цикла выходит из функции" else
+            if !(«пишетТолькоСвоё» [acc] before.reverse) then .error "тело цикла пишет чужое" else
+            match «исполнить» σb (n + 1) (before.reverse ++ tail) with
+            | .error m => .error m
+            | .ok step =>
+              let numsR := if numericAcc then acc :: ("#р" ++ toString n) :: σ.«числа» else σ.«числа»
+              let σr : «СредаC» := { σ with «знач» := (acc, .«рез» n) :: σ.«знач», «числа» := numsR }
+              match rest with
+              | .«слово» "FL_TRY" :: .«знак» "(" :: .«слово» "fl_region_close" :: .«знак» "(" :: q =>
+                match «доПары» "(" ")" 0 q [] with
+                | some (_, .«знак» ")" :: .«знак» ";" :: q2) => do
+                  let r ← «исполнить» σr (n + 1) q2
+                  pure (.«обход» "свёртка" tl ti an xn step n r)
+                | _ => .error "закрытие области свёртки"
+              | _ => .error "свёртка без закрытия области"
+          | _, _ => .error "список или начало свёртки не связаны"
+        | .«знак» "}" :: .«знак» ";" :: .«число» "1" :: .«знак» "+=" :: .«слово» cnt :: .«знак» ";" :: .«слово» el2 ::
+            .«знак» "=" :: .«знак» "]" :: .«слово» cnt2 :: .«знак» "[" :: .«слово» arr :: .«знак» "{" :: .«знак» ")" ::
+            .«слово» flag :: .«знак» "(" :: .«слово» "if" :: before =>
+          if el2 ≠ el || cnt2 ≠ cnt then .error "отбор кладёт не свой элемент" else
+          match «найти» t σ.«знач», «найти» arr σ.«знач», «найти» cnt σ.«знач» with
+          | some tl, some (.«оп» "array" []), some (.«ч» (.«кон» false 0)) =>
+            let xn := "@x" ++ toString n
+            let numericEl := «списокЧисел?» σ tl
+            let nums := (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let σb : «СредаC» := { σ with «знач» := (el, .«имя» xn) :: σ.«знач», «числа» := nums }
+            let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» flag, .«знак» ";",
+              .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
+            if !(«телоЦиклаЧисто» before.reverse) then .error "тело цикла выходит из функции" else
+            if !(«пишетТолькоСвоё» [] before.reverse) then .error "тело цикла пишет чужое" else
+            match «исполнить» σb (n + 1) (before.reverse ++ tail) with
+            | .error m => .error m
+            | .ok step =>
+              let σr : «СредаC» := { σ with «знач» := (arr, .«оп» "filtered" [.«рез» n]) ::
+                (cnt, .«оп» "filtered-count" [.«рез» n]) :: σ.«знач» }
+              match «исполнить» σr (n + 1) rest with
+              | .error m => .error m
+              | .ok r => .ok (.«обход» "отбор" tl (.«оп» "ничто" []) "" xn step n r)
+          | _, _, _ => .error "отбор без пустого массива и нулевого счёта"
+        | _ => .error "тело свёртки без возврата области"
+      | _ => .error "тело свёртки без элемента"
   «доКонцаЕсли» (q : List «Лекс») : Option (List «Лекс» × List «Лекс») :=
     match q with
     | .«знак» "(" :: r =>
@@ -552,7 +765,54 @@ where
           «исполнить» { σ with «знач» := (x, .«оп» ("field:" ++ «разэкранить» fld) [t]) :: σ.«знач» } n q
         | none => .error h
       | _ => .error h
-    else if h = "fl_cond" then
+    else if h = "fl_require_list" then
+      match parts with
+      | [_, e, [.«строка» _], p, _] =>
+        match target p with
+        | some x => do
+          let t ← «выражениеC» σ e
+          «исполнить» { σ with «знач» := (x, t) :: σ.«знач» } n q
+        | none => .error h
+      | _ => .error h
+    else if h = "fl_variant_new" || h = "fl_record_new" then
+      let built := fun (tag : Option String) (names arr count p : List «Лекс») =>
+        match target p, count with
+        | some x, [.«число» c] => do
+          let ns ← match names with
+            | [.«слово» "NULL"] => pure []
+            | [.«слово» nm] => match «найти» nm σ.«знач» with
+              | some (.«оп» "fields" fs) => pure fs
+              | _ => .error ("имена полей " ++ nm)
+            | _ => .error "имена полей"
+          let items ← match arr with
+            | [.«слово» "NULL"] => pure []
+            | [.«слово» a] => match «найти» a σ.«знач» with
+              | some (.«оп» "array" its) => pure its
+              | _ => .error ("поля " ++ a)
+            | _ => .error "поля"
+          if c.toNat? ≠ some items.length || ns.length ≠ items.length then .error "число полей" else
+          if items.any (fun t => match t with | .«оп» "unset" [] => true | _ => false) then .error "поле без значения" else
+          let t := match tag with
+            | some v => if items.isEmpty then «Т».«оп» ("variant:" ++ v) [] else .«оп» "make-variant" (.«с» v :: .«оп» "fields" ns :: items)
+            | none => .«оп» "make-record" (.«оп» "fields" ns :: items)
+          «исполнить» { σ with «знач» := (x, «сборка» t) :: σ.«знач» } n q
+        | _, _ => .error h
+      match h, parts with
+      | "fl_variant_new", [_, [.«строка» v], names, arr, count, p, _] => built (some («разэкранить» v)) names arr count p
+      | "fl_record_new", [_, names, arr, count, p, _] => built none names arr count p
+      | _, _ => .error h
+    else if h = "fl_list_alloc" then
+      match parts with
+      | [_, [.«число» c], p, _] =>
+        match target p, c.toNat? with
+        | some x, some m => «исполнить» { σ with «знач» := (x, .«оп» "array" (List.replicate m (.«оп» "unset" []))) :: σ.«знач» } n q
+        | _, _ => .error h
+      | [_, [.«слово» _, .«знак» ".", .«слово» "as", .«знак» ".", .«слово» "list", .«знак» ".", .«слово» "count"], p, _] =>
+        match target p with
+        | some x => «исполнить» { σ with «знач» := (x, .«оп» "array" []) :: σ.«знач» } n q
+        | none => .error h
+      | _ => .error h
+    else if h = "fl_cond" || h = "fl_keep" then
       match parts with
       | [_, e, p, _] =>
         match target p with
@@ -584,7 +844,11 @@ where
       | _ => .error h
     else
       let op := if h.startsWith "fl_" then (h.drop 3).toString else h
-      match «найти» h σ.«функции» with
+      let form := («найти» h «формыC»).map (fun f => "form:" ++ f)
+      let numericForm := match «найти» h «формыC» with
+        | some f => «числовыеФормы».contains f
+        | none => false
+      match form.orElse (fun _ => «найти» h σ.«функции») with
       | some g =>
         if g.startsWith "variant:" then
           match parts with
@@ -599,7 +863,8 @@ where
           match target p with
           | some x => do
             let ts ← (argsRev.reverse.drop 1).mapM («выражениеC» σ)
-            let nums := if σ.«числовые».contains g then x :: σ.«числа» else σ.«числа»
+            let nums := if σ.«числовые».contains g || numericForm then x :: ("#р" ++ toString n) :: σ.«числа»
+              else σ.«числа»
             let σ2 : «СредаC» := { σ with «знач» := (x, .«рез» n) :: σ.«знач», «числа» := nums }
             let r ← «исполнить» σ2 (n + 1) q
             pure (.«вызов» g ts n r)

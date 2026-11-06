@@ -2541,6 +2541,8 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain "$(cat flang/proof/lean/lean-toolchain)"
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Check Lean version
+        run: lean --version
       - name: Build flang from the seed
         run: make -C bootstrap -j"$(nproc)"
       - name: Printed C agrees with the reference, counts within their bounds

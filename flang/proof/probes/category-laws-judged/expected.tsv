@@ -1,0 +1,10 @@
+program	surface	code	word	contract ADR-0196: codes and words are taken by the binary of print batch 9d
+cited-law.flang	check --proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+exact-integer-monoid.flang	check --proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
+list-functor.flang	check --proof	0	законом «Тождественное отображение»
+list-monoid.flang	check --proof	3	законов утверждениями 3: доказано ядром 2
+maybe-monad.flang	check --proof	3	законов утверждениями 3: доказано ядром 2
+number-monoid.flang	check --proof	3	доказан не будет
+row-monoid.flang	check --proof	0	законов утверждениями 3: доказано ядром 3
+subtraction-monoid.flang	check --proof	1	FLANG_MONOID_ASSOC
+flang/ct/monoid-and-monad.flang	check --proof	3	ПОСЧИТАНО НА СЕТКЕ

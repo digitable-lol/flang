@@ -79,6 +79,7 @@ script.lean-parity:probe = bootstrap/flang io flang/proof/parity/run.fscript --p
 script.plan-rules:probe = bootstrap/flang io flang/proof/probes/plan-rules-asked/run.fscript --plan Binary
 script.kernel-memo:probe = bootstrap/flang io flang/proof/probes/kernel-memo/run.fscript
 script.ru-morphology:probe = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Binary
+script.category-laws:probe = bootstrap/flang io flang/proof/probes/category-laws-judged/run.fscript --plan Binary --timeout 900000
 script.ru-morphology:forgery = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Forgery
 script.ru-morphology:snap = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Snap
 script.fallacies:probe = bootstrap/flang io flang/proof/probes/syllogism/fallacies/run.fscript --plan Binary --max-steps 400000000

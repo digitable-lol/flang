@@ -43,8 +43,8 @@
 тотальная функция «Ceiling»
   возвращает число
   пример «Paths without a model, at most; it grows only by an edit here, with a reason»
-    ожидается 24
-  24
+    ожидается 18
+  18
 
 тотальная функция «Has»
   принимает word: строка, words: список строки
@@ -126,13 +126,18 @@
   пример «The last guillemet name of a path»
     дано path равно "«Суд».«выводом»"
     ожидается "«выводом»"
-  пример «A path without guillemets is its own key»
+  пример «A move is named by its word in quotes, as the dispatch of the second checker names it»
     дано path равно "ход цель"
-    ожидается "ход цель"
+    ожидается "\"цель\""
+  пример «A path without guillemets and without the move word is its own key»
+    дано path равно "прогон"
+    ожидается "прогон"
   пусть parts равно (разделить path по "«")
   если (длина parts) больше 1
     то соединить ["«", (элемент (длина parts) в parts)] по ""
-    иначе path
+    иначе (если path начинается с "ход "
+      то (соединить ["\"", (подстрока path с 5 по (длина path)), "\""] по "")
+      иначе path)
 
 тотальная функция «Statement of»
   принимает name: строка, theorems: список строки

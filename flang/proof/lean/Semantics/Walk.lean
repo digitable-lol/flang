@@ -7,6 +7,13 @@ inductive «Терм» where
   | «имя» (x : String)
   | «рез» (k : Nat)
   | «двучлен» (op : String) (a b : «Терм»)
+  | «вариант?» (k : String) (t : «Терм»)
+  | «пусто?» (t : «Терм»)
+  | «звено?» (t : «Терм»)
+  | «голова» (t : «Терм»)
+  | «хвост» (t : «Терм»)
+  | «поле» (f : String) (t : «Терм»)
+  | «список» (ts : List «Терм»)
 deriving Repr, Inhabited
 
 inductive «Дерево» where
@@ -14,7 +21,47 @@ inductive «Дерево» where
   | «отказ» (k : String)
   | «если» (c : «Терм») (a b : «Дерево»)
   | «вызов» (f : String) (args : List «Терм») (k : Nat) (rest : «Дерево»)
+  | «форма» (f : String) (args : List «Терм») (k : Nat) (rest : «Дерево»)
 deriving Repr, Inhabited
+
+def «вариантКакой» (k : String) : «Зн» → Bool
+  | .«вариант» m _ => k = m
+  | _ => false
+
+def «пустой» : «Зн» → Bool
+  | .«строка» s => s.isEmpty
+  | .«список» l => l.isEmpty
+  | _ => false
+
+def «звеньевой» : «Зн» → Bool
+  | .«строка» s => match s.toList with
+    | [] => false
+    | _ :: _ => true
+  | .«список» (_ :: _) => true
+  | _ => false
+
+def «головаЗн» : «Зн» → «Исход»
+  | .«строка» s => match s.toList with
+    | c :: _ => .ok (.«строка» (String.singleton c))
+    | [] => «беда» "FLANG_MATCH_NOT_EXHAUSTIVE"
+  | .«список» (v :: _) => .ok v
+  | _ => «беда» "FLANG_MATCH_NOT_EXHAUSTIVE"
+
+def «хвостЗн» : «Зн» → «Исход»
+  | .«строка» s => match s.toList with
+    | _ :: r => .ok (.«строка» (String.ofList r))
+    | [] => «беда» "FLANG_MATCH_NOT_EXHAUSTIVE"
+  | .«список» (_ :: r) => .ok (.«список» r)
+  | _ => «беда» "FLANG_MATCH_NOT_EXHAUSTIVE"
+
+def «полеЗн» (p : String) : «Зн» → «Исход»
+  | .«запись» fs => match «найти» p fs with
+    | some w => .ok w
+    | none => «беда» "FLANG_FIELD"
+  | .«вариант» _ fs => match «найти» p fs with
+    | some w => .ok w
+    | none => «беда» "FLANG_FIELD"
+  | _ => «беда» "FLANG_FIELD"
 
 abbrev «Итоги» := List (Nat × «Зн»)
 
@@ -22,6 +69,7 @@ def «взять» (k : Nat) : «Итоги» → Option «Зн»
   | [] => none
   | (j, v) :: r => if j = k then some v else «взять» k r
 
+mutual
 def «значТерм» (σ : «Среда») (res : «Итоги») : «Терм» → «Исход»
   | .«знач» v => .ok v
   | .«имя» x =>
@@ -36,6 +84,27 @@ def «значТерм» (σ : «Среда») (res : «Итоги») : «Тер
     let x ← «значТерм» σ res a
     let y ← «значТерм» σ res b
     «двучлен» op x y
+  | .«вариант?» k t => do
+    let x ← «значТерм» σ res t
+    pure (.«признак» («вариантКакой» k x))
+  | .«пусто?» t => do
+    let x ← «значТерм» σ res t
+    pure (.«признак» («пустой» x))
+  | .«звено?» t => do
+    let x ← «значТерм» σ res t
+    pure (.«признак» («звеньевой» x))
+  | .«голова» t => do
+    let x ← «значТерм» σ res t
+    «головаЗн» x
+  | .«хвост» t => do
+    let x ← «значТерм» σ res t
+    «хвостЗн» x
+  | .«поле» f t => do
+    let x ← «значТерм» σ res t
+    «полеЗн» f x
+  | .«список» ts => do
+    let vs ← «значВсех» σ res ts
+    pure (.«список» vs)
 
 def «значВсех» (σ : «Среда») (res : «Итоги») : List «Терм» → Except «Сбой» (List «Зн»)
   | [] => .ok []
@@ -43,6 +112,7 @@ def «значВсех» (σ : «Среда») (res : «Итоги») : List «�
     let v ← «значТерм» σ res t
     let w ← «значВсех» σ res r
     pure (v :: w)
+end
 
 def «значДерева» (P : «Программа») (M : Nat) (σ : «Среда») : «Итоги» → «Дерево» → «Исход»
   | res, .«лист» t => «значТерм» σ res t
@@ -56,6 +126,10 @@ def «значДерева» (P : «Программа») (M : Nat) (σ : «Ср
   | res, .«вызов» f ts k rest => do
     let vs ← «значВсех» σ res ts
     let v ← «выч» P M [] (.«вызов» f (vs.map .«лит»))
+    «значДерева» P M σ ((k, v) :: res) rest
+  | res, .«форма» f ts k rest => do
+    let vs ← «значВсех» σ res ts
+    let v ← «форма» f vs
     «значДерева» P M σ ((k, v) :: res) rest
 
 mutual
@@ -79,24 +153,80 @@ def «обход» (ρ : List (String × «Терм»)) (n : Nat) (k : «Тер�
       match k (.«рез» n1) (n1 + 1) with
       | some r => some (.«вызов» f ts n1 r)
       | none => none) args
+  | .«форма» f args =>
+    if f.startsWith "#отказ " then some (.«отказ» (f.drop 7).toString) else
+    «обходВсех» ρ n (fun ts n1 =>
+      match k (.«рез» n1) (n1 + 1) with
+      | some r => some (.«форма» f ts n1 r)
+      | none => none) args
+  | .«поле» t p => «обход» ρ n (fun tt n1 => k (.«поле» p tt) n1) t
+  | .«список» es => «обходВсех» ρ n (fun ts n1 => k (.«список» ts) n1) es
+  | .«конструктор» v [] => k (.«знач» (.«вариант» v [])) n
+  | .«разбор» t cs => «обход» ρ n (fun tt n1 => «обходСлучаев» ρ n1 k tt cs) t
   | _ => none
 def «обходВсех» (ρ : List (String × «Терм»)) (n : Nat) (k : List «Терм» → Nat → Option «Дерево») :
     List «Выр» → Option «Дерево»
   | [] => k [] n
   | e :: r => «обход» ρ n (fun t n1 => «обходВсех» ρ n1 (fun ts n2 => k (t :: ts) n2) r) e
+def «обходСлучаев» (ρ : List (String × «Терм»)) (n : Nat) (k : «Терм» → Nat → Option «Дерево») (tt : «Терм») :
+    List («Образец» × «Выр») → Option «Дерево»
+  | [] => some (.«отказ» "FLANG_MATCH_NOT_EXHAUSTIVE")
+  | (.«любое», b) :: _ => «обход» ρ n k b
+  | (.«вариант» v bs, b) :: r =>
+    match «обход» (bs.map (fun fx => (fx.2, «Терм».«поле» fx.1 tt)) ++ ρ) n k b, «обходСлучаев» ρ n k tt r with
+    | some y, some z => some (.«если» (.«вариант?» v tt) y z)
+    | _, _ => none
+  | (.«пусто», b) :: r =>
+    match «обход» ρ n k b, «обходСлучаев» ρ n k tt r with
+    | some y, some z => some (.«если» (.«пусто?» tt) y z)
+    | _, _ => none
+  | (.«звено» h t, b) :: r =>
+    match «обход» (h.toList.map (fun x => (x, «Терм».«голова» tt)) ++ t.toList.map (fun y => (y, «Терм».«хвост» tt)) ++ ρ)
+        n k b, «обходСлучаев» ρ n k tt r with
+    | some y, some z => some (.«если» (.«звено?» tt) y z)
+    | _, _ => none
+  | (.«лит» _, _) :: _ => none
 end
 
+mutual
 def «Ниже» (n : Nat) : «Терм» → Prop
   | .«знач» _ => True
   | .«имя» _ => True
   | .«рез» j => j < n
   | .«двучлен» _ a b => «Ниже» n a ∧ «Ниже» n b
+  | .«вариант?» _ t => «Ниже» n t
+  | .«пусто?» t => «Ниже» n t
+  | .«звено?» t => «Ниже» n t
+  | .«голова» t => «Ниже» n t
+  | .«хвост» t => «Ниже» n t
+  | .«поле» _ t => «Ниже» n t
+  | .«список» ts => «НижеВсе» n ts
+def «НижеВсе» (n : Nat) : List «Терм» → Prop
+  | [] => True
+  | t :: r => «Ниже» n t ∧ «НижеВсе» n r
+end
 
+mutual
 theorem «ниже-выше» {n m : Nat} (h : n ≤ m) : ∀ t, «Ниже» n t → «Ниже» m t
   | .«знач» _, _ => trivial
   | .«имя» _, _ => trivial
   | .«рез» _, hj => Nat.lt_of_lt_of_le hj h
   | .«двучлен» _ a b, ⟨ha, hb⟩ => ⟨«ниже-выше» h a ha, «ниже-выше» h b hb⟩
+  | .«вариант?» _ t, ht => «ниже-выше» h t ht
+  | .«пусто?» t, ht => «ниже-выше» h t ht
+  | .«звено?» t, ht => «ниже-выше» h t ht
+  | .«голова» t, ht => «ниже-выше» h t ht
+  | .«хвост» t, ht => «ниже-выше» h t ht
+  | .«поле» _ t, ht => «ниже-выше» h t ht
+  | .«список» ts, ht => «нижеВсе-выше» h ts ht
+theorem «нижеВсе-выше» {n m : Nat} (h : n ≤ m) : ∀ ts, «НижеВсе» n ts → «НижеВсе» m ts
+  | [], _ => trivial
+  | t :: r, ⟨ht, hr⟩ => ⟨«ниже-выше» h t ht, «нижеВсе-выше» h r hr⟩
+end
+
+theorem «нижеВсе-из-членов» {n : Nat} : ∀ ts : List «Терм», (∀ t, t ∈ ts → «Ниже» n t) → «НижеВсе» n ts
+  | [], _ => trivial
+  | t :: r, h => ⟨h t (by simp), «нижеВсе-из-членов» r (fun x hx => h x (by simp [hx]))⟩
 
 def «Расширяет» (res' res : «Итоги») (n : Nat) : Prop :=
   ∃ pre, res' = pre ++ res ∧ ∀ p, p ∈ pre → n ≤ p.1
@@ -136,6 +266,7 @@ theorem «взять-расширение» {res' res : «Итоги»} {n j : N
     rw [ite_eq_right_iff.mpr (fun h => absurd h hne)]
     exact ih (fun x hx => hp x (by simp [hx]))
 
+mutual
 theorem «терм-расширение» (σ : «Среда») {res' res : «Итоги»} {n : Nat} (h : «Расширяет» res' res n) :
     ∀ t, «Ниже» n t → «значТерм» σ res' t = «значТерм» σ res t
   | .«знач» _, _ => rfl
@@ -143,6 +274,18 @@ theorem «терм-расширение» (σ : «Среда») {res' res : «И
   | .«рез» j, hj => by simp only [«значТерм», «взять-расширение» hj h]
   | .«двучлен» op a b, ⟨ha, hb⟩ => by
     simp only [«значТерм», «терм-расширение» σ h a ha, «терм-расширение» σ h b hb]
+  | .«вариант?» _ t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«пусто?» t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«звено?» t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«голова» t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«хвост» t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«поле» _ t, ht => by simp only [«значТерм», «терм-расширение» σ h t ht]
+  | .«список» ts, ht => by simp only [«значТерм», «термы-расширение» σ h ts ht]
+theorem «термы-расширение» (σ : «Среда») {res' res : «Итоги»} {n : Nat} (h : «Расширяет» res' res n) :
+    ∀ ts, «НижеВсе» n ts → «значВсех» σ res' ts = «значВсех» σ res ts
+  | [], _ => rfl
+  | t :: r, ⟨ht, hr⟩ => by simp only [«значВсех», «терм-расширение» σ h t ht, «термы-расширение» σ h r hr]
+end
 
 def «Согласны» (σ : «Среда») (res : «Итоги») (n : Nat) (ρ : List (String × «Терм»)) (γ : «Среда») : Prop :=
   ∀ x t, «найти» x ρ = some t → «Ниже» n t ∧ ∃ w, «найти» x γ = some w ∧ «значТерм» σ res t = .ok w
@@ -168,6 +311,142 @@ theorem «согласны-дальше» {σ : «Среда»} {res res' : «И
   refine ⟨«ниже-выше» hnm t h1, w, h2, ?_⟩
   rw [«терм-расширение» σ he t h1]
   exact h3
+
+def «Соответствуют» (σ : «Среда») (res : «Итоги») (n : Nat) :
+    List (String × «Терм») → «Среда» → Prop
+  | [], [] => True
+  | (x, t) :: a, (y, w) :: b => x = y ∧ «Ниже» n t ∧ «значТерм» σ res t = .ok w ∧ «Соответствуют» σ res n a b
+  | _, _ => False
+
+theorem «согласны-префикс» {σ : «Среда»} {res : «Итоги»} {n : Nat} {ρ : List (String × «Терм»)} {γ : «Среда»}
+    (h : «Согласны» σ res n ρ γ) : ∀ (pr : List (String × «Терм»)) (pg : «Среда»), «Соответствуют» σ res n pr pg →
+      «Согласны» σ res n (pr ++ ρ) (pg ++ γ)
+  | [], [], _ => by simpa using h
+  | (x, t) :: a, (y, w) :: b, ⟨hxy, hn, ht, hab⟩ => by
+    subst hxy
+    exact «согласны-шире» («согласны-префикс» h a b hab) x t w hn ht
+  | [], _ :: _, hf => by simp [«Соответствуют»] at hf
+  | _ :: _, [], hf => by simp [«Соответствуют»] at hf
+
+theorem «соответствуют-сцепка» {σ : «Среда»} {res : «Итоги»} {n : Nat} :
+    ∀ (a1 : List (String × «Терм»)) (b1 : «Среда») (a2 : List (String × «Терм»)) (b2 : «Среда»),
+      «Соответствуют» σ res n a1 b1 → «Соответствуют» σ res n a2 b2 → «Соответствуют» σ res n (a1 ++ a2) (b1 ++ b2)
+  | [], [], _, _, _, h2 => by simpa using h2
+  | (x, t) :: a, (y, w) :: b, a2, b2, ⟨h1, h2, h3, h4⟩, h5 =>
+    ⟨h1, h2, h3, «соответствуют-сцепка» a b a2 b2 h4 h5⟩
+  | [], _ :: _, _, _, hf, _ => by simp [«Соответствуют»] at hf
+  | _ :: _, [], _, _, hf, _ => by simp [«Соответствуют»] at hf
+
+theorem «связки-соответствуют» (σ : «Среда») (res : «Итоги») (n : Nat) (tt : «Терм») (mm : String)
+    (fs : List (String × «Зн»)) (hn : «Ниже» n tt) (ht : «значТерм» σ res tt = .ok (.«вариант» mm fs)) :
+    ∀ (bs : List (String × String)) (e : «Среда»), «связки» fs bs = .ok e →
+      «Соответствуют» σ res n (bs.map (fun fx => (fx.2, «Терм».«поле» fx.1 tt))) e
+  | [], e, h => by simp only [«связки»] at h; cases h; trivial
+  | (f, x) :: r, e, h => by
+    simp only [«связки»] at h
+    cases hf : «найти» f fs with
+    | none => rw [hf] at h; cases h
+    | some w =>
+      rw [hf] at h
+      cases hr : «связки» fs r with
+      | error er => rw [hr] at h; cases h
+      | ok e' =>
+        rw [hr] at h
+        simp only [bind, Except.bind, pure, Except.pure] at h
+        cases h
+        refine ⟨rfl, hn, ?_, «связки-соответствуют» σ res n tt mm fs hn ht r e' hr⟩
+        simp [«значТерм», ht, «полеЗн», hf, bind, Except.bind]
+
+def «связиЗвена» (h t : Option String) (H T : «Зн») : «Среда» :=
+  (match h with | some x => [(x, H)] | none => []) ++ (match t with | some y => [(y, T)] | none => [])
+
+theorem «звено-соответствуют» (σ : «Среда») (res : «Итоги») (n : Nat) (tt : «Терм») (val : «Зн»)
+    (hn : «Ниже» n tt) (ht : «значТерм» σ res tt = .ok val) (h t : Option String) (e : «Среда»)
+    (hp : «подходит» (.«звено» h t) val = .ok (some e)) :
+    «Соответствуют» σ res n (h.toList.map (fun x => (x, «Терм».«голова» tt)) ++
+      t.toList.map (fun y => (y, «Терм».«хвост» tt))) e := by
+  have key : ∀ (H T : «Зн»), «головаЗн» val = .ok H → «хвостЗн» val = .ok T →
+      e = «связиЗвена» h t H T →
+      «Соответствуют» σ res n (h.toList.map (fun x => (x, «Терм».«голова» tt)) ++
+        t.toList.map (fun y => (y, «Терм».«хвост» tt))) e := by
+    intro H T hH hT he
+    subst he
+    unfold «связиЗвена»
+    apply «соответствуют-сцепка»
+    · cases h with
+      | none => trivial
+      | some x => exact ⟨rfl, hn, by simp [«значТерм», ht, hH, bind, Except.bind], trivial⟩
+    · cases t with
+      | none => trivial
+      | some y => exact ⟨rfl, hn, by simp [«значТерм», ht, hT, bind, Except.bind], trivial⟩
+  cases val with
+  | «строка» s =>
+    simp only [«подходит»] at hp
+    cases hs : s.toList with
+    | nil => rw [hs] at hp; cases hp
+    | cons c r =>
+      rw [hs] at hp
+      simp only [Except.ok.injEq, Option.some.injEq] at hp
+      exact key (.«строка» (String.singleton c)) (.«строка» (String.ofList r)) (by simp [«головаЗн», hs])
+        (by simp [«хвостЗн», hs]) (by rw [hp.symm]; rfl)
+  | «список» l =>
+    simp only [«подходит»] at hp
+    cases l with
+    | nil => cases hp
+    | cons v r =>
+      simp only [Except.ok.injEq, Option.some.injEq] at hp
+      exact key v (.«список» r) (by simp [«головаЗн»]) (by simp [«хвостЗн»]) (by rw [hp.symm]; rfl)
+  | _ => simp [«подходит»] at hp
+
+theorem «звено-без-ошибки» (h t : Option String) (val : «Зн») (er : «Сбой») :
+    «подходит» (.«звено» h t) val ≠ .error er := by
+  cases val with
+  | «строка» s =>
+    simp only [«подходит»]
+    cases s.toList <;> simp
+  | «список» l => cases l <;> simp [«подходит»]
+  | _ => simp [«подходит»]
+
+theorem «звено-нет» (h t : Option String) (val : «Зн») (hp : «подходит» (.«звено» h t) val = .ok none) :
+    «звеньевой» val = false := by
+  cases val with
+  | «строка» s =>
+    simp only [«подходит»] at hp
+    simp only [«звеньевой»]
+    cases hs : s.toList with
+    | nil => rfl
+    | cons c r => rw [hs] at hp; simp at hp
+  | «список» l => cases l with
+    | nil => rfl
+    | cons _ _ => simp [«подходит»] at hp
+  | _ => rfl
+
+theorem «звено-да» (h t : Option String) (val : «Зн») (e : «Среда»)
+    (hp : «подходит» (.«звено» h t) val = .ok (some e)) : «звеньевой» val = true := by
+  cases val with
+  | «строка» s =>
+    simp only [«подходит»] at hp
+    simp only [«звеньевой»]
+    cases hs : s.toList with
+    | nil => rw [hs] at hp; simp at hp
+    | cons c r => rfl
+  | «список» l => cases l with
+    | nil => simp [«подходит»] at hp
+    | cons _ _ => rfl
+  | _ => simp [«подходит»] at hp
+
+theorem «поле-как-полеЗн» (p : String) (v : «Зн») :
+    (match v with
+      | .«запись» fs =>
+        match «найти» p fs with
+        | some w => pure w
+        | none => «беда» "FLANG_FIELD"
+      | .«вариант» _ fs =>
+        match «найти» p fs with
+        | some w => pure w
+        | none => «беда» "FLANG_FIELD"
+      | _ => «беда» "FLANG_FIELD" : «Исход») = «полеЗн» p v := by
+  cases v <;> simp [«полеЗн»] <;> rfl
 
 theorem «вычВсе-литералы» (P : «Программа») (m : Nat) (γ : «Среда») :
     ∀ vs : List «Зн», 0 < m → «вычВсе» («выч» P m) γ (vs.map .«лит») = .ok vs
@@ -328,15 +607,91 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
           refine hk _ (n1 + 1) r ((n1, v) :: res1) hr (by omega) (Nat.lt_succ_self n1)
             («расширяет-добавить» hn1 v he1) ?_
           simp [«значТерм», «взять»]
-  | .«разбор» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
+  | .«разбор» t cs, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases ht : «выч» P m γ t with
+      | error er => rw [ht] at hv; cases hv
+      | ok val =>
+        rw [ht] at hv
+        simp only [bind, Except.bind] at hv
+        simp only [«обход»] at hd
+        refine «обход-верен» P σ M t ρ γ n res _ d m val R hd hs ht (by omega) ?_
+        intro tt n1 d1 res1 hd1 hn1 htt he1 hval
+        refine «обходСлучаев-верен» P σ M cs ρ γ n1 res1 k tt d1 m val v R hd1 («согласны-дальше» hs hn1 he1)
+          htt hval hv (by omega) ?_
+        intro t' n2 d' res' h1 h2 h3 h4 h5
+        exact hk t' n2 d' res' h1 (by omega) h3 («расширяет-цепь» hn1 h4 he1) h5
   | .«свёртка» _ _ _ _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
   | .«отобразить» _ _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
   | .«отфильтровать» _ _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
-  | .«список» _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
+  | .«список» es, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases hvs : «вычВсе» («выч» P m) γ es with
+      | error er => rw [hvs] at hv; cases hv
+      | ok vs =>
+        rw [hvs] at hv
+        simp only [bind, Except.bind, pure, Except.pure] at hv
+        cases hv
+        simp only [«обход»] at hd
+        refine «обходВсех-верен» P σ M es ρ γ n res _ d m vs R hd hs hvs (by omega) ?_
+        intro ts n1 d1 res1 hd1 hn1 hts he1 hvts
+        refine hk _ n1 d1 res1 hd1 hn1 («нижеВсе-из-членов» ts hts) he1 ?_
+        simp only [«значТерм», hvts, bind, Except.bind, pure, Except.pure]
   | .«запись» _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
-  | .«конструктор» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
-  | .«поле» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
-  | .«форма» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
+  | .«конструктор» kv [], ρ, γ, n, res, k, d, m, v, R, hd, _, hv, _, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг», «вычПоля», bind, Except.bind, pure, Except.pure] at hv
+      cases hv
+      exact hk _ _ _ res hd (Nat.le_refl n) trivial («расширяет-сам» res n) rfl
+  | .«конструктор» _ (_ :: _), _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
+  | .«поле» t p, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases ht : «выч» P m γ t with
+      | error er => rw [ht] at hv; cases hv
+      | ok val =>
+        rw [ht] at hv
+        simp only [bind, Except.bind] at hv
+        simp only [«обход»] at hd
+        refine «обход-верен» P σ M t ρ γ n res _ d m val R hd hs ht (by omega) ?_
+        intro tt n1 d1 res1 hd1 hn1 htt he1 hval
+        refine hk _ n1 d1 res1 hd1 hn1 htt he1 ?_
+        simp only [«значТерм», hval, bind, Except.bind]
+        cases val <;> simp only [«полеЗн»] <;> first | exact hv | (simp [«беда»] at hv)
+  | .«форма» f args, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases hvs : «вычВсе» («выч» P m) γ args with
+      | error er => rw [hvs] at hv; cases hv
+      | ok vs =>
+        rw [hvs] at hv
+        simp only [bind, Except.bind] at hv
+        by_cases hf : f.startsWith "#отказ "
+        · simp [«форма», hf, «беда»] at hv
+        · simp only [«обход», hf] at hd
+          refine «обходВсех-верен» P σ M args ρ γ n res _ d m vs R hd hs hvs (by omega) ?_
+          intro ts n1 d1 res1 hd1 hn1 hts he1 hvts
+          cases hr : k (.«рез» n1) (n1 + 1) with
+          | none => simp [hr] at hd1
+          | some r =>
+            simp only [hr] at hd1
+            cases hd1
+            simp only [«значДерева», hvts, bind, Except.bind, hv]
+            refine hk _ (n1 + 1) r ((n1, v) :: res1) hr (by omega) (Nat.lt_succ_self n1)
+              («расширяет-добавить» hn1 v he1) ?_
+            simp [«значТерм», «взять»]
   | .«ссылка» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
   | .«применить» _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
 theorem «обходВсех-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
@@ -374,6 +729,118 @@ theorem «обходВсех-верен» (P : «Программа») (σ : «�
           · rw [hx]; exact «ниже-выше» hn2 t ht
           · exact hts x hx
         · simp only [«значВсех», «терм-расширение» σ he2 t ht, hwt, hws, bind, Except.bind, pure, Except.pure]
+theorem «обходСлучаев-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
+    ∀ (cs : List («Образец» × «Выр»)) (ρ : List (String × «Терм»)) (γ : «Среда») (n : Nat) (res : «Итоги»)
+      (k : «Терм» → Nat → Option «Дерево») (tt : «Терм») (d : «Дерево») (m : Nat) (val v : «Зн») (R : «Исход»),
+      «обходСлучаев» ρ n k tt cs = some d → «Согласны» σ res n ρ γ → «Ниже» n tt → «значТерм» σ res tt = .ok val →
+      «разобрать» («выч» P m) γ val cs = .ok v → m ≤ M →
+      (∀ t n1 d' res', k t n1 = some d' → n ≤ n1 → «Ниже» n1 t → «Расширяет» res' res n →
+        «значТерм» σ res' t = .ok v → «значДерева» P M σ res' d' = R) →
+      «значДерева» P M σ res d = R
+  | [], _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hv, _, _ => by simp [«разобрать», «беда»] at hv
+  | (.«любое», b) :: _, ρ, γ, n, res, k, tt, d, m, val, v, R, hd, hs, _, _, hv, hM, hk => by
+    simp only [«разобрать», «подходит», «вставить», List.nil_append] at hv
+    simp only [«обходСлучаев»] at hd
+    exact «обход-верен» P σ M b ρ γ n res k d m v R hd hs hv hM hk
+  | (.«лит» _, _) :: _, _, _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _, _, _ => by simp [«обходСлучаев»] at hd
+  | (.«вариант» kv bs, b) :: r, ρ, γ, n, res, k, tt, d, m, val, v, R, hd, hs, hn, ht, hv, hM, hk => by
+    simp only [«обходСлучаев»] at hd
+    cases hy : «обход» (bs.map (fun fx => (fx.2, «Терм».«поле» fx.1 tt)) ++ ρ) n k b with
+    | none => simp [hy] at hd
+    | some y =>
+      cases hz : «обходСлучаев» ρ n k tt r with
+      | none => simp [hy, hz] at hd
+      | some z =>
+        simp only [hy, hz] at hd
+        cases hd
+        have hrest : «разобрать» («выч» P m) γ val r = .ok v → «значДерева» P M σ res z = R :=
+          fun h => «обходСлучаев-верен» P σ M r ρ γ n res k tt z m val v R hz hs hn ht h hM hk
+        cases val with
+        | «вариант» mm fs =>
+          by_cases hk' : kv = mm
+          · subst hk'
+            simp only [«разобрать», «подходит», ite_true] at hv
+            cases he : «связки» fs bs with
+            | error er => rw [he] at hv; cases hv
+            | ok e =>
+              rw [he] at hv
+              simp only [bind, Except.bind, pure, Except.pure, «вставить»] at hv
+              simp only [«значДерева», «значТерм», ht, «вариантКакой», bind, Except.bind, pure, Except.pure,
+                decide_true]
+              exact «обход-верен» P σ M b _ (e ++ γ) n res k y m v R hy
+                («согласны-префикс» hs _ e («связки-соответствуют» σ res n tt kv fs hn ht bs e he)) hv hM hk
+          · simp only [«разобрать», «подходит», hk', ite_false] at hv
+            simp only [«значДерева», «значТерм», ht, «вариантКакой», hk', bind, Except.bind, pure, Except.pure,
+              decide_false]
+            exact hrest hv
+        | _ =>
+          simp only [«разобрать», «подходит»] at hv
+          simp only [«значДерева», «значТерм», ht, «вариантКакой», bind, Except.bind, pure, Except.pure]
+          exact hrest hv
+  | (.«пусто», b) :: r, ρ, γ, n, res, k, tt, d, m, val, v, R, hd, hs, hn, ht, hv, hM, hk => by
+    simp only [«обходСлучаев»] at hd
+    cases hy : «обход» ρ n k b with
+    | none => simp [hy] at hd
+    | some y =>
+      cases hz : «обходСлучаев» ρ n k tt r with
+      | none => simp [hy, hz] at hd
+      | some z =>
+        simp only [hy, hz] at hd
+        cases hd
+        have hrest : «разобрать» («выч» P m) γ val r = .ok v → «значДерева» P M σ res z = R :=
+          fun h => «обходСлучаев-верен» P σ M r ρ γ n res k tt z m val v R hz hs hn ht h hM hk
+        have hyes : «выч» P m γ b = .ok v → «значДерева» P M σ res y = R :=
+          fun h => «обход-верен» P σ M b ρ γ n res k y m v R hy hs h hM hk
+        cases val with
+        | «строка» s =>
+          by_cases he : s.isEmpty = true
+          · simp only [«разобрать», «подходит», he, ite_true, «вставить», List.nil_append] at hv
+            simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
+            exact hyes hv
+          · simp only [«разобрать», «подходит», he, ite_false] at hv
+            simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
+            exact hrest hv
+        | «список» l =>
+          by_cases he : l.isEmpty = true
+          · simp only [«разобрать», «подходит», he, ite_true, «вставить», List.nil_append] at hv
+            simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
+            exact hyes hv
+          · simp only [«разобрать», «подходит», he, ite_false] at hv
+            simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
+            exact hrest hv
+        | _ =>
+          simp only [«разобрать», «подходит»] at hv
+          simp only [«значДерева», «значТерм», ht, «пустой», bind, Except.bind, pure, Except.pure]
+          exact hrest hv
+  | (.«звено» h t, b) :: r, ρ, γ, n, res, k, tt, d, m, val, v, R, hd, hs, hn, ht, hv, hM, hk => by
+    simp only [«обходСлучаев», List.append_assoc] at hd
+    cases hy : «обход» (h.toList.map (fun x => (x, «Терм».«голова» tt)) ++ (t.toList.map (fun y => (y, «Терм».«хвост» tt)) ++ ρ))
+        n k b with
+    | none => simp [hy] at hd
+    | some y =>
+      cases hz : «обходСлучаев» ρ n k tt r with
+      | none => simp [hy, hz] at hd
+      | some z =>
+        simp only [hy, hz] at hd
+        cases hd
+        have hrest : «разобрать» («выч» P m) γ val r = .ok v → «значДерева» P M σ res z = R :=
+          fun h' => «обходСлучаев-верен» P σ M r ρ γ n res k tt z m val v R hz hs hn ht h' hM hk
+        cases hp : «подходит» (.«звено» h t) val with
+        | error er => exact absurd hp («звено-без-ошибки» h t val er)
+        | ok o =>
+          cases o with
+          | none =>
+            have hv' : «разобрать» («выч» P m) γ val r = .ok v := by
+              simp only [«разобрать», hp] at hv; exact hv
+            simp only [«значДерева», «значТерм», ht, «звено-нет» h t val hp, bind, Except.bind, pure, Except.pure]
+            exact hrest hv'
+          | some e =>
+            have hv' : «выч» P m (e ++ γ) b = .ok v := by
+              simp only [«разобрать», hp, «вставить»] at hv; exact hv
+            simp only [«значДерева», «значТерм», ht, «звено-да» h t val e hp, bind, Except.bind, pure, Except.pure]
+            have hs2 := «согласны-префикс» hs _ e («звено-соответствуют» σ res n tt val hn ht h t e hp)
+            rw [List.append_assoc] at hs2
+            exact «обход-верен» P σ M b _ (e ++ γ) n res k y m v R hy hs2 hv' hM hk
 end
 
 structure «Условие входа» where

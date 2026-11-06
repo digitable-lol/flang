@@ -12,7 +12,7 @@
 [ADR-0093](0093-the-declared-measure-is-proved-by-the-kernel-or-refused-and-the-guard-stays-only-on-faith.md)
 — объявленная мера и сторож; [ADR-0053](0053-line-length-and-conditional-depth-are-limits-in-the-settings-file.md)
 — пределы строки и глубины.
-**Проверяется:** `bootstrap/flang run-script sugar:check` (три задачи разворачиваются, и
+**Проверяется:** `bootstrap/flang run-script sugar:demo` (три задачи разворачиваются, и
 `check --proof` отвечает на развёрнутое то же, что на исходные решения);
 `bootstrap/flang check flang/sugar/loops.flang` (примеры каждого шага разворота).
 
@@ -237,7 +237,7 @@ Python), и прогнано на примерах из файла flang; тек
 бы не с чем.
 
 Вердикты `check --proof` совпали построчно (план `Compare`, `bootstrap/flang run-script
-sugar:check`):
+sugar:demo`):
 
 ```
 121: совпало — код 0, ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 0: доказано 0, … — код возврата 0

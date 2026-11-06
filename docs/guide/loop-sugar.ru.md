@@ -54,6 +54,6 @@ bootstrap/flang check --proof развёрнутое.flang
 параметры, свои хранимые значения и свой элемент; имя, связанное `пусть` до
 цикла, входит через `храним`.
 
-`bootstrap/flang run-script sugar:check` разворачивает три задачи LeetCode,
+`bootstrap/flang run-script sugar:demo` разворачивает три задачи LeetCode,
 записанные циклами (`flang/sugar/tasks.flang`), и сличает вердикт `check --proof`
 каждой с вердиктом исходного решения в `docs/examples/leetcode`.

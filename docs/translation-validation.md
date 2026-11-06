@@ -12,8 +12,8 @@ bootstrap/flang run-script translation:validate -- --all
 bootstrap/flang run-script translation:validate -- --path docs/examples/leetcode
 ```
 
-The first command takes `flang/proof/examples`, `docs/examples/pythagoras` and
-`docs/examples/leetcode/069-sqrtx.flang`; with `--all` it
+The first command takes `flang/proof/examples`, `docs/examples/pythagoras`,
+`docs/examples/leetcode/069-sqrtx.flang` and `flang/translation/runtime-contracts.flang`; with `--all` it
 takes every file of `docs/examples` too. With `-- --path <file or directory>` (from the root of the
 tree, or absolute) it takes that program and the eight files the forgeries edit, so a program of
 your own is validated the same way.
@@ -127,6 +127,7 @@ refused. A function it refuses keeps its witnesses.
   причины вне валидации: <reason> — <count>; …
 не напечатано или не собрано файлов F: …
 расхождений D
+функций рантайма C, которые зовёт сличённый C, R, из них без модели в эталоне U: …
 ```
 
 - **перебором всей области** — the C function agrees with the reference on its whole domain.
@@ -137,13 +138,17 @@ refused. A function it refuses keeps its witnesses.
   with no fitting function in the module, or every witness ran into a limit.
 - **не напечатано** — the print refused the file; the forgery examples of the kernel are refused
   this way by design.
+- **функций рантайма** — the runtime C functions the printed corpus calls, and how many of them
+  have no row in the table of models of the plan (each row names the definition of the reference
+  that is the function's meaning, ADR-0212). A runtime function is checked through the functions
+  that call it.
 
 Any disagreement fails the plan and is named with both answers.
 
 ## Bounds in CI
 
 The job `translation-validation` of `.github/workflows/binary.yml` runs on every push and every
-pull request. It gives the plan a floor and three ceilings:
+pull request. It gives the plan floors and ceilings:
 
 | key | bound |
 |---|---|
@@ -151,6 +156,7 @@ pull request. It gives the plan a floor and three ceilings:
 | `--proved-floor` | functions proved over the whole domain or symbolically, at least |
 | `--outside-ceiling` | functions outside the validation, at most |
 | `--unprinted-ceiling` | files not printed or not built, at most |
+| `--unmodelled-ceiling` | runtime C functions the printed corpus calls that have no model in the reference, at most |
 
 A count past its bound fails the plan with a line `пол … не достигнут` or `потолок … превышен`.
 A second step of the same job runs the plan with the proved floor one higher and the ceiling of

@@ -26,7 +26,33 @@ structure «Толкование» where
   «метка» : String → Prop
   «здесь» : String → String → Prop
   «тожд» : String → String → Prop
+  «неНеЧисло» : String → Prop
   «т-верно» : ∀ g, «истинно» («т» g) → «истинно» g
+  «т-сохраняет» : ∀ g, «истинно» g → «истинно» («т» g)
+  «ужать-верно» : ∀ a b, «ужатьТ» a = «ужатьТ» b → «истинно» a → «истинно» b
+  «ужать-здесь» : ∀ a b c, «ужатьТ» a = «ужатьТ» b → «здесь» a c → «здесь» b c
+  «да-верно» : «истинно» "да"
+  «совпали-верно» : ∀ a b, «совпали» a b = true → «истинно» a → «истинно» b
+  «тождество-верно» : ∀ t, («сторона» t "равно" "равен").«есть» = true →
+    «ужатьТ» («сторона» t "равно" "равен").«лево» = «ужатьТ» («сторона» t "равно" "равен").«право» → «истинно» t
+  «равен-здесь» : ∀ t, («сторона» t "равен" "равно").«есть» = true → «истинно» t →
+    «здесь» («сторона» t "равен" "равно").«лево» («сторона» t "равен" "равно").«право»
+  «порядок-верно» : ∀ f g i (fr gr : «Разрез»), «неравРазрез» f = some (i, fr) → «неравРазрез» g = some (i, gr) →
+    «ужатьТ» fr.«лево» = «ужатьТ» gr.«лево» → «ужатьТ» fr.«право» = «ужатьТ» gr.«право» → «истинно» f → «истинно» g
+  «если-факт» : ∀ f, («разрез» f "то").«есть» = true → («разрез» («разрез» f "то").«право» "иначе").«есть» = true →
+    («разрез» f "то").«лево».startsWith "если " = true → «истинно» f →
+    «здесь» («словаС» («разрез» f "то").«лево» 1) "да" → «истинно» («разрез» («разрез» f "то").«право» "иначе").«лево»
+  «охрана-верна» : ∀ t, («разрез» t "то").«есть» = true → («разрез» («разрез» t "то").«право» "иначе").«есть» = true →
+    («разрез» t "то").«лево».startsWith "если " = true → «ужатьТ» («разрез» («разрез» t "то").«право» "иначе").«право» = "да" →
+    («здесь» («словаС» («разрез» t "то").«лево» 1) "да" → «истинно» («разрез» («разрез» t "то").«право» "иначе").«лево») →
+    «истинно» t
+  «метка-факт» : ∀ c f, «метка» c → f ∈ c.splitOn "\n" →
+    (f.startsWith "+" = true → «здесь» (f.drop 1).toString "да") ∧ (f.startsWith "-" = true → «здесь» (f.drop 1).toString "нет")
+  «даёт-да» : ∀ f g x y s n v st, «порядокСравнения» f = some (x, y, s) → «порядокСравнения» g = some (n, v, st) →
+    x = n → y = v → (s || !st) = true → «здесь» f "да" → «истинно» g
+  «даёт-нет» : ∀ f g a b s n v st, «порядокСравнения» f = some (a, b, s) → «порядокСравнения» g = some (n, v, st) →
+    «неНеЧисло» a → «неНеЧисло» b → b = n → a = v → (!s || !st) = true → «здесь» f "нет" → «истинно» g
+  «порядок-тождества» : ∀ g x, «порядокСравнения» g = some (x, x, false) → «неНеЧисло» x → «истинно» g
   «здесь-симм» : ∀ a b, «здесь» a b → «здесь» b a
   «метка-пуста» : «метка» ""
   «метка-плюс» : ∀ c0 c, «метка» (if c0 = "" then "+" ++ c else c0 ++ "\n" ++ "+" ++ c) ↔ («метка» c0 ∧ «здесь» c "да")
@@ -48,6 +74,8 @@ structure «Толкование» where
     («разрез» t "то").«лево».startsWith "если " = true → «словаС» («разрез» t "то").«лево» 1 = "нет" →
     «тожд» t («разрез» («разрез» t "то").«право» "иначе").«право»
   «счёт-тождество» : ∀ a b, «значение» s!"( {a} ) равен ( {b} )" 64 = some (.«п» true) → «тожд» a b
+  «нейтральный-ноль» : ∀ t «ог», («разрез» t "плюс").«есть» = true → («сверху» («ужатьТ» t) "плюс").length = 2 →
+    «безНуля» t ≠ "" → «истинно» «ог» → «держитНоль» («безНуля» t) «ог» = true → «здесь» t («безНуля» t)
   «и-притом» : ∀ t, («разрез» t "и притом").«есть» = true → («сверху» («ужатьТ» t) "и притом").length = 2 →
     «истинно» («т» («разрез» t "и притом").«лево») → «истинно» («т» («разрез» t "и притом").«право») → «истинно» t
   «или-лево» : ∀ t, («разрез» t "или").«есть» = true → («сверху» («ужатьТ» t) "или").length = 2 →
@@ -425,6 +453,301 @@ theorem «ход-вычислить-состоятелен» (I : «Толков
     apply «одна-верна» I p _ h3 _ hv
     intro _ h
     exact I.«подстановка-тождества» _ a b (I.«счёт-тождество» a b heq) (I.«т-верно» _ h)
+  · subst hq; simp [«беда-оборвана»] at hok
+
+/-- **Ход «нейтральный ноль» состоятелен** для утверждения, чьи ограничения верны: при
+    посылке `т0 больше К`, `К` не меньше 0, `т0 плюс 0` равно `т0` (`«нейтральный-ноль»`);
+    вне связывателя равное подставляется. Под связывателем ход не берётся. -/
+theorem «ход-нейтральный-состоятелен» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
+    (hlim : ∀ g ∈ o.«ограничения», I.«истинно» g)
+    (hw : «слово» l 3 = "нейтральный") (hok : («ходШага» p l o).«оборван» = false)
+    (hv : I.«верен» («ходШага» p l o)) : I.«верен» p := by
+  obtain ⟨h1, h2, h3⟩ := «шаг-допущен» p l o hok
+  have e : «ходШага» p l o = «ходНуля» p l o := by simp [«ходШага», h1, h2, h3, hw]
+  rw [e] at hok hv
+  generalize hq : «ходНуля» p l o = q at hok hv
+  unfold «ходНуля» at hq
+  dsimp only at hq
+  generalize ht : «т» («уголок» l 1) = t at hq
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hB
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hC
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hD
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [«отказ-оборван»] at hok
+  rename_i hF
+  subst hq
+  have hB' : («разрез» t "плюс").«есть» = true ∧ («сверху» («ужатьТ» t) "плюс").length = 2 := by
+    simpa using hB
+  have hD' : ∃ g ∈ o.«ограничения», «держитНоль» («безНуля» t) g = true := by
+    simpa using hD
+  obtain ⟨g, hg, hz⟩ := hD'
+  have heq := I.«нейтральный-ноль» t g hB'.1 hB'.2 hC (hlim g hg) hz
+  apply «одна-верна» I p _ h3 _ hv
+  intro _ h
+  exact I.«подстановка-равенства» _ t _ (by simpa using hF) heq (I.«т-верно» _ h)
+
+/-- Первая цель снята: достаточно, чтобы она была верна. -/
+theorem «снять-верна» (I : «Толкование») (p : «Прогон») (hne : p.«цели» ≠ [])
+    (hstep : (∀ d ∈ p.«дано», I.«истинно» d) → I.«метка» (p.«условияЦели» 0) → I.«истинно» p.«первая») :
+    I.«верен» (p.«заменить» []) → I.«верен» p := by
+  apply «заменитьСУсловиями-верен» I p [] _ hne
+  intro hd hm _
+  exact hstep hd hm
+
+/-- Модус-поненс, не оборванный, снимает цель, и из верного факта следует цель. -/
+theorem «модус-закрыт» (I : «Толкование») (p : «Прогон») (a f b : String)
+    (hok : («модусПоненс» p a f b).«оборван» = false) :
+    «модусПоненс» p a f b = { p.«заменить» [] with «факт» := "" } ∧ (I.«истинно» b → I.«истинно» a) := by
+  unfold «модусПоненс» at hok ⊢
+  split
+  · rename_i h
+    refine ⟨rfl, fun hb => I.«т-верно» _ (I.«ужать-верно» _ _ h.symm (I.«т-сохраняет» _ hb))⟩
+  · rename_i h0
+    simp only [h0, ↓reduceIte] at hok
+    dsimp only at hok ⊢
+    split
+    · rename_i hfr
+      simp only [hfr, ↓reduceIte] at hok
+      split
+      · rename_i hfree
+        simp [hfree, «отказ-оборван»] at hok
+      · rename_i hfree
+        simp only [hfree, Bool.false_eq_true, ↓reduceIte] at hok ⊢
+        split
+        · rename_i hg
+          have hg' : («сторона» («т» («вместо» a («сторона» b "равен" "равно").«лево» («сторона» b "равен" "равно").«право»)) "равно" "равен").«есть» = true ∧
+              «ужатьТ» («сторона» («т» («вместо» a («сторона» b "равен" "равно").«лево» («сторона» b "равен" "равно").«право»)) "равно" "равен").«лево» =
+              «ужатьТ» («сторона» («т» («вместо» a («сторона» b "равен" "равно").«лево» («сторона» b "равен" "равно").«право»)) "равно" "равен").«право» := by
+            simpa using hg
+          refine ⟨rfl, fun hb => ?_⟩
+          exact I.«подстановка-равенства» a _ _ (by simpa using hfree) (I.«равен-здесь» b hfr hb)
+            (I.«т-верно» _ (I.«тождество-верно» _ hg'.1 hg'.2))
+        · rename_i hg
+          simp only [hg] at hok
+          simp [«беда-оборвана»] at hok
+    · rename_i hfr
+      simp only [hfr, Bool.false_eq_true, ↓reduceIte] at hok
+      split at hok
+      · simp [«беда-оборвана»] at hok
+      · rename_i fi fn ci cn hfi hci
+        split
+        · rename_i hc
+          have hc' : (fi = ci ∧ «ужатьТ» fn.«лево» = «ужатьТ» cn.«лево») ∧ «ужатьТ» fn.«право» = «ужатьТ» cn.«право» := by
+            simpa using hc
+          refine ⟨rfl, fun hb => ?_⟩
+          obtain ⟨⟨h1, h2⟩, h3⟩ := hc'
+          subst h1
+          exact I.«порядок-верно» b a fi fn cn hfi hci h2 h3 hb
+        · rename_i hc
+          simp only [hc] at hok
+          simp [«беда-оборвана»] at hok
+      · simp [«беда-оборвана»] at hok
+
+theorem «закрыть-условием» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
+    (hnn : ∀ x, «безНеЧисла» o x = true → I.«неНеЧисло» x) (hne : p.«цели» ≠ [])
+    (hok : («закрытьУсловиемВетви» p l o).«оборван» = false)
+    (hv : I.«верен» («закрытьУсловиемВетви» p l o)) : I.«верен» p := by
+  generalize hq : «закрытьУсловиемВетви» p l o = q at hok hv
+  unfold «закрытьУсловиемВетви» at hq
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i x y st hg
+  dsimp only at hq
+  split at hq
+  · rename_i hany
+    subst hq
+    apply «снять-верна» I p hne _ hv
+    intro _ hm
+    obtain ⟨f, hf, hd⟩ := List.any_eq_true.mp hany
+    have hfl := I.«метка-факт» _ f hm hf
+    split at hd
+    · rename_i hplus
+      split at hd
+      · rename_i a b s0 hab
+        have hd' : (a = x ∧ b = y) ∧ (s0 || !st) = true := by simpa using hd
+        obtain ⟨⟨rfl, rfl⟩, hs⟩ := hd'
+        exact I.«даёт-да» _ _ a b s0 a b st hab hg rfl rfl hs (hfl.1 hplus)
+      · simp at hd
+    · rename_i hplus
+      split at hd
+      · rename_i hminus
+        split at hd
+        · rename_i a b s0 hab
+          have hd' : ((((«безНеЧисла» o a = true ∧ «безНеЧисла» o b = true) ∧ b = x) ∧ a = y) ∧ (!s0 || !st) = true) := by
+            simpa using hd
+          obtain ⟨⟨⟨⟨ha, hb⟩, rfl⟩, rfl⟩, hs⟩ := hd'
+          exact I.«даёт-нет» _ _ a b s0 b a st hab hg (hnn a ha) (hnn b hb) rfl rfl hs (hfl.2 hminus)
+        · simp at hd
+      · simp at hd
+  · subst hq; simp [«беда-оборвана»] at hok
+
+theorem «закрыть-порядком» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
+    (hnn : ∀ x, «безНеЧисла» o x = true → I.«неНеЧисло» x) (hne : p.«цели» ≠ [])
+    (hok : («закрытьПорядкомТождества» p l o).«оборван» = false)
+    (hv : I.«верен» («закрытьПорядкомТождества» p l o)) : I.«верен» p := by
+  generalize hq : «закрытьПорядкомТождества» p l o = q at hok hv
+  unfold «закрытьПорядкомТождества» at hq
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  split at hq
+  · rename_i x y hg
+    split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hxy
+    split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hx
+    subst hq
+    have hxy' : x = y := by simpa using hxy
+    subst hxy'
+    apply «снять-верна» I p hne _ hv
+    intro _ _
+    exact I.«порядок-тождества» _ x hg (hnn x (by simpa using hx))
+  · subst hq; simp [«беда-оборвана»] at hok
+
+/-- Ход «закрыть по свойству» при верном внесённом факте снимает цель. -/
+theorem «закрыть-по-свойству» (I : «Толкование») (p : «Прогон») (l : String) (hne : p.«цели» ≠ [])
+    (hfact : p.«факт» ≠ "" → I.«истинно» p.«факт»)
+    (hok : («закрытьПоСвойству» p l).«оборван» = false)
+    (hv : I.«верен» («закрытьПоСвойству» p l)) : I.«верен» p := by
+  generalize hq : «закрытьПоСвойству» p l = q at hok hv
+  unfold «закрытьПоСвойству» at hq
+  dsimp only at hq
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hf0
+  have hF := hfact hf0
+  split at hq
+  · subst hq
+    obtain ⟨he, himp⟩ := «модус-закрыт» I p _ _ _ hok
+    rw [he] at hv
+    exact «снять-верна» I p hne (fun _ _ => himp hF) hv
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hA
+  split at hq
+  · subst hq; simp [«беда-оборвана»] at hok
+  rename_i hB
+  have hA' : (((«разрез» p.«первая» "то").«есть» = true ∧ («разрез» («разрез» p.«первая» "то").«право» "иначе").«есть» = true) ∧
+      («разрез» p.«первая» "то").«лево».startsWith "если " = true) ∧
+      «ужатьТ» («словаС» («разрез» p.«первая» "то").«лево» 1) = «ужатьТ» («обрезать» («уголок» l 1)) := by
+    simpa using hA
+  obtain ⟨⟨⟨hc1, hc2⟩, hc3⟩, hc4⟩ := hA'
+  have hB' : «ужатьТ» («разрез» («разрез» p.«первая» "то").«право» "иначе").«право» = "да" := by simpa using hB
+  split at hq
+  · rename_i hG
+    have hG' : ((«разрез» p.«факт» "то").«есть» = true ∧ («разрез» («разрез» p.«факт» "то").«право» "иначе").«есть» = true) ∧
+        («разрез» p.«факт» "то").«лево».startsWith "если " = true := by simpa using hG
+    obtain ⟨⟨hf1, hf2⟩, hf3⟩ := hG'
+    split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hU
+    have hU' : «ужатьТ» («словаС» («разрез» p.«факт» "то").«лево» 1) = «ужатьТ» («обрезать» («уголок» l 1)) := by
+      simpa using hU
+    subst hq
+    obtain ⟨he, himp⟩ := «модус-закрыт» I p _ _ _ hok
+    rw [he] at hv
+    apply «снять-верна» I p hne _ hv
+    intro _ _
+    apply I.«охрана-верна» _ hc1 hc2 hc3 hB'
+    intro hy
+    apply himp
+    apply I.«если-факт» _ hf1 hf2 hf3 hF
+    exact I.«ужать-здесь» _ _ _ (hc4.trans hU'.symm) hy
+  · subst hq
+    obtain ⟨he, himp⟩ := «модус-закрыт» I p _ _ _ hok
+    rw [he] at hv
+    apply «снять-верна» I p hne _ hv
+    intro _ _
+    exact I.«охрана-верна» _ hc1 hc2 hc3 hB' (fun _ => himp hF)
+
+/-- **Ход «закрыть» состоятелен** во всех семи формах, когда верны требования
+    доказываемой функции, типы её доводов исключают не-число там, где так говорит
+    `«безНеЧисла»`, и внесённый факт верен: допущение (`дано`), равенство себе
+    (`тождеством`, равенство языка рефлексивно), `да` (`истиной`), требование функции
+    (`требованием`), условие ветви (`условием ветви`), `Т не больше Т` (`порядком
+    тождества`), модус-поненс по факту (`по свойству`). -/
+theorem «ход-закрыть-состоятелен» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
+    (hreq : ∀ (n : Nat) («имя» : String), o.«исх».«хозяин» n = o.«функция» →
+      (o.«исх».«по» n).startsWith s!"требует «{«имя»}» " = true →
+      I.«истинно» («т» («после» (o.«исх».«по» n) s!"требует «{«имя»}» ")))
+    (hnn : ∀ x, «безНеЧисла» o x = true → I.«неНеЧисло» x)
+    (hfact : p.«факт» ≠ "" → I.«истинно» p.«факт»)
+    (hw : «слово» l 3 = "закрыть") (hok : («ходШага» p l o).«оборван» = false)
+    (hv : I.«верен» («ходШага» p l o)) : I.«верен» p := by
+  obtain ⟨h1, h2, h3⟩ := «шаг-допущен» p l o hok
+  have e : «ходШага» p l o = «ходЗакрытия» p l o := by simp [«ходШага», h1, h2, h3, hw]
+  rw [e] at hok hv
+  generalize hq : «ходЗакрытия» p l o = q at hok hv
+  unfold «ходЗакрытия» at hq
+  dsimp only at hq
+  split at hq
+  · subst hq; exact «закрыть-условием» I p l o hnn h3 hok hv
+  · subst hq; exact «закрыть-порядком» I p l o hnn h3 hok hv
+  · split at hq
+    · rename_i hc
+      subst hq
+      have hc' : («ужатьТ» (p.«дано».getD («номерПосле» l "закрыть дано " - 1) "") = «ужатьТ» p.«первая» ∧
+          1 ≤ «номерПосле» l "закрыть дано ") ∧ «номерПосле» l "закрыть дано " ≤ p.«дано».length := by
+        simpa using hc
+      obtain ⟨⟨hu, hn1⟩, hn2⟩ := hc'
+      apply «снять-верна» I p h3 _ hv
+      intro hd _
+      have hlt : «номерПосле» l "закрыть дано " - 1 < p.«дано».length := by omega
+      have hmem : p.«дано».getD («номерПосле» l "закрыть дано " - 1) "" ∈ p.«дано» := by
+        rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hlt]
+        exact List.getElem_mem _
+      exact I.«ужать-верно» _ _ hu (hd _ hmem)
+    · subst hq; simp [«беда-оборвана»] at hok
+  · split at hq
+    · rename_i hc
+      subst hq
+      have hc' : («сторона» p.«первая» "равно" "равен").«есть» = true ∧
+          «ужатьТ» («сторона» p.«первая» "равно" "равен").«лево» = «ужатьТ» («сторона» p.«первая» "равно" "равен").«право» := by
+        simpa using hc
+      apply «снять-верна» I p h3 _ hv
+      intro _ _
+      exact I.«тождество-верно» _ hc'.1 hc'.2
+    · subst hq; simp [«беда-оборвана»] at hok
+  · split at hq
+    · rename_i hc
+      subst hq
+      apply «снять-верна» I p h3 _ hv
+      intro _ _
+      rw [hc]
+      exact I.«да-верно»
+    · subst hq; simp [«беда-оборвана»] at hok
+  · split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hA
+    split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hB
+    split at hq
+    · subst hq; simp [«беда-оборвана»] at hok
+    rename_i hC
+    subst hq
+    apply «снять-верна» I p h3 _ hv
+    intro _ _
+    have hA' : (o.«исх».«по» («номерПосле» l "строка ")).startsWith s!"требует «{«ёлочка» l 1}» " = true := by
+      simpa using hA
+    have hB' : o.«исх».«хозяин» («номерПосле» l "строка ") = o.«функция» := by simpa using hB
+    have hC' : «совпали» («т» («после» (o.«исх».«по» («номерПосле» l "строка ")) s!"требует «{«ёлочка» l 1}» "))
+        («т» p.«первая») = true := by simpa using hC
+    exact I.«т-верно» _ (I.«совпали-верно» _ _ hC' (hreq _ _ hB' hA'))
+  · subst hq; exact «закрыть-по-свойству» I p l h3 hfact hok hv
   · subst hq; simp [«беда-оборвана»] at hok
 
 end «Второй»

@@ -52,7 +52,7 @@
 
 тотальная функция «Forgeries»
   возвращает список «Forgery»
-  обеспечивает «twelve forgeries» (длина результат) равен 12
+  обеспечивает «thirteen forgeries» (длина результат) равен 13
   ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "program.c"
       и "n.as.number + n.as.number" и "n.as.number - n.as.number" и "Удвоить"),
     («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "program.c" и "fl_number(500.0)"
@@ -81,7 +81,10 @@
       и "Без значения"),
     («Forgery of» от "hidden map point" и "flang-proof-examples-binder-wall-map" и "program.c"
       и "fl_flag(fl_t44.as.number > 0.0)" и "fl_flag(fl_t44.as.number > 0.0 && fl_t44.as.number != 5000.0)"
-      и "Порог под отображением")])
+      и "Порог под отображением"),
+    («Forgery of» от "dispatch target" и "flang-proof-examples-corpus-hof" и "program.c"
+      и "return utverzhdeniya_o_vysshem_poryadke_udvoit(ctx, a1, result, error);"
+      и "return utverzhdeniya_o_vysshem_poryadke_vozvesti_v_kvadrat(ctx, a1, result, error);" и "Отобразить")])
 
 тотальная функция «Specification»
   принимает forgery: «Forgery»
@@ -93,6 +96,14 @@
   соединить [(forgery.«name»), (forgery.«unit»), (forgery.«file»), (forgery.«original»), (forgery.«forged»),
       (forgery.«function»)] по "|"
 
+тотальная функция «Forgery hosts»
+  возвращает список строки
+  обеспечивает «seven files carry the forgeries» (длина результат) равен 7
+  ["flang/proof/examples/precondition.flang", "flang/proof/examples/traffic-light.flang",
+    "flang/proof/examples/corpus-alphabet.flang", "flang/proof/examples/corpus-lists.flang",
+    "flang/proof/examples/binder-wall-map.flang", "flang/proof/examples/corpus-hof.flang",
+    "docs/examples/pythagoras/euclid-formula.flang"]
+
 тотальная функция «Corpus»
   принимает answers: список «Answer»
   возвращает список строки
@@ -103,9 +114,18 @@
     дано answers равно [(запись «Answer» с «name» равным "arguments"
         и «reply» равным (вариант «Доводы» с доводы равным ["--all"]))]
     ожидается ["flang/proof/examples", "docs/examples"]
-  если («Given of» от "arguments" и answers) содержит "--all"
-    то ["flang/proof/examples", "docs/examples"]
-    иначе ["flang/proof/examples", "docs/examples/pythagoras"]
+  пример «With --path the named file and the files the forgeries edit»
+    дано answers равно [(запись «Answer» с «name» равным "arguments"
+        и «reply» равным (вариант «Доводы» с доводы равным ["--path", "my/program.flang"]))]
+    ожидается ["flang/proof/examples/precondition.flang", "flang/proof/examples/traffic-light.flang",
+      "flang/proof/examples/corpus-alphabet.flang", "flang/proof/examples/corpus-lists.flang",
+      "flang/proof/examples/binder-wall-map.flang", "flang/proof/examples/corpus-hof.flang",
+      "docs/examples/pythagoras/euclid-formula.flang", "my/program.flang"]
+  пусть words равно («Given of» от "arguments" и answers)
+  пусть path равно («Key value» от "--path" и words)
+  пусть usual равно ["flang/proof/examples", "docs/examples/pythagoras"]
+  «Chosen» от [(«When» от (не (пусто path)) и (добавить path к («Forgery hosts»))),
+      («When» от (words содержит "--all") и ["flang/proof/examples", "docs/examples"])] и usual
 
 тотальная функция «Modules»
   возвращает список строки

@@ -93,6 +93,7 @@ inductive «Тип» where
   | «запись» (n : String) (fs : List (String × «Тип»))
   | «сумма» (n : String) (vs : List (String × List (String × «Тип»)))
   | «ссылка» (n : String)
+  | «функция» (ps : List «Тип») (r : «Тип»)
   | «вне» (why : String)
 deriving Inhabited
 
@@ -114,7 +115,7 @@ partial def «типJson» (j : Json) : «Тип» :=
     else if «целыеИмена».contains n then .«целое»
     else if «числаИмена».contains n then .«число»
     else .«ссылка» n
-  | "fn" => .«вне» "значение-функция"
+  | "fn" => .«функция» ((«массив» j "params").map «типJson») («типJson» ((«поле?» j "returns").getD .null))
   | k => .«вне» ("вид типа " ++ k)
 
 def «объявленияТипов» (j : Json) : List (String × Json) :=
@@ -178,30 +179,49 @@ partial def «конечен?» (decls : List (String × Json)) (seen : List Str
   | .«сумма» _ vs => vs.all (fun v => v.2.all (fun f => «конечен?» decls seen f.2))
   | _ => false
 
-partial def «образцы» (decls : List (String × Json)) (seen : List String) (depth : Nat) : «Тип» → «Образцы»
+def «родТипа» : «Тип» → String
+  | .«число» => "число"
+  | .«нат» => "число"
+  | .«целое» => "число"
+  | .«признак» => "признак"
+  | .«строка» => "строка"
+  | .«список» _ => "список"
+  | .«функция» _ _ => "функция"
+  | _ => ""
+
+def «совместимы» (a b : «Тип») : Bool :=
+  «родТипа» a = "" || «родТипа» b = "" || «родТипа» a = «родТипа» b
+
+partial def «образцы» (fns : List (String × List «Тип» × «Тип»)) (decls : List (String × Json)) (seen : List String)
+    (depth : Nat) : «Тип» → «Образцы»
   | .«число» => ⟨«образцыЧисла», false, []⟩
   | .«нат» => ⟨«образцыНат», false, []⟩
   | .«целое» => ⟨«образцыЦелого», false, []⟩
   | .«признак» => ⟨[.«признак» false, .«признак» true], true, []⟩
   | .«строка» => ⟨«образцыСтроки», false, []⟩
   | .«вне» why => ⟨[], false, [why]⟩
+  | .«функция» ps r =>
+    let fits := fns.filter (fun (_, gps, gr) =>
+      gps.length = ps.length && (gps.zip ps).all (fun (a, b) => «совместимы» a b) && «совместимы» gr r)
+    if fits.isEmpty then ⟨[], false, ["значение-функция без подходящих функций модуля"]⟩
+    else ⟨fits.map (fun (g, _, _) => .«вариант» g []), false, []⟩
   | .«список» t =>
-    let inner := «образцы» decls seen (depth - 1) t
+    let inner := «образцы» fns decls seen (depth - 1) t
     let vs := inner.«значения»
     let lists := if vs.isEmpty then [[]] else [[], [vs[0]!], (vs.drop 1).take 2, (vs.drop 3).take 3]
     ⟨lists.map .«список», false, inner.«вне»⟩
   | .«ссылка» n =>
     if seen.contains n && depth = 0 then ⟨[], false, []⟩
     else
-      let inner := «образцы» decls (n :: seen) (if seen.contains n then depth - 1 else depth) («раскрыть» decls n)
+      let inner := «образцы» fns decls (n :: seen) (if seen.contains n then depth - 1 else depth) («раскрыть» decls n)
       { inner with «конечно» := «конечен?» decls seen (.«ссылка» n) }
   | .«запись» _ fs =>
-    let rows := fs.map (fun f => «образцы» decls seen depth f.2)
+    let rows := fs.map (fun f => «образцы» fns decls seen depth f.2)
     «соединитьОбразцы» rows (fun vs => .«запись» ((fs.map (·.1)).zip vs))
   | .«сумма» _ vs =>
     let parts : List «Образцы» := vs.map (fun v =>
       if v.2.isEmpty then ⟨[.«вариант» v.1 []], true, []⟩
-      else «соединитьОбразцы» (v.2.map (fun f => «образцы» decls seen depth f.2))
+      else «соединитьОбразцы» (v.2.map (fun f => «образцы» fns decls seen depth f.2))
         (fun ws => .«вариант» v.1 ((v.2.map (·.1)).zip ws)))
     ⟨parts.flatMap (·.«значения»), parts.all (·.«конечно»), parts.flatMap (·.«вне»)⟩
 
@@ -258,6 +278,7 @@ structure «КонтекстC» where
   «тексты» : List (String × «Т»)
   «доказанные» : List (String × String)
   «есть» : Bool
+  «применения» : List (String × List String)
 
 def «числовойТип?» : «Тип» → Bool
   | .«число» => true
@@ -409,6 +430,33 @@ def «именаC» (fs : List «ФункцияC») (names : List String) : List
     match «дверьФункции» fs n with
     | some block => («последнийВызов» (fs.map (·.«имя»)) block none).map (fun c => (c, n))
     | none => none)
+
+partial def «ветвиПрименения» (names : List (String × String)) (teg : String) (args : List String) :
+    List «Лекс» → Option (List String)
+  | .«слово» "if" :: .«знак» "(" :: .«слово» "fl_variant_is" :: .«знак» "(" :: .«слово» t :: .«знак» "," ::
+      .«строка» tag :: .«знак» ")" :: .«знак» ")" :: .«знак» "{" :: .«слово» "return" :: .«слово» c :: .«знак» "(" ::
+      .«слово» "ctx" :: r =>
+    let want := (args.flatMap (fun a => [«Лекс».«знак» ",", .«слово» a])) ++
+      [.«знак» ",", .«слово» "result", .«знак» ",", .«слово» "error", .«знак» ")", .«знак» ";", .«знак» "}",
+        .«слово» "else"]
+    let tagName := «разэкранить» tag
+    if t ≠ teg || «найти» c names ≠ some tagName || !(r.take want.length == want) then none
+    else match «ветвиПрименения» names teg args (r.drop want.length) with
+      | some rest => some (tagName :: rest)
+      | none => none
+  | [.«знак» "{", .«слово» "return", .«слово» "fl_match_fail", .«знак» "(", .«слово» "ctx", .«знак» ",", .«слово» t,
+      .«знак» ",", .«слово» "error", .«знак» ")", .«знак» ";", .«знак» "}"] => if t = teg then some [] else none
+  | _ => none
+
+def «применения» (fs : List «ФункцияC») (names : List (String × String)) : List (String × String × List String) :=
+  fs.filterMap (fun f =>
+    match f.«параметры» with
+    | teg :: args =>
+      if args.isEmpty then none else
+      match «ветвиПрименения» names teg args f.«тело» with
+      | some tags => if tags.isEmpty then none else some (f.«имя», "apply:" ++ toString args.length, tags)
+      | none => none
+    | [] => none)
 
 partial def «постыC» : List «Лекс» → List String
   | .«слово» "fl_post" :: .«знак» "(" :: r =>
@@ -566,6 +614,9 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
   | .«вызов» f ts k r => do
     let vs ← ts.mapM («значТ» vals res)
     let v ← if f.startsWith "form:" then «форма» (f.drop 5).toString vs
+      else if f.startsWith "apply:" then match vs with
+        | fv :: args => «выч» P «топливоСверки» [] (.«применить» (.«лит» fv) (args.map .«лит»))
+        | [] => «беда» "FLANG_ARITY"
       else «выч» P «топливоСверки» [] (.«вызов» f (vs.map .«лит»))
     «вычД» P vals ((k, v) :: res) r
   | .«обход» "свёртка" l i a x st k r => do
@@ -615,16 +666,19 @@ def «символьно» (P : «Программа») (cx : «Контекст
       | .ok c =>
         let kernel := «постыНаСловеЯдра» cx f g
         let word := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
-        let called := ((«вызовыД» r) ++ («вызовыД» c)).eraseDups.filter (· ≠ g.«имя»)
+        let expand := fun (x : String) => if x.startsWith "apply:" then
+          (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
+        let called := (((«вызовыД» r) ++ («вызовыД» c)).flatMap expand).eraseDups.filter (· ≠ g.«имя»)
         if «равныД» r c then (word, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
-def «строкиФункции» (P : «Программа») (common : List (String × Json)) (cx : «КонтекстC») (numeric : List String) (f : Json) : List String :=
+def «строкиФункции» (P : «Программа») (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json))
+    (cx : «КонтекстC») (numeric : List String) (f : Json) : List String :=
   let decls := «параметрыТипа» f ++ common
   let name := «строка?» f "name"
   let params := («массив» f "params").map (fun p => («строка?» p "name", «типJson» ((«поле?» p "type").getD .null)))
-  let ret := «образцы» decls [] 2 («типJson» ((«поле?» f "returns").getD .null))
-  let rows := params.map (fun p => «образцы» decls [] 2 p.2)
+  let ret := «образцы» fns decls [] 2 («типJson» ((«поле?» f "returns").getD .null))
+  let rows := params.map (fun p => «образцы» fns decls [] 2 p.2)
   let why := rows.flatMap (·.«вне») ++ ret.«вне»
   match why.head?, «функцияПрограммы» P name with
   | some w, _ => [name ++ "\tвне\t" ++ w ++ "\t"]
@@ -680,11 +734,16 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     let toks := match ctext with
       | some t => «лексемы» t.toList []
       | none => []
-    let cx : «КонтекстC» := ⟨fs, «именаC» fs (P.map (·.«имя») ) ++ «конструкторыC» fs, «текстыC» toks ++ «именаПолейC» toks, proved,
-      ctext.isSome⟩
+    let names := «именаC» fs (P.map (·.«имя») ) ++ «конструкторыC» fs
+    let apps := «применения» fs names
+    let cx : «КонтекстC» := ⟨fs, names ++ apps.map (fun (c, a, _) => (c, a)), «текстыC» toks ++ «именаПолейC» toks, proved,
+      ctext.isSome, apps.map (fun (_, a, ts) => (a, ts))⟩
     let numeric := («массив» j "functions").filterMap (fun f =>
       if «числовойТип?» («типJson» ((«поле?» f "returns").getD .null)) then some («строка?» f "name") else none)
-    pure ((«массив» j "functions").flatMap («строкиФункции» P decls cx numeric))
+    let fns := («массив» j "functions").map (fun f => («строка?» f "name",
+      («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
+      «типJson» ((«поле?» f "returns").getD .null)))
+    pure ((«массив» j "functions").flatMap («строкиФункции» P fns decls cx numeric))
 
 def «канонФайла» (path : String) : IO (List String) := do
   let text ← IO.FS.readFile path

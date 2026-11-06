@@ -26,6 +26,12 @@ compares their answers with the evaluator's.
 A call outside `требует` (ledger row 15), a run the evaluator refused as unproven and a
 fixed-width word the evaluator prints as `null` (row 13) are not compared by `b-<target>`.
 
+## Schedule
+
+`.github/workflows/typing-holes-fuzz.yml` runs once a day: the self test, the fixed seeds
+1..600 and 600 seeds from the clock; on Sundays and by hand also the proof records of the tree.
+A finding is repeated by the same command with its seed and the count 1.
+
 ## Known findings
 
 `scripts/fuzz/known.tsv` names, for a ledger row of `flang/proof/tables/typing-holes.tsv`, the
@@ -36,8 +42,7 @@ closed hole cannot come back silently.
 ## Plans
 
 ```
-bootstrap/flang io scripts/fuzz/search.fscript --plan Campaign --max-orders 100000000 \
-  --max-steps 4000000000 --timeout 3600000 -- <directory> <first seed> <count> <threads> \
+bootstrap/flang run-script typing-holes:campaign -- <directory> <first seed> <count> <threads> \
   [<targets> <targets every N-th> <records every M-th>]
 ```
 
@@ -49,8 +54,8 @@ record and the checker gets its mutants. The directory is absolute: the host sta
 from the plan's directory.
 
 `--plan Batch` runs one batch and writes a line per program to `<directory>/batch-<first>.tsv`.
-`--plan Selftest -- <directory>` plants for every oracle what it must catch; the exit code is 1
-when one of them stays silent.
+`bootstrap/flang run-script typing-holes:selftest -- <directory>` plants for every oracle what
+it must catch; the exit code is 1 when one of them stays silent.
 
 Processes run under a limit of 4 GiB, each with its own time limit; a process cut by its time
 answers `timeout`. Printed programs build and answer without a memory limit: the JVM and Go

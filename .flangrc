@@ -271,6 +271,7 @@ script.package-install:command = bootstrap/flang io scripts/guards/package-insta
 script.package:keygen = bootstrap/flang io scripts/package-sign.fscript --plan Keygen --max-steps 400000000 --
 script.package:sign = bootstrap/flang io scripts/package-sign.fscript --plan Sign --max-steps 400000000 --
 script.package:verify = bootstrap/flang io scripts/package-sign.fscript --plan Verify --max-steps 400000000 --
+script.package-signature:check = bootstrap/flang io scripts/guards/package-signature-guard.fscript --plan Check --timeout 900000 --
 script.lock-forms:check = bootstrap/flang io scripts/guards/lock-closes-every-form.fscript --plan Check
 script.lock-forms:forgery = bootstrap/flang io scripts/guards/lock-closes-every-form.fscript --plan Forgery
 script.reprint = sh scripts/bootstrap-reprint.sh

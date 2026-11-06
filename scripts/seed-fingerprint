@@ -4,7 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
-коммит 1556d9bfd5ee73180557873ae5fbae85c27532c0
+коммит c82481620c139177b461726e450a60d2f49af880
 e200119e04672d9c574cd22cb41f6358a9508a1810f8a4f43ad287a8add8f923  flang/core/evaluate.flang
 363ef4fdf66c10a13853083b3aa4aea6b6308c21045171cf5196e02c7871991f  flang/core/json.flang
 2a4c2793a83a86e5f3f9d39558e9ae92494312544656edac9d3cd7a1301f4965  flang/self/bootstrap/compiler.flang
@@ -51,7 +51,7 @@ aa6b0ab20d2d0adf439d39afbb9cb02df973dbabb16d89299cf2165bd9f057d9  flang/self/par
 b1fc925623002b8c05af506c38aac032dc2ffe6257598ebf5ae22398e3808d88  flang/self/processes.flang
 7f4609d5f9fdac2e595deb0974fec88eaba8aee8d2bd6668f54ca8eccf269754  flang/self/proof-initial.flang
 16cd0a22d59e0486bc195d87c20e6cf57a4f8513da860313d632493b213ae19a  flang/self/proof-kernel.flang
-24a442f4f55549687ca323049192f27a6472c59a6d42ab3fafbe6c01c4068f3a  flang/self/proof-record.flang
+87611e64f4a8885fa64ceadd026cfbe219070abc9a2709638e6d663ee6e100cd  flang/self/proof-record.flang
 050871b6e39896c62ec7fe9dc7f609f11e0fb5948416f4821d8ed711613d2332  flang/self/proof.flang
 77a00c634287aabf26f582b41a64347c6200718f08d5ed976e8091e9776c0661  flang/self/proofterm.flang
 7e2a6ba6464503f525d4872351498a829f96264de4140489c4adbeb2e1aad8b6  flang/self/setoid-oracle.flang
@@ -89,8 +89,8 @@ f29b59b18de89c10196e708bd474035ece36a69c7b8564ca4e90054a188d2255  flang/stdlib/x
 # То, что печать положила в bootstrap/ и из чего соберётся двоичный.
 # Сверяется с рабочим деревом; расхождение красное всегда — довод у SEED_STAMP.
 2cf0a1a7d02f5795886f3e3ec6654850be77f9fb9699b6cdcea0623e9a37ddae  bootstrap/Makefile
-ea68c51635b4f7913c4743e75f6f7d77b7bed9753eb9e7de5ef7e2209768afc5  bootstrap/compiler_flang.c
-372793c9ccd1077974e9f57acc094416140432ae58b79ca3a2c83e9eb7031936  bootstrap/compiler_flang.h
+984913940361392581d44f71ac9d5653676695959ea16e4b31e2925af796dac6  bootstrap/compiler_flang.c
+ee532740998c97e6f3f6e7bd6386b78ff9e7024ceed658ab538a75a90e9ef8af  bootstrap/compiler_flang.h
 43b50bb0a0989ec9d4f700a32467f3196810c5127c78914dff25d62650c3a13f  bootstrap/flang_cli.c
 a4607dc45182cd3e188750dbb1646fdc012c8acdfed0fbdeef74ea46c50e2eb4  bootstrap/flang_repl.c
 20d2c4fe1ea612069337bf13b3d5c5be4b1e873c7f6d2970785a9053b7197c7e  bootstrap/flang_runtime.c

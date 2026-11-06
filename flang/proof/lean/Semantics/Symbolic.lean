@@ -380,27 +380,30 @@ def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«п» _ => false
   | .«с» _ => false
 
-partial def «разэкранитьЗнаки» : List Char → List Char → List Char
-  | '\\' :: 'n' :: r, acc => «разэкранитьЗнаки» r ('\n' :: acc)
-  | '\\' :: 't' :: r, acc => «разэкранитьЗнаки» r ('\t' :: acc)
-  | '\\' :: 'r' :: r, acc => «разэкранитьЗнаки» r ('\r' :: acc)
+partial def «разэкранитьБайты» : List Char → List UInt8 → List UInt8
+  | '\\' :: 'n' :: r, acc => «разэкранитьБайты» r (10 :: acc)
+  | '\\' :: 't' :: r, acc => «разэкранитьБайты» r (9 :: acc)
+  | '\\' :: 'r' :: r, acc => «разэкранитьБайты» r (13 :: acc)
   | '\\' :: 'x' :: r, acc =>
     let ds := r.takeWhile (fun c => c.isDigit || ('a' ≤ c && c ≤ 'f') || ('A' ≤ c && c ≤ 'F'))
     let v := ds.foldl (fun n c => n * 16 + (if c.isDigit then c.toNat - 48 else (c.toLower.toNat - 87))) 0
-    «разэкранитьЗнаки» (r.drop ds.length) (Char.ofNat v :: acc)
+    «разэкранитьБайты» (r.drop ds.length) (UInt8.ofNat v :: acc)
   | '\\' :: a :: r, acc =>
     if '0' ≤ a && a ≤ '7' then
       let ds := (a :: r).take 3 |>.takeWhile (fun c => '0' ≤ c && c ≤ '7')
       let v := ds.foldl (fun n c => n * 8 + (c.toNat - 48)) 0
-      «разэкранитьЗнаки» ((a :: r).drop ds.length) (Char.ofNat v :: acc)
+      «разэкранитьБайты» ((a :: r).drop ds.length) (UInt8.ofNat v :: acc)
     else
-      let e := if a = 'a' then Char.ofNat 7 else if a = 'b' then Char.ofNat 8 else if a = 'f' then Char.ofNat 12
-        else if a = 'v' then Char.ofNat 11 else a
-      «разэкранитьЗнаки» r (e :: acc)
-  | c :: r, acc => «разэкранитьЗнаки» r (c :: acc)
+      let e : Nat := if a = 'a' then 7 else if a = 'b' then 8 else if a = 'f' then 12
+        else if a = 'v' then 11 else a.toNat
+      «разэкранитьБайты» r (UInt8.ofNat e :: acc)
+  | c :: r, acc => «разэкранитьБайты» r ((String.singleton c).toUTF8.toList.reverse ++ acc)
   | [], acc => acc.reverse
 
-def «разэкранить» (s : String) : String := String.ofList («разэкранитьЗнаки» s.toList [])
+def «разэкранить» (s : String) : String :=
+  match String.fromUTF8? (ByteArray.mk («разэкранитьБайты» s.toList []).toArray) with
+  | some v => v
+  | none => "\uFFFD" ++ s
 
 mutual
 partial def «выражениеC» (σ : «СредаC») (ls : List «Лекс») : Except String «Т» :=

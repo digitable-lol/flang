@@ -52,7 +52,7 @@
 
 тотальная функция «Forgeries»
   возвращает список «Forgery»
-  обеспечивает «thirteen forgeries» (длина результат) равен 13
+  обеспечивает «fourteen forgeries» (длина результат) равен 14
   ([(«Forgery of» от "operation sign" и "flang-proof-examples-precondition" и "program.c"
       и "n.as.number + n.as.number" и "n.as.number - n.as.number" и "Удвоить"),
     («Forgery of» от "branch literal" и "flang-proof-examples-traffic-light" и "program.c" и "fl_number(500.0)"
@@ -84,7 +84,11 @@
       и "Порог под отображением"),
     («Forgery of» от "dispatch target" и "flang-proof-examples-corpus-hof" и "program.c"
       и "return utverzhdeniya_o_vysshem_poryadke_udvoit(ctx, a1, result, error);"
-      и "return utverzhdeniya_o_vysshem_poryadke_vozvesti_v_kvadrat(ctx, a1, result, error);" и "Отобразить")])
+      и "return utverzhdeniya_o_vysshem_poryadke_vozvesti_v_kvadrat(ctx, a1, result, error);" и "Отобразить"),
+    («Forgery of» от "hidden loop step" и "docs-examples-leetcode-069-sqrtx" и "integer_square_root.c"
+      и "const fl_value dovod_2 = fl_number(seredina.as.number + 1.0);"
+      и "const fl_value dovod_2 = fl_number(seredina.as.number + 1.0 + (seredina.as.number == 777.0));"
+      и "Корень в отрезке")])
 
 тотальная функция «Specification»
   принимает forgery: «Forgery»
@@ -98,18 +102,18 @@
 
 тотальная функция «Forgery hosts»
   возвращает список строки
-  обеспечивает «seven files carry the forgeries» (длина результат) равен 7
+  обеспечивает «eight files carry the forgeries» (длина результат) равен 8
   ["flang/proof/examples/precondition.flang", "flang/proof/examples/traffic-light.flang",
     "flang/proof/examples/corpus-alphabet.flang", "flang/proof/examples/corpus-lists.flang",
     "flang/proof/examples/binder-wall-map.flang", "flang/proof/examples/corpus-hof.flang",
-    "docs/examples/pythagoras/euclid-formula.flang"]
+    "docs/examples/pythagoras/euclid-formula.flang", "docs/examples/leetcode/069-sqrtx.flang"]
 
 тотальная функция «Corpus»
   принимает answers: список «Answer»
   возвращает список строки
-  пример «By default the proof examples and the Pythagoras examples»
+  пример «By default the proof examples, the Pythagoras examples and the integer square root»
     дано answers равно пустой список
-    ожидается ["flang/proof/examples", "docs/examples/pythagoras"]
+    ожидается ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang"]
   пример «With --all every example of the documentation»
     дано answers равно [(запись «Answer» с «name» равным "arguments"
         и «reply» равным (вариант «Доводы» с доводы равным ["--all"]))]
@@ -120,10 +124,10 @@
     ожидается ["flang/proof/examples/precondition.flang", "flang/proof/examples/traffic-light.flang",
       "flang/proof/examples/corpus-alphabet.flang", "flang/proof/examples/corpus-lists.flang",
       "flang/proof/examples/binder-wall-map.flang", "flang/proof/examples/corpus-hof.flang",
-      "docs/examples/pythagoras/euclid-formula.flang", "my/program.flang"]
+      "docs/examples/pythagoras/euclid-formula.flang", "docs/examples/leetcode/069-sqrtx.flang", "my/program.flang"]
   пусть words равно («Given of» от "arguments" и answers)
   пусть path равно («Key value» от "--path" и words)
-  пусть usual равно ["flang/proof/examples", "docs/examples/pythagoras"]
+  пусть usual равно ["flang/proof/examples", "docs/examples/pythagoras", "docs/examples/leetcode/069-sqrtx.flang"]
   «Chosen» от [(«When» от (не (пусто path)) и (добавить path к («Forgery hosts»))),
       («When» от (words содержит "--all") и ["flang/proof/examples", "docs/examples"])] и usual
 

@@ -155,6 +155,18 @@ partial def «сжатьВызовы» (seen : List (String × List «Т» × Na
   | .«обход» w l i a x st k r => .«обход» w l i a x («сжатьВызовы» seen st) k («сжатьВызовы» seen r)
   | d => d
 
+partial def «упростить» (facts : List («Т» × Bool)) : «Д» → «Д»
+  | .«если» (.«п» true) a _ => «упростить» facts a
+  | .«если» (.«п» false) _ b => «упростить» facts b
+  | .«если» c a b =>
+    match facts.find? (fun (t, _) => «равныТ» t c) with
+    | some (_, true) => «упростить» facts a
+    | some (_, false) => «упростить» facts b
+    | none => .«если» c («упростить» ((c, true) :: facts) a) («упростить» ((c, false) :: facts) b)
+  | .«вызов» f as k r => .«вызов» f as k («упростить» facts r)
+  | .«обход» w l i a x st k r => .«обход» w l i a x («упростить» facts st) k («упростить» facts r)
+  | d => d
+
 def «вызовыД» : «Д» → List String
   | .«знач» _ => []
   | .«отказ» _ => []
@@ -399,6 +411,8 @@ structure «СредаC» where
   «функции» : List (String × String)
   «числовые» : List String
   «тела» : List «ФункцияC»
+  «петля» : Option (String × List String) := none
+  «глубина» : Nat := 0
 
 def «опC» : List (String × String) :=
   [("+", "add"), ("-", "sub"), ("*", "fmul"), ("/", "fdiv"), ("<", "lt"), ("<=", "lte"), (">", "gt"), (">=", "gte"),
@@ -624,6 +638,16 @@ def «пишетТолькоСвоё» (own : List String) (body : List «Лек
   let mine := «объявленные» body ++ own
   («записанные» body).all (fun x => mine.contains x || x = "items")
 
+partial def «продолжить» (d : «Д») (k : «Т» → Except String «Д») : Except String «Д» :=
+  match d with
+  | .«знач» t => k t
+  | .«отказ» c => .ok (.«отказ» c)
+  | .«если» c a b => do
+    let a2 ← «продолжить» a k
+    let b2 ← «продолжить» b k
+    pure (.«если» c a2 b2)
+  | _ => .error "встроенная функция зовёт или обходит"
+
 partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List «Лекс») : Except String «Д» :=
   match ls with
   | [] => .error "тело кончилось без возврата"
@@ -646,6 +670,18 @@ partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List �
       match «кодОтказа» ls with
       | some k => .ok (.«отказ» k)
       | none => .error ("возврат вызовом " ++ f)
+  | .«слово» "for" :: .«знак» "(" :: .«знак» ";" :: .«знак» ";" :: .«знак» ")" :: .«знак» "{" :: r =>
+    match σ.«петля», «доПары» "{" "}" 0 r [] with
+    | some _, some (body, _) => «исполнить» σ n body
+    | _, _ => .error "бесконечный цикл вне хвостовой рекурсии"
+  | .«слово» "continue" :: .«знак» ";" :: _ =>
+    match σ.«петля» with
+    | some (f, ps) => do
+      let ts ← ps.mapM (fun p => match «найти» p σ.«знач» with
+        | some t => .ok t
+        | none => .error ("параметр витка " ++ p))
+      pure (.«вызов» f ts n (.«знач» (.«рез» n)))
+    | none => .error "continue вне хвостовой рекурсии"
   | .«знак» "(" :: .«слово» "void" :: .«знак» ")" :: r =>
     match «доТочки» r [] with
     | some (_, q) => «исполнить» σ n q
@@ -975,6 +1011,23 @@ where
               «исполнить» { σ with «знач» := (x, t) :: σ.«знач» } n q
             | none => .error h
           | _ => .error h
-        else .error ("помощник " ++ h)
+        else if h = "fl_tick" then «исполнить» σ n q
+        else match σ.«тела».find? (·.«имя» = h) with
+          | some f =>
+            if σ.«глубина» ≥ 4 then .error ("встраивание глубже предела " ++ h) else
+            match parts.reverse with
+            | _ :: p :: argsRev =>
+              match target p with
+              | some x => do
+                let ts ← (argsRev.reverse.drop 1).mapM («выражениеC» σ)
+                if ts.length ≠ f.«параметры».length || !f.«указатели».isEmpty then .error ("встраивание " ++ h) else
+                let valsG := f.«параметры».zip ts ++ σ.«знач»
+                let deeper := σ.«глубина» + 1
+                let σg : «СредаC» := { σ with «знач» := valsG, «петля» := none, «глубина» := deeper }
+                let inner ← «исполнить» σg n f.«тело»
+                «продолжить» inner (fun t => «исполнить» { σ with «знач» := (x, t) :: σ.«знач» } n q)
+              | none => .error ("встраивание без места " ++ h)
+            | _ => .error ("встраивание " ++ h)
+          | none => .error ("помощник " ++ h)
 
 end «Эталон»

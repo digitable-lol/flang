@@ -517,7 +517,9 @@ def «деревоC» (cx : «КонтекстC») (decls : List (String × Json
   «вставитьТело» name (fun ts k =>
     let cn := (fc.«параметры».zip types).flatMap (fun (c, t) => «числовыеИмена» decls c t) ++ named
     let vals1 := fc.«параметры».zip ts ++ cx.«тексты»
-    let σ1 : «СредаC» := { «знач» := vals1, «числа» := cn, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
+    let loop := if («постыC» fc.«тело»).isEmpty then some (name, fc.«параметры») else none
+    let σ0b : «СредаC» := { «знач» := vals1, «числа» := cn, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
+    let σ1 : «СредаC» := { σ0b with «петля» := loop }
     «исполнить» σ1 k fc.«тело») d
 
 def «постыБезСуда» (cx : «КонтекстC») (f : Json) (g : «Функция») : Nat :=
@@ -696,7 +698,8 @@ def «символьно» (P : «Программа») (cx : «Контекст
         let expand := fun (x : String) => if x.startsWith "apply:" then
           (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
         let called := (((«вызовыД» r) ++ («вызовыД» c)).flatMap expand).eraseDups.filter (· ≠ g.«имя»)
-        if «равныД» («сжатьВызовы» [] r) («сжатьВызовы» [] c) then (word, ",".intercalate called)
+        if «равныД» («упростить» [] («сжатьВызовы» [] r)) («упростить» [] («сжатьВызовы» [] c)) then
+          (word, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
 def «строкиФункции» (P : «Программа») (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json))

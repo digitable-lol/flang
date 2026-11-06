@@ -2175,6 +2175,14 @@ jobs:
         run: bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Probe the signature guard by a tampered package taken for honest
+        run: |
+          if bootstrap/flang run-script package-signature:forgery; then
+            echo "the signature guard stayed green on a tampered package" >&2
+            exit 1
+          fi
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Probe author signatures of packages
         run: bootstrap/flang run-script package-signature:check
         env:

@@ -25,9 +25,9 @@
   вариант «Remove dir» содержит slot: число
 
 тип «Probe step»
-  вариант «Starting»
-  вариант «Reading temp folder»
-  вариант «Reading binary» содержит root: строка
+  вариант «Starting» содержит forged: признак
+  вариант «Reading temp folder» содержит forged: признак
+  вариант «Reading binary» содержит root: строка, forged: признак
   вариант «Probing» содержит walk: «Probe walk»
 
 тотальная функция «Probe binary»
@@ -128,8 +128,21 @@
     вариант «Remove dir» с slot равным 0]
 
 тотальная функция «All probe acts»
+  принимает forged: признак
   возвращает список «Probe act»
-  свёртка («Cleanup acts») начиная с («Probe acts») как kept и one → добавить one к kept
+  пример «The forgery takes only the tampered package, as if it were honest»
+    дано forged равно да
+    ожидается [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1,
+      вариант «Put program» с slot равным 1, (вариант «Install» с slot равным 1 и ledger равным
+      "packaging/registry/cases/signature/tampered.list" и flags равным пустой список и expect равным ""),
+      вариант «Remove» с slot равным 1 и file равным "proba.flang", вариант «Remove dir» с slot равным 1,
+      вариант «Remove dir» с slot равным 0]
+  если forged
+    то [вариант «Make dir» с slot равным 0, вариант «Make dir» с slot равным 1, вариант «Put program» с slot равным 1,
+      («Install act» от 1 и "tampered" и пустой список и ""),
+      вариант «Remove» с slot равным 1 и file равным "proba.flang", вариант «Remove dir» с slot равным 1,
+      вариант «Remove dir» с slot равным 0]
+    иначе свёртка («Cleanup acts») начиная с («Probe acts») как kept и one → добавить one к kept
 
 тотальная функция «Slot dir»
   принимает walk: «Probe walk», slot: число
@@ -460,8 +473,14 @@
 тотальная функция «Probe start»
   возвращает «Probe step»
   пример «The probe starts by asking where temporary folders go»
-    ожидается вариант «Starting»
-  вариант «Starting»
+    ожидается вариант «Starting» с forged равным нет
+  вариант «Starting» с forged равным нет
+
+тотальная функция «Forgery start»
+  возвращает «Probe step»
+  пример «The forgery starts the same way»
+    ожидается вариант «Starting» с forged равным да
+  вариант «Starting» с forged равным да
 
 тотальная функция «Root from»
   принимает reply: «Отклик», fallback: строка
@@ -484,25 +503,32 @@
   принимает step: «Probe step», reply: «Отклик»
   возвращает «Продолжение»
   пример «The first turn reads FLANG_TMP»
-    дано step равно вариант «Starting»
+    дано step равно вариант «Starting» с forged равным нет
     дано reply равно вариант «Пока ничего»
     ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
-      "FLANG_TMP") и потом равным (вариант «Reading temp folder»))
+      "FLANG_TMP") и потом равным (вариант «Reading temp folder» с forged равным нет))
   разбор step
-    случай вариант «Starting»
+    случай вариант «Starting» с forged как forged
       то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
-        "FLANG_TMP") и потом равным (вариант «Reading temp folder»))
-    случай вариант «Reading temp folder»
+        "FLANG_TMP") и потом равным (вариант «Reading temp folder» с forged равным forged))
+    случай вариант «Reading temp folder» с forged как forged
       то (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным
-        "FLANG_BINARY") и потом равным (вариант «Reading binary» с root равным («Root from» от reply и "/tmp")))
-    случай вариант «Reading binary» с root как root
+        "FLANG_BINARY") и потом равным (вариант «Reading binary» с root равным («Root from» от reply и
+        "/tmp") и forged равным forged))
+    случай вариант «Reading binary» с root как root и forged как forged
       то («Probe perform» от (запись «Probe walk» с «binary» равным («Root from» от reply и («Probe binary»)) и
         «root» равным root и «home» равным "" и «dirs» равным пустой список и «now» равным (вариант «Idle») и
-        «rest» равным («All probe acts») и «troubles» равным пустой список и «done» равным 0 и «kept» равным ""))
+        «rest» равным («All probe acts» от forged) и «troubles» равным пустой список и «done» равным 0 и «kept» равным
+        ""))
     случай вариант «Probing» с walk как walk
       то «Probe perform» от («After probe reply» от walk и reply)
 
 план «Check»
   состояние «Probe step»
   начинает с «Probe start»
+  обрабатывает «Probe next»
+
+план «Forgery»
+  состояние «Probe step»
+  начинает с «Forgery start»
   обрабатывает «Probe next»

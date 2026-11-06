@@ -101,6 +101,17 @@ def «поИменам» (ns ts : List «Т») : List «Т» × List «Т» :=
   let sorted := (ns.zip ts).foldr «вставитьПару» []
   (sorted.map (·.1), sorted.map (·.2))
 
+def «полеИз» (p : String) : List «Т» → List «Т» → Option «Т»
+  | .«с» q :: ns, t :: ts => if q = p then some t else «полеИз» p ns ts
+  | _, _ => none
+
+def «полеТ» (p : String) (t : «Т») : «Т» :=
+  let found := match t with
+    | .«оп» "make-record" (.«оп» "fields" ns :: items) => «полеИз» p ns items
+    | .«оп» "make-variant" (_ :: .«оп» "fields" ns :: items) => «полеИз» p ns items
+    | _ => none
+  found.getD (.«оп» ("field:" ++ p) [t])
+
 def «сборка» : «Т» → «Т»
   | .«оп» "make-variant" (v :: .«оп» "fields" ns :: ts) =>
     let (ns2, ts2) := «поИменам» ns ts
@@ -121,6 +132,28 @@ def «формыC» : List (String × String) :=
 def «формыЭталона» : List String := «формыC».map (·.2)
 
 def «числовыеФормы» : List String := ["длина", "код символа", "остаток от"]
+
+partial def «заменаТ» (k k0 : Nat) : «Т» → «Т»
+  | .«рез» m => if m = k then .«рез» k0 else .«рез» m
+  | .«оп» o as => .«оп» o (as.map («заменаТ» k k0))
+  | t => t
+
+partial def «заменаД» (k k0 : Nat) : «Д» → «Д»
+  | .«знач» t => .«знач» («заменаТ» k k0 t)
+  | .«отказ» c => .«отказ» c
+  | .«если» c a b => .«если» («заменаТ» k k0 c) («заменаД» k k0 a) («заменаД» k k0 b)
+  | .«вызов» f as m r => .«вызов» f (as.map («заменаТ» k k0)) m («заменаД» k k0 r)
+  | .«обход» w l i a x st m r =>
+    .«обход» w («заменаТ» k k0 l) («заменаТ» k k0 i) a x («заменаД» k k0 st) m («заменаД» k k0 r)
+
+partial def «сжатьВызовы» (seen : List (String × List «Т» × Nat)) : «Д» → «Д»
+  | .«если» c a b => .«если» c («сжатьВызовы» seen a) («сжатьВызовы» seen b)
+  | .«вызов» f as k r =>
+    match seen.find? (fun (g, bs, _) => g == f && «равныСпискиТ» bs as) with
+    | some (_, _, k0) => «сжатьВызовы» seen («заменаД» k k0 r)
+    | none => .«вызов» f as k («сжатьВызовы» ((f, as, k) :: seen) r)
+  | .«обход» w l i a x st k r => .«обход» w l i a x («сжатьВызовы» seen st) k («сжатьВызовы» seen r)
+  | d => d
 
 def «вызовыД» : «Д» → List String
   | .«знач» _ => []
@@ -189,7 +222,7 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
   | .«конструктор» v fs =>
     «симВсе» P ρ n (fs.map (·.2)) [] (fun ts n1 =>
       k («сборка» (.«оп» "make-variant" (.«с» v :: .«оп» "fields" (fs.map (fun f => .«с» f.1)) :: ts))) n1)
-  | .«поле» t p => «сим» P ρ n t (fun tt n1 => k (.«оп» ("field:" ++ p) [tt]) n1)
+  | .«поле» t p => «сим» P ρ n t (fun tt n1 => k («полеТ» p tt) n1)
   | .«форма» f args =>
     if «формыЭталона».contains f then
       «симВсе» P ρ n args [] (fun ts n1 => do
@@ -208,7 +241,7 @@ where
     | [], _ => .ok (.«отказ» "FLANG_MATCH_NOT_EXHAUSTIVE")
     | (.«любое», b) :: _, k => «сим» P ρ n b k
     | (.«вариант» v bs, b) :: r, k => do
-      let ρ2 := bs.map (fun (f, x) => (x, «Т».«оп» ("field:" ++ f) [tt])) ++ ρ
+      let ρ2 := bs.map (fun (f, x) => (x, «полеТ» f tt)) ++ ρ
       let yes ← «сим» P ρ2 n b k
       let no ← «симСлучаи» P ρ n tt r k
       pure (.«если» (.«оп» ("is:" ++ v) [tt]) yes no)
@@ -389,6 +422,8 @@ def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«ч» _ => true
   | .«имя» x => σ.«числа».contains x
   | .«оп» "head" [t] => «списокЧисел?» σ t
+  | .«оп» o [.«имя» x] => if o.startsWith "field:" then σ.«числа».contains (x ++ "." ++ (o.drop 6).toString)
+      else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«оп» o _ => ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«рез» k => σ.«числа».contains ("#р" ++ toString k)
   | .«п» _ => false
@@ -799,7 +834,7 @@ where
         match target p with
         | some x => do
           let t ← «выражениеC» σ a
-          «исполнить» { σ with «знач» := (x, .«оп» ("field:" ++ «разэкранить» fld) [t]) :: σ.«знач» } n q
+          «исполнить» { σ with «знач» := (x, «полеТ» («разэкранить» fld) t) :: σ.«знач» } n q
         | none => .error h
       | _ => .error h
     else if h = "fl_require_list" then

@@ -279,6 +279,7 @@ structure «КонтекстC» where
   «доказанные» : List (String × String)
   «есть» : Bool
   «применения» : List (String × List String)
+  «судимые» : List (String × String)
 
 def «числовойТип?» : «Тип» → Bool
   | .«число» => true
@@ -286,11 +287,22 @@ def «числовойТип?» : «Тип» → Bool
   | .«целое» => true
   | _ => false
 
-def «числовыеИмена» (x : String) : «Тип» → List String
+def «числовыеПоля» (fs : List (String × «Тип»)) : List String :=
+  fs.filterMap (fun (f, t) => if «числовойТип?» t then some f else none)
+
+def «числовыеИмена» (decls : List (String × Json)) (x : String) : «Тип» → List String
   | .«список» t => if «числовойТип?» t then ["[]" ++ x] else []
+  | .«ссылка» n =>
+    match «раскрыть» decls n with
+    | .«запись» _ fs => («числовыеПоля» fs).map (fun f => x ++ "." ++ f)
+    | .«сумма» _ vs =>
+      let all := vs.flatMap (·.2)
+      let names := (all.map (·.1)).eraseDups
+      (names.filter (fun f => all.all (fun (g, t) => g ≠ f || «числовойТип?» t))).map (fun f => x ++ "." ++ f)
+    | _ => []
   | t => if «числовойТип?» t then [x] else []
 
-def «предел ветвлений» : Nat := 12
+def «предел ветвлений» : Nat := 32
 
 partial def «ветвления» : «Выр» → Nat
   | .«если» c t e => 1 + «ветвления» c + «ветвления» t + «ветвления» e
@@ -485,7 +497,8 @@ partial def «вставитьТело» (f : String) (body : List «Т» → Na
     pure (.«обход» w l i a x st2 k r2)
   | d => pure d
 
-def «деревоC» (cx : «КонтекстC») (numeric : List String) (name : String) (types : List «Тип») : Except String «Д» := do
+def «деревоC» (cx : «КонтекстC») (decls : List (String × Json)) (numeric : List String) (name : String)
+    (types : List «Тип») : Except String «Д» := do
   let block ← match «дверьФункции» cx.«функции» name with
     | some b => pure b
     | none => .error "функции нет в двери _call"
@@ -496,16 +509,26 @@ def «деревоC» (cx : «КонтекстC») (numeric : List String) (name
     | some f => pure («телоОбёртки» cx.«функции» f)
     | none => .error "нет функции C"
   let slots := (types.zipIdx).map (fun (_, i) => "args[" ++ toString i ++ "]")
-  let named := (types.zipIdx).flatMap (fun (t, i) => «числовыеИмена» ("#" ++ toString i) t)
-  let nums := (slots.zip types).flatMap (fun (s, t) => «числовыеИмена» s t) ++ named
+  let named := (types.zipIdx).flatMap (fun (t, i) => «числовыеИмена» decls ("#" ++ toString i) t)
+  let nums := (slots.zip types).flatMap (fun (s, t) => «числовыеИмена» decls s t) ++ named
   let start := slots.zipIdx.map (fun (s, i) => (s, «Т».«имя» ("#" ++ toString i))) ++ cx.«тексты»
   let σ0 : «СредаC» := { «знач» := start, «числа» := nums, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
   let d ← «исполнить» σ0 0 («безСчёта» block)
   «вставитьТело» name (fun ts k =>
-    let cn := (fc.«параметры».zip types).flatMap (fun (c, t) => «числовыеИмена» c t) ++ named
+    let cn := (fc.«параметры».zip types).flatMap (fun (c, t) => «числовыеИмена» decls c t) ++ named
     let vals1 := fc.«параметры».zip ts ++ cx.«тексты»
     let σ1 : «СредаC» := { «знач» := vals1, «числа» := cn, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
     «исполнить» σ1 k fc.«тело») d
+
+def «постыБезСуда» (cx : «КонтекстC») (f : Json) (g : «Функция») : Nat :=
+  let cid := (cx.«имена».find? (fun p => p.2 = g.«имя»)).map (·.1)
+  let inC := match cid with
+    | some c => match cx.«функции».find? (fun (h : «ФункцияC») => h.«имя» = c) with
+      | some h => «постыC» («телоОбёртки» cx.«функции» h).«тело»
+      | none => []
+    | none => []
+  ((«условияJson» f "postconditions" "FLANG_PROPERTY").filter (fun q =>
+    !(inC.contains q.«имя») && !(cx.«судимые».contains (g.«имя», q.«имя»)))).length
 
 def «постыНаСловеЯдра» (cx : «КонтекстC») (f : Json) (g : «Функция») : Nat :=
   let cid := (cx.«имена».find? (fun p => p.2 = g.«имя»)).map (·.1)
@@ -648,20 +671,24 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
     | _ => «беда» "FLANG_TYPE"
   | .«обход» _ _ _ _ _ _ _ _ => «беда» "FLANG_TYPE"
 
-def «символьно» (P : «Программа») (cx : «КонтекстC») (numeric : List String) (f : Json) (g : «Функция»)
+def «символьно» (P : «Программа») (cx : «КонтекстC») (decls : List (String × Json)) (numeric : List String) (f : Json)
+    (g : «Функция»)
     (types : List «Тип») (witnesses : List (List «Зн»)) (answers : List String) : String × String :=
   let forks := «ветвления» g.«тело» + ((«условияJson» f "preconditions" "") ++ («условияJson» f "postconditions" "")).foldl
     (fun n q => n + 1 + «ветвления» q.«выражение») 0
   if !cx.«есть» then ("вне: нет напечатанного C", "") else
   if forks > «предел ветвлений» then ("вне: ветвлений больше предела", "") else
+  if «постыБезСуда» cx f g > 0 then ("вне: постусловие не напечатано, а вердикта ядра о нём нет", "") else
   match «деревоЭталона» P cx f g with
   | .error m => ("вне: " ++ m, "")
   | .ok r =>
     let vals := fun (vs : List «Зн») => (vs.zipIdx).map (fun (v, i) => ("#" ++ toString i, v))
-    let bad := (witnesses.zip answers).filter (fun (vs, a) => «эталонТекстом» («вычД» P (vals vs) [] r) ≠ a)
+    let checked := (witnesses.zip answers).filter (fun (_, a) => !(a.startsWith "топливо") && !(a.startsWith "вне"))
+    let bad := checked.filter (fun (vs, a) => «эталонТекстом» («вычД» P (vals vs) [] r) ≠ a)
+    if checked.isEmpty then ("вне: у эталона нет ни одного ответа, чтобы сверить с ним дерево", "") else
     if !bad.isEmpty then ("вне: символьное дерево эталона разошлось с вычислением на свидетеле", "")
     else
-      match «деревоC» cx numeric g.«имя» types with
+      match «деревоC» cx decls numeric g.«имя» types with
       | .error m => ("вне: C " ++ m, "")
       | .ok c =>
         let kernel := «постыНаСловеЯдра» cx f g
@@ -669,7 +696,7 @@ def «символьно» (P : «Программа») (cx : «Контекст
         let expand := fun (x : String) => if x.startsWith "apply:" then
           (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
         let called := (((«вызовыД» r) ++ («вызовыД» c)).flatMap expand).eraseDups.filter (· ≠ g.«имя»)
-        if «равныД» r c then (word, ",".intercalate called)
+        if «равныД» («сжатьВызовы» [] r) («сжатьВызовы» [] c) then (word, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
 def «строкиФункции» (P : «Программа») (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json))
@@ -699,7 +726,7 @@ def «строкиФункции» (P : «Программа») (fns : List (Str
     let cls := if params.isEmpty then "без параметров" else if full then "перебор" else "свидетели"
     let pre := «предусловияJson» f
     let answers := all.map («ответЭталона» P pre g)
-    let sym := «символьно» P cx numeric f g types all answers
+    let sym := «символьно» P cx decls numeric f g types all answers
     if all.isEmpty then [name ++ "\tвне\tнет ни одного свидетеля\t"]
     else (all.zip answers).map (fun (vs, a) => name ++ "\t" ++ cls ++ "\t" ++ «запрос» name vs ++ "\t" ++ a) ++
       [name ++ "\tсимвол\t" ++ sym.1 ++ "\t" ++ sym.2]
@@ -731,13 +758,17 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     let proved := match Json.parse ptext with
       | .ok pj => «доказанныеJson» pj
       | .error _ => []
+    let judged := match Json.parse ptext with
+      | .ok pj => («массив» pj "obligations").filterMap (fun o =>
+          if «строка?» o "kind" = "postcondition" then some («строка?» o "of", «строка?» o "name") else none)
+      | .error _ => []
     let toks := match ctext with
       | some t => «лексемы» t.toList []
       | none => []
     let names := «именаC» fs (P.map (·.«имя») ) ++ «конструкторыC» fs
     let apps := «применения» fs names
     let cx : «КонтекстC» := ⟨fs, names ++ apps.map (fun (c, a, _) => (c, a)), «текстыC» toks ++ «именаПолейC» toks, proved,
-      ctext.isSome, apps.map (fun (_, a, ts) => (a, ts))⟩
+      ctext.isSome, apps.map (fun (_, a, ts) => (a, ts)), judged⟩
     let numeric := («массив» j "functions").filterMap (fun f =>
       if «числовойТип?» («типJson» ((«поле?» f "returns").getD .null)) then some («строка?» f "name") else none)
     let fns := («массив» j "functions").map (fun f => («строка?» f "name",

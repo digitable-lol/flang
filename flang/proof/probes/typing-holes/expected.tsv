@@ -40,3 +40,6 @@ exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1
 exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":true,"value":{"l":[{"n":"-1"}]}}
 requirement-bypassed-by-function-value.flang	check	0	замечаний нет
 requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	нарушено свойство «итог больше пяти»
+shortest-number-tie-in-rust.flang	check	0	замечаний нет
+shortest-number-tie-in-rust.flang	run-shortest-tie	0	1501199875790165.2
+shortest-number-tie-in-rust.flang	emit-rust-shortest-tie	0	{"ok":true,"value":{"n":"1501199875790165.2"}}

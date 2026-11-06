@@ -518,14 +518,17 @@ pub fn number_text(value: f64) -> String {
     /* Кратчайшая запись, читающаяся обратно тем же double: ровно то «s», о
     котором говорит спецификация («k как можно меньше»). */
     let shortest = format!("{value:e}");
-    let (mantissa, exponent_text) = match shortest.split_once('e') {
+    let length = shortest.split('e').next().unwrap_or("").chars().filter(|symbol| *symbol != '.').count();
+    let nearest = format!("{:.*e}", length.saturating_sub(1), value);
+    let chosen = if nearest.parse::<f64>() == Ok(value) { nearest } else { shortest };
+    let (mantissa, exponent_text) = match chosen.split_once('e') {
         Some(parts) => parts,
-        None => return format!("{sign}{shortest}"),
+        None => return format!("{sign}{chosen}"),
     };
     let digits: String = mantissa.chars().filter(|symbol| *symbol != '.').collect();
     let exponent: i64 = match exponent_text.parse() {
         Ok(parsed) => parsed,
-        Err(_) => return format!("{sign}{shortest}"),
+        Err(_) => return format!("{sign}{chosen}"),
     };
 
     let k = digits.len() as i64;

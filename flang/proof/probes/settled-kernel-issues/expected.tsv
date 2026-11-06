@@ -8,3 +8,4 @@ nat-equality-false.flang	check	1	FLANG_PROOF_INDUCTION_CASES
 field-under-two-matches.flang	proof	0	доказано 2, условно
 field-under-two-matches-false.flang	proof	3	доказано 1, условно
 sign-of-zero-in-a-mismatch.flang	check	1	ожидалось -0, получено 0
+same-name-postconditions.flang	proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО

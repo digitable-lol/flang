@@ -74,7 +74,7 @@ P	О6 без отпечатка256 чужой путь → отказ	flang/proo
 P	О6б подмена без отпечатка256 → 3, причина названа	flang/proof/checker/tests/programs/lie-collision.flang	flang/proof/checker/tests/records/program-binding/a-without-256.record	-	-	-	-	3	привязка к программе не криптографическая	-	-
 C	отпечаток доводом: путь понижен до приметы	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/records/program-binding/v-honest.record	-	-	-	sha256	0	-	-	-
 M	отпечаток доводом засчитан криптопривязкой	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/records/program-binding/relative-path.record	-	-	-	sha256	-	Привязка к программе: SHA-256 сошёлся	-	-
-C	запись без взятого на слово + отпечаток, доказанного нет → ВПУСТУЮ, код 3	flang/proof/examples/corpus-brackets.flang	flang/proof/checker/tests/records/corpus/corpus-brackets.record	-	-	-	sha256	3	-	-	-
+C	запись без взятого на слово + отпечаток, доказанного нет → ВПУСТУЮ, код 3	flang/test/fixtures/krug-tuda-i-obratno.flang	flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record	-	-	-	sha256	3	-	-	-
 C	запись без взятого на слово + отпечаток, доказанное есть → ПРОВЕРЕНО	flang/proof/examples/corpus-hof.flang	flang/proof/checker/tests/records/corpus/corpus-hof.record	-	-	-	sha256	0	-	-	-
 P	она же с ЧУЖИМ отпечатком → отказ	flang/proof/examples/corpus-brackets.flang	flang/proof/checker/tests/records/corpus/corpus-brackets.record	-	-	-	0000000000000000000000000000000000000000000000000000000000000000	1	-	-	-
 say	── ключи: список закрыт, неизвестный ключ не толкуется ──	-	-	-	-	-	-	-	-	-	-
@@ -1226,3 +1226,7 @@ C	история честная: «хочу» доказано по телу, к
 P	история: запись говорит «не больше 30», а история хочет «не больше 20»	flang/proof/checker/tests/families/story/story.flang	flang/proof/checker/tests/families/story/story.record	8s/не больше 30/не больше 20/	-	-	-	1	-	-	-
 P	история: утверждение приписано строке «чтобы»	flang/proof/checker/tests/families/story/story.flang	flang/proof/checker/tests/families/story/story.record	-	s/строка 8$/строка 9/	-	-	1	-	-	-
 P	история: заголовок подменён тотальной функцией — строка «хочу» постусловием не читается	flang/proof/checker/tests/families/story/story.flang	flang/proof/checker/tests/families/story/story.record	6s/^история «/тотальная функция «/	-	-	-	1	-	-	-
+say	── имена доводов в «ёлочках»: разбор «итог» и ветвь «любое» — 1 честная → 0, 2 подделки → 3 ──	-	-	-	-	-	-	-	-	-	-
+C	постусловие над доводом «итог»: развёртка на конструкторе через ветвь «любое»	flang/proof/examples/corpus-brackets.flang	flang/proof/checker/tests/records/corpus/corpus-brackets.record	-	-	-	-	0	-	-	-
+P	ветвь «любое» у «Не решено ли» отвечает да — цель случая «Скобка есть» ложна	flang/proof/examples/corpus-brackets.flang	flang/proof/checker/tests/records/corpus/corpus-brackets.record	15s/то нет$/то да/	-	-	-	3	не сошлись знак в знак	-	-
+P	постусловие «… равен да» записано доказанным — случай «Скобки нет» его опровергает	flang/proof/examples/corpus-brackets.flang	flang/proof/checker/tests/records/corpus/corpus-brackets.record	s/(«Не решено ли» от «итог»)) равен нет$/(«Не решено ли» от «итог»)) равен да/	-	-	-	3	не сошлись знак в знак	-	-

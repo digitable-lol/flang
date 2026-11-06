@@ -2107,7 +2107,7 @@ def «Исх».«случайТела» (s : «Исх») («чья» : String) (
     `случай любое` на отступе случаев, как `найти_любое` сверщика на C (ADR-0133, Инд7). -/
 def «Исх».«найтиЛюбое» (s : «Исх») (a b : Nat) («по» : String) : Option Nat := Id.run do
   let some r := (List.range' a (b - a)).find? (fun i => (s.«строка» i).startsWith "разбор ") | return none
-  if «по» ≠ "" && «обрезать» («словаС» (s.«строка» r) 1) ≠ «по» then return none
+  if «по» ≠ "" && «голо» («обрезать» («словаС» (s.«строка» r) 1)) ≠ «голо» «по» then return none
   let mut d : Option Nat := none
   for i in s.«меж» r b do
     let l := s.«строка» i
@@ -2130,7 +2130,8 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
   let mut kr : Option Nat := none
   for i in razb do
     for k in [0:ds.length] do
-      if «обрезать» («словаС» (s.«строка» i) 1) = ds.getD k "" then kr := some k
+      let w := «обрезать» («словаС» (s.«строка» i) 1)
+      if w = ds.getD k "" || w = s!"«{ds.getD k ""}»" then kr := some k
   if razb.length ≠ 1 then return t
   let some k0 := kr | return t
   let dv := «ужатьТ» («обрезать» (args.getD k0 ""))
@@ -2176,13 +2177,13 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
       marks := marks.push s!"%п{k}%"
       vals := vals.push («т» vv[j]!)
   for k in [0:nk.size] do
-    body := «вместо» body nk[k]! marks[k]!
+    body := «вместоИмени» body («голо» nk[k]!) marks[k]!
   for k in [0:ds.length] do
     -- разбираемый довод пропускается, только когда имя образца его затеняет (как в сверщике)
     if k = k0 && nk.contains (ds.getD k "") then continue
     marks := marks.push s!"%д{k}%"
     vals := vals.push («т» («обрезать» (args.getD k "")))
-    body := «вместо» body (ds.getD k "") marks[marks.size - 1]!
+    body := «вместоИмени» body (ds.getD k "") marks[marks.size - 1]!
   for k in [0:marks.size] do
     body := «вместо» body marks[k]! vals[k]!
   return «т» body

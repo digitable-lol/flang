@@ -333,6 +333,7 @@ def «строкаЧисла» : «Д64» → String
 def «вНат» (k : Int) : Nat := k.toNat
 
 def «форма» (n : String) (vs : List «Зн») : «Исход» :=
+  if n.startsWith "#отказ " then «беда» (n.drop 7).toString else
   match n, vs with
   | "длина", [.«строка» s] => .ok (.«число» («изЦелого» s.length))
   | "длина", [.«список» l] => .ok (.«число» («изЦелого» l.length))

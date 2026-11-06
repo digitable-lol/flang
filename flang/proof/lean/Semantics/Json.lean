@@ -56,6 +56,21 @@ def «образецJson» (j : Json) : «Образец» :=
   | "literal" => .«лит» («значениеJson» ((«поле?» j "value").getD .null))
   | _ => .«любое»
 
+def «отказМеры» : «Выр» := .«форма» "#отказ FLANG_MEASURE" []
+
+def «сторожМеры» (f : String) (args : List «Выр») (current next : «Выр») (callee : List String) : «Выр» :=
+  let slots := (args.zipIdx).map (fun (_, i) => "#довод" ++ toString i)
+  let call := .«вызов» f (slots.map .«имя»)
+  let whole := .«двучлен» "eq" (.«двучлен» "sub" (.«имя» "#шаг") (.«двучлен» "mod" (.«имя» "#шаг") (.«лит» (.«число» («изЦелого» 1)))))
+    (.«имя» "#шаг")
+  let check := .«если» (.«двучлен» "lt" (.«имя» "#шаг") (.«имя» "#мера"))
+    (.«если» (.«двучлен» "gte" (.«имя» "#шаг") (.«лит» (.«число» («изЦелого» 0))))
+      (.«если» whole call «отказМеры») «отказМеры») «отказМеры»
+  let withNext := .«пусть» "#шаг" next check
+  let named := (callee.zip slots).foldr (fun (p, a) e => .«пусть» p (.«имя» a) e) withNext
+  let measured := .«пусть» "#мера" current named
+  (args.zip slots).foldr (fun (a, x) e => .«пусть» x a e) measured
+
 partial def «вырJson» (j : Json) : «Выр» :=
   let sub := fun (k : String) => «вырJson» ((«поле?» j k).getD .null)
   let subs := fun (k : String) => («массив» j k).map «вырJson»
@@ -66,7 +81,17 @@ partial def «вырJson» (j : Json) : «Выр» :=
   | "binary" => .«двучлен» («строка?» j "op") (sub "left") (sub "right")
   | "if" => .«если» (sub "cond") (sub "then") (sub "else")
   | "let" => .«пусть» («строка?» j "name") (sub "value") (sub "in")
-  | "call" => .«вызов» («строка?» j "name") (subs "args")
+  | "call" =>
+    match «поле?» j "descent" with
+    | some d =>
+      if («строка?» d "proved").isEmpty && («поле?» d "current").isSome && («поле?» d "next").isSome then
+        «сторожМеры» («строка?» j "name") (subs "args") («вырJson» ((«поле?» d "current").getD .null))
+          («вырJson» ((«поле?» d "next").getD .null)) ((«массив» d "calleeParams").map (fun p =>
+            match p with
+            | .str t => t
+            | _ => «строка?» p "name"))
+      else .«вызов» («строка?» j "name") (subs "args")
+    | none => .«вызов» («строка?» j "name") (subs "args")
   | "match" => .«разбор» (sub "target") ((«массив» j "cases").map (fun c =>
       («образецJson» ((«поле?» c "pattern").getD .null), «вырJson» ((«поле?» c "body").getD .null))))
   | "fold" => .«свёртка» (sub "over") (sub "init") («строка?» j "acc") («строка?» j "item") (sub "body")

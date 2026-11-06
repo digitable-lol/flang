@@ -224,7 +224,8 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
       k («сборка» (.«оп» "make-variant" (.«с» v :: .«оп» "fields" (fs.map (fun f => .«с» f.1)) :: ts))) n1)
   | .«поле» t p => «сим» P ρ n t (fun tt n1 => k («полеТ» p tt) n1)
   | .«форма» f args =>
-    if «формыЭталона».contains f then
+    if f.startsWith "#отказ " then .ok (.«отказ» (f.drop 7).toString)
+    else if «формыЭталона».contains f then
       «симВсе» P ρ n args [] (fun ts n1 => do
         let r ← k (.«рез» n1) (n1 + 1)
         pure (.«вызов» ("form:" ++ f) ts n1 r))

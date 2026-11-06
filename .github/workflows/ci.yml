@@ -2148,6 +2148,12 @@ jobs:
             echo "the guard stayed green on a forged fingerprint" >&2
             exit 1
           fi
+      - name: Probe the signature guard by a tampered package taken for honest
+        run: |
+          if bootstrap/flang io scripts/guards/package-signature-guard.fscript --plan Forgery --timeout 900000; then
+            echo "the signature guard stayed green on a tampered package" >&2
+            exit 1
+          fi
       # ПРОБА СНАРУЖИ: в раздаваемом списке подкручен один знак отпечатка той
       # версии, которую выбирает установка (Логика 1.2.0). Сторож ОБЯЗАН
       # покраснеть — установщик отвечает FLANG_INSTALL_FINGERPRINT; список
@@ -2173,14 +2179,6 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
       - name: Install a package by name on a clean machine, twice
         run: bootstrap/flang run-script package-install:check http://127.0.0.1:18765/registry.list
-        env:
-          FLANG_TMP: ${{ runner.temp }}
-      - name: Probe the signature guard by a tampered package taken for honest
-        run: |
-          if bootstrap/flang run-script package-signature:forgery; then
-            echo "the signature guard stayed green on a tampered package" >&2
-            exit 1
-          fi
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Probe author signatures of packages

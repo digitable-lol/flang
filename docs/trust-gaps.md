@@ -13,7 +13,7 @@ gap that leaves, and which stage closes it. Each gap has its decision in an ADR.
 | second checker in Lean `flang/proof/checker/second/` | the theorem "an accepted derivation block is true in the model"; the other blocks are judged by code without a theorem | 4 |
 | value model `flang/proof/lean/Model.lean` | human reading: integers instead of binary64, rounding given by two properties | 4 |
 | record reading `flang/proof/lean/RecordReader.lean` | verdict comparison | 4 |
-| C print `flang/self/emit-c.flang` | translation protocol and the matcher `flang/translation/matcher.c`, by structure; by meaning, a comparison with the reference for every function (ADR-0163): over the whole domain where it is finite, by equal decision trees for a function without loops, on witnesses otherwise | 1 |
+| C print `flang/self/emit-c.flang` | translation protocol and the matcher `flang/translation/matcher.c`, by structure; by meaning, a comparison with the reference for every function (ADR-0163): over the whole domain where it is finite, by equal decision trees where the symbolic walk reads the function, on witnesses otherwise | 1 |
 | runtime `flang/src/emit/c/flang_runtime.c` | examples and probes | 1 |
 | C compiler | nothing; CompCert builds the printed code but the build does not select it | 1 |
 | processes, mailboxes, scheduler, host | `прогон` blocks over seeds; the kernel knows nothing about processes; fairness is neither an assumption nor a theorem | 2 |
@@ -33,7 +33,7 @@ Until the contracts exist, meaning is held by translation validation against the
 [how it works](translation-validation.md)): every function of the printed C runs on witnesses
 drawn from its types, and its answer is compared with the answer of the reference semantics.
 Where the domain of a function is finite, the witnesses are the whole domain, and agreement
-holds for every input. For a function without loops the decision tree of the printed C is
+holds for every input. Otherwise the decision tree of the printed C is
 compared with the decision tree of the reference, and equal trees hold for every input too.
 
 | stage | closes |

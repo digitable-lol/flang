@@ -63,24 +63,35 @@ input. A function without parameters has a domain of one point.
 
 ## Symbolic comparison
 
-For a function without loops, `Semantics/Symbolic.lean` builds two decision trees and compares them
-node by node:
+`Semantics/Symbolic.lean` builds two decision trees for a function and compares them node by
+node:
 
 - from the tree of the source, by walking the reference semantics with the parameters left as
-  names: a leaf is a value term or a refusal code, an inner node is a condition or a call to
-  another function of the module;
+  names: a leaf is a value term or a refusal code, an inner node is a condition, a call to
+  another function of the module, a call to a builtin form, or a walk over a list (a fold, a
+  filter or a map) with its own tree for one step;
 - from the printed C, by executing a small subset of C statements symbolically: declarations and
   assignments of `fl_value`, `fl_number`, `fl_flag`, `fl_equal`, `fmod`, arithmetic and comparison
   of doubles (`a * b + 0.0`, `a / b + 0.0` and `fmod(a, b) + 0.0` are the product, quotient and
   remainder of the language, whose zero result is `+0`; a bare `*`, `/` or `fmod` is the binary64
-  operation and does not equal the operation of the language), `fl_cond`, `fl_pre`, `fl_post` with their refusal, the number guards, variant tests
-  and field reads, text constants (with their byte and character counts checked), calls to the
-  functions of the module and the recursion wrapper. The C tree starts at the door `_call`, so the
+  operation and does not equal the operation of the language), `fl_cond`, `fl_pre`, `fl_post`
+  with their refusal, the number guards, variant tests and field reads, text constants (with their byte and character counts checked), calls to the
+  functions of the module and the recursion wrapper; list patterns (`fl_chain_empty`,
+  `fl_chain_cons`, `fl_chain_head`, `fl_chain_tail`), list literals (`fl_list_alloc`, stores by
+  index, `fl_list`), records and variants with fields (`fl_record_new`, `fl_variant_new` with the
+  field names read from `static const char *const …[]`), and calls to the builtin forms `fl_b_…`
+  (the 18 forms the reference runs). A fold loop and a filter loop are recognized by their whole
+  shape (`for` over `.as.list.items`, an accumulator with `fl_region_recycle` or a `fl_keep` flag,
+  and `fl_list` after the loop), and the loop body becomes the tree of one step; for a map
+  (`fl_par_map`) the tree of one step is the separate C function the print hands the element and
+  the array of captured values. A loop body that leaves
+  the function (a `return` that is not a refusal, `break`, `goto`) or writes a variable declared
+  outside it (other than the accumulator) is refused. The C tree starts at the door `_call`, so the
   preconditions printed there are compared too.
 
 Equal trees mean that for every input the C function makes the same decisions and computes the
 same terms as the reference, provided the functions it calls do; recursion is covered by induction
-on the depth of the call. A function counts as proved symbolically when its trees are equal and
+on the depth of the call, and a walk over a list by induction on its length. A function counts as proved symbolically when its trees are equal and
 every function it calls is proved too (by symbols or over its whole domain). Before the C tree is
 built, the reference tree is evaluated on every witness and must give the reference answer; a
 mismatch is a fault of the symbolic walk, and the function is left out.
@@ -141,7 +152,9 @@ together with the change that moved them.
 The same plan breaks the printed C of honest programs, one edit each, and requires the
 validator to reject every one of them: an operation sign, a branch literal, a precondition
 bound, a recursion step, a text constant, swapped operands, a hidden point (a postcondition check
-that fails at one value no witness takes) and a bound inside a sum (a precondition over `m² + n²`).
+that fails at one value no witness takes), a bound inside a sum (a precondition over `m² + n²`), a
+list length wrong only on a tail of three, a fold step that takes the wrong accumulator, a filter
+that drops 1000 and a map condition wrong only at a threshold of 5000.
 A forgery is rejected when a witness disagrees or the symbolic comparison does not match. A forgery that cannot be built
 (its line is gone from the printed C) fails the plan too.
 
@@ -150,8 +163,13 @@ A forgery is rejected when a witness disagrees or the symbolic comparison does n
 The symbolic comparison adds two more things to trust: the meaning it gives to the C subset it
 executes (`Semantics/Symbolic.lean`: C `+`, `<`, `*`, `/`, `fmod` on doubles are the binary64
 operations of the reference, `x + 0.0` over the result of `*`, `/` or `fmod` is the product,
-quotient or remainder of the language, the runtime helpers `fl_add` and the like are the operations of the language), and
-the kernel for the postconditions it proved and the print left out.
+quotient or remainder of the language, `fl_b_…` is the builtin form of the same name,
+`fl_chain_…` is a list pattern, `fl_list`, `fl_record_new` and `fl_variant_new` build a value,
+`fl_par_map` maps in order (when a lane fails the runtime finishes the list sequentially, so the
+refusal is the one of the first failing element), the runtime helpers `fl_add` and the like are the operations of the language), and
+the kernel for the postconditions it proved and the print left out, and the types: the walk drops
+a number guard on a parameter, the result of a function or a form, the head of a list of numbers
+and a fold accumulator that starts as a number.
 
 The validator trusts the tree printed by `flang ast`: the reference reads it and the print reads
 the same parse, so a parser error that changes the meaning of a program is invisible here. It

@@ -1255,3 +1255,5 @@ P	подставить пусть под «отобразить»: связан�
 P	подставить пусть по первому из двух одноимённых «пусть»: имя значит второе	flang/proof/checker/tests/families/binder-substitution/let-twice.flang	flang/proof/checker/tests/families/binder-substitution/let-twice.record	-	-	-	-	3	связываний 2	-	-
 say	── семья «факт из чужой цели» (ADR-0202): факт, оплаченный охраной одной цели, закрывает другую — 1 подделка → 1 ──	-	-	-	-	-	-	-	-	-	-
 P	факт с ограничением «н больше 0», оплаченный охраной первой цели, закрывает вторую цель без охраны	flang/proof/checker/tests/families/stale-fact/fact-from-another-goal.flang	flang/proof/checker/tests/families/stale-fact/fact-from-another-goal.record	-	-	-	-	1	факта не внесено	-	-
+say	── семья «равенство не корень» (ADR-0202): разрез по «равно» через связку слабее — 1 подделка → 1 ──	-	-	-	-	-	-	-	-	-	-
+P	«М и притом М равно М и притом М» закрыта тождеством, а равенство в ней не корень	flang/proof/checker/tests/families/equality-root/conjunction-equal-to-itself.flang	flang/proof/checker/tests/families/equality-root/conjunction-equal-to-itself.record	-	-	-	-	1	стороны равенства разные	-	-

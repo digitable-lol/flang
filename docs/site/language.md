@@ -1411,57 +1411,57 @@ The rows of the table for the three families that hold the six checked rules:
 <!-- insert tsv flang/proof/tables/inference-rules.tsv family=Н -->
 | name | family | kind | kernel-rule | anchor | status |
 | --- | --- | --- | --- | --- | --- |
-| Н1 | Н | rule | неотрицательность по построению | proof-kernel.flang:1925 «Литерал неотрицателен» | code |
-| Н2 | Н | rule | неотрицательность по построению | proof-kernel.flang:1932 «Есть известное» | code |
-| Н3 | Н | rule | неотрицательность по построению | proof-kernel.flang:4028 «Известное снизу» | code |
-| Н4 | Н | rule | неотрицательность по построению | proof-kernel.flang:2095 «Неотрицательная форма» | code |
-| Н5 | Н | rule | неотрицательность по построению | proof-kernel.flang:1941 «Обе неотрицательны» | code |
-| Н6 | Н | rule | неотрицательность по построению | proof-kernel.flang:2160 «Неотрицательно», случай "if" | code |
-| Н7 | Н | rule | неотрицательность по построению | proof-kernel.flang:2115 «Свёртка неотрицательна» | code |
-| Н8 | Н | rule | неотрицательность по построению | proof-kernel.flang:2071 «Умножение неотрицательно» | code |
-| Н9 | Н | rule | неотрицательность по построению | proof-kernel.flang:2061 «Квадрат конечного» | code |
-| Н10 | Н | rule | неотрицательность по построению | proof-kernel.flang:2083 «Остаток неотрицателен» | code-stricter |
-| Н11 | Н | rule | неотрицательность по построению | proof-kernel.flang:2143 «Разбор неотрицателен» | not-in-adr |
-| Н12 | Н | rule | неотрицательность по построению | proof-kernel.flang:4073 «Разность по порядку» | code |
-| Н13 | Н | rule | неотрицательность по построению | proof-kernel.flang:4045 «Разность из-под конечного литерала» | code |
-| Н✗ | Н | ban | неотрицательность по построению | proof-kernel.flang:2160 «Неотрицательно», отсутствие случая "sub" | code |
+| Н1 | Н | rule | неотрицательность по построению | proof-kernel.flang:2060 «Литерал неотрицателен» | code |
+| Н2 | Н | rule | неотрицательность по построению | proof-kernel.flang:2067 «Есть известное» | code |
+| Н3 | Н | rule | неотрицательность по построению | proof-kernel.flang:4209 «Известное снизу» | code |
+| Н4 | Н | rule | неотрицательность по построению | proof-kernel.flang:2230 «Неотрицательная форма» | code |
+| Н5 | Н | rule | неотрицательность по построению | proof-kernel.flang:2076 «Обе неотрицательны» | code |
+| Н6 | Н | rule | неотрицательность по построению | proof-kernel.flang:2295 «Неотрицательно», случай "if" | code |
+| Н7 | Н | rule | неотрицательность по построению | proof-kernel.flang:2250 «Свёртка неотрицательна» | code |
+| Н8 | Н | rule | неотрицательность по построению | proof-kernel.flang:2206 «Умножение неотрицательно» | code |
+| Н9 | Н | rule | неотрицательность по построению | proof-kernel.flang:2196 «Квадрат конечного» | code |
+| Н10 | Н | rule | неотрицательность по построению | proof-kernel.flang:2218 «Остаток неотрицателен» | code-stricter |
+| Н11 | Н | rule | неотрицательность по построению | proof-kernel.flang:2278 «Разбор неотрицателен» | not-in-adr |
+| Н12 | Н | rule | неотрицательность по построению | proof-kernel.flang:4254 «Разность по порядку» | code |
+| Н13 | Н | rule | неотрицательность по построению | proof-kernel.flang:4226 «Разность из-под конечного литерала» | code |
+| Н✗ | Н | ban | неотрицательность по построению | proof-kernel.flang:2295 «Неотрицательно», отсутствие случая "sub" | code |
 <!-- end insert -->
 
 <!-- insert tsv flang/proof/tables/inference-rules.tsv family=О -->
 | name | family | kind | kernel-rule | anchor | status |
 | --- | --- | --- | --- | --- | --- |
-| О1 | О | rule | порядок по построению | proof-kernel.flang:2413 «Есть порядок» | code |
-| О2 | О | rule | порядок по построению | proof-kernel.flang:2514 «Тождество сторон» | code |
-| О3 | О | rule | порядок по построению | proof-kernel.flang:2521 «По порядку», случай "if" | code |
-| О4 | О | rule | порядок по построению | proof-kernel.flang:2472 «Литерал под дном» | code |
-| О5 | О | rule | порядок по построению | proof-kernel.flang:2509 «Сумма под суммой» | code-wider |
-| О6 | О | rule | порядок по построению | proof-kernel.flang:3452 «Слагаемое в границе» | code-wider |
-| О7 | О | rule | порядок по построению | proof-kernel.flang:3239 «По разбору» | code-stricter |
-| О8 | О | rule | порядок по построению | proof-kernel.flang:3434 «Отбор под длиной» | code-wider |
-| О9 | О | rule | порядок по построению | proof-kernel.flang:3271 «Свёртка не быстрее списка» | code-stricter |
-| О10 | О | rule | порядок по построению | proof-kernel.flang:2462 «Есть порядок через середину» | not-in-adr |
+| О1 | О | rule | порядок по построению | proof-kernel.flang:2548 «Есть порядок» | code |
+| О2 | О | rule | порядок по построению | proof-kernel.flang:2649 «Тождество сторон» | code |
+| О3 | О | rule | порядок по построению | proof-kernel.flang:2656 «По порядку», случай "if" | code |
+| О4 | О | rule | порядок по построению | proof-kernel.flang:2607 «Литерал под дном» | code |
+| О5 | О | rule | порядок по построению | proof-kernel.flang:2644 «Сумма под суммой» | code-wider |
+| О6 | О | rule | порядок по построению | proof-kernel.flang:3587 «Слагаемое в границе» | code-wider |
+| О7 | О | rule | порядок по построению | proof-kernel.flang:3374 «По разбору» | code-stricter |
+| О8 | О | rule | порядок по построению | proof-kernel.flang:3569 «Отбор под длиной» | code-wider |
+| О9 | О | rule | порядок по построению | proof-kernel.flang:3406 «Свёртка не быстрее списка» | code-stricter |
+| О10 | О | rule | порядок по построению | proof-kernel.flang:2597 «Есть порядок через середину» | not-in-adr |
 | О11 | О | rule | порядок по построению | proof-kernel.flang:8119 «Нестрогий из строгого» | not-in-adr |
-| О✗ | О | ban | порядок по построению | proof-kernel.flang:2521 «По порядку», отсутствие случая "sub" | not-in-adr |
-| О✗✗ | О | ban | порядок по построению | proof-kernel.flang:3452 «Слагаемое в границе», требование обеих границ | not-in-adr |
-| О✗✗✗ | О | ban | порядок по построению | proof-kernel.flang:2341 «Дно произведения», отсутствие парного случая у порядка | not-in-adr |
+| О✗ | О | ban | порядок по построению | proof-kernel.flang:2656 «По порядку», отсутствие случая "sub" | not-in-adr |
+| О✗✗ | О | ban | порядок по построению | proof-kernel.flang:3587 «Слагаемое в границе», требование обеих границ | not-in-adr |
+| О✗✗✗ | О | ban | порядок по построению | proof-kernel.flang:2476 «Дно произведения», отсутствие парного случая у порядка | not-in-adr |
 <!-- end insert -->
 
 <!-- insert tsv flang/proof/tables/inference-rules.tsv family=Разв -->
 | name | family | kind | kernel-rule | anchor | status |
 | --- | --- | --- | --- | --- | --- |
-| Разв1 | Разв | rule | — | proof-kernel.flang:1665 «Правило развёртки», ветвь конструктора | code |
-| Разв2 | Разв | rule | — | proof-kernel.flang:1665 «Правило развёртки», ветвь плоского определения | code |
-| Яр1 | Разв | rule | — | proof-kernel.flang:6869 «Ярлык применения» | code-narrower |
-| Разв3 | Разв | rule | — | proof-kernel.flang:1523 «Развернуть подстановкой» | code |
-| К↑ | Разв | rule | — | proof-kernel.flang:903 «Поле известного значения» | code |
-| Зап1 | Разв | rule | равенство записей по полям | proof-kernel.flang:5693 «Свести поля записей» | not-in-adr |
-| Зап2 | Разв | rule | запись из своих полей | proof-kernel.flang:5784 «Запись из своих полей» | not-in-adr |
-| Зап3 | Разв | rule | равенство записей по полям | proof-kernel.flang:5796 «Равны по полям фактов» | not-in-adr |
-| Зап✗ | Разв | ban | запись из своих полей | proof-kernel.flang:5765 «Поля записи имени», отказ при необязательном поле, при параметрах типа и при неполном наборе полей | not-in-adr |
-| Разв4 | Разв | rule | — | proof-kernel.flang:1107 «Разбор по приписанному» | code |
-| Разв5 | Разв | rule | — | proof-kernel.flang:1080 «Разбор внутрь» | code |
-| Разв6 | Разв | rule | — | proof-kernel.flang:1091 «Сжатый разбор» | code |
-| Разв✗ | Разв | ban | — | proof-kernel.flang:1297 «Связь из значения» | code |
+| Разв1 | Разв | rule | — | proof-kernel.flang:1800 «Правило развёртки», ветвь конструктора | code |
+| Разв2 | Разв | rule | — | proof-kernel.flang:1800 «Правило развёртки», ветвь плоского определения | code |
+| Яр1 | Разв | rule | — | proof-kernel.flang:7243 «Ярлык применения» | code-narrower |
+| Разв3 | Разв | rule | — | proof-kernel.flang:1537 «Развернуть подстановкой» | code |
+| К↑ | Разв | rule | — | proof-kernel.flang:917 «Поле известного значения» | code |
+| Зап1 | Разв | rule | равенство записей по полям | proof-kernel.flang:5906 «Свести поля записей» | not-in-adr |
+| Зап2 | Разв | rule | запись из своих полей | proof-kernel.flang:5997 «Запись из своих полей» | not-in-adr |
+| Зап3 | Разв | rule | равенство записей по полям | proof-kernel.flang:6009 «Равны по полям фактов» | not-in-adr |
+| Зап✗ | Разв | ban | запись из своих полей | proof-kernel.flang:5978 «Поля записи имени», отказ при необязательном поле, при параметрах типа и при неполном наборе полей | not-in-adr |
+| Разв4 | Разв | rule | — | proof-kernel.flang:1121 «Разбор по приписанному» | code |
+| Разв5 | Разв | rule | — | proof-kernel.flang:1094 «Разбор внутрь» | code |
+| Разв6 | Разв | rule | — | proof-kernel.flang:1105 «Сжатый разбор» | code |
+| Разв✗ | Разв | ban | — | proof-kernel.flang:1311 «Связь из значения» | code |
 <!-- end insert -->
 
 Why name the rule: the independent proof checker (`flang/proof/checker/checker.c`)

@@ -6,16 +6,18 @@
 чего он не обещает, — [ADR-0204](adr/0204-an-article-is-checked-step-by-step-and-only-the-kernel-proves.md).
 
 ```
-bootstrap/flang io flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 -- <текст> | jq -r .result
+bootstrap/flang io flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 -- <текст>
 ```
 
-На образце подконтрольного языка `flang/experimental/texts/argument-controlled.txt`:
+На образце подконтрольного языка `flang/proof/probes/argument-check/programs/sample.txt`:
 
 ```
-bootstrap/flang run-script argument-check:demo | jq -r .result
+bootstrap/flang run-script argument-check:demo
 ```
 
-Путь берётся от корня дерева; путь, начинающийся с `/`, берётся как есть.
+Путь берётся от корня дерева; путь, начинающийся с `/`, берётся как есть. Отчёт
+печатается обычным текстом в стандартный вывод; следом хозяин `io` печатает
+свою строку JSON с ходом плана.
 
 ## Что печатается
 
@@ -64,6 +66,14 @@ bootstrap/flang run-script argument-check:demo | jq -r .result
 Перевод текста в утверждения не доверен: переводчик может прочесть
 предложение не так, как его понял автор. Доказано только то, что доказало ядро
 о напечатанной программе.
+
+## Набор проб
+
+`bootstrap/flang run-script argument-check:probe` прогоняет план на трёх
+текстах из `flang/proof/probes/argument-check/programs/` и сверяет строку
+отчёта из `expected.tsv`: итог подконтрольного образца, объяснение примера
+Рассела и неверный вывод «Все кошки — животные. Все собаки — животные.
+Следовательно, все собаки — кошки», который план обязан назвать «не следует».
 
 ## Чего план не делает
 

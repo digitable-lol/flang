@@ -780,6 +780,8 @@
   пусть from_affirmatives равно («Denies» от conclusion) и притом (не («Denies» от major)) и притом (не
       («Denies» от minor))
   пусть particulars равно («Speaks of some» от major) и притом («Speaks of some» от minor)
+  пусть bases равно (если (major.«subject») равен (minor.«subject») то [(major.«subject»)] иначе [(major.«subject»),
+      (minor.«subject»)])
   пусть existential равно («Speaks of some» от conclusion) и притом (не («Speaks of some» от major)) и притом (не
       («Speaks of some» от minor))
   «Chosen» от [
@@ -816,9 +818,9 @@
     («When» от particulars и («Named fallacy» от "two-particular-premises" и "две частные посылки" и ""
         и (соединить ["обе посылки говорят только о «некоторых»: из двух частных ", "суждений вывода нет"] по ""))),
     («When» от existential и («Named fallacy» от "existential-fallacy" и "частный вывод из общих посылок"
-        и "vacuous-truth" и (соединить ["обе посылки общие, а вывод частный: общее суждение о «", small,
-        "» верно и тогда, когда ни одного «", small, "» нет, а «некоторые …» утверждает, что они есть"]
-        по "")))] и («No fallacy»)
+        и "vacuous-truth" и (соединить ["обе посылки общие, а вывод частный: общие суждения о ",
+        («Quoted list» от bases), " верны и тогда, когда ни одного такого предмета нет, а «некоторые …» ",
+        "утверждает, что «", small, "» есть"] по "")))] и («No fallacy»)
 
 
 тотальная функция «Two premise fallacy id»

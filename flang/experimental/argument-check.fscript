@@ -37,6 +37,7 @@
   вариант «Awaiting arguments»
   вариант «Awaiting text» содержит path: строка
   вариант «Judging» содержит path: строка, rows: список «Row», waiting: список «Argument», done: список «Verdict line»
+  вариант «Printed» содержит path: строка
 
 тотальная функция «Marks»
   возвращает список строки
@@ -497,12 +498,13 @@
 тотальная функция «Next judgment»
   принимает path: строка, rows: список «Row», waiting: список «Argument», done: список «Verdict line»
   возвращает «Продолжение»
-  пример «Nothing left to judge ends with the report»
+  пример «Nothing left to judge prints the report»
     дано path равно "a.txt"
     дано rows равно пустой список
     дано waiting равно пустой список
     дано done равно пустой список
-    ожидается вариант «Конец работы» с значение равным """
+    ожидается вариант «Сделать» с поручение равным (вариант «Записать файл»
+        с путь равным "/dev/stdout" и содержимое равным """
       ── a.txt ──
       итог:
         предложений 0
@@ -513,12 +515,23 @@
         слов 0, с чтением 0, с чтением без недостач 0
       граница: перевод текста в утверждения не доверен; доказано только то, что доказало ядро
       """
+        ) и потом равным (вариант «Printed» с path равным "a.txt")
   разбор waiting
     случай пусто
-      то вариант «Конец работы» с значение равным («Report» от path и rows и done)
+      то (вариант «Сделать» с поручение равным («Print» от («Report» от path и rows и done))
+          и потом равным (вариант «Printed»
+          с path равным path))
     случай голова и хвост
       то (вариант «Сделать» с поручение равным («Kernel order» от («Check script») и голова) и потом равным
           (вариант «Judging» с path равным path и rows равным rows и waiting равным waiting и done равным done))
+
+тотальная функция «Print»
+  принимает text: строка
+  возвращает «Поручение»
+  пример «The report goes to the standard output as plain text»
+    дано text равно "отчёт\n"
+    ожидается вариант «Записать файл» с путь равным "/dev/stdout" и содержимое равным "отчёт\n"
+  вариант «Записать файл» с путь равным "/dev/stdout" и содержимое равным text
 
 тотальная функция «Check script»
   возвращает строка
@@ -630,6 +643,8 @@
       то «After text» от path и reply
     случай вариант «Judging» с path как path и rows как rows и waiting как waiting и done как done
       то «After kernel» от path и rows и waiting и done и reply
+    случай вариант «Printed» с path как path
+      то вариант «Конец работы» с значение равным (соединить ["отчёт напечатан: ", path] по "")
 
 план «Check»
   состояние «Paper step»

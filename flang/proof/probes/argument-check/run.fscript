@@ -1,0 +1,68 @@
+модуль «Argument check probes»
+
+использует «Таблица проб» из "../table.fscript"
+
+тотальная функция «Этот набор»
+  возвращает «Набор»
+  пример «The set is named, and a mismatch and blindness have different codes»
+    ожидается (запись «Набор» с «имя» равным "argument-check" и «код расхождения» равным "FLANG_PROBE_ARGUMENT_CHECK"
+        и «код слепоты» равным "FLANG_PROBE_ARGUMENT_CHECK_CANNOT_LOOK")
+  (запись «Набор» с «имя» равным "argument-check" и «код расхождения» равным "FLANG_PROBE_ARGUMENT_CHECK"
+      и «код слепоты» равным "FLANG_PROBE_ARGUMENT_CHECK_CANNOT_LOOK")
+
+тотальная функция «Команда»
+  принимает программа: строка
+  возвращает строка
+  пример «The plan reads the text from the root of the tree»
+    дано программа равно "empty-class.txt"
+    ожидается """
+      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang io \\
+        flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- \\
+        'flang/proof/probes/argument-check/programs/empty-class.txt'; } 2>&1; echo "[code=$?]"
+      """
+  пусть call равно (соединить ["$flang io \\\n  flang/experimental/argument-check.fscript --plan Check ",
+      "--max-steps 1000000000000 --timeout 600000 -- \\\n  'flang/proof/probes/argument-check/programs/", программа,
+      "'"] по "")
+  соединить [(«От корня» от («С меткой» от call)), "\n"] по ""
+
+тотальная функция «Проба из строки»
+  принимает части: список строки
+  возвращает «Проба»
+  пример «A row of the table becomes a probe»
+    дано части равно ["empty-class.txt", "0", "золотая гора"]
+    ожидается (запись «Проба» с «программа» равным "empty-class.txt" и «приметы» равным "empty-class.txt []"
+        и «команда» равным """
+      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang io \\
+        flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- \\
+        'flang/proof/probes/argument-check/programs/empty-class.txt'; } 2>&1; echo "[code=$?]"
+      """
+        и «код» равным "0" и «слово» равным "золотая гора")
+  (запись «Проба» с «программа» равным («Поле» от части и 1)
+      и «приметы» равным («Приметы» от («Поле» от части и 1) и пустой список)
+      и «команда» равным («Команда» от («Поле» от части и 1)) и «код» равным («Поле» от части и 2)
+      и «слово» равным («Поле» от части и 3))
+
+тотальная функция «Пробы»
+  принимает текст: строка
+  возвращает список «Проба»
+  отобразить («Строки данных» от текст) как части → («Проба из строки» от части)
+
+тотальная функция «Начать»
+  возвращает «Ход»
+  пример «The plan starts from the start»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Дальше»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор ход
+    случай вариант «Ждём таблицу»
+      то «После таблицы» от («Этот набор») и («Пробы» от («Содержимое» от отклик))
+    случай любое
+      то «Шаг» от («Этот набор») и ход и отклик
+
+план «Binary»
+  состояние «Ход»
+  начинает с «Начать»
+  обрабатывает «Дальше»

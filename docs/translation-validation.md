@@ -107,12 +107,16 @@ every function it calls is proved too (by symbols or over its whole domain). Bef
 built, the reference tree is evaluated on every witness and must give the reference answer; a
 mismatch is a fault of the symbolic walk, and the function is left out.
 
-For the fragment of literals, names, binary operations, `если`, `пусть`, calls, preconditions and
-postconditions the reference tree is also built by `«деревоФункции»` of `Semantics/Walk.lean`, and
-the theorem `«дерево-функции-верно»` proves that this tree gives the answer of the reference on
-every input where the expressions of the function evaluate without error. When both trees are
-equal the verdict says «дерево эталона по теореме» and counts the function; `--theorem-floor`
-bounds that count.
+For the fragment of literals, names, binary operations, `если`, `пусть`, calls, builtin forms,
+variant and list patterns, field reads, variants without fields, list literals, folds, filters,
+maps, preconditions and postconditions the reference tree is also built by `«деревоФункции»` of
+`Semantics/Walk.lean`, and the theorem `«дерево-функции-верно»` proves that this tree gives the
+answer of the reference on every input where the expressions of the function evaluate without
+error. The tree of the printed C is read back into a tree of the theorem (`Semantics/Bridge.lean`)
+and compared with it by a Boolean equality proved sound; `«смысл-C-верен»` states that the C tree
+then means the answer of the reference. Such a function is proved without the working symbolic
+walk of the reference and without its evaluation in the plan; the verdict says «дерево эталона по
+теореме» and counts it, and `--theorem-floor` bounds the count.
 
 A postcondition the kernel proved is not printed in C. Such a postcondition is left out of the
 reference tree too, so the proof stands on the kernel for it, and the verdict counts those

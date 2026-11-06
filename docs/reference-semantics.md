@@ -81,8 +81,10 @@ reference (exact fractions, `хеш256`).
 | `«развёртка-доводами»` | a call that evaluates to `v` can be replaced by its body with the argument expressions put in place of the parameters: the result is `v` again |
 | `«развёртка-без-подстановки-ложна»` | unfolding without putting the arguments in place changes the value |
 | `«развёртка-с-захватом-ложна»` | unfolding where a binder of the body captures an argument name changes the value |
-| `«обход-верен»` (`Semantics/Walk.lean`) | the tree the symbolic walk builds from an expression of literals, names, binary operations, `если`, `пусть` and calls gives the value of `выч` whenever `выч` gives a value |
+| `«обход-верен»` (`Semantics/Walk.lean`) | the tree the symbolic walk builds from an expression of literals, names, binary operations, `если`, `пусть`, calls, forms, patterns, fields, lists, folds, filters and maps gives the value of `выч` whenever `выч` gives a value |
+| `«обходСлучаев-верен»` | the tree of a match over variant and list patterns gives the value of `разобрать` |
 | `«дерево-функции-верно»` | the tree of a function with preconditions and postconditions gives the answer of the reference — a value or the refusal of a condition — whenever the expressions of the function evaluate without error on the input |
+| `«смысл-C-верен»` (`Semantics/Bridge.lean`) | a C tree that reads back into the tree of a function means the answer of the reference on the same inputs |
 
 `«развёртка-доводами»` is the reference form of the unfolding move of the checker: it needs the
 count of arguments to match, the free names of the body to be its parameters, and no argument

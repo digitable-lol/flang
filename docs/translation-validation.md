@@ -9,10 +9,13 @@ print; it checks each printed program. The decision is
 ```
 bootstrap/flang run-script translation:validate
 bootstrap/flang run-script translation:validate -- --all
+bootstrap/flang run-script translation:validate -- --path docs/examples/leetcode
 ```
 
 The first command takes `flang/proof/examples` and `docs/examples/pythagoras`; with `--all` it
-takes every file of `docs/examples` too.
+takes every file of `docs/examples` too. With `-- --path <file or directory>` (from the root of the
+tree, or absolute) it takes that program and the seven files the forgeries edit, so a program of
+your own is validated the same way.
 
 ## How it runs
 
@@ -52,6 +55,7 @@ Witnesses come from the declared types of the parameters:
 | list | the empty list and lists of one to three witnesses of the element type |
 | record, variant with fields | combinations of the witnesses of the fields; a recursive sum is unfolded twice |
 | type parameter | `число` is put in its place |
+| function | the functions of the module without captures that take as many parameters, of fitting kinds (number, flag, string, list) |
 
 The examples of the function are added to the witnesses, and so are the boundaries: every number
 literal that a comparison in the body, a precondition or a postcondition holds against a value,
@@ -76,7 +80,8 @@ node:
   remainder of the language, whose zero result is `+0`; a bare `*`, `/` or `fmod` is the binary64
   operation and does not equal the operation of the language), `fl_cond`, `fl_pre`, `fl_post`
   with their refusal, the number guards, variant tests and field reads, text constants (with their byte and character counts checked), calls to the
-  functions of the module and the recursion wrapper; list patterns (`fl_chain_empty`,
+  functions of the module and the recursion wrapper, applications of a function value through the
+  apply function (each of its branches checked against the tag it dispatches); list patterns (`fl_chain_empty`,
   `fl_chain_cons`, `fl_chain_head`, `fl_chain_tail`), list literals (`fl_list_alloc`, stores by
   index, `fl_list`), records and variants with fields (`fl_record_new`, `fl_variant_new` with the
   field names read from `static const char *const …[]`), and calls to the builtin forms `fl_b_…`
@@ -122,8 +127,8 @@ refused. A function it refuses keeps its witnesses.
 - **символьно** — the decision trees of the C function and of the reference are equal.
 - **на свидетелях без доказательства** — the C function agrees on every compared witness. This is a test, not a
   proof: an error on an input that is not a witness stays unseen.
-- **вне валидации** — the function is not checked, and the reason is named: a parameter whose
-  value is a function, or every witness ran into a limit.
+- **вне валидации** — the function is not checked, and the reason is named: a function parameter
+  with no fitting function in the module, or every witness ran into a limit.
 - **не напечатано** — the print refused the file; the forgery examples of the kernel are refused
   this way by design.
 
@@ -131,8 +136,8 @@ Any disagreement fails the plan and is named with both answers.
 
 ## Bounds in CI
 
-The job `translation-validation` of `.github/workflows/ci.yml` runs on every push to `main` and
-`dev` and on every pull request. It gives the plan a floor and three ceilings:
+The job `translation-validation` of `.github/workflows/binary.yml` runs on every push and every
+pull request. It gives the plan a floor and three ceilings:
 
 | key | bound |
 |---|---|
@@ -142,8 +147,8 @@ The job `translation-validation` of `.github/workflows/ci.yml` runs on every pus
 | `--unprinted-ceiling` | files not printed or not built, at most |
 
 A count past its bound fails the plan with a line `пол … не достигнут` or `потолок … превышен`.
-A second step of the same job runs the plan with the proved floor one higher and the outside
-ceiling one lower and requires it to fail with both lines, so a bound the plan stopped reading
+A second step of the same job runs the plan with the proved floor one higher and the ceiling of
+files not printed one lower and requires it to fail with both lines, so a bound the plan stopped reading
 cannot stay green. Raising a floor or lowering a ceiling is an edit of the numbers in the job, made
 together with the change that moved them.
 
@@ -166,7 +171,8 @@ operations of the reference, `x + 0.0` over the result of `*`, `/` or `fmod` is 
 quotient or remainder of the language, `fl_b_…` is the builtin form of the same name,
 `fl_chain_…` is a list pattern, `fl_list`, `fl_record_new` and `fl_variant_new` build a value,
 `fl_par_map` maps in order (when a lane fails the runtime finishes the list sequentially, so the
-refusal is the one of the first failing element), the runtime helpers `fl_add` and the like are the operations of the language), and
+refusal is the one of the first failing element), `fl_variant_is` in the apply function selects
+the function of that tag, the runtime helpers `fl_add` and the like are the operations of the language), and
 the kernel for the postconditions it proved and the print left out, and the types: the walk drops
 a number guard on a parameter, the result of a function or a form, the head of a list of numbers
 and a fold accumulator that starts as a number.

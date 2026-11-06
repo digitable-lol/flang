@@ -74,7 +74,7 @@
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 25 (translation validation: the symbolic walk of printed C; до них 24, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 25 файлов,
-<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 21941 (translation validation: the symbolic walk of printed C; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 21 941 строка,
+<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 22004 (translation validation: the symbolic walk of printed C; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 22 004 строки,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -301,20 +301,20 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
 свёртку, отображение, отбор, записи, варианты и 18 встроенных форм. Проверку перевода —
 план `flang/translation/validation.fscript`, ярлык `bootstrap/flang run-script translation:validate`,
 описание [`translation-validation.ru.md`](translation-validation.ru.md) — CI гоняет работой
-`translation-validation` на каждый push в `main` и `dev` и на каждый pull request, с полом
+`translation-validation` на каждый push и каждый pull request, с полом
 проверенных и доказанных функций и потолками функций вне проверки и ненапечатанных файлов; шаг
 с границами на единицу теснее обязан покраснеть. На корпусе по умолчанию (`flang/proof/examples`
 и `docs/examples/pythagoras`, 54 файла):
 
 | что | число |
 |---|---:|
-| функций со СООТВЕТСТВИЕМ ПРОВЕРЕНО | 146 |
-| доказано для любого входа | 146: перебором области 47, символьно 99 |
-| из символьных стоят на постусловиях, доказанных ядром и не напечатанных | 46 |
+| функций со СООТВЕТСТВИЕМ ПРОВЕРЕНО | 150 |
+| доказано для любого входа | 150: перебором области 47, символьно 103 |
+| из символьных стоят на постусловиях, доказанных ядром и не напечатанных | 50 |
 | на свидетелях без доказательства | 0 |
-| вне проверки | 4 (параметр-функция) |
+| вне проверки | 0 |
 | расхождений | 0 |
-| подделок напечатанного C отвергнуто | 12 из 12, пять из них — только символьным сравнением |
+| подделок напечатанного C отвергнуто | 13 из 13, пять из них — только символьным сравнением |
 
 Устройство печати держит отдельно сличитель протокола перевода `flang/translation/matcher.c`
 (ADR-0030).
@@ -325,9 +325,9 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
   весь `docs/examples` прогоном не измерен: ключ `--all` до конца не доходил. Символьное
   сравнение читает печать, только пока она держит форму, которую оно знает; другая форма той же
   печати снимает доказательство без ошибки, и функция остаётся на свидетелях.
-- *Покрытия языка эталоном.* Процессы, ящики и планы эталон не исполняет вовсе; функции с
-  параметром-функцией стоят вне проверки; встроенные формы сверх 18 и вызовы функций других
-  модулей эталон отвергает, и такая функция тоже вне проверки.
+- *Покрытия языка эталоном.* Процессы, ящики и планы эталон не исполняет вовсе; встроенные
+  формы сверх 18 и вызовы функций других модулей эталон отвергает, и такая функция вне
+  проверки. Параметр-функция проверяется на функциях модуля без захвата, а не на всех значениях.
 - *Контрактов рантайма C.* Напечатанный корпус зовёт напрямую 38 функций рантайма
   `flang/src/emit/c/flang_runtime.{c,h}` (счёт имён `fl_…(` в напечатанных `program.c`), и
   доказанного контракта нет ни у одной (контракты CBMC — ADR-0124, в дереве их нет). Рантайм
@@ -337,8 +337,8 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
   теоремы, что значение дерева равно `выч`, нет — сверка идёт на свидетелях.
 - *Проверенного компилятора C.* Напечатанное собирает `cc -O2` системы, ему и libc проверка
   доверяет. CompCert собирает напечатанное только после правки рантайма руками (задача 3467).
-- *Проверки на программах пользователя.* План проверяет названный корпус; `flang emit --target c`
-  проверку перевода своей программы не запускает.
+- *Проверки при печати.* Свою программу план проверяет ключом `-- --path`, отдельным прогоном;
+  `flang emit --target c` проверку перевода не запускает и вердикта не печатает.
 
 Остаётся доверенным и после всего списка: разбор `flang ast` (его читают и эталон, и генератор),
 Lean, исполняющий эталон, и постусловия, доказанные ядром и потому не напечатанные (их держит
@@ -347,7 +347,7 @@ Lean, исполняющий эталон, и постусловия, доказ
 **Как узнаем, что взято.** Работа `translation-validation` зелёная на стволе, и на корпусе
 `flang/proof/examples` вместе со всем `docs/examples`: каждая функция, которую эталон исполняет,
 доказана — перебором или символьно, на свидетелях без доказательства 0; функции вне проверки
-названы каждая с причиной из закрытого списка (процессы, параметр-функция); у функций рантайма,
+названы каждая с причиной из закрытого списка (процессы); у функций рантайма,
 которые зовёт напечатанный корпус, доказан контракт; `flang emit --target c` печатает вердикт
 проверки перевода для программы пользователя. Компилятор C и Lean стоят в доверенной базе
 поимённо.

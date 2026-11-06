@@ -291,6 +291,8 @@ def «числовыеПоля» (fs : List (String × «Тип»)) : List Strin
   fs.filterMap (fun (f, t) => if «числовойТип?» t then some f else none)
 
 def «числовыеИмена» (decls : List (String × Json)) (x : String) : «Тип» → List String
+  | .«список» (.«список» (.«список» t)) => if «числовойТип?» t then ["[][][]" ++ x] else []
+  | .«список» (.«список» t) => if «числовойТип?» t then ["[][]" ++ x] else []
   | .«список» t => if «числовойТип?» t then ["[]" ++ x] else []
   | .«ссылка» n =>
     match «раскрыть» decls n with
@@ -772,8 +774,8 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     let apps := «применения» fs names
     let cx : «КонтекстC» := ⟨fs, names ++ apps.map (fun (c, a, _) => (c, a)), «текстыC» toks ++ «именаПолейC» toks, proved,
       ctext.isSome, apps.map (fun (_, a, ts) => (a, ts)), judged⟩
-    let numeric := («массив» j "functions").filterMap (fun f =>
-      if «числовойТип?» («типJson» ((«поле?» f "returns").getD .null)) then some («строка?» f "name") else none)
+    let numeric := («массив» j "functions").flatMap (fun f =>
+      «числовыеИмена» decls («строка?» f "name") («типJson» ((«поле?» f "returns").getD .null)))
     let fns := («массив» j "functions").map (fun f => («строка?» f "name",
       («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
       «типJson» ((«поле?» f "returns").getD .null)))

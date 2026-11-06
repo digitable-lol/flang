@@ -127,7 +127,8 @@ def «формыC» : List (String × String) :=
     ("fl_b_nachinaetsya_s", "начинается с"), ("fl_b_ostatok_ot", "остаток от"), ("fl_b_podstroka", "подстрока"),
     ("fl_b_pripisat", "приписать"), ("fl_b_pusto", "пусто"), ("fl_b_razdelit", "разделить"), ("fl_b_simvol", "символ"),
     ("fl_b_simvol_po_kodu", "символ по коду"), ("fl_b_simvoly", "символы"), ("fl_b_soderzhit", "содержит"),
-    ("fl_b_soedinit", "соединить")]
+    ("fl_b_soedinit", "соединить"), ("fl_b_golova_dokazano", "голова"), ("fl_b_hvost_dokazano", "хвост"),
+    ("fl_b_kod_simvola_dokazano", "код символа"), ("fl_b_razdelit_dokazano", "разделить")]
 
 def «формыЭталона» : List String := «формыC».map (·.2)
 
@@ -428,16 +429,32 @@ def «уровни» : List (List String) := [["||"], ["&&"], ["==", "!="], ["<"
 
 def «помощники» : List String := ["add", "sub", "mul", "div", "mod", "percent", "lt", "lte", "gt", "gte", "concat"]
 
-def «списокЧисел?» (σ : «СредаC») : «Т» → Bool
-  | .«имя» x => σ.«числа».contains ("[]" ++ x)
-  | .«оп» "tail" [t] => «списокЧисел?» σ t
-  | _ => false
+def «префикс» (d : Nat) : String := String.join (List.replicate d "[]")
+
+def «глубинаИмени» (σ : «СредаC») (x : String) : Nat :=
+  ([3, 2, 1].find? (fun d => σ.«числа».contains («префикс» d ++ x))).getD 0
+
+partial def «глубинаСписка» (σ : «СредаC») : «Т» → Nat
+  | .«имя» x => «глубинаИмени» σ x
+  | .«рез» k => «глубинаИмени» σ ("#р" ++ toString k)
+  | .«оп» "tail" [t] => «глубинаСписка» σ t
+  | .«оп» "head" [t] => let d := «глубинаСписка» σ t; if d ≥ 2 then d - 1 else 0
+  | .«оп» "list" ts => if !ts.isEmpty && ts.all (fun t => match t with | .«ч» _ => true | _ => false) then 1 else 0
+  | _ => 0
+
+def «списокЧисел?» (σ : «СредаC») (t : «Т») : Bool := «глубинаСписка» σ t = 1
+
+def «элементыСписка» (σ : «СредаC») (l : «Т») (names : List String) : List String :=
+  let d := «глубинаСписка» σ l
+  if d = 0 then [] else names.map (fun x => «префикс» (d - 1) ++ x)
 
 def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«ч» _ => true
   | .«имя» x => σ.«числа».contains x
-  | .«оп» "head" [t] => «списокЧисел?» σ t
+  | .«оп» "head" [t] => «глубинаСписка» σ t = 1
   | .«оп» o [.«имя» x] => if o.startsWith "field:" then σ.«числа».contains (x ++ "." ++ (o.drop 6).toString)
+      else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
+  | .«оп» o [.«рез» k] => if o.startsWith "field:" then σ.«числа».contains ("#р" ++ toString k ++ "." ++ (o.drop 6).toString)
       else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«оп» o _ => ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«рез» k => σ.«числа».contains ("#р" ++ toString k)
@@ -788,8 +805,16 @@ where
             let an := "@a" ++ toString n
             let xn := "@x" ++ toString n
             let numericAcc := «числовой?» σ ti
-            let numericEl := «списокЧисел?» σ tl
-            let nums := (if numericAcc then [acc, an] else []) ++ (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let accFields := match ti with
+              | .«оп» "make-record" (.«оп» "fields" ns :: items) =>
+                (ns.zip items).filterMap (fun (nm, it) => match nm with
+                  | «Т».«с» f => if «числовой?» σ it then some f else none
+                  | _ => none)
+              | _ => []
+            let listAcc := «списокЧисел?» σ ti
+            let nums := (if numericAcc then [acc, an] else []) ++ «элементыСписка» σ tl [el, xn] ++
+              (if listAcc then ["[]" ++ acc, "[]" ++ an] else []) ++
+              accFields.flatMap (fun f => [acc ++ "." ++ f, an ++ "." ++ f]) ++ σ.«числа»
             let σb : «СредаC» := { σ with «знач» := (acc, .«имя» an) :: (el, .«имя» xn) :: σ.«знач», «числа» := nums }
             let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» acc, .«знак» ";",
               .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
@@ -798,7 +823,9 @@ where
             match «исполнить» σb (n + 1) (before.reverse ++ tail) with
             | .error m => .error m
             | .ok step =>
-              let numsR := if numericAcc then acc :: ("#р" ++ toString n) :: σ.«числа» else σ.«числа»
+              let rk := "#р" ++ toString n
+              let numsR := (if numericAcc then [acc, rk] else []) ++ (if listAcc then ["[]" ++ acc, "[]" ++ rk] else []) ++
+                accFields.flatMap (fun f => [acc ++ "." ++ f, rk ++ "." ++ f]) ++ σ.«числа»
               let σr : «СредаC» := { σ with «знач» := (acc, .«рез» n) :: σ.«знач», «числа» := numsR }
               match rest with
               | .«слово» "FL_TRY" :: .«знак» "(" :: .«слово» "fl_region_close" :: .«знак» "(" :: q =>
@@ -816,8 +843,7 @@ where
           match «найти» t σ.«знач», «найти» arr σ.«знач», «найти» cnt σ.«знач» with
           | some tl, some (.«оп» "array" []), some (.«ч» (.«кон» false 0)) =>
             let xn := "@x" ++ toString n
-            let numericEl := «списокЧисел?» σ tl
-            let nums := (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let nums := «элементыСписка» σ tl [el, xn] ++ σ.«числа»
             let σb : «СредаC» := { σ with «знач» := (el, .«имя» xn) :: σ.«знач», «числа» := nums }
             let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» flag, .«знак» ";",
               .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
@@ -913,14 +939,14 @@ where
     else if h = "fl_par_map" then
       match parts with
       | [_, [.«слово» t], [.«слово» fn], [.«слово» env], [.«слово» arr], _] =>
-        match «найти» t σ.«знач», «найти» env σ.«знач», «найти» arr σ.«знач», σ.«тела».find? (·.«имя» = fn) with
+        let envT := if env = "NULL" then some («Т».«оп» "array" []) else «найти» env σ.«знач»
+        match «найти» t σ.«знач», envT, «найти» arr σ.«знач», σ.«тела».find? (·.«имя» = fn) with
         | some tl, some (.«оп» "array" captured), some (.«оп» "array" []), some f =>
           match f.«параметры», f.«указатели» with
           | [el], [envName] =>
             let xn := "@x" ++ toString n
-            let numericEl := «списокЧисел?» σ tl
             let valsF := (el, «Т».«имя» xn) :: (envName, «Т».«оп» "array" captured) :: σ.«знач»
-            let numsF := (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let numsF := «элементыСписка» σ tl [el, xn] ++ σ.«числа»
             let σf : «СредаC» := { σ with «знач» := valsF, «числа» := numsF }
             match «исполнить» σf (n + 1) f.«тело» with
             | .error m => .error m
@@ -992,8 +1018,21 @@ where
           match target p with
           | some x => do
             let ts ← (argsRev.reverse.drop 1).mapM («выражениеC» σ)
-            let nums := if σ.«числовые».contains g || numericForm then x :: ("#р" ++ toString n) :: σ.«числа»
-              else σ.«числа»
+            let rk := "#р" ++ toString n
+            let numList := fun (t : «Т») => «списокЧисел?» σ t
+            let elemNames := match g, ts with
+              | "form:элемент", [_, l] => «элементыСписка» σ l [x, rk]
+              | "form:голова", [l] => «элементыСписка» σ l [x, rk]
+              | "form:хвост", [l] => (let d := «глубинаСписка» σ l; if d = 0 then [] else [«префикс» d ++ x, «префикс» d ++ rk])
+              | _, _ => []
+            let listNumeric := match g, ts with
+              | "form:добавить", [v, l] => numList l && «числовой?» σ v
+              | "form:приписать", [v, l] => numList l && «числовой?» σ v
+              | _, _ => σ.«числовые».contains ("[]" ++ g)
+            let fieldNames := (σ.«числовые».filter (fun e => e.startsWith (g ++ "."))).map (fun e => (e.drop (g.length + 1)).toString)
+            let nums := (if σ.«числовые».contains g || numericForm then [x, rk] else []) ++ elemNames ++
+              (if listNumeric then ["[]" ++ x, "[]" ++ rk] else []) ++
+              fieldNames.flatMap (fun f => [x ++ "." ++ f, rk ++ "." ++ f]) ++ σ.«числа»
             let σ2 : «СредаC» := { σ with «знач» := (x, .«рез» n) :: σ.«знач», «числа» := nums }
             let r ← «исполнить» σ2 (n + 1) q
             pure (.«вызов» g ts n r)

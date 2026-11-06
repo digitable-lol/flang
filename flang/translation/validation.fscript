@@ -136,8 +136,10 @@
 тотальная функция «Modules»
   возвращает список строки
   пример «The reference and the validator are five Lean modules»
-    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate"]
-  ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate"]
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
+      "Semantics/Validate"]
+  ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
+    "Semantics/Validate"]
 
 тотальная функция «Whole corpus program»
   возвращает строка
@@ -522,7 +524,7 @@
 
 тотальная функция «Runtime models»
   возвращает список (список строки)
-  обеспечивает «sixty-five model rows» (длина результат) равен 65
+  обеспечивает «sixty-six model rows» (длина результат) равен 66
   [["fl_b_dlina", "Eval.lean «форма» \"длина\""],
     ["fl_b_dobavit", "Eval.lean «форма» \"добавить\""],
     ["fl_b_pripisat", "Eval.lean «форма» \"приписать\""],
@@ -545,6 +547,7 @@
     ["fl_b_simvol", "Eval.lean «форма» \"символ\""],
     ["fl_b_simvol_po_kodu", "Eval.lean «форма» \"символ по коду\""],
     ["fl_b_simvoly", "Eval.lean «форма» \"символы\""],
+    ["fl_b_k_chislu", "Eval.lean «форма» \"к числу\""],
     ["fl_add", "Eval.lean «двучлен» \"add\""],
     ["fl_sub", "Eval.lean «двучлен» \"sub\""],
     ["fl_mul", "Eval.lean «двучлен» \"mul\""],
@@ -729,6 +732,7 @@
     ожидается (["СООТВЕТСТВИЕ ПРОВЕРЕНО для 0 функций, вне валидации 0",
         "  доказано для 0: перебором всей области 0 (из них без параметров 0), символьно 0",
         "  из символьных опираются на постусловия, доказанные ядром, 0",
+        "  из символьных дерево эталона доказано теоремой (Semantics/Walk.lean), 0",
         "  на свидетелях без доказательства 0; сличено свидетелей 0",
         "  символьно не сошлось 0; символьно сошлось, но опирается на недоказанные вызовы 0",
         "  причины вне символьной проверки: ", "  причины вне валидации: ",
@@ -766,6 +770,8 @@
       " (из них без параметров ", (к строке (длина constant)), "), символьно ", (к строке (длина symbolic))] по ""),
     (соединить ["  из символьных опираются на постусловия, доказанные ядром, ", (к строке (длина (отфильтровать
       symbolic где r → (r.«reference») содержит "на слове ядра")))] по ""),
+    (соединить ["  из символьных дерево эталона доказано теоремой (Semantics/Walk.lean), ", (к строке (длина
+      (отфильтровать symbolic где r → (r.«reference») содержит "по теореме")))] по ""),
     (соединить ["  на свидетелях без доказательства ", (к строке ((длина witnesses) минус (длина symbolic))),
       "; сличено свидетелей ", (к строке («Total compared» от («Соединить списки» от exhaustive и witnesses)))]
       по ""),
@@ -816,7 +822,8 @@
   возвращает список строки
   пример «Nothing built is a failure of every module»
     дано answers равно пустой список
-    ожидается ["Binary64", "Semantics/Eval", "Semantics/Json", "Semantics/Symbolic", "Semantics/Validate", "validator"]
+    ожидается ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
+      "Semantics/Validate", "validator"]
   отфильтровать (добавить "validator" к («Modules»)) где name → не («Built» от name и answers)
 
 тотальная функция «Built»
@@ -890,9 +897,13 @@
   пусть proved равно (exhaustive плюс (длина («Proved symbolically» от summaries и rows)))
   пусть outside равно ((длина («Of kind» от "вне" и summaries)) плюс (длина («Of kind» от "не сличено" и summaries)))
   пусть unprinted равно (длина («Of kind» от "файл" и summaries))
+  пусть byTheorem равно (длина (отфильтровать («Proved symbolically» от summaries и rows) где r →
+      (r.«reference») содержит "по теореме"))
   пусть lower равно («Соединить списки» от («Bound trouble» от "--validated-floor"
       и («Bound» от "--validated-floor" и answers) и validated и нет)
-      и («Bound trouble» от "--proved-floor" и («Bound» от "--proved-floor" и answers) и proved и нет))
+      и («Соединить списки» от («Bound trouble» от "--proved-floor" и («Bound» от "--proved-floor" и answers)
+        и proved и нет) и («Bound trouble» от "--theorem-floor" и («Bound» от "--theorem-floor" и answers)
+        и byTheorem и нет)))
   пусть upper равно («Соединить списки» от («Bound trouble» от "--outside-ceiling"
       и («Bound» от "--outside-ceiling" и answers) и outside и да)
       и («Bound trouble» от "--unprinted-ceiling" и («Bound» от "--unprinted-ceiling" и answers) и unprinted и да))
@@ -907,7 +918,7 @@
   пример «Nothing built fails the check»
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64,Eval,Json,Symbolic,Validate,validator")
+        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Validate,validator")
   пусть broken равно («Build failures» от answers)
   пусть shortBroken равно (отобразить broken как n → «Cell» от (длина (разделить n по "/")) и (разделить n по "/"))
   пусть corpus равно («Summaries» от («Output of» от "corpus" и answers))
@@ -959,7 +970,7 @@
     дано stages равно 0
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64,Eval,Json,Symbolic,Validate,validator")
+        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Validate,validator")
   разбор queue
     случай голова и хвост
       то «Ask» от (голова) и (хвост) и stages и answers

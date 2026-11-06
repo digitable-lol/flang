@@ -128,11 +128,11 @@ def «формыC» : List (String × String) :=
     ("fl_b_pripisat", "приписать"), ("fl_b_pusto", "пусто"), ("fl_b_razdelit", "разделить"), ("fl_b_simvol", "символ"),
     ("fl_b_simvol_po_kodu", "символ по коду"), ("fl_b_simvoly", "символы"), ("fl_b_soderzhit", "содержит"),
     ("fl_b_soedinit", "соединить"), ("fl_b_golova_dokazano", "голова"), ("fl_b_hvost_dokazano", "хвост"),
-    ("fl_b_kod_simvola_dokazano", "код символа"), ("fl_b_razdelit_dokazano", "разделить")]
+    ("fl_b_kod_simvola_dokazano", "код символа"), ("fl_b_razdelit_dokazano", "разделить"), ("fl_b_k_chislu", "к числу")]
 
 def «формыЭталона» : List String := «формыC».map (·.2)
 
-def «числовыеФормы» : List String := ["длина", "код символа", "остаток от"]
+def «числовыеФормы» : List String := ["длина", "код символа", "остаток от", "к числу"]
 
 partial def «заменаТ» (k k0 : Nat) : «Т» → «Т»
   | .«рез» m => if m = k then .«рез» k0 else .«рез» m
@@ -444,6 +444,12 @@ partial def «глубинаСписка» (σ : «СредаC») : «Т» → N
 
 def «списокЧисел?» (σ : «СредаC») (t : «Т») : Bool := «глубинаСписка» σ t = 1
 
+partial def «ключСписка» : «Т» → Option String
+  | .«имя» x => some x
+  | .«рез» k => some ("#р" ++ toString k)
+  | .«оп» "tail" [t] => «ключСписка» t
+  | _ => none
+
 def «элементыСписка» (σ : «СредаC») (l : «Т») (names : List String) : List String :=
   let d := «глубинаСписка» σ l
   if d = 0 then [] else names.map (fun x => «префикс» (d - 1) ++ x)
@@ -454,6 +460,11 @@ def «числовой?» (σ : «СредаC») : «Т» → Bool
   | .«оп» "head" [t] => «глубинаСписка» σ t = 1
   | .«оп» o [.«имя» x] => if o.startsWith "field:" then σ.«числа».contains (x ++ "." ++ (o.drop 6).toString)
       else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
+  | .«оп» o [.«оп» "head" [l]] =>
+    if o.startsWith "field:" then match «ключСписка» l with
+      | some key => σ.«числа».contains ("[]" ++ key ++ "." ++ (o.drop 6).toString)
+      | none => false
+    else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«оп» o [.«рез» k] => if o.startsWith "field:" then σ.«числа».contains ("#р" ++ toString k ++ "." ++ (o.drop 6).toString)
       else ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o
   | .«оп» o _ => ["add", "sub", "mul", "div", "mod", "fmul", "fdiv", "fmod"].contains o

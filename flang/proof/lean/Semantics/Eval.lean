@@ -332,6 +332,56 @@ def «строкаЧисла» : «Д64» → String
 
 def «вНат» (k : Int) : Nat := k.toNat
 
+def «пробелJS?» (c : Char) : Bool :=
+  [9, 10, 11, 12, 13, 32, 160, 5760, 8232, 8233, 8239, 8287, 12288, 65279].contains c.toNat ||
+    (8192 ≤ c.toNat && c.toNat ≤ 8202)
+
+def «цифра10?» (c : Char) : Bool := '0' ≤ c && c ≤ '9'
+
+def «значЦифр» (cs : List Char) : Nat := cs.foldl (fun n c => n * 10 + (c.toNat - '0'.toNat)) 0
+
+def «записьЧисла» (cs : List Char) : Option (Bool × Nat × Int) :=
+  let (neg, r0) := match cs with
+    | '-' :: r => (true, r)
+    | '+' :: r => (false, r)
+    | r => (false, r)
+  let whole := r0.takeWhile «цифра10?»
+  let r1 := r0.drop whole.length
+  let (frac, r2, dotOk) := match r1 with
+    | '.' :: r =>
+      let f := r.takeWhile «цифра10?»
+      (f, r.drop f.length, !f.isEmpty)
+    | r => ([], r, true)
+  if !dotOk || (whole.length + frac.length) = 0 then none else
+  let (ex, r3, exOk) := match r2 with
+    | c :: r =>
+      if c = 'e' || c = 'E' then
+        let (eneg, r') := match r with
+          | '-' :: q => (true, q)
+          | '+' :: q => (false, q)
+          | q => (false, q)
+        let ds := r'.takeWhile «цифра10?»
+        let e : Int := if eneg then -(«значЦифр» ds : Int) else («значЦифр» ds : Int)
+        (e, r'.drop ds.length, !ds.isEmpty)
+      else (0, c :: r, true)
+    | [] => (0, [], true)
+  if !exOk || !r3.isEmpty then none else
+  some (neg, «значЦифр» (whole ++ frac), ex - frac.length)
+
+def «кЧислу» (s : String) : «Исход» :=
+  let cs := ((s.toList.dropWhile «пробелJS?»).reverse.dropWhile «пробелJS?»).reverse
+  match «записьЧисла» cs with
+  | none => «беда» "FLANG_BUILTIN_ARGS"
+  | some (neg, p, k) =>
+    let digits : Int := (toString p).length
+    if p = 0 then .ok (.«число» (.«кон» neg 0))
+    else if k + digits > 400 then «беда» "FLANG_BUILTIN_ARGS"
+    else if k + digits < -400 then .ok (.«число» (.«кон» neg 0))
+    else
+      match «дробьВД64» neg p k with
+      | .«кон» sg v => .ok (.«число» (.«кон» sg v))
+      | _ => «беда» "FLANG_BUILTIN_ARGS"
+
 def «форма» (n : String) (vs : List «Зн») : «Исход» :=
   if n.startsWith "#отказ " then «беда» (n.drop 7).toString else
   match n, vs with
@@ -401,6 +451,7 @@ def «форма» (n : String) (vs : List «Зн») : «Исход» :=
   | "начинается с", _ => «беда» "FLANG_BUILTIN_ARGS"
   | "к строке", [.«строка» s] => .ok (.«строка» s)
   | "к строке", [.«число» d] => .ok (.«строка» («строкаЧисла» d))
+  | "к числу", [.«строка» t] => «кЧислу» t
   | "к строке", [.«признак» b] => .ok (.«строка» (if b then "да" else "нет"))
   | "к строке", [.«ничто»] => .ok (.«строка» "ничто")
   | "к строке", _ => «беда» "FLANG_BUILTIN_ARGS"

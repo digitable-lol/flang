@@ -1,4 +1,5 @@
 import Semantics.Symbolic
+import Semantics.Walk
 
 namespace «Эталон»
 
@@ -225,23 +226,10 @@ partial def «образцы» (fns : List (String × List «Тип» × «Ти�
         (fun ws => .«вариант» v.1 ((v.2.map (·.1)).zip ws)))
     ⟨parts.flatMap (·.«значения»), parts.all (·.«конечно»), parts.flatMap (·.«вне»)⟩
 
-structure «Предусловие» where
-  «код» : String
-  «выражение» : «Выр»
-
-def «предусловияJson» (f : Json) : List «Предусловие» :=
+def «предусловияJson» (f : Json) : List «Условие входа» :=
   («массив» f "preconditions").map (fun q =>
     { «код» := («имя?» q "code").getD "FLANG_PRECONDITION"
       «выражение» := «вырJson» ((«поле?» q "expr").getD .null) })
-
-def «проверитьПред» (P : «Программа») (ρ : «Среда») : List «Предусловие» → Option «Исход»
-  | [] => none
-  | q :: r =>
-    match «выч» P «топливоСверки» ρ q.«выражение» with
-    | .ok (.«признак» true) => «проверитьПред» P ρ r
-    | .ok (.«признак» false) => some («беда» q.«код»)
-    | .ok _ => some («беда» "FLANG_TYPE")
-    | .error e => some (.error e)
 
 def «эталонТекстом» : «Исход» → String
   | .ok v => "значение " ++ «меткой» («канон» v)
@@ -249,11 +237,8 @@ def «эталонТекстом» : «Исход» → String
   | .error .«топливо» => "топливо"
   | .error (.«вне» k) => "вне " ++ k
 
-def «ответЭталона» (P : «Программа») (pre : List «Предусловие») (g : «Функция») (vs : List «Зн») : String :=
-  let ρ := «привязать» g.«параметры» vs
-  match «проверитьПред» P ρ pre with
-  | some r => «эталонТекстом» r
-  | none => «эталонТекстом» («выч» P «топливоСверки» [] (.«вызов» g.«имя» (vs.map .«лит»)))
+def «ответЭталона» (P : «Программа») (pre : List «Условие входа») (g : «Функция») (vs : List «Зн») : String :=
+  «эталонТекстом» («исходЭталона» P «топливоСверки» pre g vs)
 
 def «запрос» (f : String) (vs : List «Зн») : String :=
   "{\"fn\":\"" ++ «экранJson» f ++ "\",\"args\":[" ++ ",".intercalate (vs.map «меткой») ++ "]}"
@@ -293,6 +278,10 @@ def «числовыеПоля» (fs : List (String × «Тип»)) : List Strin
 def «числовыеИмена» (decls : List (String × Json)) (x : String) : «Тип» → List String
   | .«список» (.«список» (.«список» t)) => if «числовойТип?» t then ["[][][]" ++ x] else []
   | .«список» (.«список» t) => if «числовойТип?» t then ["[][]" ++ x] else []
+  | .«список» (.«ссылка» n) =>
+    match «раскрыть» decls n with
+    | .«запись» _ fs => («числовыеПоля» fs).map (fun f => "[]" ++ x ++ "." ++ f)
+    | _ => []
   | .«список» t => if «числовойТип?» t then ["[]" ++ x] else []
   | .«ссылка» n =>
     match «раскрыть» decls n with
@@ -544,6 +533,51 @@ def «постыНаСловеЯдра» (cx : «КонтекстC») (f : Json)
   ((«условияJson» f "postconditions" "FLANG_PROPERTY").filter (fun q =>
     !(inC.contains q.«имя») && cx.«доказанные».contains (g.«имя», q.«имя»))).length
 
+def «вТерм» (idx : List (String × Nat)) : «Терм» → Option «Т»
+  | .«знач» (.«число» d) => some (.«ч» d)
+  | .«знач» (.«признак» b) => some (.«п» b)
+  | .«знач» (.«строка» v) => some (.«с» v)
+  | .«знач» _ => none
+  | .«имя» x => («найти» x idx).map (fun i => «Т».«имя» ("#" ++ toString i))
+  | .«рез» k => some (.«рез» k)
+  | .«двучлен» op a b =>
+    if «операцииИсходника».contains op then
+      match «вТерм» idx a, «вТерм» idx b with
+      | some ta, some tb => some (.«оп» op [ta, tb])
+      | _, _ => none
+    else none
+
+def «вДерево» (idx : List (String × Nat)) : «Дерево» → Option «Д»
+  | .«лист» t => («вТерм» idx t).map .«знач»
+  | .«отказ» k => some (.«отказ» k)
+  | .«если» c a b =>
+    match «вТерм» idx c, «вДерево» idx a, «вДерево» idx b with
+    | some tc, some ta, some tb => some (.«если» tc ta tb)
+    | _, _, _ => none
+  | .«вызов» f ts k r =>
+    match ts.mapM («вТерм» idx), «вДерево» idx r with
+    | some us, some rr => some (.«вызов» f us k rr)
+    | _, _ => none
+
+def «постыЭталона» (cx : «КонтекстC») (f : Json) (g : «Функция») : List «Условие» :=
+  let cid := (cx.«имена».find? (fun p => p.2 = g.«имя»)).map (·.1)
+  let inC := match cid with
+    | some c => match cx.«функции».find? (fun (h : «ФункцияC») => h.«имя» = c) with
+      | some h => «постыC» («телоОбёртки» cx.«функции» h).«тело»
+      | none => []
+    | none => []
+  («условияJson» f "postconditions" "FLANG_PROPERTY").filter (fun q =>
+    inC.contains q.«имя» || !(cx.«доказанные».contains (g.«имя», q.«имя»)))
+
+def «деревоПоТеореме» (cx : «КонтекстC») (f : Json) (g : «Функция») : Option «Д» :=
+  let pres := «предусловияJson» f
+  let qs := («постыЭталона» cx f g).map (fun q =>
+    ({ «связка» := q.«связка», «код» := q.«код», «выражение» := q.«выражение» } : «Постусловие»))
+  let idx := g.«параметры».zipIdx
+  match «деревоФункции» pres g qs with
+  | some d => «вДерево» idx d
+  | none => none
+
 def «деревоЭталона» (P : «Программа») (cx : «КонтекстC») (f : Json) (g : «Функция») : «Сим» :=
   let cid := (cx.«имена».find? (fun p => p.2 = g.«имя»)).map (·.1)
   let inC := match cid with
@@ -696,7 +730,11 @@ def «символьно» (P : «Программа») (cx : «Контекст
       | .error m => ("вне: C " ++ m, "")
       | .ok c =>
         let kernel := «постыНаСловеЯдра» cx f g
-        let word := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
+        let word0 := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
+        let byTheorem := match «деревоПоТеореме» cx f g with
+          | some t => «равныД» t r
+          | none => false
+        let word := if byTheorem then word0 ++ ", дерево эталона по теореме" else word0
         let expand := fun (x : String) => if x.startsWith "apply:" then
           (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
         let called := (((«вызовыД» r) ++ («вызовыД» c)).flatMap expand).eraseDups.filter (· ≠ g.«имя»)

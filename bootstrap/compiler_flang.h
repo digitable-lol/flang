@@ -91629,6 +91629,20 @@ fl_status compiler_flang_pravilo_razvyortki(fl_ctx *ctx, fl_value funkciya,
                                             fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Развёртка без конструктора».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param funkciya — «функция»: «Значение»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_razvyortka_bez_konstruktora(fl_ctx *ctx,
+                                                     fl_value funkciya,
+                                                     fl_value argumenty,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
  * Функция flang «Развёртка тела с вызовами».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -99683,7 +99697,7 @@ compiler_flang_svesti_vsemi_elementami(fl_ctx *ctx, fl_value cel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Отображённое всё», «Прибавленное всё», «Все элементы как написано»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Отображённое всё», «Прибавленное всё», «Все элементы по виду», «Все элементы как написано»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param cel — «цель»: «Значение»
@@ -99734,7 +99748,7 @@ fl_status compiler_flang_zveno_pripisyvaniem(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Отображённое всё», «Прибавленное всё», «Все элементы по построению»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Отображённое всё», «Прибавленное всё», «Все элементы по виду», «Все элементы по построению»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param cel — «цель»: «Значение»
@@ -99758,6 +99772,34 @@ compiler_flang_vse_elementy_kak_napisano(fl_ctx *ctx, fl_value cel,
                                          fl_value opredeleniya,
                                          fl_value programma, fl_value otchyot,
                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Все элементы по виду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Отображённое всё», «Прибавленное всё», «Все элементы как написано», «Все элементы по построению»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param obyavlennye — «объявленные»: список: «Значение»
+ * @param konechnye — «конечные»: список: «Значение»
+ * @param polozhitelnye — «положительные»: список: «Значение»
+ * @param celye — «целые»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param otchyot — «отчёт»: «Состояние ядра»
+ * @return значение
+ */
+fl_status
+compiler_flang_vse_elementy_po_vidu(fl_ctx *ctx, fl_value cel, fl_value fakty,
+                                    fl_value obyavleniya, fl_value obyavlennye,
+                                    fl_value konechnye, fl_value polozhitelnye,
+                                    fl_value celye, fl_value opredeleniya,
+                                    fl_value programma, fl_value otchyot,
+                                    fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Это выписанное звено».
@@ -99920,7 +99962,7 @@ fl_status compiler_flang_nositel_vklyuchaet(fl_ctx *ctx, fl_value nositel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Отображённое всё», «Все элементы как написано», «Все элементы по построению»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Отображённое всё», «Все элементы по виду», «Все элементы как написано», «Все элементы по построению»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param cel — «цель»: «Значение»
@@ -99950,7 +99992,7 @@ compiler_flang_pribavlennoe_vsyo(fl_ctx *ctx, fl_value cel, fl_value argumenty,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Прибавленное всё», «Все элементы как написано», «Все элементы по построению»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Прибавленное всё», «Все элементы по виду», «Все элементы как написано», «Все элементы по построению»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param cel — «цель»: «Значение»
@@ -102460,6 +102502,18 @@ fl_status compiler_flang_telo_est_element(fl_ctx *ctx, fl_value telo,
 fl_status compiler_flang_otobrazhenie_zakonom(fl_ctx *ctx, fl_value uzel,
                                               fl_value *result,
                                               fl_error *error);
+
+/*
+ * Функция flang «Отображение законом на отображении».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Ход переписки»
+ */
+fl_status compiler_flang_otobrazhenie_zakonom_na_otobrazhenii(fl_ctx *ctx,
+                                                              fl_value uzel,
+                                                              fl_value *result,
+                                                              fl_error *error);
 
 /*
  * Функция flang «Слить отображения».

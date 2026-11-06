@@ -102,6 +102,11 @@ def «вызов?» (t : String) : Option (String × List String) :=
     else none
   | _ => if u.startsWith "«" && u.endsWith "»" && !(u.any (· = ' ')) then some (u, []) else none
 
+def «имяВЁлочках?» (t : String) : Option String :=
+  let u := «ужать» t
+  if u.startsWith "«" && u.endsWith "»" && u.any (· = ' ') && «сколькоРаз» u '«' = 1 && «сколькоРаз» u '»' = 1
+  then some («безКраёв» u) else none
+
 /-- Голое имя из ёлочек. -/
 def «голо» (s : String) : String :=
   let t := s.«обр»
@@ -175,6 +180,7 @@ partial def «число» (s0 : String) : Option «ТермЧ» :=
   else if let some f := «ярлык?» s then some (.«ярлык» f)
   else if let some n := «литерал?» s then some (.«лит» n)
   else if «имя?» s then some (.«имя» s)
+  else if let some x := «имяВЁлочках?» s then some (.«имя» x)
   else none
 
 partial def «список» (s0 : String) : Option «ТермС» :=
@@ -233,6 +239,7 @@ partial def «список» (s0 : String) : Option «ТермС» :=
     | none => none
   else if let some (f, args) := «вызов?» s then do pure (.«вызовС» f (← «доводы» args))
   else if «имя?» s then some (.«имяС» s)
+  else if let some x := «имяВЁлочках?» s then some (.«имяС» x)
   else none
 
 partial def «текст» (s0 : String) : Option «ТермТ» :=
@@ -248,6 +255,7 @@ partial def «текст» (s0 : String) : Option «ТермТ» :=
   else if s.startsWith "к строке " then do pure (.«кСтроке» (← «число» (s.«сн» 9)))
   else if let some (f, args) := «вызов?» s then do pure (.«вызовТ» f (← «доводы» args))
   else if «имя?» s then some (.«имяТ» s)
+  else if let some x := «имяВЁлочках?» s then some (.«имяТ» x)
   else none
 
 partial def «форм» (s0 : String) : Option «Форм» :=

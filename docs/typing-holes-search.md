@@ -40,7 +40,9 @@ A finding is repeated by the same command with its seed and the count 1.
 `scripts/fuzz/known.tsv` names, for a ledger row of `flang/proof/tables/typing-holes.tsv`, the
 oracle and a substring of the finding. A finding that matches is known and does not make the
 campaign red. When the ledger calls the row `закрыта`, the same finding is new again, so a
-closed hole cannot come back silently.
+closed hole cannot come back silently. A call to a function whose body passes one of the program's
+functions to «Применить» carries the mark `~fv` after its type; the known line of row 16 names
+that mark, so a negative value from any other source stays a finding.
 
 ## Plans
 

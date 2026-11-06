@@ -750,6 +750,60 @@ theorem «ход-закрыть-состоятелен» (I : «Толкован
   · subst hq; exact «закрыть-по-свойству» I p l h3 hfact hok hv
   · subst hq; simp [«беда-оборвана»] at hok
 
+/-- **Ход «подставить пусть» состоятелен**, когда единственное связывание `пусть` имени в
+    доказываемой функции даёт имени в цели его значение (посылка `hlet`); вне связывателя
+    равное подставляется. Под связывателем и при двух `пусть` одного имени ход не берётся. -/
+theorem «ход-подставить-состоятелен» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
+    (hlet : ∀ (n : Nat), o.«исх».«хозяин» n = o.«функция» →
+      («какЧитаетЯзык» (o.«исх».«по» n)).startsWith "пусть " = true →
+      ((o.«исх».«внутри» o.«функция»).filter (fun i =>
+        («какЧитаетЯзык» (o.«исх».«по» i)).startsWith "пусть " &&
+          «слово» («какЧитаетЯзык» (o.«исх».«по» i)) 2 = «слово» («какЧитаетЯзык» (o.«исх».«по» n)) 2)).length = 1 →
+      I.«здесь» («слово» («какЧитаетЯзык» (o.«исх».«по» n)) 2) («т» («словаС» («какЧитаетЯзык» (o.«исх».«по» n)) 3)))
+    (hw : «слово» l 3 = "подставить") (hok : («ходШага» p l o).«оборван» = false)
+    (hv : I.«верен» («ходШага» p l o)) : I.«верен» p := by
+  obtain ⟨h1, h2, h3⟩ := «шаг-допущен» p l o hok
+  have e : «ходШага» p l o = «ходПусть» p l o := by simp [«ходШага», h1, h2, h3, hw]
+  rw [e] at hok hv
+  generalize hq : «ходПусть» p l o = q at hok hv
+  unfold «ходПусть» at hq
+  simp only [Id.run] at hq
+  generalize hn : «номерПосле» l "строка " = n at hq
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  rename_i hx
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  rename_i hh
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «отказ-оборван»] at hok
+  rename_i hu
+  split at hq
+  · subst hq; simp [pure, «беда-оборвана»] at hok
+  split at hq
+  · subst hq; simp [pure, «отказ-оборван»] at hok
+  rename_i hf
+  simp only [pure] at hq
+  subst hq
+  have hx' : («какЧитаетЯзык» (o.«исх».«по» n)).startsWith "пусть " = true := by
+    simp only [Bool.or_eq_true, Bool.not_eq_true', decide_eq_true_eq, not_or] at hx
+    simpa using hx.1
+  have hh' : o.«исх».«хозяин» n = o.«функция» := by simpa using hh
+  have hu' := Decidable.of_not_not hu
+  apply «одна-верна» I p _ h3 _ hv
+  intro _ h
+  exact I.«подстановка-равенства» _ _ _ (by simpa using hf) (hlet n hh' hx' hu') (I.«т-верно» _ h)
+
 /-! ## Прогон блока ходов целиком -/
 
 /-- Начальная цель посылки верна при верных допущениях индукции этого прогона. -/

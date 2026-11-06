@@ -1,8 +1,7 @@
-# что кладём в реестр: путь к пакету | нужды пакета
-logic-1.0.0.flang-package
-logic-1.2.0.flang-package
-logic-2.0.0.flang-package
-lists-1.4.2.flang-package | Логика: не ниже 1.0
-sets-1.0.0.flang-package | Логика: не ниже 1.0
-sets-1.1.0.flang-package | Списки: в пределах 1.x; Логика: в пределах 1.x
-optional-0.9.0.flang-package | Логика: ровно 2.0.0
+logic-1.0.0.flang-package |  | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+logic-1.2.0.flang-package |  | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+logic-2.0.0.flang-package |  | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+lists-1.4.2.flang-package | Логика: не ниже 1.0 | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+sets-1.0.0.flang-package | Логика: не ниже 1.0 | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+sets-1.1.0.flang-package | Списки: в пределах 1.x; Логика: в пределах 1.x | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B
+optional-0.9.0.flang-package | Логика: ровно 2.0.0 | RWTrVUCh7y75N1WY0UnU8KRab7XMZxBpTborOVlZkHnrLydNeUm9BH2B

@@ -24,3 +24,4 @@ hole	oracle	detail
 23	b-java	outside X): evaluator {"error":"FLANG_TYPE"}
 23	b-rust	outside X): evaluator {"error":"FLANG_TYPE"}
 24	c-property	нарушено свойство «итог в границе»
+16	a-value	type M, value -

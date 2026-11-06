@@ -2,8 +2,11 @@
 
 `scripts/fuzz/generator.flang` prints, from a seed, a flang program at the edges of its types —
 refined numbers, narrowing by a condition, `требует`, folds, records, variants, parametric
-types, functions as values, fixed-width words, exact integers — together with a list of calls:
-arguments inside the declared types and, for every function, one argument outside.
+types, functions as values, fixed-width words, exact integers, lists of records, strings —
+together with a list of calls: arguments inside the declared types and, for every function, one
+argument outside. Two of three numeric expressions are built for the declared kind (a literal
+or a name of that kind, a choice between two such, «Удвоить», a length), so programs reach the
+oracles more often; the third is built without regard to the kind and probes the edges.
 `scripts/fuzz/search.fscript` runs every program through the oracles below.
 `scripts/fuzz/values.fscript`, over the small reader `scripts/fuzz/json-reader.fscript` that
 keeps number literals as written, reads the JSON the evaluator and the printed programs answer

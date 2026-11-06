@@ -215,16 +215,14 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
       pure (.«обход» "свёртка" tl ti "" "" step n2 rest)))
   | .«отобразить» l x s =>
     «сим» P ρ n l (fun tl n1 => do
-      let xn := "@x" ++ toString n1
-      let step ← «сим» P ((x, .«имя» xn) :: ρ) (n1 + 1) s (fun t _ => .ok (.«знач» t))
+      let step ← «сим» P ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) s (fun t _ => .ok (.«знач» t))
       let rest ← k (.«рез» n1) (n1 + 1)
-      pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" xn step n1 rest))
+      pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" "" step n1 rest))
   | .«отфильтровать» l x s =>
     «сим» P ρ n l (fun tl n1 => do
-      let xn := "@x" ++ toString n1
-      let step ← «сим» P ((x, .«имя» xn) :: ρ) (n1 + 1) s (fun t _ => .ok (.«знач» t))
+      let step ← «сим» P ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) s (fun t _ => .ok (.«знач» t))
       let rest ← k (.«рез» n1) (n1 + 1)
-      pure (.«обход» "отбор" tl (.«оп» "ничто" []) "" xn step n1 rest))
+      pure (.«обход» "отбор" tl (.«оп» "ничто" []) "" "" step n1 rest))
   | .«список» es => «симВсе» P ρ n es [] (fun ts n1 => k (.«оп» "list" ts) n1)
   | .«запись» fs =>
     «симВсе» P ρ n (fs.map (·.2)) [] (fun ts n1 =>
@@ -851,21 +849,21 @@ where
           if el2 ≠ el || cnt2 ≠ cnt then .error "отбор кладёт не свой элемент" else
           match «найти» t σ.«знач», «найти» arr σ.«знач», «найти» cnt σ.«знач» with
           | some tl, some (.«оп» "array" []), some (.«ч» (.«кон» false 0)) =>
-            let xn := "@x" ++ toString n
+            let xn := "#р" ++ toString (n + 1)
             let nums := «элементыСписка» σ tl [el, xn] ++ σ.«числа»
-            let σb : «СредаC» := { σ with «знач» := (el, .«имя» xn) :: σ.«знач», «числа» := nums }
+            let σb : «СредаC» := { σ with «знач» := (el, .«рез» (n + 1)) :: σ.«знач», «числа» := nums }
             let tail := [«Лекс».«знак» "*", .«слово» "result", .«знак» "=", .«слово» flag, .«знак» ";",
               .«слово» "return", .«слово» "FL_OK", .«знак» ";"]
             if !(«телоЦиклаЧисто» before.reverse) then .error "тело цикла выходит из функции" else
             if !(«пишетТолькоСвоё» [] before.reverse) then .error "тело цикла пишет чужое" else
-            match «исполнить» σb (n + 1) (before.reverse ++ tail) with
+            match «исполнить» σb (n + 2) (before.reverse ++ tail) with
             | .error m => .error m
             | .ok step =>
               let σr : «СредаC» := { σ with «знач» := (arr, .«оп» "filtered" [.«рез» n]) ::
                 (cnt, .«оп» "filtered-count" [.«рез» n]) :: σ.«знач» }
               match «исполнить» σr (n + 1) rest with
               | .error m => .error m
-              | .ok r => .ok (.«обход» "отбор" tl (.«оп» "ничто" []) "" xn step n r)
+              | .ok r => .ok (.«обход» "отбор" tl (.«оп» "ничто" []) "" "" step n r)
           | _, _, _ => .error "отбор без пустого массива и нулевого счёта"
         | _ => .error "тело свёртки без возврата области"
       | _ => .error "тело свёртки без элемента"
@@ -953,15 +951,15 @@ where
         | some tl, some (.«оп» "array" captured), some (.«оп» "array" []), some f =>
           match f.«параметры», f.«указатели» with
           | [el], [envName] =>
-            let xn := "@x" ++ toString n
-            let valsF := (el, «Т».«имя» xn) :: (envName, «Т».«оп» "array" captured) :: σ.«знач»
+            let xn := "#р" ++ toString (n + 1)
+            let valsF := (el, «Т».«рез» (n + 1)) :: (envName, «Т».«оп» "array" captured) :: σ.«знач»
             let numsF := «элементыСписка» σ tl [el, xn] ++ σ.«числа»
             let σf : «СредаC» := { σ with «знач» := valsF, «числа» := numsF }
-            match «исполнить» σf (n + 1) f.«тело» with
+            match «исполнить» σf (n + 2) f.«тело» with
             | .error m => .error m
             | .ok step => do
               let r ← «исполнить» { σ with «знач» := (arr, .«оп» "mapped" [.«рез» n, tl]) :: σ.«знач» } (n + 1) q
-              pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" xn step n r)
+              pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" "" step n r)
           | _, _ => .error "тело отображения"
         | _, _, _, _ => .error "отображение"
       | _ => .error h

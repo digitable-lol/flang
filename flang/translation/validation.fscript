@@ -137,9 +137,9 @@
   возвращает список строки
   пример «The reference and the validator are five Lean modules»
     ожидается ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
-      "Semantics/Validate"]
+      "Semantics/Bridge", "Semantics/Validate"]
   ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
-    "Semantics/Validate"]
+    "Semantics/Bridge", "Semantics/Validate"]
 
 тотальная функция «Whole corpus program»
   возвращает строка
@@ -823,7 +823,7 @@
   пример «Nothing built is a failure of every module»
     дано answers равно пустой список
     ожидается ["Binary64", "Semantics/Eval", "Semantics/Fuel", "Semantics/Walk", "Semantics/Json", "Semantics/Symbolic",
-      "Semantics/Validate", "validator"]
+      "Semantics/Bridge", "Semantics/Validate", "validator"]
   отфильтровать (добавить "validator" к («Modules»)) где name → не («Built» от name и answers)
 
 тотальная функция «Built»
@@ -918,7 +918,7 @@
   пример «Nothing built fails the check»
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Validate,validator")
+        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Bridge,Validate,validator")
   пусть broken равно («Build failures» от answers)
   пусть shortBroken равно (отобразить broken как n → «Cell» от (длина (разделить n по "/")) и (разделить n по "/"))
   пусть corpus равно («Summaries» от («Output of» от "corpus" и answers))
@@ -970,7 +970,7 @@
     дано stages равно 0
     дано answers равно пустой список
     ожидается (вариант «Провал» с код равным "FLANG_TRANSLATION_VALIDATION"
-        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Validate,validator")
+        и сообщение равным "не собраны: Binary64,Eval,Fuel,Walk,Json,Symbolic,Bridge,Validate,validator")
   разбор queue
     случай голова и хвост
       то «Ask» от (голова) и (хвост) и stages и answers

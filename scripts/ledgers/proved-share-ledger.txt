@@ -1885,7 +1885,7 @@ f91d13cf6ac7c76a4abb75d145a2413f|2|×|×|×|0|flang/proof/checker/tests/families
 // `требует` и `закон` в файле нет, потому «без приговора» ноль.
 11d6263322f60bf76452901348c7981d|15|15|0|0|0|flang/translation/run.fscript
 2e07191c40468a615de96745c9d92b91|0|0|0|0|1|flang/translation/runtime-contracts.flang
-ca61acb9309d5630c020e005304a94a3|5|5|0|0|0|flang/translation/validation.fscript
+4e18db83ab92c661c7967458b0215ab0|5|5|0|0|0|flang/translation/validation.fscript
 // ── Точное целое на целях печати (задача 1413), снято 4 октября 2026 ───────
 // Приговор снят `flang check --proof` этого же дерева: «утверждений 15:
 // доказано 15, условно 0, сетка 0, объявлено, не доказано 0».

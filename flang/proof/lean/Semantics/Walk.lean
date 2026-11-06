@@ -23,6 +23,8 @@ inductive «Дерево» where
   | «вызов» (f : String) (args : List «Терм») (k : Nat) (rest : «Дерево»)
   | «форма» (f : String) (args : List «Терм») (k : Nat) (rest : «Дерево»)
   | «свёртка» (l i : «Терм») (step : «Дерево») (k : Nat) (rest : «Дерево»)
+  | «отбор» (l : «Терм») (step : «Дерево») (k : Nat) (rest : «Дерево»)
+  | «отображение» (l : «Терм») (step : «Дерево») (k : Nat) (rest : «Дерево»)
 deriving Repr, Inhabited
 
 def «вариантКакой» (k : String) : «Зн» → Bool
@@ -141,7 +143,21 @@ def «значДерева» (P : «Программа») (M : Nat) (σ : «Ср
       let acc ← «свернутьДерево» P M σ res step k xs iv
       «значДерева» P M σ ((k, acc) :: res) rest
     | _ => «беда» "FLANG_TYPE"
-termination_by res d => (sizeOf d, 0)
+  | res, .«отбор» l step k rest => do
+    let lv ← «значТерм» σ res l
+    match lv with
+    | .«список» xs => do
+      let ws ← «отобратьДерево» P M σ res step k xs
+      «значДерева» P M σ ((k, .«список» ws) :: res) rest
+    | _ => «беда» "FLANG_TYPE"
+  | res, .«отображение» l step k rest => do
+    let lv ← «значТерм» σ res l
+    match lv with
+    | .«список» xs => do
+      let ws ← «отобразитьДерево» P M σ res step k xs
+      «значДерева» P M σ ((k, .«список» ws) :: res) rest
+    | _ => «беда» "FLANG_TYPE"
+termination_by _ d => (sizeOf d, 0)
 decreasing_by all_goals (simp_wf; first | omega | (apply Prod.Lex.left; omega))
 def «свернутьДерево» (P : «Программа») (M : Nat) (σ : «Среда») (res : «Итоги») (step : «Дерево») (k : Nat) :
     List «Зн» → «Зн» → «Исход»
@@ -150,6 +166,27 @@ def «свернутьДерево» (P : «Программа») (M : Nat) (σ 
     let acc' ← «значДерева» P M σ ((k + 1, v) :: (k, acc) :: res) step
     «свернутьДерево» P M σ res step k r acc'
 termination_by xs _ => (sizeOf step, xs.length + 1)
+decreasing_by all_goals (simp_wf; first | omega | (apply Prod.Lex.right; omega) | (apply Prod.Lex.left; omega))
+def «отобратьДерево» (P : «Программа») (M : Nat) (σ : «Среда») (res : «Итоги») (step : «Дерево») (k : Nat) :
+    List «Зн» → Except «Сбой» (List «Зн»)
+  | [] => .ok []
+  | v :: r => do
+    let c ← «значДерева» P M σ ((k + 1, v) :: res) step
+    let ws ← «отобратьДерево» P M σ res step k r
+    match c with
+    | .«признак» true => pure (v :: ws)
+    | .«признак» false => pure ws
+    | _ => «беда» "FLANG_TYPE"
+termination_by xs => (sizeOf step, xs.length + 1)
+decreasing_by all_goals (simp_wf; first | omega | (apply Prod.Lex.right; omega) | (apply Prod.Lex.left; omega))
+def «отобразитьДерево» (P : «Программа») (M : Nat) (σ : «Среда») (res : «Итоги») (step : «Дерево») (k : Nat) :
+    List «Зн» → Except «Сбой» (List «Зн»)
+  | [] => .ok []
+  | v :: r => do
+    let w ← «значДерева» P M σ ((k + 1, v) :: res) step
+    let ws ← «отобразитьДерево» P M σ res step k r
+    pure (w :: ws)
+termination_by xs => (sizeOf step, xs.length + 1)
 decreasing_by all_goals (simp_wf; first | omega | (apply Prod.Lex.right; omega) | (apply Prod.Lex.left; omega))
 end
 
@@ -182,6 +219,16 @@ def «обход» (ρ : List (String × «Терм»)) (n : Nat) (k : «Тер�
       | none => none) args
   | .«поле» t p => «обход» ρ n (fun tt n1 => k (.«поле» p tt) n1) t
   | .«список» es => «обходВсех» ρ n (fun ts n1 => k (.«список» ts) n1) es
+  | .«отфильтровать» l x s =>
+    «обход» ρ n (fun tl n1 =>
+      match «обход» ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) (fun t _ => some (.«лист» t)) s, k (.«рез» n1) (n1 + 1) with
+      | some st, some r => some (.«отбор» tl st n1 r)
+      | _, _ => none) l
+  | .«отобразить» l x s =>
+    «обход» ρ n (fun tl n1 =>
+      match «обход» ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) (fun t _ => some (.«лист» t)) s, k (.«рез» n1) (n1 + 1) with
+      | some st, some r => some (.«отображение» tl st n1 r)
+      | _, _ => none) l
   | .«свёртка» l i a x s =>
     «обход» ρ n (fun tl n1 => «обход» ρ n1 (fun ti n2 =>
       match «обход» ((a, .«рез» n2) :: (x, .«рез» (n2 + 1)) :: ρ) (n2 + 2) (fun t _ => some (.«лист» t)) s,
@@ -534,6 +581,44 @@ theorem «свернуть-верно» (P : «Программа») (σ : «С�
       simp only [«свернутьДерево», hstep acc v acc' hb, bind, Except.bind]
       exact «свернуть-верно» P σ M m γ a x s n2 st res hstep r acc' w hw
 
+theorem «отбор-верно» (P : «Программа») (σ : «Среда») (M m : Nat) (γ : «Среда»)
+    (x : String) (s : «Выр») (n2 : Nat) (st : «Дерево») (res : «Итоги»)
+    (hstep : ∀ (v c : «Зн»), «выч» P m ((x, v) :: γ) s = .ok c → «значДерева» P M σ ((n2 + 1, v) :: res) st = .ok c) :
+    ∀ (xs ws : List «Зн»), «отбор» («выч» P m) γ x s xs = .ok ws → «отобратьДерево» P M σ res st n2 xs = .ok ws
+  | [], ws, hw => by simp only [«отбор»] at hw; cases hw; simp [«отобратьДерево»]
+  | v :: r, ws, hw => by
+    simp only [«отбор»] at hw
+    cases hb : «выч» P m ((x, v) :: γ) s with
+    | error er => rw [hb] at hw; cases hw
+    | ok c =>
+      cases hr : «отбор» («выч» P m) γ x s r with
+      | error er => rw [hb, hr] at hw; cases hw
+      | ok ws' =>
+        rw [hb, hr] at hw
+        simp only [bind, Except.bind] at hw
+        simp only [«отобратьДерево», hstep v c hb, «отбор-верно» P σ M m γ x s n2 st res hstep r ws' hr, bind,
+          Except.bind]
+        exact hw
+
+theorem «образы-верно» (P : «Программа») (σ : «Среда») (M m : Nat) (γ : «Среда»)
+    (x : String) (s : «Выр») (n2 : Nat) (st : «Дерево») (res : «Итоги»)
+    (hstep : ∀ (v c : «Зн»), «выч» P m ((x, v) :: γ) s = .ok c → «значДерева» P M σ ((n2 + 1, v) :: res) st = .ok c) :
+    ∀ (xs ws : List «Зн»), «образы» («выч» P m) γ x s xs = .ok ws → «отобразитьДерево» P M σ res st n2 xs = .ok ws
+  | [], ws, hw => by simp only [«образы»] at hw; cases hw; simp [«отобразитьДерево»]
+  | v :: r, ws, hw => by
+    simp only [«образы»] at hw
+    cases hb : «выч» P m ((x, v) :: γ) s with
+    | error er => rw [hb] at hw; cases hw
+    | ok c =>
+      cases hr : «образы» («выч» P m) γ x s r with
+      | error er => rw [hb, hr] at hw; cases hw
+      | ok ws' =>
+        rw [hb, hr] at hw
+        simp only [bind, Except.bind] at hw
+        simp only [«отобразитьДерево», hstep v c hb, «образы-верно» P σ M m γ x s n2 st res hstep r ws' hr, bind,
+          Except.bind]
+        exact hw
+
 mutual
 theorem «обход-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
     ∀ (e : «Выр») (ρ : List (String × «Терм»)) (γ : «Среда») (n : Nat) (res : «Итоги»)
@@ -726,8 +811,108 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
                   («расширяет-добавить» (by omega) v he12) ?_
                 simp [«значТерм», «взять»]
           | _ => simp [«беда»] at hv
-  | .«отобразить» _ _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
-  | .«отфильтровать» _ _ _, _, _, _, _, _, _, _, _, _, hd, _, _, _, _ => by simp [«обход»] at hd
+  | .«отфильтровать» l x s, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases hl : «выч» P m γ l with
+      | error er => rw [hl] at hv; cases hv
+      | ok lv =>
+        rw [hl] at hv
+        simp only [bind, Except.bind] at hv
+        cases lv with
+        | «список» xs =>
+          simp only at hv
+          cases hws : «отбор» («выч» P m) γ x s xs with
+          | error er => rw [hws] at hv; cases hv
+          | ok ws =>
+            rw [hws] at hv
+            simp only [pure, Except.pure] at hv
+            cases hv
+            simp only [«обход»] at hd
+            refine «обход-верен» P σ M l ρ γ n res _ d m (.«список» xs) R hd hs hl (by omega) ?_
+            intro tl n1 d1 res1 hd1 hn1 htl he1 hvl
+            cases hst : «обход» ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) (fun t _ => some (.«лист» t)) s with
+            | none => simp [hst] at hd1
+            | some st =>
+              cases hr : k (.«рез» n1) (n1 + 1) with
+              | none => simp [hst, hr] at hd1
+              | some r =>
+                simp only [hst, hr] at hd1
+                cases hd1
+                have hs1 : «Согласны» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
+                have hstep : ∀ (w c : «Зн»), «выч» P m ((x, w) :: γ) s = .ok c →
+                    «значДерева» P M σ ((n1 + 1, w) :: res1) st = .ok c := by
+                  intro w c hb
+                  have hext : «Расширяет» ((n1 + 1, w) :: res1) res1 n1 :=
+                    «расширяет-добавить» (by omega) w («расширяет-сам» res1 n1)
+                  have hs0 : «Согласны» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
+                  have hsx := «согласны-шире» hs0 x (.«рез» (n1 + 1)) w (by simp [«Ниже»])
+                    (by simp [«значТерм», «взять»])
+                  refine «обход-верен» P σ M s _ _ (n1 + 2) _ _ st m c _ hst hsx hb (by omega) ?_
+                  intro t n3 d' res' h1 _ _ _ h5
+                  simp only [Option.some.injEq] at h1
+                  subst h1
+                  simp only [«значДерева»]
+                  exact h5
+                have hf := «отбор-верно» P σ M m γ x s n1 st res1 hstep xs ws hws
+                simp only [«значДерева», hvl, bind, Except.bind, hf]
+                refine hk _ (n1 + 1) r ((n1, .«список» ws) :: res1) hr (by omega) (Nat.lt_succ_self n1)
+                  («расширяет-добавить» hn1 _ he1) ?_
+                simp [«значТерм», «взять»]
+        | _ => simp [«беда»] at hv
+  | .«отобразить» l x s, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
+    cases m with
+    | zero => simp [«выч»] at hv
+    | succ m =>
+      simp only [«выч», «шаг»] at hv
+      cases hl : «выч» P m γ l with
+      | error er => rw [hl] at hv; cases hv
+      | ok lv =>
+        rw [hl] at hv
+        simp only [bind, Except.bind] at hv
+        cases lv with
+        | «список» xs =>
+          simp only at hv
+          cases hws : «образы» («выч» P m) γ x s xs with
+          | error er => rw [hws] at hv; cases hv
+          | ok ws =>
+            rw [hws] at hv
+            simp only [pure, Except.pure] at hv
+            cases hv
+            simp only [«обход»] at hd
+            refine «обход-верен» P σ M l ρ γ n res _ d m (.«список» xs) R hd hs hl (by omega) ?_
+            intro tl n1 d1 res1 hd1 hn1 htl he1 hvl
+            cases hst : «обход» ((x, .«рез» (n1 + 1)) :: ρ) (n1 + 2) (fun t _ => some (.«лист» t)) s with
+            | none => simp [hst] at hd1
+            | some st =>
+              cases hr : k (.«рез» n1) (n1 + 1) with
+              | none => simp [hst, hr] at hd1
+              | some r =>
+                simp only [hst, hr] at hd1
+                cases hd1
+                have hs1 : «Согласны» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
+                have hstep : ∀ (w c : «Зн»), «выч» P m ((x, w) :: γ) s = .ok c →
+                    «значДерева» P M σ ((n1 + 1, w) :: res1) st = .ok c := by
+                  intro w c hb
+                  have hext : «Расширяет» ((n1 + 1, w) :: res1) res1 n1 :=
+                    «расширяет-добавить» (by omega) w («расширяет-сам» res1 n1)
+                  have hs0 : «Согласны» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
+                  have hsx := «согласны-шире» hs0 x (.«рез» (n1 + 1)) w (by simp [«Ниже»])
+                    (by simp [«значТерм», «взять»])
+                  refine «обход-верен» P σ M s _ _ (n1 + 2) _ _ st m c _ hst hsx hb (by omega) ?_
+                  intro t n3 d' res' h1 _ _ _ h5
+                  simp only [Option.some.injEq] at h1
+                  subst h1
+                  simp only [«значДерева»]
+                  exact h5
+                have hf := «образы-верно» P σ M m γ x s n1 st res1 hstep xs ws hws
+                simp only [«значДерева», hvl, bind, Except.bind, hf]
+                refine hk _ (n1 + 1) r ((n1, .«список» ws) :: res1) hr (by omega) (Nat.lt_succ_self n1)
+                  («расширяет-добавить» hn1 _ he1) ?_
+                simp [«значТерм», «взять»]
+        | _ => simp [«беда»] at hv
   | .«список» es, ρ, γ, n, res, k, d, m, v, R, hd, hs, hv, hM, hk => by
     cases m with
     | zero => simp [«выч»] at hv
@@ -898,7 +1083,7 @@ theorem «обходСлучаев-верен» (P : «Программа») (σ
           · simp only [«разобрать», «подходит», he, ite_true, «вставить», List.nil_append] at hv
             simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
             exact hyes hv
-          · simp only [«разобрать», «подходит», he, ite_false] at hv
+          · simp only [«разобрать», «подходит», he] at hv
             simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
             exact hrest hv
         | «список» l =>
@@ -906,7 +1091,7 @@ theorem «обходСлучаев-верен» (P : «Программа») (σ
           · simp only [«разобрать», «подходит», he, ite_true, «вставить», List.nil_append] at hv
             simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
             exact hyes hv
-          · simp only [«разобрать», «подходит», he, ite_false] at hv
+          · simp only [«разобрать», «подходит», he] at hv
             simp only [«значДерева», «значТерм», ht, «пустой», he, bind, Except.bind, pure, Except.pure]
             exact hrest hv
         | _ =>

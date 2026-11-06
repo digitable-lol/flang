@@ -2550,7 +2550,7 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
         run: >-
           bootstrap/flang run-script translation:validate --
-          --validated-floor 174 --proved-floor 174 --theorem-floor 56 --outside-ceiling 0 --unprinted-ceiling 3
+          --validated-floor 174 --proved-floor 174 --theorem-floor 117 --outside-ceiling 0 --unprinted-ceiling 3
           --unmodelled-ceiling 0
       - name: Bounds one step tighter turn the validation red
         env:

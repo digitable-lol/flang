@@ -650,7 +650,7 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
         | [] => «беда» "FLANG_ARITY"
       else «выч» P «топливоСверки» [] (.«вызов» f (vs.map .«лит»))
     «вычД» P vals ((k, v) :: res) r
-  | .«обход» "свёртка" l i a x st k r => do
+  | .«обход» "свёртка" l i _ _ st k r => do
     let lv ← «значТ» vals res l
     let iv ← «значТ» vals res i
     match lv with
@@ -658,23 +658,23 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
       let acc ← xs.foldlM (fun acc v => «вычД» P vals ((k + 1, v) :: (k, acc) :: res) st) iv
       «вычД» P vals ((k, acc) :: res) r
     | _ => «беда» "FLANG_TYPE"
-  | .«обход» "отбор" l _ _ x st k r => do
+  | .«обход» "отбор" l _ _ _ st k r => do
     let lv ← «значТ» vals res l
     match lv with
     | .«список» xs => do
       let kept ← xs.foldlM (fun acc v => do
-        let c ← «вычД» P ((x, v) :: vals) res st
+        let c ← «вычД» P vals ((k + 1, v) :: res) st
         match c with
         | .«признак» true => pure (acc ++ [v])
         | .«признак» false => pure acc
         | _ => «беда» "FLANG_TYPE") []
       «вычД» P vals ((k, .«список» kept) :: res) r
     | _ => «беда» "FLANG_TYPE"
-  | .«обход» "отображение" l _ _ x st k r => do
+  | .«обход» "отображение" l _ _ _ st k r => do
     let lv ← «значТ» vals res l
     match lv with
     | .«список» xs => do
-      let ys ← xs.mapM (fun v => «вычД» P ((x, v) :: vals) res st)
+      let ys ← xs.mapM (fun v => «вычД» P vals ((k + 1, v) :: res) st)
       «вычД» P vals ((k, .«список» ys) :: res) r
     | _ => «беда» "FLANG_TYPE"
   | .«обход» _ _ _ _ _ _ _ _ => «беда» "FLANG_TYPE"
@@ -687,27 +687,29 @@ def «символьно» (P : «Программа») (cx : «Контекст
   if !cx.«есть» then ("вне: нет напечатанного C", "") else
   if forks > «предел ветвлений» then ("вне: ветвлений больше предела", "") else
   if «постыБезСуда» cx f g > 0 then ("вне: постусловие не напечатано, а вердикта ядра о нём нет", "") else
-  match «деревоЭталона» P cx f g with
-  | .error m => ("вне: " ++ m, "")
-  | .ok r =>
-    let vals := fun (vs : List «Зн») => «привязать» g.«параметры» vs
-    let checked := (witnesses.zip answers).filter (fun (_, a) => !(a.startsWith "топливо") && !(a.startsWith "вне"))
-    let bad := checked.filter (fun (vs, a) => «эталонТекстом» («вычД» P (vals vs) [] r) ≠ a)
-    if checked.isEmpty then ("вне: у эталона нет ни одного ответа, чтобы сверить с ним дерево", "") else
-    if !bad.isEmpty then ("вне: символьное дерево эталона разошлось с вычислением на свидетеле", "")
+  let kernel := «постыНаСловеЯдра» cx f g
+  let word0 := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
+  let expand := fun (x : String) => if x.startsWith "apply:" then
+    (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
+  match «деревоC» cx decls numeric g.«имя» g.«параметры» types with
+  | .error m => ("вне: C " ++ m, "")
+  | .ok c =>
+    if «деревоПоТеореме?» («предусловияJson» f) g («постыДляТеоремы» cx f g) c then
+      let called := ((«вызовыД» c).flatMap expand).eraseDups.filter (· ≠ g.«имя»)
+      (word0 ++ ", дерево эталона по теореме", ",".intercalate called)
     else
-      match «деревоC» cx decls numeric g.«имя» g.«параметры» types with
-      | .error m => ("вне: C " ++ m, "")
-      | .ok c =>
-        let kernel := «постыНаСловеЯдра» cx f g
-        let word0 := if kernel = 0 then "доказано" else "доказано, постусловий на слове ядра " ++ toString kernel
-        let byTheorem := «деревоПоТеореме?» («предусловияJson» f) g («постыДляТеоремы» cx f g) c
-        let word := if byTheorem then word0 ++ ", дерево эталона по теореме" else word0
-        let expand := fun (x : String) => if x.startsWith "apply:" then
-          (cx.«применения».filter (fun p => p.1 = x)).flatMap (·.2) else [x]
+    match «деревоЭталона» P cx f g with
+    | .error m => ("вне: " ++ m, "")
+    | .ok r =>
+      let vals := fun (vs : List «Зн») => «привязать» g.«параметры» vs
+      let checked := (witnesses.zip answers).filter (fun (_, a) => !(a.startsWith "топливо") && !(a.startsWith "вне"))
+      let bad := checked.filter (fun (vs, a) => «эталонТекстом» («вычД» P (vals vs) [] r) ≠ a)
+      if checked.isEmpty then ("вне: у эталона нет ни одного ответа, чтобы сверить с ним дерево", "") else
+      if !bad.isEmpty then ("вне: символьное дерево эталона разошлось с вычислением на свидетеле", "")
+      else
         let called := (((«вызовыД» r) ++ («вызовыД» c)).flatMap expand).eraseDups.filter (· ≠ g.«имя»)
-        if byTheorem || «равныД» («упростить» [] («сжатьВызовы» [] r)) («упростить» [] («сжатьВызовы» [] c)) then
-          (word, ",".intercalate called)
+        if «равныД» («упростить» [] («сжатьВызовы» [] r)) («упростить» [] («сжатьВызовы» [] c)) then
+          (word0, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
 def «строкиФункции» (P : «Программа») (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json))

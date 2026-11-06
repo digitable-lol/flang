@@ -1,0 +1,354 @@
+модуль «Loop sugar run»
+  использует «Loop sugar» из "loops.flang"
+  использует «Loop sugar tasks» из "tasks.flang"
+
+тип «Expanding»
+  вариант «Asking arguments»
+  вариант «Reading» содержит target: строка
+  вариант «Writing» содержит target: строка
+
+объект «Verdict pair»
+  «code»: число
+  «line»: строка
+
+объект «Comparison»
+  «directory»: строка
+  «tasks»: список «Sugared task»
+  «report»: список строки
+
+тип «Comparing»
+  вариант «Asking directory»
+  вариант «Taking directory»
+  вариант «Written» содержит runPart: «Comparison»
+  вариант «Checked sugared» содержит runPart: «Comparison»
+  вариант «Checked original» содержит runPart: «Comparison», sugared: «Verdict pair»
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «The binary of the tree, seen from this directory»
+    ожидается "../../bootstrap/flang"
+  "../../bootstrap/flang"
+
+тотальная функция «Expand start»
+  возвращает «Expanding»
+  пример «The plan starts by asking for its arguments»
+    ожидается вариант «Asking arguments»
+  вариант «Asking arguments»
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «Two paths»
+    ожидается "нужны два довода: файл с циклами и файл, куда писать развёрнутый текст"
+  "нужны два довода: файл с циклами и файл, куда писать развёрнутый текст"
+
+тотальная функция «After arguments»
+  принимает arguments: список строки
+  возвращает «Продолжение»
+  пример «Two paths read the first»
+    дано arguments равно ["а.flang", "б.flang"]
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "а.flang") и
+        потом равным (вариант «Reading» с target равным "б.flang"))
+  пример «One path is refused»
+    дано arguments равно ["а.flang"]
+    ожидается (вариант «Провал» с код равным "FLANG_SUGAR_ARGUMENTS" и сообщение равным
+        "нужны два довода: файл с циклами и файл, куда писать развёрнутый текст")
+  пусть reading равно вариант «Прочитать файл» с путь равным (элемент 1 в arguments)
+  пусть target равно элемент (длина arguments) в arguments
+  если (длина arguments) равен 2
+    то вариант «Сделать» с поручение равным reading и потом равным (вариант «Reading» с target равным target)
+    иначе вариант «Провал» с код равным "FLANG_SUGAR_ARGUMENTS" и сообщение равным («Usage»)
+
+тотальная функция «After reading»
+  принимает target: строка, source: строка
+  возвращает «Продолжение»
+  пример «A loop that cannot be expanded is refused with its reason»
+    дано target равно "б.flang"
+    дано source равно "модуль «А»\n\nтотальная функция «Б»\n  возвращает число\n  цикл «В»\n    в конце 0\n"
+    ожидается (вариант «Провал» с код равным "FLANG_SUGAR_LOOP" и сообщение равным
+        "цикл «В»: нет ни «для каждого …», ни «пока …»")
+  пример «Text without loops is written as it is»
+    дано target равно "б.flang"
+    дано source равно "модуль «А»\n"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "б.flang" и
+        содержимое равным "модуль «А»\n") и потом равным (вариант «Writing» с target равным "б.flang"))
+  разбор («Expand text» от source)
+    случай вариант «Expanded» с textPart как expanded
+      пусть writing равно вариант «Записать файл» с путь равным target и содержимое равным expanded
+      вариант «Сделать» с поручение равным writing и потом равным (вариант «Writing» с target равным target)
+    случай вариант «Not expanded» с reason как reason
+      то вариант «Провал» с код равным "FLANG_SUGAR_LOOP" и сообщение равным reason
+
+тотальная функция «Expand arguments»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «The arguments came»
+    дано answer равно вариант «Доводы» с доводы равным ["а.flang", "б.flang"]
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "а.flang") и
+        потом равным (вариант «Reading» с target равным "б.flang"))
+  пример «Before anything the arguments are asked for»
+    дано answer равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и
+        потом равным (вариант «Asking arguments»))
+  разбор answer
+    случай вариант «Доводы» с доводы как arguments
+      то «After arguments» от arguments
+    случай любое
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Asking arguments»)
+
+тотальная функция «Expand reading»
+  принимает target: строка, answer: «Отклик»
+  возвращает «Продолжение»
+  пример «Nothing was read»
+    дано target равно "б.flang"
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_SUGAR_READ" и сообщение равным "файл с циклами не прочитан"
+  разбор answer
+    случай вариант «Прочитано» с содержимое как source
+      то «After reading» от target и source
+    случай любое
+      то вариант «Провал» с код равным "FLANG_SUGAR_READ" и сообщение равным "файл с циклами не прочитан"
+
+тотальная функция «Expand next»
+  принимает stateWord: «Expanding», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «After writing the work ends»
+    дано stateWord равно вариант «Writing» с target равным "б.flang"
+    дано answer равно вариант «Записано» с сколько равным 3
+    ожидается вариант «Конец работы» с значение равным "развёрнуто: б.flang"
+  разбор stateWord
+    случай вариант «Asking arguments»
+      то «Expand arguments» от answer
+    случай вариант «Reading» с target как target
+      то «Expand reading» от target и answer
+    случай вариант «Writing» с target как target
+      то вариант «Конец работы» с значение равным (соединить "развёрнуто: " с target)
+
+план «Expand»
+  состояние «Expanding»
+  начинает с «Expand start»
+  обрабатывает «Expand next»
+
+тотальная функция «Compare start»
+  возвращает «Comparing»
+  пример «The comparison starts by asking where temporary files go»
+    ожидается вариант «Asking directory»
+  вариант «Asking directory»
+
+тотальная функция «Expanded path»
+  принимает directory: строка, task: «Sugared task»
+  возвращает строка
+  пример «A file named by the task»
+    дано directory равно "/tmp/а"
+    дано task равно запись «Sugared task» с «id» равным "121" и «original» равным "" и «sugared» равным ""
+    ожидается "/tmp/а/loop-sugar-121.flang"
+  соединить [directory, "/loop-sugar-", task.«id», ".flang"] по ""
+
+тотальная функция «Expanded text»
+  принимает source: строка
+  возвращает строка
+  пример «Text without a loop stays»
+    дано source равно "модуль «А»\n"
+    ожидается "модуль «А»\n"
+  пример «A loop that cannot be expanded gives nothing to check»
+    дано source равно "модуль «А»\n\nтотальная функция «Б»\n  возвращает число\n  цикл «В»\n    в конце 0\n"
+    ожидается ""
+  разбор («Expand text» от source)
+    случай вариант «Expanded» с textPart как expanded
+      то expanded
+    случай вариант «Not expanded» с reason как reason
+      то ""
+
+тотальная функция «Check order»
+  принимает path: строка
+  возвращает «Поручение»
+  пример «A proof check of one file»
+    дано path равно "а.flang"
+    ожидается (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+        "../../bootstrap/flang check --proof 'а.flang' 2>&1"])
+  (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c",
+    соединить [«Binary», " check --proof '", path, "' 2>&1"] по ""])
+
+тотальная функция «Verdict line»
+  принимает output: строка
+  возвращает строка
+  пример «The verdict without the path»
+    дано output равно "шум\n/x/а.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 0 — код возврата 0\n"
+    ожидается "ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 0 — код возврата 0"
+  пример «No verdict»
+    дано output равно "FLANG_PARSE …"
+    ожидается "нет строки вердикта"
+  пусть found равно отфильтровать (разделить output по "\n") где line → line содержит ": ПРОВЕРЕНО "
+  пусть final равно если пусто found то "" иначе элемент (длина found) в found
+  пусть tailText равно соединить (хвост (разделить final по ": ПРОВЕРЕНО ")) по ": ПРОВЕРЕНО "
+  если пусто found то "нет строки вердикта" иначе соединить "ПРОВЕРЕНО " с tailText
+
+тотальная функция «Verdict of»
+  принимает answer: «Отклик»
+  возвращает «Verdict pair»
+  пример «A finished check»
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "а: ПРОВЕРЕНО да\n" и ошибки равным ""
+    ожидается запись «Verdict pair» с «code» равным 0 и «line» равным "ПРОВЕРЕНО да"
+  пример «A check that did not start»
+    дано answer равно вариант «Пока ничего»
+    ожидается запись «Verdict pair» с «code» равным -1 и «line» равным "проверка не запустилась"
+  разбор answer
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то запись «Verdict pair» с «code» равным code и «line» равным («Verdict line» от output)
+    случай любое
+      то запись «Verdict pair» с «code» равным -1 и «line» равным "проверка не запустилась"
+
+тотальная функция «Report line»
+  принимает task: «Sugared task», sugared: «Verdict pair», original: «Verdict pair»
+  возвращает строка
+  пример «Same verdict»
+    дано task равно запись «Sugared task» с «id» равным "121" и «original» равным "" и «sugared» равным ""
+    дано sugared равно запись «Verdict pair» с «code» равным 0 и «line» равным "ПРОВЕРЕНО да"
+    дано original равно запись «Verdict pair» с «code» равным 0 и «line» равным "ПРОВЕРЕНО да"
+    ожидается "121: совпало — код 0, ПРОВЕРЕНО да"
+  пример «Different verdict»
+    дано task равно запись «Sugared task» с «id» равным "121" и «original» равным "" и «sugared» равным ""
+    дано sugared равно запись «Verdict pair» с «code» равным 3 и «line» равным "ПРОВЕРЕНО нет"
+    дано original равно запись «Verdict pair» с «code» равным 0 и «line» равным "ПРОВЕРЕНО да"
+    ожидается "121: РАЗОШЛОСЬ — код 3, ПРОВЕРЕНО нет против 0, ПРОВЕРЕНО да"
+  пусть same равно (sugared.«code» равен original.«code») и притом (sugared.«line» равен original.«line»)
+  пусть word равно если same то ": совпало — код " иначе ": РАЗОШЛОСЬ — код "
+  пусть against равно соединить [" против ", к строке original.«code», ", ", original.«line»] по ""
+  пусть tailText равно если same то "" иначе against
+  соединить [task.«id», word, к строке sugared.«code», ", ", sugared.«line», tailText] по ""
+
+тотальная функция «Compare end»
+  принимает report: список строки
+  возвращает «Продолжение»
+  пример «All the same»
+    дано report равно ["121: совпало — код 0, ПРОВЕРЕНО да"]
+    ожидается вариант «Конец работы» с значение равным "121: совпало — код 0, ПРОВЕРЕНО да"
+  пример «One differs»
+    дано report равно ["121: РАЗОШЛОСЬ — код 3"]
+    ожидается вариант «Провал» с код равным "FLANG_SUGAR_DIFFERS" и сообщение равным "121: РАЗОШЛОСЬ — код 3"
+  пусть failed равно отфильтровать report где line → line содержит "РАЗОШЛОСЬ"
+  если пусто failed
+    то вариант «Конец работы» с значение равным (соединить report по "\n")
+    иначе вариант «Провал» с код равным "FLANG_SUGAR_DIFFERS" и сообщение равным (соединить report по "\n")
+
+тотальная функция «Next task»
+  принимает runPart: «Comparison»
+  возвращает «Продолжение»
+  пример «Nothing left»
+    дано runPart равно (запись «Comparison» с «directory» равным "/tmp" и «tasks» равным [] и
+        «report» равным ["121: совпало"])
+    ожидается вариант «Конец работы» с значение равным "121: совпало"
+  разбор runPart.«tasks»
+    случай пусто
+      то «Compare end» от runPart.«report»
+    случай голова и хвост
+      пусть path равно «Expanded path» от runPart.«directory» и голова
+      пусть content равно «Expanded text» от голова.«sugared»
+      пусть order равно вариант «Записать файл» с путь равным path и содержимое равным content
+      вариант «Сделать» с поручение равным order и потом равным (вариант «Written» с runPart равным runPart)
+
+тотальная функция «No directory»
+  возвращает строка
+  пример «Why there is nowhere to write»
+    ожидается "FLANG_TMP не задан: некуда писать"
+  "FLANG_TMP не задан: некуда писать"
+
+тотальная функция «Comparison in»
+  принимает directory: строка, tasks: список «Sugared task»
+  возвращает «Comparison»
+  пример «A run with an empty report»
+    дано directory равно "/tmp"
+    дано tasks равно []
+    ожидается запись «Comparison» с «directory» равным "/tmp" и «tasks» равным [] и «report» равным []
+  запись «Comparison» с «directory» равным directory и «tasks» равным tasks и «report» равным []
+
+тотальная функция «After directory»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «No directory»
+    дано answer равно вариант «Значение среды» с значение равным ""
+    ожидается вариант «Провал» с код равным "FLANG_SUGAR_TMP" и сообщение равным "FLANG_TMP не задан: некуда писать"
+  пусть refused равно вариант «Провал» с код равным "FLANG_SUGAR_TMP" и сообщение равным («No directory»)
+  разбор answer
+    случай вариант «Значение среды» с значение как directory
+      пусть started равно «Next task» от («Comparison in» от directory и («Sugared tasks»))
+      если (длина directory) больше 0 то started иначе refused
+    случай любое
+      то refused
+
+тотальная функция «Check first»
+  принимает runPart: «Comparison»
+  возвращает «Продолжение»
+  пример «Nothing left»
+    дано runPart равно запись «Comparison» с «directory» равным "/tmp" и «tasks» равным [] и «report» равным []
+    ожидается вариант «Конец работы» с значение равным ""
+  разбор runPart.«tasks»
+    случай пусто
+      то «Compare end» от runPart.«report»
+    случай голова и хвост
+      пусть order равно «Check order» от («Expanded path» от runPart.«directory» и голова)
+      вариант «Сделать» с поручение равным order и потом равным (вариант «Checked sugared» с runPart равным runPart)
+
+тотальная функция «Check second»
+  принимает runPart: «Comparison», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «Nothing left»
+    дано runPart равно запись «Comparison» с «directory» равным "/tmp" и «tasks» равным [] и «report» равным []
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Конец работы» с значение равным ""
+  разбор runPart.«tasks»
+    случай пусто
+      то «Compare end» от runPart.«report»
+    случай голова и хвост
+      пусть nextPart равно вариант «Checked original» с runPart равным runPart и sugared равным («Verdict of» от answer)
+      вариант «Сделать» с поручение равным («Check order» от голова.«original») и потом равным nextPart
+
+тотальная функция «Check done»
+  принимает runPart: «Comparison», sugared: «Verdict pair», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «Nothing left»
+    дано runPart равно запись «Comparison» с «directory» равным "/tmp" и «tasks» равным [] и «report» равным []
+    дано sugared равно запись «Verdict pair» с «code» равным 0 и «line» равным ""
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Конец работы» с значение равным ""
+  разбор runPart.«tasks»
+    случай пусто
+      то «Compare end» от runPart.«report»
+    случай голова и хвост
+      пусть line равно «Report line» от голова и sugared и («Verdict of» от answer)
+      пусть report равно добавить line к runPart.«report»
+      «Next task» от (запись «Comparison» с «directory» равным runPart.«directory» и «tasks» равным хвост и
+        «report» равным report)
+
+тотальная функция «Compare next»
+  принимает stateWord: «Comparing», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «First the directory for temporary files is asked for»
+    дано stateWord равно вариант «Asking directory»
+    дано answer равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP") и
+        потом равным (вариант «Taking directory»))
+  разбор stateWord
+    случай вариант «Asking directory»
+      пусть asking равно вариант «Прочитать переменную среды» с имя равным "FLANG_TMP"
+      вариант «Сделать» с поручение равным asking и потом равным (вариант «Taking directory»)
+    случай вариант «Taking directory»
+      то «After directory» от answer
+    случай вариант «Written» с runPart как runPart
+      то «Check first» от runPart
+    случай вариант «Checked sugared» с runPart как runPart
+      то «Check second» от runPart и answer
+    случай вариант «Checked original» с runPart как runPart и sugared как sugared
+      то «Check done» от runPart и sugared и answer
+
+план «Compare»
+  состояние «Comparing»
+  начинает с «Compare start»
+  обрабатывает «Compare next»
+
+тотальная функция «Объявление короткой команды sugar:expand»
+  возвращает строка
+  "bootstrap/flang io --plan Expand — развернуть циклы: первый довод — файл с циклами, второй — куда писать"
+
+тотальная функция «Объявление короткой команды sugar:demo»
+  возвращает строка
+  "bootstrap/flang io --plan Compare --timeout 600000 — три задачи с циклами дают те же вердикты check --proof"

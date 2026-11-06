@@ -1,0 +1,1306 @@
+модуль «Loop sugar»
+
+объект «Indent count»
+  «spaces»: число
+  «going»: признак
+
+объект «Cut»
+  «found»: признак
+  «before»: строка
+  «after»: строка
+
+объект «Splitting»
+  «depth»: число
+  «quoted»: признак
+  «piece»: строка
+  «parts»: список строки
+
+объект «Parameter»
+  «name»: строка
+  «type»: строка
+
+объект «Kept»
+  «name»: строка
+  «type»: строка
+  «start»: строка
+
+тип «Clause kind»
+  вариант «For each»
+  вариант «While»
+  вариант «Measure»
+  вариант «Fuel»
+  вариант «Keep»
+  вариант «At the end»
+
+объект «Clause rule»
+  «prefix»: строка
+  «kind»: «Clause kind»
+
+объект «Clause»
+  «kind»: «Clause kind»
+  «text»: строка
+
+объект «Loop»
+  «name»: строка
+  «margin»: строка
+  «clauses»: список «Clause»
+  «body»: список строки
+
+объект «Placing»
+  «seen»: число
+  «phase»: число
+  «indent»: число
+  «before»: список строки
+  «header»: строка
+  «inside»: список строки
+  «after»: список строки
+
+объект «Update»
+  «name»: строка
+  «value»: строка
+
+объект «Rewriting»
+  «nested»: число
+  «lines»: список строки
+  «continues»: число
+  «last»: строка
+  «updates»: список «Update»
+
+объект «Rule check»
+  «bad»: признак
+  «message»: строка
+
+объект «Expansion»
+  «trouble»: строка
+  «declarations»: список (список строки)
+
+объект «Step»
+  «stop»: признак
+  «trouble»: строка
+  «queue»: список (список строки)
+  «done»: список (список строки)
+
+объект «Grouping»
+  «done»: список (список строки)
+  «current»: список строки
+
+тип «Outcome»
+  вариант «Expanded» содержит textPart: строка
+  вариант «Not expanded» содержит reason: строка
+
+тотальная функция «Joined» от «А»
+  принимает front: список «А», back: список «А»
+  возвращает список «А»
+  пример «Second goes after first»
+    дано front равно ["а"]
+    дано back равно ["б", "в"]
+    ожидается ["а", "б", "в"]
+  свёртка back начиная с front как joined и entry → добавить entry к joined
+
+тотальная функция «Flattened» от «А»
+  принимает groups: список (список «А»)
+  возвращает список «А»
+  пример «Two lists become one»
+    дано groups равно [["а"], ["б", "в"]]
+    ожидается ["а", "б", "в"]
+  свёртка groups начиная с пустой список как flat и group → «Joined» от flat и group
+
+тотальная функция «Indent»
+  принимает line: строка
+  возвращает число
+  пример «Four spaces»
+    дано line равно "    пусть а равно 1"
+    ожидается 4
+  пример «No spaces»
+    дано line равно "модуль «А»"
+    ожидается 0
+  пример «Only spaces»
+    дано line равно "  "
+    ожидается 2
+  пусть counted равно свёртка (разложить line на символы) начиная с (запись «Indent count» с «spaces» равным 0 и
+    «going» равным да) как acc и sign
+    пусть going равно acc.«going» и притом (sign равен " ")
+    пусть spaces равно если going то acc.«spaces» плюс 1 иначе acc.«spaces»
+    запись «Indent count» с «spaces» равным spaces и «going» равным going
+  counted.«spaces»
+
+тотальная функция «Margin»
+  принимает line: строка
+  возвращает строка
+  пример «Leading spaces only»
+    дано line равно "  то 1"
+    ожидается "  "
+  подстрока line с 1 по («Indent» от line)
+
+тотальная функция «Trimmed»
+  принимает line: строка
+  возвращает строка
+  пример «Leading spaces go»
+    дано line равно "   дальше"
+    ожидается "дальше"
+  пример «Blank becomes empty»
+    дано line равно "   "
+    ожидается ""
+  подстрока line с ((«Indent» от line) плюс 1) по (длина line)
+
+тотальная функция «Text from»
+  принимает textPart: строка, origin: число
+  возвращает строка
+  пример «Inside»
+    дано textPart равно "цикл «А»"
+    дано origin равно 6
+    ожидается "«А»"
+  пример «Past the end»
+    дано textPart равно ""
+    дано origin равно 6
+    ожидается ""
+  пример «Before the start»
+    дано textPart равно "то"
+    дано origin равно 0
+    ожидается ""
+  пусть outside равно (origin меньше 1) или (origin больше ((длина textPart) плюс 1))
+  если outside то "" иначе подстрока textPart с origin по (длина textPart)
+
+тотальная функция «Blank»
+  принимает line: строка
+  возвращает признак
+  пример «Spaces only»
+    дано line равно "  "
+    ожидается да
+  пример «Text»
+    дано line равно "  а"
+    ожидается нет
+  (длина («Trimmed» от line)) равен 0
+
+тотальная функция «Ends with»
+  принимает textPart: строка, tailPart: строка
+  возвращает признак
+  пример «Ends»
+    дано textPart равно "  иначе "
+    дано tailPart равно "иначе "
+    ожидается да
+  пример «Too short»
+    дано textPart равно "то"
+    дано tailPart равно "то "
+    ожидается нет
+  пусть origin равно ((длина textPart) минус (длина tailPart)) плюс 1
+  («Text from» от textPart и origin) равен tailPart
+
+тотальная функция «Reindented line»
+  принимает line: строка, origin: число, margin: строка
+  возвращает строка
+  пример «Moved in»
+    дано line равно "  а"
+    дано origin равно 2
+    дано margin равно "    "
+    ожидается "    а"
+  пример «Blank stays empty»
+    дано line равно "  "
+    дано origin равно 2
+    дано margin равно "    "
+    ожидается ""
+  если «Blank» от line то "" иначе соединить margin с («Text from» от line и (origin плюс 1))
+
+тотальная функция «Reindented»
+  принимает lines: список строки, origin: число, margin: строка
+  возвращает список строки
+  пример «Two levels in»
+    дано lines равно ["  а", "", "    б"]
+    дано origin равно 2
+    дано margin равно "      "
+    ожидается ["      а", "", "        б"]
+  отобразить lines как line → «Reindented line» от line и origin и margin
+
+тотальная функция «Cut at»
+  принимает textPart: строка, separator: строка
+  возвращает «Cut»
+  пример «First place only»
+    дано textPart равно "а: список (б: в)"
+    дано separator равно ": "
+    ожидается запись «Cut» с «found» равным да и «before» равным "а" и «after» равным "список (б: в)"
+  пример «Not found»
+    дано textPart равно "а"
+    дано separator равно ": "
+    ожидается запись «Cut» с «found» равным нет и «before» равным "а" и «after» равным ""
+  пусть parts равно разделить textPart по separator
+  если (длина parts) меньше 2
+    то запись «Cut» с «found» равным нет и «before» равным textPart и «after» равным ""
+    иначе (запись «Cut» с «found» равным да и «before» равным (элемент 1 в parts) и
+      «after» равным (соединить (хвост parts) по separator))
+
+тотальная функция «Depth change»
+  принимает sign: строка
+  возвращает число
+  пример «Opening»
+    дано sign равно "("
+    ожидается 1
+  пример «Closing guillemet»
+    дано sign равно "»"
+    ожидается -1
+  (если "([«" содержит sign то 1 иначе 0) минус (если ")]»" содержит sign то 1 иначе 0)
+
+тотальная функция «Comma step»
+  принимает acc: «Splitting», sign: строка
+  возвращает «Splitting»
+  пример «A comma at the top splits»
+    дано acc равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "а" и «parts» равным []
+    дано sign равно ","
+    ожидается запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным ["а"]
+  пример «A comma inside brackets stays»
+    дано acc равно запись «Splitting» с «depth» равным 1 и «quoted» равным нет и «piece» равным "[а" и «parts» равным []
+    дано sign равно ","
+    ожидается запись «Splitting» с «depth» равным 1 и «quoted» равным нет и «piece» равным "[а," и «parts» равным []
+  пусть splits равно (не acc.«quoted») и притом (sign равен ",") и притом (acc.«depth» равен 0)
+  пусть quoted равно если sign равен "\"" то не acc.«quoted» иначе acc.«quoted»
+  пусть depth равно acc.«depth» плюс (если acc.«quoted» или quoted то 0 иначе «Depth change» от sign)
+  если splits
+    то (запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и
+      «parts» равным (добавить («Trimmed» от acc.«piece») к acc.«parts»))
+    иначе (запись «Splitting» с «depth» равным depth и «quoted» равным quoted и
+      «piece» равным (соединить acc.«piece» с sign) и «parts» равным acc.«parts»)
+
+тотальная функция «Top level parts»
+  принимает textPart: строка
+  возвращает список строки
+  пример «Commas inside brackets and strings stay»
+    дано textPart равно "а равным [1, 2], б равным \"x, y\", в"
+    ожидается ["а равным [1, 2]", "б равным \"x, y\"", "в"]
+  пример «Empty text has no parts»
+    дано textPart равно ""
+    ожидается []
+  пусть start равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным []
+  пусть pieces равно свёртка (разложить textPart на символы) начиная с start как acc и sign → «Comma step» от acc и sign
+  отфильтровать (добавить («Trimmed» от pieces.«piece») к pieces.«parts») где part → (длина part) больше 0
+
+тотальная функция «Word step»
+  принимает acc: «Splitting», sign: строка
+  возвращает «Splitting»
+  пример «A space ends a word»
+    дано acc равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "а" и «parts» равным []
+    дано sign равно " "
+    ожидается запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным ["а"]
+  пусть depth равно acc.«depth» плюс (если sign равен "«" то 1 иначе (если sign равен "»" то -1 иначе 0))
+  пусть ends равно (acc.«depth» равен 0) и притом (" ()[],.:" содержит sign)
+  если ends
+    то (запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным
+      (если (длина acc.«piece») больше 0 то добавить acc.«piece» к acc.«parts» иначе acc.«parts»))
+    иначе (запись «Splitting» с «depth» равным depth и «quoted» равным нет и
+      «piece» равным (соединить acc.«piece» с sign) и «parts» равным acc.«parts»)
+
+тотальная функция «Words»
+  принимает textPart: строка
+  возвращает список строки
+  пример «Names in guillemets stay whole»
+    дано textPart равно "(«Мой счёт» от цены).минимум"
+    ожидается ["«Мой счёт»", "от", "цены", "минимум"]
+  пусть start равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным []
+  пусть signs равно разложить (соединить textPart с " ") на символы
+  пусть pieces равно свёртка signs начиная с start как acc и sign → «Word step» от acc и sign
+  pieces.«parts»
+
+тотальная функция «Wrapped»
+  принимает expression: строка
+  возвращает строка
+  пример «A word stays»
+    дано expression равно "лево"
+    ожидается "лево"
+  пример «A phrase gets brackets»
+    дано expression равно "лево плюс 1"
+    ожидается "(лево плюс 1)"
+  если expression содержит " " то соединить ["(", expression, ")"] по "" иначе expression
+
+тотальная функция «Quoted»
+  принимает name: строка
+  возвращает строка
+  пример «Bare name»
+    дано name равно "лево"
+    ожидается "«лево»"
+  пример «Already quoted»
+    дано name равно "«мой счёт»"
+    ожидается "«мой счёт»"
+  если name начинается с "«" то name иначе соединить ["«", name, "»"] по ""
+
+тотальная функция «Parameter of»
+  принимает part: строка
+  возвращает «Parameter»
+  пример «Name and type»
+    дано part равно "элементы: список числа"
+    ожидается запись «Parameter» с «name» равным "элементы" и «type» равным "список числа"
+  пусть cut равно «Cut at» от part и ": "
+  запись «Parameter» с «name» равным cut.«before» и «type» равным cut.«after»
+
+тотальная функция «Header text»
+  принимает lines: список строки, word: строка
+  возвращает строка
+  пример «The result line»
+    дано lines равно ["тотальная функция «А»", "  принимает х: число", "  возвращает число", "  х"]
+    дано word равно "возвращает "
+    ожидается "число"
+  пример «No such line»
+    дано lines равно ["тотальная функция «А»", "  возвращает число", "  1"]
+    дано word равно "принимает "
+    ожидается ""
+  пусть prefix равно соединить "  " с word
+  пусть found равно отфильтровать lines где line → ((«Indent» от line) равен 2) и притом (line начинается с prefix)
+  если пусто found то "" иначе («Cut at» от («Trimmed» от (элемент 1 в found)) и word).«after»
+
+тотальная функция «Parameters»
+  принимает lines: список строки
+  возвращает список «Parameter»
+  пример «Two parameters»
+    дано lines равно ["тотальная функция «А»", "  принимает х: число, у: список (список числа)", "  возвращает число"]
+    ожидается [запись «Parameter» с «name» равным "х" и «type» равным "число", (запись «Parameter» с «name» равным "у" и
+        «type» равным "список (список числа)")]
+  отобразить («Top level parts» от («Header text» от lines и "принимает ")) как part → «Parameter of» от part
+
+тотальная функция «Is loop header»
+  принимает line: строка
+  возвращает признак
+  пример «A loop»
+    дано line равно "  цикл «Проход»"
+    ожидается да
+  пример «Top level is not a loop»
+    дано line равно "цикл «Проход»"
+    ожидается нет
+  ((«Indent» от line) больше 0) и притом ((«Trimmed» от line) начинается с "цикл «")
+
+тотальная функция «Has loop»
+  принимает lines: список строки
+  возвращает признак
+  пример «A function with a loop»
+    дано lines равно ["тотальная функция «А»", "  цикл «Б»"]
+    ожидается да
+  не (пусто (отфильтровать lines где line → «Is loop header» от line))
+
+тотальная функция «Placing start»
+  возвращает «Placing»
+  пример «The start of the placing»
+    ожидается (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным "" и «inside» равным [] и «after» равным [])
+  (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и «header» равным "" и
+    «inside» равным [] и «after» равным [])
+
+тотальная функция «Place later»
+  принимает acc: «Placing», line: строка
+  возвращает «Placing»
+  пример «A line after the block»
+    дано acc равно (запись «Placing» с «seen» равным 2 и «phase» равным 1 и «indent» равным 2 и «before» равным ["ф"]
+        и «header» равным "  цикл «А»" и «inside» равным ["    пока да"] и «after» равным [])
+    дано line равно "  1"
+    ожидается (запись «Placing» с «seen» равным 3 и «phase» равным 2 и «indent» равным 2 и «before» равным ["ф"] и
+        «header» равным "  цикл «А»" и «inside» равным ["    пока да"] и «after» равным ["  1"])
+  пусть outside равно (не («Blank» от line)) и притом ((«Indent» от line) не больше acc.«indent»)
+  пусть ends равно (acc.«phase» равен 1) и притом outside
+  пусть phase равно если ends то 2 иначе acc.«phase»
+  пусть inside равно если phase равен 1 то добавить line к acc.«inside» иначе acc.«inside»
+  пусть afterPart равно если phase равен 2 то добавить line к acc.«after» иначе acc.«after»
+  (запись «Placing» с «seen» равным (acc.«seen» плюс 1) и «phase» равным phase и «indent» равным acc.«indent» и
+    «before» равным acc.«before» и «header» равным acc.«header» и «inside» равным inside и «after» равным afterPart)
+
+тотальная функция «Place before»
+  принимает acc: «Placing», line: строка, final: число
+  возвращает «Placing»
+  пример «The loop header opens the block»
+    дано acc равно (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным "" и «inside» равным [] и «after» равным [])
+    дано line равно "  цикл «А»"
+    дано final равно 1
+    ожидается (запись «Placing» с «seen» равным 1 и «phase» равным 1 и «indent» равным 2 и «before» равным [] и
+        «header» равным "  цикл «А»" и «inside» равным [] и «after» равным [])
+  пусть seen равно acc.«seen» плюс 1
+  если seen равен final
+    то (запись «Placing» с «seen» равным seen и «phase» равным 1 и «indent» равным («Indent» от line) и
+      «before» равным acc.«before» и «header» равным line и «inside» равным [] и «after» равным [])
+    иначе (запись «Placing» с «seen» равным seen и «phase» равным 0 и «indent» равным 0 и
+      «before» равным (добавить line к acc.«before») и «header» равным "" и «inside» равным [] и «after» равным [])
+
+тотальная функция «Place step»
+  принимает acc: «Placing», line: строка, final: число
+  возвращает «Placing»
+  пример «A line before the loop»
+    дано acc равно (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным "" и «inside» равным [] и «after» равным [])
+    дано line равно "ф"
+    дано final равно 2
+    ожидается (запись «Placing» с «seen» равным 1 и «phase» равным 0 и «indent» равным 0 и «before» равным ["ф"] и
+        «header» равным "" и «inside» равным [] и «after» равным [])
+  если acc.«phase» равен 0 то «Place before» от acc и line и final иначе «Place later» от acc и line
+
+тотальная функция «Count header line»
+  принимает acc: список число, line: строка
+  возвращает список число
+  пример «A loop header becomes the last»
+    дано acc равно [1, 0]
+    дано line равно "  цикл «А»"
+    ожидается [2, 2]
+  пусть seen равно (элемент 1 в acc) плюс 1
+  [seen, если «Is loop header» от line то seen иначе элемент 2 в acc]
+
+тотальная функция «Last header number»
+  принимает lines: список строки
+  возвращает число
+  пример «The second loop is the last»
+    дано lines равно ["ф", "  цикл «А»", "    цикл «Б»", "    дальше"]
+    ожидается 3
+  пусть counted равно свёртка lines начиная с [0, 0] как acc и line → «Count header line» от acc и line
+  элемент 2 в counted
+
+тотальная функция «Place loop»
+  принимает lines: список строки
+  возвращает «Placing»
+  пример «The last loop and its block»
+    дано lines равно ["ф", "  цикл «А»", "    пока да", "  1", ""]
+    ожидается (запись «Placing» с «seen» равным 5 и «phase» равным 2 и «indent» равным 2 и «before» равным ["ф"] и
+        «header» равным "  цикл «А»" и «inside» равным ["    пока да"] и «after» равным ["  1", ""])
+  пусть final равно «Last header number» от lines
+  свёртка lines начиная с («Placing start») как acc и line → «Place step» от acc и line и final
+
+тотальная функция «Clause rules»
+  возвращает список «Clause rule»
+  пример «Six clauses»
+    ожидается [(запись «Clause rule» с «prefix» равным "для каждого " и «kind» равным вариант «For each»), (запись
+        «Clause rule» с «prefix» равным "пока " и «kind» равным вариант «While»), (запись «Clause rule» с «prefix»
+        равным "убывает " и «kind» равным вариант «Measure»), (запись «Clause rule» с «prefix» равным
+        "шагов не больше " и «kind» равным вариант «Fuel»), (запись «Clause rule» с «prefix» равным "храним " и «kind»
+        равным вариант «Keep»), (запись «Clause rule» с «prefix» равным "в конце " и «kind» равным вариант
+        «At the end»)]
+  [запись «Clause rule» с «prefix» равным "для каждого " и «kind» равным вариант «For each»,
+    запись «Clause rule» с «prefix» равным "пока " и «kind» равным вариант «While»,
+    запись «Clause rule» с «prefix» равным "убывает " и «kind» равным вариант «Measure»,
+    запись «Clause rule» с «prefix» равным "шагов не больше " и «kind» равным вариант «Fuel»,
+    запись «Clause rule» с «prefix» равным "храним " и «kind» равным вариант «Keep»,
+    запись «Clause rule» с «prefix» равным "в конце " и «kind» равным вариант «At the end»]
+
+тотальная функция «Clause after prefix»
+  принимает rulePart: «Clause rule», textPart: строка
+  возвращает «Clause»
+  пример «The text after the prefix»
+    дано rulePart равно запись «Clause rule» с «prefix» равным "пока " и «kind» равным вариант «While»
+    дано textPart равно "пока да"
+    ожидается запись «Clause» с «kind» равным вариант «While» и «text» равным "да"
+  пусть rest равно «Text from» от textPart и ((длина rulePart.«prefix») плюс 1)
+  запись «Clause» с «kind» равным rulePart.«kind» и «text» равным rest
+
+тотальная функция «Clauses of line»
+  принимает line: строка
+  возвращает список «Clause»
+  пример «A while clause»
+    дано line равно "    пока лево меньше право"
+    ожидается [запись «Clause» с «kind» равным вариант «While» и «text» равным "лево меньше право"]
+  пример «A body line»
+    дано line равно "    пусть а равно 1"
+    ожидается []
+  пусть textPart равно «Trimmed» от line
+  пусть matching равно отфильтровать («Clause rules») где rulePart → textPart начинается с rulePart.«prefix»
+  отобразить matching как rulePart → «Clause after prefix» от rulePart и textPart
+
+тотальная функция «Continues clauses»
+  принимает line: строка, margin: строка, found: список «Clause»
+  возвращает признак
+  пример «A clause one level in»
+    дано line равно "    пока да"
+    дано margin равно "  "
+    дано found равно [запись «Clause» с «kind» равным вариант «While» и «text» равным "да"]
+    ожидается да
+  пример «A body line»
+    дано line равно "    пусть а равно 1"
+    дано margin равно "  "
+    дано found равно []
+    ожидается нет
+  пусть level равно (длина («Margin» от line)) равен ((длина margin) плюс 2)
+  level и притом (не (пусто found))
+
+тотальная функция «Read clauses»
+  принимает name: строка, margin: строка, lines: список строки, clauses: список «Clause»
+  возвращает «Loop»
+  пример «Clauses first, then the body»
+    дано name равно "«А»"
+    дано margin равно "  "
+    дано lines равно ["    пока да", "    дальше"]
+    дано clauses равно []
+    ожидается (запись «Loop» с «name» равным "«А»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "да")] и «body» равным ["    дальше"])
+  разбор lines
+    случай пусто
+      то запись «Loop» с «name» равным name и «margin» равным margin и «clauses» равным clauses и «body» равным []
+    случай голова и хвост
+      пусть found равно «Clauses of line» от голова
+      если «Continues clauses» от голова и margin и found
+        то «Read clauses» от name и margin и хвост и («Joined» от clauses и found)
+        иначе (запись «Loop» с «name» равным name и «margin» равным margin и «clauses» равным clauses и
+          «body» равным lines)
+
+тотальная функция «Clause text»
+  принимает loop: «Loop», kind: «Clause kind»
+  возвращает строка
+  пример «The condition of a while loop»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано kind равно вариант «While»
+    ожидается "к больше 0"
+  пусть found равно отфильтровать loop.«clauses» где clause → clause.«kind» равен kind
+  если пусто found то "" иначе (элемент 1 в found).«text»
+
+тотальная функция «Has clause»
+  принимает loop: «Loop», kind: «Clause kind»
+  возвращает признак
+  пример «No fuel in a loop with a measure»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано kind равно вариант «Fuel»
+    ожидается нет
+  не (пусто (отфильтровать loop.«clauses» где clause → clause.«kind» равен kind))
+
+тотальная функция «Kept of part»
+  принимает part: строка
+  возвращает «Kept»
+  пример «Name, type and start»
+    дано part равно "лучшее: число равным 0"
+    ожидается запись «Kept» с «name» равным "лучшее" и «type» равным "число" и «start» равным "0"
+  пусть named равно «Cut at» от part и ": "
+  пусть typed равно «Cut at» от named.«after» и " равным "
+  запись «Kept» с «name» равным named.«before» и «type» равным typed.«before» и «start» равным typed.«after»
+
+тотальная функция «Kept»
+  принимает loop: «Loop»
+  возвращает список «Kept»
+  пример «One kept value»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    ожидается [(запись «Kept» с «name» равным "к" и «type» равным "число" и «start» равным "н")]
+  пусть keeps равно отфильтровать loop.«clauses» где clause → clause.«kind» равен вариант «Keep»
+  пусть parts равно «Flattened» от (отобразить keeps как clause → «Top level parts» от clause.«text»)
+  отобразить parts как part → «Kept of part» от part
+
+тотальная функция «Each part»
+  принимает loop: «Loop»
+  возвращает «Cut»
+  пример «Element with a type»
+    дано loop равно (запись «Loop» с «name» равным "«А»" и «margin» равным "" и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "цена: число из хвост")] и «body» равным [])
+    ожидается запись «Cut» с «found» равным да и «before» равным "цена: число" и «after» равным "хвост"
+  «Cut at» от («Clause text» от loop и вариант «For each») и " из "
+
+тотальная функция «Element»
+  принимает loop: «Loop»
+  возвращает «Parameter»
+  пример «The element and its type»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "х: число из xs"), (запись «Clause» с «kind» равным вариант
+        «Keep» и «text» равным "с: число равным 0"), (запись «Clause» с «kind» равным вариант «At the end» и «text»
+        равным "с")] и «body» равным ["    дальше: с станет с плюс х"])
+    ожидается (запись «Parameter» с «name» равным "х" и «type» равным "число")
+  пусть named равно «Cut at» от («Each part» от loop).«before» и ": "
+  запись «Parameter» с «name» равным named.«before» и «type» равным named.«after»
+
+тотальная функция «Fuel part»
+  принимает loop: «Loop»
+  возвращает «Cut»
+  пример «The fuel and the value when it runs out»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Fuel» и
+        «text» равным "н, иначе -1"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    ожидается (запись «Cut» с «found» равным да и «before» равным "н" и «after» равным "-1")
+  «Cut at» от («Clause text» от loop и вариант «Fuel») и ", иначе "
+
+тотальная функция «Continue cut»
+  принимает line: строка
+  возвращает «Cut»
+  пример «A continue after то»
+    дано line равно "        то дальше: лево станет лево плюс 1"
+    ожидается (запись «Cut» с «found» равным да и «before» равным "        то " и
+        «after» равным ": лево станет лево плюс 1")
+  пример «A name with the word inside is not a continue»
+    дано line равно "      пусть «цена дальше» равно 1"
+    ожидается запись «Cut» с «found» равным нет и «before» равным "      пусть «цена " и «after» равным "» равно 1"
+  пример «A bare continue»
+    дано line равно "    дальше"
+    ожидается запись «Cut» с «found» равным да и «before» равным "    " и «after» равным ""
+  пусть cut равно «Cut at» от line и "дальше"
+  пусть lead равно «Trimmed» от cut.«before»
+  пусть afterThen равно «Ends with» от cut.«before» и " то "
+  пусть afterElse равно «Ends with» от cut.«before» и " иначе "
+  пусть placed равно ((длина lead) равен 0) или afterThen или afterElse
+  пусть closed равно ((длина cut.«after») равен 0) или (cut.«after» начинается с ":")
+  (запись «Cut» с «found» равным (cut.«found» и притом placed и притом closed) и «before» равным cut.«before» и
+    «after» равным cut.«after»)
+
+тотальная функция «Update of part»
+  принимает part: строка
+  возвращает «Update»
+  пример «Name and value»
+    дано part равно "лево станет лево плюс 1"
+    ожидается запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"
+  пусть cut равно «Cut at» от part и " станет "
+  запись «Update» с «name» равным cut.«before» и «value» равным cut.«after»
+
+тотальная функция «Updates»
+  принимает afterPart: строка
+  возвращает список «Update»
+  пример «Two updates»
+    дано afterPart равно ": лево станет лево плюс 1, лучшее станет итог"
+    ожидается [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1", (запись «Update» с «name» равным
+        "лучшее" и «value» равным "итог")]
+  пусть textPart равно «Text from» от afterPart и 2
+  отобразить («Top level parts» от textPart) как part → «Update of part» от part
+
+тотальная функция «Value after»
+  принимает kept: «Kept», updates: список «Update»
+  возвращает строка
+  пример «Updated»
+    дано kept равно запись «Kept» с «name» равным "лево" и «type» равным "число" и «start» равным "1"
+    дано updates равно [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"]
+    ожидается "(лево плюс 1)"
+  пример «Unchanged»
+    дано kept равно запись «Kept» с «name» равным "право" и «type» равным "число" и «start» равным "1"
+    дано updates равно [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"]
+    ожидается "право"
+  пусть found равно отфильтровать updates где update → update.«name» равен kept.«name»
+  если пусто found то kept.«name» иначе «Wrapped» от (элемент 1 в found).«value»
+
+тотальная функция «Rewrite own line»
+  принимает acc: «Rewriting», line: строка, call: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «A continue becomes a call»
+    дано acc равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и «last» равным
+        "" и «updates» равным [])
+    дано line равно "    дальше: к станет к минус 1"
+    дано call равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано captured равно ["н"]
+    ожидается (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц» от н и (к минус 1)"] и «continues»
+        равным 1 и «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным
+        "к" и «value» равным "к минус 1")])
+  пусть cut равно «Continue cut» от line
+  пусть nested равно если «Is loop header» от line то «Indent» от line иначе -1
+  пусть called равно соединить cut.«before» с («Continue call» от call и captured и cut.«after»)
+  пусть rewritten равно если cut.«found» то called иначе line
+  (запись «Rewriting» с «nested» равным nested и «lines» равным (добавить rewritten к acc.«lines») и
+    «continues» равным (acc.«continues» плюс (если cut.«found» то 1 иначе 0)) и
+    «last» равным (если «Blank» от line то acc.«last» иначе line) и
+    «updates» равным («Joined» от acc.«updates» и («Updates of line» от line)))
+
+тотальная функция «Rewrite step»
+  принимает acc: «Rewriting», line: строка, call: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «A line of the loop itself»
+    дано acc равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и «last» равным
+        "" и «updates» равным [])
+    дано line равно "    дальше: к станет к минус 1"
+    дано call равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано captured равно ["н"]
+    ожидается (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц» от н и (к минус 1)"] и «continues»
+        равным 1 и «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным
+        "к" и «value» равным "к минус 1")])
+  пусть deeper равно ((«Blank» от line)) или ((«Indent» от line) больше acc.«nested»)
+  пусть inner равно (acc.«nested» не меньше 0) и притом deeper
+  если inner
+    то (запись «Rewriting» с «nested» равным acc.«nested» и «lines» равным (добавить line к acc.«lines») и
+      «continues» равным acc.«continues» и «last» равным acc.«last» и «updates» равным acc.«updates»)
+    иначе «Rewrite own line» от acc и line и call и captured
+
+тотальная функция «Rewritten body»
+  принимает loop: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «The continue of a while loop»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано captured равно ["н"]
+    ожидается (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц» от н и (к минус 1)"] и «continues»
+        равным 1 и «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным
+        "к" и «value» равным "к минус 1")])
+  пусть start равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и
+    «last» равным "" и
+    «updates» равным [])
+  свёртка loop.«body» начиная с start как acc и line → «Rewrite step» от acc и line и loop и captured
+
+тотальная функция «Continue call»
+  принимает loop: «Loop», captured: список строки, afterPart: строка
+  возвращает строка
+  пример «A call with the kept value changed»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано captured равно ["н"]
+    дано afterPart равно ": к станет к минус 1"
+    ожидается "«Ц» от н и (к минус 1)"
+  пусть updates равно «Updates» от afterPart
+  пусть hasEach равно если «Has clause» от loop и вариант «For each» то [«Generated» от loop и "дальше"] иначе []
+  пусть fuelCall равно соединить ["(", «Generated» от loop и "запас", " минус 1)"] по ""
+  пусть hasFuel равно если «Has clause» от loop и вариант «Fuel» то [fuelCall] иначе []
+  пусть kept равно отобразить («Kept» от loop) как kept → «Value after» от kept и updates
+  «Call text» от loop.«name» и («Flattened» от [captured, hasEach, hasFuel, kept])
+
+тотальная функция «Call text»
+  принимает name: строка, arguments: список строки
+  возвращает строка
+  пример «Three arguments»
+    дано name равно "«А»"
+    дано arguments равно ["х", "(у плюс 1)", "0"]
+    ожидается "«А» от х и (у плюс 1) и 0"
+  если пусто arguments то name иначе соединить [name, " от ", соединить arguments по " и "] по ""
+
+тотальная функция «Generated»
+  принимает loop: «Loop», part: строка
+  возвращает строка
+  пример «A generated name»
+    дано loop равно (запись «Loop» с «name» равным "«Сужение»" и «margin» равным "" и «clauses» равным [] и
+        «body» равным [])
+    дано part равно "запас"
+    ожидается "«Сужение — запас»"
+  соединить [подстрока loop.«name» с 1 по ((длина loop.«name») минус 1), " — ", part, "»"] по ""
+
+тотальная функция «Loop words»
+  принимает loop: «Loop»
+  возвращает список строки
+  пример «Words of the condition, measure, end and body»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    ожидается ["к", "больше", "0", "к", "0", "дальше", "к", "станет", "к", "минус", "1"]
+  пусть inside равно [«Clause text» от loop и вариант «While», «Clause text» от loop и вариант «Measure»,
+    «Clause text» от loop и вариант «At the end», («Fuel part» от loop).«after»]
+  «Words» от (соединить («Joined» от inside и loop.«body») по " ")
+
+тотальная функция «Captured»
+  принимает loop: «Loop», parameters: список «Parameter»
+  возвращает список «Parameter»
+  пример «Only parameters the loop mentions»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано parameters равно [(запись «Parameter» с «name» равным "н" и «type» равным "число"), (запись «Parameter» с
+        «name» равным "м" и «type» равным "число")]
+    ожидается []
+  пусть words равно «Loop words» от loop
+  отфильтровать parameters где parameter → words содержит parameter.«name»
+
+тотальная функция «Fold form»
+  принимает loop: «Loop», rewriting: «Rewriting»
+  возвращает признак
+  пример «A loop over a list that always continues is a fold»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "х: число из xs"), (запись «Clause» с «kind» равным вариант
+        «Keep» и «text» равным "с: число равным 0"), (запись «Clause» с «kind» равным вариант «At the end» и «text»
+        равным "с")] и «body» равным ["    дальше: с станет с плюс х"])
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц»"] и «continues» равным 1
+        и «last» равным "    дальше: с станет с плюс х" и «updates» равным [(запись «Update» с «name» равным "с" и
+        «value» равным "с плюс х")])
+    ожидается да
+  пусть noWhile равно не («Has clause» от loop и вариант «While»)
+  пусть onlyPart равно noWhile и притом не («Has clause» от loop и вариант «Measure»)
+  пусть final равно (rewriting.«continues» равен 1) и притом («Continue cut» от rewriting.«last»).«found»
+  пусть texts равно отфильтровать loop.«body» где line → не («Blank» от line)
+  пусть ending равно (не (пусто texts)) и притом ((элемент (длина texts) в texts) равен rewriting.«last»)
+  пусть plain равно ending и притом ((«Trimmed» от rewriting.«last») начинается с "дальше")
+  пусть hasEach равно («Has clause» от loop и вариант «For each») и притом не («Has clause» от loop и вариант «Fuel»)
+  hasEach и притом onlyPart и притом final и притом plain
+
+тотальная функция «Checks»
+  принимает loop: «Loop», resultType: строка, rewriting: «Rewriting»
+  возвращает список «Rule check»
+  пример «Nothing is wrong with a while loop with a measure»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано resultType равно "число"
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц» от н"] и «continues»
+        равным 1 и «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным
+        "к" и «value» равным "к минус 1")])
+    ожидается [(запись «Rule check» с «bad» равным нет и «message» равным "у цикла нет имени в ёлочках"), (запись
+        «Rule check» с «bad» равным нет и «message» равным
+        "нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается"), (запись «Rule check» с «bad»
+        равным нет и «message» равным "нет ни «для каждого …», ни «пока …»"), (запись «Rule check» с «bad» равным нет
+        и «message» равным "у «пока» нет границы: нужна «убывает …» или «шагов не больше …, иначе …»"), (запись
+        «Rule check» с «bad» равным нет и «message» равным
+        "у «шагов не больше» нет «, иначе …»: не сказано, что отдать, когда шаги кончились"), (запись «Rule check» с
+        «bad» равным нет и «message» равным "функция с циклом не называет «возвращает»"), (запись «Rule check» с «bad»
+        равным нет и «message» равным "в теле нет «дальше»"), (запись «Rule check» с «bad» равным нет и «message»
+        равным "«дальше» меняет имя, которого нет в «храним»"), (запись «Rule check» с «bad» равным нет и «message»
+        равным "«храним» пишется «имя: тип равным значение»")]
+  пусть hasEach равно «Has clause» от loop и вариант «For each»
+  пусть bounded равно hasEach или («Has clause» от loop и вариант «Measure») или («Has clause» от loop и вариант «Fuel»)
+  пусть names равно отобразить («Kept» от loop) как kept → kept.«name»
+  пусть strangers равно отфильтровать rewriting.«updates» где update → не (names содержит update.«name»)
+  [(запись «Rule check» с «bad» равным (не (loop.«name» начинается с "«")) и
+      «message» равным "у цикла нет имени в ёлочках"),
+    (запись «Rule check» с «bad» равным (не («Has clause» от loop и вариант «At the end»)) и «message» равным
+      "нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается"),
+    (запись «Rule check» с «bad» равным (не hasEach и притом не («Has clause» от loop и вариант «While»)) и
+      «message» равным
+      "нет ни «для каждого …», ни «пока …»"),
+    (запись «Rule check» с «bad» равным (не bounded) и «message» равным
+      "у «пока» нет границы: нужна «убывает …» или «шагов не больше …, иначе …»"),
+    (запись «Rule check» с «bad» равным ((«Has clause» от loop и вариант «Fuel») и притом
+      не («Fuel part» от loop).«found»)
+      и «message» равным "у «шагов не больше» нет «, иначе …»: не сказано, что отдать, когда шаги кончились"),
+    (запись «Rule check» с «bad» равным ((длина resultType) равен 0) и «message» равным
+      "функция с циклом не называет «возвращает»"),
+    запись «Rule check» с «bad» равным (rewriting.«continues» равен 0) и «message» равным "в теле нет «дальше»",
+    (запись «Rule check» с «bad» равным (не (пусто strangers)) и «message» равным
+      "«дальше» меняет имя, которого нет в «храним»"),
+    (запись «Rule check» с «bad» равным (не (пусто (отфильтровать («Kept» от loop) где kept →
+      (длина kept.«start») равен 0)))
+      и «message» равным "«храним» пишется «имя: тип равным значение»")]
+
+тотальная функция «Updates of line»
+  принимает line: строка
+  возвращает список «Update»
+  пример «One update»
+    дано line равно "    дальше: к станет 1"
+    ожидается [(запись «Update» с «name» равным "к" и «value» равным "1")]
+  пусть cut равно «Continue cut» от line
+  если cut.«found» и притом ((длина cut.«after») больше 0) то «Updates» от cut.«after» иначе []
+
+тотальная функция «Trouble»
+  принимает loop: «Loop», resultType: строка, rewriting: «Rewriting», foldShape: признак
+  возвращает строка
+  пример «No trouble»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано resultType равно "число"
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц» от н"] и «continues»
+        равным 1 и «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным
+        "к" и «value» равным "к минус 1")])
+    дано foldShape равно нет
+    ожидается ""
+  пусть untyped равно (длина («Element» от loop).«type») равен 0
+  пусть typeless равно (не foldShape) и притом («Has clause» от loop и вариант «For each») и притом untyped
+  пусть extraCheck равно (запись «Rule check» с «bad» равным typeless и «message» равным
+    "у «для каждого» с ранним выходом нужен тип элемента: «для каждого х: число из …»")
+  пусть checks равно добавить extraCheck к («Checks» от loop и resultType и rewriting)
+  пусть bad равно отфильтровать checks где check → check.«bad»
+  если пусто bad то "" иначе соединить ["цикл ", loop.«name», ": ", (элемент 1 в bad).«message»] по ""
+
+тотальная функция «Head of each»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A match on the rest of the list»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "х: число из xs"), (запись «Clause» с «kind» равным вариант
+        «Keep» и «text» равным "с: число равным 0"), (запись «Clause» с «kind» равным вариант «At the end» и «text»
+        равным "с")] и «body» равным ["    дальше: с станет с плюс х"])
+    дано margin равно "  "
+    ожидается ["  разбор «Ц — остаток»", "    случай пусто", "      то с", "    случай х и «Ц — дальше»"]
+  [соединить [margin, "разбор ", «Generated» от loop и "остаток"] по "",
+    соединить [margin, "  случай пусто"] по "",
+    соединить [margin, "    то ", «Clause text» от loop и вариант «At the end»] по "",
+    соединить [margin, "  случай ", («Element» от loop).«name», " и ", «Generated» от loop и "дальше"] по ""]
+
+тотальная функция «Head of fuel»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A check of the fuel»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Fuel» и
+        «text» равным "н, иначе -1"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано margin равно "  "
+    ожидается ["  если «Ц — запас» не больше 0", "    то -1", "    иначе"]
+  [соединить [margin, "если ", «Generated» от loop и "запас", " не больше 0"] по "",
+    соединить [margin, "  то ", («Fuel part» от loop).«after»] по "",
+    соединить [margin, "  иначе"] по ""]
+
+тотальная функция «Head of while»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A check of the condition»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано margin равно "  "
+    ожидается ["  если не (к больше 0)", "    то 0", "    иначе"]
+  [соединить [margin, "если не (", «Clause text» от loop и вариант «While», ")"] по "",
+    соединить [margin, "  то ", «Clause text» от loop и вариант «At the end»] по "",
+    соединить [margin, "  иначе"] по ""]
+
+тотальная функция «Deeper»
+  принимает margin: строка, wanted: признак
+  возвращает строка
+  пример «Four spaces more»
+    дано margin равно "  "
+    дано wanted равно да
+    ожидается "      "
+  если wanted то соединить margin с "    " иначе margin
+
+тотальная функция «Recursive body»
+  принимает loop: «Loop», lines: список строки
+  возвращает список строки
+  пример «A while loop body under its condition»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано lines равно ["    «Ц» от н и (к минус 1)"]
+    ожидается ["  если не (к больше 0)", "    то 0", "    иначе", "      «Ц» от н и (к минус 1)"]
+  пусть hasEach равно «Has clause» от loop и вариант «For each»
+  пусть hasFuel равно «Has clause» от loop и вариант «Fuel»
+  пусть hasWhile равно «Has clause» от loop и вариант «While»
+  пусть front равно «Deeper» от "  " и hasEach
+  пусть back равно «Deeper» от front и hasFuel
+  пусть third равно «Deeper» от back и hasWhile
+  пусть inner равно «Reindented» от lines и ((длина loop.«margin») плюс 2) и third
+  пусть guarded равно если hasWhile то «Joined» от («Head of while» от loop и back) и inner иначе inner
+  пусть fueled равно если hasFuel то «Joined» от («Head of fuel» от loop и front) и guarded иначе guarded
+  если hasEach то «Joined» от («Head of each» от loop и "  ") и fueled иначе fueled
+
+тотальная функция «Generated parameter»
+  принимает loop: «Loop», kind: «Clause kind», part: строка, typeName: строка
+  возвращает список строки
+  пример «The fuel parameter»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Fuel» и
+        «text» равным "н, иначе -1"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано kind равно вариант «Fuel»
+    дано part равно "запас"
+    дано typeName равно "неотрицательное"
+    ожидается ["«Ц — запас»: неотрицательное"]
+  если «Has clause» от loop и kind то [соединить [«Generated» от loop и part, ": ", typeName] по ""] иначе []
+
+тотальная функция «Recursive declaration»
+  принимает loop: «Loop», lines: список строки, captured: список «Parameter», resultType: строка
+  возвращает список строки
+  пример «A function for a while loop»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано lines равно ["    «Ц» от (к минус 1)"]
+    дано captured равно []
+    дано resultType равно "число"
+    ожидается ["", "тотальная функция «Ц»", "  принимает к: число", "  возвращает число", "  убывает к",
+        "  если не (к больше 0)", "    то 0", "    иначе", "      «Ц» от (к минус 1)"]
+  пусть listType равно соединить "список " с («Element» от loop).«type»
+  пусть hasEach равно «Generated parameter» от loop и вариант «For each» и "остаток" и listType
+  пусть hasFuel равно «Generated parameter» от loop и вариант «Fuel» и "запас" и "неотрицательное"
+  пусть kept равно отобразить («Kept» от loop) как kept → соединить [kept.«name», ": ", kept.«type»] по ""
+  пусть own равно отобразить captured как parameter → соединить [parameter.«name», ": ", parameter.«type»] по ""
+  пусть parameters равно «Flattened» от [own, hasEach, hasFuel, kept]
+  пусть measure равно «Clause text» от loop и вариант «Measure»
+  пусть taking равно если пусто parameters то [] иначе [соединить "  принимает " с (соединить parameters по ", ")]
+  пусть decreasing равно если (длина measure) равен 0 то [] иначе [соединить "  убывает " с measure]
+  пусть named равно ["", соединить "тотальная функция " с loop.«name»]
+  пусть giving равно [соединить "  возвращает " с resultType]
+  «Flattened» от [named, taking, giving, decreasing, «Recursive body» от loop и lines]
+
+тотальная функция «First call»
+  принимает loop: «Loop», captured: список «Parameter»
+  возвращает строка
+  пример «The first call passes the starting values»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано captured равно [(запись «Parameter» с «name» равным "н" и «type» равным "число")]
+    ожидается "«Ц» от н и н"
+  пусть eachText равно («Each part» от loop).«after»
+  пусть hasEach равно если «Has clause» от loop и вариант «For each» то [«Wrapped» от eachText] иначе []
+  пусть fuelText равно («Fuel part» от loop).«before»
+  пусть hasFuel равно если «Has clause» от loop и вариант «Fuel» то [«Wrapped» от fuelText] иначе []
+  пусть kept равно отобразить («Kept» от loop) как kept → «Wrapped» от kept.«start»
+  пусть own равно отобразить captured как parameter → parameter.«name»
+  «Call text» от loop.«name» и («Flattened» от [own, hasEach, hasFuel, kept])
+
+тотальная функция «Recursive expansion»
+  принимает loop: «Loop», place: «Placing», parameters: список «Parameter», resultType: строка
+  возвращает «Expansion»
+  пример «A while loop becomes a call and a function»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант
+        «Measure» и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н"), (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body»
+        равным ["    дальше: к станет к минус 1"])
+    дано place равно (запись «Placing» с «seen» равным 10 и «phase» равным 1 и «indent» равным 2 и «before» равным
+        ["тотальная функция «Ф»", "  принимает н: число", "  возвращает число"] и «header» равным "  цикл «Ц»" и
+        «inside» равным ["    пока к больше 0", "    убывает к", "    храним к: число равным н", "    в конце 0",
+        "    дальше: к станет к минус 1", ""] и «after» равным [])
+    дано parameters равно [(запись «Parameter» с «name» равным "н" и «type» равным "число")]
+    дано resultType равно "число"
+    ожидается (запись «Expansion» с «trouble» равным "" и «declarations» равным [["тотальная функция «Ф»",
+        "  принимает н: число", "  возвращает число", "  «Ц» от н"], ["", "тотальная функция «Ц»",
+        "  принимает к: число", "  возвращает число", "  убывает к", "  если не (к больше 0)", "    то 0",
+        "    иначе", "      «Ц» от (к минус 1)"]])
+  пусть captured равно «Captured» от loop и parameters
+  пусть names равно отобразить captured как parameter → parameter.«name»
+  пусть rewriting равно «Rewritten body» от loop и names
+  пусть call равно соединить loop.«margin» с («First call» от loop и captured)
+  пусть outer равно «Flattened» от [place.«before», [call], place.«after»]
+  (запись «Expansion» с «trouble» равным "" и «declarations» равным [outer,
+    «Recursive declaration» от loop и rewriting.«lines» и captured и resultType])
+
+тотальная функция «State record»
+  принимает loop: «Loop», values: список строки
+  возвращает строка
+  пример «One field»
+    дано loop равно (запись «Loop» с «name» равным "«Проход»" и «margin» равным "" и «clauses» равным [(запись «Clause»
+        с «kind» равным вариант «Keep» и «text» равным "лучшее: число равным 0")] и «body» равным [])
+    дано values равно ["1"]
+    ожидается "(запись «Проход — состояние» с «лучшее» равным 1)"
+  пусть pairs равно «Pairs» от («Kept» от loop) и values
+  соединить ["(запись ", «Generated» от loop и "состояние", " с ", соединить pairs по " и ", ")"] по ""
+
+тотальная функция «Pairs»
+  принимает kept: список «Kept», values: список строки
+  возвращает список строки
+  пример «Fields and values side by side»
+    дано kept равно [запись «Kept» с «name» равным "а" и «type» равным "число" и «start» равным "0"]
+    дано values равно ["1"]
+    ожидается ["«а» равным 1"]
+  разбор kept
+    случай пусто
+      то []
+    случай голова и хвост
+      пусть value равно если пусто values то голова.«name» иначе элемент 1 в values
+      приписать (соединить [«Quoted» от голова.«name», " равным ", value] по "") к («Pairs» от хвост и (хвост values))
+
+тотальная функция «Fold expansion»
+  принимает loop: «Loop», place: «Placing», rewriting: «Rewriting»
+  возвращает «Expansion»
+  пример «A loop over a list becomes a fold»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «margin» равным "  " и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "х: число из xs"), (запись «Clause» с «kind» равным вариант
+        «Keep» и «text» равным "с: число равным 0"), (запись «Clause» с «kind» равным вариант «At the end» и «text»
+        равным "с")] и «body» равным ["    дальше: с станет с плюс х"])
+    дано place равно (запись «Placing» с «seen» равным 3 и «phase» равным 2 и «indent» равным 2 и «before» равным
+        ["ф"] и «header» равным "  цикл «Ц»" и «inside» равным [] и «after» равным [""])
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным ["    «Ц»"] и «continues» равным 1
+        и «last» равным "    дальше: с станет с плюс х" и «updates» равным [(запись «Update» с «name» равным "с" и
+        «value» равным "с плюс х")])
+    ожидается (запись «Expansion» с «trouble» равным "" и «declarations» равным [["", "объект «Ц — состояние»",
+        "  «с»: число", ""], ["ф",
+        "  пусть «Ц — итог» равно свёртка xs начиная с (запись «Ц — состояние» с «с» равным 0) как «Ц — шаг» и х",
+        "    пусть с равно «Ц — шаг».«с»", "    (запись «Ц — состояние» с «с» равным (с плюс х))",
+        "  пусть с равно «Ц — итог».«с»", "  с", ""]])
+  пусть margin равно loop.«margin»
+  пусть kept равно «Kept» от loop
+  пусть starts равно отобразить kept как one → «Wrapped» от one.«start»
+  пусть values равно отобразить kept как one → «Value after» от one и rewriting.«updates»
+  пусть body равно отфильтровать («Without last line» от loop.«body») где line → не («Blank» от line)
+  пусть headPart равно соединить [margin, "пусть ", «Generated» от loop и "итог", " равно свёртка ",
+    «Wrapped» от («Each part» от loop).«after», " начиная с ", «State record» от loop и starts, " как ",
+    «Generated» от loop и "шаг", " и ", («Element» от loop).«name»] по ""
+  пусть opened равно отобразить kept как one → соединить [margin, "  пусть ", one.«name», " равно ",
+    «Generated» от loop и "шаг", ".", «Quoted» от one.«name»] по ""
+  пусть closing равно соединить [margin, "  ", «State record» от loop и values] по ""
+  пусть results равно отобразить kept как one → соединить [margin, "пусть ", one.«name», " равно ",
+    «Generated» от loop и "итог", ".", «Quoted» от one.«name»] по ""
+  пусть ending равно соединить margin с («Clause text» от loop и вариант «At the end»)
+  пусть fields равно отобразить kept как one → соединить ["  ", «Quoted» от one.«name», ": ", one.«type»] по ""
+  пусть statePart равно «Flattened» от [["", соединить "объект " с («Generated» от loop и "состояние")], fields, [""]]
+  пусть middle равно [[headPart], opened, body, [closing], results, [ending]]
+  пусть outer равно «Flattened» от («Joined» от («Joined» от [place.«before»] и middle) и [place.«after»])
+  запись «Expansion» с «trouble» равным "" и «declarations» равным [statePart, outer]
+
+тотальная функция «Count text line»
+  принимает acc: список число, line: строка
+  возвращает список число
+  пример «A text line becomes the last»
+    дано acc равно [2, 1]
+    дано line равно "  а"
+    ожидается [3, 3]
+  пример «A blank line does not»
+    дано acc равно [2, 1]
+    дано line равно ""
+    ожидается [3, 1]
+  пусть seen равно (элемент 1 в acc) плюс 1
+  [seen, если «Blank» от line то элемент 2 в acc иначе seen]
+
+тотальная функция «Without last line»
+  принимает lines: список строки
+  возвращает список строки
+  пример «The last text line goes with the blanks after it»
+    дано lines равно ["    а", "    б", ""]
+    ожидается ["    а"]
+  пусть counted равно свёртка lines начиная с [0, 0] как acc и line → «Count text line» от acc и line
+  пусть final равно элемент 2 в counted
+  пусть numbered равно свёртка lines начиная с [] как acc и line → добавить (длина acc) к acc
+  пусть kept равно отфильтровать numbered где number → (number плюс 1) меньше final
+  отобразить kept как number → элемент (number плюс 1) в lines
+
+тотальная функция «Expand one»
+  принимает lines: список строки
+  возвращает «Expansion»
+  пример «One loop of one function»
+    дано lines равно ["тотальная функция «Ф»", "  принимает н: число", "  возвращает число", "  цикл «Ц»",
+        "    пока к больше 0", "    убывает к", "    храним к: число равным н", "    в конце 0",
+        "    дальше: к станет к минус 1", ""]
+    ожидается (запись «Expansion» с «trouble» равным "" и «declarations» равным [["тотальная функция «Ф»",
+        "  принимает н: число", "  возвращает число", "  «Ц» от н"], ["", "тотальная функция «Ц»",
+        "  принимает к: число", "  возвращает число", "  убывает к", "  если не (к больше 0)", "    то 0",
+        "    иначе", "      «Ц» от (к минус 1)", ""]])
+  пусть place равно «Place loop» от lines
+  пусть header равно «Trimmed» от place.«header»
+  пусть name равно «Text from» от header и 6
+  пусть loop равно «Read clauses» от name и («Margin» от place.«header») и place.«inside» и []
+  пусть resultType равно «Header text» от lines и "возвращает "
+  пусть parameters равно «Parameters» от lines
+  пусть names равно отобразить («Captured» от loop и parameters) как parameter → parameter.«name»
+  пусть rewriting равно «Rewritten body» от loop и names
+  пусть foldShape равно «Fold form» от loop и rewriting
+  пусть trouble равно «Trouble» от loop и resultType и rewriting и foldShape
+  если (длина trouble) больше 0
+    то запись «Expansion» с «trouble» равным trouble и «declarations» равным []
+    иначе (если foldShape то «Fold expansion» от loop и place и rewriting
+      иначе «Recursive expansion» от loop и place и parameters и resultType)
+
+тотальная функция «Step on»
+  принимает declaration: список строки, rest: список (список строки), done: список (список строки)
+  возвращает «Step»
+  пример «A declaration without a loop moves to the done ones»
+    дано declaration равно ["модуль «А»"]
+    дано rest равно []
+    дано done равно []
+    ожидается (запись «Step» с «stop» равным нет и «trouble» равным "" и «queue» равным [] и «done» равным
+        [["модуль «А»"]])
+  пусть moved равно (запись «Step» с «stop» равным нет и «trouble» равным "" и «queue» равным rest и «done» равным
+    (добавить declaration к done))
+  если «Has loop» от declaration то «Step after» от («Expand one» от declaration) и rest и done иначе moved
+
+тотальная функция «Step after»
+  принимает expansion: «Expansion», rest: список (список строки), done: список (список строки)
+  возвращает «Step»
+  пример «A trouble stops the expansion»
+    дано expansion равно (запись «Expansion» с «trouble» равным "беда" и «declarations» равным [])
+    дано rest равно []
+    дано done равно []
+    ожидается (запись «Step» с «stop» равным да и «trouble» равным "беда" и «queue» равным [] и «done» равным [])
+  пусть stopped равно (запись «Step» с «stop» равным да и «trouble» равным expansion.«trouble» и «queue» равным rest и
+    «done» равным done)
+  пусть grown равно (запись «Step» с «stop» равным нет и «trouble» равным "" и
+    «queue» равным («Joined» от expansion.«declarations» и rest) и «done» равным done)
+  если (длина expansion.«trouble») больше 0 то stopped иначе grown
+
+тотальная функция «Expansion step»
+  принимает queue: список (список строки), done: список (список строки)
+  возвращает «Step»
+  пример «An empty queue stops»
+    дано queue равно []
+    дано done равно [["модуль «А»"]]
+    ожидается (запись «Step» с «stop» равным да и «trouble» равным "" и «queue» равным [] и «done» равным
+        [["модуль «А»"]])
+  разбор queue
+    случай пусто
+      то запись «Step» с «stop» равным да и «trouble» равным "" и «queue» равным [] и «done» равным done
+    случай голова и хвост
+      то «Step on» от голова и хвост и done
+
+тотальная функция «Expand all»
+  принимает queue: список (список строки), done: список (список строки), steps: список строки
+  возвращает «Expansion»
+  пример «No budget left»
+    дано queue равно [["модуль «А»"]]
+    дано done равно []
+    дано steps равно []
+    ожидается (запись «Expansion» с «trouble» равным "циклы вложены глубже, чем строк в файле" и «declarations» равным
+        [])
+  разбор steps
+    случай пусто
+      то запись «Expansion» с «trouble» равным "циклы вложены глубже, чем строк в файле" и «declarations» равным done
+    случай голова и хвост
+      пусть stepped равно «Expansion step» от queue и done
+      если stepped.«stop»
+        то запись «Expansion» с «trouble» равным stepped.«trouble» и «declarations» равным stepped.«done»
+        иначе «Expand all» от stepped.«queue» и stepped.«done» и хвост
+
+тотальная функция «Group step»
+  принимает acc: «Grouping», line: строка
+  возвращает «Grouping»
+  пример «A line at the left edge opens a declaration»
+    дано acc равно (запись «Grouping» с «done» равным [] и «current» равным ["модуль «А»"])
+    дано line равно "функция «Б»"
+    ожидается (запись «Grouping» с «done» равным [["модуль «А»"]] и «current» равным ["функция «Б»"])
+  пусть opens равно ((«Indent» от line) равен 0) и притом (не («Blank» от line)) и притом (не (пусто acc.«current»))
+  если opens
+    то запись «Grouping» с «done» равным (добавить acc.«current» к acc.«done») и «current» равным [line]
+    иначе запись «Grouping» с «done» равным acc.«done» и «current» равным (добавить line к acc.«current»)
+
+тотальная функция «Declarations»
+  принимает lines: список строки
+  возвращает список (список строки)
+  пример «Two declarations with their blank lines»
+    дано lines равно ["модуль «А»", "", "функция «Б»", "  1"]
+    ожидается [["модуль «А»", ""], ["функция «Б»", "  1"]]
+  пусть start равно запись «Grouping» с «done» равным [] и «current» равным []
+  пусть grouped равно свёртка lines начиная с start как acc и line → «Group step» от acc и line
+  добавить grouped.«current» к grouped.«done»
+
+тотальная функция «Expand text»
+  принимает source: строка
+  возвращает «Outcome»
+  пример «A while loop»
+    дано source равно """
+      модуль «А»
+
+      тотальная функция «Ф»
+        принимает н: число
+        возвращает число
+        цикл «Ц»
+          пока к больше 0
+          убывает к
+          храним к: число равным н
+          в конце 0
+          дальше: к станет к минус 1
+      """
+    ожидается вариант «Expanded» с textPart равным """
+      модуль «А»
+
+      тотальная функция «Ф»
+        принимает н: число
+        возвращает число
+        «Ц» от н
+
+      тотальная функция «Ц»
+        принимает к: число
+        возвращает число
+        убывает к
+        если не (к больше 0)
+          то 0
+          иначе
+            «Ц» от (к минус 1)
+      """
+  пусть lines равно разделить source по "\n"
+  пусть steps равно «Flattened» от [lines, lines, lines, lines, lines, ["", ""]]
+  пусть expansion равно «Expand all» от («Declarations» от lines) и [] и steps
+  если (длина expansion.«trouble») больше 0
+    то вариант «Not expanded» с reason равным expansion.«trouble»
+    иначе вариант «Expanded» с textPart равным (соединить («Flattened» от expansion.«declarations») по "\n")

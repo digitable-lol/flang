@@ -12,9 +12,10 @@ bootstrap/flang run-script translation:validate -- --all
 bootstrap/flang run-script translation:validate -- --path docs/examples/leetcode
 ```
 
-The first command takes `flang/proof/examples` and `docs/examples/pythagoras`; with `--all` it
+The first command takes `flang/proof/examples`, `docs/examples/pythagoras` and
+`docs/examples/leetcode/069-sqrtx.flang`; with `--all` it
 takes every file of `docs/examples` too. With `-- --path <file or directory>` (from the root of the
-tree, or absolute) it takes that program and the seven files the forgeries edit, so a program of
+tree, or absolute) it takes that program and the eight files the forgeries edit, so a program of
 your own is validated the same way.
 
 ## How it runs
@@ -89,7 +90,12 @@ node:
   shape (`for` over `.as.list.items`, an accumulator with `fl_region_recycle` or a `fl_keep` flag,
   and `fl_list` after the loop), and the loop body becomes the tree of one step; for a map
   (`fl_par_map`) the tree of one step is the separate C function the print hands the element and
-  the array of captured values. A loop body that leaves
+  the array of captured values; a self tail call that the print turns into `for (;;)` with the
+  parameters reassigned and `continue` is read as a call of the function itself with the new
+  values (only for a function without printed postconditions), and a C function of the module that
+  has no source name and makes no calls (the measure guard) is executed in place. Both trees are
+  simplified along their paths (a condition decided above is not asked again, a constant one is
+  folded), and two calls of one function with equal arguments count as one. A loop body that leaves
   the function (a `return` that is not a refusal, `break`, `goto`) or writes a variable declared
   outside it (other than the accumulator) is refused. The C tree starts at the door `_call`, so the
   preconditions printed there are compared too.
@@ -159,7 +165,8 @@ validator to reject every one of them: an operation sign, a branch literal, a pr
 bound, a recursion step, a text constant, swapped operands, a hidden point (a postcondition check
 that fails at one value no witness takes), a bound inside a sum (a precondition over `m² + n²`), a
 list length wrong only on a tail of three, a fold step that takes the wrong accumulator, a filter
-that drops 1000 and a map condition wrong only at a threshold of 5000.
+that drops 1000, a map condition wrong only at a threshold of 5000, an apply function that sends a
+tag to another function and a tail-call loop step wrong only at 777.
 A forgery is rejected when a witness disagrees or the symbolic comparison does not match. A forgery that cannot be built
 (its line is gone from the printed C) fails the plan too.
 

@@ -74,7 +74,7 @@
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 25 (translation validation: the symbolic walk of printed C; до них 24, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) --> 25 файлов,
-<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 22097 (translation validation: the symbolic walk of printed C; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 22 097 строк,
+<!-- СНЯТО 2026-11-06 строк-в flang/proof/lean/*.lean = 22153 (translation validation: the symbolic walk of printed C; до них 20607, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 19693, снято 2026-10-25) (task 4804: the Lean acceptance replays the word bound steps; до них 19514, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 18817, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 18644, снято 2026-10-18) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 14217, снято 2026-10-13) (batch five over dev 4222c7083; до них 13972, снято 2026-10-11) (правка ложной теоремы о не-числе в Rules.lean; до них 13969, снято 2026-10-11) (ADR-0064: Н6 и О9 входят в приёмку с теоремами; до них 12676, снято 2026-10-04) --> 22 153 строки,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -304,17 +304,17 @@ PostgreSQL и SQLite, HTTP, TLS. С 24 октября 2026 (20:07 UTC) в раб
 `translation-validation` на каждый push и каждый pull request, с полом
 проверенных и доказанных функций и потолками функций вне проверки и ненапечатанных файлов; шаг
 с границами на единицу теснее обязан покраснеть. На корпусе по умолчанию (`flang/proof/examples`
-и `docs/examples/pythagoras`, 54 файла):
+и `docs/examples/pythagoras` и `docs/examples/leetcode/069-sqrtx.flang`, 55 файлов):
 
 | что | число |
 |---|---:|
-| функций со СООТВЕТСТВИЕМ ПРОВЕРЕНО | 150 |
-| доказано для любого входа | 150: перебором области 47, символьно 103 |
-| из символьных стоят на постусловиях, доказанных ядром и не напечатанных | 50 |
+| функций со СООТВЕТСТВИЕМ ПРОВЕРЕНО | 152 |
+| доказано для любого входа | 152: перебором области 47, символьно 105 |
+| из символьных стоят на постусловиях, доказанных ядром и не напечатанных | 51 |
 | на свидетелях без доказательства | 0 |
 | вне проверки | 0 |
 | расхождений | 0 |
-| подделок напечатанного C отвергнуто | 13 из 13, пять из них — только символьным сравнением |
+| подделок напечатанного C отвергнуто | 14 из 14, шесть из них — только символьным сравнением |
 
 Устройство печати держит отдельно сличитель протокола перевода `flang/translation/matcher.c`
 (ADR-0030).

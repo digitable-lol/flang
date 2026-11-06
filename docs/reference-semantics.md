@@ -47,9 +47,10 @@ number into binary64:
 | `«умножить-кон-кон»` | a non-zero product of finite numbers is the binary64 product |
 | `«остаток-кон-кон»` | the remainder of finite numbers is the binary64 remainder unless it is a zero with the sign of a negative dividend |
 
-What the model still does not distinguish is the sign of a zero result: `«знак-нуля-суммы»`
-shows `−0 + −0`, and the same holds for `0 × −5` and `−5 остаток от 5`. Equality is `Object.is`,
-so such a zero is not equal to `0` in the language while the model says it is.
+What the model still does not distinguish is the sign of a zero sum: `«знак-нуля-суммы»` shows
+`−0 + −0`. Equality is `Object.is`, so such a zero is not equal to `0` in the language while the
+model says it is. The language makes a zero product, quotient and remainder `+0`, and so does the
+reference, so `0 × −5` and `−5 остаток от 5` agree with the model.
 
 ## The language core: `Semantics/Eval.lean`
 
@@ -63,7 +64,10 @@ record, constructor, field, the built-in forms and function references with appl
 `«выч» P n ρ e` evaluates `e` in the environment `ρ` with `n` units of fuel; fuel bounds the depth
 of evaluation, so the definition is total. A call evaluates the arguments, binds them to the
 parameters in a fresh environment, evaluates the body and checks every postcondition, as the
-interpreter does. A run ends with a value, an error with its code, out of fuel, or outside the
+interpreter does. A call where the totality analysis marked a descent of a declared measure and
+the kernel did not prove it first checks the measure, as the print does: the measure at the
+callee's arguments is smaller than the caller's, not below zero and whole, or the call refuses
+with `FLANG_MEASURE`. A zero product, quotient or remainder is `+0`. A run ends with a value, an error with its code, out of fuel, or outside the
 reference (exact fractions, `к числу`, `хеш256`).
 
 ## Theorems about evaluation
@@ -104,5 +108,5 @@ The plan fails on any disagreement. The same step runs in the Lean crosscheck wo
   the translation of model terms into the reference tree, which would carry it over, is not written.
 - The moves of the record (`ход …`) have no theorem in either semantics.
 - Exact fractions, parsing numbers from strings and hashing are outside the reference.
-- The sign of a zero result is not modelled.
+- The sign of a zero sum is not modelled.
 - Reading the text of a record and of the `flang ast` output is trusted.

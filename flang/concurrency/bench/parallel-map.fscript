@@ -22,11 +22,14 @@
     "count() { cat \"$R\"/$1/*.c | grep -c \"$2\"; }",
     "emit parallel-map main",
     "emit parallel-map-forged-number number",
-    "emit parallel-map-forged-unit unit",
+    соединить [
+      "U=$($F emit \"$B/parallel-map-forged-unit.flang\" --target c --out \"$R/unit\" 2>&1); ",
+      "echo \"unit_identity=$(printf '%s' \"$U\" | grep -c FLANG_MONOID_IDENTITY)\""
+    ] по "",
     "echo \"map_main=$(count main 'fl_par_map(ctx')\"",
     "echo \"fold_main=$(count main 'fl_par_fold(ctx')\"",
     "echo \"fold_number=$(count number 'fl_par_fold(ctx')\"",
-    "echo \"fold_unit=$(count unit 'fl_par_fold(ctx')\"",
+    "echo \"fold_unit=$(cat \"$R\"/unit/*.c 2>/dev/null | grep -c 'fl_par_fold(ctx')\"",
     "for d in force tsan forged; do cp -r \"$R/main\" \"$R/$d\"; done",
     "G=\"$R/forged/flang_runtime.c\"",
     соединить [
@@ -186,6 +189,8 @@
   пусть отказ равно («Значение ключа» от вывод и "refusal_text")
   пусть режет равно ((«Число ключа» от вывод и "fold_main") равен 1)
   пусть краснеет равно ((«Число ключа» от вывод и "tsan_forged") больше 0)
+  пусть отвергнут равно ((«Число ключа» от вывод и "unit_identity") больше 0)
+  пусть без_свёртки равно ((«Число ключа» от вывод и "fold_unit") равен 0)
   [
     «Одинаково на потоках» от вывод и "map",
     «Одинаково на потоках» от вывод и "refusal",
@@ -195,7 +200,7 @@
     «Требуется» от "отображение печатается через fl_par_map" и ((«Число ключа» от вывод и "map_main") больше 0),
     «Требуется» от "свёртка по доказанному моноиду печатается через fl_par_fold" и режет,
     «Требуется» от "моноид над число не режет свёртку" и ((«Число ключа» от вывод и "fold_number") равен 0),
-    «Требуется» от "моноид с ложной единицей не режет свёртку" и ((«Число ключа» от вывод и "fold_unit") равен 0),
+    «Требуется» от "моноид с ложной единицей отвергнут печатью и не режет свёртку" и (отвергнут и притом без_свёртки),
     «Требуется» от "ThreadSanitizer молчит" и ((«Число ключа» от вывод и "tsan") равен 0),
     «Требуется» от "возвращённая запись из куска краснит ThreadSanitizer" и краснеет,
     «Требуется» от "восемь потоков быстрее одного не меньше чем в шесть раз" и ((«Ускорение» от вывод) не меньше 6)
@@ -236,6 +241,7 @@ map_main=1
 fold_main=1
 fold_number=0
 fold_unit=0
+unit_identity=1
 tsan=0
 tsan_forged=5
 ms_1=6000

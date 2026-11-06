@@ -92,6 +92,7 @@ script.unicode-text:forgery = bootstrap/flang io flang/proof/probes/unicode-text
 script.unicode:translate = bootstrap/flang io scripts/unicode/translate.fscript --plan Translate --max-steps 10000000000 --
 script.russian-grammar:probe = bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
 script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-demo.fscript --plan Demo --timeout 600000
+script.argument-check:demo = bootstrap/flang io flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- flang/experimental/texts/argument-controlled.txt
 script.ring-rules:probe = bootstrap/flang io flang/proof/probes/ring-laws/run.fscript --plan Binary --max-steps 4000000000 --timeout 1800000
 script.randomness:probe = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Binary
 script.randomness:forgery = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Forgery

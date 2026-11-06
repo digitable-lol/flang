@@ -20,7 +20,7 @@
 
 тотальная функция «Moves command»
   возвращает строка
-  (соединить ["grep -o '^    | \"[а-яё]*\" =>' ../checker/second/Moves.lean ",
+  (соединить ["grep -o '^    | \"[^\" ]*\" =>' ../checker/second/Moves.lean ",
       "| sed 's/^    | \"//; s/\" =>$//; s/^/ход /' | LC_ALL=C sort -u"] по "")
 
 тотальная функция «Sorry command»

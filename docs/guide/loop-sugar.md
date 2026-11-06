@@ -54,6 +54,6 @@ mentions, then the kept values, and returns what the enclosing function returns.
 The loop body sees those parameters, its kept values and its element; anything
 bound by `пусть` before the loop enters through `храним`.
 
-`bootstrap/flang run-script sugar:check` expands three LeetCode tasks written
+`bootstrap/flang run-script sugar:demo` expands three LeetCode tasks written
 with loops (`flang/sugar/tasks.flang`) and compares the `check --proof` verdict
 of each with the verdict of the original solution in `docs/examples/leetcode`.

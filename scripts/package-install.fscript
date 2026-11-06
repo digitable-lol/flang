@@ -1,5 +1,7 @@
 модуль «Package installer»
   использует «Registry»
+  использует «Minisign»
+  использует «Ed25519»
 
 примечание "ДВИЖОК УСТАНОВКИ ПАКЕТОВ ПО ИМЕНИ ИЗ РЕЕСТРА (ADR-0021, ADR-0059, ADR-0168). Его зовёт"
 примечание "команда двоичного «flang install <программа.flang> [<имя>[: <ограничение>]]... [--registry"
@@ -41,6 +43,22 @@
   «binary»: строка
   «needs»: строка
   «stale»: признак
+  «trust»: «Trust»
+
+объект «Pin»
+  «name»: строка
+  «key»: строка
+
+объект «Trust»
+  «unsigned ok»: признак
+  «repins»: список строки
+  «pins»: список «Pin»
+  «trusted»: список «Pin»
+
+объект «Trust words»
+  «trust»: «Trust»
+  «words»: список строки
+  «pending»: признак
 
 объект «Got»
   «name»: строка
@@ -50,6 +68,8 @@
   «proved»: число
   «claims»: число
   «risky»: признак
+  «key»: строка
+  «remark»: строка
 
 объект «Parse»
   «program»: строка
@@ -71,6 +91,11 @@
   вариант «Checking» содержит ask: «Ask», got: список «Got»
   вариант «Locking» содержит ask: «Ask», got: список «Got»
   вариант «Writing lock» содержит ask: «Ask», got: список «Got»
+  вариант «Reading lock» содержит ask: «Ask»
+  вариант «Reading trust» содержит ask: «Ask»
+  вариант «Fetching signature» содержит ask: «Ask», pending: «Pending»
+  вариант «Verifying» содержит ask: «Ask», pending: «Pending», check: «Ed25519 check», started: число
+  вариант «Timing» содержит ask: «Ask», pending: «Pending», started: число
 
 тотальная функция «Default ledger»
   возвращает строка
@@ -105,7 +130,7 @@
 тотальная функция «Usage»
   возвращает строка
   соединить ["звать: flang run-script package:install <программа.flang> [<имя>[: <диапазон>]]... ",
-    "[--registry <адрес>] [--accept-unproven]"] по ""
+    "[--registry <адрес>] [--accept-unproven] [--allow-unsigned] [--repin <имя>]..."] по ""
 
 тотальная функция «Failed»
   принимает code: строка, words: строка
@@ -420,7 +445,8 @@
   (запись «Got» с «name» равным (choice.«имя») и «version» равным («Версия строкой» от (choice.«версия»))
     и «file» равным («Package file» от (choice.«адрес») и («Версия строкой» от (choice.«версия»)))
     и «body» равным body и «proved» равным («Count of» от body и («Proved mark»))
-    и «claims» равным («Count of» от body и («Claim mark»)) и «risky» равным («Risky» от body))
+    и «claims» равным («Count of» от body и («Claim mark»)) и «risky» равным («Risky» от body) и «key» равным "нет"
+    и «remark» равным "")
 
 тотальная функция «Share words»
   принимает one: «Got»
@@ -428,7 +454,7 @@
   пример «Доля названа числами, а не процентом»
     дано one равно (запись «Got» с «name» равным "Логика" и «version» равным "1.2.0"
       и «file» равным "logic.flang-package" и «body» равным "" и «proved» равным 4 и «claims» равным 7
-      и «risky» равным нет)
+      и «risky» равным нет и «key» равным "нет" и «remark» равным "")
     ожидается "Логика 1.2.0 → logic.flang-package: доказано 4 из 7 обязательств"
   соединить [(one.«name»), " ", (one.«version»), " → ", (one.«file»), ": доказано ", (к строке (one.«proved»)),
     " из ", (к строке (one.«claims»)), " обязательств"] по ""
@@ -500,7 +526,7 @@
   (запись «Ask» с «program» равным («From root» от (parse.«program»)) и «shown» равным (parse.«program»)
     и «folder» равным («Folder of» от («From root» от (parse.«program»))) и «wanted» равным (parse.«wanted»)
     и «ledger» равным (parse.«ledger») и «consent» равным (parse.«consent») и «binary» равным («Default binary»)
-    и «needs» равным "" и «stale» равным нет)
+    и «needs» равным "" и «stale» равным нет и «trust» равным («Blank trust»))
 
 тотальная функция «Parse trouble»
   принимает parse: «Parse»
@@ -527,23 +553,24 @@
 тотальная функция «With binary»
   принимает ask: «Ask», binary: строка
   возвращает «Ask»
-  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
-    и «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent»)
-    и «binary» равным binary и «needs» равным (ask.«needs») и «stale» равным (ask.«stale»))
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder») и
+    «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent») и
+    «binary» равным binary и «needs» равным (ask.«needs») и «stale» равным (ask.«stale») и «trust» равным
+    (ask.«trust»))
 
 тотальная функция «With ledger»
   принимает ask: «Ask», ledger: строка
   возвращает «Ask»
-  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
-    и «wanted» равным (ask.«wanted») и «ledger» равным ledger и «consent» равным (ask.«consent»)
-    и «binary» равным (ask.«binary») и «needs» равным (ask.«needs») и «stale» равным (ask.«stale»))
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder») и
+    «wanted» равным (ask.«wanted») и «ledger» равным ledger и «consent» равным (ask.«consent») и «binary» равным
+    (ask.«binary») и «needs» равным (ask.«needs») и «stale» равным (ask.«stale») и «trust» равным (ask.«trust»))
 
 тотальная функция «With needs»
   принимает ask: «Ask», needs: строка, stale: признак
   возвращает «Ask»
   (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder»)
     и «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent»)
-    и «binary» равным (ask.«binary») и «needs» равным needs и «stale» равным stale)
+    и «binary» равным (ask.«binary») и «needs» равным needs и «stale» равным stale и «trust» равным (ask.«trust»))
 
 тотальная функция «Ledger from settings»
   принимает ask: «Ask», text: строка
@@ -555,12 +582,16 @@
   принимает ask: «Ask»
   возвращает «Ask»
   пример «Названный адрес остаётся; относительный путь считается от корня дерева»
-    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным ""
-      и «wanted» равным пустой список и «ledger» равным "scripts/registry-example/registry.list"
-      и «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет)
-    ожидается (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным ""
-      и «wanted» равным пустой список и «ledger» равным "../scripts/registry-example/registry.list"
-      и «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет)
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "scripts/registry-example/registry.list" и
+      «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет и «trust» равным
+      (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и «pins» равным пустой список и
+      «trusted» равным пустой список))
+    ожидается (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "../scripts/registry-example/registry.list" и
+      «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет и «trust» равным
+      (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и «pins» равным пустой список и
+      «trusted» равным пустой список))
   если «Is web» от (ask.«ledger»)
     то ask
     иначе «With ledger» от ask и («From root» от (ask.«ledger»))
@@ -584,18 +615,18 @@
     случай вариант «Пока ничего»
       то «Doing» от (вариант «Прочитать доводы») и (вариант «Reading arguments»)
     случай вариант «Доводы» с доводы как words
-      то «Take arguments» от («Parsed» от words)
+      то «Take arguments» от («Parsed» от («Trust split» от words).«words») и («Trust split» от words).«trust»
     случай любое
       то «Failed» от "FLANG_IO_ORDER" и "ждали доводы команды"
 
 тотальная функция «Take arguments»
-  принимает parse: «Parse»
+  принимает parse: «Parse», trust: «Trust»
   возвращает «Продолжение»
   пусть trouble равно («Parse trouble» от parse)
   если не (trouble равен "")
     то «Failed» от "FLANG_INSTALL_USAGE" и trouble
     иначе («Doing» от (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
-      и (вариант «Reading binary» с ask равным («Ask of» от parse)))
+      и (вариант «Reading binary» с ask равным («With trust» от («Ask of» от parse) и trust)))
 
 тотальная функция «After binary»
   принимает ask: «Ask», reply: «Отклик»
@@ -635,7 +666,7 @@
   принимает ask: «Ask», before: строка
   возвращает «Продолжение»
   пусть text равно («Needs text» от («Merged needs» от before и (ask.«wanted»)))
-  «Fetch ledger» от («With needs» от ask и text и (не (text равен before)))
+  «Read old lock» от («With needs» от ask и text и (не (text равен before)))
 
 тотальная функция «After needs»
   принимает ask: «Ask», reply: «Отклик»
@@ -775,7 +806,7 @@
   возвращает «Продолжение»
   пусть print равно (хеш256 body)
   если print равен (now.«отпечаток»)
-    то «Fetch next» от ask и rest и (добавить («Got of» от now и body) к got)
+    то «Signature policy» от ask и now и rest и got и body
     иначе «Failed» от "FLANG_INSTALL_FINGERPRINT" и (соединить ["пакет ", («Who» от now),
       ": отпечаток тела не сошёлся — в списке ", (now.«отпечаток»), ", у полученного ", print,
       "; на диск ничего не записано"] по "")
@@ -859,8 +890,9 @@
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
       то если code равен 0
-        то («Doing» от (вариант «Записать файл» с путь равным (соединить [(ask.«folder»), («Lock file»)] по "")
-          и содержимое равным output) и (вариант «Writing lock» с ask равным ask и got равным got))
+        то («Doing» от (вариант «Записать файл» с путь равным (соединить [(ask.«folder»),
+          («Lock file»)] по "") и содержимое равным («Lock with pins» от output и («Pins after» от
+          (ask.«trust».«pins») и got))) и (вариант «Writing lock» с ask равным ask и got равным got))
         иначе «Failed» от "FLANG_INSTALL_BUILD" и («Tool words» от "flang lock" и code и output и errors)
     случай вариант «Сбой» с код как code и сообщение как words
       то «Failed» от "FLANG_INSTALL_BUILD" и (соединить ["flang lock не запустился: ", words] по "")
@@ -872,7 +904,7 @@
   возвращает строка
   пусть head равно (соединить ["поставлено пакетов: ", (к строке (длина got)), " рядом с ", (ask.«shown»),
     "; замок ", (ask.«folder»), («Lock file»), " — ", (к строке bytes), " знаков:"] по "")
-  «Trouble list» от head и (отобразить got как one → «Share words» от one)
+  «Trouble list» от head и (отобразить got как one → «Installed words» от one)
 
 тотальная функция «After lock written»
   принимает ask: «Ask», got: список «Got», reply: «Отклик»
@@ -911,6 +943,696 @@
       то «After locking» от ask и got и reply
     случай вариант «Writing lock» с ask как ask и got как got
       то «After lock written» от ask и got и reply
+    случай вариант «Reading lock» с ask как ask
+      то «After old lock» от ask и reply
+    случай вариант «Reading trust» с ask как ask
+      то «After trust» от ask и reply
+    случай вариант «Fetching signature» с ask как ask и pending как pending
+      то «After signature» от ask и pending и reply
+    случай вариант «Verifying» с ask как ask и pending как pending и check как check и started как started
+      то «After tick» от ask и pending и check и started и reply
+    случай вариант «Timing» с ask как ask и pending как pending и started как started
+      то «After timing» от ask и pending и started и reply
+
+тип «Trust word kind»
+  вариант «Repin name»
+  вариант «Repin flag»
+  вариант «Unsigned flag»
+  вариант «Plain word»
+
+объект «Word rule»
+  «matches»: признак
+  «kind»: «Trust word kind»
+
+тотальная функция «Blank trust»
+  возвращает «Trust»
+  пример «Nothing allowed and nothing pinned»
+    ожидается (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и
+      «pins» равным пустой список и «trusted» равным пустой список)
+  (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и «pins» равным пустой список и
+    «trusted» равным пустой список)
+
+тотальная функция «With trust»
+  принимает ask: «Ask», trust: «Trust»
+  возвращает «Ask»
+  пример «The trust settles into the request»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано trust равно (запись «Trust» с «unsigned ok» равным да и «repins» равным пустой список и
+      «pins» равным пустой список и «trusted» равным пустой список)
+    ожидается (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным да и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+  (запись «Ask» с «program» равным (ask.«program») и «shown» равным (ask.«shown») и «folder» равным (ask.«folder») и
+    «wanted» равным (ask.«wanted») и «ledger» равным (ask.«ledger») и «consent» равным (ask.«consent») и
+    «binary» равным (ask.«binary») и «needs» равным (ask.«needs») и «stale» равным (ask.«stale») и
+    «trust» равным trust)
+
+тотальная функция «Trust word kind of»
+  принимает pending: признак, word: строка
+  возвращает «Trust word kind»
+  пример «The word after --repin names a package»
+    дано pending равно да
+    дано word равно "Логика"
+    ожидается вариант «Repin name»
+  пример «The flag that allows unsigned packages»
+    дано pending равно нет
+    дано word равно "--allow-unsigned"
+    ожидается вариант «Unsigned flag»
+  пример «Any other word goes to the old parser»
+    дано pending равно нет
+    дано word равно "proba.flang"
+    ожидается вариант «Plain word»
+  разбор (отфильтровать [(запись «Word rule» с «matches» равным pending и «kind» равным (вариант «Repin name»)),
+    (запись «Word rule» с «matches» равным (word равен "--repin") и «kind» равным (вариант «Repin flag»)),
+    (запись «Word rule» с «matches» равным (word равен "--allow-unsigned") и «kind» равным
+    (вариант «Unsigned flag»))] где one → one.«matches»)
+    случай пусто
+      то вариант «Plain word»
+    случай голова lead и хвост others
+      то lead.«kind»
+
+тотальная функция «Trust split step»
+  принимает parted: «Trust words», word: строка
+  возвращает «Trust words»
+  пример «The word after --repin is a name to re-pin»
+    дано parted равно (запись «Trust words» с «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список) и
+      «words» равным пустой список и «pending» равным да)
+    дано word равно "Логика"
+    ожидается (запись «Trust words» с «trust» равным (запись «Trust» с «unsigned ok» равным нет и «repins» равным
+      ["Логика"] и «pins» равным пустой список и «trusted» равным пустой список) и «words» равным пустой список и
+      «pending» равным нет)
+  пусть trust равно parted.«trust»
+  разбор («Trust word kind of» от (parted.«pending») и word)
+    случай вариант «Repin name»
+      то (запись «Trust words» с «trust» равным (запись «Trust» с «unsigned ok» равным (trust.«unsigned ok») и
+        «repins» равным (добавить word к (trust.«repins»)) и «pins» равным (trust.«pins») и «trusted» равным
+        (trust.«trusted»)) и «words» равным (parted.«words») и «pending» равным нет)
+    случай вариант «Repin flag»
+      то (запись «Trust words» с «trust» равным trust и «words» равным (parted.«words») и «pending» равным да)
+    случай вариант «Unsigned flag»
+      то (запись «Trust words» с «trust» равным (запись «Trust» с «unsigned ok» равным да и «repins» равным
+        (trust.«repins») и «pins» равным (trust.«pins») и «trusted» равным (trust.«trusted»)) и «words» равным
+        (parted.«words») и «pending» равным нет)
+    случай вариант «Plain word»
+      то (запись «Trust words» с «trust» равным trust и «words» равным (добавить word к (parted.«words»)) и
+        «pending» равным нет)
+
+тотальная функция «Trust split»
+  принимает words: список строки
+  возвращает «Trust words»
+  пример «The new flags are taken out, the rest stays in order»
+    дано words равно ["proba.flang", "--repin", "Логика", "Списки", "--allow-unsigned"]
+    ожидается (запись «Trust words» с «trust» равным (запись «Trust» с «unsigned ok» равным да и «repins» равным
+      ["Логика"] и «pins» равным пустой список и «trusted» равным пустой список) и «words» равным ["proba.flang",
+      "Списки"] и «pending» равным нет)
+  (свёртка words начиная с (запись «Trust words» с «trust» равным («Blank trust») и «words» равным пустой список и
+    «pending» равным нет) как parted и word → «Trust split step» от parted и word)
+
+тотальная функция «With pins»
+  принимает ask: «Ask», pins: список «Pin», trusted: список «Pin»
+  возвращает «Ask»
+  пример «Pins and trusted keys land in the trust of the request»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pins равно [(запись «Pin» с «name» равным "Логика" и «key» равным "нет")]
+    дано trusted равно пустой список
+    ожидается (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным [(запись «Pin» с «name» равным "Логика" и «key» равным "нет")] и
+      «trusted» равным пустой список))
+  пусть trust равно ask.«trust»
+  («With trust» от ask и (запись «Trust» с «unsigned ok» равным (trust.«unsigned ok») и «repins» равным
+    (trust.«repins») и «pins» равным pins и «trusted» равным trusted))
+
+тотальная функция «Read old lock»
+  принимает ask: «Ask»
+  возвращает «Продолжение»
+  пример «The old lock is read before anything is fetched»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "/x/" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным
+      "/x/flang.lock") и потом равным (вариант «Reading lock» с ask равным (запись «Ask» с «program» равным "p" и
+      «shown» равным "p" и «folder» равным "/x/" и «wanted» равным пустой список и «ledger» равным "l" и
+      «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет и «trust» равным
+      (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и «pins» равным пустой список и
+      «trusted» равным пустой список))))
+  («Doing» от (вариант «Прочитать файл» с путь равным (соединить [(ask.«folder»), («Lock file»)] по "")) и
+    (вариант «Reading lock» с ask равным ask))
+
+тотальная функция «After old lock»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without an old lock nothing is pinned and the settings are read next»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "/x/" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным
+      "/x/.flangrc") и потом равным (вариант «Reading trust» с ask равным (запись «Ask» с «program» равным "p" и
+      «shown» равным "p" и «folder» равным "/x/" и «wanted» равным пустой список и «ledger» равным "l" и
+      «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет и «trust» равным
+      (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и «pins» равным пустой список и
+      «trusted» равным пустой список))))
+  пусть pinned равно «With pins» от ask и («Pins of reply» от reply) и пустой список
+  («Doing» от (вариант «Прочитать файл» с путь равным (соединить [(ask.«folder»), ".flangrc"] по "")) и
+    (вариант «Reading trust» с ask равным pinned))
+
+тотальная функция «Pins of reply»
+  принимает reply: «Отклик»
+  возвращает список «Pin»
+  пример «No lock, no pins»
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается пустой список
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Pins of lock» от text
+    случай любое
+      то пустой список
+
+тотальная функция «After trust»
+  принимает ask: «Ask», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without settings next to the program the ledger is fetched at once»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "/x/" и
+      «wanted» равным пустой список и «ledger» равным "/r/registry.list" и «consent» равным нет и «binary» равным
+      "b" и «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO_READ" и сообщение равным "нет файла"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным
+      "/r/registry.list") и потом равным (вариант «Reading ledger» с ask равным (запись «Ask» с «program» равным "p" и
+      «shown» равным "p" и «folder» равным "/x/" и «wanted» равным пустой список и «ledger» равным
+      "/r/registry.list" и «consent» равным нет и «binary» равным "b" и «needs» равным "" и «stale» равным нет и
+      «trust» равным (запись «Trust» с «unsigned ok» равным нет и «repins» равным пустой список и
+      «pins» равным пустой список и «trusted» равным пустой список))))
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то «Fetch ledger» от («With pins» от ask и (ask.«trust».«pins») и («Trusted keys» от text))
+    случай любое
+      то «Fetch ledger» от ask
+
+тотальная функция «Pins mark»
+  возвращает строка
+  пример «Where the pins stand in a lock»
+    ожидается "\"подписи\":["
+  "\"подписи\":["
+
+тотальная функция «Pins of lock»
+  принимает text: строка
+  возвращает список «Pin»
+  пример «Two pins»
+    дано text равно "{\"подписи\":[{\"имя\":\"А\",\"ключ\":\"K1\"},{\"имя\":\"Б\",\"ключ\":\"нет\"}],\"схема\":2}"
+    ожидается [(запись «Pin» с «name» равным "А" и «key» равным "K1"), (запись «Pin» с «name» равным "Б" и
+      «key» равным "нет")]
+  пример «A lock without pins»
+    дано text равно "{\"схема\":2}"
+    ожидается пустой список
+  если не (text содержит («Pins mark»))
+    то пустой список
+    иначе «Pins of list» от (голова (разделить («После метки» от text и («Pins mark»)) по "]"))
+
+тотальная функция «Pins of list»
+  принимает listed: строка
+  возвращает список «Pin»
+  пример «One pin»
+    дано listed равно "{\"имя\":\"Логика\",\"ключ\":\"нет\"}"
+    ожидается [(запись «Pin» с «name» равным "Логика" и «key» равным "нет")]
+  пример «No pins»
+    дано listed равно ""
+    ожидается пустой список
+  (отобразить (отфильтровать (разделить listed по "},{") где piece → piece содержит "\"ключ\":\"") как piece →
+    «Pin of text» от piece)
+
+тотальная функция «Pin of text»
+  принимает piece: строка
+  возвращает «Pin»
+  пример «A name with a quote is unescaped»
+    дано piece равно "{\"имя\":\"А\\\"Б\",\"ключ\":\"нет\"}"
+    ожидается (запись «Pin» с «name» равным "А\"Б" и «key» равным "нет")
+  пусть named равно «После метки» от piece и "\"имя\":\""
+  (запись «Pin» с «name» равным («Json unescaped» от (голова (разделить named по "\",\"ключ\":\""))) и «key» равным
+    (голова (разделить («После метки» от named и "\",\"ключ\":\"") по "\"")))
+
+тотальная функция «Json escaped»
+  принимает text: строка
+  возвращает строка
+  пример «Quote and backslash are escaped»
+    дано text равно "А\"Б\\"
+    ожидается "А\\\"Б\\\\"
+  соединить (разделить (соединить (разделить text по "\\") по "\\\\") по "\"") по "\\\""
+
+тотальная функция «Json unescaped»
+  принимает text: строка
+  возвращает строка
+  пример «The escapes of a name are undone»
+    дано text равно "А\\\"Б\\\\"
+    ожидается "А\"Б\\"
+  соединить (разделить (соединить (разделить text по "\\\"") по "\"") по "\\\\") по "\\"
+
+тотальная функция «Pin text»
+  принимает pin: «Pin»
+  возвращает строка
+  пример «One pin as the lock writes it»
+    дано pin равно (запись «Pin» с «name» равным "Логика" и «key» равным "нет")
+    ожидается "{\"имя\":\"Логика\",\"ключ\":\"нет\"}"
+  соединить ["{\"имя\":\"", («Json escaped» от (pin.«name»)), "\",\"ключ\":\"", (pin.«key»), "\"}"] по ""
+
+тотальная функция «Pins after»
+  принимает pins: список «Pin», got: список «Got»
+  возвращает список «Pin»
+  пример «An installed name replaces its old pin, others stay»
+    дано pins равно [(запись «Pin» с «name» равным "Логика" и «key» равным "нет"), (запись «Pin» с «name» равным
+      "Другое" и «key» равным "нет")]
+    дано got равно [(запись «Got» с «name» равным "Логика" и «version» равным "1.2.0" и «file» равным
+      "logic.flang-package" и «body» равным "" и «proved» равным 4 и «claims» равным 7 и «risky» равным нет и
+      «key» равным "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk" и «remark» равным "")]
+    ожидается [(запись «Pin» с «name» равным "Другое" и «key» равным "нет"), (запись «Pin» с «name» равным "Логика" и
+      «key» равным "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk")]
+  пусть names равно отобразить got как one → one.«name»
+  (свёртка got начиная с (отфильтровать pins где pin → не (names содержит (pin.«name»))) как kept и one → добавить
+    (запись «Pin» с «name» равным (one.«name») и «key» равным (one.«key»)) к kept)
+
+тотальная функция «Lock with pins»
+  принимает lock: строка, pins: список «Pin»
+  возвращает строка
+  пример «The pins stand first in the lock»
+    дано lock равно "{\"схема\":2,\"вход\":\"./p.flang\"}"
+    дано pins равно [(запись «Pin» с «name» равным "Логика" и «key» равным "нет")]
+    ожидается "{\"подписи\":[{\"имя\":\"Логика\",\"ключ\":\"нет\"}],\"схема\":2,\"вход\":\"./p.flang\"}"
+  пример «Text that is not a JSON object stays as it is»
+    дано lock равно "x"
+    дано pins равно пустой список
+    ожидается "x"
+  если lock начинается с "{"
+    то (соединить ["{", («Pins mark»), (соединить (отобразить pins как pin → «Pin text» от pin) по ","), "],",
+      (подстрока lock с 2 по (длина lock))] по "")
+    иначе lock
+
+тотальная функция «Trusted keys»
+  принимает text: строка
+  возвращает список «Pin»
+  пример «Trusted keys of the settings next to the program»
+    дано text равно "registry = x\ntrusted-key = Логика: RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk\n"
+    ожидается [(запись «Pin» с «name» равным "Логика" и «key» равным
+      "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk")]
+  (отобразить (отфильтровать («Live lines» от text) где line → «Names key» от line и "trusted-key") как line →
+    «Trusted pin» от («Обрезать» от («После метки» от line и "=")))
+
+тотальная функция «Trusted pin»
+  принимает value: строка
+  возвращает «Pin»
+  пример «The name before the colon, the key after it»
+    дано value равно "Логика: RWQ"
+    ожидается (запись «Pin» с «name» равным "Логика" и «key» равным "RWQ")
+  (запись «Pin» с «name» равным («Обрезать» от (голова (разделить value по ":"))) и «key» равным («Обрезать» от
+    («Last of» от (разделить value по ":"))))
+
+тотальная функция «Keys named»
+  принимает pins: список «Pin», name: строка
+  возвращает список строки
+  пример «The keys of one name»
+    дано pins равно [(запись «Pin» с «name» равным "Логика" и «key» равным "a"), (запись «Pin» с «name» равным
+      "Списки" и «key» равным "b")]
+    дано name равно "Логика"
+    ожидается ["a"]
+  отобразить (отфильтровать pins где pin → (pin.«name») равен name) как pin → pin.«key»
+
+тотальная функция «Pinned key»
+  принимает pins: список «Pin», name: строка
+  возвращает строка
+  пример «Nothing pinned is empty»
+    дано pins равно пустой список
+    дано name равно "Логика"
+    ожидается ""
+  разбор («Keys named» от pins и name)
+    случай пусто
+      то ""
+    случай голова lead и хвост others
+      то lead
+
+тотальная функция «Key words»
+  принимает line: строка
+  возвращает строка
+  пример «A key is named by its number»
+    дано line равно "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk"
+    ожидается "ключ 8877665544332211"
+  пример «No key»
+    дано line равно ""
+    ожидается "без подписи"
+  разбор («Parse public key» от line)
+    случай вариант «Key» с id как id и key как key
+      то соединить ["ключ ", («Key id text» от id)] по ""
+    случай вариант «Bad key» с reason как why
+      то если (line равен "") или (line равен "нет") то "без подписи" иначе соединить ["нечитаемый ключ ", line] по ""
+
+тип «Key verdict»
+  вариант «Key refused» содержит code: строка, words: строка
+  вариант «Key taken» содержит remark: строка
+  вариант «Key absent» содержит remark: строка
+
+объект «Key rule»
+  «kept»: признак
+  «code»: строка
+  «words»: строка
+
+объект «Key note»
+  «fits»: признак
+  «remark»: строка
+
+тотальная функция «Key verdict of»
+  принимает ask: «Ask», now: «Выбор»
+  возвращает «Key verdict»
+  пример «First use pins the key»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано now равно (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с «старшая» равным 1 и
+      «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk")
+    ожидается вариант «Key taken» с remark равным "ключ закреплён при первой установке"
+  пример «A changed key is refused»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным [(запись «Pin» с «name» равным "Логика" и «key» равным
+      "RWQBAgMEBQYHCDtqJ7zOtqQtYqOo0CpvDXNlMhV3HeJDpjrASKGLWdop")] и «trusted» равным пустой список))
+    дано now равно (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с «старшая» равным 1 и
+      «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk")
+    ожидается (вариант «Key refused» с code равным "FLANG_INSTALL_KEY_CHANGED" и words равным
+      "пакет «Логика» 1.2.0: в замке ключ 0807060504030201, в списке ключ 8877665544332211; --repin")
+  пример «An unsigned package needs the flag»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано now равно (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с «старшая» равным 1 и
+      «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "")
+    ожидается (вариант «Key refused» с code равным "FLANG_INSTALL_UNSIGNED" и words равным
+      "пакет «Логика» 1.2.0 без подписи автора; ставится только с --allow-unsigned")
+  пусть name равно now.«имя»
+  пусть listed равно now.«ключ»
+  пусть pinned равно «Pinned key» от (ask.«trust».«pins») и name
+  пусть trusted равно «Keys named» от (ask.«trust».«trusted») и name
+  пусть vouched равно (trusted содержит listed) или ((ask.«trust».«repins») содержит name)
+  пусть who равно соединить ["пакет «", name, "» ", («Версия строкой» от (now.«версия»))] по ""
+  пусть rules равно [(запись «Key rule» с «kept» равным (((длина trusted) равен 0) или (trusted содержит listed)) и
+    «code» равным "FLANG_INSTALL_KEY_UNTRUSTED" и «words» равным (соединить [who, ": в списке ",
+    («Key words» от listed), ", в .flangrc доверены другие ключи"] по "")), (запись «Key rule» с «kept» равным
+    ((pinned равен "") или (pinned равен "нет") или (pinned равен listed) или vouched) и «code» равным
+    "FLANG_INSTALL_KEY_CHANGED" и «words» равным (соединить [who, ": в замке ", («Key words» от pinned),
+    ", в списке ", («Key words» от listed), "; --repin"] по "")), (запись «Key rule» с «kept» равным ((не
+    (listed равен "")) или (ask.«trust».«unsigned ok»)) и «code» равным "FLANG_INSTALL_UNSIGNED" и «words» равным
+    (соединить [who, " без подписи автора; ставится только с --allow-unsigned"] по ""))]
+  разбор (отфильтровать rules где one → не (one.«kept»))
+    случай голова lead и хвост others
+      то вариант «Key refused» с code равным (lead.«code») и words равным (lead.«words»)
+    случай пусто
+      то «Key accepted» от listed и pinned
+
+тотальная функция «Key accepted»
+  принимает listed: строка, pinned: строка
+  возвращает «Key verdict»
+  пример «An unsigned package allowed by the flag»
+    дано listed равно ""
+    дано pinned равно ""
+    ожидается вариант «Key absent» с remark равным "без подписи, --allow-unsigned"
+  пример «The same key as in the lock»
+    дано listed равно "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk"
+    дано pinned равно "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk"
+    ожидается вариант «Key taken» с remark равным "ключ совпал с закреплённым в замке"
+  пусть notes равно [(запись «Key note» с «fits» равным (pinned равен "") и «remark» равным
+    "ключ закреплён при первой установке"), (запись «Key note» с «fits» равным (pinned равен "нет") и «remark» равным
+    "ключ закреплён, прежде пакет стоял без подписи"), (запись «Key note» с «fits» равным (pinned равен listed) и
+    «remark» равным "ключ совпал с закреплённым в замке")]
+  если listed равен ""
+    то вариант «Key absent» с remark равным "без подписи, --allow-unsigned"
+    иначе разбор (отфильтровать notes где one → one.«fits»)
+      случай голова lead и хвост others
+        то вариант «Key taken» с remark равным (lead.«remark»)
+      случай пусто
+        то (вариант «Key taken» с remark равным (соединить ["ключ перезакреплён, прежде в замке ",
+          («Key words» от pinned)] по ""))
+
+объект «Pending»
+  «now»: «Выбор»
+  «rest»: список «Выбор»
+  «got»: список «Got»
+  «body»: строка
+  «remark»: строка
+
+тотальная функция «Signed got»
+  принимает pending: «Pending», key: строка, remark: строка
+  возвращает «Got»
+  пример «The share of an empty body and the key»
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным
+      "RWQRIjNEVWZ3iHm1Vi6P5lT5QHixEuipi6eQH4U65pW+1+DjkQutBJZk") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано key равно "нет"
+    дано remark равно "r"
+    ожидается (запись «Got» с «name» равным "Логика" и «version» равным "1.2.0" и «file» равным
+      "logic.flang-package" и «body» равным "" и «proved» равным 0 и «claims» равным 0 и «risky» равным нет и
+      «key» равным "нет" и «remark» равным "r")
+  пусть plain равно «Got of» от (pending.«now») и (pending.«body»)
+  (запись «Got» с «name» равным (plain.«name») и «version» равным (plain.«version») и «file» равным (plain.«file») и
+    «body» равным (pending.«body») и «proved» равным (plain.«proved») и «claims» равным (plain.«claims») и
+    «risky» равным (plain.«risky») и «key» равным key и «remark» равным remark)
+
+тотальная функция «Signature policy»
+  принимает ask: «Ask», now: «Выбор», rest: список «Выбор», got: список «Got», body: строка
+  возвращает «Продолжение»
+  пример «An unsigned package without the flag is refused»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано now равно (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с «старшая» равным 1 и
+      «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "")
+    дано rest равно пустой список
+    дано got равно пустой список
+    дано body равно ""
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_UNSIGNED" и сообщение равным
+      "пакет «Логика» 1.2.0 без подписи автора; ставится только с --allow-unsigned")
+  пусть pending равно (запись «Pending» с «now» равным now и «rest» равным rest и «got» равным got и
+    «body» равным body и «remark» равным "")
+  разбор («Key verdict of» от ask и now)
+    случай вариант «Key refused» с code как code и words как words
+      то «Failed» от code и words
+    случай вариант «Key absent» с remark как remark
+      то «Fetch next» от ask и rest и (добавить («Signed got» от pending и "нет" и remark) к got)
+    случай вариант «Key taken» с remark как remark
+      то («Doing» от («Fetch order» от («Resolve address» от (ask.«ledger») и (соединить [(now.«адрес»),
+        ".minisig"] по ""))) и (вариант «Fetching signature» с ask равным ask и pending равным
+        («With remark» от pending и remark)))
+
+тотальная функция «With remark»
+  принимает pending: «Pending», remark: строка
+  возвращает «Pending»
+  пример «The remark is kept for the summary»
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано remark равно "r"
+    ожидается (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "r")
+  (запись «Pending» с «now» равным (pending.«now») и «rest» равным (pending.«rest») и «got» равным (pending.«got») и
+    «body» равным (pending.«body») и «remark» равным remark)
+
+тотальная функция «Signature failed»
+  принимает now: «Выбор», words: строка
+  возвращает «Продолжение»
+  пример «The refusal names the package and says nothing was written»
+    дано now равно (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с «старшая» равным 1 и
+      «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "")
+    дано words равно "подпись не сошлась"
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_SIGNATURE" и сообщение равным
+      "пакет «Логика» 1.2.0: подпись не сошлась; ничего не записано")
+  («Failed» от "FLANG_INSTALL_SIGNATURE" и (соединить ["пакет «", (now.«имя»), "» ", («Версия строкой» от
+    (now.«версия»)), ": ", words, "; ничего не записано"] по ""))
+
+тотальная функция «After signature»
+  принимает ask: «Ask», pending: «Pending», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing signature file is a refusal»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано reply равно вариант «Ответ сети» с код равным 404 и тело равным ""
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_SIGNATURE" и сообщение равным
+      "пакет «Логика» 1.2.0: нет подписи: адрес ответил кодом 404; ничего не записано")
+  разбор («Body of» от "нет подписи" и reply)
+    случай вариант «Fetch failed» с words как words
+      то «Signature failed» от (pending.«now») и words
+    случай вариант «Fetched body» с body как text
+      то «Start check» от ask и pending и («Parse public key» от (pending.«now».«ключ»)) и («Parse signature» от text)
+
+тотальная функция «Start check»
+  принимает ask: «Ask», pending: «Pending», pubkey: «Public key», parsed: «Signature»
+  возвращает «Продолжение»
+  пример «A signature file that does not parse is a refusal»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано pubkey равно вариант «Key» с id равным [1] и key равным [2]
+    дано parsed равно вариант «Bad signature» с reason равным "a minisign signature file has four lines"
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_SIGNATURE" и сообщение равным
+      "пакет «Логика» 1.2.0: a minisign signature file has four lines; ничего не записано")
+  пусть now равно pending.«now»
+  разбор pubkey
+    случай вариант «Bad key» с reason как why
+      то «Signature failed» от now и why
+    случай вариант «Key» с id как id и key как key
+      то разбор parsed
+        случай вариант «Bad signature» с reason как why
+          то «Signature failed» от now и why
+        случай вариант «Signed» с kind как how и id как who и main как sig и comment как said и global как outer
+          то («Check of» от ask и pending и (who равен id) и («Ed25519 check start» от key и
+            («Signed message» от how и («Statement» от (now.«отпечаток»))) и sig))
+
+тотальная функция «Check of»
+  принимает ask: «Ask», pending: «Pending», same: признак, check: «Ed25519 check»
+  возвращает «Продолжение»
+  пример «A signature by another key is a refusal»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано same равно нет
+    дано check равно вариант «Check passed»
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_SIGNATURE" и сообщение равным
+      "пакет «Логика» 1.2.0: подписано не ключом из списка; ничего не записано")
+  если same
+    то («Doing» от (вариант «Текущее время») и
+      (вариант «Verifying» с ask равным ask и pending равным pending и check равным check и started равным 0))
+    иначе «Signature failed» от (pending.«now») и "подписано не ключом из списка"
+
+тотальная функция «Check windows»
+  возвращает нат
+  пример «Sixteen windows of four bits a turn keep a turn well under the step limit»
+    ожидается 16
+  16
+
+тотальная функция «After tick»
+  принимает ask: «Ask», pending: «Pending», check: «Ed25519 check», started: число, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A refused check is a refusal»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано check равно вариант «Check refused» с reason равным "r"
+    дано started равно 0
+    дано reply равно вариант «Отметка времени» с миллисекунды равным 5
+    ожидается (вариант «Провал» с код равным "FLANG_INSTALL_SIGNATURE" и сообщение равным
+      "пакет «Логика» 1.2.0: подпись не сошлась: r; ничего не записано")
+  разбор reply
+    случай вариант «Отметка времени» с миллисекунды как ms
+      то («After advance» от ask и pending и («Ed25519 check advance» от check и («Check windows»)) и
+        (если started равен 0 то ms иначе started))
+    случай любое
+      то «Failed» от "FLANG_IO_ORDER" и "ждали отметку времени"
+
+тотальная функция «After advance»
+  принимает ask: «Ask», pending: «Pending», check: «Ed25519 check», started: число
+  возвращает «Продолжение»
+  пример «A passed check asks for the time once more»
+    дано ask равно (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список))
+    дано pending равно (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным
+      (запись «Версия» с «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и
+      «адрес» равным "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и
+      «got» равным пустой список и «body» равным "" и «remark» равным "")
+    дано check равно вариант «Check passed»
+    дано started равно 5
+    ожидается (вариант «Сделать» с поручение равным (вариант «Текущее время») и потом равным
+      (вариант «Timing» с ask равным (запись «Ask» с «program» равным "p" и «shown» равным "p" и «folder» равным "" и
+      «wanted» равным пустой список и «ledger» равным "l" и «consent» равным нет и «binary» равным "b" и
+      «needs» равным "" и «stale» равным нет и «trust» равным (запись «Trust» с «unsigned ok» равным нет и
+      «repins» равным пустой список и «pins» равным пустой список и «trusted» равным пустой список)) и pending равным
+      (запись «Pending» с «now» равным (запись «Выбор» с «имя» равным "Логика" и «версия» равным (запись «Версия» с
+      «старшая» равным 1 и «средняя» равным 2 и «младшая» равным 0) и «отпечаток» равным "ab" и «адрес» равным
+      "logic-1.2.0.flang-package" и «ключ» равным "") и «rest» равным пустой список и «got» равным пустой список и
+      «body» равным "" и «remark» равным "") и started равным 5))
+  разбор check
+    случай вариант «Check running» с ladder как ladder и target как target
+      то («Doing» от (вариант «Текущее время») и
+        (вариант «Verifying» с ask равным ask и pending равным pending и check равным check и started равным started))
+    случай вариант «Check refused» с reason как why
+      то «Signature failed» от (pending.«now») и (соединить ["подпись не сошлась: ", why] по "")
+    случай вариант «Check passed»
+      то («Doing» от (вариант «Текущее время») и
+        (вариант «Timing» с ask равным ask и pending равным pending и started равным started))
+
+тотальная функция «After timing»
+  принимает ask: «Ask», pending: «Pending», started: число, reply: «Отклик»
+  возвращает «Продолжение»
+  пусть now равно pending.«now»
+  пусть said равно (соединить ["подпись: ", («Key words» от (now.«ключ»)), ", сошлась за ", (к строке
+    («Spent» от reply и started)), " мс; ", (pending.«remark»)] по "")
+  «Fetch next» от ask и (pending.«rest») и (добавить («Signed got» от pending и (now.«ключ») и said) к (pending.«got»))
+
+тотальная функция «Spent»
+  принимает reply: «Отклик», started: число
+  возвращает число
+  пример «Milliseconds since the start»
+    дано reply равно вариант «Отметка времени» с миллисекунды равным 1500
+    дано started равно 1000
+    ожидается 500
+  разбор reply
+    случай вариант «Отметка времени» с миллисекунды как ms
+      то ms минус started
+    случай любое
+      то 0
+
+тотальная функция «Installed words»
+  принимает one: «Got»
+  возвращает строка
+  пример «The share and the signature»
+    дано one равно (запись «Got» с «name» равным "Логика" и «version» равным "1.2.0" и «file» равным
+      "logic.flang-package" и «body» равным "" и «proved» равным 4 и «claims» равным 7 и «risky» равным нет и
+      «key» равным "нет" и «remark» равным "без подписи")
+    ожидается "Логика 1.2.0 → logic.flang-package: доказано 4 из 7 обязательств; без подписи"
+  (если ((one.«remark») равен "") то («Share words» от one) иначе (соединить [(«Share words» от one), "; ",
+    (one.«remark»)] по ""))
 
 план «Поставить»
   состояние «Step»

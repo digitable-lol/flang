@@ -169,7 +169,12 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
       let step ← «сим» P ((a, .«имя» an) :: (x, .«имя» xn) :: ρ) (n2 + 1) s (fun t _ => .ok (.«знач» t))
       let rest ← k (.«рез» n2) (n2 + 1)
       pure (.«обход» "свёртка" tl ti an xn step n2 rest)))
-  | .«отобразить» _ _ _ => .error "отобразить"
+  | .«отобразить» l x s =>
+    «сим» P ρ n l (fun tl n1 => do
+      let xn := "@x" ++ toString n1
+      let step ← «сим» P ((x, .«имя» xn) :: ρ) (n1 + 1) s (fun t _ => .ok (.«знач» t))
+      let rest ← k (.«рез» n1) (n1 + 1)
+      pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" xn step n1 rest))
   | .«отфильтровать» l x s =>
     «сим» P ρ n l (fun tl n1 => do
       let xn := "@x" ++ toString n1
@@ -305,6 +310,7 @@ structure «ФункцияC» where
   «имя» : String
   «параметры» : List String
   «тело» : List «Лекс»
+  «указатели» : List String := []
 deriving Inhabited
 
 def «знак?» (l : «Лекс») (s : String) : Bool := l == .«знак» s
@@ -339,7 +345,10 @@ partial def «функцииC» : List «Лекс» → List «ФункцияC»
       match «доПары» "{" "}" 0 q [] with
       | some (body, rest) =>
         let params := («разрезать» ps).filterMap «имяПараметра»
-        «функцииC» rest ({ «имя» := f, «параметры» := params, «тело» := body } :: acc)
+        let pointers := («разрезать» ps).filterMap (fun p => match p with
+          | [.«слово» "const", .«слово» "fl_value", .«знак» "*", .«слово» x] => some x
+          | _ => none)
+        «функцииC» rest ({ «имя» := f, «параметры» := params, «тело» := body, «указатели» := pointers } :: acc)
       | none => acc.reverse
     | some (_, q) => «функцииC» q acc
     | none => acc.reverse
@@ -351,6 +360,7 @@ structure «СредаC» where
   «числа» : List String
   «функции» : List (String × String)
   «числовые» : List String
+  «тела» : List «ФункцияC»
 
 def «опC» : List (String × String) :=
   [("+", "add"), ("-", "sub"), ("*", "fmul"), ("/", "fdiv"), ("<", "lt"), ("<=", "lte"), (">", "gt"), (">=", "gte"),
@@ -471,6 +481,18 @@ partial def «одночлен» (σ : «СредаC») (ls : List «Лекс»)
     if σ.«числа».contains x || «числовой?» σ t then pure t else .error ("не число " ++ x)
   | [.«слово» "args", .«знак» "[", .«число» i, .«знак» "]"] =>
     «одночлен» σ [.«слово» ("args[" ++ i ++ "]")]
+  | [.«слово» x, .«знак» "[", .«число» i, .«знак» "]"] =>
+    match «найти» x σ.«знач», i.toNat? with
+    | some (.«оп» "array" items), some j =>
+      match items[j]? with
+      | some (.«оп» "unset" []) => .error "чтение пустого места"
+      | some t => .ok t
+      | none => .error "место вне массива"
+    | _, _ => .error ("массив C " ++ x)
+  | [.«слово» x, .«знак» ".", .«слово» "as", .«знак» ".", .«слово» "list", .«знак» ".", .«слово» "count"] =>
+    match «найти» x σ.«знач» with
+    | some t => .ok (.«оп» "count" [t])
+    | none => .error ("имя C " ++ x)
   | [.«слово» "args", .«знак» "[", .«число» i, .«знак» "]", .«знак» ".", .«слово» "as", .«знак» ".",
       .«слово» "number"] =>
     «одночлен» σ [.«слово» ("args[" ++ i ++ "]"), .«знак» ".", .«слово» "as", .«знак» ".", .«слово» "number"]
@@ -486,6 +508,8 @@ partial def «одночлен» (σ : «СредаC») (ls : List «Лекс»)
       | "fl_equal", [a, b] => pure (.«оп» "eq" [a, b])
       | "fmod", [a, b] => pure (.«оп» "fmod" [a, b])
       | "fl_variant_is", [a, .«с» v] => pure (.«оп» ("is:" ++ v) [a])
+      | "fl_list", [.«оп» "mapped" [r, l], .«оп» "count" [l2]] =>
+        if «равныТ» l l2 then pure r else .error "отображение собрано не своей длины"
       | "fl_list", [.«оп» "filtered" [r], .«оп» "filtered-count" [r2]] =>
         if «равныТ» r r2 then pure r else .error "отбор собран не из своего массива"
       | "fl_list", [.«оп» "array" items, .«ч» _] =>
@@ -609,6 +633,12 @@ partial def «исполнить» (σ : «СредаC») (n : Nat) (ls : List �
       else .error ("страж " ++ «поЛексемам» g)
     | some _ => .error "if без блока"
   | .«слово» "fl_value" :: .«слово» _ :: .«знак» ";" :: r => «исполнить» σ n r
+  | .«слово» "const" :: .«слово» "fl_value" :: .«слово» x :: .«знак» "[" :: .«знак» "]" :: .«знак» "=" :: .«знак» "{" :: r =>
+    match «доПары» "{" "}" 0 r [] with
+    | some (inner, .«знак» ";" :: q) => do
+      let ts ← («разрезать» inner).mapM («выражениеC» σ)
+      «исполнить» { σ with «знач» := (x, .«оп» "array" ts) :: σ.«знач» } n q
+    | _ => .error "массив захвата"
   | .«слово» "fl_value" :: .«слово» x :: .«знак» "[" :: .«число» m :: .«знак» "]" :: .«знак» ";" :: r =>
     match m.toNat? with
     | some c => «исполнить» { σ with «знач» := (x, .«оп» "array" (List.replicate c (.«оп» "unset" []))) :: σ.«знач» } n r
@@ -804,6 +834,26 @@ where
       | "fl_variant_new", [_, [.«строка» v], names, arr, count, p, _] => built (some («разэкранить» v)) names arr count p
       | "fl_record_new", [_, names, arr, count, p, _] => built none names arr count p
       | _, _ => .error h
+    else if h = "fl_par_map" then
+      match parts with
+      | [_, [.«слово» t], [.«слово» fn], [.«слово» env], [.«слово» arr], _] =>
+        match «найти» t σ.«знач», «найти» env σ.«знач», «найти» arr σ.«знач», σ.«тела».find? (·.«имя» = fn) with
+        | some tl, some (.«оп» "array" captured), some (.«оп» "array" []), some f =>
+          match f.«параметры», f.«указатели» with
+          | [el], [envName] =>
+            let xn := "@x" ++ toString n
+            let numericEl := «списокЧисел?» σ tl
+            let valsF := (el, «Т».«имя» xn) :: (envName, «Т».«оп» "array" captured) :: σ.«знач»
+            let numsF := (if numericEl then [el, xn] else []) ++ σ.«числа»
+            let σf : «СредаC» := { σ with «знач» := valsF, «числа» := numsF }
+            match «исполнить» σf (n + 1) f.«тело» with
+            | .error m => .error m
+            | .ok step => do
+              let r ← «исполнить» { σ with «знач» := (arr, .«оп» "mapped" [.«рез» n, tl]) :: σ.«знач» } (n + 1) q
+              pure (.«обход» "отображение" tl (.«оп» "ничто" []) "" xn step n r)
+          | _, _ => .error "тело отображения"
+        | _, _, _, _ => .error "отображение"
+      | _ => .error h
     else if h = "fl_list_alloc" then
       match parts with
       | [_, [.«число» c], p, _] =>

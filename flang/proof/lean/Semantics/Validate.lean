@@ -451,11 +451,12 @@ def «деревоC» (cx : «КонтекстC») (numeric : List String) (name
   let named := (types.zipIdx).flatMap (fun (t, i) => «числовыеИмена» ("#" ++ toString i) t)
   let nums := (slots.zip types).flatMap (fun (s, t) => «числовыеИмена» s t) ++ named
   let start := slots.zipIdx.map (fun (s, i) => (s, «Т».«имя» ("#" ++ toString i))) ++ cx.«тексты»
-  let σ0 : «СредаC» := ⟨start, nums, cx.«имена», numeric⟩
+  let σ0 : «СредаC» := { «знач» := start, «числа» := nums, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
   let d ← «исполнить» σ0 0 («безСчёта» block)
   «вставитьТело» name (fun ts k =>
     let cn := (fc.«параметры».zip types).flatMap (fun (c, t) => «числовыеИмена» c t) ++ named
-    let σ1 : «СредаC» := ⟨fc.«параметры».zip ts ++ cx.«тексты», cn, cx.«имена», numeric⟩
+    let vals1 := fc.«параметры».zip ts ++ cx.«тексты»
+    let σ1 : «СредаC» := { «знач» := vals1, «числа» := cn, «функции» := cx.«имена», «числовые» := numeric, «тела» := cx.«функции» }
     «исполнить» σ1 k fc.«тело») d
 
 def «постыНаСловеЯдра» (cx : «КонтекстC») (f : Json) (g : «Функция») : Nat :=
@@ -586,6 +587,13 @@ partial def «вычД» (P : «Программа») (vals : List (String × «
         | .«признак» false => pure acc
         | _ => «беда» "FLANG_TYPE") []
       «вычД» P vals ((k, .«список» kept) :: res) r
+    | _ => «беда» "FLANG_TYPE"
+  | .«обход» "отображение" l _ _ x st k r => do
+    let lv ← «значТ» vals res l
+    match lv with
+    | .«список» xs => do
+      let ys ← xs.mapM (fun v => «вычД» P ((x, v) :: vals) res st)
+      «вычД» P vals ((k, .«список» ys) :: res) r
     | _ => «беда» "FLANG_TYPE"
   | .«обход» _ _ _ _ _ _ _ _ => «беда» "FLANG_TYPE"
 

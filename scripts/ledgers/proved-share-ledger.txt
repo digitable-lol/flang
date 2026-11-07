@@ -2264,3 +2264,6 @@ e207fbc06882d172c6f22e6bad1a1059|5|×|×|×|0|flang/proof/probes/written-steps/p
 7b8b9182d82421e016daa17bc831d0ed|1|×|×|×|0|flang/proof/probes/category-laws-judged/programs/cited-law.flang
 a0c0fc8a2b0fa6b85063b0bed9ee2904|2|×|×|×|0|flang/proof/probes/category-laws-judged/programs/list-functor.flang
 cfe81680e8183e16d1f664777a25eb78|2|×|×|×|0|flang/proof/probes/settled-kernel-issues/programs/same-name-postconditions.flang
+94fa31a05ecf086d31d0af8542edb24b|1|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/box.flang
+2eb545b0adebff532ea0161f157df179|2|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/lists.flang
+d5027123566bbe06027583bbbe55f236|3|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/shapes.flang

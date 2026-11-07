@@ -2127,6 +2127,76 @@ def «Исх».«найтиЛюбое» (s : «Исх») (a b : Nat) («по» :
   return none
 
 
+def «Исх».«найтиСлучай» (s : «Исх») (a b : Nat) («вариант» : String) : Option Nat :=
+  (List.range' a (b - a)).find? fun i =>
+    let l := s.«строка» i
+    l.startsWith "случай " && «вариантСлучая» («словаС» l 1) = «вариант»
+
+def «членыСпискаВывода» (t : String) : Option (List String) :=
+  let u := «ужатьТ» t
+  if u = "пустой список" then some [] else
+  let w := " ".intercalate ((«заменить» («заменить» («заменить» u "[" " [ ") "]" " ] ") "," " , ").splitOn " " |>.filter (· ≠ ""))
+  if w.length < 2 || !w.startsWith "[" || !w.endsWith "]" then none else
+  let inner := «обрезать» (String.ofList (w.toList.drop 1).dropLast)
+  if (inner.splitOn "[").length > 1 || (inner.splitOn "]").length > 1 then none
+  else if inner = "" then some []
+  else some ((«сверху» inner ",").map «ужатьТ»)
+
+def «Исх».«развернутьПлоскоеМетками» (s : «Исх») (t «чья» : String) : String :=
+  let n := «ёлочка» t 1
+  if n = "" || n = «чья» || !t.startsWith s!"«{n}» от " then t else
+  let body := s.«плоскоеТело» n
+  if body = "" || «естьСвязыватель» body then t else
+  let ds := s.«именаДоводовФункции» n
+  let fs := «доводыВызоваС» («обрезать» («отЗнака» t (s!"«{n}» от ").length))
+  if ds.isEmpty || ds.length ≠ fs.length then t else
+  let marked := (List.range ds.length).foldl (fun acc i => «вместоИмени» acc (ds.getD i "") s!"%д{i}%") body
+  let done := (List.range ds.length).foldl (fun acc i => «вместо» acc s!"%д{i}%" («т» («обрезать» (fs.getD i "")))) marked
+  «ужатьТ» («безВнешних» done)
+
+def «развернутьДоводами» (body : String) (ds args : List String) (k0 : Nat) («имена» : List String) («метки» «значения» : Array String) : String := Id.run do
+  let mut b := body
+  let mut marks := «метки»
+  let mut vals := «значения»
+  for k in [0:ds.length] do
+    if k = k0 && «имена».contains (ds.getD k "") then continue
+    marks := marks.push s!"%д{k}%"
+    vals := vals.push («т» («обрезать» (args.getD k "")))
+    b := «вместоИмени» b (ds.getD k "") marks[marks.size - 1]!
+  for k in [0:marks.size] do
+    b := «вместо» b marks[k]! vals[k]!
+  return «т» b
+
+def «Исх».«развернутьПустым» (s : «Исх») (t n : String) (a b : Nat) (ds args : List String) (k0 : Nat) : String :=
+  let ci := match s.«случайТела» n a b (ds.getD k0 "") "пусто" with
+    | some ci => some ci
+    | none => s.«найтиЛюбое» a b (ds.getD k0 "")
+  match ci with
+  | none => t
+  | some ci =>
+    let body := s.«телоСлучая» ci b
+    if body = "" then t else «развернутьДоводами» body ds args k0 [] #[] #[]
+
+def «Исх».«развернутьЗвеном» (s : «Исх») (t : String) (a b : Nat) (ds args : List String) (k0 : Nat) («довод» : String) : String := Id.run do
+  let some (x, l) := «приписатьКуски» «довод» | return t
+  let (ci, hs) ← match s.«найтиСлучай» a b "голова и хвост" with
+    | some ci => pure (ci, «словаС» (s.«строка» ci) 1)
+    | none => match s.«найтиЛюбое» a b (ds.getD k0 "") with
+      | some ci => pure (ci, "")
+      | none => return t
+  let mut body := s.«телоСлучая» ci b
+  if body = "" then return t
+  let nms := if hs = "" then [] else «связанныеСлучая» hs
+  if hs ≠ "" && nms.length ≠ 2 then return t
+  let mut marks : Array String := #[]
+  let mut vals : Array String := #[]
+  for k in [0:nms.length] do
+    marks := marks.push s!"%п{k}%"
+    vals := vals.push («т» (if k = 0 then x else l))
+    body := «вместоИмени» body («голо» (nms.getD k "")) marks[k]!
+    if «голо» (nms.getD k "") = "хвост" && !ds.contains "хвоста" then body := «вместоИмени» body "хвоста" marks[k]!
+  return «развернутьДоводами» body ds args k0 nms marks vals
+
 def «Исх».«развернутьВариантом» (s : «Исх») (t «чья» : String) : String := Id.run do
   let g := «т» t
   let n := «ёлочка» g 1
@@ -2142,9 +2212,17 @@ def «Исх».«развернутьВариантом» (s : «Исх») (t «
     for k in [0:ds.length] do
       let w := «обрезать» («словаС» (s.«строка» i) 1)
       if w = ds.getD k "" || w = s!"«{ds.getD k ""}»" then kr := some k
+    if kr.isNone then
+      let w := «обрезать» («словаС» (s.«строка» i) 1)
+      kr := (List.range ds.length).find? (fun k => «тоЖеИмяРазбора» w (ds.getD k "") ds)
   if razb.length ≠ 1 then return t
   let some k0 := kr | return t
-  let dv := «ужатьТ» («безВнешних» (args.getD k0 ""))
+  let dv0 := s.«развернутьПлоскоеМетками» («ужатьТ» («безВнешних» (args.getD k0 ""))) «чья»
+  let dv := match «членыСпискаВывода» dv0 with
+    | some (h :: r) => s!"приписать {«вСкобки» h} к {if r.isEmpty then "пустой список" else "[" ++ ", ".intercalate r ++ "]"}"
+    | _ => dv0
+  if «членыСпискаВывода» dv0 == some [] then return s.«развернутьПустым» t n a b ds args k0
+  if dv.startsWith "приписать " then return s.«развернутьЗвеном» t a b ds args k0 dv
   if !dv.startsWith "вариант «" then return t
   let var := «ёлочка» dv 1
   if var = "" then return t
@@ -2209,6 +2287,55 @@ def «закрывающая» (cs : Array Char) (p : Nat) : Option Nat := Id.ru
     q := q + 1
   return none
 
+def «вызовВСкобки» (t : String) : String := Id.run do
+  let cs := t.toList.toArray
+  let pat := "» от ".toList
+  let mut «вкав» := false
+  let mut «экр» := false
+  for p in [0:cs.size] do
+    let c := cs[p]!
+    if «вкав» then
+      if «экр» then «экр» := false
+      else if c = '\\' then «экр» := true
+      else if c = '"' then «вкав» := false
+      continue
+    if c = '"' then
+      «вкав» := true
+      continue
+    if c ≠ '«' || p = 0 || cs[p - 1]! ≠ ' ' || (p ≥ 2 && cs[p - 2]! = '(') then continue
+    let some k := (List.range' p (cs.size - p)).find? (fun i => «стоитНа» cs i pat) | continue
+    if (cs.extract p k).toList.contains ' ' then continue
+    let d := k + pat.length
+    let mut e := d
+    if d < cs.size && cs[d]! = '(' then
+      match «закрывающая» cs d with
+      | none => continue
+      | some z => e := z + 1
+    else
+      while e < cs.size && cs[e]! ≠ ' ' && cs[e]! ≠ ')' && cs[e]! ≠ '"' do e := e + 1
+    if e = d then continue
+    let mut z := e
+    while z < cs.size && cs[z]! = ' ' do z := z + 1
+    if z < cs.size && cs[z]! ≠ ')' then continue
+    return String.ofList (cs.extract 0 p).toList ++ "( " ++ String.ofList (cs.extract p e).toList ++ " )" ++ String.ofList (cs.extract e cs.size).toList
+  return t
+
+def «Исх».«развернутьГруппу» (s : «Исх») (r «чья» : String) : String := Id.run do
+  let cs := r.toList.toArray
+  let pat := "( «".toList
+  let mut p := 0
+  while p < cs.size do
+    if «стоитНа» cs p pat then
+      match «закрывающая» cs p with
+      | none => return r
+      | some q =>
+        let inner := «обрезать» (String.ofList (cs.extract (p + 1) q).toList)
+        let nn := s.«развернутьВариантом» inner «чья»
+        if nn ≠ inner then
+          return «т» (String.ofList (cs.extract 0 p).toList ++ «вСкобки» nn ++ String.ofList (cs.extract (q + 1) cs.size).toList)
+    p := p + 1
+  return r
+
 def «Исх».«развернутьВезде» (s : «Исх») (t «чья» : String) : String := Id.run do
   let mut r := «т» t
   for _ in [0:24] do
@@ -2216,22 +2343,14 @@ def «Исх».«развернутьВезде» (s : «Исх») (t «чья»
     if r2 ≠ r then
       r := «т» r2
       continue
-    let cs := r.toList.toArray
-    let pat := "( «".toList
-    let mut changed := false
-    let mut p := 0
-    while p < cs.size && !changed do
-      if «стоитНа» cs p pat then
-        match «закрывающая» cs p with
-        | none => p := cs.size
-        | some q =>
-          let inner := «обрезать» (String.ofList (cs.extract (p + 1) q).toList)
-          let nn := s.«развернутьВариантом» inner «чья»
-          if nn ≠ inner then
-            r := «т» (String.ofList (cs.extract 0 p).toList ++ «вСкобки» nn ++ String.ofList (cs.extract (q + 1) cs.size).toList)
-            changed := true
-      p := p + 1
-    if !changed then break
+    let r3 := s.«развернутьГруппу» r «чья»
+    if r3 ≠ r then
+      r := r3
+      continue
+    let vs := «вызовВСкобки» r
+    let r4 := if vs ≠ r then s.«развернутьГруппу» vs «чья» else vs
+    if r4 = vs then break
+    r := r4
   return r
 
 /-- Факты для цели, которую не закрыло тело, — зеркало `факты_цели` сверщика на C. Два источника,

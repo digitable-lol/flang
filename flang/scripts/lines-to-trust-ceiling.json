@@ -1,18 +1,18 @@
 {
-  "decisionKernelLines": 9078,
-  "kernelFilesCode": 12268,
-  "seedSourcesCode": 89601,
+  "decisionKernelLines": 9492,
+  "kernelFilesCode": 12765,
+  "seedSourcesCode": 91294,
   "seedSourcesFiles": 76,
   "parsingCode": 8426,
   "evaluatorCode": 3750,
-  "emitCCode": 4093,
+  "emitCCode": 4094,
   "typeCheckCode": 6412,
   "runtimeCode": 28924,
   "runtimeFiles": 4,
-  "printedCCode": 1042049,
+  "printedCCode": 1057455,
   "printedCFiles": 8,
-  "checkerCode": 11943,
-  "inferenceRules": 155,
-  "totalSources": 118525,
-  "totalPrinted": 1042049
+  "checkerCode": 12807,
+  "inferenceRules": 157,
+  "totalSources": 120218,
+  "totalPrinted": 1057455
 }

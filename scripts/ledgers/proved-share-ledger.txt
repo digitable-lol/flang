@@ -2273,4 +2273,5 @@ d6017dd8e0f456ff11299777798b2774|1|×|×|×|0|flang/proof/probes/quantifier-insi
 bc1861ad6a0a46a46a3acf3024e67843|1|×|×|×|0|flang/proof/probes/quantifier-inside-a-formula/programs/exists-under-not.flang
 c38be63d01428bc0f51dafdffcdc4be2|3|×|×|×|0|flang/proof/probes/quantifier-inside-a-formula/programs/or-with-a-quantifier-half.flang
 ccb51e941d7a451c4898f27838e0478b|1|×|×|×|0|flang/proof/probes/quantifier-inside-a-formula/programs/or-with-a-wrong-witness-and-a-true-half.flang
-f583ff66d701dad63e508e4efa5b2a0e|3|3|0|0|0|flang/concurrency/bench/spread-map.fscript
+069bf89cead9ee3d10d7bc4ff82dc4f7|3|3|0|0|0|flang/concurrency/bench/spread-map.fscript
+c158a54ca2d085c52bf1df5536f33737|1|0|1|0|0|flang/concurrency/bench/spread-map.flang

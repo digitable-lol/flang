@@ -75,7 +75,7 @@
       и "fl_number(1.0 + fl_t1.as.number)" и "fl_number(1.0 + fl_t1.as.number + (fl_t1.as.number == 3.0))"
       и "Длина"),
     («Forgery of» от "fold step" и "flang-proof-examples-corpus-lists" и "program.c"
-      и "fl_b_dobavit(ctx, el, akk, &fl_t10" и "fl_b_dobavit(ctx, el, pervyy, &fl_t10" и "Соединить списки"),
+      и "fl_b_dobavit(ctx, el, akk, &fl_t6" и "fl_b_dobavit(ctx, el, pervyy, &fl_t6" и "Соединить списки"),
     («Forgery of» от "hidden filter point" и "flang-proof-examples-corpus-lists" и "program.c"
       и "fl_flag(!fl_equal(el, znachenie))" и "fl_flag(!fl_equal(el, znachenie) && !fl_equal(el, fl_number(1000.0)))"
       и "Без значения"),

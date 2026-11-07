@@ -3,42 +3,53 @@
 
 тотальная функция «Сценарий строками»
   возвращает список строки
-  обеспечивает «строк сценария 29» (длина результат) равен 29
+  обеспечивает «строк сценария 37» (длина результат) равен 37
   [
     "set -u",
+    "F=${FLANG:-bootstrap/flang}",
     "B=flang/concurrency/bench",
     "C=flang/src/emit/c",
     "R=$(mktemp -d \"${TMPDIR:-/tmp}/spread-map.XXXXXX\") || exit 1",
     "trap 'rm -rf \"$R\"' EXIT",
     "O='-std=c99 -Wall -Wextra -Werror -pedantic -O2 -DFL_SPREAD_WAIT_NS=0L -DFL_SPREAD_WORTH_NS=0L'",
-    "cp \"$C/flang_runtime.c\" \"$C/flang_runtime.h\" \"$B/spread-map.c\" \"$R/\"",
-    "G=\"$R/forged.c\"",
-    соединить [
-      "sed 's/\\&items\\[from + index\\], 0u)/\\&items[from + (rest - 1u - index)], 0u)/' ",
-      "\"$R/flang_runtime.c\" > \"$G\""
-    ] по "",
+    "$F emit \"$B/spread-map.flang\" --target c --out \"$R/main\" >/dev/null 2>&1",
+    "[ -f \"$R/main/Makefile\" ] || { echo emit=main; exit 1; }",
+    "cp \"$C/flang_runtime.c\" \"$C/flang_runtime.h\" \"$R/main/\"",
+    "sed -i 's/fl_par_map(ctx/fl_spread_map(ctx/' \"$R/main/spread_map_bench.c\"",
+    "grep -q 'fl_spread_map(ctx' \"$R/main/spread_map_bench.c\" || { echo spread=unprinted; exit 1; }",
+    "cp -r \"$R/main\" \"$R/forged\"",
+    "G=\"$R/forged/flang_runtime.c\"",
+    "sed -i 's/\\&items\\[from + index\\], 0u)/\\&items[from + (rest - 1u - index)], 0u)/' \"$G\"",
     "grep -q 'rest - 1u - index' \"$G\" || { echo forged=unbuilt; exit 1; }",
+    "for d in main forged; do make -s -C \"$R/$d\" CFLAGS=\"$O\" >/dev/null 2>&1 || { echo build=$d; exit 1; }; done",
     соединить [
-      "cc $O -I\"$R\" \"$R/spread-map.c\" \"$R/flang_runtime.c\" -o \"$R/main\" -lm -lpthread || ",
-      "{ echo build=main; exit 1; }"
+      "req() { awk -v n=\"$1\" -v k=\"$2\" -v f=\"$3\" -v s=\"$4\" 'BEGIN { q = \"\\\"\"; ",
+      "printf \"{%sfn%s:%sВсе пробы%s,%sargs%s:[{%sl%s:[\", q, q, q, q, q, q, q, q; ",
+      "for (i = 0; i < n; i++) printf \"%s{%sn%s:%s%d%s}\", (i ? \",\" : \"\"), q, q, q, i, q; ",
+      "printf \"]},{%sl%s:[\", q, q; ",
+      "for (i = 0; i < k; i++) printf \"%s{%sn%s:%s%d%s}\", (i ? \",\" : \"\"), q, q, q, i % 5, q; ",
+      "printf \"]},{%sl%s:[\", q, q; ",
+      "for (i = 0; i < k; i++) printf \"%s{%sn%s:%s0.00%d%s}\", (i ? \",\" : \"\"), q, q, q, i % 97, q; ",
+      "printf \"]},{%sn%s:%s%s%s}],%ssteps%s:%s%s%s}\\n\", q, q, q, f, q, q, q, q, s, q }'; }"
     ] по "",
-    "cc $O -I\"$R\" \"$R/spread-map.c\" \"$G\" -o \"$R/forged\" -lm -lpthread || { echo build=forged; exit 1; }",
-    "run() { j=$1; b=$2; shift 2; FLANG_JOBS=$j \"$R/$b\" \"$@\" 2>/dev/null; }",
+    "req 300 100 -1 0 > \"$R/map\"; req 300 100 199.75 0 > \"$R/refusal\"; req 300 100 -1 100000 > \"$R/limit\"",
+    "req 300 1000 -1 0 > \"$R/big\"",
+    "run() { FLANG_JOBS=$1 \"$R/$2/flang_cli\" < \"$R/$3\" 2>/dev/null; }",
     "for t in 1 2 8 64; do",
-    "  echo \"map_$t=$(run $t main 300 -1 300000 | cksum)\"",
-    "  echo \"refusal_$t=$(run $t main 300 200 300000 | cksum)\"",
-    "  echo \"limit_$t=$(run $t main 300 -1 300000 300000000 | cksum)\"",
+    "  echo \"map_$t=$(run $t main map | cksum)\"",
+    "  echo \"refusal_$t=$(run $t main refusal | cksum)\"",
+    "  echo \"limit_$t=$(run $t main limit | cksum)\"",
     "done",
-    "echo \"refusal_text=$(run 8 main 300 200 300000 | sed -n 2p)\"",
-    "echo \"limit_text=$(run 8 main 300 -1 300000 300000000 | sed -n 2p)\"",
-    "echo \"forged_8=$(run 8 forged 300 -1 300000 | cksum)\"",
-    "FLANG_JOBS=8 \"$R/main\" 300 -1 1000000 > \"$R/killed\" 2>/dev/null & p=$!",
+    "echo \"refusal_text=$(run 8 main refusal | head -c 120)\"",
+    "echo \"limit_text=$(run 8 main limit | head -c 120)\"",
+    "echo \"forged_8=$(run 8 forged map | cksum)\"",
+    "FLANG_JOBS=8 \"$R/main/flang_cli\" < \"$R/big\" > \"$R/killed\" 2>/dev/null & p=$!",
     "c=; i=0; while [ -z \"$c\" ] && [ $i -lt 500 ]; do c=$(pgrep -P $p | head -n 1); i=$((i + 1)); sleep 0.01; done",
     "[ -n \"$c\" ] && kill -9 \"$c\"; wait $p",
     "echo \"killed_child=${c:-none}\"",
     "echo \"killed_8=$(cksum < \"$R/killed\")\"",
     соединить [
-      "ms() { s=$(date +%s%N); run $1 main 300 -1 1000000 > \"$R/ms_$1\"; e=$(date +%s%N); echo ",
+      "ms() { s=$(date +%s%N); run $1 main big > \"$R/ms_$1\"; e=$(date +%s%N); echo ",
       "$(( (e - s) / 1000000 )); }"
     ] по "",
     "echo \"ms_1=$(ms 1)\"; echo \"ms_8=$(ms 8)\"",

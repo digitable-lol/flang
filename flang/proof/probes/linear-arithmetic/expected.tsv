@@ -1,2 +1,3 @@
 program	judge	code	word
-linear-kernel-verdicts.flang	run --trust --function "Свод"	0	линейная арифметика: доказано 7 из 7, отвергнуто 7 из 7, из них с причиной над числом 1 из 1; свидетель строгого дна найден
+linear-kernel-verdicts.flang	run --trust --max-steps 4000000000 --function "Свод"	0	линейная арифметика: доказано 7 из 7, отвергнуто 7 из 7, из них с причиной над числом 1 из 1; свидетель строгого дна найден
+ring-normal-form-verdicts.flang	run --trust --max-steps 4000000000 --function "Свод"	0	нормальная форма кольца: доказано 7 из 7, отвергнуто 5 из 5

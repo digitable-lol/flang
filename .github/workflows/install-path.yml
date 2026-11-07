@@ -65,6 +65,8 @@ on:
     paths:
       - "packaging/**"
       - "scripts/release/release-in-c.fscript"
+      - "scripts/release/process-deadline.fscript"
+      - "scripts/release/release-deadline-probe.fscript"
       - "scripts/release/path-without-node.fscript"
       - "scripts/bootstrap-reprint.sh"
       - "scripts/guards/version-guard.fscript"
@@ -78,6 +80,8 @@ on:
     paths:
       - "packaging/**"
       - "scripts/release/release-in-c.fscript"
+      - "scripts/release/process-deadline.fscript"
+      - "scripts/release/release-deadline-probe.fscript"
       - "scripts/release/path-without-node.fscript"
       - "scripts/bootstrap-reprint.sh"
       - "scripts/guards/version-guard.fscript"
@@ -140,6 +144,8 @@ jobs:
           make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"
       - name: Check Darwin build
         run: bootstrap/flang run-script darwin:check
+      - name: Check release deadline
+        run: bootstrap/flang run-script release-deadline:check
 
       # ── АРХИВ, ЗА КОТОРЫМ ХОДИТ BREW ──────────────────────────────────────
       #

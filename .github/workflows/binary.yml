@@ -1469,6 +1469,10 @@ jobs:
         run: bootstrap/flang run-script parallel:check
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Spread map over worker processes
+        run: bootstrap/flang run-script spread:check
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       - name: Report memory
         if: always() && hashFiles('bootstrap/flang') != ''
         run: bootstrap/flang io scripts/memory-headroom.fscript --plan Report -- --status "${{ job.status }}"

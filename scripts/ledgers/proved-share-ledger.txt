@@ -1347,7 +1347,7 @@ f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|45|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|48|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
@@ -1359,7 +1359,7 @@ b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
 05641fed3c8e2405969b58859d7b46bd|189|125|15|48|0|flang/self/defunc.flang
 8cf37894dbbccdff06a8ef8c0bb9395e|81|54|6|21|1|flang/self/distributed.flang
 ff586b33c1aa75e4b80d727672748361|20|10|0|10|0|flang/self/distributive.flang
-d328a6015287755e0bf7082b88afdd29|462|291|8|109|0|flang/self/emit-c.flang
+d328a6015287755e0bf7082b88afdd29|467|291|8|109|0|flang/self/emit-c.flang
 e6a1c5149ebb9e155fd5cd9c13fae314|7|4|0|3|0|flang/self/emit-cpp.flang
 29a749a897421f9f3b89dd7f1c372746|664|551|30|79|0|flang/self/emit-csharp.flang
 cc8efee04153882fa095db14dfa0548d|144|88|4|50|0|flang/self/emit-elixir.flang
@@ -1399,7 +1399,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 0671f904ac2c1b423ee51e1562ed2a08|103|44|0|0|0|flang/self/proof-kernel.flang
 94902a6939c9331164c3fdd856ef2a93|258|98|57|3|0|flang/self/proof-record.flang
 6caf41ec0a767163f46212d635157227|341|268|26|41|0|flang/self/proof.flang
-ef9ed6468f2ee47584e2653aefa44b54|192|46|1|91|0|flang/self/proofterm.flang
+ef9ed6468f2ee47584e2653aefa44b54|193|46|1|91|0|flang/self/proofterm.flang
 da31ea912bad831b3fd0c8f7c50fdab3|1|×|×|×|0|flang/self/repl/repl.flang
 bddb9033aaa4c5848f9eb45f5b8780b7|86|24|0|64|0|flang/self/setoid-oracle.flang
 283bcb74a49880f90b1aa8497a73236d|101|79|0|22|0|flang/self/setoid.flang
@@ -2264,3 +2264,4 @@ e207fbc06882d172c6f22e6bad1a1059|5|×|×|×|0|flang/proof/probes/written-steps/p
 7b8b9182d82421e016daa17bc831d0ed|1|×|×|×|0|flang/proof/probes/category-laws-judged/programs/cited-law.flang
 a0c0fc8a2b0fa6b85063b0bed9ee2904|2|×|×|×|0|flang/proof/probes/category-laws-judged/programs/list-functor.flang
 cfe81680e8183e16d1f664777a25eb78|2|×|×|×|0|flang/proof/probes/settled-kernel-issues/programs/same-name-postconditions.flang
+f583ff66d701dad63e508e4efa5b2a0e|3|3|0|0|0|flang/concurrency/bench/spread-map.fscript

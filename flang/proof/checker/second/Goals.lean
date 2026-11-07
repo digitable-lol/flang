@@ -932,6 +932,13 @@ theorem «ход-цель-состоятелен» (I : «Толкование»
     simp only [«Толкование».«цельВерна», «Прогон».«условияЦели»] at h0
     exact h0 (by simpa using I.«метка-пуста»)
 
+theorem «ходДопущения-вид» (p : «Прогон») (l : String) (o : «Обст») :
+    (∃ t, «ходДопущения» p l o = p.«беда» t) ∨
+    «ходДопущения» p l o = { p with «дано» := p.«дано» ++ [o.«приЗначении» («ёлочка» l 1)] } := by
+  unfold «ходДопущения»
+  dsimp only
+  repeat' (first | (split <;> try dsimp only) | exact Or.inl ⟨_, rfl⟩ | exact Or.inr rfl)
+
 /-- **Ход «дано»**: допущение индукции добавляется к допущениям прогона; верность прогона
     при всех допущениях даёт начальную цель, как и до хода. -/
 theorem «ход-дано-состоятелен» (I : «Толкование») (o : «Обст») (p : «Прогон») (s0 : String)
@@ -939,14 +946,9 @@ theorem «ход-дано-состоятелен» (I : «Толкование»
     (hw : «слово» («обрезать» s0) 2 = "дано") (hh : I.«держит» o p) : I.«держит» o («шагБлока» o p s0) := by
   unfold «шагБлока»
   simp only [hp, hs, hw, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
-  unfold «ходДопущения»
-  dsimp only
-  split
-  · exact «держит-беда» I o _ _
-  split
-  · exact «держит-беда» I o _ _
-  split
-  · exact «держит-беда» I o _ _
+  rcases «ходДопущения-вид» p («обрезать» s0) o with ⟨t, ht⟩ | ht
+  · rw [ht]; exact «держит-беда» I o _ _
+  rw [ht]
   intro hi
   obtain ⟨hob, himp, hfj⟩ := hh hi
   refine ⟨hob, fun hv hd => ?_, fun hf hd hg => hfj hf (fun d hdm => hd d (List.mem_append_left _ hdm)) hg⟩
@@ -1064,8 +1066,7 @@ theorem «шаг-счёт» (o : «Обст») (p : «Прогон») (s0 : Stri
       split <;> simp [«Прогон».«беда»]
     by_cases h2 : «слово» («обрезать» s0) 2 = "дано"
     · unfold «шагБлока»; simp only [hp', hs, h2, Bool.false_eq_true, ↓reduceIte, Bool.not_true]
-      unfold «ходДопущения»; dsimp only
-      split <;> (try split) <;> (try split) <;> simp [«Прогон».«беда»]
+      rcases «ходДопущения-вид» p («обрезать» s0) o with ⟨t, ht⟩ | ht <;> rw [ht] <;> simp [«Прогон».«беда»]
     rw [«шагБлока-прочий» o p s0 hp' hs h1 h2 h3]
     simp [«вРамке»]
   · have hs' : («обрезать» s0).startsWith "ход " = false := by simpa using hs

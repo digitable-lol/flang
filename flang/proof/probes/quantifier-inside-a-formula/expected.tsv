@@ -18,3 +18,8 @@ named-witness-is-wrong.flang	check	1	FLANG_PROOF_STEP
 named-witness-is-wrong.flang	check	1	свидетель «м», названный после «а именно» как ⟨0⟩, цели не сводит
 named-witness-is-wrong.flang	check	1	среди подтермов цели годен ⟨н⟩
 named-witness-is-wrong.flang	proof	1	FLANG_PROOF_STEP
+exists-under-not.flang	check	1	FLANG_PROOF_STEP
+exists-under-not.flang	check	1	Св✗✗
+exists-under-not-without-a-witness.flang	check	1	FLANG_PROOF_STEP
+or-with-a-quantifier-half.flang	proof	0	утверждений 3: доказано 3
+or-with-a-wrong-witness-and-a-true-half.flang	proof	3	сетка 1

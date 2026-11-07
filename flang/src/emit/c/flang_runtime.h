@@ -1201,4 +1201,8 @@ fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start,
                       fl_par_pair step, const fl_value *env, fl_value *result,
                       fl_error *error);
 
+size_t fl_spread_jobs(void);
+fl_status fl_spread_map(fl_ctx *ctx, fl_value list, fl_par_item body,
+                        const fl_value *env, fl_value *items, fl_error *error);
+
 #endif /* FLANG_RUNTIME_H */

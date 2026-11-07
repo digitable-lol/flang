@@ -1,0 +1,8 @@
+program	surface	code	word	контракт ADR-0190: слова сняты 2 ноября 2026 компилятором ветки, запущенным из исходников (check-with-source-compiler), и сверены с двоичным печати 9d (семя acfdc85e5): все семь строк сходятся; двоичный 0.7.32 расходится на record-field-with-a-free-name, arrow-through-the-point, else-branch-length и copy-includes-its-input — это и есть снятая граница
+record-field-with-a-free-name.flang	proof	0	доказано 3, условно
+record-field-with-a-free-name-false.flang	check	1	FLANG_PROPERTY
+arrow-through-the-point.flang	proof	0	доказано 2, условно
+arrow-through-the-point-false.flang	check	1	FLANG_PROPERTY
+else-branch-length.flang	proof	0	доказано 1, условно
+copy-includes-its-input.flang	proof	0	доказано 1, условно
+copy-drops-the-head.flang	check	1	FLANG_PROPERTY

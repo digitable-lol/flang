@@ -1,0 +1,11 @@
+program	surface	code	word	заявки 399, 405, 408 и 413 двоичный 0.7.32 уже берёт: строки стерегут, чтобы взятое не ушло назад, у каждой честной — ложный сосед; знак нуля в сообщении (заявка 483) — слово двоичного печати 9d (семя acfdc85e5)
+closure-over-the-tail.flang	check	0	замечаний нет
+closure-over-the-whole-list.flang	check	1	FLANG_NOT_TOTAL
+any-case-induction.flang	proof	0	доказано 2, условно
+any-case-gives-red.flang	proof	3	доказано 0, условно
+nat-equality-two-matches.flang	proof	0	доказано 1, условно
+nat-equality-false.flang	check	1	FLANG_PROOF_INDUCTION_CASES
+field-under-two-matches.flang	proof	0	доказано 2, условно
+field-under-two-matches-false.flang	proof	3	доказано 1, условно
+sign-of-zero-in-a-mismatch.flang	check	1	ожидалось -0, получено 0
+same-name-postconditions.flang	proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО

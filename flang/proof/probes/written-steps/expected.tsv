@@ -1,0 +1,4 @@
+program	surface	code	word	контракт ADR-0187: слова сняты 21 октября 2026 компилятором этой ветки, запущенным из исходников (flang/self/bootstrap/check-with-source-compiler.flang, только для замера); коды при сверщике — по его прогону на записи той же печати; семя до перепечатки расходится на всех трёх строках — это и есть снятая граница; после ADR-0190 (партия 9d) квадрат доказан без сетки — код 0
+functor-square.flang	proof	0	доказано 5
+functor-square-false-link.flang	check	1	FLANG_PROOF_STEP
+branch-capture-false.flang	proof	3	доказано 1

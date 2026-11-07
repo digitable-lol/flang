@@ -49,6 +49,8 @@ import «Приёмка»
 | Разв3 | «Разв3» (β-редукция) | своё тело — «подстановка» + факт «результат равен телу»; вызов — «замФ-верно», «развёрнут?-верно» + факт «функция равна телу» здесь |
 | Выч | «Выч-звено», «Выч-вариант» (замкнутый счёт) | «вычФ-верно», «вычЧ-верно» здесь: ответ счёта — значение формулы в каждом мире |
 | Р2, Р3 | «Р2», «Р3» (разбор случаев по значению условия) | «замФ-верно» с «кусок-верно» здесь: на месте условия — литерал того же значения |
+| Р8 | «Р8» (разбор по условию с допущением в каждой половине) | «выборЛит-верно» здесь: условие на литерал, выбор по нему на ветвь; гипотезы половин выполнены в своём мире |
+| Отр1 | «Отр1», «Отр1-не-больше» (обратное сравнение вне не-числа) | «свидетельЧисла-верно», «порядок?-знач», «строгий?-знач» здесь |
 | Р5 | «Р5» (ветвь «пусто» разбора) | «Р5-мир», «пустота?-верно» + факт «результат равен телу» здесь |
 | Р6 | «Р6» (начало свёртки по пустому списку) | «Р6-мир», «пустота?-верно» + факт «результат равен телу» здесь |
 | Разв1 (строка тела) | «Выч-звено» (ветвь разбора выписанного списка) | «ветвьСписка?-значение» («подстПарТ-значение»), затем как Разв3 по своему телу |
@@ -1967,6 +1969,77 @@ theorem «Сл2-терм» (Γ : List («Факт» «Мир»)) (x : String) (n
   rw [«факт-потолок», hb]
   exact «Сл2» b k hk
 
+/-! ## Р8, Отр1: разбор по условию с допущением и порядок из отрицания (ADR-0186) -/
+
+/-- Замена, которую велит «выборЛит», сохраняет значение в мире, где условие V
+    имеет значение литерала C: выбор по V равен своей ветви. -/
+theorem «выборЛит-верно» (v c : «Форм») (w : «Мир») (h : «оценитьФ» v w = «оценитьФ» c w)
+    (hc : c = .«да» ∨ c = .«нет») :
+    ∀ A B, «выборЛит» v c A B = true → «значение» A w = «значение» B w := by
+  intro A B hAB
+  have hk := «кусок-верно» v c w h
+  unfold «выборЛит» at hAB
+  simp only [Bool.or_eq_true] at hAB
+  rcases hAB with hk1 | hAB
+  · exact hk A B hk1
+  · split at hAB
+    · rename_i v' a b t
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at hAB
+      obtain ⟨rfl, ht⟩ := hAB
+      have e := «замЧ-верно» _ w hk _ _ ht
+      simp only [«значение», «оценить»]
+      rcases hc with rfl | rfl
+      · simp only [«оценитьФ»] at h; simp [h, «выбор», ← e]
+      · simp only [«оценитьФ»] at h; simp [h, «выбор», ← e]
+    · rename_i v' a b t
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at hAB
+      obtain ⟨rfl, ht⟩ := hAB
+      have e := «замФ-верно» _ w hk _ _ ht
+      simp only [«значение», «оценитьФ»]
+      rcases hc with rfl | rfl
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+    · rename_i v' a b t
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at hAB
+      obtain ⟨rfl, ht⟩ := hAB
+      have e := «замС-верно» _ w hk _ _ ht
+      simp only [«значение», «оценитьС»]
+      rcases hc with rfl | rfl
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+    · rename_i v' a b t
+      simp only [Bool.and_eq_true, decide_eq_true_eq] at hAB
+      obtain ⟨rfl, ht⟩ := hAB
+      have e := «замТ-верно» _ w hk _ _ ht
+      simp only [«значение», «оценитьТ»]
+      rcases hc with rfl | rfl
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+      · simp only [«оценитьФ»] at h; simp [h, ← e]
+    · cases hAB
+
+theorem «порядок?-знач» {f : «Форм»} {e g : «ТермЧ»} (h : «порядок?» f = some (e, g)) (w : «Мир») :
+    «оценитьФ» f w = «неБольше» («оценить» e w) («оценить» g w) := by
+  unfold «порядок?» at h
+  split at h <;> cases h <;> simp [«оценитьФ», «неМеньше»]
+
+theorem «строгий?-знач» {f : «Форм»} {e g : «ТермЧ»} (h : «строгий?» f = some (e, g)) (w : «Мир») :
+    «оценитьФ» f w = «меньше» («оценить» e w) («оценить» g w) := by
+  unfold «строгий?» at h
+  split at h <;> cases h <;> simp [«оценитьФ»]
+
+/-- Свидетель Отр1: из «литерал не больше Т» значение Т — не «не число». -/
+theorem «свидетельЧисла-верно» {t : «ТермЧ»} {p : «Принятый»} (h : «свидетельЧисла» t p = true) (w : «Мир»)
+    (hw : «Факт-из» p.«формула» w) : «оценить» t w ≠ «неЧисло» := by
+  unfold «свидетельЧисла» at h
+  split at h
+  · rename_i k t' hp
+    simp only [decide_eq_true_eq] at h
+    subst h
+    rw [«порядок?-факт» hp] at hw
+    simp only [«Факт-из», «оценитьФ», «оценить»] at hw
+    intro hn; rw [hn] at hw; simp [«неБольше»] at hw
+  · cases h
+
 /-- Каждый принятый шаг выводится из своих открытых гипотез и окружения. -/
 def «Инв» (u : «Утверждение») («преж» : List «Принятый») : Prop :=
   ∀ p ∈ «преж», «Судим» («гип» p.«откр» ++ «окружение» u) («Факт-из» p.«формула»)
@@ -2139,6 +2212,54 @@ theorem «шаг-верен» (u : «Утверждение») («преж» : L
     rcases hc with rfl | rfl
     · exact («Вкл2-терм» _ e a x b hq).1
     · exact («Вкл2-терм» _ e a x b hq).2
+  | «Р8» n m k p1 p2 p3 v ho hp h1 h2 h3 hg hv hz hd hn o1 o2 =>
+    simp only [«итог», «гип», List.map_nil, List.nil_append]
+    have e1 := hinv p1 («шагПо-в» h1)
+    have e2 := hinv p2 («шагПо-в» h2)
+    intro w hw
+    simp only [«Факт-из»]
+    cases hvw : «оценитьФ» v w
+    · have hg2 : «Выполняет» («гип» p2.«откр» ++ «окружение» u) w := by
+        intro f hf
+        rcases List.mem_append.mp hf with hf | hf
+        · simp only [«гип», List.mem_map] at hf
+          obtain ⟨q, hq, rfl⟩ := hf
+          rw [o2 q hq]; simp [«Факт-из», «оценитьФ», hvw]
+        · exact hw f hf
+      have := e2 w hg2
+      simp only [«Факт-из»] at this
+      rw [«замФ-верно» («выборЛит» v .«нет») w («выборЛит-верно» v .«нет» w (by simp [«оценитьФ», hvw]) (Or.inr rfl)) _ _ hn]
+      exact this
+    · have hg1 : «Выполняет» («гип» p1.«откр» ++ «окружение» u) w := by
+        intro f hf
+        rcases List.mem_append.mp hf with hf | hf
+        · simp only [«гип», List.mem_map] at hf
+          obtain ⟨q, hq, rfl⟩ := hf
+          rw [o1 q hq]; simp [«Факт-из», hvw]
+        · exact hw f hf
+      have := e1 w hg1
+      simp only [«Факт-из»] at this
+      rw [«замФ-верно» («выборЛит» v .«да») w («выборЛит-верно» v .«да» w (by simp [«оценитьФ», hvw]) (Or.inl rfl)) _ _ hd]
+      exact this
+  | «Отр1» n m k p1 p2 p3 c e g ho hp h1 h2 h3 hc hf he hg =>
+    simp only [«итог»]
+    have q1 := «слева» (p1.«откр» ++ p2.«откр») p3.«откр» («слева» p1.«откр» p2.«откр» (hinv p1 («шагПо-в» h1)))
+    have q2 := «слева» (p1.«откр» ++ p2.«откр») p3.«откр» («справа» p1.«откр» p2.«откр» (hinv p2 («шагПо-в» h2)))
+    have q3 := «справа» (p1.«откр» ++ p2.«откр») p3.«откр» (hinv p3 («шагПо-в» h3))
+    intro w hw
+    have a1 := q1 w hw
+    have ae := «свидетельЧисла-верно» he w (q2 w hw)
+    have ag := «свидетельЧисла-верно» hg w (q3 w hw)
+    rw [hc] at a1
+    simp only [«Факт-из», «оценитьФ», Bool.not_eq_true'] at a1
+    simp only [«Факт-из»]
+    rcases hf with ⟨hpc, hs⟩ | ⟨hpc, hsc, hs⟩
+    · rw [«порядок?-знач» hpc] at a1
+      rw [«строгий?-знач» hs]
+      exact «Отр1-не-больше» _ _ ae ag a1
+    · rw [«строгий?-знач» hsc] at a1
+      rw [«порядок?-знач» hs]
+      exact «Отр1» _ _ ae ag a1
   | «Зв0» n z ho hp hz hf =>
     simp only [«итог», «гип», List.map_nil, List.nil_append]
     rw [hf]; exact «Зв0-терм» _ _ («звено-в-окружении» u z hz)
@@ -2577,5 +2698,5 @@ theorem «состоятельность-разрешимо» (u : «Утвер�
     «Судим» («окружение» u) («Факт-из» u.«цель») :=
   «состоятельность» u («принят?-верно» u h)
 
-/-- Число покрытых правил; сверщик именует 81 приём в `шаг_вывода`. -/
-theorem «покрыто-число» : «покрыто» = 91 := by decide
+/-- Число покрытых правил; сверщик именует 93 приёма в `шаг_вывода`. -/
+theorem «покрыто-число» : «покрыто» = 93 := by decide

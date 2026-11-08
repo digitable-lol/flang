@@ -1,12 +1,11 @@
 модуль «Link import guard»
-  использует «SHA-256»
-  использует «UTF-8»
 
 объект «Walk»
   «forged»: признак
   «binary»: строка
   «root»: строка
   «lock»: строка
+  «pins»: список строки
   «now»: «Act»
   «rest»: список «Act»
   «troubles»: список строки
@@ -21,6 +20,10 @@
   вариант «Same lock» содержит dir: строка
   вариант «Bend lock» содержит dir: строка
   вариант «Remove» содержит file: строка
+  вариант «Digest» содержит file: строка, slot: число
+  вариант «Pin in lock»
+  вариант «Poison body»
+  вариант «Poison index»
   вариант «Clean»
 
 тип «Step»
@@ -73,7 +76,6 @@
 тотальная функция «Shop»
   принимает address: строка
   возвращает строка
-  обеспечивает «the link stands in the import line» результат содержит address
   соединить ["модуль «Магазин»", (соединить ["  использует «Скидка» из \"", address, "\""] по ""), "",
     "тотальная функция «Итог»", "  возвращает число", "  пример «Сто со скидкой»", "    ожидается 90",
     "  «Цена со скидкой» от 100", ""] по "\n"
@@ -83,7 +85,7 @@
   возвращает строка
   пример «A file of the probe directory as a file address»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано file равно "lib/discount.flang"
     ожидается "file:///t/lib/discount.flang"
@@ -94,29 +96,11 @@
   возвращает строка
   пример «Paths are counted from the probe directory»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано file равно "shop1/shop.flang"
     ожидается "/t/shop1/shop.flang"
   соединить [(walk.«root»), "/", file] по ""
-
-тотальная функция «Pinned address»
-  принимает text: строка
-  возвращает строка
-  обеспечивает «sixty four hex digits» (длина результат) равен 64
-  пример «The address is sha256 over the schema prefix and the text»
-    дано text равно ""
-    ожидается "ea6e3df9ffe809af7098e099808ec12b77522996e44267eea01ae0d5c9f9f639"
-  «Хеш байтов» от («Байты текста» от (соединить ["flang-lock-2 ", text] по ""))
-
-тотальная функция «Plain address»
-  принимает text: строка
-  возвращает строка
-  обеспечивает «sixty four hex digits» (длина результат) равен 64
-  пример «The index of the cache is named by sha256 of the address»
-    дано text равно "abc"
-    ожидается "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
-  «Хеш байтов» от («Байты текста» от text)
 
 тотальная функция «Cache file»
   принимает name: строка, tail: строка
@@ -128,18 +112,85 @@
   соединить ["home/.cache/flang/links/", name, tail] по ""
 
 тотальная функция «Poison acts»
-  принимает walk: «Walk»
+  принимает forged: признак
   возвращает список «Act»
-  обеспечивает «one put or two» (длина результат) не больше 2
-  пусть link равно («Link of» от walk и "lib/discount.flang")
-  пусть forged равно («Pinned address» от («Substituted discount»))
-  разбор (walk.«forged»)
+  пример «The honest probe substitutes the body only»
+    дано forged равно нет
+    ожидается [вариант «Poison body»]
+  пример «The forgery adjusts the index to the substituted body»
+    дано forged равно да
+    ожидается [вариант «Poison body», вариант «Poison index»]
+  разбор forged
     случай да
-      то [(вариант «Put» с file равным («Cache file» от forged и ".flang") и text равным («Substituted discount»)),
-        (вариант «Put» с file равным («Cache file» от («Plain address» от link) и ".address") и text равным forged)]
+      то [вариант «Poison body», вариант «Poison index»]
     случай нет
-      то [(вариант «Put» с file равным («Cache file» от («Pinned address» от («Discount»)) и ".flang")
-        и text равным («Substituted discount»))]
+      то [вариант «Poison body»]
+
+тотальная функция «Pin»
+  принимает pins: список строки, slot: число
+  возвращает строка
+  пример «The second pin»
+    дано pins равно ["a", "b", "c"]
+    дано slot равно 2
+    ожидается "b"
+  пример «No such pin»
+    дано pins равно ["a"]
+    дано slot равно 3
+    ожидается ""
+  разбор (((длина pins) не меньше slot) и притом (slot больше 0))
+    случай да
+      то элемент slot в pins
+    случай нет
+      то ""
+
+тотальная функция «Set pin»
+  принимает pins: список строки, slot: число, value: строка
+  возвращает список строки
+  пример «The first pin is set»
+    дано pins равно ["", "", ""]
+    дано slot равно 1
+    дано value равно "ab"
+    ожидается ["ab", "", ""]
+  отобразить [1, 2, 3] как n → «Pin or value» от pins и n и slot и value
+
+тотальная функция «Pin or value»
+  принимает pins: список строки, n: число, slot: число, value: строка
+  возвращает строка
+  пример «The slot takes the value»
+    дано pins равно ["", ""]
+    дано n равно 2
+    дано slot равно 2
+    дано value равно "x"
+    ожидается "x"
+  разбор (n равен slot)
+    случай да
+      то value
+    случай нет
+      то «Pin» от pins и n
+
+тотальная функция «Digest of»
+  принимает output: строка
+  возвращает строка
+  пример «sha256sum prints the digest first»
+    дано output равно "ab12  /t/digest/link\n"
+    ожидается "ab12"
+  разбор (разделить output по " ")
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Body slot»
+  принимает forged: признак
+  возвращает число
+  пример «The forgery writes under the substituted pin»
+    дано forged равно да
+    ожидается 2
+  разбор forged
+    случай да
+      то 2
+    случай нет
+      то 1
 
 тотальная функция «Run act»
   принимает dir: строка, offline: признак, expect: строка
@@ -152,21 +203,33 @@
       и mark равным "" и quiet равным нет)
   вариант «Run» с dir равным dir и offline равным offline и expect равным expect и mark равным "" и quiet равным нет
 
+тотальная функция «Digest acts»
+  принимает discount: строка
+  возвращает список «Act»
+  обеспечивает «three texts and three digests» (длина результат) равен 6
+  [(вариант «Put» с file равным "digest/discount" и text равным (соединить ["flang-lock-2 ", («Discount»)] по "")),
+   (вариант «Put» с file равным "digest/substituted"
+     и text равным (соединить ["flang-lock-2 ", («Substituted discount»)] по "")),
+   вариант «Put» с file равным "digest/link" и text равным discount,
+   вариант «Digest» с file равным "digest/discount" и slot равным 1,
+   вариант «Digest» с file равным "digest/substituted" и slot равным 2,
+   вариант «Digest» с file равным "digest/link" и slot равным 3]
+
 тотальная функция «First acts»
   принимает walk: «Walk»
   возвращает список «Act»
-  обеспечивает «eight acts set the probe up and fetch» (длина результат) равен 8
   пусть discount равно («Link of» от walk и "lib/discount.flang")
-  [вариант «Make dirs»,
+  пусть head равно [вариант «Make dirs»,
    вариант «Put» с file равным "lib/discount.flang" и text равным («Discount»),
    вариант «Put» с file равным "lib/util.flang" и text равным («Util»),
    вариант «Put» с file равным "lib/broken.flang" и text равным («Broken»),
-   вариант «Put» с file равным "shop1/shop.flang" и text равным («Shop» от discount),
-   (вариант «Run» с dir равным "shop1" и offline равным нет и expect равным ""
-     и mark равным (соединить [discount, " — отпечаток ", («Pinned address» от («Discount»))] по "")
-     и quiet равным нет),
+   вариант «Put» с file равным "shop1/shop.flang" и text равным («Shop» от discount)]
+  пусть fetch равно [(вариант «Run» с dir равным "shop1" и offline равным нет и expect равным ""
+     и mark равным (соединить ["скачано: ", discount] по "") и quiet равным нет),
    вариант «Keep lock» с dir равным "shop1",
+   вариант «Pin in lock»,
    вариант «Remove» с file равным "lib/discount.flang"]
+  «Joined» от («Joined» от head и («Digest acts» от discount)) и fetch
 
 тотальная функция «Offline acts»
   принимает walk: «Walk»
@@ -198,9 +261,8 @@
 тотальная функция «All acts»
   принимает walk: «Walk»
   возвращает список «Act»
-  обеспечивает «every act of the probe» (длина результат) не меньше 26
   пусть poison равно (приписать (вариант «Put» с file равным "shop3/shop.flang"
-    и text равным («Shop» от («Link of» от walk и "lib/discount.flang"))) к («Poison acts» от walk))
+    и text равным («Shop» от («Link of» от walk и "lib/discount.flang"))) к («Poison acts» от (walk.«forged»)))
   пусть cache равно (добавить («Run act» от "shop3" и да и "FLANG_LINK_CHANGED") к poison)
   пусть head равно («Joined» от («Joined» от («First acts» от walk) и («Offline acts» от walk)) и cache)
   «Joined» от head и (добавить (вариант «Clean») к («Refusal acts» от walk))
@@ -222,10 +284,11 @@
     дано binary равно "b"
     дано root равно "/t"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
   (запись «Walk» с «forged» равным forged и «binary» равным binary и «root» равным root и «lock» равным ""
-    и «now» равным (вариант «Nothing») и «rest» равным пустой список и «troubles» равным пустой список
+    и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
+    и «rest» равным пустой список и «troubles» равным пустой список
     и «done» равным 0)
 
 тотальная функция «Started walk»
@@ -234,7 +297,8 @@
   обеспечивает «nothing is done yet» (результат.«done») равен 0
   пусть walk равно («Fresh walk» от forged и binary и root)
   (запись «Walk» с «forged» равным forged и «binary» равным binary и «root» равным root и «lock» равным ""
-    и «now» равным (вариант «Nothing») и «rest» равным («All acts» от walk) и «troubles» равным пустой список
+    и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
+    и «rest» равным («All acts» от walk) и «troubles» равным пустой список
     и «done» равным 0)
 
 тотальная функция «Trouble»
@@ -242,14 +306,15 @@
   возвращает «Walk»
   пример «A trouble is written down»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано words равно "x"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным ["x"] и «done» равным 0)
   (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
-    и «lock» равным (walk.«lock») и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «lock» равным (walk.«lock») и «pins» равным (walk.«pins»)
+    и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
     и «troubles» равным (добавить words к (walk.«troubles»)) и «done» равным (walk.«done»))
 
 тотальная функция «With lock»
@@ -257,14 +322,15 @@
   возвращает «Walk»
   пример «The first lock is kept for the comparisons»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано lock равно "{}"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "{}" и «now» равным (вариант «Nothing»)
+      и «lock» равным "{}" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
   (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
-    и «lock» равным lock и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «lock» равным lock и «pins» равным (walk.«pins»)
+    и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
     и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
 
 тотальная функция «Taking»
@@ -272,15 +338,16 @@
   возвращает «Walk»
   пример «Taking an act counts it»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано act равно вариант «Clean»
     дано rest равно пустой список
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Clean»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Clean»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
   (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
-    и «lock» равным (walk.«lock») и «now» равным act и «rest» равным rest
+    и «lock» равным (walk.«lock») и «pins» равным (walk.«pins»)
+    и «now» равным act и «rest» равным rest
     и «troubles» равным (walk.«troubles») и «done» равным ((walk.«done») плюс 1))
 
 тотальная функция «Pushed»
@@ -288,14 +355,15 @@
   возвращает «Walk»
   пример «A pushed act goes first»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано act равно вариант «Clean»
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным [вариант «Clean»] и «troubles» равным пустой список и «done» равным 0)
   (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
-    и «lock» равным (walk.«lock») и «now» равным (walk.«now») и «rest» равным (приписать act к (walk.«rest»))
+    и «lock» равным (walk.«lock») и «pins» равным (walk.«pins»)
+    и «now» равным (walk.«now») и «rest» равным (приписать act к (walk.«rest»))
     и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
 
 тотальная функция «Run words»
@@ -303,7 +371,7 @@
   возвращает список строки
   пример «A clean machine: empty environment, empty home, no network»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано dir равно "shop1"
     дано offline равно да
@@ -321,12 +389,13 @@
 тотальная функция «Dirs»
   принимает walk: «Walk»
   возвращает список строки
-  пример «Home, the library and six projects»
+  пример «Home, the library, the digests and six projects»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
-    ожидается ["-p", "/t/home", "/t/lib", "/t/shop1", "/t/shop2", "/t/shop3", "/t/shop4", "/t/shop5", "/t/shop6"]
-  приписать "-p" к (отобразить ["home", "lib", "shop1", "shop2", "shop3", "shop4", "shop5", "shop6"]
+    ожидается ["-p", "/t/home", "/t/lib", "/t/digest", "/t/shop1", "/t/shop2", "/t/shop3", "/t/shop4", "/t/shop5",
+      "/t/shop6"]
+  приписать "-p" к (отобразить ["home", "lib", "digest", "shop1", "shop2", "shop3", "shop4", "shop5", "shop6"]
     как name → «Path in» от walk и name)
 
 тотальная функция «Lock in»
@@ -334,7 +403,7 @@
   возвращает строка
   пример «The lock lies next to the program»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано dir равно "shop1"
     ожидается "/t/shop1/flang.lock"
@@ -345,7 +414,7 @@
   возвращает «Поручение»
   пример «Cleaning removes the probe directory»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано act равно вариант «Clean»
     ожидается вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/t"]
@@ -364,6 +433,17 @@
       то вариант «Прочитать файл» с путь равным («Lock in» от walk и dir)
     случай вариант «Remove» с file как file
       то вариант «Удалить файл» с путь равным («Path in» от walk и file)
+    случай вариант «Digest» с file как file и slot как slot
+      то вариант «Запустить процесс» с программа равным "sha256sum" и аргументы равным [(«Path in» от walk и file)]
+    случай вариант «Pin in lock»
+      то вариант «Прочитать файл» с путь равным («Lock in» от walk и "shop1")
+    случай вариант «Poison body»
+      то (вариант «Записать файл»
+        с путь равным («Cache path» от walk и («Body slot» от (walk.«forged»)) и ".flang")
+        и содержимое равным («Substituted discount»))
+    случай вариант «Poison index»
+      то (вариант «Записать файл» с путь равным («Cache path» от walk и 3 и ".address")
+        и содержимое равным («Pin» от (walk.«pins») и 2))
     случай вариант «Clean»
       то вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", (walk.«root»)]
     случай вариант «Nothing»
@@ -374,7 +454,7 @@
   возвращает «Продолжение»
   пример «A walk with nothing ahead ends»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     ожидается вариант «Конец работы» с значение равным "импорт по ссылке: шагов 0, замок, кеш и отказы сошлись"
   разбор (walk.«rest»)
@@ -505,13 +585,13 @@
   возвращает «Walk»
   пример «Nothing to note»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано words равно пустой список
     дано output равно ""
     дано errors равно ""
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
   разбор words
     случай пусто
@@ -525,11 +605,12 @@
   возвращает «Walk»
   пример «The first lock is kept»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Keep lock» с dir равным "shop1")
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Keep lock» с dir равным "shop1")
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
     дано text равно "{\"путь\":\"file:///t/x\"}"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "{\"путь\":\"file:///t/x\"}" и «now» равным (вариант «Keep lock» с dir равным "shop1")
+      и «lock» равным "{\"путь\":\"file:///t/x\"}" и «pins» равным ["", "", ""]
+      и «now» равным (вариант «Keep lock» с dir равным "shop1")
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
   разбор (walk.«now»)
     случай вариант «Keep lock» с dir как dir
@@ -547,20 +628,41 @@
             (к строке (длина text)), " и ", (к строке (длина (walk.«lock»))), " знаков"] по "")
     случай вариант «Bend lock» с dir как dir
       то «Bent lock» от walk и dir и text
+    случай вариант «Pin in lock»
+      то «Pin found» от walk и text
     случай любое
       то walk
+
+тотальная функция «Pin found»
+  принимает walk: «Walk», text: строка
+  возвращает «Walk»
+  пример «The lock carries the pin sha256sum counted»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["ab", "", ""] и «now» равным (вариант «Pin in lock»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+    дано text равно "{\"адрес\":\"ab\"}"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["ab", "", ""] и «now» равным (вариант «Pin in lock»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+  пусть pin равно («Pin» от (walk.«pins») и 1)
+  разбор ((не (pin равен "")) и притом (text содержит («Pin mark» от pin)))
+    случай да
+      то walk
+    случай нет
+      то «Trouble» от walk и (соединить ["в замке нет отпечатка, который насчитал sha256sum: ",
+        («Pin» от (walk.«pins») и 1)] по "")
 
 тотальная функция «Bent lock»
   принимает walk: «Walk», dir: строка, text: строка
   возвращает «Walk»
   пример «The bent lock is written back»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано dir равно "shop1"
     дано text равно "умножить на 0.9"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным [вариант «Put» с file равным "shop1/flang.lock" и text равным "умножить на 0.8"]
       и «troubles» равным пустой список и «done» равным 0)
   пусть bent равно («Bent» от text)
@@ -575,25 +677,70 @@
   возвращает «Walk»
   пример «A failed act is a trouble»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано code равно "FLANG_IO"
     дано words равно "нет"
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным ["шаг пробы: FLANG_IO: нет"] и «done» равным 0)
   «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": ", code, ": ", words] по "")
+
+тотальная функция «After process»
+  принимает walk: «Walk», code: число, output: строка, errors: строка
+  возвращает «Walk»
+  пример «A digest is kept in its slot»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["", "", ""]
+      и «now» равным (вариант «Digest» с file равным "d" и slot равным 2)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+    дано code равно 0
+    дано output равно "ab  /t/d\n"
+    дано errors равно ""
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["", "ab", ""]
+      и «now» равным (вариант «Digest» с file равным "d" и slot равным 2)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+  пусть noted равно («Noted» от walk и («Run troubles» от (walk.«now») и code и output и errors) и output и errors)
+  разбор (walk.«now»)
+    случай вариант «Digest» с file как file и slot как slot
+      то «With pins» от noted и («Set pin» от (noted.«pins») и slot и («Digest of» от output))
+    случай любое
+      то noted
+
+тотальная функция «With pins»
+  принимает walk: «Walk», pins: список строки
+  возвращает «Walk»
+  пример «The pins are replaced»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано pins равно ["a", "b", "c"]
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["a", "b", "c"] и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+  (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
+    и «lock» равным (walk.«lock») и «pins» равным pins и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
+
+тотальная функция «Pin mark»
+  принимает pin: строка
+  возвращает строка
+  пример «The pin as the lock writes it»
+    дано pin равно "ab"
+    ожидается "\"адрес\":\"ab\""
+  соединить ["\"адрес\":\"", pin, "\""] по ""
 
 тотальная функция «After reply»
   принимает walk: «Walk», reply: «Отклик»
   возвращает «Walk»
   пример «A written file moves on»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано reply равно вариант «Записано» с сколько равным 3
     ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
   разбор reply
     случай вариант «Записано» с сколько как bytes
@@ -603,7 +750,7 @@
     случай вариант «Прочитано» с содержимое как text
       то «After read» от walk и text
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
-      то «Noted» от walk и («Run troubles» от (walk.«now») и code и output и errors) и output и errors
+      то «After process» от walk и code и output и errors
     случай вариант «Сбой» с код как code и сообщение как words
       то «After failure» от walk и code и words
     случай любое
@@ -614,7 +761,7 @@
   возвращает «Продолжение»
   пример «No troubles is the end of the work»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
-      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «lock» равным "" и «pins» равным ["", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     ожидается вариант «Конец работы» с значение равным "импорт по ссылке: шагов 0, замок, кеш и отказы сошлись"
   разбор (пусто (walk.«troubles»))
@@ -798,3 +945,15 @@
       то пустой список
     случай нет
       то [соединить ["процесс ответил кодом ", (к строке code), ": ", errors] по ""]
+
+тотальная функция «Cache path»
+  принимает walk: «Walk», slot: число, tail: строка
+  возвращает строка
+  пример «The body of the first pin in the cache»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «pins» равным ["ab", "", ""] и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано slot равно 1
+    дано tail равно ".flang"
+    ожидается "/t/home/.cache/flang/links/ab.flang"
+  «Path in» от walk и («Cache file» от («Pin» от (walk.«pins») и slot) и tail)

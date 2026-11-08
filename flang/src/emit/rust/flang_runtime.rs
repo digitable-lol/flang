@@ -1385,7 +1385,7 @@ pub fn b_integer_part(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
 /// мантиссы.
 pub fn percent(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     let (a, b) = arithmetic("percent", &left, &right)?;
-    Ok(number((a / 100.0) * b))
+    Ok(number(unsigned_zero((a / 100.0) * b)))
 }
 
 /// «больше».
@@ -2475,7 +2475,7 @@ pub fn b_remainder(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error
 pub fn b_percent_of(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Error> {
     let a = expect_number("процентов от", &left, "процент")?;
     let b = expect_number("процентов от", &right, "значение")?;
-    Ok(number((a / 100.0) * b))
+    Ok(number(unsigned_zero((a / 100.0) * b)))
 }
 
 // ───────────────────────────── граница входа ─────────────────────────────

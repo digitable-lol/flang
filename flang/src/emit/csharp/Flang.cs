@@ -765,7 +765,7 @@ public static class Flang
     public static Value Percent(Ctx ctx, Value left, Value right)
     {
         Arithmetic("percent", left, right);
-        return Value.Number((left.Num / 100) * right.Num);
+        return Value.Number(UnsignedZero((left.Num / 100) * right.Num));
     }
 
     /// <summary>«больше».</summary>
@@ -1977,7 +1977,7 @@ public static class Flang
     {
         double a = ExpectNumber("процентов от", left, "процент");
         double b = ExpectNumber("процентов от", right, "значение");
-        return Value.Number((a / 100) * b);
+        return Value.Number(UnsignedZero((a / 100) * b));
     }
 
     // ───────────────────────────── граница входа ─────────────────────────────

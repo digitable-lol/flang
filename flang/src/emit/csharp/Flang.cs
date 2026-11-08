@@ -2012,6 +2012,7 @@ public static class Flang
     public const int TypeRecord = 6;
     /// <summary>Сумма типов.</summary>
     public const int TypeSum = 7;
+    public const int TypeExact = 8;
 
     /// <summary>Поле записи или варианта: имя и место его типа в таблице типов.</summary>
     /// <remarks>Собирает описание поля.</remarks>
@@ -2155,6 +2156,43 @@ public static class Flang
         }
     }
 
+    private static void CheckExactType(TypeSpec spec, Value value, string label)
+    {
+        const string canon = "точное целое записано не в каноне";
+        if (!ExactDigits(value))
+        {
+            throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
+        }
+        Value[] digits = Value.Elements(value);
+        if (digits.Length > 0 && digits[digits.Length - 1].Num == 0)
+        {
+            throw Fail(FlangError.CodeType, canon + ": старший разряд нулевой, а канон требует снять старшие нули");
+        }
+        foreach (Value item in digits)
+        {
+            double digit = item.Num;
+            if (double.IsNaN(digit) || double.IsInfinity(digit))
+            {
+                continue;
+            }
+            string text = Value.NumberText(digit);
+            if (digit < 0)
+            {
+                throw Fail(
+                    FlangError.CodeType,
+                    canon + ": разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет");
+            }
+            if (System.Math.Floor(digit) != digit)
+            {
+                throw Fail(FlangError.CodeType, canon + ": разряд " + text + " не целый, а разряды точного целого целы");
+            }
+            if (digit >= 4194304)
+            {
+                throw Fail(FlangError.CodeType, canon + ": разряд " + text + " не меньше основания 4194304");
+            }
+        }
+    }
+
     private static void CheckFields(
         EntryTable table, int from, int count, Field[] given, string label, string owner, bool ofVariant)
     {
@@ -2209,6 +2247,9 @@ public static class Flang
         {
             case TypeNumber:
                 CheckNumberType(spec, value, label);
+                return;
+            case TypeExact:
+                CheckExactType(spec, value, label);
                 return;
             case TypeText:
                 if (value.Tag != Value.TagString)

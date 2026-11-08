@@ -2514,6 +2514,7 @@ pub enum TypeKind {
     Record,
     /// сумма типов
     Sum,
+    Exact,
 }
 
 /// Поле записи или варианта: имя и место его типа в таблице типов.
@@ -2612,6 +2613,52 @@ fn check_number_type(spec: &Type, value: &Value, label: &str) -> Result<(), Erro
     Ok(())
 }
 
+fn check_exact_type(spec: &Type, value: &Value, label: &str) -> Result<(), Error> {
+    let canon = "точное целое записано не в каноне";
+    let digits: Vec<f64> = match value {
+        Value::List(items) if exact_digits(value) => items
+            .as_slice()
+            .iter()
+            .map(|item| match item {
+                Value::Number(number) => *number,
+                _ => 0.0,
+            })
+            .collect(),
+        _ => return Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name))),
+    };
+    if digits.last() == Some(&0.0) {
+        return Err(fail(
+            CODE_TYPE,
+            format!("{}: старший разряд нулевой, а канон требует снять старшие нули", canon),
+        ));
+    }
+    for digit in digits.iter().copied().filter(|digit| digit.is_finite()) {
+        if digit < 0.0 {
+            return Err(fail(
+                CODE_TYPE,
+                format!(
+                    "{}: разряд {} отрицателен, а точное целое ниже нуля значений не имеет",
+                    canon,
+                    number_text(digit)
+                ),
+            ));
+        }
+        if digit.floor() != digit {
+            return Err(fail(
+                CODE_TYPE,
+                format!("{}: разряд {} не целый, а разряды точного целого целы", canon, number_text(digit)),
+            ));
+        }
+        if digit >= 4194304.0 {
+            return Err(fail(
+                CODE_TYPE,
+                format!("{}: разряд {} не меньше основания 4194304", canon, number_text(digit)),
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn check_fields(
     table: &EntryTable,
     from: usize,
@@ -2662,6 +2709,7 @@ fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> 
     let mismatch = || Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name)));
     match spec.kind {
         TypeKind::Number => check_number_type(spec, value, label),
+        TypeKind::Exact => check_exact_type(spec, value, label),
         TypeKind::Text => match value {
             Value::Text(_) => Ok(()),
             _ => mismatch(),

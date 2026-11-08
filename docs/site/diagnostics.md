@@ -582,12 +582,13 @@ Permissions are taken away one at a time; by default everything is allowed:
 flang io план.flang --plan 'Разбор' --no-net --in-dir
 ```
 
-## Installing packages
+## Importing by a link
 
-Refusals of the package installer (`flang install`) are
-printed by the installer itself, a plan written in flang, not by the compiler;
-their codes and what to do about them are listed on the
-[packages page](packages.html#refusal-codes-of-the-installer).
+| Code | What it means | What to do |
+|---|---|---|
+| `FLANG_LINK_FETCH` | the body behind the link was not received, or the scheme is neither `https://` nor `file://` | check the link |
+| `FLANG_LINK_OFFLINE` | the network is closed by `FLANG_OFFLINE`, and neither the lock nor the cache knows the link | build with the network or bring `flang.lock` |
+| `FLANG_LINK_CHANGED` | the body in the lock or the cache does not match the pinned fingerprint | restore the lock from git; details on the [packages page](packages.html#link-refusal-codes) |
 
 ## Processes
 

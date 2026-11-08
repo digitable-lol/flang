@@ -2110,6 +2110,7 @@ const (
 	TypeList
 	TypeRecord
 	TypeSum
+	TypeExact
 )
 
 // TypeField — поле записи или варианта: имя и место его типа в таблице типов.
@@ -2173,6 +2174,32 @@ func checkNumberType(spec *Type, value Value, label string) error {
 	return nil
 }
 
+func checkExactType(spec *Type, value Value, label string) error {
+	const canon = "точное целое записано не в каноне"
+	if !exactDigits(value) {
+		return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
+	}
+	if count := len(value.List); count > 0 && value.List[count-1].Num == 0 {
+		return Fail(CodeType, "%s: старший разряд нулевой, а канон требует снять старшие нули", canon)
+	}
+	for _, item := range value.List {
+		digit := item.Num
+		if math.IsNaN(digit) || math.IsInf(digit, 0) {
+			continue
+		}
+		if digit < 0 {
+			return Fail(CodeType, "%s: разряд %s отрицателен, а точное целое ниже нуля значений не имеет", canon, NumberText(digit))
+		}
+		if math.Floor(digit) != digit {
+			return Fail(CodeType, "%s: разряд %s не целый, а разряды точного целого целы", canon, NumberText(digit))
+		}
+		if digit >= 4194304 {
+			return Fail(CodeType, "%s: разряд %s не меньше основания 4194304", canon, NumberText(digit))
+		}
+	}
+	return nil
+}
+
 func checkFields(table *EntryTable, from, count int, given []Field, label, owner string, ofVariant bool) error {
 	for index := 0; index < count; index++ {
 		declared := table.Fields[from+index]
@@ -2217,6 +2244,8 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 	switch spec.Kind {
 	case TypeNumber:
 		return checkNumberType(spec, value, label)
+	case TypeExact:
+		return checkExactType(spec, value, label)
 	case TypeText:
 		if value.Tag != TagString {
 			return mismatch()

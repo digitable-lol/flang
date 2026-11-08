@@ -885,6 +885,52 @@ static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type,
   return FL_OK;
 }
 
+static fl_status fl_check_exact_type(fl_ctx *ctx, const fl_type *type,
+                                     fl_value value, const char *label,
+                                     fl_error *error) {
+  static const char canon[] = "точное целое записано не в каноне";
+  char text[FL_NUMBER_TEXT_MAX];
+  size_t index = 0;
+  if (value.tag != FL_LIST) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
+                   label, type->name);
+  }
+  for (index = 0; index < value.as.list.count; index += 1) {
+    if (value.as.list.items[index].tag != FL_NUMBER) {
+      return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
+                     label, type->name);
+    }
+  }
+  if (value.as.list.count > 0 &&
+      value.as.list.items[value.as.list.count - 1].as.number == 0.0) {
+    return fl_fail(ctx, error, FL_CODE_TYPE,
+                   "%s: старший разряд нулевой, а канон требует снять старшие нули",
+                   canon);
+  }
+  for (index = 0; index < value.as.list.count; index += 1) {
+    const double digit = value.as.list.items[index].as.number;
+    if (!isfinite(digit)) {
+      continue;
+    }
+    fl_number_text(digit, text);
+    if (digit < 0.0) {
+      return fl_fail(ctx, error, FL_CODE_TYPE,
+                     "%s: разряд %s отрицателен, а точное целое ниже нуля значений не имеет",
+                     canon, text);
+    }
+    if (floor(digit) != digit) {
+      return fl_fail(ctx, error, FL_CODE_TYPE,
+                     "%s: разряд %s не целый, а разряды точного целого целы",
+                     canon, text);
+    }
+    if (digit >= 4194304.0) {
+      return fl_fail(ctx, error, FL_CODE_TYPE,
+                     "%s: разряд %s не меньше основания 4194304", canon, text);
+    }
+  }
+  return FL_OK;
+}
+
 /*
  * ── Сравнение имён и строк без похода в libc ───────────────────────────────
  *
@@ -1060,6 +1106,8 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
   switch (type->kind) {
   case FL_TYPE_NUMBER:
     return fl_check_number_type(ctx, type, value, label, error);
+  case FL_TYPE_EXACT:
+    return fl_check_exact_type(ctx, type, value, label, error);
   case FL_TYPE_STRING:
     if (value.tag != FL_STRING) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",

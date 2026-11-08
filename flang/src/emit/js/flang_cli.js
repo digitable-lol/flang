@@ -355,6 +355,8 @@ function checkTyped(program, table, at, value, label) {
   switch (spec.kind) {
     case "число":
       return checkNumber(spec, value, label, mismatch)
+    case "точное целое":
+      return checkExact(value, mismatch)
     case "строка":
       return typeof value === "string" ? null : mismatch
     case "признак":
@@ -415,6 +417,20 @@ function checkNumber(spec, value, label, mismatch) {
   }
   if (spec.range && (value < spec.low || value > spec.high)) {
     return `${label}: ${value} вне ${spec.name}`
+  }
+  return null
+}
+
+function checkExact(value, mismatch) {
+  const canon = "точное целое записано не в каноне"
+  if (!Array.isArray(value) || !value.every((digit) => typeof digit === "number")) return mismatch
+  if (value.length > 0 && value[value.length - 1] === 0) {
+    return `${canon}: старший разряд нулевой, а канон требует снять старшие нули`
+  }
+  for (const digit of value.filter((item) => Number.isFinite(item))) {
+    if (digit < 0) return `${canon}: разряд ${digit} отрицателен, а точное целое ниже нуля значений не имеет`
+    if (!Number.isInteger(digit)) return `${canon}: разряд ${digit} не целый, а разряды точного целого целы`
+    if (digit >= 4194304) return `${canon}: разряд ${digit} не меньше основания 4194304`
   }
   return null
 }

@@ -2320,6 +2320,7 @@ defmodule Flang.Rt do
 
     case kind do
       :number -> check_number_type(spec, value, label, name)
+      :exact -> check_exact_type(value, label, name)
       :text -> want(match?({:str, _}, value), label, name)
       :flag -> want(match?({:flag, _}, value), label, name)
       :null -> want(value == :nothing, label, name)
@@ -2327,6 +2328,41 @@ defmodule Flang.Rt do
       :record -> check_record(table, spec, value, label, name, owner)
       :sum -> check_sum(table, spec, value, label, name, owner)
       _ -> :ok
+    end
+  end
+
+  defp check_exact_type(value, label, name) do
+    want(exact_digits?(value), label, name)
+    digits = Enum.map(items(value), fn {:num, digit} -> digit end)
+    last = List.last(digits)
+
+    if is_float(last) and last == 0.0 do
+      raise fail(@code_type, "#{exact_canon_word()}: старший разряд нулевой, а канон требует снять старшие нули")
+    end
+
+    digits |> Enum.filter(&is_float/1) |> Enum.each(&check_exact_digit/1)
+  end
+
+  defp exact_canon_word, do: "точное целое записано не в каноне"
+
+  defp check_exact_digit(digit) do
+    text = number_text(digit)
+
+    cond do
+      digit < 0 ->
+        raise fail(
+                @code_type,
+                "#{exact_canon_word()}: разряд #{text} отрицателен, а точное целое ниже нуля значений не имеет"
+              )
+
+      Float.floor(digit) != digit ->
+        raise fail(@code_type, "#{exact_canon_word()}: разряд #{text} не целый, а разряды точного целого целы")
+
+      digit >= 4_194_304 ->
+        raise fail(@code_type, "#{exact_canon_word()}: разряд #{text} не меньше основания 4194304")
+
+      true ->
+        :ok
     end
   end
 

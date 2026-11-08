@@ -803,6 +803,10 @@ $ echo $?
 | `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
 | `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_SUGAR_CLASS` | `sugar.flang` | — |
+| `FLANG_SUGAR_HEADER` | `sugar.flang` | — |
+| `FLANG_SUGAR_INTERFACE` | `sugar.flang` | — |
+| `FLANG_SUGAR_LOOP` | `sugar.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
 | `FLANG_TICKS_OUT` | `flang_runtime.c` | — |
 | `FLANG_TIME_OUT` | `flang_runtime.c` | — |

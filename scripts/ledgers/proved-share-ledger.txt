@@ -1352,7 +1352,7 @@ fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-sou
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
 b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
-87efd53b3cad17320ce7282d24440d59|82|53|8|17|0|flang/self/cli.flang
+87efd53b3cad17320ce7282d24440d59|81|53|8|17|0|flang/self/cli.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/declared-properties.flang
@@ -1624,6 +1624,7 @@ b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 25b6cee98abe43fb155693a170fe8ae4|1|1|0|0|0|scripts/guards/license-guard.fscript
 b162a51d6ae08b12527da153f5957d56|85|37|48|0|0|scripts/guards/link-guard.fscript
+1b6d7b63b34e56523c00bfdb26a87233|8|8|0|0|0|scripts/guards/link-import-guard.fscript
 d3c200fe9be648a3eb699ba7d7fb237d|3|3|0|0|0|scripts/guards/lock-closes-every-form.fscript
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/guards/manpage-guard.fscript
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/guards/module-name-guard.fscript

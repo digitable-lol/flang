@@ -584,11 +584,8 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 
 ## Importing by a link
 
-| Code | What it means | What to do |
-|---|---|---|
-| `FLANG_LINK_FETCH` | the body behind the link was not received, or the scheme is neither `https://` nor `file://` | check the link |
-| `FLANG_LINK_OFFLINE` | the network is closed by `FLANG_OFFLINE`, and neither the lock nor the cache knows the link | build with the network or bring `flang.lock` |
-| `FLANG_LINK_CHANGED` | the body in the lock or the cache does not match the pinned fingerprint | restore the lock from git; details on the [packages page](packages.html#link-refusal-codes) |
+The refusals of an import by a link and what to do about them are listed on
+the [packages page](packages.html#link-refusal-codes).
 
 ## Processes
 

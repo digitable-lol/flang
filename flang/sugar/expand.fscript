@@ -1,5 +1,5 @@
 модуль «Loop sugar run»
-  использует «Loop sugar» из "loops.flang"
+  использует «Surface sugar» из "../self/sugar.flang"
   использует «Loop sugar tasks» из "tasks.flang"
 
 тип «Expanding»
@@ -71,12 +71,15 @@
     дано source равно "модуль «А»\n"
     ожидается (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "б.flang" и
         содержимое равным "модуль «А»\n") и потом равным (вариант «Writing» с target равным "б.flang"))
-  разбор («Expand text» от source)
-    случай вариант «Expanded» с textPart как expanded
+  разбор («Expand sugar» от source)
+    случай вариант «Sugar kept»
+      пусть kept равно вариант «Записать файл» с путь равным target и содержимое равным source
+      вариант «Сделать» с поручение равным kept и потом равным (вариант «Writing» с target равным target)
+    случай вариант «Sugar expanded» с textPart как expanded
       пусть writing равно вариант «Записать файл» с путь равным target и содержимое равным expanded
       вариант «Сделать» с поручение равным writing и потом равным (вариант «Writing» с target равным target)
-    случай вариант «Not expanded» с reason как reason
-      то вариант «Провал» с код равным "FLANG_SUGAR_LOOP" и сообщение равным reason
+    случай вариант «Sugar refused» с code как code и message как reason
+      то вариант «Провал» с код равным code и сообщение равным reason
 
 тотальная функция «Expand arguments»
   принимает answer: «Отклик»
@@ -152,10 +155,12 @@
   пример «A loop that cannot be expanded gives nothing to check»
     дано source равно "модуль «А»\n\nтотальная функция «Б»\n  возвращает число\n  цикл «В»\n    в конце 0\n"
     ожидается ""
-  разбор («Expand text» от source)
-    случай вариант «Expanded» с textPart как expanded
+  разбор («Expand sugar» от source)
+    случай вариант «Sugar kept»
+      то source
+    случай вариант «Sugar expanded» с textPart как expanded
       то expanded
-    случай вариант «Not expanded» с reason как reason
+    случай вариант «Sugar refused» с code как code
       то ""
 
 тотальная функция «Check order»

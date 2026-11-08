@@ -1066,6 +1066,183 @@ Limit: you can apply only a function that the program somewhere takes with
 anywhere in the program is rejected with `FLANG_APPLY`. There is no separate
 compilation: function values are resolved over the whole program at once.
 
+## Sugar: the same thing, written shorter
+
+Four forms are expanded by the compiler into ordinary flang before the lexer reads the
+text. The kernel, the types and the checkers see only the expansion, so proofs and
+totality of the short form are those of the long one. Details: [Sugar](../guide/surface-sugar.md);
+the decisions are ADR-0206 and ADR-0208.
+
+The compiler does this after the seed is reprinted; until then the source compiler runs
+the expansion, and `bootstrap/flang run-script sugar:expand -- a.flang b.flang` prints the
+expanded text. That is why the examples below are marked as fragments and the binary does
+not judge them.
+
+### One-line header
+
+```flang fragment
+тотальная функция «Меньшее из двух» принимает первый: число, второй: число возвращает число
+  если первый не больше второй то первый иначе второй
+```
+
+The same as `тотальная функция «Меньшее из двух»`, `  принимает первый: число, второй: число`,
+`  возвращает число`.
+
+### `цикл` — steps with kept values
+
+```flang fragment
+цикл «Сделка»
+  для каждого цена из хвост
+  храним минимум: число равным голова, прибыль: число равным 0
+  в конце прибыль
+  пусть сегодня равно цена минус минимум
+  пусть ниже равно если цена меньше минимум то цена иначе минимум
+  пусть лучше равно если сегодня больше прибыль то сегодня иначе прибыль
+  дальше: минимум станет ниже, прибыль станет лучше
+```
+
+`храним` names the values kept between steps; `дальше: х станет е` is the next step; a
+branch without `дальше` is the answer of the loop (an early return); `в конце` is the
+answer when the list ends. A loop over a list without an early return becomes a `свёртка`;
+with an early return, a function with `разбор` over the rest of the list; `пока` becomes a
+function with a step budget (`шагов не больше n, иначе v`) or a measure (`убывает м`). A
+`пока` loop always names its bound.
+
+### `класс` — an object and functions over it
+
+```flang fragment
+класс «Счёт»
+  владелец: строка
+  остаток: число
+  всегда «остаток не отрицателен» остаток не меньше 0
+
+  метод «Положить» принимает сумма: число
+    требует «сумма не отрицательна» сумма не меньше 0
+    остаток станет остаток плюс сумма
+
+  метод «Пусто ли» возвращает признак
+    остаток равен 0
+```
+
+This is `объект «Счёт»` and functions `«Счёт: Положить»`, `«Счёт: Пусто ли»` whose first
+parameter is `этот: «Счёт»`. A field in a method is a bare name (`остаток` →
+`этот.остаток`). A method that ends with lines `поле станет значение` returns a new
+`«Счёт»`; fields it does not name stay as they were. `всегда` becomes a `требует` of every
+method and an `обеспечивает «остаток не отрицателен после»` of a method that returns
+`«Счёт»`; here the kernel proves it by the rule «неотрицательность по построению». A call
+is `«Счёт: Положить» от счёт и 30`.
+
+### `интерфейс` — required methods and laws
+
+```flang fragment
+интерфейс «Фигура»
+  метод «Площадь» возвращает число
+  метод «Название» возвращает строка
+    обеспечивает «название не пусто» (длина результат) больше 0
+    "фигура"
+
+класс «Квадрат» есть «Фигура»
+  сторона: число
+  метод «Площадь» возвращает число
+    сторона умножить на сторона
+  метод «Название» возвращает строка
+    "квадрат"
+```
+
+This is `тип «Фигура»` with a variant `«Квадрат»` (and a variant for every other class of
+the file that `есть «Фигура»`) and functions `«Фигура: Площадь»`, `«Фигура: Название»` with
+a `разбор` over the classes. A method without a body is required; one with a body is the
+default. An `обеспечивает` of an interface method is a law: it goes to the method of every
+class and to `«Фигура: Название»`, where the kernel proves it by induction over `«Фигура»`.
+A value of the interface is `вариант «Квадрат» с значение равным квадрат`.
+
+### A LeetCode task both ways: 704, binary search
+
+With sugar: one header line and a loop with a step budget:
+
+```flang fragment
+модуль «Binary search»
+
+тотальная функция «Двоичный поиск» принимает элементы: список числа, цель: число возвращает число
+  пример «Пример 1 из условия»
+    дано элементы равно [-1, 0, 3, 5, 9, 12]
+    дано цель равно 9
+    ожидается 4
+  цикл «Поиск»
+    пока низ не больше верх
+    шагов не больше длина элементы, иначе -1
+    храним низ: число равным 1, верх: число равным длина элементы
+    в конце -1
+    пусть сумма равно низ плюс верх
+    пусть середина равно (сумма минус (сумма остаток от 2)) делить на 2
+    пусть значение равно элемент середина в элементы
+    если значение равен цель
+      то середина минус 1
+      иначе если значение меньше цель
+        то дальше: низ станет середина плюс 1
+        иначе дальше: верх станет середина минус 1
+```
+
+Without sugar: the corpus solution, where the loop is a separate function and a copy of
+the list serves as fuel:
+
+```flang insert docs/examples/leetcode/704-binary-search.flang
+модуль «Binary search»
+
+тотальная функция «Поиск в диапазоне»
+  принимает топливо: список числа, элементы: список числа, цель: число, низ: число, верх: число
+  возвращает число
+  пример «Нашли середину»
+    дано топливо равно [1, 2, 3]
+    дано элементы равно [1, 2, 3]
+    дано цель равно 2
+    дано низ равно 1
+    дано верх равно 3
+    ожидается 1
+  разбор топливо
+    случай пусто
+      то -1
+    случай голова и хвост
+      если низ больше верх
+        то -1
+        иначе
+          пусть сумма равно низ плюс верх
+          пусть середина равно (сумма минус (сумма остаток от 2)) делить на 2
+          пусть значение равно элемент середина в элементы
+          если значение равен цель
+            то середина минус 1
+            иначе
+              если значение меньше цель
+                то «Поиск в диапазоне» от хвост и элементы и цель и (середина плюс 1) и верх
+                иначе «Поиск в диапазоне» от хвост и элементы и цель и низ и (середина минус 1)
+
+тотальная функция «Двоичный поиск»
+  принимает элементы: список числа, цель: число
+  возвращает число
+  пример «Пример 1 из условия»
+    дано элементы равно [-1, 0, 3, 5, 9, 12]
+    дано цель равно 9
+    ожидается 4
+  пример «Пример 2 из условия»
+    дано элементы равно [-1, 0, 3, 5, 9, 12]
+    дано цель равно 2
+    ожидается -1
+  пример «Один элемент»
+    дано элементы равно [5]
+    дано цель равно 5
+    ожидается 0
+  «Поиск в диапазоне» от элементы и элементы и цель и 1 и (длина элементы)
+```
+
+The `check --proof` verdict of the sugared form is the verdict of its expanded text; the
+probes in `flang/proof/probes/surface-sugar` compare them.
+
+A malformed form is refused before the lexer, with the line and column of the source:
+`FLANG_SUGAR_LOOP` (a loop without `в конце` or a `пока` without a bound),
+`FLANG_SUGAR_HEADER` (`возвращает` before `принимает`), `FLANG_SUGAR_CLASS` (`станет`
+changes a field that does not exist), `FLANG_SUGAR_INTERFACE` (a class lacks a required
+method).
+
 ## Contracts and proofs
 
 These words say more about a function than its type does. Each is checked in its
@@ -2231,7 +2408,7 @@ The words of this section on all four surfaces, from the lexer's table:
 
 | Habit | What to use instead |
 | --- | --- |
-| a loop | `fold` and recursion |
+| a loop with a mutable variable | `fold`, recursion, or a `цикл` block that expands into them |
 | changing an element in place | building a new value |
 | an exception | a Result: a variant of a type that carries the reason |
 | `null` for "not found" | an Optional: a type with variants and a mandatory `match` |

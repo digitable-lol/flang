@@ -139,6 +139,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
@@ -12310,6 +12311,30 @@ static bool run_args(const char *text, fl_value *out) {
  * описание («список длиной 3»), годное для диагностики и негодное для того, кто
  * читает ответ программы.
  */
+static void run_print_word(fl_value value) {
+  fl_value kind = fl_nothing();
+  fl_value high = fl_nothing();
+  fl_value low = fl_nothing();
+  const char *text = NULL;
+  size_t bytes = 0;
+  unsigned long width = 0;
+  uint64_t bits = 0;
+  if (!val_field(value, "вид", &kind) || !val_text(kind, &text, &bytes) || bytes < 2 ||
+      !val_field(value, "верх", &high) || high.tag != FL_NUMBER || !val_field(value, "низ", &low) ||
+      low.tag != FL_NUMBER) {
+    fputs("null", stdout);
+    return;
+  }
+  width = strtoul(text + 1, NULL, 10);
+  bits = ((uint64_t)high.as.number << 32) | (uint64_t)low.as.number;
+  if (text[0] == 'i' && width > 0 && width <= 64 && ((bits >> (width - 1)) & 1u) != 0) {
+    const uint64_t magnitude = width == 64 ? ~bits + 1u : (((uint64_t)1 << width) - bits);
+    printf("-%" PRIu64, magnitude);
+    return;
+  }
+  printf("%" PRIu64, bits);
+}
+
 static void run_print(fl_value value) {
   fl_value inner = fl_nothing();
   const char *text = NULL;
@@ -12321,7 +12346,15 @@ static void run_print(fl_value value) {
   if (val_is(value, "Знач число") && val_field(value, "число", &inner) && inner.tag == FL_NUMBER) {
     char buffer[64];
     const size_t used = fl_number_text(inner.as.number, buffer);
+    if (inner.as.number == 0.0 && signbit(inner.as.number)) {
+      fputs("-0", stdout);
+      return;
+    }
     printf("%.*s", (int)used, buffer);
+    return;
+  }
+  if (val_is(value, "Знач слово")) {
+    run_print_word(value);
     return;
   }
   if (val_is(value, "Знач признак") && val_field(value, "признак", &inner)) {

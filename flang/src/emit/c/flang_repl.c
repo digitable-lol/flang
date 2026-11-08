@@ -452,7 +452,6 @@ static const char FLANG_HELP[] =
     "  flang lock <файл>                  замок: сами зависимости, а не ссылки на них\n"
     "  flang package <файл>               пакет: замок с именем, версией и ведомостью\n"
     "  flang new <имя>                    новый пакет с нуля: модуль, fspec/, манифест\n"
-    "  flang install <файл> [<имя>…]      поставить пакеты по имени из реестра и записать замок\n"
     "  flang run-script <имя>             короткая команда проекта из «.flangrc»\n"
     "  flang repl [файл]                  та же оболочка, названная по имени\n"
     "  flang lsp [--stdio]                языковой сервер для редактора (LSP)\n"
@@ -1030,31 +1029,6 @@ static const char HELP_NEW[] =
     "или из FLANG_FSPEC_TEMPLATE_DIR; не нашла ни того ни другого — отказ\n"
     "FLANG_NEW, код 1, и каталог не заводится вовсе.";
 
-static const char HELP_INSTALL[] =
-    "flang install <файл.flang> [<имя>[: <ограничение>]]... [--registry <адрес>]\n"
-    "              [--accept-unproven]\n"
-    "\n"
-    "Ставит пакеты по имени из реестра и записывает замок. Нужды проекта живут в\n"
-    "файле flang.needs рядом с программой (по нужде на строку: «Логика: не ниже 1.0»);\n"
-    "имена из команды дописываются туда после удачной установки. Список реестра\n"
-    "берётся по адресу (http://, https:// или путь), версии разрешаются по нуждам\n"
-    "проекта и самих пакетов (наибольшая годная, одна на имя), тело каждого пакета\n"
-    "сверяется с отпечатком sha256 из списка ДО записи на диск, файлы ложатся рядом\n"
-    "с программой под именем из списка без версии, затем flang check и flang lock.\n"
-    "\n"
-    "  flang install проба/proba.flang 'Множество строк: не ниже 1.1'\n"
-    "\n"
-    "Ограничения: любая, ровно 1.2.3, не ниже 1.2.3, в пределах 1.x. Адрес списка:\n"
-    "ключ --registry, иначе ключ «registry» в ближайшем .flangrc, иначе список ветки\n"
-    "dev на GitHub. Пакет, несущий закон или «объявлено, не доказано», ставится\n"
-    "только с --accept-unproven; доля доказанного печатается у каждого пакета.\n"
-    "\n"
-    "Команда зовёт движок — план scripts/package-install.fscript, который лежит рядом\n"
-    "с двоичным (в дереве — scripts/, у поставленного — share/flang/scripts/); нет его\n"
-    "— отказ FLANG_INSTALL_ENGINE. Отказы движка — FLANG_INSTALL_USAGE, _LEDGER,\n"
-    "_NEEDS, _CONFLICT, _FINGERPRINT, _UNPROVED, _BUILD; код возврата 1. Из дерева\n"
-    "тот же движок зовётся словами «flang run-script package:install …».";
-
 static const char HELP_RUN_SCRIPT[] =
     "flang run-script [<имя> [доводы…]]\n"
     "\n"
@@ -1226,8 +1200,6 @@ static void human_help(const char *topic) {
     printf("%s\n", HELP_LOCK);
   } else if (strcmp(topic, "package") == 0) {
     printf("%s\n", HELP_PACKAGE);
-  } else if (strcmp(topic, "install") == 0) {
-    printf("%s\n", HELP_INSTALL);
   } else if (strcmp(topic, "new") == 0) {
     printf("%s\n", HELP_NEW);
   } else {
@@ -3983,6 +3955,8 @@ static bool repl_only_of(fl_value node, repl_strings *out) {
 }
 
 /** Пути импортов файла: разбираем его тем же разбором, что и всё остальное. */
+static char *link_target(const char *from, const char *link, size_t link_bytes);
+
 static void repl_imports_of(const char *text, size_t bytes, const char *from, repl_strings *queue) {
   fl_value args[2];
   fl_value parsed = fl_nothing();
@@ -4045,7 +4019,8 @@ static void repl_imports_of(const char *text, size_t bytes, const char *from, re
       has_only = repl_only_of(items[inner], &only);
       if (zn_field_text(items[inner], "from", &path, &path_bytes)) {
         char *relative = repl_dup(path, path_bytes);
-        char *full = repl_resolve(directory, relative);
+        char *linked = link_target(from, path, path_bytes);
+        char *full = linked != NULL ? linked : repl_resolve(directory, relative);
         strings_say(queue, full);
         repl_edge_push(from, full, &only, has_only);
         free(relative);
@@ -4222,6 +4197,46 @@ static void sha256_hex(sha256_ctx *ctx, char *out) {
  */
 #define LOCK_SCHEMA 2
 #define LOCK_FILENAME "flang.lock"
+typedef struct {
+  char *name;   /* имя модуля — из его же заголовка, а не из ссылки на него */
+  char *path;   /* путь внутри замка: от каталога замка и всегда через `/` */
+  char *source; /* груз: весь текст файла, байт в байт */
+  size_t bytes;
+  size_t functions;
+  char address[65];
+} lock_module;
+
+typedef struct {
+  lock_module *items;
+  size_t count;
+  size_t capacity;
+} lock_modules;
+
+static void lock_modules_init(lock_modules *list) {
+  list->items = NULL;
+  list->count = 0;
+  list->capacity = 0;
+}
+
+static lock_module *lock_modules_push(lock_modules *list) {
+  if (list->count == list->capacity) {
+    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
+    list->items = repl_grow(list->items, list->capacity * sizeof(lock_module));
+  }
+  list->count += 1;
+  return &list->items[list->count - 1];
+}
+
+static void lock_modules_free(lock_modules *list) {
+  size_t at = 0;
+  for (at = 0; at < list->count; at += 1) {
+    free(list->items[at].name);
+    free(list->items[at].path);
+    free(list->items[at].source);
+  }
+  free(list->items);
+  lock_modules_init(list);
+}
 
 static void lock_print(const char *text, size_t bytes, char *out) {
   char prefix[32];
@@ -4267,6 +4282,524 @@ static bool lock_json_text(const char *text, size_t bytes, repl_buf *out) {
   return true;
 }
 
+/* ═══════════ импорт по ссылке: замок, кеш, скачивание ═══════════════════ */
+
+static repl_strings link_keys;
+static repl_strings link_urls;
+static lock_modules link_pinned;
+static lock_modules link_fresh;
+static lock_modules link_kept;
+static char *link_lock_entry = NULL;
+static char *link_lock_dir = NULL;
+static bool link_refused = false;
+
+static bool link_fetch(const char *url, repl_buf *body, char *why, size_t why_size);
+static bool proof_cache_make_dirs(const char *path);
+
+static void link_forget(void) {
+  size_t at = 0;
+  if (link_keys.capacity != 0 || link_keys.count != 0) {
+    for (at = 0; at < link_keys.count; at += 1) {
+      free(link_keys.items[at]);
+      free(link_urls.items[at]);
+    }
+    free(link_keys.items);
+    free(link_keys.sizes);
+    free(link_urls.items);
+    free(link_urls.sizes);
+  }
+  strings_init(&link_keys);
+  strings_init(&link_urls);
+  lock_modules_free(&link_pinned);
+  lock_modules_free(&link_fresh);
+  lock_modules_free(&link_kept);
+  free(link_lock_entry);
+  free(link_lock_dir);
+  link_lock_entry = NULL;
+  link_lock_dir = NULL;
+  link_refused = false;
+}
+
+static bool link_is_url(const char *text, size_t bytes) {
+  size_t at = 0;
+  while (at < bytes && ((text[at] >= 'a' && text[at] <= 'z') || (text[at] >= 'A' && text[at] <= 'Z'))) {
+    at += 1;
+  }
+  return at > 0 && at + 3 <= bytes && memcmp(text + at, "://", 3) == 0;
+}
+
+static const char *link_url_of(const char *key) {
+  size_t at = 0;
+  for (at = 0; at < link_keys.count; at += 1) {
+    if (strcmp(link_keys.items[at], key) == 0) {
+      return link_urls.items[at];
+    }
+  }
+  return NULL;
+}
+
+static lock_module *link_find(lock_modules *list, const char *url) {
+  size_t at = 0;
+  for (at = 0; at < list->count; at += 1) {
+    if (strcmp(list->items[at].path, url) == 0) {
+      return &list->items[at];
+    }
+  }
+  return NULL;
+}
+
+static size_t link_authority_end(const char *url) {
+  const char *scheme_end = strstr(url, "://");
+  const char *rest = scheme_end == NULL ? url : scheme_end + 3;
+  const char *slash = NULL;
+  if (strncmp(url, "file://", 7) == 0) {
+    return 7;
+  }
+  slash = strchr(rest, '/');
+  return slash == NULL ? strlen(url) : (size_t)(slash - url);
+}
+
+static char *link_join(const char *base, const char *relative) {
+  const size_t cut = link_authority_end(base);
+  const char *path = base + cut;
+  const char *last = strrchr(path, '/');
+  repl_strings parts;
+  repl_buf buf;
+  const char *scan = NULL;
+  char *result = NULL;
+  size_t index = 0;
+  bool above = false;
+  strings_init(&parts);
+  buf_init(&buf);
+  if (relative[0] != '/' && last != NULL) {
+    buf_add(&buf, path, (size_t)(last - path) + 1);
+  }
+  buf_put(&buf, relative);
+  scan = buf.data;
+  while (*scan != '\0') {
+    const char *slash = strchr(scan, '/');
+    const size_t bytes = slash == NULL ? strlen(scan) : (size_t)(slash - scan);
+    if (bytes == 2 && scan[0] == '.' && scan[1] == '.') {
+      if (parts.count == 0) {
+        above = true;
+      } else {
+        free(parts.items[parts.count - 1]);
+        parts.count -= 1;
+      }
+    } else if (bytes > 0 && !(bytes == 1 && scan[0] == '.')) {
+      strings_add(&parts, scan, bytes);
+    }
+    if (slash == NULL) {
+      break;
+    }
+    scan = slash + 1;
+  }
+  buf_reset(&buf);
+  buf_add(&buf, base, cut);
+  for (index = 0; index < parts.count; index += 1) {
+    buf_char(&buf, '/');
+    buf_put(&buf, parts.items[index]);
+  }
+  result = above ? repl_say("") : repl_dup(buf.data, buf.used);
+  strings_free(&parts);
+  buf_free(&buf);
+  return result;
+}
+
+static char *link_key_of(const char *from, const char *link) {
+  fl_value args[2];
+  fl_value resolved = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  args[0] = repl_value_text(from, strlen(from));
+  args[1] = repl_value_text(link, strlen(link));
+  if (repl_call("Разрешить путь", args, 2, &resolved) == FL_OK && val_text(resolved, &utf8, &bytes)) {
+    return repl_dup(utf8, bytes);
+  }
+  return NULL;
+}
+
+static char *link_target(const char *from, const char *link, size_t link_bytes) {
+  const char *from_url = link_url_of(from);
+  const bool absolute = link_is_url(link, link_bytes);
+  char *wanted = NULL;
+  char *url = NULL;
+  char *key = NULL;
+  if (!absolute && from_url == NULL) {
+    return NULL;
+  }
+  wanted = repl_dup(link, link_bytes);
+  url = absolute ? repl_say(wanted) : link_join(from_url, wanted);
+  key = link_key_of(from, wanted);
+  free(wanted);
+  if (key == NULL) {
+    free(url);
+    return NULL;
+  }
+  if (link_url_of(key) == NULL) {
+    strings_say(&link_keys, key);
+    strings_say(&link_urls, url);
+  }
+  free(url);
+  return key;
+}
+
+static void link_refuse(const char *code, const char *url, const char *say) {
+  repl_buf buf;
+  buf_init(&buf);
+  buf_put(&buf, "ссылка ");
+  buf_put(&buf, url[0] == '\0' ? "без адреса" : url);
+  buf_put(&buf, ": ");
+  buf_put(&buf, say);
+  repl_print_bad(code, buf.data, NULL, NULL, 0, 0);
+  buf_free(&buf);
+  link_refused = true;
+}
+
+static char *link_cache_dir(void) {
+  const char *xdg = getenv("XDG_CACHE_HOME");
+  const char *home = getenv("HOME");
+  if (xdg != NULL && xdg[0] == '/') {
+    return repl_join(xdg, "flang/links");
+  }
+  if (home != NULL && home[0] != '\0') {
+    return repl_join(home, ".cache/flang/links");
+  }
+  return NULL;
+}
+
+static char *link_glue(const char *head, const char *tail) {
+  repl_buf buf;
+  char *result = NULL;
+  buf_init(&buf);
+  buf_put(&buf, head);
+  buf_put(&buf, tail);
+  result = repl_dup(buf.data, buf.used);
+  buf_free(&buf);
+  return result;
+}
+
+static char *link_cache_file(const char *dir, const char *name, const char *tail) {
+  repl_buf buf;
+  char *result = NULL;
+  buf_init(&buf);
+  buf_put(&buf, dir);
+  buf_char(&buf, '/');
+  buf_put(&buf, name);
+  buf_put(&buf, tail);
+  result = repl_dup(buf.data, buf.used);
+  buf_free(&buf);
+  return result;
+}
+
+static void link_url_digest(const char *url, char *out) {
+  sha256_ctx ctx;
+  sha256_init(&ctx);
+  sha256_add(&ctx, url, strlen(url));
+  sha256_hex(&ctx, out);
+}
+
+static bool link_write_whole(const char *path, const char *text, size_t bytes) {
+  char *temporary = link_glue(path, ".new");
+  FILE *stream = fopen(temporary, "wb");
+  bool ok = stream != NULL;
+  if (ok) {
+    ok = fwrite(text, 1, bytes, stream) == bytes;
+    ok = fclose(stream) == 0 && ok;
+  }
+  ok = ok && rename(temporary, path) == 0;
+  if (!ok) {
+    remove(temporary);
+  }
+  free(temporary);
+  return ok;
+}
+
+static void link_cache_put(const char *url, const char *address, const char *text, size_t bytes) {
+  char *dir = link_cache_dir();
+  char digest[65];
+  char *body = NULL;
+  char *index = NULL;
+  if (dir == NULL || !proof_cache_make_dirs(dir)) {
+    free(dir);
+    return;
+  }
+  link_url_digest(url, digest);
+  body = link_cache_file(dir, address, ".flang");
+  index = link_cache_file(dir, digest, ".address");
+  if (!repl_exists(body)) {
+    link_write_whole(body, text, bytes);
+  }
+  link_write_whole(index, address, 64);
+  free(body);
+  free(index);
+  free(dir);
+}
+
+static int link_cache_take(const char *url, char *address, char **text, size_t *bytes) {
+  char *dir = link_cache_dir();
+  char digest[65];
+  char computed[65];
+  char *index = NULL;
+  char *said = NULL;
+  char *body = NULL;
+  size_t said_bytes = 0;
+  int answer = 0;
+  if (dir == NULL) {
+    return 0;
+  }
+  link_url_digest(url, digest);
+  index = link_cache_file(dir, digest, ".address");
+  said = repl_read_file(index, &said_bytes);
+  if (said != NULL && said_bytes == 64) {
+    memcpy(address, said, 64);
+    address[64] = '\0';
+    body = link_cache_file(dir, address, ".flang");
+    *text = repl_read_file(body, bytes);
+    answer = *text == NULL ? 0 : 1;
+  }
+  if (answer == 1) {
+    lock_print(*text, *bytes, computed);
+    if (memcmp(computed, address, 64) != 0) {
+      repl_buf say;
+      buf_init(&say);
+      buf_put(&say, "тело в кеше ");
+      buf_put(&say, body);
+      buf_put(&say, " не сходится со своим отпечатком: ждали ");
+      buf_put(&say, address);
+      buf_put(&say, ", а у тела ");
+      buf_put(&say, computed);
+      link_refuse("FLANG_LINK_CHANGED", url, say.data);
+      buf_free(&say);
+      free(*text);
+      *text = NULL;
+      answer = -1;
+    }
+  }
+  free(said);
+  free(body);
+  free(index);
+  free(dir);
+  return answer;
+}
+
+static size_t link_functions_of(const char *text, size_t bytes, char **name) {
+  fl_value args[2];
+  fl_value parsed = fl_nothing();
+  fl_value program = fl_nothing();
+  const fl_value *items = NULL;
+  const char *utf8 = NULL;
+  size_t got = 0;
+  size_t count = 0;
+  *name = NULL;
+  args[0] = repl_value_text(text, bytes);
+  args[1] = repl_value_list(NULL, 0);
+  if (repl_call("Разбор исходника", args, 2, &parsed) != FL_OK || !val_field(parsed, "программа", &program)) {
+    return 0;
+  }
+  if (zn_field_text(program, "module", &utf8, &got)) {
+    *name = repl_dup(utf8, got);
+  }
+  zn_field_items(program, "functions", &items, &count);
+  return count;
+}
+
+static void link_remember(lock_modules *list, const char *url, const char *address, const char *text,
+                          size_t bytes) {
+  lock_module *record = lock_modules_push(list);
+  char *name = NULL;
+  record->functions = link_functions_of(text, bytes, &name);
+  record->name = name != NULL ? name : repl_say("");
+  record->path = repl_say(url);
+  record->source = repl_dup(text, bytes);
+  record->bytes = bytes;
+  memcpy(record->address, address, 65);
+}
+
+static bool link_offline(void) {
+  const char *offline = getenv("FLANG_OFFLINE");
+  return offline != NULL && offline[0] != '\0' && strcmp(offline, "0") != 0;
+}
+
+static char *link_read(const char *key, size_t *bytes) {
+  const char *url = link_url_of(key);
+  lock_module *known = NULL;
+  char address[65];
+  char *text = NULL;
+  int cached = 0;
+  repl_buf body;
+  char why[512];
+  if (url == NULL) {
+    return NULL;
+  }
+  if (url[0] == '\0') {
+    link_refuse("FLANG_LINK_FETCH", key, "относительный путь в скачанном модуле выходит выше корня его адреса");
+    return NULL;
+  }
+  known = link_find(&link_pinned, url);
+  if (known == NULL) {
+    known = link_find(&link_fresh, url);
+  }
+  if (known != NULL) {
+    *bytes = known->bytes;
+    return repl_dup(known->source, known->bytes);
+  }
+  if (strncmp(url, "https://", 8) != 0 && strncmp(url, "file://", 7) != 0) {
+    link_refuse("FLANG_LINK_FETCH", url, "адрес принимается только по https:// или file://");
+    return NULL;
+  }
+  cached = link_cache_take(url, address, &text, bytes);
+  if (cached < 0) {
+    return NULL;
+  }
+  if (cached > 0) {
+    link_remember(&link_fresh, url, address, text, *bytes);
+    fprintf(stderr, "взято из кеша: %s — отпечаток %s\n", url, address);
+    return text;
+  }
+  if (link_offline()) {
+    link_refuse("FLANG_LINK_OFFLINE", url,
+                "замок рядом с программой этой ссылки не знает, в кеше её нет, а сеть закрыта (FLANG_OFFLINE)");
+    return NULL;
+  }
+  buf_init(&body);
+  if (!link_fetch(url, &body, why, sizeof(why))) {
+    link_refuse("FLANG_LINK_FETCH", url, why);
+    buf_free(&body);
+    return NULL;
+  }
+  if (fl_utf8_not_text_at(body.data, body.used) > 0) {
+    link_refuse("FLANG_LINK_FETCH", url, "за адресом лежит не текст UTF-8");
+    buf_free(&body);
+    return NULL;
+  }
+  lock_print(body.data, body.used, address);
+  link_cache_put(url, address, body.data, body.used);
+  link_remember(&link_fresh, url, address, body.data, body.used);
+  fprintf(stderr, "скачано: %s — отпечаток %s\n", url, address);
+  *bytes = body.used;
+  text = repl_dup(body.data, body.used);
+  buf_free(&body);
+  return text;
+}
+
+static bool lock_seal(const lock_modules *modules, char *out);
+static bool lock_write_module(const lock_module *module, repl_buf *out);
+static int lock_by_path(const void *left, const void *right);
+
+static bool link_print_lock(const lock_modules *modules, const char *entry, repl_buf *out) {
+  char seal[65];
+  size_t at = 0;
+  bool ok = lock_seal(modules, seal);
+  buf_put(out, "{\"схема\":");
+  buf_number(out, LOCK_SCHEMA);
+  buf_put(out, ",\"вход\":");
+  ok = ok && lock_json_text(entry, strlen(entry), out);
+  buf_put(out, ",\"модули\":[");
+  for (at = 0; at < modules->count && ok; at += 1) {
+    if (at > 0) {
+      buf_char(out, ',');
+    }
+    ok = lock_write_module(&modules->items[at], out);
+  }
+  buf_put(out, "],\"печать\":");
+  ok = ok && lock_json_text(seal, 64, out);
+  buf_char(out, '}');
+  return ok;
+}
+
+static void link_copy_module(lock_modules *list, const lock_module *from) {
+  lock_module *record = lock_modules_push(list);
+  record->name = repl_say(from->name);
+  record->path = repl_say(from->path);
+  record->source = repl_dup(from->source, from->bytes);
+  record->bytes = from->bytes;
+  record->functions = from->functions;
+  memcpy(record->address, from->address, 65);
+}
+
+static void link_settle(void) {
+  lock_modules all;
+  repl_buf out;
+  char *path = NULL;
+  size_t at = 0;
+  if (link_fresh.count == 0 || link_lock_dir == NULL || link_lock_entry == NULL || link_refused) {
+    return;
+  }
+  lock_modules_init(&all);
+  for (at = 0; at < link_kept.count; at += 1) {
+    link_copy_module(&all, &link_kept.items[at]);
+  }
+  for (at = 0; at < link_fresh.count; at += 1) {
+    if (link_find(&all, link_fresh.items[at].path) == NULL) {
+      link_copy_module(&all, &link_fresh.items[at]);
+    }
+  }
+  qsort(all.items, all.count, sizeof(lock_module), lock_by_path);
+  path = repl_join(link_lock_dir, LOCK_FILENAME);
+  buf_init(&out);
+  if (link_print_lock(&all, link_lock_entry, &out)) {
+    buf_char(&out, '\n');
+    if (link_write_whole(path, out.data, out.used)) {
+      fprintf(stderr, "в замок %s: ссылок %lu\n", path, (unsigned long)link_fresh.count);
+      for (at = 0; at < link_fresh.count; at += 1) {
+        link_copy_module(&link_pinned, &link_fresh.items[at]);
+      }
+      lock_modules_free(&link_fresh);
+    } else {
+      fprintf(stderr, "flang: замок %s не записан: %s\n", path, strerror(errno));
+    }
+  }
+  buf_free(&out);
+  lock_modules_free(&all);
+  free(path);
+}
+
+static void link_keep(lock_modules *list, fl_value module, const char *path, size_t path_bytes, const char *source,
+                      size_t source_bytes) {
+  lock_module *record = lock_modules_push(list);
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  fl_value count = fl_nothing();
+  double functions = 0;
+  record->name = zn_field_text(module, "имя", &utf8, &bytes) ? repl_dup(utf8, bytes) : repl_say("");
+  record->path = repl_dup(path, path_bytes);
+  record->source = repl_dup(source, source_bytes);
+  record->bytes = source_bytes;
+  record->functions = zn_field(module, "функций", &count) && zn_number(count, &functions) ? (size_t)functions : 0;
+  lock_print(source, source_bytes, record->address);
+}
+
+static bool link_pinned_holds(const char *lock, fl_value module, const char *url, size_t url_bytes) {
+  const char *text = NULL;
+  const char *address = NULL;
+  size_t text_bytes = 0;
+  size_t address_bytes = 0;
+  char computed[65];
+  repl_buf say;
+  char *named = NULL;
+  if (!zn_field_text(module, "исходник", &text, &text_bytes) ||
+      !zn_field_text(module, "адрес", &address, &address_bytes)) {
+    return true;
+  }
+  lock_print(text, text_bytes, computed);
+  if (address_bytes == 64 && memcmp(address, computed, 64) == 0) {
+    return true;
+  }
+  named = repl_dup(url, url_bytes);
+  buf_init(&say);
+  buf_put(&say, "исходник в замке ");
+  buf_put(&say, lock);
+  buf_put(&say, " не сходится с отпечатком, приколотым при первом скачивании: ждали ");
+  buf_add(&say, address, address_bytes);
+  buf_put(&say, ", а у исходника ");
+  buf_put(&say, computed);
+  link_refuse("FLANG_LINK_CHANGED", named, say.data);
+  buf_free(&say);
+  free(named);
+  return false;
+}
+
 /* ═══════════ замок рядом со входом: чтение груза ══════════════════════════ */
 
 /*
@@ -4299,6 +4832,9 @@ static bool facts_json(const char *text, size_t *at, fl_value *out);
  */
 static char *lock_cargo_read(const char *path, size_t *bytes) {
   size_t at = 0;
+  if (link_url_of(path) != NULL) {
+    return link_read(path, bytes);
+  }
   if (lock_cargo_open) {
     for (at = 0; at < lock_cargo_paths.count; at += 1) {
       if (strcmp(lock_cargo_paths.items[at], path) == 0) {
@@ -4494,6 +5030,10 @@ static bool lock_beside(const char *entry) {
   double number = 0;
   bool ok = true;
 
+  link_forget();
+  link_lock_dir = repl_say(root);
+  link_lock_entry = lock_path(root, entry);
+
   if (text == NULL) {
     /* Замка нет — груз пуст, но пакеты рядом всё равно спрашиваются: у
        программы, ссылающейся на `.flang-package`, исходников зависимостей на
@@ -4521,6 +5061,12 @@ static bool lock_beside(const char *entry) {
   } else if (!zn_field(lock, "модули", &modules) || !zn_items(modules, &items, &count)) {
     ok = lock_refuse(path, "в замке нет списка модулей");
   } else {
+    const char *said_entry = NULL;
+    size_t said_entry_bytes = 0;
+    if (zn_field_text(lock, "вход", &said_entry, &said_entry_bytes)) {
+      free(link_lock_entry);
+      link_lock_entry = repl_dup(said_entry, said_entry_bytes);
+    }
     /* ПЕЧАТЬ СВЕРЯЕТСЯ ДО РАЗБОРА ГРУЗА, тем же порядком, что у свидетеля:
        список пар «путь, адрес» в каноническом JSON, sha256 с приставкой схемы. */
     repl_buf pairs;
@@ -4558,8 +5104,17 @@ static bool lock_beside(const char *entry) {
       char *file = NULL;
       char *source = NULL;
       size_t source_bytes = 0;
-      ok = lock_take_module(false, path, items[at], "замке", &file, &source, &source_bytes);
+      const char *raw = NULL;
+      size_t raw_bytes = 0;
+      const bool linked = zn_field_text(items[at], "путь", &raw, &raw_bytes) && link_is_url(raw, raw_bytes);
+      ok = !linked || link_pinned_holds(path, items[at], raw, raw_bytes);
+      ok = ok && lock_take_module(false, path, items[at], "замке", &file, &source, &source_bytes);
       if (ok) {
+        link_keep(&link_kept, items[at], file, strlen(file), source, source_bytes);
+      }
+      if (ok && linked) {
+        link_keep(&link_pinned, items[at], file, strlen(file), source, source_bytes);
+      } else if (ok) {
         char *full = repl_resolve(root, file);
         strings_say(&lock_cargo_paths, full);
         strings_add(&lock_cargo_texts, source, source_bytes);
@@ -4783,6 +5338,7 @@ static fl_value repl_closure(repl_strings *paths, repl_strings *texts, repl_stri
     repl_imports_of(text, bytes, path, queue);
     free(text);
   }
+  link_settle();
   /* Файлы прочитаны и граф ввозов известен — теперь из них вычёркивается всё,
      что не названо. Считать это раньше нельзя: пока обход не кончился, ещё не
      видно, не ввозит ли кто-то тот же файл ЦЕЛИКОМ. */
@@ -4832,7 +5388,8 @@ static fl_value repl_sources(repl_session *session, const char *source, const re
       continue;
     }
     {
-      char *full = repl_resolve(session->base, item->from);
+      char *linked = link_target(session->file, item->from, strlen(item->from));
+      char *full = linked != NULL ? linked : repl_resolve(session->base, item->from);
       strings_say(&queue, full);
       free(full);
     }
@@ -20135,6 +20692,57 @@ static fl_value io_request(io_host *host, const char *method, const char *addres
   return result;
 }
 
+static bool link_fetch(const char *url, repl_buf *body, char *why, size_t why_size) {
+  io_host host;
+  fl_value answer = fl_nothing();
+  fl_value fields = fl_nothing();
+  fl_value status = fl_nothing();
+  const char *variant = NULL;
+  const char *utf8 = NULL;
+  size_t variant_bytes = 0;
+  size_t bytes = 0;
+  double code = 0;
+  if (strncmp(url, "file://", 7) == 0) {
+    char *text = repl_read_file(url + 7, &bytes);
+    if (text == NULL) {
+      snprintf(why, why_size, "файл %s не прочитан: %s", url + 7, strerror(errno));
+      return false;
+    }
+    buf_add(body, text, bytes);
+    free(text);
+    return true;
+  }
+  memset(&host, 0, sizeof(host));
+  host.net = true;
+  host.timeout_ms = 30000;
+  answer = io_request(&host, "GET", url, NULL);
+  if (!zn_field_text(answer, "variant", &variant, &variant_bytes) || !zn_field(answer, "fields", &fields)) {
+    snprintf(why, why_size, "хозяин не ответил на запрос");
+    return false;
+  }
+  if (variant_bytes != strlen("Ответ сети") || memcmp(variant, "Ответ сети", variant_bytes) != 0) {
+    const char *said = NULL;
+    size_t said_bytes = 0;
+    const char *named = NULL;
+    size_t named_bytes = 0;
+    zn_field_text(fields, "код", &named, &named_bytes);
+    zn_field_text(fields, "сообщение", &said, &said_bytes);
+    snprintf(why, why_size, "%.*s: %.*s", (int)named_bytes, named == NULL ? "" : named, (int)said_bytes,
+             said == NULL ? "" : said);
+    return false;
+  }
+  if (!zn_field(fields, "код", &status) || !zn_number(status, &code) || code != 200) {
+    snprintf(why, why_size, "адрес ответил кодом HTTP %d, а не 200", (int)code);
+    return false;
+  }
+  if (!zn_field_text(fields, "тело", &utf8, &bytes)) {
+    snprintf(why, why_size, "в ответе нет тела");
+    return false;
+  }
+  buf_add(body, utf8, bytes);
+  return true;
+}
+
 /* ── один поручение → один отклик ────────────────────────────────────────── */
 
 static int io_compare_names(const void *left, const void *right) {
@@ -21215,21 +21823,8 @@ static fl_value io_perform(io_host *host, fl_value order) {
  * диагностика одна и несёт код и сообщение. Идёт он в stderr, а не в stdout, —
  * там, где у удачи стоит вердикт.
  */
-/*
- * КРАТКИЙ ОТВЕТ — для команды, за которой человек, а не свидетель: `flang install`
- * зовёт исполнителя планов внутри процесса, и человеку нужен итог строками, а не
- * вердикт JSON с журналом поручений, в котором лежат тела всех скачанных пакетов.
- * Удача — текст итога в stdout; отказ — «КОД: причина» в stderr. Коды возврата те
- * же, что у `flang io`: решает по-прежнему план, а не способ печати.
- */
-static bool io_brief = false;
-
 static void io_print_error(const char *code, const char *message, double line, double column, bool pretty) {
   fl_value diagnostic[4];
-  if (io_brief) {
-    fprintf(stderr, "%s: %s\n", code, message);
-    return;
-  }
   fl_value list[1];
   fl_value pairs[2];
   fl_value printed = fl_nothing();
@@ -21276,15 +21871,6 @@ static void io_report(fl_value plan, fl_value result, const fl_value *log, size_
   const char *utf8 = NULL;
   size_t bytes = 0;
   char *name = NULL;
-  if (io_brief) {
-    if (zn_text(result, &utf8, &bytes) || val_text(result, &utf8, &bytes)) {
-      fwrite(utf8, 1, bytes, stdout);
-      fputc('\n', stdout);
-    } else {
-      fputs("готово\n", stdout);
-    }
-    return;
-  }
   val_field(plan, "имя", &field);
   name = val_copy(field);
   pairs[0] = io_pair("plan", io_say(name));
@@ -21753,46 +22339,6 @@ static int io_file(int argc, char **argv) {
  * записи. Экранирования строки JSON здесь своего НЕТ — его делает «Печать
  * строки» из `flang/core/json.flang`, уже втащенная в замыкание.
  */
-typedef struct {
-  char *name;   /* имя модуля — из его же заголовка, а не из ссылки на него */
-  char *path;   /* путь внутри замка: от каталога замка и всегда через `/` */
-  char *source; /* груз: весь текст файла, байт в байт */
-  size_t bytes;
-  size_t functions;
-  char address[65];
-} lock_module;
-
-typedef struct {
-  lock_module *items;
-  size_t count;
-  size_t capacity;
-} lock_modules;
-
-static void lock_modules_init(lock_modules *list) {
-  list->items = NULL;
-  list->count = 0;
-  list->capacity = 0;
-}
-
-static lock_module *lock_modules_push(lock_modules *list) {
-  if (list->count == list->capacity) {
-    list->capacity = list->capacity == 0 ? 8 : list->capacity * 2;
-    list->items = repl_grow(list->items, list->capacity * sizeof(lock_module));
-  }
-  list->count += 1;
-  return &list->items[list->count - 1];
-}
-
-static void lock_modules_free(lock_modules *list) {
-  size_t at = 0;
-  for (at = 0; at < list->count; at += 1) {
-    free(list->items[at].name);
-    free(list->items[at].path);
-    free(list->items[at].source);
-  }
-  free(list->items);
-  lock_modules_init(list);
-}
 
 
 
@@ -21907,7 +22453,10 @@ static bool lock_scan(const char *full, const char *text, size_t bytes, char **n
         continue;
       }
       relative = repl_dup(from, from_bytes);
-      target = repl_resolve(directory, relative);
+      target = link_target(full, from, from_bytes);
+      if (target == NULL) {
+        target = repl_resolve(directory, relative);
+      }
       free(relative);
       if (strings_has(seen, target, strlen(target))) {
         free(target);
@@ -21963,7 +22512,7 @@ static bool lock_collect(const char *entry, const char *root, const char *entry_
       ok = pkg_take_nested(file, root, out);
       continue;
     }
-    text = repl_read_file(file, &bytes);
+    text = link_url_of(file) != NULL ? link_read(file, &bytes) : repl_read_file(file, &bytes);
     if (text == NULL) {
       fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
       ok = false;
@@ -21978,7 +22527,7 @@ static bool lock_collect(const char *entry, const char *root, const char *entry_
     if (at > 0 || with_entry) {
       lock_module *record = lock_modules_push(out);
       record->name = name != NULL ? name : repl_say(queue_names.items[at]);
-      record->path = lock_path(root, file);
+      record->path = link_url_of(file) != NULL ? repl_say(link_url_of(file)) : lock_path(root, file);
       record->source = text;
       record->bytes = bytes;
       record->functions = functions;
@@ -22065,7 +22614,6 @@ static int lock_file(int argc, char **argv) {
   lock_modules modules;
   repl_buf out;
   char buffer[4096];
-  char seal[65];
   const char *path = NULL;
   char *base = NULL;
   char *full = NULL;
@@ -22106,38 +22654,17 @@ static int lock_file(int argc, char **argv) {
   } else {
     qsort(modules.items, modules.count, sizeof(lock_module), lock_by_path);
     entry = lock_path(root, full);
-    if (!lock_seal(&modules, seal)) {
-      fputs("flang lock: печать замка не посчиталась\n", stderr);
+    if (!link_print_lock(&modules, entry, &out)) {
+      fputs("flang lock: замок не напечатался\n", stderr);
       code = 1;
     } else {
-      bool ok = true;
-      size_t at = 0;
-      buf_put(&out, "{\"схема\":");
-      buf_number(&out, LOCK_SCHEMA);
-      buf_put(&out, ",\"вход\":");
-      ok = lock_json_text(entry, strlen(entry), &out);
-      buf_put(&out, ",\"модули\":[");
-      for (at = 0; at < modules.count && ok; at += 1) {
-        if (at > 0) {
-          buf_char(&out, ',');
-        }
-        ok = lock_write_module(&modules.items[at], &out);
-      }
-      buf_put(&out, "],\"печать\":");
-      ok = ok && lock_json_text(seal, 64, &out);
-      buf_char(&out, '}');
-      if (!ok) {
-        fputs("flang lock: замок не напечатался\n", stderr);
-        code = 1;
+      if (pretty) {
+        ast_pretty(out.data, out.used);
       } else {
-        if (pretty) {
-          ast_pretty(out.data, out.used);
-        } else {
-          fwrite(out.data, 1, out.used, stdout);
-        }
-        fputc('\n', stdout);
-        fflush(stdout);
+        fwrite(out.data, 1, out.used, stdout);
       }
+      fputc('\n', stdout);
+      fflush(stdout);
     }
   }
 
@@ -22371,7 +22898,7 @@ static bool pkg_collect(const char *entry, const char *root, const char *entry_n
       ok = pkg_take_nested(file, root, out);
       continue;
     }
-    text = repl_read_file(file, &bytes);
+    text = link_url_of(file) != NULL ? link_read(file, &bytes) : repl_read_file(file, &bytes);
     if (text == NULL) {
       fprintf(stderr, "FLANG_CLI: не прочитан файл %s\n", file);
       ok = false;
@@ -22392,7 +22919,7 @@ static bool pkg_collect(const char *entry, const char *root, const char *entry_n
     {
       lock_module *record = lock_modules_push(out);
       record->name = name != NULL ? name : repl_say(queue_names.items[at]);
-      record->path = lock_path(root, file);
+      record->path = link_url_of(file) != NULL ? repl_say(link_url_of(file)) : lock_path(root, file);
       record->source = text;
       record->bytes = bytes;
       record->functions = functions;
@@ -23232,7 +23759,7 @@ static int package_file(int argc, char **argv) {
 
 static const char *const NEW_RESERVED[] = {"check", "ast",  "tokens",  "run",     "test", "facts", "emit",
                                            "io",    "repl", "lock",    "package", "new",  "lsp",   "help",
-                                           "version", "flang", "fspec", "install"};
+                                           "version", "flang", "fspec"};
 #define NEW_RESERVED_COUNT (sizeof(NEW_RESERVED) / sizeof(NEW_RESERVED[0]))
 
 /** Запрещённые куски имени пакета — та же строка, что «Запрещённые куски
@@ -25006,180 +25533,6 @@ static void human_memory_said(const char *command) {
           command);
 }
 
-/* ═══════════════════ установка пакетов: `flang install` ══════════════════ */
-
-/*
- * КОМАНДА НЕ НЕСЁТ УСТАНОВЩИКА (ADR-0168 §6). Движок — план
- * `scripts/package-install.fscript`; он лежит рядом с двоичным там же, где
- * библиотека: в дереве — `<каталог двоичного>/../scripts/`, у поставленного —
- * `<каталог двоичного>/../share/flang/scripts/`. Команда готовит движку доводы и
- * зовёт исполнителя планов внутри процесса: путь программы делается абсолютным
- * (пути поручений план считает от СВОЕГО каталога, а не от каталога человека),
- * адрес списка берётся из ближайшего `.flangrc` вверх от рабочего каталога тем
- * же разбором, что у `run-script`, а свой путь двоичный отдаёт в FLANG_BINARY,
- * чтобы `check` и `lock` звались им же, а не `../bootstrap/flang`.
- *
- * Почему не текст плана в C-строке: он менялся бы только печатью семени, а файл
- * рядом с двоичным меняется коммитом и едет к поставленному с выпуском, как едет
- * библиотека. Нет файла — названный отказ FLANG_INSTALL_ENGINE, не тишина.
- */
-#define INSTALL_ENGINE "package-install.fscript"
-
-static char *install_engine_path(const char *self) {
-  static const char *const SUBS[2] = {"scripts", "share/flang/scripts"};
-  char *self_dir = repl_self_dir(self);
-  char *parent = NULL;
-  char *found = NULL;
-  size_t index = 0;
-  if (self_dir == NULL) {
-    return NULL;
-  }
-  parent = repl_dirname(self_dir);
-  for (index = 0; index < 2 && found == NULL; index += 1) {
-    char *directory = repl_join(parent, SUBS[index]);
-    char *candidate = repl_join(directory, INSTALL_ENGINE);
-    if (repl_exists(candidate)) {
-      found = candidate;
-    } else {
-      free(candidate);
-    }
-    free(directory);
-  }
-  free(parent);
-  free(self_dir);
-  return found;
-}
-
-/** Абсолютный путь: относительный считается от рабочего каталога человека. */
-static char *install_absolute(const char *path) {
-  char cwd[4096];
-  if (path[0] == '/') {
-    return repl_dup(path, strlen(path));
-  }
-  if (getcwd(cwd, sizeof(cwd)) == NULL) {
-    return repl_dup(path, strlen(path));
-  }
-  return repl_resolve(cwd, path);
-}
-
-/** Адрес списка: сеть — как есть, путь — абсолютный от названного каталога. */
-static char *install_address(const char *given, const char *base) {
-  if (strncmp(given, "http://", 7) == 0 || strncmp(given, "https://", 8) == 0 || given[0] == '/') {
-    return repl_dup(given, strlen(given));
-  }
-  return repl_resolve(base, given);
-}
-
-/** Ключ «registry» ближайшего `.flangrc`; путь считается от каталога файла. Нет — NULL. */
-static char *install_registry_from_settings(void) {
-  char path[4352];
-  size_t bytes = 0;
-  size_t at = 0;
-  char *text = NULL;
-  char *found = NULL;
-  char *value = NULL;
-  char *base = NULL;
-  flangrc_pair pair;
-  if (!flangrc_project(path, sizeof(path))) {
-    return NULL;
-  }
-  text = repl_read_file(path, &bytes);
-  if (text == NULL) {
-    return NULL;
-  }
-  while (flangrc_next(text, bytes, &at, &pair)) {
-    if (pair.key_bytes == strlen("registry") && memcmp(pair.key, "registry", pair.key_bytes) == 0 &&
-        pair.value_bytes > 0) {
-      free(value);
-      value = repl_dup(pair.value, pair.value_bytes);
-    }
-  }
-  free(text);
-  if (value == NULL) {
-    return NULL;
-  }
-  base = repl_dirname(path);
-  found = install_address(value, base);
-  free(base);
-  free(value);
-  return found;
-}
-
-static int install_command(int argc, char **argv, const char *self) {
-  char *engine = NULL;
-  char *program = NULL;
-  char *registry = NULL;
-  char *binary = NULL;
-  char **words = NULL;
-  char *given_registry = NULL;
-  int count = 0;
-  int index = 0;
-  int code = 0;
-  bool registry_given = false;
-  for (index = 2; index < argc; index += 1) {
-    if (strcmp(argv[index], "--registry") == 0) {
-      registry_given = true;
-    }
-  }
-  if (argc < 3 || argv[2][0] == '-') {
-    fputs("FLANG_INSTALL_USAGE: не назван файл программы. Звать: flang install <файл.flang> "
-          "[<имя>[: <ограничение>]]... [--registry <адрес>] [--accept-unproven]\n",
-          stderr);
-    return 1;
-  }
-  engine = install_engine_path(self);
-  if (engine == NULL) {
-    fputs("FLANG_INSTALL_ENGINE: рядом с двоичным нет движка установки " INSTALL_ENGINE
-          " (ни в <каталог двоичного>/../scripts, ни в ../share/flang/scripts). Поставьте flang целиком — "
-          "тарболлом, install.sh, Homebrew или asdf; из дерева зовите «flang run-script package:install»\n",
-          stderr);
-    return 1;
-  }
-  program = install_absolute(argv[2]);
-  binary = install_absolute(self);
-  if (!registry_given) {
-    registry = install_registry_from_settings();
-  }
-  setenv("FLANG_BINARY", binary, 1);
-  /* flang io <движок> --plan Поставить --timeout 600000 -- <программа> <доводы> [--registry <из .flangrc>] */
-  words = (char **)repl_alloc((size_t)(argc + 10) * sizeof(char *));
-  words[count++] = argv[0];
-  words[count++] = (char *)"io";
-  words[count++] = engine;
-  words[count++] = (char *)"--plan";
-  words[count++] = (char *)"Поставить";
-  words[count++] = (char *)"--timeout";
-  words[count++] = (char *)"600000";
-  words[count++] = (char *)"--";
-  words[count++] = program;
-  for (index = 3; index < argc; index += 1) {
-    if (index > 3 && strcmp(argv[index - 1], "--registry") == 0) {
-      /* Путь списка человек называет от своего каталога, а план считает пути от
-         своего — поэтому путь делается абсолютным здесь, адрес сети не трогается. */
-      char cwd[4096];
-      free(given_registry);
-      given_registry = install_address(argv[index], getcwd(cwd, sizeof(cwd)) == NULL ? "." : cwd);
-      words[count++] = given_registry;
-    } else {
-      words[count++] = argv[index];
-    }
-  }
-  if (registry != NULL) {
-    words[count++] = (char *)"--registry";
-    words[count++] = registry;
-  }
-  io_brief = true;
-  code = io_file(count, words);
-  io_brief = false;
-  free(words);
-  free(given_registry);
-  free(registry);
-  free(binary);
-  free(program);
-  free(engine);
-  return code;
-}
-
 int fl_human_main(int argc, char **argv, const char *self) {
   const char *command = argc > 1 ? argv[1] : "";
   proof_cache_argv = argv;
@@ -25258,8 +25611,6 @@ int fl_human_main(int argc, char **argv, const char *self) {
     code = package_file(argc, argv);
   } else if (strcmp(command, "new") == 0) {
     code = new_project(argc, argv, self);
-  } else if (strcmp(command, "install") == 0) {
-    code = install_command(argc, argv, self);
   } else if (scripted) {
     code = script_command(argc, argv);
   } else if (strcmp(command, "lsp") == 0) {

@@ -983,7 +983,7 @@ func Percent(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number((a / 100) * b), nil
+	return Number(unsignedZero((a / 100) * b)), nil
 }
 
 // Gt — «больше».
@@ -2076,7 +2076,7 @@ func BPercentOf(ctx *Ctx, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
-	return Number((percent / 100) * value), nil
+	return Number(unsignedZero((percent / 100) * value)), nil
 }
 
 // ───────────────────────────── граница входа ─────────────────────────────

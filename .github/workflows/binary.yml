@@ -2326,6 +2326,14 @@ jobs:
         run: bootstrap/flang io flang/proof/probes/kernel-memo/run.fscript --timeout 600000
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
+      - name: Kernel steps stay within the speed budget
+        run: bootstrap/flang run-script kernel-speed:check
+        env:
+          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
+      - name: A four times smaller speed budget turns the gate red
+        run: bootstrap/flang run-script kernel-speed:forgery
+        env:
+          FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
   # ── БЛОКИ «прогон»: ВЕРНОЕ ОЖИДАНИЕ ОТЛИЧИМО ОТ ЛОЖНОГО (задача 1116) ─────
   #

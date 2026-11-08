@@ -1346,7 +1346,7 @@ defmodule Flang.Rt do
   """
   def percent(left, right) do
     {a, b, _} = arithmetic("percent", left, right)
-    {:num, num_mul(num_div(a, 100.0), b)}
+    {:num, unsigned_zero(num_mul(num_div(a, 100.0), b))}
   end
 
   @doc "«больше»."
@@ -2240,7 +2240,7 @@ defmodule Flang.Rt do
   def b_percent_of(left, right) do
     a = expect_number("процентов от", left, "процент")
     b = expect_number("процентов от", right, "значение")
-    {:num, num_mul(num_div(a, 100.0), b)}
+    {:num, unsigned_zero(num_mul(num_div(a, 100.0), b))}
   end
 
   # ───────────────────────────── граница входа ─────────────────────────────

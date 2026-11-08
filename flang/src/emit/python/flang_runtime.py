@@ -1046,7 +1046,7 @@ def percent(ctx, left, right):
     мантиссы.
     """
     a, b = _arithmetic("percent", left, right)
-    return Value(TAG_NUMBER, (a / 100) * b)
+    return Value(TAG_NUMBER, unsigned_zero((a / 100) * b))
 
 
 def gt(ctx, left, right):
@@ -1820,7 +1820,7 @@ def b_percent_of(ctx, left, right):
     """«процентов от»: (процент / 100) * значение, порядок ядра."""
     a = _expect_number("процентов от", left, "процент")
     b = _expect_number("процентов от", right, "значение")
-    return Value(TAG_NUMBER, (a / 100) * b)
+    return Value(TAG_NUMBER, unsigned_zero((a / 100) * b))
 
 
 # ───────────────────────────── граница входа ─────────────────────────────

@@ -1,0 +1,2972 @@
+модуль «Surface sugar»
+
+объект «Source line»
+  «text»: строка
+  «line»: число
+  «shift»: число
+  «raw»: признак
+
+объект «Line place»
+  «line»: число
+  «shift»: число
+
+тип «Sugar outcome»
+  вариант «Sugar kept»
+  вариант «Sugar expanded» содержит textPart: строка, places: список «Line place»
+  вариант «Sugar refused» содержит code: строка, message: строка, atLine: число, atColumn: число
+
+объект «Indent count»
+  «spaces»: число
+  «going»: признак
+
+объект «Sugar cut»
+  «found»: признак
+  «before»: строка
+  «after»: строка
+
+объект «Outer cutting»
+  «found»: признак
+  «before»: строка
+  «rest»: список строки
+
+объект «Splitting»
+  «depth»: число
+  «quoted»: признак
+  «piece»: строка
+  «parts»: список строки
+
+объект «Numbering»
+  «lines»: список «Source line»
+  «inside»: признак
+
+объект «Grouping»
+  «done»: список (список «Source line»)
+  «current»: список «Source line»
+
+объект «Rule check»
+  «bad»: признак
+  «message»: строка
+
+объект «Pass result»
+  «code»: строка
+  «message»: строка
+  «at»: «Source line»
+  «declarations»: список (список «Source line»)
+
+объект «Signature»
+  «head»: строка
+  «taking»: строка
+  «giving»: строка
+  «takes»: признак
+  «gives»: признак
+  «reversed»: признак
+
+объект «Word piece»
+  «text»: строка
+  «word»: признак
+
+объект «Piecing»
+  «mode»: число
+  «piece»: строка
+  «pieces»: список «Word piece»
+
+объект «Item»
+  «first»: «Source line»
+  «lines»: список «Source line»
+
+объект «Method»
+  «name»: строка
+  «signature»: «Signature»
+  «head»: «Source line»
+  «lines»: список «Source line»
+
+объект «Class model»
+  «name»: строка
+  «face»: строка
+  «head»: «Source line»
+  «fields»: список «Source line»
+  «rules»: список «Source line»
+  «methods»: список «Method»
+  «stray»: список «Source line»
+
+объект «Class reading»
+  «fields»: список «Source line»
+  «rules»: список «Source line»
+  «methods»: список «Method»
+  «stray»: список «Source line»
+  «open»: признак
+  «current»: «Method»
+
+объект «Face model»
+  «name»: строка
+  «head»: «Source line»
+  «methods»: список «Method»
+  «stray»: список «Source line»
+
+объект «Emitted»
+  «trouble»: строка
+  «at»: «Source line»
+  «lines»: список «Source line»
+
+тотальная функция «Joined» от «А»
+  принимает front: список «А», back: список «А»
+  возвращает список «А»
+  пример «Second goes after first»
+    дано front равно ["а"]
+    дано back равно ["б", "в"]
+    ожидается ["а", "б", "в"]
+  свёртка back начиная с front как joined и entry → добавить entry к joined
+
+тотальная функция «Concatenated» от «А»
+  принимает groups: список (список «А»)
+  возвращает список «А»
+  пример «Two lists become one»
+    дано groups равно [["а"], ["б", "в"]]
+    ожидается ["а", "б", "в"]
+  свёртка groups начиная с пустой список как flat и group → «Joined» от flat и group
+
+тотальная функция «Indent»
+  принимает line: строка
+  возвращает число
+  пример «Four spaces»
+    дано line равно "    пусть а равно 1"
+    ожидается 4
+  пример «No spaces»
+    дано line равно "модуль «А»"
+    ожидается 0
+  пусть counted равно свёртка (разложить line на символы) начиная с (запись «Indent count» с «spaces» равным 0 и
+    «going» равным да) как acc и sign
+    пусть going равно acc.«going» и притом (sign равен " ")
+    пусть spaces равно если going то acc.«spaces» плюс 1 иначе acc.«spaces»
+    запись «Indent count» с «spaces» равным spaces и «going» равным going
+  counted.«spaces»
+
+тотальная функция «Margin»
+  принимает line: строка
+  возвращает строка
+  пример «Leading spaces only»
+    дано line равно "  то 1"
+    ожидается "  "
+  подстрока line с 1 по («Indent» от line)
+
+тотальная функция «Without indent»
+  принимает line: строка
+  возвращает строка
+  пример «Leading spaces go»
+    дано line равно "   дальше"
+    ожидается "дальше"
+  пример «Blank becomes empty»
+    дано line равно "   "
+    ожидается ""
+  подстрока line с ((«Indent» от line) плюс 1) по (длина line)
+
+тотальная функция «Text from»
+  принимает textPart: строка, origin: число
+  возвращает строка
+  пример «Inside»
+    дано textPart равно "цикл «А»"
+    дано origin равно 6
+    ожидается "«А»"
+  пример «Past the end»
+    дано textPart равно ""
+    дано origin равно 6
+    ожидается ""
+  пусть outside равно (origin меньше 1) или (origin больше ((длина textPart) плюс 1))
+  если outside то "" иначе подстрока textPart с origin по (длина textPart)
+
+тотальная функция «Blank»
+  принимает line: строка
+  возвращает признак
+  пример «Spaces only»
+    дано line равно "  "
+    ожидается да
+  пример «Text»
+    дано line равно "  а"
+    ожидается нет
+  (длина («Without indent» от line)) равен 0
+
+тотальная функция «Ends with»
+  принимает textPart: строка, tailPart: строка
+  возвращает признак
+  пример «Ends»
+    дано textPart равно "  иначе "
+    дано tailPart равно "иначе "
+    ожидается да
+  пример «Too short»
+    дано textPart равно "то"
+    дано tailPart равно "то "
+    ожидается нет
+  пусть origin равно ((длина textPart) минус (длина tailPart)) плюс 1
+  («Text from» от textPart и origin) равен tailPart
+
+тотальная функция «Cut once»
+  принимает textPart: строка, separator: строка
+  возвращает «Sugar cut»
+  пример «First place only»
+    дано textPart равно "а: список (б: в)"
+    дано separator равно ": "
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "а" и «after» равным "список (б: в)"
+  пример «Not found»
+    дано textPart равно "а"
+    дано separator равно ": "
+    ожидается запись «Sugar cut» с «found» равным нет и «before» равным "а" и «after» равным ""
+  пусть parts равно разделить textPart по separator
+  если (длина parts) меньше 2
+    то запись «Sugar cut» с «found» равным нет и «before» равным textPart и «after» равным ""
+    иначе (запись «Sugar cut» с «found» равным да и «before» равным (элемент 1 в parts) и
+      «after» равным (соединить (хвост parts) по separator))
+
+тотальная функция «Occurrences»
+  принимает textPart: строка, sign: строка
+  возвращает число
+  пример «Two guillemets»
+    дано textPart равно "«а» и «б»"
+    дано sign равно "«"
+    ожидается 2
+  (длина (разделить textPart по sign)) минус 1
+
+тотальная функция «Balanced»
+  принимает textPart: строка
+  возвращает признак
+  пример «A closed name»
+    дано textPart равно "функция «А принимает»"
+    ожидается да
+  пример «An open name»
+    дано textPart равно "функция «А"
+    ожидается нет
+  пример «An open string»
+    дано textPart равно "\"а"
+    ожидается нет
+  пусть names равно («Occurrences» от textPart и "«") равен («Occurrences» от textPart и "»")
+  names и притом (((«Occurrences» от textPart и "\"") остаток от 2) равен 0)
+
+тотальная функция «Outer step»
+  принимает acc: «Outer cutting», part: строка, separator: строка
+  возвращает «Outer cutting»
+  пример «A balanced front is cut»
+    дано acc равно запись «Outer cutting» с «found» равным нет и «before» равным "функция «Ф»" и «rest» равным []
+    дано part равно "а: число"
+    дано separator равно " принимает "
+    ожидается запись «Outer cutting» с «found» равным да и «before» равным "функция «Ф»" и «rest» равным ["а: число"]
+  пример «A front inside a name grows»
+    дано acc равно запись «Outer cutting» с «found» равным нет и «before» равным "функция «Ф" и «rest» равным []
+    дано part равно "»"
+    дано separator равно " принимает "
+    ожидается (запись «Outer cutting» с «found» равным нет и «before» равным "функция «Ф принимает »" и
+        «rest» равным [])
+  пусть cuts равно (не acc.«found») и притом («Balanced» от acc.«before»)
+  пусть grown равно соединить [acc.«before», separator, part] по ""
+  пусть before равно если acc.«found» или cuts то acc.«before» иначе grown
+  пусть rest равно если acc.«found» или cuts то добавить part к acc.«rest» иначе acc.«rest»
+  запись «Outer cutting» с «found» равным (acc.«found» или cuts) и «before» равным before и «rest» равным rest
+
+тотальная функция «Outer cut»
+  принимает textPart: строка, separator: строка
+  возвращает «Sugar cut»
+  пример «A word inside a name is not a cut»
+    дано textPart равно "тотальная функция «Ф принимает» принимает а: число"
+    дано separator равно " принимает "
+    ожидается (запись «Sugar cut» с «found» равным да и «before» равным "тотальная функция «Ф принимает»" и
+        «after» равным "а: число")
+  пример «No word»
+    дано textPart равно "тотальная функция «Ф»"
+    дано separator равно " принимает "
+    ожидается запись «Sugar cut» с «found» равным нет и «before» равным "тотальная функция «Ф»" и «after» равным ""
+  пусть parts равно разделить textPart по separator
+  пусть start равно запись «Outer cutting» с «found» равным нет и «before» равным (голова parts) и «rest» равным []
+  пусть cutting равно свёртка (хвост parts) начиная с start как acc и part → «Outer step» от acc и part и separator
+  если cutting.«found»
+    то (запись «Sugar cut» с «found» равным да и «before» равным cutting.«before» и
+      «after» равным (соединить cutting.«rest» по separator))
+    иначе запись «Sugar cut» с «found» равным нет и «before» равным textPart и «after» равным ""
+
+тотальная функция «Plain line»
+  принимает textPart: строка, number: число
+  возвращает «Source line»
+  пример «A line of the source keeps its number»
+    дано textPart равно "  а"
+    дано number равно 3
+    ожидается запись «Source line» с «text» равным "  а" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
+  запись «Source line» с «text» равным textPart и «line» равным number и «shift» равным 0 и «raw» равным нет
+
+тотальная функция «Made line»
+  принимает origin: «Source line», textPart: строка
+  возвращает «Source line»
+  пример «A made line points at the column where its origin starts»
+    дано origin равно (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет)
+    дано textPart равно "тотальная функция «Ц»"
+    ожидается (запись «Source line» с «text» равным "тотальная функция «Ц»" и «line» равным 4 и «shift» равным 2 и
+        «raw» равным нет)
+  пусть shift равно ((«Indent» от origin.«text») плюс origin.«shift») минус («Indent» от textPart)
+  запись «Source line» с «text» равным textPart и «line» равным origin.«line» и «shift» равным shift и «raw» равным нет
+
+тотальная функция «Moved line»
+  принимает line: «Source line», textPart: строка
+  возвращает «Source line»
+  пример «A line moved two columns left keeps pointing at its own column»
+    дано line равно запись «Source line» с «text» равным "    а" и «line» равным 5 и «shift» равным 0 и «raw» равным нет
+    дано textPart равно "  а"
+    ожидается запись «Source line» с «text» равным "  а" и «line» равным 5 и «shift» равным 2 и «raw» равным нет
+  пусть moved равно («Indent» от line.«text») минус («Indent» от textPart)
+  пусть shift равно если «Blank» от textPart то line.«shift» иначе line.«shift» плюс moved
+  (запись «Source line» с «text» равным textPart и «line» равным line.«line» и «shift» равным shift и
+      «raw» равным line.«raw»)
+
+тотальная функция «Number step»
+  принимает acc: «Numbering», textPart: строка
+  возвращает «Numbering»
+  пример «A line that opens a text block is raw, and so is the next»
+    дано acc равно запись «Numbering» с «lines» равным [] и «inside» равным нет
+    дано textPart равно "  пусть а равно \"\"\""
+    ожидается (запись «Numbering» с «lines» равным [(запись «Source line» с «text» равным "  пусть а равно \"\"\"" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным да)] и «inside» равным да)
+  пусть quotes равно «Occurrences» от textPart и "\"\"\""
+  пусть raw равно acc.«inside» или (quotes больше 0)
+  пусть inside равно если (quotes остаток от 2) равен 1 то не acc.«inside» иначе acc.«inside»
+  пусть line равно (запись «Source line» с «text» равным textPart и «line» равным ((длина acc.«lines») плюс 1) и
+    «shift» равным 0 и «raw» равным raw)
+  запись «Numbering» с «lines» равным (добавить line к acc.«lines») и «inside» равным inside
+
+тотальная функция «Numbered»
+  принимает source: строка
+  возвращает список «Source line»
+  пример «Lines get numbers from one»
+    дано source равно "а\nб"
+    ожидается [(запись «Source line» с «text» равным "а" и «line» равным 1 и «shift» равным 0 и «raw» равным нет),
+      (запись «Source line» с «text» равным "б" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)]
+  пусть start равно запись «Numbering» с «lines» равным [] и «inside» равным нет
+  (свёртка (разделить source по "\n") начиная с start как acc и textPart → «Number step» от acc и textPart).«lines»
+
+тотальная функция «Opens declaration»
+  принимает line: «Source line»
+  возвращает признак
+  пример «A line at the left edge»
+    дано line равно (запись «Source line» с «text» равным "функция «Б»" и «line» равным 3 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается да
+  пример «A raw line never opens»
+    дано line равно (запись «Source line» с «text» равным "функция «Б»" и «line» равным 3 и «shift» равным 0 и
+        «raw» равным да)
+    ожидается нет
+  ((«Indent» от line.«text») равен 0) и притом (не («Blank» от line.«text»)) и притом (не line.«raw»)
+
+тотальная функция «Group step»
+  принимает acc: «Grouping», line: «Source line»
+  возвращает «Grouping»
+  пример «A line at the left edge opens a declaration»
+    дано acc равно ((запись «Grouping» с «done» равным [] и «current» равным [(запись
+        «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)]))
+    дано line равно (запись «Source line» с «text» равным "функция «Б»" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается (запись «Grouping» с «done» равным [[(запись «Source line» с «text» равным "модуль «А»" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)]] и
+        «current» равным [(запись «Source line» с «text» равным "функция «Б»" и «line» равным 2 и «shift» равным 0
+            и «raw» равным нет)])
+  пусть opens равно («Opens declaration» от line) и притом (не (пусто acc.«current»))
+  если opens
+    то запись «Grouping» с «done» равным (добавить acc.«current» к acc.«done») и «current» равным [line]
+    иначе запись «Grouping» с «done» равным acc.«done» и «current» равным (добавить line к acc.«current»)
+
+тотальная функция «Declarations»
+  принимает lines: список «Source line»
+  возвращает список (список «Source line»)
+  пример «Two declarations with their blank lines»
+    дано lines равно ([(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "функция «Б»" и «line» равным 3 и «shift» равным 0
+        и «raw» равным нет)])
+    ожидается ([[(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)], [(запись «Source line» с «text» равным "функция «Б»" и «line» равным 3 и
+        «shift» равным 0 и «raw» равным нет)]])
+  пусть start равно запись «Grouping» с «done» равным [] и «current» равным []
+  пусть grouped равно свёртка lines начиная с start как acc и line → «Group step» от acc и line
+  добавить grouped.«current» к grouped.«done»
+
+тотальная функция «Texts»
+  принимает lines: список «Source line»
+  возвращает список строки
+  пример «Only the texts»
+    дано lines равно ([(запись «Source line» с «text» равным "а" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "б" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)])
+    ожидается ["а", "б"]
+  отобразить lines как line → line.«text»
+
+тотальная функция «First trouble»
+  принимает checks: список «Rule check»
+  возвращает строка
+  пример «The first bad check speaks»
+    дано checks равно [(запись «Rule check» с «bad» равным нет и «message» равным "а"),
+      (запись «Rule check» с «bad» равным да и «message» равным "б")]
+    ожидается "б"
+  пример «Nothing bad»
+    дано checks равно []
+    ожидается ""
+  пусть bad равно отфильтровать checks где check → check.«bad»
+  если пусто bad то "" иначе (голова bad).«message»
+
+тотальная функция «Passed»
+  принимает declarations: список (список «Source line»)
+  возвращает «Pass result»
+  пример «A pass without trouble»
+    дано declarations равно []
+    ожидается (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным (запись
+        «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+        «declarations» равным [])
+  (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным («Plain line» от "" и 0) и
+    «declarations» равным declarations)
+
+тотальная функция «Refused»
+  принимает code: строка, message: строка, origin: «Source line»
+  возвращает «Pass result»
+  пример «A refusal names its line»
+    дано code равно "FLANG_SUGAR_HEADER"
+    дано message равно "беда"
+    дано origin равно (запись «Source line» с «text» равным "функция «Ф» возвращает" и «line» равным 3 и
+        «shift» равным 0 и «raw» равным нет)
+    ожидается (запись «Pass result» с «code» равным "FLANG_SUGAR_HEADER" и «message» равным "беда" и
+        «at» равным (запись «Source line» с «text» равным "функция «Ф» возвращает" и «line» равным 3 и
+            «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+  запись «Pass result» с «code» равным code и «message» равным message и «at» равным origin и «declarations» равным []
+
+тотальная функция «Signature of»
+  принимает textPart: строка
+  возвращает «Signature»
+  пример «Both words»
+    дано textPart равно "тотальная функция «Ф» принимает а: число, б: список числа возвращает число"
+    ожидается (запись «Signature» с «head» равным "тотальная функция «Ф»" и «taking» равным "а: число, б: список числа"
+        и «giving» равным "число" и «takes» равным да и «gives» равным да и «reversed» равным нет)
+  пример «Only the result»
+    дано textPart равно "метод «Площадь» возвращает число"
+    ожидается (запись «Signature» с «head» равным "метод «Площадь»" и «taking» равным "" и «giving» равным "число" и
+        «takes» равным нет и «gives» равным да и «reversed» равным нет)
+  пример «The result before the parameters»
+    дано textPart равно "функция «Ф» возвращает число принимает а: число"
+    ожидается (запись «Signature» с «head» равным "функция «Ф»" и «taking» равным "а: число" и «giving» равным
+        "число принимает а: число" и «takes» равным да и «gives» равным да и «reversed» равным да)
+  пусть take равно «Outer cut» от textPart и " принимает "
+  пусть give равно «Outer cut» от textPart и " возвращает "
+  пусть reversed равно take.«found» и притом give.«found» и притом ((длина give.«before») меньше (длина take.«before»))
+  пусть fronts равно отфильтровать [take, give] где cut → cut.«found»
+  пусть headLine равно свёртка fronts начиная с textPart как shortest и cut → «Shorter» от shortest и cut.«before»
+  пусть taking равно если take.«found» то («Outer cut» от take.«after» и " возвращает ").«before» иначе ""
+  пусть giving равно если give.«found» то give.«after» иначе ""
+  (запись «Signature» с «head» равным headLine и «taking» равным taking и «giving» равным giving и
+      «takes» равным take.«found»
+    и «gives» равным give.«found» и «reversed» равным reversed)
+
+тотальная функция «Is function head»
+  принимает line: «Source line»
+  возвращает признак
+  пример «A total function»
+    дано line равно (запись «Source line» с «text» равным "тотальная функция «Ф» возвращает число" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)
+    ожидается да
+  пример «A body line»
+    дано line равно (запись «Source line» с «text» равным "  функция «Ф» возвращает число" и «line» равным 1 и
+        «shift» равным 0 и «raw» равным нет)
+    ожидается нет
+  пусть starts равно (line.«text» начинается с "функция «") или (line.«text» начинается с "тотальная функция «")
+  starts и притом (не line.«raw»)
+
+тотальная функция «Header line count»
+  принимает lines: список «Source line», word: строка
+  возвращает число
+  пример «One line of results»
+    дано lines равно ([(запись «Source line» с «text» равным "функция «Ф»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет)])
+    дано word равно "возвращает"
+    ожидается 1
+  пусть prefix равно соединить ["  ", word, " "] по ""
+  длина (отфильтровать lines где line → (line.«text» начинается с prefix) и притом ((«Indent» от line.«text») равен 2))
+
+тотальная функция «Header checks»
+  принимает signature: «Signature», lines: список «Source line»
+  возвращает список «Rule check»
+  пример «A good header»
+    дано signature равно (запись «Signature» с «head» равным "функция «Ф»" и «taking» равным "а: число" и
+        «giving» равным "число" и «takes» равным да и «gives» равным да и «reversed» равным нет)
+    дано lines равно ([(запись «Source line» с «text» равным "функция «Ф» принимает а: число возвращает число" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)])
+    ожидается [(запись «Rule check» с «bad» равным нет и «message» равным
+        "в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»"), (запись
+        «Rule check» с «bad» равным нет и «message» равным "после «принимает» не назван ни один параметр"), (запись
+        «Rule check» с «bad» равным нет и «message» равным "после «возвращает» не назван тип"), (запись «Rule check» с
+        «bad» равным нет и «message» равным "«принимает» сказано дважды: в заголовке и строкой ниже"), (запись
+        «Rule check» с «bad» равным нет и «message» равным "«возвращает» сказано дважды: в заголовке и строкой ниже")]
+  [(запись «Rule check» с «bad» равным signature.«reversed» и «message» равным
+      "в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»"),
+    (запись «Rule check» с «bad» равным (signature.«takes» и притом «Blank» от signature.«taking») и «message» равным
+      "после «принимает» не назван ни один параметр"),
+    (запись «Rule check» с «bad» равным (signature.«gives» и притом «Blank» от signature.«giving») и «message» равным
+      "после «возвращает» не назван тип"),
+    (запись «Rule check» с «bad» равным (signature.«takes» и притом ((«Header line count» от lines и
+        "принимает") больше 0))
+      и «message» равным "«принимает» сказано дважды: в заголовке и строкой ниже"),
+    (запись «Rule check» с «bad» равным (signature.«gives» и притом ((«Header line count» от lines и
+        "возвращает") больше 0))
+      и «message» равным "«возвращает» сказано дважды: в заголовке и строкой ниже")]
+
+тотальная функция «Header lines»
+  принимает origin: «Source line», signature: «Signature»
+  возвращает список «Source line»
+  пример «Three lines from one»
+    дано origin равно (запись «Source line» с «text» равным "функция «Ф» принимает а: число возвращает число" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)
+    дано signature равно (запись «Signature» с «head» равным "функция «Ф»" и «taking» равным "а: число" и
+        «giving» равным "число" и «takes» равным да и «gives» равным да и «reversed» равным нет)
+    ожидается [(запись «Source line» с «text» равным "функция «Ф»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  принимает а: число" и
+        «line» равным 1 и «shift» равным 10 и «raw» равным нет), (запись «Source line» с «text» равным
+        "  возвращает число" и «line» равным 1 и «shift» равным 29 и «raw» равным нет)]
+  пусть headLine равно (запись «Source line» с «text» равным signature.«head» и «line» равным origin.«line» и
+      «shift» равным origin.«shift» и «raw» равным нет)
+  пусть taking равно соединить "  принимает " с signature.«taking»
+  пусть giving равно соединить "  возвращает " с signature.«giving»
+  пусть takeAt равно (длина signature.«head») минус 1
+  пусть giveAt равно (длина («Outer cut» от origin.«text» и " возвращает ").«before») минус 1
+  пусть takeLine равно (запись «Source line» с «text» равным taking и «line» равным origin.«line» и
+    «shift» равным (origin.«shift» плюс takeAt) и «raw» равным нет)
+  пусть giveLine равно (запись «Source line» с «text» равным giving и «line» равным origin.«line» и
+    «shift» равным (origin.«shift» плюс giveAt) и «raw» равным нет)
+  пусть takeLines равно если signature.«takes» то [takeLine] иначе []
+  пусть giveLines равно если signature.«gives» то [giveLine] иначе []
+  «Concatenated» от [[headLine], takeLines, giveLines]
+
+тотальная функция «Header of declaration»
+  принимает lines: список «Source line»
+  возвращает «Pass result»
+  пример «A declaration without a one-line header stays»
+    дано lines равно [(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)]
+    ожидается (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным (запись «Source line» с
+        «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [[(запись
+        «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)]])
+  пример «A header with the result first is refused»
+    дано lines равно [(запись «Source line» с «text» равным "функция «Ф» возвращает число принимает а: число" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)]
+    ожидается (запись «Pass result» с «code» равным "FLANG_SUGAR_HEADER" и «message» равным
+        "в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»" и «at» равным
+        (запись «Source line» с «text» равным "функция «Ф» возвращает число принимает а: число" и «line» равным 1 и
+        «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+  разбор lines
+    случай пусто
+      то «Passed» от [lines]
+    случай голова и хвост
+      пусть signature равно «Signature of» от голова.«text»
+      пусть sugared равно («Is function head» от голова) и притом (signature.«takes» или signature.«gives»)
+      пусть trouble равно «First trouble» от («Header checks» от signature и хвост)
+      пусть expanded равно «Joined» от («Header lines» от голова и signature) и хвост
+      пусть headerTrouble равно «Refused» от "FLANG_SUGAR_HEADER" и trouble и голова
+      пусть checked равно если (длина trouble) больше 0 то headerTrouble иначе «Passed» от [expanded]
+      если sugared
+        то checked
+        иначе «Passed» от [lines]
+
+тотальная функция «Shorter»
+  принимает current: строка, candidate: строка
+  возвращает строка
+  пример «The second is shorter»
+    дано current равно "функция «Ф» принимает а"
+    дано candidate равно "функция «Ф»"
+    ожидается "функция «Ф»"
+  если (длина candidate) меньше (длина current) то candidate иначе current
+
+объект «Parameter»
+  «name»: строка
+  «type»: строка
+
+объект «Kept»
+  «name»: строка
+  «type»: строка
+  «start»: строка
+
+тип «Clause kind»
+  вариант «For each»
+  вариант «While»
+  вариант «Measure»
+  вариант «Fuel»
+  вариант «Keep»
+  вариант «At the end»
+
+объект «Clause rule»
+  «prefix»: строка
+  «kind»: «Clause kind»
+
+объект «Clause»
+  «kind»: «Clause kind»
+  «text»: строка
+
+объект «Loop»
+  «name»: строка
+  «head»: «Source line»
+  «clauses»: список «Clause»
+  «body»: список «Source line»
+
+объект «Placing»
+  «seen»: число
+  «phase»: число
+  «indent»: число
+  «before»: список «Source line»
+  «header»: «Source line»
+  «inside»: список «Source line»
+  «after»: список «Source line»
+
+объект «Update»
+  «name»: строка
+  «value»: строка
+
+объект «Rewriting»
+  «nested»: число
+  «lines»: список «Source line»
+  «continues»: число
+  «last»: строка
+  «updates»: список «Update»
+
+объект «Loop expansion»
+  «trouble»: строка
+  «at»: «Source line»
+  «declarations»: список (список «Source line»)
+
+объект «Loop step»
+  «stop»: признак
+  «trouble»: строка
+  «at»: «Source line»
+  «queue»: список (список «Source line»)
+  «done»: список (список «Source line»)
+
+тотальная функция «Depth change»
+  принимает sign: строка
+  возвращает число
+  пример «Opening»
+    дано sign равно "("
+    ожидается 1
+  пример «Closing guillemet»
+    дано sign равно "»"
+    ожидается -1
+  (если "([«" содержит sign то 1 иначе 0) минус (если ")]»" содержит sign то 1 иначе 0)
+
+тотальная функция «Comma split step»
+  принимает acc: «Splitting», sign: строка
+  возвращает «Splitting»
+  пример «A comma at the top splits»
+    дано acc равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "а" и «parts» равным []
+    дано sign равно ","
+    ожидается запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным ["а"]
+  пусть splits равно (не acc.«quoted») и притом (sign равен ",") и притом (acc.«depth» равен 0)
+  пусть quoted равно если sign равен "\"" то не acc.«quoted» иначе acc.«quoted»
+  пусть depth равно acc.«depth» плюс (если acc.«quoted» или quoted то 0 иначе «Depth change» от sign)
+  если splits
+    то (запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и
+      «parts» равным (добавить («Without indent» от acc.«piece») к acc.«parts»))
+    иначе (запись «Splitting» с «depth» равным depth и «quoted» равным quoted и
+      «piece» равным (соединить acc.«piece» с sign) и «parts» равным acc.«parts»)
+
+тотальная функция «Top level parts»
+  принимает textPart: строка
+  возвращает список строки
+  пример «Commas inside brackets and strings stay»
+    дано textPart равно "а равным [1, 2], б равным \"x, y\", в"
+    ожидается ["а равным [1, 2]", "б равным \"x, y\"", "в"]
+  пример «Empty text has no parts»
+    дано textPart равно ""
+    ожидается []
+  пусть start равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным []
+  пусть pieces равно (свёртка (разложить textPart на символы) начиная с start как acc и
+      sign → «Comma split step» от acc и sign)
+  отфильтровать (добавить («Without indent» от pieces.«piece») к pieces.«parts») где part → (длина part) больше 0
+
+тотальная функция «Word step»
+  принимает acc: «Splitting», sign: строка
+  возвращает «Splitting»
+  пример «A space ends a word»
+    дано acc равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "а" и «parts» равным []
+    дано sign равно " "
+    ожидается запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным ["а"]
+  пусть depth равно acc.«depth» плюс (если sign равен "«" то 1 иначе (если sign равен "»" то -1 иначе 0))
+  пусть ends равно (acc.«depth» равен 0) и притом (" ()[],.:" содержит sign)
+  если ends
+    то (запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным
+      (если (длина acc.«piece») больше 0 то добавить acc.«piece» к acc.«parts» иначе acc.«parts»))
+    иначе (запись «Splitting» с «depth» равным depth и «quoted» равным нет и
+      «piece» равным (соединить acc.«piece» с sign) и «parts» равным acc.«parts»)
+
+тотальная функция «Words»
+  принимает textPart: строка
+  возвращает список строки
+  пример «Names in guillemets stay whole»
+    дано textPart равно "(«Мой счёт» от цены).минимум"
+    ожидается ["«Мой счёт»", "от", "цены", "минимум"]
+  пусть start равно запись «Splitting» с «depth» равным 0 и «quoted» равным нет и «piece» равным "" и «parts» равным []
+  пусть signs равно разложить (соединить textPart с " ") на символы
+  пусть pieces равно свёртка signs начиная с start как acc и sign → «Word step» от acc и sign
+  pieces.«parts»
+
+тотальная функция «Wrapped»
+  принимает expression: строка
+  возвращает строка
+  пример «A word stays»
+    дано expression равно "лево"
+    ожидается "лево"
+  пример «A phrase gets brackets»
+    дано expression равно "лево плюс 1"
+    ожидается "(лево плюс 1)"
+  если expression содержит " " то соединить ["(", expression, ")"] по "" иначе expression
+
+тотальная функция «In guillemets»
+  принимает name: строка
+  возвращает строка
+  пример «Bare name»
+    дано name равно "лево"
+    ожидается "«лево»"
+  пример «Already quoted»
+    дано name равно "«мой счёт»"
+    ожидается "«мой счёт»"
+  если name начинается с "«" то name иначе соединить ["«", name, "»"] по ""
+
+тотальная функция «Parameter of»
+  принимает part: строка
+  возвращает «Parameter»
+  пример «Name and type»
+    дано part равно "элементы: список числа"
+    ожидается запись «Parameter» с «name» равным "элементы" и «type» равным "список числа"
+  пусть cut равно «Cut once» от part и ": "
+  запись «Parameter» с «name» равным cut.«before» и «type» равным cut.«after»
+
+тотальная функция «Header text»
+  принимает lines: список «Source line», word: строка
+  возвращает строка
+  пример «The result line»
+    дано lines равно [(запись «Source line» с «text» равным "тотальная функция «А»" и «line» равным 1 и
+        «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 2 и
+            «shift» равным 0
+        и «raw» равным нет)]
+    дано word равно "возвращает "
+    ожидается "число"
+  пусть prefix равно соединить "  " с word
+  пусть found равно (отфильтровать lines где line → ((«Indent» от line.«text») равен 2) и притом (line.«text»
+      начинается с prefix))
+  если пусто found то "" иначе («Cut once» от («Without indent» от (голова found).«text») и word).«after»
+
+тотальная функция «Parameters»
+  принимает lines: список «Source line»
+  возвращает список «Parameter»
+  пример «Two parameters»
+    дано lines равно [(запись «Source line» с «text» равным "  принимает х: число, у: список (список числа)" и «line»
+        равным 2 и «shift» равным 0 и «raw» равным нет)]
+    ожидается [запись «Parameter» с «name» равным "х" и «type» равным "число", (запись «Parameter» с «name» равным "у" и
+        «type» равным "список (список числа)")]
+  отобразить («Top level parts» от («Header text» от lines и "принимает ")) как part → «Parameter of» от part
+
+тотальная функция «Is loop header»
+  принимает line: «Source line»
+  возвращает признак
+  пример «A loop»
+    дано line равно (запись «Source line» с «text» равным "  цикл «Проход»" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается да
+  пример «A loop inside a text block is text»
+    дано line равно (запись «Source line» с «text» равным "  цикл «Проход»" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным да)
+    ожидается нет
+  пусть inside равно (не line.«raw») и притом ((«Indent» от line.«text») больше 0)
+  inside и притом ((«Without indent» от line.«text») начинается с "цикл «")
+
+тотальная функция «Has loop»
+  принимает lines: список «Source line»
+  возвращает признак
+  пример «A function without a loop»
+    дано lines равно ([(запись «Source line» с «text» равным "  1" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)])
+    ожидается нет
+  не (пусто (отфильтровать lines где line → «Is loop header» от line))
+
+тотальная функция «No line»
+  возвращает «Source line»
+  пример «An empty line with no place»
+    ожидается запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет
+  запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет
+
+тотальная функция «Placing start»
+  возвращает «Placing»
+  пример «The start of the placing»
+    ожидается (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw» равным нет)
+        и «inside» равным [] и «after» равным [])
+  (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+    «header» равным («No line») и «inside» равным [] и «after» равным [])
+
+тотальная функция «Place later»
+  принимает acc: «Placing», line: «Source line»
+  возвращает «Placing»
+  пример «A line after the block ends it»
+    дано acc равно (запись «Placing» с «seen» равным 2 и «phase» равным 1 и «indent» равным 2 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw» равным нет)
+        и «inside» равным [] и «after» равным [])
+    дано line равно запись «Source line» с «text» равным "  1" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
+    ожидается (запись «Placing» с «seen» равным 3 и «phase» равным 2 и «indent» равным 2 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw» равным нет)
+        и «inside» равным [] и «after» равным [(запись «Source line» с «text» равным "  1" и «line» равным 3 и «shift»
+        равным 0 и «raw» равным нет)])
+  пусть outside равно ((не («Blank» от line.«text»)) и притом (не line.«raw») и притом ((«Indent» от line.«text»)
+      не больше acc.«indent»))
+  пусть ends равно (acc.«phase» равен 1) и притом outside
+  пусть phase равно если ends то 2 иначе acc.«phase»
+  пусть inside равно если phase равен 1 то добавить line к acc.«inside» иначе acc.«inside»
+  пусть afterPart равно если phase равен 2 то добавить line к acc.«after» иначе acc.«after»
+  (запись «Placing» с «seen» равным (acc.«seen» плюс 1) и «phase» равным phase и «indent» равным acc.«indent» и
+    «before» равным acc.«before» и «header» равным acc.«header» и «inside» равным inside и «after» равным afterPart)
+
+тотальная функция «Place before»
+  принимает acc: «Placing», line: «Source line», final: число
+  возвращает «Placing»
+  пример «The loop header opens the block»
+    дано acc равно (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw» равным нет)
+        и «inside» равным [] и «after» равным [])
+    дано line равно (запись «Source line» с «text» равным "  цикл «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)
+    дано final равно 1
+    ожидается (запись «Placing» с «seen» равным 1 и «phase» равным 1 и «indent» равным 2 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "  цикл «А»" и «line» равным 1 и «shift» равным 0 и «raw»
+        равным нет) и «inside» равным [] и «after» равным [])
+  пусть seen равно acc.«seen» плюс 1
+  если seen равен final
+    то (запись «Placing» с «seen» равным seen и «phase» равным 1 и «indent» равным («Indent» от line.«text») и
+      «before» равным acc.«before» и «header» равным line и «inside» равным [] и «after» равным [])
+    иначе (запись «Placing» с «seen» равным seen и «phase» равным 0 и «indent» равным 0 и
+      «before» равным (добавить line к acc.«before») и «header» равным acc.«header» и «inside» равным [] и
+          «after» равным [])
+
+тотальная функция «Place step»
+  принимает acc: «Placing», line: «Source line», final: число
+  возвращает «Placing»
+  пример «A line before the loop»
+    дано acc равно (запись «Placing» с «seen» равным 0 и «phase» равным 0 и «indent» равным 0 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw» равным нет)
+        и «inside» равным [] и «after» равным [])
+    дано line равно запись «Source line» с «text» равным "ф" и «line» равным 1 и «shift» равным 0 и «raw» равным нет
+    дано final равно 2
+    ожидается (запись «Placing» с «seen» равным 1 и «phase» равным 0 и «indent» равным 0 и «before» равным [(запись
+        «Source line» с «text» равным "ф" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)] и «header» равным
+        (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «inside»
+        равным [] и «after» равным [])
+  если acc.«phase» равен 0 то «Place before» от acc и line и final иначе «Place later» от acc и line
+
+тотальная функция «Count header line»
+  принимает acc: список число, line: «Source line»
+  возвращает список число
+  пример «A loop header becomes the last»
+    дано acc равно [1, 0]
+    дано line равно (запись «Source line» с «text» равным "  цикл «А»" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается [2, 2]
+  пусть seen равно (элемент 1 в acc) плюс 1
+  [seen, если «Is loop header» от line то seen иначе элемент 2 в acc]
+
+тотальная функция «Place loop»
+  принимает lines: список «Source line»
+  возвращает «Placing»
+  пример «No loop leaves every line before»
+    дано lines равно ([(запись «Source line» с «text» равным "ф" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)])
+    ожидается (запись «Placing» с «seen» равным 1 и «phase» равным 0 и «indent» равным 0 и «before» равным [(запись
+        «Source line» с «text» равным "ф" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)] и «header» равным
+        (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «inside»
+        равным [] и «after» равным [])
+  пусть counted равно свёртка lines начиная с [0, 0] как acc и line → «Count header line» от acc и line
+  пусть final равно элемент 2 в counted
+  свёртка lines начиная с («Placing start») как acc и line → «Place step» от acc и line и final
+
+тотальная функция «Clause rules»
+  возвращает список «Clause rule»
+  пример «Six clauses, the for-each first»
+    ожидается [(запись «Clause rule» с «prefix» равным "для каждого " и «kind» равным вариант «For each»), (запись
+        «Clause rule» с «prefix» равным "пока " и «kind» равным вариант «While»), (запись «Clause rule» с «prefix»
+        равным "убывает " и «kind» равным вариант «Measure»), (запись «Clause rule» с «prefix» равным
+        "шагов не больше " и «kind» равным вариант «Fuel»), (запись «Clause rule» с «prefix» равным "храним " и «kind»
+        равным вариант «Keep»), (запись «Clause rule» с «prefix» равным "в конце " и «kind» равным вариант
+        «At the end»)]
+  [запись «Clause rule» с «prefix» равным "для каждого " и «kind» равным вариант «For each»,
+    запись «Clause rule» с «prefix» равным "пока " и «kind» равным вариант «While»,
+    запись «Clause rule» с «prefix» равным "убывает " и «kind» равным вариант «Measure»,
+    запись «Clause rule» с «prefix» равным "шагов не больше " и «kind» равным вариант «Fuel»,
+    запись «Clause rule» с «prefix» равным "храним " и «kind» равным вариант «Keep»,
+    запись «Clause rule» с «prefix» равным "в конце " и «kind» равным вариант «At the end»]
+
+тотальная функция «Clauses of line»
+  принимает line: строка
+  возвращает список «Clause»
+  пример «A while clause»
+    дано line равно "    пока лево меньше право"
+    ожидается [запись «Clause» с «kind» равным вариант «While» и «text» равным "лево меньше право"]
+  пример «A body line»
+    дано line равно "    пусть а равно 1"
+    ожидается []
+  пусть textPart равно «Without indent» от line
+  пусть matching равно отфильтровать («Clause rules») где rulePart → textPart начинается с rulePart.«prefix»
+  (отобразить matching как rulePart → запись «Clause» с «kind» равным rulePart.«kind» и
+      «text» равным («Text from» от textPart и ((длина rulePart.«prefix») плюс 1)))
+
+тотальная функция «Read clauses»
+  принимает loop: «Loop», lines: список «Source line»
+  возвращает «Loop»
+  пример «Clauses first, then the body»
+    дано loop равно (запись «Loop» с «name» равным "«А»" и «head» равным (запись
+        «Source line» с «text» равным "  цикл «А»"
+        и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [] и «body» равным [])
+    дано lines равно [(запись «Source line» с «text» равным "    пока да" и «line» равным 2 и «shift» равным 0 и «raw»
+        равным нет), (запись «Source line» с «text» равным "    дальше" и «line» равным 3 и «shift» равным 0 и «raw»
+        равным нет)]
+    ожидается (запись «Loop» с «name» равным "«А»" и «head» равным (запись «Source line» с «text» равным "  цикл «А»" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "да")] и «body» равным [(запись «Source line» с «text» равным "    дальше" и
+        «line» равным 3 и «shift» равным 0 и «raw» равным нет)])
+  разбор lines
+    случай пусто
+      то loop
+    случай голова и хвост
+      пусть found равно «Clauses of line» от голова.«text»
+      пусть level равно («Indent» от голова.«text») равен ((«Indent» от loop.«head».«text») плюс 2)
+      пусть clauses равно «Joined» от loop.«clauses» и found
+      пусть grown равно (запись «Loop» с «name» равным loop.«name» и «head» равным loop.«head» и
+          «clauses» равным clauses и «body» равным [])
+      пусть done равно (запись «Loop» с «name» равным loop.«name» и «head» равным loop.«head» и
+          «clauses» равным loop.«clauses» и «body» равным lines)
+      пусть going равно level и притом (не (пусто found)) и притом (не голова.«raw»)
+      если going
+        то «Read clauses» от grown и хвост
+        иначе done
+
+тотальная функция «Clause text»
+  принимает loop: «Loop», kind: «Clause kind»
+  возвращает строка
+  пример «The condition of a while loop»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0")] и «body» равным [])
+    дано kind равно вариант «While»
+    ожидается "к больше 0"
+  пусть found равно отфильтровать loop.«clauses» где clause → clause.«kind» равен kind
+  если пусто found то "" иначе (голова found).«text»
+
+тотальная функция «Has clause»
+  принимает loop: «Loop», kind: «Clause kind»
+  возвращает признак
+  пример «No fuel in a loop with a condition only»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0")] и «body» равным [])
+    дано kind равно вариант «Fuel»
+    ожидается нет
+  не (пусто (отфильтровать loop.«clauses» где clause → clause.«kind» равен kind))
+
+тотальная функция «Kept of part»
+  принимает part: строка
+  возвращает «Kept»
+  пример «Name, type and start»
+    дано part равно "лучшее: число равным 0"
+    ожидается запись «Kept» с «name» равным "лучшее" и «type» равным "число" и «start» равным "0"
+  пусть named равно «Cut once» от part и ": "
+  пусть typed равно «Cut once» от named.«after» и " равным "
+  запись «Kept» с «name» равным named.«before» и «type» равным typed.«before» и «start» равным typed.«after»
+
+тотальная функция «Kept»
+  принимает loop: «Loop»
+  возвращает список «Kept»
+  пример «Two kept values on one line»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Keep» и «text» равным "к: число равным н, с: число равным 0")] и «body» равным [])
+    ожидается [(запись «Kept» с «name» равным "к" и «type» равным "число" и «start» равным "н"), (запись «Kept» с
+        «name» равным "с" и «type» равным "число" и «start» равным "0")]
+  пусть keeps равно отфильтровать loop.«clauses» где clause → clause.«kind» равен вариант «Keep»
+  пусть parts равно «Concatenated» от (отобразить keeps как clause → «Top level parts» от clause.«text»)
+  отобразить parts как part → «Kept of part» от part
+
+тотальная функция «Each part»
+  принимает loop: «Loop»
+  возвращает «Sugar cut»
+  пример «Element with a type»
+    дано loop равно (запись «Loop» с «name» равным "«А»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «For each» и «text» равным "цена: число из хвост")] и «body» равным [])
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "цена: число" и «after» равным "хвост"
+  «Cut once» от («Clause text» от loop и вариант «For each») и " из "
+
+тотальная функция «Element»
+  принимает loop: «Loop»
+  возвращает «Parameter»
+  пример «The element and its type»
+    дано loop равно (запись «Loop» с «name» равным "«А»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «For each» и «text» равным "цена: число из хвост")] и «body» равным [])
+    ожидается запись «Parameter» с «name» равным "цена" и «type» равным "число"
+  пусть named равно «Cut once» от («Each part» от loop).«before» и ": "
+  запись «Parameter» с «name» равным named.«before» и «type» равным named.«after»
+
+тотальная функция «Fuel part»
+  принимает loop: «Loop»
+  возвращает «Sugar cut»
+  пример «The fuel and the value when it runs out»
+    дано loop равно (запись «Loop» с «name» равным "«А»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Fuel» и «text» равным "н, иначе -1")] и «body» равным [])
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "н" и «after» равным "-1"
+  «Cut once» от («Clause text» от loop и вариант «Fuel») и ", иначе "
+
+тотальная функция «Continue cut»
+  принимает line: строка
+  возвращает «Sugar cut»
+  пример «A continue after то»
+    дано line равно "        то дальше: лево станет лево плюс 1"
+    ожидается (запись «Sugar cut» с «found» равным да и «before» равным "        то " и
+        «after» равным ": лево станет лево плюс 1")
+  пример «A name with the word inside is not a continue»
+    дано line равно "      пусть «цена дальше» равно 1"
+    ожидается (запись «Sugar cut» с «found» равным нет и «before» равным "      пусть «цена " и
+        «after» равным "» равно 1")
+  пример «A bare continue»
+    дано line равно "    дальше"
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "    " и «after» равным ""
+  пусть cut равно «Cut once» от line и "дальше"
+  пусть lead равно «Without indent» от cut.«before»
+  пусть afterThen равно «Ends with» от cut.«before» и " то "
+  пусть afterElse равно «Ends with» от cut.«before» и " иначе "
+  пусть placed равно ((длина lead) равен 0) или afterThen или afterElse
+  пусть closed равно ((длина cut.«after») равен 0) или (cut.«after» начинается с ":")
+  (запись «Sugar cut» с «found» равным (cut.«found» и притом placed и притом closed) и «before» равным cut.«before» и
+    «after» равным cut.«after»)
+
+тотальная функция «Update of part»
+  принимает part: строка
+  возвращает «Update»
+  пример «Name and value»
+    дано part равно "лево станет лево плюс 1"
+    ожидается запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"
+  пусть cut равно «Cut once» от part и " станет "
+  запись «Update» с «name» равным cut.«before» и «value» равным cut.«after»
+
+тотальная функция «Updates»
+  принимает afterPart: строка
+  возвращает список «Update»
+  пример «Two updates»
+    дано afterPart равно ": лево станет лево плюс 1, лучшее станет итог"
+    ожидается [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1", (запись «Update» с «name» равным
+        "лучшее" и «value» равным "итог")]
+  отобразить («Top level parts» от («Text from» от afterPart и 2)) как part → «Update of part» от part
+
+тотальная функция «Value after»
+  принимает kept: «Kept», updates: список «Update»
+  возвращает строка
+  пример «Updated»
+    дано kept равно запись «Kept» с «name» равным "лево" и «type» равным "число" и «start» равным "1"
+    дано updates равно [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"]
+    ожидается "(лево плюс 1)"
+  пример «Unchanged»
+    дано kept равно запись «Kept» с «name» равным "право" и «type» равным "число" и «start» равным "1"
+    дано updates равно [запись «Update» с «name» равным "лево" и «value» равным "лево плюс 1"]
+    ожидается "право"
+  пусть found равно отфильтровать updates где update → update.«name» равен kept.«name»
+  если пусто found то kept.«name» иначе «Wrapped» от (голова found).«value»
+
+тотальная функция «Updates of line»
+  принимает line: строка
+  возвращает список «Update»
+  пример «One update»
+    дано line равно "    дальше: к станет 1"
+    ожидается [(запись «Update» с «name» равным "к" и «value» равным "1")]
+  пусть cut равно «Continue cut» от line
+  если cut.«found» и притом ((длина cut.«after») больше 0) то «Updates» от cut.«after» иначе []
+
+тотальная функция «Call text»
+  принимает name: строка, arguments: список строки
+  возвращает строка
+  пример «Three arguments»
+    дано name равно "«А»"
+    дано arguments равно ["х", "(у плюс 1)", "0"]
+    ожидается "«А» от х и (у плюс 1) и 0"
+  если пусто arguments то name иначе соединить [name, " от ", соединить arguments по " и "] по ""
+
+тотальная функция «Generated»
+  принимает loop: «Loop», part: строка
+  возвращает строка
+  пример «A generated name»
+    дано loop равно (запись «Loop» с «name» равным "«Сужение»" и «head» равным (запись «Source line» с «text» равным ""
+        и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [] и «body» равным [])
+    дано part равно "запас"
+    ожидается "«Сужение — запас»"
+  соединить [подстрока loop.«name» с 1 по ((длина loop.«name») минус 1), " — ", part, "»"] по ""
+
+тотальная функция «Continue call»
+  принимает loop: «Loop», captured: список строки, afterPart: строка
+  возвращает строка
+  пример «A call with the kept value changed»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н")] и «body» равным [])
+    дано captured равно ["н"]
+    дано afterPart равно ": к станет к минус 1"
+    ожидается "«Ц» от н и (к минус 1)"
+  пусть updates равно «Updates» от afterPart
+  пусть hasEach равно если «Has clause» от loop и вариант «For each» то [«Generated» от loop и "дальше"] иначе []
+  пусть fuelCall равно соединить ["(", «Generated» от loop и "запас", " минус 1)"] по ""
+  пусть hasFuel равно если «Has clause» от loop и вариант «Fuel» то [fuelCall] иначе []
+  пусть kept равно отобразить («Kept» от loop) как kept → «Value after» от kept и updates
+  «Call text» от loop.«name» и («Concatenated» от [captured, hasEach, hasFuel, kept])
+
+тотальная функция «Rewrite own line»
+  принимает acc: «Rewriting», line: «Source line», loop: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «A continue becomes a call»
+    дано acc равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и «last» равным
+        "" и «updates» равным [])
+    дано line равно (запись «Source line» с «text» равным "    дальше: к станет к минус 1" и «line» равным 6 и
+        «shift» равным 0 и «raw» равным нет)
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным
+        "к: число равным н")] и «body» равным [])
+    дано captured равно ["н"]
+    ожидается (запись «Rewriting» с «nested» равным -1 и «lines» равным [(запись «Source line» с «text» равным
+        "    «Ц» от н и (к минус 1)" и «line» равным 6 и «shift» равным 0 и «raw» равным нет)] и «continues» равным 1 и
+        «last» равным "    дальше: к станет к минус 1" и «updates» равным [(запись «Update» с «name» равным "к" и
+        «value» равным "к минус 1")])
+  пусть cut равно «Continue cut» от line.«text»
+  пусть found равно cut.«found» и притом (не line.«raw»)
+  пусть nested равно если «Is loop header» от line то «Indent» от line.«text» иначе -1
+  пусть called равно соединить cut.«before» с («Continue call» от loop и captured и cut.«after»)
+  пусть rewritten равно если found то called иначе line.«text»
+  пусть moved равно (запись «Source line» с «text» равным rewritten и «line» равным line.«line» и
+      «shift» равным line.«shift» и «raw» равным line.«raw»)
+  пусть updates равно если found то «Updates of line» от line.«text» иначе []
+  (запись «Rewriting» с «nested» равным nested и «lines» равным (добавить moved к acc.«lines») и
+    «continues» равным (acc.«continues» плюс (если found то 1 иначе 0)) и
+    «last» равным (если «Blank» от line.«text» то acc.«last» иначе line.«text») и
+    «updates» равным («Joined» от acc.«updates» и updates))
+
+тотальная функция «Rewrite step»
+  принимает acc: «Rewriting», line: «Source line», loop: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «A line of an inner loop stays as it is»
+    дано acc равно (запись «Rewriting» с «nested» равным 4 и «lines» равным [] и «continues» равным 0 и «last» равным
+        "" и «updates» равным [])
+    дано line равно (запись «Source line» с «text» равным "      дальше" и «line» равным 6 и «shift» равным 0 и
+        «raw» равным нет)
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [] и «body» равным [])
+    дано captured равно []
+    ожидается (запись «Rewriting» с «nested» равным 4 и «lines» равным [(запись «Source line» с «text» равным
+        "      дальше" и «line» равным 6 и «shift» равным 0 и «raw» равным нет)] и «continues» равным 0 и «last» равным
+        "" и «updates» равным [])
+  пусть deeper равно («Blank» от line.«text») или ((«Indent» от line.«text») больше acc.«nested»)
+  пусть inner равно (acc.«nested» не меньше 0) и притом deeper
+  если inner
+    то (запись «Rewriting» с «nested» равным acc.«nested» и «lines» равным (добавить line к acc.«lines») и
+      «continues» равным acc.«continues» и «last» равным acc.«last» и «updates» равным acc.«updates»)
+    иначе «Rewrite own line» от acc и line и loop и captured
+
+тотальная функция «Rewritten body»
+  принимает loop: «Loop», captured: список строки
+  возвращает «Rewriting»
+  пример «An empty body»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [] и «body» равным [])
+    дано captured равно []
+    ожидается (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и «last» равным "" и
+        «updates» равным [])
+  пусть start равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 0 и
+    «last» равным "" и «updates» равным [])
+  свёртка loop.«body» начиная с start как acc и line → «Rewrite step» от acc и line и loop и captured
+
+тотальная функция «Loop words»
+  принимает loop: «Loop»
+  возвращает список строки
+  пример «Words of the condition and the body»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше н")] и «body» равным [(запись «Source line» с «text» равным
+        "    дальше" и «line» равным 3 и «shift» равным 0 и «raw» равным нет)])
+    ожидается ["к", "больше", "н", "дальше"]
+  пусть inside равно [«Clause text» от loop и вариант «While», «Clause text» от loop и вариант «Measure»,
+    «Clause text» от loop и вариант «At the end», («Fuel part» от loop).«after»]
+  «Words» от (соединить («Joined» от inside и («Texts» от loop.«body»)) по " ")
+
+тотальная функция «Captured»
+  принимает loop: «Loop», parameters: список «Parameter»
+  возвращает список «Parameter»
+  пример «Only parameters the loop mentions»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше н")] и «body» равным [])
+    дано parameters равно [(запись «Parameter» с «name» равным "н" и «type» равным "число"), (запись «Parameter» с
+        «name» равным "м" и «type» равным "число")]
+    ожидается [(запись «Parameter» с «name» равным "н" и «type» равным "число")]
+  пусть words равно «Loop words» от loop
+  отфильтровать parameters где parameter → words содержит parameter.«name»
+
+тотальная функция «Fold form»
+  принимает loop: «Loop», rewriting: «Rewriting»
+  возвращает признак
+  пример «A loop over a list that always continues is a fold»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «For each» и «text» равным "х: число из xs")] и «body» равным [(запись «Source line» с «text» равным
+        "    дальше: с станет с плюс х" и «line» равным 3 и «shift» равным 0 и «raw» равным нет)])
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 1
+        и «last» равным "    дальше: с станет с плюс х" и «updates» равным [])
+    ожидается да
+  пусть noWhile равно не («Has clause» от loop и вариант «While»)
+  пусть onlyPart равно noWhile и притом не («Has clause» от loop и вариант «Measure»)
+  пусть final равно (rewriting.«continues» равен 1) и притом («Continue cut» от rewriting.«last»).«found»
+  пусть texts равно отфильтровать («Texts» от loop.«body») где line → не («Blank» от line)
+  пусть ending равно (не (пусто texts)) и притом ((элемент (длина texts) в texts) равен rewriting.«last»)
+  пусть plain равно ending и притом ((«Without indent» от rewriting.«last») начинается с "дальше")
+  пусть hasEach равно («Has clause» от loop и вариант «For each») и притом не («Has clause» от loop и вариант «Fuel»)
+  hasEach и притом onlyPart и притом final и притом plain
+
+тотальная функция «Loop checks»
+  принимает loop: «Loop», resultType: строка, rewriting: «Rewriting», foldShape: признак
+  возвращает список «Rule check»
+  пример «A loop with no end»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Measure» и «text»
+        равным "к")] и «body» равным [])
+    дано resultType равно "число"
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 1 и «last»
+        равным "" и «updates» равным [])
+    дано foldShape равно нет
+    ожидается [(запись «Rule check» с «bad» равным нет и «message» равным "у цикла нет имени в ёлочках"), (запись
+        «Rule check» с «bad» равным да и «message» равным
+        "нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается"), (запись «Rule check» с «bad»
+        равным нет и «message» равным "нет ни «для каждого …», ни «пока …»"), (запись «Rule check» с «bad» равным нет
+        и «message» равным "у «пока» нет границы: нужна «убывает …» или «шагов не больше …, иначе …»"), (запись
+        «Rule check» с «bad» равным нет и «message» равным
+        "у «шагов не больше» нет «, иначе …»: не сказано, что отдать, когда шаги кончились"), (запись «Rule check» с
+        «bad» равным нет и «message» равным "функция с циклом не называет «возвращает»"), (запись «Rule check» с «bad»
+        равным нет и «message» равным "в теле нет «дальше»"), (запись «Rule check» с «bad» равным нет и «message»
+        равным "«дальше» меняет имя, которого нет в «храним»"), (запись «Rule check» с «bad» равным нет и «message»
+        равным "«храним» пишется «имя: тип равным значение»"), (запись «Rule check» с «bad» равным нет и «message»
+        равным "у «для каждого» с ранним выходом нужен тип элемента: «для каждого х: число из …»")]
+  пусть hasEach равно «Has clause» от loop и вариант «For each»
+  пусть bounded равно hasEach или («Has clause» от loop и вариант «Measure») или («Has clause» от loop и вариант «Fuel»)
+  пусть names равно отобразить («Kept» от loop) как kept → kept.«name»
+  пусть strangers равно отфильтровать rewriting.«updates» где update → не (names содержит update.«name»)
+  пусть untyped равно (длина («Element» от loop).«type») равен 0
+  пусть typeless равно (не foldShape) и притом hasEach и притом untyped
+  [(запись «Rule check» с «bad» равным (не (loop.«name» начинается с "«")) и
+      «message» равным "у цикла нет имени в ёлочках"),
+    (запись «Rule check» с «bad» равным (не («Has clause» от loop и вариант «At the end»)) и «message» равным
+      "нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается"),
+    (запись «Rule check» с «bad» равным (не hasEach и притом не («Has clause» от loop и вариант «While»)) и
+      «message» равным "нет ни «для каждого …», ни «пока …»"),
+    (запись «Rule check» с «bad» равным (не bounded) и «message» равным
+      "у «пока» нет границы: нужна «убывает …» или «шагов не больше …, иначе …»"),
+    (запись «Rule check» с «bad» равным ((«Has clause» от loop и вариант «Fuel») и притом
+      не («Fuel part» от loop).«found»)
+      и «message» равным "у «шагов не больше» нет «, иначе …»: не сказано, что отдать, когда шаги кончились"),
+    (запись «Rule check» с «bad» равным ((длина resultType) равен 0) и «message» равным
+      "функция с циклом не называет «возвращает»"),
+    запись «Rule check» с «bad» равным (rewriting.«continues» равен 0) и «message» равным "в теле нет «дальше»",
+    (запись «Rule check» с «bad» равным (не (пусто strangers)) и «message» равным
+      "«дальше» меняет имя, которого нет в «храним»"),
+    (запись «Rule check» с «bad» равным (не (пусто (отфильтровать («Kept» от loop) где kept →
+      (длина kept.«start») равен 0)))
+      и «message» равным "«храним» пишется «имя: тип равным значение»"),
+    (запись «Rule check» с «bad» равным typeless и «message» равным
+      "у «для каждого» с ранним выходом нужен тип элемента: «для каждого х: число из …»")]
+
+тотальная функция «Head of each»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A match on the rest of the list»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «For each» и «text» равным "х: число из xs"), (запись «Clause» с «kind» равным вариант «At the end» и
+        «text» равным "с")] и «body» равным [])
+    дано margin равно "  "
+    ожидается ["  разбор «Ц — остаток»", "    случай пусто", "      то с", "    случай х и «Ц — дальше»"]
+  [соединить [margin, "разбор ", «Generated» от loop и "остаток"] по "",
+    соединить [margin, "  случай пусто"] по "",
+    соединить [margin, "    то ", «Clause text» от loop и вариант «At the end»] по "",
+    соединить [margin, "  случай ", («Element» от loop).«name», " и ", «Generated» от loop и "дальше"] по ""]
+
+тотальная функция «Head of fuel»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A check of the fuel»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Fuel» и «text» равным "н, иначе -1")] и «body» равным [])
+    дано margin равно "  "
+    ожидается ["  если «Ц — запас» не больше 0", "    то -1", "    иначе"]
+  [соединить [margin, "если ", «Generated» от loop и "запас", " не больше 0"] по "",
+    соединить [margin, "  то ", («Fuel part» от loop).«after»] по "",
+    соединить [margin, "  иначе"] по ""]
+
+тотальная функция «Head of while»
+  принимает loop: «Loop», margin: строка
+  возвращает список строки
+  пример «A check of the condition»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «At the end» и «text»
+        равным "0")] и «body» равным [])
+    дано margin равно "  "
+    ожидается ["  если не (к больше 0)", "    то 0", "    иначе"]
+  [соединить [margin, "если не (", «Clause text» от loop и вариант «While», ")"] по "",
+    соединить [margin, "  то ", «Clause text» от loop и вариант «At the end»] по "",
+    соединить [margin, "  иначе"] по ""]
+
+тотальная функция «Deeper»
+  принимает margin: строка, wanted: признак
+  возвращает строка
+  пример «Four spaces more»
+    дано margin равно "  "
+    дано wanted равно да
+    ожидается "      "
+  если wanted то соединить margin с "    " иначе margin
+
+тотальная функция «Made lines»
+  принимает origin: «Source line», texts: список строки
+  возвращает список «Source line»
+  пример «Every made line points at its origin»
+    дано origin равно (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет)
+    дано texts равно ["  если да"]
+    ожидается ([(запись «Source line» с «text» равным "  если да" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет)])
+  отобразить texts как textPart → «Made line» от origin и textPart
+
+тотальная функция «Reindented»
+  принимает lines: список «Source line», origin: число, margin: строка
+  возвращает список «Source line»
+  пример «A line moved two columns right»
+    дано lines равно ([(запись «Source line» с «text» равным "    а" и «line» равным 5 и «shift» равным 0 и
+        «raw» равным нет)])
+    дано origin равно 4
+    дано margin равно "      "
+    ожидается ([(запись «Source line» с «text» равным "      а" и «line» равным 5 и «shift» равным -2 и
+        «raw» равным нет)])
+  отобразить lines как line → «Moved line» от line и («Reindented text» от line.«text» и origin и margin)
+
+тотальная функция «Reindented text»
+  принимает line: строка, origin: число, margin: строка
+  возвращает строка
+  пример «Moved in»
+    дано line равно "  а"
+    дано origin равно 2
+    дано margin равно "    "
+    ожидается "    а"
+  пример «Blank stays empty»
+    дано line равно "  "
+    дано origin равно 2
+    дано margin равно "    "
+    ожидается ""
+  если «Blank» от line то "" иначе соединить margin с («Text from» от line и (origin плюс 1))
+
+тотальная функция «Recursive body»
+  принимает loop: «Loop», lines: список «Source line»
+  возвращает список «Source line»
+  пример «A while loop body under its condition»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 4 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись
+            «Clause» с «kind» равным вариант «At the end»
+        и «text» равным "0")] и «body» равным [])
+    дано lines равно [(запись «Source line» с «text» равным "    «Ц» от (к минус 1)" и «line» равным 9 и
+        «shift» равным 0
+        и «raw» равным нет)]
+    ожидается [(запись «Source line» с «text» равным "  если не (к больше 0)" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "    то 0" и «line» равным 4 и «shift» равным -2 и
+            «raw»
+        равным нет), (запись «Source line» с «text» равным "    иначе" и «line» равным 4 и «shift» равным -2 и «raw»
+        равным нет), (запись «Source line» с «text» равным "      «Ц» от (к минус 1)" и «line» равным 9 и «shift»
+        равным -2 и «raw» равным нет)]
+  пусть hasEach равно «Has clause» от loop и вариант «For each»
+  пусть hasFuel равно «Has clause» от loop и вариант «Fuel»
+  пусть hasWhile равно «Has clause» от loop и вариант «While»
+  пусть front равно «Deeper» от "  " и hasEach
+  пусть back равно «Deeper» от front и hasFuel
+  пусть third равно «Deeper» от back и hasWhile
+  пусть inner равно «Reindented» от lines и ((«Indent» от loop.«head».«text») плюс 2) и third
+  пусть guarded равно (если hasWhile то «Joined» от («Made lines» от loop.«head» и («Head of while» от loop и
+      back)) и inner иначе inner)
+  пусть fueled равно (если hasFuel то «Joined» от («Made lines» от loop.«head» и («Head of fuel» от loop и front))
+      и guarded иначе guarded)
+  если hasEach то «Joined» от («Made lines» от loop.«head» и («Head of each» от loop и "  ")) и fueled иначе fueled
+
+тотальная функция «Generated parameter»
+  принимает loop: «Loop», kind: «Clause kind», part: строка, typeName: строка
+  возвращает список строки
+  пример «The fuel parameter»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Fuel» и «text» равным "н, иначе -1")] и «body» равным [])
+    дано kind равно вариант «Fuel»
+    дано part равно "запас"
+    дано typeName равно "неотрицательное"
+    ожидается ["«Ц — запас»: неотрицательное"]
+  если «Has clause» от loop и kind то [соединить [«Generated» от loop и part, ": ", typeName] по ""] иначе []
+
+тотальная функция «Recursive declaration»
+  принимает loop: «Loop», lines: список «Source line», captured: список «Parameter», resultType: строка
+  возвращает список «Source line»
+  пример «A function for a while loop»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 4 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «While» и «text» равным "к больше 0"), (запись «Clause» с «kind» равным вариант «Measure»
+        и «text» равным "к"), (запись «Clause» с «kind» равным вариант «Keep» и «text» равным "к: число равным н"),
+        (запись «Clause» с «kind» равным вариант «At the end» и «text» равным "0")] и «body» равным [])
+    дано lines равно []
+    дано captured равно []
+    дано resultType равно "число"
+    ожидается [(запись «Source line» с «text» равным "" и «line» равным 4 и «shift» равным 2 и
+        «raw» равным нет), (запись
+        «Source line» с «text» равным "тотальная функция «Ц»" и «line» равным 4 и «shift» равным 2 и «raw» равным нет),
+        (запись «Source line» с «text» равным "  принимает к: число" и «line» равным 4 и «shift» равным 0 и «raw» равным
+        нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 4 и «shift» равным 0 и «raw»
+        равным нет), (запись «Source line» с «text» равным "  убывает к" и «line» равным 4 и «shift» равным 0 и «raw»
+        равным нет), (запись «Source line» с «text» равным "  если не (к больше 0)" и «line» равным 4 и «shift» равным 0
+        и «raw» равным нет), (запись «Source line» с «text» равным "    то 0" и «line» равным 4 и «shift» равным -2 и
+        «raw» равным нет), (запись «Source line» с «text» равным "    иначе" и «line» равным 4 и «shift» равным -2
+            и «raw»
+        равным нет)]
+  пусть listType равно соединить "список " с («Element» от loop).«type»
+  пусть hasEach равно «Generated parameter» от loop и вариант «For each» и "остаток" и listType
+  пусть hasFuel равно «Generated parameter» от loop и вариант «Fuel» и "запас" и "неотрицательное"
+  пусть kept равно отобразить («Kept» от loop) как kept → соединить [kept.«name», ": ", kept.«type»] по ""
+  пусть own равно отобразить captured как parameter → соединить [parameter.«name», ": ", parameter.«type»] по ""
+  пусть parameters равно «Concatenated» от [own, hasEach, hasFuel, kept]
+  пусть measure равно «Clause text» от loop и вариант «Measure»
+  пусть taking равно если пусто parameters то [] иначе [соединить "  принимает " с (соединить parameters по ", ")]
+  пусть decreasing равно если (длина measure) равен 0 то [] иначе [соединить "  убывает " с measure]
+  пусть named равно ["", соединить "тотальная функция " с loop.«name»]
+  пусть giving равно [соединить "  возвращает " с resultType]
+  пусть heads равно «Made lines» от loop.«head» и («Concatenated» от [named, taking, giving, decreasing])
+  «Joined» от heads и («Recursive body» от loop и lines)
+
+тотальная функция «First call»
+  принимает loop: «Loop», captured: список «Parameter»
+  возвращает строка
+  пример «The first call passes the starting values»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным "" и
+        «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Keep» и «text» равным "к: число равным н")] и «body» равным [])
+    дано captured равно [(запись «Parameter» с «name» равным "н" и «type» равным "число")]
+    ожидается "«Ц» от н и н"
+  пусть eachText равно («Each part» от loop).«after»
+  пусть hasEach равно если «Has clause» от loop и вариант «For each» то [«Wrapped» от eachText] иначе []
+  пусть fuelText равно («Fuel part» от loop).«before»
+  пусть hasFuel равно если «Has clause» от loop и вариант «Fuel» то [«Wrapped» от fuelText] иначе []
+  пусть kept равно отобразить («Kept» от loop) как kept → «Wrapped» от kept.«start»
+  пусть own равно отобразить captured как parameter → parameter.«name»
+  «Call text» от loop.«name» и («Concatenated» от [own, hasEach, hasFuel, kept])
+
+тотальная функция «Recursive expansion»
+  принимает loop: «Loop», place: «Placing», parameters: список «Parameter», resultType: строка
+  возвращает «Loop expansion»
+  пример «A loop with nothing around it becomes a call»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [] и «body» равным [])
+    дано place равно (запись «Placing» с «seen» равным 1 и «phase» равным 1 и «indent» равным 2 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw»
+        равным нет) и «inside» равным [] и «after» равным [])
+    дано parameters равно []
+    дано resultType равно "число"
+    ожидается (запись «Loop expansion» с «trouble» равным "" и «at» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [[(запись
+        «Source line» с «text» равным "  «Ц»" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)], [(запись
+        «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 2 и «raw» равным нет), (запись «Source line»
+        с «text» равным "тотальная функция «Ц»" и «line» равным 2 и «shift» равным 2 и «raw» равным нет), (запись
+        «Source line» с «text» равным "  возвращает число" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)]])
+  пусть captured равно «Captured» от loop и parameters
+  пусть names равно отобразить captured как parameter → parameter.«name»
+  пусть rewriting равно «Rewritten body» от loop и names
+  пусть call равно («Made line» от loop.«head» и (соединить
+      («Margin» от loop.«head».«text») с («First call» от loop и captured)))
+  пусть outer равно «Concatenated» от [place.«before», [call], place.«after»]
+  (запись «Loop expansion» с «trouble» равным "" и «at» равным loop.«head» и «declarations» равным [outer,
+    «Recursive declaration» от loop и rewriting.«lines» и captured и resultType])
+
+тотальная функция «Pairs»
+  принимает kept: список «Kept», values: список строки
+  возвращает список строки
+  пример «Fields and values side by side»
+    дано kept равно [запись «Kept» с «name» равным "а" и «type» равным "число" и «start» равным "0"]
+    дано values равно ["1"]
+    ожидается ["«а» равным 1"]
+  разбор kept
+    случай пусто
+      то []
+    случай голова и хвост
+      пусть value равно если пусто values то голова.«name» иначе голова values
+      (приписать (соединить [«In guillemets» от голова.«name», " равным ", value] по "") к («Pairs» от хвост и
+          (хвост values)))
+
+тотальная функция «State record»
+  принимает loop: «Loop», values: список строки
+  возвращает строка
+  пример «One field»
+    дано loop равно (запись «Loop» с «name» равным "«Проход»" и «head» равным (запись «Source line» с «text» равным ""
+        и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с «kind» равным
+        вариант «Keep» и «text» равным "лучшее: число равным 0")] и «body» равным [])
+    дано values равно ["1"]
+    ожидается "(запись «Проход — состояние» с «лучшее» равным 1)"
+  пусть pairs равно «Pairs» от («Kept» от loop) и values
+  соединить ["(запись ", «Generated» от loop и "состояние", " с ", соединить pairs по " и ", ")"] по ""
+
+тотальная функция «Count text line»
+  принимает acc: список число, line: «Source line»
+  возвращает список число
+  пример «A text line becomes the last»
+    дано acc равно [2, 1]
+    дано line равно запись «Source line» с «text» равным "  а" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
+    ожидается [3, 3]
+  пусть seen равно (элемент 1 в acc) плюс 1
+  [seen, если «Blank» от line.«text» то элемент 2 в acc иначе seen]
+
+тотальная функция «Without last line»
+  принимает lines: список «Source line»
+  возвращает список «Source line»
+  пример «The last text line goes with the blanks after it»
+    дано lines равно [(запись «Source line» с «text» равным "    а" и «line» равным 1 и «shift» равным 0 и «raw» равным
+        нет), (запись «Source line» с «text» равным "    б" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)]
+    ожидается [(запись «Source line» с «text» равным "    а" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)]
+  пусть counted равно свёртка lines начиная с [0, 0] как acc и line → «Count text line» от acc и line
+  пусть final равно элемент 2 в counted
+  пусть numbered равно свёртка lines начиная с [] как acc и line → добавить (длина acc) к acc
+  пусть kept равно отфильтровать numbered где number → (number плюс 1) меньше final
+  отобразить kept как number → элемент (number плюс 1) в lines
+
+тотальная функция «Fold expansion»
+  принимает loop: «Loop», place: «Placing», rewriting: «Rewriting»
+  возвращает «Loop expansion»
+  пример «A loop over a list becomes a fold»
+    дано loop равно (запись «Loop» с «name» равным "«Ц»" и «head» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «clauses» равным [(запись «Clause» с
+        «kind» равным вариант «For each» и «text» равным "х из xs"), (запись «Clause» с «kind» равным вариант «Keep» и
+        «text» равным "с: число равным 0"), (запись «Clause» с «kind» равным вариант «At the end» и
+            «text» равным "с")] и
+        «body» равным [(запись «Source line» с «text» равным "    дальше: с станет с плюс х" и «line» равным 6 и «shift»
+        равным 0 и «raw» равным нет)])
+    дано place равно (запись «Placing» с «seen» равным 1 и «phase» равным 1 и «indent» равным 2 и «before» равным [] и
+        «header» равным (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw»
+        равным нет) и «inside» равным [] и «after» равным [])
+    дано rewriting равно (запись «Rewriting» с «nested» равным -1 и «lines» равным [] и «continues» равным 1 и «last»
+        равным "    дальше: с станет с плюс х" и «updates» равным [(запись «Update» с «name» равным "с" и «value» равным
+        "с плюс х")])
+    ожидается (запись «Loop expansion» с «trouble» равным "" и «at» равным (запись «Source line» с «text» равным
+        "  цикл «Ц»" и «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [[(запись
+        «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 2 и «raw» равным нет), (запись «Source line»
+        с «text» равным "объект «Ц — состояние»" и «line» равным 2 и «shift» равным 2 и «raw» равным нет), (запись
+        «Source line» с «text» равным "  «с»: число" и «line» равным 2 и «shift» равным 0 и «raw» равным нет), (запись
+        «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 2 и «raw» равным нет)], [(запись
+            «Source line» с «text» равным
+        "  пусть «Ц — итог» равно свёртка xs начиная с (запись «Ц — состояние» с «с» равным 0) как «Ц — шаг» и х"
+        и «line» равным 2 и «shift» равным 0 и «raw» равным нет), (запись «Source line» с «text» равным
+        "    пусть с равно «Ц — шаг».«с»" и «line» равным 2 и «shift» равным -2 и «raw» равным нет), (запись
+            «Source line»
+        с «text» равным "    (запись «Ц — состояние» с «с» равным (с плюс х))" и «line» равным 2 и «shift» равным -2 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  пусть с равно «Ц — итог».«с»" и «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет), (запись «Source line» с «text» равным "  с" и «line» равным 2 и «shift»
+        равным 0 и «raw» равным нет)]])
+  пусть margin равно «Margin» от loop.«head».«text»
+  пусть kept равно «Kept» от loop
+  пусть starts равно отобразить kept как one → «Wrapped» от one.«start»
+  пусть values равно отобразить kept как one → «Value after» от one и rewriting.«updates»
+  пусть body равно отфильтровать («Without last line» от loop.«body») где line → не («Blank» от line.«text»)
+  пусть headPart равно соединить [margin, "пусть ", «Generated» от loop и "итог", " равно свёртка ",
+    «Wrapped» от («Each part» от loop).«after», " начиная с ", «State record» от loop и starts, " как ",
+    «Generated» от loop и "шаг", " и ", («Element» от loop).«name»] по ""
+  пусть opened равно отобразить kept как one → соединить [margin, "  пусть ", one.«name», " равно ",
+    «Generated» от loop и "шаг", ".", «In guillemets» от one.«name»] по ""
+  пусть closing равно соединить [margin, "  ", «State record» от loop и values] по ""
+  пусть results равно отобразить kept как one → соединить [margin, "пусть ", one.«name», " равно ",
+    «Generated» от loop и "итог", ".", «In guillemets» от one.«name»] по ""
+  пусть ending равно соединить margin с («Clause text» от loop и вариант «At the end»)
+  пусть fields равно отобразить kept как one → соединить ["  ", «In guillemets» от one.«name», ": ", one.«type»] по ""
+  пусть statePart равно («Made lines» от loop.«head» и
+      («Concatenated» от [["", соединить "объект " с («Generated» от loop и "состояние")], fields, [""]]))
+  пусть front равно «Made lines» от loop.«head» и («Joined» от [headPart] и opened)
+  пусть back равно «Made lines» от loop.«head» и («Concatenated» от [[closing], results, [ending]])
+  пусть outer равно «Concatenated» от [place.«before», front, body, back, place.«after»]
+  запись «Loop expansion» с «trouble» равным "" и «at» равным loop.«head» и «declarations» равным [statePart, outer]
+
+тотальная функция «Expand one»
+  принимает lines: список «Source line»
+  возвращает «Loop expansion»
+  пример «A loop without a bound is refused at its header»
+    дано lines равно [(запись «Source line» с «text» равным "тотальная функция «Ф»" и «line» равным 1 и
+        «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 2 и
+            «shift» равным 0
+        и «raw» равным нет), (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 3 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "    пока да" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "    в конце 0" и «line» равным 5 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "    дальше" и «line» равным 6 и «shift» равным 0 и
+        «raw» равным нет)]
+    ожидается (запись «Loop expansion» с «trouble» равным
+        "цикл «Ц»: у «пока» нет границы: нужна «убывает …» или «шагов не больше …, иначе …»" и «at» равным (запись
+        «Source line» с «text» равным "  цикл «Ц»" и «line» равным 3 и «shift» равным 0 и «raw» равным нет) и
+        «declarations» равным [])
+  пусть place равно «Place loop» от lines
+  пусть header равно «Without indent» от place.«header».«text»
+  пусть start равно (запись «Loop» с «name» равным («Text from» от header и 6) и «head» равным place.«header» и
+    «clauses» равным [] и «body» равным [])
+  пусть loop равно «Read clauses» от start и place.«inside»
+  пусть resultType равно «Header text» от lines и "возвращает "
+  пусть parameters равно «Parameters» от lines
+  пусть names равно отобразить («Captured» от loop и parameters) как parameter → parameter.«name»
+  пусть rewriting равно «Rewritten body» от loop и names
+  пусть foldShape равно «Fold form» от loop и rewriting
+  пусть trouble равно «First trouble» от («Loop checks» от loop и resultType и rewriting и foldShape)
+  пусть said равно соединить ["цикл ", loop.«name», ": ", trouble] по ""
+  если (длина trouble) больше 0
+    то запись «Loop expansion» с «trouble» равным said и «at» равным place.«header» и «declarations» равным []
+    иначе (если foldShape то «Fold expansion» от loop и place и rewriting
+      иначе «Recursive expansion» от loop и place и parameters и resultType)
+
+тотальная функция «Loop step after»
+  принимает expansion: «Loop expansion», rest: список (список «Source line»), done: список (список «Source line»)
+  возвращает «Loop step»
+  пример «A trouble stops the expansion»
+    дано expansion равно (запись «Loop expansion» с «trouble» равным "беда" и «at» равным (запись «Source line» с «text»
+        равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+    дано rest равно []
+    дано done равно []
+    ожидается (запись «Loop step» с «stop» равным да и «trouble» равным "беда" и «at» равным (запись «Source line» с
+        «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «queue» равным [] и
+            «done» равным [])
+  пусть stopped равно (запись «Loop step» с «stop» равным да и «trouble» равным expansion.«trouble» и
+    «at» равным expansion.«at» и «queue» равным rest и «done» равным done)
+  пусть grown равно (запись «Loop step» с «stop» равным нет и «trouble» равным "" и «at» равным expansion.«at» и
+    «queue» равным («Joined» от expansion.«declarations» и rest) и «done» равным done)
+  если (длина expansion.«trouble») больше 0 то stopped иначе grown
+
+тотальная функция «Loop step on»
+  принимает declaration: список «Source line», rest: список (список «Source line»), done: список (список «Source line»)
+  возвращает «Loop step»
+  пример «A declaration without a loop moves to the done ones»
+    дано declaration равно [(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)]
+    дано rest равно []
+    дано done равно []
+    ожидается (запись «Loop step» с «stop» равным нет и «trouble» равным "" и «at» равным (запись «Source line» с «text»
+        равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «queue» равным [] и «done» равным [[(запись
+        «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)]])
+  пусть moved равно (запись «Loop step» с «stop» равным нет и «trouble» равным "" и «at» равным («No line») и
+    «queue» равным rest и «done» равным (добавить declaration к done))
+  если «Has loop» от declaration то «Loop step after» от («Expand one» от declaration) и rest и done иначе moved
+
+тотальная функция «Loop expansion step»
+  принимает queue: список (список «Source line»), done: список (список «Source line»)
+  возвращает «Loop step»
+  пример «An empty queue stops»
+    дано queue равно []
+    дано done равно []
+    ожидается (запись «Loop step» с «stop» равным да и «trouble» равным "" и «at» равным (запись «Source line» с «text»
+        равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «queue» равным [] и «done» равным [])
+  разбор queue
+    случай пусто
+      то (запись «Loop step» с «stop» равным да и «trouble» равным "" и «at» равным («No line») и «queue» равным []
+          и «done» равным done)
+    случай голова и хвост
+      то «Loop step on» от (голова) и хвост и done
+
+тотальная функция «Expand loops»
+  принимает queue: список (список «Source line»), done: список (список «Source line»), steps: список «Source line»
+  возвращает «Pass result»
+  пример «No budget left»
+    дано queue равно []
+    дано done равно []
+    дано steps равно []
+    ожидается (запись «Pass result» с «code» равным "FLANG_SUGAR_LOOP" и «message» равным
+        "циклы вложены глубже, чем строк в файле" и «at» равным (запись «Source line» с «text» равным "" и
+            «line» равным 0
+        и «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+  разбор steps
+    случай пусто
+      то «Refused» от "FLANG_SUGAR_LOOP" и "циклы вложены глубже, чем строк в файле" и («No line»)
+    случай голова и хвост
+      пусть stepped равно «Loop expansion step» от queue и done
+      пусть trouble равно (если (длина stepped.«trouble») больше 0 то «Refused» от "FLANG_SUGAR_LOOP" и
+          stepped.«trouble» и stepped.«at» иначе «Passed» от stepped.«done»)
+      если stepped.«stop»
+        то trouble
+        иначе «Expand loops» от stepped.«queue» и stepped.«done» и хвост
+
+тотальная функция «Flush word»
+  принимает acc: «Piecing»
+  возвращает «Piecing»
+  пример «A gathered word becomes a piece»
+    дано acc равно запись «Piecing» с «mode» равным 0 и «piece» равным "остаток" и «pieces» равным []
+    ожидается (запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным [(запись «Word piece» с «text»
+        равным "остаток" и «word» равным да)])
+  пусть word равно запись «Word piece» с «text» равным acc.«piece» и «word» равным да
+  пусть pieces равно если (длина acc.«piece») больше 0 то добавить word к acc.«pieces» иначе acc.«pieces»
+  запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным pieces
+
+тотальная функция «Plain piece step»
+  принимает acc: «Piecing», sign: строка
+  возвращает «Piecing»
+  пример «A dot ends a word and stays a piece»
+    дано acc равно запись «Piecing» с «mode» равным 0 и «piece» равным "этот" и «pieces» равным []
+    дано sign равно "."
+    ожидается (запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным [(запись «Word piece» с «text»
+        равным "этот" и «word» равным да), (запись «Word piece» с «text» равным "." и «word» равным нет)])
+  пусть flushed равно «Flush word» от acc
+  пусть opens равно если sign равен "\"" то 1 иначе (если sign равен "«" то 2 иначе 0)
+  пусть separated равно добавить (запись «Word piece» с «text» равным sign и «word» равным нет) к flushed.«pieces»
+  если opens больше 0
+    то запись «Piecing» с «mode» равным opens и «piece» равным sign и «pieces» равным flushed.«pieces»
+    иначе (если " ()[],.:→" содержит sign то запись «Piecing» с «mode» равным 0 и «piece» равным "" и
+        «pieces» равным separated
+      иначе запись «Piecing» с «mode» равным 0 и «piece» равным (соединить acc.«piece» с sign) и
+          «pieces» равным acc.«pieces»)
+
+тотальная функция «Closed piece step»
+  принимает acc: «Piecing», sign: строка
+  возвращает «Piecing»
+  пример «A closing guillemet ends a name»
+    дано acc равно запись «Piecing» с «mode» равным 2 и «piece» равным "«Ф" и «pieces» равным []
+    дано sign равно "»"
+    ожидается (запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным [(запись «Word piece» с «text»
+        равным "«Ф»" и «word» равным нет)])
+  пусть closer равно если acc.«mode» равен 1 то "\"" иначе "»"
+  пусть escaped равно (acc.«mode» равен 1) и притом («Ends with» от acc.«piece» и "\\")
+  пусть grown равно соединить acc.«piece» с sign
+  пусть done равно добавить (запись «Word piece» с «text» равным grown и «word» равным нет) к acc.«pieces»
+  если (sign равен closer) и притом (не escaped)
+    то запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным done
+    иначе запись «Piecing» с «mode» равным acc.«mode» и «piece» равным grown и «pieces» равным acc.«pieces»
+
+тотальная функция «Pieces»
+  принимает textPart: строка
+  возвращает список «Word piece»
+  пример «Words, a name and a string»
+    дано textPart равно "остаток «Ф» \"а б\""
+    ожидается [(запись «Word piece» с «text» равным "остаток" и «word» равным да), (запись «Word piece» с «text» равным
+        " " и «word» равным нет), (запись «Word piece» с «text» равным "«Ф»" и «word» равным нет), (запись
+            «Word piece» с
+        «text» равным " " и «word» равным нет), (запись «Word piece» с «text» равным "\"а б\"" и «word» равным нет)]
+  пусть start равно запись «Piecing» с «mode» равным 0 и «piece» равным "" и «pieces» равным []
+  пусть walked равно свёртка (разложить textPart на символы) начиная с start как acc и sign → «Piece step» от acc и sign
+  пусть rest равно запись «Word piece» с «text» равным walked.«piece» и «word» равным нет
+  если walked.«mode» равен 0 то («Flush word» от walked).«pieces» иначе добавить rest к walked.«pieces»
+
+тотальная функция «Next word»
+  принимает pieces: список «Word piece»
+  возвращает строка
+  пример «The next word after a space»
+    дано pieces равно [(запись «Word piece» с «text» равным " " и «word» равным нет), (запись
+        «Word piece» с «text» равным
+        "равным" и «word» равным да)]
+    ожидается "равным"
+  пусть seen равно отфильтровать pieces где piece → piece.«text» не равен " "
+  если пусто seen то "" иначе (голова seen).«text»
+
+тотальная функция «Owned pieces»
+  принимает pieces: список «Word piece», fields: список строки, holder: строка, previous: строка
+  возвращает список строки
+  пример «A field gets its owner, a label does not»
+    дано pieces равно [(запись «Word piece» с «text» равным "остаток" и «word» равным да), (запись «Word piece» с «text»
+        равным " " и «word» равным нет), (запись «Word piece» с «text» равным "равным" и «word» равным да)]
+    дано fields равно ["остаток"]
+    дано holder равно "этот"
+    дано previous равно ""
+    ожидается ["остаток", " ", "равным"]
+  разбор pieces
+    случай пусто
+      то []
+    случай голова и хвост
+      пусть named равно голова.«word» и притом (fields содержит голова.«text»)
+      пусть owned равно named и притом (previous не равен ".") и притом ((«Next word» от хвост) не равен "равным")
+      пусть textPart равно если owned то соединить [holder, ".", голова.«text»] по "" иначе голова.«text»
+      пусть seen равно если голова.«text» равен " " то previous иначе голова.«text»
+      приписать textPart к («Owned pieces» от хвост и fields и holder и seen)
+
+тотальная функция «Owned»
+  принимает textPart: строка, fields: список строки, holder: строка
+  возвращает строка
+  пример «Fields in an expression»
+    дано textPart равно "остаток минус сумма"
+    дано fields равно ["остаток", "владелец"]
+    дано holder равно "этот"
+    ожидается "этот.остаток минус сумма"
+  пример «A field after a dot and inside a string stays»
+    дано textPart равно "результат.остаток равен \"остаток\""
+    дано fields равно ["остаток"]
+    дано holder равно "этот"
+    ожидается "результат.остаток равен \"остаток\""
+  соединить («Owned pieces» от («Pieces» от textPart) и fields и holder и "") по ""
+
+тотальная функция «Rebound»
+  принимает textPart: строка, names: список строки
+  возвращает список строки
+  пример «A let names a field»
+    дано textPart равно "    пусть остаток равно 1"
+    дано names равно ["остаток"]
+    ожидается ["остаток"]
+  пример «A use is not a binding»
+    дано textPart равно "    остаток плюс 1"
+    дано names равно ["остаток"]
+    ожидается []
+  пусть words равно «Words» от textPart
+  пусть pairs равно «Joined» от [""] и words
+  пусть numbered равно свёртка words начиная с [] как acc и word → добавить (длина acc) к acc
+  пусть bound равно отфильтровать numbered где number → «Binds name» от pairs и words и names и number
+  отобразить bound как number → элемент (number плюс 1) в words
+
+тотальная функция «Starts declaration»
+  принимает lines: список «Source line», word: строка
+  возвращает признак
+  пример «A class»
+    дано lines равно [(запись «Source line» с «text» равным "класс «Счёт»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)]
+    дано word равно "класс «"
+    ожидается да
+  разбор lines
+    случай пусто
+      то нет
+    случай голова и хвост
+      то (не голова.«raw») и притом (голова.«text» начинается с word)
+
+тотальная функция «Items»
+  принимает lines: список «Source line», level: число
+  возвращает список «Item»
+  пример «An example with its lines is one item»
+    дано lines равно [(запись «Source line» с «text» равным "    пример «а»" и «line» равным 3 и «shift» равным 0 и
+        «raw»
+        равным нет), (запись «Source line» с «text» равным "      ожидается 1" и «line» равным 4 и «shift» равным 0 и
+        «raw» равным нет)]
+    дано level равно 4
+    ожидается [(запись «Item» с «first» равным (запись «Source line» с «text» равным "    пример «а»" и
+        «line» равным 3 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным "    пример «а»" и
+        «line» равным 3 и «shift» равным 0 и «raw» равным нет), (запись
+            «Source line» с «text» равным "      ожидается 1"
+        и «line» равным 4 и «shift» равным 0 и «raw» равным нет)])]
+  свёртка lines начиная с [] как acc и line → «Item step» от acc и line и level
+
+тотальная функция «Item step»
+  принимает acc: список «Item», line: «Source line», level: число
+  возвращает список «Item»
+  пример «The first line opens an item»
+    дано acc равно []
+    дано line равно запись «Source line» с «text» равным "    1" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
+    дано level равно 4
+    ожидается [(запись «Item» с «first» равным (запись «Source line» с «text» равным "    1" и «line» равным 3 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным "    1" и «line» равным 3 и
+        «shift» равным 0 и «raw» равным нет)])]
+  пусть opens равно ((не line.«raw») и притом (не («Blank» от line.«text»)) и притом ((«Indent» от line.«text»)
+      не больше level))
+  пусть fresh равно запись «Item» с «first» равным line и «lines» равным [line]
+  разбор acc
+    случай пусто
+      то [fresh]
+    случай голова и хвост
+      пусть last равно элемент (длина acc) в acc
+      пусть grown равно запись «Item» с «first» равным last.«first» и «lines» равным (добавить line к last.«lines»)
+      если opens то добавить fresh к acc иначе добавить grown к («Without last» от acc)
+
+тотальная функция «Without last» от «А»
+  принимает entries: список «А»
+  возвращает список «А»
+  пример «The last one goes»
+    дано entries равно ["а", "б"]
+    ожидается ["а"]
+  пусть numbered равно свёртка entries начиная с [] как acc и entry → добавить (длина acc) к acc
+  (отобразить (отфильтровать numbered где number → (number плюс 1) меньше (длина entries)) как number → элемент
+      (number плюс 1) в entries)
+
+тотальная функция «Item lines»
+  принимает items: список «Item»
+  возвращает список «Source line»
+  пример «Items back to lines»
+    дано items равно []
+    ожидается []
+  «Concatenated» от (отобразить items как oneItem → oneItem.«lines»)
+
+тотальная функция «Item word»
+  принимает oneItem: «Item»
+  возвращает строка
+  пример «The first word of an item»
+    дано oneItem равно (запись «Item» с «first» равным (запись «Source line» с «text» равным "    требует а" и
+        «line» равным
+        3 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается "требует"
+  голова (добавить "" к (разделить («Without indent» от oneItem.«first».«text») по " "))
+
+тотальная функция «Is contract item»
+  принимает oneItem: «Item»
+  возвращает признак
+  пример «An example is part of the contract»
+    дано oneItem равно (запись «Item» с «first» равным (запись «Source line» с «text» равным "    пример «а»" и
+        «line» равным
+        3 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается да
+  ["требует", "обеспечивает", "пример", "для"] содержит («Item word» от oneItem)
+
+тотальная функция «Becoming»
+  принимает oneItem: «Item»
+  возвращает «Sugar cut»
+  пример «A field becomes a value»
+    дано oneItem равно (запись «Item» с «first» равным (запись
+        «Source line» с «text» равным "    остаток станет остаток плюс 1"
+        и «line» равным 3 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "остаток" и «after» равным "остаток плюс 1"
+  пример «A let is not a change»
+    дано oneItem равно (запись «Item» с «first» равным (запись «Source line» с «text» равным "    пусть а равно 1"
+        и «line»
+        равным 3 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается запись «Sugar cut» с «found» равным нет и «before» равным "пусть а равно 1" и «after» равным ""
+  пусть cut равно «Outer cut» от («Without indent» от oneItem.«first».«text») и " станет "
+  пусть single равно cut.«found» и притом (не (cut.«before» содержит " ")) и притом (не oneItem.«first».«raw»)
+  запись «Sugar cut» с «found» равным single и «before» равным cut.«before» и «after» равным cut.«after»
+
+тотальная функция «Piece step»
+  принимает acc: «Piecing», sign: строка
+  возвращает «Piecing»
+  пример «Inside a string a space is text»
+    дано acc равно запись «Piecing» с «mode» равным 1 и «piece» равным "\"а" и «pieces» равным []
+    дано sign равно " "
+    ожидается запись «Piecing» с «mode» равным 1 и «piece» равным "\"а " и «pieces» равным []
+  если acc.«mode» равен 0 то «Plain piece step» от acc и sign иначе «Closed piece step» от acc и sign
+
+тотальная функция «Binds name»
+  принимает before: список строки, words: список строки, names: список строки, number: число
+  возвращает признак
+  пример «The word after a let»
+    дано before равно ["", "пусть", "остаток"]
+    дано words равно ["пусть", "остаток"]
+    дано names равно ["остаток"]
+    дано number равно 1
+    ожидается да
+  пусть binder равно ["пусть", "как", "дано"] содержит (элемент (number плюс 1) в before)
+  binder и притом (names содержит (элемент (number плюс 1) в words))
+
+тотальная функция «No method»
+  возвращает «Method»
+  пример «A method with no name»
+    ожидается (запись «Method» с «name» равным "" и «signature» равным (запись «Signature» с «head» равным "" и «taking»
+        равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и «reversed» равным нет) и
+            «head» равным
+        (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+            «lines» равным
+        [])
+  пусть signature равно «Signature of» от ""
+  запись «Method» с «name» равным "" и «signature» равным signature и «head» равным («No line») и «lines» равным []
+
+тотальная функция «Method of»
+  принимает line: «Source line»
+  возвращает «Method»
+  пример «A method that takes a sum»
+    дано line равно (запись «Source line» с «text» равным "  метод «Положить» принимает сумма: число" и
+        «line» равным 5 и «shift» равным 0 и «raw» равным нет)
+    ожидается (запись «Method» с «name» равным "«Положить»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Положить»" и «taking» равным "сумма: число" и «giving» равным "" и «takes» равным да и
+            «gives» равным нет и
+        «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным
+        "  метод «Положить» принимает сумма: число" и «line» равным 5 и «shift» равным 0 и «raw» равным нет) и «lines»
+        равным [])
+  пусть signature равно «Signature of» от («Without indent» от line.«text»)
+  пусть name равно «Without indent» от («Text from» от signature.«head» и 7)
+  запись «Method» с «name» равным name и «signature» равным signature и «head» равным line и «lines» равным []
+
+тотальная функция «Reading start»
+  возвращает «Class reading»
+  пример «Nothing read yet»
+    ожидается (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным [] и
+        «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+            «Signature» с
+        «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw»
+        равным нет) и «lines» равным []))
+  (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и «stray» равным [] и
+    «open» равным нет и «current» равным («No method»))
+
+тотальная функция «Closed reading»
+  принимает acc: «Class reading»
+  возвращает «Class reading»
+  пример «Nothing open, nothing changes»
+    дано acc равно (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным
+        [] и «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+        «Signature» с «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и
+            «gives» равным нет
+        и «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным []))
+    ожидается (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным [] и
+        «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+            «Signature» с
+        «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw»
+        равным нет) и «lines» равным []))
+  пусть methods равно если acc.«open» то добавить acc.«current» к acc.«methods» иначе acc.«methods»
+  (запись «Class reading» с «fields» равным acc.«fields» и «rules» равным acc.«rules» и «methods» равным methods и
+    «stray» равным acc.«stray» и «open» равным нет и «current» равным («No method»))
+
+тотальная функция «Is field line»
+  принимает textPart: строка
+  возвращает признак
+  пример «A field»
+    дано textPart равно "  остаток: число"
+    ожидается да
+  пример «A sentence»
+    дано textPart равно "  всегда «а» остаток: число"
+    ожидается нет
+  пусть cut равно «Cut once» от («Without indent» от textPart) и ": "
+  cut.«found» и притом (не (cut.«before» содержит " ")) и притом ((длина cut.«before») больше 0)
+
+тотальная функция «Read top line»
+  принимает acc: «Class reading», line: «Source line»
+  возвращает «Class reading»
+  пример «A rule line»
+    дано acc равно (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным
+        [] и «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+        «Signature» с «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и
+            «gives» равным нет
+        и «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным []))
+    дано line равно (запись «Source line» с «text» равным "  всегда «а» да" и «line» равным 3 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается (запись «Class reading» с «fields» равным [] и «rules» равным [(запись «Source line» с «text» равным
+        "  всегда «а» да" и «line» равным 3 и «shift» равным 0 и «raw» равным нет)] и «methods» равным [] и
+            «stray» равным
+        [] и «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+        «Signature» с «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и
+            «gives» равным нет
+        и «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным []))
+  пусть closed равно «Closed reading» от acc
+  пусть textPart равно «Without indent» от line.«text»
+  пусть methodLine равно textPart начинается с "метод «"
+  пусть ruleLine равно textPart начинается с "всегда "
+  пусть fieldLine равно «Is field line» от line.«text»
+  пусть rules равно если ruleLine то добавить line к closed.«rules» иначе closed.«rules»
+  пусть fields равно если fieldLine и притом (не ruleLine) то добавить line к closed.«fields» иначе closed.«fields»
+  пусть stray равно если methodLine или ruleLine или fieldLine то closed.«stray» иначе добавить line к closed.«stray»
+  пусть current равно если methodLine то «Method of» от line иначе («No method»)
+  (запись «Class reading» с «fields» равным fields и «rules» равным rules и «methods» равным closed.«methods» и
+    «stray» равным stray и «open» равным methodLine и «current» равным current)
+
+тотальная функция «Read inner line»
+  принимает acc: «Class reading», line: «Source line»
+  возвращает «Class reading»
+  пример «A blank line outside a method is dropped»
+    дано acc равно (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным
+        [] и «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+        «Signature» с «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и
+            «gives» равным нет
+        и «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным []))
+    дано line равно запись «Source line» с «text» равным "" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
+    ожидается (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным [] и
+        «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+            «Signature» с
+        «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw»
+        равным нет) и «lines» равным []))
+  пусть method равно acc.«current»
+  пусть grown равно (запись «Method» с «name» равным method.«name» и «signature» равным method.«signature» и
+      «head» равным method.«head» и «lines» равным (добавить line к method.«lines»))
+  пусть lost равно (не acc.«open») и притом (не («Blank» от line.«text»))
+  пусть stray равно если lost то добавить line к acc.«stray» иначе acc.«stray»
+  пусть current равно если acc.«open» то grown иначе method
+  (запись «Class reading» с «fields» равным acc.«fields» и «rules» равным acc.«rules» и «methods» равным acc.«methods» и
+    «stray» равным stray и «open» равным acc.«open» и «current» равным current)
+
+тотальная функция «Read class line»
+  принимает acc: «Class reading», line: «Source line»
+  возвращает «Class reading»
+  пример «A field line»
+    дано acc равно (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным
+        [] и «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+        «Signature» с «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и
+            «gives» равным нет
+        и «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift»
+        равным 0 и «raw» равным нет) и «lines» равным []))
+    дано line равно (запись «Source line» с «text» равным "  остаток: число" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет)
+    ожидается (запись «Class reading» с «fields» равным [(запись «Source line» с «text» равным "  остаток: число" и
+        «line»
+        равным 2 и «shift» равным 0 и «raw» равным нет)] и «rules» равным [] и «methods» равным [] и «stray» равным [] и
+        «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+            «Signature» с
+        «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw»
+        равным нет) и «lines» равным []))
+  пусть top равно ((не line.«raw») и притом (не («Blank» от line.«text»)) и притом ((«Indent» от line.«text»)
+      не больше 2))
+  если top то «Read top line» от acc и line иначе «Read inner line» от acc и line
+
+тотальная функция «Read members»
+  принимает lines: список «Source line»
+  возвращает «Class reading»
+  пример «No lines»
+    дано lines равно []
+    ожидается (запись «Class reading» с «fields» равным [] и «rules» равным [] и «methods» равным [] и
+        «stray» равным [] и
+        «open» равным нет и «current» равным (запись «Method» с «name» равным "" и «signature» равным (запись
+            «Signature» с
+        «head» равным "" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+            «raw»
+        равным нет) и «lines» равным []))
+  «Closed reading» от (свёртка lines начиная с («Reading start») как acc и line → «Read class line» от acc и line)
+
+тотальная функция «Class of»
+  принимает lines: список «Source line»
+  возвращает «Class model»
+  пример «A class header with an interface»
+    дано lines равно [(запись «Source line» с «text» равным "класс «Круг» есть «Фигура»" и «line» равным 1 и
+        «shift» равным
+        0 и «raw» равным нет)]
+    ожидается (запись «Class model» с «name» равным "«Круг»" и «face» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным "класс «Круг» есть «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным
+        нет) и «fields» равным [] и «rules» равным [] и «methods» равным [] и «stray» равным [])
+  пусть headLine равно голова lines
+  пусть named равно «Outer cut» от («Text from» от headLine.«text» и 7) и " есть "
+  пусть reading равно «Read members» от (хвост lines)
+  (запись «Class model» с «name» равным («Without indent» от named.«before») и «face» равным named.«after» и
+      «head» равным headLine и
+    «fields» равным reading.«fields» и «rules» равным reading.«rules» и «methods» равным reading.«methods» и
+    «stray» равным reading.«stray»)
+
+тотальная функция «Trouble if»
+  принимает bad: признак, code: строка, message: строка, origin: «Source line»
+  возвращает список «Pass result»
+  пример «Nothing bad, nothing said»
+    дано bad равно нет
+    дано code равно "FLANG_SUGAR_CLASS"
+    дано message равно "беда"
+    дано origin равно запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет
+    ожидается []
+  пусть said равно «Refused» от code и message и origin
+  если bad то [said] иначе []
+
+тотальная функция «Field names»
+  принимает fields: список «Source line»
+  возвращает список строки
+  пример «Names of two fields»
+    дано fields равно [(запись «Source line» с «text» равным "  владелец: строка" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  остаток: число" и «line» равным 3 и
+            «shift» равным 0 и
+        «raw» равным нет)]
+    ожидается ["владелец", "остаток"]
+  отобразить fields как line → («Cut once» от («Without indent» от line.«text») и ": ").«before»
+
+тотальная функция «Inner name»
+  принимает name: строка
+  возвращает строка
+  пример «Without guillemets»
+    дано name равно "«Счёт»"
+    ожидается "Счёт"
+  пусть opened равно name начинается с "«"
+  пусть closed равно «Ends with» от name и "»"
+  пусть inner равно подстрока name с 2 по ((длина name) минус 1)
+  если opened и притом closed то inner иначе name
+
+тотальная функция «Member name»
+  принимает holder: строка, name: строка
+  возвращает строка
+  пример «A method of a class»
+    дано holder равно "«Счёт»"
+    дано name равно "«Положить»"
+    ожидается "«Счёт: Положить»"
+  соединить ["«", «Inner name» от holder, ": ", «Inner name» от name, "»"] по ""
+
+тотальная функция «Named sentence»
+  принимает textPart: строка
+  возвращает «Sugar cut»
+  пример «A rule with its name»
+    дано textPart равно "«остаток не отрицателен» остаток не меньше 0"
+    ожидается (запись «Sugar cut» с «found» равным да и «before» равным "«остаток не отрицателен»" и
+        «after» равным "остаток не меньше 0")
+  пример «A rule without a name»
+    дано textPart равно "остаток не меньше 0"
+    ожидается запись «Sugar cut» с «found» равным нет и «before» равным "остаток не меньше 0" и «after» равным ""
+  пусть cut равно «Cut once» от textPart и "» "
+  пусть named равно cut.«found» и притом (textPart начинается с "«")
+  пусть name равно соединить cut.«before» с "»"
+  если named то запись «Sugar cut» с «found» равным да и «before» равным name и «after» равным cut.«after» иначе (запись
+    «Sugar cut» с «found» равным нет и «before» равным textPart и «after» равным "")
+
+тотальная функция «Renamed»
+  принимает name: строка, word: строка
+  возвращает строка
+  пример «A name with a word after it»
+    дано name равно "«остаток не отрицателен»"
+    дано word равно "после"
+    ожидается "«остаток не отрицателен после»"
+  соединить ["«", «Inner name» от name, " ", word, "»"] по ""
+
+тотальная функция «Rule of»
+  принимает line: «Source line»
+  возвращает «Sugar cut»
+  пример «The name and the statement of a rule»
+    дано line равно (запись «Source line» с «text» равным "  всегда «плюс» остаток не меньше 0" и «line» равным 4 и
+        «shift» равным 0 и «raw» равным нет)
+    ожидается запись «Sugar cut» с «found» равным да и «before» равным "«плюс»" и «after» равным "остаток не меньше 0"
+  «Named sentence» от («Text from» от («Without indent» от line.«text») и 8)
+
+тотальная функция «Owned line»
+  принимает line: «Source line», fields: список строки, holder: строка
+  возвращает «Source line»
+  пример «A field in a body line»
+    дано line равно (запись «Source line» с «text» равным "  остаток плюс 1" и «line» равным 7 и «shift» равным 0 и
+        «raw» равным нет)
+    дано fields равно ["остаток"]
+    дано holder равно "этот"
+    ожидается (запись «Source line» с «text» равным "  этот.остаток плюс 1" и «line» равным 7 и «shift» равным 0 и
+        «raw» равным нет)
+  пусть textPart равно если line.«raw» то line.«text» иначе «Owned» от line.«text» и fields и holder
+  (запись «Source line» с «text» равным textPart и «line» равным line.«line» и «shift» равным line.«shift» и
+      «raw» равным line.«raw»)
+
+тотальная функция «Owned items»
+  принимает items: список «Item», fields: список строки
+  возвращает список «Source line»
+  пример «No items»
+    дано items равно []
+    дано fields равно ["остаток"]
+    ожидается []
+  отобразить («Item lines» от items) как line → «Owned line» от line и fields и "этот"
+
+тотальная функция «Record lines»
+  принимает model: «Class model», becomes: список «Item»
+  возвращает список «Source line»
+  пример «One field changes, one stays»
+    дано model равно (запись «Class model» с «name» равным "«Счёт»" и «face» равным "" и «head» равным (запись
+        «Source line»
+        с «text» равным "класс «Счёт»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «fields» равным [(запись
+        «Source line» с «text» равным "  владелец: строка" и «line» равным 2 и «shift» равным 0 и «raw» равным нет),
+        (запись «Source line» с «text» равным "  остаток: число" и «line» равным 3 и «shift» равным 0 и
+            «raw» равным нет)]
+        и «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано becomes равно [(запись «Item» с «first» равным (запись «Source line» с «text» равным
+        "  остаток станет остаток плюс сумма" и «line» равным 7 и «shift» равным 2 и «raw» равным нет) и
+            «lines» равным [])]
+    ожидается [(запись «Source line» с «text» равным "  (запись «Счёт» с владелец равным этот.владелец и" и
+        «line» равным 7
+        и «shift» равным 2 и «raw» равным нет), (запись «Source line» с «text» равным
+        "    остаток равным (этот.остаток плюс сумма))" и «line» равным 7 и «shift» равным 0 и «raw» равным нет)]
+  пусть fields равно «Field names» от model.«fields»
+  пусть origin равно если пусто becomes то model.«head» иначе (голова becomes).«first»
+  пусть entries равно отобразить fields как fieldName → «Record entry» от fieldName и fields и becomes
+  пусть numbered равно свёртка entries начиная с [] как acc и entry → добавить (длина acc) к acc
+  пусть texts равно отобразить numbered как number → «Record text» от model.«name» и entries и number
+  «Made lines» от origin и texts
+
+тотальная функция «Record entry»
+  принимает fieldName: строка, fields: список строки, becomes: список «Item»
+  возвращает строка
+  пример «A field that does not change»
+    дано fieldName равно "владелец"
+    дано fields равно ["владелец"]
+    дано becomes равно []
+    ожидается "владелец равным этот.владелец"
+  пусть found равно отфильтровать becomes где oneItem → («Becoming» от oneItem).«before» равен fieldName
+  пусть kept равно соединить "этот." с fieldName
+  пусть value равно (если пусто found то kept иначе «Wrapped» от («Owned» от («Becoming» от (голова found)).«after»
+      и fields и "этот"))
+  соединить [fieldName, " равным ", value] по ""
+
+тотальная функция «Record text»
+  принимает name: строка, entries: список строки, number: число
+  возвращает строка
+  пример «The last of two entries closes the record»
+    дано name равно "«Счёт»"
+    дано entries равно ["а равным 1", "б равным 2"]
+    дано number равно 1
+    ожидается "    б равным 2)"
+  пусть front равно если number равен 0 то соединить ["  (запись ", name, " с "] по "" иначе "    "
+  пусть back равно если (number плюс 1) равен (длина entries) то ")" иначе " и"
+  соединить [front, элемент (number плюс 1) в entries, back] по ""
+
+тотальная функция «Parameter names»
+  принимает taking: строка
+  возвращает список строки
+  пример «Two parameters»
+    дано taking равно "сумма: число, к: список числа"
+    ожидается ["сумма", "к"]
+  отобразить («Top level parts» от taking) как part → («Parameter of» от part).«name»
+
+тотальная функция «Method checks»
+  принимает model: «Class model», method: «Method», items: список «Item»
+  возвращает список «Rule check»
+  пример «A method that neither returns nor changes»
+    дано model равно (запись «Class model» с «name» равным "«Счёт»" и «face» равным "" и «head» равным (запись
+        «Source line»
+        с «text» равным "класс «Счёт»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «fields» равным [] и
+        «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "" и «takes» равным нет и «gives» равным нет и
+            «reversed» равным
+        нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф»" и «line» равным 3 и «shift» равным 0 и
+        «raw» равным нет) и «lines» равным [])
+    дано items равно []
+    ожидается [(запись «Rule check» с «bad» равным нет и «message» равным
+        "в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»"), (запись
+            «Rule check» с
+        «bad» равным нет и «message» равным "после «принимает» не назван ни один параметр"), (запись
+            «Rule check» с «bad»
+        равным нет и «message» равным "после «возвращает» не назван тип"), (запись «Rule check» с «bad» равным да и
+        «message» равным "метод не называет «возвращает» и не меняет полей строкой «поле станет …»"), (запись
+            «Rule check»
+        с «bad» равным нет и
+            «message» равным "метод меняет поля и потому возвращает «Счёт»; «возвращает» у него не пишется"),
+        (запись «Rule check» с «bad» равным нет и
+            «message» равным "у класса «Счёт» нет поля, которое меняет «… станет …»"),
+        (запись «Rule check» с «bad» равным нет и «message» равным
+        "строки «поле станет …» стоят последними, а перед ними в теле — только строки «пусть …»"), (запись
+            «Rule check» с
+        «bad» равным нет и
+            «message» равным "имя поля связано заново: поле нельзя назвать параметром, «пусть» или «как»")]
+  пусть fields равно «Field names» от model.«fields»
+  пусть signature равно method.«signature»
+  пусть body равно отфильтровать items где oneItem → не («Is contract item» от oneItem)
+  пусть becomes равно отфильтровать body где oneItem → («Becoming» от oneItem).«found»
+  пусть lets равно отфильтровать body где oneItem → не («Becoming» от oneItem).«found»
+  пусть changes равно не (пусто becomes)
+  пусть giving равно «Without indent» от signature.«giving»
+  пусть strangers равно отфильтровать becomes где oneItem → не (fields содержит («Becoming» от oneItem).«before»)
+  пусть strangerName равно (если пусто strangers то "" иначе соединить [" «", («Becoming» от (голова
+      strangers)).«before», "»"] по "")
+  пусть badLets равно отфильтровать lets где oneItem → («Item word» от oneItem) не равен "пусть"
+  пусть ordered равно body равен («Joined» от lets и becomes)
+  пусть rebound равно «Concatenated» от (отобразить method.«lines» как line → «Rebound» от line.«text» и fields)
+  пусть named равно отфильтровать («Parameter names» от signature.«taking») где name → fields содержит name
+  [(запись «Rule check» с «bad» равным signature.«reversed» и «message» равным
+      "в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»"),
+    (запись «Rule check» с «bad» равным (signature.«takes» и притом «Blank» от signature.«taking») и «message» равным
+      "после «принимает» не назван ни один параметр"),
+    (запись «Rule check» с «bad» равным (signature.«gives» и притом «Blank» от signature.«giving») и «message» равным
+      "после «возвращает» не назван тип"),
+    (запись «Rule check» с «bad» равным ((не changes) и притом ((длина giving) равен 0)) и «message» равным
+      "метод не называет «возвращает» и не меняет полей строкой «поле станет …»"),
+    (запись «Rule check» с «bad» равным (changes и притом ((длина giving) больше 0) и притом (giving
+        не равен model.«name»))
+      и «message» равным (соединить
+          ["метод меняет поля и потому возвращает ", model.«name», "; «возвращает» у него не пишется"] по "")),
+    (запись «Rule check» с «bad» равным (не (пусто strangers)) и «message» равным
+      (соединить ["у класса ", model.«name», " нет поля", strangerName, ", которое меняет «… станет …»"] по "")),
+    (запись «Rule check» с «bad» равным (changes и притом ((не (пусто badLets)) или (не ordered))) и «message» равным
+      "строки «поле станет …» стоят последними, а перед ними в теле — только строки «пусть …»"),
+    (запись «Rule check» с «bad» равным (не (пусто («Joined» от rebound и named))) и «message» равным
+      "имя поля связано заново: поле нельзя назвать параметром, «пусть» или «как»")]
+
+тотальная функция «Method emitted»
+  принимает model: «Class model», laws: список «Source line», method: «Method»
+  возвращает «Emitted»
+  пример «A method that reads a field»
+    дано model равно (запись «Class model» с «name» равным "«Счёт»" и «face» равным "" и «head» равным (запись
+        «Source line»
+        с «text» равным "класс «Счёт»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «fields» равным [(запись
+        «Source line» с «text» равным "  остаток: число" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)] и
+        «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано laws равно []
+    дано method равно (запись «Method» с «name» равным "«Остаток»" и «signature» равным (запись
+        «Signature» с «head» равным
+        "метод «Остаток»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и
+        «reversed» равным нет) и «head» равным (запись
+            «Source line» с «text» равным "  метод «Остаток» возвращает число" и
+        «line» равным 3 и «shift» равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным
+        "    остаток" и «line» равным 4 и «shift» равным 0 и «raw» равным нет)])
+    ожидается (запись «Emitted» с «trouble» равным "" и «at» равным (запись «Source line» с «text» равным
+        "  метод «Остаток» возвращает число" и «line» равным 3 и «shift» равным 0 и «raw» равным нет) и «lines» равным
+        [(запись «Source line» с «text» равным "" и «line» равным 3 и «shift» равным 2 и «raw» равным нет), (запись
+        «Source line» с «text» равным "тотальная функция «Счёт: Остаток»" и «line» равным 3 и «shift» равным 2 и «raw»
+        равным нет), (запись «Source line» с «text» равным "  принимает этот: «Счёт»" и «line» равным 3 и
+            «shift» равным 0
+        и «raw» равным нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 3 и
+            «shift» равным
+        0 и «raw» равным нет), (запись «Source line» с «text» равным "  этот.остаток" и «line» равным 4 и
+            «shift» равным 2
+        и «raw» равным нет)])
+  пусть fields равно «Field names» от model.«fields»
+  пусть signature равно method.«signature»
+  пусть items равно «Items» от («Reindented» от method.«lines» и 4 и "  ") и 2
+  пусть needs равно отфильтровать items где oneItem → («Item word» от oneItem) равен "требует"
+  пусть promises равно (отфильтровать items где oneItem → («Is contract item» от oneItem) и притом (не
+      ((«Item word» от oneItem) равен "требует")))
+  пусть body равно отфильтровать items где oneItem → не («Is contract item» от oneItem)
+  пусть becomes равно отфильтровать body где oneItem → («Becoming» от oneItem).«found»
+  пусть lets равно отфильтровать body где oneItem → не («Becoming» от oneItem).«found»
+  пусть changes равно не (пусто becomes)
+  пусть giving равно если changes то model.«name» иначе «Without indent» от signature.«giving»
+  пусть taking равно если signature.«takes» то соединить ", " с signature.«taking» иначе ""
+  пусть named равно соединить "тотальная функция " с («Member name» от model.«name» и method.«name»)
+  пусть heads равно «Made lines» от method.«head» и ["", named,
+    соединить ["  принимает этот: ", model.«name», taking] по "", соединить "  возвращает " с giving]
+  пусть keeps равно giving равен model.«name»
+  пусть ruleRequires равно отобразить model.«rules» как line → «Rule line» от line и fields и "требует" и "этот" и ""
+  пусть ruleEnsures равно (если keeps то (отобразить model.«rules» как line → «Rule line» от line и fields и
+      "обеспечивает" и "результат" и "после") иначе [])
+  пусть bodyLines равно (если changes то «Joined» от («Owned items» от lets и fields) и («Record lines» от model и
+      becomes) иначе «Owned items» от body и fields)
+  пусть ownNeeds равно «Owned items» от needs и fields
+  пусть ownPromises равно «Owned items» от promises и fields
+  пусть lines равно «Concatenated» от [heads, ruleRequires, ownNeeds, ruleEnsures, laws, ownPromises, bodyLines]
+  пусть trouble равно «First trouble» от («Method checks» от model и method и items)
+  пусть said равно соединить ["метод ", method.«name», " класса ", model.«name», ": ", trouble] по ""
+  если (длина trouble) больше 0
+    то запись «Emitted» с «trouble» равным said и «at» равным method.«head» и «lines» равным []
+    иначе запись «Emitted» с «trouble» равным "" и «at» равным method.«head» и «lines» равным lines
+
+тотальная функция «Rule line»
+  принимает line: «Source line», fields: список строки, word: строка, holder: строка, suffix: строка
+  возвращает «Source line»
+  пример «The rule as a precondition»
+    дано line равно (запись «Source line» с «text» равным "  всегда «плюс» остаток не меньше 0" и «line» равным 4 и
+        «shift» равным 0 и «raw» равным нет)
+    дано fields равно ["остаток"]
+    дано word равно "требует"
+    дано holder равно "этот"
+    дано suffix равно ""
+    ожидается (запись «Source line» с «text» равным "  требует «плюс» этот.остаток не меньше 0" и «line» равным 4 и
+        «shift» равным 0 и «raw» равным нет)
+  пусть sentence равно «Rule of» от line
+  пусть name равно если (длина suffix) больше 0 то «Renamed» от sentence.«before» и suffix иначе sentence.«before»
+  «Made line» от line и (соединить ["  ", word, " ", name, " ", «Owned» от sentence.«after» и fields и holder] по "")
+
+тотальная функция «Face of»
+  принимает lines: список «Source line»
+  возвращает «Face model»
+  пример «An interface with no methods»
+    дано lines равно [(запись «Source line» с «text» равным "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)]
+    ожидается (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+  пусть headLine равно голова lines
+  пусть reading равно «Read members» от (хвост lines)
+  (запись «Face model» с «name» равным («Without indent» от («Text from» от headLine.«text» и 11)) и
+      «head» равным headLine и
+    «methods» равным reading.«methods» и
+        «stray» равным («Concatenated» от [reading.«stray», reading.«fields», reading.«rules»]))
+
+тотальная функция «Method items»
+  принимает method: «Method»
+  возвращает список «Item»
+  пример «A method with no lines»
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф» возвращает число" и
+            «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается []
+  «Items» от method.«lines» и 4
+
+тотальная функция «Laws»
+  принимает method: «Method»
+  возвращает список «Item»
+  пример «A method with no laws»
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф» возвращает число" и
+            «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается []
+  отфильтровать («Method items» от method) где oneItem → («Item word» от oneItem) равен "обеспечивает"
+
+тотальная функция «Default body»
+  принимает method: «Method»
+  возвращает список «Source line»
+  пример «A required method has no body»
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф» возвращает число" и
+            «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается []
+  пусть lines равно («Item lines» от (отфильтровать
+      («Method items» от method) где oneItem → не («Is contract item» от oneItem)))
+  пусть texts равно отфильтровать lines где line → не («Blank» от line.«text»)
+  если пусто texts то [] иначе lines
+
+тотальная функция «Law line»
+  принимает oneItem: «Item», className: строка
+  возвращает «Source line»
+  пример «A law carried into a class»
+    дано oneItem равно (запись «Item» с «first» равным (запись «Source line» с «text» равным
+        "    обеспечивает «неотрицательна» результат не меньше 0" и «line» равным 3 и «shift» равным 0 и
+            «raw» равным нет) и
+        «lines» равным [])
+    дано className равно "«Круг»"
+    ожидается (запись «Source line» с «text» равным "  обеспечивает «неотрицательна — Круг» результат не меньше 0" и
+        «line» равным 3 и «shift» равным 2 и «raw» равным нет)
+  пусть sentence равно «Named sentence» от («Text from» от («Without indent» от oneItem.«first».«text») и 14)
+  пусть name равно «Renamed» от sentence.«before» и (соединить "— " с («Inner name» от className))
+  «Made line» от oneItem.«first» и (соединить ["  обеспечивает ", name, " ", sentence.«after»] по "")
+
+тотальная функция «Class laws»
+  принимает model: «Class model», faces: список «Face model», name: строка
+  возвращает список «Source line»
+  пример «A class without an interface has no laws»
+    дано model равно (запись «Class model» с «name» равным "«Счёт»" и «face» равным "" и «head» равным (запись
+        «Source line»
+        с «text» равным "класс «Счёт»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «fields» равным [] и
+        «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано faces равно []
+    дано name равно "«Площадь»"
+    ожидается []
+  пусть mine равно отфильтровать faces где face → face.«name» равен model.«face»
+  пусть methods равно «Concatenated» от (отобразить mine как face → face.«methods»)
+  пусть same равно отфильтровать methods где method → method.«name» равен name
+  пусть items равно «Concatenated» от (отобразить same как method → «Laws» от method)
+  отобразить items как oneItem → «Law line» от oneItem и model.«name»
+
+тотальная функция «Same signature»
+  принимает mine: «Signature», theirs: «Signature»
+  возвращает признак
+  пример «Spaces do not matter»
+    дано mine равно (запись «Signature» с «head» равным "метод «Ф»" и «taking» равным "" и «giving» равным "число" и
+        «takes» равным нет и «gives» равным да и «reversed» равным нет)
+    дано theirs равно (запись «Signature» с «head» равным "  метод «Ф»" и «taking» равным "" и
+        «giving» равным "число " и
+        «takes» равным нет и «gives» равным да и «reversed» равным нет)
+    ожидается да
+  пусть takes равно «Squeezed» от mine.«taking» равен «Squeezed» от theirs.«taking»
+  takes и притом («Squeezed» от mine.«giving» равен «Squeezed» от theirs.«giving»)
+
+тотальная функция «Squeezed»
+  принимает textPart: строка
+  возвращает строка
+  пример «Spaces around go»
+    дано textPart равно " список  числа "
+    ожидается "список числа"
+  соединить (отфильтровать (разделить textPart по " ") где word → (длина word) больше 0) по " "
+
+тотальная функция «Class emitted»
+  принимает model: «Class model», faces: список «Face model»
+  возвращает «Emitted»
+  пример «A class with one field and no methods»
+    дано model равно (запись «Class model» с «name» равным "«Точка»" и «face» равным "" и «head» равным (запись
+        «Source line» с «text» равным "класс «Точка»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «fields»
+        равным [(запись «Source line» с «text» равным "  х: число" и «line» равным 2 и «shift» равным 0 и «raw» равным
+        нет)] и «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано faces равно []
+    ожидается (запись «Emitted» с «trouble» равным "" и «at» равным (запись
+        «Source line» с «text» равным "класс «Точка»" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным
+        "объект «Точка»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет), (запись «Source line» с «text» равным
+        "  х: число" и «line» равным 2 и «shift» равным 0 и «raw» равным нет)])
+  пусть objectLines равно (приписать («Made line» от model.«head» и (соединить "объект " с model.«name»))
+      к model.«fields»)
+  пусть emitted равно (отобразить model.«methods» как method → «Method emitted» от model и («Class laws» от model и
+      faces и method.«name») и method)
+  пусть bad равно отфильтровать emitted где one → (длина one.«trouble») больше 0
+  пусть lines равно «Concatenated» от (приписать objectLines к (отобразить emitted как one → one.«lines»))
+  (если пусто bad то запись «Emitted» с «trouble» равным "" и «at» равным model.«head» и
+      «lines» равным lines иначе голова bad)
+
+тотальная функция «Class checks»
+  принимает model: «Class model», faces: список «Face model»
+  возвращает список «Pass result»
+  пример «A class without fields»
+    дано model равно (запись «Class model» с «name» равным "«Пусто»" и «face» равным "" и «head» равным (запись
+        «Source line» с «text» равным "класс «Пусто»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «fields»
+        равным [] и «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано faces равно []
+    ожидается [(запись «Pass result» с «code» равным "FLANG_SUGAR_CLASS" и «message» равным
+        "у класса «Пусто» нет ни одного поля «имя: тип»" и «at» равным (запись «Source line» с «text» равным
+        "класс «Пусто»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [])]
+  пусть name равно model.«name»
+  пусть code равно "FLANG_SUGAR_CLASS"
+  пусть stray равно отобразить model.«stray» как line → «Refused» от code и (соединить ["в классе ", name,
+    " строка — не поле «имя: тип», не «всегда «имя» утверждение» и не «метод …»"] по "") и line
+  пусть badRules равно отфильтровать model.«rules» где line → не («Rule of» от line).«found»
+  пусть rules равно (отобразить badRules как line → «Refused» от code и
+      "«всегда» пишется «всегда «имя» утверждение»" и line)
+  пусть bare равно (длина model.«fields») равен 0
+  пусть fieldless равно («Trouble if» от bare и code и (соединить
+      ["у класса ", name, " нет ни одного поля «имя: тип»"] по "") и model.«head»)
+  пусть faceTroubles равно «Face troubles» от model и faces
+  «Concatenated» от [stray, fieldless, rules, faceTroubles]
+
+тотальная функция «Face troubles»
+  принимает model: «Class model», faces: список «Face model»
+  возвращает список «Pass result»
+  пример «A class without an interface»
+    дано model равно (запись «Class model» с «name» равным "«Точка»" и «face» равным "" и «head» равным (запись
+        «Source line» с «text» равным "класс «Точка»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «fields»
+        равным [] и «rules» равным [] и «methods» равным [] и «stray» равным [])
+    дано faces равно []
+    ожидается []
+  пусть code равно "FLANG_SUGAR_INTERFACE"
+  пусть mine равно отфильтровать faces где face → face.«name» равен model.«face»
+  пусть named равно (длина model.«face») больше 0
+  пусть missing равно («Trouble if» от (named и притом (пусто mine)) и code и (соединить
+      ["интерфейса ", model.«face», " в этом файле нет"] по "") и model.«head»)
+  пусть wanted равно «Concatenated» от (отобразить mine как face → face.«methods»)
+  пусть lacking равно «Concatenated» от (отобразить wanted как method → «Lack» от model и method)
+  «Joined» от missing и lacking
+
+тотальная функция «Lack»
+  принимает model: «Class model», wanted: «Method»
+  возвращает список «Pass result»
+  пример «A required method the class gives»
+    дано model равно (запись «Class model» с «name» равным "«Круг»" и «face» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным "класс «Круг» есть «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным
+        нет) и «fields» равным [] и «rules» равным [] и «methods» равным [(запись «Method» с «name» равным "«Площадь»" и
+        «signature» равным (запись «Signature» с «head» равным "метод «Площадь»" и «taking» равным "" и «giving» равным
+        "число" и «takes» равным нет и «gives» равным да и «reversed» равным нет) и «head» равным (запись
+            «Source line» с
+        «text» равным "  метод «Площадь» возвращает число" и «line» равным 3 и «shift» равным 0 и «raw» равным нет) и
+        «lines» равным [])] и «stray» равным [])
+    дано wanted равно (запись «Method» с «name» равным "«Площадь»" и «signature» равным (запись «Signature» с «head»
+        равным "метод «Площадь»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и
+            «gives» равным да и
+        «reversed» равным нет) и «head» равным (запись
+            «Source line» с «text» равным "  метод «Площадь» возвращает число" и
+        «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается []
+  пусть code равно "FLANG_SUGAR_INTERFACE"
+  пусть same равно отфильтровать model.«methods» где method → method.«name» равен wanted.«name»
+  пусть required равно пусто («Default body» от wanted)
+  пусть absent равно «Trouble if» от (required и притом (пусто same)) и code и (соединить
+      ["класс ", model.«name», " есть ",
+    model.«face», ", но не даёт метод ", wanted.«name»] по "") и model.«head»
+  пусть differs равно отфильтровать same где method → не («Same signature» от method.«signature» и wanted.«signature»)
+  пусть wrong равно отобразить differs как method → «Refused» от code и (соединить ["метод ", wanted.«name», " класса ",
+    model.«name», " принимает или возвращает не то, что в интерфейсе ", model.«face»] по "") и method.«head»
+  «Joined» от absent и wrong
+
+тотальная функция «Face checks»
+  принимает face: «Face model», classes: список «Class model»
+  возвращает список «Pass result»
+  пример «An interface no class takes»
+    дано face равно (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+    дано classes равно []
+    ожидается [(запись «Pass result» с «code» равным "FLANG_SUGAR_INTERFACE" и «message» равным
+        "у интерфейса «Фигура» нет ни одного класса «класс … есть «Фигура»»" и «at» равным (запись
+            «Source line» с «text»
+        равным "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и
+            «declarations» равным [])]
+  пусть code равно "FLANG_SUGAR_INTERFACE"
+  пусть name равно face.«name»
+  пусть stray равно отобразить face.«stray» как line → «Refused» от code и (соединить ["в интерфейсе ", name,
+    " строка — не «метод …»"] по "") и line
+  пусть takers равно отфильтровать classes где model → model.«face» равен name
+  пусть lonely равно «Trouble if» от (пусто takers) и code и (соединить ["у интерфейса ", name,
+    " нет ни одного класса «класс … есть ", name, "»"] по "") и face.«head»
+  пусть methods равно «Concatenated» от (отобразить face.«methods» как method → «Face method checks» от face и method)
+  «Concatenated» от [stray, methods, lonely]
+
+тотальная функция «Face method checks»
+  принимает face: «Face model», method: «Method»
+  возвращает список «Pass result»
+  пример «A method with its result»
+    дано face равно (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и «reversed»
+        равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф» возвращает число" и
+            «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается []
+  пусть code равно "FLANG_SUGAR_INTERFACE"
+  пусть blind равно «Blank» от method.«signature».«giving»
+  пусть foreign равно (отфильтровать («Method items» от method) где oneItem → ["требует", "пример", "для"] содержит
+      («Item word» от oneItem))
+  пусть noResult равно «Trouble if» от blind и code и (соединить ["метод ", method.«name», " интерфейса ", face.«name»,
+    " не называет «возвращает»"] по "") и method.«head»
+  пусть allowed равно "в интерфейсе метод несёт только законы «обеспечивает …» и тело по умолчанию"
+  пусть others равно отобразить foreign как oneItem → «Refused» от code и allowed и oneItem.«first»
+  «Joined» от noResult и others
+
+тотальная функция «Default lines»
+  принимает method: «Method»
+  возвращает список «Source line»
+  пример «A one-line default answers after то»
+    дано method равно (запись «Method» с «name» равным "«Имя»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Имя»" и «taking» равным "" и «giving» равным "строка" и «takes» равным нет и «gives» равным да и
+        «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Имя» возвращает строка" и
+        «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным
+        "    \"фигура\"" и «line» равным 3 и «shift» равным 0 и «raw» равным нет)])
+    ожидается [(запись «Source line» с «text» равным "      то \"фигура\"" и «line» равным 3 и «shift» равным -2 и «raw»
+        равным нет)]
+  пусть body равно отфильтровать («Default body» от method) где line → не («Blank» от line.«text»)
+  пусть single равно (длина body) равен 1
+  пусть said равно (отобразить body как line → «Moved line» от line и (соединить
+      "      то " с («Without indent» от line.«text»)))
+  если single то said иначе «Reindented» от body и 4 и "      "
+
+тотальная функция «Dispatch case»
+  принимает face: «Face model», method: «Method», model: «Class model»
+  возвращает список «Source line»
+  пример «A class that gives the method»
+    дано face равно (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "к: число" и «giving» равным "число" и «takes» равным да и «gives» равным да и
+        «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф»" и «line» равным 2 и
+        «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    дано model равно (запись «Class model» с «name» равным "«Круг»" и «face» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным "класс «Круг» есть «Фигура»" и «line» равным 5 и «shift» равным 0 и «raw» равным
+        нет) и «fields» равным [] и «rules» равным [] и «methods» равным [(запись «Method» с «name» равным "«Ф»" и
+        «signature» равным (запись «Signature» с «head» равным "метод «Ф»" и «taking» равным "к: число" и
+            «giving» равным
+        "число" и «takes» равным да и «gives» равным да и «reversed» равным нет) и «head» равным (запись «Source line» с
+        «text» равным "  метод «Ф»" и «line» равным 6 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])] и
+        «stray» равным [])
+    ожидается [(запись «Source line» с «text» равным "    случай вариант «Круг» с значение как «значение»" и
+        «line» равным 2
+        и «shift» равным -2 и «raw» равным нет), (запись «Source line» с «text» равным
+        "      то «Круг: Ф» от «значение» и к" и «line» равным 2 и «shift» равным -4 и «raw» равным нет)]
+  пусть opening равно соединить ["    случай вариант ", model.«name», " с значение как «значение»"] по ""
+  пусть hasIt равно не (пусто (отфильтровать model.«methods» где one → one.«name» равен method.«name»))
+  пусть arguments равно приписать "«значение»" к («Parameter names» от method.«signature».«taking»)
+  пусть call равно соединить "      то " с («Call text» от («Member name» от model.«name» и method.«name») и arguments)
+  пусть made равно «Made lines» от method.«head» и [opening, call]
+  если hasIt то made иначе приписать (голова made) к («Default lines» от method)
+
+тотальная функция «Dispatcher»
+  принимает face: «Face model», classes: список «Class model», method: «Method»
+  возвращает список «Source line»
+  пример «A dispatcher with no classes»
+    дано face равно (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+    дано classes равно []
+    дано method равно (запись «Method» с «name» равным "«Ф»" и «signature» равным (запись «Signature» с «head» равным
+        "метод «Ф»" и «taking» равным "" и «giving» равным "число" и «takes» равным нет и «gives» равным да и
+        «reversed» равным нет) и «head» равным (запись «Source line» с «text» равным "  метод «Ф» возвращает число" и
+        «line» равным 2 и «shift» равным 0 и «raw» равным нет) и «lines» равным [])
+    ожидается [(запись «Source line» с «text» равным "" и «line» равным 2 и «shift» равным 2 и
+        «raw» равным нет), (запись
+        «Source line» с «text» равным "тотальная функция «Фигура: Ф»" и «line» равным 2 и «shift» равным 2 и
+            «raw» равным
+        нет), (запись «Source line» с «text» равным "  принимает этот: «Фигура»" и «line» равным 2 и «shift» равным 0 и
+        «raw» равным нет), (запись «Source line» с «text» равным "  возвращает число" и «line» равным 2 и
+            «shift» равным 0
+        и «raw» равным нет), (запись «Source line» с «text» равным "  разбор этот" и «line» равным 2 и
+            «shift» равным 0 и
+        «raw» равным нет)]
+  пусть signature равно method.«signature»
+  пусть taking равно если signature.«takes» то соединить ", " с signature.«taking» иначе ""
+  пусть named равно соединить "тотальная функция " с («Member name» от face.«name» и method.«name»)
+  пусть heads равно «Made lines» от method.«head» и ["", named,
+    соединить ["  принимает этот: ", face.«name», taking] по "", соединить "  возвращает " с signature.«giving»]
+  пусть laws равно «Reindented» от («Item lines» от («Laws» от method)) и 4 и "  "
+  пусть opening равно «Made lines» от method.«head» и ["  разбор этот"]
+  пусть takers равно отфильтровать classes где model → model.«face» равен face.«name»
+  пусть cases равно «Concatenated» от (отобразить takers как model → «Dispatch case» от face и method и model)
+  «Concatenated» от [heads, laws, opening, cases]
+
+тотальная функция «Face emitted»
+  принимает face: «Face model», classes: список «Class model»
+  возвращает список «Source line»
+  пример «An interface with no methods and no classes»
+    дано face равно (запись «Face model» с «name» равным "«Фигура»" и «head» равным (запись
+        «Source line» с «text» равным
+        "интерфейс «Фигура»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет) и «methods» равным [] и «stray»
+        равным [])
+    дано classes равно []
+    ожидается ([(запись «Source line» с «text» равным "тип «Фигура»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)])
+  пусть takers равно отфильтровать classes где model → model.«face» равен face.«name»
+  пусть variants равно (отобразить takers как model → соединить
+      ["  вариант ", model.«name», " содержит значение: ", model.«name»] по "")
+  пусть typeLines равно «Made lines» от face.«head» и (приписать (соединить "тип " с face.«name») к variants)
+  («Joined» от typeLines и («Concatenated» от (отобразить face.«methods» как method → «Dispatcher» от face и
+      classes и method)))
+
+тотальная функция «Declaration emitted»
+  принимает lines: список «Source line», classes: список «Class model», faces: список «Face model»
+  возвращает «Emitted»
+  пример «A plain declaration stays»
+    дано lines равно ([(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)])
+    дано classes равно []
+    дано faces равно []
+    ожидается (запись «Emitted» с «trouble» равным "" и «at» равным (запись «Source line» с «text» равным "" и
+        «line» равным
+        0 и «shift» равным 0 и «raw» равным нет) и «lines» равным [(запись «Source line» с «text» равным "модуль «А»" и
+        «line» равным 1 и «shift» равным 0 и «raw» равным нет)])
+  пусть plain равно запись «Emitted» с «trouble» равным "" и «at» равным («No line») и «lines» равным lines
+  пусть isClass равно «Starts declaration» от lines и "класс «"
+  пусть isFace равно «Starts declaration» от lines и "интерфейс «"
+  если isClass
+    то «Class emitted» от («Class of» от lines) и faces
+    иначе (если isFace то запись «Emitted» с «trouble» равным "" и «at» равным («No line») и
+        «lines» равным («Face emitted» от
+      («Face of» от lines) и classes) иначе plain)
+
+тотальная функция «Class pass»
+  принимает declarations: список (список «Source line»)
+  возвращает «Pass result»
+  пример «Nothing to expand»
+    дано declarations равно [[(запись «Source line» с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и
+        «raw» равным нет)]]
+    ожидается (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным (запись
+        «Source line» с «text»
+        равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [[(запись
+            «Source line»
+        с «text» равным "модуль «А»" и «line» равным 1 и «shift» равным 0 и «raw» равным нет)]])
+  пусть classLines равно отфильтровать declarations где lines → «Starts declaration» от lines и "класс «"
+  пусть faceLines равно отфильтровать declarations где lines → «Starts declaration» от lines и "интерфейс «"
+  пусть classes равно отобразить classLines как lines → «Class of» от lines
+  пусть faces равно отобразить faceLines как lines → «Face of» от lines
+  пусть classTroubles равно «Concatenated» от (отобразить classes как model → «Class checks» от model и faces)
+  пусть faceTroubles равно «Concatenated» от (отобразить faces как face → «Face checks» от face и classes)
+  пусть emitted равно отобразить declarations как lines → «Declaration emitted» от lines и classes и faces
+  пусть failed равно отфильтровать emitted где one → (длина one.«trouble») больше 0
+  пусть methodTroubles равно отобразить failed как one → «Refused» от "FLANG_SUGAR_CLASS" и one.«trouble» и one.«at»
+  пусть troubles равно «Concatenated» от [classTroubles, faceTroubles, methodTroubles]
+  пусть regrouped равно «Declarations» от («Concatenated» от (отобразить emitted как one → one.«lines»))
+  если пусто troubles то «Passed» от regrouped иначе голова troubles
+
+тотальная функция «Header step»
+  принимает acc: «Pass result», lines: список «Source line»
+  возвращает «Pass result»
+  пример «A refusal stays»
+    дано acc равно (запись «Pass result» с «code» равным "FLANG_SUGAR_HEADER" и «message» равным "беда" и «at» равным
+        (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+            «declarations»
+        равным [])
+    дано lines равно []
+    ожидается (запись «Pass result» с «code» равным "FLANG_SUGAR_HEADER" и «message» равным "беда" и «at» равным (запись
+        «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+            «declarations» равным
+        [])
+  пусть done равно (длина acc.«code») больше 0
+  пусть headerResult равно «Header of declaration» от lines
+  пусть grown равно «Passed» от («Joined» от acc.«declarations» и headerResult.«declarations»)
+  если done то acc иначе (если (длина headerResult.«code») больше 0 то headerResult иначе grown)
+
+тотальная функция «Header pass»
+  принимает stage: «Pass result»
+  возвращает «Pass result»
+  пример «A refusal of an earlier pass goes on»
+    дано stage равно (запись «Pass result» с «code» равным "FLANG_SUGAR_CLASS" и «message» равным "беда" и «at» равным
+        (запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+            «declarations»
+        равным [])
+    ожидается (запись «Pass result» с «code» равным "FLANG_SUGAR_CLASS" и «message» равным "беда" и «at» равным (запись
+        «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и
+            «declarations» равным
+        [])
+  пусть headed равно (свёртка stage.«declarations» начиная с («Passed» от []) как acc и
+      lines → «Header step» от acc и lines)
+  если (длина stage.«code») больше 0 то stage иначе headed
+
+тотальная функция «Loop pass»
+  принимает stage: «Pass result», budget: список «Source line»
+  возвращает «Pass result»
+  пример «Nothing to expand»
+    дано stage равно (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным (запись
+        «Source line» с
+        «text» равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+    дано budget равно ([(запись «Source line» с «text» равным "" и «line» равным 0 и «shift» равным 0 и
+        «raw» равным нет)])
+    ожидается (запись «Pass result» с «code» равным "" и «message» равным "" и «at» равным (запись
+        «Source line» с «text»
+        равным "" и «line» равным 0 и «shift» равным 0 и «raw» равным нет) и «declarations» равным [])
+  если (длина stage.«code») больше 0 то stage иначе «Expand loops» от stage.«declarations» и [] и budget
+
+тотальная функция «Sugar markers»
+  возвращает список строки
+  пример «Five markers»
+    ожидается ["цикл «", "класс «", "интерфейс «", "» принимает ", "» возвращает "]
+  ["цикл «", "класс «", "интерфейс «", "» принимает ", "» возвращает "]
+
+тотальная функция «Outcome of»
+  принимает stage: «Pass result», original: список «Source line»
+  возвращает «Sugar outcome»
+  пример «A refusal names its line and column»
+    дано stage равно (запись «Pass result» с «code» равным "FLANG_SUGAR_LOOP" и «message» равным "беда" и «at» равным
+        (запись «Source line» с «text» равным "  цикл «Ц»" и «line» равным 4 и «shift» равным 0 и «raw» равным нет) и
+        «declarations» равным [])
+    дано original равно []
+    ожидается (вариант «Sugar refused» с code равным "FLANG_SUGAR_LOOP" и message равным "беда" и
+        atLine равным 4 и atColumn равным 3)
+  пусть final равно «Concatenated» от stage.«declarations»
+  пусть same равно («Texts» от final) равен («Texts» от original)
+  пусть places равно (отобразить final как line → запись «Line place» с «line» равным line.«line» и
+      «shift» равным line.«shift»)
+  пусть column равно ((«Indent» от stage.«at».«text») плюс stage.«at».«shift») плюс 1
+  пусть refused равно (вариант «Sugar refused» с code равным stage.«code» и message равным stage.«message» и
+    atLine равным stage.«at».«line» и atColumn равным column)
+  пусть expanded равно (вариант «Sugar expanded» с textPart равным (соединить («Texts» от final) по "\n") и
+      places равным places)
+  если (длина stage.«code») больше 0 то refused иначе (если same то вариант «Sugar kept» иначе expanded)
+
+тотальная функция «Expand marked»
+  принимает source: строка
+  возвращает «Sugar outcome»
+  пример «A marker inside a string changes nothing»
+    дано source равно "модуль «А»\n\nтотальная функция «Ф»\n  возвращает строка\n  \"цикл «Б»\""
+    ожидается вариант «Sugar kept»
+  пусть lines равно «Numbered» от source
+  пусть budget равно «Concatenated» от [lines, lines, lines, lines, lines]
+  пусть classed равно «Class pass» от («Declarations» от lines)
+  пусть headed равно «Header pass» от (запись «Pass result» с «code» равным classed.«code» и
+      «message» равным classed.«message» и
+    «at» равным classed.«at» и «declarations» равным («Declarations» от («Concatenated» от classed.«declarations»)))
+  «Outcome of» от («Loop pass» от headed и budget) и lines
+
+тотальная функция «Expand sugar»
+  принимает source: строка
+  возвращает «Sugar outcome»
+  пример «Text without sugar is kept»
+    дано source равно "модуль «А»\n"
+    ожидается вариант «Sugar kept»
+  пример «A one-line header»
+    дано source равно "модуль «А»\n\nфункция «Ф» возвращает число\n  1\n"
+    ожидается (вариант «Sugar expanded» с textPart равным "модуль «А»\n\nфункция «Ф»\n  возвращает число\n  1\n" и
+        places
+        равным [(запись «Line place» с «line» равным 1 и «shift» равным 0), (запись «Line place» с «line» равным 2
+            и «shift»
+        равным 0), (запись «Line place» с «line» равным 3 и «shift» равным 0), (запись «Line place» с «line» равным 3 и
+        «shift» равным 10), (запись «Line place» с «line» равным 4 и «shift» равным 0), (запись
+            «Line place» с «line» равным 5
+        и «shift» равным 0)])
+  пример «A loop without an end is refused at its header»
+    дано source равно "модуль «А»\n\nфункция «Ф» возвращает число\n  цикл «Ц»\n    пока да\n    убывает 1\n    дальше\n"
+    ожидается (вариант «Sugar refused» с code равным "FLANG_SUGAR_LOOP" и message равным
+        "цикл «Ц»: нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается" и atLine равным 4 и
+        atColumn равным 3)
+  пусть marked равно не (пусто (отфильтровать («Sugar markers») где marker → source содержит marker))
+  если marked то «Expand marked» от source иначе вариант «Sugar kept»

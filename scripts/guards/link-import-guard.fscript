@@ -1,0 +1,800 @@
+модуль «Link import guard»
+  использует «SHA-256»
+  использует «UTF-8»
+
+объект «Walk»
+  «forged»: признак
+  «binary»: строка
+  «root»: строка
+  «lock»: строка
+  «now»: «Act»
+  «rest»: список «Act»
+  «troubles»: список строки
+  «done»: число
+
+тип «Act»
+  вариант «Nothing»
+  вариант «Make dirs»
+  вариант «Put» содержит file: строка, text: строка
+  вариант «Run» содержит dir: строка, offline: признак, expect: строка, mark: строка, quiet: признак
+  вариант «Keep lock» содержит dir: строка
+  вариант «Same lock» содержит dir: строка
+  вариант «Bend lock» содержит dir: строка
+  вариант «Remove» содержит file: строка
+  вариант «Clean»
+
+тип «Step»
+  вариант «Reading arguments» содержит forged: признак
+  вариант «Reading temp» содержит forged: признак
+  вариант «Reading binary» содержит forged: признак, root: строка
+  вариант «Making root» содержит forged: признак, binary: строка
+  вариант «Walking» содержит walk: «Walk»
+
+тотальная функция «Binary»
+  возвращает строка
+  пример «The binary is named from the guard directory»
+    ожидается "../../bootstrap/flang"
+  "../../bootstrap/flang"
+
+тотальная функция «Discount»
+  возвращает строка
+  обеспечивает «the linked module imports its neighbour» результат содержит "из \"util.flang\""
+  соединить ["модуль «Скидка»", "  использует «Округление» из \"util.flang\"", "",
+    "тотальная функция «Цена со скидкой»",
+    "  принимает «цена»: число", "  возвращает число", "  пример «Десять процентов»", "    дано «цена» равно 100",
+    "    ожидается 90", "  «Округлить» от («цена» умножить на 0.9)", ""] по "\n"
+
+тотальная функция «Substituted discount»
+  возвращает строка
+  обеспечивает «the substituted body takes twenty percent» результат содержит "на 0.8"
+  «Bent» от («Discount»)
+
+тотальная функция «Bent»
+  принимает text: строка
+  возвращает строка
+  пример «Ninety percent becomes eighty»
+    дано text равно "x умножить на 0.9"
+    ожидается "x умножить на 0.8"
+  соединить (разделить text по "умножить на 0.9") по "умножить на 0.8"
+
+тотальная функция «Util»
+  возвращает строка
+  обеспечивает «the neighbour is a module» результат начинается с "модуль «Округление»"
+  соединить ["модуль «Округление»", "", "тотальная функция «Округлить»", "  принимает «x»: число", "  возвращает число",
+    "  пример «Целое остаётся»", "    дано «x» равно 90", "    ожидается 90", "  «x»", ""] по "\n"
+
+тотальная функция «Broken»
+  возвращает строка
+  обеспечивает «the example of the linked module is false» результат содержит "ожидается 91"
+  соединить ["модуль «Скидка»", "", "тотальная функция «Цена со скидкой»", "  принимает «цена»: число",
+    "  возвращает число", "  пример «Десять процентов»", "    дано «цена» равно 100", "    ожидается 91",
+    "  «цена» умножить на 0.9", ""] по "\n"
+
+тотальная функция «Shop»
+  принимает address: строка
+  возвращает строка
+  обеспечивает «the link stands in the import line» результат содержит address
+  соединить ["модуль «Магазин»", (соединить ["  использует «Скидка» из \"", address, "\""] по ""), "",
+    "тотальная функция «Итог»", "  возвращает число", "  пример «Сто со скидкой»", "    ожидается 90",
+    "  «Цена со скидкой» от 100", ""] по "\n"
+
+тотальная функция «Link of»
+  принимает walk: «Walk», file: строка
+  возвращает строка
+  пример «A file of the probe directory as a file address»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано file равно "lib/discount.flang"
+    ожидается "file:///t/lib/discount.flang"
+  соединить ["file://", («Path in» от walk и file)] по ""
+
+тотальная функция «Path in»
+  принимает walk: «Walk», file: строка
+  возвращает строка
+  пример «Paths are counted from the probe directory»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано file равно "shop1/shop.flang"
+    ожидается "/t/shop1/shop.flang"
+  соединить [(walk.«root»), "/", file] по ""
+
+тотальная функция «Pinned address»
+  принимает text: строка
+  возвращает строка
+  обеспечивает «sixty four hex digits» (длина результат) равен 64
+  пример «The address is sha256 over the schema prefix and the text»
+    дано text равно ""
+    ожидается "ea6e3df9ffe809af7098e099808ec12b77522996e44267eea01ae0d5c9f9f639"
+  «Хеш байтов» от («Байты текста» от (соединить ["flang-lock-2 ", text] по ""))
+
+тотальная функция «Plain address»
+  принимает text: строка
+  возвращает строка
+  обеспечивает «sixty four hex digits» (длина результат) равен 64
+  пример «The index of the cache is named by sha256 of the address»
+    дано text равно "abc"
+    ожидается "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+  «Хеш байтов» от («Байты текста» от text)
+
+тотальная функция «Cache file»
+  принимает name: строка, tail: строка
+  возвращает строка
+  пример «The cache lives under the empty home»
+    дано name равно "ab"
+    дано tail равно ".flang"
+    ожидается "home/.cache/flang/links/ab.flang"
+  соединить ["home/.cache/flang/links/", name, tail] по ""
+
+тотальная функция «Poison acts»
+  принимает walk: «Walk»
+  возвращает список «Act»
+  обеспечивает «one put or two» (длина результат) не больше 2
+  пусть link равно («Link of» от walk и "lib/discount.flang")
+  пусть forged равно («Pinned address» от («Substituted discount»))
+  разбор (walk.«forged»)
+    случай да
+      то [(вариант «Put» с file равным («Cache file» от forged и ".flang") и text равным («Substituted discount»)),
+        (вариант «Put» с file равным («Cache file» от («Plain address» от link) и ".address") и text равным forged)]
+    случай нет
+      то [(вариант «Put» с file равным («Cache file» от («Pinned address» от («Discount»)) и ".flang")
+        и text равным («Substituted discount»))]
+
+тотальная функция «Run act»
+  принимает dir: строка, offline: признак, expect: строка
+  возвращает «Act»
+  пример «A run without a mark and without the quiet demand»
+    дано dir равно "shop4"
+    дано offline равно да
+    дано expect равно "FLANG_LINK_OFFLINE"
+    ожидается (вариант «Run» с dir равным "shop4" и offline равным да и expect равным "FLANG_LINK_OFFLINE"
+      и mark равным "" и quiet равным нет)
+  вариант «Run» с dir равным dir и offline равным offline и expect равным expect и mark равным "" и quiet равным нет
+
+тотальная функция «First acts»
+  принимает walk: «Walk»
+  возвращает список «Act»
+  обеспечивает «eight acts set the probe up and fetch» (длина результат) равен 8
+  пусть discount равно («Link of» от walk и "lib/discount.flang")
+  [вариант «Make dirs»,
+   вариант «Put» с file равным "lib/discount.flang" и text равным («Discount»),
+   вариант «Put» с file равным "lib/util.flang" и text равным («Util»),
+   вариант «Put» с file равным "lib/broken.flang" и text равным («Broken»),
+   вариант «Put» с file равным "shop1/shop.flang" и text равным («Shop» от discount),
+   (вариант «Run» с dir равным "shop1" и offline равным нет и expect равным ""
+     и mark равным (соединить [discount, " — отпечаток ", («Pinned address» от («Discount»))] по "")
+     и quiet равным нет),
+   вариант «Keep lock» с dir равным "shop1",
+   вариант «Remove» с file равным "lib/discount.flang"]
+
+тотальная функция «Offline acts»
+  принимает walk: «Walk»
+  возвращает список «Act»
+  обеспечивает «six acts run offline» (длина результат) равен 6
+  пусть discount равно («Link of» от walk и "lib/discount.flang")
+  [вариант «Remove» с file равным "lib/util.flang",
+   (вариант «Run» с dir равным "shop1" и offline равным да и expect равным "" и mark равным "" и quiet равным да),
+   вариант «Same lock» с dir равным "shop1",
+   вариант «Put» с file равным "shop2/shop.flang" и text равным («Shop» от discount),
+   (вариант «Run» с dir равным "shop2" и offline равным да и expect равным "" и mark равным "взято из кеша"
+     и quiet равным да),
+   вариант «Same lock» с dir равным "shop2"]
+
+тотальная функция «Refusal acts»
+  принимает walk: «Walk»
+  возвращает список «Act»
+  обеспечивает «nine refusal acts» (длина результат) равен 9
+  [вариант «Bend lock» с dir равным "shop1",
+   («Run act» от "shop1" и да и "FLANG_LINK_CHANGED"),
+   вариант «Put» с file равным "shop4/shop.flang" и text равным («Shop» от («Link of» от walk и "lib/missing.flang")),
+   («Run act» от "shop4" и да и "FLANG_LINK_OFFLINE"),
+   («Run act» от "shop4" и нет и "FLANG_LINK_FETCH"),
+   вариант «Put» с file равным "shop5/shop.flang" и text равным («Shop» от "http://127.0.0.1:9/discount.flang"),
+   («Run act» от "shop5" и нет и "FLANG_LINK_FETCH"),
+   вариант «Put» с file равным "shop6/shop.flang" и text равным («Shop» от («Link of» от walk и "lib/broken.flang")),
+   («Run act» от "shop6" и нет и "FLANG_EXAMPLE")]
+
+тотальная функция «All acts»
+  принимает walk: «Walk»
+  возвращает список «Act»
+  обеспечивает «every act of the probe» (длина результат) не меньше 26
+  пусть poison равно (приписать (вариант «Put» с file равным "shop3/shop.flang"
+    и text равным («Shop» от («Link of» от walk и "lib/discount.flang"))) к («Poison acts» от walk))
+  пусть cache равно (добавить («Run act» от "shop3" и да и "FLANG_LINK_CHANGED") к poison)
+  пусть head равно («Joined» от («Joined» от («First acts» от walk) и («Offline acts» от walk)) и cache)
+  «Joined» от head и (добавить (вариант «Clean») к («Refusal acts» от walk))
+
+тотальная функция «Joined» от «А»
+  принимает left: список «А», right: список «А»
+  возвращает список «А»
+  пример «Two lists one after the other»
+    дано left равно [1]
+    дано right равно [2]
+    ожидается [1, 2]
+  свёртка right начиная с left как kept и one → добавить one к kept
+
+тотальная функция «Fresh walk»
+  принимает forged: признак, binary: строка, root: строка
+  возвращает «Walk»
+  пример «A new walk has done nothing»
+    дано forged равно нет
+    дано binary равно "b"
+    дано root равно "/t"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+  (запись «Walk» с «forged» равным forged и «binary» равным binary и «root» равным root и «lock» равным ""
+    и «now» равным (вариант «Nothing») и «rest» равным пустой список и «troubles» равным пустой список
+    и «done» равным 0)
+
+тотальная функция «Started walk»
+  принимает forged: признак, binary: строка, root: строка
+  возвращает «Walk»
+  обеспечивает «nothing is done yet» (результат.«done») равен 0
+  пусть walk равно («Fresh walk» от forged и binary и root)
+  (запись «Walk» с «forged» равным forged и «binary» равным binary и «root» равным root и «lock» равным ""
+    и «now» равным (вариант «Nothing») и «rest» равным («All acts» от walk) и «troubles» равным пустой список
+    и «done» равным 0)
+
+тотальная функция «Trouble»
+  принимает walk: «Walk», words: строка
+  возвращает «Walk»
+  пример «A trouble is written down»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано words равно "x"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным ["x"] и «done» равным 0)
+  (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
+    и «lock» равным (walk.«lock») и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «troubles» равным (добавить words к (walk.«troubles»)) и «done» равным (walk.«done»))
+
+тотальная функция «With lock»
+  принимает walk: «Walk», lock: строка
+  возвращает «Walk»
+  пример «The first lock is kept for the comparisons»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано lock равно "{}"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "{}" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+  (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
+    и «lock» равным lock и «now» равным (walk.«now») и «rest» равным (walk.«rest»)
+    и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
+
+тотальная функция «Taking»
+  принимает walk: «Walk», act: «Act», rest: список «Act»
+  возвращает «Walk»
+  пример «Taking an act counts it»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано act равно вариант «Clean»
+    дано rest равно пустой список
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Clean»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+  (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
+    и «lock» равным (walk.«lock») и «now» равным act и «rest» равным rest
+    и «troubles» равным (walk.«troubles») и «done» равным ((walk.«done») плюс 1))
+
+тотальная функция «Pushed»
+  принимает walk: «Walk», act: «Act»
+  возвращает «Walk»
+  пример «A pushed act goes first»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано act равно вариант «Clean»
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным [вариант «Clean»] и «troubles» равным пустой список и «done» равным 0)
+  (запись «Walk» с «forged» равным (walk.«forged») и «binary» равным (walk.«binary») и «root» равным (walk.«root»)
+    и «lock» равным (walk.«lock») и «now» равным (walk.«now») и «rest» равным (приписать act к (walk.«rest»))
+    и «troubles» равным (walk.«troubles») и «done» равным (walk.«done»))
+
+тотальная функция «Run words»
+  принимает walk: «Walk», dir: строка, offline: признак
+  возвращает список строки
+  пример «A clean machine: empty environment, empty home, no network»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано dir равно "shop1"
+    дано offline равно да
+    ожидается ["-i", "HOME=/t/home", "PATH=/usr/bin:/bin", "LC_ALL=C.UTF-8", "FLANG_OFFLINE=1",
+      "b", "check", "/t/shop1/shop.flang"]
+  пусть head равно ["-i", (соединить ["HOME=", («Path in» от walk и "home")] по ""),
+    "PATH=/usr/bin:/bin", "LC_ALL=C.UTF-8"]
+  пусть tail равно [(walk.«binary»), "check", («Path in» от walk и (соединить [dir, "/shop.flang"] по ""))]
+  разбор offline
+    случай да
+      то «Joined» от (добавить "FLANG_OFFLINE=1" к head) и tail
+    случай нет
+      то «Joined» от head и tail
+
+тотальная функция «Dirs»
+  принимает walk: «Walk»
+  возвращает список строки
+  пример «Home, the library and six projects»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    ожидается ["-p", "/t/home", "/t/lib", "/t/shop1", "/t/shop2", "/t/shop3", "/t/shop4", "/t/shop5", "/t/shop6"]
+  приписать "-p" к (отобразить ["home", "lib", "shop1", "shop2", "shop3", "shop4", "shop5", "shop6"]
+    как name → «Path in» от walk и name)
+
+тотальная функция «Lock in»
+  принимает walk: «Walk», dir: строка
+  возвращает строка
+  пример «The lock lies next to the program»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано dir равно "shop1"
+    ожидается "/t/shop1/flang.lock"
+  «Path in» от walk и (соединить [dir, "/flang.lock"] по "")
+
+тотальная функция «Order of»
+  принимает walk: «Walk», act: «Act»
+  возвращает «Поручение»
+  пример «Cleaning removes the probe directory»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано act равно вариант «Clean»
+    ожидается вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/t"]
+  разбор act
+    случай вариант «Make dirs»
+      то вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным («Dirs» от walk)
+    случай вариант «Put» с file как file и text как text
+      то вариант «Записать файл» с путь равным («Path in» от walk и file) и содержимое равным text
+    случай вариант «Run» с dir как dir и offline как offline и expect как expect и mark как mark и quiet как quiet
+      то вариант «Запустить процесс» с программа равным "env" и аргументы равным («Run words» от walk и dir и offline)
+    случай вариант «Keep lock» с dir как dir
+      то вариант «Прочитать файл» с путь равным («Lock in» от walk и dir)
+    случай вариант «Same lock» с dir как dir
+      то вариант «Прочитать файл» с путь равным («Lock in» от walk и dir)
+    случай вариант «Bend lock» с dir как dir
+      то вариант «Прочитать файл» с путь равным («Lock in» от walk и dir)
+    случай вариант «Remove» с file как file
+      то вариант «Удалить файл» с путь равным («Path in» от walk и file)
+    случай вариант «Clean»
+      то вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", (walk.«root»)]
+    случай вариант «Nothing»
+      то вариант «Прочитать доводы»
+
+тотальная функция «Perform»
+  принимает walk: «Walk»
+  возвращает «Продолжение»
+  пример «A walk with nothing ahead ends»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    ожидается вариант «Конец работы» с значение равным "импорт по ссылке: шагов 0, замок, кеш и отказы сошлись"
+  разбор (walk.«rest»)
+    случай пусто
+      то «Verdict» от walk
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Order of» от walk и голова)
+        и потом равным (вариант «Walking» с walk равным («Taking» от walk и голова и хвост)))
+
+тотальная функция «Case name»
+  принимает act: «Act»
+  возвращает строка
+  пример «A run names its project and the network»
+    дано act равно (вариант «Run» с dir равным "shop4" и offline равным да и expect равным "FLANG_LINK_OFFLINE"
+      и mark равным "" и quiet равным нет)
+    ожидается "flang check в shop4 без сети"
+  разбор act
+    случай вариант «Run» с dir как dir и offline как offline и expect как expect и mark как mark и quiet как quiet
+      то соединить ["flang check в ", dir, («Network words» от offline)] по ""
+    случай вариант «Same lock» с dir как dir
+      то соединить ["замок в ", dir] по ""
+    случай вариант «Keep lock» с dir как dir
+      то соединить ["замок в ", dir] по ""
+    случай вариант «Bend lock» с dir как dir
+      то соединить ["замок в ", dir] по ""
+    случай любое
+      то "шаг пробы"
+
+тотальная функция «Tail of»
+  принимает text: строка
+  возвращает строка
+  пример «A short text whole»
+    дано text равно "абв"
+    ожидается "абв"
+  пусть lines равно (разделить text по "\n")
+  разбор ((длина lines) больше 12)
+    случай да
+      то соединить («Dropped» от lines и ((длина lines) минус 12)) по "\n"
+    случай нет
+      то text
+
+тотальная функция «Dropped» от «А»
+  принимает items: список «А», count: число
+  возвращает список «А»
+  пример «Drop two»
+    дано items равно [1, 2, 3, 4]
+    дано count равно 2
+    ожидается [3, 4]
+  разбор items
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Dropped further» от items и хвост и count
+
+тотальная функция «Success troubles»
+  принимает code: число, output: строка, errors: строка, mark: строка, quiet: признак
+  возвращает список строки
+  пример «A clean pass»
+    дано code равно 0
+    дано output равно "x.flang: проверено; замечаний нет"
+    дано errors равно ""
+    дано mark равно ""
+    дано quiet равно да
+    ожидается пустой список
+  пример «A quiet run that fetched»
+    дано code равно 0
+    дано output равно "замечаний нет"
+    дано errors равно "скачано: file:///t/a.flang"
+    дано mark равно ""
+    дано quiet равно да
+    ожидается ["ждали сборку без скачивания, а двоичный скачал"]
+  пусть rules равно [
+    (запись «Rule» с «broken» равным (не ((code равен 0) и притом (output содержит "замечаний нет")))
+      и «words» равным (соединить ["ждали код 0 и «замечаний нет», а ответ — код ", (к строке code)] по "")),
+    (запись «Rule» с «broken» равным (не (errors содержит mark))
+      и «words» равным (соединить ["в выводе нет строки «", mark, "»"] по "")),
+    (запись «Rule» с «broken» равным (quiet и притом (errors содержит "скачано"))
+      и «words» равным "ждали сборку без скачивания, а двоичный скачал")]
+  отобразить (отфильтровать rules где one → (one.«broken»)) как one → (one.«words»)
+
+объект «Rule»
+  «broken»: признак
+  «words»: строка
+
+тотальная функция «Refusal troubles»
+  принимает code: число, output: строка, errors: строка, expect: строка
+  возвращает список строки
+  пример «The refusal named by its code»
+    дано code равно 1
+    дано output равно ""
+    дано errors равно "FLANG_LINK_OFFLINE: ссылка"
+    дано expect равно "FLANG_LINK_OFFLINE"
+    ожидается пустой список
+  пример «A pass where a refusal was due»
+    дано code равно 0
+    дано output равно "замечаний нет"
+    дано errors равно ""
+    дано expect равно "FLANG_LINK_CHANGED"
+    ожидается ["ждали отказ FLANG_LINK_CHANGED, а ответ — код 0"]
+  разбор ((code не равен 0) и притом ((соединить [errors, output] по "") содержит expect))
+    случай да
+      то пустой список
+    случай нет
+      то [соединить ["ждали отказ ", expect, ", а ответ — код ", (к строке code)] по ""]
+
+тотальная функция «Run troubles»
+  принимает act: «Act», code: число, output: строка, errors: строка
+  возвращает список строки
+  пример «A refusal run»
+    дано act равно (вариант «Run» с dir равным "shop4" и offline равным да и expect равным "FLANG_LINK_OFFLINE"
+      и mark равным "" и quiet равным нет)
+    дано code равно 1
+    дано output равно ""
+    дано errors равно "FLANG_LINK_OFFLINE"
+    ожидается пустой список
+  разбор act
+    случай вариант «Run» с dir как dir и offline как offline и expect как expect и mark как mark и quiet как quiet
+      то разбор (expect равен "")
+        случай да
+          то «Success troubles» от code и output и errors и mark и quiet
+        случай нет
+          то «Refusal troubles» от code и output и errors и expect
+    случай любое
+      то «Process troubles» от code и errors
+
+тотальная функция «Noted»
+  принимает walk: «Walk», words: список строки, output: строка, errors: строка
+  возвращает «Walk»
+  пример «Nothing to note»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано words равно пустой список
+    дано output равно ""
+    дано errors равно ""
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+  разбор words
+    случай пусто
+      то walk
+    случай голова и хвост
+      то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": ", (соединить words по "; "), "\n",
+        («Tail of» от (соединить [errors, output] по "\n"))] по "")
+
+тотальная функция «After read»
+  принимает walk: «Walk», text: строка
+  возвращает «Walk»
+  пример «The first lock is kept»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Keep lock» с dir равным "shop1")
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+    дано text равно "{\"путь\":\"file:///t/x\"}"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "{\"путь\":\"file:///t/x\"}" и «now» равным (вариант «Keep lock» с dir равным "shop1")
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 1)
+  разбор (walk.«now»)
+    случай вариант «Keep lock» с dir как dir
+      то разбор (text содержит "file://")
+        случай да
+          то «With lock» от walk и text
+        случай нет
+          то «Trouble» от («With lock» от walk и text) и "в замке нет записи с адресом file://"
+    случай вариант «Same lock» с dir как dir
+      то разбор (text равен (walk.«lock»))
+        случай да
+          то walk
+        случай нет
+          то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": замок разошёлся с первым: ",
+            (к строке (длина text)), " и ", (к строке (длина (walk.«lock»))), " знаков"] по "")
+    случай вариант «Bend lock» с dir как dir
+      то «Bent lock» от walk и dir и text
+    случай любое
+      то walk
+
+тотальная функция «Bent lock»
+  принимает walk: «Walk», dir: строка, text: строка
+  возвращает «Walk»
+  пример «The bent lock is written back»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано dir равно "shop1"
+    дано text равно "умножить на 0.9"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным [вариант «Put» с file равным "shop1/flang.lock" и text равным "умножить на 0.8"]
+      и «troubles» равным пустой список и «done» равным 0)
+  пусть bent равно («Bent» от text)
+  разбор (bent равен text)
+    случай да
+      то «Trouble» от walk и "в замке нечего подменить: исходника скидки в нём нет"
+    случай нет
+      то «Pushed» от walk и (вариант «Put» с file равным (соединить [dir, "/flang.lock"] по "") и text равным bent)
+
+тотальная функция «After failure»
+  принимает walk: «Walk», code: строка, words: строка
+  возвращает «Walk»
+  пример «A failed act is a trouble»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано code равно "FLANG_IO"
+    дано words равно "нет"
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным ["шаг пробы: FLANG_IO: нет"] и «done» равным 0)
+  «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": ", code, ": ", words] по "")
+
+тотальная функция «After reply»
+  принимает walk: «Walk», reply: «Отклик»
+  возвращает «Walk»
+  пример «A written file moves on»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    дано reply равно вариант «Записано» с сколько равным 3
+    ожидается (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+  разбор reply
+    случай вариант «Записано» с сколько как bytes
+      то walk
+    случай вариант «Убрано»
+      то walk
+    случай вариант «Прочитано» с содержимое как text
+      то «After read» от walk и text
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «Noted» от walk и («Run troubles» от (walk.«now») и code и output и errors) и output и errors
+    случай вариант «Сбой» с код как code и сообщение как words
+      то «After failure» от walk и code и words
+    случай любое
+      то «Trouble» от walk и (соединить [(«Case name» от (walk.«now»)), ": хозяин ответил не тем откликом"] по "")
+
+тотальная функция «Verdict»
+  принимает walk: «Walk»
+  возвращает «Продолжение»
+  пример «No troubles is the end of the work»
+    дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
+      и «lock» равным "" и «now» равным (вариант «Nothing»)
+      и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
+    ожидается вариант «Конец работы» с значение равным "импорт по ссылке: шагов 0, замок, кеш и отказы сошлись"
+  разбор (пусто (walk.«troubles»))
+    случай да
+      то вариант «Конец работы» с значение равным (соединить ["импорт по ссылке: шагов ", (к строке (walk.«done»)),
+        ", замок, кеш и отказы сошлись"] по "")
+    случай нет
+      то вариант «Провал» с код равным "FLANG_LINK_PROBE" и сообщение равным (соединить (приписать (соединить [
+        "проба импорта по ссылке: бед ", (к строке (длина (walk.«troubles»))), " из ", (к строке (walk.«done»)),
+        " шагов:"] по "") к (walk.«troubles»)) по "\n  · ")
+
+тотальная функция «Start check»
+  возвращает «Step»
+  пример «The check starts by reading its arguments»
+    ожидается вариант «Reading arguments» с forged равным нет
+  вариант «Reading arguments» с forged равным нет
+
+тотальная функция «Start forgery»
+  возвращает «Step»
+  пример «The forgery starts the same way»
+    ожидается вариант «Reading arguments» с forged равным да
+  вариант «Reading arguments» с forged равным да
+
+тотальная функция «Ask»
+  принимает order: «Поручение», following: «Step»
+  возвращает «Продолжение»
+  пример «An order and the step after it»
+    дано order равно вариант «Прочитать доводы»
+    дано following равно вариант «Reading arguments» с forged равным нет
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать доводы»)
+      и потом равным (вариант «Reading arguments» с forged равным нет))
+  вариант «Сделать» с поручение равным order и потом равным following
+
+тотальная функция «Order failed»
+  принимает what: строка
+  возвращает «Продолжение»
+  пример «The host answered out of order»
+    дано what равно "доводы"
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали доводы"
+  вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным (соединить ["ждали ", what] по "")
+
+тотальная функция «After arguments»
+  принимает forged: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first answer asks for the temporary directory»
+    дано forged равно нет
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")
+      и потом равным (вариант «Reading temp» с forged равным нет))
+  разбор reply
+    случай вариант «Пока ничего»
+      то («Ask» от (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")
+        и (вариант «Reading temp» с forged равным forged))
+    случай любое
+      то «Order failed» от "первого отклика"
+
+тотальная функция «Temp pattern»
+  принимает root: строка
+  возвращает строка
+  пример «The probe directory pattern»
+    дано root равно "/tmp"
+    ожидается "/tmp/flang-link-probe-"
+  соединить [root, "/flang-link-probe-"] по ""
+
+тотальная функция «After temp»
+  принимает forged: признак, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The temporary root is known, the binary is asked»
+    дано forged равно нет
+    дано reply равно вариант «Значение среды» с значение равным "/t"
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
+      и потом равным (вариант «Reading binary» с forged равным нет и root равным "/t"))
+  разбор reply
+    случай вариант «Значение среды» с значение как root
+      то («Ask» от (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
+        и (вариант «Reading binary» с forged равным forged и root равным root))
+    случай вариант «Переменной среды нет»
+      то («Ask» от (вариант «Прочитать переменную среды» с имя равным "FLANG_BINARY")
+        и (вариант «Reading binary» с forged равным forged и root равным "/tmp"))
+    случай любое
+      то «Order failed» от "переменную среды FLANG_TMP"
+
+тотальная функция «After binary»
+  принимает forged: признак, root: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without FLANG_BINARY the tree binary is taken»
+    дано forged равно нет
+    дано root равно "/t"
+    дано reply равно вариант «Переменной среды нет»
+    ожидается (вариант «Сделать»
+      с поручение равным (вариант «Завести временный каталог» с образец равным "/t/flang-link-probe-")
+      и потом равным (вариант «Making root» с forged равным нет и binary равным "../../bootstrap/flang"))
+  пусть order равно (вариант «Завести временный каталог» с образец равным («Temp pattern» от root))
+  разбор reply
+    случай вариант «Значение среды» с значение как binary
+      то «Ask» от order и (вариант «Making root» с forged равным forged и binary равным binary)
+    случай вариант «Переменной среды нет»
+      то «Ask» от order и (вариант «Making root» с forged равным forged и binary равным («Binary»))
+    случай любое
+      то «Order failed» от "переменную среды FLANG_BINARY"
+
+тотальная функция «After root»
+  принимает forged: признак, binary: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A refused directory ends the probe»
+    дано forged равно нет
+    дано binary равно "b"
+    дано reply равно вариант «Сбой» с код равным "FLANG_IO" и сообщение равным "нет"
+    ожидается вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали временный каталог"
+  разбор reply
+    случай вариант «Заведено» с путь как path
+      то «Perform» от («Started walk» от forged и binary и path)
+    случай любое
+      то «Order failed» от "временный каталог"
+
+тотальная функция «Next»
+  принимает step: «Step», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «The first answer of the host»
+    дано step равно вариант «Reading arguments» с forged равным да
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным "FLANG_TMP")
+      и потом равным (вариант «Reading temp» с forged равным да))
+  разбор step
+    случай вариант «Reading arguments» с forged как forged
+      то «After arguments» от forged и reply
+    случай вариант «Reading temp» с forged как forged
+      то «After temp» от forged и reply
+    случай вариант «Reading binary» с forged как forged и root как root
+      то «After binary» от forged и root и reply
+    случай вариант «Making root» с forged как forged и binary как binary
+      то «After root» от forged и binary и reply
+    случай вариант «Walking» с walk как walk
+      то «Perform» от («After reply» от walk и reply)
+
+план «Check»
+  состояние «Step»
+  начинает с «Start check»
+  обрабатывает «Next»
+
+план «Forgery»
+  состояние «Step»
+  начинает с «Start forgery»
+  обрабатывает «Next»
+
+тотальная функция «Network words»
+  принимает offline: признак
+  возвращает строка
+  пример «Offline»
+    дано offline равно да
+    ожидается " без сети"
+  разбор offline
+    случай да
+      то " без сети"
+    случай нет
+      то " с сетью"
+
+тотальная функция «Dropped further» от «А»
+  принимает items: список «А», rest: список «А», count: число
+  возвращает список «А»
+  пример «Nothing left to drop»
+    дано items равно [1, 2]
+    дано rest равно [2]
+    дано count равно 0
+    ожидается [1, 2]
+  разбор (count больше 0)
+    случай да
+      то «Dropped» от rest и (count минус 1)
+    случай нет
+      то items
+
+тотальная функция «Process troubles»
+  принимает code: число, errors: строка
+  возвращает список строки
+  пример «A process that failed»
+    дано code равно 2
+    дано errors равно "нет"
+    ожидается ["процесс ответил кодом 2: нет"]
+  разбор (code равен 0)
+    случай да
+      то пустой список
+    случай нет
+      то [соединить ["процесс ответил кодом ", (к строке code), ": ", errors] по ""]

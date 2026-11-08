@@ -1,12 +1,12 @@
 # Packages
 
 A flang package is **one file** that holds a library together with everything
-it imports. There is no package cache, and the registry is a
-[list of names](registry.html), not a store of code: it has no command of the
-binary and answers with an address. To publish a package, commit the file to
-git; to use it, put the file next to your program and write one import line.
-Building on another machine needs only your program and the package file, and
-never touches the network.
+it imports. There is no package manager: the file is put next to the program or
+imported by a link right in the import line (`использует «X» из "https://…"`),
+and then the binary fetches it once and pins it by a fingerprint in
+`flang.lock`. To publish a package, commit the file to git. Building on another
+machine needs only your program and its `flang.lock`, and such a build does not
+touch the network.
 
 Two commands of the `flang` binary do the work: `flang package` builds a
 package, `flang lock` writes a lock file for a whole program. Both have
@@ -59,80 +59,57 @@ FLANG_PRECONDITION_CALL, строка 34, столбец 3: вызов «Ски�
 shop.flang: не проверено — замечаний 1
 ```
 
-## Install a package by name from the registry
+## Import a module by a link
 
-A package listed in the [registry](registry.html) is installed with one command.
-Name your program file and the package, with a version range if you want one:
+A module from someone else's address is imported by a link right in the import
+line. There is no install command and no registry is needed:
 
-```bash
-$ flang install проба/proba.flang 'Множество строк: не ниже 1.1'
-поставлено пакетов: 3 рядом с проба/proba.flang; замок проба/flang.lock — 65547 знаков:
-  · Множество строк 1.1.0 → sets.flang-package: доказано 4 из 18 обязательств
-  · Списки 1.4.2 → lists.flang-package: доказано 15 из 39 обязательств
-  · Логика 1.2.0 → logic.flang-package: доказано 4 из 7 обязательств
-$ echo $?
-0
+```
+модуль «Магазин»
+  использует «Скидка» из "https://example.org/discount/v1.2.0/discount.flang"
 ```
 
-The `flang install` command reaches the binary with the reprint of the seed
-(batch 9c); it is in the sources. In the 0.7.30 binary the same command is the
-shortcut of the flang tree,
-`flang run-script package:install проба/proba.flang 'Множество строк: не ниже 1.1'`;
-that shortcut is the engine `flang install` calls inside.
+```bash
+$ flang check shop.flang
+скачано: https://example.org/discount/v1.2.0/discount.flang — отпечаток 9261f268…
+в замок /home/me/shop/flang.lock: ссылок 1
+shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+```
 
 What happens behind that line:
 
-1. the need is appended to `flang.needs` next to the program (one need per line:
-   `Логика: не ниже 1.0`); without a name on the command line everything in the
-   file is installed;
-2. the registry list is fetched — from the address in `--registry`, else from the
-   `registry` key in `.flangrc`, else from the stable address on GitHub;
-3. from the needs of the project and the needs of the packages themselves the
-   greatest version of each name that satisfies all of them is chosen; one name,
-   one version; needs that cannot be met together are refused with
-   `FLANG_INSTALL_CONFLICT`, which names every range and who asked for it;
-4. each package is downloaded and the `sha256` of the body is compared with the
-   list record **before** anything is written: a mismatch is
-   `FLANG_INSTALL_FINGERPRINT`, and no file is written;
-5. the files land next to the program under the list name without the version
-   (`sets-1.1.0.flang-package` → `sets.flang-package`), so the line `использует
-   «Множество строк» из "sets.flang-package"` does not change when the version
-   moves;
-6. the program is checked with `flang check` and locked with `flang lock`: the
-   sources themselves go into `flang.lock`, and the build never touches the
-   network again.
+1. a link is a string that starts with `https://` or `file://`; it is not
+   joined to the program's directory but read from its address;
+2. the body is looked for in order: in `flang.lock` next to the program, then in
+   the cache `$XDG_CACHE_HOME/flang/links/` (without the variable,
+   `~/.cache/flang/links/`), then over the network; it is fetched once;
+3. the fingerprint of the body (sha256) and the body itself go into
+   `flang.lock`, the body also into the cache; later builds do not touch the
+   network and check the body against the fingerprint;
+4. the imports of a fetched module are resolved the same way: a relative path in
+   it counts from its address;
+5. the fetched module is checked together with the program, like a local file:
+   types, termination, the kernel and examples.
 
-A package carrying a `закон` (law) or a claim "declared, not proved" widens what
-you trust without proof. Such a package is shown on its own line and is installed
-only with `--accept-unproven`. The proved share is printed for every package.
+A link names exactly one thing, there is no version selection: a new version is
+a new link (`/v1.2.0/` → `/v1.3.0/`). The first fetch trusts what the address
+answered; after that the fingerprint in the lock catches a substitution behind
+the address
+([ADR-0214](https://github.com/digitable-lol/flang/blob/dev/docs/adr/0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md)).
+Without network (`FLANG_OFFLINE=1`) a build takes the bodies from the lock and
+the cache. `flang run-script link-import:check` verifies this on a clean HOME,
+and the CI job `link-import` does the same.
 
-Installing again into an empty directory gives the same `flang.lock` byte for
-byte — `flang run-script package-install:check` verifies this, and the CI job
-`package-install` does the same on a clean image. Ranges are written in words,
-not symbols: `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x`. The refusal
-codes are in the table below.
+### Link refusal codes
 
-How it works inside: the installer is a flang program
-(`scripts/package-install.fscript`) that `flang install` finds next to the
-binary (`scripts/` in the tree, `share/flang/scripts/` when installed) and runs
-with its own plan executor. From the flang tree the same plan is called by the
-shortcut `flang run-script package:install`; that is how it is tested and how
-it works until reprint 9c.
-
-### Refusal codes of the installer
-
-The exit code is 1 for all of them; the code stands in the answer with the reason.
+The exit status of all of them is 1; the code is in the answer together with the
+link and the reason.
 
 | Code | What it means | What to do |
 |---|---|---|
-| `FLANG_INSTALL_USAGE` | the command was called without a program file or with an unknown key | `flang install <program.flang> [<name>[: <range>]]... [--registry <address>] [--accept-unproven]` |
-| `FLANG_INSTALL_ENGINE` | no engine `package-install.fscript` next to the binary (neither in `scripts/` nor in `share/flang/scripts/`) | install flang whole — tarball, `install.sh`, Homebrew or asdf; from the tree call `flang run-script package:install` |
-| `FLANG_INSTALL_LEDGER` | the registry list or a package file was not received (the address answered other than 200, the file is missing) or the list did not parse | check the address: the `--registry` key or `registry` in `.flangrc`; the list format is `docs/registry-list-format.md` |
-| `FLANG_INSTALL_NEEDS` | the project needs in `flang.needs` did not parse | write `name: range`, one need per line; ranges are `любая`, `ровно 1.2.3`, `не ниже 1.2.3`, `в пределах 1.x` |
-| `FLANG_INSTALL_CONFLICT` | the needs cannot be met together, or the registry does not know the name; the refusal names every range, who asked for it and which versions the registry knows | loosen a range or raise both sides to one version |
-| `FLANG_INSTALL_FINGERPRINT` | the `sha256` of the received body differs from the registry record; nothing was written to disk | a substituted or damaged package: do not install it, tell the keeper of the list |
-| `FLANG_INSTALL_UNPROVED` | the package carries a `закон` (law) or a claim "declared, not proved" and would widen the trusted base | read the named lines; if you agree, repeat with `--accept-unproven` |
-| `FLANG_INSTALL_BUILD` | after installing, `flang check` or `flang lock` over the program answered non-zero | read their answer in the message; usually the program lacks the line `использует «Имя» из "file.flang-package"` |
+| `FLANG_LINK_FETCH` | the body was not received: the address answered other than 200, there is no file, the scheme is neither `https://` nor `file://`, or a relative path goes above the root of the address | check the link |
+| `FLANG_LINK_OFFLINE` | the network is closed by `FLANG_OFFLINE`, and neither the lock nor the cache knows this link | build once with the network or bring `flang.lock` |
+| `FLANG_LINK_CHANGED` | the body in the lock or in the cache does not match the fingerprint it was pinned by | the lock or the cache was edited: restore the lock from git; to take the body again, remove the record from `flang.lock` and clear the cache |
 
 ## Make a package
 
@@ -340,10 +317,9 @@ A program can have a `flang.lock` and packages at the same time.
 
 ## What is missing
 
-- **`flang install` in the 0.7.30 binary.** The command arrives with reprint
-  9c; until then installing runs the same plan from the flang tree (`flang
-  run-script package:install`). There is no `flang publish` or `flang search` —
-  publishing is a commit of the file and a line in the registry list.
+- **Install, search and publish commands.** There is no `flang install`, `flang
+  search` or `flang publish`: an outside module is imported by a link, and
+  publishing is a commit of the file at an address one can name.
 - **Other people's packages in the registry.** The list holds only the example
   packages.
 - **Two versions of one library** in one program: imports merge into one flat

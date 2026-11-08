@@ -1997,6 +1997,7 @@ conversion
 predicates
 undistributed
 xanthippe
+xor
 translator
 applied
 way
@@ -2084,6 +2085,7 @@ unclosed
 wrapped
 mix
 weight
+weights
 binary64
 bracket
 eval

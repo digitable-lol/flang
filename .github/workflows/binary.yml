@@ -2331,7 +2331,18 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
       - name: A four times smaller speed budget turns the gate red
-        run: bootstrap/flang run-script kernel-speed:forgery
+        run: |
+          if bootstrap/flang run-script kernel-speed:forgery; then
+            echo "kernel-speed:forgery промолчал на вчетверо меньшем бюджете — проверять им нечего" >&2
+            exit 1
+          fi
+          g=flang/proof/probes/kernel-speed/run.fscript
+          sed -i 's/«шагов» равным 125000000/«шагов» равным 1000/; s/«шагов» равным 60000000/«шагов» равным 1000/' "$g"
+          if bootstrap/flang run-script kernel-speed:check; then
+            echo "kernel-speed:check промолчал на бюджете в тысячу шагов — проверять им нечего" >&2
+            exit 1
+          fi
+          git checkout -- "$g"
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 

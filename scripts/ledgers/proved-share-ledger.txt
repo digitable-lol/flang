@@ -2275,3 +2275,6 @@ c38be63d01428bc0f51dafdffcdc4be2|3|×|×|×|0|flang/proof/probes/quantifier-insi
 ccb51e941d7a451c4898f27838e0478b|1|×|×|×|0|flang/proof/probes/quantifier-inside-a-formula/programs/or-with-a-wrong-witness-and-a-true-half.flang
 069bf89cead9ee3d10d7bc4ff82dc4f7|3|3|0|0|0|flang/concurrency/bench/spread-map.fscript
 c158a54ca2d085c52bf1df5536f33737|1|0|1|0|0|flang/concurrency/bench/spread-map.flang
+421be55eb82ac825b52c355ada8a461d|1|×|×|×|0|flang/proof/probes/kernel-speed/programs/let-parse.flang
+b491c468ed16af382968358f50af4d4e|4|×|×|×|0|flang/proof/probes/kernel-speed/programs/xor-weights.flang
+9c6d4288880bc7d886cbaf0bd28b0f23|3|×|×|×|0|flang/proof/probes/kernel-speed/run.fscript

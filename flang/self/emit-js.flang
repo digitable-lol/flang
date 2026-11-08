@@ -1561,7 +1561,8 @@
   соединить [
     "function $percent(percent, value) {",
     "  $nums(\"percent\", percent, value)",
-    "  return (percent / 100) * value",
+    "  const share = (percent / 100) * value",
+    "  return share === 0 ? 0 : share",
     "}"
   ] по "\n"
 
@@ -2348,7 +2349,8 @@
     "function $b_procentov_ot(percent, value) {",
     "  $expectNumber(\"процентов от\", percent, \"процент\")",
     "  $expectNumber(\"процентов от\", value, \"значение\")",
-    "  return (percent / 100) * value",
+    "  const share = (percent / 100) * value",
+    "  return share === 0 ? 0 : share",
     "}"
   ] по "\n"
 

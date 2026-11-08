@@ -716,7 +716,7 @@ public final class Flang {
    */
   public static Value percent(Ctx ctx, Value left, Value right) {
     arithmetic("percent", left, right);
-    return Value.number((left.num / 100) * right.num);
+    return Value.number(unsignedZero((left.num / 100) * right.num));
   }
 
   /** «больше». */
@@ -1798,7 +1798,7 @@ public final class Flang {
   public static Value bPercentOf(Ctx ctx, Value left, Value right) {
     double a = expectNumber("процентов от", left, "процент");
     double b = expectNumber("процентов от", right, "значение");
-    return Value.number((a / 100) * b);
+    return Value.number(unsignedZero((a / 100) * b));
   }
 
   /* ───────────────────────────── граница входа ─────────────────────────────

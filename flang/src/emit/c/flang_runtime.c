@@ -5728,7 +5728,7 @@ fl_status fl_percent(fl_ctx *ctx, fl_value left, fl_value right, fl_value *out,
     return fl_word_arith(ctx, "percent", left, right, out, error);
   }
   FL_TRY(fl_numbers(ctx, "percent", left, right, error));
-  *out = fl_number((left.as.number / 100.0) * right.as.number);
+  *out = fl_number((left.as.number / 100.0) * right.as.number + 0.0);
   return FL_OK;
 }
 
@@ -7005,7 +7005,7 @@ fl_status fl_b_procentov_ot(fl_ctx *ctx, fl_value left, fl_value right,
                             fl_value *out, fl_error *error) {
   FL_TRY(fl_expect_number(ctx, "процентов от", left, "процент", error));
   FL_TRY(fl_expect_number(ctx, "процентов от", right, "значение", error));
-  *out = fl_number((left.as.number / 100.0) * right.as.number);
+  *out = fl_number((left.as.number / 100.0) * right.as.number + 0.0);
   return FL_OK;
 }
 

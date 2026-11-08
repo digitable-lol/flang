@@ -778,7 +778,7 @@ record — [the record format](record-format.html).
 | `FLANG_PECHAT_OTKAZ` | `emit-from-source.flang` | — |
 | `FLANG_PLAN` | `io.flang` | — |
 | `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
-| `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `parser.flang` | — |
+| `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `interpret.flang`, `parser.flang` | — |
 | `FLANG_PRECONDITION_CALL` | `proofterm.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |

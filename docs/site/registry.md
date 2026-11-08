@@ -45,20 +45,11 @@ list and choosing a version are written and proved in
 format, for whoever writes or serves it, is
 [registry-list-format.md](../registry-list-format.md).
 
-## Install a package by name
+## There is no install by name
 
-```
-flang install проба/proba.flang 'Множество строк: не ниже 1.1'
-```
-
-(until reprint 9c, `flang run-script package:install` from the flang tree — the same engine).
-The command takes this list, picks the greatest version that satisfies the needs
-of the project and of the packages themselves, downloads the files, checks their
-`sha256` before writing, puts them next to the program and writes `flang.lock`.
-Details are on the [packages page](packages.html); the list address comes from
-`--registry` or from the `registry` key in `.flangrc`. Installing again into an
-empty directory gives exactly the same lock — the check
-`package-install:check` and the CI job of the same name hold that.
+A program imports a module by a link right in the import line
+(`использует «X» из "https://…"`), not by a name from this list; how it works is on
+the [packages page](packages.html). The list is served by the registry service.
 
 ## The records as they stand
 

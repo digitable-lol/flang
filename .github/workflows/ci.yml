@@ -2132,7 +2132,7 @@ jobs:
       - run: make -C bootstrap -j"$(nproc)"
       - name: Probe the link import by a substituted body
         run: |
-          if bootstrap/flang run-script link-import:forgery; then
+          if bootstrap/flang io scripts/guards/link-import-guard.fscript --plan Forgery --timeout 900000; then
             echo "the guard stayed green on a substituted body" >&2
             exit 1
           fi

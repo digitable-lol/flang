@@ -1,5 +1,5 @@
 модуль «Loop sugar tasks»
-  использует «Loop sugar» из "loops.flang"
+  использует «Surface sugar» из "../self/sugar.flang"
 
 объект «Sugared task»
   «id»: строка
@@ -144,11 +144,11 @@
   пример «Text without a loop expands to itself»
     дано source равно "модуль «А»\n"
     ожидается да
-  разбор («Expand text» от source)
-    случай вариант «Expanded» с textPart как expanded
-      то да
-    случай вариант «Not expanded» с reason как reason
+  разбор («Expand sugar» от source)
+    случай вариант «Sugar refused» с code как code
       то нет
+    случай любое
+      то да
 
 тотальная функция «Every task expands»
   возвращает признак

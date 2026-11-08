@@ -14949,6 +14949,8 @@ static const char *emit_kind_word(fl_type_kind kind) {
       return "запись";
     case FL_TYPE_SUM:
       return "сумма";
+    case FL_TYPE_EXACT:
+      return "точное целое";
     case FL_TYPE_UNKNOWN:
     default:
       return "неизвестно";

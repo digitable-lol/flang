@@ -859,7 +859,8 @@ typedef enum fl_type_kind {
   FL_TYPE_NULL,
   FL_TYPE_LIST,
   FL_TYPE_RECORD,
-  FL_TYPE_SUM
+  FL_TYPE_SUM,
+  FL_TYPE_EXACT
 } fl_type_kind;
 
 /* Поле записи или варианта: имя и индекс его типа в таблице типов. */

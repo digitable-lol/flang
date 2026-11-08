@@ -1834,6 +1834,7 @@ public final class Flang {
   public static final int TYPE_RECORD = 6;
   /** Сумма типов. */
   public static final int TYPE_SUM = 7;
+  public static final int TYPE_EXACT = 8;
 
   /** Поле записи или варианта: имя и место его типа в таблице типов. */
   public record TypeField(String name, int type) {}
@@ -1885,6 +1886,37 @@ public final class Flang {
     }
   }
 
+  private static void checkExactType(TypeSpec spec, Value value, String label) {
+    String canon = "точное целое записано не в каноне";
+    if (!exactDigits(value)) {
+      throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+    }
+    Value[] digits = Value.elements(value);
+    if (digits.length > 0 && digits[digits.length - 1].num == 0) {
+      throw fail(
+          FlangError.CODE_TYPE, canon + ": старший разряд нулевой, а канон требует снять старшие нули");
+    }
+    for (Value item : digits) {
+      double digit = item.num;
+      if (!Double.isFinite(digit)) {
+        continue;
+      }
+      String text = Value.numberText(digit);
+      if (digit < 0) {
+        throw fail(
+            FlangError.CODE_TYPE,
+            canon + ": разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет");
+      }
+      if (Math.floor(digit) != digit) {
+        throw fail(
+            FlangError.CODE_TYPE, canon + ": разряд " + text + " не целый, а разряды точного целого целы");
+      }
+      if (digit >= 4194304) {
+        throw fail(FlangError.CODE_TYPE, canon + ": разряд " + text + " не меньше основания 4194304");
+      }
+    }
+  }
+
   private static void checkFields(
       EntryTable table,
       int from,
@@ -1933,6 +1965,7 @@ public final class Flang {
     String mismatch = label + " не соответствует типу " + spec.name();
     switch (spec.kind()) {
       case TYPE_NUMBER -> checkNumberType(spec, value, label);
+      case TYPE_EXACT -> checkExactType(spec, value, label);
       case TYPE_TEXT -> {
         if (value.tag != Value.TAG_STRING) {
           throw fail(FlangError.CODE_TYPE, mismatch);

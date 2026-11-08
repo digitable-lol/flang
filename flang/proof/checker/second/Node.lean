@@ -448,11 +448,11 @@ def «Исх».«узелВысказывания» (s : «Исх») (c : «Сч
         fields := fields.push s!"{f} равным {f}"
         if tf = s!"«{tip}»" then
           own := own + 1
-          if let some (x, y) := «разрезРавенства» («вместо» («т» «цель») po f) then
+          if let some (x, y) := «разрезРавенства» («вместоИмени» («т» «цель») po f) then
             lv := lv ++ [«свестиПорядком» o x 6]
             rv := rv ++ [«свестиПорядком» o y 6]
     let ctor := if fields.isEmpty then s!"вариант «{v}»" else s!"вариант «{v}» с {" и ".intercalate fields.toList}"
-    let g := «вместо» («т» «цель») po ctor
+    let g := «вместоИмени» («т» «цель») po ctor
     if (own > 0) != («слово» («после» l "вид ") 1 = "step") then
       bad := bad ++ [s!"утверждение «{«имя»}», посылка «{v}»: у варианта {if own > 0 then "есть" else "нет"} поля типа «{tip}», а записана как «вид {«слово» («после» l "вид ") 1}»"]
     let some (L, P) := «разрезРавенства» g | return (if bad.isEmpty then .«не» s!"случай «{v}»: цель «{g}» — не равенство" else .«ложь» bad)

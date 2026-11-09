@@ -649,6 +649,11 @@
 // ⚑ 26 октября 2026, вход перепечатки 9b (issue 479): у flang/self/parser.flang
 // пересчитано только «написано»: 809 → 810 (обещание «Узел первичного числа»);
 // md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
+// ⚑ 9 ноября 2026, партия печати 11: у flang/self/cli.flang и flang/self/types.flang
+// пересчитано только «написано»: 82 → 81 (снята команда flang install) и 458 → 467
+// (починки дыр типизации 12–24 и 26, отказы FLANG_INFINITY и FLANG_SCALE); md5 и
+// числитель НЕ ТРОНУТЫ. Новая строка scripts/guards/link-import-guard.fscript снята
+// scripts/ledgers/take-proof-ledger.fscript двоичным партии 11: доказано 8 из 8.
 // Задача 4722 завела семью `flang/proof/checker/tests/families/rewrite/`: законы склейки
 // строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
 // ведомости у проб нет — «×», как у соседних семей сверщика.
@@ -1352,7 +1357,7 @@ fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-sou
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
 b4ec2d3ddf6dc53486a93d1545f6d465|10|6|0|4|0|flang/self/carriers.flang
-87efd53b3cad17320ce7282d24440d59|82|53|8|17|0|flang/self/cli.flang
+87efd53b3cad17320ce7282d24440d59|81|53|8|17|0|flang/self/cli.flang
 02ccce0235b40a701fd8baf4ed5c7bc7|13|9|0|4|0|flang/self/commutative.flang
 6962b417f4054916cefff7f1716b5d6c|203|124|23|56|0|flang/self/conc.flang
 0415f36439e19883e5516407500a09ec|19|12|2|5|0|flang/self/declared-properties.flang
@@ -1409,7 +1414,7 @@ bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
 5244f474a7f26171786a1690f79a98e9|317|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
-6f5995562eb91e54ecbcd9bde4c4853e|458|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|467|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 2f0b2efdc38dacde4f0d37c9a3f99736|127|120|6|1|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1624,6 +1629,7 @@ b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-
 ea1518a801b7e78ee25788b065921aff|23|11|2|3|0|scripts/guards/kernel-abilities-guard.fscript
 25b6cee98abe43fb155693a170fe8ae4|1|1|0|0|0|scripts/guards/license-guard.fscript
 b162a51d6ae08b12527da153f5957d56|85|37|48|0|0|scripts/guards/link-guard.fscript
+1b6d7b63b34e56523c00bfdb26a87233|8|8|0|0|0|scripts/guards/link-import-guard.fscript
 d3c200fe9be648a3eb699ba7d7fb237d|3|3|0|0|0|scripts/guards/lock-closes-every-form.fscript
 3eea8a647996e57cc3e492c8f4e4763e|15|13|2|0|0|scripts/guards/manpage-guard.fscript
 f8e01fecff7e47ed055e836a42195ee0|15|15|0|0|0|scripts/guards/module-name-guard.fscript

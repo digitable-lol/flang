@@ -207,7 +207,7 @@
 
 тотальная функция «Объявлено, не сделано»
   возвращает список «Отсрочка»
-  пример «Записей восемь: четыре отвергнутых кода, один снятый и три обещанных»
+  пример «Записей четырнадцать: четыре отвергнутых кода, восемь снятых и два обещанных»
     ожидается [
       (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
         "docs/flang/concurrency/DISTRIBUTED.md"] и «почему» равным [
@@ -261,7 +261,46 @@
         "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md"] и «почему» равным [
         "не код отказа, а ключ препроцессора из решения ADR-0067 §4: матрица выпуска передаёт тройку в двоичный ",
         "как -DFLANG_TARGET, и третья строка --version печатает её. Решение предложено, работа 7959 не начата, ",
-        "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"])
+        "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_BUILD" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_CONFLICT" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_FINGERPRINT" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+          "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_LEDGER" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_NEEDS" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_PROBE" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+          "docs/tasks/3404-the-binary-has-no-install-command-the-installer-lives-only-in-the-tree.md",
+          "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_INSTALL_UNPROVED" и «род» равным "снят" и «где» равным [
+          "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+          "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+          "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+          "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+          "его отказы именно по этим именам, и без имени разбор не читается"])
     ]
   [
     (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
@@ -316,15 +355,55 @@
       "docs/adr/0067-the-release-ships-binaries-for-four-triples-from-one-seed.md"] и «почему» равным [
       "не код отказа, а ключ препроцессора из решения ADR-0067 §4: матрица выпуска передаёт тройку в двоичный ",
       "как -DFLANG_TARGET, и третья строка --version печатает её. Решение предложено, работа 7959 не начата, ",
-      "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"])
+      "release.yml матрицы не знает. Появится в flang/src/emit/c/flang_repl.c — снять запись"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_BUILD" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_CONFLICT" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_FINGERPRINT" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+        "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_LEDGER" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_NEEDS" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_PROBE" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+        "docs/tasks/3404-the-binary-has-no-install-command-the-installer-lives-only-in-the-tree.md",
+        "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_INSTALL_UNPROVED" и «род» равным "снят" и «где» равным [
+        "docs/adr/0168-a-package-is-installed-by-name-by-a-plan-and-not-by-the-binary.md",
+        "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
+        "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
+        "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
+        "его отказы именно по этим именам, и без имени разбор не читается"])
   ]
 
 тотальная функция «Отсроченные имена»
   возвращает список строки
-  пример «Семь имён»
+  пример «Четырнадцать имён»
     ожидается ["FLANG_NODE_DEAD", "FLANG_ZAMER", "FLANG_PROBE_MAX_DEPTH",
       "FLANG_SLOVO_PUSTOTA", "FLANG_IO_UNSUPPORTED", "FLANG_SELF_EVAL_UNSUPPORTED",
-      "FLANG_TARGET"]
+      "FLANG_TARGET", "FLANG_INSTALL_BUILD", "FLANG_INSTALL_CONFLICT", "FLANG_INSTALL_FINGERPRINT",
+      "FLANG_INSTALL_LEDGER", "FLANG_INSTALL_NEEDS", "FLANG_INSTALL_PROBE", "FLANG_INSTALL_UNPROVED"]
   отобразить («Объявлено, не сделано») как отсрочка → (отсрочка.«код»)
 
 тотальная функция «Файл места»

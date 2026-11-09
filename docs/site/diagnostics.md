@@ -695,6 +695,7 @@ record — [the record format](record-format.html).
 | `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
+| `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
 | `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
@@ -778,7 +779,7 @@ record — [the record format](record-format.html).
 | `FLANG_PLAN` | `io.flang` | — |
 | `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
 | `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `interpret.flang`, `parser.flang` | — |
-| `FLANG_PRECONDITION_CALL` | `proofterm.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
+| `FLANG_PRECONDITION_CALL` | `proofterm.flang`, `types.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
@@ -807,6 +808,7 @@ record — [the record format](record-format.html).
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
+| `FLANG_SCALE` | `types.flang` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |

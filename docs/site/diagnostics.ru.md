@@ -721,6 +721,7 @@ $ echo $?
 | `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
 | `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
+| `FLANG_JOBS` | `flang_runtime.c` | — |
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |

@@ -1,4 +1,4 @@
-program	surface	function	input	code	word	объявленные типы на входе напечатанной программы и у flang run (ADR-0099): строки целей и строка «-1 вне вес» у run ждут печати семени после 12 октября 2026; до неё семя 0.7.26 на них расходится, и это и есть снятый дефект. Строки check с кодом 0 — зазор FLANG_INFINITY и FLANG_SCALE, названный в docs/tasks
+program	surface	function	input	code	word	объявленные типы на входе напечатанной программы и у flang run (ADR-0099): строки целей и строка «-1 вне вес» у run ждут печати семени после 12 октября 2026; до неё семя 0.7.26 на них расходится, и это и есть снятый дефект. Строки check с FLANG_INFINITY и FLANG_SCALE — зазор docs/tasks/1747-weight-and-scale-arithmetic-refusals.md, закрытый печатью партии 11; до неё эти строки отвечали кодом 0 «замечаний нет»
 weight-args.flang	run	Удвоить вес	{"а":-1}	1	аргумент «а»: -1 вне вес
 weight-args.flang	run	Удвоить вес	{"а":21}	0	42
 weight-args.flang	run	Удвоить натуральное	{"н":-1}	1	аргумент «н»: -1 вне неотрицательное
@@ -44,6 +44,6 @@ weight-args.flang	ts	Удвоить вес	21	-	{"n":"42"}
 weight-args.flang	ts	Удвоить натуральное	-1	-	аргумент «н»: -1 вне неотрицательное
 weight-args.flang	ts	Строка	5	-	аргумент «т» не соответствует типу строка
 weight-minus.flang	check	-	-	1	объявлена как вес, а тело даёт число
-weight-minus-into-number.flang	check	-	-	0	замечаний нет
-scale-mix.flang	check	-	-	0	замечаний нет
-scale-mix-into-number.flang	check	-	-	0	замечаний нет
+weight-minus-into-number.flang	check	-	-	1	FLANG_INFINITY
+scale-mix.flang	check	-	-	1	FLANG_SCALE
+scale-mix-into-number.flang	check	-	-	1	FLANG_SCALE

@@ -29,16 +29,23 @@ flang: flang_cli.o flang_repl.o $(OBJECTS)
 # них оболочка не может собрать выражение системным `cc` и умеет только
 # проверять. Страница руководства кладётся, если она рядом (в архиве
 # релиза она есть, в дереве репозитория — нет).
+# Рантаймы целей печати и стандартная библиотека ложатся в share/flang:
+# двоичный ищет их в ../share/flang рядом с собой. В архиве релиза они
+# лежат в runtime/, в дереве репозитория — в ../flang/src/emit и
+# ../flang/stdlib.
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib $(DESTDIR)$(PREFIX)/include
 	install -m 0755 flang $(DESTDIR)$(PREFIX)/bin/flang
 	install -m 0644 libcompiler_flang.a $(DESTDIR)$(PREFIX)/lib/
 	install -m 0644 *.h $(DESTDIR)$(PREFIX)/include/
 	test ! -f flang.1 || { install -d $(DESTDIR)$(PREFIX)/share/man/man1 && install -m 0644 flang.1 $(DESTDIR)$(PREFIX)/share/man/man1/; }
+	test ! -d runtime || { install -d $(DESTDIR)$(PREFIX)/share/flang && cp -R runtime/. $(DESTDIR)$(PREFIX)/share/flang/; }
+	test -d runtime || test ! -d ../flang/src/emit || { install -d $(DESTDIR)$(PREFIX)/share/flang && cp -R ../flang/src/emit/. ../flang/stdlib $(DESTDIR)$(PREFIX)/share/flang/; }
 	@echo 'поставлено: $(DESTDIR)$(PREFIX)/bin/flang — проверьте: flang --version'
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/flang $(DESTDIR)$(PREFIX)/lib/libcompiler_flang.a $(DESTDIR)$(PREFIX)/share/man/man1/flang.1
+	rm -rf $(DESTDIR)$(PREFIX)/share/flang
 
 # Заголовки названы поимённо. Без них действует одно неявное правило
 # «объектный файл из одноимённого исходника», и смена заголовка не
@@ -47,10 +54,14 @@ uninstall:
 # Замыкание транзитивное: исходник модуля зовёт flang_runtime.h не сам, а
 # через свой заголовок. Названы ТОЛЬКО заголовки, которые печать кладёт
 # рядом: на отсутствующий make отвечает «No rule to make target».
+# Клиент TLS печатается отдельно и лежит рядом не всегда: оболочка
+# включает tls_client.c, только если он есть, и Makefile называет его
+# через $(wildcard) — нет файла, нет и зависимости.
 flang_runtime.o: flang_runtime.c flang_runtime.h
 compiler_flang.o: compiler_flang.c compiler_flang.h flang_runtime.h
 flang_cli.o: flang_cli.c flang_runtime.h
 flang_repl.o: flang_repl.c flang_runtime.h
+flang_repl.o: $(wildcard tls_client.c tls_client.h)
 
 clean:
 	rm -f $(OBJECTS) flang_cli.o flang_repl.o flang libcompiler_flang.a

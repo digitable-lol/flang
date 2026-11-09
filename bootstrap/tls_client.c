@@ -394,7 +394,7 @@ static fl_status tls_client_svyortka_rsa_map_fl_t1391(fl_ctx *ctx,
   (void)fl_t1394;
   if (fl_t1394.tag != FL_NUMBER || razryad.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t1394, razryad, error));
-  *result = fl_number(fl_t1394.as.number * razryad.as.number);
+  *result = fl_number(fl_t1394.as.number * razryad.as.number + 0.0);
   return FL_OK;
 }
 
@@ -411,7 +411,7 @@ static fl_status tls_client_shag_montgomeri_map_fl_t1401(fl_ctx *ctx,
   (void)fl_t1404;
   if (fl_t1404.tag != FL_NUMBER || razryad.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t1404, razryad, error));
-  *result = fl_number(fl_t1404.as.number * razryad.as.number);
+  *result = fl_number(fl_t1404.as.number * razryad.as.number + 0.0);
   return FL_OK;
 }
 
@@ -453,7 +453,7 @@ static fl_status tls_client_udvoit_po_modulyu_map_fl_t1438(fl_ctx *ctx,
   (void)r;
   if (r.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(2.0), r, error));
-  *result = fl_number(2.0 * r.as.number);
+  *result = fl_number(2.0 * r.as.number + 0.0);
   return FL_OK;
 }
 static const fl_value tls_client_text_207 = {
@@ -617,7 +617,7 @@ static fl_status tls_client_svyortka_razryadov_map_fl_t2326(fl_ctx *ctx,
   (void)fl_t2329;
   if (fl_t2329.tag != FL_NUMBER || razryad.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t2329, razryad, error));
-  *result = fl_number(fl_t2329.as.number * razryad.as.number);
+  *result = fl_number(fl_t2329.as.number * razryad.as.number + 0.0);
   return FL_OK;
 }
 
@@ -632,7 +632,7 @@ static fl_status tls_client_svernut_razryady_map_fl_t2336(fl_ctx *ctx,
   (void)razryad;
   if (razryad.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(38.0), razryad, error));
-  *result = fl_number(38.0 * razryad.as.number);
+  *result = fl_number(38.0 * razryad.as.number + 0.0);
   return FL_OK;
 }
 
@@ -649,7 +649,7 @@ static fl_status tls_client_umnozhit_na_chislo_map_fl_t2343(fl_ctx *ctx,
   (void)fl_t2346;
   if (fl_t2346.tag != FL_NUMBER || razryad.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t2346, razryad, error));
-  *result = fl_number(fl_t2346.as.number * razryad.as.number);
+  *result = fl_number(fl_t2346.as.number * razryad.as.number + 0.0);
   return FL_OK;
 }
 static const fl_value tls_client_text_247 = {FL_STRING,
@@ -1922,8 +1922,10 @@ fl_status tls_client_celaya_chast(fl_ctx *ctx, fl_value znachenie,
     FL_TRY(fl_not_numbers(ctx, "mod", znachenie, fl_number(1.0), error));
   if (znachenie.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", znachenie,
-                          fl_number((fmod(znachenie.as.number, 1.0))), error));
-  *result = fl_number(znachenie.as.number - (fmod(znachenie.as.number, 1.0)));
+                          fl_number((fmod(znachenie.as.number, 1.0) + 0.0)),
+                          error));
+  *result = fl_number(
+      znachenie.as.number - (fmod(znachenie.as.number, 1.0) + 0.0));
   return FL_OK;
 }
 
@@ -2018,12 +2020,12 @@ fl_status tls_client_bayty_kodovoy_tochki(fl_ctx *ctx, fl_value kod,
           FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
         if (tochka.tag != FL_NUMBER)
           FL_TRY(fl_not_numbers(ctx, "sub", tochka,
-                                fl_number((fmod(tochka.as.number, 64.0))),
+                                fl_number((fmod(tochka.as.number, 64.0) + 0.0)),
                                 error));
-        fl_t14[0] = fl_number(192.0 + ((tochka.as.number - (fmod(tochka.as.number, 64.0))) / 64.0));
+        fl_t14[0] = fl_number(192.0 + ((tochka.as.number - (fmod(tochka.as.number, 64.0) + 0.0)) / 64.0 + 0.0));
         if (tochka.tag != FL_NUMBER)
           FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
-        fl_t14[1] = fl_number(128.0 + (fmod(tochka.as.number, 64.0)));
+        fl_t14[1] = fl_number(128.0 + (fmod(tochka.as.number, 64.0) + 0.0));
         *result = fl_list(fl_t14, 2);
         return FL_OK;
       } else {
@@ -2039,19 +2041,19 @@ fl_status tls_client_bayty_kodovoy_tochki(fl_ctx *ctx, fl_value kod,
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(4096.0), error));
           if (tochka.tag != FL_NUMBER)
-            FL_TRY(fl_not_numbers(ctx, "sub", tochka,
-                                  fl_number((fmod(tochka.as.number, 4096.0))),
-                                  error));
-          fl_t16[0] = fl_number(224.0 + ((tochka.as.number - (fmod(tochka.as.number, 4096.0))) / 4096.0));
+            FL_TRY(fl_not_numbers(
+                ctx, "sub", tochka,
+                fl_number((fmod(tochka.as.number, 4096.0) + 0.0)), error));
+          fl_t16[0] = fl_number(224.0 + ((tochka.as.number - (fmod(tochka.as.number, 4096.0) + 0.0)) / 4096.0 + 0.0));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(4096.0), error));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
-          fl_t16[1] = fl_number(128.0 + (((fmod(tochka.as.number, 4096.0)) - (fmod(tochka.as.number, 64.0))) / 64.0));
+          fl_t16[1] = fl_number(128.0 + (((fmod(tochka.as.number, 4096.0) + 0.0) - (fmod(tochka.as.number, 64.0) + 0.0)) / 64.0 + 0.0));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
-          fl_t16[2] = fl_number(128.0 + (fmod(tochka.as.number, 64.0)));
+          fl_t16[2] = fl_number(128.0 + (fmod(tochka.as.number, 64.0) + 0.0));
           *result = fl_list(fl_t16, 3);
           return FL_OK;
         } else {
@@ -2061,26 +2063,26 @@ fl_status tls_client_bayty_kodovoy_tochki(fl_ctx *ctx, fl_value kod,
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(262144.0), error));
           if (tochka.tag != FL_NUMBER)
-            FL_TRY(fl_not_numbers(ctx, "sub", tochka,
-                                  fl_number((fmod(tochka.as.number, 262144.0))),
-                                  error));
-          fl_t17[0] = fl_number(240.0 + ((tochka.as.number - (fmod(tochka.as.number, 262144.0))) / 262144.0));
+            FL_TRY(fl_not_numbers(
+                ctx, "sub", tochka,
+                fl_number((fmod(tochka.as.number, 262144.0) + 0.0)), error));
+          fl_t17[0] = fl_number(240.0 + ((tochka.as.number - (fmod(tochka.as.number, 262144.0) + 0.0)) / 262144.0 + 0.0));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(262144.0), error));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(4096.0), error));
-          fl_t17[1] = fl_number(128.0 + (((fmod(tochka.as.number, 262144.0)) - (fmod(tochka.as.number, 4096.0))) / 4096.0));
+          fl_t17[1] = fl_number(128.0 + (((fmod(tochka.as.number, 262144.0) + 0.0) - (fmod(tochka.as.number, 4096.0) + 0.0)) / 4096.0 + 0.0));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "mod", tochka, fl_number(4096.0), error));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
-          fl_t17[2] = fl_number(128.0 + (((fmod(tochka.as.number, 4096.0)) - (fmod(tochka.as.number, 64.0))) / 64.0));
+          fl_t17[2] = fl_number(128.0 + (((fmod(tochka.as.number, 4096.0) + 0.0) - (fmod(tochka.as.number, 64.0) + 0.0)) / 64.0 + 0.0));
           if (tochka.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "mod", tochka, fl_number(64.0), error));
-          fl_t17[3] = fl_number(128.0 + (fmod(tochka.as.number, 64.0)));
+          fl_t17[3] = fl_number(128.0 + (fmod(tochka.as.number, 64.0) + 0.0));
           *result = fl_list(fl_t17, 4);
           return FL_OK;
         }
@@ -2596,10 +2598,7 @@ fl_status tls_client_shag_razbora_utf8(fl_ctx *ctx, fl_value hod, fl_value bayt,
           if (bayt.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "sub", bayt, fl_number(128.0), error));
           fl_value fl_t99 = fl_nothing();
-          FL_TRY(fl_b_dobavit(
-              ctx,
-              fl_number((kopilka.as.number * 64.0) + (bayt.as.number - 128.0)),
-              tochki, &fl_t99, error));
+          FL_TRY(fl_b_dobavit(ctx, fl_number((kopilka.as.number * 64.0 + 0.0) + (bayt.as.number - 128.0)), tochki, &fl_t99, error));
           fl_value fl_t101[6];
           fl_t101[0] = fl_t99;
           fl_t101[1] = fl_number(0.0);
@@ -2621,7 +2620,7 @@ fl_status tls_client_shag_razbora_utf8(fl_ctx *ctx, fl_value hod, fl_value bayt,
             FL_TRY(fl_not_numbers(ctx, "sub", ostalos, fl_number(1.0), error));
           fl_value fl_t103[6];
           fl_t103[0] = tochki;
-          fl_t103[1] = fl_number((kopilka.as.number * 64.0) + (bayt.as.number - 128.0));
+          fl_t103[1] = fl_number((kopilka.as.number * 64.0 + 0.0) + (bayt.as.number - 128.0));
           fl_t103[2] = fl_number(ostalos.as.number - 1.0);
           fl_t103[3] = fl_number(128.0);
           fl_t103[4] = fl_number(191.0);
@@ -3112,10 +3111,11 @@ fl_status tls_client_delit_nacelo(fl_ctx *ctx, fl_value delimoe,
     if (delimoe.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
           ctx, "sub", delimoe,
-          fl_number((fmod(delimoe.as.number, delitel.as.number))), error));
+          fl_number((fmod(delimoe.as.number, delitel.as.number) + 0.0)),
+          error));
     if (delitel.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "div", fl_number((delimoe.as.number - (fmod(delimoe.as.number, delitel.as.number)))), delitel, error));
-    *result = fl_number((delimoe.as.number - (fmod(delimoe.as.number, delitel.as.number))) / delitel.as.number);
+      FL_TRY(fl_not_numbers(ctx, "div", fl_number((delimoe.as.number - (fmod(delimoe.as.number, delitel.as.number) + 0.0))), delitel, error));
+    *result = fl_number((delimoe.as.number - (fmod(delimoe.as.number, delitel.as.number) + 0.0)) / delitel.as.number + 0.0);
     return FL_OK;
   }
 }
@@ -3262,9 +3262,10 @@ fl_status tls_client_chislo_iz_oktetov(fl_ctx *ctx, fl_value oktety,
     if (nabrano.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", nabrano, fl_number(256.0), error));
     if (oktet.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((nabrano.as.number * 256.0)),
-                            oktet, error));
-    nabrano = fl_number((nabrano.as.number * 256.0) + oktet.as.number);
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((nabrano.as.number * 256.0 + 0.0)), oktet,
+                            error));
+    nabrano = fl_number((nabrano.as.number * 256.0 + 0.0) + oktet.as.number);
     FL_TRY(fl_region_recycle(ctx, fl_t179, &nabrano, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t179, FL_OK, &nabrano, error));
@@ -3288,7 +3289,7 @@ fl_status tls_client_razobrat_golovu(fl_ctx *ctx, fl_value oktety,
   if (fl_t180.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t180, fl_number(32.0), error));
   bool fl_t181 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(fl_t180.as.number, 32.0)), fl_number(31.0))), &fl_t181, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(fl_t180.as.number, 32.0) + 0.0), fl_number(31.0))), &fl_t181, error));
   if (fl_t181) {
     fl_value fl_t182 = fl_nothing();
     FL_TRY(tls_client_oktet(ctx, oktety, mesto, &fl_t182, error));
@@ -3627,9 +3628,10 @@ fl_status tls_client_celoe_der(fl_ctx *ctx, fl_value oktety, fl_value *result,
     if (nabrano.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", nabrano, fl_number(256.0), error));
     if (oktet.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((nabrano.as.number * 256.0)),
-                            oktet, error));
-    nabrano = fl_number((nabrano.as.number * 256.0) + oktet.as.number);
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((nabrano.as.number * 256.0 + 0.0)), oktet,
+                            error));
+    nabrano = fl_number((nabrano.as.number * 256.0 + 0.0) + oktet.as.number);
     FL_TRY(fl_region_recycle(ctx, fl_t245, &nabrano, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t245, FL_OK, &nabrano, error));
@@ -3687,14 +3689,15 @@ fl_status tls_client_oktet_shestnadcaterichnym(fl_ctx *ctx, fl_value oktet,
   if (oktet.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", oktet, fl_number(256.0), error));
   fl_value fl_t250 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx, fl_number(fmod(oktet.as.number, 256.0)),
+  FL_TRY(tls_client_delit_nacelo(ctx,
+                                 fl_number(fmod(oktet.as.number, 256.0) + 0.0),
                                  fl_number(16.0), &fl_t250, error));
   fl_value fl_t251 = fl_nothing();
   FL_TRY(tls_client_cifra_der(ctx, fl_t250, &fl_t251, error));
   if (oktet.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", oktet, fl_number(16.0), error));
   fl_value fl_t252 = fl_nothing();
-  FL_TRY(tls_client_cifra_der(ctx, fl_number(fmod(oktet.as.number, 16.0)),
+  FL_TRY(tls_client_cifra_der(ctx, fl_number(fmod(oktet.as.number, 16.0) + 0.0),
                               &fl_t252, error));
   fl_value fl_t253 = fl_nothing();
   FL_TRY(fl_concat(ctx, fl_t251, fl_t252, &fl_t253, error));
@@ -3915,10 +3918,11 @@ fl_status tls_client_zakryt_uzel_oid(fl_ctx *ctx, fl_value hod,
       FL_TRY(fl_not_numbers(ctx, "mul", fl_number(40.0), fl_t286, error));
     if (znachenie.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", znachenie,
-                            fl_number((40.0 * fl_t286.as.number)), error));
+                            fl_number((40.0 * fl_t286.as.number + 0.0)),
+                            error));
     fl_value fl_t288 = fl_nothing();
     FL_TRY(fl_b_k_stroke(
-        ctx, fl_number(znachenie.as.number - (40.0 * fl_t286.as.number)),
+        ctx, fl_number(znachenie.as.number - (40.0 * fl_t286.as.number + 0.0)),
         &fl_t288, error));
     if (znachenie.tag != FL_NUMBER)
       FL_TRY(fl_not_order(ctx, znachenie, fl_number(80.0), error));
@@ -3979,7 +3983,7 @@ fl_status tls_client_shag_oid(fl_ctx *ctx, fl_value hod, fl_value oktet,
     FL_TRY(fl_field_get(ctx, hod, "начат", &fl_t301, error));
     fl_value fl_t303[3];
     fl_t303[0] = fl_t299;
-    fl_t303[1] = fl_number((fl_t300.as.number * 128.0) + (oktet.as.number - 128.0));
+    fl_t303[1] = fl_number((fl_t300.as.number * 128.0 + 0.0) + (oktet.as.number - 128.0));
     fl_t303[2] = fl_t301;
     fl_value fl_t302 = fl_nothing();
     FL_TRY(fl_record_new(ctx, tls_client_names_5, fl_t303, 3, &fl_t302, error));
@@ -3991,11 +3995,13 @@ fl_status tls_client_shag_oid(fl_ctx *ctx, fl_value hod, fl_value oktet,
     if (fl_t304.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_t304, fl_number(128.0), error));
     if (oktet.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t304.as.number * 128.0)),
-                            oktet, error));
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((fl_t304.as.number * 128.0 + 0.0)), oktet,
+                            error));
     return tls_client_zakryt_uzel_oid(
-        ctx, hod, fl_number((fl_t304.as.number * 128.0) + oktet.as.number),
-        result, error);
+        ctx, hod,
+        fl_number((fl_t304.as.number * 128.0 + 0.0) + oktet.as.number), result,
+        error);
   }
 }
 
@@ -4092,9 +4098,10 @@ fl_status tls_client_dvuznachnoe(fl_ctx *ctx, fl_value oktety, fl_value mesto,
   fl_value fl_t319 = fl_nothing();
   FL_TRY(tls_client_cifra_okteta(ctx, fl_t318, &fl_t319, error));
   if (fl_t319.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t317.as.number * 10.0)),
-                          fl_t319, error));
-  *result = fl_number((fl_t317.as.number * 10.0) + fl_t319.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t317.as.number * 10.0 + 0.0)), fl_t319,
+                          error));
+  *result = fl_number((fl_t317.as.number * 10.0 + 0.0) + fl_t319.as.number);
   return FL_OK;
 }
 
@@ -4190,8 +4197,8 @@ fl_status tls_client_razobrat_vremya(fl_ctx *ctx, fl_value metka,
           tls_client_dvuznachnoe(ctx, oktety, fl_number(3.0), &fl_t338, error));
       if (fl_t338.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "add",
-                              fl_number((fl_t337.as.number * 100.0)), fl_t338,
-                              error));
+                              fl_number((fl_t337.as.number * 100.0 + 0.0)),
+                              fl_t338, error));
       fl_value fl_t339 = fl_nothing();
       FL_TRY(
           tls_client_dvuznachnoe(ctx, oktety, fl_number(5.0), &fl_t339, error));
@@ -4220,7 +4227,7 @@ fl_status tls_client_razobrat_vremya(fl_ctx *ctx, fl_value metka,
         fl_t346 = tls_client_text_66;
       }
       fl_value fl_t348[7];
-      fl_t348[0] = fl_number((fl_t337.as.number * 100.0) + fl_t338.as.number);
+      fl_t348[0] = fl_number((fl_t337.as.number * 100.0 + 0.0) + fl_t338.as.number);
       fl_t348[1] = fl_t339;
       fl_t348[2] = fl_t340;
       fl_t348[3] = fl_t341;
@@ -4332,7 +4339,7 @@ fl_status tls_client_dva_znaka(fl_ctx *ctx, fl_value n, fl_value *result,
     if (n.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(10.0), error));
     fl_value fl_t361 = fl_nothing();
-    FL_TRY(tls_client_cifra_der(ctx, fl_number(fmod(n.as.number, 10.0)),
+    FL_TRY(tls_client_cifra_der(ctx, fl_number(fmod(n.as.number, 10.0) + 0.0),
                                 &fl_t361, error));
     fl_value fl_t362 = fl_nothing();
     FL_TRY(fl_concat(ctx, fl_t360, fl_t361, &fl_t362, error));
@@ -4429,15 +4436,13 @@ fl_status tls_client_vremya_chislom(fl_ctx *ctx, fl_value vremya,
   fl_value fl_t384 = fl_nothing();
   FL_TRY(fl_field_get(ctx, vremya, "месяц", &fl_t384, error));
   if (fl_t384.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t383.as.number * 100.0)),
-                          fl_t384, error));
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t383.as.number * 100.0 + 0.0)), fl_t384,
+                          error));
   fl_value fl_t385 = fl_nothing();
   FL_TRY(fl_field_get(ctx, vremya, "день", &fl_t385, error));
   if (fl_t385.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(
-        ctx, "add",
-        fl_number((((fl_t383.as.number * 100.0) + fl_t384.as.number) * 100.0)),
-        fl_t385, error));
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t383.as.number * 100.0 + 0.0) + fl_t384.as.number) * 100.0 + 0.0)), fl_t385, error));
   fl_value fl_t386 = fl_nothing();
   FL_TRY(fl_field_get(ctx, vremya, "час", &fl_t386, error));
   if (fl_t386.tag != FL_NUMBER)
@@ -4445,13 +4450,14 @@ fl_status tls_client_vremya_chislom(fl_ctx *ctx, fl_value vremya,
   fl_value fl_t387 = fl_nothing();
   FL_TRY(fl_field_get(ctx, vremya, "минута", &fl_t387, error));
   if (fl_t387.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t386.as.number * 100.0)),
-                          fl_t387, error));
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t386.as.number * 100.0 + 0.0)), fl_t387,
+                          error));
   fl_value fl_t388 = fl_nothing();
   FL_TRY(fl_field_get(ctx, vremya, "секунда", &fl_t388, error));
   if (fl_t388.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number(((((((fl_t383.as.number * 100.0) + fl_t384.as.number) * 100.0) + fl_t385.as.number) * 1000000.0) + (((fl_t386.as.number * 100.0) + fl_t387.as.number) * 100.0))), fl_t388, error));
-  *result = fl_number(((((((fl_t383.as.number * 100.0) + fl_t384.as.number) * 100.0) + fl_t385.as.number) * 1000000.0) + (((fl_t386.as.number * 100.0) + fl_t387.as.number) * 100.0)) + fl_t388.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number(((((((fl_t383.as.number * 100.0 + 0.0) + fl_t384.as.number) * 100.0 + 0.0) + fl_t385.as.number) * 1000000.0 + 0.0) + (((fl_t386.as.number * 100.0 + 0.0) + fl_t387.as.number) * 100.0 + 0.0))), fl_t388, error));
+  *result = fl_number(((((((fl_t383.as.number * 100.0 + 0.0) + fl_t384.as.number) * 100.0 + 0.0) + fl_t385.as.number) * 1000000.0 + 0.0) + (((fl_t386.as.number * 100.0 + 0.0) + fl_t387.as.number) * 100.0 + 0.0)) + fl_t388.as.number);
   return FL_OK;
 }
 
@@ -4698,14 +4704,14 @@ fl_status tls_client_pervaya_shestyorka(fl_ctx *ctx, fl_value bayt,
                                         fl_value *result, fl_error *error) {
   if (bayt.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", bayt, fl_number(256.0), error));
-  const fl_value svedyonnyy = fl_number(fmod(bayt.as.number, 256.0));
+  const fl_value svedyonnyy = fl_number(fmod(bayt.as.number, 256.0) + 0.0);
   if (svedyonnyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", svedyonnyy, fl_number(4.0), error));
   if (svedyonnyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", svedyonnyy,
-                          fl_number((fmod(svedyonnyy.as.number, 4.0))), error));
-  *result = fl_number(
-      (svedyonnyy.as.number - (fmod(svedyonnyy.as.number, 4.0))) / 4.0);
+                          fl_number((fmod(svedyonnyy.as.number, 4.0) + 0.0)),
+                          error));
+  *result = fl_number((svedyonnyy.as.number - (fmod(svedyonnyy.as.number, 4.0) + 0.0)) / 4.0 + 0.0);
   return FL_OK;
 }
 
@@ -4722,21 +4728,22 @@ fl_status tls_client_vtoraya_shestyorka(fl_ctx *ctx, fl_value pervyy,
                                         fl_error *error) {
   if (pervyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", pervyy, fl_number(256.0), error));
-  const fl_value svedyonnyy = fl_number(fmod(pervyy.as.number, 256.0));
+  const fl_value svedyonnyy = fl_number(fmod(pervyy.as.number, 256.0) + 0.0);
   if (svedyonnyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", svedyonnyy, fl_number(4.0), error));
-  const fl_value mladshie = fl_number(fmod(svedyonnyy.as.number, 4.0));
+  const fl_value mladshie = fl_number(fmod(svedyonnyy.as.number, 4.0) + 0.0);
   if (vtoroy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", vtoroy, fl_number(256.0), error));
-  const fl_value inoy = fl_number(fmod(vtoroy.as.number, 256.0));
+  const fl_value inoy = fl_number(fmod(vtoroy.as.number, 256.0) + 0.0);
   if (mladshie.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", mladshie, fl_number(16.0), error));
   if (inoy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", inoy, fl_number(16.0), error));
   if (inoy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", inoy,
-                          fl_number((fmod(inoy.as.number, 16.0))), error));
-  *result = fl_number((mladshie.as.number * 16.0) + ((inoy.as.number - (fmod(inoy.as.number, 16.0))) / 16.0));
+                          fl_number((fmod(inoy.as.number, 16.0) + 0.0)),
+                          error));
+  *result = fl_number((mladshie.as.number * 16.0 + 0.0) + ((inoy.as.number - (fmod(inoy.as.number, 16.0) + 0.0)) / 16.0 + 0.0));
   return FL_OK;
 }
 
@@ -4753,21 +4760,22 @@ fl_status tls_client_tretya_shestyorka(fl_ctx *ctx, fl_value vtoroy,
                                        fl_error *error) {
   if (vtoroy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", vtoroy, fl_number(256.0), error));
-  const fl_value svedyonnyy = fl_number(fmod(vtoroy.as.number, 256.0));
+  const fl_value svedyonnyy = fl_number(fmod(vtoroy.as.number, 256.0) + 0.0);
   if (svedyonnyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", svedyonnyy, fl_number(16.0), error));
-  const fl_value mladshie = fl_number(fmod(svedyonnyy.as.number, 16.0));
+  const fl_value mladshie = fl_number(fmod(svedyonnyy.as.number, 16.0) + 0.0);
   if (tretiy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", tretiy, fl_number(256.0), error));
-  const fl_value inoy = fl_number(fmod(tretiy.as.number, 256.0));
+  const fl_value inoy = fl_number(fmod(tretiy.as.number, 256.0) + 0.0);
   if (mladshie.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", mladshie, fl_number(4.0), error));
   if (inoy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", inoy, fl_number(64.0), error));
   if (inoy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", inoy,
-                          fl_number((fmod(inoy.as.number, 64.0))), error));
-  *result = fl_number((mladshie.as.number * 4.0) + ((inoy.as.number - (fmod(inoy.as.number, 64.0))) / 64.0));
+                          fl_number((fmod(inoy.as.number, 64.0) + 0.0)),
+                          error));
+  *result = fl_number((mladshie.as.number * 4.0 + 0.0) + ((inoy.as.number - (fmod(inoy.as.number, 64.0) + 0.0)) / 64.0 + 0.0));
   return FL_OK;
 }
 
@@ -4783,7 +4791,7 @@ fl_status tls_client_chetvyortaya_shestyorka(fl_ctx *ctx, fl_value bayt,
                                              fl_error *error) {
   if (bayt.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", bayt, fl_number(256.0), error));
-  *result = fl_number(fmod((fmod(bayt.as.number, 256.0)), 64.0));
+  *result = fl_number(fmod((fmod(bayt.as.number, 256.0) + 0.0), 64.0) + 0.0);
   return FL_OK;
 }
 
@@ -5032,15 +5040,15 @@ fl_status tls_client_slozhit_shestyorku(fl_ctx *ctx, fl_value gotovye,
     if (nabralos.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", nabralos, fl_number(65536.0), error));
     if (nabralos.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "sub", nabralos,
-                            fl_number((fmod(nabralos.as.number, 65536.0))),
-                            error));
+      FL_TRY(fl_not_numbers(
+          ctx, "sub", nabralos,
+          fl_number((fmod(nabralos.as.number, 65536.0) + 0.0)), error));
     fl_value fl_t463 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number((nabralos.as.number - (fmod(nabralos.as.number, 65536.0))) / 65536.0), gotovye, &fl_t463, error));
+    FL_TRY(fl_b_dobavit(ctx, fl_number((nabralos.as.number - (fmod(nabralos.as.number, 65536.0) + 0.0)) / 65536.0 + 0.0), gotovye, &fl_t463, error));
     fl_value fl_t464 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number(((fmod(nabralos.as.number, 65536.0)) - (fmod(nabralos.as.number, 256.0))) / 256.0), fl_t463, &fl_t464, error));
+    FL_TRY(fl_b_dobavit(ctx, fl_number(((fmod(nabralos.as.number, 65536.0) + 0.0) - (fmod(nabralos.as.number, 256.0) + 0.0)) / 256.0 + 0.0), fl_t463, &fl_t464, error));
     fl_value fl_t465 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(nabralos.as.number, 256.0)),
+    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(nabralos.as.number, 256.0) + 0.0),
                         fl_t464, &fl_t465, error));
     fl_value fl_t467[3];
     fl_t467[0] = fl_t465;
@@ -5095,12 +5103,13 @@ fl_status tls_client_svesti_shestyorku(fl_ctx *ctx, fl_value hod,
       if (kopilka.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mul", kopilka, fl_number(64.0), error));
       if (znachenie.tag != FL_NUMBER)
-        FL_TRY(fl_not_numbers(ctx, "add", fl_number((kopilka.as.number * 64.0)),
+        FL_TRY(fl_not_numbers(ctx, "add",
+                              fl_number((kopilka.as.number * 64.0 + 0.0)),
                               znachenie, error));
       return tls_client_slozhit_shestyorku(
           ctx, gotovye, skolko,
-          fl_number((kopilka.as.number * 64.0) + znachenie.as.number), result,
-          error);
+          fl_number((kopilka.as.number * 64.0 + 0.0) + znachenie.as.number),
+          result, error);
     }
   } else {
     return fl_match_fail(ctx, hod, error);
@@ -5149,10 +5158,10 @@ fl_status tls_client_zakryt_raskodirovanie(fl_ctx *ctx, fl_value hod,
         FL_TRY(fl_not_numbers(ctx, "mod", kopilka, fl_number(16.0), error));
       if (kopilka.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "sub", kopilka,
-                              fl_number((fmod(kopilka.as.number, 16.0))),
+                              fl_number((fmod(kopilka.as.number, 16.0) + 0.0)),
                               error));
       fl_value fl_t474 = fl_nothing();
-      FL_TRY(fl_b_dobavit(ctx, fl_number((kopilka.as.number - (fmod(kopilka.as.number, 16.0))) / 16.0), gotovye, &fl_t474, error));
+      FL_TRY(fl_b_dobavit(ctx, fl_number((kopilka.as.number - (fmod(kopilka.as.number, 16.0) + 0.0)) / 16.0 + 0.0), gotovye, &fl_t474, error));
       *result = fl_t474;
       return FL_OK;
     } else {
@@ -5167,13 +5176,13 @@ fl_status tls_client_zakryt_raskodirovanie(fl_ctx *ctx, fl_value hod,
         if (kopilka.tag != FL_NUMBER)
           FL_TRY(fl_not_numbers(ctx, "mod", kopilka, fl_number(1024.0), error));
         if (kopilka.tag != FL_NUMBER)
-          FL_TRY(fl_not_numbers(ctx, "sub", kopilka,
-                                fl_number((fmod(kopilka.as.number, 1024.0))),
-                                error));
+          FL_TRY(fl_not_numbers(
+              ctx, "sub", kopilka,
+              fl_number((fmod(kopilka.as.number, 1024.0) + 0.0)), error));
         fl_value fl_t476 = fl_nothing();
-        FL_TRY(fl_b_dobavit(ctx, fl_number((kopilka.as.number - (fmod(kopilka.as.number, 1024.0))) / 1024.0), gotovye, &fl_t476, error));
+        FL_TRY(fl_b_dobavit(ctx, fl_number((kopilka.as.number - (fmod(kopilka.as.number, 1024.0) + 0.0)) / 1024.0 + 0.0), gotovye, &fl_t476, error));
         fl_value fl_t477 = fl_nothing();
-        FL_TRY(fl_b_dobavit(ctx, fl_number(((fmod(kopilka.as.number, 1024.0)) - (fmod(kopilka.as.number, 4.0))) / 4.0), fl_t476, &fl_t477, error));
+        FL_TRY(fl_b_dobavit(ctx, fl_number(((fmod(kopilka.as.number, 1024.0) + 0.0) - (fmod(kopilka.as.number, 4.0) + 0.0)) / 4.0 + 0.0), fl_t476, &fl_t477, error));
         *result = fl_t477;
         return FL_OK;
       } else {
@@ -7834,13 +7843,13 @@ fl_status tls_client_bit(fl_ctx *ctx, fl_value slovo, fl_value ves,
   if (ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
   if (slovo.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "mod", slovo, fl_number((ves.as.number * 2.0)),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "mod", slovo,
+                          fl_number((ves.as.number * 2.0 + 0.0)), error));
   if (slovo.tag != FL_NUMBER || ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", slovo, ves, error));
   if (ves.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(slovo.as.number, (ves.as.number * 2.0))) - (fmod(slovo.as.number, ves.as.number)))), ves, error));
-  *result = fl_number(((fmod(slovo.as.number, (ves.as.number * 2.0))) - (fmod(slovo.as.number, ves.as.number))) / ves.as.number);
+    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(slovo.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0) - (fmod(slovo.as.number, ves.as.number) + 0.0))), ves, error));
+  *result = fl_number(((fmod(slovo.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0) - (fmod(slovo.as.number, ves.as.number) + 0.0)) / ves.as.number + 0.0);
   return FL_OK;
 }
 
@@ -7857,13 +7866,13 @@ fl_status tls_client_chetvyorka(fl_ctx *ctx, fl_value slovo, fl_value ves,
   if (ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(16.0), error));
   if (slovo.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "mod", slovo, fl_number((ves.as.number * 16.0)),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "mod", slovo,
+                          fl_number((ves.as.number * 16.0 + 0.0)), error));
   if (slovo.tag != FL_NUMBER || ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", slovo, ves, error));
   if (ves.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(slovo.as.number, (ves.as.number * 16.0))) - (fmod(slovo.as.number, ves.as.number)))), ves, error));
-  *result = fl_number(((fmod(slovo.as.number, (ves.as.number * 16.0))) - (fmod(slovo.as.number, ves.as.number))) / ves.as.number);
+    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(slovo.as.number, (ves.as.number * 16.0 + 0.0)) + 0.0) - (fmod(slovo.as.number, ves.as.number) + 0.0))), ves, error));
+  *result = fl_number(((fmod(slovo.as.number, (ves.as.number * 16.0 + 0.0)) + 0.0) - (fmod(slovo.as.number, ves.as.number) + 0.0)) / ves.as.number + 0.0);
   return FL_OK;
 }
 
@@ -7878,7 +7887,7 @@ fl_status tls_client_svesti_k_slovu(fl_ctx *ctx, fl_value h, fl_value *result,
                                     fl_error *error) {
   if (h.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", h, fl_number(4294967296.0), error));
-  const fl_value svedeno = fl_number(fmod(h.as.number, 4294967296.0));
+  const fl_value svedeno = fl_number(fmod(h.as.number, 4294967296.0) + 0.0);
   if (svedeno.tag != FL_NUMBER)
     FL_TRY(fl_not_order(ctx, svedeno, fl_number(0.0), error));
   bool fl_t836 = false;
@@ -7925,8 +7934,10 @@ fl_status tls_client_svesti_k_baytu(fl_ctx *ctx, fl_value bayt,
       FL_TRY(fl_not_numbers(ctx, "mod", bayt, fl_number(1.0), error));
     if (bayt.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", bayt,
-                            fl_number((fmod(bayt.as.number, 1.0))), error));
-    *result = fl_number((bayt.as.number - (fmod(bayt.as.number, 1.0))) + 0.0);
+                            fl_number((fmod(bayt.as.number, 1.0) + 0.0)),
+                            error));
+    *result = fl_number(
+        (bayt.as.number - (fmod(bayt.as.number, 1.0) + 0.0)) + 0.0);
     return FL_OK;
   } else {
     *result = fl_number(0.0);
@@ -8005,7 +8016,7 @@ fl_status tls_client_isklyuchayuschee_ili_tryoh(fl_ctx *ctx, fl_value pervoe,
     const fl_value ves = fl_t847.as.list.items[fl_t848];
     if (ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
-    const fl_value dvoynoy = fl_number(ves.as.number * 2.0);
+    const fl_value dvoynoy = fl_number(ves.as.number * 2.0 + 0.0);
     if (pervoe.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", pervoe, dvoynoy, error));
     if (pervoe.tag != FL_NUMBER || ves.tag != FL_NUMBER)
@@ -8018,14 +8029,15 @@ fl_status tls_client_isklyuchayuschee_ili_tryoh(fl_ctx *ctx, fl_value pervoe,
       FL_TRY(fl_not_numbers(ctx, "mod", trete, dvoynoy, error));
     if (trete.tag != FL_NUMBER || ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", trete, ves, error));
-    const fl_value summa = fl_number((((fmod(pervoe.as.number, dvoynoy.as.number)) - (fmod(pervoe.as.number, ves.as.number))) + ((fmod(vtoroe.as.number, dvoynoy.as.number)) - (fmod(vtoroe.as.number, ves.as.number)))) + ((fmod(trete.as.number, dvoynoy.as.number)) - (fmod(trete.as.number, ves.as.number))));
+    const fl_value summa = fl_number((((fmod(pervoe.as.number, dvoynoy.as.number) + 0.0) - (fmod(pervoe.as.number, ves.as.number) + 0.0)) + ((fmod(vtoroe.as.number, dvoynoy.as.number) + 0.0) - (fmod(vtoroe.as.number, ves.as.number) + 0.0))) + ((fmod(trete.as.number, dvoynoy.as.number) + 0.0) - (fmod(trete.as.number, ves.as.number) + 0.0)));
     if (summa.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", summa, dvoynoy, error));
     if (akk.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
           ctx, "add", akk,
-          fl_number((fmod(summa.as.number, dvoynoy.as.number))), error));
-    akk = fl_number(akk.as.number + (fmod(summa.as.number, dvoynoy.as.number)));
+          fl_number((fmod(summa.as.number, dvoynoy.as.number) + 0.0)), error));
+    akk = fl_number(
+        akk.as.number + (fmod(summa.as.number, dvoynoy.as.number) + 0.0));
     FL_TRY(fl_region_recycle(ctx, fl_t849, &akk, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t849, FL_OK, &akk, error));
@@ -8055,26 +8067,26 @@ fl_status tls_client_vybor(fl_ctx *ctx, fl_value uslovie, fl_value edinichnoe,
     const fl_value ves = fl_t851.as.list.items[fl_t852];
     if (ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
-    const fl_value dvoynoy = fl_number(ves.as.number * 2.0);
+    const fl_value dvoynoy = fl_number(ves.as.number * 2.0 + 0.0);
     if (uslovie.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", uslovie, dvoynoy, error));
     if (uslovie.tag != FL_NUMBER || ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", uslovie, ves, error));
     bool fl_t854 = false;
-    FL_TRY(fl_cond(ctx, fl_flag(!fl_equal(fl_number((fmod(uslovie.as.number, dvoynoy.as.number)) - (fmod(uslovie.as.number, ves.as.number))), fl_number(0.0))), &fl_t854, error));
+    FL_TRY(fl_cond(ctx, fl_flag(!fl_equal(fl_number((fmod(uslovie.as.number, dvoynoy.as.number) + 0.0) - (fmod(uslovie.as.number, ves.as.number) + 0.0)), fl_number(0.0))), &fl_t854, error));
     fl_value fl_t855;
     if (fl_t854) {
       if (edinichnoe.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mod", edinichnoe, dvoynoy, error));
       if (edinichnoe.tag != FL_NUMBER || ves.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mod", edinichnoe, ves, error));
-      fl_t855 = fl_number((fmod(edinichnoe.as.number, dvoynoy.as.number)) - (fmod(edinichnoe.as.number, ves.as.number)));
+      fl_t855 = fl_number((fmod(edinichnoe.as.number, dvoynoy.as.number) + 0.0) - (fmod(edinichnoe.as.number, ves.as.number) + 0.0));
     } else {
       if (nulevoe.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mod", nulevoe, dvoynoy, error));
       if (nulevoe.tag != FL_NUMBER || ves.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mod", nulevoe, ves, error));
-      fl_t855 = fl_number((fmod(nulevoe.as.number, dvoynoy.as.number)) - (fmod(nulevoe.as.number, ves.as.number)));
+      fl_t855 = fl_number((fmod(nulevoe.as.number, dvoynoy.as.number) + 0.0) - (fmod(nulevoe.as.number, ves.as.number) + 0.0));
     }
     if (akk.tag != FL_NUMBER || fl_t855.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "add", akk, fl_t855, error));
@@ -8108,7 +8120,7 @@ fl_status tls_client_bolshinstvo(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe,
     const fl_value ves = fl_t857.as.list.items[fl_t858];
     if (ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
-    const fl_value dvoynoy = fl_number(ves.as.number * 2.0);
+    const fl_value dvoynoy = fl_number(ves.as.number * 2.0 + 0.0);
     if (pervoe.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", pervoe, dvoynoy, error));
     if (pervoe.tag != FL_NUMBER || ves.tag != FL_NUMBER)
@@ -8121,16 +8133,16 @@ fl_status tls_client_bolshinstvo(fl_ctx *ctx, fl_value pervoe, fl_value vtoroe,
       FL_TRY(fl_not_numbers(ctx, "mod", trete, dvoynoy, error));
     if (trete.tag != FL_NUMBER || ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", trete, ves, error));
-    const fl_value summa = fl_number((((fmod(pervoe.as.number, dvoynoy.as.number)) - (fmod(pervoe.as.number, ves.as.number))) + ((fmod(vtoroe.as.number, dvoynoy.as.number)) - (fmod(vtoroe.as.number, ves.as.number)))) + ((fmod(trete.as.number, dvoynoy.as.number)) - (fmod(trete.as.number, ves.as.number))));
+    const fl_value summa = fl_number((((fmod(pervoe.as.number, dvoynoy.as.number) + 0.0) - (fmod(pervoe.as.number, ves.as.number) + 0.0)) + ((fmod(vtoroe.as.number, dvoynoy.as.number) + 0.0) - (fmod(vtoroe.as.number, ves.as.number) + 0.0))) + ((fmod(trete.as.number, dvoynoy.as.number) + 0.0) - (fmod(trete.as.number, ves.as.number) + 0.0)));
     if (summa.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", summa, dvoynoy, error));
     if (summa.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
           ctx, "sub", summa,
-          fl_number((fmod(summa.as.number, dvoynoy.as.number))), error));
+          fl_number((fmod(summa.as.number, dvoynoy.as.number) + 0.0)), error));
     if (akk.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", akk, fl_number(((summa.as.number - (fmod(summa.as.number, dvoynoy.as.number))) / 2.0)), error));
-    akk = fl_number(akk.as.number + ((summa.as.number - (fmod(summa.as.number, dvoynoy.as.number))) / 2.0));
+      FL_TRY(fl_not_numbers(ctx, "add", akk, fl_number(((summa.as.number - (fmod(summa.as.number, dvoynoy.as.number) + 0.0)) / 2.0 + 0.0)), error));
+    akk = fl_number(akk.as.number + ((summa.as.number - (fmod(summa.as.number, dvoynoy.as.number) + 0.0)) / 2.0 + 0.0));
     FL_TRY(fl_region_recycle(ctx, fl_t859, &akk, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t859, FL_OK, &akk, error));
@@ -8173,7 +8185,7 @@ fl_status tls_client_povorot_vpravo(fl_ctx *ctx, fl_value slovo,
     if (stepen.tag != FL_NUMBER)
       FL_TRY(
           fl_not_numbers(ctx, "mod", fl_number(4294967296.0), stepen, error));
-    fl_t864 = fl_flag(!fl_equal(fl_number(fmod(4294967296.0, stepen.as.number)), fl_number(0.0)));
+    fl_t864 = fl_flag(!fl_equal(fl_number(fmod(4294967296.0, stepen.as.number) + 0.0), fl_number(0.0)));
   }
   bool fl_t865 = false;
   FL_TRY(fl_cond(ctx, fl_t864, &fl_t865, error));
@@ -8184,20 +8196,17 @@ fl_status tls_client_povorot_vpravo(fl_ctx *ctx, fl_value slovo,
     if (h.tag != FL_NUMBER || stepen.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", h, stepen, error));
     if (h.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "sub", h,
-                            fl_number((fmod(h.as.number, stepen.as.number))),
-                            error));
-    if (stepen.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
-          ctx, "div",
-          fl_number((h.as.number - (fmod(h.as.number, stepen.as.number)))),
-          stepen, error));
+          ctx, "sub", h, fl_number((fmod(h.as.number, stepen.as.number) + 0.0)),
+          error));
+    if (stepen.tag != FL_NUMBER)
+      FL_TRY(fl_not_numbers(ctx, "div", fl_number((h.as.number - (fmod(h.as.number, stepen.as.number) + 0.0))), stepen, error));
     if (h.tag != FL_NUMBER || stepen.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", h, stepen, error));
     if (stepen.tag != FL_NUMBER)
       FL_TRY(
           fl_not_numbers(ctx, "div", fl_number(4294967296.0), stepen, error));
-    *result = fl_number(((h.as.number - (fmod(h.as.number, stepen.as.number))) / stepen.as.number) + ((fmod(h.as.number, stepen.as.number)) * (4294967296.0 / stepen.as.number)));
+    *result = fl_number(((h.as.number - (fmod(h.as.number, stepen.as.number) + 0.0)) / stepen.as.number + 0.0) + ((fmod(h.as.number, stepen.as.number) + 0.0) * (4294967296.0 / stepen.as.number + 0.0) + 0.0));
     return FL_OK;
   }
 }
@@ -8226,15 +8235,12 @@ fl_status tls_client_sdvig_vpravo(fl_ctx *ctx, fl_value slovo, fl_value stepen,
     if (h.tag != FL_NUMBER || stepen.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", h, stepen, error));
     if (h.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "sub", h,
-                            fl_number((fmod(h.as.number, stepen.as.number))),
-                            error));
-    if (stepen.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
-          ctx, "div",
-          fl_number((h.as.number - (fmod(h.as.number, stepen.as.number)))),
-          stepen, error));
-    *result = fl_number((h.as.number - (fmod(h.as.number, stepen.as.number))) / stepen.as.number);
+          ctx, "sub", h, fl_number((fmod(h.as.number, stepen.as.number) + 0.0)),
+          error));
+    if (stepen.tag != FL_NUMBER)
+      FL_TRY(fl_not_numbers(ctx, "div", fl_number((h.as.number - (fmod(h.as.number, stepen.as.number) + 0.0))), stepen, error));
+    *result = fl_number((h.as.number - (fmod(h.as.number, stepen.as.number) + 0.0)) / stepen.as.number + 0.0);
     return FL_OK;
   }
 }
@@ -8629,10 +8635,11 @@ fl_status tls_client_shag_sbora_slov(fl_ctx *ctx, fl_value sbor, fl_value bayt,
     fl_value fl_t889 = fl_nothing();
     FL_TRY(tls_client_svesti_k_baytu(ctx, bayt, &fl_t889, error));
     if (fl_t889.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((kopilka.as.number * 256.0)),
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((kopilka.as.number * 256.0 + 0.0)),
                             fl_t889, error));
     const fl_value novoe =
-        fl_number((kopilka.as.number * 256.0) + fl_t889.as.number);
+        fl_number((kopilka.as.number * 256.0 + 0.0) + fl_t889.as.number);
     if (nabrano.tag != FL_NUMBER)
       FL_TRY(fl_not_order(ctx, nabrano, fl_number(3.0), error));
     bool fl_t890 = false;
@@ -9079,12 +9086,12 @@ fl_status tls_client_bayt_razryada(fl_ctx *ctx, fl_value chislo,
     FL_TRY(fl_not_numbers(ctx, "mul", stepen, fl_number(256.0), error));
   if (chislo.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", chislo,
-                          fl_number((stepen.as.number * 256.0)), error));
+                          fl_number((stepen.as.number * 256.0 + 0.0)), error));
   if (chislo.tag != FL_NUMBER || stepen.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", chislo, stepen, error));
   if (stepen.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(chislo.as.number, (stepen.as.number * 256.0))) - (fmod(chislo.as.number, stepen.as.number)))), stepen, error));
-  *result = fl_number(((fmod(chislo.as.number, (stepen.as.number * 256.0))) - (fmod(chislo.as.number, stepen.as.number))) / stepen.as.number);
+    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(chislo.as.number, (stepen.as.number * 256.0 + 0.0)) + 0.0) - (fmod(chislo.as.number, stepen.as.number) + 0.0))), stepen, error));
+  *result = fl_number(((fmod(chislo.as.number, (stepen.as.number * 256.0 + 0.0)) + 0.0) - (fmod(chislo.as.number, stepen.as.number) + 0.0)) / stepen.as.number + 0.0);
   return FL_OK;
 }
 
@@ -9100,14 +9107,13 @@ fl_status tls_client_bayty_dliny(fl_ctx *ctx, fl_value bitov, fl_value *result,
   if (bitov.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", bitov, fl_number(4294967296.0), error));
   if (bitov.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", bitov,
-                          fl_number((fmod(bitov.as.number, 4294967296.0))),
-                          error));
-  const fl_value verh = fl_number(
-      (bitov.as.number - (fmod(bitov.as.number, 4294967296.0))) / 4294967296.0);
+    FL_TRY(fl_not_numbers(
+        ctx, "sub", bitov,
+        fl_number((fmod(bitov.as.number, 4294967296.0) + 0.0)), error));
+  const fl_value verh = fl_number((bitov.as.number - (fmod(bitov.as.number, 4294967296.0) + 0.0)) / 4294967296.0 + 0.0);
   if (bitov.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", bitov, fl_number(4294967296.0), error));
-  const fl_value niz = fl_number(fmod(bitov.as.number, 4294967296.0));
+  const fl_value niz = fl_number(fmod(bitov.as.number, 4294967296.0) + 0.0);
   fl_value *fl_t991 = NULL;
   FL_TRY(fl_list_alloc(ctx, 8, &fl_t991, error));
   fl_value fl_t992 = fl_nothing();
@@ -9157,8 +9163,8 @@ fl_status tls_client_dopolnit_soobschenie(fl_ctx *ctx, fl_value bayty,
   const fl_value skolko = fl_t1000;
   if (skolko.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", skolko, fl_number(64.0), error));
-  const fl_value nuley =
-      fl_number(fmod(((55.0 - (fmod(skolko.as.number, 64.0))) + 64.0), 64.0));
+  const fl_value nuley = fl_number(
+      fmod(((55.0 - (fmod(skolko.as.number, 64.0) + 0.0)) + 64.0), 64.0) + 0.0);
   fl_value *fl_t1001 = NULL;
   FL_TRY(fl_list_alloc(ctx, 1, &fl_t1001, error));
   fl_t1001[0] = fl_number(128.0);
@@ -9172,7 +9178,7 @@ fl_status tls_client_dopolnit_soobschenie(fl_ctx *ctx, fl_value bayty,
   if (skolko.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", skolko, fl_number(8.0), error));
   fl_value fl_t1005 = fl_nothing();
-  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(skolko.as.number * 8.0),
+  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(skolko.as.number * 8.0 + 0.0),
                                 &fl_t1005, error));
   fl_value fl_t1006 = fl_nothing();
   FL_TRY(tls_client_dosypat_bayty(ctx, fl_t1004, fl_t1005, &fl_t1006, error));
@@ -9738,7 +9744,7 @@ fl_status tls_client_bayt_ili_nol(fl_ctx *ctx, fl_value bayty, fl_value nomer,
     if (nomer.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", nomer, fl_number(1.0), error));
     bool fl_t1105 = false;
-    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(nomer.as.number, 1.0)), fl_number(0.0))), &fl_t1105, error));
+    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(nomer.as.number, 1.0) + 0.0), fl_number(0.0))), &fl_t1105, error));
     fl_value fl_t1106;
     if (fl_t1105) {
       fl_t1106 = fl_flag(false);
@@ -9950,7 +9956,7 @@ fl_status tls_client_dopisat_nomer(fl_ctx *ctx, fl_value menshie,
   if (baytov.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", baytov, fl_number(32.0), error));
   bool fl_t1152 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(baytov.as.number, 32.0)), fl_number(1.0))), &fl_t1152, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(baytov.as.number, 32.0) + 0.0), fl_number(1.0))), &fl_t1152, error));
   if (fl_t1152) {
     fl_value fl_t1153 = fl_nothing();
     FL_TRY(fl_b_dlina(ctx, menshie, &fl_t1153, error));
@@ -10908,7 +10914,7 @@ fl_status tls_client_dopisat_nomer_sha_1(fl_ctx *ctx, fl_value menshie,
   if (baytov.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", baytov, fl_number(20.0), error));
   bool fl_t1298 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(baytov.as.number, 20.0)), fl_number(1.0))), &fl_t1298, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(baytov.as.number, 20.0) + 0.0), fl_number(1.0))), &fl_t1298, error));
   if (fl_t1298) {
     fl_value fl_t1299 = fl_nothing();
     FL_TRY(fl_b_dlina(ctx, menshie, &fl_t1299, error));
@@ -11650,14 +11656,14 @@ fl_status tls_client_perenesti_rsa(fl_ctx *ctx, fl_value hod, fl_value razryad,
     const fl_value summa = fl_number(razryad.as.number + p.as.number);
     if (summa.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", summa, fl_number(65536.0), error));
-    const fl_value niz = fl_number(fmod(summa.as.number, 65536.0));
+    const fl_value niz = fl_number(fmod(summa.as.number, 65536.0) + 0.0);
     fl_value fl_t1360 = fl_nothing();
     FL_TRY(fl_b_dobavit(ctx, niz, st, &fl_t1360, error));
     if (summa.tag != FL_NUMBER || niz.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", summa, niz, error));
     fl_value fl_t1362[2];
     fl_t1362[0] = fl_t1360;
-    fl_t1362[1] = fl_number((summa.as.number - niz.as.number) / 65536.0);
+    fl_t1362[1] = fl_number((summa.as.number - niz.as.number) / 65536.0 + 0.0);
     fl_value fl_t1361 = fl_nothing();
     FL_TRY(fl_variant_new(ctx, "Перенос RSA", tls_client_names_37, fl_t1362, 2,
                           &fl_t1361, error));
@@ -11837,8 +11843,8 @@ fl_status tls_client_shag_nyutona(fl_ctx *ctx, fl_value m, fl_value h,
   if (m.tag != FL_NUMBER || h.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", m, h, error));
   if (h.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "mul", h, fl_number((fmod((65538.0 - (fmod((m.as.number * h.as.number), 65536.0))), 65536.0))), error));
-  *result = fl_number(fmod((h.as.number * (fmod((65538.0 - (fmod((m.as.number * h.as.number), 65536.0))), 65536.0))), 65536.0));
+    FL_TRY(fl_not_numbers(ctx, "mul", h, fl_number((fmod((65538.0 - (fmod((m.as.number * h.as.number + 0.0), 65536.0) + 0.0)), 65536.0) + 0.0)), error));
+  *result = fl_number(fmod((h.as.number * (fmod((65538.0 - (fmod((m.as.number * h.as.number + 0.0), 65536.0) + 0.0)), 65536.0) + 0.0) + 0.0), 65536.0) + 0.0);
   return FL_OK;
 }
 
@@ -11879,7 +11885,7 @@ fl_status tls_client_obratnyy_so_znakom_minus(fl_ctx *ctx, fl_value delitel,
   FL_TRY(tls_client_obratnyy_po_65536(ctx, fl_t1387, &fl_t1388, error));
   if (fl_t1388.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", fl_number(65536.0), fl_t1388, error));
-  *result = fl_number(fmod((65536.0 - fl_t1388.as.number), 65536.0));
+  *result = fl_number(fmod((65536.0 - fl_t1388.as.number), 65536.0) + 0.0);
   return FL_OK;
 }
 
@@ -11964,21 +11970,21 @@ fl_status tls_client_shag_montgomeri(fl_ctx *ctx, fl_value hod,
         FL_TRY(
             fl_not_numbers(ctx, "mod", tekuschiy, fl_number(65536.0), error));
       if (obratnyy.tag != FL_NUMBER)
-        FL_TRY(fl_not_numbers(ctx, "mul",
-                              fl_number((fmod(tekuschiy.as.number, 65536.0))),
-                              obratnyy, error));
-      const fl_value mnozh = fl_number(fmod(((fmod(tekuschiy.as.number, 65536.0)) * obratnyy.as.number), 65536.0));
+        FL_TRY(fl_not_numbers(
+            ctx, "mul", fl_number((fmod(tekuschiy.as.number, 65536.0) + 0.0)),
+            obratnyy, error));
+      const fl_value mnozh = fl_number(fmod(((fmod(tekuschiy.as.number, 65536.0) + 0.0) * obratnyy.as.number + 0.0), 65536.0) + 0.0);
       fl_value fl_t1397 = fl_nothing();
       FL_TRY(tls_client_razryad_rsa(ctx, delitel, fl_number(1.0), &fl_t1397,
                                     error));
       if (mnozh.tag != FL_NUMBER || fl_t1397.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mul", mnozh, fl_t1397, error));
       if (tekuschiy.tag != FL_NUMBER)
-        FL_TRY(fl_not_numbers(ctx, "add", tekuschiy,
-                              fl_number((mnozh.as.number * fl_t1397.as.number)),
-                              error));
+        FL_TRY(fl_not_numbers(
+            ctx, "add", tekuschiy,
+            fl_number((mnozh.as.number * fl_t1397.as.number + 0.0)), error));
       const fl_value summa = fl_number(
-          tekuschiy.as.number + (mnozh.as.number * fl_t1397.as.number));
+          tekuschiy.as.number + (mnozh.as.number * fl_t1397.as.number + 0.0));
       fl_value fl_t1398 = fl_nothing();
       FL_TRY(tls_client_otbrosit_rsa(ctx, delitel, fl_number(1.0), &fl_t1398,
                                      error));
@@ -11998,11 +12004,11 @@ fl_status tls_client_shag_montgomeri(fl_ctx *ctx, fl_value hod,
         FL_TRY(fl_not_numbers(ctx, "mod", summa, fl_number(65536.0), error));
       if (summa.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "sub", summa,
-                              fl_number((fmod(summa.as.number, 65536.0))),
+                              fl_number((fmod(summa.as.number, 65536.0) + 0.0)),
                               error));
       fl_value fl_t1407[2];
       fl_t1407[0] = vyshe;
-      fl_t1407[1] = fl_number((summa.as.number - (fmod(summa.as.number, 65536.0))) / 65536.0);
+      fl_t1407[1] = fl_number((summa.as.number - (fmod(summa.as.number, 65536.0) + 0.0)) / 65536.0 + 0.0);
       fl_value fl_t1406 = fl_nothing();
       FL_TRY(fl_variant_new(ctx, "Ход Монтгомери", tls_client_names_39,
                             fl_t1407, 2, &fl_t1406, error));
@@ -12123,8 +12129,8 @@ fl_status tls_client_umnozhenie_montgomeri(fl_ctx *ctx, fl_value a, fl_value b,
   if (fl_t1420.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(2.0), fl_t1420, error));
   fl_value fl_t1421 = fl_nothing();
-  FL_TRY(tls_client_nuley(ctx, fl_number(2.0 * fl_t1420.as.number), &fl_t1421,
-                          error));
+  FL_TRY(tls_client_nuley(ctx, fl_number(2.0 * fl_t1420.as.number + 0.0),
+                          &fl_t1421, error));
   fl_value fl_t1422 = fl_nothing();
   FL_TRY(tls_client_slozhit_rsa(ctx, fl_t1419, fl_t1421, &fl_t1422, error));
   return tls_client_privedenie_montgomeri(ctx, fl_t1422, delitel, obratnyy,
@@ -12264,9 +12270,9 @@ fl_status tls_client_r_po_lyubomu_modulyu(fl_ctx *ctx, fl_value delitel,
     FL_TRY(fl_b_dlina(ctx, delitel, &fl_t1449, error));
     if (fl_t1449.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_number(16.0), fl_t1449, error));
-    return tls_client_udvoit_stolko_raz(ctx, fl_t1448, delitel,
-                                        fl_number(16.0 * fl_t1449.as.number),
-                                        result, error);
+    return tls_client_udvoit_stolko_raz(
+        ctx, fl_t1448, delitel, fl_number(16.0 * fl_t1449.as.number + 0.0),
+        result, error);
   }
 }
 
@@ -12347,14 +12353,15 @@ static fl_status tls_client_bity_po_schyotu_body(fl_ctx *ctx, fl_value n,
     if (n.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(2.0), error));
     if (n.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "sub", n, fl_number((fmod(n.as.number, 2.0))),
-                            error));
+      FL_TRY(fl_not_numbers(ctx, "sub", n,
+                            fl_number((fmod(n.as.number, 2.0) + 0.0)), error));
     fl_value fl_t1459 = fl_nothing();
     FL_TRY(tls_client_bity_po_schyotu(
-        ctx, fl_number((n.as.number - (fmod(n.as.number, 2.0))) / 2.0), h,
-        &fl_t1459, error));
+        ctx,
+        fl_number((n.as.number - (fmod(n.as.number, 2.0) + 0.0)) / 2.0 + 0.0),
+        h, &fl_t1459, error));
     fl_value fl_t1460 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(n.as.number, 2.0)), fl_t1459,
+    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(n.as.number, 2.0) + 0.0), fl_t1459,
                         &fl_t1460, error));
     *result = fl_t1460;
     return FL_OK;
@@ -12558,14 +12565,15 @@ static fl_status tls_client_razryady_iz_mladshih_baytov_body(fl_ctx *ctx,
         FL_TRY(fl_not_numbers(ctx, "mul", fl_number(256.0), vtoroy, error));
       if (b.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "add", b,
-                              fl_number((256.0 * vtoroy.as.number)), error));
+                              fl_number((256.0 * vtoroy.as.number + 0.0)),
+                              error));
       fl_value fl_t1477 = fl_nothing();
       FL_TRY(tls_client_razryady_iz_mladshih_baytov(ctx, prochie, &fl_t1477,
                                                     error));
       fl_value fl_t1478 = fl_nothing();
-      FL_TRY(fl_b_pripisat(ctx,
-                           fl_number(b.as.number + (256.0 * vtoroy.as.number)),
-                           fl_t1477, &fl_t1478, error));
+      FL_TRY(fl_b_pripisat(
+          ctx, fl_number(b.as.number + (256.0 * vtoroy.as.number + 0.0)),
+          fl_t1477, &fl_t1478, error));
       *result = fl_t1478;
       return FL_OK;
     } else {
@@ -12631,15 +12639,15 @@ fl_status tls_client_bayty_iz_razryadov(fl_ctx *ctx, fl_value razryady,
       FL_TRY(fl_not_numbers(ctx, "mod", razryad, fl_number(256.0), error));
     if (razryad.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", razryad,
-                            fl_number((fmod(razryad.as.number, 256.0))),
+                            fl_number((fmod(razryad.as.number, 256.0) + 0.0)),
                             error));
     if (razryad.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", razryad, fl_number(256.0), error));
     fl_value fl_t1483 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(razryad.as.number, 256.0)), akk,
-                        &fl_t1483, error));
+    FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(razryad.as.number, 256.0) + 0.0),
+                        akk, &fl_t1483, error));
     fl_value fl_t1484 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx, fl_number((razryad.as.number - (fmod(razryad.as.number, 256.0))) / 256.0), fl_t1483, &fl_t1484, error));
+    FL_TRY(fl_b_dobavit(ctx, fl_number((razryad.as.number - (fmod(razryad.as.number, 256.0) + 0.0)) / 256.0 + 0.0), fl_t1483, &fl_t1484, error));
     akk = fl_t1484;
     FL_TRY(fl_region_recycle(ctx, fl_t1482, &akk, error));
   }
@@ -12853,14 +12861,14 @@ fl_status tls_client_schyotchik_mgf1(fl_ctx *ctx, fl_value nomer,
                                      fl_value *result, fl_error *error) {
   if (nomer.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", nomer, fl_number(256.0), error));
-  const fl_value mladshiy = fl_number(fmod(nomer.as.number, 256.0));
+  const fl_value mladshiy = fl_number(fmod(nomer.as.number, 256.0) + 0.0);
   fl_value *fl_t1510 = NULL;
   FL_TRY(fl_list_alloc(ctx, 4, &fl_t1510, error));
   fl_t1510[0] = fl_number(0.0);
   fl_t1510[1] = fl_number(0.0);
   if (nomer.tag != FL_NUMBER || mladshiy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", nomer, mladshiy, error));
-  fl_t1510[2] = fl_number(fmod(((nomer.as.number - mladshiy.as.number) / 256.0), 256.0));
+  fl_t1510[2] = fl_number(fmod(((nomer.as.number - mladshiy.as.number) / 256.0 + 0.0), 256.0) + 0.0);
   fl_t1510[3] = mladshiy;
   *result = fl_list(fl_t1510, 4);
   return FL_OK;
@@ -12931,8 +12939,8 @@ fl_status tls_client_maska_mgf1(fl_ctx *ctx, fl_value vid, fl_value zerno,
         ctx, "mod", fl_number(((skolko.as.number + hesh.as.number) - 1.0)),
         hesh, error));
   if (hesh.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "div", fl_number((((skolko.as.number + hesh.as.number) - 1.0) - (fmod(((skolko.as.number + hesh.as.number) - 1.0), hesh.as.number)))), hesh, error));
-  const fl_value kuskov = fl_number((((skolko.as.number + hesh.as.number) - 1.0) - (fmod(((skolko.as.number + hesh.as.number) - 1.0), hesh.as.number))) / hesh.as.number);
+    FL_TRY(fl_not_numbers(ctx, "div", fl_number((((skolko.as.number + hesh.as.number) - 1.0) - (fmod(((skolko.as.number + hesh.as.number) - 1.0), hesh.as.number) + 0.0))), hesh, error));
+  const fl_value kuskov = fl_number((((skolko.as.number + hesh.as.number) - 1.0) - (fmod(((skolko.as.number + hesh.as.number) - 1.0), hesh.as.number) + 0.0)) / hesh.as.number + 0.0);
   fl_value fl_t1519[2];
   fl_t1519[0] = fl_number(0.0);
   fl_t1519[1] = fl_list(NULL, 0);
@@ -13101,7 +13109,7 @@ fl_status tls_client_stepen_dvoyki(fl_ctx *ctx, fl_value pokazatel,
     FL_TRY(tls_client_mnozhitel_shaga(ctx, shag, pokazatel, &fl_t1541, error));
     if (stepen.tag != FL_NUMBER || fl_t1541.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", stepen, fl_t1541, error));
-    stepen = fl_number(stepen.as.number * fl_t1541.as.number);
+    stepen = fl_number(stepen.as.number * fl_t1541.as.number + 0.0);
     FL_TRY(fl_region_recycle(ctx, fl_t1540, &stepen, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t1540, FL_OK, &stepen, error));
@@ -13193,7 +13201,8 @@ fl_status tls_client_sbrosit_verh(fl_ctx *ctx, fl_value oktety,
     if (g.tag != FL_NUMBER || granica.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", g, granica, error));
     fl_value fl_t1547 = fl_nothing();
-    FL_TRY(fl_b_pripisat(ctx, fl_number(fmod(g.as.number, granica.as.number)),
+    FL_TRY(fl_b_pripisat(ctx,
+                         fl_number(fmod(g.as.number, granica.as.number) + 0.0),
                          h, &fl_t1547, error));
     *result = fl_t1547;
     return FL_OK;
@@ -13286,10 +13295,10 @@ fl_status tls_client_kodirovka_pss_shoditsya(fl_ctx *ctx, fl_value vid,
   if (dh.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(2.0), dh, error));
   if (vsego.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", vsego, fl_number((2.0 * dh.as.number)),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "sub", vsego,
+                          fl_number((2.0 * dh.as.number + 0.0)), error));
   const fl_value nabivka =
-      fl_number((vsego.as.number - (2.0 * dh.as.number)) - 2.0);
+      fl_number((vsego.as.number - (2.0 * dh.as.number + 0.0)) - 2.0);
   if (nabivka.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "add", nabivka, fl_number(1.0), error));
   fl_value fl_t1561 = fl_nothing();
@@ -13311,10 +13320,11 @@ fl_status tls_client_kodirovka_pss_shoditsya(fl_ctx *ctx, fl_value vid,
   if (dh.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(2.0), dh, error));
   if (vsego.tag != FL_NUMBER)
-    FL_TRY(fl_not_order(ctx, vsego, fl_number(((2.0 * dh.as.number) + 2.0)),
-                        error));
+    FL_TRY(fl_not_order(ctx, vsego,
+                        fl_number(((2.0 * dh.as.number + 0.0) + 2.0)), error));
   bool fl_t1567 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(vsego.as.number >= ((2.0 * dh.as.number) + 2.0)),
+  FL_TRY(fl_cond(ctx,
+                 fl_flag(vsego.as.number >= ((2.0 * dh.as.number + 0.0) + 2.0)),
                  &fl_t1567, error));
   fl_value fl_t1568;
   if (fl_t1567) {
@@ -13661,9 +13671,10 @@ fl_status tls_client_bayt_iz_pary(fl_ctx *ctx, fl_value starshiy,
   fl_value fl_t1618 = fl_nothing();
   FL_TRY(tls_client_znachenie_znaka_16(ctx, mladshiy, &fl_t1618, error));
   if (fl_t1618.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((16.0 * fl_t1617.as.number)),
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((16.0 * fl_t1617.as.number + 0.0)),
                           fl_t1618, error));
-  *result = fl_number((16.0 * fl_t1617.as.number) + fl_t1618.as.number);
+  *result = fl_number((16.0 * fl_t1617.as.number + 0.0) + fl_t1618.as.number);
   return FL_OK;
 }
 
@@ -13696,9 +13707,10 @@ fl_status tls_client_pol_drobi(fl_ctx *ctx, fl_value znachenie,
     FL_TRY(fl_not_numbers(ctx, "mod", znachenie, fl_number(1.0), error));
   if (znachenie.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", znachenie,
-                          fl_number((fmod(znachenie.as.number, 1.0))), error));
+                          fl_number((fmod(znachenie.as.number, 1.0) + 0.0)),
+                          error));
   const fl_value srezano =
-      fl_number(znachenie.as.number - (fmod(znachenie.as.number, 1.0)));
+      fl_number(znachenie.as.number - (fmod(znachenie.as.number, 1.0) + 0.0));
   if (srezano.tag != FL_NUMBER || znachenie.tag != FL_NUMBER)
     FL_TRY(fl_not_order(ctx, srezano, znachenie, error));
   bool fl_t1620 = false;
@@ -13736,7 +13748,8 @@ fl_status tls_client_delenie_vniz(fl_ctx *ctx, fl_value delimoe,
     if (delimoe.tag != FL_NUMBER || delitel.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "div", delimoe, delitel, error));
     return tls_client_pol_drobi(
-        ctx, fl_number(delimoe.as.number / delitel.as.number), result, error);
+        ctx, fl_number(delimoe.as.number / delitel.as.number + 0.0), result,
+        error);
   }
 }
 
@@ -13752,15 +13765,12 @@ fl_status tls_client_visokosnyy_god(fl_ctx *ctx, fl_value god, fl_value *result,
   if (god.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", god, fl_number(4.0), error));
   bool fl_t1622 = false;
-  FL_TRY(fl_cond(
-      ctx,
-      fl_flag(fl_equal(fl_number(fmod(god.as.number, 4.0)), fl_number(0.0))),
-      &fl_t1622, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(god.as.number, 4.0) + 0.0), fl_number(0.0))), &fl_t1622, error));
   if (fl_t1622) {
     if (god.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", god, fl_number(100.0), error));
     bool fl_t1623 = false;
-    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(god.as.number, 100.0)), fl_number(0.0))), &fl_t1623, error));
+    FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(god.as.number, 100.0) + 0.0), fl_number(0.0))), &fl_t1623, error));
     fl_value fl_t1624;
     if (fl_t1623) {
       fl_t1624 = fl_flag(false);
@@ -13775,8 +13785,7 @@ fl_status tls_client_visokosnyy_god(fl_ctx *ctx, fl_value god, fl_value *result,
     } else {
       if (god.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mod", god, fl_number(400.0), error));
-      *result = fl_flag(
-          fl_equal(fl_number(fmod(god.as.number, 400.0)), fl_number(0.0)));
+      *result = fl_flag(fl_equal(fl_number(fmod(god.as.number, 400.0) + 0.0), fl_number(0.0)));
       return FL_OK;
     }
   } else {
@@ -14034,9 +14043,9 @@ fl_status tls_client_dney_ot_epohi(fl_ctx *ctx, fl_value data, fl_value *result,
       FL_TRY(fl_not_numbers(ctx, "mul", era, fl_number(400.0), error));
     if (sdvinutyy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", sdvinutyy,
-                            fl_number((era.as.number * 400.0)), error));
+                            fl_number((era.as.number * 400.0 + 0.0)), error));
     const fl_value god_ery =
-        fl_number(sdvinutyy.as.number - (era.as.number * 400.0));
+        fl_number(sdvinutyy.as.number - (era.as.number * 400.0 + 0.0));
     if (mesyac.tag != FL_NUMBER)
       FL_TRY(fl_not_order(ctx, mesyac, fl_number(2.0), error));
     bool fl_t1657 = false;
@@ -14050,9 +14059,7 @@ fl_status tls_client_dney_ot_epohi(fl_ctx *ctx, fl_value data, fl_value *result,
     if (mesyac.tag != FL_NUMBER || fl_t1658.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "add", mesyac, fl_t1658, error));
     fl_value fl_t1659 = fl_nothing();
-    FL_TRY(tls_client_delenie_vniz(
-        ctx, fl_number((153.0 * (mesyac.as.number + fl_t1658.as.number)) + 2.0),
-        fl_number(5.0), &fl_t1659, error));
+    FL_TRY(tls_client_delenie_vniz(ctx, fl_number((153.0 * (mesyac.as.number + fl_t1658.as.number) + 0.0) + 2.0), fl_number(5.0), &fl_t1659, error));
     if (fl_t1659.tag != FL_NUMBER || sutki.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "add", fl_t1659, sutki, error));
     const fl_value den_goda =
@@ -14063,7 +14070,8 @@ fl_status tls_client_dney_ot_epohi(fl_ctx *ctx, fl_value data, fl_value *result,
     FL_TRY(tls_client_delenie_vniz(ctx, god_ery, fl_number(4.0), &fl_t1660,
                                    error));
     if (fl_t1660.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((god_ery.as.number * 365.0)),
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((god_ery.as.number * 365.0 + 0.0)),
                             fl_t1660, error));
     fl_value fl_t1661 = fl_nothing();
     FL_TRY(tls_client_delenie_vniz(ctx, god_ery, fl_number(100.0), &fl_t1661,
@@ -14071,18 +14079,19 @@ fl_status tls_client_dney_ot_epohi(fl_ctx *ctx, fl_value data, fl_value *result,
     if (fl_t1661.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
           ctx, "sub",
-          fl_number(((god_ery.as.number * 365.0) + fl_t1660.as.number)),
+          fl_number(((god_ery.as.number * 365.0 + 0.0) + fl_t1660.as.number)),
           fl_t1661, error));
     if (den_goda.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((((god_ery.as.number * 365.0) + fl_t1660.as.number) - fl_t1661.as.number)), den_goda, error));
-    const fl_value den_ery = fl_number((((god_ery.as.number * 365.0) + fl_t1660.as.number) - fl_t1661.as.number) + den_goda.as.number);
+      FL_TRY(fl_not_numbers(ctx, "add", fl_number((((god_ery.as.number * 365.0 + 0.0) + fl_t1660.as.number) - fl_t1661.as.number)), den_goda, error));
+    const fl_value den_ery = fl_number((((god_ery.as.number * 365.0 + 0.0) + fl_t1660.as.number) - fl_t1661.as.number) + den_goda.as.number);
     if (era.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", era, fl_number(146097.0), error));
     if (den_ery.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((era.as.number * 146097.0)),
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((era.as.number * 146097.0 + 0.0)),
                             den_ery, error));
     *result = fl_number(
-        ((era.as.number * 146097.0) + den_ery.as.number) - 719468.0);
+        ((era.as.number * 146097.0 + 0.0) + den_ery.as.number) - 719468.0);
     return FL_OK;
   } else {
     return fl_match_fail(ctx, data, error);
@@ -14109,9 +14118,9 @@ fl_status tls_client_data_iz_dney(fl_ctx *ctx, fl_value dni, fl_value *result,
     FL_TRY(fl_not_numbers(ctx, "mul", era, fl_number(146097.0), error));
   if (sdvig.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", sdvig,
-                          fl_number((era.as.number * 146097.0)), error));
+                          fl_number((era.as.number * 146097.0 + 0.0)), error));
   const fl_value den_ery =
-      fl_number(sdvig.as.number - (era.as.number * 146097.0));
+      fl_number(sdvig.as.number - (era.as.number * 146097.0 + 0.0));
   fl_value fl_t1663 = fl_nothing();
   FL_TRY(tls_client_delenie_vniz(ctx, den_ery, fl_number(1460.0), &fl_t1663,
                                  error));
@@ -14136,15 +14145,17 @@ fl_status tls_client_data_iz_dney(fl_ctx *ctx, fl_value dni, fl_value *result,
     FL_TRY(fl_not_numbers(ctx, "mul", era, fl_number(400.0), error));
   if (god_ery.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "add", god_ery,
-                          fl_number((era.as.number * 400.0)), error));
-  const fl_value god = fl_number(god_ery.as.number + (era.as.number * 400.0));
+                          fl_number((era.as.number * 400.0 + 0.0)), error));
+  const fl_value god =
+      fl_number(god_ery.as.number + (era.as.number * 400.0 + 0.0));
   if (god_ery.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(365.0), god_ery, error));
   fl_value fl_t1667 = fl_nothing();
   FL_TRY(
       tls_client_delenie_vniz(ctx, god_ery, fl_number(4.0), &fl_t1667, error));
   if (fl_t1667.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((365.0 * god_ery.as.number)),
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((365.0 * god_ery.as.number + 0.0)),
                           fl_t1667, error));
   fl_value fl_t1668 = fl_nothing();
   FL_TRY(tls_client_delenie_vniz(ctx, god_ery, fl_number(100.0), &fl_t1668,
@@ -14152,24 +14163,24 @@ fl_status tls_client_data_iz_dney(fl_ctx *ctx, fl_value dni, fl_value *result,
   if (fl_t1668.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(
         ctx, "sub",
-        fl_number(((365.0 * god_ery.as.number) + fl_t1667.as.number)), fl_t1668,
-        error));
+        fl_number(((365.0 * god_ery.as.number + 0.0) + fl_t1667.as.number)),
+        fl_t1668, error));
   if (den_ery.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", den_ery, fl_number((((365.0 * god_ery.as.number) + fl_t1667.as.number) - fl_t1668.as.number)), error));
-  const fl_value den_goda = fl_number(den_ery.as.number - (((365.0 * god_ery.as.number) + fl_t1667.as.number) - fl_t1668.as.number));
+    FL_TRY(fl_not_numbers(ctx, "sub", den_ery, fl_number((((365.0 * god_ery.as.number + 0.0) + fl_t1667.as.number) - fl_t1668.as.number)), error));
+  const fl_value den_goda = fl_number(den_ery.as.number - (((365.0 * god_ery.as.number + 0.0) + fl_t1667.as.number) - fl_t1668.as.number));
   if (den_goda.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(5.0), den_goda, error));
   fl_value fl_t1669 = fl_nothing();
-  FL_TRY(tls_client_delenie_vniz(ctx,
-                                 fl_number((5.0 * den_goda.as.number) + 2.0),
-                                 fl_number(153.0), &fl_t1669, error));
+  FL_TRY(tls_client_delenie_vniz(
+      ctx, fl_number((5.0 * den_goda.as.number + 0.0) + 2.0), fl_number(153.0),
+      &fl_t1669, error));
   const fl_value mesyac_pyatyy = fl_t1669;
   if (mesyac_pyatyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(153.0), mesyac_pyatyy, error));
   fl_value fl_t1670 = fl_nothing();
   FL_TRY(tls_client_delenie_vniz(
-      ctx, fl_number((153.0 * mesyac_pyatyy.as.number) + 2.0), fl_number(5.0),
-      &fl_t1670, error));
+      ctx, fl_number((153.0 * mesyac_pyatyy.as.number + 0.0) + 2.0),
+      fl_number(5.0), &fl_t1670, error));
   if (den_goda.tag != FL_NUMBER || fl_t1670.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", den_goda, fl_t1670, error));
   const fl_value sutki =
@@ -14225,7 +14236,8 @@ fl_status tls_client_den_nedeli(fl_ctx *ctx, fl_value data, fl_value *result,
   FL_TRY(tls_client_dney_ot_epohi(ctx, data, &fl_t1677, error));
   if (fl_t1677.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t1677, fl_number(7.0), error));
-  *result = fl_number(fmod(((fmod(fl_t1677.as.number, 7.0)) + 11.0), 7.0));
+  *result = fl_number(
+      fmod(((fmod(fl_t1677.as.number, 7.0) + 0.0) + 11.0), 7.0) + 0.0);
   return FL_OK;
 }
 
@@ -14384,10 +14396,10 @@ fl_status tls_client_sekund_ot_epohi(fl_ctx *ctx, fl_value otmetka,
       if (minuta.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mul", minuta, fl_number(60.0), error));
       if (sekunda.tag != FL_NUMBER)
-        FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t1690.as.number * 86400.0) + (chas.as.number * 3600.0)) + (minuta.as.number * 60.0))), sekunda, error));
+        FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t1690.as.number * 86400.0 + 0.0) + (chas.as.number * 3600.0 + 0.0)) + (minuta.as.number * 60.0 + 0.0))), sekunda, error));
       if (smeschenie.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mul", smeschenie, fl_number(60.0), error));
-      *result = fl_number(((((fl_t1690.as.number * 86400.0) + (chas.as.number * 3600.0)) + (minuta.as.number * 60.0)) + sekunda.as.number) - (smeschenie.as.number * 60.0));
+      *result = fl_number(((((fl_t1690.as.number * 86400.0 + 0.0) + (chas.as.number * 3600.0 + 0.0)) + (minuta.as.number * 60.0 + 0.0)) + sekunda.as.number) - (smeschenie.as.number * 60.0 + 0.0));
       return FL_OK;
     } else {
       return fl_match_fail(ctx, chasy, error);
@@ -14500,8 +14512,8 @@ fl_status tls_client_chislo_iz_cifr(fl_ctx *ctx, fl_value tekst,
           if (fl_t1709.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "sub", fl_t1709, fl_number(48.0), error));
-          fl_t1708 =
-              fl_number((akk.as.number * 10.0) + (fl_t1709.as.number - 48.0));
+          fl_t1708 = fl_number(
+              (akk.as.number * 10.0 + 0.0) + (fl_t1709.as.number - 48.0));
         }
         fl_t1702 = fl_t1708;
       }
@@ -14674,14 +14686,14 @@ fl_status tls_client_smeschenie_iz_hvosta(fl_ctx *ctx, fl_value hvost,
             FL_TRY(fl_not_numbers(ctx, "mul", chasy, fl_number(60.0), error));
           if (minuty.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(ctx, "add",
-                                  fl_number((chasy.as.number * 60.0)), minuty,
-                                  error));
+                                  fl_number((chasy.as.number * 60.0 + 0.0)),
+                                  minuty, error));
           if (fl_t1744.tag != FL_NUMBER)
             FL_TRY(fl_not_numbers(
                 ctx, "mul", fl_t1744,
-                fl_number(((chasy.as.number * 60.0) + minuty.as.number)),
+                fl_number(((chasy.as.number * 60.0 + 0.0) + minuty.as.number)),
                 error));
-          *result = fl_number(fl_t1744.as.number * ((chasy.as.number * 60.0) + minuty.as.number));
+          *result = fl_number(fl_t1744.as.number * ((chasy.as.number * 60.0 + 0.0) + minuty.as.number) + 0.0);
           return FL_OK;
         }
       }
@@ -15329,7 +15341,8 @@ fl_status tls_client_napechatat_poyas(fl_ctx *ctx, fl_value smeschenie,
       FL_TRY(fl_not_numbers(ctx, "mod", po_modulyu, fl_number(60.0), error));
     fl_value fl_t1885 = fl_nothing();
     FL_TRY(tls_client_dvumya_znakami(
-        ctx, fl_number(fmod(po_modulyu.as.number, 60.0)), &fl_t1885, error));
+        ctx, fl_number(fmod(po_modulyu.as.number, 60.0) + 0.0), &fl_t1885,
+        error));
     fl_value fl_t1886 = fl_nothing();
     FL_TRY(fl_concat(ctx, fl_t1884, fl_t1885, &fl_t1886, error));
     *result = fl_t1886;
@@ -15411,11 +15424,10 @@ fl_status tls_client_ostatok_pri_delenii_vniz(fl_ctx *ctx, fl_value delimoe,
   if (fl_t1899.tag != FL_NUMBER || delitel.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t1899, delitel, error));
   if (delimoe.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", delimoe,
-                          fl_number((fl_t1899.as.number * delitel.as.number)),
-                          error));
-  *result = fl_number(
-      (delimoe.as.number - (fl_t1899.as.number * delitel.as.number)) + 0.0);
+    FL_TRY(fl_not_numbers(
+        ctx, "sub", delimoe,
+        fl_number((fl_t1899.as.number * delitel.as.number + 0.0)), error));
+  *result = fl_number((delimoe.as.number - (fl_t1899.as.number * delitel.as.number + 0.0)) + 0.0);
   return FL_OK;
 }
 
@@ -15439,12 +15451,9 @@ fl_status tls_client_dlitelnost_iz_chasov_minut_sekund(fl_ctx *ctx,
   if (minut.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", minut, fl_number(60.0), error));
   if (sekund.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(
-        ctx, "add",
-        fl_number(((chasov.as.number * 3600.0) + (minut.as.number * 60.0))),
-        sekund, error));
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number(((chasov.as.number * 3600.0 + 0.0) + (minut.as.number * 60.0 + 0.0))), sekund, error));
   fl_value fl_t1901[1];
-  fl_t1901[0] = fl_number(((chasov.as.number * 3600.0) + (minut.as.number * 60.0)) + sekund.as.number);
+  fl_t1901[0] = fl_number(((chasov.as.number * 3600.0 + 0.0) + (minut.as.number * 60.0 + 0.0)) + sekund.as.number);
   fl_value fl_t1900 = fl_nothing();
   FL_TRY(fl_variant_new(ctx, "Длительность", tls_client_names_46, fl_t1901, 1,
                         &fl_t1900, error));
@@ -15514,9 +15523,10 @@ fl_status tls_client_otmetka_iz_sekund(fl_ctx *ctx, fl_value sekundy,
     FL_TRY(fl_not_numbers(ctx, "mul", smeschenie, fl_number(60.0), error));
   if (sekundy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "add", sekundy,
-                          fl_number((smeschenie.as.number * 60.0)), error));
+                          fl_number((smeschenie.as.number * 60.0 + 0.0)),
+                          error));
   const fl_value mestnye =
-      fl_number(sekundy.as.number + (smeschenie.as.number * 60.0));
+      fl_number(sekundy.as.number + (smeschenie.as.number * 60.0 + 0.0));
   fl_value fl_t1906 = fl_nothing();
   FL_TRY(tls_client_delenie_vniz(ctx, mestnye, fl_number(86400.0), &fl_t1906,
                                  error));
@@ -15843,7 +15853,7 @@ fl_status tls_client_doli_sekundy(fl_ctx *ctx, fl_value tekst, fl_value *result,
           if (fl_t1965.tag != FL_NUMBER)
             FL_TRY(
                 fl_not_numbers(ctx, "mul", fl_t1965, fl_number(100.0), error));
-          *result = fl_number(fl_t1965.as.number * 100.0);
+          *result = fl_number(fl_t1965.as.number * 100.0 + 0.0);
           return FL_OK;
         } else {
           bool fl_t1966 = false;
@@ -15858,7 +15868,7 @@ fl_status tls_client_doli_sekundy(fl_ctx *ctx, fl_value tekst, fl_value *result,
             if (fl_t1968.tag != FL_NUMBER)
               FL_TRY(
                   fl_not_numbers(ctx, "mul", fl_t1968, fl_number(10.0), error));
-            *result = fl_number(fl_t1968.as.number * 10.0);
+            *result = fl_number(fl_t1968.as.number * 10.0 + 0.0);
             return FL_OK;
           } else {
             fl_value fl_t1969 = fl_nothing();
@@ -16515,10 +16525,10 @@ fl_status tls_client_vremya_sertifikata(fl_ctx *ctx, fl_value millisekundy,
   if (millisekundy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", millisekundy, fl_number(1000.0), error));
   if (millisekundy.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", millisekundy,
-                          fl_number((fmod(millisekundy.as.number, 1000.0))),
-                          error));
-  const fl_value sekundy = fl_number((millisekundy.as.number - (fmod(millisekundy.as.number, 1000.0))) / 1000.0);
+    FL_TRY(fl_not_numbers(
+        ctx, "sub", millisekundy,
+        fl_number((fmod(millisekundy.as.number, 1000.0) + 0.0)), error));
+  const fl_value sekundy = fl_number((millisekundy.as.number - (fmod(millisekundy.as.number, 1000.0) + 0.0)) / 1000.0 + 0.0);
   fl_value fl_t2080 = fl_nothing();
   FL_TRY(tls_client_otmetka_iz_sekund(ctx, sekundy, fl_number(0.0), &fl_t2080,
                                       error));
@@ -16536,13 +16546,14 @@ fl_status tls_client_vremya_sertifikata(fl_ctx *ctx, fl_value millisekundy,
   fl_value fl_t2084 = fl_nothing();
   FL_TRY(fl_field_get(ctx, den, "месяц", &fl_t2084, error));
   if (fl_t2084.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t2083.as.number * 100.0)),
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t2083.as.number * 100.0 + 0.0)),
                           fl_t2084, error));
   fl_value fl_t2085 = fl_nothing();
   FL_TRY(fl_field_get(ctx, den, "сутки", &fl_t2085, error));
   if (fl_t2085.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t2083.as.number * 100.0) + fl_t2084.as.number) * 100.0)), fl_t2085, error));
-  const fl_value data = fl_number((((fl_t2083.as.number * 100.0) + fl_t2084.as.number) * 100.0) + fl_t2085.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t2083.as.number * 100.0 + 0.0) + fl_t2084.as.number) * 100.0 + 0.0)), fl_t2085, error));
+  const fl_value data = fl_number((((fl_t2083.as.number * 100.0 + 0.0) + fl_t2084.as.number) * 100.0 + 0.0) + fl_t2085.as.number);
   fl_value fl_t2086 = fl_nothing();
   FL_TRY(fl_field_get(ctx, chasy, "час", &fl_t2086, error));
   if (fl_t2086.tag != FL_NUMBER)
@@ -16550,19 +16561,21 @@ fl_status tls_client_vremya_sertifikata(fl_ctx *ctx, fl_value millisekundy,
   fl_value fl_t2087 = fl_nothing();
   FL_TRY(fl_field_get(ctx, chasy, "минута", &fl_t2087, error));
   if (fl_t2087.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t2086.as.number * 100.0)),
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t2086.as.number * 100.0 + 0.0)),
                           fl_t2087, error));
   fl_value fl_t2088 = fl_nothing();
   FL_TRY(fl_field_get(ctx, chasy, "секунда", &fl_t2088, error));
   if (fl_t2088.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t2086.as.number * 100.0) + fl_t2087.as.number) * 100.0)), fl_t2088, error));
-  const fl_value vremya = fl_number((((fl_t2086.as.number * 100.0) + fl_t2087.as.number) * 100.0) + fl_t2088.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number((((fl_t2086.as.number * 100.0 + 0.0) + fl_t2087.as.number) * 100.0 + 0.0)), fl_t2088, error));
+  const fl_value vremya = fl_number((((fl_t2086.as.number * 100.0 + 0.0) + fl_t2087.as.number) * 100.0 + 0.0) + fl_t2088.as.number);
   if (data.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", data, fl_number(1000000.0), error));
   if (vremya.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((data.as.number * 1000000.0)),
-                          vremya, error));
-  *result = fl_number((data.as.number * 1000000.0) + vremya.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((data.as.number * 1000000.0 + 0.0)), vremya,
+                          error));
+  *result = fl_number((data.as.number * 1000000.0 + 0.0) + vremya.as.number);
   return FL_OK;
 }
 
@@ -17799,14 +17812,14 @@ fl_status tls_client_shag_perenosa(fl_ctx *ctx, fl_value hod, fl_value razryad,
     const fl_value summa = fl_number(razryad.as.number + p.as.number);
     if (summa.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", summa, fl_number(65536.0), error));
-    const fl_value niz = fl_number(fmod(summa.as.number, 65536.0));
+    const fl_value niz = fl_number(fmod(summa.as.number, 65536.0) + 0.0);
     fl_value fl_t2251 = fl_nothing();
     FL_TRY(fl_b_dobavit(ctx, niz, st, &fl_t2251, error));
     if (summa.tag != FL_NUMBER || niz.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", summa, niz, error));
     fl_value fl_t2253[2];
     fl_t2253[0] = fl_t2251;
-    fl_t2253[1] = fl_number((summa.as.number - niz.as.number) / 65536.0);
+    fl_t2253[1] = fl_number((summa.as.number - niz.as.number) / 65536.0 + 0.0);
     fl_value fl_t2252 = fl_nothing();
     FL_TRY(fl_variant_new(ctx, "Ход переноса", tls_client_names_37, fl_t2253, 2,
                           &fl_t2252, error));
@@ -17867,7 +17880,8 @@ fl_status tls_client_uzhat(fl_ctx *ctx, fl_value razryady, fl_value *result,
     FL_TRY(fl_variant_field(ctx, hod, "перенос", &p, error));
     if (p.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_number(38.0), p, error));
-    return tls_client_dobavit_k_pervomu(ctx, st, fl_number(38.0 * p.as.number),
+    return tls_client_dobavit_k_pervomu(ctx, st,
+                                        fl_number(38.0 * p.as.number + 0.0),
                                         result, error);
   } else {
     return fl_match_fail(ctx, hod, error);
@@ -17907,8 +17921,8 @@ fl_status tls_client_svesti(fl_ctx *ctx, fl_value razryady, fl_value *result,
       if (p.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "mul", fl_number(38.0), p, error));
       return tls_client_dobavit_k_pervomu(ctx, st,
-                                          fl_number(38.0 * p.as.number), result,
-                                          error);
+                                          fl_number(38.0 * p.as.number + 0.0),
+                                          result, error);
     }
   } else {
     return fl_match_fail(ctx, hod, error);
@@ -18056,13 +18070,14 @@ static fl_status tls_client_iz_baytov_body(fl_ctx *ctx, fl_value bayty,
         FL_TRY(fl_not_numbers(ctx, "mul", fl_number(256.0), vtoroy, error));
       if (b.tag != FL_NUMBER)
         FL_TRY(fl_not_numbers(ctx, "add", b,
-                              fl_number((256.0 * vtoroy.as.number)), error));
+                              fl_number((256.0 * vtoroy.as.number + 0.0)),
+                              error));
       fl_value fl_t2270 = fl_nothing();
       FL_TRY(tls_client_iz_baytov(ctx, prochie, &fl_t2270, error));
       fl_value fl_t2271 = fl_nothing();
-      FL_TRY(fl_b_pripisat(ctx,
-                           fl_number(b.as.number + (256.0 * vtoroy.as.number)),
-                           fl_t2270, &fl_t2271, error));
+      FL_TRY(fl_b_pripisat(
+          ctx, fl_number(b.as.number + (256.0 * vtoroy.as.number + 0.0)),
+          fl_t2270, &fl_t2271, error));
       *result = fl_t2271;
       return FL_OK;
     } else {
@@ -18116,7 +18131,7 @@ fl_status tls_client_tochka_iz_baytov(fl_ctx *ctx, fl_value bayty,
   fl_value fl_t2275 = fl_nothing();
   FL_TRY(tls_client_nuli_polya(ctx, fl_number(15.0), &fl_t2275, error));
   fl_value fl_t2276 = fl_nothing();
-  FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(fl_t2274.as.number, 32768.0)),
+  FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(fl_t2274.as.number, 32768.0) + 0.0),
                       fl_t2275, &fl_t2276, error));
   return tls_client_slozhit_po_razryadam(ctx, fl_t2273, fl_t2276, result,
                                          error);
@@ -18139,15 +18154,15 @@ fl_status tls_client_v_bayty(fl_ctx *ctx, fl_value razryady, fl_value *result,
     const fl_value razryad = fl_t2277.as.list.items[fl_t2278];
     if (razryad.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", razryad, fl_number(256.0), error));
-    const fl_value niz = fl_number(fmod(razryad.as.number, 256.0));
+    const fl_value niz = fl_number(fmod(razryad.as.number, 256.0) + 0.0);
     if (razryad.tag != FL_NUMBER || niz.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "sub", razryad, niz, error));
     fl_value fl_t2280 = fl_nothing();
     FL_TRY(fl_b_dobavit(ctx, niz, akk, &fl_t2280, error));
     fl_value fl_t2281 = fl_nothing();
-    FL_TRY(fl_b_dobavit(ctx,
-                        fl_number((razryad.as.number - niz.as.number) / 256.0),
-                        fl_t2280, &fl_t2281, error));
+    FL_TRY(fl_b_dobavit(
+        ctx, fl_number((razryad.as.number - niz.as.number) / 256.0 + 0.0),
+        fl_t2280, &fl_t2281, error));
     akk = fl_t2281;
     FL_TRY(fl_region_recycle(ctx, fl_t2279, &akk, error));
   }
@@ -18172,9 +18187,10 @@ fl_status tls_client_snyat_starshiy(fl_ctx *ctx, fl_value razryady,
     FL_TRY(fl_not_numbers(ctx, "mod", verh, fl_number(32768.0), error));
   if (verh.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", verh,
-                          fl_number((fmod(verh.as.number, 32768.0))), error));
-  const fl_value sverh =
-      fl_number((verh.as.number - (fmod(verh.as.number, 32768.0))) / 32768.0);
+                          fl_number((fmod(verh.as.number, 32768.0) + 0.0)),
+                          error));
+  const fl_value sverh = fl_number(
+      (verh.as.number - (fmod(verh.as.number, 32768.0) + 0.0)) / 32768.0 + 0.0);
   fl_value fl_t2283 = fl_nothing();
   FL_TRY(tls_client_vzyat_pervye(ctx, razryady, fl_number(15.0), &fl_t2283,
                                  error));
@@ -18183,8 +18199,8 @@ fl_status tls_client_snyat_starshiy(fl_ctx *ctx, fl_value razryady,
   fl_value fl_t2284 = fl_nothing();
   FL_TRY(tls_client_nuli_polya(ctx, fl_number(15.0), &fl_t2284, error));
   fl_value fl_t2285 = fl_nothing();
-  FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(verh.as.number, 32768.0)), fl_t2284,
-                      &fl_t2285, error));
+  FL_TRY(fl_b_dobavit(ctx, fl_number(fmod(verh.as.number, 32768.0) + 0.0),
+                      fl_t2284, &fl_t2285, error));
   fl_value fl_t2286 = fl_nothing();
   FL_TRY(tls_client_slozhit_po_razryadam(ctx, fl_t2283, fl_t2285, &fl_t2286,
                                          error));
@@ -18193,7 +18209,7 @@ fl_status tls_client_snyat_starshiy(fl_ctx *ctx, fl_value razryady,
     FL_TRY(fl_not_numbers(ctx, "mul", fl_number(19.0), sverh, error));
   fl_value fl_t2287 = fl_nothing();
   FL_TRY(tls_client_dobavit_k_pervomu(ctx, srez,
-                                      fl_number(19.0 * sverh.as.number),
+                                      fl_number(19.0 * sverh.as.number + 0.0),
                                       &fl_t2287, error));
   fl_value fl_t2288 = fl_nothing();
   FL_TRY(tls_client_razlozhit(ctx, fl_t2287, &fl_t2288, error));
@@ -18751,12 +18767,10 @@ fl_status tls_client_bit_skalyara(fl_ctx *ctx, fl_value skalyar, fl_value nomer,
     FL_TRY(fl_not_numbers(ctx, "mod", nomer, fl_number(8.0), error));
   if (nomer.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", nomer,
-                          fl_number((fmod(nomer.as.number, 8.0))), error));
+                          fl_number((fmod(nomer.as.number, 8.0) + 0.0)),
+                          error));
   fl_value fl_t2375 = fl_nothing();
-  FL_TRY(tls_client_razryad(
-      ctx, skalyar,
-      fl_number(((nomer.as.number - (fmod(nomer.as.number, 8.0))) / 8.0) + 1.0),
-      &fl_t2375, error));
+  FL_TRY(tls_client_razryad(ctx, skalyar, fl_number(((nomer.as.number - (fmod(nomer.as.number, 8.0) + 0.0)) / 8.0 + 0.0) + 1.0), &fl_t2375, error));
   const fl_value bayt = fl_t2375;
   fl_value fl_t2376 = fl_nothing();
   FL_TRY(tls_client_vesa_bayta_polya(ctx, &fl_t2376, error));
@@ -18764,19 +18778,19 @@ fl_status tls_client_bit_skalyara(fl_ctx *ctx, fl_value skalyar, fl_value nomer,
     FL_TRY(fl_not_numbers(ctx, "mod", nomer, fl_number(8.0), error));
   fl_value fl_t2377 = fl_nothing();
   FL_TRY(tls_client_razryad(ctx, fl_t2376,
-                            fl_number((fmod(nomer.as.number, 8.0)) + 1.0),
+                            fl_number((fmod(nomer.as.number, 8.0) + 0.0) + 1.0),
                             &fl_t2377, error));
   const fl_value ves = fl_t2377;
   if (ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
   if (bayt.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "mod", bayt, fl_number((ves.as.number * 2.0)),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "mod", bayt,
+                          fl_number((ves.as.number * 2.0 + 0.0)), error));
   if (bayt.tag != FL_NUMBER || ves.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", bayt, ves, error));
   if (ves.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(bayt.as.number, (ves.as.number * 2.0))) - (fmod(bayt.as.number, ves.as.number)))), ves, error));
-  *result = fl_number(((fmod(bayt.as.number, (ves.as.number * 2.0))) - (fmod(bayt.as.number, ves.as.number))) / ves.as.number);
+    FL_TRY(fl_not_numbers(ctx, "div", fl_number(((fmod(bayt.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0) - (fmod(bayt.as.number, ves.as.number) + 0.0))), ves, error));
+  *result = fl_number(((fmod(bayt.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0) - (fmod(bayt.as.number, ves.as.number) + 0.0)) / ves.as.number + 0.0);
   return FL_OK;
 }
 
@@ -18808,13 +18822,15 @@ fl_status tls_client_zazhat_skalyar(fl_ctx *ctx, fl_value bayty,
     FL_TRY(fl_not_numbers(ctx, "mod", pervyy, fl_number(8.0), error));
   if (pervyy.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "sub", pervyy,
-                          fl_number((fmod(pervyy.as.number, 8.0))), error));
+                          fl_number((fmod(pervyy.as.number, 8.0) + 0.0)),
+                          error));
   fl_value fl_t2382 = fl_nothing();
   FL_TRY(fl_b_pripisat(
-      ctx, fl_number(pervyy.as.number - (fmod(pervyy.as.number, 8.0))),
+      ctx, fl_number(pervyy.as.number - (fmod(pervyy.as.number, 8.0) + 0.0)),
       seredina, &fl_t2382, error));
   fl_value fl_t2383 = fl_nothing();
-  FL_TRY(fl_b_dobavit(ctx, fl_number((fmod(posledniy.as.number, 64.0)) + 64.0),
+  FL_TRY(fl_b_dobavit(ctx,
+                      fl_number((fmod(posledniy.as.number, 64.0) + 0.0) + 64.0),
                       fl_t2382, &fl_t2383, error));
   *result = fl_t2383;
   return FL_OK;
@@ -19228,7 +19244,7 @@ fl_status tls_client_isklyuchayuschee_ili_baytov(fl_ctx *ctx, fl_value pervyy,
     const fl_value ves = fl_t2446.as.list.items[fl_t2447];
     if (ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
-    const fl_value dvoynoy = fl_number(ves.as.number * 2.0);
+    const fl_value dvoynoy = fl_number(ves.as.number * 2.0 + 0.0);
     if (a.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", a, dvoynoy, error));
     if (a.tag != FL_NUMBER || ves.tag != FL_NUMBER)
@@ -19237,14 +19253,15 @@ fl_status tls_client_isklyuchayuschee_ili_baytov(fl_ctx *ctx, fl_value pervyy,
       FL_TRY(fl_not_numbers(ctx, "mod", b, dvoynoy, error));
     if (b.tag != FL_NUMBER || ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", b, ves, error));
-    const fl_value summa = fl_number(((fmod(a.as.number, dvoynoy.as.number)) - (fmod(a.as.number, ves.as.number))) + ((fmod(b.as.number, dvoynoy.as.number)) - (fmod(b.as.number, ves.as.number))));
+    const fl_value summa = fl_number(((fmod(a.as.number, dvoynoy.as.number) + 0.0) - (fmod(a.as.number, ves.as.number) + 0.0)) + ((fmod(b.as.number, dvoynoy.as.number) + 0.0) - (fmod(b.as.number, ves.as.number) + 0.0)));
     if (summa.tag != FL_NUMBER || dvoynoy.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", summa, dvoynoy, error));
     if (akk.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(
           ctx, "add", akk,
-          fl_number((fmod(summa.as.number, dvoynoy.as.number))), error));
-    akk = fl_number(akk.as.number + (fmod(summa.as.number, dvoynoy.as.number)));
+          fl_number((fmod(summa.as.number, dvoynoy.as.number) + 0.0)), error));
+    akk = fl_number(
+        akk.as.number + (fmod(summa.as.number, dvoynoy.as.number) + 0.0));
     FL_TRY(fl_region_recycle(ctx, fl_t2448, &akk, error));
   }
   FL_TRY(fl_region_close(ctx, fl_t2448, FL_OK, &akk, error));
@@ -19597,14 +19614,14 @@ fl_status tls_client_udvoit_v_pole(fl_ctx *ctx, fl_value bayt, fl_value *result,
   if (fl_t2458) {
     if (b.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", b, fl_number(2.0), error));
-    *result = fl_number(b.as.number * 2.0);
+    *result = fl_number(b.as.number * 2.0 + 0.0);
     return FL_OK;
   } else {
     if (b.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", b, fl_number(2.0), error));
     return tls_client_isklyuchayuschee_ili_baytov(
-        ctx, fl_number((b.as.number * 2.0) - 256.0), fl_number(27.0), result,
-        error);
+        ctx, fl_number((b.as.number * 2.0 + 0.0) - 256.0), fl_number(27.0),
+        result, error);
   }
 }
 
@@ -20473,7 +20490,7 @@ fl_status tls_client_klyuch_raunda(fl_ctx *ctx, fl_value rasshirenie,
   if (raund.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", raund, fl_number(16.0), error));
   return tls_client_shestnadcat_baytov(ctx, rasshirenie,
-                                       fl_number(raund.as.number * 16.0),
+                                       fl_number(raund.as.number * 16.0 + 0.0),
                                        result, error);
 }
 
@@ -21089,7 +21106,7 @@ fl_status tls_client_shag_sdviga_bloka(fl_ctx *ctx, fl_value hod, fl_value bayt,
   if (fl_t2771.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t2771, fl_number(2.0), error));
   bool fl_t2772 = false;
-  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(fl_t2771.as.number, 2.0)), fl_number(1.0))), &fl_t2772, error));
+  FL_TRY(fl_cond(ctx, fl_flag(fl_equal(fl_number(fmod(fl_t2771.as.number, 2.0) + 0.0), fl_number(1.0))), &fl_t2772, error));
   fl_value fl_t2773;
   if (fl_t2772) {
     fl_t2773 = fl_number(128.0);
@@ -21100,16 +21117,17 @@ fl_status tls_client_shag_sdviga_bloka(fl_ctx *ctx, fl_value hod, fl_value bayt,
   if (b.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", b, fl_number(2.0), error));
   if (b.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", b, fl_number((fmod(b.as.number, 2.0))),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "sub", b,
+                          fl_number((fmod(b.as.number, 2.0) + 0.0)), error));
   if (perenos.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(
-        ctx, "add", fl_number(((b.as.number - (fmod(b.as.number, 2.0))) / 2.0)),
+        ctx, "add",
+        fl_number(((b.as.number - (fmod(b.as.number, 2.0) + 0.0)) / 2.0 + 0.0)),
         perenos, error));
   fl_value fl_t2774 = fl_nothing();
   FL_TRY(fl_field_get(ctx, hod, "байты", &fl_t2774, error));
   fl_value fl_t2775 = fl_nothing();
-  FL_TRY(fl_b_dobavit(ctx, fl_number(((b.as.number - (fmod(b.as.number, 2.0))) / 2.0) + perenos.as.number), fl_t2774, &fl_t2775, error));
+  FL_TRY(fl_b_dobavit(ctx, fl_number(((b.as.number - (fmod(b.as.number, 2.0) + 0.0)) / 2.0 + 0.0) + perenos.as.number), fl_t2774, &fl_t2775, error));
   fl_value fl_t2777[2];
   fl_t2777[0] = b;
   fl_t2777[1] = fl_t2775;
@@ -21234,7 +21252,7 @@ fl_status tls_client_shag_razryada_polya(fl_ctx *ctx, fl_value hod,
                                    error));
   if (fl_t2798.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t2798, fl_number(2.0), error));
-  const fl_value ushyol = fl_number(fmod(fl_t2798.as.number, 2.0));
+  const fl_value ushyol = fl_number(fmod(fl_t2798.as.number, 2.0) + 0.0);
   fl_value fl_t2799 = fl_nothing();
   FL_TRY(fl_field_get(ctx, hod, "сдвиг", &fl_t2799, error));
   fl_value fl_t2800 = fl_nothing();
@@ -21295,14 +21313,14 @@ fl_status tls_client_shag_bayta_polya(fl_ctx *ctx, fl_value hod, fl_value bayt,
     if (ves.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", ves, fl_number(2.0), error));
     if (b.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "mod", b, fl_number((ves.as.number * 2.0)),
-                            error));
+      FL_TRY(fl_not_numbers(ctx, "mod", b,
+                            fl_number((ves.as.number * 2.0 + 0.0)), error));
     if (ves.tag != FL_NUMBER)
-      FL_TRY(fl_not_order(ctx,
-                          fl_number((fmod(b.as.number, (ves.as.number * 2.0)))),
-                          ves, error));
-    const fl_value est =
-        fl_flag((fmod(b.as.number, (ves.as.number * 2.0))) >= ves.as.number);
+      FL_TRY(fl_not_order(
+          ctx,
+          fl_number((fmod(b.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0)),
+          ves, error));
+    const fl_value est = fl_flag((fmod(b.as.number, (ves.as.number * 2.0 + 0.0)) + 0.0) >= ves.as.number);
     bool fl_t2811 = false;
     FL_TRY(fl_cond(ctx, est, &fl_t2811, error));
     fl_value fl_t2812;
@@ -21748,9 +21766,7 @@ fl_status tls_client_nabivka_do_bloka(fl_ctx *ctx, fl_value bayty,
   if (fl_t2897.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t2897, fl_number(16.0), error));
   fl_value fl_t2898 = fl_nothing();
-  FL_TRY(tls_client_nuli(
-      ctx, fl_number(fmod((16.0 - (fmod(fl_t2897.as.number, 16.0))), 16.0)),
-      &fl_t2898, error));
+  FL_TRY(tls_client_nuli(ctx, fl_number(fmod((16.0 - (fmod(fl_t2897.as.number, 16.0) + 0.0)), 16.0) + 0.0), &fl_t2898, error));
   return tls_client_dosypat_bayty(ctx, bayty, fl_t2898, result, error);
 }
 
@@ -21776,7 +21792,7 @@ fl_status tls_client_dannye_ghash(fl_ctx *ctx, fl_value dop,
   if (fl_t2902.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t2902, fl_number(8.0), error));
   fl_value fl_t2903 = fl_nothing();
-  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t2902.as.number * 8.0),
+  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t2902.as.number * 8.0 + 0.0),
                                 &fl_t2903, error));
   fl_value fl_t2904 = fl_nothing();
   FL_TRY(tls_client_dosypat_bayty(ctx, fl_t2901, fl_t2903, &fl_t2904, error));
@@ -21785,7 +21801,7 @@ fl_status tls_client_dannye_ghash(fl_ctx *ctx, fl_value dop,
   if (fl_t2905.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mul", fl_t2905, fl_number(8.0), error));
   fl_value fl_t2906 = fl_nothing();
-  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t2905.as.number * 8.0),
+  FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t2905.as.number * 8.0 + 0.0),
                                 &fl_t2906, error));
   return tls_client_dosypat_bayty(ctx, fl_t2904, fl_t2906, result, error);
 }
@@ -21830,7 +21846,8 @@ fl_status tls_client_nachalnyy_schyotchik(fl_ctx *ctx, fl_value klyuch,
     if (fl_t2916.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_t2916, fl_number(8.0), error));
     fl_value fl_t2917 = fl_nothing();
-    FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t2916.as.number * 8.0),
+    FL_TRY(tls_client_bayty_dliny(ctx,
+                                  fl_number(fl_t2916.as.number * 8.0 + 0.0),
                                   &fl_t2917, error));
     fl_value fl_t2918 = fl_nothing();
     FL_TRY(tls_client_dosypat_bayty(ctx, fl_t2915, fl_t2917, &fl_t2918, error));
@@ -23102,7 +23119,8 @@ fl_status tls_client_nabivka_pkcs7(fl_ctx *ctx, fl_value bayty,
   FL_TRY(fl_b_dlina(ctx, bayty, &fl_t3129, error));
   if (fl_t3129.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", fl_t3129, fl_number(16.0), error));
-  const fl_value skolko = fl_number(16.0 - (fmod(fl_t3129.as.number, 16.0)));
+  const fl_value skolko =
+      fl_number(16.0 - (fmod(fl_t3129.as.number, 16.0) + 0.0));
   fl_value fl_t3130 = fl_nothing();
   FL_TRY(tls_client_nuli(ctx, skolko, &fl_t3130, error));
   fl_value fl_t3131 = fl_nothing();
@@ -24473,7 +24491,8 @@ fl_status tls_client_nachalnyy_schyotchik_256(fl_ctx *ctx, fl_value klyuch,
     if (fl_t3405.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_t3405, fl_number(8.0), error));
     fl_value fl_t3406 = fl_nothing();
-    FL_TRY(tls_client_bayty_dliny(ctx, fl_number(fl_t3405.as.number * 8.0),
+    FL_TRY(tls_client_bayty_dliny(ctx,
+                                  fl_number(fl_t3405.as.number * 8.0 + 0.0),
                                   &fl_t3406, error));
     fl_value fl_t3407 = fl_nothing();
     FL_TRY(tls_client_dosypat_bayty(ctx, fl_t3404, fl_t3406, &fl_t3407, error));
@@ -24618,17 +24637,18 @@ fl_status tls_client_bayt_dvumya_znakami(fl_ctx *ctx, fl_value bayt,
   if (b.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", b, fl_number(16.0), error));
   if (b.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", b, fl_number((fmod(b.as.number, 16.0))),
-                          error));
+    FL_TRY(fl_not_numbers(ctx, "sub", b,
+                          fl_number((fmod(b.as.number, 16.0) + 0.0)), error));
   fl_value fl_t3431 = fl_nothing();
   FL_TRY(tls_client_cifra_16(
-      ctx, fl_number((b.as.number - (fmod(b.as.number, 16.0))) / 16.0),
+      ctx,
+      fl_number((b.as.number - (fmod(b.as.number, 16.0) + 0.0)) / 16.0 + 0.0),
       &fl_t3431, error));
   if (b.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", b, fl_number(16.0), error));
   fl_value fl_t3432 = fl_nothing();
-  FL_TRY(tls_client_cifra_16(ctx, fl_number(fmod(b.as.number, 16.0)), &fl_t3432,
-                             error));
+  FL_TRY(tls_client_cifra_16(ctx, fl_number(fmod(b.as.number, 16.0) + 0.0),
+                             &fl_t3432, error));
   fl_value fl_t3433 = fl_nothing();
   FL_TRY(fl_concat(ctx, fl_t3431, fl_t3432, &fl_t3433, error));
   *result = fl_t3433;
@@ -24713,16 +24733,16 @@ fl_status tls_client_oktet_zaglavnymi(fl_ctx *ctx, fl_value oktet,
   if (oktet.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", oktet, fl_number(256.0), error));
   fl_value fl_t3443 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx, fl_number(fmod(oktet.as.number, 256.0)),
+  FL_TRY(tls_client_delit_nacelo(ctx,
+                                 fl_number(fmod(oktet.as.number, 256.0) + 0.0),
                                  fl_number(16.0), &fl_t3443, error));
   fl_value fl_t3444 = fl_nothing();
   FL_TRY(tls_client_znak_shestnadcati(ctx, fl_t3443, &fl_t3444, error));
   if (oktet.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", oktet, fl_number(16.0), error));
   fl_value fl_t3445 = fl_nothing();
-  FL_TRY(tls_client_znak_shestnadcati(ctx,
-                                      fl_number(fmod(oktet.as.number, 16.0)),
-                                      &fl_t3445, error));
+  FL_TRY(tls_client_znak_shestnadcati(
+      ctx, fl_number(fmod(oktet.as.number, 16.0) + 0.0), &fl_t3445, error));
   fl_value fl_t3446 = fl_nothing();
   FL_TRY(fl_concat(ctx, fl_t3444, fl_t3445, &fl_t3446, error));
   *result = fl_t3446;
@@ -25006,14 +25026,14 @@ fl_status tls_client_zagolovok_zapisi(fl_ctx *ctx, fl_value metka,
   fl_t3473[1] = fl_t3474;
   if (versiya.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", versiya, fl_number(256.0), error));
-  fl_t3473[2] = fl_number(fmod(versiya.as.number, 256.0));
+  fl_t3473[2] = fl_number(fmod(versiya.as.number, 256.0) + 0.0);
   fl_value fl_t3475 = fl_nothing();
   FL_TRY(
       tls_client_delit_nacelo(ctx, skolko, fl_number(256.0), &fl_t3475, error));
   fl_t3473[3] = fl_t3475;
   if (skolko.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", skolko, fl_number(256.0), error));
-  fl_t3473[4] = fl_number(fmod(skolko.as.number, 256.0));
+  fl_t3473[4] = fl_number(fmod(skolko.as.number, 256.0) + 0.0);
   *result = fl_list(fl_t3473, 5);
   return FL_OK;
 }
@@ -25514,13 +25534,14 @@ fl_status tls_client_shag_par(fl_ctx *ctx, fl_value hod, fl_value oktet,
     if (fl_t3519.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mul", fl_t3519, fl_number(256.0), error));
     if (oktet.tag != FL_NUMBER)
-      FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t3519.as.number * 256.0)),
+      FL_TRY(fl_not_numbers(ctx, "add",
+                            fl_number((fl_t3519.as.number * 256.0 + 0.0)),
                             oktet, error));
     fl_value fl_t3520 = fl_nothing();
     FL_TRY(fl_field_get(ctx, hod, "пары", &fl_t3520, error));
     fl_value fl_t3521 = fl_nothing();
     FL_TRY(fl_b_dobavit(
-        ctx, fl_number((fl_t3519.as.number * 256.0) + oktet.as.number),
+        ctx, fl_number((fl_t3519.as.number * 256.0 + 0.0) + oktet.as.number),
         fl_t3520, &fl_t3521, error));
     fl_value fl_t3523[3];
     fl_t3523[0] = fl_t3518;
@@ -25827,9 +25848,8 @@ fl_status tls_client_pechat_naborov(fl_ctx *ctx, fl_value kody,
     if (kod.tag != FL_NUMBER)
       FL_TRY(fl_not_numbers(ctx, "mod", kod, fl_number(256.0), error));
     fl_value fl_t3558 = fl_nothing();
-    FL_TRY(tls_client_oktet_zaglavnymi(ctx,
-                                       fl_number(fmod(kod.as.number, 256.0)),
-                                       &fl_t3558, error));
+    FL_TRY(tls_client_oktet_zaglavnymi(
+        ctx, fl_number(fmod(kod.as.number, 256.0) + 0.0), &fl_t3558, error));
     fl_t3555[3] = fl_t3558;
     fl_t3555[4] = tls_client_text_315;
     fl_value fl_t3559 = fl_nothing();
@@ -26516,12 +26536,13 @@ fl_status tls_client_dva_okteta(fl_ctx *ctx, fl_value n, fl_value *result,
   if (n.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(65536.0), error));
   fl_value fl_t3689 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx, fl_number(fmod(n.as.number, 65536.0)),
+  FL_TRY(tls_client_delit_nacelo(ctx,
+                                 fl_number(fmod(n.as.number, 65536.0) + 0.0),
                                  fl_number(256.0), &fl_t3689, error));
   fl_t3688[0] = fl_t3689;
   if (n.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(256.0), error));
-  fl_t3688[1] = fl_number(fmod(n.as.number, 256.0));
+  fl_t3688[1] = fl_number(fmod(n.as.number, 256.0) + 0.0);
   *result = fl_list(fl_t3688, 2);
   return FL_OK;
 }
@@ -27027,9 +27048,9 @@ fl_status tls_client_vektor_s_nomerom(fl_ctx *ctx, fl_value vektor,
   if (nomer.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", nomer, fl_number(4294967296.0), error));
   fl_value fl_t3736 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx,
-                                 fl_number(fmod(nomer.as.number, 4294967296.0)),
-                                 fl_number(65536.0), &fl_t3736, error));
+  FL_TRY(tls_client_delit_nacelo(
+      ctx, fl_number(fmod(nomer.as.number, 4294967296.0) + 0.0),
+      fl_number(65536.0), &fl_t3736, error));
   fl_value fl_t3737 = fl_nothing();
   FL_TRY(tls_client_dva_okteta(ctx, fl_t3736, &fl_t3737, error));
   fl_value fl_t3738 = fl_nothing();
@@ -27307,18 +27328,20 @@ fl_status tls_client_tri_okteta(fl_ctx *ctx, fl_value n, fl_value *result,
   if (n.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(16777216.0), error));
   fl_value fl_t3768 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx, fl_number(fmod(n.as.number, 16777216.0)),
+  FL_TRY(tls_client_delit_nacelo(ctx,
+                                 fl_number(fmod(n.as.number, 16777216.0) + 0.0),
                                  fl_number(65536.0), &fl_t3768, error));
   fl_t3767[0] = fl_t3768;
   if (n.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(65536.0), error));
   fl_value fl_t3769 = fl_nothing();
-  FL_TRY(tls_client_delit_nacelo(ctx, fl_number(fmod(n.as.number, 65536.0)),
+  FL_TRY(tls_client_delit_nacelo(ctx,
+                                 fl_number(fmod(n.as.number, 65536.0) + 0.0),
                                  fl_number(256.0), &fl_t3769, error));
   fl_t3767[1] = fl_t3769;
   if (n.tag != FL_NUMBER)
     FL_TRY(fl_not_numbers(ctx, "mod", n, fl_number(256.0), error));
-  fl_t3767[2] = fl_number(fmod(n.as.number, 256.0));
+  fl_t3767[2] = fl_number(fmod(n.as.number, 256.0) + 0.0);
   *result = fl_list(fl_t3767, 3);
   return FL_OK;
 }
@@ -28086,9 +28109,10 @@ fl_status tls_client_dva_okteta_s_mesta(fl_ctx *ctx, fl_value lenta,
   FL_TRY(tls_client_oktet(ctx, lenta, fl_number(mesto.as.number + 1.0),
                           &fl_t3857, error));
   if (fl_t3857.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number((fl_t3856.as.number * 256.0)),
+    FL_TRY(fl_not_numbers(ctx, "add",
+                          fl_number((fl_t3856.as.number * 256.0 + 0.0)),
                           fl_t3857, error));
-  *result = fl_number((fl_t3856.as.number * 256.0) + fl_t3857.as.number);
+  *result = fl_number((fl_t3856.as.number * 256.0 + 0.0) + fl_t3857.as.number);
   return FL_OK;
 }
 
@@ -28120,8 +28144,8 @@ fl_status tls_client_tri_okteta_s_mesta(fl_ctx *ctx, fl_value lenta,
   FL_TRY(tls_client_oktet(ctx, lenta, fl_number(mesto.as.number + 2.0),
                           &fl_t3860, error));
   if (fl_t3860.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "add", fl_number(((fl_t3858.as.number * 65536.0) + (fl_t3859.as.number * 256.0))), fl_t3860, error));
-  *result = fl_number(((fl_t3858.as.number * 65536.0) + (fl_t3859.as.number * 256.0)) + fl_t3860.as.number);
+    FL_TRY(fl_not_numbers(ctx, "add", fl_number(((fl_t3858.as.number * 65536.0 + 0.0) + (fl_t3859.as.number * 256.0 + 0.0))), fl_t3860, error));
+  *result = fl_number(((fl_t3858.as.number * 65536.0 + 0.0) + (fl_t3859.as.number * 256.0 + 0.0)) + fl_t3860.as.number);
   return FL_OK;
 }
 

@@ -578,6 +578,8 @@ size_t fl_stack_room(void) {
 static FL_THREAD_LOCAL fl_ctx *fl_watch_ctx = NULL;
 static FL_THREAD_LOCAL int fl_watch_mine = 0;
 
+static bool fl_spread_child = false;
+
 #ifdef FL_POSIX_STACK
 typedef struct fl_deep_work {
   void (*work)(void *);
@@ -1894,6 +1896,9 @@ static void fl_pulse_tick(fl_ctx *ctx, const char *function) {
   static unsigned long long ticks = 0;
   static unsigned long long every = 0;
   static int tried = 0;
+  if (fl_spread_child) {
+    return;
+  }
   if (tried == 0) {
     const char *path = getenv("FLANG_WATCH_TICK");
     const char *step = getenv("FLANG_PULSE_TICK");
@@ -2355,6 +2360,9 @@ static void fl_pulse(fl_ctx *ctx, const char *function) {
   static unsigned long calls = 0;
   static unsigned long every = 0;
   static int tried = 0;
+  if (fl_spread_child) {
+    return;
+  }
   if (tried == 0) {
     const char *path = getenv("FLANG_WATCH");
     const char *step = getenv("FLANG_PULSE");
@@ -9177,7 +9185,7 @@ static bool fl_par_tally(fl_ctx *ctx, const fl_par_job *job, size_t *steps,
 }
 
 static bool fl_par_begin(fl_ctx *ctx, size_t rest) {
-  if (ctx->lane != 0 || rest < 2) {
+  if (ctx->lane != 0 || rest < 2 || fl_spread_child) {
     return false;
   }
   if (pthread_mutex_trylock(&fl_par_busy) != 0) {
@@ -9377,6 +9385,816 @@ fl_status fl_par_fold(fl_ctx *ctx, fl_value list, fl_value start,
   }
   FL_TRY(fl_region_close(ctx, mark, FL_OK, &acc, error));
   *result = acc;
+  return FL_OK;
+}
+
+#endif
+
+#ifndef FL_SPREAD_MAX_JOBS
+#define FL_SPREAD_MAX_JOBS 256
+#endif
+#ifndef FL_SPREAD_DEFAULT_JOBS
+#define FL_SPREAD_DEFAULT_JOBS 64
+#endif
+#ifndef FL_SPREAD_WAIT_NS
+#define FL_SPREAD_WAIT_NS 20000000L
+#endif
+#ifndef FL_SPREAD_WORTH_NS
+#define FL_SPREAD_WORTH_NS 2000000000L
+#endif
+#ifndef FL_SPREAD_SHARE_NS
+#define FL_SPREAD_SHARE_NS 250000000L
+#endif
+#ifndef FL_SPREAD_SAY_NS
+#define FL_SPREAD_SAY_NS 30000000000L
+#endif
+
+static size_t fl_spread_wanted = 0;
+
+size_t fl_spread_jobs(void) {
+  if (fl_spread_wanted == 0) {
+    const char *told = getenv("FLANG_JOBS");
+    size_t jobs = 0;
+    if (told != NULL && told[0] != '\0') {
+      char *end = NULL;
+      const unsigned long asked = strtoul(told, &end, 10);
+      if (end != told && *end == '\0' && asked > 0) {
+        jobs = asked > FL_SPREAD_MAX_JOBS ? FL_SPREAD_MAX_JOBS : (size_t)asked;
+      }
+    }
+    if (jobs == 0) {
+#ifdef FL_POSIX_STACK
+      const long online = sysconf(_SC_NPROCESSORS_ONLN);
+      jobs = online < 1                                 ? 1
+             : (size_t)online > FL_SPREAD_DEFAULT_JOBS ? FL_SPREAD_DEFAULT_JOBS
+                                                        : (size_t)online;
+#else
+      jobs = 1;
+#endif
+    }
+    fl_spread_wanted = jobs;
+  }
+  return fl_spread_wanted;
+}
+
+#ifdef FL_POSIX_STACK
+
+#include <poll.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+typedef struct fl_spread_head {
+  unsigned long long index;
+  unsigned long long status;
+  unsigned long long steps;
+  unsigned long long copied;
+  unsigned long long span;
+  unsigned long long bytes;
+} fl_spread_head;
+
+typedef struct fl_spread_worker {
+  pid_t pid;
+  int task;
+  int result;
+  unsigned char *bytes;
+  size_t size;
+  size_t capacity;
+  size_t parsed;
+  bool busy;
+  bool open;
+} fl_spread_worker;
+
+typedef struct fl_spread_slot {
+  size_t worker;
+  size_t offset;
+  size_t bytes;
+  bool done;
+} fl_spread_slot;
+
+static bool fl_spread_told(const char *name) {
+  const char *value = getenv(name);
+  return value != NULL && value[0] != '\0';
+}
+
+static bool fl_spread_allowed(const fl_ctx *ctx) {
+  return ctx->lane == 0 && !fl_spread_child && !fl_lasting.on &&
+         !fl_spread_told("FLANG_TICKS_OUT") &&
+         !fl_spread_told("FLANG_TIME_OUT") && fl_spread_jobs() > 1;
+}
+
+static bool fl_spread_write(int fd, const void *bytes, size_t size) {
+  const unsigned char *at = (const unsigned char *)bytes;
+  while (size > 0) {
+    const ssize_t wrote = write(fd, at, size);
+    if (wrote < 0 && errno == EINTR) {
+      continue;
+    }
+    if (wrote <= 0) {
+      return false;
+    }
+    at += wrote;
+    size -= (size_t)wrote;
+  }
+  return true;
+}
+
+static bool fl_spread_read(int fd, void *bytes, size_t size) {
+  unsigned char *at = (unsigned char *)bytes;
+  while (size > 0) {
+    const ssize_t got = read(fd, at, size);
+    if (got < 0 && errno == EINTR) {
+      continue;
+    }
+    if (got <= 0) {
+      return false;
+    }
+    at += got;
+    size -= (size_t)got;
+  }
+  return true;
+}
+
+static void fl_spread_work(fl_ctx *ctx, fl_value list, size_t from,
+                           size_t rest, fl_par_item body, const fl_value *env,
+                           int task, int result, size_t workers) {
+  const size_t steps = ctx->steps;
+  const size_t copied = ctx->copied;
+  const size_t depth = ctx->depth;
+  fl_memo_buffer out;
+  fl_spread_child = true;
+  fl_memo_ready();
+  if (workers > 1 && fl_memo.cap > fl_memo.spent) {
+    fl_memo.cap = fl_memo.spent + (fl_memo.cap - fl_memo.spent) / workers;
+  }
+  memset(&out, 0, sizeof out);
+  for (;;) {
+    unsigned long long index = 0;
+    fl_spread_head head;
+    fl_value value = fl_nothing();
+    fl_value none = fl_nothing();
+    fl_error error;
+    fl_mark mark;
+    fl_status status = FL_OK;
+    if (!fl_spread_read(task, &index, sizeof index)) {
+      _exit(0);
+    }
+    if (index >= rest) {
+      _exit(3);
+    }
+    error.code = NULL;
+    error.message = NULL;
+    ctx->steps = steps;
+    ctx->copied = copied;
+    ctx->depth_peak = depth;
+    mark = fl_region_open(ctx);
+    status = body(ctx, list.as.list.items[from + (size_t)index], env, &value,
+                  &error);
+    memset(&head, 0, sizeof head);
+    head.index = index;
+    head.status = status == FL_OK ? 0u : 1u;
+    head.steps = ctx->steps - steps;
+    head.copied = ctx->copied - copied;
+    head.span = ctx->depth_peak > depth ? ctx->depth_peak - depth : 0u;
+    out.size = 0;
+    out.failed = false;
+    fl_memo_put(&out, &head, sizeof head);
+    if (status == FL_OK) {
+      fl_memo_write(&out, value);
+    }
+    if (out.failed) {
+      _exit(4);
+    }
+    head.bytes = (unsigned long long)(out.size - sizeof head);
+    memcpy(out.data, &head, sizeof head);
+    if (!fl_spread_write(result, out.data, out.size)) {
+      _exit(5);
+    }
+    if (status != FL_OK) {
+      _exit(0);
+    }
+    (void)fl_region_close(ctx, mark, FL_OK, &none, NULL);
+  }
+}
+
+
+typedef struct fl_spread_name {
+  unsigned long long hash;
+  const char *text;
+} fl_spread_name;
+
+static fl_spread_name *fl_spread_names = NULL;
+static size_t fl_spread_name_slots = 0;
+static size_t fl_spread_name_count = 0;
+
+static const char *fl_spread_name_of(const unsigned char *text, size_t size) {
+  const unsigned long long hash = fl_memo_hash(text, size);
+  size_t at = 0;
+  char *copy = NULL;
+  if ((fl_spread_name_count + 1u) * 2u > fl_spread_name_slots) {
+    const size_t slots =
+        fl_spread_name_slots == 0 ? 256u : fl_spread_name_slots * 2u;
+    fl_spread_name *fresh = (fl_spread_name *)calloc(slots, sizeof *fresh);
+    size_t index = 0;
+    if (fresh == NULL) {
+      return NULL;
+    }
+    for (index = 0; index < fl_spread_name_slots; index += 1) {
+      if (fl_spread_names[index].text != NULL) {
+        at = (size_t)(fl_spread_names[index].hash &
+                      (unsigned long long)(slots - 1u));
+        while (fresh[at].text != NULL) {
+          at = (at + 1u) & (slots - 1u);
+        }
+        fresh[at] = fl_spread_names[index];
+      }
+    }
+    free(fl_spread_names);
+    fl_spread_names = fresh;
+    fl_spread_name_slots = slots;
+  }
+  at = (size_t)(hash & (unsigned long long)(fl_spread_name_slots - 1u));
+  while (fl_spread_names[at].text != NULL) {
+    if (fl_spread_names[at].hash == hash &&
+        strlen(fl_spread_names[at].text) == size &&
+        memcmp(fl_spread_names[at].text, text, size) == 0) {
+      return fl_spread_names[at].text;
+    }
+    at = (at + 1u) & (fl_spread_name_slots - 1u);
+  }
+  copy = (char *)malloc(size + 1u);
+  if (copy == NULL) {
+    return NULL;
+  }
+  memcpy(copy, text, size);
+  copy[size] = '\0';
+  fl_spread_names[at].hash = hash;
+  fl_spread_names[at].text = copy;
+  fl_spread_name_count += 1;
+  return copy;
+}
+
+static const char *fl_spread_take_name(fl_memo_reader *reader) {
+  size_t size = 0;
+  const char *name = NULL;
+  if (!fl_memo_read_size(reader, &size) || size > reader->size - reader->at) {
+    reader->failed = true;
+    return NULL;
+  }
+  name = fl_spread_name_of(reader->bytes + reader->at, size);
+  reader->at += size;
+  if (name == NULL) {
+    reader->failed = true;
+  }
+  return name;
+}
+
+static bool fl_spread_take(fl_ctx *ctx, fl_memo_reader *reader, fl_value *out,
+                           size_t depth);
+
+static bool fl_spread_take_fields(fl_ctx *ctx, fl_memo_reader *reader,
+                                  size_t count, const fl_field **out,
+                                  size_t depth) {
+  fl_field *fields = NULL;
+  size_t index = 0;
+  *out = NULL;
+  if (count == 0) {
+    return true;
+  }
+  if (count > ((size_t)-1) / sizeof(fl_field)) {
+    reader->failed = true;
+    return false;
+  }
+  fields = (fl_field *)fl_arena_alloc(ctx->arena, count * sizeof(fl_field));
+  if (fields == NULL) {
+    reader->failed = true;
+    return false;
+  }
+  for (index = 0; index < count; index += 1) {
+    fields[index].name = fl_spread_take_name(reader);
+    if (fields[index].name == NULL ||
+        !fl_spread_take(ctx, reader, &fields[index].value, depth + 1u)) {
+      reader->failed = true;
+      return false;
+    }
+  }
+  *out = fields;
+  return true;
+}
+
+static bool fl_spread_take(fl_ctx *ctx, fl_memo_reader *reader, fl_value *out,
+                           size_t depth) {
+  unsigned char tag = 0;
+  size_t count = 0;
+  size_t index = 0;
+  *out = fl_nothing();
+  if (depth > 1000000u || !fl_memo_read_raw(reader, &tag, 1u)) {
+    reader->failed = true;
+    return false;
+  }
+  switch ((fl_tag)tag) {
+  case FL_NOTHING:
+    return true;
+  case FL_NUMBER:
+    out->tag = FL_NUMBER;
+    return fl_memo_read_raw(reader, &out->as.number, sizeof out->as.number);
+  case FL_FLAG: {
+    unsigned char flag = 0;
+    if (!fl_memo_read_raw(reader, &flag, 1u) || flag > 1u) {
+      reader->failed = true;
+      return false;
+    }
+    out->tag = FL_FLAG;
+    out->as.flag = flag == 1u;
+    return true;
+  }
+  case FL_STRING: {
+    char *text = NULL;
+    if (!fl_memo_read_size(reader, &count) ||
+        count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    text = (char *)fl_arena_alloc(ctx->arena, count + 1u);
+    if (text == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    if (count > 0) {
+      memcpy(text, reader->bytes + reader->at, count);
+    }
+    text[count] = '\0';
+    reader->at += count;
+    *out = fl_text_borrow(text, count, fl_utf8_points(text, count));
+    return true;
+  }
+  case FL_LIST: {
+    fl_value *items = NULL;
+    if (!fl_memo_read_size(reader, &count) ||
+        count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    if (count == 0) {
+      *out = fl_list(NULL, 0);
+      return true;
+    }
+    items = (fl_value *)fl_arena_alloc(ctx->arena, count * sizeof(fl_value));
+    if (items == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    for (index = 0; index < count; index += 1) {
+      if (!fl_spread_take(ctx, reader, &items[index], depth + 1u)) {
+        return false;
+      }
+    }
+    *out = fl_list(items, count);
+    return true;
+  }
+  case FL_RECORD: {
+    fl_record *record =
+        (fl_record *)fl_arena_alloc(ctx->arena, sizeof(fl_record));
+    if (record == NULL || !fl_memo_read_size(reader, &count) ||
+        count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    record->count = count;
+    if (!fl_spread_take_fields(ctx, reader, count, &record->fields, depth)) {
+      return false;
+    }
+    out->tag = FL_RECORD;
+    out->as.record = record;
+    return true;
+  }
+  case FL_VARIANT: {
+    fl_variant *variant =
+        (fl_variant *)fl_arena_alloc(ctx->arena, sizeof(fl_variant));
+    if (variant == NULL) {
+      reader->failed = true;
+      return false;
+    }
+    variant->name = fl_spread_take_name(reader);
+    if (variant->name == NULL || !fl_memo_read_size(reader, &count) ||
+        count > reader->size - reader->at) {
+      reader->failed = true;
+      return false;
+    }
+    variant->count = count;
+    if (!fl_spread_take_fields(ctx, reader, count, &variant->fields, depth)) {
+      return false;
+    }
+    out->tag = FL_VARIANT;
+    out->as.variant = variant;
+    return true;
+  }
+  case FL_WORD: {
+    unsigned char width = 0;
+    unsigned char sign = 0;
+    if (!fl_memo_read_raw(reader, &width, 1u) ||
+        !fl_memo_read_raw(reader, &sign, 1u) || sign > 1u ||
+        (width != 8u && width != 16u && width != 32u && width != 64u)) {
+      reader->failed = true;
+      return false;
+    }
+    out->tag = FL_WORD;
+    out->as.word.width = width;
+    out->as.word.sign = sign == 1u;
+    return fl_memo_read_raw(reader, &out->as.word.bits,
+                            sizeof out->as.word.bits);
+  }
+  default:
+    reader->failed = true;
+    return false;
+  }
+}
+
+
+static void fl_spread_say(size_t workers, size_t done, size_t rest,
+                          long started) {
+  const char *path = getenv("FLANG_WATCH");
+  FILE *pulse = NULL;
+  long spent = 0;
+  if (path == NULL || path[0] == '\0') {
+    return;
+  }
+  pulse = fopen(path, "a");
+  if (pulse == NULL) {
+    return;
+  }
+  spent = (fl_par_clock() - started) / 1000000000L;
+  fprintf(pulse,
+          "%4ld:%02ld  раздача: работников %lu, готово %lu из %lu, сейчас "
+          "«%s»\n",
+          spent / 60, spent % 60, (unsigned long)workers, (unsigned long)done,
+          (unsigned long)rest,
+          fl_now != NULL ? fl_now : "раздача");
+  fclose(pulse);
+}
+
+#ifndef FL_SPREAD_FLOOR_BYTES
+#define FL_SPREAD_FLOOR_BYTES ((unsigned long long)16u << 30)
+#endif
+#ifndef FL_SPREAD_WORKER_BYTES
+#define FL_SPREAD_WORKER_BYTES ((unsigned long long)1u << 30)
+#endif
+
+static unsigned long long fl_spread_room(void) {
+  FILE *info = fopen("/proc/meminfo", "r");
+  char line[256];
+  unsigned long long room = 0;
+  if (info == NULL) {
+    return 0;
+  }
+  while (fgets(line, sizeof line, info) != NULL) {
+    if (strncmp(line, "MemAvailable:", 13) == 0) {
+      room = strtoull(line + 13, NULL, 10) * 1024ull;
+      break;
+    }
+  }
+  fclose(info);
+  return room;
+}
+
+static bool fl_spread_give(fl_spread_worker *worker, size_t *next,
+                           size_t rest) {
+  if (*next >= rest) {
+    if (worker->task >= 0) {
+      close(worker->task);
+      worker->task = -1;
+    }
+    return true;
+  }
+  {
+    const unsigned long long index = (unsigned long long)*next;
+    if (!fl_spread_write(worker->task, &index, sizeof index)) {
+      return false;
+    }
+  }
+  *next += 1;
+  worker->busy = true;
+  return true;
+}
+
+static bool fl_spread_parse(fl_spread_worker *worker, size_t self,
+                            fl_spread_slot *slots, size_t rest, size_t *done) {
+  while (worker->size - worker->parsed >= sizeof(fl_spread_head)) {
+    fl_spread_head head;
+    memcpy(&head, worker->bytes + worker->parsed, sizeof head);
+    if (head.bytes > worker->size - worker->parsed - sizeof head) {
+      return true;
+    }
+    if (head.status != 0u || head.index >= rest || slots[head.index].done) {
+      return false;
+    }
+    slots[head.index].worker = self;
+    slots[head.index].offset = worker->parsed;
+    slots[head.index].bytes = (size_t)head.bytes;
+    slots[head.index].done = true;
+    worker->parsed += sizeof head + (size_t)head.bytes;
+    worker->busy = false;
+    *done += 1;
+  }
+  return true;
+}
+
+static bool fl_spread_drain(fl_spread_worker *worker) {
+  if (worker->capacity - worker->size < 65536u) {
+    const size_t grown =
+        worker->capacity < 65536u ? 131072u : worker->capacity * 2u;
+    unsigned char *fresh = (unsigned char *)realloc(worker->bytes, grown);
+    if (fresh == NULL) {
+      return false;
+    }
+    worker->bytes = fresh;
+    worker->capacity = grown;
+  }
+  for (;;) {
+    const ssize_t got = read(worker->result, worker->bytes + worker->size,
+                             worker->capacity - worker->size);
+    if (got < 0 && errno == EINTR) {
+      continue;
+    }
+    if (got < 0) {
+      return false;
+    }
+    if (got == 0) {
+      worker->open = false;
+      return true;
+    }
+    worker->size += (size_t)got;
+    return true;
+  }
+}
+
+static bool fl_spread_rest(fl_ctx *ctx, fl_value list, size_t from,
+                           fl_par_item body, const fl_value *env,
+                           fl_value *items, long projected) {
+  const size_t rest = list.as.list.count - from;
+  size_t workers = fl_spread_jobs();
+  size_t started = 0;
+  size_t next = 0;
+  size_t done = 0;
+  size_t index = 0;
+  bool failed = false;
+  fl_spread_worker *crew = NULL;
+  fl_spread_slot *slots = NULL;
+  struct pollfd *watch = NULL;
+  struct sigaction quiet;
+  struct sigaction saved;
+  const long began = fl_par_clock();
+  long said = began;
+  long looked = began;
+  bool tight = false;
+  {
+    const long by_time = projected / FL_SPREAD_SHARE_NS;
+    if (by_time < (long)workers) {
+      workers = by_time < 2 ? 2u : (size_t)by_time;
+    }
+  }
+  if (workers > rest) {
+    workers = rest;
+  }
+  {
+    const unsigned long long room = fl_spread_room();
+    if (room != 0) {
+      const unsigned long long fit =
+          room > FL_SPREAD_FLOOR_BYTES
+              ? (room - FL_SPREAD_FLOOR_BYTES) / FL_SPREAD_WORKER_BYTES
+              : 0u;
+      if (fit < (unsigned long long)workers) {
+        workers = (size_t)fit;
+      }
+    }
+  }
+  if (workers < 2) {
+    return false;
+  }
+  crew = (fl_spread_worker *)calloc(workers, sizeof *crew);
+  slots = (fl_spread_slot *)calloc(rest, sizeof *slots);
+  watch = (struct pollfd *)calloc(workers, sizeof *watch);
+  if (crew == NULL || slots == NULL || watch == NULL) {
+    free(crew);
+    free(slots);
+    free(watch);
+    return false;
+  }
+  memset(&quiet, 0, sizeof quiet);
+  quiet.sa_handler = SIG_IGN;
+  sigemptyset(&quiet.sa_mask);
+  sigaction(SIGPIPE, &quiet, &saved);
+  fflush(NULL);
+  for (started = 0; started < workers; started += 1) {
+    int down[2];
+    int up[2];
+    pid_t pid = 0;
+    if (pipe(down) != 0) {
+      break;
+    }
+    if (pipe(up) != 0) {
+      close(down[0]);
+      close(down[1]);
+      break;
+    }
+    pid = fork();
+    if (pid == 0) {
+      for (index = 0; index < started; index += 1) {
+        close(crew[index].task);
+        close(crew[index].result);
+      }
+      close(down[1]);
+      close(up[0]);
+      fl_spread_work(ctx, list, from, rest, body, env, down[0], up[1],
+                     workers);
+      _exit(6);
+    }
+    close(down[0]);
+    close(up[1]);
+    if (pid < 0) {
+      close(down[1]);
+      close(up[0]);
+      break;
+    }
+    crew[started].pid = pid;
+    crew[started].task = down[1];
+    crew[started].result = up[0];
+    crew[started].open = true;
+  }
+  if (started < 2) {
+    failed = true;
+  }
+  for (index = 0; index < started && !failed; index += 1) {
+    failed = !fl_spread_give(&crew[index], &next, rest);
+  }
+  while (!failed && done < rest) {
+    size_t count = 0;
+    int ready = 0;
+    for (index = 0; index < started; index += 1) {
+      if (crew[index].open) {
+        watch[count].fd = crew[index].result;
+        watch[count].events = POLLIN;
+        watch[count].revents = 0;
+        count += 1;
+      }
+    }
+    if (count == 0) {
+      failed = true;
+      break;
+    }
+    ready = poll(watch, (nfds_t)count, 1000);
+    if (ready < 0 && errno != EINTR) {
+      failed = true;
+      break;
+    }
+    if (fl_par_clock() - said >= FL_SPREAD_SAY_NS) {
+      said = fl_par_clock();
+      fl_spread_say(started, done, rest, began);
+    }
+    if (fl_par_clock() - looked >= 1000000000L) {
+      const unsigned long long room = fl_spread_room();
+      looked = fl_par_clock();
+      tight = room != 0 && room < FL_SPREAD_FLOOR_BYTES;
+    }
+    if (ready <= 0) {
+      continue;
+    }
+    count = 0;
+    for (index = 0; index < started && !failed; index += 1) {
+      fl_spread_worker *worker = &crew[index];
+      if (!worker->open) {
+        continue;
+      }
+      if ((watch[count].revents & (POLLIN | POLLHUP | POLLERR)) != 0) {
+        if (!fl_spread_drain(worker) ||
+            !fl_spread_parse(worker, index, slots, rest, &done)) {
+          failed = true;
+        } else if (!worker->open && worker->busy) {
+          failed = true;
+        } else if (!worker->busy && worker->open) {
+          size_t others = 0;
+          size_t look = 0;
+          for (look = 0; look < started; look += 1) {
+            if (look != index && crew[look].task >= 0) {
+              others += 1;
+            }
+          }
+          if (tight && others > 0 && worker->task >= 0) {
+            close(worker->task);
+            worker->task = -1;
+          } else {
+            failed = !fl_spread_give(worker, &next, rest);
+          }
+        }
+      }
+      count += 1;
+    }
+  }
+  for (index = 0; index < started; index += 1) {
+    if (crew[index].task >= 0) {
+      close(crew[index].task);
+      crew[index].task = -1;
+    }
+    if (failed) {
+      kill(crew[index].pid, SIGKILL);
+    }
+  }
+  for (index = 0; index < started; index += 1) {
+    int how = 0;
+    while (waitpid(crew[index].pid, &how, 0) < 0 && errno == EINTR) {
+    }
+    close(crew[index].result);
+  }
+  sigaction(SIGPIPE, &saved, NULL);
+  if (!failed) {
+    unsigned long long steps = 0;
+    unsigned long long copied = 0;
+    unsigned long long span = 0;
+    for (index = 0; index < rest && !failed; index += 1) {
+      fl_spread_head head;
+      memcpy(&head, crew[slots[index].worker].bytes + slots[index].offset,
+             sizeof head);
+      if (head.steps > (unsigned long long)-1 - steps) {
+        failed = true;
+      }
+      steps += head.steps;
+      copied += head.copied;
+      if (head.span > span) {
+        span = head.span;
+      }
+    }
+    if (!failed && ctx->max_steps != 0 &&
+        (ctx->steps > ctx->max_steps ||
+         steps > (unsigned long long)(ctx->max_steps - ctx->steps))) {
+      failed = true;
+    }
+    for (index = 0; index < rest && !failed; index += 1) {
+      fl_memo_reader reader;
+      reader.bytes = crew[slots[index].worker].bytes + slots[index].offset +
+                     sizeof(fl_spread_head);
+      reader.size = slots[index].bytes;
+      reader.at = 0;
+      reader.failed = false;
+      if (!fl_spread_take(ctx, &reader, &items[from + index], 0u) ||
+          reader.failed || reader.at != reader.size) {
+        failed = true;
+      }
+    }
+    if (!failed) {
+      ctx->steps += (size_t)steps;
+      ctx->copied += (size_t)copied;
+      if (ctx->depth + (size_t)span > ctx->depth_peak) {
+        ctx->depth_peak = ctx->depth + (size_t)span;
+      }
+    }
+  }
+  for (index = 0; index < started; index += 1) {
+    free(crew[index].bytes);
+  }
+  free(crew);
+  free(slots);
+  free(watch);
+  return !failed;
+}
+
+fl_status fl_spread_map(fl_ctx *ctx, fl_value list, fl_par_item body,
+                        const fl_value *env, fl_value *items,
+                        fl_error *error) {
+  const size_t count = list.as.list.count;
+  bool may = count > 1 && fl_spread_allowed(ctx);
+  const long started = may ? fl_par_clock() : 0;
+  size_t next = 1;
+  size_t index = 0;
+  for (index = 0; index < count; index += 1) {
+    if (may && index == next) {
+      const long spent = fl_par_clock() - started;
+      next *= 2;
+      if (spent >= FL_SPREAD_WAIT_NS) {
+        const double projected =
+            (double)spent / (double)index * (double)(count - index);
+        if (projected >= (double)FL_SPREAD_WORTH_NS) {
+          may = false;
+          if (fl_spread_rest(ctx, list, index, body, env, items,
+                             projected > 9.0e18 ? 9000000000000000000L
+                                                : (long)projected)) {
+            return FL_OK;
+          }
+        }
+      }
+    }
+    FL_TRY(body(ctx, list.as.list.items[index], env, &items[index], error));
+  }
+  return FL_OK;
+}
+
+#else
+
+fl_status fl_spread_map(fl_ctx *ctx, fl_value list, fl_par_item body,
+                        const fl_value *env, fl_value *items,
+                        fl_error *error) {
+  size_t index = 0;
+  for (index = 0; index < list.as.list.count; index += 1) {
+    FL_TRY(body(ctx, list.as.list.items[index], env, &items[index], error));
+  }
   return FL_OK;
 }
 

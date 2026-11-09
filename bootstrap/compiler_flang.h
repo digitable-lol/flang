@@ -4009,6 +4009,97 @@ fl_status compiler_flang_sozdat_schyot_listov(fl_ctx *ctx, fl_value godno,
                                               fl_value shtuk, fl_value *out,
                                               fl_error *error);
 
+/* Запись FTS «Член линейной формы»: «одночлен», «множитель». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_chlen_lineynoy_formy(fl_ctx *ctx,
+                                                     fl_value odnochlen,
+                                                     fl_value mnozhitel,
+                                                     fl_value *out,
+                                                     fl_error *error);
+
+/* Запись FTS «Линейная форма»: «есть», «члены». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynaya_forma(fl_ctx *ctx, fl_value est,
+                                                fl_value chleny, fl_value *out,
+                                                fl_error *error);
+
+/* Запись FTS «Линейный отрезок»: «годен», «низ», «верх». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynyy_otrezok(fl_ctx *ctx, fl_value goden,
+                                                 fl_value niz, fl_value verh,
+                                                 fl_value *out,
+                                                 fl_error *error);
+
+/* Запись FTS «Линейное звено»: «вид», «текст», «обратно», «форма». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynoe_zveno(fl_ctx *ctx, fl_value vid,
+                                               fl_value tekst, fl_value obratno,
+                                               fl_value forma, fl_value *out,
+                                               fl_error *error);
+
+/* Запись FTS «Линейный вклад»: «номер», «множитель». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynyy_vklad(fl_ctx *ctx, fl_value nomer,
+                                               fl_value mnozhitel,
+                                               fl_value *out, fl_error *error);
+
+/* Запись FTS «Линейное ограничение»: «форма», «вклады». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynoe_ogranichenie(fl_ctx *ctx,
+                                                      fl_value forma,
+                                                      fl_value vklady,
+                                                      fl_value *out,
+                                                      fl_error *error);
+
+/* Запись FTS «Линейный вывод»: «найден», «вклады». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynyy_vyvod(fl_ctx *ctx, fl_value nayden,
+                                               fl_value vklady, fl_value *out,
+                                               fl_error *error);
+
+/* Запись FTS «Сбор ограничений линейно»: «номер», «ограничения». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_ogranicheniy_lineyno(fl_ctx *ctx,
+                                                          fl_value nomer,
+                                                          fl_value ogranicheniya,
+                                                          fl_value *out,
+                                                          fl_error *error);
+
+/* Запись FTS «Сбор ходов линейно»: «номер», «ходы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_sbor_hodov_lineyno(fl_ctx *ctx, fl_value nomer,
+                                                   fl_value hody, fl_value *out,
+                                                   fl_error *error);
+
+/* Запись FTS «Звено с номером линейно»: «номер», «звено». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zveno_s_nomerom_lineyno(fl_ctx *ctx,
+                                                        fl_value nomer,
+                                                        fl_value zveno,
+                                                        fl_value *out,
+                                                        fl_error *error);
+
+/* Запись FTS «Линейный итог»: «принято», «ходы». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynyy_itog(fl_ctx *ctx, fl_value prinyato,
+                                              fl_value hody, fl_value *out,
+                                              fl_error *error);
+
+/* Запись FTS «Опровержение цели линейно»: «цель», «вывод». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_oproverzhenie_celi_lineyno(fl_ctx *ctx,
+                                                           fl_value cel,
+                                                           fl_value vyvod,
+                                                           fl_value *out,
+                                                           fl_error *error);
+
+/* Запись FTS «Линейные блоки»: «найдены», «опровержения», «опора». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_lineynye_bloki(fl_ctx *ctx, fl_value naydeny,
+                                               fl_value oproverzheniya,
+                                               fl_value opora, fl_value *out,
+                                               fl_error *error);
+
 /* Запись FTS «Замена терма»: «имя», «узел», «переименовать». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_zamena_terma(fl_ctx *ctx, fl_value imya,
@@ -29641,6 +29732,32 @@ fl_status compiler_flang_pechat_otobrazheniya(fl_ctx *ctx, fl_value uzel,
                                               fl_error *error);
 
 /*
+ * Функция flang «Печать отображения без раздачи».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param provereno — «проверено»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_otobrazheniya_bez_razdachi(fl_ctx *ctx,
+                                                           fl_value uzel,
+                                                           fl_value telo,
+                                                           fl_value element,
+                                                           fl_value kontekst,
+                                                           fl_value sostoyanie,
+                                                           fl_value provereno,
+                                                           fl_value otstup,
+                                                           fl_value *result,
+                                                           fl_error *error);
+
+/*
  * Функция flang «Печать свёртки или кусков».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -29776,6 +29893,27 @@ fl_status compiler_flang_pechatat_kuskami(fl_ctx *ctx, fl_value telo,
                                           fl_value kontekst,
                                           fl_value sostoyanie, fl_value *result,
                                           fl_error *error);
+
+/*
+ * Функция flang «Spread functions».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_spread_functions(fl_ctx *ctx, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Раздаётся».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение
+ */
+fl_status compiler_flang_razdayotsya(fl_ctx *ctx, fl_value kontekst,
+                                     fl_value sostoyanie, fl_value *result,
+                                     fl_error *error);
 
 /*
  * Функция flang «Свёртка по моноиду».
@@ -29964,6 +30102,49 @@ compiler_flang_pechat_otobrazheniya_kuskami(fl_ctx *ctx, fl_value uzel,
                                             fl_value sostoyanie,
                                             fl_value otstup, fl_value *result,
                                             fl_error *error);
+
+/*
+ * Функция flang «Печать отображения раздачей».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_otobrazheniya_razdachey(fl_ctx *ctx,
+                                                        fl_value uzel,
+                                                        fl_value element,
+                                                        fl_value kontekst,
+                                                        fl_value sostoyanie,
+                                                        fl_value otstup,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Печать отображения через».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @param razdatchik — «раздатчик»: строка
+ * @return значение: «Итог»
+ */
+fl_status
+compiler_flang_pechat_otobrazheniya_cherez(fl_ctx *ctx, fl_value uzel,
+                                           fl_value element, fl_value kontekst,
+                                           fl_value sostoyanie, fl_value otstup,
+                                           fl_value razdatchik,
+                                           fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Печать свёртки кусками».
@@ -91597,6 +91778,27 @@ compiler_flang_razvernut_podstanovkoy(fl_ctx *ctx, fl_value vyzov,
                                       fl_error *error);
 
 /*
+ * Функция flang «Подставить и развернуть».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param vyzov — «вызов»: «Значение»
+ * @param funkciya — «функция»: «Значение»
+ * @param parametry — «параметры»: список: «Значение»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @param pravilo — «правило»: строка
+ * @param sostoyanie — «состояние»: «Состояние ядра»
+ * @return значение: «Попытка развёртки»
+ */
+fl_status
+compiler_flang_podstavit_i_razvernut(fl_ctx *ctx, fl_value vyzov,
+                                     fl_value funkciya, fl_value parametry,
+                                     fl_value argumenty, fl_value pravilo,
+                                     fl_value sostoyanie, fl_value *result,
+                                     fl_error *error);
+
+/*
  * Функция flang «Связи параметров».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -91657,16 +91859,16 @@ fl_status compiler_flang_razvyortka_tela_s_vyzovami(fl_ctx *ctx,
                                                     fl_error *error);
 
 /*
- * Функция flang «Развёртка на записи без самовызова».
+ * Функция flang «Развёртка на записи без ветвлений».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param funkciya — «функция»: «Значение»
  * @return значение: строка
  */
-fl_status compiler_flang_razvyortka_na_zapisi_bez_samovyzova(fl_ctx *ctx,
-                                                             fl_value funkciya,
-                                                             fl_value *result,
-                                                             fl_error *error);
+fl_status compiler_flang_razvyortka_na_zapisi_bez_vetvleniy(fl_ctx *ctx,
+                                                            fl_value funkciya,
+                                                            fl_value *result,
+                                                            fl_error *error);
 
 /*
  * Функция flang «Композиция над типом автора».
@@ -91768,67 +91970,6 @@ fl_status compiler_flang_bez_vetvleniya_v_polyah(fl_ctx *ctx, fl_value polya,
 fl_status compiler_flang_est_vypisannaya_zapis(fl_ctx *ctx, fl_value argumenty,
                                                fl_value *result,
                                                fl_error *error);
-
-/*
- * Функция flang «Зовёт по имени».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param uzel — «узел»: «Значение»
- * @param imya — «имя»: строка
- * @return значение
- */
-fl_status compiler_flang_zovyot_po_imeni(fl_ctx *ctx, fl_value uzel,
-                                         fl_value imya, fl_value *result,
-                                         fl_error *error);
-
-/*
- * Функция flang «Вызов с этим именем».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @param imya — «имя»: строка
- * @return значение
- */
-fl_status compiler_flang_vyzov_s_etim_imenem(fl_ctx *ctx, fl_value uzel,
-                                             fl_value imya, fl_value *result,
-                                             fl_error *error);
-
-/*
- * Функция flang «Зовёт по имени в списке».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Хвостовой самовызов развёрнут в цикл: стек не растёт.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param elementy — «элементы»: список: «Значение»
- * @param imya — «имя»: строка
- * @return значение
- */
-fl_status compiler_flang_zovyot_po_imeni_v_spiske(fl_ctx *ctx,
-                                                  fl_value elementy,
-                                                  fl_value imya,
-                                                  fl_value *result,
-                                                  fl_error *error);
-
-/*
- * Функция flang «Зовёт по имени в полях».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * Хвостовой самовызов развёрнут в цикл: стек не растёт.
- *
- * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
- * @param polya — «поля»: список: «Поле значения»
- * @param imya — «имя»: строка
- * @return значение
- */
-fl_status compiler_flang_zovyot_po_imeni_v_polyah(fl_ctx *ctx, fl_value polya,
-                                                  fl_value imya,
-                                                  fl_value *result,
-                                                  fl_error *error);
 
 /*
  * Функция flang «Конструктор на месте».
@@ -92047,6 +92188,49 @@ fl_status compiler_flang_svyazyvaet_uzlom(fl_ctx *ctx, fl_value uzel,
 fl_status compiler_flang_svyazyvatel_lovit(fl_ctx *ctx, fl_value uzel,
                                            fl_value imena, fl_value *result,
                                            fl_error *error);
+
+/*
+ * Функция flang «Связыватель ловит по именам».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_svyazyvatel_lovit_po_imenam(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value imena,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Образец ловит».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param sluchai — «случаи»: список: «Значение»
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_obrazec_lovit(fl_ctx *ctx, fl_value sluchai,
+                                       fl_value imena, fl_value *result,
+                                       fl_error *error);
+
+/*
+ * Функция flang «Есть связанное из имён».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_svyazannoe_iz_imyon(fl_ctx *ctx,
+                                                 fl_value svyazannye,
+                                                 fl_value imena,
+                                                 fl_value *result,
+                                                 fl_error *error);
 
 /*
  * Функция flang «Связывает список».
@@ -98791,7 +98975,7 @@ fl_status compiler_flang_svobodnoe_imya_uzla(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из узла»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из связывателя», «Свободные из записи», «Свободные из узла»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -98808,7 +98992,7 @@ fl_status compiler_flang_svobodnye_iz_pust(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из связывателя», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -98826,7 +99010,7 @@ fl_status compiler_flang_svobodnye_iz_svyortki(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из свёртки», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из свёртки», «Свободные из связывателя», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -98861,7 +99045,7 @@ fl_status compiler_flang_svobodnye_iz_razbora(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из отображения», «Свободные из свёртки», «Свободные из связывателя», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -98911,7 +99095,7 @@ fl_status compiler_flang_svobodnye_iz_poley(fl_ctx *ctx, fl_value uzel,
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из связывателя», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -98925,11 +99109,30 @@ fl_status compiler_flang_svobodnye_iz_zapisi(fl_ctx *ctx, fl_value uzel,
                                              fl_error *error);
 
 /*
+ * Функция flang «Свободные из связывателя».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из узла», «Свободные из пусть»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param svyazannye — «связанные»: список: строка
+ * @param imena — «имена»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_svobodnye_iz_svyazyvatelya(fl_ctx *ctx, fl_value uzel,
+                                                    fl_value svyazannye,
+                                                    fl_value imena,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
  * Функция flang «Свободные из узла».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
  *
- * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из записи», «Свободные из пусть»: вызовы идут через батут.
+ * Взаимная хвостовая рекурсия с «Свободные из существования», «Свободные из отображения», «Свободные из свёртки», «Свободные из связывателя», «Свободные из записи», «Свободные из пусть»: вызовы идут через батут.
  *
  * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
  * @param uzel — «узел»: «Значение»
@@ -102580,6 +102783,2226 @@ fl_status compiler_flang_zamenit_imya_v_pole_tela(fl_ctx *ctx, fl_value p,
                                                   fl_value imya, fl_value na,
                                                   fl_value *result,
                                                   fl_error *error);
+
+/*
+ * Функция flang «Захватывает доводы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param argumenty — «аргументы»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_zahvatyvaet_dovody(fl_ctx *ctx, fl_value uzel,
+                                            fl_value argumenty,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Связанные в узле».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param akk — «акк»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_svyazannye_v_uzle(fl_ctx *ctx, fl_value uzel,
+                                           fl_value akk, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Связанные в поле».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pole — «поле»: «Поле значения»
+ * @param akk — «акк»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_svyazannye_v_pole(fl_ctx *ctx, fl_value pole,
+                                           fl_value akk, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Связанные узлом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param akk — «акк»: список: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_svyazannye_uzlom(fl_ctx *ctx, fl_value uzel,
+                                          fl_value akk, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Имена связывателя».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param vid — «вид»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_svyazyvatelya(fl_ctx *ctx, fl_value uzel,
+                                             fl_value vid, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Связыватель элемента».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @return значение
+ */
+fl_status compiler_flang_svyazyvatel_elementa(fl_ctx *ctx, fl_value vid,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Имена образцов случаев».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param sluchai — «случаи»: список: «Значение»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_imena_obrazcov_sluchaev(fl_ctx *ctx, fl_value sluchai,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Предел размера доводов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_razmera_dovodov(fl_ctx *ctx, fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Остаток размера».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param ostatok — «остаток»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_ostatok_razmera(fl_ctx *ctx, fl_value uzel,
+                                         fl_value ostatok, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Остаток размера по виду».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param ostatok — «остаток»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_ostatok_razmera_po_vidu(fl_ctx *ctx, fl_value uzel,
+                                                 fl_value ostatok,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Остаток размера в списке».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param elementy — «элементы»: список: «Значение»
+ * @param ostatok — «остаток»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_ostatok_razmera_v_spiske(fl_ctx *ctx,
+                                                  fl_value elementy,
+                                                  fl_value ostatok,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Правило линейной арифметики».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_pravilo_lineynoy_arifmetiki(fl_ctx *ctx,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Точный потолок линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_tochnyy_potolok_lineyno(fl_ctx *ctx, fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Край точности линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_kray_tochnosti_lineyno(fl_ctx *ctx, fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Нет линейной формы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_net_lineynoy_formy(fl_ctx *ctx, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Линейная константа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chislo — «число»: число
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynaya_konstanta(fl_ctx *ctx, fl_value chislo,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Линейный атом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynyy_atom(fl_ctx *ctx, fl_value uzel,
+                                       fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Без нулевых членов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chleny — «члены»: список: «Член линейной формы»
+ * @return значение: список: «Член линейной формы»
+ */
+fl_status compiler_flang_bez_nulevyh_chlenov(fl_ctx *ctx, fl_value chleny,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Добавить член линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param chleny — «члены»: список: «Член линейной формы»
+ * @param chlen — «член»: «Член линейной формы»
+ * @return значение: список: «Член линейной формы»
+ */
+fl_status compiler_flang_dobavit_chlen_lineyno(fl_ctx *ctx, fl_value chleny,
+                                               fl_value chlen, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Сложить члены линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levye — «левые»: список: «Член линейной формы»
+ * @param pravye — «правые»: список: «Член линейной формы»
+ * @return значение: список: «Член линейной формы»
+ */
+fl_status compiler_flang_slozhit_chleny_lineyno(fl_ctx *ctx, fl_value levye,
+                                                fl_value pravye,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Сумма линейных форм».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_summa_lineynyh_form(fl_ctx *ctx, fl_value l,
+                                             fl_value p, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Линейная форма на число».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @param k — «к»: число
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynaya_forma_na_chislo(fl_ctx *ctx, fl_value f,
+                                                   fl_value k, fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Разность линейных форм».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_raznost_lineynyh_form(fl_ctx *ctx, fl_value l,
+                                               fl_value p, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Только константа».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @return значение
+ */
+fl_status compiler_flang_tolko_konstanta(fl_ctx *ctx, fl_value f,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободный член».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @return значение: число
+ */
+fl_status compiler_flang_svobodnyy_chlen(fl_ctx *ctx, fl_value f,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Множитель одночлена».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param f — «ф»: «Линейная форма»
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @return значение: число
+ */
+fl_status compiler_flang_mnozhitel_odnochlena(fl_ctx *ctx, fl_value f,
+                                              fl_value odnochlen,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Произведение линейных форм».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_proizvedenie_lineynyh_form(fl_ctx *ctx, fl_value l,
+                                                    fl_value p,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Целое неотрицательное линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_celoe_neotricatelnoe_lineyno(fl_ctx *ctx,
+                                                      fl_value znachenie,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
+ * Функция flang «Целое в отрезке линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ch — «ч»: число
+ * @return значение
+ */
+fl_status compiler_flang_celoe_v_otrezke_lineyno(fl_ctx *ctx, fl_value ch,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Тип годен линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @return значение
+ */
+fl_status compiler_flang_tip_goden_lineyno(fl_ctx *ctx, fl_value tip,
+                                           fl_value rezhim, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Имя типа годно линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param rezhim — «режим»: строка
+ * @return значение
+ */
+fl_status compiler_flang_imya_tipa_godno_lineyno(fl_ctx *ctx, fl_value imya,
+                                                 fl_value rezhim,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Имя годно линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_imya_godno_lineyno(fl_ctx *ctx, fl_value imya,
+                                            fl_value rezhim,
+                                            fl_value obyavleniya,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вызов годен линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_vyzov_goden_lineyno(fl_ctx *ctx, fl_value uzel,
+                                             fl_value rezhim,
+                                             fl_value opredeleniya,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Линейный лист годен».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_lineynyy_list_goden(fl_ctx *ctx, fl_value uzel,
+                                             fl_value rezhim,
+                                             fl_value obyavleniya,
+                                             fl_value opredeleniya,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Линейная константа узла».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynaya_konstanta_uzla(fl_ctx *ctx, fl_value uzel,
+                                                  fl_value rezhim,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Точный литерал линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param razryady — «разряды»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_tochnyy_literal_lineyno(fl_ctx *ctx, fl_value razryady,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Разряд литерала годен линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param g — «г»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_razryad_literala_goden_lineyno(fl_ctx *ctx, fl_value g,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Линейная форма узла».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status
+compiler_flang_lineynaya_forma_uzla(fl_ctx *ctx, fl_value uzel, fl_value rezhim,
+                                    fl_value obyavleniya, fl_value opredeleniya,
+                                    fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Линейная форма двоичного».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param op — «оп»: строка
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynaya_forma_dvoichnogo(fl_ctx *ctx, fl_value uzel,
+                                                    fl_value op,
+                                                    fl_value rezhim,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Линейная форма операции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param op — «оп»: строка
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynaya_forma_operacii(fl_ctx *ctx, fl_value uzel,
+                                                  fl_value op, fl_value l,
+                                                  fl_value p, fl_value rezhim,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Линейное произведение».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_lineynoe_proizvedenie(fl_ctx *ctx, fl_value uzel,
+                                               fl_value l, fl_value p,
+                                               fl_value rezhim,
+                                               fl_value obyavleniya,
+                                               fl_value opredeleniya,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Произведение без константы слева».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_proizvedenie_bez_konstanty_sleva(fl_ctx *ctx,
+                                                          fl_value uzel,
+                                                          fl_value l,
+                                                          fl_value p,
+                                                          fl_value rezhim,
+                                                          fl_value obyavleniya,
+                                                          fl_value opredeleniya,
+                                                          fl_value *result,
+                                                          fl_error *error);
+
+/*
+ * Функция flang «Произведение листьев линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_proizvedenie_listev_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value rezhim,
+                                                     fl_value obyavleniya,
+                                                     fl_value opredeleniya,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Линейные листья».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_lineynye_listya(fl_ctx *ctx, fl_value uzel,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Есть вычитание линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_est_vychitanie_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Вычитания линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_vychitaniya_lineyno(fl_ctx *ctx, fl_value uzel,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Режим линейной арифметики».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_rezhim_lineynoy_arifmetiki(fl_ctx *ctx, fl_value cel,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Режим листьев линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param listya — «листья»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_rezhim_listev_lineyno(fl_ctx *ctx, fl_value listya,
+                                               fl_value obyavleniya,
+                                               fl_value opredeleniya,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Листья в режиме линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param listya — «листья»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_listya_v_rezhime_lineyno(fl_ctx *ctx, fl_value listya,
+                                                  fl_value rezhim,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Листья над числом линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_listya_nad_chislom_lineyno(fl_ctx *ctx, fl_value cel,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Отрезок точен линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param o — «о»: «Линейный отрезок»
+ * @return значение
+ */
+fl_status compiler_flang_otrezok_tochen_lineyno(fl_ctx *ctx, fl_value o,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Негодный отрезок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_negodnyy_otrezok(fl_ctx *ctx, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Отрезок узла линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_otrezok_uzla_lineyno(fl_ctx *ctx, fl_value uzel,
+                                              fl_value obyavleniya,
+                                              fl_value opredeleniya,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Отрезок константы линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_otrezok_konstanty_lineyno(fl_ctx *ctx, fl_value f,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Отрезок двоичного линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param l — «л»: «Линейный отрезок»
+ * @param p — «п»: «Линейный отрезок»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_otrezok_dvoichnogo_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                    fl_value l, fl_value p,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Отрезок произведения линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param l — «л»: «Линейный отрезок»
+ * @param p — «п»: «Линейный отрезок»
+ * @param tochno — «точно»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_otrezok_proizvedeniya_lineyno(fl_ctx *ctx,
+                                                       fl_value uzel,
+                                                       fl_value l, fl_value p,
+                                                       fl_value tochno,
+                                                       fl_value obyavleniya,
+                                                       fl_value opredeleniya,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
+ * Функция flang «Отрезок — точка не ниже нуля линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param o — «о»: «Линейный отрезок»
+ * @return значение
+ */
+fl_status compiler_flang_otrezok_tochka_ne_nizhe_nulya_lineyno(fl_ctx *ctx,
+                                                               fl_value o,
+                                                               fl_value *result,
+                                                               fl_error *error);
+
+/*
+ * Функция flang «Отрезок произведения справа линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param l — «л»: «Линейный отрезок»
+ * @param p — «п»: «Линейный отрезок»
+ * @param tochno — «точно»
+ * @return значение: «Линейный отрезок»
+ */
+fl_status compiler_flang_otrezok_proizvedeniya_sprava_lineyno(fl_ctx *ctx,
+                                                              fl_value l,
+                                                              fl_value p,
+                                                              fl_value tochno,
+                                                              fl_value *result,
+                                                              fl_error *error);
+
+/*
+ * Функция flang «Точно в двоичном линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_tochno_v_dvoichnom_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Атомарный линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_atomarnyy_lineyno(fl_ctx *ctx, fl_value uzel,
+                                           fl_value obyavleniya,
+                                           fl_value opredeleniya,
+                                           fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сторона точна линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param myagko — «мягко»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_storona_tochna_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                fl_value myagko,
+                                                fl_value obyavleniya,
+                                                fl_value opredeleniya,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Положительный терм линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Положительный двоичный терм линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_polozhitelnyy_term_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                    fl_value obyavleniya,
+                                                    fl_value opredeleniya,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Положительный двоичный терм линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Положительный терм линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_polozhitelnyy_dvoichnyy_term_lineyno(fl_ctx *ctx,
+                                                              fl_value uzel,
+                                                              fl_value obyavleniya,
+                                                              fl_value opredeleniya,
+                                                              fl_value *result,
+                                                              fl_error *error);
+
+/*
+ * Функция flang «Оп двоичного линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_op_dvoichnogo_lineyno(fl_ctx *ctx, fl_value uzel,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Множитель положителен линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_mnozhitel_polozhitelen_lineyno(fl_ctx *ctx,
+                                                        fl_value uzel,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Слагаемый литерал линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Слагаемый литерал двоичного линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_slagaemyy_literal_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Слагаемый литерал двоичного линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Слагаемый литерал линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_slagaemyy_literal_dvoichnogo_lineyno(fl_ctx *ctx,
+                                                              fl_value uzel,
+                                                              fl_value *result,
+                                                              fl_error *error);
+
+/*
+ * Функция flang «Листья вложены линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param eti — «эти»: список: «Значение»
+ * @param te — «те»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_listya_vlozheny_lineyno(fl_ctx *ctx, fl_value eti,
+                                                 fl_value te, fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Равенство без минус нуля линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param l — «л»: «Значение»
+ * @param p — «п»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_ravenstvo_bez_minus_nulya_lineyno(fl_ctx *ctx,
+                                                           fl_value l,
+                                                           fl_value p,
+                                                           fl_value obyavleniya,
+                                                           fl_value opredeleniya,
+                                                           fl_value *result,
+                                                           fl_error *error);
+
+/*
+ * Функция flang «Слово операции линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param operaciya — «операция»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_slovo_operacii_lineyno(fl_ctx *ctx, fl_value operaciya,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Текст узла линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_uzla_lineyno(fl_ctx *ctx, fl_value uzel,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Текст довода линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_dovoda_lineyno(fl_ctx *ctx, fl_value uzel,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Текст сравнения линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param l — «л»: «Значение»
+ * @param op — «оп»: строка
+ * @param p — «п»: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_sravneniya_lineyno(fl_ctx *ctx, fl_value l,
+                                                  fl_value op, fl_value p,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Текст одночлена линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @return значение: строка
+ */
+fl_status compiler_flang_tekst_odnochlena_lineyno(fl_ctx *ctx,
+                                                  fl_value odnochlen,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Звено линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vid — «вид»: строка
+ * @param tekst — «текст»: строка
+ * @param obratno — «обратно»
+ * @param forma — «форма»: «Линейная форма»
+ * @return значение: «Линейное звено»
+ */
+fl_status compiler_flang_zveno_lineyno(fl_ctx *ctx, fl_value vid,
+                                       fl_value tekst, fl_value obratno,
+                                       fl_value forma, fl_value *result,
+                                       fl_error *error);
+
+/*
+ * Функция flang «Сторона факта годна линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_storona_fakta_godna_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value rezhim,
+                                                     fl_value obyavleniya,
+                                                     fl_value opredeleniya,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Звенья порядка линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param op — «оп»: строка
+ * @param tekst — «текст»: строка
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_zvenya_poryadka_lineyno(fl_ctx *ctx, fl_value op,
+                                                 fl_value tekst, fl_value l,
+                                                 fl_value p, fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Обратный порядок линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param op — «оп»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_obratnyy_poryadok_lineyno(fl_ctx *ctx, fl_value op,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Это порядок линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_poryadok_lineyno(fl_ctx *ctx, fl_value uzel,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Это отрицание порядка линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_eto_otricanie_poryadka_lineyno(fl_ctx *ctx,
+                                                        fl_value uzel,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Звенья факта линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fakt — «факт»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status
+compiler_flang_zvenya_fakta_lineyno(fl_ctx *ctx, fl_value fakt, fl_value rezhim,
+                                    fl_value obyavleniya, fl_value opredeleniya,
+                                    fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Звенья сравнения линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param levoe — «левое»: «Значение»
+ * @param op — «оп»: строка
+ * @param pravoe — «правое»: «Значение»
+ * @param tekst — «текст»: строка
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_zvenya_sravneniya_lineyno(fl_ctx *ctx, fl_value levoe,
+                                                   fl_value op, fl_value pravoe,
+                                                   fl_value tekst,
+                                                   fl_value rezhim,
+                                                   fl_value obyavleniya,
+                                                   fl_value opredeleniya,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Цели нет линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_celi_net_lineyno(fl_ctx *ctx, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Цели сравнения линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_celi_sravneniya_lineyno(fl_ctx *ctx, fl_value cel,
+                                                 fl_value rezhim,
+                                                 fl_value obyavleniya,
+                                                 fl_value opredeleniya,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Цели вычитаний линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_celi_vychitaniy_lineyno(fl_ctx *ctx, fl_value cel,
+                                                 fl_value obyavleniya,
+                                                 fl_value opredeleniya,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Вычитание в вызове линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_vychitanie_v_vyzove_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Цели линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_celi_lineyno(fl_ctx *ctx, fl_value cel,
+                                      fl_value rezhim, fl_value obyavleniya,
+                                      fl_value opredeleniya, fl_value *result,
+                                      fl_error *error);
+
+/*
+ * Функция flang «Цели над точным линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param svoi — «свои»: список: «Линейное звено»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_celi_nad_tochnym_lineyno(fl_ctx *ctx, fl_value cel,
+                                                  fl_value svoi,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Склеить звенья линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: список: «Линейное звено»
+ * @param pravye — «правые»: список: «Линейное звено»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_skleit_zvenya_lineyno(fl_ctx *ctx, fl_value levye,
+                                               fl_value pravye,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Одночлены звеньев линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param zvenya — «звенья»: список: «Линейное звено»
+ * @return значение: список: список: «Значение»
+ */
+fl_status compiler_flang_odnochleny_zvenev_lineyno(fl_ctx *ctx, fl_value zvenya,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Одночлены формы в набор линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param nabor — «набор»: список: список: «Значение»
+ * @param forma — «форма»: «Линейная форма»
+ * @return значение: список: список: «Значение»
+ */
+fl_status compiler_flang_odnochleny_formy_v_nabor_lineyno(fl_ctx *ctx,
+                                                          fl_value nabor,
+                                                          fl_value forma,
+                                                          fl_value *result,
+                                                          fl_error *error);
+
+/*
+ * Функция flang «Границы одночлена линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status
+compiler_flang_granicy_odnochlena_lineyno(fl_ctx *ctx, fl_value odnochlen,
+                                          fl_value rezhim, fl_value obyavleniya,
+                                          fl_value opredeleniya,
+                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Границы линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param odnochleny — «одночлены»: список: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: список: «Линейное звено»
+ */
+fl_status compiler_flang_granicy_lineyno(fl_ctx *ctx, fl_value odnochleny,
+                                         fl_value rezhim, fl_value obyavleniya,
+                                         fl_value opredeleniya,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Вывода нет линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Линейный вывод»
+ */
+fl_status compiler_flang_vyvoda_net_lineyno(fl_ctx *ctx, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Добавить вклад линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @param vklad — «вклад»: «Линейный вклад»
+ * @return значение: список: «Линейный вклад»
+ */
+fl_status compiler_flang_dobavit_vklad_lineyno(fl_ctx *ctx, fl_value vklady,
+                                               fl_value vklad, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Вклады на число линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @param k — «к»: число
+ * @return значение: список: «Линейный вклад»
+ */
+fl_status compiler_flang_vklady_na_chislo_lineyno(fl_ctx *ctx, fl_value vklady,
+                                                  fl_value k, fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Сложить вклады линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: список: «Линейный вклад»
+ * @param pravye — «правые»: список: «Линейный вклад»
+ * @return значение: список: «Линейный вклад»
+ */
+fl_status compiler_flang_slozhit_vklady_lineyno(fl_ctx *ctx, fl_value levye,
+                                                fl_value pravye,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Ограничение звена линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zveno — «звено»: «Линейное звено»
+ * @param nomer — «номер»: число
+ * @return значение: «Линейное ограничение»
+ */
+fl_status compiler_flang_ogranichenie_zvena_lineyno(fl_ctx *ctx, fl_value zveno,
+                                                    fl_value nomer,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Ограничения звеньев линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zvenya — «звенья»: список: «Линейное звено»
+ * @return значение: список: «Линейное ограничение»
+ */
+fl_status compiler_flang_ogranicheniya_zvenev_lineyno(fl_ctx *ctx,
+                                                      fl_value zvenya,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
+ * Функция flang «Ограничение ложно линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param o — «о»: «Линейное ограничение»
+ * @return значение
+ */
+fl_status compiler_flang_ogranichenie_lozhno_lineyno(fl_ctx *ctx, fl_value o,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Ограничение пусто линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param o — «о»: «Линейное ограничение»
+ * @return значение
+ */
+fl_status compiler_flang_ogranichenie_pusto_lineyno(fl_ctx *ctx, fl_value o,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Модуль линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param h — «х»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_modul_lineyno(fl_ctx *ctx, fl_value h,
+                                       fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ограничение не раздуто линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param o — «о»: «Линейное ограничение»
+ * @return значение
+ */
+fl_status compiler_flang_ogranichenie_ne_razduto_lineyno(fl_ctx *ctx,
+                                                         fl_value o,
+                                                         fl_value *result,
+                                                         fl_error *error);
+
+/*
+ * Функция flang «Скрестить линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param verhnee — «верхнее»: «Линейное ограничение»
+ * @param nizhnee — «нижнее»: «Линейное ограничение»
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @return значение: «Линейное ограничение»
+ */
+fl_status compiler_flang_skrestit_lineyno(fl_ctx *ctx, fl_value verhnee,
+                                          fl_value nizhnee, fl_value odnochlen,
+                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Первые ограничения линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @param skolko — «сколько»: число
+ * @return значение: список: «Линейное ограничение»
+ */
+fl_status compiler_flang_pervye_ogranicheniya_lineyno(fl_ctx *ctx, fl_value ogr,
+                                                      fl_value skolko,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
+ * Функция flang «Предел ограничений линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_ogranicheniy_lineyno(fl_ctx *ctx,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Исключить линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @return значение: список: «Линейное ограничение»
+ */
+fl_status compiler_flang_isklyuchit_lineyno(fl_ctx *ctx, fl_value ogr,
+                                            fl_value odnochlen,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Склеить ограничения линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param levye — «левые»: список: «Линейное ограничение»
+ * @param pravye — «правые»: список: «Линейное ограничение»
+ * @return значение: список: «Линейное ограничение»
+ */
+fl_status compiler_flang_skleit_ogranicheniya_lineyno(fl_ctx *ctx,
+                                                      fl_value levye,
+                                                      fl_value pravye,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
+ * Функция flang «Опровергнуть линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Исключить дальше линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @param odnochleny — «одночлены»: список: список: «Значение»
+ * @return значение: «Линейный вывод»
+ */
+fl_status compiler_flang_oprovergnut_lineyno(fl_ctx *ctx, fl_value ogr,
+                                             fl_value odnochleny,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исключить дальше линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Взаимная хвостовая рекурсия с «Опровергнуть линейно»: вызовы идут через батут.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @param odnochleny — «одночлены»: список: список: «Значение»
+ * @return значение: «Линейный вывод»
+ */
+fl_status compiler_flang_isklyuchit_dalshe_lineyno(fl_ctx *ctx, fl_value ogr,
+                                                   fl_value odnochleny,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «НОД линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param a — «а»: число
+ * @param b — «б»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_nod_lineyno(fl_ctx *ctx, fl_value a, fl_value b,
+                                     fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сократить вклады линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @return значение: список: «Линейный вклад»
+ */
+fl_status compiler_flang_sokratit_vklady_lineyno(fl_ctx *ctx, fl_value vklady,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Строка хода линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nomer — «номер»: число
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_hoda_lineyno(fl_ctx *ctx, fl_value nomer,
+                                             fl_value tekst, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Ход звена линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zveno — «звено»: «Линейное звено»
+ * @param mnozhitel — «множитель»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_hod_zvena_lineyno(fl_ctx *ctx, fl_value zveno,
+                                           fl_value mnozhitel, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Множитель вклада линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @param nomer — «номер»: число
+ * @return значение: число
+ */
+fl_status compiler_flang_mnozhitel_vklada_lineyno(fl_ctx *ctx, fl_value vklady,
+                                                  fl_value nomer,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Пронумеровать звенья линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zvenya — «звенья»: список: «Линейное звено»
+ * @return значение: список: «Звено с номером линейно»
+ */
+fl_status compiler_flang_pronumerovat_zvenya_lineyno(fl_ctx *ctx,
+                                                     fl_value zvenya,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Ходы вывода линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param s — «с»: «Сбор ходов линейно»
+ * @param cel — «цель»: «Линейное звено»
+ * @param istochniki — «источники»: список: «Линейное звено»
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @return значение: «Сбор ходов линейно»
+ */
+fl_status compiler_flang_hody_vyvoda_lineyno(fl_ctx *ctx, fl_value s,
+                                             fl_value cel, fl_value istochniki,
+                                             fl_value vklady, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Ход вклада линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Сбор ходов линейно»
+ * @param nz — «нз»: «Звено с номером линейно»
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @return значение: «Сбор ходов линейно»
+ */
+fl_status compiler_flang_hod_vklada_lineyno(fl_ctx *ctx, fl_value akk,
+                                            fl_value nz, fl_value vklady,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Линейного итога нет».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_lineynogo_itoga_net(fl_ctx *ctx, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Носитель линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rezhim — «режим»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_nositel_lineyno(fl_ctx *ctx, fl_value rezhim,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Опровергнуть цель линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Линейное звено»
+ * @param opora — «опора»: список: «Линейное звено»
+ * @param odnochleny — «одночлены»: список: список: «Значение»
+ * @return значение: «Опровержение цели линейно»
+ */
+fl_status compiler_flang_oprovergnut_cel_lineyno(fl_ctx *ctx, fl_value cel,
+                                                 fl_value opora,
+                                                 fl_value odnochleny,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Блоков нет линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Линейные блоки»
+ */
+fl_status compiler_flang_blokov_net_lineyno(fl_ctx *ctx, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Блоки линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейные блоки»
+ */
+fl_status compiler_flang_bloki_lineyno(fl_ctx *ctx, fl_value cel,
+                                       fl_value fakty, fl_value rezhim,
+                                       fl_value obyavleniya,
+                                       fl_value opredeleniya, fl_value *result,
+                                       fl_error *error);
+
+/*
+ * Функция flang «Блоки при целях линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param celi — «цели»: список: «Линейное звено»
+ * @param fakty — «факты»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейные блоки»
+ */
+fl_status compiler_flang_bloki_pri_celyah_lineyno(fl_ctx *ctx, fl_value celi,
+                                                  fl_value fakty,
+                                                  fl_value rezhim,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Все опровержения найдены линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param oproverzheniya — «опровержения»: список: «Опровержение цели линейно»
+ * @return значение
+ */
+fl_status compiler_flang_vse_oproverzheniya_naydeny_lineyno(fl_ctx *ctx,
+                                                            fl_value oproverzheniya,
+                                                            fl_value *result,
+                                                            fl_error *error);
+
+/*
+ * Функция flang «Ходы блоков линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param s — «с»: «Сбор ходов линейно»
+ * @param bloki — «блоки»: «Линейные блоки»
+ * @return значение: «Сбор ходов линейно»
+ */
+fl_status compiler_flang_hody_blokov_lineyno(fl_ctx *ctx, fl_value s,
+                                             fl_value bloki, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Начало ходов линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rezhim — «режим»: строка
+ * @return значение: «Сбор ходов линейно»
+ */
+fl_status compiler_flang_nachalo_hodov_lineyno(fl_ctx *ctx, fl_value rezhim,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Ход строкой линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param s — «с»: «Сбор ходов линейно»
+ * @param tekst — «текст»: строка
+ * @return значение: «Сбор ходов линейно»
+ */
+fl_status compiler_flang_hod_strokoy_lineyno(fl_ctx *ctx, fl_value s,
+                                             fl_value tekst, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Итог ходов линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param s — «с»: «Сбор ходов линейно»
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_itog_hodov_lineyno(fl_ctx *ctx, fl_value s,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свести линейно в режиме».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_svesti_lineyno_v_rezhime(fl_ctx *ctx, fl_value cel,
+                                                  fl_value fakty,
+                                                  fl_value rezhim,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Ноль линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_nol_lineyno(fl_ctx *ctx, fl_value uzel,
+                                     fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Произведение цели линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_proizvedenie_celi_lineyno(fl_ctx *ctx, fl_value cel,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Единица линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param rezhim — «режим»: строка
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_edinica_lineyno(fl_ctx *ctx, fl_value rezhim,
+                                         fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Положителен фактом линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzel — «узел»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_polozhitelen_faktom_lineyno(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value fakty,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Свести множитель линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param mnozhitel — «множитель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param rezhim — «режим»: строка
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейные блоки»
+ */
+fl_status
+compiler_flang_svesti_mnozhitel_lineyno(fl_ctx *ctx, fl_value mnozhitel,
+                                        fl_value fakty, fl_value rezhim,
+                                        fl_value obyavleniya,
+                                        fl_value opredeleniya, fl_value *result,
+                                        fl_error *error);
+
+/*
+ * Функция flang «Свести произведение порядком».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param proizvedenie — «произведение»: «Значение»
+ * @param pervyy — «первый»: «Значение»
+ * @param vtoroy — «второй»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный итог»
+ */
+fl_status
+compiler_flang_svesti_proizvedenie_poryadkom(fl_ctx *ctx, fl_value proizvedenie,
+                                             fl_value pervyy, fl_value vtoroy,
+                                             fl_value fakty,
+                                             fl_value obyavleniya,
+                                             fl_value opredeleniya,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Второй множитель линейно».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param nachalo — «начало»: «Сбор ходов линейно»
+ * @param bloki — «блоки»: «Линейные блоки»
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_vtoroy_mnozhitel_lineyno(fl_ctx *ctx, fl_value nachalo,
+                                                  fl_value bloki,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Свести произведение линейно».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_svesti_proizvedenie_lineyno(fl_ctx *ctx, fl_value cel,
+                                                     fl_value fakty,
+                                                     fl_value obyavleniya,
+                                                     fl_value opredeleniya,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Свести линейной арифметикой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @return значение: «Линейный итог»
+ */
+fl_status compiler_flang_svesti_lineynoy_arifmetikoy(fl_ctx *ctx, fl_value cel,
+                                                     fl_value fakty,
+                                                     fl_value obyavleniya,
+                                                     fl_value opredeleniya,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Отказ линейной арифметики над числом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_lineynoy_arifmetiki_nad_chislom(fl_ctx *ctx,
+                                                               fl_value *result,
+                                                               fl_error *error);
+
+/*
+ * Функция flang «Цель линейной арифметики».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param cel — «цель»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_cel_lineynoy_arifmetiki(fl_ctx *ctx, fl_value cel,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «С линейной арифметикой».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param svedenie — «сведение»: «Сведение»
+ * @return значение: «Сведение»
+ */
+fl_status
+compiler_flang_s_lineynoy_arifmetikoy(fl_ctx *ctx, fl_value cel, fl_value fakty,
+                                      fl_value obyavleniya,
+                                      fl_value opredeleniya, fl_value svedenie,
+                                      fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Итог линейной арифметики».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param itog — «итог»: «Линейный итог»
+ * @param cel — «цель»: «Значение»
+ * @param fakty — «факты»: список: «Значение»
+ * @param obyavleniya — «объявления»: список: «Значение»
+ * @param opredeleniya — «определения»: список: «Значение»
+ * @param svedenie — «сведение»: «Сведение»
+ * @return значение: «Сведение»
+ */
+fl_status compiler_flang_itog_lineynoy_arifmetiki(fl_ctx *ctx, fl_value itog,
+                                                  fl_value cel, fl_value fakty,
+                                                  fl_value obyavleniya,
+                                                  fl_value opredeleniya,
+                                                  fl_value svedenie,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Свидетель строгого дна».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param telo — «тело»: «Значение»
+ * @param imya — «имя»: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_svidetel_strogogo_dna(fl_ctx *ctx, fl_value telo,
+                                               fl_value imya, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Предел членов кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_chlenov_kolca(fl_ctx *ctx, fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Предел пар кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_par_kolca(fl_ctx *ctx, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Предел одночленов кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: число
+ */
+fl_status compiler_flang_predel_odnochlenov_kolca(fl_ctx *ctx, fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Мера членов кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chleny — «члены»: список: «Член линейной формы»
+ * @return значение: число
+ */
+fl_status compiler_flang_mera_chlenov_kolca(fl_ctx *ctx, fl_value chleny,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Мера вкладов кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vklady — «вклады»: список: «Линейный вклад»
+ * @return значение: число
+ */
+fl_status compiler_flang_mera_vkladov_kolca(fl_ctx *ctx, fl_value vklady,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Точно в пределе кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param mera — «мера»: число
+ * @return значение
+ */
+fl_status compiler_flang_tochno_v_predele_kolca(fl_ctx *ctx, fl_value mera,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Сумма в пределе кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение
+ */
+fl_status compiler_flang_summa_v_predele_kolca(fl_ctx *ctx, fl_value l,
+                                               fl_value p, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Множитель в пределе кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @param k — «к»: число
+ * @return значение
+ */
+fl_status compiler_flang_mnozhitel_v_predele_kolca(fl_ctx *ctx, fl_value f,
+                                                   fl_value k, fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Произведение в пределе кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param l — «л»: «Линейная форма»
+ * @param p — «п»: «Линейная форма»
+ * @return значение
+ */
+fl_status compiler_flang_proizvedenie_v_predele_kolca(fl_ctx *ctx, fl_value l,
+                                                      fl_value p,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
+ * Функция flang «Форма в пределе кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param f — «ф»: «Линейная форма»
+ * @return значение: «Линейная форма»
+ */
+fl_status compiler_flang_forma_v_predele_kolca(fl_ctx *ctx, fl_value f,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Скрещение в пределе кольца».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param verhnee — «верхнее»: «Линейное ограничение»
+ * @param nizhnee — «нижнее»: «Линейное ограничение»
+ * @param odnochlen — «одночлен»: список: «Значение»
+ * @return значение
+ */
+fl_status
+compiler_flang_skreschenie_v_predele_kolca(fl_ctx *ctx, fl_value verhnee,
+                                           fl_value nizhnee, fl_value odnochlen,
+                                           fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Опровергнуть в пределе кольца».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param cel — «цель»: «Линейное звено»
+ * @param otricanie — «отрицание»: «Линейное звено»
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @param odnochleny — «одночлены»: список: список: «Значение»
+ * @return значение: «Линейный вывод»
+ */
+fl_status compiler_flang_oprovergnut_v_predele_kolca(fl_ctx *ctx, fl_value cel,
+                                                     fl_value otricanie,
+                                                     fl_value ogr,
+                                                     fl_value odnochleny,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Мера вклада кольца».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param vklad — «вклад»: «Линейный вклад»
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @return значение: число
+ */
+fl_status compiler_flang_mera_vklada_kolca(fl_ctx *ctx, fl_value vklad,
+                                           fl_value ogr, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Сертификат в пределе кольца».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param vyvod — «вывод»: «Линейный вывод»
+ * @param ogr — «огр»: список: «Линейное ограничение»
+ * @return значение: «Линейный вывод»
+ */
+fl_status compiler_flang_sertifikat_v_predele_kolca(fl_ctx *ctx, fl_value vyvod,
+                                                    fl_value ogr,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Обратный знак существования».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_obratnyy_znak_suschestvovaniya(fl_ctx *ctx,
+                                                        fl_value znak,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Знак условия существования».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param uzel — «узел»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znak_usloviya_suschestvovaniya(fl_ctx *ctx,
+                                                        fl_value uzel,
+                                                        fl_value znak,
+                                                        fl_value *result,
+                                                        fl_error *error);
+
+/*
+ * Функция flang «Существование не на месте».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_suschestvovanie_ne_na_meste(fl_ctx *ctx, fl_value uzel,
+                                                     fl_value znak,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Существование в выборе».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param znak — «знак»: строка
+ * @return значение
+ */
+fl_status compiler_flang_suschestvovanie_v_vybore(fl_ctx *ctx, fl_value uzel,
+                                                  fl_value znak,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Существование в полях».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_suschestvovanie_v_polyah(fl_ctx *ctx, fl_value uzel,
+                                                  fl_value *result,
+                                                  fl_error *error);
+
+/*
+ * Функция flang «Существование в значении».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param znachenie — «значение»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_suschestvovanie_v_znachenii(fl_ctx *ctx,
+                                                     fl_value znachenie,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Отказ существования под отрицанием».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param obeschanie — «обещание»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_suschestvovaniya_pod_otricaniem(fl_ctx *ctx,
+                                                               fl_value obeschanie,
+                                                               fl_value *result,
+                                                               fl_error *error);
+
+/*
+ * Функция flang «Разряд точного кольца».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_razryad_tochnogo_kolca(fl_ctx *ctx, fl_value znachenie,
+                                                fl_value *result,
+                                                fl_error *error);
 
 /*
  * Функция flang «Имя именованного».
@@ -116470,6 +118893,18 @@ fl_status compiler_flang_stroki_utverzhdeniya(fl_ctx *ctx,
                                               fl_error *error);
 
 /*
+ * Функция flang «Ходы линейной арифметики записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param verdikt — «вердикт»: «Значение»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_hody_lineynoy_arifmetiki_zapisi(fl_ctx *ctx,
+                                                         fl_value verdikt,
+                                                         fl_value *result,
+                                                         fl_error *error);
+
+/*
  * Функция flang «Пустой обход таблиц записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -122574,6 +125009,20 @@ fl_status compiler_flang_svesti_gotovuyu_cel(fl_ctx *ctx,
                                              fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «С ходами линейной арифметики».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param verdikt — «вердикт»: «Значение»
+ * @param svedenie — «сведение»: «Сведение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_s_hodami_lineynoy_arifmetiki(fl_ctx *ctx,
+                                                      fl_value verdikt,
+                                                      fl_value svedenie,
+                                                      fl_value *result,
+                                                      fl_error *error);
+
+/*
  * Функция flang «Вердикт по объявлению».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -123036,6 +125485,20 @@ compiler_flang_proverit_obyazatelstvo(fl_ctx *ctx, fl_value obyazatelstvo,
                                       fl_value svod, fl_value programma,
                                       fl_value progony, fl_value zakrytye,
                                       fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свод существования под отрицанием».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstvo — «обязательство»: «Значение»
+ * @param svod — «свод»: «Свод проверки»
+ * @return значение: «Свод проверки»
+ */
+fl_status compiler_flang_svod_suschestvovaniya_pod_otricaniem(fl_ctx *ctx,
+                                                              fl_value obyazatelstvo,
+                                                              fl_value svod,
+                                                              fl_value *result,
+                                                              fl_error *error);
 
 /*
  * Функция flang «Проверить с подставленным».
@@ -124241,6 +126704,78 @@ fl_status compiler_flang_proyti_obyazatelstva_po_suzheniyam(fl_ctx *ctx,
                                                             fl_value sp,
                                                             fl_value *result,
                                                             fl_error *error);
+
+/*
+ * Функция flang «Пройти по сужениям».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstva — «обязательства»: список: «Значение»
+ * @param hod — «ход»: «Свод с сужениями»
+ * @param p — «п»: «Значение»
+ * @param progony — «прогоны»: список: «Значение»
+ * @param z — «з»: список: «Закрытое»
+ * @param sp — «сп»: «Сужения программы»
+ * @return значение: «Свод с сужениями»
+ */
+fl_status compiler_flang_proyti_po_suzheniyam(fl_ctx *ctx,
+                                              fl_value obyazatelstva,
+                                              fl_value hod, fl_value p,
+                                              fl_value progony, fl_value z,
+                                              fl_value sp, fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Вклады обязательств».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param obyazatelstva — «обязательства»: список: «Значение»
+ * @param programma — «программа»: «Значение»
+ * @param progony — «прогоны»: список: «Значение»
+ * @param zakrytye — «закрытые»: список: «Закрытое»
+ * @return значение: список: «Свод проверки»
+ */
+fl_status compiler_flang_vklady_obyazatelstv(fl_ctx *ctx,
+                                             fl_value obyazatelstva,
+                                             fl_value programma,
+                                             fl_value progony,
+                                             fl_value zakrytye,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сложить вклады».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param vklady — «вклады»: список: «Свод проверки»
+ * @param hod — «ход»: «Свод с сужениями»
+ * @return значение: «Свод с сужениями»
+ */
+fl_status compiler_flang_slozhit_vklady(fl_ctx *ctx, fl_value vklady,
+                                        fl_value hod, fl_value *result,
+                                        fl_error *error);
+
+/*
+ * Функция flang «Ход с вкладом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Свод с сужениями»
+ * @param vklad — «вклад»: «Свод проверки»
+ * @return значение: «Свод с сужениями»
+ */
+fl_status compiler_flang_hod_s_vkladom(fl_ctx *ctx, fl_value hod,
+                                       fl_value vklad, fl_value *result,
+                                       fl_error *error);
+
+/*
+ * Функция flang «Дописать вклад».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param bylo — «было»: «Свод проверки»
+ * @param vklad — «вклад»: «Свод проверки»
+ * @return значение: «Свод проверки»
+ */
+fl_status compiler_flang_dopisat_vklad(fl_ctx *ctx, fl_value bylo,
+                                       fl_value vklad, fl_value *result,
+                                       fl_error *error);
 
 /*
  * Функция flang «По сужению».
@@ -155666,6 +158201,22 @@ compiler_flang_oproverzheniya_na_gotovoy(fl_ctx *ctx, fl_value utverzhdeniya,
                                          fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Опровержения утверждений по одному».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param utverzhdeniya — «утверждения»: список: «Значение»
+ * @param opora — «опора»: «Опора краёв»
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @return значение: список: список: «Итог примера»
+ */
+fl_status compiler_flang_oproverzheniya_utverzhdeniy_po_odnomu(fl_ctx *ctx,
+                                                               fl_value utverzhdeniya,
+                                                               fl_value opora,
+                                                               fl_value gotovaya,
+                                                               fl_value *result,
+                                                               fl_error *error);
+
+/*
  * Функция flang «Опровержение утверждения».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -155836,6 +158387,35 @@ fl_status compiler_flang_oproverzheniya_postusloviy_na_gotovoy(fl_ctx *ctx,
                                                                fl_value gotovaya,
                                                                fl_value *result,
                                                                fl_error *error);
+
+/*
+ * Функция flang «Опровержения функций».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Значение»
+ * @param zapisi — «записи»: список: «Запись признаков»
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @return значение: список: список: «Итог примера»
+ */
+fl_status compiler_flang_oproverzheniya_funkciy(fl_ctx *ctx, fl_value funkcii,
+                                                fl_value zapisi,
+                                                fl_value gotovaya,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Опровержения функции».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param f — «ф»: «Значение»
+ * @param zapisi — «записи»: список: «Запись признаков»
+ * @param g — «г»: «Готовая программа»
+ * @return значение: список: «Итог примера»
+ */
+fl_status compiler_flang_oproverzheniya_funkcii(fl_ctx *ctx, fl_value f,
+                                                fl_value zapisi, fl_value g,
+                                                fl_value *result,
+                                                fl_error *error);
 
 /*
  * Функция flang «Шаг опровержения постусловия».
@@ -156317,6 +158897,28 @@ fl_status compiler_flang_telo_pri_ogranichenii(fl_ctx *ctx, fl_value uslovie,
 fl_status compiler_flang_stroki_primerov(fl_ctx *ctx, fl_value funkcii,
                                          fl_value gotovaya, fl_value *result,
                                          fl_error *error);
+
+/*
+ * Функция flang «Примеры функций».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param funkcii — «функции»: список: «Значение»
+ * @param gotovaya — «готовая»: «Готовая программа»
+ * @return значение: список: список: «Итог примера»
+ */
+fl_status compiler_flang_primery_funkciy(fl_ctx *ctx, fl_value funkcii,
+                                         fl_value gotovaya, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Склеить примеры».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param chasti — «части»: список: список: «Итог примера»
+ * @return значение: список: «Итог примера»
+ */
+fl_status compiler_flang_skleit_primery(fl_ctx *ctx, fl_value chasti,
+                                        fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Прогон законов стрелок».
@@ -163498,30 +166100,6 @@ fl_status compiler_flang_eto_stroka_v_monade_bez_proverok(fl_ctx *ctx,
                                                           fl_value uzel,
                                                           fl_value *result,
                                                           fl_error *error);
-
-/*
- * Функция flang «Это список в монаде без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_spisok_v_monade_bez_proverok(fl_ctx *ctx,
-                                                          fl_value uzel,
-                                                          fl_value *result,
-                                                          fl_error *error);
-
-/*
- * Функция flang «Это запись в монаде без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_zapis_v_monade_bez_proverok(fl_ctx *ctx,
-                                                         fl_value uzel,
-                                                         fl_value *result,
-                                                         fl_error *error);
 
 /*
  * Функция flang «Упоминает параметр без проверок».
@@ -176215,6 +178793,32 @@ fl_status compiler_flang_pechat_otobrazheniya_bez_proverok(fl_ctx *ctx,
                                                            fl_error *error);
 
 /*
+ * Функция flang «Печать отображения без раздачи без проверок».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param telo — «тело»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param provereno — «проверено»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_otobrazheniya_bez_razdachi_bez_proverok(fl_ctx *ctx,
+                                                                        fl_value uzel,
+                                                                        fl_value telo,
+                                                                        fl_value element,
+                                                                        fl_value kontekst,
+                                                                        fl_value sostoyanie,
+                                                                        fl_value provereno,
+                                                                        fl_value otstup,
+                                                                        fl_value *result,
+                                                                        fl_error *error);
+
+/*
  * Функция flang «Печать свёртки или кусков без проверок».
  *
  * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
@@ -176364,6 +178968,30 @@ fl_status compiler_flang_pechatat_kuskami_bez_proverok(fl_ctx *ctx,
                                                        fl_value sostoyanie,
                                                        fl_value *result,
                                                        fl_error *error);
+
+/*
+ * Функция flang «Spread functions без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_spread_functions_bez_proverok(fl_ctx *ctx,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
+ * Функция flang «Раздаётся без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @return значение
+ */
+fl_status compiler_flang_razdayotsya_bez_proverok(fl_ctx *ctx,
+                                                  fl_value kontekst,
+                                                  fl_value sostoyanie,
+                                                  fl_value *result,
+                                                  fl_error *error);
 
 /*
  * Функция flang «Свёртка по моноиду без проверок».
@@ -176573,6 +179201,52 @@ fl_status compiler_flang_pechat_otobrazheniya_kuskami_bez_proverok(fl_ctx *ctx,
                                                                    fl_value otstup,
                                                                    fl_value *result,
                                                                    fl_error *error);
+
+/*
+ * Функция flang «Печать отображения раздачей без проверок».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_otobrazheniya_razdachey_bez_proverok(fl_ctx *ctx,
+                                                                     fl_value uzel,
+                                                                     fl_value element,
+                                                                     fl_value kontekst,
+                                                                     fl_value sostoyanie,
+                                                                     fl_value otstup,
+                                                                     fl_value *result,
+                                                                     fl_error *error);
+
+/*
+ * Функция flang «Печать отображения через без проверок».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param uzel — «узел»: «Значение»
+ * @param element — «элемент»: строка
+ * @param kontekst — «контекст»: «Контекст»
+ * @param sostoyanie — «состояние»: «Состояние»
+ * @param otstup — «отступ»: строка
+ * @param razdatchik — «раздатчик»: строка
+ * @return значение: «Итог»
+ */
+fl_status compiler_flang_pechat_otobrazheniya_cherez_bez_proverok(fl_ctx *ctx,
+                                                                  fl_value uzel,
+                                                                  fl_value element,
+                                                                  fl_value kontekst,
+                                                                  fl_value sostoyanie,
+                                                                  fl_value otstup,
+                                                                  fl_value razdatchik,
+                                                                  fl_value *result,
+                                                                  fl_error *error);
 
 /*
  * Функция flang «Печать свёртки кусками без проверок».
@@ -184995,30 +187669,6 @@ fl_status compiler_flang_eto_nichto_python_bez_proverok(fl_ctx *ctx,
                                                         fl_error *error);
 
 /*
- * Функция flang «Это признак в скаляре Python без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param skalyar — «скаляр»: «Скаляр»
- * @return значение
- */
-fl_status compiler_flang_eto_priznak_v_skalyare_python_bez_proverok(fl_ctx *ctx,
-                                                                    fl_value skalyar,
-                                                                    fl_value *result,
-                                                                    fl_error *error);
-
-/*
- * Функция flang «Это признак Python без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_priznak_python_bez_proverok(fl_ctx *ctx,
-                                                         fl_value uzel,
-                                                         fl_value *result,
-                                                         fl_error *error);
-
-/*
  * Функция flang «Это число в скаляре Python без проверок».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -187957,18 +190607,6 @@ fl_status compiler_flang_eto_priznak_v_skalyare_csharp_bez_proverok(fl_ctx *ctx,
                                                                     fl_value skalyar,
                                                                     fl_value *result,
                                                                     fl_error *error);
-
-/*
- * Функция flang «Это признак CSharp без проверок».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param uzel — «узел»: «Значение»
- * @return значение
- */
-fl_status compiler_flang_eto_priznak_csharp_bez_proverok(fl_ctx *ctx,
-                                                         fl_value uzel,
-                                                         fl_value *result,
-                                                         fl_error *error);
 
 /*
  * Функция flang «Это число в скаляре CSharp без проверок».

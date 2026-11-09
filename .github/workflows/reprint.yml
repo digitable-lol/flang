@@ -77,6 +77,10 @@ on:
         description: "Only the two prints of one tree, without the seed check"
         type: boolean
         default: false
+      printer_ref:
+        description: "Git ref whose bootstrap/ seed does both prints (empty: the seed of this tree)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -461,6 +465,16 @@ jobs:
       # уводит раннер в подкачку. Переопределяется переменной репозитория.
       MEMORY_CEILING_GB: ${{ vars.PRINT_MEMORY_CEILING_GB || '140' }}
       PRINT_SECONDS: "57600"
+      # ЧЕМ ПЕЧАТАТЬ. Пусто — семенем этого же дерева (bootstrap/). Иначе —
+      # семенем из bootstrap/ названной ветки или метки (кнопка `printer_ref`
+      # или переменная репозитория `PRINTER_REF`): так печатает и куратор,
+      # быстрым печатником, а не тем, что лежит в дереве. Пара остаётся
+      # парой: обе печати идут ОДНИМ печатником по ОДНОМУ дереву.
+      # Печатник семени 9d (ствол 1de7d6b43) за 16 ч не прошёл суд
+      # доказательств ни в одной из двух печатей (прогон 42369882673), а
+      # печатник 9c на том же раннере прошёл его меньше чем за 4 ч (прогон
+      # 41529835650).
+      PRINTER_REF: ${{ inputs.printer_ref || vars.PRINTER_REF || '' }}
       # Кеш суда ядра 16 ГиБ вместо 4: с 0.7.27 он не влезает в 4, и печать
       # идёт около 8,5 ч вместо 75 мин; вывод тот же. Сказано явно, а не
       # оставлено умолчанию scripts/bootstrap-reprint.sh.
@@ -468,6 +482,29 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: make -C bootstrap -j"$(nproc)"
+
+      - name: Build the printer
+        env:
+          PRINTER_DIR: ${{ runner.temp }}/printer
+        run: |
+          set -u
+          if [ -z "$PRINTER_REF" ]; then
+            echo "печатник: семя этого дерева (bootstrap/flang, коммит $(git rev-parse HEAD))"
+            echo "Печатник: семя этого дерева, коммит \`$(git rev-parse HEAD)\`." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # Печатник выкладывается В СТОРОНЕ от дерева: дерево печати обязано
+          # остаться чистым, иначе печать откажется называть коммит.
+          rm -rf "$PRINTER_DIR"
+          mkdir -p "$PRINTER_DIR"
+          git fetch --no-tags --depth 1 origin "$PRINTER_REF"
+          commit=$(git rev-parse FETCH_HEAD)
+          git archive "$commit" bootstrap | tar -x -C "$PRINTER_DIR"
+          make -C "$PRINTER_DIR/bootstrap" -j"$(nproc)" flang
+          [ -x "$PRINTER_DIR/bootstrap/flang" ] || { echo "печатник не собрался из $PRINTER_REF" >&2; exit 2; }
+          echo "PRINTER_BINARY=$PRINTER_DIR/bootstrap/flang" >> "$GITHUB_ENV"
+          echo "печатник: семя из bootstrap/ $PRINTER_REF, коммит $commit"
+          echo "Печатник: семя из bootstrap/ \`$PRINTER_REF\`, коммит \`$commit\`." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Prepare two trees
         env:
@@ -501,7 +538,7 @@ jobs:
         continue-on-error: true
         env:
           BASE: ${{ runner.temp }}/two-prints
-          FLANG: ${{ vars.FLANG_PRINTER }}
+          FLANG: ${{ env.PRINTER_BINARY || vars.FLANG_PRINTER }}
           FLANG_TMP: ${{ runner.temp }}
         run: |
           set -u
@@ -522,10 +559,14 @@ jobs:
           # памяти и сроком. Без неё — как прежде, под ulimit и timeout здесь.
           # `|| code=$?`: шаг идёт под `bash -e`, и голый отказ команды
           # оборвал бы его раньше, чем код запишется.
+          # Срок печати в очереди считает САМА очередь, и только с той минуты,
+          # как печать взяла место: ожидание места в срок печати не входит.
+          # Прежде внешний `timeout` считал и ожидание, и печать, стоявшая в
+          # очереди за прогонами агентов, теряла часы ещё до начала.
           code=0
           if [ -n "${FLANG_HEAVY_WRAPPER:-}" ]; then
             HEAVY_MEM_GB=$MEMORY_CEILING_GB HEAVY_HOURS=$((PRINT_SECONDS / 3600)) \
-              timeout "$PRINT_SECONDS" sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+              sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
           else
             timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
           fi
@@ -549,7 +590,7 @@ jobs:
         continue-on-error: true
         env:
           BASE: ${{ runner.temp }}/two-prints
-          FLANG: ${{ vars.FLANG_PRINTER }}
+          FLANG: ${{ env.PRINTER_BINARY || vars.FLANG_PRINTER }}
           FLANG_TMP: ${{ runner.temp }}
         run: |
           set -u
@@ -565,10 +606,14 @@ jobs:
           # памяти и сроком. Без неё — как прежде, под ulimit и timeout здесь.
           # `|| code=$?`: шаг идёт под `bash -e`, и голый отказ команды
           # оборвал бы его раньше, чем код запишется.
+          # Срок печати в очереди считает САМА очередь, и только с той минуты,
+          # как печать взяла место: ожидание места в срок печати не входит.
+          # Прежде внешний `timeout` считал и ожидание, и печать, стоявшая в
+          # очереди за прогонами агентов, теряла часы ещё до начала.
           code=0
           if [ -n "${FLANG_HEAVY_WRAPPER:-}" ]; then
             HEAVY_MEM_GB=$MEMORY_CEILING_GB HEAVY_HOURS=$((PRINT_SECONDS / 3600)) \
-              timeout "$PRINT_SECONDS" sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
+              sh "$FLANG_HEAVY_WRAPPER" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
           else
             timeout "$PRINT_SECONDS" sh scripts/bootstrap-reprint.sh > "$LOG" 2>&1 || code=$?
           fi

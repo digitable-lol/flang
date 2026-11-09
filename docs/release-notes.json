@@ -25,7 +25,7 @@
         "сломалось": [
           "**Подделанная запись доказательства теперь отвергается.** Честные записи принимаются, как раньше. Как починить: напечатайте запись заново через `check --proof`.",
           "**Известное ограничение: ассоциативность монады не доказывается** — файл с объявленной монадой даёт код 3. Будет в 0.7.34.",
-          "**Известное ограничение: 15 открытых дыр типизации** — список в `flang/proof/tables/typing-holes.tsv`, у каждой проба. Например, `flang run` не проверяет `требует` на входе. Исправления — в 0.7.34."
+          "**Известное ограничение: 14 открытых дыр типизации** — список в `flang/proof/tables/typing-holes.tsv`, у каждой проба. Например, `flang run` не проверяет `требует` на входе. Исправления — в 0.7.34."
         ]
       },
       "en": {
@@ -51,7 +51,7 @@
         "сломалось": [
           "**A forged proof record is now refused.** Honest records are accepted as before. To fix: print the record again with `check --proof`.",
           "**Known limitation: monad associativity is not proved** — a file with a declared monad exits with code 3. Coming in 0.7.34.",
-          "**Known limitation: 15 open typing holes**, listed in `flang/proof/tables/typing-holes.tsv`, each with a probe. For example, `flang run` does not check `требует` (requires) on input. Fixes come in 0.7.34."
+          "**Known limitation: 14 open typing holes**, listed in `flang/proof/tables/typing-holes.tsv`, each with a probe. For example, `flang run` does not check `требует` (requires) on input. Fixes come in 0.7.34."
         ]
       }
     },

@@ -654,7 +654,6 @@ record — [the record format](record-format.html).
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
-| `FLANG_BINARY` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
@@ -696,9 +695,8 @@ record — [the record format](record-format.html).
 | `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
+| `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
-| `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
-| `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
 | `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
@@ -735,7 +733,10 @@ record — [the record format](record-format.html).
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
 | `FLANG_LIB_DIR` | `flang_repl.c` | — |
+| `FLANG_LINK_CHANGED` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LINK_FETCH` | `flang_repl.c` | — |
+| `FLANG_LINK_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
 | `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
@@ -769,6 +770,7 @@ record — [the record format](record-format.html).
 | `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |
 | `FLANG_NOT_MONOTONE` | `monotone.flang` | — |
 | `FLANG_NOT_TOTAL` | `totality.flang` | total function «{function}» calls an unknown function «{callee}»: termination cannot be proved · total function «{function}»: the recursive call «{callee}» does not decrease — argument {position} ({argument}) increases parameter «{parameter}». Pass a part of the argument: the tail of a list from the pattern «голова и хвост», a variant field from a pattern, a record field or an element of a collection |
+| `FLANG_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
@@ -780,7 +782,7 @@ record — [the record format](record-format.html).
 | `FLANG_PLAN` | `io.flang` | — |
 | `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
 | `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `interpret.flang`, `parser.flang` | — |
-| `FLANG_PRECONDITION_CALL` | `proofterm.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
+| `FLANG_PRECONDITION_CALL` | `proofterm.flang`, `types.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
@@ -809,10 +811,15 @@ record — [the record format](record-format.html).
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
+| `FLANG_SCALE` | `types.flang` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
 | `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_SUGAR_CLASS` | `sugar.flang` | — |
+| `FLANG_SUGAR_HEADER` | `sugar.flang` | — |
+| `FLANG_SUGAR_INTERFACE` | `sugar.flang` | — |
+| `FLANG_SUGAR_LOOP` | `sugar.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
 | `FLANG_TICKS_OUT` | `flang_runtime.c` | — |
 | `FLANG_TIME_OUT` | `flang_runtime.c` | — |

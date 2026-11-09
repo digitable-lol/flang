@@ -647,7 +647,6 @@ $ echo $?
 | `FLANG_BIFUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
-| `FLANG_BINARY` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | постусловие «{claim}» функции «{function}» ЛОЖНО, и контрпример назван: {reason} |
 | `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
@@ -689,9 +688,8 @@ $ echo $?
 | `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
+| `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
-| `FLANG_INSTALL_ENGINE` | `flang_repl.c` | — |
-| `FLANG_INSTALL_USAGE` | `flang_repl.c` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
 | `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
@@ -728,7 +726,10 @@ $ echo $?
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
 | `FLANG_LIB_DIR` | `flang_repl.c` | — |
+| `FLANG_LINK_CHANGED` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
+| `FLANG_LINK_FETCH` | `flang_repl.c` | — |
+| `FLANG_LINK_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
 | `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
@@ -762,6 +763,7 @@ $ echo $?
 | `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |
 | `FLANG_NOT_MONOTONE` | `monotone.flang` | — |
 | `FLANG_NOT_TOTAL` | `totality.flang` | тотальная функция «{function}» вызывает неизвестную функцию «{callee}»: завершение доказать нельзя · тотальная функция «{function}»: рекурсивный вызов «{callee}» не убывает — аргумент {position} ({argument}) увеличивает параметр «{parameter}». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции |
+| `FLANG_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_TRANSITIVE` | `partialorder.flang` | — |
@@ -773,7 +775,7 @@ $ echo $?
 | `FLANG_PLAN` | `io.flang` | — |
 | `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
 | `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `interpret.flang`, `parser.flang` | — |
-| `FLANG_PRECONDITION_CALL` | `proofterm.flang` | вызов «{callee}» в функции «{function}» не снимает предусловие «{precondition}»: {reason} |
+| `FLANG_PRECONDITION_CALL` | `proofterm.flang`, `types.flang` | вызов «{callee}» в функции «{function}» не снимает предусловие «{precondition}»: {reason} |
 | `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
 | `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
@@ -802,10 +804,15 @@ $ echo $?
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |
 | `FLANG_RUNTIME_DIR` | `flang_repl.c` | — |
+| `FLANG_SCALE` | `types.flang` | — |
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
 | `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_SUGAR_CLASS` | `sugar.flang` | — |
+| `FLANG_SUGAR_HEADER` | `sugar.flang` | — |
+| `FLANG_SUGAR_INTERFACE` | `sugar.flang` | — |
+| `FLANG_SUGAR_LOOP` | `sugar.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
 | `FLANG_TICKS_OUT` | `flang_runtime.c` | — |
 | `FLANG_TIME_OUT` | `flang_runtime.c` | — |

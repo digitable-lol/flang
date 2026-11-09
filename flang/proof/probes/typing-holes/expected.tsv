@@ -15,36 +15,36 @@ restricted-postcondition-outside-domain.flang	check	0	замечаний нет
 restricted-postcondition-false-inside-domain.flang	check	1	нарушено на входе н = 2147483647
 word-literal-above-two-to-the-53.flang	check	0	замечаний нет
 assumption-bound-at-two-to-the-64.flang	proof	3	доказано 0, условно 0
-generic-variant-field-outside-refinement.flang	check	0	замечаний нет
-generic-variant-field-outside-refinement.flang	run-generic-field	0	"значение":-7
+generic-variant-field-outside-refinement.flang	check	1	а тело даёт «Возможно» от целого
+generic-variant-field-outside-refinement.flang	run-generic-field	1	FLANG_TYPE
 fixed-width-word-in-run.flang	check	0	замечаний нет
-fixed-width-word-in-run.flang	run-word-answer	0	null
-fixed-width-word-in-run.flang	run-word-argument	1	не соответствует типу u8
-weight-from-number-by-match.flang	check	0	замечаний нет
-weight-from-number-by-match.flang	run-weight-from-number	0	-7
-weight-from-number-by-match.flang	run-weight-first-branch	0	-5
+fixed-width-word-in-run.flang	run-word-answer	0	5
+fixed-width-word-in-run.flang	run-word-argument	0	5
+weight-from-number-by-match.flang	check	1	объявлена как вес, а тело даёт число
+weight-from-number-by-match.flang	run-weight-from-number	1	FLANG_TYPE
+weight-from-number-by-match.flang	run-weight-first-branch	1	FLANG_TYPE
 run-requirement-outside.flang	check	0	замечаний нет
-run-requirement-outside.flang	run-requirement-outside	0	-7
-function-value-outside-refinement.flang	check	0	замечаний нет
-function-value-outside-refinement.flang	run-function-value	0	-1
-promised-arithmetic-refusals.flang	check	0	замечаний нет
-empty-list-by-let.flang	check	0	замечаний нет
-empty-list-by-let.flang	run-empty-list	0	[-2]
+run-requirement-outside.flang	run-requirement-outside	1	FLANG_PRECONDITION
+function-value-outside-refinement.flang	check	1	получен функция из целого в число
+function-value-outside-refinement.flang	run-function-value	1	FLANG_TYPE
+promised-arithmetic-refusals.flang	check	1	не проверено — замечаний 2
+empty-list-by-let.flang	check	1	а тело даёт список целого
+empty-list-by-let.flang	run-empty-list	1	FLANG_TYPE
 negative-zero-to-word.flang	run-negative-zero-word	0	true
-negative-zero-in-run-answer.flang	run-negative-zero-answer	0	[0]
+negative-zero-in-run-answer.flang	run-negative-zero-answer	0	[-0]
 parametric-argument-at-printed-entry.flang	check	0	замечаний нет
-parametric-argument-at-printed-entry.flang	emit-c-parametric-entry	0	{"ok":true,"value":{"n":"-3"}}
-negative-zero-from-percent.flang	run-percent-zero	0	"минус"
+parametric-argument-at-printed-entry.flang	emit-c-parametric-entry	0	{"ok":false,"code":"FLANG_TYPE"
+negative-zero-from-percent.flang	run-percent-zero	0	"плюс"
 exact-integer-off-canon-at-printed-entry.flang	check	0	замечаний нет
 exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1 отрицателен
-exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":true,"value":{"l":[{"n":"-1"}]}}
-requirement-bypassed-by-function-value.flang	check	0	замечаний нет
-requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	нарушено свойство «итог больше пяти»
+exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":false,"code":"FLANG_TYPE"
+requirement-bypassed-by-function-value.flang	check	1	FLANG_PRECONDITION_CALL
+requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	FLANG_PRECONDITION_CALL
 shortest-number-tie-in-rust.flang	check	0	замечаний нет
 shortest-number-tie-in-rust.flang	run-shortest-tie	0	1501199875790165.2
 shortest-number-tie-in-rust.flang	emit-rust-shortest-tie	0	{"ok":true,"value":{"n":"1501199875790165.2"}}
 fieldless-variant-argument-as-record.flang	check	0	замечаний нет
-fieldless-variant-argument-as-record.flang	run-fieldless-variant	0	false
+fieldless-variant-argument-as-record.flang	run-fieldless-variant	1	не соответствует типу «Может»
 fieldless-variant-argument-as-record.flang	run-fieldless-variant-tagged	0	true
-selective-import-in-two-lines.flang	check	1	не входит в список «только»
+selective-import-in-two-lines.flang	check	0	замечаний нет
 selective-import-helpers.flang	check	0	замечаний нет

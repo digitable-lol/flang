@@ -438,6 +438,7 @@ derivations
 derived
 descend
 descent
+desugared
 detached
 determine
 dev
@@ -825,6 +826,7 @@ instruments
 integer
 integers
 integrality
+interface
 intermediate
 interpreter
 into

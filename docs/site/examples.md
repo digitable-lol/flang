@@ -60,9 +60,12 @@ refusal code rather than skipped in silence.
 Start with a line someone can read and edit without knowing flang. Write down
 what each word means and which inputs should be rejected. In both examples
 the parser turns text into a value or an explicit error. A separate function
-uses the value to make a decision.
+uses the value to make a decision. The `.dsl` files contain the rules;
+the `.flang` files implement their grammar and behavior.
 
 ### Free shipping
+
+Rule: [`shipping.dsl`](docs/examples/dsl/shipping.dsl).
 
 ```text
 free-shipping from 50
@@ -71,7 +74,7 @@ free-shipping from 50
 `from` includes 50. Below that threshold delivery costs 7. The parser checks
 the phrase and uses flang's number parser for the amount. Try `many` instead of
 `50` to see the error. The pricing function takes two numbers, so it can also
-be tested without reading a DSL line. [Shipping example](docs/examples/dsl/shipping.flang)
+be tested without reading a DSL line. [Implementation](docs/examples/dsl/shipping.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
@@ -82,13 +85,15 @@ The parser returns `{"вариант":"Правило","порог":50}`.
 
 ### Access to a document
 
+Rule: [`access.dsl`](docs/examples/dsl/access.dsl).
+
 ```text
 allow editor publish
 ```
 
 The grammar is `allow <role> <action>`. The parser accepts roles `reader` and
 `editor` and actions `read` and `publish`. A parsed rule allows only the exact
-pair it names. Here, an editor can publish. Reading needs its own rule. [Access example](docs/examples/dsl/access.flang)
+pair it names. Here, an editor can publish. Reading needs its own rule. [Implementation](docs/examples/dsl/access.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \

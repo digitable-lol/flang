@@ -104,7 +104,6 @@ export const РАЗДЕЛЫ = [
       { адрес: 'embedding.html', имя: 'Встроить в чужую программу', из: 'docs/site/embedding.ru.md' },
       { адрес: 'browser-app.html', имя: 'Приложение в браузере', из: 'docs/site/browser-app.ru.md' },
       { адрес: 'host-boundary.html', имя: 'Где кончается flang и начинается хозяин', из: 'docs/site/host-boundary.ru.md' },
-      { адрес: 'c-into-flang.html', имя: 'Код на C в flang', из: 'docs/guide/c-into-flang.ru.md' },
     ],
   },
   {
@@ -140,6 +139,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/guide/project-layout.ru.md' },
       { адрес: 'bootstrap-circle.html', имя: 'Компилятор собирает сам себя', из: 'docs/guide/bootstrap-circle.ru.md' },
       { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
+      { адрес: 'c-into-flang.html', имя: 'Код на C в flang', из: 'docs/guide/c-into-flang.ru.md' },
       /* Контракты: рабочие документы с кодами отказа и границами обещаний.
          Спецификация языка — контракт на 2140 строк.
          СНЯТО 2026-11-10 строк docs/flang/SPEC.md = 2140 (sections that 0.7.34 no longer bears out are gone; до них 2158, снято 2026-11-09) (print batch 11: the binary raises FLANG_INFINITY and FLANG_SCALE; до них 2157, снято 2026-10-28) (print batch 9c: flang install, small compiler fixes, installs and io, restricted postconditions, listen address, u64 literals; до них 2156, снято 2026-10-20) (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists; до них 2086, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 2040, снято 2026-10-13) (print batch six: measure, rewrite by postcondition, branch condition, declared types, tls and udp, plans in four targets, judged grids; до них 2015, снято 2026-10-11) (ADR-0094: запрет Св✗, проба кванторов внутри формулы; до них 2011, снято 2026-10-08) (ADR-0056: абзац про поручение «Запустить процесс с пределом» и правка строки кода FLANG_IO_TIMEOUT; до них 1802, снято 2026-09-17) */

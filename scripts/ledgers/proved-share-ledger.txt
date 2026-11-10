@@ -2253,6 +2253,8 @@ e80fc205ae28ac40583b12a9a9992314|2|1|1|0|1|flang/proof/checker/tests/families/bi
 ed57892d01e14653dbb6b2504c6159bf|2|1|0|1|0|flang/proof/checker/tests/families/stale-fact/fact-from-another-goal.flang
 6be0929a5cd3cfa2dd30371548eebc33|1|0|0|1|0|flang/proof/checker/tests/families/equality-root/conjunction-equal-to-itself.flang
 25f2f468864a42a3198261897c85ab42|1|0|0|1|0|flang/proof/checker/tests/families/square-law/square-without-brackets.flang
+dcd72a8568c9e7b34064f1d08383f4cb|1|0|0|1|0|flang/proof/checker/tests/families/sum-law/empty-prefix-under-negation.flang
+b5d11eeb8fe6f46aa6df900690f9c4c8|1|0|0|1|0|flang/proof/checker/tests/families/sum-law/sum-under-negation.flang
 8dea8e085c913725d4972046d02a36fa|1|×|×|×|0|flang/proof/probes/settled-kernel-issues/programs/any-case-gives-red.flang
 9d356c9eafdcecd653ea099c90d65d26|2|×|×|×|0|flang/proof/probes/settled-kernel-issues/programs/any-case-induction.flang
 01c0640a972fb9232e433388b75de824|2|×|×|×|0|flang/proof/probes/settled-kernel-issues/programs/field-under-two-matches-false.flang

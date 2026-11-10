@@ -1,6 +1,6 @@
 # Таблицы доказательного слоя: `flang/proof/tables/`
 
-Пять таблиц, у каждой первая строка — заголовок, разделитель — табуляция,
+Девять таблиц <!-- СНЯТО 2026-11-10 файлов flang/proof/tables/*.tsv = 9 -->, у каждой первая строка — заголовок, разделитель — табуляция,
 комментариев нет. Их читают программы; прозу о строках держат страницы `docs/`.
 
 ## `inference-rules.tsv` — правила вывода
@@ -97,3 +97,40 @@ ADR-0193): каждый путь приёмки второго сверщика 
 
 Колонки `key` и `state` (`open` либо `closed`); что стоит за каждым именем —
 [известные нарушения состоятельности](known-soundness-violations.md).
+
+## `diagnostic-codes.tsv` — коды диагностик и их устойчивость
+
+| колонка | что в ней |
+|---|---|
+| `code` | код `FLANG_*` |
+| `since` | выпуск, в котором код появился |
+| `status` | `устойчив`, `новый` либо `снят` |
+
+Читает `scripts/guards/diagnostic-codes-guard.fscript` (ярлыки `diagnostic-codes:check`,
+`diagnostic-codes:forgery`). Что обещано о кодах — `docs/road-to-1-0.md`.
+
+## `record-format-version.tsv` — версия формата записи
+
+| колонка | что в ней |
+|---|---|
+| `version` | номер версии формата |
+| `printer`, `reader` | sha256 печатающей и читающей стороны на день съёма |
+| `programs` | программы, по записям которых снят отпечаток, через пробел |
+| `taken` | дата съёма |
+
+Читает `scripts/guards/record-format-guard.fscript` (ярлыки `record-format:check`,
+`record-format:forgery`). Сам формат — [формат записи](record-format.md).
+
+## `typing-holes.tsv` — дыры типизации
+
+| колонка | что в ней |
+|---|---|
+| `number` | номер дыры |
+| `description` | что принималось и почему это ложь |
+| `source` | коммит, выпуск и задача |
+| `status` | `закрыта` либо `открыта` |
+| `probe` | имя программы-пробы |
+
+Читает `scripts/guards/typing-holes-guard.fscript` (ярлыки `typing-holes:check`,
+`typing-holes:forgery`); её же читает поиск дыр `scripts/fuzz/search.fscript`
+(`docs/typing-holes-search.md`).

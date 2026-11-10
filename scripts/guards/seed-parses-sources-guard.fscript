@@ -68,7 +68,8 @@
     дано folder равно "../../flang/self"
     дано names равно ["bootstrap", "cli.flang", "SPEC.md"]
     ожидается ["../../flang/self/cli.flang"]
-  отобразить (отфильтровать names где name → «Ends with» от name и ".flang") как name → соединить [folder, "/", name] по ""
+  отобразить (отфильтровать names где name → «Ends with» от name и ".flang") как name → соединить [folder, "/",
+      name] по ""
 
 тотальная функция «Folders of»
   принимает names: список строки
@@ -76,7 +77,8 @@
   пример «Whatever is not a source may be a folder of sources»
     дано names равно ["bootstrap", "cli.flang", "repl"]
     ожидается ["../../flang/self/bootstrap", "../../flang/self/repl"]
-  отобразить (отфильтровать names где name → не («Ends with» от name и ".flang")) как name → соединить [(«Sources folder»), "/", name] по ""
+  отобразить (отфильтровать names где name → не («Ends with» от name и ".flang")) как name → соединить [
+      («Sources folder»), "/", name] по ""
 
 тотальная функция «Check order»
   принимает binary: строка, limit: строка, path: строка
@@ -134,7 +136,8 @@
     дано said равно "types.flang: не проверено — замечаний 1\nFLANG_UNKNOWN_NAME, строка 157: неизвестный тип «неотрицательное»\n"
     ожидается "  ✗ flang/self/types.flang\n      FLANG_UNKNOWN_NAME, строка 157: неизвестный тип «неотрицательное»"
   пусть telling равно («First three» от (отфильтровать (разделить said по "\n") где line → «Tells of reading» от line))
-  соединить («Joined» от [(соединить ["  ✗ ", («Shown path» от path)] по "")] и (отобразить telling как line → соединить ["      ", line] по "")) по "\n"
+  соединить («Joined» от [(соединить ["  ✗ ", («Shown path» от path)] по "")] и
+      (отобразить telling как line → соединить ["      ", line] по "")) по "\n"
 
 тотальная функция «Counted»
   принимает tally: «Tally», path: строка, said: строка
@@ -236,7 +239,9 @@
     случай пусто
       то «Verdict» от binary и limit и tally
     случай голова и хвост
-      то вариант «Сделать» с поручение равным («Check order» от binary и limit и голова) и потом равным (вариант «Checking» с binary равным binary и limit равным limit и pending равным pending и tally равным tally)
+      то вариант «Сделать» с поручение равным («Check order» от binary и limit и
+          голова) и потом равным (вариант «Checking» с binary равным binary и limit равным limit и
+          pending равным pending и tally равным tally)
 
 тотальная функция «After check»
   принимает binary: строка, limit: строка, pending: список строки, tally: «Tally», reply: «Отклик»
@@ -261,7 +266,8 @@
   возвращает «Продолжение»
   разбор folders
     случай пусто
-      то «Check next» от binary и limit и files и (запись «Tally» с «files» равным 0 и «unread» равным пустой список и «unfinished» равным 0)
+      то «Check next» от binary и limit и files и (запись «Tally» с «files» равным 0 и «unread» равным пустой список и
+          «unfinished» равным 0)
     случай голова и хвост
       то вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным голова) и потом равным (вариант «Listing» с binary равным binary и limit равным limit и folders равным folders и files равным files)
 
@@ -331,7 +337,8 @@
     дано binary равно "../../bootstrap/flang"
     дано limit равно "300000"
     ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["check", "../../flang/self/types.flang", "--предел-шагов", "300000"]) и потом равным (вариант «Trying key» с binary равным "../../bootstrap/flang" и limit равным "300000")
-  вариант «Сделать» с поручение равным («Check order» от binary и limit и (соединить [(«Sources folder»), "/types.flang"] по "")) и потом равным (вариант «Trying key» с binary равным binary и limit равным limit)
+  вариант «Сделать» с поручение равным («Check order» от binary и limit и (соединить [(«Sources folder»),
+      "/types.flang"] по "")) и потом равным (вариант «Trying key» с binary равным binary и limit равным limit)
 
 тотальная функция «After limit»
   принимает binary: строка, reply: «Отклик»
@@ -426,7 +433,8 @@
   возвращает «Move»
   пример «A silent move shows nothing and wants the code zero»
     дано order равно (вариант «Удалить файл» с путь равным "/tmp/forged")
-    ожидается (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+    ожидается (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и
+        «wanted» равным 0 и «telling» равным "")
   запись «Move» с «title» равным "" и «order» равным order и «wanted» равным 0 и «telling» равным ""
 
 тотальная функция «Written»
@@ -436,7 +444,9 @@
     дано root равно "/tmp/forgery"
     дано place равно "/flang/self/types.flang"
     дано text равно "модуль"
-    ожидается (запись «Move» с «title» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/flang/self/types.flang" и содержимое равным "модуль") и «wanted» равным 0 и «telling» равным "")
+    ожидается (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/flang/self/types.flang" и
+        содержимое равным "модуль") и «wanted» равным 0 и «telling» равным "")
   «Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)
 
 тотальная функция «Judging»
@@ -447,7 +457,10 @@
     дано title равно "сторона первая"
     дано wanted равно 0
     дано telling равно "сходится"
-    ожидается (запись «Move» с «title» равным "сторона первая" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/tmp/forgery/scripts/guards/seed-parses-sources-guard.fscript", "--plan", "Check"]) и «wanted» равным 0 и «telling» равным "сходится")
+    ожидается (запись «Move» с «title» равным "сторона первая" и
+        «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io",
+        "/tmp/forgery/scripts/guards/seed-parses-sources-guard.fscript", "--plan", "Check"]) и «wanted» равным 0 и
+        «telling» равным "сходится")
   запись «Move» с «title» равным title и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", (соединить [root, "/scripts/guards/seed-parses-sources-guard.fscript"] по ""), "--plan", "Check"]) и «wanted» равным wanted и «telling» равным telling
 
 тотальная функция «Forged»
@@ -457,8 +470,15 @@
     дано root равно "/tmp/forgery"
     дано place равно "/flang/self/forged.flang"
     дано text равно "модуль"
-    дано judging равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным "")
-    ожидается [(запись «Move» с «title» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/flang/self/forged.flang" и содержимое равным "модуль") и «wanted» равным 0 и «telling» равным ""), (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным ""), (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/flang/self/forged.flang") и «wanted» равным 0 и «telling» равным "")]
+    дано judging равно (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным "")
+    ожидается [(запись «Move» с «title» равным "" и
+        «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/flang/self/forged.flang" и
+        содержимое равным "модуль") и «wanted» равным 0 и «telling» равным ""), (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0 и «telling» равным ""),
+        (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/flang/self/forged.flang") и
+        «wanted» равным 0 и «telling» равным "")]
   [(«Written» от root и place и text), judging,
     («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
 
@@ -480,24 +500,37 @@
 тотальная функция «Sides of reading»
   принимает root: строка
   возвращает список «Move»
-  «Joined» от [(«Judging» от root и "сторона первая: семя читает оба исходника, ждём код 0" и 0 и "файлов 2, семя не читает 0, не досмотрено 0")] и («Joined» от («Forged» от root и "/flang/self/forged.flang" и («Source with a new word») и («Judging» от root и "сторона вторая: в позиции типа стоит слово, которого семя не знает, ждём код 1" и 1 и "✗ flang/self/forged.flang")) и («Forged» от root и "/flang/self/repl/forged.flang" и («Source cut in the middle») и («Judging» от root и "сторона третья: исходник во вложенном каталоге оборван посередине, ждём код 1" и 1 и "✗ flang/self/repl/forged.flang")))
+  «Joined» от [(«Judging» от root и "сторона первая: семя читает оба исходника, ждём код 0" и 0 и
+      "файлов 2, семя не читает 0, не досмотрено 0")] и («Joined» от («Forged» от root и "/flang/self/forged.flang" и
+      («Source with a new word») и («Judging» от root и
+      "сторона вторая: в позиции типа стоит слово, которого семя не знает, ждём код 1" и 1 и
+      "✗ flang/self/forged.flang")) и («Forged» от root и "/flang/self/repl/forged.flang" и
+      («Source cut in the middle») и («Judging» от root и
+      "сторона третья: исходник во вложенном каталоге оборван посередине, ждём код 1" и 1 и
+      "✗ flang/self/repl/forged.flang")))
 
 тотальная функция «Moves»
   принимает root: строка
   возвращает список «Move»
-  «Joined» от («Joined» от («Tree of the forgery» от root) и («Sides of reading» от root)) и («Forged» от root и "/flang/self/forged.flang" и («Source beyond the limit») и («Judging» от root и "сторона четвёртая: проверка исходника не укладывается в предел шагов, ждём код 3" и 3 и "файлов 3, семя не читает 0, не досмотрено 1"))
+  «Joined» от («Joined» от («Tree of the forgery» от root) и («Sides of reading» от root)) и («Forged» от root и
+      "/flang/self/forged.flang" и («Source beyond the limit») и («Judging» от root и
+      "сторона четвёртая: проверка исходника не укладывается в предел шагов, ждём код 3" и 3 и
+      "файлов 3, семя не читает 0, не досмотрено 1"))
 
 тотальная функция «Shown after»
   принимает shown: список строки, move: «Move», code: число
   возвращает список строки
   пример «A judged side is shown by its title, its code and what it has told»
     дано shown равно пустой список
-    дано move равно (запись «Move» с «title» равным "сторона первая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "сходится")
+    дано move равно (запись «Move» с «title» равным "сторона первая" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и
+        «telling» равным "сходится")
     дано code равно 0
     ожидается ["── сторона первая ──\nкод 0, сказано «сходится»"]
   пример «A silent move shows nothing»
     дано shown равно пустой список
-    дано move равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+    дано move равно (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
     дано code равно 0
     ожидается пустой список
   если (move.«title») равен ""
@@ -512,8 +545,11 @@
     дано root равно "/tmp/forgery"
     дано fault равно ""
     дано shown равно пустой список
-    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и shown равным пустой список)
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и
+        аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и
+        shown равным пустой список)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf",
+      root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
 
 тотальная функция «Move on»
   принимает root: строка, moves: список «Move», shown: список строки
@@ -522,17 +558,21 @@
     случай пусто
       то «Clear» от root и "" и shown
     случай голова и хвост
-      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и current равным голова и rest равным хвост и shown равным shown)
+      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и
+          current равным голова и rest равным хвост и shown равным shown)
 
 тотальная функция «Fault of»
   принимает move: «Move», answer: строка
   возвращает строка
   пример «A side that answered otherwise is named with what was wanted»
-    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и
+        «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
     дано answer равно "код 0"
     ожидается "ПОДЛОГ НЕ ПОКАЗАН — сторона вторая: ждали код 1 и слова «НОВЫЙ НЕЗВАНЫЙ», получено: код 0"
   пример «A broken step of the forgery is named by what it answered»
-    дано move равно (запись «Move» с «title» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
+    дано move равно (запись «Move» с «title» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 0 и «telling» равным "")
     дано answer равно "файла нет"
     ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
   если (move.«title») равен ""
@@ -544,12 +584,16 @@
   принимает move: «Move», code: число, said: строка
   возвращает признак
   пример «The code and the words are both wanted»
-    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и
+        «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
     дано code равно 1
     дано said равно "{\"error\":\"НОВЫЙ НЕЗВАНЫЙ: «forged:проверка»\"}"
     ожидается да
   пример «The wanted code with other words is not the wanted answer»
-    дано move равно (запись «Move» с «title» равным "сторона вторая" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
+    дано move равно (запись «Move» с «title» равным "сторона вторая" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged") и «wanted» равным 1 и
+        «telling» равным "НОВЫЙ НЕЗВАНЫЙ")
     дано code равно 1
     дано said равно "{\"error\":\"ведомости нет\"}"
     ожидается нет
@@ -593,7 +637,8 @@
   пример «The tree of the forgery gets a folder of its own»
     дано base равно "/tmp"
     ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/seed-parses-sources-forgery-") и потом равным (вариант «Making place»)
-  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/seed-parses-sources-forgery-"] по "")) и потом равным (вариант «Making place»)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base,
+      "/seed-parses-sources-forgery-"] по "")) и потом равным (вариант «Making place»)
 
 тотальная функция «After finding place»
   принимает reply: «Отклик»

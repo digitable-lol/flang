@@ -178,7 +178,8 @@
   пусть word равно («Seed word» от piece)
   если ((«Without leading blanks» от word) равен "") или («Is known» от (known.«marks») и word)
     то known
-    иначе запись «Known» с «marks» равным (соединить [(known.«marks»), word, "|"] по "") и «words» равным ((known.«words») плюс 1)
+    иначе запись «Known» с «marks» равным (соединить [(known.«marks»), word,
+        "|"] по "") и «words» равным ((known.«words») плюс 1)
 
 тотальная функция «Known of»
   принимает lists: строка
@@ -240,7 +241,8 @@
   пример «brackets and commas part the words»
     дано pieces равно ["(список", "строки),"]
     ожидается ["список", "строки"]
-  «Words» от (свёртка ["(", ")", ",", "?", "|", "→"] начиная с (соединить pieces по " ") как spelled и sign → соединить (разделить spelled по sign) по " ")
+  «Words» от (свёртка ["(", ")", ",", "?", "|", "→"] начиная с (соединить pieces по " ") как spelled и
+      sign → соединить (разделить spelled по sign) по " ")
 
 тотальная функция «Is plain word»
   принимает word: строка
@@ -266,19 +268,24 @@
   принимает reading: «Reading», line: строка, place: строка, word: строка, known: признак
   возвращает «Reading»
   пример «a known word is remembered as seen»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
     дано line равно "4"
     дано place равно "принимает"
     дано word равно "число"
     дано known равно да
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
   пример «a strange word is kept with its place»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
     дано line равно "4"
     дано place равно "принимает"
     дано word равно "невыдуманноеслово"
     дано known равно нет
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 2 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и
+        «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
   если known
     то запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным (reading.«noted») и «words» равным ((reading.«words») плюс 1) и «seen» равным (соединить [(reading.«seen»), word, "|"] по "") и «strange» равным (reading.«strange»)
     иначе запись «Reading» с «path» равным (reading.«path») и «block» равным (reading.«block») и «noted» равным (reading.«noted») и «words» равным ((reading.«words») плюс 1) и «seen» равным (reading.«seen») и «strange» равным (добавить (запись «Found» с «path» равным (reading.«path») и «line» равным line и «word» равным word и «place» равным place) к (reading.«strange»))
@@ -300,26 +307,33 @@
   принимает reading: «Reading», marks: строка, line: строка, place: строка, piece: строка
   возвращает «Reading»
   пример «a word seen before is only counted»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
     дано marks равно "|число|список|"
     дано line равно "4"
     дано place равно "принимает"
     дано piece равно "число"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
   пример «a masked name is not a word»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|список|"
     дано line равно "4"
     дано place равно "принимает"
     дано piece равно "\u0001"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|" и «strange» равным пустой список)
   пример «a piece with brackets is spelled into words»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|список|"
     дано line равно "4"
     дано place равно "принимает"
     дано piece равно "(список,невыдуманноеслово),"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|список|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 2 и «seen» равным "|список|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и
+        «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает")])
   пусть kind равно («First holding» от [
     (запись «Rule» с «name» равным "masked" и «holds» равным (piece равен "\u0001")),
     (запись «Rule» с «name» равным "seen" и «holds» равным («Is known» от (reading.«seen») и piece))] и "fresh")
@@ -329,7 +343,8 @@
     случай "seen"
       то «Seen» от reading
     случай любое
-      то свёртка («Spelled» от [piece]) начиная с reading как spelled и word → «Spelled step» от spelled и marks и line и place и word
+      то свёртка («Spelled» от [
+          piece]) начиная с reading как spelled и word → «Spelled step» от spelled и marks и line и place и word
 
 тотальная функция «Taken»
   принимает reading: «Reading», marks: строка, line: строка, place: строка, pieces: список строки
@@ -370,7 +385,8 @@
   принимает reading: «Reading», blocks: строка
   возвращает признак
   пример «a function is one of the blocks with a signature»
-    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано blocks равно "|function|theorem|"
     ожидается да
   blocks содержит (соединить ["|", (reading.«block»), "|"] по "")
@@ -389,7 +405,9 @@
     ожидается пустой список
   пусть spoken равно (соединить (разделить (соединить ["\u0001",
     («After first» от body и "\u0001")] по "") по "\u0001 иногда является ") по "\u0001 является ")
-  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "colon" и «holds» равным ((«Without leading blanks» от («After first» от body и "\u0001")) начинается с ":")), (запись «Rule» с «name» равным "spoken" и «holds» равным (spoken начинается с "\u0001 является "))] и "none")
+  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "colon" и
+      «holds» равным ((«Without leading blanks» от («After first» от body и "\u0001")) начинается с ":")),
+      (запись «Rule» с «name» равным "spoken" и «holds» равным (spoken начинается с "\u0001 является "))] и "none")
   разбор kind
     случай "colon"
       то «Words» от («After first» от body и ":")
@@ -402,30 +420,40 @@
   принимает reading: «Reading», marks: строка, line: строка, content: строка
   возвращает «Reading»
   пример «the types of a signature are counted»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано line равно "4"
     дано content равно "  принимает size: число, «имя»: число"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 2 и «seen» равным "|число|" и «strange» равным пустой список)
   пример «a signature outside of a function is not read»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано line равно "4"
     дано content равно "  возвращает число"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
   пусть body равно («Without leading blanks» от («Masked» от («Plain» от content)))
   пусть signed равно («In block» от reading и "|function|theorem|")
   разбор («First piece» от body и " ")
     случай "принимает"
-      то «Taken» от reading и marks и line и "принимает" и (если signed то («Signed pieces» от («After first» от body и "принимает ")) иначе (пустой список))
+      то «Taken» от reading и marks и line и "принимает" и (если signed то («Signed pieces» от («After first» от body и
+          "принимает ")) иначе (пустой список))
     случай "возвращает"
-      то «Taken» от reading и marks и line и "возвращает" и (если signed то («Words» от («After first» от body и "возвращает ")) иначе (пустой список))
+      то «Taken» от reading и marks и line и "возвращает" и (если signed то («Words» от («After first» от body и
+          "возвращает ")) иначе (пустой список))
     случай "дано"
-      то «Taken» от reading и marks и line и "дано" и (если «In block» от reading и "|theorem|" то («Signed pieces» от («First piece» от («After first» от body и "дано ") и " таких что")) иначе (пустой список))
+      то «Taken» от reading и marks и line и "дано" и (если «In block» от reading и
+          "|theorem|" то («Signed pieces» от («First piece» от («After first» от body и "дано ") и
+          " таких что")) иначе (пустой список))
     случай "вариант"
-      то «Taken» от reading и marks и line и "вариант" и (если «In block» от reading и "|sum|" то («Signed pieces» от («After first» от body и " содержит ")) иначе (пустой список))
+      то «Taken» от reading и marks и line и "вариант" и (если «In block» от reading и
+          "|sum|" то («Signed pieces» от («After first» от body и " содержит ")) иначе (пустой список))
     случай любое
-      то «Taken» от reading и marks и line и "поле" и (если «In block» от reading и "|object|" то («Field pieces» от body) иначе (пустой список))
+      то «Taken» от reading и marks и line и "поле" и (если «In block» от reading и
+          "|object|" то («Field pieces» от body) иначе (пустой список))
 
 тотальная функция «Alias pieces»
   принимает content: строка
@@ -449,17 +477,21 @@
   принимает reading: «Reading», marks: строка, line: строка, content: строка
   возвращает «Reading»
   пример «a function opens a block with a signature»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано line равно "3"
     дано content равно "тотальная функция «"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
   пример «an alias is read at once and opens nothing»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано line равно "3"
     дано content равно "тип «Вес» является число"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "other" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|число|" и «strange» равным пустой список)
   пусть alias равно (если content начинается с "тип «" то («Alias pieces» от content) иначе (пустой список))
   пусть block равно («First holding» от [
     (запись «Rule» с «name» равным "other" и «holds» равным ((длина alias) больше 0)),
@@ -467,7 +499,9 @@
     (запись «Rule» с «name» равным "sum" и «holds» равным (content начинается с "тип «")),
     (запись «Rule» с «name» равным "theorem" и «holds» равным (content начинается с "теорема ")),
     (запись «Rule» с «name» равным "function" и «holds» равным (content содержит "функция «"))] и "other")
-  «Taken» от (запись «Reading» с «path» равным (reading.«path») и «block» равным block и «noted» равным нет и «words» равным (reading.«words») и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)) и marks и line и "псевдоним" и alias
+  «Taken» от (запись «Reading» с «path» равным (reading.«path») и «block» равным block и «noted» равным нет и
+      «words» равным (reading.«words») и «seen» равным (reading.«seen») и
+      «strange» равным (reading.«strange»)) и marks и line и "псевдоним" и alias
 
 тотальная функция «Noting»
   принимает reading: «Reading», noted: признак
@@ -478,9 +512,11 @@
   принимает reading: «Reading», path: строка
   возвращает «Reading»
   пример «a new file forgets the block of the last one»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным да и «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным да и
+        «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
     дано path равно "./b.flang"
-    ожидается (запись «Reading» с «path» равным "./b.flang" и «block» равным "" и «noted» равным нет и «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./b.flang" и «block» равным "" и «noted» равным нет и
+        «words» равным 5 и «seen» равным "|" и «strange» равным пустой список)
   если path равен (reading.«path»)
     то reading
     иначе запись «Reading» с «path» равным path и «block» равным "" и «noted» равным нет и «words» равным (reading.«words») и «seen» равным (reading.«seen») и «strange» равным (reading.«strange»)
@@ -489,7 +525,10 @@
   принимает reading: «Reading», marks: строка, line: строка, content: строка
   возвращает «Reading»
   пусть opening равно ((content содержит "/*") и притом ((«Without leading blanks» от content) начинается с "/*"))
-  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "noted" и «holds» равным ((reading.«noted») или opening)), (запись «Rule» с «name» равным "skipped" и «holds» равным ((content равен "/") или (content содержит "*/"))), (запись «Rule» с «name» равным "inside" и «holds» равным ((content начинается с " ") или (content начинается с "\t")))] и "top")
+  пусть kind равно («First holding» от [(запись «Rule» с «name» равным "noted" и
+      «holds» равным ((reading.«noted») или opening)), (запись «Rule» с «name» равным "skipped" и
+      «holds» равным ((content равен "/") или (content содержит "*/"))), (запись «Rule» с «name» равным "inside" и
+      «holds» равным ((content начинается с " ") или (content начинается с "\t")))] и "top")
   разбор kind
     случай "noted"
       то «Noting» от reading и (не (content содержит "*/"))
@@ -504,19 +543,25 @@
   принимает reading: «Reading», marks: строка, found: строка
   возвращает «Reading»
   пример «a line of the search names the file, the line and what stands there»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано found равно "./a.flang:5:  возвращает невыдуманноеслово"
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 1 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")])
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 1 и «seen» равным "|" и «strange» равным [(запись «Found» с «path» равным "./a.flang" и
+        «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")])
   пример «an empty line of the search changes nothing»
-    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано marks равно "|число|"
     дано found равно ""
-    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
   пусть tail равно («After first» от found и ":")
   если tail равен ""
     то reading
-    иначе «Content step» от («Fresh» от reading и («First piece» от found и ":")) и marks и («First piece» от tail и ":") и («After first» от tail и ":")
+    иначе «Content step» от («Fresh» от reading и («First piece» от found и ":")) и marks и («First piece» от tail и
+        ":") и («After first» от tail и ":")
 
 тотальная функция «Shown path»
   принимает path: строка
@@ -535,7 +580,8 @@
   принимает found: «Found»
   возвращает строка
   пример «the place of a strange word is told to the line»
-    дано found равно (запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")
+    дано found равно (запись «Found» с «path» равным "./a.flang" и «line» равным "5" и
+        «word» равным "невыдуманноеслово" и «place» равным "возвращает")
     ожидается "  a.flang:5: применено «невыдуманноеслово» (возвращает) — семя такого слова не знает"
   соединить ["  ", («Shown path» от (found.«path»)), ":", (found.«line»), ": применено «", (found.«word»), "» (",
     (found.«place»), ") — семя такого слова не знает"] по ""
@@ -544,9 +590,12 @@
   принимает strange: список «Found»
   возвращает список строки
   пример «every strange word is told once with the count of its uses»
-    дано strange равно [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и «word» равным "невыдуманноеслово" и «place» равным "принимает"), (запись «Found» с «path» равным "./a.flang" и «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")]
+    дано strange равно [(запись «Found» с «path» равным "./a.flang" и «line» равным "4" и
+        «word» равным "невыдуманноеслово" и «place» равным "принимает"), (запись «Found» с «path» равным "./a.flang" и
+        «line» равным "5" и «word» равным "невыдуманноеслово" и «place» равным "возвращает")]
     ожидается ["  «невыдуманноеслово» — применений: 2"]
-  пусть told равно (свёртка strange начиная с (запись «Known» с «marks» равным "|" и «words» равным 0) как known и found → «Known step» от known и (found.«word»))
+  пусть told равно (свёртка strange начиная с (запись «Known» с «marks» равным "|" и «words» равным 0) как known и
+      found → «Known step» от known и (found.«word»))
   отобразить (отфильтровать (разделить (told.«marks») по "|") где word → не (word равен "")) как word → соединить [
     "  «", word, "» — применений: ",
     (к строке (длина (отфильтровать strange где found → (found.«word») равен word)))] по ""
@@ -560,7 +609,8 @@
   возвращает строка
   пример «four counts on one line»
     дано files равно "1064"
-    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 57184 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и
+        «words» равным 57184 и «seen» равным "|" и «strange» равным пустой список)
     дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
     ожидается "сторож слов: файлов 1064, слов в позициях типа 57184, словарь семени 871, чужих семени 0"
   соединить ["сторож слов: файлов ", files, ", слов в позициях типа ", (к строке (reading.«words»)),
@@ -572,13 +622,15 @@
   пример «a tree without strange words ends the work»
     дано forged равно нет
     дано files равно "2"
-    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 7 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и
+        «words» равным 7 и «seen» равным "|" и «strange» равным пустой список)
     дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
     ожидается вариант «Конец работы» с значение равным "сторож слов: файлов 2, слов в позициях типа 7, словарь семени 871, чужих семени 0"
   пример «a forgery that was not caught is told aloud»
     дано forged равно да
     дано files равно "1"
-    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
+    дано reading равно (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и
+        «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
     дано known равно (запись «Known» с «marks» равным "|" и «words» равным 871)
     ожидается вариант «Конец работы» с значение равным "ПОДЛОГ НЕ ПОЙМАН — выдуманный тип «невыдуманноеслово» прошёл\nсторож слов: файлов 1, слов в позициях типа 0, словарь семени 871, чужих семени 0"
   пусть counted равно (соединить [
@@ -597,12 +649,15 @@
 тотальная функция «Judged»
   принимает forged: признак, files: строка, known: «Known», lines: строка
   возвращает «Продолжение»
-  «Verdict» от forged и files и (свёртка (разделить lines по "\n") начиная с (запись «Reading» с «path» равным "" и «block» равным "" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и «strange» равным пустой список) как reading и found → «Line step» от reading и (known.«marks») и found) и known
+  «Verdict» от forged и files и (свёртка (разделить lines по "\n") начиная с (запись «Reading» с «path» равным "" и
+      «block» равным "" и «noted» равным нет и «words» равным 0 и «seen» равным "|" и
+      «strange» равным пустой список) как reading и found → «Line step» от reading и (known.«marks») и found) и known
 
 тотальная функция «Clear»
   принимает root: строка, verdict: «Продолжение»
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с verdict равным verdict)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf",
+      root]) и потом равным (вариант «Clearing» с verdict равным verdict)
 
 тотальная функция «Nothing to judge»
   принимает what: строка
@@ -610,12 +665,15 @@
   пример «what could not be seen is named»
     дано what равно "семени нет"
     ожидается вариант «Не проверено» с код равным "FLANG_SEED_WORDS_NOT_JUDGED" и сообщение равным "сторож слов: семени нет"
-  вариант «Не проверено» с код равным "FLANG_SEED_WORDS_NOT_JUDGED" и сообщение равным (соединить ["сторож слов: ", what] по "")
+  вариант «Не проверено» с код равным "FLANG_SEED_WORDS_NOT_JUDGED" и сообщение равным (соединить ["сторож слов: ",
+      what] по "")
 
 тотальная функция «Gather»
   принимает root: строка, forged: признак, names: список строки
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным («Joined» от ["-c", («Gathering script»), "sh", root] и names)) и потом равным (вариант «Gathering» с root равным root и forged равным forged)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и
+      аргументы равным («Joined» от ["-c", («Gathering script»), "sh", root] и
+      names)) и потом равным (вариант «Gathering» с root равным root и forged равным forged)
 
 тотальная функция «After names»
   принимает forged: признак, reply: «Отклик»
@@ -635,7 +693,9 @@
 тотальная функция «Make place»
   принимает forged: признак, names: список строки, base: строка
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/seed-knows-type-words-"] по "")) и потом равным (вариант «Making place» с forged равным forged и names равным names)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base,
+      "/seed-knows-type-words-"] по "")) и потом равным (вариант «Making place» с forged равным forged и
+      names равным names)
 
 тотальная функция «After finding place»
   принимает forged: признак, names: список строки, reply: «Отклик»
@@ -652,7 +712,9 @@
   разбор reply
     случай вариант «Заведено» с путь как root
       то если forged
-        то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [root, "/forged.flang"] по "") и содержимое равным («Forged source»)) и потом равным (вариант «Forging» с root равным root)
+        то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [root,
+            "/forged.flang"] по "") и
+            содержимое равным («Forged source»)) и потом равным (вариант «Forging» с root равным root)
         иначе «Gather» от root и нет и names
     случай вариант «Сбой» с код как code и сообщение как message
       то «Nothing to judge» от (соединить ["временный каталог не завёлся — ", message] по "")
@@ -695,7 +757,9 @@
       то если ((«Known of» от output).«words») меньше 100
         то «Clear» от root и («Nothing to judge» от (соединить ["в семени нашлось всего ",
           (к строке ((«Known of» от output).«words»)), " слов — это не семя"] по ""))
-        иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [root, "/lines"] по "")) и потом равным (вариант «Reading lines» с root равным root и forged равным forged и files равным files и known равным («Known of» от output))
+        иначе вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [root,
+            "/lines"] по "")) и потом равным (вариант «Reading lines» с root равным root и forged равным forged и
+            files равным files и known равным («Known of» от output))
     случай любое
       то «Clear» от root и («Nothing to judge» от "каталога семени нет — bootstrap")
 

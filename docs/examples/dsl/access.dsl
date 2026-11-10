@@ -1,1 +1,1 @@
-allow editor publish
+Editors can publish documents

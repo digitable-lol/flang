@@ -6,6 +6,36 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.33 — 10 November 2026
+
+**The kernel proves linear inequalities and monad laws; large files check three times faster; the checker refuses forged proofs**
+
+### What appeared
+
+- **Linear inequalities over `точное целое` (exact integer).** `утверждаем если а больше б и притом б больше ц то а больше ц иначе да` (if a > b and b > c then a > c) is `доказано` (proved), exit code 0. So are `a ≥ b ⇒ a + c ≥ b + c` and the sum of two inequalities. In 0.7.32 all three were `объявлено, не доказано` (declared, not proved), code 3.
+- **Polynomials with subtraction.** `(a + b)·(a + b) − b·b = a·a + a·b + a·b` over exact integers is proved. In 0.7.32 it was declared, not proved.
+- **Monad laws.** For a declared `монада` (monad) with `возврат` (return) and `соединение` (join), `check --proof` judges three laws; the left and right unit are proved.
+- **List functor laws.** Mapping the identity leaves a list unchanged, and two maps fuse into one; both are proved.
+- **A statement over a list is proved by induction** when it follows step by step over the list.
+- **Check your program against its printed C.** `bootstrap/flang run-script translation:validate -- --path <file>` prints the program to C and compares each function with the reference semantics of flang.
+- **Checking reasoning in a text (experimental).** `bootstrap/flang run-script argument-check:demo` reads a text sentence by sentence and answers «следует» (follows) or «не следует» (does not follow) with a counterexample.
+
+### What changed
+
+- **`flang check` of large files is faster.** Independent obligations are judged by several processes (`FLANG_JOBS` sets how many, by default the number of cores), and the kernel unfolds calls less. Seconds on `flang/stdlib`, 0.7.32 → 0.7.33: aes 290 → 90, tls 580 → 225, sqlite 84 → 74, x25519 8 → 5, postgres 100 → 106.
+- **The checker refuses five kinds of forged proof records** that 0.7.32 called `ПРОВЕРЕНО` (checked), and replays places the kernel proved without moves.
+- **Two postconditions with one name in different functions** no longer give `НЕ СОШЛОСЬ СО СВЕРЩИКОМ` (did not agree with the checker), code 3: the file passes with code 0.
+- **An example mismatch on the sign of zero prints `-0`:** `expected -0, got 0` instead of `expected 0, got 0`.
+- **A module `tls_client` prints to C.** Before, the print failed with `FLANG_PROPERTY`.
+- **Rust prints a number the way the evaluator does:** `4503599627370496 / 3` is `1501199875790165.2`, as in C, Go and Java (before `…165.3`).
+- **A monoid law over `число` (binary number) refuses with a reason:** addition rounds, so the law is not proved; the message suggests the carrier `точное целое`.
+
+### What broke
+
+- **A forged proof record is now refused.** Honest records are accepted as before. To fix: print the record again with `check --proof`.
+- **Known limitation: monad associativity is not proved** — a file with a declared monad exits with code 3. Coming in 0.7.34.
+- **Known limitation: 14 open typing holes**, listed in `flang/proof/tables/typing-holes.tsv`, each with a probe. For example, `flang run` does not check `требует` (requires) on input. Fixes come in 0.7.34.
+
 ## 0.7.32 — 1 November 2026
 
 **Packages are installed with flang install; servers listen on 127.0.0.1 by default; a correct «для всех … таких что» postcondition passes again**

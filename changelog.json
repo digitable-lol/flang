@@ -2,15 +2,604 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.32",
-  "latest": "0.7.32",
+  "declared": "0.7.33",
+  "latest": "0.7.33",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
     "flang/messages",
+    "flang/services",
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.33",
+      "tag": "v0.7.33",
+      "date": "2026-11-10",
+      "human": "10 ноября 2026",
+      "commit": "d679f89",
+      "title": "Ядро доказывает линейные неравенства и законы монады; большие файлы проверяются втрое быстрее; сверщик не принимает подделанных доказательств",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.33 archive",
+          "commit": "d679f89"
+        },
+        {
+          "text": "chore(release): version 0.7.33 and its release notes",
+          "commit": "2391af6"
+        },
+        {
+          "text": "chore(proof): trusted base ceiling follows the call unfolding",
+          "commit": "0dc1974"
+        },
+        {
+          "text": "fix(checker): both checkers replay linear arithmetic over unfolded calls",
+          "commit": "02be6ad"
+        },
+        {
+          "text": "docs(proofs): twenty decision rules and the FLANG_JOBS code row",
+          "commit": "f4bbc2b"
+        },
+        {
+          "text": "fix(proof): typing hole 19 is closed by the batch 10 binary",
+          "commit": "48568a0"
+        },
+        {
+          "text": "chore(seed): print batch 10 on gpu from 30c969264",
+          "commit": "cdee6cd"
+        },
+        {
+          "text": "revert(types): the typing hole fixes wait for print batch 11",
+          "commit": "30c9692"
+        },
+        {
+          "text": "test(proof): the speed forgery turns red and ci demands it",
+          "commit": "5eafa06"
+        },
+        {
+          "text": "test(proof): a speed gate counts the kernel steps of two small files",
+          "commit": "123e47e"
+        },
+        {
+          "text": "chore(proof): anchors, ceiling and ledger follow the kernel fix base",
+          "commit": "d1a3746"
+        },
+        {
+          "text": "test(bench): the spread stand is a flang program, not hand-written C",
+          "commit": "9196b8e"
+        },
+        {
+          "text": "fix(link): two only lists of one module in a file add up",
+          "commit": "64e3b7e"
+        },
+        {
+          "text": "fix(types): a variant argument has the shape the evaluator reads",
+          "commit": "a50315d"
+        },
+        {
+          "text": "fix(types): six typing holes of the ledger close in the compiler source",
+          "commit": "dedadac"
+        },
+        {
+          "text": "test(bench): a gate for the spread map over worker processes",
+          "commit": "6472ed5"
+        },
+        {
+          "text": "feat(runtime): judge independent obligations in worker processes",
+          "commit": "162936e"
+        },
+        {
+          "text": "docs: the ring row and both adrs say what the tree does now",
+          "commit": "c257456"
+        },
+        {
+          "text": "fix(checker): the lean checker keeps the bound of the certificate sum",
+          "commit": "0745b5b"
+        },
+        {
+          "text": "fix(probe): the linear arithmetic probes parse and run to the end",
+          "commit": "75a9b5a"
+        },
+        {
+          "text": "fix(checker): the linear arithmetic path is a deciding path of the proof",
+          "commit": "6c85514"
+        },
+        {
+          "text": "feat(checker): both checkers replay linear arithmetic within the bound",
+          "commit": "d391296"
+        },
+        {
+          "text": "feat(kernel): linear arithmetic and an exact ring normal form",
+          "commit": "bda7712"
+        },
+        {
+          "text": "fix(kernel): unfolding stops at 2000 argument nodes",
+          "commit": "c009080"
+        },
+        {
+          "text": "fix(kernel): unfolding on a built record needs a branch-free body",
+          "commit": "170f2f3"
+        },
+        {
+          "text": "test(proof): corpus-lists record and shapes expectation follow 9d",
+          "commit": "dbde57b"
+        },
+        {
+          "text": "fix(checker): both checkers replay the 9d places closed without moves",
+          "commit": "e67aa71"
+        },
+        {
+          "text": "fix(translation): the fold step forgery follows the 9d print",
+          "commit": "7d1fbf0"
+        },
+        {
+          "text": "chore(numbers): counts and ceiling follow the rebase onto dev 51779a9f2",
+          "commit": "dfbb4d7"
+        },
+        {
+          "text": "fix(lean): the given move proof goes through a shape lemma",
+          "commit": "aacbc97"
+        },
+        {
+          "text": "chore(seed): print batch 9d a fourth time on gpu from 3a4707f4e",
+          "commit": "30c109e"
+        },
+        {
+          "text": "refactor(kernel): three condition ladders become a case split and steps",
+          "commit": "3219aa7"
+        },
+        {
+          "text": "test(proof): two same-name postconditions and the third 9d print line",
+          "commit": "59e1728"
+        },
+        {
+          "text": "chore(seed): print batch 9d again on gpu from 30f4f4ee1",
+          "commit": "e6f1965"
+        },
+        {
+          "text": "fix(record): a postcondition is looked up in its own function first",
+          "commit": "cd44a48"
+        },
+        {
+          "text": "test(proof): category-laws-judged probe on the binary of print 9d",
+          "commit": "193278c"
+        },
+        {
+          "text": "chore(seed): print batch 9d on gpu from 364a22ae9",
+          "commit": "b7f9a71"
+        },
+        {
+          "text": "fix(checker): the probe table loses three leftover merge marker lines",
+          "commit": "4795867"
+        },
+        {
+          "text": "docs(adr): adr-0196 monad and list functor laws, rows and anchors",
+          "commit": "47fe2b8"
+        },
+        {
+          "text": "fix(kernel): the fusion of two maps parses as one expression",
+          "commit": "b3e1c39"
+        },
+        {
+          "text": "feat(kernel): list functor laws rewrite goals, unfolding sees free names",
+          "commit": "a9560ee"
+        },
+        {
+          "text": "feat(self): a declared monad yields three laws the kernel judges",
+          "commit": "85cc03e"
+        },
+        {
+          "text": "chore(proof): rule anchors follow the cheap unfolding questions",
+          "commit": "f7f74db"
+        },
+        {
+          "text": "perf(kernel): unfolding asks cheap questions before the body walk",
+          "commit": "a99ab13"
+        },
+        {
+          "text": "docs(reprint): the first 9d print, its ledger line and the marks",
+          "commit": "f2323cb"
+        },
+        {
+          "text": "fix(checker): the flang checker counts 24 reduction rules",
+          "commit": "c4e6bc5"
+        },
+        {
+          "text": "perf(kernel): a composition unfolds only when it returns an author type",
+          "commit": "a177a45"
+        },
+        {
+          "text": "chore(marks): prose numbers and probe words follow batch 9d",
+          "commit": "374da68"
+        },
+        {
+          "text": "chore(proof): rule anchors and the checker ceiling follow batch 9d",
+          "commit": "f590274"
+        },
+        {
+          "text": "feat(kernel): calls unfold on built records and branch-free compositions",
+          "commit": "d2f4f6e"
+        },
+        {
+          "text": "test(proof): family of a free statement proved by list induction",
+          "commit": "86b23e2"
+        },
+        {
+          "text": "feat(kernel): a free statement over a list is proved by induction",
+          "commit": "68b4ab9"
+        },
+        {
+          "text": "feat(checker): both checkers replay list premises of a free statement",
+          "commit": "374bbbe"
+        },
+        {
+          "text": "docs(adr): adr-0188 one down and one up, two zeros on the floor",
+          "commit": "b084cd3"
+        },
+        {
+          "text": "feat(checker): both checkers replay one down and one up in a descent",
+          "commit": "3ba798e"
+        },
+        {
+          "text": "feat(kernel): one down and one up is the same natural",
+          "commit": "a644de6"
+        },
+        {
+          "text": "test(proof): written-step rewrite family, kernel probes and adr-0187",
+          "commit": "fc5450d"
+        },
+        {
+          "text": "feat(checker): both checkers replay a goal rewritten by written steps",
+          "commit": "7bb3c74"
+        },
+        {
+          "text": "feat(kernel): written theorem steps rewrite the goal of the closing step",
+          "commit": "daaaf10"
+        },
+        {
+          "text": "feat(kernel): a split under its condition and a variant call are printed",
+          "commit": "8fc1fd6"
+        },
+        {
+          "text": "feat(checker): both checkers replay a split under its condition",
+          "commit": "4fd77ed"
+        },
+        {
+          "text": "fix(examples): a mismatch on the sign of zero prints -0",
+          "commit": "de7fe2d"
+        },
+        {
+          "text": "fix(emit-c): a module named tls_client keeps its own makefile line",
+          "commit": "77343a5"
+        },
+        {
+          "text": "test(typing-holes): two open rows, a variant argument and two imports",
+          "commit": "e7fcbfc"
+        },
+        {
+          "text": "feat(fuzz): the generator builds numbers for their kind and new shapes",
+          "commit": "9264720"
+        },
+        {
+          "text": "test(experimental): probe the argument check and print plain text",
+          "commit": "07da5de"
+        },
+        {
+          "text": "fix(emit): rust prints the nearest of two shortest numbers, even on ties",
+          "commit": "4b2e55f"
+        },
+        {
+          "text": "chore(numbers): counts and ceiling follow the rebase onto dev",
+          "commit": "20b5091"
+        },
+        {
+          "text": "docs(fuzz): the search is described in docs, its probes have no notes",
+          "commit": "86be710"
+        },
+        {
+          "text": "test(typing-holes): source probes judge types and runs from source",
+          "commit": "2c3e561"
+        },
+        {
+          "text": "style(checker): the quoted-name fixes carry no comments",
+          "commit": "533192c"
+        },
+        {
+          "text": "fix(lean): the model reads a quoted name of several words as a name",
+          "commit": "5d85961"
+        },
+        {
+          "text": "fix(checker): the second checker takes a quoted parameter in fields too",
+          "commit": "b72d8a2"
+        },
+        {
+          "text": "test(typing-holes): requires is skipped through a function value",
+          "commit": "6ffde74"
+        },
+        {
+          "text": "fix(checker): a parameter name in guillemets is a name",
+          "commit": "eb92676"
+        },
+        {
+          "text": "test(typing-holes): printed programs take exact integers off canon",
+          "commit": "62df3a2"
+        },
+        {
+          "text": "test(typing-holes): percent of gives -0 where +0 is promised",
+          "commit": "2c3da02"
+        },
+        {
+          "text": "test(typing-holes): printed programs skip type arguments at the entry",
+          "commit": "e627d51"
+        },
+        {
+          "text": "test(typing-holes): nine holes found by the generator are in the ledger",
+          "commit": "fa02ce6"
+        },
+        {
+          "text": "feat(lean): the walk theorem reads filter and map, proofs skip the walk",
+          "commit": "4f00bb8"
+        },
+        {
+          "text": "feat(lean): the walk theorem reads folds over lists",
+          "commit": "22ca56f"
+        },
+        {
+          "text": "feat(lean): the walk theorem reads patterns, fields and lists",
+          "commit": "fea09f8"
+        },
+        {
+          "text": "feat(lean): the reference tree of a function is proved, for a fragment",
+          "commit": "2b8a06c"
+        },
+        {
+          "text": "feat(translation): each runtime function of the print has a model",
+          "commit": "b01bf18"
+        },
+        {
+          "text": "feat(lean): symbolic walk follows number types through data",
+          "commit": "e598367"
+        },
+        {
+          "text": "chore(numbers): counts and ceiling follow the rebase onto dev",
+          "commit": "4983c66"
+        },
+        {
+          "text": "test(checker): the square law over an unbracketed sum is refused",
+          "commit": "4b61bdb"
+        },
+        {
+          "text": "fix(checker): the square law applies to a simple term only",
+          "commit": "06375bd"
+        },
+        {
+          "text": "feat(lean): the fact move brings only a justified fact, by theorem",
+          "commit": "95ec242"
+        },
+        {
+          "text": "chore(numbers): counts and ceiling follow the rebase onto dev",
+          "commit": "78772c4"
+        },
+        {
+          "text": "test(checker): a conjunction equal to itself is not an identity",
+          "commit": "6790118"
+        },
+        {
+          "text": "fix(checker): an equality is split only when it is the root",
+          "commit": "dfaa544"
+        },
+        {
+          "text": "chore(numbers): counts and ceiling follow the rebase onto dev",
+          "commit": "0a4e169"
+        },
+        {
+          "text": "test(checker): a fact paid for one goal closes another one",
+          "commit": "572dcdb"
+        },
+        {
+          "text": "fix(checker): a fact of the run lives until the next move only",
+          "commit": "2ec1b85"
+        },
+        {
+          "text": "feat(lean): symbolic walk reads tail recursion printed as a loop",
+          "commit": "3c380fc"
+        },
+        {
+          "text": "fix(lean): the reference checks a declared measure like the print",
+          "commit": "c1a7317"
+        },
+        {
+          "text": "feat(lean): symbolic walk reads fields, repeated calls and imports",
+          "commit": "892650d"
+        },
+        {
+          "text": "feat(lean): function parameters are validated and proved",
+          "commit": "e1a5c8c"
+        },
+        {
+          "text": "feat(lean): symbolic comparison reads the parallel map",
+          "commit": "576e334"
+        },
+        {
+          "text": "fix(lean): c string escapes are bytes, decoded as utf-8 together",
+          "commit": "717d1f9"
+        },
+        {
+          "text": "feat(lean): symbolic comparison reads lists, folds, filters and forms",
+          "commit": "8c7cdd8"
+        },
+        {
+          "text": "ci(translation): validate the printed c on every push with bounds",
+          "commit": "5ef8279"
+        },
+        {
+          "text": "fix(lean): the reference gives +0 for a zero product, quotient, rest",
+          "commit": "98eb74a"
+        },
+        {
+          "text": "feat(translation): symbolic proofs and the whole docs corpus",
+          "commit": "b9b37ca"
+        },
+        {
+          "text": "feat(lean): symbolic comparison of printed C with the reference",
+          "commit": "1632dda"
+        },
+        {
+          "text": "feat(lean): the let substitution move is sound by theorem",
+          "commit": "4ac4a0b"
+        },
+        {
+          "text": "feat(lean): a block of moves is sound when each framed move is",
+          "commit": "194c9f3"
+        },
+        {
+          "text": "feat(lean): goal, hypothesis and end steps of a block run by theorem",
+          "commit": "8e7b5cd"
+        },
+        {
+          "text": "docs(adr): adr-0202 names the 10 checker lines of the let check",
+          "commit": "8ca63fc"
+        },
+        {
+          "text": "test(checker): five false statements proved by substitution in binders",
+          "commit": "bbd3863"
+        },
+        {
+          "text": "fix(checker): a let is substituted only when it alone binds the name",
+          "commit": "62d15f2"
+        },
+        {
+          "text": "docs(adr): adr-0202 names the 5 checker lines of the closing moves",
+          "commit": "3b34b61"
+        },
+        {
+          "text": "feat(lean): closing and neutral zero moves are sound by theorem",
+          "commit": "a3e23a1"
+        },
+        {
+          "text": "fix(checker): neutral zero and closing by an equality fact skip binders",
+          "commit": "6eb5240"
+        },
+        {
+          "text": "docs(adr): adr-0202 names the 10 checker lines of the binder check",
+          "commit": "50a79a0"
+        },
+        {
+          "text": "refactor(lean): the model of goals lives in Goals.lean",
+          "commit": "9ff43a6"
+        },
+        {
+          "text": "feat(lean): six move kinds are sound against a model of goals",
+          "commit": "3db0b4c"
+        },
+        {
+          "text": "fix(checker): both checkers decline substitution under a binder",
+          "commit": "374ecec"
+        },
+        {
+          "text": "docs(adr): adr-0196 names the 130 checker lines it adds",
+          "commit": "c68d78f"
+        },
+        {
+          "text": "feat(lean): the identity and fusion laws of the list map are theorems",
+          "commit": "59b81dc"
+        },
+        {
+          "text": "feat(checker): both checkers derive monad laws and replay map laws",
+          "commit": "719110d"
+        },
+        {
+          "text": "feat(lean): accepted discharges cover every call site by theorem",
+          "commit": "1a3a0f7"
+        },
+        {
+          "text": "feat(lean): the census prints blocks judged by a path with a theorem",
+          "commit": "8c70284"
+        },
+        {
+          "text": "fix(lean): soundness guard reads move names in any utf-8 locale",
+          "commit": "7ed7c0e"
+        },
+        {
+          "text": "refactor(checker): drop the work line name from checker text",
+          "commit": "0d53e2e"
+        },
+        {
+          "text": "docs(adr): kernel places without moves are replayed from the source",
+          "commit": "1cd164b"
+        },
+        {
+          "text": "fix(checker): a counterexample refutes five old lie forgeries",
+          "commit": "6ff6cdc"
+        },
+        {
+          "text": "feat(checker): both checkers replay all fourteen parity tasks",
+          "commit": "49b0f78"
+        },
+        {
+          "text": "docs(adr): the trusted checker base grows by quoted argument names",
+          "commit": "c9adfde"
+        },
+        {
+          "text": "fix(checker): both checkers read an argument named in guillemets",
+          "commit": "eb8a1ba"
+        },
+        {
+          "text": "test(bench): a false monoid unit is refused at emit, not printed",
+          "commit": "1ab357b"
+        },
+        {
+          "text": "refactor(checker): a proved statement passes only by a deciding path",
+          "commit": "1b11706"
+        },
+        {
+          "text": "refactor(checker): source theorems of the lean checker by proof",
+          "commit": "372c9cf"
+        },
+        {
+          "text": "refactor(checker): induction premises of the lean checker by proof",
+          "commit": "002b47b"
+        },
+        {
+          "text": "refactor(checker): discharges, obligations and row places by proof",
+          "commit": "ac79903"
+        },
+        {
+          "text": "docs(adr): the trusted checker base grows by the recursion checks",
+          "commit": "bcd7fe9"
+        },
+        {
+          "text": "fix(checker): a totality record holds only if each recursive call drops",
+          "commit": "cebc7b5"
+        },
+        {
+          "text": "refactor(checker): header, tables and plans of the lean checker by proof",
+          "commit": "e77d011"
+        },
+        {
+          "text": "chore(guards): file name words and a forgery shortcut follow the census",
+          "commit": "98d6620"
+        },
+        {
+          "text": "feat(checker): the second checker accepts a deduction only by the model",
+          "commit": "bde8fda"
+        },
+        {
+          "text": "test(proof): a census prints which record blocks the lean model reads",
+          "commit": "a9bdc7f"
+        },
+        {
+          "text": "feat(proof): the lean model reads the registry of proved postconditions",
+          "commit": "5a32431"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.32",
+          "commit": "813a318"
+        }
+      ],
+      "hidden": 114
+    },
     {
       "version": "0.7.32",
       "tag": "v0.7.32",

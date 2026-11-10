@@ -3,9 +3,6 @@
 Five steps: write a file, check it, run its unit tests, run a function,
 generate C from it. You need `flang` installed — [how to install it](install.html).
 
-Every output block below is copied from a real run of the current binary. The
-commands can be copied one after another.
-
 ## Write
 
 Put this in `hello.flang`:
@@ -114,12 +111,12 @@ flang run sum.flang --function Sum --args '{"items": [1,2,3]}'
 Each value is checked against the declared type before anything is computed.
 More in [Operations](operations.html), the `--args` section.
 
-`flang run` checks argument types. `«Factorial»` is declared over `nat`; called
-with −3 it answers, with exit code 1:
+`flang run` checks argument types. The parameter `n` is declared `nat`; on
+`{"n": -3}` the answer is this, with exit code 1:
 
 ```
-доказано: утверждений 0
-FLANG_TYPE: вызов функции «Factorial»: аргумент «n»: -3 вне неотрицательное
+доказано: утверждений 1
+FLANG_TYPE: вызов функции «Twice»: аргумент «n»: -3 вне неотрицательное
 ```
 
 ## Read the proof report
@@ -239,6 +236,8 @@ builds `target/debug/flang_cli`, which calls the same function.
 
 - [Tutorial](tutorial.html) — six chapters from your first function to a
   postcondition the prover proves
+- [Loops, classes, interfaces](surface-sugar.html) — familiar forms and what
+  they expand into
 - [Which construct to use when](which-construct.html) — what to write for a
   task: enum, Optional, Result, map, filter, reduce
 - [Operations](operations.html) — standard library functions for lists,

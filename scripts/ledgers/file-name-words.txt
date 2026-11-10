@@ -1725,6 +1725,7 @@ symbolic
 symmetric
 sync
 syntactic
+syntax
 synthesis
 t1
 t2

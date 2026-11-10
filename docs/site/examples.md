@@ -1,11 +1,11 @@
 # The catalogue of examples
 
-Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-10-17 файлов docs/examples/*.flang = 348 --> 348 files in
-twenty-five sets and one full-size project. There is no second directory of examples
+Every example program in flang lives in one directory — `docs/examples/`: <!-- СНЯТО 2026-11-10 файлов docs/examples/*.flang = 349 --> 349 files in
+twenty-six sets and one full-size project. There is no second directory of examples
 in the repository.
 
 The number is recounted by one command:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-10-17 файлов docs/examples/*.flang = 348 --> 348.
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-11-10 файлов docs/examples/*.flang = 349 --> 349.
 
 ## The sets
 
@@ -16,6 +16,7 @@ The number is recounted by one command:
 | [`web/`](docs/examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
 | [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-19 файлов docs/examples/io/*.flang = 10 --> 10 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet, a progress bar on the terminal |
 | [`crypto/`](docs/examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
+| [`dsl/`](docs/examples/dsl) | 1 | a small language for capture rules and its translation to typed values |
 | [`library-api/`](docs/examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
 | [`service-on-processes/`](docs/examples/service-on-processes) | 4 | a service on processes rather than on a three-function example: the claim about an own alternative to OTP, checked at full size |
@@ -53,6 +54,63 @@ modules it imports), about 19 minutes, because it computes real AES and ECDSA
 test vectors. A file the
 binary did not accept is named together with the
 refusal code rather than skipped in silence.
+
+## Create a DSL for capture rules
+
+A domain-specific language (DSL) gives authors words for one job. Here a level
+designer edits [a two-line rules file](docs/examples/dsl/example.capture):
+
+```text
+neutral after 3 ticks
+hostile after 5 ticks
+```
+
+1. **Choose the domain and units.** This file specifies how many simulation ticks
+   it takes to capture a neutral or a hostile cell. Require the two lines in that
+   order, one space between words, and one or two ASCII digits with a value
+   from 1 to 99. Accept LF and CRLF and one optional final newline.
+2. **Translate the text once at the boundary.** In
+   [the flang implementation](docs/examples/dsl/capture.flang),
+   `«Разобрать правила»` checks the syntax and returns either a typed
+   `«Правила захвата»` record or an error with the first rejected line number.
+   The DSL's vocabulary lives in that parser. It requires no changes to the
+   flang lexer or any of its four writing surfaces.
+3. **Write the decisions against the typed model.** `«Срок захвата»` selects
+   the duration from the record. Put the result of each branch into a named
+   postcondition. Add examples for valid input, missing or extra lines, and
+   mistakes in units or values. In an application, parse the file when loading
+   the rules and pass the accepted record to the simulation.
+
+From the repository root, check the examples and both postconditions:
+
+```sh
+bootstrap/flang check docs/examples/dsl/capture.flang --proof
+bootstrap/flang test docs/examples/dsl/capture.flang
+```
+
+To read the sample file, use Node.js to pass its contents as a JSON string to
+the flang command:
+
+```sh
+args=$(node -e 'process.stdout.write(JSON.stringify({текст:require("node:fs").readFileSync(process.argv[1],"utf8")}))' docs/examples/dsl/example.capture)
+bootstrap/flang run docs/examples/dsl/capture.flang --function 'Разобрать правила' --args "$args"
+```
+
+The result contains `{"нейтральная":3,"вражеская":5}` in the `правила` field.
+Changing `ticks` to `seconds` on the second line returns
+`{"вариант":"Ошибка правила","строкаПравила":2}`. Try the same rule
+selection the simulation would make:
+
+```sh
+bootstrap/flang run docs/examples/dsl/capture.flang --function 'Срок захвата' \
+  --args '{"правила":{"нейтральная":3,"вражеская":5},"вражеская":true}'
+```
+
+It returns `5`. The two postconditions prove field selection for every input to
+that function. The parser examples check specific accepted and rejected files.
+If you extend the DSL, add a case for each new form and for the bad input it
+might accidentally accept. If an existing file would change meaning, version the
+grammar and let the host choose the parser when loading that version.
 
 ## About `library-api`
 

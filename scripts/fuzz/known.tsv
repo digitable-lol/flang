@@ -26,3 +26,11 @@ hole	oracle	detail
 24	c-property	нарушено свойство «итог в границе»
 16	a-value	~fv, value -
 28	a-value	type IZ, value {"вариант":"Нечто","значение":
+30	a-argument	не соответствует типу u8
+31	b-c	(outside u8): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside i8): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside u32): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside i64): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside u64): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside K): evaluator {"error":"FLANG_TYPE"}
+31	b-c	(outside LB): evaluator {"error":"FLANG_TYPE"}

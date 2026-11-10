@@ -289,11 +289,9 @@
 
 тотальная функция «Прогон по умолчанию»
   возвращает список строки
-  пример «Четыре теста узла целей»
-    ожидается ["node", "--test", "--test-timeout=1800000", "flang/test/uzel-celi.test.mjs",
-      "flang/test/nadzor-uzla.test.mjs", "flang/test/svyaz-celi.test.mjs", "flang/test/planirovshchik-celi.test.mjs"]
-  ["node", "--test", "--test-timeout=1800000", "flang/test/uzel-celi.test.mjs", "flang/test/nadzor-uzla.test.mjs",
-    "flang/test/svyaz-celi.test.mjs", "flang/test/planirovshchik-celi.test.mjs"]
+  пример «Три сверки целей печати одной командой»
+    ожидается ["sh", "-c", "cd ../.. && bootstrap/flang run-script tests"]
+  ["sh", "-c", "cd ../.. && bootstrap/flang run-script tests"]
 
 тотальная функция «Прогон пробы»
   возвращает список строки

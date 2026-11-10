@@ -266,10 +266,9 @@ dotnet bin/Debug/net8.0/flang.dll MestoVstavki
 библиотека и решения LeetCode.
 
 > **Девятую цель этот механизм покрывает не полностью, и два места дерева
-> говорят об этом разное.** `grep cpp flang/test/` находит три файла, и они не в
-> согласии: `nadzor-uzla.test.mjs` держит `cpp` в списке `С_НАДЗОРОМ`,
-> `uzel-osnastka.mjs` описывает его тулчейн (`c++`/`g++`), а
-> `self-ledger.txt` строкой 13 записывает `flang/self/emit-cpp.flang вне
+> говорят об этом разное.** План `flang/scripts/supervisor-across-targets.fscript`
+> держит `cpp` среди девяти целей надзора и собирает его `g++`, а
+> `flang/test/self-ledger.txt` строкой 13 записывает `flang/self/emit-cpp.flang вне
 > присмотра 10` — то есть сам генератор кода цели из присмотра как раз
 > выпадает, на десяти счётах.
 >

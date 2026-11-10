@@ -103,14 +103,6 @@ jobs:
         with:
           mode: release
 
-      # Node остаётся ради набора проверок (`bootstrap/flang run-script tests` — это
-      # `node --test`). `cache: npm` снят вместе с `package-lock.json`: без
-      # замка этот ключ падает с «unable to cache dependencies», а `registry-url`
-      # был нужен только публикации.
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "20"
-
       # Семя собирается ЗДЕСЬ, до всего остального: им печатается архив.
       - name: Build bootstrap
         run: make -C bootstrap -j"$(nproc)"
@@ -457,10 +449,15 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
 
+      # Планы сверки целей красят цель, которая промолчала, а Elixir в образе
+      # раннера нет: без этого шага набор был бы красен всегда.
+      - name: Install Elixir
+        run: sudo apt-get update && sudo apt-get install -y elixir
+
       - name: Run all checks
-        # Был `npm test` — это ровно `bootstrap/flang run-script tests`, то есть
-        # `node --test flang/test/*.test.mjs`. npm не делал здесь ничего, кроме
-        # подстановки строки из `package.json`.
+        # `bootstrap/flang run-script tests` — три плана сверки целей печати
+        # (связь, планировщик, надзор). Node им нужен только как тулчейн цели
+        # `js` и берётся из образа раннера.
         run: bootstrap/flang run-script tests
 
   # ── PREBUILT BUILDS ───────────────────────────────────────────────────────

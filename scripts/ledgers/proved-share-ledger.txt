@@ -1335,7 +1335,6 @@ da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.fscript
 566df784de903626dd9ab31f709780e4|10|10|0|0|0|flang/scripts/code-guard.fscript
 cd50b4ec140445992c5b5051918b76b0|1|1|0|0|0|flang/scripts/direct-run.flang
 4660f4078dbb69ef66df64263cb80208|48|48|0|0|0|flang/scripts/emptiness-guard.fscript
-dd5c6fa5aeaa9edc65474e5cf9df01fe|21|21|0|0|0|flang/scripts/guards-start.fscript
 0cd6195f28ddc0a5b803d29049edfcf0|74|70|4|0|0|flang/scripts/kernel-forgeries.fscript
 73bf5c6a64f0209a9cc4e03fa73f1c90|53|38|0|0|0|flang/scripts/kernel-lines-to-trust.fscript
 948a418a6ae7751f23fbe4f17496eb17|19|19|0|0|0|flang/scripts/ledger-summary.fscript

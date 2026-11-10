@@ -42,12 +42,12 @@ sh flang/test/обход-примеров.sh
 sh scripts/bootstrap-reprint.sh --check
 ```
 
-These three run on the binary and need no Node. The JavaScript suite —
-`bootstrap/flang run-script tests` — **does not start on this tree**:
-its preparation step imports a module of the removed second implementation and
-fails before the first check. Moving the suite onto the binary is separate work.
-Until it is done, the three commands above are the checks there are; two of them
-are red today for reasons named on the page about what is proved.
+These three run on the binary and need no Node.
+`bootstrap/flang run-script tests` runs three plans written in flang: they print
+the link, the scheduler and the supervisor of the node into nine targets, build
+each with its real toolchain and compare the answers. A target whose toolchain is
+missing is red, not skipped, so the command needs all nine toolchains (`node`
+among them, as the toolchain of the `js` target).
 
 Before the run, the preflight prints what is actually going to be checked:
 
@@ -163,7 +163,7 @@ Both run as `bootstrap/flang run-script scripts:check`.
 | --- | --- |
 | `bootstrap/flang run-script build` | rebuild the binary compiler from the C99 in `bootstrap/`: the seed body is checked against its fingerprint first, the seed fingerprint is written next to the binary last |
 | `bootstrap/flang run-script scripts:check` | every short command names a file that exists in the tree, and the declaration inside each script agrees with the line in `.flangrc` |
-| `bootstrap/flang run-script tests` | the whole suite, `flang/test/*.test.mjs`, preflight first |
+| `bootstrap/flang run-script tests` | the link, the scheduler and the supervisor of the node, printed into nine targets and compared |
 | `bootstrap/flang run-script tests:remote` | the same suite on a host of your choosing, over ssh |
 | `bootstrap/flang run-script reprint` · `bootstrap/flang run-script reprint:check` · `bootstrap/flang run-script seed-lines:check` | reprint `bootstrap/` from the current sources, compare it byte for byte, and the fast literal check |
 | `bootstrap/flang run-script claims:check` · `bootstrap/flang run-script counts:check` · `bootstrap/flang run-script codes:check` · `bootstrap/flang run-script emit-promises:check` · `bootstrap/flang run-script names:check` | the five prose guards below |
@@ -184,7 +184,6 @@ Both run as `bootstrap/flang run-script scripts:check`.
 | `bootstrap/flang run-script kernel-forgeries:check` | a program that tries to prove a falsehood must be refused, and the refusal must name it |
 | `bootstrap/flang run-script link-collisions:check` | name collisions inside the closure of imports |
 | `bootstrap/flang run-script proofs:report` | the proof ledger over the corpus |
-| `bootstrap/flang run-script guards:check` | every check file of the tree LOADS; the ones that do not are named, with the verbatim refusal |
 | `bootstrap/flang run-script codes:forgery` | the code guard turns red on a planted code and goes silent once it is removed |
 | `bootstrap/flang run-script word:occupancy` | how many written programs would break if a given word became a keyword; takes arguments |
 

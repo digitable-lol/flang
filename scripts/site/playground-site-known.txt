@@ -11,8 +11,9 @@ docs/site/language.ru.md | модуль «Counting»
 # playground: the example is a false statement on purpose; the block is not marked refused.
 docs/site/playground.md | модуль «Ложное»
 docs/site/playground.ru.md | модуль «Ложное»
-# stdlib: the kernel runs out of the 32-bit step ceiling of WebAssembly (2770894848 steps).
-docs/site/stdlib.md | модуль «Проба json»
-docs/site/stdlib.md | модуль «Заголовок базы»
-docs/site/stdlib.ru.md | модуль «Проба json»
-docs/site/stdlib.ru.md | модуль «Заголовок базы»
+# stdlib: the kernel runs out of the 32-bit step ceiling of WebAssembly (2770894848 steps)
+# after minutes of work. A line that starts with "slow: " is not run at all.
+slow: docs/site/stdlib.md | модуль «Проба json»
+slow: docs/site/stdlib.md | модуль «Заголовок базы»
+slow: docs/site/stdlib.ru.md | модуль «Проба json»
+slow: docs/site/stdlib.ru.md | модуль «Заголовок базы»

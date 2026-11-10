@@ -744,7 +744,7 @@
   var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null;
   /* Сколько ждать ответа на одно поручение, когда компилятор уже загружен.
      Скачивание в этот срок не входит: его ждёт `warm`. */
-  var TIME_LIMIT_MS = 45000;
+  var TIME_LIMIT_MS = 120000;
   function stopWorker(why) {
     if (worker) worker.terminate();
     worker = null; warmed = null; loadedOnce = false;

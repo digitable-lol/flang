@@ -64,43 +64,40 @@ flang. Определите смысл каждого слова и услови
 
 ### Бесплатная доставка
 
-Правило: [`shipping.dsl`](docs/examples/dsl/shipping.dsl).
+[`shipping.dsl`](docs/examples/dsl/shipping.dsl)
 
 ```text
-free-shipping from 50
+Shipping is free when the order total is at least 50
+Otherwise shipping costs 7
 ```
 
-Слово `from` включает сам порог. От 50 доставка бесплатна, при меньшей сумме
-стоит 7. Разборщик проверяет форму строки и использует встроенный разбор числа.
-Замените `50` на `many`, чтобы увидеть ошибку. Функция расчёта получает два
-числа, поэтому её можно проверить отдельно. [Реализация](docs/examples/dsl/shipping.flang)
+В первой строке задан порог бесплатной доставки, во второй — цена ниже порога. При сумме заказа 50 доставка стоит 0, при сумме 49 — 7. Обе суммы берутся из правила. Замените 50 на `many`, чтобы увидеть ошибку.
+[Реализация](docs/examples/dsl/shipping.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
-  --args '{"строкаПравила":"free-shipping from 50"}'
+  --args '{"строкаПравила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
 ```
 
-Разборщик вернёт `{"вариант":"Правило","порог":50}`.
+Разборщик вернёт `{"вариант":"Правило","порог":50,"обычнаяЦена":7}`.
 
 ### Доступ к документу
 
-Правило: [`access.dsl`](docs/examples/dsl/access.dsl).
+[`access.dsl`](docs/examples/dsl/access.dsl)
 
 ```text
-allow editor publish
+Editors can publish documents
 ```
 
-Форма строки — `allow <роль> <действие>`. Допустимые роли — `reader` и
-`editor`, действия — `read` и `publish`. Правило разрешает только указанную
-пару. В этом примере редактору разрешена публикация, а разрешение на чтение
-потребовало бы отдельного правила. [Реализация](docs/examples/dsl/access.flang)
+`Editors` и `Readers` обозначают роли, а `publish documents` и `read documents` — действия. Правило разрешает редакторам публиковать документы. Для чтения потребуется отдельное правило.
+[Реализация](docs/examples/dsl/access.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \
-  --args '{"строкаПравила":"allow editor publish"}'
+  --args '{"строкаПравила":"Editors can publish documents"}'
 ```
 
-В поле `право` будет `{"роль":"editor","действие":"publish"}`.
+Разборщик вернёт `{"вариант":"Правило","право":{"роль":"editor","действие":"publish"}}`.
 
 Из корня репозитория запустите оба набора примеров.
 

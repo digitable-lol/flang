@@ -65,42 +65,40 @@ the `.flang` files implement their grammar and behavior.
 
 ### Free shipping
 
-Rule: [`shipping.dsl`](docs/examples/dsl/shipping.dsl).
+[`shipping.dsl`](docs/examples/dsl/shipping.dsl)
 
 ```text
-free-shipping from 50
+Shipping is free when the order total is at least 50
+Otherwise shipping costs 7
 ```
 
-`from` includes 50. Below that threshold delivery costs 7. The parser checks
-the phrase and uses flang's number parser for the amount. Try `many` instead of
-`50` to see the error. The pricing function takes two numbers, so it can also
-be tested without reading a DSL line. [Implementation](docs/examples/dsl/shipping.flang)
+The two lines set the free-shipping threshold and the price below it. An order of 50 ships for 0. An order of 49 ships for 7. Both amounts come from the rule. Try replacing 50 with `many` to see the error.
+[Implementation](docs/examples/dsl/shipping.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
-  --args '{"строкаПравила":"free-shipping from 50"}'
+  --args '{"строкаПравила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
 ```
 
-The parser returns `{"вариант":"Правило","порог":50}`.
+The parser returns `{"вариант":"Правило","порог":50,"обычнаяЦена":7}`.
 
 ### Access to a document
 
-Rule: [`access.dsl`](docs/examples/dsl/access.dsl).
+[`access.dsl`](docs/examples/dsl/access.dsl)
 
 ```text
-allow editor publish
+Editors can publish documents
 ```
 
-The grammar is `allow <role> <action>`. The parser accepts roles `reader` and
-`editor` and actions `read` and `publish`. A parsed rule allows only the exact
-pair it names. Here, an editor can publish. Reading needs its own rule. [Implementation](docs/examples/dsl/access.flang)
+`Editors` and `Readers` name the supported roles. `publish documents` and `read documents` name the supported actions. This rule grants editors permission to publish. Reading requires its own rule.
+[Implementation](docs/examples/dsl/access.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \
-  --args '{"строкаПравила":"allow editor publish"}'
+  --args '{"строкаПравила":"Editors can publish documents"}'
 ```
 
-The result contains `{"роль":"editor","действие":"publish"}` in `право`.
+The result contains `{"вариант":"Правило","право":{"роль":"editor","действие":"publish"}}`.
 
 Run both sets of examples from the repository root:
 

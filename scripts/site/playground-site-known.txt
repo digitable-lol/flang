@@ -1,0 +1,18 @@
+# Known mismatches of the site check in the playground (playground:site).
+# One line per block: page | first line of the block. A listed block must fail in the
+# playground; when it passes, the plan turns red and the line goes away.
+#
+# cli: the page shows a violated postcondition on purpose; the block is not marked refused.
+docs/site/cli.md | модуль «Grid»
+docs/site/cli.ru.md | модуль «Grid»
+# language: the block imports the module of the block above it; the playground takes one file.
+docs/site/language.md | module «Counting»
+docs/site/language.ru.md | модуль «Counting»
+# playground: the example is a false statement on purpose; the block is not marked refused.
+docs/site/playground.md | модуль «Ложное»
+docs/site/playground.ru.md | модуль «Ложное»
+# stdlib: the kernel runs out of the 32-bit step ceiling of WebAssembly (2770894848 steps).
+docs/site/stdlib.md | модуль «Проба json»
+docs/site/stdlib.md | модуль «Заголовок базы»
+docs/site/stdlib.ru.md | модуль «Проба json»
+docs/site/stdlib.ru.md | модуль «Заголовок базы»

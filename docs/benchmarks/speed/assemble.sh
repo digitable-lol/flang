@@ -45,11 +45,11 @@ make -C "$OUT/base" -j4 > "$OUT/base/make.log" 2>&1
 
 patch_module() {
   local dir="$1"; shift
-  python3 - "$dir/zadachi_zamera.c" "$@" <<'PY'
+  python3 - "$dir/program.c" "$@" <<'PY'
 import sys
 path, *names = sys.argv[1:]
 text = open(path, encoding="utf-8").read()
-marker = '#include "zadachi_zamera.h"'
+marker = '#include "program.h"'
 assert marker in text, "не найден include модуля"
 lines = ["", "/* ЗАМЕР: проверки вычеркнуты вместе с вызовами. */"]
 for name in names:

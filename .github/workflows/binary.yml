@@ -2424,11 +2424,14 @@ jobs:
           check bootstrap/flang run-script guard-calls:check
           probe bootstrap/flang run-script forgery-probe:forgery
           check bootstrap/flang run-script forgery-probe:check
-          probe bootstrap/flang io scripts/guards/checks-nobody-calls.fscript --plan Подлог --max-steps 4000000000
+          probe bootstrap/flang io scripts/guards/checks-nobody-calls.fscript --plan Подлог --max-steps 4000000000 --timeout 600000
           check bootstrap/flang run-script uncalled-checks:check
           shown bootstrap/flang run-script dictionary-copies:forgery
           check bootstrap/flang run-script dictionary-copies:check
           check bootstrap/flang run-script dictionary:check
+          check bootstrap/flang io scripts/guards/check-before-run.fscript
+          check bootstrap/flang io scripts/guards/input-boundary.fscript
+          check bootstrap/flang io scripts/guards/corpus-runner.fscript --на-веру
           check bootstrap/flang run-script licenses:check
           check bootstrap/flang run-script cli-commands:check
           check bootstrap/flang run-script install-path:check

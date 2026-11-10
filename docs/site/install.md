@@ -116,7 +116,7 @@ flang {{выпуск.версия}}
 оболочка …: правит строку (стрелки, слова, история, Tab), цвет digitable
 ```
 
-Put this into `privet.flang`:
+Put this into `hello.flang`:
 
 ```flang
 модуль «Привет»
@@ -126,19 +126,19 @@ Put this into `privet.flang`:
 ```
 
 ```bash
-flang check privet.flang
+flang check hello.flang
 ```
 
 ```
 модуль «Привет»: функций 1, из них с доказанным завершением 1; типов 0
-privet.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
 Exit code 0. A file that did not pass answers `не проверено — замечаний N` and
 exit code 1.
 
 ```bash
-flang run privet.flang --function Два
+flang run hello.flang --function Два
 ```
 
 ```

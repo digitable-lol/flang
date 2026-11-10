@@ -1,22 +1,24 @@
 # The kernel refused: whose mistake is it
 
-This page tells you what every refusal from the proof kernel means, so that the
-code alone tells you whether the mistake is yours or the boundary of the
-language. There are exactly {{отказы.всего}} refusals, and here they all are:
-`FLANG_PROOF_NO_GOAL`, `FLANG_PROOF_AMBIGUOUS`, `FLANG_PROOF_DUPLICATE`,
-`FLANG_PROOF_CLAIM_MISMATCH`, `FLANG_PROOF_UNFINISHED`,
-`FLANG_PROOF_UNKNOWN_VAR`, `FLANG_PROOF_VAR_TYPE`, `FLANG_PROOF_STEP`,
-`FLANG_PROOF_INDUCTION_STEP`, `FLANG_PROOF_INDUCTION_TYPE`,
-`FLANG_PROOF_INDUCTION_BRANCH`, `FLANG_PROOF_INDUCTION_CASES`,
-`FLANG_PROOF_INDUCTION_DESCENT`.
+The kernel — the prover, the part of the compiler that proves postconditions —
+rejects a theorem you wrote with one of {{отказы.всего}} codes. The first
+{{отказы.обязательств}} say the theorem does not line up with the function and
+are fixed inside the theorem: `FLANG_PROOF_NO_GOAL`, `FLANG_PROOF_AMBIGUOUS`,
+`FLANG_PROOF_DUPLICATE`, `FLANG_PROOF_CLAIM_MISMATCH`, `FLANG_PROOF_UNFINISHED`,
+`FLANG_PROOF_UNKNOWN_VAR`, `FLANG_PROOF_VAR_TYPE`. The other {{отказы.вывода}}
+say the derivation was not built, and that is either your mistake or a limit of
+the language: `FLANG_PROOF_STEP`, `FLANG_PROOF_INDUCTION_STEP`,
+`FLANG_PROOF_INDUCTION_TYPE`, `FLANG_PROOF_INDUCTION_BRANCH`,
+`FLANG_PROOF_INDUCTION_CASES`, `FLANG_PROOF_INDUCTION_DESCENT`. The message
+texts below are the output of `flang {{выпуск.версия}}`.
 
-The first {{отказы.обязательств}} say the theorem does not line up with the
-function and are fixed inside the theorem; the other {{отказы.вывода}} say the
-derivation was not built, and half of those name a limit the language does not
-cross today. All thirteen were produced by actual runs on small programs: the
-message texts below are the compiler's output, not a retelling.
+A refusal is exit code 1 and the line `не проверено — замечаний N` ("not
+checked — N diagnostics"). A postcondition without a theorem that the kernel
+did not derive is not a refusal: `flang check` exits with 0, and what really
+happened to it is told by `flang check --proof` — see
+[the three answers](how-proofs-work.html#обеспечивает-the-postcondition-and-the-three-answers).
 
-## A diagnostic has five parts
+## How to read the message
 
 ```
 FLANG_PROOF_NO_GOAL в файле проба.flang, строка 23, столбец 1: теорема
@@ -26,90 +28,28 @@ FLANG_PROOF_NO_GOAL в файле проба.flang, строка 23, столб�
 закрывает
 ```
 
-Code, file, line, column, text. The exit code is 1, and the file counts as
-unchecked as a whole: `flang check` ends with the line
-`не проверено — замечаний N`.
+Code, file, line, column, text. Read the text to the end: for
+`FLANG_PROOF_STEP` and `FLANG_PROOF_INDUCTION_STEP` it ends with what the kernel
+knew at that point (`известно: предусловие функции «Сумма»`, "known: the
+precondition of «Сумма»", or `не известно ничего`, "nothing is known"). Nothing
+known means a fact was missing, and that is your mistake. Rules are listed and
+the goal fits none of them — a limit of the kernel.
 
-Read the tail of the message, and not out of politeness. For three of the six
-derivation refusals — `FLANG_PROOF_STEP`, `FLANG_PROOF_INDUCTION_STEP`,
-`FLANG_PROOF_INDUCTION_BRANCH` — the tail is exactly where the kernel says what
-it knew at that point (`известно: предусловие функции «Сумма»`) and which ways
-it tried (`правил десять — …`). That is the answer to "mine or not mine": an empty
-`известно:` means nothing to stand on, a list of rules means the wrong goal
-shape.
+## The theorem does not line up with the function
 
-## A refusal is not the worst outcome. Exit code 0 is
-
-A claim with no theorem attached is not rejected. It is simply not proved, and
-`flang check` answers with 0:
-
-```flang
-модуль «Проба»
-
-тотальная функция «Удвоить»
-  принимает х: целое
-  возвращает число
-  для всех х обеспечивает «результат чётный» (результат остаток от 2) равно 0
-  пример «единица»
-    дано х равно 1
-    ожидается 2
-  х умножить на 2
-```
-
-```
-$ flang check проба.flang
-модуль «Проба»: функций 1, из них с доказанным завершением 1; типов 0
-проба.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-$ echo $?
-0
-```
-
-The word "checked" there is about types and termination; about the claim it
-says nothing. What actually happened to the claim is shown by `--proof`:
-
-```
-$ flang check проба.flang --proof
-постусловие «результат чётный» функции «Удвоить» — сетка 1 значение
-(примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано
-только их число. Это не доказательство — теоремы при утверждении нет
-```
-
-The rule is simple: **a green `flang check` does not mean "proved".** It means
-"not rejected". Proved is what `--proof` calls proved; for everything else it
-says "grid of N", "declared, not proved", or "on trust". What each of those
-words is worth is on [what is proved and what is not](what-is-proved.html).
-
-## Where to look when you are refused
-
-```mermaid A kernel refusal: where to fix it
-flowchart TD
-  A[the kernel refused<br>exit code 1] --> B{name of the code}
-  B -->|the other seven| C([the theorem does not<br>line up with the function])
-  B -->|STEP and INDUCTION| D{what the tail says}
-  C --> G([fix the theorem:<br>its name, its variables,<br>the words of the claim])
-  D -->|it knew such and such| E([not enough to stand on:<br>требует or индукция по])
-  D -->|ten rules<br>from TWO body forms<br>exactly н минус 1| F([boundary of the kernel:<br>the language cannot<br>do this here])
-  class G vyvod
-  class E glavnoe
-  class F otkaz
-```
-
-## Seven refusals: the theorem does not line up with the function
-
-All seven are about how a theorem is attached to the function it closes, and
-all seven are fixed in the theorem itself. None of them touch the language.
+These refusals are fixed in the theorem itself.
 
 | Code | What happened | What to fix |
 | --- | --- | --- |
-| `FLANG_PROOF_NO_GOAL` | no function in the module has a postcondition by that name | the theorem's name: it must match the postcondition's name |
+| `FLANG_PROOF_NO_GOAL` | no function of the module has a postcondition with that name | the theorem's name: it has to match the postcondition's name |
 | `FLANG_PROOF_AMBIGUOUS` | two postconditions fit the theorem's name | give the postconditions different names |
 | `FLANG_PROOF_DUPLICATE` | one postcondition has more than one theorem | keep one |
-| `FLANG_PROOF_CLAIM_MISMATCH` | `утверждаем` is not written the way the postcondition is | rewrite it word for word: the kernel does not decide that two spellings mean one thing |
-| `FLANG_PROOF_UNFINISHED` | the line `следовательно доказано` is missing | add it; an unclosed proof is a draft |
-| `FLANG_PROOF_UNKNOWN_VAR` | `дано` introduces a name the function does not have | use the parameter name the function declares |
+| `FLANG_PROOF_CLAIM_MISMATCH` | `утверждаем` (we claim) is not written the way the postcondition is | rewrite it word for word: the kernel does not decide that two spellings mean the same |
+| `FLANG_PROOF_UNFINISHED` | the line `следовательно доказано` (hence proved) is missing | add it |
+| `FLANG_PROOF_UNKNOWN_VAR` | `дано` (given) introduces a name the function does not have | name the parameter as the function names it |
 | `FLANG_PROOF_VAR_TYPE` | the theorem's variable and the parameter have different types | use the declared type of the parameter |
 
-Here it is in full. A function and a theorem whose names drifted apart:
+An example: the theorem and the postcondition have different names.
 
 ```flang refused
 модуль «Проба»
@@ -146,120 +86,112 @@ Here it is in full. A function and a theorem whose names drifted apart:
 ```
 
 ```
-$ flang check проба.flang
+$ flang check проба.flang; echo "exit $?"
 модуль «Проба»: функций 1, из них с доказанным завершением 1; типов 1
 FLANG_PROOF_NO_GOAL в файле проба.flang, строка 23, столбец 1: теорема
-«штраф положителен» ничего не закрывает: постусловия «штраф положителен» нет
-ни у одной функции модуля. Теорема доказывает названное утверждение, а не
-утверждение вообще — назовите её так же, как постусловие, которое она
-закрывает
+«штраф положителен» ничего не закрывает: …
 проба.flang: не проверено — замечаний 1
-$ echo $?
-1
+exit 1
 ```
 
-The theorem here is true, and it proves something nobody promised. The kernel
-does not match a claim by meaning — only by name.
+Name the theorem `«штраф неотрицателен»` and the file passes with exit code 0.
 
-## Six refusals: the derivation was not built
-
-This is where the real boundary lies. Two of the six are your mistake, three
-name something the language does not do at all, and one is read off the tail of
-the message: it can be either.
+## The derivation was not built
 
 | Code | What happened | Whose mistake |
 | --- | --- | --- |
-| `FLANG_PROOF_INDUCTION_CASES` | the theorem's cases do not match the type's variants | yours: an extra case speaks of a value the type does not have |
-| `FLANG_PROOF_INDUCTION_STEP` | `по предположению` stands where there is nothing to assume | yours: neither an induction hypothesis nor a `требует` |
-| `FLANG_PROOF_STEP` | the goal was not reduced by any rule | depends on the tail: a missing fact is yours, a wrong goal shape is the boundary |
-| `FLANG_PROOF_INDUCTION_TYPE` | induction runs over a type that carries no principle | boundary: `число` and `целое` do not carry one, and will not |
-| `FLANG_PROOF_INDUCTION_BRANCH` | the body is written in a form the conclusion cannot be read from | boundary: only `разбор` and `свёртка` yield it |
-| `FLANG_PROOF_INDUCTION_DESCENT` | the descent over `неотрицательное` is not strict | boundary: exactly `н минус 1` is read, and nothing else |
+| `FLANG_PROOF_INDUCTION_CASES` | the theorem's cases do not match the variants of the type | yours: an extra case speaks of something the type does not have |
+| `FLANG_PROOF_INDUCTION_STEP` | `по предположению` (by the hypothesis) stands where there is nothing to assume | yours: this case has neither an induction hypothesis nor a `требует` |
+| `FLANG_PROOF_STEP` | a step or the goal is not reduced by any rule | by the end of the message: a missing fact is yours; the wrong goal shape is a limit |
+| `FLANG_PROOF_INDUCTION_TYPE` | the induction runs over a type that has no induction principle | a limit: there is no induction over `число` |
+| `FLANG_PROOF_INDUCTION_BRANCH` | the function body is not of a form the result of a case is read from | a limit: the body is a `разбор` (match) or a `свёртка` (fold) over the same variable; for `неотрицательное`, an `если` |
+| `FLANG_PROOF_INDUCTION_DESCENT` | the descent over `неотрицательное` is not named or is not by one | not named is yours; not by one is a limit |
 
-### `FLANG_PROOF_INDUCTION_TYPE`: there is no induction over numbers
+### `FLANG_PROOF_INDUCTION_TYPE`
 
-A type has to carry an induction principle, and only three things carry one: a
-declared sum (from its variants), the built-in list (from the two patterns that
-exhaust it), and the `неотрицательное` segment (from the two ends of the range). The kernel
-prints the reason together with the refusal:
+Induction is carried by a type with variants, a record, a list, a string and
+`неотрицательное`. There is none over `число`:
 
 ```
 FLANG_PROOF_INDUCTION_TYPE … индукция теоремы «двойная норма неотрицательна»
-идёт по «норма», а у этого типа (число) принципа индукции нет … По «число» и
-«целое» его брать НЕЛЬЗЯ, и это не осторожность: у «число» в носителе живёт
-«+∞», у которого «х минус 1» равно самому «х», и спуска не происходит вовсе;
-а вне [0, 2⁵³−1] ложно и само «х минус 1 меньше х» (при х = 2⁵³+4 округление
-к ближайшему возвращает то же х)
+идёт по «норма», а у этого типа (число) принципа индукции нет: у «число» нет
+дна: в носителе живёт «+∞», у которого «х минус 1» равно самому «х». …
 ```
 
-The way around it is to declare the parameter as `неотрицательное` rather than `число`.
+"`число` has no bottom: +∞ lives in it, and for it `х минус 1` equals `х`."
+The way round is to declare the parameter `неотрицательное`.
 
-### `FLANG_PROOF_INDUCTION_BRANCH`: the body has to be one of two forms
+### `FLANG_PROOF_INDUCTION_BRANCH`
 
-To build the conclusion of a case, the kernel needs to know what `результат`
-becomes in that case, and it reads that from the function body:
+The kernel reads what `результат` is in each case from the function body:
 
 ```
 FLANG_PROOF_INDUCTION_BRANCH … тело функции «Штраф» не разбирает «свет» на
-верхнем уровне и не сворачивает «свет» свёрткой … Ядро читает «результат»
-случая из ДВУХ форм тела и ниоткуда больше: с ветви `разбор` по той же
-переменной … и с начала и шага `свёртка` по той же переменной … Тело-вызов,
-тело-арифметика и тело-условие заключения посылки не дают
+верхнем уровне и не сворачивает «свет» свёрткой, поэтому заключение посылки
+индукции построить не из чего. Ядро читает «результат» случая из ДВУХ форм
+тела и ниоткуда больше: с ветви `разбор` по той же переменной … и с начала и
+шага `свёртка` по той же переменной … Тело-вызов, тело-арифметика и
+тело-условие заключения посылки не дают
 ```
 
-The way around it is to rewrite the body as a `разбор` over the variable the
-induction runs on.
+The way round is to rewrite the body as a match on the variable the induction
+runs over.
 
-### `FLANG_PROOF_INDUCTION_DESCENT`: the descent is read as exactly one
+### `FLANG_PROOF_INDUCTION_DESCENT`
 
-For the `неотрицательное` segment the principle holds because the chain `н, н−1, …` cannot
-step over the floor, and the kernel verifies that in the body:
+Induction over `неотрицательное` is written `индукция по н убывает н`. Without
+the words `убывает н` the kernel asks you to add them. With them it checks the
+descent in the body, and reads only `н минус 1`:
 
 ```
 FLANG_PROOF_INDUCTION_DESCENT … спуск в шаге «Сумма до» не строгий: вычитают
-на 2, а не на 1. Ядро читает ровно «н минус 1» и ничего кроме … Всё прочее —
-либо не убывание, либо убывание, которого IEEE-754 не обещает
+на 2, а не на 1. Ядро читает ровно «н минус 1» и ничего кроме: убывание на
+единицу внутри [0, 2⁵³−1] точно (соседние целые там представимы), и цепочка
+спуска дна не проскакивает. …
 ```
 
-There is no way around this one: a step that subtracts two is not proved today.
+The kernel does not prove a step that subtracts two.
 
-### `FLANG_PROOF_STEP`: ten goal shapes, and an eleventh way
+### `FLANG_PROOF_STEP`
 
-`FLANG_PROOF_STEP` is the one refusal that lists everything it tried:
+The refusal lists the goal shapes the kernel has a rule for:
 
 ```
 FLANG_PROOF_STEP … цель не сведена к 1 предусловию функции: у цели этого
 случая нет вида, к которому у ядра есть правило: правил десять — «не меньше 0»,
 «не больше конечного литерала», «не больше терма», «не меньше терма», «меньше
-терма», «больше терма», «равно», «содержит», «не убывает» и «начинается с», и
-все десять названы в отказе, чтобы список был виден целиком. … известно:
+терма», «больше терма», «равно», «содержит», «не убывает» и «начинается с» …
+Вида цели не спрашивает только одиннадцатое, «цель есть допущение», и оно тоже
+не прошло: ни одно допущение не совпало с целью знак в знак. … известно:
 предусловие функции «Сумма»
 ```
 
-The text above is taken from the kernel's source
-(`flang/self/proof-kernel.flang`, the function that prints this refusal). Only
-the eleventh move,
-"the goal is an assumption", does not ask for the goal's shape: it matches the
-goal against an assumption sign for sign.
+Ten shapes: not less than 0, not greater than a finite literal, not greater
+than a term, not less than a term, less than a term, greater than a term,
+equals, contains, non-decreasing, starts with; the eleventh way, "the goal is an
+assumption", does not look at the shape. Here the goal was
+`не (результат равен 0)`. If the goal is none of these shapes, rewrite the
+postcondition, not the theorem. If the shape fits and the fact is missing from
+`известно:`, add a `требует` to the function or `индукция по` to the theorem.
 
-Read it like this: if your goal is not one of those ten shapes, the kernel has
-nothing to prove it with, and it is the claim that has to be rewritten, not the
-proof. If the shape does fit but `известно:` is empty or names the wrong fact,
-what is missing is something to stand on — a `требует` on the function or an
-`индукция по` in the theorem.
+## Refusals that are not about theorems
 
-## The compiler's other codes
+These codes come with no theorem in the file:
 
-The proof kernel has no further refusals: the thirteen named at the top of this
-page are all of them. The codes about parsing, types, names and termination are
-listed in `man flang`, section ДИАГНОСТИКА.
+| Code | What happened | Where it is explained |
+| --- | --- | --- |
+| `FLANG_NOT_TOTAL` | the termination of a `тотальная` function is not proved | [Termination](how-proofs-work.html#termination) |
+| `FLANG_PRECONDITION_CALL` | the caller did not prove the callee's `требует` | [`требует`](how-proofs-work.html#требует-the-precondition) |
+| `FLANG_PRECONDITION` | `требует` is broken at the program's entry or in an example | same place |
+| `FLANG_EXAMPLE: FLANG_PROPERTY` | an input was found on which the postcondition is false | [A false postcondition](how-proofs-work.html#a-false-postcondition) |
+| `FLANG_BOUND_ON_NAN` | a bound on `число` is false on NaN | [What the kernel proves by itself](what-the-kernel-accepts.html) |
 
-## Where to go next
+All compiler codes are in the [Diagnostics reference](diagnostics.html).
 
-- [Proving by hand](manual-proofs.html) — three techniques for when the kernel did
-  not prove a postcondition by itself, with programs before and after
-- [Tutorial](tutorial.html) — from a first function to a claim the kernel accepts
-- [What is proved and what is not](what-is-proved.html) — the kernel's three
-  answers and what stands behind them
-- [Kernel specification](../spec-proof.html) — in Russian; the inference rules
-  in full, for anyone who wants to know why there are exactly that many
+## Next
+
+- [Proofs by hand](manual-proofs.html) — how to write a theorem.
+- [What the kernel proves by itself](what-the-kernel-accepts.html) — how to
+  rewrite a postcondition so that no theorem is needed.
+- [The kernel specification](../spec-proof.html) — in Russian; the inference
+  rules in full.

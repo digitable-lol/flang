@@ -9,15 +9,24 @@
   возвращает список строки
   обеспечивает «длина постоянного списка — Фразы BSD-2-Clause» (длина результат) равен 5
   пример «Пять фраз, без которых текст уже не BSD-2-Clause»
-    ожидается ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice", "Redistributions in binary form must reproduce the above copyright notice", "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"", "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
-  ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice", "Redistributions in binary form must reproduce the above copyright notice", "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"", "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
+    ожидается ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice",
+        "Redistributions in binary form must reproduce the above copyright notice",
+        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"",
+        "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
+  ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice",
+      "Redistributions in binary form must reproduce the above copyright notice",
+      "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"",
+      "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
 
 тотальная функция «Фразы лицензии»
   принимает объявлена: строка
   возвращает список строки
   пример «BSD-2-Clause знакома сторожу»
     дано объявлена равно "BSD-2-Clause"
-    ожидается ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice", "Redistributions in binary form must reproduce the above copyright notice", "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"", "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
+    ожидается ["BSD 2-Clause License", "Redistributions of source code must retain the above copyright notice",
+        "Redistributions in binary form must reproduce the above copyright notice",
+        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"",
+        "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE"]
   пример «Незнакомая лицензия — фраз нет»
     дано объявлена равно "MIT"
     ожидается пустой список
@@ -54,7 +63,8 @@
     ожидается пустой список
   пусть пропавшие равно (отобразить (отфильтровать («Требования» от объявлена) где т → не (текст содержит (т.«фраза»))) как т → т.«беда»)
   если (длина («Фразы лицензии» от объявлена)) равен 0
-    то добавить (соединить ["LICENSE: .flangrc объявляет ", объявлена, ", а сторож не знает её текста"] по "") к пропавшие
+    то добавить (соединить ["LICENSE: .flangrc объявляет ", объявлена,
+        ", а сторож не знает её текста"] по "") к пропавшие
     иначе пропавшие
 
 тип «Ход»
@@ -80,9 +90,11 @@
     ожидается вариант «Провал» с код равным "FLANG_LICENZIYA" и сообщение равным "нарушений лицензии: 1\n  · LICENSE: пропала строка копирайта Digitable"
   разбор беды
     случай пусто
-      то вариант «Конец работы» с значение равным (соединить ["лицензия в порядке: LICENSE в корне несёт текст ", объявлена, " и копирайт Digitable"] по "")
+      то вариант «Конец работы» с значение равным (соединить ["лицензия в порядке: LICENSE в корне несёт текст ",
+          объявлена, " и копирайт Digitable"] по "")
     случай голова и хвост
-      то вариант «Провал» с код равным "FLANG_LICENZIYA" и сообщение равным (соединить (приписать (соединить ["нарушений лицензии: ", (к строке (длина беды))] по "") к беды) по "\n  · ")
+      то вариант «Провал» с код равным "FLANG_LICENZIYA" и сообщение равным (соединить (приписать (соединить [
+          "нарушений лицензии: ", (к строке (длина беды))] по "") к беды) по "\n  · ")
 
 тотальная функция «После манифеста»
   принимает отклик: «Отклик»

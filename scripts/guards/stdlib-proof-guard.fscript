@@ -165,7 +165,8 @@
     дано name равно "guard-calls:check"
     дано sorted равно ["closed-length:check", "codes:check"]
     ожидается ["closed-length:check", "codes:check", "guard-calls:check"]
-  «Joined» от (добавить name к (отфильтровать sorted где each → не («Goes before» от name и each))) и (отфильтровать sorted где each → «Goes before» от name и each)
+  «Joined» от (добавить name к (отфильтровать sorted где each → не («Goes before» от name и
+      each))) и (отфильтровать sorted где each → «Goes before» от name и each)
 
 тотальная функция «Sorted»
   принимает names: список строки
@@ -270,9 +271,19 @@
     дано mode равно "check"
     дано values равно ["/srv/tree", "", "", "", "", "", "", ""]
     дано root равно "/srv/tree"
-    ожидается (запись «Setup» с «mode» равным "check" и «root» равным "/srv/tree" и «binary» равным "/srv/tree/bootstrap/flang" и «catalogue» равным "/srv/tree/flang/stdlib" и «ledger» равным "/srv/tree/scripts/ledgers/stdlib-proof-debt.tsv" и «parallel» равным "8" и «limit» равным "3600" и «temp» равным "/tmp" и «tree» равным "/srv/tree")
+    ожидается (запись «Setup» с «mode» равным "check" и «root» равным "/srv/tree" и
+        «binary» равным "/srv/tree/bootstrap/flang" и «catalogue» равным "/srv/tree/flang/stdlib" и
+        «ledger» равным "/srv/tree/scripts/ledgers/stdlib-proof-debt.tsv" и «parallel» равным "8" и
+        «limit» равным "3600" и «temp» равным "/tmp" и «tree» равным "/srv/tree")
   пусть folder равно («Setting» от values и 1)
-  запись «Setup» с «mode» равным mode и «root» равным root и «binary» равным («Resolved» от («Setting» от values и 6) и folder и (соединить [root, "/bootstrap/flang"] по "")) и «catalogue» равным («Resolved» от («Setting» от values и 4) и folder и (соединить [root, "/flang/stdlib"] по "")) и «ledger» равным («Resolved» от («Setting» от values и 5) и folder и (соединить [root, "/scripts/ledgers/stdlib-proof-debt.tsv"] по "")) и «parallel» равным («Or» от («Setting» от values и 2) и "8") и «limit» равным («Or» от («Setting» от values и 3) и "3600") и «temp» равным («Resolved» от («Setting» от values и 7) и folder и "/tmp") и «tree» равным («Resolved» от («Setting» от values и 8) и folder и root)
+  запись «Setup» с «mode» равным mode и «root» равным root и «binary» равным («Resolved» от («Setting» от values и 6) и
+      folder и (соединить [root, "/bootstrap/flang"] по "")) и «catalogue» равным («Resolved» от («Setting» от values и
+      4) и folder и (соединить [root, "/flang/stdlib"] по "")) и «ledger» равным («Resolved» от («Setting» от values и
+      5) и folder и (соединить [root,
+      "/scripts/ledgers/stdlib-proof-debt.tsv"] по "")) и «parallel» равным («Or» от («Setting» от values и 2) и
+      "8") и «limit» равным («Or» от («Setting» от values и 3) и
+      "3600") и «temp» равным («Resolved» от («Setting» от values и 7) и folder и
+      "/tmp") и «tree» равным («Resolved» от («Setting» от values и 8) и folder и root)
 
 тотальная функция «Setting names»
   возвращает список строки
@@ -296,9 +307,12 @@
   возвращает «Probe»
   пример «four fields of one probe»
     дано line равно "aes\t3\t127\t135329"
-    ожидается (запись «Probe» с «module» равным "aes" и «code» равным 3 и «seconds» равным 127 и «bytes» равным 135329 и «line» равным "aes\t3\t127\t135329")
+    ожидается (запись «Probe» с «module» равным "aes" и «code» равным 3 и «seconds» равным 127 и «bytes» равным 135329 и
+        «line» равным "aes\t3\t127\t135329")
   пусть fields равно (разделить line по "\t")
-  запись «Probe» с «module» равным («Setting» от fields и 1) и «code» равным («Number of» от («Setting» от fields и 2)) и «seconds» равным («Number of» от («Setting» от fields и 3)) и «bytes» равным («Number of» от («Setting» от fields и 4)) и «line» равным line
+  запись «Probe» с «module» равным («Setting» от fields и 1) и «code» равным («Number of» от («Setting» от fields и
+      2)) и «seconds» равным («Number of» от («Setting» от fields и
+      3)) и «bytes» равным («Number of» от («Setting» от fields и 4)) и «line» равным line
 
 тотальная функция «Number of»
   принимает text: строка
@@ -319,20 +333,28 @@
   принимает probes: список «Probe»
   возвращает список «Probe»
   пример «probes are put in the order of their names»
-    дано probes равно [(запись «Probe» с «module» равным "tree" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и «line» равным "tree\t0\t1\t1"), (запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и «line» равным "aes\t0\t1\t1")]
-    ожидается [(запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и «line» равным "aes\t0\t1\t1"), (запись «Probe» с «module» равным "tree" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и «line» равным "tree\t0\t1\t1")]
+    дано probes равно [(запись «Probe» с «module» равным "tree" и «code» равным 0 и «seconds» равным 1 и
+        «bytes» равным 1 и «line» равным "tree\t0\t1\t1"), (запись «Probe» с «module» равным "aes" и «code» равным 0 и
+        «seconds» равным 1 и «bytes» равным 1 и «line» равным "aes\t0\t1\t1")]
+    ожидается [(запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и
+        «line» равным "aes\t0\t1\t1"), (запись «Probe» с «module» равным "tree" и «code» равным 0 и «seconds» равным 1 и
+        «bytes» равным 1 и «line» равным "tree\t0\t1\t1")]
   отобразить («Sorted» от (отобразить probes как probe → probe.«line»)) как line → («Probe of» от line)
 
 тотальная функция «Slower»
   принимает left: «Probe», right: «Probe»
   возвращает признак
   пример «more seconds go first»
-    дано left равно (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 9 и «bytes» равным 1 и «line» равным "b\t0\t9\t1")
-    дано right равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и «line» равным "a\t0\t3\t1")
+    дано left равно (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 9 и «bytes» равным 1 и
+        «line» равным "b\t0\t9\t1")
+    дано right равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и
+        «line» равным "a\t0\t3\t1")
     ожидается да
   пример «equal seconds go in the order of the line»
-    дано left равно (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и «line» равным "b\t0\t3\t1")
-    дано right равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и «line» равным "a\t0\t3\t1")
+    дано left равно (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и
+        «line» равным "b\t0\t3\t1")
+    дано right равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 3 и «bytes» равным 1 и
+        «line» равным "a\t0\t3\t1")
     ожидается нет
   если (left.«seconds») равен (right.«seconds»)
     то «Goes before» от (left.«line») и (right.«line»)
@@ -362,7 +384,8 @@
   принимает probe: «Probe»
   возвращает строка
   пример «the columns of one module»
-    дано probe равно (запись «Probe» с «module» равным "aes" и «code» равным 3 и «seconds» равным 127 и «bytes» равным 135329 и «line» равным "")
+    дано probe равно (запись «Probe» с «module» равным "aes" и «code» равным 3 и «seconds» равным 127 и
+        «bytes» равным 135329 и «line» равным "")
     ожидается "aes                    код 3    127 с    135329 байт ведомости"
   пусть seconds равно (к строке (probe.«seconds»))
   пусть bytes равно (к строке (probe.«bytes»))
@@ -374,7 +397,8 @@
   принимает probe: «Probe»
   возвращает признак
   пример «an empty ledger is a failure even with the code zero»
-    дано probe равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 0 и «line» равным "")
+    дано probe равно (запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 0 и
+        «line» равным "")
     ожидается да
   ((probe.«code») больше 0) или ((probe.«code») меньше 0) или ((probe.«bytes») равен 0)
 
@@ -424,13 +448,15 @@
   принимает probe: «Probe», debt: список строки, said: список «Said», ledger: строка
   возвращает список строки
   пример «a closed debt is a gravestone»
-    дано probe равно (запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 9 и «line» равным "")
+    дано probe равно (запись «Probe» с «module» равным "aes" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 9 и
+        «line» равным "")
     дано debt равно ["aes\t3"]
     дано said равно пустой список
     дано ledger равно "/srv/tree/debt.tsv"
     ожидается ["НАДГРОБИЕ: aes.flang стоит в /srv/tree/debt.tsv, а ведомость с него снимается (код 0, 9 байт) — уберите строку, иначе она глушит проверку"]
   пример «a new failure is named with its errors»
-    дано probe равно (запись «Probe» с «module» равным "kdf" и «code» равным 1 и «seconds» равным 1 и «bytes» равным 0 и «line» равным "")
+    дано probe равно (запись «Probe» с «module» равным "kdf" и «code» равным 1 и «seconds» равным 1 и «bytes» равным 0 и
+        «line» равным "")
     дано debt равно пустой список
     дано said равно [(запись «Said» с «module» равным "kdf" и «lines» равным ["беда"])]
     дано ledger равно "/srv/tree/debt.tsv"
@@ -465,17 +491,23 @@
   принимает probes: список «Probe»
   возвращает строка
   пример «the three slowest modules»
-    дано probes равно [(запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и «line» равным "a\t0\t1\t1"), (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 7 и «bytes» равным 1 и «line» равным "b\t0\t7\t1")]
+    дано probes равно [(запись «Probe» с «module» равным "a" и «code» равным 0 и «seconds» равным 1 и «bytes» равным 1 и
+        «line» равным "a\t0\t1\t1"), (запись «Probe» с «module» равным "b" и «code» равным 0 и «seconds» равным 7 и
+        «bytes» равным 1 и «line» равным "b\t0\t7\t1")]
     ожидается "b 7с, a 1с"
-  соединить (отобразить (свёртка («By time» от probes) начиная с (пустой список) как kept и probe → (если (длина kept) меньше 3 то (добавить probe к kept) иначе kept)) как probe → соединить [(probe.«module»), " ", (к строке (probe.«seconds»)), "с"] по "") по ", "
+  соединить (отобразить (свёртка («By time» от probes) начиная с (пустой список) как kept и
+      probe → (если (длина kept) меньше 3 то (добавить probe к kept) иначе kept)) как probe → соединить [
+      (probe.«module»), " ", (к строке (probe.«seconds»)), "с"] по "") по ", "
 
 тотальная функция «Check verdict»
   принимает setup: «Setup», probes: список «Probe», debt: список строки, said: список «Said»
   возвращает «Продолжение»
   пусть ordered равно («By name» от probes)
-  пусть troubles равно (свёртка ordered начиная с (пустой список) как found и probe → «Joined» от found и («Trouble of» от probe и debt и said и (setup.«ledger»)))
+  пусть troubles равно (свёртка ordered начиная с (пустой список) как found и probe → «Joined» от found и
+      («Trouble of» от probe и debt и said и (setup.«ledger»)))
   пусть failures равно (длина (отфильтровать probes где probe → «Failed» от probe))
-  пусть counted равно (длина (отфильтровать ordered где probe → (длина («Trouble of» от probe и debt и said и (setup.«ledger»))) больше 0))
+  пусть counted равно (длина (отфильтровать ordered где probe → (длина («Trouble of» от probe и debt и said и
+      (setup.«ledger»))) больше 0))
   разбор troubles
     случай пусто
       то вариант «Конец работы» с значение равным (соединить ["модулей библиотеки ", (к строке (длина probes)),
@@ -523,7 +555,8 @@
     ожидается (запись «Strung» с «inside» равным да и «kept» равным "a " и «raw» равным "\"x\\\"y")
   пусть closes равно ((strung.«inside») и притом (((«Trailing escapes» от (strung.«raw»)) остаток от 2) равен 0))
   если closes
-    то запись «Strung» с «inside» равным нет и «kept» равным (соединить [(strung.«kept»), "\"\"", piece] по "") и «raw» равным ""
+    то запись «Strung» с «inside» равным нет и «kept» равным (соединить [(strung.«kept»), "\"\"",
+        piece] по "") и «raw» равным ""
     иначе запись «Strung» с «inside» равным да и «kept» равным (strung.«kept») и «raw» равным (соединить [
       (если strung.«inside» то (strung.«raw») иначе ""), "\"", piece] по "")
 
@@ -545,7 +578,8 @@
     случай пусто
       то ""
     случай голова и хвост
-      то «Kept and raw» от (свёртка хвост начиная с (запись «Strung» с «inside» равным нет и «kept» равным голова и «raw» равным "") как walked и piece → «String step» от walked и piece)
+      то «Kept and raw» от (свёртка хвост начиная с (запись «Strung» с «inside» равным нет и «kept» равным голова и
+          «raw» равным "") как walked и piece → «String step» от walked и piece)
 
 тотальная функция «Unnamed»
   принимает text: строка
@@ -570,7 +604,8 @@
   пример «two open and one closed»
     дано text равно "(a [b)"
     ожидается 1
-  ((«Count of» от text и "(") плюс («Count of» от text и "[")) минус ((«Count of» от text и ")") плюс («Count of» от text и "]"))
+  ((«Count of» от text и "(") плюс («Count of» от text и "[")) минус ((«Count of» от text и
+      ")") плюс («Count of» от text и "]"))
 
 тотальная функция «Level step»
   принимает level: «Level», piece: строка, pattern: строка
@@ -587,7 +622,9 @@
     дано pattern равно " или "
     ожидается 9
   пусть pieces равно (разделить text по pattern)
-  (свёртка («Output lines» от (соединить pieces по "\n")) начиная с (запись «Level» с «depth» равным 0 и «length» равным 0 и «first» равным (0 минус 1)) как level и piece → «Level step» от level и piece и pattern).«first»
+  (свёртка («Output lines» от (соединить pieces по "\n")) начиная с (запись «Level» с «depth» равным 0 и
+      «length» равным 0 и «first» равным (0 минус 1)) как level и piece → «Level step» от level и piece и
+      pattern).«first»
 
 тотальная функция «Is ambiguous»
   принимает line: строка
@@ -618,7 +655,8 @@
   пример «the signs go backwards»
     дано text равно "абв"
     ожидается "вба"
-  соединить (свёртка (разложить text на символы) начиная с (пустой список) как kept и sign → приписать sign к kept) по ""
+  соединить (свёртка (разложить text на символы) начиная с (пустой список) как kept и
+      sign → приписать sign к kept) по ""
 
 тотальная функция «Stripped»
   принимает text: строка
@@ -707,7 +745,8 @@
 тотальная функция «Clear»
   принимает place: строка, verdict: «Продолжение»
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", place]) и потом равным (вариант «Clearing» с verdict равным verdict)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf",
+      place]) и потом равным (вариант «Clearing» с verdict равным verdict)
 
 тотальная функция «Not judged»
   принимает words: строка
@@ -722,7 +761,8 @@
   возвращает «Продолжение»
   разбор names
     случай пусто
-      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]) и потом равным (вариант «Finding root» с mode равным mode и values равным values)
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным [
+          "-c", "cd ../.. && pwd"]) и потом равным (вариант «Finding root» с mode равным mode и values равным values)
     случай голова и хвост
       то вариант «Сделать» с поручение равным (вариант «Прочитать переменную среды» с имя равным голова) и потом равным (вариант «Asking» с mode равным mode и names равным names и values равным values)
 
@@ -753,7 +793,8 @@
 тотальная функция «Make place»
   принимает setup: «Setup», debt: список строки
   возвращает «Продолжение»
-  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [(setup.«temp»), "/stdlib-proof-"] по "")) и потом равным (вариант «Making place» с setup равным setup и debt равным debt)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [(setup.«temp»),
+      "/stdlib-proof-"] по "")) и потом равным (вариант «Making place» с setup равным setup и debt равным debt)
 
 тотальная функция «Start»
   принимает setup: «Setup»
@@ -764,7 +805,8 @@
     случай "brackets-forgery"
       то «Make place» от setup и (пустой список)
     случай любое
-      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "test" и аргументы равным ["-x", (setup.«binary»)]) и потом равным (вариант «Checking binary» с setup равным setup)
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "test" и
+          аргументы равным ["-x", (setup.«binary»)]) и потом равным (вариант «Checking binary» с setup равным setup)
 
 тотальная функция «After root»
   принимает mode: строка, values: список строки, reply: «Отклик»
@@ -816,7 +858,10 @@
         случай "forgery"
           то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [place, "/forged-guard.flang"] по "") и содержимое равным («Forged module»)) и потом равным (вариант «Forging» с setup равным («With catalogue» от setup и place) и debt равным debt и place равным place)
         случай "brackets-forgery"
-          то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [place, "/forged.flang"] по "") и содержимое равным («Forged brackets»)) и потом равным (вариант «Forging» с setup равным setup и debt равным debt и place равным place)
+          то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [place,
+              "/forged.flang"] по "") и
+              содержимое равным («Forged brackets»)) и потом равным (вариант «Forging» с setup равным setup и
+              debt равным debt и place равным place)
         случай любое
           то «List modules» от setup и debt и place
     случай вариант «Сбой» с код как code и сообщение как message
@@ -829,7 +874,9 @@
   возвращает «Продолжение»
   разбор reply
     случай вариант «Записано»
-      то (если (setup.«mode») равен "forgery" то («List modules» от setup и debt и place) иначе (вариант «Сделать» с поручение равным («Scan order» от place) и потом равным (вариант «Scanning» с setup равным setup и place равным place)))
+      то (если (setup.«mode») равен "forgery" то («List modules» от setup и debt и
+          place) иначе (вариант «Сделать» с поручение равным («Scan order» от place) и
+          потом равным (вариант «Scanning» с setup равным setup и place равным place)))
     случай любое
       то «Clear» от place и (вариант «Конец работы» с значение равным "ПОДЛОГ НЕ СОБРАЛСЯ: подложенный модуль не записан — поправить подлог, сторож ни при чём")
 
@@ -839,7 +886,11 @@
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
       то если code равен 0
-        то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [place, "/modules"] по "") и содержимое равным (соединить (отобразить («Sorted» от («Text lines» от output)) как path → соединить [path, "\n"] по "") по "")) и потом равным (вариант «Writing list» с setup равным setup и debt равным debt и place равным place)
+        то вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным (соединить [place,
+            "/modules"] по "") и
+            содержимое равным (соединить (отобразить («Sorted» от («Text lines» от output)) как path → соединить [path,
+            "\n"] по "") по "")) и потом равным (вариант «Writing list» с setup равным setup и debt равным debt и
+            place равным place)
         иначе «Clear» от place и («Not judged» от (соединить ["нет каталога библиотеки: ", (setup.«catalogue»)] по ""))
     случай любое
       то «Clear» от place и («Not judged» от (соединить ["нет каталога библиотеки: ", (setup.«catalogue»)] по ""))
@@ -852,7 +903,9 @@
       то «Clear» от place и (если (setup.«mode») равен "forgery" то («Forgery verdict» от setup и probes и debt и said)
         иначе («Check verdict» от setup и probes и debt и said))
     случай голова и хвост
-      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [place, "/", (голова.«module»), ".err"] по "")) и потом равным (вариант «Reading errors» с setup равным setup и debt равным debt и place равным place и probes равным probes и pending равным pending и said равным said)
+      то вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным (соединить [place, "/",
+          (голова.«module»), ".err"] по "")) и потом равным (вариант «Reading errors» с setup равным setup и
+          debt равным debt и place равным place и probes равным probes и pending равным pending и said равным said)
 
 тотальная функция «After probing»
   принимает setup: «Setup», debt: список строки, place: строка, reply: «Отклик»
@@ -876,7 +929,8 @@
     случай "census"
       то «Clear» от place и (вариант «Конец работы» с значение равным (соединить (отобразить («By time» от probes) как probe → «Census line» от probe) по "\n"))
     случай любое
-      то «Read errors next» от setup и debt и place и probes и («Newly failed» от («By name» от probes) и debt) и (пустой список)
+      то «Read errors next» от setup и debt и place и probes и («Newly failed» от («By name» от probes) и
+          debt) и (пустой список)
 
 тотальная функция «After error»
   принимает setup: «Setup», debt: список строки, place: строка, probes: список «Probe», pending: список «Probe», said: список «Said», reply: «Отклик»
@@ -960,7 +1014,8 @@
     случай вариант «Listing» с setup как setup и debt как debt и place как place
       то «After listing» от setup и debt и place и reply
     случай вариант «Writing list» с setup как setup и debt как debt и place как place
-      то вариант «Сделать» с поручение равным («Probe order» от setup и place) и потом равным (вариант «Probing» с setup равным setup и debt равным debt и place равным place)
+      то вариант «Сделать» с поручение равным («Probe order» от setup и
+          place) и потом равным (вариант «Probing» с setup равным setup и debt равным debt и place равным place)
     случай вариант «Probing» с setup как setup и debt как debt и place как place
       то «After probing» от setup и debt и place и reply
     случай вариант «Reading errors» с setup как setup и debt как debt и place как place и probes как probes и pending как pending и said как said

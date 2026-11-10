@@ -324,7 +324,8 @@
       (запись «Task» с «folder» равным "closed" и «name» равным "0005-closed.md")]
     дано found равно "../../docs/tasks/0028-a.md:номер: 0028\n../../docs/tasks/0001-ci.md:номер: 9998\n"
     ожидается ["0001-ci.md: в шапке номер «9998», а имя файла говорит «0001»"]
-  пусть wrong равно (отфильтровать tasks где task → ((task.«folder») равен "") и притом (не ((«Header of» от task и found) равен («Number of» от task))))
+  пусть wrong равно (отфильтровать tasks где task → ((task.«folder») равен "") и притом (не ((«Header of» от task и
+      found) равен («Number of» от task))))
   отобразить («Sorted by number» от wrong) как task → «Header trouble» от task и («Header of» от task и found)
 
 тотальная функция «Number troubles»
@@ -335,7 +336,8 @@
       (запись «Task» с «folder» равным "closed" и «name» равным "0002-b.md")]
     дано found равно "../../docs/tasks/0002-a.md:номер: 0002\n../../docs/tasks/drafts/0009-c.md:номер: 0009\n"
     ожидается ["НОМЕР 0002 ЗАНЯТ НЕ ОДНОЙ ЗАДАЧЕЙ:", "  · docs/tasks/0002-a.md", "  · docs/tasks/used-numbers.tsv: 0002", "docs/tasks/drafts/0009-c.md: задача лежит в подкаталоге — закрытую задачу удаляют, а номер вписывают в docs/tasks/used-numbers.tsv"]
-  «Joined» от («Twin troubles» от tasks) и («Joined» от («Header troubles» от tasks и found) и («Nested troubles» от found))
+  «Joined» от («Twin troubles» от tasks) и («Joined» от («Header troubles» от tasks и found) и
+      («Nested troubles» от found))
 
 тотальная функция «Nested troubles»
   принимает found: строка
@@ -468,7 +470,8 @@
     случай пусто
       то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "список каталога приехал, а каталога никто не спрашивал"
     случай голова и хвост
-      то «List next» от хвост и (свёртка («Tasks of» от голова и names) начиная с tasks как known и task → добавить task к known)
+      то «List next» от хвост и (свёртка («Tasks of» от голова и names) начиная с tasks как known и
+          task → добавить task к known)
 
 тотальная функция «Starts with open tasks»
   принимает folders: список строки
@@ -557,7 +560,8 @@
   возвращает «Move»
   пример «A silent move shows nothing and wants the code zero»
     дано order равно (вариант «Удалить файл» с путь равным "/tmp/forged.md")
-    ожидается (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+    ожидается (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
   запись «Move» с «title» равным "" и «remark» равным "" и «order» равным order и «wanted» равным 0
 
 тотальная функция «Judging»
@@ -568,7 +572,10 @@
     дано title равно "сторона вторая: подлог убран, ждём код 0"
     дано wanted равно 0
     дано remark равно "зеленеет, как и должен"
-    ожидается (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и «remark» равным "зеленеет, как и должен" и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", "/tmp/forgery/scripts/guards/task-numbers-guard.fscript", "--plan", "Check"]) и «wanted» равным 0)
+    ожидается (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и
+        «remark» равным "зеленеет, как и должен" и
+        «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io",
+        "/tmp/forgery/scripts/guards/task-numbers-guard.fscript", "--plan", "Check"]) и «wanted» равным 0)
   запись «Move» с «title» равным title и «remark» равным remark и «order» равным (вариант «Запустить процесс» с программа равным "../../bootstrap/flang" и аргументы равным ["io", (соединить [root, "/scripts/guards/task-numbers-guard.fscript"] по ""), "--plan", "Check"]) и «wanted» равным wanted
 
 тотальная функция «Forged»
@@ -578,47 +585,78 @@
     дано root равно "/tmp/forgery"
     дано place равно "/docs/tasks/1001-forged-twin.md"
     дано text равно "подлог"
-    дано judging равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
-    ожидается [(запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md" и содержимое равным "подлог") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md") и «wanted» равным 0)]
+    дано judging равно (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
+    ожидается [(запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Записать файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md" и
+        содержимое равным "подлог") и «wanted» равным 0), (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0),
+        (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forgery/docs/tasks/1001-forged-twin.md") и
+        «wanted» равным 0)]
   [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root, place] по "") и содержимое равным text)),
     judging, («Silent» от (вариант «Удалить файл» с путь равным (соединить [root, place] по "")))]
 
 тотальная функция «Tree of the forgery»
   принимает root: строка
   возвращает список «Move»
-  [(«Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (соединить [root, "/scripts/guards"] по ""), (соединить [root, "/docs/tasks/drafts"] по "")])), («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным ["task-numbers-guard.fscript", (соединить [root, "/scripts/guards/task-numbers-guard.fscript"] по "")])), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/1001-open-task.md"] по "") и содержимое равным («Task text» от "1001" и "свободна" и ""))), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/used-numbers.tsv"] по "") и содержимое равным "number\tstate\ttitle\n1002\tdone\tClosed task\n"))]
+  [(«Silent» от (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (соединить [root,
+      "/scripts/guards"] по ""), (соединить [root, "/docs/tasks/drafts"] по "")])),
+      («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным [
+      "task-numbers-guard.fscript", (соединить [root, "/scripts/guards/task-numbers-guard.fscript"] по "")])),
+      («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/1001-open-task.md"] по "") и
+      содержимое равным («Task text» от "1001" и "свободна" и ""))),
+      («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/used-numbers.tsv"] по "") и
+      содержимое равным "number\tstate\ttitle\n1002\tdone\tClosed task\n"))]
 
 тотальная функция «Sides of numbers»
   принимает root: строка
   возвращает список «Move»
-  «Joined» от («Forged» от root и "/docs/tasks/1001-forged-twin.md" и («Task text» от "1001" и "свободна" и "") и («Judging» от root и "сторона первая: подлог заведён, ждём код 1" и 1 и "краснеет, как и должен")) и («Joined» от [(«Judging» от root и "сторона вторая: подлог убран, ждём код 0" и 0 и "зеленеет, как и должен")] и («Forged» от root и "/docs/tasks/1002-forged-twin-of-closed.md" и («Task text» от "1002" и "свободна" и "") и («Judging» от root и "сторона третья: номер закрытой задачи выдан второй раз, ждём код 1" и 1 и "номер закрытой задачи пойман")))
+  «Joined» от («Forged» от root и "/docs/tasks/1001-forged-twin.md" и («Task text» от "1001" и "свободна" и "") и
+      («Judging» от root и "сторона первая: подлог заведён, ждём код 1" и 1 и
+      "краснеет, как и должен")) и («Joined» от [(«Judging» от root и "сторона вторая: подлог убран, ждём код 0" и 0 и
+      "зеленеет, как и должен")] и («Forged» от root и "/docs/tasks/1002-forged-twin-of-closed.md" и
+      («Task text» от "1002" и "свободна" и "") и («Judging» от root и
+      "сторона третья: номер закрытой задачи выдан второй раз, ждём код 1" и 1 и "номер закрытой задачи пойман")))
 
 тотальная функция «Sides of closed»
   принимает root: строка
   возвращает список «Move»
-  «Joined» от («Forged» от root и "/docs/tasks/drafts/1006-closed-left-behind.md" и («Task text» от "1006" и "сделана" и "") и («Judging» от root и "сторона четвёртая: закрытая задача оставлена файлом в подкаталоге, ждём код 1" и 1 и "файл закрытой задачи пойман")) и [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/used-numbers.tsv"] по "") и содержимое равным "number\tstate\ttitle\n1002\tсделана\n")), («Judging» от root и "сторона пятая: строка списка занятых номеров испорчена, ждём код 1" и 1 и "испорченная строка поймана"), («Silent» от (вариант «Записать файл» с путь равным (соединить [root, "/docs/tasks/used-numbers.tsv"] по "") и содержимое равным "number\tstate\ttitle\n1002\tdone\tClosed task\n"))]
+  «Joined» от («Forged» от root и "/docs/tasks/drafts/1006-closed-left-behind.md" и («Task text» от "1006" и "сделана" и
+      "") и («Judging» от root и "сторона четвёртая: закрытая задача оставлена файлом в подкаталоге, ждём код 1" и 1 и
+      "файл закрытой задачи пойман")) и [(«Silent» от (вариант «Записать файл» с путь равным (соединить [root,
+      "/docs/tasks/used-numbers.tsv"] по "") и содержимое равным "number\tstate\ttitle\n1002\tсделана\n")),
+      («Judging» от root и "сторона пятая: строка списка занятых номеров испорчена, ждём код 1" и 1 и
+      "испорченная строка поймана"), («Silent» от (вариант «Записать файл» с путь равным (соединить [root,
+      "/docs/tasks/used-numbers.tsv"] по "") и содержимое равным "number\tstate\ttitle\n1002\tdone\tClosed task\n"))]
 
 тотальная функция «Side of the header»
   принимает root: строка
   возвращает список «Move»
-  «Forged» от root и "/docs/tasks/1004-forged-header.md" и («Task text» от "1005" и "свободна" и "") и («Judging» от root и "сторона шестая: номер в шапке разошёлся с именем файла, ждём код 1" и 1 и "расхождение шапки с именем файла поймано")
+  «Forged» от root и "/docs/tasks/1004-forged-header.md" и («Task text» от "1005" и "свободна" и
+      "") и («Judging» от root и "сторона шестая: номер в шапке разошёлся с именем файла, ждём код 1" и 1 и
+      "расхождение шапки с именем файла поймано")
 
 тотальная функция «Moves»
   принимает root: строка
   возвращает список «Move»
-  «Joined» от («Joined» от («Tree of the forgery» от root) и («Sides of numbers» от root)) и («Joined» от («Sides of closed» от root) и («Side of the header» от root))
+  «Joined» от («Joined» от («Tree of the forgery» от root) и
+      («Sides of numbers» от root)) и («Joined» от («Sides of closed» от root) и («Side of the header» от root))
 
 тотальная функция «Shown after»
   принимает shown: список строки, move: «Move», code: число
   возвращает список строки
   пример «A judged side is shown by its title and its code»
     дано shown равно пустой список
-    дано move равно (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и «remark» равным "зеленеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 0)
+    дано move равно (запись «Move» с «title» равным "сторона вторая: подлог убран, ждём код 0" и
+        «remark» равным "зеленеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и
+        «wanted» равным 0)
     дано code равно 0
     ожидается ["── сторона вторая: подлог убран, ждём код 0 ──\nкод 0 — зеленеет, как и должен"]
   пример «A silent move shows nothing»
     дано shown равно пустой список
-    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
     дано code равно 0
     ожидается пустой список
   если (move.«title») равен ""
@@ -633,8 +671,11 @@
     дано root равно "/tmp/forgery"
     дано fault равно ""
     дано shown равно пустой список
-    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и shown равным пустой список)
-  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf", root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
+    ожидается вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и
+        аргументы равным ["-rf", "/tmp/forgery"]) и потом равным (вариант «Clearing» с fault равным "" и
+        shown равным пустой список)
+  вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "rm" и аргументы равным ["-rf",
+      root]) и потом равным (вариант «Clearing» с fault равным fault и shown равным shown)
 
 тотальная функция «Move on»
   принимает root: строка, moves: список «Move», shown: список строки
@@ -643,17 +684,21 @@
     случай пусто
       то «Clear» от root и "" и shown
     случай голова и хвост
-      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и current равным голова и rest равным хвост и shown равным shown)
+      то вариант «Сделать» с поручение равным (голова.«order») и потом равным (вариант «Moving» с root равным root и
+          current равным голова и rest равным хвост и shown равным shown)
 
 тотальная функция «Fault of»
   принимает move: «Move», answer: строка
   возвращает строка
   пример «A side that answered with another code is named with both codes»
-    дано move равно (запись «Move» с «title» равным "сторона первая: подлог заведён, ждём код 1" и «remark» равным "краснеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и «wanted» равным 1)
+    дано move равно (запись «Move» с «title» равным "сторона первая: подлог заведён, ждём код 1" и
+        «remark» равным "краснеет, как и должен" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/other") и
+        «wanted» равным 1)
     дано answer равно "код 0"
     ожидается "ПОДЛОГ НЕ ПОКАЗАН — сторона первая: подлог заведён, ждём код 1: ждали код 1, получен код 0"
   пример «A broken step of the forgery is named by what it answered»
-    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
+    дано move равно (запись «Move» с «title» равным "" и «remark» равным "" и
+        «order» равным (вариант «Удалить файл» с путь равным "/tmp/forged.md") и «wanted» равным 0)
     дано answer равно "файла нет"
     ожидается "ПОДЛОГ НЕ СОБРАЛСЯ — шаг пробы ответил: файла нет"
   если (move.«title») равен ""
@@ -688,7 +733,8 @@
     дано shown равно пустой список
     ожидается вариант «Провал» с код равным "FLANG_TASK_NUMBERS_FORGERY" и сообщение равным "ПОДЛОГ НЕ ПОКАЗАН"
   если fault равен ""
-    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и ["все шесть сторон показаны прогоном."]) по "\n\n")
+    то вариант «Конец работы» с значение равным (соединить («Joined» от shown и [
+        "все шесть сторон показаны прогоном."]) по "\n\n")
     иначе вариант «Провал» с код равным "FLANG_TASK_NUMBERS_FORGERY" и сообщение равным fault
 
 тотальная функция «Make place»
@@ -697,7 +743,8 @@
   пример «The copy of the tree gets a folder of its own»
     дано base равно "/tmp"
     ожидается вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным "/tmp/task-numbers-forgery-") и потом равным (вариант «Making place»)
-  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base, "/task-numbers-forgery-"] по "")) и потом равным (вариант «Making place»)
+  вариант «Сделать» с поручение равным (вариант «Завести временный каталог» с образец равным (соединить [base,
+      "/task-numbers-forgery-"] по "")) и потом равным (вариант «Making place»)
 
 тотальная функция «After finding place»
   принимает reply: «Отклик»

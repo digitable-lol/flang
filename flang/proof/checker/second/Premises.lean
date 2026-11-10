@@ -179,7 +179,7 @@ def «Исх».«видПоВарианту» (s : «Исх») («тип» «в�
     let l := s.«строкаВариантаТипа» «тип» «вариант»
     if l = "" then none
     else if !((l.splitOn "содержит ").length > 1) then some "base"
-    else if ((«после» l "содержит ").splitOn s!"«{«тип»}»").length > 1 then some "step" else some "base"
+    else if «рекурсивныхЧастей» l «тип» > 0 then some "step" else some "base"
 
 def «Исх».«естьВетвьВарианта» (s : «Исх») («функция» «вариант» : String) : Bool :=
   match s.«блок» «функция» with

@@ -230,30 +230,92 @@
       ? { запустить: 'run in the playground' }
       : { запустить: 'запустить в песочнице' };
     var адресПесочницы = корень + (английский ? 'en/playground.html' : 'playground.html');
-    function вАдрес(текст) {
-      var байты = new TextEncoder().encode(текст);
+    function вОснование64(байты) {
       var строка = '';
       for (var i = 0; i < байты.length; i++) строка += String.fromCharCode(байты[i]);
       return btoa(строка).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
+    /* Текст в адресе: сжатый (`code`: UTF-8 → deflate-raw → base64url), а где
+       браузер сжимать не умеет — старым полем `text`. Формат читает
+       `playground.js`; после «#» браузер серверу ничего не отправляет. */
+    function вАдрес(текст) {
+      var байты = new TextEncoder().encode(текст);
+      var простой = 'text=' + вОснование64(байты);
+      if (typeof CompressionStream === 'undefined' || typeof Response === 'undefined') return Promise.resolve(простой);
+      return new Response(new Blob([байты]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()
+        .then(function (сжатое) { return 'code=' + вОснование64(new Uint8Array(сжатое)); })
+        .catch(function () { return простой; });
+    }
     if (typeof document.querySelectorAll !== 'function') return;
     var место = document.querySelector('main pre.lang-playground');
     var блоки = document.querySelectorAll('main pre');
+    /* Целая программа — блок flang, первая значащая строка которого (пустые и
+       «//» не в счёт) открывает модуль или категорию: по тому же правилу
+       песочница решает, что перед ней программа. */
+    function целаяПрограмма(текст) {
+      var строки = текст.split('\n');
+      for (var i = 0; i < строки.length; i++) {
+        var строка = строки[i].trim();
+        if (строка === '' || строка.indexOf('//') === 0) continue;
+        return /^(модуль|module|категория|category)\s/.test(строка);
+      }
+      return false;
+    }
     function годитсяВПесочницу(блок) {
       if (блок === место) return false;
-      return блок.classList.contains('lang-flang') && /^\s*(модуль|категория)\s/.test(блок.textContent);
+      return блок.classList.contains('lang-flang') && целаяПрограмма(блок.textContent);
+    }
+    /* Имя файла программы: страница называет его в обратных кавычках в
+       абзаце прямо перед блоком («Положите в файл `hello.flang`:»). */
+    function имяФайла(блок) {
+      var перед = блок.previousElementSibling;
+      if (!перед || перед.tagName !== 'P') return '';
+      var коды = перед.querySelectorAll('code');
+      for (var i = коды.length - 1; i >= 0; i--) {
+        if (/^[^\s\/]+\.flang$/.test(коды[i].textContent)) return коды[i].textContent;
+      }
+      return '';
+    }
+    /* Команда, которую страница показывает после программы: первый блок
+       оболочки до следующей программы со строкой
+       `flang check|test|run|emit файл.flang …`. Если программа названа по
+       имени, команда обязана называть тот же файл; если нет — поиск идёт
+       только до ближайшего заголовка. Песочница откроется сразу с ней. */
+    function командаПосле(блок) {
+      var имя = имяФайла(блок);
+      for (var сосед = блок.nextElementSibling; сосед; сосед = сосед.nextElementSibling) {
+        if (сосед.tagName === 'PRE' && сосед.classList.contains('lang-flang')) return '';
+        if (имя === '' && /^H[1-6]$/.test(сосед.tagName)) return '';
+        if (сосед.tagName !== 'PRE' || !(сосед.classList.contains('lang-bash') || сосед.classList.contains('lang-sh'))) continue;
+        var м = /^\$?\s*flang\s+(check|test|run|emit)\s+(\S+\.flang)(.*)$/m.exec(сосед.textContent);
+        if (!м) { if (имя === '') return ''; continue; }
+        if (имя !== '' && м[2] !== имя) continue;
+        var хвост = м[3];
+        var поля = '&do=' + м[1];
+        var функция = /--function\s+(?:«([^»]+)»|"([^"]+)"|'([^']+)'|(\S+))/.exec(хвост);
+        var доводы = /--args\s+'([^']*)'/.exec(хвост);
+        var цель = /--target\s+(\S+)/.exec(хвост);
+        if (функция) поля += '&fn=' + encodeURIComponent(функция[1] || функция[2] || функция[3] || функция[4]);
+        if (доводы) поля += '&args=' + encodeURIComponent(доводы[1]);
+        if (цель) поля += '&target=' + encodeURIComponent(цель[1]);
+        return поля;
+      }
+      return '';
     }
     // Сама песочница — отдельный файл `playground.js`: он ставится только на
     // её страницу. Здесь — только ссылки «запустить в песочнице» на блоках
     // программ остальных страниц.
     if (место) return;
-    for (var н = 0; н < блоки.length; н++) {
-      if (!годитсяВПесочницу(блоки[н])) continue;
+    function поставить(блок) {
       var ссылка = document.createElement('a');
+      var поля = командаПосле(блок);
       ссылка.className = 'run-in-playground';
-      ссылка.href = адресПесочницы + '#text=' + вАдрес(блоки[н].textContent);
       ссылка.textContent = С.запустить;
-      блоки[н].insertAdjacentElement('afterend', ссылка);
+      блок.insertAdjacentElement('afterend', ссылка);
+      вАдрес(блок.textContent).then(function (текст) { ссылка.href = адресПесочницы + '#' + текст + поля; });
+    }
+    for (var н = 0; н < блоки.length; н++) {
+      if (годитсяВПесочницу(блоки[н])) поставить(блоки[н]);
     }
   }
   завестиПесочницу();

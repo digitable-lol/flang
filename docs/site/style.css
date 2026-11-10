@@ -637,6 +637,20 @@ body {
 .content .playground-check { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .content .playground-check:disabled { opacity: .6; cursor: progress; }
 .content .playground-status { color: var(--muted); font-size: .85em; }
+/* Что запускать и чем: имя функции, доводы и версия компилятора вкладки. На
+   узком экране поля встают друг под другом во всю ширину, кнопки — в ряд по
+   две: пальцем попасть можно, вбок страница не едет. */
+.content .playground-call { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; font-size: .85em; color: var(--muted); }
+.content .playground-field { display: flex; gap: .35rem; align-items: center; flex: 0 1 15rem; min-width: 0; white-space: nowrap; }
+.content .playground-field-wide { flex: 1 1 18rem; }
+.content .playground-fn, .content .playground-args {
+  font-family: var(--mono); font-size: .95em; padding: .25rem .45rem; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--surface); color: var(--ink); flex: 1 1 auto; min-width: 0; width: 100%;
+}
+.content .playground-version { margin-left: auto; white-space: nowrap; }
+.content .playground-share:disabled { opacity: .6; cursor: progress; }
+.content .pg-verdict .playground-share { margin-top: .5rem; }
+.content .pg-terminal { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .82rem; max-height: 32rem; overflow: auto; }
 
 /* Редактор: под прозрачным полем ввода лежит раскрашенная копия того же
    текста. Шрифт, кегль, интерлиньяж и отступы у обоих обязаны совпадать до
@@ -797,3 +811,15 @@ body {
 .content .pg-svg .pg-set-c { fill: var(--pg-warn); stroke: var(--pg-warn); }
 .content .pg-svg .pg-set-name { fill: var(--ink); font-weight: 600; }
 .content .pg-svg .pg-set-item { fill: var(--ink); font-family: var(--mono); font-size: 13px; }
+
+/* Песочница на узком экране — в конце файла, чтобы правила не перебивались
+   основными, объявленными выше. */
+@media (max-width: 760px) {
+  .content .playground-examples { flex-basis: 100%; max-width: none; }
+  .content .playground-check, .content .playground-share { flex: 1 1 40%; padding: .55rem .6rem; }
+  .content .playground-status { flex-basis: 100%; }
+  .content .playground-field, .content .playground-field-wide { flex: 1 1 100%; }
+  .content .playground-version { margin-left: 0; white-space: normal; }
+  .content .pg-tab { padding: .5rem .6rem; }
+  .content .playground-fn, .content .playground-args { font-size: 16px; }
+}

@@ -171,3 +171,21 @@
 | 0214 | [Пакет — это ссылка с отпечатком; реестра нет](0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md) | принято | да |  |
 | 0218 | [Независимые обязательства судят процессы-работники, ответ собирается по номерам](0218-independent-obligations-are-judged-in-worker-processes.md) | предложено | да |  |
 | 0220 | [Остальные ходы теоремы состоятельны относительно законов ядра: закон, переписать, поля, развернуть](0220-the-remaining-moves-are-sound-against-laws-of-the-kernel.md) | предложено | да |  |
+
+## Команды старых решений, которых больше нет
+
+Решения до октября 2026 называют приборы на оболочке. С тех пор приборы переписаны планами
+на языке; текст решений не правился, поэтому вместо названной команды зовётся нынешняя.
+
+| В решении | Сейчас |
+|---|---|
+| `sh flang/proof/checker/tests/run.sh` | `bootstrap/flang run-script checker:check` |
+| `sh flang/proof/corpus-share.sh --набор корпус` | `bootstrap/flang run-script proved-share:check` |
+| `sh flang/proof/corpus-share.sh --проигрыванием` | `bootstrap/flang run-script share:replay` |
+| `sh flang/proof/tables-guard.sh`, `scripts/tables-guard.sh` | `bootstrap/flang io flang/proof/tables-guard.fscript` |
+| `flang/proof/lean/run.sh` | `bootstrap/flang io flang/proof/lean/run.fscript` |
+| `flang/proof/checker/ratchet.txt` | `flang/proof/ratchets.txt` |
+| `sh scripts/guards/cyrillic-file-names-guard.sh --check` | `bootstrap/flang run-script cyrillic:check` |
+| `sh scripts/guards/translit-file-names-guard.sh --check` | `bootstrap/flang run-script transliteration:check` |
+| `sh scripts/guards/who-calls-the-guards.sh --check` | `bootstrap/flang run-script guard-calls:check` |
+| `sh scripts/guards/guards-without-forgery-probe.sh --check` | `bootstrap/flang run-script forgery-probe:check` |

@@ -7,7 +7,7 @@ the command or the sign that shows the step is done.
 | --- | --- | --- |
 | 1. Install | [Installation](install.html) | `flang --version` answers with a version |
 | 2. First program | [Your first program](getting-started.html) | you wrote a file, checked it and ran a function |
-| 3. The basics | [Tutorial](tutorial.html), six chapters with exercises | you can read a `FLANG_NOT_TOTAL` refusal and know what to fix |
+| 3. The basics | [Tutorial](tutorial.html), six chapters with exercises; or `flangtutor` in the terminal — twelve lessons with blanks to fill, the compiler checks the answer (`flangtutor --lang en`) | you can read a `FLANG_NOT_TOTAL` refusal and know what to fix |
 | 4. Familiar forms | [Loops, classes, interfaces](../guide/surface-sugar.md) | you know what a loop expands into |
 | 5. A task of your own | [Which construct to use when](which-construct.html), [Operations](operations.html) | a task you solved before in another language passes `flang check` and `flang test` |
 | 6. Proofs | [Why and how](proofs.html), [How a proof works](how-proofs-work.html), [The kernel refused: whose error is it](proof-refused.html) | you tell «доказано» (proved) from «сетка N» (examples only) in the output of `flang check --proof` |

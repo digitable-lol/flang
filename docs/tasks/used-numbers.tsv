@@ -431,3 +431,23 @@ number	state	title
 1412	done	Ring rules only for the exact integer
 6480	done	Broken links in docs are repaired by instrument
 7685	done	The print cost is broken down by stage
+0048	done	Tls is assembled end to end
+1116	done	The test command does not run scenario blocks
+2031	done	No form of dependency a registry delivers reaches the lock
+2227	done	A fold widens a narrow accumulator type
+2663	done	An exported function calling a hidden helper is unknown to importers
+2761	done	Consent to the unproven also skips link refusals
+4735	done	A nested object line crashes the binary
+4804	done	The lean acceptance does not read fixed width words
+5021	done	Induction does not split an any case
+5295	done	Checker disagreement leaves the exit code at zero
+6610	done	Nested match on two arguments is not unfolded
+7718	done	Recursion through a partial application is not total
+8192	done	The checkers read story blocks
+8570	done	The print is outrun because it is slow
+8634	done	The kernel proves a false postcondition when a pattern name shadows a parameter
+3355	done	Packages are links with a hash
+3536	done	A variable step descent is refused with a wrong hint
+5958	done	A mutual recursion loop needs size change termination
+3403	dropped	Package installer manifest network lock
+3404	dropped	The binary has no install command the installer lives only in the tree

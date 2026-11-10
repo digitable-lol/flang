@@ -223,7 +223,7 @@ The results of `--proof` and their codes:
 | `ПРОВЕРЕНО САМОСТОЯТЕЛЬНО` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ` | `0` without the flag, `3` with it | the file has no guarantees at all |
 | `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ` | `3` | a guarantee is checked only on examples |
 | `НЕ ПРОВЕРЕНО` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО` | `3` | a guarantee has neither a proof nor examples |
-| `не проверено — ведомость не печатается у программы с замечаниями` | the same | `1` | the program has failures; no report is printed |
+| `не проверено — … не печатается у программы с замечаниями` | the same | `1` | the program has failures; no report is printed |
 
 When there are several reasons, the most serious one is named: no proof
 outranks "examples only". `--strict` is for CI: without it a file with nothing

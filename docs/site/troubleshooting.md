@@ -20,7 +20,7 @@ type. Messages are quoted verbatim.
 | --- | --- | --- |
 | `место указано строкой и столбцом, но без файла` | several files were checked together with the imports. A failure in an imported module carries the path in its text: `в файле …/neighbour.flang:`; a failure without a path is in your file | check the named module on its own: `flang check neighbour.flang` |
 | `FLANG_IMPORT_NOT_FOUND: не найден модуль «Имя»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора` | the search by module name found no file — or found one that does not pass the check | name the path: `использует «Имя» из "path/file.flang"`; then check that module itself |
-| `не проверено — ведомость не печатается у программы с замечаниями` | `check --proof` prints the proof report only for a program without failures | fix the failures printed above that line |
+| `не проверено — … не печатается у программы с замечаниями` | `check --proof` prints the proof report only for a program without failures | fix the failures printed above that line |
 | `FLANG_RECURSION_LIMIT` from `flang check` on a large file | the checker ran out of its step limit | `flang check file.flang --step-limit N` |
 | Exit code 5 | the run hit the memory limit (three quarters of the machine's memory by default) | `--memory-limit N`, for example `--memory-limit 16G` |
 

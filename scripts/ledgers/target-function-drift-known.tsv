@@ -1,8 +1,8 @@
-../flang/concurrency/node-benchmark.flang	cpp	-5	цель «c» не отбрасывает недостижимое (compiler.flang:394-400), поэтому печатает на 5 ввезённых и никем не зовомых функций больше; cpp отбрасывает, как и все восемь
-../flang/concurrency/node-benchmark.flang	csharp	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	elixir	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	go	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	java	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	js	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	python	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
-../flang/concurrency/node-benchmark.flang	rust	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	cpp	-5	цель «c» не отбрасывает недостижимое (compiler.flang:394-400), поэтому печатает на 5 ввезённых и никем не зовомых функций больше; cpp отбрасывает, как и все восемь
+../../flang/concurrency/node-benchmark.flang	csharp	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	elixir	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	go	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	java	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	js	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	python	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели
+../../flang/concurrency/node-benchmark.flang	rust	-5	то же: лишние пять у эталона «c», а не нехватка у этой цели

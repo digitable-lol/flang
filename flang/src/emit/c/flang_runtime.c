@@ -9518,7 +9518,6 @@ static bool fl_spread_told(const char *name) {
 
 static bool fl_spread_allowed(const fl_ctx *ctx) {
   return ctx->lane == 0 && !fl_spread_child && !fl_lasting.on &&
-         !fl_spread_told("FLANG_TICKS_OUT") &&
          !fl_spread_told("FLANG_TIME_OUT") && fl_spread_jobs() > 1;
 }
 
@@ -9554,6 +9553,110 @@ static bool fl_spread_read(int fd, void *bytes, size_t size) {
   return true;
 }
 
+/*
+ * The named tick ledger (FLANG_TICKS_OUT) of a worker. A worker starts from
+ * empty tables and, once its task pipe closes, sends back every row it
+ * counted under a head with status 2; the host adds the rows to its own
+ * tables. Function names are string constants of the program image, so a
+ * forked worker names them by the same address as the host.
+ */
+static void fl_spread_ticks_clear(void) {
+  memset(fl_ticks_table, 0, sizeof fl_ticks_table);
+  memset(fl_enters_table, 0, sizeof fl_enters_table);
+  memset(fl_charge_table, 0, sizeof fl_charge_table);
+  fl_ticks_total = 0;
+  fl_enters_total = 0;
+  fl_charge_total = 0;
+  fl_ticks_lost = 0;
+  fl_charge_lost = 0;
+}
+
+static void fl_spread_ticks_put(fl_memo_buffer *out, unsigned long long kind,
+                                const char *name, unsigned long long count) {
+  const unsigned long long row[3] = {
+      kind, (unsigned long long)(size_t)name, count};
+  fl_memo_put(out, row, sizeof row);
+}
+
+static bool fl_spread_ticks_send(int result) {
+  static const struct fl_ticks_slot *const tables[3] = {
+      fl_ticks_table, fl_enters_table, fl_charge_table};
+  fl_memo_buffer out;
+  fl_spread_head head;
+  unsigned table = 0;
+  unsigned index = 0;
+  bool sent = false;
+  memset(&out, 0, sizeof out);
+  memset(&head, 0, sizeof head);
+  head.status = 2u;
+  fl_memo_put(&out, &head, sizeof head);
+  fl_spread_ticks_put(&out, 3u, NULL, fl_ticks_total);
+  fl_spread_ticks_put(&out, 4u, NULL, fl_enters_total);
+  fl_spread_ticks_put(&out, 5u, NULL, fl_charge_total);
+  fl_spread_ticks_put(&out, 6u, NULL, fl_ticks_lost);
+  fl_spread_ticks_put(&out, 7u, NULL, fl_charge_lost);
+  for (table = 0; table < 3u; table += 1) {
+    for (index = 0; index < FL_TICKS_SLOTS; index += 1) {
+      if (tables[table][index].name != NULL) {
+        fl_spread_ticks_put(&out, table, tables[table][index].name,
+                            tables[table][index].count);
+      }
+    }
+  }
+  if (!out.failed) {
+    head.bytes = (unsigned long long)(out.size - sizeof head);
+    memcpy(out.data, &head, sizeof head);
+    sent = fl_spread_write(result, out.data, out.size);
+  }
+  free(out.data);
+  return sent;
+}
+
+static bool fl_spread_ticks_take(const unsigned char *bytes, size_t size) {
+  static struct fl_ticks_slot *const tables[3] = {
+      fl_ticks_table, fl_enters_table, fl_charge_table};
+  size_t at = 0;
+  if (size % (3u * sizeof(unsigned long long)) != 0) {
+    return false;
+  }
+  for (at = 0; at < size; at += 3u * sizeof(unsigned long long)) {
+    unsigned long long row[3];
+    memcpy(row, bytes + at, sizeof row);
+    switch (row[0]) {
+    case 0u:
+    case 1u:
+    case 2u:
+      if (!fl_ticks_add(tables[row[0]], (const char *)(size_t)row[1],
+                        row[2])) {
+        if (row[0] == 2u) {
+          fl_charge_lost += row[2];
+        } else {
+          fl_ticks_lost += row[2];
+        }
+      }
+      break;
+    case 3u:
+      fl_ticks_total += row[2];
+      break;
+    case 4u:
+      fl_enters_total += row[2];
+      break;
+    case 5u:
+      fl_charge_total += row[2];
+      break;
+    case 6u:
+      fl_ticks_lost += row[2];
+      break;
+    case 7u:
+      fl_charge_lost += row[2];
+      break;
+    default:
+      return false;
+    }
+  }
+  return true;
+}
+
 static void fl_spread_work(fl_ctx *ctx, fl_value list, size_t from,
                            size_t rest, fl_par_item body, const fl_value *env,
                            int task, int result, size_t workers) {
@@ -9562,6 +9665,10 @@ static void fl_spread_work(fl_ctx *ctx, fl_value list, size_t from,
   const size_t depth = ctx->depth;
   fl_memo_buffer out;
   fl_spread_child = true;
+  fl_ticks_open();
+  if (fl_ticks_path != NULL) {
+    fl_spread_ticks_clear();
+  }
   fl_memo_ready();
   if (workers > 1 && fl_memo.cap > fl_memo.spent) {
     fl_memo.cap = fl_memo.spent + (fl_memo.cap - fl_memo.spent) / workers;
@@ -9576,6 +9683,9 @@ static void fl_spread_work(fl_ctx *ctx, fl_value list, size_t from,
     fl_mark mark;
     fl_status status = FL_OK;
     if (!fl_spread_read(task, &index, sizeof index)) {
+      if (fl_ticks_path != NULL && !fl_spread_ticks_send(result)) {
+        _exit(5);
+      }
       _exit(0);
     }
     if (index >= rest) {
@@ -9924,6 +10034,14 @@ static bool fl_spread_parse(fl_spread_worker *worker, size_t self,
     if (head.bytes > worker->size - worker->parsed - sizeof head) {
       return true;
     }
+    if (head.status == 2u) {
+      if (!fl_spread_ticks_take(worker->bytes + worker->parsed + sizeof head,
+                                (size_t)head.bytes)) {
+        return false;
+      }
+      worker->parsed += sizeof head + (size_t)head.bytes;
+      continue;
+    }
     if (head.status != 0u || head.index >= rest || slots[head.index].done) {
       return false;
     }
@@ -9986,6 +10104,7 @@ static bool fl_spread_rest(fl_ctx *ctx, fl_value list, size_t from,
   long said = began;
   long looked = began;
   bool tight = false;
+  fl_ticks_open();
   {
     const long by_time = projected / FL_SPREAD_SHARE_NS;
     if (by_time < (long)workers) {
@@ -10136,6 +10255,13 @@ static bool fl_spread_rest(fl_ctx *ctx, fl_value list, size_t from,
     }
     if (failed) {
       kill(crew[index].pid, SIGKILL);
+    }
+  }
+  for (index = 0; index < started && !failed && fl_ticks_path != NULL;
+       index += 1) {
+    while (!failed && crew[index].open) {
+      failed = !fl_spread_drain(&crew[index]) ||
+               !fl_spread_parse(&crew[index], index, slots, rest, &done);
     }
   }
   for (index = 0; index < started; index += 1) {

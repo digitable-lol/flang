@@ -43,51 +43,51 @@
 # и заметить это можно только пробой порчи (`--подлог`).
 set -eu
 
-KOREN=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-cd "$KOREN"
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+cd "$ROOT"
 
-REZHIM=${1:-}
-SUD=$KOREN
-if [ "$REZHIM" = "--корень" ]; then
-  SUD=${2:?"--корень требует каталога"}
-  REZHIM=${3:-}
+MODE=${1:-}
+JUDGED=$ROOT
+if [ "$MODE" = "--корень" ]; then
+  JUDGED=${2:?"--корень требует каталога"}
+  MODE=${3:-}
 fi
 
-if [ "$REZHIM" = "--подлог" ]; then
+if [ "$MODE" = "--подлог" ]; then
   # ПРОБА ПОРЧИ. Настоящее дерево для неё не годится в обе стороны: покрасить
   # его — значит положить файл ВЫШЕ корня, в чужую рабочую зону, а позеленить —
   # значит убрать чужой черновик, который сторожу и не принадлежит. Поэтому
   # проба строит игрушечное дерево во временном каталоге и гоняет сторожа по
   # нему дважды: с подложенным файлом наверху и без него.
-  RAB=$(mktemp -d "${TMPDIR:-/tmp}/izolyaciya-podlog.XXXXXX")
-  trap 'rm -rf "$RAB"' EXIT INT TERM
-  mkdir -p "$RAB/над/дерево/flang/stdlib" "$RAB/над/дерево/scripts" "$RAB/над/дерево/bootstrap"
-  : > "$RAB/над/дерево/bootstrap/flang"
-  printf 'модуль «Списки»\n' > "$RAB/над/дерево/flang/stdlib/lists.flang"
-  printf 'модуль «Проба»\n  использует «Списки»\n' > "$RAB/над/дерево/scripts/probe.flang"
+  WORK=$(mktemp -d "${TMPDIR:-/tmp}/isolation-forgery.XXXXXX")
+  trap 'rm -rf "$WORK"' EXIT INT TERM
+  mkdir -p "$WORK/над/дерево/flang/stdlib" "$WORK/над/дерево/scripts" "$WORK/над/дерево/bootstrap"
+  : > "$WORK/над/дерево/bootstrap/flang"
+  printf 'модуль «Списки»\n' > "$WORK/над/дерево/flang/stdlib/lists.flang"
+  printf 'модуль «Проба»\n  использует «Списки»\n' > "$WORK/над/дерево/scripts/probe.flang"
   # `.flang` В КОРНЕ игрушечного дерева — не украшение, а условие подъёма:
   # каталог без единого `.flang` обрывает подъём, и без этого файла проба была
   # бы зелена в обе стороны, ничего не проверив.
-  printf 'модуль «Корень»\n' > "$RAB/над/дерево/root.flang"
+  printf 'модуль «Корень»\n' > "$WORK/над/дерево/root.flang"
 
-  printf 'модуль «Списки»\n' > "$RAB/над/чужой-черновик.flang"
+  printf 'модуль «Списки»\n' > "$WORK/над/чужой-черновик.flang"
   set +e
-  sh "$0" --корень "$RAB/над/дерево" > "$RAB/с-подлогом.out" 2>&1
-  S_PODLOGOM=$?
-  rm -f "$RAB/над/чужой-черновик.flang"
-  sh "$0" --корень "$RAB/над/дерево" > "$RAB/без-подлога.out" 2>&1
-  BEZ_PODLOGA=$?
+  sh "$0" --корень "$WORK/над/дерево" > "$WORK/с-подлогом.out" 2>&1
+  WITH_FORGERY=$?
+  rm -f "$WORK/над/чужой-черновик.flang"
+  sh "$0" --корень "$WORK/над/дерево" > "$WORK/без-подлога.out" 2>&1
+  WITHOUT_FORGERY=$?
   set -e
 
   echo "ПРОБА ПОРЧИ: сторож происхождения модулей"
   echo
-  echo "  с подложенным файлом выше корня  код $S_PODLOGOM  (ждали 1)"
-  sed 's/^/    /' "$RAB/с-подлогом.out"
+  echo "  с подложенным файлом выше корня  код $WITH_FORGERY  (ждали 1)"
+  sed 's/^/    /' "$WORK/с-подлогом.out"
   echo
-  echo "  без него                          код $BEZ_PODLOGA  (ждали 0)"
-  sed 's/^/    /' "$RAB/без-подлога.out"
+  echo "  без него                          код $WITHOUT_FORGERY  (ждали 0)"
+  sed 's/^/    /' "$WORK/без-подлога.out"
   echo
-  if [ "$S_PODLOGOM" = 1 ] && [ "$BEZ_PODLOGA" = 0 ]; then
+  if [ "$WITH_FORGERY" = 1 ] && [ "$WITHOUT_FORGERY" = 0 ]; then
     echo "проба пройдена: сторож краснеет на подлоге и зеленеет без него"
     exit 0
   fi
@@ -95,175 +95,175 @@ if [ "$REZHIM" = "--подлог" ]; then
   exit 1
 fi
 
-LC_ALL=C.UTF-8 python3 - "$SUD" "$REZHIM" <<'PY'
+LC_ALL=C.UTF-8 python3 - "$JUDGED" "$MODE" <<'PY'
 import os, re, sys
 
-sud, rezhim = os.path.realpath(sys.argv[1]), sys.argv[2]
+judged, mode = os.path.realpath(sys.argv[1]), sys.argv[2]
 
 # ── Правило поиска: повторение repl_places_of/repl_find_module ──────────────
-SLOVA_MODULYA = ("модуль", "module", "模块")
-SLOVA_VVOZA = ("использует", "uses", "uzas", "使用")
-GOLOVA = 65536          # столько же байт от начала читает repl_read_head
+MODULE_WORDS = ("модуль", "module", "模块")
+IMPORT_WORDS = ("использует", "uses", "uzas", "使用")
+HEAD_BYTES = 65536          # столько же байт от начала читает repl_read_head
 
-kesh_katalogov = {}
+directory_cache = {}
 
-def katalog(put):
+def directory(path_):
     """Пути `.flang` каталога и имена их модулей — читается один раз."""
-    if put in kesh_katalogov:
-        return kesh_katalogov[put]
-    pary = []
+    if path_ in directory_cache:
+        return directory_cache[path_]
+    pairs = []
     try:
-        imena = sorted(f for f in os.listdir(put) if f.endswith(".flang"))
+        names = sorted(f for f in os.listdir(path_) if f.endswith(".flang"))
     except OSError:
-        imena = []
-    for imya in imena:
-        polnyj = os.path.join(put, imya)
-        if not os.path.isfile(polnyj):
+        names = []
+    for name in names:
+        full = os.path.join(path_, name)
+        if not os.path.isfile(full):
             continue
-        pary.append((polnyj, imya_modulya(polnyj)))
-    kesh_katalogov[put] = pary
-    return pary
+        pairs.append((full, module_name(full)))
+    directory_cache[path_] = pairs
+    return pairs
 
-def imya_modulya(put):
+def module_name(path_):
     """Первая ЗНАЧАЩАЯ строка файла — она и обязана быть заголовком модуля."""
     try:
-        with open(put, "rb") as potok:
-            tekst = potok.read(GOLOVA).decode("utf-8", "replace")
+        with open(path_, "rb") as stream:
+            text = stream.read(HEAD_BYTES).decode("utf-8", "replace")
     except OSError:
         return None
-    for stroka in tekst.split("\n"):
-        obrez = stroka.strip()
-        if not obrez or obrez.startswith("//"):
+    for line in text.split("\n"):
+        trimmed = line.strip()
+        if not trimmed or trimmed.startswith("//"):
             continue
-        sovpalo = re.match(r"(%s)[ \t]+«([^»]+)»" % "|".join(SLOVA_MODULYA), obrez)
-        return sovpalo.group(2) if sovpalo else None
+        matched = re.match(r"(%s)[ \t]+«([^»]+)»" % "|".join(MODULE_WORDS), trimmed)
+        return matched.group(2) if matched else None
     return None
 
-def mesta(vvozyashchij):
+def places_of(importer):
     """Каталог файла, каждый ВЫШЕ с `.flang`, FLANG_MODULE_DIR, библиотека."""
-    spisok, hod = [], os.path.dirname(vvozyashchij)
+    places, step = [], os.path.dirname(importer)
     while True:
-        if hod not in spisok:
-            spisok.append(hod)
-        if hod == "/":
+        if step not in places:
+            places.append(step)
+        if step == "/":
             break
-        verh = os.path.dirname(hod)
-        hod = verh
-        if not katalog(hod):
+        above = os.path.dirname(step)
+        step = above
+        if not directory(step):
             break
-    nazvannoe = os.environ.get("FLANG_MODULE_DIR", "")
-    spisok += [k for k in nazvannoe.split(":") if k]
-    spisok += biblioteka()
-    return spisok
+    named = os.environ.get("FLANG_MODULE_DIR", "")
+    places += [k for k in named.split(":") if k]
+    places += library()
+    return places
 
-def biblioteka():
+def library():
     """Подкаталоги РЯДОМ С ДВОИЧНЫМ — так их ищет repl_library_places."""
-    dvoichnyj = os.environ.get("FLANG_BINARY") or os.path.join(sud, "bootstrap", "flang")
-    if not os.path.exists(dvoichnyj):
+    binary = os.environ.get("FLANG_BINARY") or os.path.join(judged, "bootstrap", "flang")
+    if not os.path.exists(binary):
         return []
-    roditel = os.path.dirname(os.path.dirname(os.path.realpath(dvoichnyj)))
-    podkatalogi = ("flang/stdlib", "flang/core", "share/flang/stdlib", "share/flang/core")
-    return [os.path.join(roditel, p) for p in podkatalogi if os.path.exists(os.path.join(roditel, p))]
+    parent = os.path.dirname(os.path.dirname(os.path.realpath(binary)))
+    subdirectories = ("flang/stdlib", "flang/core", "share/flang/stdlib", "share/flang/core")
+    return [os.path.join(parent, p) for p in subdirectories if os.path.exists(os.path.join(parent, p))]
 
-def najti(vvozyashchij, imya):
+def find(importer, name):
     """Первое место, где имя нашлось, отдаёт ВСЕ свои совпадения; прочее — тень."""
-    vzyato, ten = [], []
-    for mesto in mesta(vvozyashchij):
-        zdes = [put for put, imya_est in katalog(mesto) if imya_est == imya]
-        if not vzyato:
-            vzyato = zdes
+    taken, shadow = [], []
+    for place in places_of(importer):
+        here = [path_ for path_, name_here in directory(place) if name_here == name]
+        if not taken:
+            taken = here
         else:
-            ten += [p for p in zdes if p not in vzyato and p not in ten]
-    return vzyato, ten
+            shadow += [p for p in here if p not in taken and p not in shadow]
+    return taken, shadow
 
 # ── Ввозы дерева ────────────────────────────────────────────────────────────
-VVOZ = re.compile(r"^(?:%s)[ \t]+«([^»]+)»(?:[ \t]+из[ \t]+\"([^\"]*)\")?" % "|".join(SLOVA_VVOZA))
+IMPORT = re.compile(r"^(?:%s)[ \t]+«([^»]+)»(?:[ \t]+из[ \t]+\"([^\"]*)\")?" % "|".join(IMPORT_WORDS))
 
-def v_dereve(put):
-    return put == sud or put.startswith(sud + os.sep)
+def in_tree(path_):
+    return path_ == judged or path_.startswith(judged + os.sep)
 
-fajly = []
-for osnova, katalogi, imena in os.walk(sud):
-    katalogi[:] = [k for k in katalogi if k != ".git"]
-    fajly += [os.path.join(osnova, i) for i in imena if i.endswith((".flang", ".fscript"))]
-fajly.sort()
+files = []
+for base, directories, names in os.walk(judged):
+    directories[:] = [k for k in directories if k != ".git"]
+    files += [os.path.join(base, i) for i in names if i.endswith((".flang", ".fscript"))]
+files.sort()
 
-vvozov_po_imeni = vvozov_s_putem = 0
-proishozhdenie = {}     # (имя модуля, путь-победитель) → сколько ввозов
-chuzhie, ne_najdeny, sporn, chuzhoj_put = [], [], [], []
+imports_by_name = imports_with_path = 0
+provenance = {}     # (имя модуля, путь-победитель) → сколько ввозов
+foreign, not_found, disputed, foreign_path = [], [], [], []
 
-for fajl in fajly:
+for file in files:
     try:
-        stroki = open(fajl, encoding="utf-8", errors="replace").read().split("\n")
+        lines = open(file, encoding="utf-8", errors="replace").read().split("\n")
     except OSError:
         continue
-    for nomer, stroka in enumerate(stroki, 1):
-        sovpalo = VVOZ.match(stroka.strip())
-        if not sovpalo:
+    for number, line in enumerate(lines, 1):
+        matched = IMPORT.match(line.strip())
+        if not matched:
             continue
-        imya, put = sovpalo.group(1), sovpalo.group(2)
-        gde = "%s:%d" % (os.path.relpath(fajl, sud), nomer)
-        if put:
-            vvozov_s_putem += 1
-            celyj = os.path.realpath(os.path.join(os.path.dirname(fajl), put))
-            if not v_dereve(celyj):
-                chuzhoj_put.append((gde, imya, celyj))
+        name, path_ = matched.group(1), matched.group(2)
+        where = "%s:%d" % (os.path.relpath(file, judged), number)
+        if path_:
+            imports_with_path += 1
+            whole = os.path.realpath(os.path.join(os.path.dirname(file), path_))
+            if not in_tree(whole):
+                foreign_path.append((where, name, whole))
             continue
-        vvozov_po_imeni += 1
-        vzyato, ten = najti(fajl, imya)
-        if not vzyato:
-            ne_najdeny.append((gde, imya))
+        imports_by_name += 1
+        taken, shadow = find(file, name)
+        if not taken:
+            not_found.append((where, name))
             continue
-        if len(vzyato) > 1:
-            sporn.append((gde, imya, vzyato))
-        pobeditel = vzyato[0]
-        proishozhdenie[(imya, pobeditel)] = proishozhdenie.get((imya, pobeditel), 0) + 1
-        if not v_dereve(pobeditel):
-            svoi = [p for p in ten if v_dereve(p)]
-            chuzhie.append((gde, imya, pobeditel, svoi))
+        if len(taken) > 1:
+            disputed.append((where, name, taken))
+        winner = taken[0]
+        provenance[(name, winner)] = provenance.get((name, winner), 0) + 1
+        if not in_tree(winner):
+            own = [p for p in shadow if in_tree(p)]
+            foreign.append((where, name, winner, own))
 
-def kratko(put):
-    return os.path.relpath(put, sud) if v_dereve(put) else put
+def short(path_):
+    return os.path.relpath(path_, judged) if in_tree(path_) else path_
 
-if rezhim != "--кратко":
-    print("ОТКУДА ПРИЕДЕТ КАЖДЫЙ МОДУЛЬ (дерево %s)\n" % sud)
-    print("  файлов .flang в дереве      %d" % len(fajly))
-    print("  ввозов по имени             %d" % vvozov_po_imeni)
-    print("  ввозов с путём              %d  (разрешаются от файла, подъёмом не задеты)" % vvozov_s_putem)
-    print("  различных пар модуль→файл   %d\n" % len(proishozhdenie))
-    for (imya, pobeditel), skolko in sorted(proishozhdenie.items()):
-        metka = "  " if v_dereve(pobeditel) else "ЧУЖОЙ "
-        print("  %s«%s» → %s  (ввозов %d)" % (metka, imya, kratko(pobeditel), skolko))
+if mode != "--кратко":
+    print("ОТКУДА ПРИЕДЕТ КАЖДЫЙ МОДУЛЬ (дерево %s)\n" % judged)
+    print("  файлов .flang в дереве      %d" % len(files))
+    print("  ввозов по имени             %d" % imports_by_name)
+    print("  ввозов с путём              %d  (разрешаются от файла, подъёмом не задеты)" % imports_with_path)
+    print("  различных пар модуль→файл   %d\n" % len(provenance))
+    for (name, winner), count in sorted(provenance.items()):
+        mark = "  " if in_tree(winner) else "ЧУЖОЙ "
+        print("  %s«%s» → %s  (ввозов %d)" % (mark, name, short(winner), count))
     print()
 
-if ne_najdeny:
-    print("НЕ НАЙДЕНЫ (об этом скажет связывание, сторож их в счёт не берёт): %d" % len(ne_najdeny))
-    for gde, imya in ne_najdeny[:20]:
-        print("  %s: «%s»" % (gde, imya))
+if not_found:
+    print("НЕ НАЙДЕНЫ (об этом скажет связывание, сторож их в счёт не берёт): %d" % len(not_found))
+    for where, name in not_found[:20]:
+        print("  %s: «%s»" % (where, name))
     print()
 
-if sporn:
-    print("СПОР ИМЁН в одном месте (компилятор ответит FLANG_IMPORT_AMBIGUOUS): %d" % len(sporn))
-    for gde, imya, vzyato in sporn[:20]:
-        print("  %s: «%s» — %s" % (gde, imya, ", ".join(kratko(p) for p in vzyato)))
+if disputed:
+    print("СПОР ИМЁН в одном месте (компилятор ответит FLANG_IMPORT_AMBIGUOUS): %d" % len(disputed))
+    for where, name, taken in disputed[:20]:
+        print("  %s: «%s» — %s" % (where, name, ", ".join(short(p) for p in taken)))
     print()
 
-beda = 0
-for gde, imya, celyj in chuzhoj_put:
-    beda += 1
-    print("ПУТЬ ВЕДЁТ ВОН ИЗ ДЕРЕВА  %s: «%s» → %s" % (gde, imya, celyj))
-for gde, imya, pobeditel, svoi in chuzhie:
-    beda += 1
-    print("МОДУЛЬ ИЗ-ЗА ПРЕДЕЛОВ ДЕРЕВА  %s: «%s» приедет из %s" % (gde, imya, pobeditel))
-    if svoi:
-        print("      этим перекрыто в дереве: %s" % ", ".join(kratko(p) for p in svoi))
+trouble = 0
+for where, name, whole in foreign_path:
+    trouble += 1
+    print("ПУТЬ ВЕДЁТ ВОН ИЗ ДЕРЕВА  %s: «%s» → %s" % (where, name, whole))
+for where, name, winner, own in foreign:
+    trouble += 1
+    print("МОДУЛЬ ИЗ-ЗА ПРЕДЕЛОВ ДЕРЕВА  %s: «%s» приедет из %s" % (where, name, winner))
+    if own:
+        print("      этим перекрыто в дереве: %s" % ", ".join(short(p) for p in own))
     else:
         print("      в дереве такого модуля нет вовсе — ввоз держится на чужом файле")
 
-if beda:
+if trouble:
     print()
     print("СБОРКА НЕ ИЗОЛИРОВАНА: мест %d. Поиск модуля поднимается ВЫШЕ корня дерева,"
-          " и чужой файл занял место своего." % beda)
+          " и чужой файл занял место своего." % trouble)
     print("Что делать сейчас: убрать чужой файл из каталога-предка либо перенести дерево"
           " туда, где у предков нет `.flang`.")
     sys.exit(1)

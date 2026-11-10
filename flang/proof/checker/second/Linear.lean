@@ -150,7 +150,8 @@ def «стороныТочны» (k : «ЛК») (t : String) («мягко» : B
   let o := «лаОтрезок» k t
   if «мягко» then o.1 else o.1 && o.2.1 ≥ -«лаКрай» && o.2.2 ≤ «лаКрай»
 
-/-- Положительный терм: (листья, есть ли слагаемый литерал); `none` — не положителен. -/
+/-- Положительный терм: (листья, нуль терма всегда плюс); `none` — не положителен. Нуль всегда плюс
+    у слагаемого литерала и у произведения: нулевое произведение язык отдаёт плюс нулём. -/
 partial def «лаПоложителен» (k : «ЛК») (t0 : String) : Option (List String × Bool) := do
   let t := «ужатьТ» t0
   let «сл» := «сверху» t "плюс"
@@ -162,8 +163,8 @@ partial def «лаПоложителен» (k : «ЛК») (t0 : String) : Option
   if «пр».length = 2 then
     let a := «ужатьТ» («пр».headD ""); let b := «ужатьТ» («пр».getD 1 "")
     match «лаЛитерал» a, «лаЛитерал» b with
-    | some c, _ => if c > 0 then «лаПоложителен» k b else none
-    | _, some c => if c > 0 then «лаПоложителен» k a else none
+    | some c, _ => if c > 0 then («лаПоложителен» k b).map (fun p => (p.1, true)) else none
+    | _, some c => if c > 0 then («лаПоложителен» k a).map (fun p => (p.1, true)) else none
     | _, _ => none
   else if («лаЛитерал» t).isSome then return ([], true)
   else if «лаЛист» k t then return ([t], false)

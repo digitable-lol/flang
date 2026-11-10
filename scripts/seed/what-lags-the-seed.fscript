@@ -69,7 +69,8 @@
   принимает chosen: строка, names: строка
   возвращает «Question»
   если пусто chosen
-    то «Shell» от "missing" и "grep -H -o -E \"$1\" flang/self/*.flang | grep -v -F -f \"$2\"" и [(«Declaration»), names]
+    то «Shell» от "missing" и "grep -H -o -E \"$1\" flang/self/*.flang | grep -v -F -f \"$2\"" и [(«Declaration»),
+        names]
     иначе «Shell» от "missing" и "grep -H -o -E \"$1\" \"$3\" | grep -v -F -f \"$2\"" и [(«Declaration»), names, chosen]
 
 тотальная функция «Opening»
@@ -97,7 +98,9 @@
     («Names file» от answers)]),
    («Totals question» от («Chosen file» от answers)),
    («Missing question» от («Chosen file» от answers) и («Names file» от answers)),
-   («Shell» от "graph" и "grep -r -H -o -E \"$1\" --include='*.flang' --include='*.fscript' flang | LC_ALL=C sort -s -t: -k1,1" и [(«Link»)]),
+   («Shell» от "graph" и
+       "grep -r -H -o -E \"$1\" --include='*.flang' --include='*.fscript' flang | LC_ALL=C sort -s -t: -k1,1" и [
+       («Link»)]),
    («Remove» от "names removed" и («Names file» от answers)),
    («Remove» от "work removed" и («Made of» от "work" и answers))]
 
@@ -189,7 +192,8 @@
   принимает answers: список «Answer»
   возвращает список «Source»
   пусть missing равно («Framed» от («Lines» от («Output of» от "missing" и answers)))
-  отфильтровать (отобразить («Lines» от («Output of» от "totals" и answers)) как line → «Source of» от line и missing) где source → (source.«declared») больше 0
+  отфильтровать (отобразить («Lines» от («Output of» от "totals" и answers)) как line → «Source of» от line и
+      missing) где source → (source.«declared») больше 0
 
 тотальная функция «Is a title»
   принимает line: строка
@@ -220,7 +224,9 @@
     дано graph равно ["a.flang:модуль   «A»", "a.flang:  использует «B»", "a.flang:модуль «Other»",
       "b.flang:модуль «B»"]
     ожидается "\na.flang:«A»\nb.flang:«B»\n"
-  «Framed» от (свёртка (отфильтровать graph где line → «Is a title» от line) начиная с (пустой список) как kept и line → если («Last path» от kept) равен («Path of» от line) то kept иначе добавить (соединить [(«Path of» от line), ":«", («Quoted» от line), "»"] по "") к kept)
+  «Framed» от (свёртка (отфильтровать graph где line → «Is a title» от line) начиная с (пустой список) как kept и
+      line → если («Last path» от kept) равен («Path of» от line) то kept иначе добавить (соединить [
+      («Path of» от line), ":«", («Quoted» от line), "»"] по "") к kept)
 
 тотальная функция «Links»
   принимает graph: список строки
@@ -281,7 +287,9 @@
       случай пусто
         то reached
       случай голова и хвост
-        то «Closure» от (отфильтровать («Homes of» от («Used by» от frontier и titles и links) и titles) где path → не (reached содержит path)) и («Without repeats» от («Соединить списки» от reached и («Homes of» от («Used by» от frontier и titles и links) и titles))) и titles и links и (rounds минус 1)
+        то «Closure» от (отфильтровать («Homes of» от («Used by» от frontier и titles и links) и
+            titles) где path → не (reached содержит path)) и («Without repeats» от («Соединить списки» от reached и
+            («Homes of» от («Used by» от frontier и titles и links) и titles))) и titles и links и (rounds минус 1)
 
 тотальная функция «Reached»
   принимает graph: список строки
@@ -301,7 +309,8 @@
     дано graph равно ["a.flang:модуль «A»", "a.flang:  использует «B»"]
     ожидается ["B"]
   пусть titles равно («Titles» от graph)
-  отфильтровать («Used by» от reached и titles и («Links» от graph)) где title → (длина («Home of» от title и titles)) равен 0
+  отфильтровать («Used by» от reached и titles и («Links» от graph)) где title → (длина («Home of» от title и
+      titles)) равен 0
 
 тотальная функция «Graph»
   принимает answers: список «Answer»
@@ -434,7 +443,8 @@
 тотальная функция «Outside»
   принимает sources: список «Source», reached: список строки
   возвращает список «Source»
-  отфильтровать sources где source → ((длина (source.«missing»)) больше 0) и притом (не («Is reached» от source и reached))
+  отфильтровать sources где source → ((длина (source.«missing»)) больше 0) и притом (не («Is reached» от source и
+      reached))
 
 тотальная функция «Whole»
   принимает sources: список «Source»
@@ -528,7 +538,9 @@
       запись «Source» с «path» равным "flang/self/sets.flang" и «declared» равным 90 и «missing» равным ["Узел"]]
     дано reached равно пустой список
     ожидается "sets.flang: нет в семени 1 из 90 — файл вне замыкания компилятора"
-  пусть said равно («Соединить списки» от («Gathered words» от (отобразить («Lagging» от sources и reached) как source → «Named lines» от source)) и (отобразить («Outside» от sources и reached) как source → «Outside line» от source))
+  пусть said равно («Соединить списки» от («Gathered words» от (отобразить («Lagging» от sources и
+      reached) как source → «Named lines» от source)) и (отобразить («Outside» от sources и
+      reached) как source → «Outside line» от source))
   если (длина said) равен 0 то "всё на месте: сошлись все функции" иначе соединить said по "\n"
 
 тотальная функция «Report text»
@@ -536,13 +548,16 @@
   возвращает строка
   пусть reached равно («Reached» от («Graph» от answers))
   если пусто («Chosen file» от answers)
-    то «Whole report» от («Sources» от answers) и reached и (длина («Lines» от («Output of» от "unresolved" и answers))) и («Lines» от («Output of» от "unresolved" и answers))
+    то «Whole report» от («Sources» от answers) и reached и (длина («Lines» от («Output of» от "unresolved" и
+        answers))) и («Lines» от («Output of» от "unresolved" и answers))
     иначе «One report» от («Sources» от answers) и reached
 
 тотальная функция «Gathering trouble»
   принимает answers: список «Answer»
   возвращает список строки
-  «Gathered words» от (отобразить ["names", "graph"] как name → если («Exit code of» от name и answers) равен 0 то пустой список иначе [(соединить ["сбор «", name, "» ответил кодом ", (к строке («Exit code of» от name и answers)), ": ", («Errors of» от name и answers)] по "")])
+  «Gathered words» от (отобразить ["names", "graph"] как name → если («Exit code of» от name и
+      answers) равен 0 то пустой список иначе [(соединить ["сбор «", name, "» ответил кодом ",
+      (к строке («Exit code of» от name и answers)), ": ", («Errors of» от name и answers)] по "")])
 
 тотальная функция «Finish»
   принимает answers: список «Answer»

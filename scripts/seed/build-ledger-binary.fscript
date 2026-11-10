@@ -88,8 +88,10 @@
     то пустой список
     иначе «Gathered» от [
       [(«Run» от "directories" и "mkdir" и ["-p", («Seed directory» от answers), («Runtime directory» от answers)])],
-      (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → «Show» от "bootstrap" и («Seed directory» от answers) и file и answers),
-      (отобразить («Runtime files») как file → «Show» от "flang/src/emit/c" и («Runtime directory» от answers) и file и answers)]
+      (отобразить («Соединить списки» от («Printed files») и («Runtime files»)) как file → «Show» от "bootstrap" и
+          («Seed directory» от answers) и file и answers),
+      (отобразить («Runtime files») как file → «Show» от "flang/src/emit/c" и («Runtime directory» от answers) и file и
+          answers)]
 
 тотальная функция «Needed files»
   принимает answers: список «Answer»
@@ -101,13 +103,16 @@
 тотальная функция «Presence»
   принимает answers: список «Answer»
   возвращает список «Question»
-  отобразить («Needed files» от answers) как path → «Run» от (соединить ["present ", path] по "") и "test" и ["-f", path]
+  отобразить («Needed files» от answers) как path → «Run» от (соединить ["present ", path] по "") и "test" и ["-f",
+      path]
 
 тотальная функция «Headers»
   принимает answers: список «Answer»
   возвращает список «Question»
   «Gathered» от [[(«Run» от "target" и "mkdir" и ["-p", («Target» от answers)]),
-      («Run» от "printed" и "cp" и («Соединить списки» от (приписать "-p" к (отобразить («Printed files») как file → соединить [(«Seed directory» от answers), "/", file] по "")) и [(«Target» от answers)]))],
+      («Run» от "printed" и "cp" и
+          («Соединить списки» от (приписать "-p" к (отобразить («Printed files») как file → соединить [
+          («Seed directory» от answers), "/", file] по "")) и [(«Target» от answers)]))],
     (отобразить («Runtime files») как file → «Run» от (соединить ["header ", file] по "") и "grep" и ["-n", "-m1",
       "^/\\* SPDX-FileCopyrightText", (соединить [(«Seed directory» от answers), "/", file] по "")])]
 
@@ -184,17 +189,22 @@
   возвращает список строки
   если пусто («Commit» от answers)
     то пустой список
-    иначе отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["show ", path] по "") и answers) как path → соединить ["в коммите ", («Full commit» от answers), " нет файла для ", path] по ""
+    иначе отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["show ",
+        path] по "") и answers) как path → соединить ["в коммите ", («Full commit» от answers), " нет файла для ",
+        path] по ""
 
 тотальная функция «Presence troubles»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["present ", path] по "") и answers) как path → соединить ["нет ", path, " — дерево не то"] по ""
+  отобразить (отфильтровать («Needed files» от answers) где path → «Failed» от (соединить ["present ", path] по "") и
+      answers) как path → соединить ["нет ", path, " — дерево не то"] по ""
 
 тотальная функция «Header troubles»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить (отфильтровать («Runtime files») где file → («Header length» от file и answers) меньше 0) как file → соединить ["в ", («Seed directory» от answers), "/", file, " нет строки SPDX — границы шапки не найти"] по ""
+  отобразить (отфильтровать («Runtime files») где file → («Header length» от file и
+      answers) меньше 0) как file → соединить ["в ", («Seed directory» от answers), "/", file,
+      " нет строки SPDX — границы шапки не найти"] по ""
 
 тотальная функция «Build outcomes»
   принимает answers: список «Answer»

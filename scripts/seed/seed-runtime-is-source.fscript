@@ -55,12 +55,15 @@
 
 тотальная функция «Openings»
   возвращает список «Question»
-  отобразить («Runtime files») как name → «Run from» от («Opening» от name) и («Root») и "head" и ["-n", "1", («Source path» от name)]
+  отобразить («Runtime files») как name → «Run from» от («Opening» от name) и («Root») и "head" и ["-n", "1",
+      («Source path» от name)]
 
 тотальная функция «Positions»
   принимает answers: список «Answer»
   возвращает список «Question»
-  отобразить (отфильтровать («Runtime files») где name → «Opened» от name и answers) как name → «Run from» от («Position» от name) и («Root») и "env" и ["LC_ALL=C.UTF-8", "grep", "-n", "-m1", "-F", "-x", "--", («First line» от («Output of» от («Opening» от name) и answers)), («Seed path» от name)]
+  отобразить (отфильтровать («Runtime files») где name → «Opened» от name и
+      answers) как name → «Run from» от («Position» от name) и («Root») и "env" и ["LC_ALL=C.UTF-8", "grep", "-n",
+      "-m1", "-F", "-x", "--", («First line» от («Output of» от («Opening» от name) и answers)), («Seed path» от name)]
 
 тотальная функция «Header end»
   принимает name: строка, answers: список «Answer»
@@ -70,7 +73,10 @@
 тотальная функция «Differences»
   принимает answers: список «Answer»
   возвращает список «Question»
-  отобразить (отфильтровать («Runtime files») где name → «Found» от name и answers) как name → «Run from» от («Difference» от name) и («Root») и "sh" и ["-c", "tail -n +\"$0\" \"$1\" | diff - \"$2\"", («Header end» от name и answers), («Seed path» от name), («Source path» от name)]
+  отобразить (отфильтровать («Runtime files») где name → «Found» от name и
+      answers) как name → «Run from» от («Difference» от name) и («Root») и "sh" и ["-c",
+      "tail -n +\"$0\" \"$1\" | diff - \"$2\"", («Header end» от name и answers), («Seed path» от name),
+      («Source path» от name)]
 
 тотальная функция «Stage»
   принимает stages: число, answers: список «Answer»
@@ -190,8 +196,13 @@
   «Chosen» от [
     («When» от (не («Opened» от name и answers)) и ([
     (соединить ["НЕТ ФАЙЛА: ", («Seed path» от name), " или ", («Source path» от name)] по "")])),
-    («When» от ((не («Found» от name и answers)) и притом ((«Exit code of» от («Position» от name) и answers) равен 1)) и ([(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: ", name, " — первой строки источника в семени нет вовсе"] по "")])),
-    («When» от (не («Found» от name и answers)) и ([(соединить ["НЕТ ФАЙЛА: ", («Seed path» от name), " или ", («Source path» от name)] по "")]))] и (приписать («Measure» от name и ((«Count» от («Header end» от name и answers)) минус 1) и (длина («Changes» от name и answers)) и («Version changes» от name и answers)) к («Shown changes» от name и answers))
+    («When» от ((не («Found» от name и answers)) и притом ((«Exit code of» от («Position» от name) и
+        answers) равен 1)) и ([(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: ", name,
+        " — первой строки источника в семени нет вовсе"] по "")])),
+    («When» от (не («Found» от name и answers)) и ([(соединить ["НЕТ ФАЙЛА: ", («Seed path» от name), " или ",
+        («Source path» от name)] по "")]))] и (приписать («Measure» от name и ((«Count» от («Header end» от name и
+        answers)) минус 1) и (длина («Changes» от name и answers)) и («Version changes» от name и
+        answers)) к («Shown changes» от name и answers))
 
 тотальная функция «Accounts»
   принимает answers: список «Answer»
@@ -252,12 +263,15 @@
 тотальная функция «Broken differences»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Runtime files») где name → («Found» от name и answers) и притом ((«Exit code of» от («Difference» от name) и answers) больше 1)
+  отфильтровать («Runtime files») где name → («Found» от name и
+      answers) и притом ((«Exit code of» от («Difference» от name) и answers) больше 1)
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
-  «Chosen» от [(«When» от ((длина («Broken differences» от answers)) больше 0) и (вариант «Не проверено» с код равным "FLANG_SEED_RUNTIME_NOT_COMPARED" и сообщение равным (соединить ["НЕ ПРОВЕРЕНО: diff не отработал на ", (соединить («Broken differences» от answers) по ", ")] по ""))),
+  «Chosen» от [(«When» от ((длина («Broken differences» от answers)) больше 0) и
+      (вариант «Не проверено» с код равным "FLANG_SEED_RUNTIME_NOT_COMPARED" и сообщение равным (соединить [
+      "НЕ ПРОВЕРЕНО: diff не отработал на ", (соединить («Broken differences» от answers) по ", ")] по ""))),
     («When» от ((«Troubled» от answers) больше 0) и (вариант «Провал» с код равным "FLANG_SEED_RUNTIME_DIFFERS" и сообщение равным (соединить («Соединить списки» от («Accounts» от answers) и («Refusal» от («Is strict» от answers) и («Troubled» от answers))) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Соединить списки» от («Accounts» от answers) и («Approval» от («Whole lag» от answers))) по "\n"))
 
 тотальная функция «Proceed»

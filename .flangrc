@@ -255,7 +255,7 @@ script.playground:build = bootstrap/flang run-script playground:library && boots
 script.playground:probe = bootstrap/flang io scripts/site/playground-probe.fscript --plan Probe
 script.playground:version = have=$(node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --версия) && want=${FLANG_PLAYGROUND_WANT_VERSION:-$(awk '$1 == "version" { print $3 }' .flangrc)} && if [ "$have" != "$want" ]; then echo "FLANG_PLAYGROUND версия компилятора песочницы $have, а дерева $want: песочница отстала — пересоберите её (playground:build)" >&2; exit 1; fi; echo "песочница: компилятор $have, дерево $want — совпало"
 script.playground:starters = node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --заготовки docs/site/playground.js
-script.playground:site = bootstrap/flang io scripts/site/playground-site.fscript --plan Check --timeout 3600000 --max-orders 100000 --max-steps 40000000000 --на-веру
+script.playground:site = bootstrap/flang io scripts/site/playground-site.fscript --plan Check --timeout 3600000 --max-orders 100000 --max-steps 40000000000
 script.playground:reasoning-probe = bootstrap/flang io scripts/site/reasoning-check-probe.fscript --plan Probe
 script.dictionary:build = bootstrap/flang io scripts/site/emit-dictionary.fscript --plan 'Напечатать словарь' --на-веру --max-steps 100000000
 script.dictionary:check = bootstrap/flang io scripts/site/emit-dictionary.fscript --plan 'Словарь сходится' --на-веру --max-steps 100000000

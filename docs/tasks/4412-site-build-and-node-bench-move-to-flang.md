@@ -1,6 +1,6 @@
 ---
 номер: 4412
-заголовок: Сборка сайта и стенд узла написаны на JavaScript, и страницы публикуются через Node
+заголовок: Сборка сайта написана на JavaScript, и страницы публикуются через Node
 статус: свободна
 приоритет: P2
 исполнитель: —
@@ -11,7 +11,7 @@
 нужность: сайт языка собирается не самим языком, и общие модули оснастки нельзя снять, пока их ввозит сборка сайта
 ---
 
-# 4412. Сборка сайта и стенд узла написаны на JavaScript, и страницы публикуются через Node
+# 4412. Сборка сайта написана на JavaScript, и страницы публикуются через Node
 
 ## Шаги воспроизведения
 
@@ -38,7 +38,7 @@ ls docs/site/*.flang
 
 ```
 $ git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l
-14
+12
 $ grep -an 'node ' .github/workflows/pages.yml
 125:        run: node scripts/site/build-changelog-page.mjs
 191:        run: node docs/site/build.mjs --check
@@ -57,19 +57,13 @@ docs/site/highlighting.flang  docs/site/markdown.flang  docs/site/numbers.flang
 docs/site/search.flang  docs/site/site-numbers.flang  docs/site/sitemap.flang
 ```
 
-Версия: flang 0.7.25, прогон 11 октября 2026. Файлов те же 14, программ на flang
-рядом те же девять; `flang/concurrency/bench/assemble.sh` (строка 25) по-прежнему
-зовёт отсутствующий `build.mjs`.
+Версия: flang 0.7.34, счёт файлов снят 10 ноября 2026; программ на flang рядом
+те же девять.
 
-**10 ноября 2026, задача 0049.** Половина про стенд узла закрыта: оба файла
-JavaScript из `flang/concurrency/bench/` сняты. Генератор стендов — план
-`flang/concurrency/bench/gen.flang` (четырнадцать стендов, от `тихо 10` до
-`ждут 1000000`, совпали с прежним генератором байт в байт), а
-`flang/concurrency/bench/assemble.sh` печатает стенд в C и собирает его двоичным
-и `make`. Стенд смерти узла на JavaScript не звал никто; его место занимает
-`flang/concurrency/bench/node-death.fscript`. Счёт первой команды теперь 12, и
-все двенадцать лежат в `docs/site/`; три пункта списка ниже про стенд описывают
-дерево до этой правки.
+Стенд узла в `flang/concurrency/bench/` на JavaScript больше не стоит: стенды
+пишет план `flang/concurrency/bench/gen.flang`, а `assemble.sh` печатает их в C
+и собирает двоичным и `make`. Все двенадцать оставшихся файлов лежат в
+`docs/site/`.
 
 Шесть коротких команд — `site:build`, `site:check`, `surfaces:run`,
 `surfaces:check`, `numbers:build`, `numbers:check` — зовут Node. Программы на
@@ -83,14 +77,7 @@ flang лежат рядом с оригиналами, но ни коротка�
   `flang/scripts/direct-run.mjs` и `docs/site/lib/surface-pair.mjs`;
 - `docs/site/site-numbers.mjs` ввозит `flang/scripts/binary.mjs`,
   `flang/scripts/direct-run.mjs`, `docs/site/numbers.mjs` и
-  `docs/site/surfaces-run.mjs`;
-- `flang/concurrency/bench/node-death-targets.mjs` ввозит
-  `flang/test/tempdir.mjs`, `flang/test/toolchain-guard.mjs`,
-  `flang/test/uzel-osnastka.mjs`; его самого не зовёт ни короткая команда, ни
-  работа CI;
-- `flang/concurrency/bench/assemble.sh` зовёт `flang/concurrency/bench/gen.mjs`
-  пятью ключами, а следом — `flang/concurrency/bench/build.mjs`, которого в
-  дереве нет; рядом с `gen.mjs` лежит `flang/concurrency/bench/gen.flang`.
+  `docs/site/surfaces-run.mjs`.
 
 ## Что должно быть
 
@@ -98,10 +85,7 @@ flang лежат рядом с оригиналами, но ни коротка�
 `.github/workflows/pages.yml` нет вызова `node`. Порядок для каждого файла:
 программа на flang даёт тот же вывод и тот же код возврата на дереве, при
 `--check` — тот же отказ на том же подложенном входе; короткая команда и
-публикация переключены; файл JavaScript удалён. Стенд смерти узла из
-`flang/concurrency/bench/` либо получает программу на flang рядом с
-`flang/scripts/node-across-targets.fscript`, либо снимается с записью в
-`docs/flang/concurrency/RESILIENCE.md`, где он назван.
+публикация переключены; файл JavaScript удалён.
 
 ## Обходной путь
 
@@ -129,7 +113,7 @@ $ grep -c ' = node docs/site' .flangrc
 ## Где живёт правка
 
 `docs/site/` (программы на flang и снос файлов JavaScript), `.flangrc`,
-`.github/workflows/pages.yml`, `flang/concurrency/bench/`. После этого
+`.github/workflows/pages.yml`. После этого
 снимаются `flang/scripts/binary.mjs` и `flang/scripts/direct-run.mjs` — когда не
 останется ни одного ввозящего. Это сценарии и настройка, пересборка семени
 (bootstrap regeneration) не нужна.
@@ -141,4 +125,4 @@ $ grep -c ' = node docs/site' .flangrc
 сверить вывод и код `--check` на дереве и на подложенной ошибке, переключить
 `script.site:check` (`.flangrc`, строка 182) и шаги 191–220 `pages.yml`. Проба,
 которая краснеет сегодня, — `git ls-files 'docs/site/*.mjs' 'flang/concurrency/bench/*.mjs' | wc -l`
-даёт 14, `grep -ac 'node ' .github/workflows/pages.yml` — 4.
+даёт 12, `grep -ac 'node ' .github/workflows/pages.yml` — 4.

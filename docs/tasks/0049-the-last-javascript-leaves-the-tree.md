@@ -18,7 +18,7 @@
 1. Сосчитать файлы JavaScript в дереве и в трёх каталогах оснастки:
 
 ```
-git ls-files '*.mjs' | wc -l
+git ls-files '*.mjs' '*.js' | wc -l
 git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs'
 ```
 
@@ -32,34 +32,32 @@ grep -an 'run: node' .github/workflows/binary.yml .github/workflows/pages.yml
 ## Что происходит
 
 ```
-$ git ls-files '*.mjs' | wc -l
-33
+$ git ls-files '*.mjs' '*.js' | wc -l
+41
 $ git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l
-14
+8
 $ grep -c ' = node ' .flangrc
-13
+12
 $ grep -ac '= node flang/\|= node scripts/\|= node --test' .flangrc
-7
+6
 ```
 
-Прогон 11 октября 2026 на дереве 1149c78f7; двоичный в счёте не участвует.
-Все четырнадцать файлов таблицы на месте, их двойники на flang — тоже.
+Прогон 10 ноября 2026 на дереве 001d8df7c, двоичный 0.7.34.
 
-Четырнадцать файлов этой задачи и что держит каждый:
+Восемь файлов этой задачи и что держит каждый:
 
-| файл | кто зовёт | программа на flang рядом |
+| файл | кто зовёт | что мешает снять |
 |---|---|---|
-| `flang/scripts/count-guard.mjs` | ярлык `counts:check` | `flang/scripts/count-guard.fscript`, правила перенесены не все |
-| `flang/scripts/name-guard.mjs` | ярлык `names:check` | `flang/scripts/name-guard.fscript` |
-| `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | `flang/scripts/link-collision-tree.fscript` — задача 7192 |
-| `scripts/site/build-changelog.mjs` | ввозит `scripts/site/build-changelog-page.mjs` | `scripts/site/build-changelog.fscript`, ярлыки `changelog:build` и `changelog:check` уже переключены |
-| `scripts/site/build-changelog-page.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | `scripts/site/build-changelog-page.fscript` |
-| `flang/test/nadzor-uzla.test.mjs`, `flang/test/planirovshchik-celi.test.mjs`, `flang/test/svyaz-celi.test.mjs` | ярлык `tests`, `flang/scripts/guards-start.fscript` (обходит все `*.test.mjs`, сегодня их в дереве ровно эти три) | `flang/scripts/supervisor-across-targets.fscript`, `flang/scripts/scheduler-across-targets.fscript`, `flang/scripts/link-across-targets.fscript` |
-| `flang/test/glob.mjs`, `flang/test/tempdir.mjs`, `flang/test/toolchain-guard.mjs`, `flang/test/uzel-osnastka.mjs` | три теста узла и стенд из задачи 4412 | уходят вместе с ввозящими |
-| `flang/scripts/binary.mjs`, `flang/scripts/direct-run.mjs` | все остальные файлы этого списка и сборка сайта | `flang/scripts/binary.fscript`; уходят последними |
+| `flang/scripts/name-guard.mjs` | ярлык `names:check` | план `flang/scripts/name-guard.fscript` отвечает тем же кодом 1 на тех же 483 файлах, но находок у него 688 против 4000; все 688 есть среди 4000, а из остальных 3312 у 2761 названного имени в файле нет — JavaScript приписывает файлу имена его ввозов. Про оставшиеся 551 не выяснено, кто прав |
+| `flang/scripts/count-guard.mjs` | ярлык `counts:check` | план `flang/scripts/count-guard.fscript` судит одни числа потолка (код 1 за 584 с, одно расхождение), остальные правила не перенесены |
+| `flang/scripts/link-collision-guard.mjs` | ярлыки `link-collisions:check`, `link-collisions:corrupt`, `.github/workflows/binary.yml`, `scripts/targets/identical-declarations.sh` | задача 7192: план `flang/scripts/link-collision-tree.fscript` числит настоящими три столкновения, заявленные пробами (код 1 против 0), и идёт 7 мин 17 с при 16 ГиБ против 15 с |
+| `scripts/site/build-changelog-page.mjs`, `scripts/site/build-changelog.mjs` | ярлыки `changelog:page`, `changelog:page:check`, `.github/workflows/pages.yml` | план `scripts/site/build-changelog-page.fscript` печатает другую страницу — вся таблица мер в ней нули — за 15 мин 06 с и 19,6 ГиБ против 35 с |
+| `flang/scripts/binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/glob.mjs` | файлы этого списка и сборка сайта | уходят последними, когда не останется ввозящих |
 
-Совпадение ответов программ на flang с ответами файлов JavaScript сегодня не
-перепроверено: прогон каждой пары дольше минуты.
+Три пробы узла (`flang/test/*.test.mjs`) и их оснастка сняты: те же вопросы
+задают планы `flang/scripts/link-across-targets.fscript`,
+`scheduler-across-targets.fscript` и `supervisor-across-targets.fscript`, ярлык
+`tests` зовёт их. Сверка каждой пары — в `docs/javascript-inventory.md`.
 
 ## Что должно быть
 
@@ -83,27 +81,23 @@ $ grep -ac '= node flang/\|= node scripts/\|= node --test' .flangrc
 0
 ```
 
-`bootstrap/flang run-script tests` и остальные переключённые ярлыки отвечают тем же кодом, что до
-сноса; `flang/scripts/guards-start.fscript` не ждёт файлов тестов на
-JavaScript. Перечень `docs/javascript-inventory.md` переснят. Файлы вне трёх
-каталогов, которые остаются (`docs/benchmarks/speed/work.mjs`,
-`docs/benchmarks/speed/programs/tasks.mjs`, `docs/examples/web/wasm/probe.mjs`,
-`flang/concurrency/bin/wire.mjs`), названы в перечне с причиной либо сняты.
+Перечень `docs/javascript-inventory.md` переснят.
 
 ## Где живёт правка
 
 Файлы из таблицы, `.flangrc` (объявления ярлыков), `.github/workflows/binary.yml`,
 `.github/workflows/pages.yml`, `scripts/targets/identical-declarations.sh`,
-`scripts/guards/occupancy-check.fscript`, `flang/scripts/guards-start.fscript`,
 `docs/javascript-inventory.md`. Пересборка семени (bootstrap regeneration) не
 нужна: всё это сценарии и настройка.
 
-Отдельная задача, здесь не решается: сборка сайта в `docs/site/` и стенд узла в
-`flang/concurrency/bench/` на JavaScript — задача 4412.
+Отдельная задача, здесь не решается: сборка сайта в `docs/site/` на JavaScript —
+задача 4412.
 
 Следующий шаг — пара `flang/scripts/name-guard.mjs` /
-`flang/scripts/name-guard.fscript`: прогнать обе на всём дереве, сверить код и
-вывод, подложить одно лишнее имя и убедиться, что краснеют обе, затем
-переключить ярлык `names:check` в `.flangrc` и удалить файл. Краснеющая сегодня
-проба: `git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' |
-wc -l` печатает 14, а не 0.
+`flang/scripts/name-guard.fscript`: взять одно из 551 имени, которое есть в
+файле, названо JavaScript и не названо планом, и выяснить, чьё это правило.
+Если прав план — переключить ярлык `names:check` и удалить файл. Три остальные
+пары упираются в цену интерпретатора на больших текстах: без неё план нельзя
+поставить в работу, идущую на каждый пуш. Краснеющая сегодня проба:
+`git ls-files 'scripts/*.mjs' 'flang/scripts/*.mjs' 'flang/test/*.mjs' | wc -l`
+печатает 8, а не 0.

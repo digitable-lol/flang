@@ -1,6 +1,7 @@
 # ADR-0160. Сверщик читает то, что доказывает ядро; три дыры закрыты, потолок растёт
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: семьи подделок `case-scope` и `surfaces` в
+`flang/proof/checker/tests/families/`. Принимает владелец.
 **Рядом:** ADR-0115 — код `check --proof` при расхождении со сверщиком; [ADR-0145](0145-unfolding-substitutes-call-arguments-and-the-ceiling-grows.md)
 — ходы цепочки вне доказанной модели; [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md)
 — потолок доверенной базы.

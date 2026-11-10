@@ -1,6 +1,7 @@
 # ADR-0171. Ядро доказывает записи по полям, равенство себе на точных типах и кольцо под остатком; число сужается проверкой
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: пробы `flang/proof/probes/records-and-arithmetic`.
+Принимает владелец.
 **Рядом:** [ADR-0095](0095-ring-laws-are-one-rule-over-the-exact-integer-and-a-refusal-with-a-cause-over-number.md)
 — кольцо точного целого; [ADR-0160](0160-the-checker-reads-what-the-kernel-proves-and-the-ceiling-grows.md)
 — сверщик читает то, что доказывает ядро; [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md)

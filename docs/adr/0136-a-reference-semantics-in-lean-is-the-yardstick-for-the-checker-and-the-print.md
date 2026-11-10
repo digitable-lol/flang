@@ -1,8 +1,10 @@
 # ADR-0136. Эталон — семантика flang на Lean; проверяющая программа на Lean доказывается против него, программа на C остаётся быстрым путём со сверкой
 
-**Состояние:** предложено. Принимает владелец. Уточняет
-[ADR-0041](0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md) (§2.3 «что
-остаётся снаружи теоремы») и [ADR-0096](0096-the-second-checker-is-the-lean-reader-and-a-disagreement-is-a-finding.md).
+**Состояние:** предложено, исполнено: эталонная семантика — `flang/proof/lean/Semantics/`.
+Принимает владелец. Уточняет
+[ADR-0041](0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md) (§2.3
+«что остаётся снаружи теоремы») и
+[ADR-0096](0096-the-second-checker-is-the-lean-reader-and-a-disagreement-is-a-finding.md).
 **Основание:** требование владельца закрыть дыру «у независимой проверки на C нет машинного
 доказательства корректности относительно формальной семантики»; сводка —
 [`docs/trust-gaps.ru.md`](../trust-gaps.ru.md).

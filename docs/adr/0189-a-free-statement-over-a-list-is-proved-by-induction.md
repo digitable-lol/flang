@@ -1,6 +1,7 @@
 # ADR-0189. Свободное утверждение над списком доказывается индукцией, и оба сверщика её переигрывают
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: семья проб
+`flang/proof/checker/tests/families/free-statement-induction`. Принимает владелец.
 **Рядом:** [ADR-0175](0175-a-list-precondition-passes-to-the-head-and-tail-and-a-list-includes-itself.md)
 — звено разбора на месте вызова; [ADR-0038](0038-a-precondition-is-discharged-by-a-printed-derivation.md)
 — снятие печатным выводом.

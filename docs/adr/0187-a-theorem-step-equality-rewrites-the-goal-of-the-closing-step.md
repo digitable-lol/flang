@@ -1,6 +1,7 @@
 # ADR-0187. Равенство, выписанное шагом теоремы, переписывает цель закрывающего шага
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: пробы `flang/proof/probes/written-steps`, семья
+`flang/proof/checker/tests/families/written-steps-rewrite`. Принимает владелец.
 **Рядом:** [ADR-0084](0084-the-kernel-rewrites-a-goal-by-proved-equality-and-a-quantifier-opens-inside-a-formula.md)
 — переписка цели доказанными равенствами утверждений; [ADR-0175](0175-a-list-precondition-passes-to-the-head-and-tail-and-a-list-includes-itself.md)
 — ветка, поверх которой стоит эта.

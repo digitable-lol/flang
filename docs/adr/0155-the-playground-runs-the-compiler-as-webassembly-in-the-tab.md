@@ -1,6 +1,8 @@
 # ADR-0155. Песочница исполняет двоичный компилятор, собранный в WebAssembly, прямо во вкладке
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: `docs/site/playground.js`, сборка —
+`bootstrap/flang run-script playground:compiler`, выкладка — `.github/workflows/pages.yml`.
+Принимает владелец.
 **Дата:** 17 октября 2026.
 **Рядом:** [ADR-0045](0045-run-and-io-print-the-verdict-and-refuse-an-unproved-program.md) —
 приговор и отказ недоказанному; страница [песочницы](../site/playground.ru.md); замер wasm

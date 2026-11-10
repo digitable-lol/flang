@@ -1,6 +1,10 @@
 # ADR-0007. Шифрование берётся поручением внешнему хозяину, а не своим кодом
 
-**Состояние:** предложено (ветка `u/zashchishchyonnoe-soedinenie`), прогнано на живой сети
+**Состояние:** заменено
+[ADR-0101](0101-the-binary-host-speaks-tls-with-the-printed-language-client.md): `https` у
+«Запросить» исполняет клиент TLS, написанный на языке, а не `curl` (задача
+[0048](../tasks/0048-tls-is-assembled-end-to-end.md) сделана). Ниже — решение 22 августа 2026,
+каким оно было.
 **Дата:** 22 августа 2026
 **Основание:** хозяин двоичного `flang/src/emit/c/flang_repl.c`, словарь эффектов
 `flang/self/parser.flang`, пример `docs/examples/io/https-request.flang`

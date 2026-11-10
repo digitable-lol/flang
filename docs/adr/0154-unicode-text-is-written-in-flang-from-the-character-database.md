@@ -1,6 +1,7 @@
 # ADR-0154. Текст по Юникоду пишется на flang из базы символов, а ICU — эталон, а не зависимость
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: `flang/stdlib/unicode-case.flang`, пробы
+`flang/proof/probes/unicode-text-in-targets`. Принимает владелец.
 **Основание:** решение владельца: возможности ICU и CLDR нужны во flang, но переписанными на
 flang, а не внешней зависимостью.
 **Рядом:** [ADR-0058](0058-a-foreign-language-enters-through-an-untrusted-translator.md) —

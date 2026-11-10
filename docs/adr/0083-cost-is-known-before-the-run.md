@@ -1,6 +1,7 @@
 # ADR-0083. Цена функции известна до прогона: граница шагов и памяти от размеров входа, переведённая в секунды и байты названной машины
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: `flang run --cost`, приборы `cost:calibrate` и
+`cost:validate`, выпуск 0.7.26. Принимает владелец.
 **Основание:** [ADR-0033](0033-termination-is-not-a-bound-on-steps.md) §2.2–§2.4,
 §5.3 и §9; [ADR-0031](0031-certification-is-a-process-not-a-property-of-the-language.md) §2;
 [ADR-0061](0061-killing-a-process-and-bounding-its-resources.md).

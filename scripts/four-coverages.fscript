@@ -65,7 +65,8 @@
 тотальная функция «Lemmas»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить («Lines» от («Output of» от "lemmas" и answers)) как line → «First line» от (соединить («Quoted» от line) по "\n")
+  отобразить («Lines» от («Output of» от "lemmas" и
+      answers)) как line → «First line» от (соединить («Quoted» от line) по "\n")
 
 тотальная функция «Rows»
   принимает least: число, text: строка
@@ -94,7 +95,8 @@
 тотальная функция «Rules»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить (отфильтровать («Rows» от 6 и («Output of» от "rules" и answers)) где cells → не ((«Cell» от 1 и cells) равен "name")) как cells → «Cell» от 1 и cells
+  отобразить (отфильтровать («Rows» от 6 и («Output of» от "rules" и answers)) где cells → не ((«Cell» от 1 и
+      cells) равен "name")) как cells → «Cell» от 1 и cells
 
 тотальная функция «Ban lemma»
   принимает title: строка
@@ -146,7 +148,8 @@
     ожидается нет
   если title содержит "✗"
     то (длина (отфильтровать lemmas где lemma → lemma равен («Ban lemma» от title))) больше 0
-    иначе (длина (отфильтровать lemmas где lemma → (lemma равен title) или (lemma начинается с (соединить [title, "-"] по "")))) больше 0
+    иначе (длина (отфильтровать lemmas где lemma → (lemma равен title) или (lemma начинается с (соединить [title,
+        "-"] по "")))) больше 0
 
 тотальная функция «Formalization lines»
   принимает rules: список строки, lemmas: список строки
@@ -207,14 +210,16 @@
   пример «A line of another shape gives nothing»
     дано line равно "доля-проигрыванием = много"
     ожидается ""
-  если ((«Digits» от («Word» от 3 и line)) и притом («Digits» от («Word» от 5 и line))) и притом ((«Word» от 8 и line) равен "%")
+  если ((«Digits» от («Word» от 3 и line)) и притом («Digits» от («Word» от 5 и line))) и притом ((«Word» от 8 и
+      line) равен "%")
     то соединить [(«Word» от 3 и line), " из ", («Word» от 5 и line), " = ", («Word» от 7 и line), " %"] по ""
     иначе ""
 
 тотальная функция «Idle»
   принимает answers: список «Answer»
   возвращает строка
-  пусть line равно («First line» от (соединить (отфильтровать («Said by» от "corpus" и answers) где line → (соединить («Words» от line) по " ") начинается с "из них ВПУСТУЮ") по "\n"))
+  пусть line равно («First line» от (соединить (отфильтровать («Said by» от "corpus" и
+      answers) где line → (соединить («Words» от line) по " ") начинается с "из них ВПУСТУЮ") по "\n"))
   «Leading digits» от («Cell» от 2 и (разделить line по "\t"))
 
 тотальная функция «Share lines»
@@ -284,7 +289,8 @@
 тотальная функция «Violations»
   принимает answers: список «Answer»
   возвращает список список строки
-  отфильтровать («Rows» от 2 и («Output of» от "violations" и answers)) где cells → не ((«Cell» от 1 и cells) равен "key")
+  отфильтровать («Rows» от 2 и («Output of» от "violations" и answers)) где cells → не ((«Cell» от 1 и
+      cells) равен "key")
 
 тотальная функция «Violations section»
   принимает answers: список «Answer»
@@ -300,7 +306,8 @@
 тотальная функция «Print rows»
   принимает answers: список «Answer»
   возвращает список список строки
-  отфильтровать («Rows» от 1 и («Output of» от "print rules" и answers)) где cells → не ((«Cell» от 1 и cells) равен "имя")
+  отфильтровать («Rows» от 1 и («Output of» от "print rules" и answers)) где cells → не ((«Cell» от 1 и
+      cells) равен "имя")
 
 тотальная функция «Translation result»
   принимает answers: список «Answer»
@@ -324,7 +331,8 @@
 тотальная функция «Translation is readable»
   принимает answers: список «Answer»
   возвращает признак
-  ((«Exit code of» от "print rules" и answers) равен 0) и притом ((«Exit code of» от "translation suite" и answers) равен 0)
+  ((«Exit code of» от "print rules" и answers) равен 0) и притом ((«Exit code of» от "translation suite" и
+      answers) равен 0)
 
 тотальная функция «Translation lines»
   принимает answers: список «Answer»

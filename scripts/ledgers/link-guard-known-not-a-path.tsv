@@ -57,10 +57,10 @@ docs/site/embedding.ru.md	src/factorial.rs	пример на чужом язык
 docs/site/embedding.ru.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
+docs/guide/surface-sugar.md	stock.flang	иллюстративное имя файла в примере страницы, не файл дерева
+docs/guide/surface-sugar.ru.md	stock.flang	иллюстративное имя файла в примере страницы, не файл дерева
 docs/site/getting-started.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/site/index.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/site/index.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»

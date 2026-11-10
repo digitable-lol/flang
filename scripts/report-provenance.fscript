@@ -94,13 +94,15 @@
     дано path равно "scripts/seed-fingerprint"
     дано sums равно "aa11  bootstrap/flang\n"
     ожидается ""
-  «First line» от (соединить (отобразить (отфильтровать («Lines» от sums) где line → («Word» от 2 и line) равен path) как line → «Word» от 1 и line) по "\n")
+  «First line» от (соединить (отобразить (отфильтровать («Lines» от sums) где line → («Word» от 2 и
+      line) равен path) как line → «Word» от 1 и line) по "\n")
 
 тотальная функция «Tree line»
   принимает answers: список «Answer»
   возвращает строка
   пусть changed равно (длина («Lines» от («Output of» от "changes" и answers)))
-  «Chosen» от [(«When» от (не ((«Exit code of» от "head" и answers) равен 0)) и ("SHA дерева         — (дерево не под учётом git)")),
+  «Chosen» от [(«When» от (не ((«Exit code of» от "head" и answers) равен 0)) и
+      ("SHA дерева         — (дерево не под учётом git)")),
     («When» от (changed равен 0) и (соединить ["SHA дерева         ",
       («First line» от («Output of» от "head" и answers)), " (рабочая копия чиста)"] по ""))] и (соединить [
       "SHA дерева         ", («First line» от («Output of» от "head" и answers)), " (РАБОЧАЯ КОПИЯ ПРАВЛЕНА: файлов ",
@@ -203,7 +205,8 @@
     случай пусто
       то если stages не больше 0
         то вариант «Конец работы» с значение равным («Provenance» от answers)
-        иначе «Proceed with provenance» от («Provenance stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+        иначе «Proceed with provenance» от («Provenance stage» от (stages минус 1) и
+            answers) и (stages минус 1) и answers
 
 тотальная функция «Begin provenance»
   возвращает «Inquiry»

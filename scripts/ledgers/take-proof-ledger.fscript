@@ -195,10 +195,17 @@
     дано values равно ["/srv/tree", "", "", "", "", "", ""]
     дано arguments равно ["flang/stdlib/aes.flang"]
     дано root равно "/srv/tree"
-    ожидается (запись «Job» с «root» равным "/srv/tree" и «file» равным "flang/stdlib/aes.flang" и «binary» равным "/srv/tree-ledger-binary/flang" и «out» равным "/srv/tree-ledger-binary/vedomosti" и «memory» равным "45G" и «peak» равным "" и «steps» равным "" и «depth» равным "" и «said» равным пустой список)
+    ожидается (запись «Job» с «root» равным "/srv/tree" и «file» равным "flang/stdlib/aes.flang" и
+        «binary» равным "/srv/tree-ledger-binary/flang" и «out» равным "/srv/tree-ledger-binary/vedomosti" и
+        «memory» равным "45G" и «peak» равным "" и «steps» равным "" и «depth» равным "" и «said» равным пустой список)
   пусть folder равно («Setting» от values и 1)
   пусть named равно («Resolved» от («Setting» от arguments и 2) и folder и "")
-  запись «Job» с «root» равным root и «file» равным («Setting» от arguments и 1) и «binary» равным («Resolved» от («Setting» от values и 2) и folder и (соединить [root, "-ledger-binary/flang"] по "")) и «out» равным («Or» от named и («Resolved» от («Setting» от values и 3) и folder и (соединить [root, "-ledger-binary/vedomosti"] по ""))) и «memory» равным («Or» от («Setting» от values и 4) и "45G") и «peak» равным («Setting» от values и 5) и «steps» равным («Setting» от values и 6) и «depth» равным («Setting» от values и 7) и «said» равным пустой список
+  запись «Job» с «root» равным root и «file» равным («Setting» от arguments и
+      1) и «binary» равным («Resolved» от («Setting» от values и 2) и folder и (соединить [root,
+      "-ledger-binary/flang"] по "")) и «out» равным («Or» от named и («Resolved» от («Setting» от values и 3) и
+      folder и (соединить [root, "-ledger-binary/vedomosti"] по ""))) и «memory» равным («Or» от («Setting» от values и
+      4) и "45G") и «peak» равным («Setting» от values и 5) и «steps» равным («Setting» от values и
+      6) и «depth» равным («Setting» от values и 7) и «said» равным пустой список
 
 тотальная функция «Saying»
   принимает job: «Job», lines: список строки
@@ -223,7 +230,9 @@
   принимает job: «Job», words: строка
   возвращает «Продолжение»
   пример «what is missing is named after what was said»
-    дано job равно (запись «Job» с «root» равным "" и «file» равным "" и «binary» равным "" и «out» равным "" и «memory» равным "" и «peak» равным "" и «steps» равным "" и «depth» равным "" и «said» равным ["снимаю ведомость: a"])
+    дано job равно (запись «Job» с «root» равным "" и «file» равным "" и «binary» равным "" и «out» равным "" и
+        «memory» равным "" и «peak» равным "" и «steps» равным "" и «depth» равным "" и «said» равным [
+        "снимаю ведомость: a"])
     дано words равно "нет файла a"
     ожидается вариант «Не проверено» с код равным "FLANG_LEDGER_NOT_TAKEN" и сообщение равным "снимаю ведомость: a\nнет файла a"
   вариант «Не проверено» с код равным "FLANG_LEDGER_NOT_TAKEN" и сообщение равным (соединить (добавить words к (job.«said»)) по "\n")
@@ -282,7 +291,8 @@
   принимает job: «Job»
   возвращает список строки
   пример «only the named limits become keys»
-    дано job равно (запись «Job» с «root» равным "" и «file» равным "" и «binary» равным "" и «out» равным "" и «memory» равным "" и «peak» равным "" и «steps» равным "5" и «depth» равным "" и «said» равным пустой список)
+    дано job равно (запись «Job» с «root» равным "" и «file» равным "" и «binary» равным "" и «out» равным "" и
+        «memory» равным "" и «peak» равным "" и «steps» равным "5" и «depth» равным "" и «said» равным пустой список)
     ожидается ["--предел-шагов", "5"]
   «Joined» от (если (job.«steps») равен "" то (пустой список)
     иначе ["--предел-шагов", (job.«steps»)]) и (если (job.«depth») равен "" то (пустой список)
@@ -350,7 +360,9 @@
     случай вариант «Доводы» с доводы как arguments
       то если (длина arguments) равен 0
         то вариант «Не проверено» с код равным "FLANG_LEDGER_NOT_TAKEN" и сообщение равным "не назван файл. Пример: bootstrap/flang io scripts/ledgers/take-proof-ledger.fscript -- flang/stdlib/aes.flang"
-        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && pwd"]) и потом равным (вариант «Finding root» с values равным values и arguments равным arguments)
+        иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и
+            аргументы равным ["-c", "cd ../.. && pwd"]) и потом равным (вариант «Finding root» с values равным values и
+            arguments равным arguments)
     случай любое
       то вариант «Не проверено» с код равным "FLANG_LEDGER_NOT_TAKEN" и сообщение равным "доводы не прочитать"
 
@@ -398,20 +410,29 @@
       то «After root» от values и arguments и reply
     случай вариант «Finding file» с job как job
       то если «Passed» от reply
-        то вариант «Сделать» с поручение равным («Test order» от "-x" и (job.«binary»)) и потом равным (вариант «Finding binary» с job равным job)
+        то вариант «Сделать» с поручение равным («Test order» от "-x" и
+            (job.«binary»)) и потом равным (вариант «Finding binary» с job равным job)
         иначе «Not taken» от job и (соединить ["нет файла ", (job.«file»)] по "")
     случай вариант «Finding binary» с job как job
       то если «Passed» от reply
-        то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "mkdir" и аргументы равным ["-p", (job.«out»)]) и потом равным (вариант «Making out» с job равным job)
+        то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "mkdir" и
+            аргументы равным ["-p", (job.«out»)]) и потом равным (вариант «Making out» с job равным job)
         иначе «Not taken» от job и (соединить ["нет двоичного ", (job.«binary»), " — соберите: bootstrap/flang io scripts/seed/build-ledger-binary.fscript --plan Build --timeout 900000 --"] по "")
     случай вариант «Making out» с job как job
       то если «Passed» от reply
-        то вариант «Сделать» с поручение равным («Test order» от "-f" и («Header of» от (job.«binary»))) и потом равным (вариант «Finding header» с job равным job и header равным («Header of» от (job.«binary»)) и fallback равным (соединить [(job.«root»), "/bootstrap/flang_runtime.h"] по ""))
+        то вариант «Сделать» с поручение равным («Test order» от "-f" и
+            («Header of» от (job.«binary»))) и потом равным (вариант «Finding header» с job равным job и
+            header равным («Header of» от (job.«binary»)) и fallback равным (соединить [(job.«root»),
+            "/bootstrap/flang_runtime.h"] по ""))
         иначе «Not taken» от job и (соединить ["каталог выходов не завёлся: ", (job.«out»)] по "")
     случай вариант «Finding header» с job как job и header как header и fallback как fallback
-      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "grep" и аргументы равным ["-E", "^#define FL_MAX_(STEPS|DEPTH) [0-9]+$", (если «Passed» от reply то header иначе fallback)]) и потом равным (вариант «Reading limits» с job равным job)
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "grep" и
+          аргументы равным ["-E", "^#define FL_MAX_(STEPS|DEPTH) [0-9]+$",
+          (если «Passed» от reply то header иначе fallback)]) и потом равным (вариант «Reading limits» с job равным job)
     случай вариант «Reading limits» с job как job
-      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "md5sum" и аргументы равным [(job.«binary»)]) и потом равным (вариант «Summing binary» с job равным job и limits равным («Reply text» от reply))
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "md5sum" и
+          аргументы равным [(job.«binary»)]) и потом равным (вариант «Summing binary» с job равным job и
+          limits равным («Reply text» от reply))
     случай вариант «Summing binary» с job как job и limits как limits
       то «After summing» от job и limits и reply
     случай вариант «Finding gates» с job как job и keys как keys
@@ -436,12 +457,14 @@
   принимает job: «Job», limits: строка, reply: «Отклик»
   возвращает «Продолжение»
   пусть built равно («Text lines» от limits)
-  пусть warned равно («Joined» от («Limit words» от "--предел-шагов" и (job.«steps») и («Defined» от built и "FL_MAX_STEPS")) и («Limit words» от "--предел-глубины" и (job.«depth») и («Defined» от built и "FL_MAX_DEPTH")))
+  пусть warned равно («Joined» от («Limit words» от "--предел-шагов" и (job.«steps») и («Defined» от built и
+      "FL_MAX_STEPS")) и («Limit words» от "--предел-глубины" и (job.«depth») и («Defined» от built и "FL_MAX_DEPTH")))
   пусть keys равно («Limit keys» от job)
   пусть said равно («Joined» от warned и [(соединить ["снимаю ведомость: ", (job.«file»)] по ""),
     (соединить ["двоичный: ", (job.«binary»), " (", («First piece» от («Reply text» от reply) и " "), ")"] по ""),
     (соединить («Joined» от ["ключи: --proof --json"] и keys) по " ")])
-  вариант «Сделать» с поручение равным («Test order» от "-x" и («Gates»)) и потом равным (вариант «Finding gates» с job равным («Saying» от job и said) и keys равным keys)
+  вариант «Сделать» с поручение равным («Test order» от "-x" и
+      («Gates»)) и потом равным (вариант «Finding gates» с job равным («Saying» от job и said) и keys равным keys)
 
 тотальная функция «After gates»
   принимает job: «Job», keys: список строки, reply: «Отклик»
@@ -449,7 +472,8 @@
   пусть gated равно («Passed» от reply)
   пусть told равно (если gated то job
     иначе («Saying» от job и [(соединить ["ворот ", («Gates»), " нет — прогон идёт напрямую"] по "")]))
-  вариант «Сделать» с поручение равным («Run order» от told и keys и gated) и потом равным (вариант «Taking» с job равным told)
+  вариант «Сделать» с поручение равным («Run order» от told и keys и
+      gated) и потом равным (вариант «Taking» с job равным told)
 
 тотальная функция «After taking»
   принимает job: «Job», reply: «Отклик»
@@ -458,7 +482,9 @@
   пусть told равно («Saying» от job и («Text lines» от said))
   если («Code of» от said) равен "0"
     то вариант «Сделать» с поручение равным («Share order» от told) и потом равным (вариант «Counting share» с job равным told)
-    иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "tail" и аргументы равным ["-5", (соединить [(job.«out»), "/", («Slug» от (job.«file»)), ".err"] по "")]) и потом равным (вариант «Reading tail» с job равным told и code равным («Code of» от said))
+    иначе вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "tail" и
+        аргументы равным ["-5", (соединить [(job.«out»), "/", («Slug» от (job.«file»)),
+        ".err"] по "")]) и потом равным (вариант «Reading tail» с job равным told и code равным («Code of» от said))
 
 тотальная функция «After share»
   принимает job: «Job», reply: «Отклик»
@@ -466,7 +492,8 @@
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
       то если code равен 0
-        то вариант «Конец работы» с значение равным (соединить («Joined» от (job.«said») и («Text lines» от output)) по "\n")
+        то вариант «Конец работы» с значение равным (соединить («Joined» от (job.«said») и
+            («Text lines» от output)) по "\n")
         иначе вариант «Провал» с код равным "FLANG_LEDGER_SHARE" и сообщение равным (соединить («Joined» от (job.«said») и («Joined» от («Text lines» от output) и («Text lines» от errors))) по "\n")
     случай любое
       то вариант «Провал» с код равным "FLANG_LEDGER_SHARE" и сообщение равным "счёт доли не запустился"

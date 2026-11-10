@@ -80,7 +80,8 @@
 тотальная функция «Lessons»
   принимает answers: список «Answer»
   возвращает список «Lesson»
-  «Numbered» от (отфильтровать («Lines» от («Output of» от "lessons" и answers)) где name → «Ends with» от name и ".lesson")
+  «Numbered» от (отфильтровать («Lines» от («Output of» от "lessons" и answers)) где name → «Ends with» от name и
+      ".lesson")
 
 тотальная функция «Total»
   принимает answers: список «Answer»
@@ -148,7 +149,8 @@
   «Chosen» от [
     («When» от (line равен heading) и (запись «Taken» с «inside» равным да и «lines» равным (taken.«lines»))),
     («When» от («Is a heading» от line) и (запись «Taken» с «inside» равным нет и «lines» равным (taken.«lines»))),
-    («When» от (taken.«inside») и (запись «Taken» с «inside» равным да и «lines» равным (добавить line к (taken.«lines»))))] и taken
+    («When» от (taken.«inside») и (запись «Taken» с «inside» равным да и
+        «lines» равным (добавить line к (taken.«lines»))))] и taken
 
 тотальная функция «Section»
   принимает name: строка, text: строка
@@ -161,7 +163,9 @@
     дано name равно "впиши"
     дано text равно "=номер=\n1\n"
     ожидается пустой список
-  (свёртка («Text lines» от text) начиная с (запись «Taken» с «inside» равным нет и «lines» равным пустой список) как taken и line → «Taking» от (соединить ["=", name, "="] по "") и taken и line).«lines»
+  (свёртка («Text lines» от text) начиная с (запись «Taken» с «inside» равным нет и
+      «lines» равным пустой список) как taken и line → «Taking» от (соединить ["=", name, "="] по "") и taken и
+      line).«lines»
 
 тотальная функция «As text»
   принимает lines: список строки
@@ -300,7 +304,8 @@
     дано wanted равно ["модуль", "следует", "follows"]
     дано present равно ["модуль"]
     ожидается ["< следует", "< follows"]
-  отобразить (отфильтровать wanted где phrase → не (present содержит phrase)) как phrase → соединить [mark, phrase] по ""
+  отобразить (отфильтровать wanted где phrase → не (present содержит phrase)) как phrase → соединить [mark,
+      phrase] по ""
 
 тотальная функция «Word differences»
   принимает lexer: список строки, tutor: список строки
@@ -309,7 +314,8 @@
     дано lexer равно ["модуль", "план"]
     дано tutor равно ["план", "модуль"]
     ожидается ["  слова те же, порядок другой"]
-  пусть differing равно («Соединить списки» от («Missing from» от "< " и lexer и tutor) и («Missing from» от "> " и tutor и lexer))
+  пусть differing равно («Соединить списки» от («Missing from» от "< " и lexer и tutor) и («Missing from» от "> " и
+      tutor и lexer))
   если пусто differing то ["  слова те же, порядок другой"] иначе «Beginning of» от differing и 10
 
 тотальная функция «Beginning of»
@@ -372,10 +378,14 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   пусть lessons равно («Lessons» от answers)
-  «Gathered» от [(отобразить lessons как lesson → «Write» от (соединить ["answer ", («Numeral» от (lesson.«number»))] по "") и («Answer file» от (lesson.«number») и answers) и («Answer to» от (lesson.«number») и answers)),
+  «Gathered» от [(отобразить lessons как lesson → «Write» от (соединить ["answer ",
+      («Numeral» от (lesson.«number»))] по "") и («Answer file» от (lesson.«number») и answers) и
+      («Answer to» от (lesson.«number») и answers)),
     [(«Write» от "all answers" и («Inside» от "whole" и answers) и («All answers» от lessons и answers)),
-     («Write» от "remaining answers" и («Inside» от "remaining" и answers) и («All answers» от (отфильтровать lessons где lesson → (lesson.«number») больше 1) и answers)),
-     («Write» от "session input" и («Inside» от "session" и answers) и "Урок\nх умножить на 2\n\"Удвоить\" от 21\nи непонятно как это работает\n\n")]]
+     («Write» от "remaining answers" и («Inside» от "remaining" и answers) и
+         («All answers» от (отфильтровать lessons где lesson → (lesson.«number») больше 1) и answers)),
+     («Write» от "session input" и («Inside» от "session" и answers) и
+         "Урок\nх умножить на 2\n\"Удвоить\" от 21\nи непонятно как это работает\n\n")]]
 
 тотальная функция «Lesson runs»
   принимает lesson: «Lesson», answers: список «Answer»
@@ -383,7 +393,8 @@
   [
     («Tutor run» от («Own question» от (lesson.«number»)) и («Answer file» от (lesson.«number») и answers) и "нет" и [
     "--только", («Numeral» от (lesson.«number»))] и answers),
-   («Tutor run» от («Foreign question» от (lesson.«number»)) и («Answer file» от («Neighbour» от (lesson.«number») и («Total» от answers)) и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers)]
+   («Tutor run» от («Foreign question» от (lesson.«number»)) и («Answer file» от («Neighbour» от (lesson.«number») и
+       («Total» от answers)) и answers) и "нет" и ["--только", («Numeral» от (lesson.«number»))] и answers)]
 
 тотальная функция «Running»
   принимает answers: список «Answer»
@@ -394,7 +405,8 @@
      («Run» от "lexer table" и "sed" и ["-n", "/^тотальная функция «Куски таблицы»/,/^  \\]/p",
        («In the tree» от "flang/self/lexer.flang" и answers)]),
      («Run» от "tutor table" и "sed" и ["-n", "/^LANGUAGE_WORDS='/,/^'/p", («Tutor» от answers)]),
-     («Tutor run» от "place first" и («Answer file» от 1 и answers) и («Inside» от "place" и answers) и ["--сначала"] и answers),
+     («Tutor run» от "place first" и («Answer file» от 1 и answers) и («Inside» от "place" и answers) и ["--сначала"] и
+         answers),
      («Read» от "place" и («Inside» от "place" и answers)),
      («Tutor run» от "list en" и "/dev/null" и "нет" и ["--список", "--язык", "en"] и answers),
      («Tutor run» от "list ru" и "/dev/null" и "нет" и ["--список", "--язык", "ru"] и answers)]]
@@ -412,7 +424,8 @@
 тотальная функция «Both languages listed»
   принимает answers: список «Answer»
   возвращает признак
-  («Has a line beginning with» от "lesson 1 · " и "list en" и answers) и притом («Has a line beginning with» от "урок 1 · " и "list ru" и answers)
+  («Has a line beginning with» от "lesson 1 · " и "list en" и
+      answers) и притом («Has a line beginning with» от "урок 1 · " и "list ru" и answers)
 
 тотальная функция «Whole is plain»
   принимает answers: список «Answer»
@@ -422,8 +435,10 @@
 тотальная функция «Following»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Gathered» от («Applying» от [(«When» от («Place is kept» от answers) и [(«Tutor run» от "place rest" и («Inside» от "remaining" и answers) и («Inside» от "place" и answers) и (пустой список) и answers)]),
-    («When» от («Both languages listed» от answers) и [(«Tutor run» от "unknown language" и («Answer file» от 1 и answers) и "нет" и ["--только", "1", "--язык", "eo"] и answers)]),
+  «Gathered» от («Applying» от [(«When» от («Place is kept» от answers) и [(«Tutor run» от "place rest" и
+      («Inside» от "remaining" и answers) и («Inside» от "place" и answers) и (пустой список) и answers)]),
+    («When» от («Both languages listed» от answers) и [(«Tutor run» от "unknown language" и («Answer file» от 1 и
+        answers) и "нет" и ["--только", "1", "--язык", "eo"] и answers)]),
     («When» от ((«Whole is plain» от answers) и притом («Passed» от "terminal present" и answers)) и [
       («Terminal run» от "colour on" и "" и answers), («Terminal run» от "colour off" и "NO_COLOR=" и answers)])])
 
@@ -447,7 +462,8 @@
       "корень дерева узнать не удалось — судить нечем (код 3)"]),
     («When» от («Failed» от "binary present" и answers) и [
       (соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
-    («When» от ((«Answered» от "lessons" и answers) и притом ((«Total» от answers) меньше 1)) и ["уроков нет — судить нечем (код 3)"]),
+    («When» от ((«Answered» от "lessons" и answers) и притом ((«Total» от answers) меньше 1)) и [
+        "уроков нет — судить нечем (код 3)"]),
     («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [
       (соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")])]
 
@@ -513,7 +529,9 @@
 тотальная функция «Session complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  «Chosen» от [(«When» от ((не («Passed» от "session" и answers)) или (не («Said» от "session" и "урок 1 пройден" и answers))) и (приписать (соединить ["сеанс: ввод владельца дал код ", («Code» от "session" и answers), ", а урок 1 не пройден"] по "") к («Tail» от "session" и 8 и answers))),
+  «Chosen» от [(«When» от ((не («Passed» от "session" и answers)) или (не («Said» от "session" и "урок 1 пройден" и
+      answers))) и (приписать (соединить ["сеанс: ввод владельца дал код ", («Code» от "session" и answers),
+      ", а урок 1 не пройден"] по "") к («Tail» от "session" и 8 и answers))),
     («When» от (не («Said» от "session" и "принял как «Урок»" и answers)) и [
       "сеанс: имя модуля без кавычек, а проводник не сказал, что взял его в кавычки"]),
     («When» от (не («Said» от "session" и "вызов самой «Удвоить» внутри её тела" и answers)) и [
@@ -547,7 +565,9 @@
   «Chosen» от [
     («When» от (не («Place is kept» от answers)) и [
     (соединить ["место: после первого урока в ", («Inside» от "place" и answers), " не записана единица"] по "")]),
-    («When» от ((не («Passed» от "place rest" и answers)) или (не («Said» от "place rest" и (соединить ["урок 2 из ", total] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ", («Code» от "place rest" и answers), ")"] по "") к («Tail» от "place rest" и 8 и answers))),
+    («When» от ((не («Passed» от "place rest" и answers)) или (не («Said» от "place rest" и (соединить ["урок 2 из ",
+        total] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ",
+        («Code» от "place rest" и answers), ")"] по "") к («Tail» от "place rest" и 8 и answers))),
     («When» от («Said» от "place rest" и (соединить ["урок 1 из ", total] по "") и answers) и [
       "место: продолжение начало с первого урока заново"])] и (пустой список)
 
@@ -565,10 +585,14 @@
 тотальная функция «Terminal complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  «Applying» от [(«When» от (не («Said» от "colour on" и («Sequence» от "1m") и answers)) и "цвет: под терминалом без NO_COLOR нет ни одной последовательности SGR"),
-    («When» от (не («Said» от "colour on" и («Sequence» от "1;34m") и answers)) и "цвет: под терминалом слова языка не подсвечены (нет SGR 1;34)"),
-    («When» от (не («Said» от "colour on" и («Sequence» от "36m") и answers)) и "цвет: под терминалом имена в ёлочках не подсвечены (нет SGR 36)"),
-    («When» от («Said» от "colour off" и («Sequence» от "") и answers) и "цвет: под терминалом с NO_COLOR последовательности остались")]
+  «Applying» от [(«When» от (не («Said» от "colour on" и («Sequence» от "1m") и answers)) и
+      "цвет: под терминалом без NO_COLOR нет ни одной последовательности SGR"),
+    («When» от (не («Said» от "colour on" и («Sequence» от "1;34m") и answers)) и
+        "цвет: под терминалом слова языка не подсвечены (нет SGR 1;34)"),
+    («When» от (не («Said» от "colour on" и («Sequence» от "36m") и answers)) и
+        "цвет: под терминалом имена в ёлочках не подсвечены (нет SGR 36)"),
+    («When» от («Said» от "colour off" и («Sequence» от "") и answers) и
+        "цвет: под терминалом с NO_COLOR последовательности остались")]
 
 тотальная функция «Colour complaints»
   принимает answers: список «Answer»

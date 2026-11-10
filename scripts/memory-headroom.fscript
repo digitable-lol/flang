@@ -189,7 +189,8 @@
   пример «Two whole samples and a cut one»
     дано text равно "  total\nMem: 16368456 1 2 3 4 9000000\nSwap: 0 0 0\n\n  total\nMem: 16368456 1 2 3 4 524288\nSwap: 0 0 0\n\n  total\nMem: 16368456 1 2 3 4 52"
     ожидается запись «Low» с «total» равным 16368456 и «lowest» равным 524288 и «position» равным 2 и «samples» равным 2
-  свёртка (разделить text по "\n\n") начиная с (запись «Low» с «total» равным («Total in» от text) и «lowest» равным 0 и «position» равным 0 и «samples» равным 0) как low и block → «Seen» от low и («Available in» от block)
+  свёртка (разделить text по "\n\n") начиная с (запись «Low» с «total» равным («Total in» от text) и «lowest» равным 0 и
+      «position» равным 0 и «samples» равным 0) как low и block → «Seen» от low и («Available in» от block)
 
 тотальная функция «Low line»
   принимает low: «Low»
@@ -206,7 +207,8 @@
   пример «Nothing noted means nothing seen»
     дано line равно ""
     ожидается запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
-  запись «Low» с «total» равным («Count» от («Word» от 1 и line)) и «lowest» равным («Count» от («Word» от 2 и line)) и «position» равным («Count» от («Word» от 3 и line)) и «samples» равным («Count» от («Word» от 4 и line))
+  запись «Low» с «total» равным («Count» от («Word» от 1 и line)) и «lowest» равным («Count» от («Word» от 2 и
+      line)) и «position» равным («Count» от («Word» от 3 и line)) и «samples» равным («Count» от («Word» от 4 и line))
 
 тотальная функция «Elapsed»
   принимает position: число, pause: число
@@ -267,8 +269,10 @@
     случай пусто
       то fallback
     случай голова и хвост
-      то «Chosen» от [(«When» от (голова начинается с (соединить [key, "="] по "")) и («After» от (соединить [key, "="] по "") и голова)),
-        («When» от (голова равен key) и («First line» от (соединить хвост по "\n")))] и («Value of» от key и хвост и fallback)
+      то «Chosen» от [(«When» от (голова начинается с (соединить [key, "="] по "")) и («After» от (соединить [key,
+          "="] по "") и голова)),
+        («When» от (голова равен key) и
+            («First line» от (соединить хвост по "\n")))] и («Value of» от key и хвост и fallback)
 
 тотальная функция «Unknown arguments»
   принимает keys: список строки, arguments: список строки
@@ -306,7 +310,8 @@
   пример «No runs at all»
     дано runs равно пустой список
     ожидается "0 -"
-  свёртка runs начиная с "0 -" как biggest и line → если («Count» от («Word» от 1 и line)) больше («Count» от («Word» от 1 и biggest)) то line иначе biggest
+  свёртка runs начиная с "0 -" как biggest и line → если («Count» от («Word» от 1 и
+      line)) больше («Count» от («Word» от 1 и biggest)) то line иначе biggest
 
 тотальная функция «Count lines»
   принимает meminfo: строка, runs: список строки, limit: число, reserve: число
@@ -337,14 +342,22 @@
   возвращает «Продолжение»
   пусть arguments равно («Given of» от "arguments" и answers)
   пусть unknown равно («Unknown arguments» от ["--limit", "--reserve"] и arguments)
-  пусть limit равно («Size in bytes» от («Value of» от "--limit" и arguments и («Setting of» от "limit" и "40G" и answers)))
-  пусть reserve равно («Size in bytes» от («Value of» от "--reserve" и arguments и («Setting of» от "reserve" и "48G" и answers)))
+  пусть limit равно («Size in bytes» от («Value of» от "--limit" и arguments и («Setting of» от "limit" и "40G" и
+      answers)))
+  пусть reserve равно («Size in bytes» от («Value of» от "--reserve" и arguments и («Setting of» от "reserve" и "48G" и
+      answers)))
   пусть meminfo равно («Output of» от "meminfo" и answers)
   пусть available равно ((«Kilobytes» от "MemAvailable:" и meminfo) умножить на 1024)
-  пусть lines равно («Count lines» от meminfo и («Runs» от («Own process» от («Output of» от "self" и answers)) и («Output of» от "runs" и answers)) и limit и reserve)
-  «Chosen» от [(«When» от ((длина unknown) больше 0) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным (соединить ["неизвестный довод: ", (соединить unknown по ", "), " (знаю --limit и --reserve)"] по ""))),
-    («When» от ((limit равен 0) или (reserve равен 0)) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и сообщение равным "не понял размер (ждал 32G, 512M, 1024K или число байт)")),
-    («When» от ((«Kilobytes» от "MemTotal:" и meminfo) равен 0) и (вариант «Не проверено» с код равным "FLANG_MEMORY_NO_METER" и сообщение равным "мерки нет: /proc/meminfo не читается")),
+  пусть lines равно («Count lines» от meminfo и («Runs» от («Own process» от («Output of» от "self" и answers)) и
+      («Output of» от "runs" и answers)) и limit и reserve)
+  «Chosen» от [(«When» от ((длина unknown) больше 0) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и
+      сообщение равным (соединить ["неизвестный довод: ", (соединить unknown по ", "),
+      " (знаю --limit и --reserve)"] по ""))),
+    («When» от ((limit равен 0) или (reserve равен 0)) и (вариант «Не проверено» с код равным "FLANG_MEMORY_ARGUMENT" и
+        сообщение равным "не понял размер (ждал 32G, 512M, 1024K или число байт)")),
+    («When» от ((«Kilobytes» от "MemTotal:" и meminfo) равен 0) и
+        (вариант «Не проверено» с код равным "FLANG_MEMORY_NO_METER" и
+        сообщение равным "мерки нет: /proc/meminfo не читается")),
     («When» от (available меньше (limit плюс reserve)) и (вариант «Провал» с код равным "FLANG_MEMORY_NO_ROOM" и сообщение равным (соединить (добавить (соединить ["КРАСНО: свободно ", («Gibibytes of bytes» от available), " ГиБ, нужно ", («Gibibytes of bytes» от (limit плюс reserve)), " ГиБ — прогон бы не начался"] по "") к lines) по "\n")))] и (вариант «Конец работы» с значение равным (соединить (добавить "ЗЕЛЕНО: места хватает" к lines) по "\n"))
 
 тотальная функция «Count questions»
@@ -471,7 +484,9 @@
     дано answers равно пустой список
     ожидается пустой список
   если (stages равен 0) и притом («Answered» от "log" и answers)
-    то добавить (запись «Answer» с «name» равным "low" и «reply» равным (вариант «Прочитано» с содержимое равным («Low line» от («Lowest of» от («Output of» от "log" и answers))))) к answers
+    то добавить (запись «Answer» с «name» равным "low" и
+        «reply» равным (вариант «Прочитано» с содержимое равным («Low line» от («Lowest of» от («Output of» от "log" и
+        answers))))) к answers
     иначе answers
 
 тотальная функция «Report of»
@@ -487,7 +502,8 @@
       "**нечем** — и это сказано, а не замолчано."]
   если (low.«total») равен 0
     то «No log»
-    иначе «Соединить списки» от («Table» от low и pause) и («Outcome» от low и («Has failed» от status) и ((low.«lowest») меньше margin))
+    иначе «Соединить списки» от («Table» от low и pause) и («Outcome» от low и («Has failed» от status) и
+        ((low.«lowest») меньше margin))
 
 тотальная функция «Report lines»
   принимает answers: список «Answer»
@@ -551,7 +567,8 @@
   «Chosen» от [(«When» от ((stages равен 2) и притом («Is a report» от answers)) и («Report setup»)),
     («When» от (stages равен 2) и («Count questions»)),
     («When» от ((stages равен 1) и притом («Is a report» от answers)) и («Report reading» от answers)),
-    («When» от ((stages равен 0) и притом («Is a report» от answers)) и («Report writing» от answers))] и (пустой список)
+    («When» от ((stages равен 0) и притом («Is a report» от answers)) и
+        («Report writing» от answers))] и (пустой список)
 
 тотальная функция «Verdict»
   принимает answers: список «Answer»
@@ -569,7 +586,8 @@
     случай пусто
       то если stages не больше 0
         то «Verdict» от answers
-        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
+        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и
+            answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
 
 тотальная функция «Begin in mode»
   принимает mode: строка

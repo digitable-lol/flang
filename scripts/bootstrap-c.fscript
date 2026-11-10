@@ -113,7 +113,8 @@
 тотальная функция «Seed names»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Lines» от («Output of» от "seed names" и answers)) где name → (не ((«Not printed») содержит name)) и притом (не («Is a build product» от name))
+  отфильтровать («Lines» от («Output of» от "seed names" и
+      answers)) где name → (не ((«Not printed») содержит name)) и притом (не («Is a build product» от name))
 
 тотальная функция «Common names»
   принимает answers: список «Answer»
@@ -141,7 +142,8 @@
 тотальная функция «Changed names»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Common names» от answers) где name → не ((«Exit code of» от («Bytes question» от name) и answers) равен 0)
+  отфильтровать («Common names» от answers) где name → не ((«Exit code of» от («Bytes question» от name) и
+      answers) равен 0)
 
 тотальная функция «Size»
   принимает name: строка, sizes: список строки
@@ -154,7 +156,8 @@
     дано name равно "absent.c"
     дано sizes равно [" 3454 Makefile"]
     ожидается 0
-  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и line) равен name) по "\n")))
+  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и
+      line) равен name) по "\n")))
 
 тотальная функция «Printed sizes»
   принимает answers: список «Answer»
@@ -191,7 +194,10 @@
     («When» от (fresh содержит name) и [
     (соединить ["  ", («In the seed» от name), ": печать даёт ", (к строке («Size» от name и printed)),
     " байт, а в дереве файла нет"] по "")]),
-    («When» от (changed содержит name) и [(соединить ["  ", («In the seed» от name), ": в дереве ", (к строке («Size» от name и planted)), " байт, печать даёт ", (к строке («Size» от name и printed))] по "")])] и (пустой список))) и (отобразить («Leftover names» от answers) как name → соединить ["  ", («In the seed» от name), ": лежит в дереве, но печать его не даёт — след прошлой перепечатки"] по "")
+    («When» от (changed содержит name) и [(соединить ["  ", («In the seed» от name), ": в дереве ",
+        (к строке («Size» от name и planted)), " байт, печать даёт ", (к строке («Size» от name и
+        printed))] по "")])] и (пустой список))) и (отобразить («Leftover names» от answers) как name → соединить ["  ",
+        («In the seed» от name), ": лежит в дереве, но печать его не даёт — след прошлой перепечатки"] по "")
 
 тотальная функция «Failed»
   принимает name: строка, answers: список «Answer»
@@ -322,7 +328,11 @@
   возвращает список «Question»
   если «Is a check» от answers
     то пустой список
-    иначе «Соединить списки» от (отобразить («Touched names» от answers) как name → «Run» от («Copy question» от name) и "cp" и ["--", (соединить [(«Work» от answers), "/", name] по ""), (соединить [(«Seed directory» от answers), "/", name] по "")]) и (отобразить («Leftover names» от answers) как name → «Run» от («Removal question» от name) и "rm" и ["-f", "--", (соединить [(«Seed directory» от answers), "/", name] по "")])
+    иначе «Соединить списки» от (отобразить («Touched names» от answers) как name → «Run» от («Copy question» от name) и
+        "cp" и ["--", (соединить [(«Work» от answers), "/", name] по ""), (соединить [(«Seed directory» от answers),
+        "/",
+        name] по "")]) и (отобразить («Leftover names» от answers) как name → «Run» от («Removal question» от name) и
+        "rm" и ["-f", "--", (соединить [(«Seed directory» от answers), "/", name] по "")])
 
 тотальная функция «Unwritten names»
   принимает answers: список «Answer»

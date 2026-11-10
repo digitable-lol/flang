@@ -84,9 +84,11 @@ $ flang run чётное.flang --function Удвоить --args '{"н": 21}' 2>/
 
 ```
 $ flang emit привет.flang --target c --out out-c 2>/dev/null
-$ grep -A 4 '^fl_status privet_udvoit' out-c/program.c
-fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *error) {
-  if (n.tag != FL_NUMBER || n.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
+$ grep -A 6 '^fl_status privet_udvoit' out-c/program.c
+fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result,
+                        fl_error *error) {
+  if (n.tag != FL_NUMBER || n.tag != FL_NUMBER)
+    FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
   *result = fl_number(n.as.number + n.as.number);
   return FL_OK;
 }
@@ -126,14 +128,14 @@ fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *err
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/          язык: self/ (компилятор), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
-docs/examples/  238 программ на flang в 26 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/  348 программ на flang в 32 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
-packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
+packaging/      готовые сборки (prebuilt/), формула Homebrew, плагин asdf, deb и rpm (nfpm.yaml), PKGBUILD для AUR, страница flang.1, проверки установки
 scripts/        проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
 fspec/          бизнес-правила, записанные доказанными спецификациями, и проверка, что новое правило не отменяет старое
-docs/           документация: исходники сайта, руководство, решения (adr/), отчёты замеров, база знаний и flang/ — контракты языка, вынесенные из кода
+docs/           документация: исходники сайта, руководство, решения (adr/), приборы замеров (benchmarks/) и flang/ — контракты языка, вынесенные из кода
 docs/flang/     контракты языка — по SPEC.md на слой, вынесенные из кода; рядом с кодом остался только указатель
-docs/tasks/     открытая и закрытая работа дерева, по файлу на задачу
+docs/tasks/     открытая работа дерева, по файлу на задачу; номера закрытых — в used-numbers.tsv
 .github/        CI и выпуск
 .ai/            что читает помощник, работающий в дереве: AGENTS.md и .claude/skills; в корне `AGENTS.md` и `.claude` оставлены символическими ссылками сюда, и по старым именам оба по-прежнему находятся
 ```
@@ -157,7 +159,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), сокращатель ссылок, где между
 байтами запроса и байтами ответа нет ничего, кроме flang, и
 [`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной
-службы; ещё 223 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
+службы; ещё 333 программы в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
 решения с 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
@@ -165,7 +167,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/bootstrap-reprint.sh --check`. Входы последней печати записаны в
-`scripts/seed-fingerprint`, по хешированной строке на файл — 80 строк во входной половине; вместе
+`scripts/seed-fingerprint`, по хешированной строке на файл — 81 строка во входной половине; вместе
 со второй половиной, телом семени, в файле 100 строк.
 <!-- СНЯТО 2026-11-09 строк scripts/seed-fingerprint = 100 (print batch 11: flang/self/sugar.flang joins the inputs; до них 99, снято 2026-10-19) (print batch 9a: flang/self/category-paths.flang joins the inputs, input half 80 lines; до них 98, снято 2026-10-18) (print batch eight over dev 51d92cf31; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
 Семя отстаёт от исходников: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` перечисляет, какие файлы и
@@ -189,7 +191,7 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Работа идёт в клоне; собирать нужно только компилятор.
 
 ```bash
-make -C bootstrap -j8                    # около минуты; даёт bootstrap/flang
+make -C bootstrap -j8                    # около пяти минут; даёт bootstrap/flang
 sh flang/test/обход.sh                   # проверки на flang, секунды
 ./bootstrap/flang test flang/stdlib/     # примеры библиотеки
 git config core.hooksPath .githooks      # хук перед пушем: дешёвые проверки до CI

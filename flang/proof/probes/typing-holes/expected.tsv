@@ -20,6 +20,13 @@ generic-variant-field-outside-refinement.flang	run-generic-field	1	FLANG_TYPE
 fixed-width-word-in-run.flang	check	0	замечаний нет
 fixed-width-word-in-run.flang	run-word-answer	0	5
 fixed-width-word-in-run.flang	run-word-argument	0	5
+word-inside-record-argument.flang	check	0	замечаний нет
+word-inside-record-argument.flang	run-word-in-record	1	аргумент «а».байт не соответствует типу u8
+word-inside-record-argument.flang	run-word-in-list	1	аргумент «а»[0] не соответствует типу u8
+word-inside-record-argument.flang	run-word-argument	0	5
+word-argument-at-printed-entry.flang	check	0	замечаний нет
+word-argument-at-printed-entry.flang	run-word-entry	1	аргумент «а» не соответствует типу u8
+word-argument-at-printed-entry.flang	emit-c-word-entry	0	{"ok":true,"value":{"n":"256"}}
 weight-from-number-by-match.flang	check	1	объявлена как вес, а тело даёт число
 weight-from-number-by-match.flang	run-weight-from-number	1	FLANG_TYPE
 weight-from-number-by-match.flang	run-weight-first-branch	1	FLANG_TYPE

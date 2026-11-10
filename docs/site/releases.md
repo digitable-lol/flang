@@ -6,6 +6,34 @@ There are three boxes: **what appeared**, **what changed**, **what broke**. An e
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.34 — 10 November 2026
+
+**The kernel proves monad associativity; loops, classes and interfaces; 13 typing holes closed; a module is imported by its link**
+
+### What appeared
+
+- **Monad associativity is proved.** For `монада «Возможно» от «А»` (a Maybe monad) with `возврат «Обернуть»` (return) and `соединение «Сплющить»` (join), `check --proof` proves all three laws: `законов утверждениями 3: доказано ядром 3` (laws as statements 3: proved by the kernel 3), code 0. In 0.7.33: `доказано ядром 2, не доказано 1` (2 proved, 1 not proved), code 3. A join that breaks associativity is still not proved.
+- **Loops with kept values.** A block `цикл «Сделка»` (loop) with the lines `для каждого цена из хвост` (for each price in the tail), `храним минимум: число равным голова, прибыль: число равным 0` (keep), `в конце прибыль` (at the end) and `дальше: минимум станет ниже, прибыль станет лучше` (next) is expanded by the compiler into a fold, and `пока счётчик меньше н` (while) with `убывает н минус счётчик` (decreases) into a total function. The expanded text is checked: `check` gives code 0 with termination proved; `run` on `[7, 1, 5, 3, 6, 4]` gives `5`. In 0.7.33: `FLANG_UNKNOWN_NAME: имя «цикл» не связано` (name not bound), code 1. The forms are described in `docs/guide/surface-sugar.md`.
+- **A one-line function header.** `тотальная функция «Меньшее из двух» принимает первый: число, второй: число возвращает число` is the same as three lines; `run` with 3 and 2 gives `2`. In 0.7.33: `FLANG_PARSE: функция «Меньшее из двух» не содержит тела` (has no body), code 1.
+- **Classes and interfaces.** `класс «Счёт»` (class) with fields, an `всегда` (always) line and `метод «Положить»` (method) expands into `объект «Счёт»` (a record) and a function `«Счёт: Положить»`; `(«Счёт: Положить» от счёт и 30).остаток` with a balance of 10 gives `40`. `интерфейс «Фигура»` (interface) with methods and `класс «Квадрат» есть «Фигура»` expand into a type with variants and functions that match on the classes; `check` gives code 0. In 0.7.33 both files gave `FLANG_PARSE: неожиданное 'класс'` (unexpected 'class', and 'interface'), code 1.
+- **A malformed form names its place.** A loop without an `в конце` line gives `FLANG_SUGAR_LOOP … строка 13, столбец 7` (line 13, column 7) `: нет строки «в конце …»`. Headers, classes and interfaces give `FLANG_SUGAR_HEADER`, `FLANG_SUGAR_CLASS` and `FLANG_SUGAR_INTERFACE`.
+
+### What changed
+
+- **`flang run` prints fixed-width words.** An answer `u64 9007199254740991` prints as `9007199254740991`, an answer `i64 -1` as `-1`; in 0.7.33 both printed `null`. The argument `{"а":5}` for a `u64` parameter is accepted; in 0.7.33: `FLANG_TYPE: аргумент «а» не соответствует типу u64` (does not match u64), code 1.
+- **`flang run` prints minus zero as `-0`.** A function that returns its argument answers `-0` on `{"б":-0}`; in 0.7.33 it printed `0`.
+- **A zero percentage is plus zero.** `-7 процентов от 0` (-7 percent of 0) is now `+0`, like any product with a zero result: `1` divided by it is above zero. A function that prints this sign answers `"плюс"` (plus) both in `flang run` and in the program printed to C; in 0.7.33: `"минус"` (minus).
+- **A program printed to C checks an exact integer on input.** On `{"fn":"Тот же","args":[{"l":[{"n":"-1"}]}]}` it answers `{"ok":false,"code":"FLANG_TYPE",…}`: `разряд -1 отрицателен` (digit -1 is negative). In 0.7.33 it took `-1` and returned it as an exact integer.
+- **The proof record checker refuses three more forgeries.** A record that applies the law of a sum of non-negatives or of an empty prefix under a negation (`утверждаем не -1 плюс 5 не меньше 0`, "not -1 + 5 ≥ 0") gives `НЕ СОШЛОСЬ` (did not agree), code 1; in 0.7.33: `ПРОВЕРЕНО` (checked), code 0. A record with the law "order is reflexive" under `отобразить` (map) gives `НЕ ПРОВЕРЕНО` (not checked), code 3; in 0.7.33: `ПРОВЕРЕНО`, code 0.
+
+### What broke
+
+- **`flang install` is removed.** There is no install by name, no `registry` key in `.flangrc` and no `package:install` shortcut. Replace it with the module's address right in the import — `использует «Логика» из "https://…/logic.flang"`; the first `flang check` fetches it once and writes its fingerprint and source into `flang.lock`, later builds go without the network.
+- **Type checking is stricter: 13 of 14 known holes are closed.** Programs that 0.7.33 passed with code 0 now get code 1. `возвращает «Возможно» от неотрицательное` (returns a Maybe of non-negative) with the body `вариант «Нечто» с значение равным -7` gives `FLANG_TYPE: … а тело даёт «Возможно» от целого` (the body gives a Maybe of integer). `пусть л равно []` and `добавить а к л` (let l be [], append a to l) in a function returning `список неотрицательное` gives `тело даёт список целого` (the body gives a list of integer). A function from `целое` to `число` passed where `функция из неотрицательное в неотрицательное` is expected gives `FLANG_TYPE`. To fix: declare the type the body really gives, or narrow the value with a check.
+- **`требует` (requires) is checked on input.** `run --args '{"а":-7}'` for a function with `требует «вход неотрицателен» а не меньше 0` (requires a ≥ 0) gives `FLANG_PRECONDITION`, code 1; in 0.7.33: the answer `-7`, code 0. An example with such an input gives `FLANG_EXAMPLE`, code 1. A function with `требует` passed as a value gives `FLANG_PRECONDITION_CALL`. To fix: remove an example whose input does not meet the requirement; call such a function directly.
+- **New arithmetic refusals.** Adding `сотых` (hundredths) and `тысячных` (thousandths) gives `FLANG_SCALE: масштабы 2 и 3 разошлись` (scales 2 and 3 differ); `вес минус вес` (weight minus weight) gives `FLANG_INFINITY`. In 0.7.33 both passed with code 0. To fix: bring the values to one scale; compute a difference of weights over `число`.
+- **Known limitation: 2 typing holes are open** (`flang/proof/tables/typing-holes.tsv`, rows 17 and 28). `0 делить на 0` (0 / 0) passes without `FLANG_NOT_A_NUMBER`. A generic function called in a `разбор` (match) branch is not checked against the declared result: `«Обернуть» от (-0.5)` (wrap -0.5) in a function returning `«Возможно» от целое` passes `check` with code 0, and `run` returns `-0.5`.
+
 ## 0.7.33 — 10 November 2026
 
 **The kernel proves linear inequalities and monad laws; large files check three times faster; the checker refuses forged proofs**

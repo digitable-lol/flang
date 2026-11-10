@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "d679f89987f367b192ed598e7305b2d9c04facff",
-  "головаКоротко": "d679f8998",
+  "голова": "01893da99ebf3fb515679b3f6b46dcd3771d68b0",
+  "головаКоротко": "01893da99",
   "головаДата": "2026-11-10",
-  "шаговСтвола": 4416,
-  "всегоКоммитов": 9664,
+  "шаговСтвола": 4471,
+  "всегоКоммитов": 9719,
   "измерители": [
     {
       "ключ": "js",
@@ -49,10 +49,10 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 137194,
-    "programm": 1249,
-    "totalnyh": 16643,
-    "obychnyh": 3608,
+    "bliznec": 140864,
+    "programm": 1274,
+    "totalnyh": 16901,
+    "obychnyh": 3670,
     "teorem": 422,
     "proverok": 3,
     "zametok": 0
@@ -72,6 +72,10 @@
     },
     {
       "корень": "flang/services",
+      "путей": 3
+    },
+    {
+      "корень": "flang/sugar",
       "путей": 3
     },
     {
@@ -98,10 +102,10 @@
   "дни": [
     "2026-11-10",
     "2026-11-09",
-    "2026-11-07",
     "2026-11-08",
-    "2026-11-03",
     "2026-11-06",
+    "2026-11-07",
+    "2026-11-03",
     "2026-11-02",
     "2026-10-24",
     "2026-10-18",
@@ -41608,15 +41612,87 @@
       "дата": "2026-11-10",
       "записи": [
         {
+          "текст": "chore(release): sha256 of the 0.7.34 archive",
+          "коммит": "dc459d337"
+        },
+        {
+          "текст": "chore(release): version 0.7.34",
+          "коммит": "bce8b371a"
+        },
+        {
+          "текст": "test(holes): row 28, a generic call in a match branch widens the variant",
+          "коммит": "eb8860f44"
+        },
+        {
+          "текст": "fix(asdf): keep skipping the scripts directory when counting targets",
+          "коммит": "bd61dfe69"
+        },
+        {
+          "текст": "test(ct): monad laws proved by the kernel leave the grid",
+          "коммит": "4383923b6"
+        },
+        {
+          "текст": "test(strict): the box monad laws are proved by the batch 11 kernel",
+          "коммит": "c4052f949"
+        },
+        {
+          "текст": "chore(proof): fourteen records follow abilities.flang after the cut",
+          "коммит": "ac752868c"
+        },
+        {
+          "текст": "chore(proof): trusted base ceiling follows the rewrite refusals",
+          "коммит": "53101ae98"
+        },
+        {
+          "текст": "fix(checker): the rewrite move is sound against laws of the kernel",
+          "коммит": "27f948649"
+        },
+        {
+          "текст": "chore(proof): trusted base ceiling follows the root check of three laws",
+          "коммит": "0a4f72fec"
+        },
+        {
+          "текст": "chore(proof): kernel laws live in Canon.lean, the ledger lists forgeries",
+          "коммит": "ff1d8463a"
+        },
+        {
+          "текст": "fix(checker): the law move is sound against laws of the kernel",
+          "коммит": "f4fae36fa"
+        },
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.33, releases page",
+          "коммит": "d25cd9af3"
+        },
+        {
           "текст": "chore(release): sha256 of the 0.7.33 archive",
           "коммит": "d679f8998"
         }
       ],
-      "скрыто": 0
+      "скрыто": 15
     },
     {
       "дата": "2026-11-09",
       "записи": [
+        {
+          "текст": "chore(marks): prose marks and the share ledger follow print batch 11",
+          "коммит": "90b9f4cf8"
+        },
+        {
+          "текст": "fix(proof): an ability with requirements no input meets has no example",
+          "коммит": "58446d18f"
+        },
+        {
+          "текст": "docs(codes): link codes are new, install codes are gone after print 11",
+          "коммит": "d55568e2b"
+        },
+        {
+          "текст": "fix(proof): typing holes 12 to 27 are closed by the batch 11 binary",
+          "коммит": "5cf107fcf"
+        },
+        {
+          "текст": "chore(seed): print batch 11 on gpu from ffa631590",
+          "коммит": "7d8990e43"
+        },
         {
           "текст": "chore(proof): trusted base ceiling follows the call unfolding",
           "коммит": "0dc1974bb"
@@ -41638,73 +41714,55 @@
           "коммит": "cdee6cded"
         }
       ],
-      "скрыто": 10
-    },
-    {
-      "дата": "2026-11-07",
-      "записи": [
-        {
-          "текст": "chore(release): version 0.7.33 and its release notes",
-          "коммит": "2391af66f"
-        },
-        {
-          "текст": "test(bench): the spread stand is a flang program, not hand-written C",
-          "коммит": "9196b8ef8"
-        },
-        {
-          "текст": "fix(link): two only lists of one module in a file add up",
-          "коммит": "64e3b7e9f"
-        },
-        {
-          "текст": "fix(types): a variant argument has the shape the evaluator reads",
-          "коммит": "a50315d1f"
-        },
-        {
-          "текст": "fix(types): six typing holes of the ledger close in the compiler source",
-          "коммит": "dedadac9c"
-        },
-        {
-          "текст": "test(bench): a gate for the spread map over worker processes",
-          "коммит": "6472ed597"
-        },
-        {
-          "текст": "feat(runtime): judge independent obligations in worker processes",
-          "коммит": "162936e04"
-        },
-        {
-          "текст": "docs: the ring row and both adrs say what the tree does now",
-          "коммит": "c257456da"
-        },
-        {
-          "текст": "fix(checker): the lean checker keeps the bound of the certificate sum",
-          "коммит": "0745b5bcf"
-        },
-        {
-          "текст": "fix(probe): the linear arithmetic probes parse and run to the end",
-          "коммит": "75a9b5a4a"
-        },
-        {
-          "текст": "test(proof): corpus-lists record and shapes expectation follow 9d",
-          "коммит": "dbde57be6"
-        },
-        {
-          "текст": "fix(checker): both checkers replay the 9d places closed without moves",
-          "коммит": "e67aa714f"
-        },
-        {
-          "текст": "chore(numbers): counts and ceiling follow the rebase onto dev 51779a9f2",
-          "коммит": "dfbb4d739"
-        },
-        {
-          "текст": "fix(lean): the given move proof goes through a shape lemma",
-          "коммит": "aacbc97ae"
-        }
-      ],
-      "скрыто": 16
+      "скрыто": 14
     },
     {
       "дата": "2026-11-08",
       "записи": [
+        {
+          "текст": "feat(link): a module is imported by a link and pinned in the lock",
+          "коммит": "eb231bce2"
+        },
+        {
+          "текст": "test(probes): every sugar form is judged like its expanded text",
+          "коммит": "8aa8eefd7"
+        },
+        {
+          "текст": "feat(self): the parser expands loops, headers, classes and interfaces",
+          "коммит": "d7c9b97dc"
+        },
+        {
+          "текст": "test(proof): a probe judges monad associativity with the source kernel",
+          "коммит": "1434d5ed9"
+        },
+        {
+          "текст": "fix(checker): a law case puts its constructor in place of a quoted name",
+          "коммит": "8aaf7f41a"
+        },
+        {
+          "текст": "fix(kernel): a constructor branch checks names free in the value",
+          "коммит": "5811b7256"
+        },
+        {
+          "текст": "chore(proof): the ledger says what each open row expects after print",
+          "коммит": "52268b812"
+        },
+        {
+          "текст": "fix(entry): printed programs refuse an exact integer off canon",
+          "коммит": "31cf3af0a"
+        },
+        {
+          "текст": "fix(arith): a zero percentage is plus zero everywhere",
+          "коммит": "054cee794"
+        },
+        {
+          "текст": "fix(run): the run answer prints words and minus zero as values",
+          "коммит": "eab1e6a16"
+        },
+        {
+          "текст": "fix(types): typing holes return with a fit the printer proves total",
+          "коммит": "1a3c8b262"
+        },
         {
           "текст": "revert(types): the typing hole fixes wait for print batch 11",
           "коммит": "30c969264"
@@ -41730,45 +41788,7 @@
           "коммит": "170f2f388"
         }
       ],
-      "скрыто": 2
-    },
-    {
-      "дата": "2026-11-03",
-      "записи": [
-        {
-          "текст": "fix(checker): the linear arithmetic path is a deciding path of the proof",
-          "коммит": "6c8551439"
-        },
-        {
-          "текст": "feat(checker): both checkers replay linear arithmetic within the bound",
-          "коммит": "d39129650"
-        },
-        {
-          "текст": "feat(kernel): linear arithmetic and an exact ring normal form",
-          "коммит": "bda77123e"
-        },
-        {
-          "текст": "perf(kernel): unfolding asks cheap questions before the body walk",
-          "коммит": "a99ab13f3"
-        },
-        {
-          "текст": "fix(checker): the second checker takes a quoted parameter in fields too",
-          "коммит": "b72d8a269"
-        },
-        {
-          "текст": "test(typing-holes): requires is skipped through a function value",
-          "коммит": "6ffde7481"
-        },
-        {
-          "текст": "docs(adr): kernel places without moves are replayed from the source",
-          "коммит": "1cd164b40"
-        },
-        {
-          "текст": "fix(checker): a counterexample refutes five old lie forgeries",
-          "коммит": "6ff6cdc08"
-        }
-      ],
-      "скрыто": 4
+      "скрыто": 6
     },
     {
       "дата": "2026-11-06",
@@ -42026,7 +42046,107 @@
           "коммит": "1ab357bf8"
         }
       ],
-      "скрыто": 51
+      "скрыто": 54
+    },
+    {
+      "дата": "2026-11-07",
+      "записи": [
+        {
+          "текст": "chore(release): version 0.7.33 and its release notes",
+          "коммит": "2391af66f"
+        },
+        {
+          "текст": "test(bench): the spread stand is a flang program, not hand-written C",
+          "коммит": "9196b8ef8"
+        },
+        {
+          "текст": "fix(link): two only lists of one module in a file add up",
+          "коммит": "64e3b7e9f"
+        },
+        {
+          "текст": "fix(types): a variant argument has the shape the evaluator reads",
+          "коммит": "a50315d1f"
+        },
+        {
+          "текст": "fix(types): six typing holes of the ledger close in the compiler source",
+          "коммит": "dedadac9c"
+        },
+        {
+          "текст": "test(bench): a gate for the spread map over worker processes",
+          "коммит": "6472ed597"
+        },
+        {
+          "текст": "feat(runtime): judge independent obligations in worker processes",
+          "коммит": "162936e04"
+        },
+        {
+          "текст": "docs: the ring row and both adrs say what the tree does now",
+          "коммит": "c257456da"
+        },
+        {
+          "текст": "fix(checker): the lean checker keeps the bound of the certificate sum",
+          "коммит": "0745b5bcf"
+        },
+        {
+          "текст": "fix(probe): the linear arithmetic probes parse and run to the end",
+          "коммит": "75a9b5a4a"
+        },
+        {
+          "текст": "test(proof): corpus-lists record and shapes expectation follow 9d",
+          "коммит": "dbde57be6"
+        },
+        {
+          "текст": "fix(checker): both checkers replay the 9d places closed without moves",
+          "коммит": "e67aa714f"
+        },
+        {
+          "текст": "chore(numbers): counts and ceiling follow the rebase onto dev 51779a9f2",
+          "коммит": "dfbb4d739"
+        },
+        {
+          "текст": "fix(lean): the given move proof goes through a shape lemma",
+          "коммит": "aacbc97ae"
+        }
+      ],
+      "скрыто": 16
+    },
+    {
+      "дата": "2026-11-03",
+      "записи": [
+        {
+          "текст": "fix(checker): the linear arithmetic path is a deciding path of the proof",
+          "коммит": "6c8551439"
+        },
+        {
+          "текст": "feat(checker): both checkers replay linear arithmetic within the bound",
+          "коммит": "d39129650"
+        },
+        {
+          "текст": "feat(kernel): linear arithmetic and an exact ring normal form",
+          "коммит": "bda77123e"
+        },
+        {
+          "текст": "perf(kernel): unfolding asks cheap questions before the body walk",
+          "коммит": "a99ab13f3"
+        },
+        {
+          "текст": "fix(checker): the second checker takes a quoted parameter in fields too",
+          "коммит": "b72d8a269"
+        },
+        {
+          "текст": "test(typing-holes): requires is skipped through a function value",
+          "коммит": "6ffde7481"
+        },
+        {
+          "текст": "docs(adr): kernel places without moves are replayed from the source",
+          "коммит": "1cd164b40"
+        },
+        {
+          "текст": "fix(checker): a counterexample refutes five old lie forgeries",
+          "коммит": "6ff6cdc08"
+        }
+      ],
+      "скрыто": 4
     },
     {
       "дата": "2026-11-02",

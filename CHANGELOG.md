@@ -11,6 +11,42 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.34 — 10 ноября 2026
+
+**Ядро доказывает ассоциативность монады; циклы, классы и интерфейсы; 13 дыр типизации закрыто; модуль подключается по ссылке**
+
+- chore(release): sha256 of the 0.7.34 archive (`dc459d3`)
+- chore(release): version 0.7.34 (`bce8b37`)
+- test(holes): row 28, a generic call in a match branch widens the variant (`eb8860f`)
+- fix(asdf): keep skipping the scripts directory when counting targets (`bd61dfe`)
+- test(ct): monad laws proved by the kernel leave the grid (`4383923`)
+- test(strict): the box monad laws are proved by the batch 11 kernel (`c4052f9`)
+- chore(proof): fourteen records follow abilities.flang after the cut (`ac75286`)
+- chore(marks): prose marks and the share ledger follow print batch 11 (`90b9f4c`)
+- fix(proof): an ability with requirements no input meets has no example (`58446d1`)
+- docs(codes): link codes are new, install codes are gone after print 11 (`d55568e`)
+- fix(proof): typing holes 12 to 27 are closed by the batch 11 binary (`5cf107f`)
+- chore(seed): print batch 11 on gpu from ffa631590 (`7d8990e`)
+- feat(link): a module is imported by a link and pinned in the lock (`eb231bc`)
+- test(probes): every sugar form is judged like its expanded text (`8aa8eef`)
+- feat(self): the parser expands loops, headers, classes and interfaces (`d7c9b97`)
+- test(proof): a probe judges monad associativity with the source kernel (`1434d5e`)
+- fix(checker): a law case puts its constructor in place of a quoted name (`8aaf7f4`)
+- fix(kernel): a constructor branch checks names free in the value (`5811b72`)
+- chore(proof): the ledger says what each open row expects after print (`52268b8`)
+- fix(entry): printed programs refuse an exact integer off canon (`31cf3af`)
+- fix(arith): a zero percentage is plus zero everywhere (`054cee7`)
+- fix(run): the run answer prints words and minus zero as values (`eab1e6a`)
+- fix(types): typing holes return with a fit the printer proves total (`1a3c8b2`)
+- chore(proof): trusted base ceiling follows the rewrite refusals (`53101ae`)
+- fix(checker): the rewrite move is sound against laws of the kernel (`27f9486`)
+- chore(proof): trusted base ceiling follows the root check of three laws (`0a4f72f`)
+- chore(proof): kernel laws live in Canon.lean, the ledger lists forgeries (`ff1d846`)
+- fix(checker): the law move is sound against laws of the kernel (`f4fae36`)
+- chore(release): the tap serves flang-package 0.7.33, releases page (`d25cd9a`)
+
+Ещё 19 правок языка снаружи не меняют.
+
 ## 0.7.33 — 10 ноября 2026
 
 **Ядро доказывает линейные неравенства и законы монады; большие файлы проверяются втрое быстрее; сверщик не принимает подделанных доказательств**

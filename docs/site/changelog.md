@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 26), `flang/experimental` (путей 8), `flang/services` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 26), `flang/experimental` (путей 8), `flang/services` (путей 3), `flang/sugar` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,15 +33,15 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `d679f8998` от 10 ноября 2026. Шагов ствола 4416, из них вливаний 1220; коммитов в истории 9664.
+Дерево на коммите `01893da99` от 10 ноября 2026. Шагов ствола 4471, из них вливаний 1220; коммитов в истории 9719.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 137194 | 0 | +3563 |
-| Программ на flang | 1249 | +2 | +625 |
-| Объявлений `тотальная функция` | 16643 | +67 | +4699 |
-| Объявлений `функция` | 3608 | 0 | +1111 |
+| Эталон компилятора на flang | 140864 | 0 | +7233 |
+| Программ на flang | 1274 | +2 | +650 |
+| Объявлений `тотальная функция` | 16901 | +67 | +4957 |
+| Объявлений `функция` | 3670 | 0 | +1173 |
 | Объявлений `теорема` | 422 | 0 | +134 |
 | Файлов проверок | 3 | 0 | 0 |
 | Заметок базы знаний | 0 | 0 | −720 |
@@ -52,45 +52,55 @@
 
 Приехало прямо в ствол, мимо ветки:
 
+- chore(release): sha256 of the 0.7.34 archive (`dc459d337`)
+- chore(release): version 0.7.34 (`bce8b371a`)
+- test(holes): row 28, a generic call in a match branch widens the variant (`eb8860f44`)
+- fix(asdf): keep skipping the scripts directory when counting targets (`bd61dfe69`)
+- test(ct): monad laws proved by the kernel leave the grid (`4383923b6`)
+- test(strict): the box monad laws are proved by the batch 11 kernel (`c4052f949`)
+- chore(proof): fourteen records follow abilities.flang after the cut (`ac752868c`)
+- chore(proof): trusted base ceiling follows the rewrite refusals (`53101ae98`)
+- fix(checker): the rewrite move is sound against laws of the kernel (`27f948649`)
+- chore(proof): trusted base ceiling follows the root check of three laws (`0a4f72fec`)
+- chore(proof): kernel laws live in Canon.lean, the ledger lists forgeries (`ff1d8463a`)
+- fix(checker): the law move is sound against laws of the kernel (`f4fae36fa`)
+- chore(release): the tap serves flang-package 0.7.33, releases page (`d25cd9af3`)
 - chore(release): sha256 of the 0.7.33 archive (`d679f8998`)
+
+Ещё 15 правок языка снаружи не меняют.
 
 ## 9 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- chore(marks): prose marks and the share ledger follow print batch 11 (`90b9f4cf8`)
+- fix(proof): an ability with requirements no input meets has no example (`58446d18f`)
+- docs(codes): link codes are new, install codes are gone after print 11 (`d55568e2b`)
+- fix(proof): typing holes 12 to 27 are closed by the batch 11 binary (`5cf107fcf`)
+- chore(seed): print batch 11 on gpu from ffa631590 (`7d8990e43`)
 - chore(proof): trusted base ceiling follows the call unfolding (`0dc1974bb`)
 - fix(checker): both checkers replay linear arithmetic over unfolded calls (`02be6ade8`)
 - docs(proofs): twenty decision rules and the FLANG_JOBS code row (`f4bbc2beb`)
 - fix(proof): typing hole 19 is closed by the batch 10 binary (`48568a0c2`)
 - chore(seed): print batch 10 on gpu from 30c969264 (`cdee6cded`)
 
-Ещё 10 правок языка снаружи не меняют.
-
-## 7 ноября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- chore(release): version 0.7.33 and its release notes (`2391af66f`)
-- test(bench): the spread stand is a flang program, not hand-written C (`9196b8ef8`)
-- fix(link): two only lists of one module in a file add up (`64e3b7e9f`)
-- fix(types): a variant argument has the shape the evaluator reads (`a50315d1f`)
-- fix(types): six typing holes of the ledger close in the compiler source (`dedadac9c`)
-- test(bench): a gate for the spread map over worker processes (`6472ed597`)
-- feat(runtime): judge independent obligations in worker processes (`162936e04`)
-- docs: the ring row and both adrs say what the tree does now (`c257456da`)
-- fix(checker): the lean checker keeps the bound of the certificate sum (`0745b5bcf`)
-- fix(probe): the linear arithmetic probes parse and run to the end (`75a9b5a4a`)
-- test(proof): corpus-lists record and shapes expectation follow 9d (`dbde57be6`)
-- fix(checker): both checkers replay the 9d places closed without moves (`e67aa714f`)
-- chore(numbers): counts and ceiling follow the rebase onto dev 51779a9f2 (`dfbb4d739`)
-- fix(lean): the given move proof goes through a shape lemma (`aacbc97ae`)
-
-Ещё 16 правок языка снаружи не меняют.
+Ещё 14 правок языка снаружи не меняют.
 
 ## 8 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- feat(link): a module is imported by a link and pinned in the lock (`eb231bce2`)
+- test(probes): every sugar form is judged like its expanded text (`8aa8eefd7`)
+- feat(self): the parser expands loops, headers, classes and interfaces (`d7c9b97dc`)
+- test(proof): a probe judges monad associativity with the source kernel (`1434d5ed9`)
+- fix(checker): a law case puts its constructor in place of a quoted name (`8aaf7f41a`)
+- fix(kernel): a constructor branch checks names free in the value (`5811b7256`)
+- chore(proof): the ledger says what each open row expects after print (`52268b812`)
+- fix(entry): printed programs refuse an exact integer off canon (`31cf3af0a`)
+- fix(arith): a zero percentage is plus zero everywhere (`054cee794`)
+- fix(run): the run answer prints words and minus zero as values (`eab1e6a16`)
+- fix(types): typing holes return with a fit the printer proves total (`1a3c8b262`)
 - revert(types): the typing hole fixes wait for print batch 11 (`30c969264`)
 - test(proof): the speed forgery turns red and ci demands it (`5eafa06cf`)
 - test(proof): a speed gate counts the kernel steps of two small files (`123e47e87`)
@@ -98,22 +108,7 @@
 - fix(kernel): unfolding stops at 2000 argument nodes (`c009080b0`)
 - fix(kernel): unfolding on a built record needs a branch-free body (`170f2f388`)
 
-Ещё 2 правки языка снаружи не меняют.
-
-## 3 ноября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- fix(checker): the linear arithmetic path is a deciding path of the proof (`6c8551439`)
-- feat(checker): both checkers replay linear arithmetic within the bound (`d39129650`)
-- feat(kernel): linear arithmetic and an exact ring normal form (`bda77123e`)
-- perf(kernel): unfolding asks cheap questions before the body walk (`a99ab13f3`)
-- fix(checker): the second checker takes a quoted parameter in fields too (`b72d8a269`)
-- test(typing-holes): requires is skipped through a function value (`6ffde7481`)
-- docs(adr): kernel places without moves are replayed from the source (`1cd164b40`)
-- fix(checker): a counterexample refutes five old lie forgeries (`6ff6cdc08`)
-
-Ещё 4 правки языка снаружи не меняют.
+Ещё 6 правок языка снаружи не меняют.
 
 ## 6 ноября 2026
 
@@ -183,7 +178,43 @@
 - fix(checker): both checkers read an argument named in guillemets (`eb8a1bacf`)
 - test(bench): a false monoid unit is refused at emit, not printed (`1ab357bf8`)
 
-Ещё 51 правка языка снаружи не меняет.
+Ещё 54 правки языка снаружи не меняют.
+
+## 7 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): version 0.7.33 and its release notes (`2391af66f`)
+- test(bench): the spread stand is a flang program, not hand-written C (`9196b8ef8`)
+- fix(link): two only lists of one module in a file add up (`64e3b7e9f`)
+- fix(types): a variant argument has the shape the evaluator reads (`a50315d1f`)
+- fix(types): six typing holes of the ledger close in the compiler source (`dedadac9c`)
+- test(bench): a gate for the spread map over worker processes (`6472ed597`)
+- feat(runtime): judge independent obligations in worker processes (`162936e04`)
+- docs: the ring row and both adrs say what the tree does now (`c257456da`)
+- fix(checker): the lean checker keeps the bound of the certificate sum (`0745b5bcf`)
+- fix(probe): the linear arithmetic probes parse and run to the end (`75a9b5a4a`)
+- test(proof): corpus-lists record and shapes expectation follow 9d (`dbde57be6`)
+- fix(checker): both checkers replay the 9d places closed without moves (`e67aa714f`)
+- chore(numbers): counts and ceiling follow the rebase onto dev 51779a9f2 (`dfbb4d739`)
+- fix(lean): the given move proof goes through a shape lemma (`aacbc97ae`)
+
+Ещё 16 правок языка снаружи не меняют.
+
+## 3 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(checker): the linear arithmetic path is a deciding path of the proof (`6c8551439`)
+- feat(checker): both checkers replay linear arithmetic within the bound (`d39129650`)
+- feat(kernel): linear arithmetic and an exact ring normal form (`bda77123e`)
+- perf(kernel): unfolding asks cheap questions before the body walk (`a99ab13f3`)
+- fix(checker): the second checker takes a quoted parameter in fields too (`b72d8a269`)
+- test(typing-holes): requires is skipped through a function value (`6ffde7481`)
+- docs(adr): kernel places without moves are replayed from the source (`1cd164b40`)
+- fix(checker): a counterexample refutes five old lie forgeries (`6ff6cdc08`)
+
+Ещё 4 правки языка снаружи не меняют.
 
 ## 2 ноября 2026
 

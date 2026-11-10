@@ -2,16 +2,145 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.33",
-  "latest": "0.7.33",
+  "declared": "0.7.34",
+  "latest": "0.7.34",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
     "flang/messages",
     "flang/services",
+    "flang/sugar",
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.34",
+      "tag": "v0.7.34",
+      "date": "2026-11-10",
+      "human": "10 ноября 2026",
+      "commit": "001d8df",
+      "title": "Ядро доказывает ассоциативность монады; циклы, классы и интерфейсы; 13 дыр типизации закрыто; модуль подключается по ссылке",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.34 archive",
+          "commit": "dc459d3"
+        },
+        {
+          "text": "chore(release): version 0.7.34",
+          "commit": "bce8b37"
+        },
+        {
+          "text": "test(holes): row 28, a generic call in a match branch widens the variant",
+          "commit": "eb8860f"
+        },
+        {
+          "text": "fix(asdf): keep skipping the scripts directory when counting targets",
+          "commit": "bd61dfe"
+        },
+        {
+          "text": "test(ct): monad laws proved by the kernel leave the grid",
+          "commit": "4383923"
+        },
+        {
+          "text": "test(strict): the box monad laws are proved by the batch 11 kernel",
+          "commit": "c4052f9"
+        },
+        {
+          "text": "chore(proof): fourteen records follow abilities.flang after the cut",
+          "commit": "ac75286"
+        },
+        {
+          "text": "chore(marks): prose marks and the share ledger follow print batch 11",
+          "commit": "90b9f4c"
+        },
+        {
+          "text": "fix(proof): an ability with requirements no input meets has no example",
+          "commit": "58446d1"
+        },
+        {
+          "text": "docs(codes): link codes are new, install codes are gone after print 11",
+          "commit": "d55568e"
+        },
+        {
+          "text": "fix(proof): typing holes 12 to 27 are closed by the batch 11 binary",
+          "commit": "5cf107f"
+        },
+        {
+          "text": "chore(seed): print batch 11 on gpu from ffa631590",
+          "commit": "7d8990e"
+        },
+        {
+          "text": "feat(link): a module is imported by a link and pinned in the lock",
+          "commit": "eb231bc"
+        },
+        {
+          "text": "test(probes): every sugar form is judged like its expanded text",
+          "commit": "8aa8eef"
+        },
+        {
+          "text": "feat(self): the parser expands loops, headers, classes and interfaces",
+          "commit": "d7c9b97"
+        },
+        {
+          "text": "test(proof): a probe judges monad associativity with the source kernel",
+          "commit": "1434d5e"
+        },
+        {
+          "text": "fix(checker): a law case puts its constructor in place of a quoted name",
+          "commit": "8aaf7f4"
+        },
+        {
+          "text": "fix(kernel): a constructor branch checks names free in the value",
+          "commit": "5811b72"
+        },
+        {
+          "text": "chore(proof): the ledger says what each open row expects after print",
+          "commit": "52268b8"
+        },
+        {
+          "text": "fix(entry): printed programs refuse an exact integer off canon",
+          "commit": "31cf3af"
+        },
+        {
+          "text": "fix(arith): a zero percentage is plus zero everywhere",
+          "commit": "054cee7"
+        },
+        {
+          "text": "fix(run): the run answer prints words and minus zero as values",
+          "commit": "eab1e6a"
+        },
+        {
+          "text": "fix(types): typing holes return with a fit the printer proves total",
+          "commit": "1a3c8b2"
+        },
+        {
+          "text": "chore(proof): trusted base ceiling follows the rewrite refusals",
+          "commit": "53101ae"
+        },
+        {
+          "text": "fix(checker): the rewrite move is sound against laws of the kernel",
+          "commit": "27f9486"
+        },
+        {
+          "text": "chore(proof): trusted base ceiling follows the root check of three laws",
+          "commit": "0a4f72f"
+        },
+        {
+          "text": "chore(proof): kernel laws live in Canon.lean, the ledger lists forgeries",
+          "commit": "ff1d846"
+        },
+        {
+          "text": "fix(checker): the law move is sound against laws of the kernel",
+          "commit": "f4fae36"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.33, releases page",
+          "commit": "d25cd9a"
+        }
+      ],
+      "hidden": 19
+    },
     {
       "version": "0.7.33",
       "tag": "v0.7.33",

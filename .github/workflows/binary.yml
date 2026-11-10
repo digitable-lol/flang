@@ -2182,7 +2182,7 @@ jobs:
         run: make -C flang/proof/checker
 
       - name: Check the russian pregroup grammar on its probe sentences
-        # ADR-0109: 71 sentences, each answered by flang run on flang/ct/russian/parse.flang.
+        # ADR-0109: 75 sentences, each answered by flang run on flang/ct/russian/parse.flang.
         run: bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
         env:
           LC_ALL: C.UTF-8

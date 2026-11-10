@@ -96,6 +96,8 @@
       то " --function '«Мимо требования»'"
     случай "run-generic-field"
       то " --function '«Минус семь неотрицательным»'"
+    случай "run-generic-call-in-match"
+      то " --function '«Половина целым»' --args '{\"а\":{\"variant\":\"Нечто\",\"fields\":{\"значение\":-3}}}'"
     случай "run-word-answer"
       то " --function '«Пять»'"
     случай "run-word-argument"

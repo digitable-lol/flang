@@ -48,3 +48,5 @@ fieldless-variant-argument-as-record.flang	run-fieldless-variant	1	не соот
 fieldless-variant-argument-as-record.flang	run-fieldless-variant-tagged	0	true
 selective-import-in-two-lines.flang	check	0	замечаний нет
 selective-import-helpers.flang	check	0	замечаний нет
+generic-call-in-match-branch.flang	check	0	замечаний нет
+generic-call-in-match-branch.flang	run-generic-call-in-match	0	-0.5

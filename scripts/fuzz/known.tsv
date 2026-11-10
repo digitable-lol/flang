@@ -25,3 +25,4 @@ hole	oracle	detail
 23	b-rust	outside X): evaluator {"error":"FLANG_TYPE"}
 24	c-property	нарушено свойство «итог в границе»
 16	a-value	~fv, value -
+28	a-value	type IZ, value {"вариант":"Нечто","значение":

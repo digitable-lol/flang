@@ -15,7 +15,7 @@
 
 Имена файлов, ключи и коды в дереве пишутся по-английски. Коды `FLANG_*` этому
 правилу следуют не все: часть составлена из русских слов, записанных латиницей
-(`FLANG_PECHAT_OTKAZ`, `FLANG_PODLOG_VYDUMANNYY_KOD`, `FLANG_SLOVAR_NEPOLON`).
+(`FLANG_PECHAT_OTKAZ`, `FLANG_MANPAGE_RAZOSHLAS`, `FLANG_SLOVAR_NEPOLON`).
 Сторожа на это нет: `transliteration:check` смотрит только имена файлов.
 
 Коды делятся на две неравные части, и переход у них разный.

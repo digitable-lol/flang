@@ -175,8 +175,18 @@
     дано line равно 3
     дано piece равно "2026-09-17 строк docs/b.md = 12 -->"
     ожидается (запись «Mark» с «file» равным "docs/a.md" и «line» равным 3 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "docs/b.md" и «written» равным "12" и «text» равным "")
+  пример «a mark that keeps an earlier measurement carries it as its text»
+    дано file равно "docs/a.md"
+    дано line равно 3
+    дано piece равно "2026-09-17 строк docs/b.md = 12 (задача; до них 11, снято 2026-09-01) -->"
+    ожидается (запись «Mark» с «file» равным "docs/a.md" и «line» равным 3 и «parsed» равным да и
+      «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "docs/b.md" и
+      «written» равным "12" и «text» равным " (задача; до них 11, снято 2026-09-01) ")
   пусть words равно (разделить piece по " ")
-  запись «Mark» с «file» равным file и «line» равным line и «parsed» равным да и «date» равным («Word at» от words и 1) и «instrument» равным («Word at» от words и 2) и «argument» равным («Word at» от words и 3) и «written» равным («Leading digits» от («Word at» от words и 5)) и «text» равным ""
+  (запись «Mark» с «file» равным file и «line» равным line и «parsed» равным да и
+    «date» равным («Word at» от words и 1) и «instrument» равным («Word at» от words и 2) и
+    «argument» равным («Word at» от words и 3) и «written» равным («Leading digits» от («Word at» от words и 5)) и
+    «text» равным («History of» от piece))
 
 тотальная функция «Unparsed»
   принимает file: строка, line: число, text: строка
@@ -360,6 +370,21 @@
     то подстрока piece с ((длина (соединить [(«Word at» от words и 1), («Word at» от words и 2),
       («Word at» от words и 3), "=", («Leading digits» от («Word at» от words и 5))] по " ")) плюс 1) по (длина piece)
     иначе соединить ["СНЯТО ", piece] по ""
+
+тотальная функция «History of»
+  принимает piece: строка
+  возвращает строка
+  пример «one reason after the number is not a history»
+    дано piece равно "2026-09-17 файлов *.sh = 96 (задача 12) --> и проза дальше, снято давно"
+    ожидается ""
+  пример «an earlier measurement kept inside the mark is a history»
+    дано piece равно "2026-09-17 файлов *.sh = 96 (задача 12; до них 95, снято 2026-09-01)"
+    ожидается " (задача 12; до них 95, снято 2026-09-01)"
+  пример «a mark without a reason has no history»
+    дано piece равно "2026-09-17 строк a.md = 12"
+    ожидается ""
+  пусть reason равно («First piece» от («Mark cut» от piece) и "-->")
+  если (reason содержит "снято ") или ((длина reason) больше 240) то reason иначе ""
 
 тотальная функция «Without marks»
   принимает text: строка
@@ -906,16 +931,24 @@
   пример «an unknown instrument»
     дано mark равно (запись «Mark» с «file» равным "a.md" и «line» равным 1 и «parsed» равным да и «date» равным "2026-09-17" и «instrument» равным "байт" и «argument» равным "a" и «written» равным "9" и «text» равным "")
     ожидается "прибор «байт» не из пяти (строк, файлов, строк-в, примеров-в, список)"
+  пример «a mark keeps the last measurement only»
+    дано mark равно (запись «Mark» с «file» равным "a.md" и «line» равным 1 и «parsed» равным да и
+      «date» равным "2026-09-17" и «instrument» равным "строк" и «argument» равным "a" и «written» равным "9" и
+      «text» равным " (задача; до них 8, снято 2026-09-01)")
+    ожидается "примета хранит хронику: после числа стоит один довод до 240 знаков, прежние снятия помнит git log"
   разбор («First holding» от [(запись «Rule» с «name» равным "unparsed" и «holds» равным (не (mark.«parsed»))),
     (запись «Rule» с «name» равным "undated" и «holds» равным (не («Is date» от (mark.«date»)))),
     (запись «Rule» с «name» равным "unknown" и «holds» равным (не («Holds» от ["строк", "файлов", "строк-в",
-    "примеров-в", "список"] и (mark.«instrument»))))] и "whole")
+    "примеров-в", "список"] и (mark.«instrument»)))),
+    (запись «Rule» с «name» равным "history" и «holds» равным (не ((mark.«text») равен "")))] и "whole")
     случай "unparsed"
       то соединить ["не разбирается: ", (mark.«text»)] по ""
     случай "undated"
       то соединить ["дата «", (mark.«date»), "» не вида ГГГГ-ММ-ДД"] по ""
     случай "unknown"
       то соединить ["прибор «", (mark.«instrument»), "» не из пяти (строк, файлов, строк-в, примеров-в, список)"] по ""
+    случай "history"
+      то "примета хранит хронику: после числа стоит один довод до 240 знаков, прежние снятия помнит git log"
     случай любое
       то ""
 

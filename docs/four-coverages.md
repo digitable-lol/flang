@@ -27,7 +27,7 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
 проверяющий на C ([`flang/proof/checker/checker.c`](../flang/proof/checker/checker.c)) переиграл сам,
 а не принял на слово у ядра. Записи лежат готовыми в
 `flang/proof/checker/tests/records/corpus/` — по одной на программу-образец, всего 100.
-<!-- СНЯТО 2026-10-18 файлов flang/proof/checker/tests/records/corpus/*.record = 100 (print batch eight over dev 51d92cf31; до них 97, снято 2026-10-17) (задача 4791: подлог захвата под связывателем в корпусе; до них 93, снято 2026-10-01) -->
+<!-- СНЯТО 2026-10-18 файлов flang/proof/checker/tests/records/corpus/*.record = 100 (print batch eight over dev 51d92cf31) -->
 Снимается: `bootstrap/flang io flang/proof/replay-share.fscript`.
 
 **Что это даёт сказать.** Что у этого набора записей слово «доказано» в отчёте компилятора не
@@ -63,7 +63,7 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
    терм, функции шага нет в реестре модели), уходит «вне модели» вместе со всем блоком.
 
 Файлов Lean в дереве 27.
-<!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 27 (translation validation: Semantics/Walk.lean, the theorem of the symbolic walk; до них 25, снято 2026-11-06) (translation validation: the symbolic walk of printed C; до них 24, снято 2026-10-28) (task 4572: record census, record form, verdicts with the registry, soundness of the second checker; до них 20, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 19, снято 2026-10-18) -->
+<!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 27 (translation validation: Semantics/Walk.lean, the theorem of the symbolic walk) -->
 Снимается целиком: `bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000` (нужен Lean в PATH, версия — в
 `flang/proof/lean/lean-toolchain`). Первый из двух вопросов прибор четырёх покрытий считает и без
 Lean: это счёт текста, а не доказательство.

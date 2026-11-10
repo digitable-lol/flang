@@ -143,12 +143,12 @@ docs/tasks/     открытая работа дерева, по файлу на
 <!-- КАРТА-КОНЕЦ -->
 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 67 файлов на flang —
-<!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar; до них 66, снято 2026-10-18) (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 65, снято 2026-10-07) -->
+<!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
 [`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **64 модуля, 1793 функции и 4144
 примеров**, которые прогоняются при каждой проверке:
 <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes; до них 4143, снято 2026-10-17) -->
+<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes) -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
@@ -169,7 +169,7 @@ docs/tasks/     открытая работа дерева, по файлу на
 сверяется с закоммиченным: `sh scripts/bootstrap-reprint.sh --check`. Входы последней печати записаны в
 `scripts/seed-fingerprint`, по хешированной строке на файл — 81 строка во входной половине; вместе
 со второй половиной, телом семени, в файле 100 строк.
-<!-- СНЯТО 2026-11-09 строк scripts/seed-fingerprint = 100 (print batch 11: flang/self/sugar.flang joins the inputs; до них 99, снято 2026-10-19) (print batch 9a: flang/self/category-paths.flang joins the inputs, input half 80 lines; до них 98, снято 2026-10-18) (print batch eight over dev 51d92cf31; до них 96, снято 2026-10-14) (print batch six: input half 77 lines; до них 77, снято 2026-10-13) (batch five over dev 4222c7083; до них 67, снято 2026-10-07) -->
+<!-- СНЯТО 2026-11-09 строк scripts/seed-fingerprint = 100 (print batch 11: flang/self/sugar.flang joins the inputs) -->
 Семя отстаёт от исходников: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` перечисляет, какие файлы и
 функции новее семени, а перепечатка (`sh scripts/bootstrap-reprint.sh`, часы на одном ядре) — единственный
 путь, которым правки `flang/self/` доезжают до двоичного. **Правка исходника не попадает в

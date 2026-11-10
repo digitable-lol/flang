@@ -2339,6 +2339,130 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+  # Сторожа и пробы, которых до этой работы не звал никто живой. Workflow «CI»
+  # (`ci.yml`) выключен на GitHub руками, поэтому зов оттуда — не зов: сторож
+  # `who-calls-the-guards` его больше не считает. Здесь стоят те из них, что
+  # зелены и дёшевы на этом дереве; красные и дорогие названы с замером в
+  # `scripts/ledgers/uncalled-guards.json` и `scripts/ledgers/checks-nobody-calls.tsv`.
+  #
+  # Шаг не останавливается на первом красном: гонит всё и называет каждого.
+  # `probe` ждёт, что подлог ПОКРАСНЕЕТ (ненулевой код); `shown` — что план
+  # подлога сам показал все стороны и ответил нулём; `check` — зелёного.
+  guards-without-a-caller:
+    name: guards-without-a-caller
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FLANG_TMP: ${{ runner.temp }}
+      LC_ALL: C.UTF-8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: binary-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.binary-cache.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.binary-cache.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      - name: Guards that only the switched-off workflow called
+        run: |
+          set -u
+          red=0
+          count=0
+          answer() {
+            count=$((count + 1))
+            "$@" > "$RUNNER_TEMP/guard-$count.out" 2>&1
+          }
+          told() {
+            red=$((red + 1))
+            echo "::error::$1"
+            tail -c 2000 "$RUNNER_TEMP/guard-$count.out" >&2
+            echo >&2
+          }
+          check() { answer "$@" || told "сторож красен: $*"; }
+          probe() { if answer "$@"; then told "подлог прошёл мимо, сторож слеп: $*"; fi; }
+          shown() { answer "$@" || told "план подлога не показал свои стороны: $*"; }
+
+          probe bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Подлог
+          check bootstrap/flang run-script cyrillic:check
+          probe bootstrap/flang run-script transliteration:forgery
+          check bootstrap/flang run-script transliteration:check
+          probe bootstrap/flang run-script stray-temporaries:forgery
+          check bootstrap/flang run-script stray-temporaries:check
+          shown bootstrap/flang run-script settings:forgery
+          check bootstrap/flang run-script settings:check
+          probe bootstrap/flang run-script skills-page:forgery
+          check bootstrap/flang run-script skills-page:check
+          probe bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Подлог
+          check bootstrap/flang run-script no-package-json:check
+          probe bootstrap/flang run-script version-derivations:forgery
+          check bootstrap/flang run-script version-derivations:check
+          probe bootstrap/flang run-script registry-resolution:forgery
+          check bootstrap/flang run-script registry-resolution:check
+          check bootstrap/flang run-script registry-prints:check
+          probe bootstrap/flang run-script lock-forms:forgery
+          check bootstrap/flang run-script lock-forms:check
+          probe bootstrap/flang run-script link-import:forgery
+          check bootstrap/flang run-script link-import:check
+          probe bootstrap/flang run-script temporal:forgery
+          check bootstrap/flang run-script temporal:check
+          shown bootstrap/flang io scripts/guards/who-calls-the-guards.fscript --plan Forgery
+          check bootstrap/flang run-script guard-calls:check
+          probe bootstrap/flang run-script forgery-probe:forgery
+          check bootstrap/flang run-script forgery-probe:check
+          probe bootstrap/flang io scripts/guards/checks-nobody-calls.fscript --plan Подлог --max-steps 4000000000
+          check bootstrap/flang run-script uncalled-checks:check
+          shown bootstrap/flang run-script dictionary-copies:forgery
+          check bootstrap/flang run-script dictionary-copies:check
+          check bootstrap/flang run-script dictionary:check
+          check bootstrap/flang run-script licenses:check
+          check bootstrap/flang run-script cli-commands:check
+          check bootstrap/flang run-script install-path:check
+          check bootstrap/flang run-script contrast:check
+          check bootstrap/flang run-script kernel-abilities:check
+          check bootstrap/flang run-script occupied-names:check
+
+          echo "прогонов $count, красных $red"
+          [ "$red" -eq 0 ]
+      - name: Probes nobody called
+        run: |
+          set -u
+          red=0
+          count=0
+          probe() {
+            count=$((count + 1))
+            if ! "$@" > "$RUNNER_TEMP/probe-$count.out" 2>&1; then
+              red=$((red + 1))
+              echo "::error::проба красна: $*"
+              tail -c 2000 "$RUNNER_TEMP/probe-$count.out" >&2
+              echo >&2
+            fi
+          }
+          probe bootstrap/flang io flang/proof/probes/calls-records-and-lists/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/lists-and-cases/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/message-language/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/declared-types-at-the-cli/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/same-name-functions/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/settled-kernel-issues/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/small-compiler-bugs/run.fscript --plan Binary --timeout 900000
+          probe bootstrap/flang io flang/proof/probes/written-steps/run.fscript --plan Binary --timeout 900000
+          echo "проб $count, красных $red"
+          [ "$red" -eq 0 ]
+
   # ── БЛОКИ «прогон»: ВЕРНОЕ ОЖИДАНИЕ ОТЛИЧИМО ОТ ЛОЖНОГО (задача 1116) ─────
   #
   # ПОЧЕМУ ОТДЕЛЬНАЯ РАБОТА, А НЕ ШАГ У СОСЕДЕЙ ВЫШЕ. Эта проба собирает ВТОРОЙ

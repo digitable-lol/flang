@@ -64,7 +64,7 @@
   принимает путь: строка
   возвращает признак
   пример «программа глубоко во вложенном каталоге тоже считается»
-    дано путь равно "flang/scripts/word-guard.fscript"
+    дано путь равно "flang/self/bootstrap/compiler.flang"
     ожидается да
   пример «не .flang»
     дано путь равно "flang/scripts/word-guard.mjs"

@@ -1,106 +1,103 @@
 # Troubleshooting
 
-On the left is what you see on screen, then why it happens and what to type.
-Every command here was run against this compiler; messages are quoted verbatim
-(the compiler speaks Russian).
+On the left is what you see on the screen, then why it happens and what to
+type. Messages are quoted verbatim.
 
 ## Installing and building
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| There is no `flang` binary after installing | the compiler is built from four C99 files in `bootstrap/`, and the machine has no `cc` or no `make`. The message «двоичный компилятор не собран» that used to be printed at install time no longer exists in the tree: `package.json` has neither `postinstall` nor a `scripts` field at all (commit 2c40752d0) | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`), then `make -C bootstrap` |
-| `make: command not found` when building from a clone | `make` is only there to compile four C files | build with a single `cc` call — the command is below |
-| `asdf install flang` refuses: the archive holds a different file name | the asdf plugin lives in a separate repository and lags behind the tree | `brew install digitable-lol/tap/flang`, or build from source |
-| The built `flang` is not found | `make -C bootstrap` puts it in `bootstrap/flang`, not on `PATH` | `sudo make -C bootstrap install`, or call `./bootstrap/flang` |
+| `flang: command not found` after `make -C bootstrap` | the build puts the binary in `bootstrap/flang`, not on `PATH` | `sudo make -C bootstrap install`, or call `./bootstrap/flang` |
+| `flang: command not found` after the one-line install | `~/.local/bin` is not on `PATH` | add `export PATH="$HOME/.local/bin:$PATH"` to your shell profile |
+| `cc: command not found` when building from a clone | no C compiler | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`) |
+| `make: command not found` when building from a clone | `make` is not installed | build with one call to `cc` — [Installing](install.html#from-source) |
+| `flang --version` does not answer `flang <version>` | LLVM Flang, the Fortran compiler with the same name, comes first on `PATH` | put the directory of our `flang` first on `PATH`, or call it by full path |
+| The shell answers `вычислять нечем: не найден libcompiler_flang.a` | the binary is installed without the library, so expressions cannot be evaluated | name the directory with `libcompiler_flang.a` in `FLANG_LIB_DIR` and the one with the headers in `FLANG_INCLUDE_DIR` |
 
-Building without `make` is one call to the C compiler:
-
-```bash
-cd bootstrap
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -o flang \
-   flang_cli.c flang_repl.c flang_runtime.c compiler_flang.c -lm -lpthread
-```
-
-## The check does not answer, or answers about the wrong thing
+## The check answers about something else
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| `flang check` on a big file thinks for a while and ends with `FLANG_RECURSION_LIMIT` | the step budget is one for the whole command, and `check` has no key that raises the limit | check one file at a time and split the module into smaller ones |
-| `flang check` names a line and column that do not exist in your file | the trouble lives in an imported module, and the diagnostic carries no file name | check every imported module with its own command |
-| "замечаний 1" and not a word about postconditions: `--proof` prints nothing | the check stopped at the first trouble — it never reached the postconditions, and the claims were not judged at all | fix the trouble; while it stands, "proved" means nothing |
-| `FLANG_IMPORT_NOT_FOUND: не найден модуль «Имя»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора` | the lookup by module name alone found no file | give the path outright: `использует «Имя» из "path/file.flang"` |
-| `flang emit` exited with code 3 and the files are written | the program declares something the binary does not judge — a monad, for instance (a program with processes, or with morphisms and no category, is emitted with code 0 today; run of 11 September 2026, binary 0.7.17, commit 2c40752d0, on the examples of the «Language reference» page) | this is not a refusal to emit: judge such a program by its examples (`flang test`) |
+| `место указано строкой и столбцом, но без файла` | several files were checked together with the imports. A failure in an imported module carries the path in its text: `в файле …/neighbour.flang:`; a failure without a path is in your file | check the named module on its own: `flang check neighbour.flang` |
+| `FLANG_IMPORT_NOT_FOUND: не найден модуль «Имя»: ни рядом с файлом, ни выше по каталогам, ни в библиотеке компилятора` | the search by module name found no file — or found one that does not pass the check | name the path: `использует «Имя» из "path/file.flang"`; then check that module itself |
+| `не проверено — ведомость не печатается у программы с замечаниями` | `check --proof` prints the proof report only for a program without failures | fix the failures printed above that line |
+| `FLANG_RECURSION_LIMIT` from `flang check` on a large file | the checker ran out of its step limit | `flang check file.flang --step-limit N` |
+| Exit code 5 | the run hit the memory limit (three quarters of the machine's memory by default) | `--memory-limit N`, for example `--memory-limit 16G` |
 
-Trouble in an imported module looks like this — line 7 belongs to the
-neighbouring file, not to the one you checked:
+## `run` or `io` refuses to start the program
 
 ```
-FLANG_UNKNOWN_NAME, строка 7, столбец 17: имя «неизвестное» не связано
+не доказано: … — запуск только по явному согласию: --trust
 ```
 
-The cure is to check one file at a time:
+Exit code 3. Before running, `flang run` and `flang io` check the proofs and do
+not start a program whose guarantees are not proved or that has failures. The
+line names the first failure.
 
-```bash
-flang check neighbour.flang
-```
+| You want | Type |
+| --- | --- |
+| To see every failure | `flang check file.flang` |
+| To run anyway, once | `--unproven warn` warns and runs; `--trust` runs without checking the proofs |
+| To run anyway, always | `unproven = warn` in `.flangrc` |
 
-## A plan run hits a limit
+## A run hits a limit
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| `FLANG_RECURSION_LIMIT: функция «Имя» исчерпала лимит шагов (10000000) на глубине вызовов N`, exit code 1 | `flang io` allows 10,000,000 steps per turn by default | raise it: `flang io plan.flang --max-steps 100000000` |
-| `FLANG_RECURSION_LIMIT: функция «Имя» превысила предел глубины вызовов (10000)` | the call depth limit is 10,000 | `--max-depth N`, or better, rewrite the recursion as a fold |
-| The plan stops early and names no trouble | the default budget is 10,000 orders per run | `--max-orders N` |
+| `FLANG_RECURSION_LIMIT: функция «Имя» исчерпала лимит шагов (N) на глубине вызовов M`, exit code 1 | the evaluation ran out of steps | `--max-steps N` on `run`, `test`, `io` |
+| `FLANG_RECURSION_LIMIT: функция «Имя» превысила предел глубины вызовов (N) на глубине M` | the call depth limit is reached | `--max-depth N`, or better, rewrite the recursion as a fold |
+| The plan stopped before its end | `flang io` allows 10,000 orders per run | `--max-orders N` |
 
-To see that the message is exactly this one, force it with a tiny limit:
+To see the message on a tiny limit:
 
 ```bash
 flang run docs/examples/rosetta/factorial.flang --function 'Факториал' --args '{"н":30}' --max-steps 3
 ```
 
-It prints `FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3)
-на глубине вызовов 1` and exits with code 1.
+```
+доказано: утверждений 0
+FLANG_RECURSION_LIMIT: функция «Факториал» исчерпала лимит шагов (3) на глубине вызовов 1
+```
 
-## Processes after emitting into another language
+Exit code 1.
 
-The scheduler is **not** emitted into every target. A program with processes
-behaves differently depending on where you emitted it:
+## Emitting a program with processes is refused
+
+The process scheduler is not emitted into every target:
 
 | Target | What happens |
 | --- | --- |
-| `c`, `elixir`, `js`, `ts` | the scheduler is emitted (for `c` it is `flang_conc.c` next to the program), exit code 0 |
-| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | emitting refuses outright, exit code 1, not a single file written |
+| `c`, `elixir`, `js`, `ts` | the scheduler is emitted, exit code 0 |
+| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | the emit is refused, exit code 1, no file is written |
 
-Taken on `docs/examples/service-on-processes/service.flang` (three processes, a
-supervisor, three runs).
-
-The refusal for `go` reads verbatim:
+The refusal looks like this:
 
 ```
 flang emit: печать отказала — у цели «go» нет планировщика конкурентности, а в программе
 объявлена конкурентность (процессов 3, надзоров 1, прогонов 3), первый — процесс «Приёмная».
-Напечатать процессы в «go» нечем: обработчик стал бы обычной функцией, которую никто
-не зовёт, и программа собралась бы, делая не то, что написано. Цели с планировщиком: c, elixir, js
 ```
 
-What to do: emit a program with processes into `c`, `elixir`, `js` or `ts`
-(the refusal names three targets; `ts` is missing from it although it does emit — same run).
+Emit such a program to `c`, `elixir`, `js` or `ts`:
 
 ```bash
-flang emit your-file.flang --target elixir --out ./output
+flang emit your-file.flang --target elixir --out ./out
 ```
 
 ## The language server in the editor
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| The editor is configured and there are no hints or squiggles | the editor cannot start `flang lsp`: the binary is not on `PATH` | check the server command in the editor settings — [Setting up your editor](editor.html); `flang check %` on a key works without the server |
-| No highlighting in Emacs | highlighting exists for Vim, Neovim and VS Code only | use `flang check %` on a key — see the same page |
+| The editor is configured, but there are no hints or underlines | the editor cannot start `flang lsp`: the binary is not on `PATH` | check the server command in the editor settings — [Editor setup](editor.html) |
+| No highlighting in Emacs | highlighting exists only for Vim, Neovim and VS Code | diagnostics come from the server or from `flang check` on a key — see the same page |
 
-One command tells you whether the server is alive:
+To check that the server answers:
 
 ```bash
 printf 'Content-Length: 75\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | flang lsp --stdio
 ```
 
-Next: [Setting up your editor](editor.html) and [Installing](install.html).
+The server is alive if it prints `Content-Length: …` and an answer with
+`"capabilities"`.
+
+Next: [Failure reference](diagnostics.html) — every `FLANG_…` code and how to
+fix it; [Installing](install.html).

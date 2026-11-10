@@ -304,7 +304,7 @@ bash $F/assemble.sh цепь 10000
 # предел памяти называет ПОРУЧЕНИЕ, а не ulimit оболочки (ADR-0061).
 # Путь к стенду — ПОЛНЫЙ: относительный план считает от своего каталога,
 # а стенды лежат там, откуда запущена сборка.
-bootstrap/flang io flang/concurrency/bench/limit.fscript --plan "Во что упирается" \
+bootstrap/flang io flang/concurrency/bench/limit.fscript --plan "Во что упирается" --на-веру \
   -- "$PWD/b-цепь-10000" 20000 1450000 1460000
 
 # 10. Течёт ли со временем

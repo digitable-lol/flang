@@ -61,6 +61,16 @@ docs/site/search.flang  docs/site/site-numbers.flang  docs/site/sitemap.flang
 рядом те же девять; `flang/concurrency/bench/assemble.sh` (строка 25) по-прежнему
 зовёт отсутствующий `build.mjs`.
 
+**10 ноября 2026, задача 0049.** Половина про стенд узла закрыта: оба файла
+JavaScript из `flang/concurrency/bench/` сняты. Генератор стендов — план
+`flang/concurrency/bench/gen.flang` (четырнадцать стендов, от `тихо 10` до
+`ждут 1000000`, совпали с прежним генератором байт в байт), а
+`flang/concurrency/bench/assemble.sh` печатает стенд в C и собирает его двоичным
+и `make`. Стенд смерти узла на JavaScript не звал никто; его место занимает
+`flang/concurrency/bench/node-death.fscript`. Счёт первой команды теперь 12, и
+все двенадцать лежат в `docs/site/`; три пункта списка ниже про стенд описывают
+дерево до этой правки.
+
 Шесть коротких команд — `site:build`, `site:check`, `surfaces:run`,
 `surfaces:check`, `numbers:build`, `numbers:check` — зовут Node. Программы на
 flang лежат рядом с оригиналами, но ни короткая команда, ни публикация страниц

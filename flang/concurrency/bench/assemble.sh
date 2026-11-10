@@ -19,8 +19,8 @@ METKA=$VID
 if [ -n "$K" ]; then METKA="$VID-k$K"; fi
 if [ -n "$TYAZH" ]; then METKA="$METKA-t$TYAZH"; fi
 for N in "$@"; do
-  node "$FLANG/flang/concurrency/bench/gen.mjs" --n="$N" --вид="$VID" ${K:+--k="$K"} ${TYAZH:+--тяж="$TYAZH"} \
-    --out="$ZAMER/$METKA-$N.flang"
+  "$FLANG/bootstrap/flang" io "$FLANG/flang/concurrency/bench/gen.flang" --max-steps 200000000000 --max-depth 3000000 -- "n=$N" "вид=$VID" ${K:+"k=$K"} ${TYAZH:+"тяж=$TYAZH"} "выход=$ZAMER/$METKA-$N.flang" > "$ZAMER/$METKA-$N.gen.log" 2>&1
   printf '%s N=%s ' "$METKA" "$N"
-  node "$FLANG/flang/concurrency/bench/build.mjs" --root="$FLANG" --src="$ZAMER/$METKA-$N.flang" --dir="$ZAMER/b-$METKA-$N"
+  "$FLANG/bootstrap/flang" emit "$ZAMER/$METKA-$N.flang" --target c --out "$ZAMER/b-$METKA-$N" > "$ZAMER/b-$METKA-$N.log" 2>&1 && make -C "$ZAMER/b-$METKA-$N" >> "$ZAMER/b-$METKA-$N.log" 2>&1
+  printf 'исходник %s байт, двоичный %s байт\n' "$(wc -c < "$ZAMER/$METKA-$N.flang")" "$(wc -c < "$ZAMER/b-$METKA-$N/flang_cli")"
 done

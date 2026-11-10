@@ -185,7 +185,8 @@
     дано block равно "f\tp\nexpr/right/kind\t\"literal\"\nexpr/right/value\t1\n"
     дано path равно "expr/right"
     ожидается нет
-  («Is literal» от block и path) и притом (["0", "-0", "0.0", "-0.0", "false"] содержит («Fact» от block и (соединить [path, "/value"] по "")))
+  («Is literal» от block и path) и притом (["0", "-0", "0.0", "-0.0", "false"] содержит («Fact» от block и (соединить [
+      path, "/value"] по "")))
 
 тотальная функция «Is length»
   принимает block: строка, path: строка
@@ -231,7 +232,8 @@
 тотальная функция «Is a guard»
   принимает block: строка, path: строка
   возвращает признак
-  ((«Is kind» от block и path и "if") и притом (пусто («Connective» от block и path))) и притом («Is true» от block и («Inside» от path и "else"))
+  ((«Is kind» от block и path и "if") и притом (пусто («Connective» от block и path))) и притом («Is true» от block и
+      («Inside» от path и "else"))
 
 тотальная функция «Core»
   принимает block: строка, path: строка, fuel: нат
@@ -267,23 +269,28 @@
   принимает block: строка, path: строка
   возвращает строка
   «Chosen» от [(«When» от («Is zero» от block и («Inside» от path и "right")) и "граница: не меньше нуля"),
-    («When» от («Is literal» от block и («Inside» от path и "right")) и "граница: не меньше литерала")] и "граница: не меньше терма"
+    («When» от («Is literal» от block и («Inside» от path и "right")) и
+        "граница: не меньше литерала")] и "граница: не меньше терма"
 
 тотальная функция «Upper bound»
   принимает block: строка, path: строка
   возвращает строка
   «Chosen» от [(«When» от («Is literal» от block и («Inside» от path и "right")) и "граница: не больше литерала"),
-    («When» от («Is literal» от block и («Inside» от path и "left")) и "граница: литерал не больше терма")] и "граница: не больше терма"
+    («When» от («Is literal» от block и («Inside» от path и "left")) и
+        "граница: литерал не больше терма")] и "граница: не больше терма"
 
 тотальная функция «Equality»
   принимает block: строка, path: строка
   возвращает строка
   пусть left равно («Inside» от path и "left")
   пусть right равно («Inside» от path и "right")
-  «Chosen» от [(«When» от ((«Is call» от block и left) и притом («Is call» от block и right)) и "равенство: круг (вызов равен вызову)"),
+  «Chosen» от [(«When» от ((«Is call» от block и left) и притом («Is call» от block и right)) и
+      "равенство: круг (вызов равен вызову)"),
     («When» от ((«Is call» от block и left) или («Is call» от block и right)) и "равенство: вызов равен терму"),
-    («When» от ((«Is length» от block и left) и притом («Is length» от block и right)) и "равенство: длин (сохранение)"),
-    («When» от ((«Is literal» от block и right) или («Is literal» от block и left)) и "равенство: с литералом")] и "равенство: термов"
+    («When» от ((«Is length» от block и left) и притом («Is length» от block и right)) и
+        "равенство: длин (сохранение)"),
+    («When» от ((«Is literal» от block и right) или («Is literal» от block и left)) и
+        "равенство: с литералом")] и "равенство: термов"
 
 тотальная функция «Binary kind»
   принимает block: строка, path: строка
@@ -366,7 +373,8 @@
 тотальная функция «Claims of»
   принимает file: строка, answers: список «Answer»
   возвращает список строки
-  отобразить («Blocks» от («Output of» от («Question of» от "digest" и file) и answers)) как block → «Claim» от (соединить [block, "\n"] по "")
+  отобразить («Blocks» от («Output of» от («Question of» от "digest" и file) и
+      answers)) как block → «Claim» от (соединить [block, "\n"] по "")
 
 тотальная функция «Claims»
   принимает answers: список «Answer»
@@ -451,7 +459,8 @@
   принимает file: строка, answers: список «Answer»
   возвращает список строки
   если «Is measured» от file и answers
-    то отфильтровать (отобразить («Lines» от («Ledger of» от file и answers)) как line → «Verdict in line» от line) где found → не (пусто found)
+    то отфильтровать (отобразить («Lines» от («Ledger of» от file и
+        answers)) как line → «Verdict in line» от line) где found → не (пусто found)
     иначе пустой список
 
 тотальная функция «Verdicts»
@@ -577,7 +586,12 @@
     дано kind равно "голое имя"
     дано doubled равно "\nголое имя\tдоказано\n\nголое имя\tНАРУШЕНО\n\nотрицание\tна сетке\n"
     ожидается запись «Row» с «kind» равным "голое имя" и «total» равным 2 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0
-  запись «Row» с «kind» равным kind и «total» равным («Occurrences» от doubled и (соединить ["\n", kind, "\t"] по "")) и «proved» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tдоказано\n"] по "")) и «induction» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tиндукцией\n"] по "")) и «grid» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tна сетке\n"] по "")) и «declared» равным («Occurrences» от doubled и (соединить ["\n", kind, "\tобъявлено\n"] по ""))
+  запись «Row» с «kind» равным kind и «total» равным («Occurrences» от doubled и (соединить ["\n", kind,
+      "\t"] по "")) и «proved» равным («Occurrences» от doubled и (соединить ["\n", kind,
+      "\tдоказано\n"] по "")) и «induction» равным («Occurrences» от doubled и (соединить ["\n", kind,
+      "\tиндукцией\n"] по "")) и «grid» равным («Occurrences» от doubled и (соединить ["\n", kind,
+      "\tна сетке\n"] по "")) и «declared» равным («Occurrences» от doubled и (соединить ["\n", kind,
+      "\tобъявлено\n"] по ""))
 
 тотальная функция «Placed»
   принимает row: «Row», sorted: список «Row»
@@ -596,7 +610,9 @@
   пример «The larger kind goes first and equal kinds keep their order»
     дано pairs равно ["а\tдоказано", "б\tдоказано", "в\tна сетке", "в\tдоказано"]
     ожидается [запись «Row» с «kind» равным "в" и «total» равным 2 и «proved» равным 1 и «induction» равным 0 и «grid» равным 1 и «declared» равным 0, запись «Row» с «kind» равным "а" и «total» равным 1 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0, запись «Row» с «kind» равным "б" и «total» равным 1 и «proved» равным 1 и «induction» равным 0 и «grid» равным 0 и «declared» равным 0]
-  свёртка («Distinct» от (отобразить pairs как pair → «Field» от 1 и pair)) начиная с (пустой список) как sorted и kind → «Placed» от («Row of» от kind и («Doubled» от pairs)) и sorted
+  свёртка («Distinct» от (отобразить pairs как pair → «Field» от 1 и
+      pair)) начиная с (пустой список) как sorted и kind → «Placed» от («Row of» от kind и
+      («Doubled» от pairs)) и sorted
 
 тотальная функция «Spaces»
   принимает count: число
@@ -647,7 +663,8 @@
   пример «The five number columns have their own widths»
     дано cells равно ["79", "59", "5", "14", "1"]
     ожидается ["   79", "   59", "   5", "    14", "      1"]
-  свёртка cells начиная с (пустой список) как aligned и cell → добавить («Right aligned» от cell и («Width at» от ((длина aligned) плюс 1))) к aligned
+  свёртка cells начиная с (пустой список) как aligned и cell → добавить («Right aligned» от cell и
+      («Width at» от ((длина aligned) плюс 1))) к aligned
 
 тотальная функция «Width at»
   принимает position: число
@@ -673,7 +690,8 @@
 тотальная функция «Unmeasured»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить (отфильтровать («Files» от answers) где file → не («Is measured» от file и answers)) как file → «Module name» от file
+  отобразить (отфильтровать («Files» от answers) где file → не («Is measured» от file и
+      answers)) как file → «Module name» от file
 
 тотальная функция «Counting lines»
   принимает answers: список «Answer»

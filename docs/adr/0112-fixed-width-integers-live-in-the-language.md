@@ -1,6 +1,7 @@
 # ADR-0112. Целые фиксированной ширины и битовые операции живут в самом языке
 
-**Состояние:** предложено. Принимает владелец. Слова решены.
+**Состояние:** предложено, исполнено: семья проб
+`flang/proof/checker/tests/families/fixed-width-words`. Принимает владелец. Слова решены.
 **Основание:** [ADR-0078](0078-tls-1-3-is-assembled-in-the-language-and-runs-printed.md) —
 TLS на языке и цена его счёта; [ADR-0036](0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md) —
 образец нового вида значения; [ADR-0064](0064-every-checker-move-has-a-lean-theorem-or-a-named-debt-row.md) —

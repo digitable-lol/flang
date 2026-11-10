@@ -1,6 +1,7 @@
 # ADR-0188. Единица туда и обратно на натуральном отрезке; на дне отрезка два нуля
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: семья проб
+`flang/proof/checker/tests/families/one-down-one-up`. Принимает владелец.
 **Рядом:** [ADR-0075](0075-a-free-statement-gets-segment-induction-integer-tightening-and-enumeration.md)
 — индукция по отрезку; [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md)
 — потолок доверенной базы сверщика.

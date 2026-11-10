@@ -1,6 +1,7 @@
 # ADR-0078. TLS 1.3 собран на языке и работает напечатанным, а `«Запросить»` по https остаётся за curl
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: `flang/stdlib/tls-client.flang`, приборы `tls:engine` и
+`tls:forgeries`, выпуск 0.7.26. Принимает владелец.
 **Дата:** 7 октября 2026.
 **Основание:** `flang/stdlib/tls-client.flang` (новый), `flang/stdlib/certificate-path.flang`
 (новый), `flang/stdlib/rsa.flang` (RSA-PSS, исправление `«R по модулю»`),

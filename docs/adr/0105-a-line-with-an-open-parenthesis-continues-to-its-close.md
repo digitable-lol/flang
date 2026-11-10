@@ -1,6 +1,7 @@
 # ADR-0105. Строка с открытой круглой скобкой продолжается до закрывающей
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: пробы `flang/proof/probes/line-continuation`; задача 1761
+открыта. Принимает владелец.
 **Дата:** 13 октября 2026.
 **Основание:** хук перед пушем ветки `a/the-simplifier-rewrites-by-proved-equalities`
 (линия [ADR-0092](0092-a-proved-equality-postcondition-rewrites-its-call-and-the-ledger-names-the-order.md))

@@ -1,6 +1,7 @@
 # ADR-0145. Развёртка ставит доводы вызова на места параметров; ходы записи вне доказанной модели названы
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: приём — в обоих сверщиках
+(`flang/proof/checker/checker.c`, `flang/proof/checker/second/Moves.lean`). Принимает владелец.
 **Рядом:** [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md)
 — потолок доверенной базы; [ADR-0127](0127-every-half-move-of-the-checker-has-a-lean-theorem.md) — ходы
 половины с теоремой; задача 5908.

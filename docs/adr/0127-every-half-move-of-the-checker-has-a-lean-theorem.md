@@ -1,6 +1,7 @@
 # ADR-0127. Каждый ход половины в сверщике на C имеет теорему в Lean, и доверенная база растёт на эти ходы
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: теоремы — в `flang/proof/lean/Half.lean`. Принимает
+владелец.
 **Дата:** 16 октября 2026.
 **Рядом:** [ADR-0064](0064-every-checker-move-has-a-lean-theorem-or-a-named-debt-row.md) —
 теорема или строка долга у каждого приёма; [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md) —

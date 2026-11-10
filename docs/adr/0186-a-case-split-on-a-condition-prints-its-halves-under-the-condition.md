@@ -1,6 +1,7 @@
 # ADR-0186. Разбор цели по условию печатает половины под условием и его отрицанием
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: приём — в обоих сверщиках
+(`flang/proof/checker/checker.c`, `flang/proof/checker/second/Moves.lean`). Принимает владелец.
 **Рядом:** [ADR-0098](0098-the-prover-reads-the-branch-condition-and-compares-two-literals.md) — правило Отр1;
 [ADR-0175](0175-a-list-precondition-passes-to-the-head-and-tail-and-a-list-includes-itself.md)
 — ветка, поверх которой сделано это решение.

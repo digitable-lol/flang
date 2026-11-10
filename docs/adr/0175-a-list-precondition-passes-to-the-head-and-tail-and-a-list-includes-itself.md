@@ -1,6 +1,7 @@
 # ADR-0175. Предусловие о списке переходит на голову и хвост; список включает себя и прежние элементы
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: пробы `flang/proof/probes/lists-and-cases`. Принимает
+владелец.
 **Рядом:** [ADR-0038](0038-a-precondition-is-discharged-by-a-printed-derivation.md) — снятие
 предусловия печатным выводом; [ADR-0097](0097-the-trusted-base-of-the-checker-grows-with-its-rules-and-the-tables-guard-runs-in-ci.md)
 — потолок доверенной базы сверщика.

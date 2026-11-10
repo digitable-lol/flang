@@ -1,6 +1,7 @@
 # ADR-0081. Напечатанный код следует канону своей цели
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: выпуск 0.7.26 — форматтер и линтер у каждой цели печати.
+Принимает владелец.
 **Основание:** `flang/self/emit-*.flang`, `flang/self/emit-layout.flang`,
 `flang/src/emit/**`, `scripts/targets/target-canons.fscript`,
 `scripts/targets/target-canons.tsv`, `.github/workflows/target-canons.yml`.

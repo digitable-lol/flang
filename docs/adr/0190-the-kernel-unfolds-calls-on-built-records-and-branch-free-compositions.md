@@ -1,6 +1,7 @@
 # ADR-0190. Ядро разворачивает вызов на выписанной записи и композицию без ветвлений; цель, сведённая к «да», доказана; длина не ноль — больше нуля; включение идёт через приписанное по факту
 
-**Состояние:** предложено. Принимает владелец.
+**Состояние:** предложено, исполнено: пробы `flang/proof/probes/calls-records-and-lists`.
+Принимает владелец.
 **Рядом:** [ADR-0042](0042-the-last-twelve-places-get-rules-not-exceptions.md) — Разв2;
 [ADR-0133](0133-the-kernel-unfolds-a-call-on-a-built-constructor.md) — развёртка на выписанном
 конструкторе и запрет Разв✗; [ADR-0175](0175-a-list-precondition-passes-to-the-head-and-tail-and-a-list-includes-itself.md) —

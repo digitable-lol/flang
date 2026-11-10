@@ -64,37 +64,37 @@ flang. Определите смысл каждого слова и услови
 
 ### Бесплатная доставка
 
-[`shipping.dsl`](docs/examples/dsl/shipping.dsl)
+[Русское правило](docs/examples/dsl/shipping.ru.dsl) · [Английское правило](docs/examples/dsl/shipping.dsl)
 
 ```text
-Shipping is free when the order total is at least 50
-Otherwise shipping costs 7
+Доставка бесплатна при сумме заказа от 50
+Иначе доставка стоит 7
 ```
 
-В первой строке задан порог бесплатной доставки, во второй — цена ниже порога. При сумме заказа 50 доставка стоит 0, при сумме 49 — 7. Обе суммы берутся из правила. Замените 50 на `many`, чтобы увидеть ошибку.
+В первой строке задан порог бесплатной доставки, во второй — цена ниже порога. При сумме заказа 50 доставка стоит 0, при сумме 49 — 7. Обе суммы берутся из правила. Замените 50 на `много`, чтобы увидеть ошибку.
 [Реализация](docs/examples/dsl/shipping.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
-  --args '{"строкаПравила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
+  --args '{"строкаПравила":"Доставка бесплатна при сумме заказа от 50\nИначе доставка стоит 7"}'
 ```
 
 Разборщик вернёт `{"вариант":"Правило","порог":50,"обычнаяЦена":7}`.
 
 ### Доступ к документу
 
-[`access.dsl`](docs/examples/dsl/access.dsl)
+[Русское правило](docs/examples/dsl/access.ru.dsl) · [Английское правило](docs/examples/dsl/access.dsl)
 
 ```text
-Editors can publish documents
+Редакторы могут публиковать документы
 ```
 
-`Editors` и `Readers` обозначают роли, а `publish documents` и `read documents` — действия. Правило разрешает редакторам публиковать документы. Для чтения потребуется отдельное правило.
+`Редакторы` и `Читатели` обозначают роли, а `публиковать документы` и `читать документы` — действия. Правило разрешает редакторам публиковать документы. Для чтения потребуется отдельное правило.
 [Реализация](docs/examples/dsl/access.flang)
 
 ```sh
 bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \
-  --args '{"строкаПравила":"Editors can publish documents"}'
+  --args '{"строкаПравила":"Редакторы могут публиковать документы"}'
 ```
 
 Разборщик вернёт `{"вариант":"Правило","право":{"роль":"editor","действие":"publish"}}`.

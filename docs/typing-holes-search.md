@@ -60,7 +60,12 @@ from the plan's directory.
 
 `--plan Batch` runs one batch and writes a line per program to `<directory>/batch-<first>.tsv`.
 `bootstrap/flang run-script typing-holes:selftest -- <directory>` plants for every oracle what
-it must catch; the exit code is 1 when one of them stays silent.
+it must catch; the exit code is 1 when one of them stays silent or the finding comes from another
+oracle. The planted faults do not depend on holes the compiler still has: an honest program is run
+by a forged evaluator, `sh -c "echo -7"`, which answers -7 to every call (outside the declared
+type, past a false requirement, unlike the printed C program), and the known list and the ledger
+are the case's own files with one planted hole, open or closed. The plan `Batch` takes the forged
+evaluator as its tenth argument, a shell command; without it calls go to `bootstrap/flang run`.
 
 Processes run under a limit of 4 GiB, each with its own time limit; a process cut by its time
 answers `timeout`. Printed programs build and answer without a memory limit: the JVM and Go

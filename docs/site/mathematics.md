@@ -1,14 +1,9 @@
 # Coq and Lean classics: what our kernel actually proves
 
-This page is not a survey of Coq and not a retelling of Mathlib. It is a
-**measurement**: seventy-five classical lemmas, copied verbatim from the Coq and
-Lean sources, rewritten in flang as real functions with postconditions, and run
-through our kernel. Every lemma carries a verdict taken from a run, and every
-unproved one carries a named reason.
-
-A negative result is worth more here than a positive one. A page saying "75 out
-of 75 proved" would be refuted by the reader's first run, and after that nothing
-else on this site would be believed.
+Seventy-five classical lemmas are copied from the Coq and Lean sources,
+rewritten in flang as functions with postconditions and run through the kernel
+of `flang {{выпуск.версия}}`. Every lemma carries the kernel's answer, and
+every unproved one a named reason.
 
 ## The bottom line
 
@@ -17,16 +12,14 @@ flang/stdlib/math-classics.flang
   утверждений 70: доказано 37 (из них без теоремы 37, объявленным типом 17), сетка 33, объявлено, не доказано 0
 
 flang/stdlib/math-classics-lists.flang
-  утверждений 37: доказано 19 (из них без теоремы 19), сетка 18, объявлено, не доказано 0
+  утверждений 37: доказано 20 (из них без теоремы 20), сетка 17, объявлено, не доказано 0
 ```
 
-That is **107 claims, 56 proved**. Of the seventy-five classical lemmas the
-kernel takes **twenty-nine outright**; **forty-five stay a grid**, each with a
-named reason below; and one more — the termination of Euclid's algorithm — cannot
-be written in flang at all.
-
-There are no axioms in these files: the "taken on faith" column of both reports
-is empty (`принято на веру: ничего`).
+That is **107 claims, 57 proved**. Of the seventy-five classical lemmas the
+kernel takes **thirty outright**; **forty-four stay a grid**, each with a named
+reason below; and one more — the termination of Euclid's algorithm — cannot be
+written in flang at all. There are no axioms in these files: both reports say
+`принято на веру: ничего` (taken on trust: nothing).
 
 ## Where the names come from
 
@@ -39,33 +32,17 @@ memory. Where nothing was found, the table has a dash.
 | `leanprover/lean4`, `master` | `src/Init/Prelude.lean`, `src/Init/Core.lean`, `src/Init/Data/Nat/{Basic,Lemmas,Gcd,MinMax,Mod,Dvd}.lean`, `src/Init/Data/List/{Basic,Lemmas}.lean` |
 | `leanprover-community/mathlib4`, `master` | `Mathlib/Data/Nat/Basic.lean`, `Mathlib/Data/List/Basic.lean`, `Mathlib/Data/Nat/GCD/Basic.lean`, `Mathlib/Algebra/Group/Nat/Even.lean` |
 
-Two details that will save the reader time. First: on Coq's `master` the standard
-library has moved to a separate repository (`rocq-prover/stdlib`), so
-`coq/coq/master/theories/…` returns 404 today — the files above were taken at tag
-`V8.19.2`. Second: `Mathlib/Data/Nat/Defs.lean` no longer exists; nearly all of
-the `Nat` classics moved into the Lean 4 core (`src/Init/Data/Nat/…`), and only
-the superstructure stayed in Mathlib.
-
-**Three names are confirmed by use, not by declaration, and that must be said
-plainly.** `Nat.le_add_r`, `Nat.le_0_l` and `Nat.sub_add` are **called** in the
-downloaded files (`theories/Arith/PeanoNat.v:411`, `theories/Lists/List.v:506`
-and `:1701`, `theories/Numbers/Natural/Abstract/NOrder.v:25`,
-`theories/Numbers/Natural/Abstract/NParity.v:41`), but they are declared in files
-that were not downloaded (`NBase.v`, `NSub.v`). The name exists; the
-declaration line was not checked.
+The Coq standard library was taken at tag `V8.19.2`: on `master` it has moved
+to `rocq-prover/stdlib`. Three names — `Nat.le_add_r`, `Nat.le_0_l`,
+`Nat.sub_add` — were found in the downloaded files only in use; the line of
+their declaration was not checked.
 
 ## Reading a verdict
 
-There are exactly four outcomes, and telling them apart is mandatory:
-
-| verdict | meaning |
-|---|---|
-| **доказано** (proved) | the claim holds for **all** inputs |
-| **доказано ПРИ УСЛОВИИ** (proved conditionally) | the conclusion holds, but it leans on a premise the kernel did not prove |
-| **сетка** (grid) | checked on a finite set of values; nothing is known about the rest |
-| **объявлено, не доказано** (declared) | written down and taken on trust; only the runtime checks it |
-
-In these two files only two outcomes occurred: **proved** and **grid**.
+In these two files there are two answers: **доказано** (proved: holds for all
+inputs) and **сетка** (grid: passed on the examples; nothing is known about the
+rest). All the answers:
+[How a proof works](how-proofs-work.html#обеспечивает-the-postcondition-and-the-three-answers).
 
 ## How `nat` was translated
 
@@ -79,14 +56,7 @@ of the classics are simply **false**:
 (0 делить на 0) не больше (0 делить на 0)           →  false
 ```
 
-So wherever they write `nat` we write `неотрицательное` — the exact range `[0, 2⁵³−1]`. This
-is not cosmetics but a condition of an honest translation; the same argument is
-recorded in `flang/test/fixtures/poddelka-order-arithmetic.flang`.
-
-**One type, two spellings.** In the compiler sources and in `docs/flang/SPEC.md`
-the type is called `неотрицательное`; `нат` is the outdated short spelling of the
-same name, accepted until 1.0. The binary takes both and calls the type
-`неотрицательное` in its own refusals and in the proof report; write that one.
+So wherever they write `nat` we write `неотрицательное` — the exact range `[0, 2⁵³−1]`.
 
 ## Table: arithmetic
 
@@ -178,7 +148,7 @@ in the named Lean file.
 | length of a map | `List.map_length` (1139) | `List.length_map` (Lemmas.lean:1081) | «Отобразить» | **proved** |
 | map over an append | `List.map_app` (1164) | `List.map_append` (Lemmas.lean:1853) | «Отобразить склейку» | grid (weakening to length — **proved**) |
 | map through composition | `List.map_map` (1295) | `List.map_map` (Lemmas.lean:1252) | «Отобразить дважды» | grid (weakening to length — **proved**) |
-| map by identity | `List.map_id` (1289) | `List.map_id` (Lemmas.lean:1108) | «Отобразить тождеством» | grid (weakening to length — **proved**) |
+| map by identity | `List.map_id` (1289) | `List.map_id` (Lemmas.lean:1108) | «Отобразить тождеством» | **proved** (and the weakening to length — **proved**) |
 | fold left over an append | `List.fold_left_app` (1360) | `List.foldl_append` (Lemmas.lean:2723) | «Свернуть слева склейку» | grid |
 | fold right over an append | `List.fold_right_app` (1392) | `List.foldr_append` (Lemmas.lean:2726) | «Свернуть справа склейку» | grid |
 | membership in an append | `List.in_app_iff` (303) | `List.mem_append` (Lemmas.lean:1598) | «Есть в склейке» | grid |
@@ -186,17 +156,16 @@ in the named Lean file.
 | a cons keeps a member | `List.in_cons` (277) | `List.mem_cons_of_mem` (Lemmas.lean:389) | «Приписать к вошедшему» | grid |
 | element at index belongs | `List.nth_In` (447) | `List.getElem_mem` | «Элемент по номеру» | grid |
 
-Twenty-one lemmas, seven taken outright.
+Twenty-one lemmas, eight taken outright.
 
 **Weakenings, said out loud.** For nine lemmas the same statement **about length
-only** stands next to the full one, and all nine are proved; for eight of them the
+only** stands next to the full one, and all nine are proved; for seven of them the
 full list equality is not taken. This does not replace the lemma — it is strictly weaker, and
 the verdict in the table belongs to the full form, not to the weakening.
 
 ## Why it is not taken: the reasons, one by one
 
-The forty-five unproved lemmas fall into **eight** named reasons, and none of them
-is "the kernel is weak in general".
+The forty-four unproved lemmas fall into **eight** reasons.
 
 ### 1. Associativity and distributivity: the kernel matches SYNTACTICALLY
 
@@ -207,10 +176,11 @@ and does not decide equalities of computations. It reads `плюс` and `умн�
 node is an IEEE-754 theorem; swapping across parentheses is not, because
 associativity is false in IEEE-754, and the kernel does not do it).
 
-Hence exactly what we measured: **commutativity is taken, associativity is not**,
-for both addition and multiplication. That is not a gap but honesty: over floats
-associativity really is false, and a rule that took it would be proving a
-falsehood.
+Hence: **commutativity is taken, associativity is not**, for both addition and
+multiplication. Over floats associativity is false, and a rule that took it
+would be proving a falsehood. Over `точное целое` (exact integer) associativity
+and polynomial equalities are proved by the rule «кольцо точного целого» —
+[an example](manual-proofs.html#a-statement-without-a-function).
 
 The same single rule explains `Nat.add_assoc`, `Nat.mul_assoc`,
 `Nat.mul_add_distr_l`, `Nat.mul_add_distr_r` — four lemmas.
@@ -265,7 +235,7 @@ statement; to the kernel the first reads the bound straight off the number.
 **What does not follow from order.** `Nat.le_antisymm` asks to turn two
 inequalities into an equality, and the kernel does not glue inequalities into an
 equality (see `Nat.mod_1_r` below). Its mirrored spelling `не (А) или (Б)`
-(technique 6) stands next to it in the file and is a grid too. `Nat.le_ge_cases`
+stands next to it in the file and is a grid too. `Nat.le_ge_cases`
 asks for a disjunction of two orders, `Nat.add_cancel_l` and `Nat.div_mod_eq` for
 equalities of computations.
 
@@ -279,14 +249,13 @@ written with a guard copied from the body word for word:
 ```
 
 Under the guard the body reduces to `а` and the goal to reflexivity, which the
-type `неотрицательное` supplies. Technique 1 of ["Which promises the kernel
-takes"](what-the-kernel-accepts.html) works on a `не больше` goal too, not only on equalities.
+type `неотрицательное` supplies. [The branch condition in the guard](what-the-kernel-accepts.html#1-a-branching-body-put-the-branch-condition-in-the-guard)
+works on a `не больше` goal too, not only on equalities.
 
 `Nat.sub_add` is a special case: over IEEE-754 the law is **false**, with the
 counterexample `(9007199254740994 минус 1) плюс 1 = 9007199254740992`. Over `неотрицательное`
 it holds, but the kernel has no rule that would tell the exact integer grid apart
-from the rest of the numbers in a subtraction, and by the note in
-`flang/self/proof-kernel.flang` it will not get one.
+from the rest of the numbers in a subtraction.
 
 ### 4. Arithmetic of remainders: parity and divisibility
 
@@ -348,16 +317,15 @@ have the marker `тотальная`, which simply is not placed here.
 `Nat.min_comm`, `Nat.max_comm` — two lemmas. Their goal is an equality between the
 result and a call of the same function with swapped arguments, and the kernel does
 not look inside a callee: it takes only its postconditions, and those of «Меньшее
-из двух» are written under guards and say nothing about swapping. This is the same
-broken chain that technique 7 describes in ["Which promises the kernel
-takes"](what-the-kernel-accepts.html).
+из двух» are written under guards and say nothing about swapping — see
+[Calls](what-the-kernel-accepts.html#5-calls-the-prover-uses-the-callee-s-proved-postconditions).
 
 ### 7. Folds: the wall runs along their boundary
 
 `List.app_nil_l`, `List.app_assoc`, `List.app_comm_cons`,
 `List.rev_involutive`, `List.rev_app_distr`, `List.map_app`, `List.map_map`,
-`List.map_id`, `List.fold_left_app`, `List.fold_right_app` — **ten** lemmas,
-the largest group.
+`List.fold_left_app`, `List.fold_right_app` — **nine** lemmas, the largest
+group. `List.map_id` is proved: it is a functor law of the list.
 
 The bodies of «Склеить» and «Обратить» are folds. **The kernel does have a fold
 principle**: it applies when the fold runs over the argument itself, named, at the
@@ -371,13 +339,6 @@ with a premise" — and that rule suffices for every claim about the measure and
 almost no claim about the contents. Of the two claims "over the empty list the
 fold is the base itself", the left one is proved and the right one is a grid.
 
-**Lifting the step (technique 8) is not used in the fold.** The step of «Склеить»
-stands beside the fold as an ordinary function «Шаг склейки», and on it the claim
-`(длина результат) равен ((длина акк) плюс 1)` (`List.last_length`) is
-**proved**. The fold itself keeps its lambda: when it calls the lifted step
-instead, the full equality of `List.app_nil_r` is lost (19 → 18 proved) — the
-warning in the manual ("lifting the step may drop a proof that stood").
-
 What **was** taken, and taken everywhere: **length**. "length of an append is the
 sum of lengths", "reversing preserves length", "mapping preserves length", "a cons
 lengthens the list by exactly one", "the empty list has length zero" are all
@@ -385,9 +346,8 @@ proved. About lists the kernel can count, but it cannot identify.
 
 ### 8. Membership and access by index
 
-`List.in_app_iff`, `List.in_eq`, `List.in_cons`, `List.nth_In` — four lemmas, and
-this is the hole named third among the known ones: **"element N of a list"**. The
-kernel has no bridge between `содержит` and `элемент … в …` in either direction.
+`List.in_app_iff`, `List.in_eq`, `List.in_cons`, `List.nth_In` — four lemmas, with
+one reason: the kernel has no bridge between `содержит` and `элемент … в …` in either direction.
 `List.in_eq` and `List.in_cons` show it over real bodies
 `приписать первый к элементы`: both are grids.
 
@@ -408,15 +368,10 @@ bound**:
 | "remainder mod one is non-negative" | alive | alive | alive | **fell** |
 | "the comparison returns exactly one of three" | alive | alive | **fell** | alive |
 
-The rule that follows: **for a bound-shaped claim, and for a "the result is one of
-three" claim, the canonical pair `0` and `1` is powerless, because both stubs lie
-inside the bound themselves.** Such a claim needs a stub from outside: above the
-ceiling or below zero. This extends the canon rather than refuting it — two stubs
-are still necessary, they are simply sometimes not enough.
-
-A caveat about the honesty of the check: stubbing a whole file at once
-yields false "empties" wherever a goal refers to a neighbouring stubbed function.
-Such places have to be discarded.
+For a bound-shaped claim, and for a "the result is one of three" claim, both
+stubs `0` and `1` lie inside the bound. Such a claim needs a stub from outside:
+above the ceiling or below zero. Stub one function at a time: otherwise a goal
+that refers to a neighbouring stubbed function looks empty.
 
 ## What this says about the kernel
 
@@ -440,10 +395,10 @@ are not. The kernel takes what is written in the body and almost nothing that
 follows from it.
 
 **Fourth: about lists the kernel counts and almost never identifies.** Of the
-nineteen proved claims in the lists file **fifteen are about length**, two are
-about the small numeric helpers that feed the examples, one is the base of the
-left fold over the empty list, and one equality of two lists is taken: append
-with the empty list on the right.
+twenty proved claims in the lists file **fifteen are about length**, two are
+about the small numeric helpers, one is the base of the left fold over the
+empty list, and two are equalities of lists: append with the empty list on the
+right and map by identity.
 
 ## Reproducing the numbers
 
@@ -452,23 +407,12 @@ with the empty list on the right.
 ./bootstrap/flang check flang/stdlib/math-classics-lists.flang --proof
 ```
 
-The line to look at is the last one of the proof report:
-
-```
-утверждений N: доказано M (из них без теоремы L), сетка S
-```
-
-Count only `доказано`. `сетка` is a finite set of values and says nothing about
-the rest of the inputs.
-
-If your numbers disagree with this page, first check which binary you counted
-with.
+Look at the line `утверждений N: доказано M …` at the end of the report.
 
 ## Where to go next
 
-- ["Which promises the kernel takes"](what-the-kernel-accepts.html) — spelling forms, each
-  with a run saying whether the kernel takes it.
-- ["The kernel refused: whose fault is it"](proof-refused.html) — thirteen refusal
-  codes and what each means.
+- [Which postconditions the prover proves](what-the-kernel-accepts.html) — the
+  spellings the kernel takes by itself.
+- [Proving by hand](manual-proofs.html) — theorems, induction, laws.
 - ["What is proved and what is not"](what-is-proved.html) — the same honesty
   across the whole standard library.

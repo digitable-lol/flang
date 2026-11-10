@@ -15,6 +15,10 @@
 | [`surfaces.md`](surfaces.md) | четыре поверхности записи: русская, английская, эсперанто, китайская |
 | [`number-kinds.md`](number-kinds.md) | виды чисел и законы арифметики, которые ядро доказывает о каждом |
 | [`four-coverages.md`](four-coverages.md) | четыре покрытия доказанности и что каждое значит |
+| [`trust-gaps.md`](trust-gaps.md) · [ru](trust-gaps.ru.md) | чему доверяет flang: четыре дыры между исходником и работающей программой и этапы, которые их закрывают |
+| [`reference-semantics.md`](reference-semantics.md) · [ru](reference-semantics.ru.md) | эталонная семантика на Lean: числа двойной точности, ядро языка, теоремы о вычислении |
+| [`translation-validation.md`](translation-validation.md) · [ru](translation-validation.ru.md) | проверка напечатанного C по эталону, функция за функцией |
+| [`python-to-flang.md`](python-to-flang.md) · [ru](python-to-flang.ru.md) | переводчик Python во flang: что входит в подмножество, что отвергается, как проверяется |
 | [`ru-grammar.md`](ru-grammar.md) | русская морфология для силлогизмов: опытный модуль |
 | [`argument-check.md`](argument-check.md) | проверка рассуждений в тексте по предложениям: что формализовано и что следует |
 | [`flang/`](flang) | контракты слоёв: `SPEC.md` языка, ядра доказательств, процессов, ядра вычислителя; [доводы против аксиом в ядре](flang/proof/axioms.md) |
@@ -57,6 +61,8 @@
 | [`page-examples.md`](page-examples.md) | проверка примеров на страницах: какой блок обязан собраться, какой — отказать |
 | [`reprint-cost.md`](reprint-cost.md), [`reprint-runs-start-from-a-clean-tree.md`](reprint-runs-start-from-a-clean-tree.md) | перепечатка семени: цена и порядок захода |
 | [`scheduler-benchmark.md`](scheduler-benchmark.md) | сколько процессов держит планировщик |
+| [`services-in-production.md`](services-in-production.md) | службы на flang в работе: где живут, как обновляются, что в них ломалось |
+| [`registry-list-format.md`](registry-list-format.md) | формат файла `registry.list`, который раздаёт служба реестра |
 | [`benchmarks/`](benchmarks/README.md) | приборы замеров: цена доказательства, скорость, кеш приговоров |
 
 ## Записи, которые читают проверки

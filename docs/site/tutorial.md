@@ -75,9 +75,9 @@ ch1.flang: примеров 2, прошло 2, не прошло 0
 **You can now:** declare a function with types and a unit test, check it and
 call it from the command line.
 
-## Chapter 2. No loops: use `свёртка` (reduce)
+## Chapter 2. Walking a list: `свёртка` (reduce)
 
-The language has no loops. To walk a list, write `свёртка`:
+The language has no mutable variables. To walk a list, write `свёртка`:
 
 ```
 тотальная функция «Сумма»
@@ -104,19 +104,17 @@ Put a condition inside to get, for example, the maximum:
   свёртка элементы начиная с 0 как акк и эл → если эл больше акк то эл иначе акк
 ```
 
-**A naming pitfall.** `эл` is an ordinary name, but `элемент` is a keyword
-("list item by index") and cannot be used as a name. If you write
-`как акк и элемент → акк плюс элемент`, the compiler answers:
+**A naming pitfall.** Some words are taken by the language and cannot be used
+as names. For example, `к` is the word from `добавить эл к список` (add an
+item to a list). If you write `как акк и к → акк плюс к`, the compiler names
+the word and suggests the way out:
 
 ```
-FLANG_PARSE в файле ch2.flang, строка 8, столбец 68: не разобрана конструкция: неожиданное '
-'
+FLANG_PARSE в файле ch2.flang, строка 8, столбец 55: не разобрана конструкция: неожиданное 'к' — это слово занято языком, именем оно быть не может: напишите имя в ёлочках («к») или переименуйте; а если слово попало в форму лишним — уберите его
 ```
 
-The message does not name the cause and points at the end of the line. If a
-parse error points somewhere strange, check whether one of your names is a
-keyword: the [glossary](../glossary.html) lists all {{словарь.понятий}}
-concepts.
+Every word of the language is in the [glossary](../glossary.html): it lists
+{{словарь.понятий}} concepts.
 
 **Exercise 2.** The sum of squares of `[1, 2, 3]` is 14.
 
@@ -132,8 +130,11 @@ ch2.flang: проверено — разбор, типы, завершаемос
 ch2.flang: примеров 3, прошло 3, не прошло 0
 ```
 
-**You can now:** compute a sum, a maximum or any other total over a list
-without a loop.
+The same walk can be written as a loop with kept values — `цикл`,
+`для каждого`, `храним`. The compiler expands it into a fold:
+[Loops, classes, interfaces](../guide/surface-sugar.md).
+
+**You can now:** compute a sum, a maximum or any other total over a list.
 
 ## Chapter 3. Four forms of a body, and how to choose
 
@@ -241,7 +242,8 @@ FLANG_TYPE: вызов функции «Сумма до»: аргумент «н
 
 Do not go back to `равен 0` with `неотрицательное`: `н минус 1` is then of type
 `целое` (integer), which may be negative, and the check fails with
-`FLANG_TYPE` and `FLANG_NOT_TOTAL`.
+`FLANG_TYPE`: «ожидался неотрицательное, получен целое» (expected a
+non-negative, got an integer).
 
 **You can now:** read a `FLANG_NOT_TOTAL` error and fix the recursion the way
 it says.
@@ -301,49 +303,35 @@ chapter 4 (parameter `число`):
   обеспечивает «сумма до неотрицательна» результат не меньше 0
 ```
 
-On its own it is not proved. The proof report (`flang check --proof`) says
-what it rests on:
+`flang check` still answers «замечаний нет» (no remarks). What became of the
+postcondition is in the proof report, `flang check --proof`, exit code 3:
 
 ```
-постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
+постусловие «сумма до неотрицательна» функции «Сумма до» — сетка 1 значение (примеры функции): нарушений на них нет: проверка прогнала каждый пример и посчитала постусловие на его ответе. Это не доказательство — теоремы при утверждении нет
 ```
 
 `сетка 1 значение` means: checked only on one example, like a unit test; there
-is no proof. There are two ways to get a proof.
+is no proof. `flang run` refuses to compute such a program. There are three
+ways to get to "proved".
 
-If the parameter is declared `неотрицательное`, as in exercise 3, the report
-says «доказано индукцией по «неотрицательное»» right away: that type itself
-gives induction over the range `[0, 2⁵³−1]`.
-
-**Way one: induction over a type with variants.** Write a `теорема` (theorem)
-and close each variant by pointing at the example that covers it:
+**Way one: narrow the type.** Declare the parameter `неотрицательное`, as in
+exercise 3. That type itself gives induction over the range `[0, 2⁵³−1]`, and
+the report answers:
 
 ```
-теорема «балл не меньше трёх»
-  дано оценка: «Оценка»
-  утверждаем результат не меньше 3
-  индукция по оценка
-    случай вариант «отлично»
-      то по примеру «отлично — пять»
-    случай вариант «хорошо»
-      то по примеру «хорошо — четыре»
-    случай вариант «удовлетворительно»
-      то по примеру «удовлетворительно — три»
-  следовательно доказано
+постусловие «сумма до неотрицательна» функции «Сумма до» — доказано индукцией по «неотрицательное»: база 1 случай, шаг при допущении на убывшем «н» (1 случай), правила сведения: неотрицательность по построению — утверждение обо ВСЕХ значениях отрезка «неотрицательное» …
 ```
 
-(The function `«Балл оценки»` here has the postcondition
-`обеспечивает «балл не меньше трёх» результат не меньше 3` and three examples
-with these names.) The report:
+The same holds for a type with variants. Add the line
+`обеспечивает «балл не меньше трёх» результат не меньше 3` to `«Балл оценки»`
+from chapter 5, and the prover goes through all three variants itself:
 
 ```
-постусловие «балл не меньше трёх» функции «Балл оценки» — доказано индукцией по «Оценка»: база 3 случая, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Оценка», а не о написанных
+постусловие «балл не меньше трёх» функции «Балл оценки» — доказано индукцией по «Оценка»: база 3 случая, шаг при допущении на частях (0 случаев), правила сведения: ограниченность точным потолком по построению — утверждение обо ВСЕХ входах типа «Оценка», а не о написанных; теоремы при нём нет и не нужно
 ```
 
-Proved for every value of the type, not only for the examples.
-
-**Way two: derive it from the precondition.** `требует` is what the caller must
-guarantee; the prover may use it as a known fact:
+**Way two: a precondition.** `требует` is what the caller must guarantee; the
+prover uses it as a known fact:
 
 ```
 тотальная функция «Двойная норма»
@@ -352,7 +340,16 @@ guarantee; the prover may use it as a known fact:
   требует «норма неотрицательна» норма не меньше 0
   обеспечивает «двойная норма неотрицательна» результат не меньше 0
   норма умножить на 2
+```
 
+```
+постусловие «двойная норма неотрицательна» функции «Двойная норма» — доказано сведением цели с телом функции: правило «неотрицательность по построению», объявленные типы аргументов не понадобились — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+```
+
+**Way three: a theorem.** When the prover does not manage on its own, the proof
+is written step by step. For `«Двойная норма»` it is this:
+
+```
 теорема «двойная норма неотрицательна»
   дано норма: число
   утверждаем результат не меньше 0
@@ -361,16 +358,19 @@ guarantee; the prover may use it as a known fact:
 ```
 
 `по предположению` (by assumption) says: this follows from the precondition.
-The report:
+The report now names the steps of the theorem:
 
 ```
 постусловие «двойная норма неотрицательна» функции «Двойная норма» — доказано: терм принят ядром, 1 шаг, правило «неотрицательность по построению», основания: предусловие функции «Двойная норма» — утверждение обо ВСЕХ входах
 ```
 
-**A proof cannot be faked.** Delete the `требует` line. The postcondition
-becomes false (−1 gives −2), and the check fails with two errors. First, the
-compiler names the counterexample: `число` also contains NaN, which is neither
-above nor below zero:
+Induction, case analysis and references to examples in theorems are on the
+page [Proving by hand](manual-proofs.html).
+
+**A proof cannot be faked.** Delete the `требует` line and keep the theorem.
+The postcondition becomes false (−1 gives −2), and the check fails with two
+errors. First, the compiler names the counterexample: `число` also contains
+NaN, which is neither above nor below zero:
 
 ```
 FLANG_BOUND_ON_NAN в файле ch6.flang, строка 5, столбец 3: постусловие «двойная норма неотрицательна» функции «Двойная норма» ЛОЖНО, и контрпример назван: …
@@ -382,14 +382,12 @@ Second, it rejects the theorem, because there is no assumption left to use:
 FLANG_PROOF_INDUCTION_STEP в файле ch6.flang, строка 11, столбец 3: шаг 1, теорема «двойная норма неотрицательна»: «по предположению» стоит вне индукции, а допущений у этой цели нет ни одного: ни посылки индукции (её даёт `индукция по`), ни предусловия функции (его даёт `требует`). Предполагать не о чем. к этому месту не известно ничего, кроме гипотез «дано»
 ```
 
-A theorem that rests on nothing is not accepted.
-
 **Exercise 5.** Prove the same for `«Тройная норма»` with the body
-`норма умножить на 3`. Answer: the same `требует` line and the same four lines
-of theorem; the report says «доказано: терм принят ядром, 1 шаг».
+`норма умножить на 3`. Answer: the same `требует` line; the report says
+«доказано сведением цели с телом функции».
 
 **You can now:** turn a postcondition checked only on examples into a proved
-one, by induction over a type with variants or from a precondition.
+one — by a type, a precondition or a theorem.
 
 ## Common errors
 

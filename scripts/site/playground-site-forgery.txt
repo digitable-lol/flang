@@ -1,0 +1,33 @@
+Forged page for the negative control of playground:site. Not a page of the site.
+The first program is sound and the output shown for it is wrong; the second
+program does not pass the check and is not marked as refused.
+
+Put into `forged.flang`:
+
+```flang
+модуль «Подлог»
+
+тотальная функция «Удвоить»
+  принимает н: неотрицательное
+  возвращает число
+  пример «дважды два»
+    дано н равно 2
+    ожидается 4
+  н плюс н
+```
+
+```sh
+flang test forged.flang
+```
+
+```
+forged.flang: примеров 1, прошло 0, не прошло 1
+```
+
+```flang
+модуль «Не проходит»
+
+тотальная функция «Четыре»
+  возвращает число
+  «Нет такой функции» от 2
+```

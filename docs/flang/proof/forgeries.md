@@ -92,6 +92,6 @@
 | `forgery-unfold-without-arguments` | `record-lies` | ход «развернуть» обязан назвать доводы вызова: «Тот же» от 5 есть 5, а не х |
 | `forgery-unfold-inside-a-list` | `record-lies` | развёртка вызова внутри списка подставляет довод вызова, а не параметр: [5] не равен [х] |
 | `forgery-unfold-of-a-whole-comparison` | `record-lies` | развёртка разворачивает вызов, а не всё сравнение: «да равен нет» ею не закрыть |
-| `negative-zero-zero-times-a` | `program-lies` | `0 умножить на а` равен `0` ложно над `число`: при а = −5 результат −0 |
-| `negative-zero-a-plus-zero` | `program-lies` | `а плюс 0` равен `а` ложно над `число`: при а = −0 результат +0 |
-| `negative-zero-a-minus-a` | `program-lies` | `а минус а` равен `0` ложно над `число`: а бесконечно или не число |
+| `negative-zero-zero-times-a` | `program-lies` | `0 умножить на а` равен `0` над `число` ядро не доказывает |
+| `negative-zero-a-plus-zero` | `program-lies` | `а плюс 0` равен `а` над `число` ядро не доказывает |
+| `negative-zero-a-minus-a` | `program-lies` | `а минус а` равен `0` над `число` ядро не доказывает; входы, на которых тождества ложны, — [семья «знак нуля»](checker/tests/families/negative-zero/README.md) |

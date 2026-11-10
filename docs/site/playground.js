@@ -13,6 +13,63 @@
    страницу блоком `#flang-lexicon`, второго списка слов здесь нет. */
 (function () {
   'use strict';
+  /* Заготовки: шесть коротких программ, с которых удобно начать. Каждую
+     сторож `playground:probe` прогоняет компилятором песочницы — заготовка,
+     которая не проходит проверку, красит сборку сайта. */
+  var STARTERS = [
+    { key: 'hello', fn: 'Удвоить', args: '{"н": 21}', text: [
+      'модуль «Привет»', '',
+      'тотальная функция «Удвоить»', '  принимает н: неотрицательное', '  возвращает число',
+      '  обеспечивает «удвоенное не меньше исходного» результат не меньше н',
+      '  пример «дважды два»', '    дано н равно 2', '    ожидается 4', '  н плюс н', ''].join('\n') },
+    { key: 'proof', fn: 'Сумма', args: '{"числа": [1, 2, 3]}', text: [
+      'модуль «Сумма списка»', '',
+      'тотальная функция «Сумма»', '  принимает числа: список неотрицательное', '  возвращает число',
+      '  обеспечивает «сумма не отрицательна» результат не меньше 0',
+      '  пример «один, два, три»', '    дано числа равно [1, 2, 3]', '    ожидается 6',
+      '  разбор числа', '    случай пусто', '      то 0', '    случай голова и хвост',
+      '      то голова плюс («Сумма» от хвост)', ''].join('\n') },
+    { key: 'monad', text: [
+      'модуль «Монада»', '',
+      'тип «Возможно» от «А»', '  вариант «Есть» содержит значение: «А»', '  вариант «Нет»', '',
+      'монада «Возможно» от «А»', '  возврат «Обернуть»', '  соединение «Сплющить»', '',
+      'тотальная функция «Обернуть» от «А»', '  принимает значение: «А»', '  возвращает «Возможно» от «А»',
+      '  пример «число заворачивается»', '    дано значение равно 7', '    ожидается вариант «Есть» с значение равным 7',
+      '  вариант «Есть» с значение равным значение', '',
+      'тотальная функция «Сплющить» от «А»', '  принимает вложенное: «Возможно» от («Возможно» от «А»)',
+      '  возвращает «Возможно» от «А»',
+      '  пример «два слоя становятся одним»',
+      '    дано вложенное равно вариант «Есть» с значение равным (вариант «Есть» с значение равным 5)',
+      '    ожидается вариант «Есть» с значение равным 5',
+      '  разбор вложенное', '    случай вариант «Есть» с значение как внутри', '      то внутри',
+      '    случай «Нет»', '      то вариант «Нет»', ''].join('\n') },
+    { key: 'loop', fn: 'Лучшая прибыль', args: '{"голова": 7, "хвост": [1, 5, 3, 6, 4]}', text: [
+      'модуль «Сделка»', '',
+      'тотальная функция «Лучшая прибыль»', '  принимает голова: число, хвост: список числа', '  возвращает число',
+      '  пример «купить за 1, продать за 6»', '    дано голова равно 7', '    дано хвост равно [1, 5, 3, 6, 4]',
+      '    ожидается 5',
+      '  цикл «Сделка»', '    для каждого цена из хвост',
+      '    храним минимум: число равным голова, прибыль: число равным 0', '    в конце прибыль',
+      '    пусть ниже равно если цена меньше минимум то цена иначе минимум',
+      '    пусть лучше равно если (цена минус ниже) больше прибыль то (цена минус ниже) иначе прибыль',
+      '    дальше: минимум станет ниже, прибыль станет лучше', ''].join('\n') },
+    { key: 'klass', slug: 'class', fn: 'После вклада', args: '{}', text: [
+      'модуль «Банк»', '',
+      'класс «Счёт»', '  владелец: строка', '  остаток: число',
+      '  всегда «остаток не отрицателен» остаток не меньше 0', '',
+      '  метод «Положить» принимает сумма: число', '    требует «сумма не отрицательна» сумма не меньше 0',
+      '    остаток станет остаток плюс сумма', '',
+      'интерфейс «Фигура»', '  метод «Площадь» возвращает число', '',
+      'класс «Квадрат» есть «Фигура»', '  сторона: число', '  метод «Площадь» возвращает число',
+      '    сторона умножить на сторона', '',
+      'функция «После вклада»', '  возвращает число', '  пример «десять и тридцать»', '    ожидается 40',
+      '  пусть счёт равно запись «Счёт» с «владелец» равным "Анна" и «остаток» равным 10',
+      '  («Счёт: Положить» от счёт и 30).остаток', ''].join('\n') },
+    { key: 'emitC', slug: 'emit-c', emit: 'c', fn: 'Удвоить', args: '{"н": 21}', text: null }
+  ];
+  STARTERS[5].text = STARTERS[0].text;
+  /* Вне браузера файл отдаёт только заготовки — их берёт сторож песочницы. */
+  if (typeof globalThis !== 'undefined') globalThis.флангЗаготовки = STARTERS;
   if (typeof document === 'undefined') return;
   var holder = document.querySelector('main pre.lang-playground');
   if (!holder) return;
@@ -26,6 +83,15 @@
 
   var T = EN ? {
     example: 'Example', check: 'Check', share: 'Share', checking: 'checking… (the first run downloads the compiler)',
+    runGo: 'Run', testGo: 'Test', running: 'running…', fnLabel: 'function', argsLabel: 'arguments, JSON', fnHint: 'name without « »',
+    version: function (v) { return 'compiler flang ' + v + ', in this tab'; }, versionUnknown: 'the compiler is not loaded yet',
+    done: 'Done', notDone: 'Not done', exitCode: 'exit code ', starters: 'Starters', pageExamples: 'Examples on this page',
+    limitTitle: 'Stopped: the step limit', timeoutTitle: 'Stopped: took too long',
+    timeoutLead: function (sec) { return 'The run took more than ' + sec + ' seconds, so the playground stopped it to keep the tab alive. The compiler will load again on the next run. Check termination of your functions, or run this program in a terminal.'; },
+    unprovenLead: '«flang run» does not compute a program that is not proved. Fix the proof, or run it on trust.', trustGo: 'Run on trust (--trust)',
+    noFunction: 'There is no function in the text to run.', badArgs: 'The arguments are not a JSON object, for example {"н": 21}.',
+    workerDown: 'The compiler did not load. Check the connection and reload the page; without WebAssembly the playground does not work.',
+    starterNames: { hello: 'First program', proof: 'Proof by induction', monad: 'Monad: three laws proved', loop: 'Loop with kept values', klass: 'Class and interface', emitC: 'Print to C' },
     linkCopied: 'the link carries the text; nothing is sent to a server', ms: 'ms',
     tabs: { result: 'Result', formula: 'Formulas', emit: 'flang → language', foreign: 'language → flang', input: 'Formula → flang', picture: 'Pictures' },
     loading: function (mb) { return 'downloading the compiler: ' + mb + ' MB'; }, ready: 'compiler loaded',
@@ -80,6 +146,15 @@
     lawKinds: { 'категория': 'category', 'моноид': 'monoid', 'связь': 'functor', 'преобразование': 'natural transformation' }
   } : {
     example: 'Пример', check: 'Проверить', share: 'Поделиться', checking: 'проверяю… (первый прогон скачивает компилятор)',
+    runGo: 'Запустить', testGo: 'Тесты', running: 'считаю…', fnLabel: 'функция', argsLabel: 'доводы, JSON', fnHint: 'имя без ёлочек',
+    version: function (v) { return 'компилятор flang ' + v + ', работает в этой вкладке'; }, versionUnknown: 'компилятор ещё не загружен',
+    done: 'Выполнено', notDone: 'Не выполнено', exitCode: 'код возврата ', starters: 'Заготовки', pageExamples: 'Примеры этой страницы',
+    limitTitle: 'Остановлено: предел шагов', timeoutTitle: 'Остановлено: слишком долго',
+    timeoutLead: function (sec) { return 'Прогон шёл дольше ' + sec + ' секунд, и песочница остановила его, чтобы вкладка не зависла. Компилятор загрузится заново при следующем прогоне. Проверьте завершение функций или запустите программу в терминале.'; },
+    unprovenLead: '«flang run» не считает недоказанную программу. Почините доказательство или запустите на веру.', trustGo: 'Запустить на веру (--trust)',
+    noFunction: 'В тексте нет функции, которую можно запустить.', badArgs: 'Доводы — не объект JSON; пример: {"н": 21}.',
+    workerDown: 'Компилятор не загрузился. Проверьте связь и обновите страницу; без WebAssembly песочница не работает.',
+    starterNames: { hello: 'Первая программа', proof: 'Доказательство индукцией', monad: 'Монада: три закона доказаны', loop: 'Цикл с хранимыми значениями', klass: 'Класс и интерфейс', emitC: 'Печать в C' },
     linkCopied: 'текст едет в адресе; на сервер не уходит ничего', ms: 'мс',
     tabs: { result: 'Итог', formula: 'Формулы', emit: 'flang → язык', foreign: 'язык → flang', input: 'Формула → flang', picture: 'Рисунки' },
     loading: function (mb) { return 'скачиваю компилятор: ' + mb + ' МБ'; }, ready: 'компилятор загружен',
@@ -150,16 +225,54 @@
     for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
     return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
+  function fromBase64(word) {
+    var s = atob(word.replace(/-/g, '+').replace(/_/g, '/')), bytes = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+    return bytes;
+  }
+  function toBase64(bytes) {
+    var s = '';
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
   function fromAddress(hash) {
     var m = /(?:^#|&)text=([A-Za-z0-9_-]*)/.exec(hash || '');
     if (!m) return null;
     try {
-      var s = atob(m[1].replace(/-/g, '+').replace(/_/g, '/')), bytes = new Uint8Array(s.length);
-      for (var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
-      return new TextDecoder().decode(bytes);
+      return new TextDecoder().decode(fromBase64(m[1]));
     } catch (e) {
       return null;
     }
+  }
+  /* Адрес песочницы: поля после «#» через «&». Текст едет полем `code`
+     (UTF-8 → deflate-raw → base64url) или старым `text` (UTF-8 → base64url);
+     `example` зовёт заготовку по имени; `do`, `fn`, `args`, `target` говорят,
+     что сделать сразу. Формат записан для страниц сайта, его же пишет
+     `search.js` под блоками кода. */
+  function addressFields(hash) {
+    var out = {};
+    String(hash || '').replace(/^#/, '').split('&').forEach(function (part) {
+      var eq = part.indexOf('=');
+      var key = eq < 0 ? part : part.slice(0, eq);
+      if (!key) return;
+      try { out[key] = eq < 0 ? '' : decodeURIComponent(part.slice(eq + 1)); } catch (e) { out[key] = part.slice(eq + 1); }
+    });
+    return out;
+  }
+  function pipe(bytes, stream) {
+    return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+  }
+  function inflate(word) {
+    if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('DecompressionStream'));
+    return pipe(fromBase64(word), new DecompressionStream('deflate-raw')).then(function (b) { return new TextDecoder().decode(b); });
+  }
+  /* Ссылка на текст: сжатая, а где браузер сжимать не умеет — старым полем. */
+  function addressOf(text) {
+    var plain = '#text=' + toAddress(text);
+    if (typeof CompressionStream === 'undefined') return Promise.resolve(plain);
+    return pipe(new TextEncoder().encode(text), new CompressionStream('deflate-raw'))
+      .then(function (b) { return '#code=' + toBase64(b); })
+      .catch(function () { return plain; });
   }
 
   /* ── подсветка ──────────────────────────────────────────────────────────── */
@@ -447,6 +560,9 @@
     { lang: 'python', name: 'Python', ready: false, note: function () { return T.soonNote; } }
   ];
   var examples = [];
+  STARTERS.forEach(function (st) {
+    examples.push({ name: T.starterNames[st.key], text: st.text, lang: 'flang', starter: st.slug || st.key, fn: st.fn || '', args: st.args || '', emit: st.emit || '' });
+  });
   var blocks = document.querySelectorAll('main pre');
   for (var b = 0; b < blocks.length; b++) {
     var blk = blocks[b];
@@ -467,11 +583,32 @@
   var bar = el('div', 'playground-bar');
   var select = el('select', 'playground-examples');
   select.setAttribute('aria-label', T.example);
-  examples.forEach(function (ex, j) { var o = el('option', null, ex.name); o.value = String(j); select.appendChild(o); });
+  var groups = { starter: el('optgroup'), page: el('optgroup') };
+  groups.starter.label = T.starters; groups.page.label = T.pageExamples;
+  examples.forEach(function (ex, j) {
+    var o = el('option', null, ex.name); o.value = String(j);
+    groups[ex.starter ? 'starter' : 'page'].appendChild(o);
+  });
+  select.appendChild(groups.starter);
+  if (groups.page.children.length) select.appendChild(groups.page);
   var checkButton = el('button', 'playground-check', T.check); checkButton.type = 'button';
+  var runButton = el('button', 'playground-share playground-run', T.runGo); runButton.type = 'button';
+  var testButton = el('button', 'playground-share playground-test', T.testGo); testButton.type = 'button';
   var shareButton = el('button', 'playground-share', T.share); shareButton.type = 'button';
   var status = el('span', 'playground-status'); status.setAttribute('role', 'status');
-  bar.appendChild(select); bar.appendChild(checkButton); bar.appendChild(shareButton); bar.appendChild(status);
+  bar.appendChild(select); bar.appendChild(checkButton); bar.appendChild(runButton); bar.appendChild(testButton);
+  bar.appendChild(shareButton); bar.appendChild(status);
+  /* Что запускать: имя функции и доводы объектом JSON — те же, что у
+     `flang run --function … --args …`. Пустое имя — первая функция текста. */
+  var callBar = el('div', 'playground-call');
+  var fnInput = el('input', 'playground-fn'); fnInput.type = 'text'; fnInput.placeholder = T.fnHint;
+  fnInput.setAttribute('aria-label', T.fnLabel); fnInput.spellcheck = false; fnInput.setAttribute('autocapitalize', 'off');
+  var argsInput = el('input', 'playground-args'); argsInput.type = 'text'; argsInput.placeholder = '{"н": 21}';
+  argsInput.setAttribute('aria-label', T.argsLabel); argsInput.spellcheck = false; argsInput.setAttribute('autocapitalize', 'off');
+  var fnWrap = el('label', 'playground-field', T.fnLabel + ' '); fnWrap.appendChild(fnInput);
+  var argsWrap = el('label', 'playground-field playground-field-wide', T.argsLabel + ' '); argsWrap.appendChild(argsInput);
+  var versionNote = el('span', 'playground-version', T.versionUnknown);
+  callBar.appendChild(fnWrap); callBar.appendChild(argsWrap); callBar.appendChild(versionNote);
 
   /* Редактор: прозрачное поле ввода над раскрашенной копией текста и столбец
      номеров строк слева. Строка с ошибкой отмечена и в тексте, и в номере. */
@@ -557,7 +694,7 @@
     }
   });
 
-  root.appendChild(bar); root.appendChild(editor); root.appendChild(marks); root.appendChild(tabs);
+  root.appendChild(bar); root.appendChild(callBar); root.appendChild(editor); root.appendChild(marks); root.appendChild(tabs);
   Object.keys(panels).forEach(function (k) { root.appendChild(panels[k]); });
   panels.result.appendChild(el('p', 'pg-hint', T.press));
   panels.formula.appendChild(el('p', 'pg-hint', T.noFormula));
@@ -577,7 +714,7 @@
   var kindAsked = 0, kindTimer = null;
   function askKind() {
     var n = ++kindAsked;
-    ask(main.input.value, { действие: 'вид' }).then(function (a) {
+    post(main.input.value, { действие: 'вид' }, false).then(function (a) {
       if (n !== kindAsked || !a || !KIND_LANG[a.вид]) return;
       root.setAttribute('data-text-kind', a.вид);
       if (main.lang !== KIND_LANG[a.вид]) { main.lang = KIND_LANG[a.вид]; main.repaint(); }
@@ -604,7 +741,18 @@
   }
 
   /* ── поток с компилятором ───────────────────────────────────────────────── */
-  var worker = null, counter = 0, waiting = {}, loadedOnce = false;
+  var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null;
+  /* Сколько ждать ответа на одно поручение, когда компилятор уже загружен.
+     Скачивание в этот срок не входит: его ждёт `warm`. */
+  var TIME_LIMIT_MS = 45000;
+  function stopWorker(why) {
+    if (worker) worker.terminate();
+    worker = null; warmed = null; loadedOnce = false;
+    Object.keys(waiting).forEach(function (k) {
+      var cb = waiting[k]; delete waiting[k];
+      cb({ код: 5, итог: 'остановлено', остановлено: why, вывод: 'FLANG_PLAYGROUND ' + (why === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown), разбор: null, замечания: [] });
+    });
+  }
   function ensureWorker() {
     if (worker) return worker;
     worker = new Worker(ROOT + 'playground/flang_host_browser.js', { type: 'module' });
@@ -620,31 +768,41 @@
       var cb = waiting[ev.data.номер];
       if (cb) { delete waiting[ev.data.номер]; cb(ev.data); }
     });
-    worker.addEventListener('error', function (ev) {
-      Object.keys(waiting).forEach(function (k) {
-        waiting[k]({ код: 2, итог: 'сбой', вывод: 'FLANG_PLAYGROUND ' + (ev.message || ''), разбор: null });
-        delete waiting[k];
-      });
-    });
+    worker.addEventListener('error', function () { stopWorker('сбой'); });
     return worker;
   }
-  function ask(text, extra) {
+  function post(text, extra, timed) {
     return new Promise(function (resolve) {
       counter += 1;
-      waiting[counter] = resolve;
-      var msg = { номер: counter, текст: text, база: new URL(ROOT + 'playground/', location.href).href };
+      var n = counter, timer = null;
+      waiting[n] = function (answer) { clearTimeout(timer); resolve(answer); };
+      var msg = { номер: n, текст: text, база: new URL(ROOT + 'playground/', location.href).href };
       Object.keys(extra || {}).forEach(function (k) { msg[k] = extra[k]; });
       ensureWorker().postMessage(msg);
+      if (timed) timer = setTimeout(function () { if (waiting[n]) stopWorker('время'); }, TIME_LIMIT_MS);
     });
   }
   /* Компилятор весит десятки мегабайт, поэтому качается не при открытии
      страницы, а при первом касании песочницы: пока человек правит текст,
-     модуль уже едет и собирается. */
-  var warmed = false;
+     модуль уже едет и собирается. Версию называет сам компилятор. */
   function warm() {
-    if (warmed) return;
-    warmed = true;
-    ask('', { действие: 'прогреть' });
+    if (warmed) return warmed;
+    warmed = post('', { действие: 'прогреть' }, false).then(function (a) {
+      if (a && a.версия) {
+        versionNote.textContent = T.version(a.версия);
+        root.setAttribute('data-compiler-version', a.версия);
+      }
+      return a;
+    });
+    return warmed;
+  }
+  /* Поручение ждёт загруженного компилятора, и только потом идёт его срок:
+     вечный цикл в программе останавливается, а медленная сеть — нет. */
+  function ask(text, extra) {
+    return warm().then(function (w) {
+      if (w && w.остановлено) return w;
+      return post(text, extra, true);
+    });
   }
   ['pointerdown', 'focusin', 'keydown'].forEach(function (evName) { root.addEventListener(evName, warm, { once: true }); });
 
@@ -693,6 +851,11 @@
   function summarize(answer) {
     var r = answer.разбор || {};
     var s = { state: 'error', title: T.failed, lead: '', items: [], marks: [], counter: '' };
+    if (answer.остановлено) {
+      s.title = answer.остановлено === 'время' ? T.timeoutTitle : T.failed;
+      s.lead = answer.остановлено === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown;
+      return s;
+    }
     if (r.рассуждение) {
       var q = r.рассуждение;
       if (!q.прочитано) {
@@ -1487,12 +1650,98 @@
     });
   }
   checkButton.addEventListener('click', function () { run(input.value); });
+
+  /* Команда как в терминале: `flang run` и `flang test` тем же компилятором.
+     Вывод показан как есть, над ним — одна строка о том, чем кончилось. */
+  function firstFunction(text) {
+    var m = /(?:функция|function)\s+«([^»]+)»/u.exec(text);
+    return m ? m[1] : '';
+  }
+  function renderCommand(panel, answer, retry) {
+    panel.textContent = '';
+    var stopped = answer.остановлено === 'время';
+    var state = answer.код === 0 ? 'proved' : answer.код === 3 ? 'unproved' : 'error';
+    var title = stopped ? T.timeoutTitle : answer.предел ? T.limitTitle : answer.код === 0 ? T.done : T.notDone;
+    var card = el('div', 'pg-verdict pg-' + state);
+    card.appendChild(el('p', 'pg-verdict-title', title));
+    if (stopped) card.appendChild(el('p', 'pg-verdict-lead', T.timeoutLead(TIME_LIMIT_MS / 1000)));
+    else if (answer.остановлено) card.appendChild(el('p', 'pg-verdict-lead', T.workerDown));
+    else if (answer.код !== 0) card.appendChild(el('p', 'pg-verdict-lead', T.exitCode + answer.код));
+    if (answer.код === 3 && retry) {
+      card.appendChild(el('p', 'pg-verdict-lead', T.unprovenLead));
+      var again = el('button', 'playground-share', T.trustGo); again.type = 'button';
+      again.addEventListener('click', retry);
+      card.appendChild(again);
+    }
+    panel.appendChild(card);
+    if (!answer.остановлено) {
+      var out = el('pre', 'playground-output pg-terminal');
+      out.textContent = (answer.команда ? '$ ' + answer.команда + '\n' : '') + String(answer.вывод || '').trim();
+      panel.appendChild(out);
+    }
+    markLines((answer.замечания || []).filter(function (d) { return d.строка; }).map(function (d) { return { line: d.строка, text: d.текст }; }));
+    return state;
+  }
+  function command(word, keys) {
+    var text = input.value;
+    started = Date.now();
+    [checkButton, runButton, testButton].forEach(function (b) { b.disabled = true; });
+    root.removeAttribute('data-playground-verdict');
+    status.textContent = T.running;
+    showTab('result');
+    return ask(text, { действие: 'команда', команда: word, ключи: keys || {} }).then(function (answer) {
+      [checkButton, runButton, testButton].forEach(function (b) { b.disabled = false; });
+      var retry = word === 'run' && !(keys && keys.наВеру) ? function () {
+        var k = {}; Object.keys(keys || {}).forEach(function (x) { k[x] = keys[x]; }); k.наВеру = true;
+        command('run', k);
+      } : null;
+      var state = renderCommand(panels.result, answer, retry);
+      root.setAttribute('data-playground-verdict', state);
+      root.setAttribute('data-playground-command', word);
+      root.setAttribute('data-playground-code', String(answer.код));
+      status.textContent = (answer.код === 0 ? T.done : T.notDone) + ' · ' + (Date.now() - started) + ' ' + T.ms;
+      return answer;
+    });
+  }
+  function refuse(words) {
+    panels.result.textContent = '';
+    var card = el('div', 'pg-verdict pg-error');
+    card.appendChild(el('p', 'pg-verdict-title', T.notDone));
+    card.appendChild(el('p', 'pg-verdict-lead', words));
+    panels.result.appendChild(card);
+    root.setAttribute('data-playground-verdict', 'error');
+    showTab('result');
+    return Promise.resolve(null);
+  }
+  function runFunction() {
+    var fn = fnInput.value.trim().replace(/^«|»$/g, '') || firstFunction(input.value);
+    if (!fn) return refuse(T.noFunction);
+    var args = argsInput.value.trim();
+    if (args) {
+      try {
+        var parsed = JSON.parse(args);
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return refuse(T.badArgs);
+      } catch (e) {
+        return refuse(T.badArgs);
+      }
+    }
+    fnInput.value = fn;
+    return command('run', { функция: fn, доводы: args });
+  }
+  runButton.addEventListener('click', runFunction);
+  testButton.addEventListener('click', function () { command('test', {}); });
+  [fnInput, argsInput].forEach(function (field) {
+    field.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); runFunction(); } });
+  });
+
   function chooseExample(j) {
     var ex = examples[j];
     if (!ex) return;
     select.value = String(j);
     root.setAttribute('data-example-lang', ex.lang);
     status.textContent = '';
+    fnInput.value = ex.fn || ''; argsInput.value = ex.args || '';
+    if (ex.emit) { setText(ex.text); emitState.target = ex.emit; showTab('emit'); return; }
     if (ex.lang !== 'flang') {
       foreignState.choose(ex.lang); foreignState.editor.set(ex.text); showTab('foreign');
       return foreignState.translate();
@@ -1504,26 +1753,52 @@
   }
   select.addEventListener('change', function () { chooseExample(Number(select.value)); });
   shareButton.addEventListener('click', function () {
-    var address = location.href.replace(/#.*$/, '') + '#text=' + toAddress(input.value);
-    history.replaceState(null, '', address);
-    if (navigator.clipboard) navigator.clipboard.writeText(address).catch(function () {});
-    status.textContent = T.linkCopied;
+    addressOf(input.value).then(function (tail) {
+      var fn = fnInput.value.trim(), args = argsInput.value.trim();
+      var address = location.href.replace(/#.*$/, '') + tail +
+        (fn ? '&fn=' + encodeURIComponent(fn) : '') + (args ? '&args=' + encodeURIComponent(args) : '');
+      history.replaceState(null, '', address);
+      if (navigator.clipboard) navigator.clipboard.writeText(address).catch(function () {});
+      status.textContent = T.linkCopied;
+    });
   });
+  /* Текст из адреса: `code` (сжатый), `text` (старый) или заготовка `example`. */
+  function textFromFields(f) {
+    if (f.code !== undefined) return inflate(f.code).catch(function () { return null; });
+    if (f.text !== undefined) return Promise.resolve(fromAddress('#text=' + f.text));
+    return Promise.resolve(null);
+  }
+  function act(f) {
+    var todo = f.do !== undefined ? f.do : f.run !== undefined ? 'check' : '';
+    if (todo === 'check') return run(input.value);
+    if (todo === 'test') return command('test', {});
+    if (todo === 'run') return runFunction();
+    if (todo === 'emit') { if (f.target) emitState.target = f.target; showTab('emit'); return emitState.refresh(); }
+    return Promise.resolve(null);
+  }
   function fromHash() {
-    var t = fromAddress(location.hash);
-    if (t !== null) setText(t);
-    return t !== null;
+    var f = addressFields(location.hash);
+    var starter = examples.map(function (x) { return x.starter; }).indexOf(f.example || '');
+    return textFromFields(f).then(function (t) {
+      if (t !== null) { setText(t); fnInput.value = ''; argsInput.value = ''; }
+      else if (f.example && starter >= 0) chooseExample(starter);
+      else return false;
+      if (f.fn !== undefined) fnInput.value = f.fn;
+      if (f.args !== undefined) argsInput.value = f.args;
+      root.setAttribute('data-address', 'read');
+      act(f);
+      return true;
+    });
   }
   window.addEventListener('hashchange', fromHash);
   showTab('result');
-  var firstFlang = examples.filter(function (x) { return x.lang === 'flang'; })[0];
-  if (!fromHash() && firstFlang) setText(firstFlang.text);
-  if (/(?:^#|&)run(?:&|$)/.test(location.hash)) run(input.value);
+  fromHash().then(function (read) { if (!read) chooseExample(0); });
 
   /* Для проб из браузера без рук. */
   window.флангПесочница = {
     run: run, setText: setText, showTab: showTab, examples: examples, highlight: highlightHtml, code: codeHtml,
-    choose: chooseExample,
+    choose: chooseExample, command: command, runFunction: runFunction, addressOf: addressOf, warm: warm,
+    setTimeLimit: function (ms) { TIME_LIMIT_MS = ms; },
     print: function (target) { emitState.target = target; showTab('emit'); return emitState.refresh(); },
     translate: function (text, lang) { if (lang) foreignState.choose(lang); if (text !== undefined) foreignState.editor.set(text); showTab('foreign'); return foreignState.translate(); }
   };

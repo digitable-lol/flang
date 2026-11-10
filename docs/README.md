@@ -70,9 +70,9 @@
 | Файл | Кто читает |
 |---|---|
 | [`tree-inventory.md`](tree-inventory.md) | опись дерева по языкам — `bootstrap/flang run-script inventory:check` |
-| [`ci-inventory.md`](ci-inventory.md) | опись проверок CI |
+| [`ci-inventory.md`](ci-inventory.md) | опись коротких команд, снятая 25 августа 2026 двоичным 0.6.2; нынешнего дерева не описывает ([задача 8356](tasks/8356-the-ci-inventory-describes-a-tree-that-is-gone.md)). Сторож кодов `flang/scripts/code-guard.fscript` ищет в ней имена кодов отказа |
 | [`javascript-inventory.md`](javascript-inventory.md) | опись JavaScript в дереве |
 | [`jargon.json`](jargon.json) | внутренние слова и тексты для читателя — `bootstrap/flang run-script jargon:check` |
-| [`reprint-ledger.tsv`](reprint-ledger.tsv) | ведомость заходов перепечатки |
+| [`reprint-ledger.tsv`](reprint-ledger.tsv) | ведомость заходов перепечатки — `scripts/seed/reprint-freshness.fscript` |
 
 [`README.ru.md`](README.ru.md) — русская редакция корневого `README.md`, а не этой страницы.

@@ -123,10 +123,7 @@ docs/tasks/2680-the-declared-measure-is-watched-at-run-time-and-never-proved.md	
 docs/tasks/0028-typed-ast-instead-of-generic-value.md	flang/self/ast.flang	путь, который задача просит создать: по построению его в дереве ещё нет
 docs/tasks/1415-the-fscript-extension-marks-a-script.md	lib.fscript	иллюстративное имя в разборе задачи/заметки, не файл
 docs/tasks/1415-the-fscript-extension-marks-a-script.md	by-name.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/2663-an-exported-function-calling-a-hidden-helper-is-unknown-to-importers.md	lib.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/tasks/2663-an-exported-function-calling-a-hidden-helper-is-unknown-to-importers.md	app.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/tasks/3401-flang-package-builds-no-package.md	scripts/guards/package-build-guard.fscript	путь, который задача просит создать: по построению его в дереве ещё нет
-docs/tasks/3403-package-installer-manifest-network-lock.md	scripts/package-install.fscript	путь, который задача просит создать: по построению его в дереве ещё нет
 docs/tasks/4238-role-profiles-have-no-guard-and-nowhere-to-be-written.md	proba2.flang	учебное имя в примере команды, не файл
 docs/tasks/5090-three-promised-self-checks-are-missing-from-the-tree.md	flang/test/uzel-celi.test.mjs	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
 docs/tasks/5821-shell-scripts-that-can-become-flang-are-counted-and-moved.md	scripts/bootstrap-c.sh	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
@@ -139,4 +136,3 @@ docs/tasks/7182-the-generated-makefile-does-not-know-about-headers.md	scripts/se
 docs/tasks/7307-the-guard-census-counts-only-guards-named-in-the-settings.md	-guard.fscript	шаблон имени `*-guard.fscript`, не файл
 docs/tasks/7660-eight-sitemap-pages-have-no-english-edition.md	SPEC.ru.md	путь, который задача просит создать: по построению его в дереве ещё нет
 docs/tasks/8356-the-ci-inventory-describes-a-tree-that-is-gone.md	ярлыки.flang	мёртвое имя — сам предмет задачи: в той же строке сказано, что пути в дереве больше нет
-docs/tasks/8634-the-kernel-proves-a-false-postcondition-when-a-pattern-name-shadows-a-parameter.md	cap.flang	иллюстративное имя в разборе задачи/заметки, не файл

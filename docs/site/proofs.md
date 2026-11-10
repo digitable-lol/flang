@@ -48,8 +48,9 @@ output: [How a proof works](how-proofs-work.html).
 a proved postcondition from the generated code.
 
 **Two programs agreed.** `flang check <file> --proof --record <record>` writes
-the proof to a file, and a separate C program re-checks every step without the
-compiler — [The proof record](record-format.html).
+the proof to a file, and a separate C program re-checks it without the
+compiler. It says how much of the proved it checked itself and how much it
+took on the prover's word — [The proof record](record-format.html).
 
 **There are no axioms.** An axiom is a statement accepted without proof; Coq
 and Lean let you declare them, and people do. The flang prover has no way to

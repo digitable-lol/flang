@@ -55,11 +55,7 @@ flang/test/fixtures/plany/11-shag-vozvrat.flang
 flang/test/fixtures/plany/12-shag-spisok.flang
 flang/test/fixtures/plany/13-shag-dzhoker.flang
 flang/test/uzel-osnastka.flang
-flang/test/uzel-osnastka.mjs
 flang/test/fixtures/fts/examples/real-world/zhi-shi.fts
-flang/test/nadzor-uzla.test.mjs
-flang/test/planirovshchik-celi.test.mjs
-flang/test/svyaz-celi.test.mjs
 flang/proof/checker/tests/records/corpus/element-po-nomeru-chestnaya.record
 flang/proof/checker/tests/records/corpus/granica-nad-chislom-chestnaya.record
 flang/proof/checker/tests/records/corpus/krug-tuda-i-obratno.record

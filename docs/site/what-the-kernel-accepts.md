@@ -7,17 +7,11 @@ writing a postcondition the prover proves and how to rewrite one it does not.
 When the check fails with an error code instead, read
 [The kernel refused: whose mistake is it](proof-refused.html).
 
-Words used below:
-
-| Word | Meaning |
-| --- | --- |
-| prover | the part of the compiler that proves postconditions; the compiler output calls it «ядро» |
-| guard | the condition `У` in a postcondition of the form `если У то Ц иначе да`: the claim `Ц` only has to hold when `У` holds |
-| enum | a `тип` with `вариант`s |
-
-Every statement on this page was checked by running `flang check --proof` on
-small probe files with the current compiler. Each section shows the code and the
-line the proof report printed for it.
+Words used below: the prover is the part of the compiler that proves
+postconditions (the compiler output calls it «ядро»); a guard is the condition
+`У` in a postcondition of the form `если У то Ц иначе да`; an enum is a `тип`
+with `вариант`s. Under each example is the report line of
+`flang {{выпуск.версия}}`.
 
 ## Read the result first
 
@@ -27,15 +21,11 @@ The last line of the report counts the results:
 утверждений 18: доказано 13, условно 0, сетка 4, объявлено, не доказано 1, отвергнуто 0, нарушено 0
 ```
 
-| The report says | What it means | What to do |
-| --- | --- | --- |
-| `доказано` | proved for all possible inputs | nothing |
-| `условно` (in the line of the postcondition: «НО ПРИ УСЛОВИИ») | proved, but the proof uses a postcondition of another function that is itself not proved | prove that other postcondition |
-| `сетка N` | checked only on your N examples, like unit tests; there is no proof | rewrite it in one of the forms below |
-| `объявлено, не доказано` | neither a proof nor an example; the runtime checks it after every call | rewrite it, or accept the runtime check |
-
-Count only `доказано`. `сетка` and `объявлено` both mean "not proved"; the
-difference is only whether the function has examples.
+Count only `доказано` (proved). `сетка` and `объявлено` both mean "not proved"
+([the three answers](how-proofs-work.html#обеспечивает-the-postcondition-and-the-three-answers)).
+`условно` (in the line of the postcondition: «НО ПРИ УСЛОВИИ») means the proof
+uses a postcondition of another function that is itself not proved — prove
+that one.
 
 ## Quick table
 
@@ -52,7 +42,12 @@ difference is only whether the function has examples.
 | a claim about one variant of an enum argument | yes, with a guard | `если отклик равен (вариант «Пока ничего») то … иначе да` | [7](#7-enums-guard-by-equality-to-a-variant) |
 | a `разбор` inside the postcondition | does not parse | a guard by equality to a variant | [7](#7-enums-guard-by-equality-to-a-variant) |
 | a predicate call as the goal | sometimes | try the other form: with and without `равен да` | [8](#8-boolean-goals-try-both-forms) |
-| one claim under a guard that the body does not test | no | a disjunction with the body's condition | [9](#9-a-guard-the-body-does-not-test) |
+
+Without any rewriting the prover also proves things that are not
+postconditions: free `утверждение` statements by induction over a list, linear
+inequalities over `точное целое` (exact integer), the functor laws of the
+list, the monoid laws and all three monad laws. Examples:
+[Proving by hand](manual-proofs.html#a-statement-without-a-function).
 
 ## 1. A branching body: put the branch condition in the guard
 
@@ -324,8 +319,7 @@ postconditions say:
 So when a claim is not proved, look at what the body calls and give the called
 function the postcondition the claim needs. A postcondition of the callee that
 is only checked on examples does not help: the compiler passes a callee's
-postcondition to the caller only if it is proved («Дописать факт вызванного»
-in `flang/self/proofterm.flang`).
+postcondition to the caller only if it is proved.
 
 A non-recursive callee without postconditions is not a problem: for
 `«Без обещания»` with the body `приписать 0 к х`, the caller's claim
@@ -437,7 +431,7 @@ ways:
 ```
 $ flang check docs/examples/proof-probes/variant-with-fields.flang --proof
 …
-утверждений 23: доказано 18 (из них индукцией 2) (из них без теоремы 16), сетка 5, объявлено, не доказано 0
+утверждений 23: доказано 21 (из них индукцией 1) (из них без теоремы 20), сетка 2, объявлено, не доказано 0
 ```
 
 | Way of writing | Result |
@@ -445,8 +439,7 @@ $ flang check docs/examples/proof-probes/variant-with-fields.flang --proof
 | the argument compared to a variant without fields | proved |
 | the argument compared to a variant with fields, the field filled by an accessor (`«Вес груза» от «груз»`) or by a literal | proved |
 | the guard negated: `если не («груз» равен (вариант «Пусто»)) то …` | proved |
-| the result of a call compared to a variant without fields | proved |
-| the result of a call compared to a variant with fields, or negated | сетка |
+| the result of a call compared to a variant: without fields, with fields, negated | proved |
 | a second claim under `иначе` instead of `да` | сетка for a variant with fields |
 
 For a list, `разбор` with `пусто` and `голова и хвост` is split by
@@ -474,22 +467,7 @@ A false claim gets the same «объявлено, не доказано» as a t
 cannot handle. Before rewriting a claim, check that it is true: write an example
 that would break it.
 
-## 9. A guard the body does not test
-
-A guard is used to split the goal only if the body tests the same condition.
-For a body `если первое меньше второе то второе иначе первое` (arguments
-`неотрицательное`):
-
-| Claim | Result |
-| --- | --- |
-| `результат не меньше первое` | объявлено, не доказано |
-| `если (первое больше 0) и притом (второе больше 0) то (результат не меньше первое) иначе да` | объявлено, не доказано |
-| `(не (первое меньше второе)) или (результат не меньше первое)` | объявлено, не доказано |
-| `(первое меньше второе) или (результат не меньше первое)` | proved |
-
-Write the claim per outcome of the body's own condition.
-
-## 10. Conjunctions
+## 9. Conjunctions
 
 A conjunction in the claim (`Ц1 и притом Ц2`) can be proved as a whole: in
 the probes `если ч равен 0 то ((результат равен 1) и притом (результат больше 0)) иначе да`
@@ -515,36 +493,22 @@ It does not say which rule was missing. A named refusal with the list of goal
 kinds the prover handles comes only for a theorem you wrote
 (see [The kernel refused](proof-refused.html)).
 
-## Examples do not make a proof
-
 Adding an example to a claim moves it from «объявлено, не доказано» to
-«сетка», not to «доказано»:
-
-```
-постусловие «k4 с примером» … сетка 1 значение (примеры функции)
-```
-
-«Объявлено» is not worse than «сетка»: the runtime checks it on every real
-call, while `сетка` only says that your examples passed.
+«сетка», not to «доказано».
 
 ## Check that a proved claim is not empty
 
-A claim that holds for any body proves nothing. To check one, replace the body
-with a stub of the same type and run the report again. If the claim is still
-proved, it says nothing about the function.
-
-Use two stubs: a zero one (`0`, `""`, `нет`, an empty list) and a non-zero one
-(`1`, `"я"`, `да`, `["я"]`). A claim of the form
-`… то результат равен да иначе да` survives the `да` stub and fails only on
-`нет`. Stub one function at a time: if two functions are stubbed at once, a
-claim that mentions the other one can look empty when it is not.
+A claim that holds for any body proves nothing. Replace the body with a stub
+of the same type (`0`, `""`, `нет`, an empty list) and run the report again:
+if the claim is still proved, it says nothing about the function. More:
+[What is proved and what is not](what-is-proved.html#a-proved-postcondition-may-say-nothing).
 
 ## Large files and the step limit
 
 A file with many claims can run out of steps: the check stops with
 `FLANG_RECURSION_LIMIT` and prints no report. Raise the limit for one run with
 `--step-limit N` (Cyrillic `--предел-шагов`); the default is built into the
-binary (`FL_MAX_STEPS` in `bootstrap/flang_runtime.h`).
+binary.
 
 ## The order of work
 

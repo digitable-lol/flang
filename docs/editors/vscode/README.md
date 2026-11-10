@@ -51,7 +51,7 @@ code --install-extension flang-0.1.0.vsix
 `~/.vscode/extensions/` и перезапустить VS Code:
 
 ```bash
-ln -s "$PWD/editors/vscode" ~/.vscode/extensions/flang
+ln -s "$PWD/docs/editors/vscode" ~/.vscode/extensions/flang
 ```
 
 Подсветка заработает сразу; для запуска сервера нужен ещё `npm install` в этом

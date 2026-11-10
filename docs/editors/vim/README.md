@@ -119,7 +119,8 @@ flang io scripts/editors/vim-highlighting.fscript     # перепечатать
 
 Печатает `scripts/editors/vim-highlighting.fscript` — программа на самом flang. Слова берёт
 из `«Куски таблицы»` (`flang/self/lexer.flang`) — той самой таблицы, которой
-язык читает свои файлы. Сегодня в ней **149 понятий и 629 фраз**.
+язык читает свои файлы. Сколько в ней понятий и фраз, печать пишет в шапку
+`syntax/flang.vim`.
 
 Печать разложена на четыре файла, и разложена не для красоты:
 
@@ -149,8 +150,7 @@ flang io scripts/editors/vim-highlighting.fscript     # перепечатать
 | Вид | Что это | К чему привязан |
 | --- | --- | --- |
 | `flangKeyword` | ключевое слово любой поверхности | `Keyword` |
-| `flangName` | имя в ёлочках `«…»` | `Identifier` |
-| `flangYolochki` | сами ёлочки | `Delimiter` |
+| `flangName` | имя в ёлочках `«…»`; сами ёлочки — группа `flangYolochki`, `Delimiter` | `Identifier` |
 | `flangString` | строка в кавычках | `String` |
 | `flangNumber` | число | `Number` |
 | `flangComment` | `//` и `/* */` | `Comment` |
@@ -174,7 +174,7 @@ flang io scripts/editors/vim-highlight-check.fscript     # подсветка
 flang io scripts/editors/lsp-check.fscript     # языковой сервер
 ```
 
-`vim-highlight-check.fscript` печатает файл со всеми 629 фразами таблицы, открывает его
+`vim-highlight-check.fscript` печатает файл со всеми фразами таблицы, открывает его
 настоящим Vim и настоящим Neovim и требует, чтобы **каждая** покрасилась
 ключевым словом целиком. Потом переводит четыре файла дерева в HTML командой
 `:TOhtml` и считает раскрашенное по видам.

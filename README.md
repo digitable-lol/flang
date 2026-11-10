@@ -150,9 +150,11 @@ explicit consent". The lines after it name the claim; `--trust` runs the program
 
 ```
 $ flang emit hello.flang --target c --out out-c 2>/dev/null
-$ grep -A 4 '^fl_status hello_twice' out-c/hello.c
-fl_status hello_twice(fl_ctx *ctx, fl_value n, fl_value *result, fl_error *error) {
-  if (n.tag != FL_NUMBER || n.tag != FL_NUMBER) FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
+$ grep -A 6 '^fl_status hello_twice' out-c/hello.c
+fl_status hello_twice(fl_ctx *ctx, fl_value n, fl_value *result,
+                      fl_error *error) {
+  if (n.tag != FL_NUMBER || n.tag != FL_NUMBER)
+    FL_TRY(fl_not_numbers(ctx, "add", n, n, error));
   *result = fl_number(n.as.number + n.as.number);
   return FL_OK;
 }

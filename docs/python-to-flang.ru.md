@@ -1,4 +1,4 @@
-[Назад к README](../README.ru.md) · [Оглавление документации](README.ru.md) · [In English](python-to-flang.md)
+[К README](README.ru.md) · [Указатель документации](README.md) · [In English](python-to-flang.md)
 
 # Python во flang: переводчик, которому не нужно верить
 

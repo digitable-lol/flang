@@ -39,14 +39,13 @@ Words in this page: a **guarantee** is an `обеспечивает` line
 guarantees for all inputs, called «ядро» in the output; a **unit test** is a
 `пример`.
 
-## Three traps that cost a day
+## Two surprises
 
-Read these before you look up your code. In each one the error shows up
-somewhere other than where the mistake is.
+### `flang check` passing does not mean the guarantees are proved
 
-### A guarantee that calls a function of its own module breaks every module that imports it by list
-
-The module checks fine on its own. The module that imports it fails.
+`flang check` without flags checks parsing, types, termination and unit tests,
+and looks for a counterexample to every guarantee. A guarantee it can neither
+prove nor refute does not make it fail:
 
 ```flang insert docs/examples/diagnostics/core.flang
 модуль «Core»
@@ -63,47 +62,14 @@ The module checks fine on its own. The module that imports it fails.
   («Двойка» от н) плюс 1
 ```
 
-```flang refused insert docs/examples/diagnostics/import.flang
-модуль «Import»
-использует «Core» только «Учтено»
-
-тотальная функция «Проба»
-  принимает н: число
-  возвращает число
-  «Учтено» от н
-```
-
 ```text insert output: check docs/examples/diagnostics/core.flang
 $ flang check docs/examples/diagnostics/core.flang
 модуль «Core»: функций 2, из них с доказанным завершением 2; типов 0
 docs/examples/diagnostics/core.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-```text insert output: check docs/examples/diagnostics/import.flang
-$ flang check docs/examples/diagnostics/import.flang
-модуль «Import»: функций 3, из них с доказанным завершением 3; типов 0; файлов вместе с импортами 2
-docs/examples/diagnostics/import.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-```
-
-The import `только «Учтено»` brings in one name. Both the body and the
-guarantee of «Учтено» call «Двойка», which the importing module does not have.
-Column 56 points inside the guarantee. The line numbers are those of the
-imported file, and no file is named because two files were checked together.
-
-Fix it in one of three ways:
-
-| Fix | How |
-|---|---|
-| import the helper too | `использует «Core» только «Учтено», «Двойка»` |
-| import the whole module | `использует «Core»` |
-| remove the call from the guarantee | say the same with arithmetic: `результат не меньше (н умножить на 2)` |
-
-### `flang check` passing does not mean the guarantees are proved
-
-`flang check` without flags checks parsing, types, termination and unit tests.
-A guarantee it can neither prove nor refute does not make it fail. The
-guarantee «не меньше двойки» above is not proved: without `--proof` the file
-passes with exit code 0; with `--proof` the same file exits with 3.
+The guarantee «не меньше двойки» here is not proved: without `--proof` the file
+passes with exit code 0, with `--proof` it exits with code 3.
 
 To see what is proved, ask for the proof report:
 
@@ -123,14 +89,10 @@ How to read the result of each guarantee: «доказано» — proved for al
 use `flang check --proof --strict`: it exits `0` only when everything is
 proved.
 
-Second trap in the same output: while a `FLANG_UNKNOWN_NAME` error stands, the
-function also loses its proved termination, and nothing proves its guarantees.
-Fix unknown names first.
-
 ### FLANG_BOUND_ON_NAN: the type `число` contains NaN, and NaN is not ordered
 
-The most common surprise. The guarantee looks obviously true, and the prover
-answers with a counterexample.
+The guarantee looks obviously true, and the prover answers with a
+counterexample.
 
 ```flang refused insert docs/examples/diagnostics/nan.flang
 модуль «Probe»
@@ -197,6 +159,46 @@ $ echo $?
 ```
 
 `если … то …` is an expression, so it always needs `иначе`.
+
+## Loop, one-line header, class, interface
+
+The compiler expands `цикл`, a one-line function header, `класс` and
+`интерфейс` into ordinary constructs. A wrong form is refused before parsing,
+with its place in the source.
+
+| Code | What it means | What to do |
+|---|---|---|
+| `FLANG_SUGAR_LOOP` | the loop is written wrong: no `в конце` line, neither `для каждого` nor `пока`, a `пока` without `убывает` or `шагов не больше` | add the missing line of the loop |
+| `FLANG_SUGAR_HEADER` | the one-line header is written wrong: `возвращает` before `принимает`, a word said twice, nothing after a word | write `… принимает … возвращает …` |
+| `FLANG_SUGAR_CLASS` | a class line that is not a field, not `всегда` and not `метод`, or `станет` changes a field that does not exist | check the field name against the class declaration |
+| `FLANG_SUGAR_INTERFACE` | a class does not give a required method of the interface, or gives it with a different header | add the method with the same header |
+
+```flang refused
+модуль «Цикл»
+
+тотальная функция «Сумма»
+  принимает числа: список число
+  возвращает число
+  цикл «Сложение»
+    для каждого х из числа
+    храним итог: число равным 0
+    дальше: итог станет итог плюс х
+```
+
+```bash
+$ flang check loop.flang
+FLANG_SUGAR_LOOP в файле loop.flang, строка 6, столбец 3: цикл «Сложение»: нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается
+loop.flang: не проверено — замечаний 1
+```
+
+The fix is the line `в конце итог` after `храним`. The other three codes look
+like this:
+
+```
+FLANG_SUGAR_HEADER в файле header.flang, строка 3, столбец 1: в заголовке «возвращает» стоит раньше «принимает»; пишется «… принимает … возвращает …»
+FLANG_SUGAR_CLASS в файле class.flang, строка 6, столбец 3: метод «Положить» класса «Счёт»: у класса «Счёт» нет поля «баланс», которое меняет «… станет …»
+FLANG_SUGAR_INTERFACE в файле interface.flang, строка 6, столбец 1: класс «Квадрат» есть «Фигура», но не даёт метод «Площадь»
+```
 
 ## Names and imports
 
@@ -268,7 +270,9 @@ $ echo $?
 | `FLANG_OVERFLOW` | an operation on a fixed-width word (`u8` … `i64`) does not fit the type, or divides by zero | write `с переполнением` where wrapping is meant, or widen the type |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | the pattern match does not cover every case | add the missing `случай` |
 | `FLANG_MATCH_UNREACHABLE` | a case is covered by an earlier one and never runs | remove it or move it up |
-| `FLANG_EXAMPLE` | a unit test failed: the value differs from the expected one | fix the body or the expected value |
+| `FLANG_SCALE` | adding or subtracting values of different scales, for example `сотых` and `тысячных` | bring the values to one scale |
+| `FLANG_INFINITY` | an operation takes a value out of the range of its type: `вес минус вес` can go negative | compute the difference over `число` |
+| `FLANG_EXAMPLE` | a unit test failed: the value differs from the expected one, the example's input does not satisfy `требует`, or an input was found that violates a guarantee | fix the body, the expectation or the guarantee; remove an example whose input does not satisfy the requirement |
 
 ```text insert output: check docs/examples/diagnostics/type.flang
 $ flang check docs/examples/diagnostics/type.flang
@@ -340,6 +344,35 @@ $ echo $?
 1
 ```
 
+Scales and ranges:
+
+```flang refused
+модуль «Масштаб»
+
+тотальная функция «Сложить»
+  принимает цена: сотых, доля: тысячных
+  возвращает число
+  цена плюс доля
+```
+
+```
+FLANG_SCALE в файле scale.flang, строка 6, столбец 8: «add»: масштабы 2 и 3 разошлись: сотых и тысячных
+```
+
+```flang refused
+модуль «Бесконечность»
+
+тотальная функция «Разность весов»
+  принимает первый: вес, второй: вес
+  возвращает вес
+  первый минус второй
+```
+
+```
+FLANG_INFINITY в файле infinity.flang, строка 6, столбец 10: «sub» над вес и вес выводит из отрезка [0, +∞]
+FLANG_TYPE в файле infinity.flang, строка 6, столбец 10: функция «Разность весов» объявлена как вес, а тело даёт число
+```
+
 ## Termination and limits
 
 | Code | What it means | What to do |
@@ -392,9 +425,9 @@ Preconditions (`требует`), guarantees (`обеспечивает`) and th
 | Code | What it means | What to do |
 |---|---|---|
 | `FLANG_PROPERTY` | a guarantee was violated at run time | either the guarantee or the body is wrong — look at the input it failed on |
-| `FLANG_PRECONDITION` | the precondition is written wrong | check the form `требует «имя» <условие>` |
-| `FLANG_PRECONDITION_CALL` | the caller does not ensure the callee's precondition | prove the condition at the call site, or narrow the argument type |
-| `FLANG_BOUND_ON_NAN` | an order guarantee is false because of NaN | see the third trap above |
+| `FLANG_PRECONDITION` | an input does not satisfy `требует`: an argument of `flang run` or the input of an example | pass an input that satisfies the requirement |
+| `FLANG_PRECONDITION_CALL` | a call does not ensure the callee's precondition; also a function with `требует` passed as a value | check the condition before the call, narrow the argument type, or repeat `требует` on the caller |
+| `FLANG_BOUND_ON_NAN` | a guarantee about order is false because of NaN | see [above](#flang_bound_on_nan-the-type-число-contains-nan-and-nan-is-not-ordered) |
 | `FLANG_PROOF_NO_GOAL` | the theorem proves nothing: no guarantee has that name | name the theorem exactly like the guarantee |
 | `FLANG_PROOF_AMBIGUOUS` | the theorem would prove two guarantees at once | give the guarantees different names |
 | `FLANG_PROOF_CLAIM_MISMATCH` | `утверждаем` differs from the guarantee | copy the guarantee text word for word |
@@ -498,6 +531,39 @@ $ echo $?
 1
 ```
 
+A requirement is checked on entry. A function with `требует`:
+
+```flang
+модуль «Требование»
+
+тотальная функция «Тот же»
+  принимает а: число
+  возвращает число
+  требует «вход неотрицателен» а не меньше 0
+  а
+```
+
+```bash
+$ flang run requires.flang --function 'Тот же' --args '{"а":-7}'
+доказано: утверждений 0
+FLANG_PRECONDITION: не выполнено требование «вход неотрицателен» функции «Тот же»
+$ echo $?
+1
+```
+
+An example with such an input is already refused by `flang check`:
+
+```
+FLANG_EXAMPLE: пример «минус семь» функции «Тот же»: FLANG_PRECONDITION: не выполнено требование «вход неотрицателен» функции «Тот же»
+```
+
+And the call `«Тот же» от б` from a function that knows nothing about `б` is
+`FLANG_PRECONDITION_CALL`:
+
+```
+FLANG_PRECONDITION_CALL в файле call.flang, строка 12, столбец 3: вызов «Тот же» в функции «Проба» не снимает предусловие «вход неотрицателен»: …
+```
+
 A guarantee the prover could not prove is checked at run time. `flang run`
 refuses unproved programs, so `--trust` is needed to see it:
 
@@ -573,6 +639,10 @@ receives as a response.
 | `FLANG_IO_NO_HOST` | there is no runtime to execute the command | run with `flang io`, not by computing a function |
 | `FLANG_IO_NOT_TEXT` | a text read found bytes that are not text | read bytes instead |
 | `FLANG_IO_TIMEOUT` | a started process was silent longer than `--timeout` | raise `--timeout` |
+| `FLANG_IO_NO_SCREEN` | a screen command was called without a terminal (piped output, CI) | run in a terminal |
+| `FLANG_IO_PLACE` | the screen was given a place that does not exist; there is one place, «экран» | name «экран» |
+| `FLANG_IO_TLS_CERT` | the host's certificate failed the check: chain, validity period, name or signature | check the address; your own roots — `--trust-roots <PEM file>` |
+| `FLANG_IO_TLS` | any other TLS failure | retry; check that the host speaks TLS 1.3 |
 | `FLANG_LOCK` | the lock file is damaged or its checksum does not match | rebuild it with `flang lock` |
 | `FLANG_PACKAGE` | the package is damaged or has no `flang.package` | rebuild it with `flang package` |
 
@@ -606,6 +676,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | Code | What it means | What to do |
 |---|---|---|
 | `FLANG_CLI` | bad call: unknown flag or missing argument | `flang <command> --help` |
+| `FLANG_NEW` | `flang new` did not create the package: the directory exists or the name is not allowed | another name, or `--force` |
 | `FLANG_INTERNAL` | the compiler itself failed | report it: this is a bug in the tool, not in your program |
 | `FLANG_SELF_REPL_UNSUPPORTED` | the shell does not accept this construct, `использует` for example | put the code in a file and run `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` got no value for a call | add the value to the facts |
@@ -621,26 +692,16 @@ The exit code is `2`.
 
 ## Every code of the compiler
 
-The table is collected from the compiler's sources: a code is listed while at
-least one line of the compiler's sources in `flang/self/` or of its runtime
-`bootstrap/flang_*.c` raises it outside examples and postconditions. The message is the English template of
-the message catalog `flang/messages/catalog.tsv`; a dash means the catalog has no
-template for the code and the text is put together where it is raised. A code
-named on this page and not found in the sources fails `docs:check`.
+The table is collected from the sources of the compiler and its runtime: it
+has every code they raise. A dash in the third column means the message text is
+put together where it is raised. The table also picks up the names of
+environment variables (`FLANG_CC`, `FLANG_JOBS` and others): they start with
+the same prefix.
 
-**The promise.** A `FLANG_*` code is part of the contract with whoever reads the
-compiler's output from outside: editors, CI and courses handle it by name. So a
-code does not appear or vanish silently. The table
-`flang/proof/tables/diagnostic-codes.tsv` keeps every code with the release it
-appeared in and a status: **устойчив** (stable) — present in a release and
-staying; **новый** (new) — already raised by the sources, no release with it yet;
-**снят** (removed) — gone, and the row says since which release. The guard
-`bootstrap/flang run-script diagnostic-codes:check` goes red when a stable code
-disappears from the sources, when the sources raise a code the table does not
-know, and when a removed code comes back: each of the three is a row in the
-table, not silence. That the guard itself can go red is shown by
-`diagnostic-codes:forgery`. The same kind of number and promise covers the proof
-record — [the record format](record-format.html).
+A `FLANG_*` code is part of the contract with whoever reads the compiler's
+output from outside: an editor, CI, a course. A code does not appear or vanish
+silently: each one is recorded in `flang/proof/tables/diagnostic-codes.tsv`
+with the release it appeared in and a status — stable, new or removed.
 
 <!-- insert codes -->
 | Code | Where in the compiler | Message |

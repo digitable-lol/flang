@@ -1,13 +1,9 @@
 # Command reference
 
-The commands of the `flang` binary are listed by its own help (inserted at the end
-of this page from `flang --help`). For each one this page says when to
-run it, how to call it, which flags it takes, what it prints and which exit code
-it returns. Everything here can be checked against `flang --help` and
-`flang <command> --help`; every output below was produced by the current binary.
-
-The compiler prints its messages in Russian. Where the output matters, the page
-says what it means.
+For each `flang` command: when to run it, how to call it, its flags, what it
+prints and which exit code it returns. The binary itself answers
+`flang --help` and `flang <command> --help`; that text is at the
+[end of the page](#the-whole-help-of-the-binary).
 
 ## Cheat sheet
 
@@ -16,13 +12,13 @@ says what it means.
 | `check` | after every change: parsing, types, termination, the prover, unit tests | `flang check привет.flang` |
 | `test` | to run only the unit tests (`пример`) | `flang test привет.flang` |
 | `run` | to compute one function and print the value | `flang run привет.flang --function «Удвоить» --args '{"н":21}'` |
-| `emit` | to generate code in one of the {{цели.поАнглийски}} target languages | `flang emit привет.flang --target js --file привет.js` |
+| `emit` | to generate code in one of the {{цели.поАнглийски}} target languages | `flang emit привет.flang --target js --out out` |
 | `ast` | to see the parsed program as a JSON tree | `flang ast привет.flang --pretty` |
 | `tokens` | to see what the lexer made of each word | `flang tokens привет.flang` |
 | `lint` | to keep lines short and conditionals shallow, against the limits in `.flangrc` | `flang lint scripts/` |
 | `facts` | to check claims against data in a JSON file | `flang facts привет.flang --facts факты.json --claims '["…"]'` |
 | `io` | to run a program that reads files, starts processes or uses the network | `flang io план.flang --pretty` |
-| `lock` | to write a lock file that contains the dependencies themselves | `flang lock привет.flang > flang.lock` |
+| `lock` | to write a lock file: the sources of every imported module in one JSON | `flang lock привет.flang > flang.lock` |
 | `package` | to build a package: a lock plus a name, a version and the list of what is proved | `flang package привет.flang > привет.flang-package` |
 | `new` | to start a new package | `flang new проба` |
 | `run-script` | to run a short project command from `.flangrc` | `flang run-script site:build` |
@@ -68,7 +64,7 @@ The codes mean the same thing in every command.
 | --- | --- |
 | `0` | done, nothing to report |
 | `1` | the program did not pass the check; for `facts` and `io`, the program itself answered "no" |
-| `2` | bad call: unknown flag, wrong value, no such file |
+| `2` | bad call: unknown flag, wrong value, no such file. For `check`, also a program with processes that is checked only in part |
 | `3` | done, but not everything is checked, and the output names what is not. Also: `run` and `io` refuse a program whose guarantees are not proved |
 | `4` | part of the checks did not run at all (`check --fast`) |
 | `5` | the run stopped at the memory limit |
@@ -114,17 +110,20 @@ Every flag also has a Cyrillic spelling, given in brackets.
 | `--depth-limit N` (`--предел-глубины`) | raise the call-depth limit for this run. Not the same as `--max-depth` of `emit`, which is written into the generated program |
 | `--memory-limit N` (`--предел-памяти`) | memory limit, see above; exit `5` at the limit |
 
-Exit codes: `0` — no remarks; `1` — the program did not pass, or with `--proof`
-a guarantee is violated; `2` — the program contains declarations the binary does not check at all
-(category declarations, processes, supervision), and it names them; `3` — with
-`--proof`, a guarantee is not proved, including a guarantee checked only on
-examples (`сетка N`), a law checked only on a grid and a guarantee proved under
-an unproved premise, and a file without imports whose proof record the
-independent checker did not accept (`НЕ СОШЛОСЬ СО СВЕРЩИКОМ`); with `--strict`,
-also a file with no guarantees at all; `4` — with `--fast`. The checker line comes before the verdict line. On a file
-with imports the checker gets no records of the imported modules; its
-disagreement there is named `НЕЗАВИСИМО НЕ ПРОВЕРЕНО` and does not change the
-code ([ADR-0115](../adr/0115-the-exit-code-of-a-proof-check-names-what-was-proved.md)).
+| Code | Meaning |
+| --- | --- |
+| `0` | no remarks |
+| `1` | the program did not pass the check; this includes a counterexample found for a postcondition (`FLANG_EXAMPLE`) |
+| `2` | the program has processes, supervision or runs: the binary checks them only in part and names what it did not check. Also a bad call |
+| `3` | with `--proof`: a guarantee is not proved — checked only on examples (`сетка N`), declared without a proof, or proved under an unproved premise; with `--strict`, also a file with no guarantees at all |
+| `4` | with `--fast`: some checks did not run |
+| `5` | the run stopped at the memory limit |
+
+With `--proof`, the line before the verdict comes from the independent checker
+— a separate program that re-checks the proof record. `НЕЗАВИСИМО НЕ ПРОВЕРЕНО`
+means the checker was not found or did not get the records of imported
+modules; the exit code does not change. `НЕ СОШЛОСЬ СО СВЕРЩИКОМ` on a file
+without imports is exit code `3`.
 
 ```text insert output: check docs/examples/cli/double.flang
 $ flang check docs/examples/cli/double.flang
@@ -172,38 +171,73 @@ $ echo $?
 4
 ```
 
-### `--strict`: one exit code per result
+### `--proof` and `--strict`: proved, or only checked on examples
 
-Without `--strict`, `check --proof` exits `0` both when everything is proved and
-when some guarantees are checked only on your examples. The words in the
-output differ, but a build script reads the exit code. With `--strict` each
-result has its own code:
+`flang check` without flags does not say whether postconditions are proved.
+`--proof` does. Here the postcondition is true, but it has no proof — only
+three examples:
 
-| Result | Code | When |
-| --- | --- | --- |
-| `ДОКАЗАНО` (proved) | `0` | there is at least one guarantee, and every guarantee is proved |
-| `ОПРОВЕРГНУТО` (disproved) | `1` | a counterexample was found |
-| `НЕ УДАЛОСЬ ДОКАЗАТЬ` (could not prove) | `3` | no counterexample, but not everything is proved; the output names what |
-| `НЕ ПОДДЕРЖИВАЕТСЯ` (not supported) | `2` | the program declares something the binary does not check, and the output names it |
+```flang
+модуль «Чётное на сетке»
 
-Code `3` has three reasons, told apart by the words after it:
-`ОПОРА НЕ СУДИЛАСЬ` — a guarantee is checked only on examples;
-`ОБЪЯВЛЕНО, НЕ ДОКАЗАНО` — a guarantee has neither a proof nor examples;
-`ПРОВЕРЕНО ВПУСТУЮ` — there are no guarantees at all. When several apply, the
-most serious one is named: a counterexample beats a missing proof, and a
-missing proof beats "only examples".
+тотальная функция «Удвоить»
+  принимает н: нат
+  возвращает число
+  обеспечивает «удвоенное чётно» (результат остаток от 2) равен 0
+  пример «ноль»
+    дано н равно 0
+    ожидается 0
+  пример «два»
+    дано н равно 2
+    ожидается 4
+  пример «семь»
+    дано н равно 7
+    ожидается 14
+  н плюс н
 
-A file with no guarantees passes by default and fails under `--strict`,
-because "nothing to prove" is not a proof:
-
-```bash
-$ flang check привет.flang --proof --strict | tail -2
-привет.flang: НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ — утверждений 0: доказано 0, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
-  ничего: ни одно утверждение не назвало ни правила, ни шага
+тотальная функция «Ответ»
+  возвращает число
+  «Удвоить» от 21
 ```
 
-**Passing examples are not a proof.** Here a postcondition is false, and two
-examples happen to pass:
+```bash
+$ flang check сетка.flang
+модуль «Чётное на сетке»: функций 2, из них с доказанным завершением 2; типов 0
+сетка.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+$ echo $?
+0
+$ flang check сетка.flang --proof | tail -1
+сетка.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 1: доказано 0, условно 0, сетка 1, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
+$ echo $?
+3
+```
+
+`сетка 1` means one guarantee is checked only on examples. `flang run` does not
+start such a program (see [run](#run)).
+
+The results of `--proof` and their codes:
+
+| Result without `--strict` | Result with `--strict` | Code | When |
+| --- | --- | --- | --- |
+| `ПРОВЕРЕНО САМОСТОЯТЕЛЬНО` | `ДОКАЗАНО` | `0` | there is at least one guarantee, and every one is proved |
+| `ПРОВЕРЕНО САМОСТОЯТЕЛЬНО` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ` | `0` without the flag, `3` with it | the file has no guarantees at all |
+| `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ` | `3` | a guarantee is checked only on examples |
+| `НЕ ПРОВЕРЕНО` | `НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО` | `3` | a guarantee has neither a proof nor examples |
+| `не проверено — ведомость не печатается у программы с замечаниями` | the same | `1` | the program has failures; no report is printed |
+
+When there are several reasons, the most serious one is named: no proof
+outranks "examples only". `--strict` is for CI: without it a file with nothing
+to prove passes with exit code `0`.
+
+```bash
+$ flang check привет.flang --proof --strict | tail -1
+привет.flang: НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ, ОБЯЗАТЕЛЬСТВ НЕТ ВОВСЕ — утверждений 0: доказано 0, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
+```
+
+`--strict` without `--proof` is a bad call, exit `2`.
+
+**`check` itself catches a false postcondition.** Here the postcondition is
+false, and both examples pass:
 
 ```flang insert docs/examples/cli/grid.flang
 модуль «Grid»
@@ -221,12 +255,15 @@ examples happen to pass:
   н плюс н
 ```
 
-`flang check docs/examples/cli/grid.flang` exits `0`: it does not judge proofs. `flang check
-docs/examples/cli/grid.flang --proof` exits `3`: the report says `сетка 1` — one guarantee checked
-only on examples — and `НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ`. With `--strict` the code
-is `3` as well.
-`flang run` refuses to compute it (see [run](#run)), and with `--trust` at
-`н = 100` it fails the postcondition:
+`flang check docs/examples/cli/grid.flang` finds an input on which the
+postcondition is violated and exits with code `1`:
+
+```
+FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «не больше ста» функции «Удвоить» нарушено на входе н = 2147483647 — посчитано вычислителем на этом входе
+docs/examples/cli/grid.flang: не проверено — замечаний 1
+```
+
+Run past the check, the program violates the postcondition at `н = 100`:
 
 ```text insert output: run docs/examples/cli/grid.flang --function «Удвоить» --args '{"н":100}' --trust
 $ flang run docs/examples/cli/grid.flang --function «Удвоить» --args '{"н":100}' --trust
@@ -235,14 +272,6 @@ FLANG_PROPERTY: нарушено свойство «не больше ста» �
 $ echo $?
 1
 ```
-
-`--strict` makes only the compiler strict. The independent checker
-`flang/proof/checker/checker.c` answers `НЕ ПРОВЕРЕНО — ВПУСТУЮ` with exit code `3`
-on a proof record with nothing proved, without any flag.
-
-`--strict` without `--proof` is a bad call, exit `2`. Test programs for all
-results are in `flang/proof/probes/strict/`; run them with
-`bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary`.
 
 ## test
 
@@ -275,10 +304,9 @@ flang test 'docs/examples/**/*.flang'  by mask (the quotes keep the shell out)
 Exit codes: `0` — every file was taken and every example passed; `1` — an
 example failed or a file was not taken; `2` — bad call.
 
-A `прогон` block states a scenario over processes. `flang test` runs it with the
-scheduler of `flang/self/conc.flang` and checks its expectations; each block
-counts as one example, so a block whose expectation is false fails the file
-with exit `1`:
+A `прогон` block states a scenario over processes. `flang test` runs it and
+checks its expectations; each block counts as one example, so a block whose
+expectation is false gives exit `1`:
 
 ```text insert output: test flang/concurrency/examples/counter.flang
 $ flang test flang/concurrency/examples/counter.flang
@@ -316,8 +344,18 @@ flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-ste
 | `--trust` (`--на-веру`) | run even if guarantees are not proved; the proofs are not checked at all, and a line says so |
 | `--unproven WORD` (`--недоказанное`) | what to do when guarantees are not proved: `refuse` — do not run (the default), `warn` — say so and run, `allow` — the same as `--trust`. Cyrillic values: `отказ`, `предупреждение`, `разрешение` |
 
-Arguments are checked against the declared types first: «Факториал» of −3 is
-rejected with `FLANG_TYPE` instead of being computed.
+Arguments are checked against the declared types first, then against the
+`требует` conditions. A call that fails either is not computed, exit `1`:
+
+```bash
+$ flang run docs/examples/rosetta/factorial.flang --function Факториал --args '{"н":-3}'
+доказано: утверждений 0
+FLANG_TYPE: вызов функции «Факториал»: аргумент «н»: -3 вне неотрицательное
+```
+
+For a function with `требует «вход неотрицателен» а не меньше 0`, the input
+`{"а":-7}` gives
+`FLANG_PRECONDITION: не выполнено требование «вход неотрицателен» функции …`.
 
 **`run` refuses an unproved program.** Before computing, it checks the proofs
 of everything the program uses (not just this file) and prints one line to the
@@ -330,13 +368,15 @@ $ flang run docs/examples/cli/double.flang --function «Удвоить» --args 
 42
 ```
 
-To allow unproved programs for good, set the `unproven` key in `.flangrc`
-([settings guide](https://github.com/digitable-lol/flang/blob/main/docs/guide/settings.md#what-to-do-with-an-unproved-program)):
-`unproven = warn`. A command-line flag beats the `FLANG_UNPROVEN` environment
-variable, which beats `.flangrc`, which beats the default `refuse`. The line
-printed before the value names what allowed the run: the flag, or the setting
-and the path of its file. An unknown value is exit code `2` with an
-explanation.
+To allow unproved programs for good, set `unproven = warn` in `.flangrc`
+([settings guide](https://github.com/digitable-lol/flang/blob/main/docs/guide/settings.md#what-to-do-with-an-unproved-program)).
+Precedence: the command-line flag, the `FLANG_UNPROVEN` environment variable,
+`.flangrc`, the default `refuse`. The line printed before the value names what
+allowed the run. An unknown value is exit code `2`.
+
+Exit codes: `0` — the value is printed; `1` — the arguments failed the check, a
+postcondition is violated, or the step or depth limit ran out; `2` — bad call;
+`3` — the program is not proved and did not run; `5` — the memory limit.
 
 ## emit
 
@@ -356,40 +396,29 @@ flang emit <файл.flang> --target c|cpp|go|rust|java|js|ts|elixir|python|csha
 | --- | --- |
 | `--target <target>` | `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python`, `csharp`. Required |
 | `--out dir` | write all files into a directory |
-| `--file name` | one file to standard output |
+| `--file name` | one of the target's files to standard output, for example `--file program.js`. An unknown name is exit `2` with the list of names |
 | `--cli`, `--no-cli` | whether to generate the command-line runner |
 | `--repl` | also generate an interactive entry point. Target `c` only |
-| `--protocol file` (`--протокол`) | target `c` only: also write a translation log — what each construct became and by which rule — which `flang/translation/matcher.c` re-checks |
+| `--protocol file` (`--протокол`) | target `c` only: also write a translation log — what each construct became and by which rule |
 | `--runtime dir` | where the target's runtime sources are |
 | `--index-base 0\|1` | declare the index base of the program |
 | `--max-steps N` | the step limit written into the generated code |
 | `--max-depth N` | the depth limit written into the generated code |
 | `--no-check` | do not run the prover. Parsing, types and termination are still checked |
-| `--no-postconditions` | do not generate runtime checks of postconditions. They are still proved; this flag changes only the generated code, and its header says so. Preconditions, termination checks and step and depth limits stay. Measurements: `flang emit --help` |
+| `--no-postconditions` | do not generate runtime checks of postconditions. They are still proved; this flag changes only the generated code, and its header says so. Preconditions, termination checks and the step and depth limits stay |
 
 Only a checked program is generated. Before generating, `emit` runs the same
 checks as `flang check`; on an error nothing is written and the exit code is
 `1`.
 
-### `--no-check` removes the prover and nothing else
-
 With `--no-check`, parsing, names, types and termination are still checked, and
-a program that fails them is still not generated. What changes:
+a program that fails them is not generated. Postconditions are not proved, so
+each one stays in the generated code as a runtime check: the output is larger
+and slower. Wrong proofs are not caught — run `flang check` before trusting the
+result.
 
-- Postconditions are not proved, so none of them can be dropped from the
-  generated code: every postcondition becomes a runtime check. The output is
-  larger and slower, but not less safe.
-- Wrong proofs are not caught. Run `flang check` before trusting the result.
-- Code generated this way must not go into the repository's own compiler
-  build: the build's fingerprint will not match. The binary prints this
-  warning after every run with the flag.
-
-How much time it saves depends on the file: on some files many times, on
-others the flag makes the whole cycle slower, because the extra runtime checks
-cost the C build more than the prover costs `emit`. `flang emit --help` gives
-the numbers. On the two largest compiler modules, `flang/self/distributed.flang`
-and `flang/self/bounded.flang`, the prover runs out of steps, and they can only
-be generated with this flag.
+A program with processes is emitted only to `c`, `elixir`, `js` and `ts`; for
+the other targets the emit is refused with exit code `1`.
 
 Exit codes of `emit`:
 
@@ -398,7 +427,7 @@ Exit codes of `emit`:
 | `0` | generated, everything checked |
 | `1` | did not pass the check; nothing was written |
 | `2` | bad call: unknown target, no such file, wrong flag value |
-| `3` | generated, but not everything was checked: the binary does not check category declarations or processes, and the output names what it skipped |
+| `3` | generated, but not everything was checked, and the output names what was skipped |
 
 `emit` does not run the unit tests, and says so; run them with `flang test`.
 
@@ -575,11 +604,16 @@ in the value of `пусть`. The depth of a function is its deepest such way, a
 finding points to the line of the deepest conditional.
 
 ```flang
-если а
-  то 1
-  иначе если б
-    то 2
-    иначе 3
+модуль «Глубина»
+
+тотальная функция «Выбор»
+  принимает а: признак, б: признак
+  возвращает число
+  если а
+    то 1
+    иначе если б
+      то 2
+      иначе 3
 ```
 
 This is depth 2: the `если` in the `иначе` branch of another `если` is one level
@@ -671,53 +705,36 @@ Like `run`, `io` checks the proofs first and prints one line to the error
 stream; a plan with unproved guarantees does not run, exit code `3`.
 
 **Write the plan name without guillemets, and put a name with a space in shell
-quotes.** In source code names are written in guillemets, but `--plan` takes the
-name exactly as typed, guillemets included:
+quotes.** `--plan` takes the name exactly as typed. On the plan «Записать
+привет» from the example below:
 
 ```bash
-$ flang io scripts/shortcut-collector.fscript --plan «Целость»
-доказано: утверждений 9
-{"error":"не найден план ««Целость»»","diagnostics":[{"code":"FLANG_UNKNOWN_PLAN","message":"не найден план ««Целость»»","severity":"error"}]}
-$ echo $?
-3
-$ flang io scripts/shortcut-collector.fscript --plan Целость
-доказано: утверждений 9
-{"plan":"Целость","result":"коротких команд 217; …
-$ echo $?
-0
-```
-
-Without shell quotes, a two-word name is split by the shell into two arguments:
-
-```bash
-$ flang io flang/scripts/kernel-forgeries.fscript --plan «Аксиом ноль»
-flang io: непонятный ключ «ноль»»
+$ flang io план.flang --plan «Записать привет»
+flang io: непонятный ключ «привет»»
 $ echo $?
 2
-$ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust
-на веру: доказанность не считалась — запуск по ключу --trust
-{"plan":"Аксиом ноль","result":"подделки отвергнуты: 36 файлов каталога … аксиом ноль, нарушений 0", …
+$ flang io план.flang --plan 'Записать привет'
+доказано: утверждений 0
+{"plan":"Записать привет","result":6,"orders":1,"log":[…]}
 $ echo $?
 0
 ```
 
-`flang io --help` itself writes `--plan «Имя»`; there the guillemets only mark
-where the name goes.
+No plan with that name is exit code `3`:
+
+```bash
+$ flang io план.flang --plan Нету
+доказано: утверждений 0
+{"error":"не найден план «Нету»","diagnostics":[{"code":"FLANG_UNKNOWN_PLAN","message":"не найден план «Нету»","severity":"error"}]}
+```
 
 Permissions are taken away one at a time: `--no-read`, `--no-write`, `--no-net`,
 `--no-clock`, `--no-random`, `--no-spawn`, `--no-env`, `--no-args`,
 `--no-screen`. By default everything is allowed: running a program with
 `flang io` means you agree to what it does.
 
-`io` has no `--args`: a plan starts from its own `начинает с` function, not from
-arguments. Pass data after `--` instead.
-
-```bash
-$ flang io docs/examples/crypto/revocation.flang --args '{}'
-flang io: непонятный ключ «--args»
-$ echo $?
-2
-```
+`io` has no `--args` — it is a bad call, exit `2`. Pass data after `--`
+instead.
 
 Exit codes: `0` — the plan finished; `1` — the program gave up itself
 («Провал»): it found a problem and named it; `2` — bad call; `3` — the tool
@@ -812,42 +829,31 @@ $ echo $?
 1
 ```
 
-**Terminal.** The screen is the controlling terminal (`/dev/tty`), and it has one
-place, named «экран»; any other name is `FLANG_IO_PLACE`. «Показать» draws a
-whole frame (clear, then text) on the terminal, not on stdout — stdout carries
-the plan's result. On the first «Показать» the runtime switches to the
-terminal's alternate screen and hides the cursor, and restores both when the
-run ends. «Ждать событие» waits for a key no longer than «срок» milliseconds (0
-or none — forever): a key gives «Случилось» with «откуда» equal to
-«клавиатура», a timeout gives «Срок вышел». Key names: ввод, пробел, таб,
-возврат, выход, вверх, вниз, влево, вправо; any other key arrives as its
-character. Ctrl-C still stops the program. «Размер экрана» returns the width and
-height in characters. Without a terminal (output piped, CI, nohup) these
-commands answer `FLANG_IO_NO_SCREEN`; with `--no-screen` they answer
-`FLANG_IO_DENIED`.
+**Terminal.** «Показать» draws a whole frame on the terminal (`/dev/tty`), not
+on stdout — stdout carries the plan's result. «Ждать событие» waits for a key no
+longer than «срок» milliseconds (0 or none — forever): a key gives «Случилось»
+with «откуда» equal to «клавиатура», a timeout gives «Срок вышел». Key names:
+ввод, пробел, таб, возврат, выход, вверх, вниз, влево, вправо; any other key
+arrives as its character. «Размер экрана» returns the width and height in
+characters. Without a terminal (output piped, CI, nohup) these commands answer
+`FLANG_IO_NO_SCREEN`; with `--no-screen` they answer `FLANG_IO_DENIED`.
 
-**HTTPS.** The «Запросить» command supports `https`. In the runtime sources it
-is executed by the TLS 1.3 client written in the language
-(`flang/stdlib/tls-client.flang`), printed to C and built into the binary; a
-binary printed before this change goes through an external `curl` and answers
-`FLANG_IO_NO_TLS` without it
-([ADR-0101](../adr/0101-the-binary-host-speaks-tls-with-the-printed-language-client.md)).
-The client checks the chain up to a root, expiry, the host name and the
-server's signature; a certificate failure is `FLANG_IO_TLS_CERT`, any other TLS
-failure `FLANG_IO_TLS`. Roots come from `--trust-roots <PEM file>` or the
-system bundle. Certificate revocation (OCSP, CRL) is not checked.
-«Открыть соединение» is plain TCP.
+**HTTPS.** The «Запросить» command supports `https`: TLS 1.3, with the chain
+checked up to a root, plus the validity period, the host name and the
+signature. A certificate failure is `FLANG_IO_TLS_CERT`, any other is
+`FLANG_IO_TLS`. Roots come from `--trust-roots <PEM file>` or the system
+bundle. Certificate revocation (OCSP, CRL) is not checked. «Открыть соединение»
+is bare TCP.
 
 **Datagrams.** «Отправить датаграмму» and «Принять датаграмму» are UDP over
-IPv4 with octets as a list of numbers; the answer is «Записано», «Датаграмма»
-or «Срок вышел».
+IPv4, octets as a list of numbers; the answer is «Записано», «Датаграмма» or
+«Срок вышел».
 
 ## lock
 
 Prints the lock file of a program: JSON that contains the dependencies
 themselves, not references to them. For each imported module its whole source
-is stored, addressed by the `sha256` of that source. There is no registry and
-nothing to download: everything is in the lock.
+is stored, addressed by the `sha256` of that source.
 
 ```bash
 flang lock <файл.flang> [--pretty]
@@ -860,6 +866,12 @@ flang lock <файл.flang> [--pretty]
 If a `flang.lock` is next to the input file, every command takes imports from it
 and does not read the dependency sources. A damaged lock is refused with
 `FLANG_LOCK`.
+
+A module can be imported by URL:
+`использует «Логика» из "https://…/logic.flang"`. The first `flang check`
+downloads it and writes the source and its fingerprint into `flang.lock`
+itself; after that no network is needed. There is no package install command
+and no registry.
 
 ```text insert output: lock docs/examples/cli/double.flang
 $ flang lock docs/examples/cli/double.flang
@@ -926,6 +938,11 @@ flang new: пакет «проба-cli» создан в …/проба-cli
 $ ls проба-cli
 README.md  flang.package  fspec  проба-cli.flang
 ```
+
+The second command of the hint, `flang io fspec/guard.flang`, on a fresh package
+answers `не доказано: утверждений 133: доказано 80, сетка 53 …` with exit code
+`3`: some guarantees of the template are checked only on examples. It runs with
+`--trust`.
 
 An existing directory without `--force` is exit code `1`; a name with a space,
 a slash, quotes or guillemets, or a reserved word (a command name, `flang`,
@@ -1002,31 +1019,25 @@ flang repl [<файл.flang>] [--max-steps N] [--max-depth N]
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit |
 
-An expression is computed by generating C for the session (as `flang emit`
-does), building it with the system C compiler and running it:
+A declaration ends with an empty line and is checked the same way as in
+`flang check`; one that fails the check does not enter the session:
 
 ```bash
-$ echo '«Удвоить» от 21' | flang repl привет.flang
-объявлено: тотальная функция «Удвоить» — завершение доказано
-загружено из привет.flang
-42
+$ printf 'тотальная функция «Три»\n  возвращает число\n  3\n\n.объявления\n' | flang repl
+объявлено: тотальная функция «Три» — завершение доказано
+1. тотальная функция «Три» — завершение доказано
 ```
 
-Without a C compiler the shell still works: it checks parsing, types and
-termination and answers «проверено» (checked) instead of a value, and says so
-at startup:
+To compute an expression, the shell generates C for the session (as
+`flang emit` does), builds it with the system C compiler and runs it. The C
+compiler and its files are found through `FLANG_CC`, `FLANG_INCLUDE_DIR` and
+`FLANG_LIB_DIR`; without them the shell checks parsing, types and termination
+and says so at startup.
 
-```bash
-$ echo '«Удвоить» от 21' | FLANG_CC=/nonexistent/cc flang repl привет.flang
-вычислять нечем: компилятора C нет (ни $FLANG_CC, ни cc, ни gcc, ни clang в PATH).
-Разбор, типы и завершаемость проверяются по-прежнему; выражение отвечает «проверено».
-объявлено: тотальная функция «Удвоить» — завершение доказано
-загружено из привет.flang
-проверено
-```
-
-The C compiler and its files are found through `FLANG_CC`,
-`FLANG_INCLUDE_DIR` and `FLANG_LIB_DIR`.
+**Known bug in {{выпуск.версия}}.** To any expression the shell answers
+`FLANG_PARSE … у функции «⟨выражение⟩» нет строки 'возвращает'` and does not
+compute it. Declarations and dot commands work. `flang run` computes a single
+function.
 
 ## lsp
 
@@ -1791,6 +1802,8 @@ JSON, как требует спецификация LSP. Запускается
 | `FLANG_CC` | the C compiler `repl` calls |
 | `FLANG_INCLUDE_DIR`, `FLANG_LIB_DIR` | where `repl` looks for headers and the library |
 | `FLANG_UNPROVEN` | what `run` and `io` do with unproved programs: `refuse`, `warn`, `allow` |
+| `FLANG_JOBS` | how many processes `check` uses for independent proofs; by default, one per core |
+| `FLANG_CHECKER` | the path to the independent checker of proof records for `check --proof` |
 
 `FLANG_RECURSION_LIMIT` is not a variable but an error code: the step or depth
 limit ran out.

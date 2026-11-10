@@ -71,6 +71,11 @@
       то («Вход печати на C» от "th-word-entry" и "{\"fn\":\"Тот же байт\",\"args\":[{\"n\":\"256\"}]}")
     случай "run-requirement-outside"
       то " --function '«Неотрицательное по требованию»' --args '{\"а\":-7}'"
+    случай "run-fraction-entry"
+      то " --function '«Та же дробь»' --args '{\"а\":[[2],[4]]}'"
+    случай "emit-c-fraction-entry"
+      то («Вход печати на C» от "th-fraction-entry" и
+        "{\"fn\":\"Та же дробь\",\"args\":[{\"l\":[{\"l\":[{\"n\":\"2\"}]},{\"l\":[{\"n\":\"4\"}]}]}]}")
     случай "run-weight-from-number"
       то " --function '«Вес из числа»' --args '{\"элементы\":[1],\"б\":-7}'"
     случай "run-weight-first-branch"

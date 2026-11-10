@@ -34,3 +34,4 @@ hole	oracle	detail
 31	b-c	(outside u64): evaluator {"error":"FLANG_TYPE"}
 31	b-c	(outside K): evaluator {"error":"FLANG_TYPE"}
 31	b-c	(outside LB): evaluator {"error":"FLANG_TYPE"}
+32	b-c	(outside Q): evaluator {"error":"FLANG_TYPE"}

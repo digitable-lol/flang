@@ -1,36 +1,15 @@
 # Proving by hand
 
-The kernel first tries to prove an `обеспечивает` postcondition on its own. Most
-of the time it succeeds and no theorem is needed. This page is about the times
-it does not: how to tell that the kernel gave up, which of three techniques to
-take, and how to read the refusal when the theorem is wrong. Every program below
-passes `flang check`, and the reports under them are compiler output.
+The kernel — the prover, a part of the compiler — proves most postconditions by
+itself. When `flang check --proof` answers «сетка N» (grid of N) or «объявлено,
+не доказано» (declared, not proved)
+([the three answers](how-proofs-work.html#обеспечивает-the-postcondition-and-the-three-answers)),
+you can prove the postcondition with a theorem. The kernel checks every step of
+it and searches for nothing by itself. Every program below passes
+`flang check`; the reports under them are the output of
+`flang {{выпуск.версия}}`.
 
-## How to tell that the kernel gave up
-
-`flang check` without keys says nothing about postconditions: an unproved
-postcondition is not an error, it is checked at run time after every return.
-Ask for the proof report:
-
-```bash
-flang check file.flang --proof
-```
-
-In the section «что высказано и чем это несётся» every postcondition gets one
-of four answers:
-
-| Answer | Meaning | What to do |
-| --- | --- | --- |
-| `доказано …` | holds for every input | nothing |
-| `сетка N значений` | checked on the function's examples only | write a theorem |
-| `объявлено, не доказано` | neither a proof nor examples | write a theorem |
-| `НАРУШЕНО` / `ЛОЖНО` | a counterexample was found | fix the function or the postcondition; do not prove it |
-
-The `--strict` key turns the answer into an exit code: 0 — everything is
-proved, 1 — refuted, 3 — something rests on examples or is not proved. It is
-the key to put into a build.
-
-## The shape of a theorem
+## The skeleton of a theorem
 
 ```flang fragment
 теорема «имя постусловия»
@@ -40,56 +19,25 @@ the key to put into a build.
   следовательно доказано
 ```
 
-A theorem attaches to a postcondition **by name**, not by meaning, and the
-`утверждаем` line repeats the postcondition word for word. `дано` lists the
-function's parameters with the same types. There are three kinds of
+That is: `теорема` (theorem) «the postcondition's name», `дано` (given) the
+parameters, `утверждаем` (we claim) the postcondition, a justification,
+`следовательно доказано` (hence proved). A theorem is tied to its postcondition
+by name. `утверждаем` repeats the postcondition word for word, and `дано` lists
+the function's parameters with the same types. There are three kinds of
 justification:
 
 | Technique | When to take it |
 | --- | --- |
-| `индукция по` + `по предположению` / `по примеру` | the function walks its own type with variants by `разбор` |
-| `по свойству «name»` | the function calls another one whose postcondition is already proved |
-| steps `затем … по закону «rule» из …` | the argument is a chain of facts the kernel does not build by itself |
+| `индукция по` (induction on) + `по предположению` (by the hypothesis) / `по примеру` (by the example) | the function walks its argument with a `разбор` (match) |
+| `по свойству «имя»` (by the property) | the function calls another one whose postcondition is already proved |
+| steps `затем … по закону «правило» из …` (then … by the law … from …) | you need a chain of facts the kernel does not build by itself |
 
-## First technique: induction
+## Induction
 
-The function counts the height of a stack from a given floor. The floor is
-non-negative by the precondition, so the result is non-negative too.
-
-```flang
-модуль «Высота стопки»
-
-тип «Стопка»
-  вариант «Пусто»
-  вариант «Звено» содержит голова: число, хвост: «Стопка»
-
-тотальная функция «Высота от дна»
-  принимает стопка: «Стопка», дно: число
-  возвращает число
-  требует «дно неотрицательно» дно не меньше 0
-  для всех стопка обеспечивает «высота от дна неотрицательна» результат не меньше 0
-  пример «пустая от нуля»
-    дано стопка равно вариант «Пусто»
-    дано дно равно 0
-    ожидается 0
-  разбор стопка
-    случай вариант «Пусто»
-      то дно
-    случай вариант «Звено» с голова как г и хвост как х
-      то («Высота от дна» от х и дно) плюс 1
-```
-
-The kernel does not prove it on its own:
-
-```
-постусловие «высота от дна неотрицательна» функции «Высота от дна» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
-```
-
-The theorem runs induction over the stack. Its cases repeat the cases of the
-`разбор` one for one. In an empty stack the result is the floor itself, and the
-support is the precondition; in a link the result is one more than the height of
-the tail, and the support is the same claim about the tail. Both assumptions are
-taken with `по предположению`:
+The function computes the height of a stack above a given floor. The floor is
+non-negative by the precondition, so the result is too. Without a theorem the
+kernel answers «сетка 1 значение». The theorem runs an induction over the
+stack, and its cases repeat the cases of the `разбор`:
 
 ```flang
 модуль «Высота стопки»
@@ -126,21 +74,33 @@ taken with `по предположению`:
 ```
 
 ```
-постусловие «высота от дна неотрицательна» функции «Высота от дна» — доказано индукцией по «Стопка»: база 1 случай, шаг при допущении на частях (1 случай), правила сведения: цель есть допущение; неотрицательность по построению — утверждение обо ВСЕХ входах типа «Стопка», а не о написанных
+постусловие «высота от дна неотрицательна» функции «Высота от дна» — доказано
+индукцией по «Стопка»: база 1 случай, шаг при допущении на частях (1 случай),
+правила сведения: цель есть допущение; неотрицательность по построению —
+утверждение обо ВСЕХ входах типа «Стопка», а не о написанных
 ```
 
-When a case covers a single value (`случай вариант «Пусто»`, `случай пусто`,
-`случай 0`) and the function has an example with exactly that value, the case
-may cite the example instead: `то по примеру «пустая от нуля»`. A case with bound
-names cannot: an example is one value, and the case covers infinitely many.
+"Proved by induction over «Стопка»: 1 base case, 1 step case — a statement
+about ALL inputs of the type." In the empty stack the result is the floor
+itself, and `по предположению` takes the precondition. In a link the result is
+one more than the height of the tail, and `по предположению` takes the same
+claim for the tail.
 
-Induction works over a type with variants (your own or a list) and over
-`неотрицательное` with a descent of exactly one. There is no induction over
-`число` or `целое`: the kernel answers `FLANG_PROOF_INDUCTION_TYPE`.
+If a case covers a single value (`случай вариант «Пусто»`, `случай пусто`,
+`случай 0`) and the function has an example with that value, you may cite it:
+`то по примеру «пустая от нуля»`.
 
-## Second technique: a property of a called function
+Induction runs over a type with variants, over a list and over
+`неотрицательное` (non-negative) — then it is written
+`индукция по н убывает н`, and the function has to descend by exactly one.
+There is no induction over `число` (number). What the kernel answers when the
+form is wrong: [The kernel refused](proof-refused.html).
 
-Add a function that counts the height from a zero floor:
+## A property of the called function
+
+Add to the same module a function whose body is a call of «Высота от дна». The
+argument takes one line: the callee already has the needed postcondition
+proved.
 
 ```flang fragment
 тотальная функция «Высота»
@@ -151,53 +111,6 @@ Add a function that counts the height from a zero floor:
     дано стопка равно вариант «Пусто»
     ожидается 0
   «Высота от дна» от стопка и 0
-```
-
-The kernel leaves its postcondition on examples as well. The argument is short:
-the body is a call of «Высота от дна», whose postcondition is already proved.
-That is what the theorem says:
-
-```flang
-модуль «Высота стопки»
-
-тип «Стопка»
-  вариант «Пусто»
-  вариант «Звено» содержит голова: число, хвост: «Стопка»
-
-тотальная функция «Высота от дна»
-  принимает стопка: «Стопка», дно: число
-  возвращает число
-  требует «дно неотрицательно» дно не меньше 0
-  для всех стопка обеспечивает «высота от дна неотрицательна» результат не меньше 0
-  пример «пустая от нуля»
-    дано стопка равно вариант «Пусто»
-    дано дно равно 0
-    ожидается 0
-  разбор стопка
-    случай вариант «Пусто»
-      то дно
-    случай вариант «Звено» с голова как г и хвост как х
-      то («Высота от дна» от х и дно) плюс 1
-
-тотальная функция «Высота»
-  принимает стопка: «Стопка»
-  возвращает число
-  для всех стопка обеспечивает «высота неотрицательна» результат не меньше 0
-  пример «у пустой стопки высоты нет»
-    дано стопка равно вариант «Пусто»
-    ожидается 0
-  «Высота от дна» от стопка и 0
-
-теорема «высота от дна неотрицательна»
-  дано стопка: «Стопка»
-  дано дно: число
-  утверждаем результат не меньше 0
-  индукция по стопка
-    случай вариант «Пусто»
-      то по предположению
-    случай вариант «Звено» с голова как г и хвост как х
-      то по предположению
-  следовательно доказано
 
 теорема «высота неотрицательна»
   дано стопка: «Стопка»
@@ -207,47 +120,21 @@ That is what the theorem says:
 ```
 
 ```
-постусловие «высота неотрицательна» функции «Высота» — доказано: терм принят ядром, 1 шаг, правило «цель есть допущение», основания: постусловие «высота от дна неотрицательна» функции «Высота от дна» — утверждение обо ВСЕХ входах
+постусловие «высота неотрицательна» функции «Высота» — доказано: терм принят
+ядром, 1 шаг, правило «цель есть допущение», основания: постусловие «высота от
+дна неотрицательна» функции «Высота от дна» — утверждение обо ВСЕХ входах
 ```
 
-`flang check file.flang --proof --strict` answers 0 on this file; without the
-two theorems it answers 3.
+`по свойству` substitutes the callee's postcondition: its parameters become
+the call's arguments, `результат` becomes the call itself. With both theorems
+`flang check --proof --strict` exits with 0, without them with 3.
 
-`по свойству` substitutes the called function's postcondition: its parameters
-become the arguments of the call, `результат` becomes the call itself. Citing the
-postcondition being proved is a circle, and the kernel names it.
+## A chain of steps
 
-## Third technique: a chain of steps that name their rules
-
-Sometimes the argument is a chain of several facts, and the kernel does not
-assemble it by itself. The function returns its first argument; the
-preconditions say it is not greater than the second, and the second is not
-greater than ten:
-
-```flang
-модуль «Через середину»
-
-тотальная функция «Меньшее из пары»
-  принимает а: число, б: число
-  требует «а не больше б» а не больше б
-  требует «б не больше десяти» б не больше 10
-  возвращает число
-  обеспечивает «результат не больше десяти» результат не больше 10
-  пример «три и семь»
-    дано а равно 3
-    дано б равно 7
-    ожидается 3
-  а
-```
-
-```
-постусловие «результат не больше десяти» функции «Меньшее из пары» — сетка 1 значение (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
-```
-
-The theorem writes the chain one step per line. Every step is `затем fact по
-закону «rule» из supports`; a support is a source line (`из строки 5`) or the
-number of an earlier step (`из 1 и 2`). The last step, without `затем`, closes
-the goal:
+The function returns its first argument. The preconditions say it is not
+greater than the second, and the second is not greater than ten. The kernel
+does not assemble this chain by itself; the theorem writes it out one step per
+line:
 
 ```flang
 модуль «Через середину»
@@ -276,87 +163,176 @@ the goal:
 ```
 
 ```
-постусловие «результат не больше десяти» функции «Меньшее из пары» — доказано: терм принят ядром, 4 шага — утверждение обо ВСЕХ входах
+постусловие «результат не больше десяти» функции «Меньшее из пары» — доказано:
+терм принят ядром, 4 шага — утверждение обо ВСЕХ входах
 ```
 
-Lines 5 and 6 are the preconditions, line 13 is the function body. Six rules can
-be named in a step:
+A step is `затем fact по закону «rule» из supports`. A support is a source
+line (`из строки 5`: a precondition; `из строки 13`: the body) or the number of
+an earlier step (`из 1 и 2`). The last step, without `затем`, closes the goal.
+There are six rules:
 
 | Rule | What it gives |
 | --- | --- |
-| `Н1` | a literal is not below zero: `0 не меньше 0` |
+| `Н1` | a literal is not less than zero: `0 не меньше 0` |
 | `Н3` | `х не меньше 0` from the line that says so: a precondition or the type `неотрицательное` |
 | `Н5` | the sum of two non-negatives is non-negative (from two steps) |
-| `О1` | an order fact `а не больше б` from the line that states it |
-| `О10` | through the middle: from `а не больше б` and `б не больше в`, `а не больше в` |
+| `О1` | `а не больше б` from the line that says so |
+| `О10` | from `а не больше б` and `б не больше в`: `а не больше в` |
 | `Разв2` | substitutes the function body for `результат` and closes the goal |
 
-The kernel checks every step and names the one that does not fit. A step cites
-the wrong line:
+The kernel names the step that did not fit. Here step 1 cited line 6 instead
+of line 5:
 
 ```
-FLANG_PROOF_STEP в файле m3.flang, строка 19, столбец 3: теорема «результат не больше десяти»: шаг 1 (О1, строка 6): О1 — допущение даёт «б не больше 10», а заключено «а не больше б»
+FLANG_PROOF_STEP в файле m3.flang, строка 19, столбец 3: теорема «результат не
+больше десяти»: шаг 1 (О1, строка 6): О1 — допущение даёт «б не больше 10», а
+заключено «а не больше б»
 ```
 
-The supports are swapped:
+## A statement without a function
 
-```
-FLANG_PROOF_STEP в файле m4.flang, строка 21, столбец 3: теорема «результат не больше десяти»: шаг 3 (О10, шаг 2 и шаг 1): О10 — середина не сходится: шаг 2 кончается «10», шаг 1 начинается «а»
-```
-
-A step that names its rule is worth it for one more reason: the independent
-checker (`flang/proof/checker/checker.c`) replays it, while a step without a
-name has to be taken on the kernel's word.
-
-Any other rule name is refused, and the message lists the ones that exist:
-
-```
-FLANG_PROOF_STEP … правило «чего не бывает» ведомости ядро пока не проверяет; проверяет шесть: Н1, Н3, Н5, О1, О10, Разв2
-```
-
-## When it cannot be proved by hand
-
-The six rules do not cover subtraction. The postcondition below holds, but
-neither the kernel nor a theorem built from these rules proves it:
+`утверждение` (statement) is a theorem about all values of a type, not tied to
+a postcondition. The kernel proves it by itself, including by induction over a
+list:
 
 ```flang
-модуль «Дополнение»
+модуль «Утверждения»
 
-тотальная функция «Сколько дополнить»
-  принимает ширина: число, длина: число
-  возвращает число
-  требует «ширина конечна» (ширина минус ширина) равно 0
-  требует «длина конечна» (длина минус длина) равно 0
-  требует «ширина не меньше длины» ширина не меньше длина
-  обеспечивает «дополнение неотрицательно» результат не меньше 0
-  пример «ровно по ширине»
-    дано ширина равно 5
-    дано длина равно 5
-    ожидается 0
-  пример «дописать три»
-    дано ширина равно 8
-    дано длина равно 5
-    ожидается 3
-  ширина минус длина
+тотальная функция «Удвоить каждое»
+  принимает ряд: список числа
+  возвращает список числа
+  разбор ряд
+    случай пусто
+      то пустой список
+    случай голова первый и хвост остальные
+      то приписать (первый умножить на 2) к («Удвоить каждое» от остальные)
+
+утверждение «удвоение сохраняет длину»
+  для всех ряд: список числа
+  утверждаем (длина («Удвоить каждое» от ряд)) равен (длина ряд)
+
+утверждение «два отображения есть одно»
+  для всех ряд: список числа
+  утверждаем ((отобразить (отобразить ряд как э → э плюс 1) как э → э умножить на 2)
+    равен (отобразить ряд как э → (э плюс 1) умножить на 2))
+
+утверждение «порядок транзитивен»
+  для всех а: точное целое и б: точное целое и ц: точное целое
+  утверждаем если а больше б и притом б больше ц то а больше ц иначе да
+
+утверждение «общее слагаемое сохраняет порядок»
+  для всех а: точное целое и б: точное целое и ц: точное целое
+  утверждаем если а не меньше б то (а плюс ц) не меньше (б плюс ц) иначе да
 ```
 
-Such a postcondition stays on examples and is checked at run time after every
-return. That is an honest outcome, not an error: the program builds, and the
-check sits in the generated code. If the run-time check must go, look for
-another way to write it: make the parameter `неотрицательное`, move the
-subtraction into a function with a proved postcondition, or state the promise
-differently. Which shapes of postcondition the kernel takes on its own is on the
-page [What postconditions the prover proves](what-the-kernel-accepts.html).
+```
+$ flang check --proof utverzhdeniya.flang
+  утверждение «удвоение сохраняет длину» — доказано индукцией по «список»: база
+  1 случай, шаг при допущении на частях (1 случай) …
+  утверждение «два отображения есть одно» — доказано … правило «переписка
+  доказанными равенствами» … основания: … закон «Слияние отображений» …
+  утверждение «порядок транзитивен» — доказано по объявленным типам аргументов …
+  утверждение «общее слагаемое сохраняет порядок» — доказано по объявленным
+  типам аргументов …
+  утверждений 4: доказано 4 (из них индукцией 1) (из них без теоремы 3,
+  объявленным типом 2), сетка 0, объявлено, не доказано 0
+```
 
-## The order of work
+What is proved here:
+
+- a property of a recursive function over a list — by induction over the list;
+- the functor laws of the list: two `отобразить` (map) fused into one, and
+  `(отобразить а как э → э) равен а`;
+- linear inequalities and polynomial equalities over `точное целое` (exact
+  integer).
+
+The type matters. The same two inequalities over `число` stay «объявлено, не
+доказано»: `число` is a float, and its addition rounds.
+
+## The laws of a monoid and a monad
+
+Declare a structure, and the kernel judges its laws as statements about all
+values:
+
+```flang
+модуль «Монада может быть»
+
+тип «Возможно» от «А»
+  вариант «Ничего»
+  вариант «Нечто» содержит значение: «А»
+
+тотальная функция «Обернуть» от «А»
+  принимает значение: «А»
+  возвращает «Возможно» от «А»
+  вариант «Нечто» с значение равным значение
+
+тотальная функция «Сплющить» от «А»
+  принимает вложенное: «Возможно» от («Возможно» от «А»)
+  возвращает «Возможно» от «А»
+  пример «два слоя дают один»
+    дано вложенное равно вариант «Нечто» с значение равным (вариант «Нечто» с значение равным 5)
+    ожидается вариант «Нечто» с значение равным 5
+  пример «пустой внешний слой»
+    дано вложенное равно вариант «Ничего»
+    ожидается вариант «Ничего»
+  разбор вложенное
+    случай вариант «Ничего»
+      то вариант «Ничего»
+    случай вариант «Нечто» с значение как внутри
+      то внутри
+
+монада «Возможно» от «А»
+  возврат «Обернуть»
+  соединение «Сплющить»
+```
+
+```
+$ flang check --proof monada.flang; echo "exit $?"
+  закон «Возможно — левая единица» — доказано сведением цели с телом функции …
+  закон «Возможно — правая единица» — доказано индукцией по «Возможно» …
+  закон «Возможно — ассоциативность связывания» — доказано индукцией по
+  «Возможно»: база 2 случая, шаг при допущении на частях (0 случаев) …
+  законов утверждениями 3: доказано ядром 3, не доказано 0
+exit 0
+```
+
+All three monad laws — left unit, right unit, associativity of bind — are
+proved. For a `моноид` (monoid) associativity and both units are proved the
+same way over `точное целое`. Over `число` the kernel refuses and names the
+reason:
+
+```
+закон «Сумма — ассоциативность» — ядром НЕ доказан и доказан не будет: носитель
+— двоичное «число» …, где сложение и умножение округляют, сумма не сочетательна
+выше 2⁵³, а ноль не нейтрален к минус нулю; объявите носитель «точное целое»
+```
+
+"Not proved and will not be: the carrier is the binary `число`, where addition
+and multiplication round; declare the carrier `точное целое`."
+
+## When a hand proof is not possible
+
+The six step rules do not cover subtraction. The postcondition
+`результат не меньше 0` with the body `ширина минус длина` and the precondition
+`ширина не меньше длина` over `число` is true, but neither the kernel nor a
+theorem built from these rules proves it. It stays a grid and is checked at run
+time after every return; the program still builds. If there must be no check,
+change the spelling: declare the parameters `неотрицательное` or state the
+postcondition differently —
+[What the kernel proves by itself](what-the-kernel-accepts.html).
+
+## The working order
 
 1. Write the postcondition and ask `flang check --proof`.
-2. `доказано` — stop, no theorem is needed.
-3. `НАРУШЕНО` or `ЛОЖНО` — fix the function or the postcondition.
-4. Examples only, or «объявлено, не доказано» — write a theorem: induction if
-   the function goes by `разбор`; `по свойству` if the body calls a function with
-   a proved postcondition; steps with rules if the argument is a chain of facts.
-5. A refusal from the kernel — read the tail of the message; what each code
-   means is on the page [The kernel refused: whose mistake is it](proof-refused.html).
+2. «Доказано» — no theorem is needed.
+3. `FLANG_EXAMPLE: FLANG_PROPERTY` — the postcondition is false on the input
+   found: fix the function or the postcondition.
+4. «Сетка» or «объявлено, не доказано» — first try to
+   [rewrite the postcondition](what-the-kernel-accepts.html), then write a
+   theorem.
+5. The kernel rejected the theorem —
+   [The kernel refused: whose mistake is it](proof-refused.html).
 
-The full syntax of a theorem is in the [Language reference](language.html#theorem).
+The full syntax of a theorem is in the
+[Language reference](language.html#theorem).

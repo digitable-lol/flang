@@ -62,3 +62,20 @@ generic-call-in-match-branch.flang	check	0	замечаний нет
 generic-call-in-match-branch.flang	run-generic-call-in-match	0	-0.5
 branch-join-drops-second-type.flang	check	0	замечаний нет
 branch-join-drops-second-type.flang	run-branch-join	0	-0.5
+linear-equality-doubling-at-negative-zero.flang	proof	3	доказано 1, условно 0
+linear-equality-doubling-at-negative-zero.flang	run-doubling-at-negative-zero	1	FLANG_PROPERTY
+segment-sum-negative-zero-literal.flang	proof	3	доказано 1, условно 0
+segment-sum-negative-zero-literal.flang	run-sum-with-negative-zero-literal	1	FLANG_PROPERTY
+length-not-equal-negative-zero.flang	proof	0	доказано 1, условно 0
+length-not-equal-negative-zero.flang	run-length-of-empty-list	1	FLANG_PROPERTY
+exact-integer-from-computed-digit.flang	proof	0	доказано 2, условно 0
+exact-integer-from-computed-digit.flang	run-exact-zero-digit	1	FLANG_PROPERTY
+exact-integer-from-computed-digit.flang	run-exact-negative-digit	1	FLANG_PROPERTY
+segment-base-equal-zero-skips-negative-zero.flang	proof	0	доказано 1, условно 0
+segment-base-equal-zero-skips-negative-zero.flang	run-segment-base-negative-zero	1	FLANG_PROPERTY
+requirement-skipped-inside-a-promise.flang	proof	0	доказано 2, условно 0
+requirement-skipped-inside-a-promise.flang	run-requirement-inside-promise	1	FLANG_PROPERTY
+two-promises-under-one-name.flang	proof	0	доказано 3, условно 0
+two-promises-under-one-name.flang	run-two-promises-one-name	1	FLANG_PROPERTY
+statement-cited-at-a-wider-type.flang	proof	0	доказано 2, условно 0
+statement-cited-at-a-wider-type.flang	run-statement-at-wider-type	1	FLANG_PROPERTY

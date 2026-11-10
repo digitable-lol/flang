@@ -45,6 +45,9 @@ negative-zero-from-percent.flang	run-percent-zero	0	"плюс"
 exact-integer-off-canon-at-printed-entry.flang	check	0	замечаний нет
 exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1 отрицателен
 exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":false,"code":"FLANG_TYPE"
+exact-fraction-off-canon-at-printed-entry.flang	check	0	замечаний нет
+exact-fraction-off-canon-at-printed-entry.flang	run-fraction-entry	1	дробь не сокращена
+exact-fraction-off-canon-at-printed-entry.flang	emit-c-fraction-entry	0	{"ok":true,"value":{"l":[{"l":[{"n":"2"}]},{"l":[{"n":"4"}]}]}}
 requirement-bypassed-by-function-value.flang	check	1	FLANG_PRECONDITION_CALL
 requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	FLANG_PRECONDITION_CALL
 shortest-number-tie-in-rust.flang	check	0	замечаний нет

@@ -16,7 +16,7 @@
 
 тотальная функция «Checks»
   возвращает список «Check»
-  обеспечивает «there are exactly twenty-nine checks» (длина результат) равен 29
+  обеспечивает «there are exactly thirty checks» (длина результат) равен 30
   [запись «Check» с «name» равным "prose-numbers-guard" и «command» равным "bootstrap/flang io scripts/guards/prose-numbers-guard.fscript --plan Check",
    запись «Check» с «name» равным "registry" и «command» равным "bootstrap/flang run-script registry-resolution:check",
    запись «Check» с «name» равным "prints" и «command» равным "bootstrap/flang run-script registry-prints:check",
@@ -31,6 +31,7 @@
    запись «Check» с «name» равным "stdlib-check" и «command» равным "bootstrap/flang run-script stdlib:changed",
    запись «Check» с «name» равным "cyrillic-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/cyrillic-file-names-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "translit-file-names-guard" и «command» равным "bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка",
+   запись «Check» с «name» равным "module-origin" и «command» равным "bootstrap/flang run-script module-origin:check",
    запись «Check» с «name» равным "no-package-json-guard" и «command» равным "bootstrap/flang io scripts/guards/no-package-json-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "run-verdict-debt-guard" и «command» равным "bootstrap/flang io scripts/guards/run-verdict-debt-guard.fscript --plan Проверка",
    запись «Check» с «name» равным "record-follows-its-source" и «command» равным "bootstrap/flang io scripts/guards/record-follows-its-source.fscript --plan Проверка",
@@ -143,7 +144,7 @@
   ["ЧЕГО ХУК НЕ ПРОВЕРИЛ (это делает CI):",
    "  · тесты, набор проб чекера, потолок доверия Г3 — минуты каждый",
    "  · сборку двоичного и всё, что её требует",
-   "  · десять сторожей дороже 200 с и двенадцать, красных по долгу дерева",
+   "  · сторожей дороже 200 с и красных по долгу дерева — их называет scripts/ledgers/uncalled-guards.json",
    "  · целость коротких команд (план «Целость») — вторая половина",
    "    bootstrap/flang run-script scripts:check; первая половина, «Сбор», здесь есть"]
 
@@ -326,7 +327,7 @@
 тотальная функция «Leftovers»
   принимает directory: строка
   возвращает список строки
-  обеспечивает «one file for every check and the directory itself» (длина результат) равен 30
+  обеспечивает «one file for every check and the directory itself» (длина результат) равен 31
   добавить directory к (отобразить («Checks») как check → («Output path» от directory и check))
 
 тотальная функция «Remove files»

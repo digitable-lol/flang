@@ -897,6 +897,26 @@
       (запись «Command» с «name» равным "build" и «line» равным "make")]
   отобразить (отфильтровать (разделить text по "\n") где line → line начинается с "script.") как line → («Command of line» от line)
 
+тотальная функция «Switched off»
+  возвращает список строки
+  пример «The workflow CI is disabled by hand at GitHub and runs nothing»
+    ожидается ["ci.yml"]
+  ["ci.yml"]
+
+тотальная функция «Runs»
+  принимает name: строка
+  возвращает признак
+  пример «A workflow file runs»
+    дано name равно "binary.yml"
+    ожидается да
+  пример «A switched off workflow calls nobody»
+    дано name равно "ci.yml"
+    ожидается нет
+  пример «A file that is not a workflow is passed by»
+    дано name равно "README.md"
+    ожидается нет
+  («Ends with» от name и ".yml") и притом (не («Holds» от («Switched off») и name))
+
 тотальная функция «Read settings»
   принимает mode: строка, calls: «Calls», entries: список «Entry»
   возвращает «Продолжение»
@@ -924,7 +944,8 @@
     случай вариант «Пока ничего»
       то вариант «Сделать» с поручение равным (вариант «Перечислить каталог» с путь равным "../../.github/workflows") и потом равным (вариант «Listing» с mode равным mode)
     случай вариант «Перечислено» с имена как names
-      то «Read flows» от mode и (отфильтровать names где name → «Ends with» от name и ".yml") и (запись «Calls» с «names» равным пустой список и «scripts» равным пустой список)
+      то «Read flows» от mode и (отфильтровать names где name → «Runs» от name) и (запись «Calls» с
+        «names» равным пустой список и «scripts» равным пустой список)
     случай вариант «Сбой» с код как code и сообщение как message
       то вариант «Не проверено» с код равным code и сообщение равным (соединить [
         "каталог .github/workflows не перечислить — перепись не считается: ", message] по "")
@@ -1008,6 +1029,12 @@
     ожидается "on:\n  push:\n    paths:\n      - 'scripts/guards/filtered.sh'\njobs:\n  guards:\n    runs-on: ubuntu-latest\n    steps:\n      # run: sh scripts/guards/filtered.sh\n      - run: bootstrap/flang run-script named:check\n      - name: Check\n        run: |\n          bootstrap/flang io scripts/guards/filed.fscript --plan Check\n          echo sh > scripts/guards/filtered.sh\n"
   "on:\n  push:\n    paths:\n      - 'scripts/guards/filtered.sh'\njobs:\n  guards:\n    runs-on: ubuntu-latest\n    steps:\n      # run: sh scripts/guards/filtered.sh\n      - run: bootstrap/flang run-script named:check\n      - name: Check\n        run: |\n          bootstrap/flang io scripts/guards/filed.fscript --plan Check\n          echo sh > scripts/guards/filtered.sh\n"
 
+тотальная функция «Off flow text»
+  возвращает строка
+  пример «The switched off workflow names the guard that nobody else calls»
+    ожидается "jobs:\n  guards:\n    steps:\n      - run: bootstrap/flang run-script filtered:check\n"
+  "jobs:\n  guards:\n    steps:\n      - run: bootstrap/flang run-script filtered:check\n"
+
 тотальная функция «Ledger text»
   принимает added: строка
   возвращает строка
@@ -1055,7 +1082,8 @@
     (соединить [root, "/.github/workflows"] по "")])),
     («Silent» от (вариант «Запустить процесс» с программа равным "cp" и аргументы равным [
     "who-calls-the-guards.fscript", (соединить [root, "/scripts/guards/who-calls-the-guards.fscript"] по "")])),
-    («Written» от root и "/.github/workflows/ci.yml" и («Flow text»)),
+    («Written» от root и "/.github/workflows/binary.yml" и («Flow text»)),
+    («Written» от root и "/.github/workflows/ci.yml" и («Off flow text»)),
     («Written» от root и "/.flangrc" и («Table text» от "")),
     («Written» от root и "/scripts/ledgers/uncalled-guards.json" и («Ledger text» от ""))]
 

@@ -67,7 +67,8 @@
     дано prefix равно "предел-шагов "
     дано text равно "предел-глубины 5\n"
     ожидается ""
-  свёртка («Lines» от text) начиная с "" как found и line → если line начинается с prefix то («After» от prefix и line) иначе found
+  свёртка («Lines» от text) начиная с "" как found и line → если line начинается с prefix то («After» от prefix и
+      line) иначе found
 
 тотальная функция «Steps limit»
   принимает answers: список «Answer»
@@ -95,7 +96,8 @@
 
 тотальная функция «Long padding»
   возвращает строка
-  соединить (отобразить [1, 2, 3, 4, 5, 6, 7, 8] как outer → соединить (отобразить [1, 2, 3, 4, 5] как inner → «Hundred») по "") по ""
+  соединить (отобразить [1, 2, 3, 4, 5, 6, 7, 8] как outer → соединить (отобразить [1, 2, 3, 4,
+      5] как inner → «Hundred») по "") по ""
 
 тотальная функция «Printing»
   принимает name: строка, zone: строка, padding: строка, answers: список «Answer»
@@ -114,8 +116,10 @@
   возвращает список «Pair»
   если «Is a forgery» от answers
     то [запись «Pair» с «label» равным "copy" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "copy" и answers),
-      запись «Pair» с «label» равным "changed" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "changed" и answers),
-      запись «Pair» с «label» равным "missing" и «left» равным («Inside» от "probe" и answers) и «right» равным («Inside» от "missing" и answers)]
+      запись «Pair» с «label» равным "changed" и «left» равным («Inside» от "probe" и
+          answers) и «right» равным («Inside» от "changed" и answers),
+      запись «Pair» с «label» равным "missing" и «left» равным («Inside» от "probe" и
+          answers) и «right» равным («Inside» от "missing" и answers)]
     иначе [запись «Pair» с «label» равным "prints" и «left» равным («Inside» от "first" и answers) и «right» равным («Inside» от "second-print-of-the-same-tree" и answers)]
 
 тотальная функция «Names question»
@@ -137,7 +141,8 @@
 тотальная функция «Names agree»
   принимает pair: «Pair», answers: список «Answer»
   возвращает признак
-  («Output of» от («Names question» от "left" и pair) и answers) равен («Output of» от («Names question» от "right" и pair) и answers)
+  («Output of» от («Names question» от "left" и pair) и answers) равен («Output of» от («Names question» от "right" и
+      pair) и answers)
 
 тотальная функция «Bytes question»
   принимает pair: «Pair», name: строка
@@ -149,9 +154,14 @@
   возвращает список «Question»
   пусть names равно («Names» от "left" и pair и answers)
   если «Names agree» от pair и answers
-    то приписать («Run from» от (соединить ["sizes ", (pair.«label»)] по "") и (pair.«left») и "wc" и (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от («Bytes question» от pair и name) и "env" и ["LC_ALL=C", "cmp", (соединить [(pair.«left»), "/", name] по ""), (соединить [(pair.«right»), "/", name] по "")])
-    иначе [(«Write» от (соединить ["left list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "left" и pair) и answers)),
-      («Write» от (соединить ["right list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "right" и pair) и answers)),
+    то приписать («Run from» от (соединить ["sizes ", (pair.«label»)] по "") и (pair.«left») и "wc" и
+        (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от («Bytes question» от pair и
+        name) и "env" и ["LC_ALL=C", "cmp", (соединить [(pair.«left»), "/", name] по ""), (соединить [(pair.«right»),
+        "/", name] по "")])
+    иначе [(«Write» от (соединить ["left list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-left-",
+        (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "left" и pair) и answers)),
+      («Write» от (соединить ["right list ", (pair.«label»)] по "") и («Inside» от (соединить ["names-right-",
+          (pair.«label»)] по "") и answers) и («Output of» от («Names question» от "right" и pair) и answers)),
       («Run» от (соединить ["names difference ", (pair.«label»)] по "") и "env" и ["LC_ALL=C", "diff",
         («Inside» от (соединить ["names-left-", (pair.«label»)] по "") и answers),
         («Inside» от (соединить ["names-right-", (pair.«label»)] по "") и answers)])]
@@ -167,7 +177,8 @@
     дано name равно "absent.c"
     дано sizes равно [" 3454 Makefile"]
     ожидается 0
-  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и line) равен name) по "\n")))
+  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и
+      line) равен name) по "\n")))
 
 тотальная функция «Difference lines»
   принимает pair: «Pair», name: строка, answers: список «Answer»
@@ -183,7 +194,8 @@
   возвращает «Outcome»
   пусть names равно («Names» от "left" и pair и answers)
   пусть sizes равно («Lines» от («Output of» от (соединить ["sizes ", (pair.«label»)] по "") и answers))
-  пусть differing равно (отфильтровать names где name → не ((«Exit code of» от («Bytes question» от pair и name) и answers) равен 0))
+  пусть differing равно (отфильтровать names где name → не ((«Exit code of» от («Bytes question» от pair и name) и
+      answers) равен 0))
   пусть lines равно («Gathered words» от (отобразить names как name → «Difference lines» от pair и name и answers))
   запись «Outcome» с «same» равным ((длина differing) равен 0) и «files» равным (длина names) и «bytes» равным (свёртка names начиная с 0 как sum и name → sum плюс («Size» от name и sizes)) и «lines» равным (если (длина differing) равен 0 то lines иначе (добавить (соединить ["файлов сверено ", (к строке (длина names)), ", разошлось ", (к строке (длина differing))] по "") к lines))
 
@@ -371,7 +383,8 @@
       то вариант «Не проверено» с код равным "FLANG_IO_ORDER" и сообщение равным "сверять нечего"
     случай голова и хвост
       то если («Compared» от (голова) и answers).«same»
-        то вариант «Конец работы» с значение равным (соединить («Соединить списки» от («Heading» от answers) и («Repeatable» от («Compared» от (голова) и answers))) по "\n")
+        то вариант «Конец работы» с значение равным (соединить («Соединить списки» от («Heading» от answers) и
+            («Repeatable» от («Compared» от (голова) и answers))) по "\n")
         иначе вариант «Провал» с код равным "FLANG_PRINT_NOT_REPEATABLE" и сообщение равным (соединить («Gathered words» от [(«Heading» от answers), ((«Compared» от (голова) и answers).«lines»), («Not repeatable»)]) по "\n")
 
 тотальная функция «Trial»
@@ -383,8 +396,15 @@
   принимает answers: список «Answer»
   возвращает список строки
   пусть victim равно («Victim» от answers)
-  отобразить («Pairs» от answers) как pair → «Chosen» от [(«When» от ((pair.«label») равен "copy") и («Trial» от ((«Compared» от pair и answers).«same») и "чисто молчит    дословная копия признана совпавшей" и "ЛОЖНАЯ ТРЕВОГА: сверщик развёл дословную копию")),
-    («When» от ((pair.«label») равен "changed") и («Trial» от (не ((«Compared» от pair и answers).«same»)) и (соединить ["подлог пойман   изменённый байт в ", victim, " назван"] по "") и (соединить ["ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на изменённом байте в ", victim] по "")))] и («Trial» от (не ((«Compared» от pair и answers).«same»)) и (соединить ["подлог пойман   пропавший файл ", victim, " назван"] по "") и (соединить ["ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на пропавшем файле ", victim] по ""))
+  отобразить («Pairs» от answers) как pair → «Chosen» от [(«When» от ((pair.«label») равен "copy") и
+      («Trial» от ((«Compared» от pair и answers).«same») и "чисто молчит    дословная копия признана совпавшей" и
+      "ЛОЖНАЯ ТРЕВОГА: сверщик развёл дословную копию")),
+    («When» от ((pair.«label») равен "changed") и («Trial» от (не ((«Compared» от pair и answers).«same»)) и
+        (соединить ["подлог пойман   изменённый байт в ", victim, " назван"] по "") и (соединить [
+        "ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на изменённом байте в ",
+        victim] по "")))] и («Trial» от (не ((«Compared» от pair и answers).«same»)) и (соединить [
+        "подлог пойман   пропавший файл ", victim, " назван"] по "") и (соединить [
+        "ПОДЛОГ НЕ ПОЙМАН: сверщик смолчал на пропавшем файле ", victim] по ""))
 
 тотальная функция «Is a blame»
   принимает line: строка

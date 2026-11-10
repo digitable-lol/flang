@@ -84,7 +84,10 @@
     («Run» от "condition" и "grep" и ["-c", "ПРИ УСЛОВИИ",
       (соединить [(«Tree» от answers), "/bootstrap/compiler_flang.c"] по "")]),
     («Run» от "progress line" и "sh" и ["-c", («Progress order»), («Binary» от answers)]),
-    («Through gate» от "kernel rules" и "45G" и [(соединить [(«Root path» от answers), "/scripts/seed/new-binary-acceptance-probe.flang"] по ""), "--proof"] и answers)] и (отобразить («Samples» от answers) как sample → «Run» от (соединить ["sample ", sample] по "") и "grep" и ["-c", "Узел хеша» от", sample])
+    («Through gate» от "kernel rules" и "45G" и [(соединить [(«Root path» от answers),
+        "/scripts/seed/new-binary-acceptance-probe.flang"] по ""), "--proof"] и
+        answers)] и (отобразить («Samples» от answers) как sample → «Run» от (соединить ["sample ",
+        sample] по "") и "grep" и ["-c", "Узел хеша» от", sample])
 
 тотальная функция «Sample»
   принимает answers: список «Answer»
@@ -207,13 +210,15 @@
     случай пусто
       то запись «Sign» с «lines» равным lines и «troubles» равным 0
     случай голова и хвост
-      то запись «Sign» с «lines» равным («Соединить списки» от (добавить (соединить ["  ✗ ", голова] по "") к lines) и хвост) и «troubles» равным 1
+      то запись «Sign» с «lines» равным («Соединить списки» от (добавить (соединить ["  ✗ ", голова] по "") к lines) и
+          хвост) и «troubles» равным 1
 
 тотальная функция «Names sign»
   принимает answers: список «Answer»
   возвращает «Sign»
   пусть names равно («Lines» от («Output of» от "names" и answers))
-  пусть lines равно («Соединить списки» от («Heading» от "ПРИМЕТА 1 — печать конкурентности в C") и (если (длина names) равен 0 то ["    "] иначе («Indented» от names)))
+  пусть lines равно («Соединить списки» от («Heading» от "ПРИМЕТА 1 — печать конкурентности в C") и
+      (если (длина names) равен 0 то ["    "] иначе («Indented» от names)))
   если (длина (отфильтровать names где name → «Ends with» от name и "_c")) больше 0
     то «Good» от lines и "имя с «_c» есть"
     иначе «Bad» от lines и "имени с «_c» НЕТ (было так же)"
@@ -304,7 +309,9 @@
   пример «A total of another shape»
     дано total равно "утверждений нет"
     ожидается ""
-  если (((«Word» от 1 и total) равен "утверждений") и притом ((«Word» от 3 и total) равен "доказано")) и притом ((«Word» от 2 и total) равен (соединить [(«Leading digits» от («Word» от 2 и total)), ":"] по ""))
+  если (((«Word» от 1 и total) равен "утверждений") и притом ((«Word» от 3 и
+      total) равен "доказано")) и притом ((«Word» от 2 и total) равен (соединить [(«Leading digits» от («Word» от 2 и
+      total)), ":"] по ""))
     то «Leading digits» от («Word» от 4 и total)
     иначе ""
 
@@ -326,7 +333,9 @@
     ожидается запись «Sign» с «lines» равным ["  ✗ проба не дала итога вовсе"] и «troubles» равным 1
   «Chosen» от [(«When» от (пусто proved) и («Bad» от lines и "проба не дала итога вовсе")),
     («When» от (proved равен "0") и («Bad» от lines и "ни одно правило не заработало — семя не догнало исходники")),
-    («When» от (proved равен "4") и («Good» от lines и "все четыре правила ядра доехали"))] и («Good» от lines и (соединить ["правил ядра доехало ", proved, " из 4 — часть, как проба и допускает; какие именно, смотреть в ведомости"] по ""))
+    («When» от (proved равен "4") и («Good» от lines и
+        "все четыре правила ядра доехали"))] и («Good» от lines и (соединить ["правил ядра доехало ", proved,
+        " из 4 — часть, как проба и допускает; какие именно, смотреть в ведомости"] по ""))
 
 тотальная функция «Rules sign»
   принимает answers: список «Answer»
@@ -356,16 +365,21 @@
   пусть shown равно (добавить (соединить ["    образец: ", sample, " (",
     («First line» от («Output of» от (соединить ["sample ", sample] по "") и answers)),
     " вхождений параметрического типа)"] по "") к heading)
-  «Chosen» от [(«When» от (пусто sample) и («Bad» от heading и "проверить НЕЧЕМ: параметрического типа нет ни в дереве перепечатки, ни в дереве приёмки — примета не снята")),
-    («When» от ((длина («Gate troubles» от "fresh types" и answers)) больше 0) и («Refused by gate» от shown и («Gate troubles» от "fresh types" и answers)))] и («Types judged» от shown и («Raw lines» от («Output of» от "fresh types" и answers)))
+  «Chosen» от [(«When» от (пусто sample) и («Bad» от heading и
+      "проверить НЕЧЕМ: параметрического типа нет ни в дереве перепечатки, ни в дереве приёмки — примета не снята")),
+    («When» от ((длина («Gate troubles» от "fresh types" и answers)) больше 0) и («Refused by gate» от shown и
+        («Gate troubles» от "fresh types" и
+        answers)))] и («Types judged» от shown и («Raw lines» от («Output of» от "fresh types" и answers)))
 
 тотальная функция «Live judged»
   принимает lines: список строки, said: список строки
   возвращает «Sign»
   пусть answer равно (соединить said по "\n")
   пусть shown равно («Соединить списки» от lines и («Indented» от said))
-  «Chosen» от [(«When» от ((answer содержит "FLANG_PROPERTY") или (answer содержит "FLANG_INTERNAL")) и («Bad» от shown и "падает — принимать НЕЛЬЗЯ")),
-    («When» от (answer содержит "утверждений") и («Good» от shown и "считает"))] и («Bad» от shown и "ответ не распознан")
+  «Chosen» от [(«When» от ((answer содержит "FLANG_PROPERTY") или (answer содержит "FLANG_INTERNAL")) и
+      («Bad» от shown и "падает — принимать НЕЛЬЗЯ")),
+    («When» от (answer содержит "утверждений") и («Good» от shown и
+        "считает"))] и («Bad» от shown и "ответ не распознан")
 
 тотальная функция «Live sign»
   принимает answers: список «Answer»

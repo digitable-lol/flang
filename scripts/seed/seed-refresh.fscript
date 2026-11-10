@@ -121,7 +121,8 @@
     дано key равно "предел-шагов"
     дано text равно "предел-глубины 20\n"
     ожидается ""
-  «Word» от 2 и («First line» от (соединить (отфильтровать («Lines» от text) где line → («Word» от 1 и line) равен key) по "\n"))
+  «Word» от 2 и («First line» от (соединить (отфильтровать («Lines» от text) где line → («Word» от 1 и
+      line) равен key) по "\n"))
 
 тотальная функция «Present limit»
   принимает variable: строка, text: строка
@@ -170,7 +171,9 @@
   принимает answers: список «Answer»
   возвращает список строки
   пусть hashed равно («Output of» от "hashes" и answers)
-  «Gathered words» от (приписать («Limit trouble» от "предел-шагов" и "MAX_STEPS" и answers) к (приписать («Limit trouble» от "предел-глубины" и "MAX_DEPTH" и answers) к (отобразить («Closure» от answers) как input → «Input trouble» от input и hashed)))
+  «Gathered words» от (приписать («Limit trouble» от "предел-шагов" и "MAX_STEPS" и
+      answers) к (приписать («Limit trouble» от "предел-глубины" и "MAX_DEPTH" и
+      answers) к (отобразить («Closure» от answers) как input → «Input trouble» от input и hashed)))
 
 тотальная функция «Noted»
   принимает stages: число, answers: список «Answer»
@@ -211,7 +214,8 @@
 тотальная функция «Stale files»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Runtime files») где name → («Found» от name и answers) и притом (не («Is the source» от name и answers))
+  отфильтровать («Runtime files») где name → («Found» от name и answers) и притом (не («Is the source» от name и
+      answers))
 
 тотальная функция «Seed present»
   принимает name: строка
@@ -221,7 +225,8 @@
 тотальная функция «Missing files»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Runtime files») где name → (не («Opened» от name и answers)) или (не ((«Exit code of» от («Seed present» от name) и answers) равен 0))
+  отфильтровать («Runtime files») где name → (не («Opened» от name и
+      answers)) или (не ((«Exit code of» от («Seed present» от name) и answers) равен 0))
 
 тотальная функция «Headless files»
   принимает answers: список «Answer»
@@ -249,7 +254,8 @@
 
 тотальная функция «Seeds»
   возвращает список «Question»
-  отобразить («Runtime files») как name → «Run from» от («Seed present» от name) и («Root») и "test" и ["-f", («Seed path» от name)]
+  отобразить («Runtime files») как name → «Run from» от («Seed present» от name) и («Root») и "test" и ["-f",
+      («Seed path» от name)]
 
 тотальная функция «Looking»
   принимает answers: список «Answer»
@@ -259,7 +265,10 @@
 тотальная функция «Comparisons»
   принимает answers: список «Answer»
   возвращает список «Question»
-  отобразить (отфильтровать («Runtime files») где name → «Found» от name и answers) как name → «Run from» от («Comparison» от name) и («Root») и "sh" и ["-c", "tail -n +\"$0\" \"$1\" | cmp -s - \"$2\"", («Header end» от name и answers), («Seed path» от name), («Source path» от name)]
+  отобразить (отфильтровать («Runtime files») где name → «Found» от name и
+      answers) как name → «Run from» от («Comparison» от name) и («Root») и "sh" и ["-c",
+      "tail -n +\"$0\" \"$1\" | cmp -s - \"$2\"", («Header end» от name и answers), («Seed path» от name),
+      («Source path» от name)]
 
 тотальная функция «May reseed»
   принимает answers: список «Answer»
@@ -285,7 +294,9 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   если («May reseed» от answers) и притом ((длина («Stale files» от answers)) больше 0)
-    то приписать («Temporary directory» от "work" и (соединить [(«Temporary» от answers), "/seed-refresh."] по "")) к (отобразить («Stale files» от answers) как name → «Run from» от («Length» от name) и («Root») и "wc" и ["-l", («Source path» от name)])
+    то приписать («Temporary directory» от "work" и (соединить [(«Temporary» от answers),
+        "/seed-refresh."] по "")) к (отобразить («Stale files» от answers) как name → «Run from» от («Length» от name) и
+        («Root») и "wc" и ["-l", («Source path» от name)])
     иначе пустой список
 
 тотальная функция «Header lines»
@@ -323,7 +334,8 @@
 тотальная функция «Is stamped»
   принимает answers: список «Answer»
   возвращает признак
-  («Is composed» от answers) и притом (((длина («Stale files» от answers)) равен 0) или ((«Exit code of» от "stamp" и answers) равен 0))
+  («Is composed» от answers) и притом (((длина («Stale files» от answers)) равен 0) или ((«Exit code of» от "stamp" и
+      answers) равен 0))
 
 тотальная функция «Building»
   принимает answers: список «Answer»
@@ -396,7 +408,8 @@
 тотальная функция «Check verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
-  «Chosen» от [(«When» от («Closure is fresh» от answers) и (вариант «Конец работы» с значение равным (соединить («Fast path holds») по "\n"))),
+  «Chosen» от [(«When» от («Closure is fresh» от answers) и
+      (вариант «Конец работы» с значение равным (соединить («Fast path holds») по "\n"))),
     («When» от («Runtime caught up» от answers) и (вариант «Провал» с код равным "FLANG_SEED_FAST_PATH_MISUSED" и сообщение равным (соединить («Fast path misused» от («Closure troubles» от answers)) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Ordinary lag» от («Closure troubles» от answers)) по "\n"))
 
 тотальная функция «Opening lines»
@@ -426,7 +439,8 @@
 тотальная функция «Accounts»
   принимает answers: список «Answer»
   возвращает список строки
-  «Соединить списки» от («Closure approval») и (отобразить («Runtime files») как name → «File account» от name и answers)
+  «Соединить списки» от («Closure approval») и (отобразить («Runtime files») как name → «File account» от name и
+      answers)
 
 тотальная функция «Stamp account»
   принимает answers: список «Answer»
@@ -464,8 +478,10 @@
   принимает answers: список «Answer»
   возвращает список строки
   ["", "пересобираю двоичный из обновлённого семени: make -C bootstrap", "", "сверяю заслоны семени:",
-   («Guard line» от ((«Exit code of» от "body" и answers) равен 0) и "bootstrap-reprint.sh --telo" и "тело семени сходится с отпечатком"),
-   («Guard line» от ((«Exit code of» от "runtime" и answers) равен 0) и "seed-runtime-is-source.fscript, план «After print»" и "семя = источник"),
+   («Guard line» от ((«Exit code of» от "body" и answers) равен 0) и "bootstrap-reprint.sh --telo" и
+       "тело семени сходится с отпечатком"),
+   («Guard line» от ((«Exit code of» от "runtime" и answers) равен 0) и
+       "seed-runtime-is-source.fscript, план «After print»" и "семя = источник"),
    "",
      (соединить ["версия собранного двоичного: ",
      («First line» от (соединить [(«Output of» от "version" и answers),
@@ -487,7 +503,8 @@
 тотальная функция «Said by»
   принимает name: строка, answers: список «Answer»
   возвращает список строки
-  «Ending» от («Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и answers))) и 20
+  «Ending» от («Соединить списки» от («Lines» от («Output of» от name и answers)) и («Lines» от («Errors of» от name и
+      answers))) и 20
 
 тотальная функция «Not judged»
   принимает lines: список строки
@@ -497,9 +514,19 @@
 тотальная функция «Reseed verdict»
   принимает answers: список «Answer»
   возвращает «Продолжение»
-  «Chosen» от [(«When» от (не («Closure is fresh» от answers)) и (вариант «Провал» с код равным "FLANG_SEED_CLOSURE_CHANGED" и сообщение равным (соединить («Closure refusal» от («Closure troubles» от answers)) по "\n"))),
-    («When» от ((длина («Missing files» от answers)) больше 0) и («Not judged» от («Соединить списки» от («Closure approval») и (отобразить («Missing files» от answers) как name → соединить ["нет файла: ", («Source path» от name), " или ", («Seed path» от name), " — пересеять нечего"] по "")))),
-    («When» от ((длина («Headless files» от answers)) больше 0) и (вариант «Провал» с код равным "FLANG_SEED_HEADER_LOST" и сообщение равным (соединить («Соединить списки» от («Closure approval») и [(соединить ["ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: первой строки источника ", (соединить («Headless files» от answers) по ", "), " в семени нет вовсе."] по ""), "Печать копирует рантайм уже не дословно — быстрым путём не пересеять.", "Нужна полная перепечатка: sh scripts/bootstrap-reprint.sh"]) по "\n"))),
+  «Chosen» от [(«When» от (не («Closure is fresh» от answers)) и
+      (вариант «Провал» с код равным "FLANG_SEED_CLOSURE_CHANGED" и
+      сообщение равным (соединить («Closure refusal» от («Closure troubles» от answers)) по "\n"))),
+    («When» от ((длина («Missing files» от answers)) больше 0) и
+        («Not judged» от («Соединить списки» от («Closure approval») и
+        (отобразить («Missing files» от answers) как name → соединить ["нет файла: ", («Source path» от name), " или ",
+        («Seed path» от name), " — пересеять нечего"] по "")))),
+    («When» от ((длина («Headless files» от answers)) больше 0) и
+        (вариант «Провал» с код равным "FLANG_SEED_HEADER_LOST" и
+        сообщение равным (соединить («Соединить списки» от («Closure approval») и [(соединить [
+        "ПРИЁМ БОЛЬШЕ НЕ ЗАКОНЕН: первой строки источника ", (соединить («Headless files» от answers) по ", "),
+        " в семени нет вовсе."] по ""), "Печать копирует рантайм уже не дословно — быстрым путём не пересеять.",
+        "Нужна полная перепечатка: sh scripts/bootstrap-reprint.sh"]) по "\n"))),
     («When» от (((длина («Stale files» от answers)) больше 0) и притом (пусто («Work» от answers))) и («Not judged» от [
       (соединить ["нет времянки: не создался каталог в ", («Temporary» от answers)] по "")])),
     («When» от (не («Is composed» от answers)) и («Not judged» от [
@@ -531,7 +558,8 @@
     случай пусто
       то если stages не больше 0
         то «Verdict» от answers
-        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
+        иначе «Proceed» от («Stage» от (stages минус 1) и («Noted» от (stages минус 1) и
+            answers)) и (stages минус 1) и («Noted» от (stages минус 1) и answers)
 
 тотальная функция «Begin in mode»
   принимает mode: строка

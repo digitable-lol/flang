@@ -65,7 +65,8 @@
 тотальная функция «Beside»
   принимает side: строка, answers: список «Answer»
   возвращает список строки
-  отфильтровать («Lines» от («Output of» от (соединить ["beside ", side] по "") и answers)) где name → «Is a journal name» от name
+  отфильтровать («Lines» от («Output of» от (соединить ["beside ", side] по "") и
+      answers)) где name → «Is a journal name» от name
 
 тотальная функция «Regular question»
   принимает side: строка, name: строка
@@ -75,7 +76,8 @@
 тотальная функция «Journals»
   принимает side: строка, answers: список «Answer»
   возвращает список строки
-  отфильтровать («Beside» от side и answers) где name → («Exit code of» от («Regular question» от side и name) и answers) равен 0
+  отфильтровать («Beside» от side и answers) где name → («Exit code of» от («Regular question» от side и name) и
+      answers) равен 0
 
 тотальная функция «Raw journal»
   принимает side: строка, name: строка, answers: список «Answer»
@@ -98,7 +100,8 @@
   возвращает строка
   пусть named равно («Named journal» от side и answers)
   пусть journals равно («Journals» от side и answers)
-  «Chosen» от [(«When» от ((не (пусто named)) и притом ((«Exit code of» от (соединить ["named file ", side] по "") и answers) равен 0)) и named),
+  «Chosen» от [(«When» от ((не (пусто named)) и притом ((«Exit code of» от (соединить ["named file ", side] по "") и
+      answers) равен 0)) и named),
     («When» от (не (пусто named)) и ""),
     («When» от ((длина journals) равен 1) и («Raw journal» от side и («Last of» от journals) и answers))] и ""
 
@@ -186,7 +189,8 @@
 тотальная функция «Success»
   принимает journal: строка, mark: строка, code: строка
   возвращает «Finding»
-  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным (соединить ["конец назван строкой «", mark, "», а кода в ней нет: ", journal] по ""))),
+  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным mark и
+      «trouble» равным (соединить ["конец назван строкой «", mark, "», а кода в ней нет: ", journal] по ""))),
     («When» от (code равен "0") и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным ""))] и (запись «Finding» с «journal» равным journal и «mark» равным mark и «trouble» равным (соединить ["печать кончилась НЕ УСПЕХОМ (код ", code, ", по «", mark, "»): ", journal] по ""))
 
 тотальная функция «End finding»
@@ -194,7 +198,8 @@
   возвращает «Finding»
   пусть code равно («Last of» от («End codes» от lines))
   пусть status равно («Exit status» от lines)
-  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным "КОНЕЦ … код=" и «trouble» равным (соединить ["строка «КОНЕЦ» есть, а кода в ней нет: ", journal] по ""))),
+  «Chosen» от [(«When» от (пусто code) и (запись «Finding» с «journal» равным journal и «mark» равным "КОНЕЦ … код=" и
+      «trouble» равным (соединить ["строка «КОНЕЦ» есть, а кода в ней нет: ", journal] по ""))),
     («When» от ((не (пусто status)) и притом (не (status равен code))) и (запись «Finding» с «journal» равным journal и «mark» равным "КОНЕЦ … код=" и «trouble» равным (соединить ["журнал сам себе противоречит: «КОНЕЦ … код=", code, "» против «Exit status: ", status, "» — ", journal, "\n    Так соврал /srv/tmp/relizy/perepechatka-zahod1-ubita.log: код=0 на убитом\n    прогоне. Пусть допишет «ПЕЧАТЬ КОД=<код>» тот, кто печать пустил."] по "")))] и («Success» от journal и "КОНЕЦ … код=" и code)
 
 тотальная функция «Read finding»
@@ -216,7 +221,8 @@
     дано journal равно "/srv/tmp/first.log"
     дано lines равно пустой список
     ожидается запись «Finding» с «journal» равным "/srv/tmp/first.log" и «mark» равным "" и «trouble» равным "конца печати в журнале НЕТ: /srv/tmp/first.log\n    ни «ПЕЧАТЬ КОД=<код>» (дописать обязан тот, кто пустил печать: для CI —\n    работа .github/workflows/reprint.yml, для ручного прогона — оболочка\n    запуска), ни «КОНЕЦ … код=<код>». Печать либо идёт, либо её оборвали,\n    не закрыв журнал. Это НЕ «печати разошлись»."
-  «Chosen» от [(«When» от ((длина («Print codes» от lines)) больше 0) и («Success» от journal и "ПЕЧАТЬ КОД=" и («Last of» от («Print codes» от lines)))),
+  «Chosen» от [(«When» от ((длина («Print codes» от lines)) больше 0) и («Success» от journal и "ПЕЧАТЬ КОД=" и
+      («Last of» от («Print codes» от lines)))),
     («When» от ((длина («End lines» от lines)) больше 0) и («End finding» от journal и lines))] и (запись «Finding» с «journal» равным journal и «mark» равным "" и «trouble» равным (соединить ["конца печати в журнале НЕТ: ", journal, "\n    ни «ПЕЧАТЬ КОД=<код>» (дописать обязан тот, кто пустил печать: для CI —\n    работа .github/workflows/reprint.yml, для ручного прогона — оболочка\n    запуска), ни «КОНЕЦ … код=<код>». Печать либо идёт, либо её оборвали,\n    не закрыв журнал. Это НЕ «печати разошлись»."] по ""))
 
 тотальная функция «Many journals»
@@ -240,7 +246,9 @@
   возвращает «Finding»
   пусть tree равно («Given tree» от side и answers)
   пусть journals равно (отобразить («Journals» от side и answers) как name → «Raw journal» от side и name и answers)
-  «Chosen» от [(«When» от (не (пусто («Named journal» от side и answers))) и (запись «Finding» с «journal» равным "" и «mark» равным "" и «trouble» равным (соединить ["названный журнал не файл: ", («Named journal» от side и answers)] по ""))),
+  «Chosen» от [(«When» от (не (пусто («Named journal» от side и answers))) и (запись «Finding» с «journal» равным "" и
+      «mark» равным "" и «trouble» равным (соединить ["названный журнал не файл: ", («Named journal» от side и
+      answers)] по ""))),
     («When» от ((длина journals) равен 0) и (запись «Finding» с «journal» равным "" и «mark» равным "" и «trouble» равным (соединить ["журнала печати рядом с ", tree, " нет (ждём ", tree, "/../*.log)"] по "")))] и (запись «Finding» с «journal» равным («Last of» от journals) и «mark» равным "" и «trouble» равным («Many journals» от tree и journals))
 
 тотальная функция «Finding of»
@@ -248,12 +256,14 @@
   возвращает «Finding»
   если пусто («Candidate» от side и answers)
     то «Unfound» от side и answers
-    иначе «Read finding» от («Located» от side и answers) и («Lines» от («Output of» от (соединить ["marks ", side] по "") и answers))
+    иначе «Read finding» от («Located» от side и answers) и («Lines» от («Output of» от (соединить ["marks ",
+        side] по "") и answers))
 
 тотальная функция «Troubles»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать (отобразить («Sides») как side → («Finding of» от side и answers).«trouble») где trouble → не (пусто trouble)
+  отфильтровать (отобразить («Sides») как side → («Finding of» от side и
+      answers).«trouble») где trouble → не (пусто trouble)
 
 тотальная функция «Share a journal»
   принимает answers: список «Answer»
@@ -269,7 +279,8 @@
 тотальная функция «Not directories»
   принимает answers: список «Answer»
   возвращает список строки
-  отобразить (отфильтровать («Sides») где side → не ((«Exit code of» от (соединить ["directory ", side] по "") и answers) равен 0)) как side → «Given tree» от side и answers
+  отобразить (отфильтровать («Sides») где side → не ((«Exit code of» от (соединить ["directory ", side] по "") и
+      answers) равен 0)) как side → «Given tree» от side и answers
 
 тотальная функция «Is called well»
   принимает answers: список «Answer»
@@ -292,7 +303,8 @@
   возвращает список «Question»
   если «Wrong call» от answers
     то пустой список
-    иначе отобразить («Sides») как side → «Run» от (соединить ["directory ", side] по "") и "test" и ["-d", («Tree» от side и answers)]
+    иначе отобразить («Sides») как side → «Run» от (соединить ["directory ", side] по "") и "test" и ["-d",
+        («Tree» от side и answers)]
 
 тотальная функция «Lookup»
   принимает side: строка, answers: список «Answer»
@@ -313,7 +325,9 @@
 тотальная функция «Regular tests»
   принимает answers: список «Answer»
   возвращает список «Question»
-  «Gathered» от (отобразить («Sides») как side → отобразить («Beside» от side и answers) как name → «Run» от («Regular question» от side и name) и "test" и ["-f", (соединить [(«Tree» от side и answers), "/../", name] по "")])
+  «Gathered» от (отобразить («Sides») как side → отобразить («Beside» от side и
+      answers) как name → «Run» от («Regular question» от side и name) и "test" и ["-f", (соединить [(«Tree» от side и
+      answers), "/../", name] по "")])
 
 тотальная функция «Found sides»
   принимает answers: список «Answer»
@@ -323,7 +337,8 @@
 тотальная функция «Places»
   принимает answers: список «Answer»
   возвращает список «Question»
-  отобразить («Found sides» от answers) как side → «Run from» от (соединить ["place ", side] по "") и («Directory of» от («Absolute» от («Candidate» от side и answers) и answers)) и "pwd" и ["-P"]
+  отобразить («Found sides» от answers) как side → «Run from» от (соединить ["place ",
+      side] по "") и («Directory of» от («Absolute» от («Candidate» от side и answers) и answers)) и "pwd" и ["-P"]
 
 тотальная функция «Marks»
   принимает answers: список «Answer»
@@ -379,7 +394,8 @@
     дано fingerprint равно "11  flang/self/lexer.flang\n"
     ожидается пустой список
   пусть parts равно (разделить fingerprint по («Body mark»))
-  отфильтровать (отобразить («Lines» от (свёртка («Without first part» от parts) начиная с "" как body и part → part)) как line → «Printed name» от line) где name → не (пусто name)
+  отфильтровать (отобразить («Lines» от (свёртка («Without first part» от parts) начиная с "" как body и
+      part → part)) как line → «Printed name» от line) где name → не (пусто name)
 
 тотальная функция «Without first part»
   принимает parts: список строки
@@ -405,7 +421,8 @@
 тотальная функция «Side names»
   принимает side: строка, answers: список «Answer»
   возвращает список строки
-  «Union» от («Lines» от («Output of» от («Names question» от side) и answers)) и («Body names» от («Output of» от («Fingerprint question» от side) и answers))
+  «Union» от («Lines» от («Output of» от («Names question» от side) и
+      answers)) и («Body names» от («Output of» от («Fingerprint question» от side) и answers))
 
 тотальная функция «Side listing»
   принимает side: строка, answers: список «Answer»
@@ -415,7 +432,8 @@
 тотальная функция «Unfingerprinted»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Sides») где side → («Answered» от («Fingerprint question» от side) и answers) и притом (пусто («Body names» от («Output of» от («Fingerprint question» от side) и answers)))
+  отфильтровать («Sides») где side → («Answered» от («Fingerprint question» от side) и
+      answers) и притом (пусто («Body names» от («Output of» от («Fingerprint question» от side) и answers)))
 
 тотальная функция «Names»
   принимает answers: список «Answer»
@@ -441,7 +459,9 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   «Chosen» от [(«When» от (не («Is ready» от answers)) и (пустой список)),
-    («When» от («Names agree» от answers) и (отобразить («Names» от answers) как name → «Run» от (соединить ["printed ", name] по "") и "test" и ["-f", («Printed» от "first" и name и answers)]))] и [(«Write» от "list first" и («List file» от "first" и answers) и («Side listing» от "first" и answers)),
+    («When» от («Names agree» от answers) и (отобразить («Names» от answers) как name → «Run» от (соединить ["printed ",
+        name] по "") и "test" и ["-f", («Printed» от "first" и name и answers)]))] и [(«Write» от "list first" и
+        («List file» от "first" и answers) и («Side listing» от "first" и answers)),
     («Write» от "list second" и («List file» от "second" и answers) и («Side listing» от "second" и answers)),
     («Run» от "names difference" и "env" и ["LC_ALL=C", "diff", («List file» от "first" и answers),
       («List file» от "second" и answers)])]
@@ -449,7 +469,8 @@
 тотальная функция «Regular names»
   принимает answers: список «Answer»
   возвращает список строки
-  отфильтровать («Names» от answers) где name → («Answered» от (соединить ["printed ", name] по "") и answers) и притом ((«Exit code of» от (соединить ["printed ", name] по "") и answers) равен 0)
+  отфильтровать («Names» от answers) где name → («Answered» от (соединить ["printed ", name] по "") и
+      answers) и притом ((«Exit code of» от (соединить ["printed ", name] по "") и answers) равен 0)
 
 тотальная функция «Comparisons»
   принимает answers: список «Answer»
@@ -457,7 +478,10 @@
   пусть names равно («Regular names» от answers)
   если (длина names) равен 0
     то пустой список
-    иначе приписать («Run from» от "sizes" и (соединить [(«Tree» от "first" и answers), "/bootstrap"] по "") и "wc" и (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от (соединить ["bytes ", name] по "") и "env" и ["LC_ALL=C", "cmp", («Printed» от "first" и name и answers), («Printed» от "second" и name и answers)])
+    иначе приписать («Run from» от "sizes" и (соединить [(«Tree» от "first" и answers), "/bootstrap"] по "") и "wc" и
+        (приписать "-c" к (приписать "--" к names))) к (отобразить names как name → «Run» от (соединить ["bytes ",
+        name] по "") и "env" и ["LC_ALL=C", "cmp", («Printed» от "first" и name и answers), («Printed» от "second" и
+        name и answers)])
 
 тотальная функция «Cleanup»
   принимает answers: список «Answer»
@@ -486,7 +510,8 @@
     дано name равно "absent.c"
     дано sizes равно [" 3454 flang_cli.c"]
     ожидается 0
-  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и line) равен name) по "\n")))
+  «Count» от («Word» от 1 и («First line» от (соединить (отфильтровать sizes где line → («Word» от 2 и
+      line) равен name) по "\n")))
 
 тотальная функция «Difference lines»
   принимает name: строка, answers: список «Answer»
@@ -624,7 +649,8 @@
   возвращает список «Trial»
   [запись «Trial» с «name» равным "identical" и «code» равным 0 и «marks» равным ["сверены: flang_cli.c, flang_repl.c, flang_runtime.c, flang_runtime.h, Makefile, compiler_flang.c, compiler_flang.h"] и «words» равным "два одинаковых дерева — совпали, и сверены напечатанные файлы",
    запись «Trial» с «name» равным "changed byte" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/compiler_flang.c"] и «words» равным "байт в compiler_flang.c второй печати — разошлись, файл назван",
-   запись «Trial» с «name» равным "missing makefile" и «code» равным 1 и «marks» равным ["РАЗОШЁЛСЯ: bootstrap/Makefile"] и «words» равным "у второй печати нет Makefile — разошлись, файл назван"]
+   запись «Trial» с «name» равным "missing makefile" и «code» равным 1 и «marks» равным [
+       "РАЗОШЁЛСЯ: bootstrap/Makefile"] и «words» равным "у второй печати нет Makefile — разошлись, файл назван"]
 
 тотальная функция «Sandbox»
   принимает answers: список «Answer»
@@ -694,7 +720,9 @@
 тотальная функция «Forgery troubles»
   принимает answers: список «Answer»
   возвращает список строки
-  «Gathered words» от (отобразить («Trials») как trial → «Trial trouble» от trial и («Exit code of» от (trial.«name») и answers) и (соединить [(«Output of» от (trial.«name») и answers), («Errors of» от (trial.«name») и answers)] по "\n"))
+  «Gathered words» от (отобразить («Trials») как trial → «Trial trouble» от trial и («Exit code of» от (trial.«name») и
+      answers) и (соединить [(«Output of» от (trial.«name») и answers), («Errors of» от (trial.«name») и
+      answers)] по "\n"))
 
 тотальная функция «Forgery verdict»
   принимает answers: список «Answer»

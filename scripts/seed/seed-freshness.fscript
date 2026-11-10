@@ -158,7 +158,8 @@
   «Chosen» от [
     («When» от (((amount остаток от 100) не меньше 11) и притом ((amount остаток от 100) не больше 14)) и ("файлов")),
     («When» от ((amount остаток от 10) равен 1) и ("файл")),
-    («When» от (((amount остаток от 10) не меньше 2) и притом ((amount остаток от 10) не больше 4)) и ("файла"))] и ("файлов")
+    («When» от (((amount остаток от 10) не меньше 2) и притом ((amount остаток от 10) не больше 4)) и
+        ("файла"))] и ("файлов")
 
 тотальная функция «Lagging»
   принимает said: строка
@@ -273,7 +274,8 @@
   принимает answers: список «Answer»
   возвращает «Outcome»
   пусть amount равно (длина («Lagging» от («Said» от "inputs" и answers)))
-  «Chosen» от [(«When» от ((«Exit code of» от "inputs" и answers) равен 0) и (запись «Outcome» с «code» равным 0 и «words» равным (соединить ["семя не отстало от исходников: ", («Asker of» от answers)] по ""))),
+  «Chosen» от [(«When» от ((«Exit code of» от "inputs" и answers) равен 0) и (запись «Outcome» с «code» равным 0 и
+      «words» равным (соединить ["семя не отстало от исходников: ", («Asker of» от answers)] по ""))),
     («When» от (amount равен 0) и («Not compared» от answers))] и («Lag» от amount и answers)
 
 тотальная функция «Ending»

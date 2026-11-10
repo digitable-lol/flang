@@ -7,8 +7,8 @@
 **Дата:** 24–25 октября 2026.
 **Основание:** условие 6 дороги к 1.0 (`docs/road-to-1-0.md`): «пакет ставится
 одной командой на чистой машине, и повторная установка даёт тот же замок»;
-задачи [3403](../tasks/3403-package-installer-manifest-network-lock.md) и
-[3404](../tasks/3404-the-binary-has-no-install-command-the-installer-lives-only-in-the-tree.md).
+задачи 3403 (закрыта) и
+3404 (закрыта).
 **Рядом:** [ADR-0021](0021-packages-are-installed-over-the-network-and-locked-locally.md) —
 менеджер пишется в `scripts/`, язык не трогается; дорога установщика описана там
 п. 2 и здесь пройдена шаг в шаг. [ADR-0059](0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md) —

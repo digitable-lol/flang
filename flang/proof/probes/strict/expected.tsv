@@ -14,9 +14,9 @@ declared-not-proved.flang	--proof	3	НЕ ПРОВЕРЕНО
 declared-not-proved.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 precedence.flang	--proof	3	НЕ ПРОВЕРЕНО
 precedence.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
-monad-with-arrow-example.flang	--proof	3	законов на сетке: 1 (значений в сетках 1
-monad-with-arrow-example.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
-monad-with-arrow-example.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОПОРА НЕ СУДИЛАСЬ
+monad-with-arrow-example.flang	--proof	0	законов утверждениями 3: доказано ядром 3
+monad-with-arrow-example.flang	--proof	0	законов на сетке: 0 (значений в сетках 0)
+monad-with-arrow-example.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ
 not-judged.flang	--proof	1	сетку строить не из чего
 not-judged.flang	--proof --строго	1	FLANG_MONAD
 refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство

@@ -13,7 +13,7 @@
 берётся, сказано в §6.
 **Рядом:** [ADR-0021](0021-packages-are-installed-over-the-network-and-locked-locally.md) —
 замок с исходниками внутри и сборка без сети.
-**Задачи:** [3355](../tasks/3355-packages-are-links-with-a-hash.md) — исполнение этого решения;
+**Задачи:** 3355 (закрыта) — исполнение этого решения;
 [4246](../tasks/4246-project-key-signs-release-archives.md) — ключ проекта подписывает архивы выпуска.
 **Компилятор:** `flang/self/link.flang` и `flang/src/emit/c/flang_repl.c`; до
 двоичного доезжает печатью семени.

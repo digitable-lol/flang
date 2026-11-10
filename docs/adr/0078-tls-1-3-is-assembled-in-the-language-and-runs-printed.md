@@ -12,7 +12,7 @@
 **Рядом:** [ADR-0007](0007-encryption-by-request-to-an-external-host.md) — https у
 `«Запросить»` исполняет curl; [ADR-0077](0077-the-host-hands-out-octets-from-the-system-random-source.md) —
 источник тайны; [ADR-0012](0012-trust-roots.md) — корни доверия — довод программы;
-задача [0048](../tasks/0048-tls-is-assembled-end-to-end.md).
+задача 0048 (закрыта).
 **Короткие команды:** `tls:engine`, `tls:get`, `tls:rfc8448`, `tls:forgeries`
 (`.flangrc`).
 

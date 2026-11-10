@@ -13,7 +13,7 @@
 прежнее решение отдать `https` curl; [ADR-0078](0078-tls-1-3-is-assembled-in-the-language-and-runs-printed.md) —
 клиент TLS 1.3 на языке и условие пересмотра (§7.3: «когда счёт и соединение
 живут в одном процессе»); [ADR-0077](0077-the-host-hands-out-octets-from-the-system-random-source.md) —
-источник тайны; задача [0048](../tasks/0048-tls-is-assembled-end-to-end.md).
+источник тайны; задача 0048 (закрыта).
 
 ---
 

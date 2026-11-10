@@ -1,4 +1,4 @@
-# Packages
+# Modules and packages
 
 A flang package is **one file** that holds a library together with everything
 it imports. There is no package manager: the file is put next to the program or
@@ -94,11 +94,9 @@ What happens behind that line:
 A link names exactly one thing, there is no version selection: a new version is
 a new link (`/v1.2.0/` → `/v1.3.0/`). The first fetch trusts what the address
 answered; after that the fingerprint in the lock catches a substitution behind
-the address
-([ADR-0214](https://github.com/digitable-lol/flang/blob/dev/docs/adr/0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md)).
+the address.
 Without network (`FLANG_OFFLINE=1`) a build takes the bodies from the lock and
-the cache. `flang run-script link-import:check` verifies this on a clean HOME,
-and the CI job `link-import` does the same.
+the cache.
 
 ### Link refusal codes
 
@@ -197,9 +195,8 @@ $ git commit -m "Скидка 1.0.0"
 $ git push
 ```
 
-Users download **that file** by any means: a raw link, a release asset, mail —
-or install it by name once the file and its `sha256` are recorded in the
-[registry list](registry.html). There is no `flang publish`.
+Users take **that file** by any means: a raw link, a release asset, mail.
+There is no `flang publish` command.
 
 ## A library of several modules
 
@@ -251,8 +248,7 @@ $ echo $?
 ```
 
 There are no version ranges in symbols (`^1.2`, `~> 1.2`). Your program uses
-exactly the file next to it, and nothing updates by itself; the installer picks
-the version from the worded ranges in `flang.needs` (see above).
+exactly the file next to it, and nothing updates by itself.
 
 ## Build offline
 
@@ -320,8 +316,8 @@ A program can have a `flang.lock` and packages at the same time.
 - **Install, search and publish commands.** There is no `flang install`, `flang
   search` or `flang publish`: an outside module is imported by a link, and
   publishing is a commit of the file at an address one can name.
-- **Other people's packages in the registry.** The list holds only the example
-  packages.
+- **A package registry.** There is no list of names and versions: a module is
+  named by its address.
 - **Two versions of one library** in one program: imports merge into one flat
   namespace.
 - **Partial updates.** To update, run `flang package` again.

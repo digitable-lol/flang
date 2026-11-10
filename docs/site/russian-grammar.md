@@ -117,18 +117,20 @@ $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --
 - **Counted on examples:** the pregroup laws — associativity of
   multiplication, `(aˡ)ʳ = a`, `aˡ · a → 1` — in
   `flang/ct/russian/category.flang`. These are examples, not a proof.
-- **Checked by probes:** 71 sentences, 36 grammatical and 35 not. Run:
+- **Checked by probes:** 75 sentences, 39 grammatical and 36 not. Run:
   `flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary`.
 - **Checked by nothing:** that the dictionary is right and that the reason
   given is the one a person would give.
 
 What the grammar cannot do yet: adverbials in the middle of a sentence
-("мама в доме читает"), sentences without a verb ("кошка на столе"), the
-instrumental case, questions, "и" (and) and subordinate clauses. The list is in
+("мама в доме читает"), sentences without a verb ("кошка на столе"),
+questions, "и" (and) and subordinate clauses. The list is in
 ADR-0109.
 
 ## Where next
 
+- [Parsing an utterance against a concept graph](russian-syntax.html) — the same
+  dictionary checks agreement between word forms in an analysis of a sentence.
 - [The category surface](categories.html) — what the compiler does with a
   declared category and monoid.
 - [What is proved and what is not](what-is-proved.html) — the same boundary

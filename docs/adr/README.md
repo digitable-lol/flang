@@ -145,7 +145,7 @@
 | 0151 | [Страница — это проза и вставки из кода; сборка вставляет, проверка краснеет на расхождении](0151-a-page-is-prose-plus-inserts-taken-from-the-code.md) | предложено | да |  |
 | 0154 | [Текст по Юникоду пишется на flang из базы символов, а ICU — эталон, а не зависимость](0154-unicode-text-is-written-in-flang-from-the-character-database.md) | предложено | да |  |
 | 0155 | [Песочница исполняет двоичный компилятор, собранный в WebAssembly, прямо во вкладке](0155-the-playground-runs-the-compiler-as-webassembly-in-the-tab.md) | предложено | да |  |
-| 0160 | [Сверщик читает то, что доказывает ядро; три дыры закрыты, потолок растёт](0160-the-checker-reads-what-the-kernel-proves-and-the-ceiling-grows.md) | предложено | ? |  |
+| 0160 | [Сверщик читает то, что доказывает ядро; три дыры закрыты, потолок растёт](0160-the-checker-reads-what-the-kernel-proves-and-the-ceiling-grows.md) | предложено | да |  |
 | 0163 | [Напечатанный C проверяется по каждой функции против эталонной семантики: перебором всей области, где она конечна, иначе символьно, иначе на свидетелях](0163-the-printed-c-is-validated-function-by-function-against-the-reference.md) | принято | частично |  |
 | 0165 | [«Всегда» над конечной моделью процессов перебирается до границы и никогда не называется доказанным](0165-always-properties-of-a-finite-process-model-are-explored-to-a-bound-and-never-called-proved.md) | предложено | да |  |
 | 0167 | [Рассуждение называет свою формальную ошибку, а о неформальных только подсказывает](0167-a-reasoning-names-its-formal-fallacy-and-hints-at-informal-ones.md) | принято | да |  |

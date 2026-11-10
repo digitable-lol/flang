@@ -8,7 +8,7 @@
 |---|---|---|---|
 | `forgeries` | строк в [манифесте подделок](forgeries.md) | замер не меньше числа | `scripts/provability.fscript`, проверка 4 |
 | `forgery-numerator` | обязательств, доказанных на честных половинах подделочных файлов | замер не меньше числа | там же |
-| `forgery-probes` | проб на подлог в `flang/proof/checker/tests/run.sh` | замер не меньше числа | там же |
+| `forgery-probes` | проб на подлог в `flang/proof/checker/tests/run.fscript` | замер не меньше числа | там же |
 | `trap-kinds` | строк `removed` в [таблице ловушки](checker/tests/trap/README.md) | замер не меньше числа | `scripts/provability.fscript`, проверка 1 |
 | `trap-goals-on-kernel-word` | строк `kept` в той же таблице | замер не меньше числа | там же |
 | `checker-code-lines` | строк кода в `flang/proof/checker/checker.c` без комментариев и пустых | замер не больше числа | `flang/proof/tables-guard.fscript`, проверка С-6 |

@@ -1,118 +1,54 @@
 # Setting up your editor
 
-The language server ships inside the compiler — there is nothing else to install:
+The language server is part of the compiler — there is nothing to install
+separately:
 
 ```bash
 flang lsp --stdio
 ```
 
-A program has four extensions, and all four are equal: `.flang` is the main one,
-the one used in every command and in CI; `.fp` is the short one; `.фп` stands for
-«функциональная программа» — a functional program — so that a Russian file name
-need not be transliterated; `.фланг` spells the name of the language out in
-Cyrillic (the decisions are recorded in
-`docs/adr/0016-three-file-extensions.md` and
-`docs/adr/0018-file-extensions-are-one-list.md`).
-All four are picked up by Vim, by Neovim and by VS Code.
+| Editor | Highlighting | Server |
+| --- | --- | --- |
+| [VS Code](#vs-code) | yes | the extension in the language tree |
+| [Vim 8/9](#vim-89) | yes | through `vim-lsp` |
+| [Neovim](#neovim) | yes | the built-in client |
+| [Emacs](#emacs) | no | through eglot |
+| any other | no | [`flang check` on a key](#without-the-server-a-check-on-a-key) |
 
-Highlighting exists for Vim 8/9, Neovim and VS Code; other editors have none.
+A program file ends in `.flang`, `.fp`, `.фп` or `.фланг`; the four extensions
+are equal, and the plugins pick up all four.
 
-## What works today
+## What the server does
 
-| What | State |
+| Does | Protocol method |
 | --- | --- |
-| Highlighting in Vim 8/9 and Neovim | works, one symlink to install |
-| Highlighting in VS Code | works, the extension builds from the language tree |
-| Highlighting in Emacs | none |
-| The server on closed input (one-command check) | answers |
-| The server with input held open, as in an editor | answers each message as it arrives |
-
-The server answers every message as soon as it is read, without waiting for
-input to close: `initialize` gets its reply, and `textDocument/didOpen` gets
-`textDocument/publishDiagnostics` while the input stays open.
-
-## What lies in the language tree
-
-```
-docs/editors/
-  vim/         highlighting and the language server for Vim 8/9 and Neovim
-  vscode/      the VS Code extension: highlighting and the language server
-  flang-lsp/   a pointer to this page: the server ships inside the compiler, there is no separate package
-  linguist/    the submission to github-linguist for the .flang language
-```
-
-**Highlighting is hand-written in no editor at all, and that is a measurement
-rather than an intention.** `docs/editors/vim/syntax/flang.vim` is <!-- СНЯТО 2026-09-08 строк docs/editors/vim/syntax/flang.vim = 47 --> 47 lines,
-`docs/editors/vscode/syntaxes/flang.tmLanguage.json` is <!-- СНЯТО 2026-09-08 строк docs/editors/vscode/syntaxes/flang.tmLanguage.json = 66 --> 66 lines, and both are printed
-from the language's keyword table by programs written in flang itself
-(`scripts/editors/vim-highlighting.fscript`, `scripts/editors/vscode-highlighting.fscript`). A list of
-words typed out separately is a second description of the language, and it
-diverges from the first on the very first day. Both are checked by a real editor
-started without a window and without a person: `flang io
-scripts/editors/vim-highlight-check.fscript`, `flang io scripts/editors/lsp-check.fscript`. The
-second check opens a file in `nvim --headless` and asks four questions: did the
-diagnostic reach the buffer with a place and a code, did go-to-definition land
-where the declaration stands, did hover show the signature — and does the
-server answer while input is still open. All four are answered "yes" in Neovim;
-the Vim 8/9 run is skipped unless `FLANG_VIM_LSP` points at `vim-lsp` and
-`async.vim`.
-
-Vim and Neovim share one directory but are configured differently: Neovim's
-protocol client is built in, Vim 8/9 takes the third-party `vim-lsp`. Both look
-for the server the same way — through one VimScript function that Lua calls via
-`vim.fn`.
-
-The VS Code extension is written in JavaScript (`docs/editors/vscode/extension.js`),
-and not one of its lines knows anything about the language: the entry point of a
-VS Code extension is a module the editor loads into its own Node process, and it
-has no other way to connect. The file only starts the server and passes it the
-words of the protocol; everything else is done by the language server written in
-flang itself.
-
-**What is not here.** Other editors, and tree-sitter and Chroma too (they colour
-code on web pages and on GitHub), still have no highlighting, and that is an
-unpaid debt. The work looks large — several grammars for one language — but the
-estimate is deceptive: by printing it costs one program per rule set, and that has
-already been measured twice in the numbers above.
-
-## What the server can do
-
-| Can | Protocol method |
-| --- | --- |
-| Diagnostics by the same road as `flang check`: parsing, linking, types, totality | `textDocument/publishDiagnostics` |
-| Completion: keywords of all four writing surfaces (from the lexer table, `flang/self/lexer.flang`), function and type names of the module and of imported modules, record fields after a dot, sum variants after `случай` | `textDocument/completion` |
-| Signature on hover: what it takes, what it returns, whether termination is proved | `textDocument/hover` |
-| Go to definition, including into another module | `textDocument/definition` |
+| Diagnostics — the same checks as `flang check`: parsing, linking, types, termination | `textDocument/publishDiagnostics` |
+| Completion: keywords, the functions and types of the module and of imported modules, record fields after a dot, variants after `случай` | `textDocument/completion` |
+| A signature on hover: what it accepts, what it returns, whether termination is proved | `textDocument/hover` |
+| Go to definition, into another module too | `textDocument/definition` |
 
 Completion is triggered by two characters: `«` and `.`. The document text is
 sent whole, not as increments. Positions are counted in UTF-16.
 
-Two narrowings of completion. Fields after a dot are offered by the type of the
-parameter of the function whose body holds the cursor; if the type is not
-inferred, the fields of all records in the program are offered, each labelled
-with its record. Names come from the last successful parse of the file: while a
-line is being typed the text does not parse, and the server completes from the
-previous program; if the file has never parsed, only keywords remain.
-Diagnostics are always from the current text.
+Names for completion come from the last successful parse of the file: while a
+line is unfinished the server completes from the previous program, and if the
+file never parsed, from keywords alone. Fields after a dot are offered by the
+type of a parameter of the function the cursor is in; if the type is not
+inferred — the fields of every record in the program, each labelled with its
+record. Diagnostics always come from the current text.
 
-What the server does not do: rename, edits, formatting, find references, the
-symbol list of a file. Such a request gets a refusal:
+What the server does not do: rename, edits, formatting, find references,
+document symbols. It answers such a request with a refusal:
 
 ```
 {"code":-32601,"message":"метод не поддержан: textDocument/rename"}
 ```
 
-A request before `initialize` gets refusal `-32002`, "server is not initialized
-yet".
+A request before `initialize` gets the refusal `-32002`
+«сервер ещё не инициализирован».
 
-JSON with escaped non-ASCII (`\uXXXX`) is read the same as plain UTF-8.
-
-Diagnostics of an imported module are **underlined neither in its buffer nor
-in the open one**: a diagnostic names its file only when there is a single
-source, and trouble in another module goes to the editor's log
-(`window/logMessage`). A diagnostic with neither a line nor a file goes there
-too, instead of underlining the first line at random. `flang lsp --help` says
-the same.
+A failure in an imported module is underlined neither in its buffer nor in the
+open one: it goes to the editor's log (`window/logMessage`).
 
 ## Check that the server answers
 
@@ -120,7 +56,7 @@ the same.
 printf 'Content-Length: 75\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | flang lsp --stdio
 ```
 
-It prints the frame and the reply, exit code 0:
+It prints a frame and the answer, exit code 0:
 
 ```
 Content-Length: 311
@@ -128,48 +64,36 @@ Content-Length: 311
 {"jsonrpc":"2.0","id":1,"result":{"capabilities":{"positionEncoding":"utf-16","textDocumentSync":{"openClose":true,"change":1,"save":{"includeText":false}},"completionProvider":{"triggerCharacters":["«","."]},"hoverProvider":true,"definitionProvider":true},"serverInfo":{"name":"flang-lsp","version":"0.1.0"}}}
 ```
 
-The reply does not wait for the input to close: with the input held open it
-arrives the same.
-
 ## VS Code
 
-The extension lives in the language tree — `docs/editors/vscode/`. It is not in the
-Marketplace: you build and install it locally.
+The extension is in the language tree — `docs/editors/vscode/`. It is not in
+the Marketplace: you build and install it locally.
 
 ```bash
 cd docs/editors/vscode
 npm install
-npx vsce package
+npm run package
 code --install-extension flang-0.1.0.vsix
 ```
 
-It highlights all four file extensions and starts the language server. There
-are three settings:
+It gives highlighting and starts the language server. There are three settings:
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `flang.server.command` | `flang-lsp` | what to run the server with |
-| `flang.server.args` | `["--stdio"]` | arguments to run it with |
+| `flang.server.command` | `flang-lsp` | what starts the server |
+| `flang.server.args` | `["--stdio"]` | the arguments |
 | `flang.server.enabled` | `true` | turn off if you only want highlighting |
 
-There is no separate `flang-lsp` command in the tree — the server is invoked
-as `flang lsp`. If that command is not on `PATH` either, put `flang` (or its
-full path) into `flang.server.command` and `["lsp", "--stdio"]` into
-`flang.server.args`.
+An install does not provide a `flang-lsp` command. Set `flang.server.command`
+to `flang` (or its full path) and `flang.server.args` to `["lsp", "--stdio"]`.
 
-More in `docs/editors/vscode/README.md`: how to install straight from the tree with
-no build, how to reprint the highlighting, and what it takes to publish the
-extension to the Marketplace.
-
-There is no other client for VS Code: without an extension the editor does not
-start a third-party language server.
+How to install from the tree without building is in
+`docs/editors/vscode/README.md`.
 
 ## Vim 8/9
 
-Highlighting and buffer settings install through the built-in package
-mechanism. The plugin lives in the `docs/editors/vim` subdirectory of the language
-tree, and that mechanism does not take subdirectories — so you point a symlink
-at it:
+The plugin is in the `docs/editors/vim` subdirectory of the language tree. The
+native package mechanism does not take a subdirectory, so you link to it:
 
 ```bash
 git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
@@ -177,34 +101,30 @@ mkdir -p ~/.vim/pack/flang/start
 ln -s ~/.local/share/flang-src/docs/editors/vim ~/.vim/pack/flang/start/flang
 ```
 
-Two lines are needed in `~/.vimrc`. Without them Vim reads neither the
-highlighting nor the file type settings, and the file opens grey:
+`~/.vimrc` needs two lines — without them the file opens without highlighting:
 
 ```vim
 filetype plugin indent on
 syntax on
 ```
 
-vim-plug takes the subdirectory as a key:
+With vim-plug the subdirectory is a key:
 `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }`.
 
-To check that it took: open any `.flang`, `.fp`, `.фп` or `.фланг` file and ask the
-editor.
+To check, open a program file and ask the editor.
 
 ```vim
 :set filetype?
 ```
 
-The answer `filetype=flang` means the extension was picked up. The text is then
-coloured by five kinds — keyword, name in guillemets, string, number, comment —
-and coloured the same way on all four writing surfaces. Indentation expands to
-two spaces: indentation is significant in this language, so mixing tabs with
-spaces would change what a program means, not just how it looks. The editor
-walks `«` and `»` as a pair and inserts the closing one.
+The answer `filetype=flang` means the plugin is picked up. The text is coloured
+in five kinds: keyword, guillemet name, string, number, comment. Indentation
+expands to two spaces: it is significant in the language. `«` and `»` are a
+bracket pair.
 
-The server: Vim 8/9 has no protocol client of its own, so install the
-third-party [vim-lsp](https://github.com/prabirshrestha/vim-lsp). You do not
-need to register the server in it by hand — the language plugin does that:
+The server: Vim 8/9 has no protocol client of its own, so install
+[vim-lsp](https://github.com/prabirshrestha/vim-lsp). You do not register the
+server in it by hand — the language plugin does:
 
 ```vim
 Plug 'prabirshrestha/async.vim'
@@ -212,18 +132,12 @@ Plug 'prabirshrestha/vim-lsp'
 Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }
 ```
 
-One client was chosen, for one reason: it is written in pure VimScript, works
-with Vim 8.0.1453, and has no external dependencies at all. `coc.nvim` requires
-Node — and the whole point is that the editor should not need Node;
-`yegappan/lsp` requires Vim 9.0 and so cuts off all of Vim 8.
-
-No vim-lsp is no disaster: highlighting works without a server, and the plugin
-stays quiet rather than pretending hints are coming. If the server itself is
-not found, Vim says so once per session and lists where it looked.
+Without vim-lsp highlighting works and there is no server. If the server itself
+is not found, Vim says so once per session and lists where it looked.
 
 ## Neovim
 
-The same plugin and the same subdirectory, only the package directory differs:
+The same plugin, with its own package directory:
 
 ```bash
 git clone https://github.com/digitable-lol/flang.git ~/.local/share/flang-src
@@ -231,7 +145,7 @@ mkdir -p ~/.config/nvim/pack/flang/start
 ln -s ~/.local/share/flang-src/docs/editors/vim ~/.config/nvim/pack/flang/start/flang
 ```
 
-A plugin manager takes the subdirectory as a key:
+In lazy.nvim the subdirectory is set like this:
 
 ```lua
 {
@@ -244,41 +158,31 @@ A plugin manager takes the subdirectory as a key:
 }
 ```
 
-vim-plug and packer: `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }` and
-`use { 'digitable-lol/flang', rtp = 'docs/editors/vim' }`.
+With vim-plug and packer — `Plug 'digitable-lol/flang', { 'rtp': 'docs/editors/vim' }`
+and `use { 'digitable-lol/flang', rtp = 'docs/editors/vim' }`.
 
-The server needs no separate setup, and should not get one: the plugin assigns
-the file type to all four extensions itself and starts the server through the
-built-in `vim.lsp`. A second client on the same buffer would give two identical
-diagnostics on every line.
+The plugin assigns the file type and starts the server through the built-in
+`vim.lsp` by itself. Do not configure the server separately: a second client on
+the same buffer doubles the diagnostics.
 
-The server is `flang lsp` from the `flang` on your `PATH`, version 0.7.25 or
-newer — the one `install.sh` or a package puts there. Older releases answer
-only after their input is closed and would look hung in an editor, so the
-plugin skips them and says so once. `let g:flang_binary_lsp = 1` takes the
-binary whatever its version, `let g:flang_binary_lsp = 0` never takes it.
+The server is `flang lsp` from the `flang` on `PATH`, version 0.7.25 or newer.
+The plugin does not take an older binary and says so once.
+`let g:flang_binary_lsp = 1` takes a binary of any version,
+`let g:flang_binary_lsp = 0` never takes it.
 
-The clone goes to `~/.local/share/flang-src`, not `~/.local/share/flang`:
-the latter is where `install.sh` puts the standard library.
-
-To turn the server off — either of two ways, in `init.lua` before the plugin
-loads:
+To turn the server off, in `init.lua` before the plugin loads, one of:
 
 ```lua
 vim.g.flang_no_setup = 1                 -- do not start the server at all
 require("flang").setup({ lsp = false })  -- the same, but assign the file type
 ```
 
-Both touch the server only: highlighting and buffer settings stay, because they
-come from the file type rather than from the plugin.
-
-Completion is `<C-x><C-o>`, hover is `K`, go to definition is `gd`.
+Highlighting and buffer settings stay.
 
 ### Without the plugin
 
 The server alone, without highlighting and buffer settings, connects through
-the built-in client of Neovim 0.11 and newer — name the file type and the
-command:
+the stock client of Neovim 0.11 and newer:
 
 ```lua
 vim.filetype.add({ extension = { flang = "flang", fp = "flang", ["фп"] = "flang", ["фланг"] = "flang" } })
@@ -291,14 +195,10 @@ vim.lsp.config.flang = {
 vim.lsp.enable("flang")
 ```
 
-On Neovim 0.10 and older — the same server through `vim.lsp.start` in a
-`FileType` autocommand for `flang`. Do not do this alongside the plugin: a
-second client on the same buffer would double every diagnostic.
-
 ## Emacs
 
-Through eglot (shipped with Emacs 29 and newer). `.flang` has no mode of its
-own — derive one from `prog-mode`:
+Through eglot (part of Emacs 29 and newer). `.flang` has no mode of its own —
+derive one from `prog-mode`:
 
 ```elisp
 (define-derived-mode flang-mode prog-mode "flang"
@@ -314,44 +214,19 @@ own — derive one from `prog-mode`:
 (add-hook 'flang-mode-hook #'eglot-ensure)
 ```
 
-Go to definition is `M-.`, the signature is `M-x eldoc`, completion is
+Go to definition — `M-.`, signature — `M-x eldoc`, completion —
 `M-x completion-at-point`.
 
-## Highlighting on GitHub: the github-linguist submission
+## Without the server: a check on a key
 
-GitHub colours sources and counts the languages of a repository by the
-«languages.yml» file of [github-linguist/linguist](https://github.com/github-linguist/linguist).
-The draft entry for flang lies in `docs/editors/linguist/languages-flang.yml`: type,
-colour, the four extensions (`.flang` first — in linguist the order of the list
-is the order of preference), the scope «source.flang» — the same one the VS Code
-extension's grammar uses.
-
-The submission has not been filed, and what is missing for it is named:
-
-- the samples directory `docs/editors/linguist/samples/` — linguist trains its
-  language detector on real files, not on a description;
-- wide usage: linguist's rules require hundreds of repositories per extension,
-  and submissions for new languages are closed.
-
-`language_id` in the entry is left empty on purpose: linguist's maintainers
-assign it on acceptance, and it never changes afterwards. The entry goes into
-«languages.yml» in alphabetical order. The extensions `.фп` and `.фланг` are
-outside ASCII; if the entry is accepted without them, the compiler and the
-editors keep reading them — GitHub merely will not colour such a file.
-
-## Without the server: checking on a key
-
-Diagnostics come by the same road as the server's, only as a command:
+The same failures come from the command:
 
 ```bash
 flang check path/to/file.flang
 ```
 
-In Vim and Neovim: `:setlocal makeprg=flang\ check\ %` and then `:make` — the
-remarks land in the quickfix list, and `:cnext` and `:cprevious` walk it. In VS
+In Vim and Neovim: `:setlocal makeprg=flang\ check\ %`, then `:make`. In VS
 Code — a task in `.vscode/tasks.json` with `"command": "flang check ${file}"`.
-Messages carry the trouble code and the place — the same text the editor would
-have shown.
+Messages carry the code and the place — the same text the editor would show.
 
-Next: [Troubleshooting](troubleshooting.html) — what to do when the check does
-not answer or goes green in the wrong place.
+Next: [Troubleshooting](troubleshooting.html).

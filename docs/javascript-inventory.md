@@ -9,6 +9,62 @@ $ git ls-files '*.mjs' '*.js' | xargs wc -l | tail -1
   25487 total
 ```
 
+**Сдвинулось 10 ноября 2026: десять файлов снесены, 2 143 строки** (задача 0049,
+ветка `a/0049-drop-javascript`, дерево `001d8df7c`, двоичный 0.7.34, машина 256
+ядер). Файлов JavaScript стало 41, строк 23 464; из них оснастки, которую зовёт
+Node, — 21 файл. Всё ниже снято прогоном в этот день; числа прежних разделов
+оставлены замером своего дня.
+
+Что ушло и чем это доказано:
+
+| файл | судьба | сверка на одном дереве |
+|---|---|---|
+| `flang/test/svyaz-celi.test.mjs` | заменён планом `flang/scripts/link-across-targets.fscript` | JavaScript: код 0, 8 целей, 2184 вопроса, 62 с. План: код 0, 9 целей, 2218 вопросов (прежние 2184 и 34 сверх них), 65 с. Подложенный отказ `go` красит оба, код 1 |
+| `flang/test/planirovshchik-celi.test.mjs` | заменён планом `flang/scripts/scheduler-across-targets.fscript` | JavaScript: код 0, 8 целей, 10004 вопроса, 196 с. План: код 0, 9 целей, 10004 вопроса, 226 с. Подложенный отказ `go` красит оба, код 1 |
+| `flang/test/nadzor-uzla.test.mjs` | заменён планом `flang/scripts/supervisor-across-targets.fscript` | JavaScript: код 0, 9 целей, 1262 с. План: код 0, 9 целей, 2244 с рядом с чужими прогонами |
+| `flang/test/tempdir.mjs`, `flang/test/toolchain-guard.mjs`, `flang/test/uzel-osnastka.mjs` | сняты вместе с тремя файлами выше | ввозили их только эти три файла и стенд смерти узла |
+| `flang/concurrency/bench/gen.mjs` | заменён планом `flang/concurrency/bench/gen.flang` | четырнадцать стендов, от `тихо 10` до `ждут 1000000`, совпали байт в байт |
+| `flang/concurrency/bench/node-death-targets.mjs` | снят | не звал никто; смерть узла судит `flang/concurrency/bench/node-death.fscript` |
+| `flang/concurrency/bin/wire.mjs` | снят | не звал никто: файла, поднимавшего испытания с проводом, в дереве нет |
+| `docs/benchmarks/speed/work.mjs` | переписан: `docs/benchmarks/speed/work.fscript` | на одной сборке оба дали те же 63 ответа и ноль расхождений; медианы плана — от 0,72 до 1,11 медиан JavaScript, цена самого прибора 1 мс |
+
+До сверки планы связи и планировщика не заводились вовсе: печать зовёт модуль
+`program.js`, `program.py`, `FlangProgram`, а планы спрашивали прежние имена
+`svyaz_uzlov` и `planirovschik_uzla`. Починка — шесть строк в каждом.
+
+Сторож `flang/scripts/guards-start.fscript` считал, сколько файлов
+`*.test.mjs` заводится под Node. Предмета у него больше нет, и он снят вместе
+с ярлыком `guards:check` и шагом работы `guards-selftest`.
+
+Оснастка, которая осталась, — 21 файл. У каждого названо, что мешает:
+
+| файл | строк | что мешает, числом |
+|---|---:|---|
+| `docs/site/build.mjs` и одиннадцать его модулей | 5 192 | сборка сайта, задача 4412: планы рядом (`docs/site/*.flang`) покрывают структурную проверку и дешёвые числа, а не сборку страниц |
+| `scripts/site/build-changelog-page.mjs`, `scripts/site/build-changelog.mjs` | 1 760 | план `scripts/site/build-changelog-page.fscript` печатает ДРУГУЮ страницу (вся таблица мер — нули) за 15 мин 06 с и 19,6 ГиБ против 35 с; публикация сайта зовёт печать на каждый пуш |
+| `flang/scripts/link-collision-guard.mjs` | 1 151 | план `flang/scripts/link-collision-tree.fscript` видит то же замыкание (4954 файла, 719 086 объявлений), но три столкновения, заявленные пробами, числит настоящими: код 1 против 0; 7 мин 17 с и 16 ГиБ против 15 с — задача 7192 |
+| `flang/scripts/name-guard.mjs` | 531 | оба красны, код 1, файлов 483 у обоих. Новых нарушений 4000 против 688; все 688 плана есть среди 4000. Из остальных 3312 у 2761 названного имени в файле нет вовсе: JavaScript приписывает файлу имена его ввозов. 38 мин 12 с против примерно 4 мин |
+| `flang/scripts/count-guard.mjs` | 979 | план `flang/scripts/count-guard.fscript` судит одни числа потолка: код 1 за 584 с, одно расхождение. Прогон JavaScript в этот день не дождан: шёл дольше часа |
+| `flang/scripts/binary.mjs`, `flang/scripts/direct-run.mjs`, `flang/test/glob.mjs` | 1 076 | общие модули: их ввозят сборка сайта и три сторожа выше; уходят последними |
+| `docs/examples/web/wasm/probe.mjs` | 63 | ведёт настоящий браузер через Playwright; зовёт его `docs/examples/web/browser-probe.sh` |
+
+Общее у первых пяти строк одно: план на flang исполняет интерпретатор, и на
+разборе больших текстов он в десятки раз медленнее Node и держит 16–20 ГиБ.
+Пока это так, переключить работу, идущую на каждый пуш, нельзя, даже когда
+ответы сойдутся.
+
+Остальные 20 файлов — не оснастка: восемь напечатанных
+`docs/examples/frameworks/*/printed/*.js`, пять файлов рантайма цели `js`
+(`flang/src/emit/js/`), хозяин узла `flang/concurrency/bin/node.js`, водитель
+пробы точного целого на цели `js`, замеряемая программа
+`docs/benchmarks/speed/programs/tasks.mjs`, расширение VS Code, KaTeX и два
+файла, которые исполняет браузер читателя (`docs/site/playground.js`,
+`docs/site/search.js`).
+
+Node больше не ставят три работы CI: `rust-node` в `binary.yml`, `test` в
+`ci.yml` (с ней ушла и матрица по трём версиям Node) и выпуск в `release.yml`.
+Node им нужен только как тулчейн цели `js` и берётся из образа раннера.
+
 **Пересверено 29 августа 2026, файл за файлом.** Состав не изменился: те же
 54 файла, ни один не пришёл и не ушёл. Сдвинулся ровно один —
 `benchmarks/proof-cost/count-library.mjs` (снят 11 сентября 2026: двойник `docs/benchmarks/proof-cost/count-library.flang` в дереве), 240 строк стало 280. На эти же
@@ -59,7 +115,7 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 строк **29 715**. На 15 сентября 2026, после снятия напечатанного задачей 1423: 51.
 На 26 сентября 2026, после снятия `proof-ledger.mjs` и `word-guard.mjs`
 (задача 4413): 49, строк 22 943. На 4 октября 2026, после снятия
-`flang/scripts/word-occupancy.mjs` (задача 0049): 48, строк 22 660. На 4 октября 2026, после водителя пробы `flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs` (задача 1413): 49, строк 22 696. На 18 октября 2026, после песочницы с рисунками (`docs/site/playground.js`): **50**, строк **24 328**. <!-- СНЯТО 2026-10-24 файлов *.js,*.mjs = 51 (site playground: KaTeX vendored under docs/site/vendor/katex (katex.min.js, katex.min.css), the text kind rule text-kind.flang, the shell .text command in flang_repl.c and its seed copy; до них 50, снято 2026-10-18) (playground: docs/site/playground.js, formula and structured answers in flang_host_browser.js, its styles; до него 49, снято 2026-10-04) (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs — судья, который считает десятичную запись точного целого на самой цели; до него 48, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 49, снято 2026-10-04) (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) -->
+`flang/scripts/word-occupancy.mjs` (задача 0049): 48, строк 22 660. На 4 октября 2026, после водителя пробы `flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs` (задача 1413): 49, строк 22 696. На 18 октября 2026, после песочницы с рисунками (`docs/site/playground.js`): **50**, строк **24 328**. <!-- СНЯТО 2026-11-10 файлов *.js,*.mjs = 41 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten; до них 51, снято 2026-10-24) (site playground: KaTeX vendored under docs/site/vendor/katex (katex.min.js, katex.min.css), the text kind rule text-kind.flang, the shell .text command in flang_repl.c and its seed copy; до них 50, снято 2026-10-18) (playground: docs/site/playground.js, formula and structured answers in flang_host_browser.js, its styles; до него 49, снято 2026-10-04) (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs — судья, который считает десятичную запись точного целого на самой цели; до него 48, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 49, снято 2026-10-04) (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) -->
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
@@ -73,8 +129,8 @@ HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
 долг вне JavaScript — **46 файлов, 4 442 строки при потолке 63**: храповик
 зелён, запас 17 файлов, разбор прежней красноты — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-25 403 строк этой описи — нижняя оценка.
-<!-- СНЯТО 2026-11-11 строк-в *.js,*.mjs = 25403 (the site map drops thirteen comment lines; до них 25416, снято 2026-11-10) (site map regrouped into nine sections in docs/site/sitemap.mjs, its history comments dropped; до него 25607, снято 2026-11-09) (print batch 11: the js runtime checks the exact integer canon and the zero percentage; до них 25591, снято 2026-10-27) (the playground takes the counterexample from the kernel answer: the corner search of flang_host_browser.js is gone; до неё 25611, снято 2026-10-27) (merge of print batch 9b into dev 34ce8a2ac: the record format page in docs/site/sitemap.mjs from dev, task 1666; до неё 25606, снято 2026-10-24) (site playground: KaTeX vendored under docs/site/vendor/katex (katex.min.js, katex.min.css), the text kind rule text-kind.flang, the shell .text command in flang_repl.c and its seed copy; до них 25441, снято 2026-10-19) (playground every language: flang emit into ten targets, the C reader, translator and counterexamples at the int bounds in flang_host_browser.js, the new tabs in docs/site/playground.js, their styles; до неё 24335, снято 2026-10-18) (ADR-0167: хозяин песочницы читает свободный текст и печатает имя ошибки, 7 строк в flang/src/emit/js/flang_host_browser.js; до них 24328, снято 2026-10-18) (playground: docs/site/playground.js, formula and structured answers in flang_host_browser.js, its styles; до него 23232, снято 2026-10-18) (ADR-0155: хозяин WASI песочницы в flang/src/emit/js/flang_host_browser.js и её разметка в docs/site/search.js, карта сайта на одну строку; до них 22529, снято 2026-10-16) (russian grammar page in docs/site/sitemap.mjs, 1 line; до них 22525, снято 2026-10-12) (сторож столкновений узнал нарочные столкновения проб; до них 22472, снято 2026-10-09) (ffeca8f82 (feat(site): страница реестра печатается из ведомости): раздел реестра в docs/site/sitemap.mjs, 5 строк; до него 22696, снято 2026-10-04) (задача 1413 и ADR-0056: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs (+32) и рантайм JS flang/src/emit/js/** (+4) — он печатается строками из flang/self/emit-js.flang, и туда пришли поручение «Запустить процесс с пределом» и отклик «Процесс оборван»; до них 22660, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 22965, снято 2026-10-04) (задача 0037: охват проверки английской пары распространён на всю карту и назван числом — 48 строк в docs/site/build.mjs и docs/site/sitemap.mjs; до неё 22917, снято 2026-09-17) (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 24382, снято 2026-09-17) -->
+25 607 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-11-10 строк-в *.js,*.mjs = 23464 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten; до них 25607, снято 2026-11-09) (print batch 11: the js runtime checks the exact integer canon and the zero percentage; до них 25591, снято 2026-10-27) (the playground takes the counterexample from the kernel answer: the corner search of flang_host_browser.js is gone; до неё 25611, снято 2026-10-27) (merge of print batch 9b into dev 34ce8a2ac: the record format page in docs/site/sitemap.mjs from dev, task 1666; до неё 25606, снято 2026-10-24) (site playground: KaTeX vendored under docs/site/vendor/katex (katex.min.js, katex.min.css), the text kind rule text-kind.flang, the shell .text command in flang_repl.c and its seed copy; до них 25441, снято 2026-10-19) (playground every language: flang emit into ten targets, the C reader, translator and counterexamples at the int bounds in flang_host_browser.js, the new tabs in docs/site/playground.js, their styles; до неё 24335, снято 2026-10-18) (ADR-0167: хозяин песочницы читает свободный текст и печатает имя ошибки, 7 строк в flang/src/emit/js/flang_host_browser.js; до них 24328, снято 2026-10-18) (playground: docs/site/playground.js, formula and structured answers in flang_host_browser.js, its styles; до него 23232, снято 2026-10-18) (ADR-0155: хозяин WASI песочницы в flang/src/emit/js/flang_host_browser.js и её разметка в docs/site/search.js, карта сайта на одну строку; до них 22529, снято 2026-10-16) (russian grammar page in docs/site/sitemap.mjs, 1 line; до них 22525, снято 2026-10-12) (сторож столкновений узнал нарочные столкновения проб; до них 22472, снято 2026-10-09) (ffeca8f82 (feat(site): страница реестра печатается из ведомости): раздел реестра в docs/site/sitemap.mjs, 5 строк; до него 22696, снято 2026-10-04) (задача 1413 и ADR-0056: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs (+32) и рантайм JS flang/src/emit/js/** (+4) — он печатается строками из flang/self/emit-js.flang, и туда пришли поручение «Запустить процесс с пределом» и отклик «Процесс оборван»; до них 22660, снято 2026-10-04) (задачи 0049 и 5821: сняты flang/scripts/word-occupancy.mjs, scripts/seed/seed-freshness.sh и scripts/guards/version-derivations-guard.sh — у каждого двойник на flang доказан прогоном; до них 22965, снято 2026-10-04) (задача 0037: охват проверки английской пары распространён на всю карту и назван числом — 48 строк в docs/site/build.mjs и docs/site/sitemap.mjs; до неё 22917, снято 2026-09-17) (задача 4413: flang/scripts/proof-ledger.mjs и word-guard.mjs сняты — свод корпуса считает двойник на flang; до них 51 файл и 24 386 строк, снято 2026-09-17) (задача 1416: четырнадцать объявлений ярлыков заведены в скриптах и зов «Сбора» — в хуке; до них 24382, снято 2026-09-17) -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

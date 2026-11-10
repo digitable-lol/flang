@@ -4,7 +4,7 @@
 с поправкой задачи о встроенной склейке и решение
 [ADR-0084](../../../../../../adr/0084-the-kernel-rewrites-a-goal-by-proved-equality-and-a-quantifier-opens-inside-a-formula.md).
 Ядро в исходниках `flang/self` переписывает цель этими ходами и печатает их; записи
-`*.kernel-print.record` и `statement-rule.record` сняты прогоном исходников
+`*.kernel-print.record` и `statement-grows.record` сняты прогоном исходников
 компилятора (`flang/self/bootstrap/check-with-source-compiler.flang`). Записи
 `concat-laws.record` и `rewrite-by-statement.record` рукотворные: они держат путь
 сверщика «переписать по свойству» по утверждению об ассоциативности, которое ядро

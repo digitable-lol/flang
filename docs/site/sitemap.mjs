@@ -111,6 +111,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'allocator.html', имя: 'Распределитель памяти', из: 'docs/site/allocator.ru.md' },
       { адрес: 'msi-driver.html', имя: 'Драйвер MSI', из: 'docs/site/msi-driver.ru.md' },
       { адрес: 'russian-grammar.html', имя: 'Грамматика русского на прегруппах', из: 'docs/site/russian-grammar.ru.md' },
+      { адрес: 'russian-syntax.html', имя: 'Разбор высказывания по графу понятий', из: 'docs/site/russian-syntax.ru.md' },
     ],
   },
   {

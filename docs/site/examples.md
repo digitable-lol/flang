@@ -112,7 +112,7 @@ sentence you still want to reject. Update the parser and check the resulting
 value. Change the decision function when the new sentence adds a new kind of
 decision.
 
-A larger example is [parsing a Russian utterance against a concept graph](russian-syntax.md).
+A larger example is [parsing a Russian utterance against a concept graph](russian-syntax.html).
 There a line names a grammar concept, and the program finds it and checks agreement
 between word forms.
 

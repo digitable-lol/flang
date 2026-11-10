@@ -19,7 +19,7 @@ Such a statement cannot be computed on a grid at all; it can only be proved.
 | reference corpus: 32 theorems with Lean 4 versions | `flang/ct/proofs/lean/` | Lean accepts 32 of 32, zero `sorry` |
 | category model for Lean without mathlib | `flang/ct/proofs/lean/Category.lean` | 117 lines, Lean 4 core only |
 | corpus run with a "proved / not" table | `bootstrap/flang run-script category-proofs:check` | prints the table and compares it with `corpus.tsv` |
-| `теорема` with a `для всякой категории …` context | this page | specified; the binary compiler does not accept it yet |
+| `теорема` with a `для всякой категории …` context | this page | binary 0.7.34 accepts and checks it: the example below exits 0, a false step gets `FLANG_CATEGORY_STEP` and exit code 1 |
 | path equality resolver in the kernel | `flang/self/category-paths.flang` | stage 1 |
 | step replay by both checkers and Lean soundness lemmas | `flang/proof/checker/checker.c`, `flang/proof/checker/second/Category.lean`, `flang/proof/lean/CategoryPaths.lean` | stage 1 |
 
@@ -160,6 +160,11 @@ The record block, one per theorem about categories:
 конец категорной теоремы
 ```
 
+In 0.7.34 a category theorem is not counted among the statements of the record
+and the ledger (`утверждений N`): a program made of such theorems alone gets
+"ПРОВЕРЕНО ВПУСТУЮ" and exit code 3 under `check --proof --strict`, although its
+record block says `вердикт доказано`.
+
 Terms are not in the record; the checker reads them from the source by line. A
 substitution gives the **place** (first atom of the segment, from 1), the functor
 **prefix** and the **side**; naturality also gives the length of u.
@@ -182,8 +187,9 @@ stays.
 
 `flang/ct/proofs/corpus.tsv` lists 32 theorems from simple to intermediate with
 the stage at which flang proves each one. `flang/ct/proofs/lean/` holds a Lean 4
-version of each over `Category.lean`; `flang/ct/proofs/programs/` holds the flang
-versions as the stages open them.
+version of each over `Category.lean`. There are no flang versions in the tree:
+the directory `flang/ct/proofs/programs/` does not exist, and the expected flang
+answer in all 32 rows of `corpus.tsv` is `none`.
 
 ```bash
 bootstrap/flang run-script category-proofs:check

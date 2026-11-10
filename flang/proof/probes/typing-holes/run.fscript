@@ -131,6 +131,8 @@
       то " --function '«Через почти ноль»' --args '{\"х\":1234567}'"
     случай "run-statement-at-wider-type"
       то " --function '«Как есть»' --args '{\"ы\":-1234567}'"
+    случай "run-sum-at-the-ceiling"
+      то " --function '«Плюс два»' --args '{\"а\":9007199254740991}'"
     случай "run-word-answer"
       то " --function '«Пять»'"
     случай "run-word-argument"

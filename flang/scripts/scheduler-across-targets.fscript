@@ -8,15 +8,15 @@
 тотальная функция «Цели»
   возвращает список «Цель»
   обеспечивает «девять целей» (длина результат) равен 9
-  [запись «Цель» с «имя» равным "js" и «сборка» равным "true" и «запуск» равным "node flang_cli.js planirovschik_uzla.js",
-   запись «Цель» с «имя» равным "python" и «сборка» равным "make check" и «запуск» равным "python3 -B flang_cli.py planirovschik_uzla",
+  [запись «Цель» с «имя» равным "js" и «сборка» равным "true" и «запуск» равным "node flang_cli.js program.js",
+   запись «Цель» с «имя» равным "python" и «сборка» равным "make check" и «запуск» равным "python3 -B flang_cli.py program",
    запись «Цель» с «имя» равным "go" и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "c" и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "cpp" и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "rust" и «сборка» равным "RUSTFLAGS='-D warnings' cargo build --offline" и «запуск» равным "./target/debug/flang_cli",
-   запись «Цель» с «имя» равным "java" и «сборка» равным "make build" и «запуск» равным "java -cp . FlangCli PlanirovschikUzla",
-   запись «Цель» с «имя» равным "csharp" и «сборка» равным "dotnet build -v quiet --nologo" и «запуск» равным "dotnet $(find bin -name flang.dll | head -1) PlanirovschikUzla",
-   запись «Цель» с «имя» равным "elixir" и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex planirovschik_uzla.ex flang_cli.ex" и «запуск» равным "elixir -pa _build -e 'Flang.Cli.main([\"PlanirovschikUzla\"])'"]
+   запись «Цель» с «имя» равным "java" и «сборка» равным "make build" и «запуск» равным "java -cp . FlangCli FlangProgram",
+   запись «Цель» с «имя» равным "csharp" и «сборка» равным "dotnet build -v quiet --nologo" и «запуск» равным "dotnet $(find bin -name flang.dll | head -1) FlangProgram",
+   запись «Цель» с «имя» равным "elixir" и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex flang_program.ex flang_cli.ex" и «запуск» равным "elixir -pa _build -e 'Flang.Cli.main([\"PlanirovschikUzla\"])'"]
 
 тотальная функция «Корень работы»
   возвращает строка
@@ -219,7 +219,7 @@
     " && d=", («Корень от дерева»), "/witness",
     " && rm -f \"$a\" && rm -rf \"$d\" && mkdir -p \"$d\"",
     " && bootstrap/flang emit flang/concurrency/scheduler.flang --target js --out \"$d\" > \"$d.log\" 2>&1",
-    " && cp \"$d/planirovschik_uzla.js\" \"$d/witness.js\"",
+    " && cp \"$d/program.js\" \"$d/witness.js\"",
     " && (cd \"$d\" && LC_ALL=C.UTF-8 node flang_cli.js witness.js < \"$q\" > \"$a\" 2>> ../witness.log)"
   ] по ""
 

@@ -9,15 +9,15 @@
 тотальная функция «Цели»
   возвращает список «Цель»
   обеспечивает «девять целей» (длина результат) равен 9
-  [запись «Цель» с «имя» равным "js" и «куда» равным "." и «сборка» равным "true" и «запуск» равным "node flang_cli.js svyaz_uzlov.js",
-   запись «Цель» с «имя» равным "python" и «куда» равным "." и «сборка» равным "make check" и «запуск» равным "python3 -B flang_cli.py svyaz_uzlov",
+  [запись «Цель» с «имя» равным "js" и «куда» равным "." и «сборка» равным "true" и «запуск» равным "node flang_cli.js program.js",
+   запись «Цель» с «имя» равным "python" и «куда» равным "." и «сборка» равным "make check" и «запуск» равным "python3 -B flang_cli.py program",
    запись «Цель» с «имя» равным "go" и «куда» равным "." и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "c" и «куда» равным "." и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "cpp" и «куда» равным "." и «сборка» равным "make" и «запуск» равным "./flang_cli",
    запись «Цель» с «имя» равным "rust" и «куда» равным "." и «сборка» равным "RUSTFLAGS='-D warnings' cargo build --offline" и «запуск» равным "./target/debug/flang_cli",
-   запись «Цель» с «имя» равным "java" и «куда» равным "." и «сборка» равным "make build" и «запуск» равным "java -cp . FlangCli SvyazUzlov",
-   запись «Цель» с «имя» равным "csharp" и «куда» равным "." и «сборка» равным "dotnet build -v quiet --nologo" и «запуск» равным "dotnet $(find bin -name flang.dll | head -1) SvyazUzlov",
-   запись «Цель» с «имя» равным "elixir" и «куда» равным "." и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex svyaz_uzlov.ex flang_cli.ex" и «запуск» равным "elixir -pa _build -e 'Flang.Cli.main([\"SvyazUzlov\"])'"]
+   запись «Цель» с «имя» равным "java" и «куда» равным "." и «сборка» равным "make build" и «запуск» равным "java -cp . FlangCli FlangProgram",
+   запись «Цель» с «имя» равным "csharp" и «куда» равным "." и «сборка» равным "dotnet build -v quiet --nologo" и «запуск» равным "dotnet $(find bin -name flang.dll | head -1) FlangProgram",
+   запись «Цель» с «имя» равным "elixir" и «куда» равным "." и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex flang_program.ex flang_cli.ex" и «запуск» равным "elixir -pa _build -e 'Flang.Cli.main([\"SvyazUzlov\"])'"]
 
 тотальная функция «Файл вопросов»
   принимает корень: строка
@@ -194,7 +194,7 @@
     " && q=\"$R/questions.jsonl\" && a=\"$R/answers-witness.jsonl\" && d=\"$R/witness\"",
     " && rm -f \"$a\" && rm -rf \"$d\" && mkdir -p \"$d\"",
     " && bootstrap/flang emit flang/concurrency/link.flang --target js --out \"$d\" > \"$R/witness.log\" 2>&1",
-    " && cp \"$d/svyaz_uzlov.js\" \"$d/witness.js\"",
+    " && cp \"$d/program.js\" \"$d/witness.js\"",
     " && (cd \"$d\" && LC_ALL=C.UTF-8 node flang_cli.js witness.js < \"$q\" > \"$a\" 2>> \"$R/witness.log\")"
   ] по ""
 

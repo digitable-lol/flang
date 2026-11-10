@@ -1975,6 +1975,8 @@ c218b0c6b08465319ece2a61e3598862|1|×|×|×|2|flang/proof/checker/tests/families
 f0632f8d7fb82fc97ba9d4a6a5b5953e|9|9|0|0|0|flang/ct/russian/pregroup.flang
 c75f1c900166044486d4cb1384de7327|2|2|0|0|0|flang/ct/russian/parse.flang
 6b510c73bb13638a1502750d76684454|7|×|×|×|4|flang/ct/russian/category.flang
+165d436d01f358a3313dde979733f64d|4|4|0|0|0|flang/ct/russian/syntax.flang
+d8097a6927833a42fe0992eb67f4facc|2|2|0|0|0|flang/ct/russian/syntax-graph.flang
 46828a7f4d52520f82a2080de478bb4f|1|0|1|0|1|flang/proof/checker/tests/families/case-split-facts/corrupt/pattern-name-hides-required-fact.flang
 46828a7f4d52520f82a2080de478bb4f|1|0|1|0|1|flang/proof/checker/tests/families/case-split-facts/corrupt/pattern-name-hides-required-fact.flang
 7e3cf7315a15f73a9291177f579d408e|1|1|0|0|0|flang/proof/parity/programs/and-introduction.flang

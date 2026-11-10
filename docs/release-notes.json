@@ -1,6 +1,24 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.34": {
+      "ru": {
+        "заголовок": "Модуль подключается по ссылке вместо flang install",
+        "появилось": [],
+        "изменилось": [],
+        "сломалось": [
+          "**`flang install` снят.** Команды установки по имени, ключа `registry` в `.flangrc` и ярлыка `package:install` больше нет. Чем заменить: впишите адрес модуля прямо в импорт — `использует «Логика» из \"https://…/logic.flang\"`; первая `flang check` скачает его один раз и запишет отпечаток и исходник в `flang.lock`, следующие сборки идут без сети."
+        ]
+      },
+      "en": {
+        "заголовок": "A module is imported by its link instead of flang install",
+        "появилось": [],
+        "изменилось": [],
+        "сломалось": [
+          "**`flang install` is removed.** There is no install by name, no `registry` key in `.flangrc` and no `package:install` shortcut. Replace it with the module's address right in the import — `использует «Логика» из \"https://…/logic.flang\"`; the first `flang check` fetches it once and writes its fingerprint and source into `flang.lock`, later builds go without the network."
+        ]
+      }
+    },
     "0.7.33": {
       "ru": {
         "заголовок": "Ядро доказывает линейные неравенства и законы монады; большие файлы проверяются втрое быстрее; сверщик не принимает подделанных доказательств",

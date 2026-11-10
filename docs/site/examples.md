@@ -77,10 +77,10 @@ The two lines set the free-shipping threshold and the price below it. An order o
 
 ```sh
 bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
-  --args '{"строкаПравила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
+  --args '{"текст правила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
 ```
 
-The parser returns `{"вариант":"Правило","порог":50,"обычнаяЦена":7}`.
+The parser returns `{"вариант":"Правило","порог":50,"обычная цена":7}`.
 
 ### Access to a document
 
@@ -95,7 +95,7 @@ Editors can publish documents
 
 ```sh
 bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \
-  --args '{"строкаПравила":"Editors can publish documents"}'
+  --args '{"текст правила":"Editors can publish documents"}'
 ```
 
 The result contains `{"вариант":"Правило","право":{"роль":"editor","действие":"publish"}}`.

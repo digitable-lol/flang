@@ -3,7 +3,7 @@ cited-law.flang	check --proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 exact-integer-monoid.flang	check --proof	0	ПРОВЕРЕНО САМОСТОЯТЕЛЬНО
 list-functor.flang	check --proof	0	законом «Тождественное отображение»
 list-monoid.flang	check --proof	3	законов утверждениями 3: доказано ядром 2
-maybe-monad.flang	check --proof	3	законов утверждениями 3: доказано ядром 2
+maybe-monad.flang	check --proof	0	законов утверждениями 3: доказано ядром 3
 number-monoid.flang	check --proof	3	доказан не будет
 row-monoid.flang	check --proof	0	законов утверждениями 3: доказано ядром 3
 subtraction-monoid.flang	check --proof	1	FLANG_MONOID_ASSOC

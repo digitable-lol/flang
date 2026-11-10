@@ -68,6 +68,5 @@
 | [`javascript-inventory.md`](javascript-inventory.md) | опись JavaScript в дереве |
 | [`jargon.json`](jargon.json) | внутренние слова и тексты для читателя — `bootstrap/flang run-script jargon:check` |
 | [`reprint-ledger.tsv`](reprint-ledger.tsv) | ведомость заходов перепечатки |
-| [`eight-targets-renames.tsv`](eight-targets-renames.tsv) | переименования объявлений по целям печати |
 
 [`README.ru.md`](README.ru.md) — русская редакция корневого `README.md`, а не этой страницы.

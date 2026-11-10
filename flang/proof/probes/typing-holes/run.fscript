@@ -111,6 +111,8 @@
       то " --function '«Минус семь неотрицательным»'"
     случай "run-generic-call-in-match"
       то " --function '«Половина целым»' --args '{\"а\":{\"variant\":\"Нечто\",\"fields\":{\"значение\":-3}}}'"
+    случай "run-branch-join"
+      то " --function '«Половина в иначе»' --args '{\"флаг\":false}'"
     случай "run-word-answer"
       то " --function '«Пять»'"
     случай "run-word-argument"

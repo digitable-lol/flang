@@ -826,6 +826,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_MORPHISM_SHAPE` | `compiler.flang` | — |
 | `FLANG_NAME_TAKEN` | `conc.flang`, `failures.flang` | — |
 | `FLANG_NEW` | `flang_repl.c` | — |
+| `FLANG_NOT_A_NUMBER` | `types.flang` | — |
 | `FLANG_NOT_COMMUTATIVE` | `commutative.flang` | — |
 | `FLANG_NOT_DISTRIBUTIVE` | `distributive.flang` | — |
 | `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |

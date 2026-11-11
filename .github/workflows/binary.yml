@@ -2339,21 +2339,11 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
-  # Сторожа и пробы, которых до этой работы не звал никто живой. Workflow «CI»
-  # (`ci.yml`) выключен на GitHub руками, поэтому зов оттуда — не зов: сторож
-  # `who-calls-the-guards` его больше не считает. Здесь стоят те из них, что
-  # зелены и дёшевы на этом дереве; красные и дорогие названы с замером в
-  # `scripts/ledgers/uncalled-guards.json` и `scripts/ledgers/checks-nobody-calls.tsv`.
-  #
-  # Шаг не останавливается на первом красном: гонит всё и называет каждого.
-  # `probe` ждёт, что подлог ПОКРАСНЕЕТ (ненулевой код); `shown` — что план
-  # подлога сам показал все стороны и ответил нулём; `check` — зелёного.
   guards-without-a-caller:
     name: guards-without-a-caller
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      FLANG_TMP: ${{ runner.temp }}
       LC_ALL: C.UTF-8
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -2379,6 +2369,8 @@ jobs:
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
       - name: Guards that only the switched-off workflow called
+        env:
+          FLANG_TMP: ${{ runner.temp }}
         run: |
           set -u
           red=0
@@ -2442,6 +2434,8 @@ jobs:
           echo "прогонов $count, красных $red"
           [ "$red" -eq 0 ]
       - name: Probes nobody called
+        env:
+          FLANG_TMP: ${{ runner.temp }}
         run: |
           set -u
           red=0

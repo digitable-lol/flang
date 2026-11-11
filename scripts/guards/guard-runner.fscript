@@ -1,0 +1,315 @@
+модуль «Guard runner»
+
+объект «Job»
+  «kind»: строка
+  «command»: строка
+
+объект «Kind»
+  «word»: строка
+  «green»: признак
+  «trouble»: строка
+
+тип «Stage»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting answer» содержит job: «Job», remaining: список «Job», troubles: список строки, count: число
+
+тотальная функция «Kinds»
+  возвращает список «Kind»
+  обеспечивает «there are exactly three kinds of runs» (длина результат) равен 3
+  [запись «Kind» с «word» равным "check" и «green» равным да и «trouble» равным "сторож красен",
+   запись «Kind» с «word» равным "probe" и «green» равным нет и «trouble» равным "подлог прошёл мимо, сторож слеп",
+   запись «Kind» с «word» равным "shown" и «green» равным да и «trouble» равным "план подлога не показал свои стороны"]
+
+тотальная функция «Job of»
+  принимает item: строка
+  возвращает «Job»
+  пример «the first word is the kind and the rest is the command»
+    дано item равно "probe bootstrap/flang run-script temporal:forgery"
+    ожидается запись «Job» с «kind» равным "probe" и «command» равным "bootstrap/flang run-script temporal:forgery"
+  пример «an empty item has neither»
+    дано item равно ""
+    ожидается запись «Job» с «kind» равным "" и «command» равным ""
+  разбор (отфильтровать (разделить item по " ") где word → (длина word) больше 0)
+    случай пусто
+      то запись «Job» с «kind» равным "" и «command» равным ""
+    случай голова и хвост
+      то запись «Job» с «kind» равным голова и «command» равным (соединить хвост по " ")
+
+тотальная функция «Jobs of»
+  принимает arguments: список строки
+  возвращает список «Job»
+  пример «the arguments are runs separated by a lone comma»
+    дано arguments равно ["check", "bootstrap/flang", "run-script", "temporal:check", ",", "probe", "bootstrap/flang",
+      "run-script", "temporal:forgery"]
+    ожидается [запись «Job» с «kind» равным "check" и «command» равным "bootstrap/flang run-script temporal:check",
+      запись «Job» с «kind» равным "probe" и «command» равным "bootstrap/flang run-script temporal:forgery"]
+  пример «no arguments name no runs»
+    дано arguments равно пустой список
+    ожидается пустой список
+  (отобразить (отфильтровать (разделить (соединить arguments по " ") по " , ") где item → (длина item) больше 0)
+    как item → («Job of» от item))
+
+тотальная функция «Shell line»
+  принимает command: строка
+  возвращает строка
+  пример «the command runs from the root and only the end of its output comes back, closed by its exit code»
+    дано command равно "true"
+    ожидается "cd ../.. && { { true; } 2>&1; c=$?; echo; echo \"exit $c\"; } | tail -c 4000 | iconv -c -f utf8 -t utf8"
+  соединить ["cd ../.. && { { ", command,
+    "; } 2>&1; c=$?; echo; echo \"exit $c\"; } | tail -c 4000 | iconv -c -f utf8 -t utf8"] по ""
+
+тотальная функция «Lines of»
+  принимает text: строка
+  возвращает список строки
+  пример «empty lines are not lines»
+    дано text равно "первая\n\nвторая\n"
+    ожидается ["первая", "вторая"]
+  отфильтровать (разделить text по "\n") где line → не (line равен "")
+
+тотальная функция «Answered zero»
+  принимает output: строка
+  возвращает признак
+  пример «the last line carries the exit code»
+    дано output равно "зелено\n\nexit 0\n"
+    ожидается да
+  пример «any other code is not zero»
+    дано output равно "разошлось\n\nexit 1\n"
+    ожидается нет
+  пример «an output without the closing line did not answer zero»
+    дано output равно "exit 0\nоборвано"
+    ожидается нет
+  (свёртка («Lines of» от output) начиная с "" как last и line → line) равен "exit 0"
+
+тотальная функция «Trouble of kind»
+  принимает kind: «Kind», job: «Job», zero: признак
+  возвращает строка
+  пример «a kind that waits for zero and gets it has no trouble»
+    дано kind равно запись «Kind» с «word» равным "check" и «green» равным да и «trouble» равным "сторож красен"
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "true"
+    дано zero равно да
+    ожидается ""
+  пример «a kind that waits for zero and does not get it names its trouble»
+    дано kind равно запись «Kind» с «word» равным "check" и «green» равным да и «trouble» равным "сторож красен"
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "false"
+    дано zero равно нет
+    ожидается "сторож красен: false"
+  если (zero и притом (kind.«green»)) или ((не zero) и притом (не (kind.«green»)))
+    то ""
+    иначе соединить [(kind.«trouble»), ": ", (job.«command»)] по ""
+
+тотальная функция «Trouble of»
+  принимает job: «Job», zero: признак
+  возвращает строка
+  пример «a check that answers zero is fine»
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "bootstrap/flang run-script temporal:check"
+    дано zero равно да
+    ожидается ""
+  пример «a forgery that passes means a blind guard»
+    дано job равно запись «Job» с «kind» равным "probe" и «command» равным "bootstrap/flang run-script temporal:forgery"
+    дано zero равно да
+    ожидается "подлог прошёл мимо, сторож слеп: bootstrap/flang run-script temporal:forgery"
+  пример «a forgery that turns red is fine»
+    дано job равно запись «Job» с «kind» равным "probe" и «command» равным "bootstrap/flang run-script temporal:forgery"
+    дано zero равно нет
+    ожидается ""
+  пример «a forgery plan that does not show its sides is a trouble»
+    дано job равно запись «Job» с «kind» равным "shown" и «command» равным "bootstrap/flang run-script settings:forgery"
+    дано zero равно нет
+    ожидается "план подлога не показал свои стороны: bootstrap/flang run-script settings:forgery"
+  пример «a kind nobody knows is a trouble of its own»
+    дано job равно запись «Job» с «kind» равным "maybe" и «command» равным "true"
+    дано zero равно да
+    ожидается "вид прогона «maybe» не известен: true"
+  разбор (отфильтровать («Kinds») где kind → (kind.«word») равен (job.«kind»))
+    случай пусто
+      то соединить ["вид прогона «", (job.«kind»), "» не известен: ", (job.«command»)] по ""
+    случай голова и хвост
+      то «Trouble of kind» от голова и job и zero
+
+тотальная функция «Without first»
+  принимает lines: список строки
+  возвращает список строки
+  пример «the oldest line leaves»
+    дано lines равно ["первая", "вторая"]
+    ожидается ["вторая"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Keep twenty»
+  принимает kept: список строки, line: строка
+  возвращает список строки
+  пример «a short window grows»
+    дано kept равно ["первая"]
+    дано line равно "вторая"
+    ожидается ["первая", "вторая"]
+  если (длина kept) меньше 20
+    то добавить line к kept
+    иначе добавить line к («Without first» от kept)
+
+тотальная функция «Last lines»
+  принимает text: строка
+  возвращает строка
+  пример «a short output is kept whole»
+    дано text равно "первая\n\nвторая\n"
+    ожидается "первая\nвторая"
+  пусть kept равно (свёртка («Lines of» от text) начиная с (пустой список) как window и line
+    → («Keep twenty» от window и line))
+  соединить kept по "\n"
+
+тотальная функция «With trouble»
+  принимает troubles: список строки, trouble: строка, output: строка
+  возвращает список строки
+  пример «no trouble adds nothing»
+    дано troubles равно пустой список
+    дано trouble равно ""
+    дано output равно "зелено\n"
+    ожидается пустой список
+  пример «a trouble is kept with the end of the output»
+    дано troubles равно пустой список
+    дано trouble равно "сторож красен: true"
+    дано output равно "разошлось\n"
+    ожидается ["сторож красен: true\nразошлось"]
+  если trouble равен ""
+    то troubles
+    иначе добавить (соединить [trouble, "\n", («Last lines» от output)] по "") к troubles
+
+тотальная функция «Troubles after»
+  принимает job: «Job», troubles: список строки, answer: «Отклик»
+  возвращает список строки
+  пример «a green check leaves the list as it was»
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "true"
+    дано troubles равно пустой список
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "\nexit 0\n" и ошибки равным ""
+    ожидается пустой список
+  пример «a red check is kept with its output»
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "false"
+    дано troubles равно пустой список
+    дано answer равно вариант «Процесс завершён» с код равным 0 и вывод равным "мимо\n\nexit 1\n" и ошибки равным ""
+    ожидается ["сторож красен: false\nмимо\nexit 1"]
+  пример «a run cut short is a trouble»
+    дано job равно запись «Job» с «kind» равным "probe" и «command» равным "sleep 9"
+    дано troubles равно пустой список
+    дано answer равно вариант «Процесс убит» с сигнал равным "SIG9" и вывод равным "" и ошибки равным ""
+    ожидается ["прогон оборван (SIG9): sleep 9\n"]
+  пример «a refusal of the host is named with its code»
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "true"
+    дано troubles равно пустой список
+    дано answer равно вариант «Сбой» с код равным "FLANG_IO_TIMEOUT" и сообщение равным "молчала"
+    ожидается ["прогон не запущен (FLANG_IO_TIMEOUT): true\nмолчала"]
+  пример «an answer that is not about a process is a trouble»
+    дано job равно запись «Job» с «kind» равным "check" и «command» равным "true"
+    дано troubles равно пустой список
+    дано answer равно вариант «Пока ничего»
+    ожидается ["прогон не запущен: true"]
+  разбор answer
+    случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
+      то «With trouble» от troubles и («Trouble of» от job и («Answered zero» от output)) и output
+    случай вариант «Процесс убит» с сигнал как signal и вывод как output и ошибки как errors
+      то (добавить (соединить ["прогон оборван (", signal, "): ", (job.«command»), "\n",
+        («Last lines» от output)] по "") к troubles)
+    случай вариант «Сбой» с код как code и сообщение как message
+      то добавить (соединить ["прогон не запущен (", code, "): ", (job.«command»), "\n", message] по "") к troubles
+    случай любое
+      то добавить (соединить ["прогон не запущен: ", (job.«command»)] по "") к troubles
+
+тотальная функция «All troubles»
+  принимает troubles: список строки, count: число
+  возвращает список строки
+  пример «a list of runs that names nobody is a trouble»
+    дано troubles равно пустой список
+    дано count равно 0
+    ожидается ["ни одного прогона не названо: после «--» ждали прогоны через запятую"]
+  пример «with runs made the troubles are those of the runs»
+    дано troubles равно ["сторож красен: true\n"]
+    дано count равно 2
+    ожидается ["сторож красен: true\n"]
+  если count равен 0
+    то ["ни одного прогона не названо: после «--» ждали прогоны через запятую"]
+    иначе troubles
+
+тотальная функция «Summary»
+  принимает count: число, red: число
+  возвращает строка
+  пример «the runs and the red ones are counted»
+    дано count равно 41
+    дано red равно 0
+    ожидается "прогонов 41, красных 0"
+  соединить ["прогонов ", (к строке count), ", красных ", (к строке red)] по ""
+
+тотальная функция «Verdict»
+  принимает troubles: список строки, count: число
+  возвращает «Продолжение»
+  пример «no troubles — the work ends green»
+    дано troubles равно пустой список
+    дано count равно 41
+    ожидается вариант «Конец работы» с значение равным "прогонов 41, красных 0"
+  пример «every trouble is named»
+    дано troubles равно ["сторож красен: true\nразошлось"]
+    дано count равно 2
+    ожидается (вариант «Провал» с код равным "FLANG_GUARD_RUNNER_RED" и сообщение равным
+      "прогонов 2, красных 1\n\nсторож красен: true\nразошлось")
+  если (длина troubles) равен 0
+    то вариант «Конец работы» с значение равным («Summary» от count и 0)
+    иначе вариант «Провал» с код равным "FLANG_GUARD_RUNNER_RED" и сообщение равным (соединить [
+      («Summary» от count и (длина troubles)), "", (соединить troubles по "\n\n")] по "\n")
+
+тотальная функция «Launch»
+  принимает remaining: список «Job», troubles: список строки, count: число
+  возвращает «Продолжение»
+  пример «with no runs left the verdict is given»
+    дано remaining равно пустой список
+    дано troubles равно пустой список
+    дано count равно 3
+    ожидается вариант «Конец работы» с значение равным "прогонов 3, красных 0"
+  разбор remaining
+    случай пусто
+      то «Verdict» от («All troubles» от troubles и count) и count
+    случай голова и хвост
+      то вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh" и
+        аргументы равным ["-c", («Shell line» от (голова.«command»))]) и потом равным (вариант
+        «Awaiting answer» с job равным голова и remaining равным хвост и troubles равным troubles и
+        count равным (count плюс 1))
+
+тотальная функция «After arguments»
+  принимает answer: «Отклик»
+  возвращает «Продолжение»
+  пример «without arguments the plan is red and says what it waited for»
+    дано answer равно вариант «Доводы» с доводы равным пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_GUARD_RUNNER_RED" и сообщение равным
+      "прогонов 0, красных 1\n\nни одного прогона не названо: после «--» ждали прогоны через запятую")
+  разбор answer
+    случай вариант «Доводы» с доводы как arguments
+      то «Launch» от («Jobs of» от arguments) и (пустой список) и 0
+    случай любое
+      то вариант «Не проверено» с код равным "FLANG_GUARD_RUNNER_BLIND" и сообщение равным "доводы плана не прочитаны"
+
+тотальная функция «Begin»
+  возвращает «Stage»
+  пример «the plan starts at the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Next»
+  принимает stage: «Stage», answer: «Отклик»
+  возвращает «Продолжение»
+  пример «the first question is which runs are named»
+    дано stage равно вариант «Start»
+    дано answer равно вариант «Пока ничего»
+    ожидается вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант
+      «Awaiting arguments»)
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то «After arguments» от answer
+    случай вариант «Awaiting answer» с job как job и remaining как remaining и troubles как troubles и count как count
+      то «Launch» от remaining и («Troubles after» от job и troubles и answer) и count
+
+план «Run»
+  состояние «Stage»
+  начинает с «Begin»
+  обрабатывает «Next»

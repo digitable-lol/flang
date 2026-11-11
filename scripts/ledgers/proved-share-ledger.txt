@@ -1619,6 +1619,7 @@ ec91150a76853aeccde1fc314f3f9644|14|14|0|0|0|scripts/guards/delivery-guard.flang
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
 bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscript
+1f370e06afbea2343cf585f244528f95|1|1|0|0|0|scripts/guards/guard-runner.fscript
 ce0f26e8f64ce11b7f2f8e559d0f090b|11|11|0|0|0|scripts/guards/guards-without-forgery-probe.fscript
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript

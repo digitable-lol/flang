@@ -50,7 +50,7 @@
         и "$flang emit '%p' --target js --out \"$d\" %k")),
     (запись «Action» с «command» равным "new" и «pattern» равным («In a folder» от («Scratch folder») и (соединить [
         "(cd \"$d\" && $flang new probe && cd probe && $flang check probe.flang",
-        " && $flang io fspec/guard.flang %k)"] по "")))]
+        " && $flang io fspec/guard.flang --на-веру %k)"] по "")))]
   разбор (отфильтровать known где action → ((action.«command») равен command))
     случай голова и хвост
       то голова.«pattern»

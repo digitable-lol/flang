@@ -91,8 +91,8 @@ c329a1618, семя партии 10: «печати совпали побайт�
 <!-- СНЯТО 2026-11-10 строк flang/proof/checker/checker.c = 16354 (ADR-0220: the unfold move binds its body to the source) --> 15 796 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
-<!-- СНЯТО 2026-11-07 файлов flang/proof/lean/*.lean = 27 (translation validation: the symbolic walk of printed C) --> 27 файлов,
-<!-- СНЯТО 2026-11-07 строк-в flang/proof/lean/*.lean = 24315 (translation validation: the symbolic walk of printed C, and ADR-0196: the list map laws are theorems) --> 24 315 строки,
+<!-- СНЯТО 2026-11-11 файлов flang/proof/lean/*.lean = 31 (ADR-0228, ADR-0232, ADR-0234: Semantics/Termination, Tables, Recursion and Examples) --> 31 файл,
+<!-- СНЯТО 2026-11-11 строк-в flang/proof/lean/*.lean = 26189 (ADR-0228, ADR-0232, ADR-0234: the theorems of totality, tables, recursion and examples, and the census) --> 26 189 строк,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -123,6 +123,9 @@ c329a1618, семя партии 10: «печати совпали побайт�
 тело «Ф» на любой среде даёт один и тот же список. Потолок 136 держит шаг CI
 (`.github/workflows/lean-model-blocks.yml`: на пуш и запрос в `dev`, где менялись файлы Lean,
 второй сверщик, корпус или таблица долга): блок вне модели сверх него красит прогон.
+Отдельной строкой перепись печатает, сколько блоков «вне модели» стоит в записях, которые
+второй сверщик отвергает («НЕ СОШЛОСЬ»): 9 блоков в 12 записях; потолок эта строка не меняет
+([ADR-0234](adr/0234-the-model-reads-a-claim-closed-by-example-on-a-function-without-parameters.md) §5).
 
 Блок тотальности читается так ([ADR-0228](adr/0228-the-model-reads-a-composition-totality-by-the-reference-evaluator.md)):
 модель — эталонный вычислитель `flang/proof/lean/Semantics/Eval.lean` над деревом программы

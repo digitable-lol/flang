@@ -62,8 +62,8 @@ bootstrap/flang io scripts/four-coverages.fscript --plan Measure --timeout 90000
    постусловий — тоже; шаг, на котором модель не читает нужного (тело функции не собрано в
    терм, функции шага нет в реестре модели), уходит «вне модели» вместе со всем блоком.
 
-Файлов Lean в дереве 27.
-<!-- СНЯТО 2026-11-06 файлов flang/proof/lean/*.lean = 27 (translation validation: Semantics/Walk.lean, the theorem of the symbolic walk) -->
+Файлов Lean в дереве 31.
+<!-- СНЯТО 2026-11-11 файлов flang/proof/lean/*.lean = 31 (ADR-0228, ADR-0232, ADR-0234: Semantics/Termination, Tables, Recursion and Examples) -->
 Снимается целиком: `bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000` (нужен Lean в PATH, версия — в
 `flang/proof/lean/lean-toolchain`). Первый из двух вопросов прибор четырёх покрытий считает и без
 Lean: это счёт текста, а не доказательство.

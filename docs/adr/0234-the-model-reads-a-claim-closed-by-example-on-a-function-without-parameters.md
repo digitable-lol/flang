@@ -90,7 +90,30 @@
 в последнем столбце, и они идут в потолок «вне модели», пока теоремы нет. Владелец решает,
 согласен ли он с тем, что графа «на слове» остаётся частью меры условия 3.
 
-## 5. Как узнаем, что взято
+## 5. Записи корпуса, которые сверщик не принимает
+
+Из 100 записей корпуса сверщик на C не принимает 29: 12 отвергает («НЕ СОШЛОСЬ»), у 17
+отвечает «НЕ ПРОВЕРЕНО — ВПУСТУЮ» (запись сошлась с исходником, доказанного в ней нет).
+Перепись считает блоки и таких записей; строкой «из них в записях, которые второй сверщик
+отвергает» она печатает, сколько блоков «вне модели» стоит в отвергнутых записях: 9 (4
+утверждения ходами, 2 «на слове», 2 посылки без ходов, 1 тотальность). Потолок эта строка
+не меняет.
+
+| ответ сверщика | подделка по имени (`forgery-…`, `poddelka-…`) | имя подделкой не зовёт |
+|---|---|---|
+| НЕ СОШЛОСЬ, 12 | `forgery-case-split-captures-a-bound-name`, `forgery-hypothesis-outside-the-postcondition`, `forgery-hypothesis-outside-the-statement`, `forgery-unfold-inside-a-list`, `forgery-unfold-of-a-whole-comparison`, `forgery-unfold-without-arguments`, `poddelka-nositel-chislo-segment`, `poddelka-nositel-psevdonim-ne-otrezok`, `poddelka-raznost-bez-poryadka`, `poddelka-razv2-sebya`, `poddelka-razv3-raznost`, `poddelka-svyortka-nad-pustym` | — |
+| НЕ ПРОВЕРЕНО — ВПУСТУЮ, 17 | `forgery-binder-hides-the-condition`, `forgery-if-without-descent`, `poddelka-element-po-nomeru`, `poddelka-istinnaya-vetv`, `poddelka-krug-pri-rabote`, `poddelka-lozhnaya-polovina`, `poddelka-mera-dliny-stroki`, `poddelka-porjadok-sosednih`, `poddelka-ravenstvo-v-tele-ne-dokazyvaet`, `poddelka-razdvoenie-diz`, `poddelka-refleksivnost`, `poddelka-sortirovka-ne-ubyvaet`, `poddelka-vhozhdenie` | `krug-tuda-i-obratno`, `negative-zero-a-minus-a`, `negative-zero-a-plus-zero`, `negative-zero-zero-times-a` |
+
+Таблица проб `flang/proof/checker/tests/probes.tsv` называет пять из этих записей: четыре
+строкой подделки с ожидаемым кодом 1 (`poddelka-nositel-chislo-segment`,
+`poddelka-nositel-psevdonim-ne-otrezok`, `poddelka-razv2-sebya`, `poddelka-razv3-raznost`) и
+одну честной строкой с ожидаемым кодом 3 (`krug-tuda-i-obratno`); об остальных 24 таблица
+молчит, и что запись — подделка, говорит только её имя.
+
+Владелец решает, как условие 3 считает блок отвергнутой записи: для него «модель читает»
+может значить только «модель отвергает по той же причине».
+
+## 6. Как узнаем, что взято
 
 `bootstrap/flang run-script lean-model:blocks` печатает вид `утверждение-примером` с
 вердиктами и вид `утверждение-на-слове` с числом 11; потолок «вне модели» в шаге CI опущен

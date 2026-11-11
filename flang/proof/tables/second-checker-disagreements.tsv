@@ -1,0 +1,20 @@
+corpus	record	c	lean	reason
+records	flang/proof/checker/tests/families/unfold-on-constructor/built-constructor.record	0	3	второй отстаёт: развёртку вызова на выписанном конструкторе (ADR-0133) по телу не проигрывает, 4 места идут на слово
+records	flang/proof/checker/tests/families/unfold-on-constructor/two-argument-match.record	0	3	второй отстаёт: узел индукции с развёрткой по двум доводам не проигрывает, 3 места идут на слово
+examples	docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/genetic/evolution.flang	3	1	приёмка модели уже: шаг Р8 «разбор цели по условию» с веткой, где условие сокращает вложенное «если», не принят; ядро и сверщик на C его принимают
+examples	docs/examples/guide/lookup-table.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/https/tls-forgeries.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/io/child-process.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/015-3sum.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/020-valid-parentheses.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/064-minimum-path-sum.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/076-minimum-window-substring.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/189-rotate-array.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/200-number-of-islands.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/424-longest-repeating-character-replacement.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/516-longest-palindromic-subsequence.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/leetcode/746-min-cost-climbing-stairs.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	docs/examples/reference/ru/property.flang	0	3	второй отстаёт: шаг теоремы «по свойству» по существу не проверяет, он идёт на слово
+examples	flang/stdlib/logic.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
+examples	flang/stdlib/math-classics.flang	3	1	приёмка модели уже: шаг Р8 «разбор цели по условию» с веткой, где условие сокращает вложенное «если», не принят; ядро и сверщик на C его принимают

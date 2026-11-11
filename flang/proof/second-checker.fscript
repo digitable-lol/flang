@@ -16,6 +16,7 @@
       "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
       "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
       "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+      "if [ ! -f \"$d\" ] && [ -f \"$(dirname \"$z\")/$d\" ]; then d=\"$(dirname \"$z\")/$d\"; fi",
       "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
       "w=\"$z\"; x=\"$z\"",
       "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
@@ -26,6 +27,7 @@
     "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
     "r=$(find flang/proof/checker/tests flang/proof/forgeries -name '*.record' | sort)",
     "for z in $r; do d=$(grep -a -m1 '^исходник ' \"$z\" | cut -d' ' -f2-)",
+    "if [ ! -f \"$d\" ] && [ -f \"$(dirname \"$z\")/$d\" ]; then d=\"$(dirname \"$z\")/$d\"; fi",
     "if [ ! -f \"$d\" ]; then printf -- '-\\t-\\t%s\\n' \"$z\"; continue; fi",
     "w=\"$z\"; x=\"$z\"",
     "if [ \"$z\" = \"$2\" ]; then w=\"$3\"; sed 's/^знаков \\([0-9]*\\)$/знаков 1\\1/' \"$z\" > \"$w\"; fi",
@@ -38,6 +40,30 @@
   пример «The honest record both checkers verify whole is the one the forgery spoils»
     ожидается "flang/proof/checker/tests/families/type-families/families.record"
   "flang/proof/checker/tests/families/type-families/families.record"
+
+тотальная функция «Example loop parts»
+  возвращает список строки
+  пример «The kernel writes the record of every example, and both checkers answer on it»
+    ожидается ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
+      "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
+      "w=\"$2\"; export c l w",
+      "find docs/examples flang/stdlib -name '*.flang' | sort | xargs -P \"${FLANG_JOBS:-4}\" -I{} sh -c ':",
+      "z=\"$w/$(printf %s \"$1\" | tr / _).record\"",
+      "timeout 900 bootstrap/flang check \"$1\" --proof --record \"$z\" >/dev/null 2>&1",
+      "if [ ! -s \"$z\" ]; then printf -- \"-\\t-\\t%s\\n\" \"$1\" > \"$z.row\"; exit 0; fi",
+      "\"$c\" \"$1\" \"$z\" >/dev/null 2>&1; k=$?", "timeout 900 \"$l\" \"$1\" \"$z\" >/dev/null 2>&1; m=$?",
+      "case \"$m\" in 0|1|3) ;; *) m=4 ;; esac",
+      "printf \"%s\\t%s\\t%s\\n\" \"$k\" \"$m\" \"$1\" > \"$z.row\"' sh {}", "cat \"$w\"/*.row > \"$1\""]
+  ["cd \"$0\" || exit 2", "c=flang/proof/checker/сверщик",
+    "l=flang/proof/checker/second/out/второй-сверщик", "[ -x \"$c\" ] && [ -x \"$l\" ] || exit 3",
+    "w=\"$2\"; export c l w",
+    "find docs/examples flang/stdlib -name '*.flang' | sort | xargs -P \"${FLANG_JOBS:-4}\" -I{} sh -c ':",
+    "z=\"$w/$(printf %s \"$1\" | tr / _).record\"",
+    "timeout 900 bootstrap/flang check \"$1\" --proof --record \"$z\" >/dev/null 2>&1",
+    "if [ ! -s \"$z\" ]; then printf -- \"-\\t-\\t%s\\n\" \"$1\" > \"$z.row\"; exit 0; fi",
+    "\"$c\" \"$1\" \"$z\" >/dev/null 2>&1; k=$?", "timeout 900 \"$l\" \"$1\" \"$z\" >/dev/null 2>&1; m=$?",
+    "case \"$m\" in 0|1|3) ;; *) m=4 ;; esac",
+    "printf \"%s\\t%s\\t%s\\n\" \"$k\" \"$m\" \"$1\" > \"$z.row\"' sh {}", "cat \"$w\"/*.row > \"$1\""]
 
 тотальная функция «Empty tally»
   возвращает «Tally»
@@ -222,6 +248,20 @@
     дано declined равно 0
     дано forged равно "1/1"
     ожидается вариант «Конец работы» с значение равным "x\nПОДЛОГ ОТВЕРГНУТ ОБОИМИ: сверщик на C — 1, второй — 1"
+  пример «An example the second checker declines does not fail the examples plan»
+    дано mode равно "examples"
+    дано lines равно ["x"]
+    дано found равно пустой список
+    дано declined равно 2
+    дано forged равно ""
+    ожидается вариант «Конец работы» с значение равным "x\nсошлось"
+  пример «A disagreement on an example fails the examples plan»
+    дано mode равно "examples"
+    дано lines равно ["x"]
+    дано found равно ["  РАСХОЖДЕНИЕ  a.flang: сверщик на C — 0, второй — 1"]
+    дано declined равно 0
+    дано forged равно ""
+    ожидается вариант «Провал» с код равным "FLANG_SECOND" и сообщение равным "x\nРАЗОШЛОСЬ"
   пример «A forged copy one checker lets through fails the plan»
     дано mode равно "both"
     дано lines равно ["x"]
@@ -233,7 +273,8 @@
   пусть caught равно ((длина found) равен 1) и притом ((длина named) равен 1)
   пусть forgery равно (mode равен "forgery")
   пусть both равно (mode равен "both")
-  пусть whole равно (пусто found) и притом (declined равен 0)
+  пусть tolerated равно (если mode равен "examples" то 0 иначе declined)
+  пусть whole равно (пусто found) и притом (tolerated равен 0)
   пусть rejected равно whole и притом (forged равен "1/1")
   пусть ok равно (если forgery то caught иначе (если both то rejected иначе whole))
   пусть good равно («Chosen» от [(«When» от forgery и "ПОДЛОГ ПОЙМАН: расхождение на испорченной копии названо"),
@@ -276,8 +317,12 @@
   пусть forged равно (если mode равен "crosscheck" то "-" иначе («Forged record»))
   пусть fed равно (если mode равен "both" то "both" иначе "-")
   пусть codes равно («In work» от "codes.tsv" и answers)
-  [(«Run» от "loop" и "sh" и ["-c", (соединить («Loop parts») по "; "), "../..", codes, forged,
+  пусть records равно [(«Run» от "loop" и "sh" и ["-c", (соединить («Loop parts») по "; "), "../..", codes, forged,
     («In work» от "forged.record" и answers), fed]), («Read» от "codes" и codes)]
+  пусть examples равно [(«Run» от "loop" и "sh" и ["-c", (соединить («Example loop parts») по "; "), "../..", codes,
+    («Made of» от "work" и answers)]), («Read» от "codes" и codes)]
+  пусть ledger равно («Read» от "ledger" и "tables/second-checker-disagreements.tsv")
+  приписать ledger к (если mode равен "examples" то examples иначе records)
 
 тотальная функция «Obstacle»
   принимает asked: признак, code: число
@@ -317,14 +362,90 @@
       то «Ask» от (голова) и (хвост) и stages и answers
     случай пусто
       то если stages не больше 0
-        то «Finished» от («Mode of» от answers) и («Output of» от "codes" и answers)
+        то «Finished» от («Mode of» от answers) и («Output of» от "codes" и answers) и («Output of» от
+          "ledger" и answers)
         иначе «Proceed» от («Stage» от stages и answers) и (stages минус 1) и answers
 
+тотальная функция «Named lines»
+  принимает mode: строка, ledger: строка
+  возвращает список строки
+  пример «A row of the ledger is the disagreement line it names, for the corpus of its plan»
+    дано mode равно "crosscheck"
+    дано ledger равно "corpus\trecord\tc\tlean\treason\nrecords\ta.record\t0\t3\tlag\nexamples\tb.flang\t3\t1\tnarrow\n"
+    ожидается ["  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 3"]
+  пример «The examples plan reads the rows of the examples»
+    дано mode равно "examples"
+    дано ledger равно "corpus\trecord\tc\tlean\treason\nrecords\ta.record\t0\t3\tlag\nexamples\tb.flang\t3\t1\tnarrow\n"
+    ожидается ["  РАСХОЖДЕНИЕ  b.flang: сверщик на C — 3, второй — 1"]
+  пусть corpus равно (если mode равен "examples" то "examples" иначе "records")
+  пусть rows равно (отфильтровать («Rows» от ledger) где row → («Cell» от 1 и row) равен corpus)
+  отобразить rows как row → соединить ["  РАСХОЖДЕНИЕ  ", («Cell» от 2 и row), ": сверщик на C — ",
+    («Cell» от 3 и row), ", второй — ", («Cell» от 4 и row)] по ""
+
+тотальная функция «Absent from»
+  принимает lines: список строки, others: список строки
+  возвращает список строки
+  пример «A line the other list does not hold»
+    дано lines равно ["а", "б"]
+    дано others равно ["б"]
+    ожидается ["а"]
+  отфильтровать lines где line → пусто (отфильтровать others где other → other равен line)
+
+тотальная функция «Stale lines»
+  принимает named: список строки, found: список строки
+  возвращает список строки
+  пример «A named disagreement that no longer happens is stale»
+    дано named равно ["  РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 3"]
+    дано found равно пустой список
+    ожидается ["  УСТАРЕЛО: в таблице названо, а в прогоне нет —   РАСХОЖДЕНИЕ  a.record: сверщик на C — 0, второй — 3"]
+  пример «A named disagreement that happens is not stale»
+    дано named равно ["а"]
+    дано found равно ["а"]
+    ожидается пустой список
+  отобразить («Absent from» от named и found) как line → соединить [
+    "  УСТАРЕЛО: в таблице названо, а в прогоне нет — ", line] по ""
+
+тотальная функция «Ledger line»
+  принимает named: список строки, found: список строки
+  возвращает строка
+  пример «How many of the disagreements the ledger names»
+    дано named равно ["а", "б"]
+    дано found равно ["а", "в"]
+    ожидается "из них названо в flang/proof/tables/second-checker-disagreements.tsv: 1, не названо: 1"
+  пусть fresh равно («Absent from» от found и named)
+  соединить ["из них названо в flang/proof/tables/second-checker-disagreements.tsv: ",
+    (к строке ((длина found) минус (длина fresh))), ", не названо: ", (к строке (длина fresh))] по ""
+
+тотальная функция «Headed»
+  принимает mode: строка, lines: список строки
+  возвращает список строки
+  пример «The examples plan names its own corpus and what a missing row means»
+    дано mode равно "examples"
+    дано lines равно ["── второй сверщик (Lean) против сверщика на C: записи проб и подделок ──",
+      "записей 1, без исходника 0, сличено 1"]
+    ожидается ["── второй сверщик (Lean) против сверщика на C: записи примеров и библиотеки ──",
+      "«без исходника» здесь — файл, по которому ядро записи не дало",
+      "записей 1, без исходника 0, сличено 1"]
+  пример «The other plans keep their lines»
+    дано mode равно "crosscheck"
+    дано lines равно ["заголовок", "строка"]
+    ожидается ["заголовок", "строка"]
+  пусть named равно ["── второй сверщик (Lean) против сверщика на C: записи примеров и библиотеки ──",
+    "«без исходника» здесь — файл, по которому ядро записи не дало"]
+  пусть rest равно (отфильтровать lines где line → не (line начинается с "── второй сверщик"))
+  если mode равен "examples" то («Соединить списки» от named и rest) иначе lines
+
 тотальная функция «Finished»
-  принимает mode: строка, codes: строка
+  принимает mode: строка, codes: строка, ledger: строка
   возвращает «Продолжение»
   пусть t равно («Tally of» от (соединить ["c\tl\tзапись\n", codes] по ""))
-  «Judged» от mode и («Report lines» от t) и (t.«disagreements») и («At» от 7 и (t.«counts»)) и (t.«forged»)
+  пусть named равно («Named lines» от mode и ledger)
+  пусть found равно (t.«disagreements»)
+  пусть stale равно («Stale lines» от named и found)
+  пусть tail равно (приписать («Ledger line» от named и found) к stale)
+  пусть said равно («Соединить списки» от («Headed» от mode и («Report lines» от t)) и tail)
+  пусть open равно («Соединить списки» от («Absent from» от found и named) и stale)
+  «Judged» от mode и said и open и («At» от 7 и (t.«counts»)) и (t.«forged»)
 
 тотальная функция «Started»
   принимает mode: строка
@@ -345,6 +466,10 @@
 тотальная функция «Begin both»
   возвращает «Inquiry»
   «Started» от "both"
+
+тотальная функция «Begin examples»
+  возвращает «Inquiry»
+  «Started» от "examples"
 
 тотальная функция «Next»
   принимает inquiry: «Inquiry», reply: «Отклик»
@@ -369,6 +494,15 @@
   состояние «Inquiry»
   начинает с «Begin both»
   обрабатывает «Next»
+
+план «Examples»
+  состояние «Inquiry»
+  начинает с «Begin examples»
+  обрабатывает «Next»
+
+тотальная функция «Объявление короткой команды checker:second-examples»
+  возвращает строка
+  "bootstrap/flang io --plan Examples --timeout 3600000 — оба сверщика на записях docs/examples и flang/stdlib"
 
 тотальная функция «Объявление короткой команды checker:second-both»
   возвращает строка

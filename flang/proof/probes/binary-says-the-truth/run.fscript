@@ -1,0 +1,133 @@
+модуль «Binary says the truth probes»
+
+использует «Таблица проб» из "../table.fscript"
+
+объект «Action»
+  «command»: строка
+  «pattern»: строка
+
+тотальная функция «This set»
+  возвращает «Набор»
+  пример «the set is named, and mismatch and blindness carry different codes»
+    ожидается (запись «Набор» с «имя» равным "binary-says-the-truth" и «код расхождения» равным "FLANG_PROBE_TRUTH"
+        и «код слепоты» равным "FLANG_PROBE_TRUTH_CANNOT_LOOK")
+  (запись «Набор» с «имя» равным "binary-says-the-truth" и «код расхождения» равным "FLANG_PROBE_TRUTH"
+      и «код слепоты» равным "FLANG_PROBE_TRUTH_CANNOT_LOOK")
+
+тотальная функция «Scratch folder»
+  возвращает строка
+  пример «the folder is made under the temporary directory of the tree»
+    ожидается "d=$(mktemp -d \"${FLANG_TMP:-${TMPDIR:-/tmp}}/binary-says-the-truth.XXXXXX\")"
+  "d=$(mktemp -d \"${FLANG_TMP:-${TMPDIR:-/tmp}}/binary-says-the-truth.XXXXXX\")"
+
+тотальная функция «In a folder»
+  принимает made: строка, work: строка
+  возвращает строка
+  пример «the work is done, the folder is removed and the code of the work is kept»
+    дано made равно "d=1"
+    дано work равно "true"
+    ожидается "d=1 && { true; k=$?; rm -rf \"$d\"; (exit $k); }"
+  соединить [made, " && { ", work, "; k=$?; rm -rf \"$d\"; (exit $k); }"] по ""
+
+тотальная функция «Pattern of»
+  принимает command: строка
+  возвращает строка
+  пример «a check is asked plainly»
+    дано command равно "check"
+    ожидается "$flang check '%p' %k"
+  пример «help is asked of the command named in the keys»
+    дано command равно "help"
+    ожидается "$flang %k --help"
+  пример «an unknown command fails the probe»
+    дано command равно "dance"
+    ожидается "false"
+  пусть known равно [
+    (запись «Action» с «command» равным "check" и «pattern» равным "$flang check '%p' %k"),
+    (запись «Action» с «command» равным "test" и «pattern» равным "$flang test '%p' %k"),
+    (запись «Action» с «command» равным "io" и «pattern» равным "$flang io '%p' %k"),
+    (запись «Action» с «command» равным "help" и «pattern» равным "$flang %k --help"),
+    (запись «Action» с «command» равным "emit" и «pattern» равным («In a folder» от («Scratch folder»)
+        и "$flang emit '%p' --target js --out \"$d\" %k")),
+    (запись «Action» с «command» равным "new" и «pattern» равным («In a folder» от («Scratch folder») и (соединить [
+        "(cd \"$d\" && $flang new probe && cd probe && $flang check probe.flang",
+        " && $flang io fspec/guard.flang %k)"] по "")))]
+  разбор (отфильтровать known где action → ((action.«command») равен command))
+    случай голова и хвост
+      то голова.«pattern»
+    случай пусто
+      то "false"
+
+тотальная функция «Filled»
+  принимает pattern: строка, mark: строка, value: строка
+  возвращает строка
+  пример «every mark is replaced by the value»
+    дано pattern равно "a %k b %k"
+    дано mark равно "%k"
+    дано value равно "x"
+    ожидается "a x b x"
+  пример «a pattern without the mark stays as it is»
+    дано pattern равно "false"
+    дано mark равно "%p"
+    дано value равно "x"
+    ожидается "false"
+  соединить (разделить pattern по mark) по value
+
+тотальная функция «Call»
+  принимает parts: список строки
+  возвращает строка
+  пример «a check row becomes a check of the program of the set»
+    дано parts равно ["one-plan.flang", "check", "-", "0", "проверено"]
+    ожидается "$flang check 'flang/proof/probes/binary-says-the-truth/programs/one-plan.flang' "
+  пример «a help row asks the command named in the keys»
+    дано parts равно ["-", "help", "test", "0", "входят в"]
+    ожидается "$flang test --help"
+  пусть path равно (соединить ["flang/proof/probes/binary-says-the-truth/programs/", («Поле» от parts и 1)] по "")
+  пусть placed равно («Filled» от («Pattern of» от («Поле» от parts и 2)) и "%p" и path)
+  «Filled» от placed и "%k" и («Ключи» от («Поле» от parts и 3))
+
+тотальная функция «Probe of a row»
+  принимает root: строка, parts: список строки
+  возвращает «Проба»
+  пример «a row of the table becomes a probe»
+    дано root равно "cd r && "
+    дано parts равно ["-", "help", "test", "0", "входят в"]
+    ожидается (запись «Проба» с «программа» равным "-" и «приметы» равным "- [help test]"
+        и «команда» равным "cd r && { $flang test --help; } 2>&1; echo \"[code=$?]\""
+        и «код» равным "0" и «слово» равным "входят в")
+  (запись «Проба» с «программа» равным («Поле» от parts и 1)
+      и «приметы» равным («Приметы» от («Поле» от parts и 1) и [(«Поле» от parts и 2), («Поле» от parts и 3)])
+      и «команда» равным (соединить [root, («С меткой» от («Call» от parts))] по "")
+      и «код» равным («Поле» от parts и 4) и «слово» равным («Поле» от parts и 5))
+
+тотальная функция «Probes»
+  принимает text: строка
+  возвращает список «Проба»
+  пример «a table without rows of data gives no probes»
+    дано text равно "program\tcommand\tkeys\tcode\tword\n"
+    ожидается пустой список
+  отобразить («Строки данных» от text) как parts → («Probe of a row» от («От корня» от "") и parts)
+
+тотальная функция «Begin»
+  возвращает «Ход»
+  пример «the plan begins at the beginning»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Next»
+  принимает step: «Ход», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «the first step reads the table of expectations»
+    дано step равно вариант «Начало»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "expected.tsv")
+        и потом равным (вариант «Ждём таблицу»))
+  разбор step
+    случай вариант «Ждём таблицу»
+      то «После таблицы» от («This set») и («Probes» от («Содержимое» от reply))
+    случай любое
+      то «Шаг» от («This set») и step и reply
+
+план «Binary»
+  состояние «Ход»
+  начинает с «Begin»
+  обрабатывает «Next»

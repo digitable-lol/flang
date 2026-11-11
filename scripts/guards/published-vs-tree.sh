@@ -685,7 +685,7 @@ proza() {
 # в исходнике, но в командной строке они становятся частью имени, а пробел без
 # кавычек оболочки разбивает имя на два довода. Обе половины проверены прогоном:
 #
-#   flang io …shortcut-collector.fscript --plan «Целость»   FLANG_UNKNOWN_PLAN, код 3
+#   flang io …shortcut-collector.fscript --plan «Целость»   FLANG_UNKNOWN_PLAN, код 2
 #   flang io …kernel-forgeries.fscript --plan «Аксиом ноль»
 #                                       «непонятный ключ «ноль»»», код 2
 #   flang io …shortcut-collector.fscript --plan Целость     код 0

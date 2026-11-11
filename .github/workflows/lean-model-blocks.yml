@@ -59,8 +59,8 @@ jobs:
           LC_ALL: C.UTF-8
           FLANG_TMP: ${{ runner.temp }}
         run: |
-          bootstrap/flang run-script lean-model:blocks -- --ceiling 183 --judged-floor 86
-          if bootstrap/flang run-script lean-model:blocks -- --ceiling 182; then
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 136 --judged-floor 86
+          if bootstrap/flang run-script lean-model:blocks -- --ceiling 135; then
             echo "the census kept silent at a ceiling below the fact" >&2
             exit 1
           fi

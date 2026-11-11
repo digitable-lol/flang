@@ -15,3 +15,4 @@ morphism-shape-mismatch.flang	check	1	даёт «Отгрузить заказ»
 category-unknown-arrow.flang	check	1	категория «Склад»: стрелки «потерять» не объявлено
 category-unknown-arrow.flang	check	1	категория «Склад»: стрелка «держать» названа дважды
 flang/ct/modules/orders.flang	check	0	категория «Заказы»: сетка 6 значений на 1 объектах, троек стрелок 162, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+flang/test/fixtures/binary-rules/meet-same-side.flang	check	0	общая часть «Само с собой»: сетка 4 значений — ПОСЧИТАНО НА СЕТКЕ, не доказано

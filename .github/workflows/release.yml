@@ -449,15 +449,10 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
 
-      # Планы сверки целей красят цель, которая промолчала, а Elixir в образе
-      # раннера нет: без этого шага набор был бы красен всегда.
       - name: Install Elixir
         run: sudo apt-get update && sudo apt-get install -y elixir
 
       - name: Run all checks
-        # `bootstrap/flang run-script tests` — три плана сверки целей печати
-        # (связь, планировщик, надзор). Node им нужен только как тулчейн цели
-        # `js` и берётся из образа раннера.
         run: bootstrap/flang run-script tests
 
   # ── PREBUILT BUILDS ───────────────────────────────────────────────────────

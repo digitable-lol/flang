@@ -16,9 +16,9 @@ is on the [Releases](releases.html) page.
 | 6 | Packages and modules | an outsider imports a module with one line, and the build is reproducible |
 | 8 | The printed C does what is proved about the source | every function of a printed program is checked against the semantics of the language written in Lean |
 
-Number 7, "Services in production", was withdrawn by the owner on 11 November
-2026: how long a service has lived is a condition of the calendar, not a
-property of the language. The other numbers stay as they were.
+Number 7, "Services in production", is not a condition: how long a service
+has lived is a condition of the calendar, not a property of the language. The
+other numbers stay as they were.
 
 For each condition — what exists, what is missing and which command checks
 it — see the document

@@ -311,10 +311,6 @@ jobs:
       - name: Probe reasoning checks in the tab
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:reasoning-probe
 
-      # The playground must run the compiler of the release the documentation
-      # describes: the version the WebAssembly compiler reports about itself is
-      # compared with the version of the tree. The forged run asks for a version
-      # the tree does not have and must turn red on that very line.
       - name: The playground compiler is the compiler of the tree
         run: |
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:version
@@ -327,15 +323,9 @@ jobs:
       - name: The starter programs of the playground pass
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:starters
 
-      # Every whole flang program on the pages of docs/site and docs/guide goes
-      # through the WebAssembly compiler, and the output a page shows after a
-      # command is compared with what that compiler prints.
       - name: Everything the site shows works in the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:site
 
-      # Negative control: a forged page shows a wrong output for a sound
-      # program and carries a program that does not pass. The plan must turn
-      # red and name both.
       - name: Probe a forged page
         run: |
           podlog=scripts/site/playground-site-forgery.txt

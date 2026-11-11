@@ -1,0 +1,68 @@
+name: Lean model blocks
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "flang/proof/lean/**"
+      - "flang/proof/checker/second/**"
+      - "flang/proof/checker/Makefile"
+      - "flang/proof/checker/tests/records/corpus/**"
+      - "flang/proof/examples/**"
+      - "flang/proof/tables/lean-soundness-debt.tsv"
+      - ".github/workflows/lean-model-blocks.yml"
+  pull_request:
+    branches: [dev]
+    paths:
+      - "flang/proof/lean/**"
+      - "flang/proof/checker/second/**"
+      - "flang/proof/checker/Makefile"
+      - "flang/proof/checker/tests/records/corpus/**"
+      - "flang/proof/examples/**"
+      - "flang/proof/tables/lean-soundness-debt.tsv"
+      - ".github/workflows/lean-model-blocks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-model-blocks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  blocks:
+    name: lean-model-blocks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Install Lean
+        run: |
+          set -eu
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain "$(cat flang/proof/lean/lean-toolchain)"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Build flang
+        run: make -C bootstrap -j4
+
+      - name: Build the second checker
+        run: make -C flang/proof/checker second
+
+      - name: Blocks outside the Lean model do not grow
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}
+        run: |
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 205 --judged-floor 147
+          if bootstrap/flang run-script lean-model:blocks -- --ceiling 204; then
+            echo "the census kept silent at a ceiling below the fact" >&2
+            exit 1
+          fi
+          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 148; then
+            echo "the census kept silent at a floor above the fact" >&2
+            exit 1
+          fi

@@ -83,10 +83,10 @@
   возвращает список строки
   пример «The verdict module and the termination theorem are compiled into the work directory»
     ожидается ["mkdir -p \"$2/Semantics\" &&",
-      "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Verdicts;",
+      "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Semantics/Tables Verdicts;",
       "do LEAN_PATH=\"$0:$2\" $1 -o \"$2/$m.olean\" \"$m.lean\" 2>&1 || exit 1; done"]
   ["mkdir -p \"$2/Semantics\" &&",
-    "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Verdicts;",
+    "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Semantics/Tables Verdicts;",
     "do LEAN_PATH=\"$0:$2\" $1 -o \"$2/$m.olean\" \"$m.lean\" 2>&1 || exit 1; done"]
 
 тотальная функция «Census parts»
@@ -248,7 +248,7 @@
   пример «A totality the termination theorem does not cover is not read»
     дано kind равно запись «Kind» с «name» равным "тотальность-вне-модели" и «counts» равным [2, 0, 0, 0, 0]
     ожидается нет
-  ["утверждение-вывод", "тотальность", "снятие"] содержит (kind.«name»)
+  ["утверждение-вывод", "тотальность", "снятие", "таблица"] содержит (kind.«name»)
 
 тотальная функция «Is a proof»
   принимает kind: «Kind»
@@ -278,7 +278,7 @@
       то ["«судитьТотальности»", "«судитьБлок»"]
     случай "тотальность-вне-модели"
       то ["«судитьТотальности»", "«судитьБлок»"]
-    случай "таблица"
+    случай "таблица-вне-модели"
       то ["«судитьШапку»", "«судитьОглавление»"]
     случай "снятие-ходами"
       то ["«судитьСнятие»", "«судитьСнятия»", "«проигратьБлок»"]

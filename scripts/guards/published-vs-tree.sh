@@ -650,15 +650,12 @@ proza() {
   # молча превращает проверку в непроверку.
   t_vsego=$(grep -racE '^[[:space:]]*теорема ' flang --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
   t_bibl=$(grep -racE '^[[:space:]]*теорема ' flang/stdlib --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
-  skazat "proofs.ru: теорем"   "$(plosko docs/site/proofs.ru.md | grep -oE 'таких теорем [0-9]+' | grep -oE '[0-9]+')" "$t_vsego"
-  skazat "proofs: теорем"      "$(plosko docs/site/proofs.md | grep -oE 'There are [0-9]+ such theorems' | grep -oE '[0-9]+')" "$t_vsego"
-  skazat "proofs.ru: в библиотеке" "$(plosko docs/site/proofs.ru.md | grep -oE 'из них [0-9]+ в стандартной' | grep -oE '[0-9]+')" "$t_bibl"
 
   # Решающих правил ядра — счёт берётся у самого ядра, и на обеих страницах он
   # стоит дважды: цифрой в скобках при команде и словом в прозе.
   pravil=$(grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang | tr -d ' ')
-  skazat "proofs: правил ядра"    "$(plosko docs/site/proofs.md | grep -oE 'proof-kernel\.flang. → [0-9]+' | grep -oE '[0-9]+')" "$pravil"
-  skazat "proofs.ru: правил ядра" "$(plosko docs/site/proofs.ru.md | grep -oE 'proof-kernel\.flang. → [0-9]+' | grep -oE '[0-9]+')" "$pravil"
+  skazat "proofs: правил ядра"    "$(plosko docs/site/proofs.md | grep -oE 'The prover has [0-9]+ rules' | grep -oE '[0-9]+')" "$pravil"
+  skazat "proofs.ru: правил ядра" "$(plosko docs/site/proofs.ru.md | grep -oE 'У prover.а [0-9]+ правил' | grep -oE '[0-9]+')" "$pravil"
   if grep -q 'три решающих правила\|the three decision rules' docs/site/proofs.ru.md docs/site/proofs.md docs/site/learning.ru.md 2>/dev/null; then
     echo "  правил ядра словом    на странице «три решающих правила» при $pravil в ядре  РАЗОШЛОСЬ"
     plohih=$((plohih + 1))

@@ -65,7 +65,7 @@ $ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль'
 some classical statements cannot be proved. For programs this rarely matters:
 they compute.
 
-**There is no external solver.** The prover has twenty rules, each one can be
+**There is no external solver.** The prover has 20 rules, each one can be
 read in full ([The kernel specification](../spec-proof.html), in Russian); refusals call them
 by name. No SMT solver is taken as a judge: that would mean trusting
 correctness to hundreds of thousands of lines of someone else's code.

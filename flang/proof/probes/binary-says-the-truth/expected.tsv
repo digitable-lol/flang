@@ -1,0 +1,23 @@
+program	command	keys	code	word
+-	help	-	0	ЧЕГО НЕТ: закона у стрелок без категории
+-	help	-	0	отдельной команды «flang-lsp»
+-	help	check	0	Категорную поверхность бинарник СУДИТ
+-	help	check	0	бинарник называет его сам
+-	help	test	0	прогоняются здесь же и входят в
+-	help	emit	0	несосчитанное зовётся
+-	help	new	0	flang io fspec/guard.flang --trust
+-	help	lsp	0	Работает слоем на самом flang
+false-property.flang	check	-	1	FLANG_NOT_COMMUTATIVE
+functor-over-arrows.flang	check	-	2	НЕ СЧИТАЛИСЬ
+functor-over-arrows.flang	emit	-	3	НЕ СЧИТАЛИСЬ
+arrow-law-without-category.flang	check	-	2	проверено НЕ ДО КОНЦА
+arrow-law-without-category.flang	emit	-	3	НЕ СЧИТАЛИСЬ
+arrow-law-without-category.flang	emit	--no-postconditions	3	НЕ СЧИТАЛИСЬ
+arrow-law-without-category.flang	test	-	0	примеров 1, прошло 1, не прошло 0
+false-arrow-example.flang	test	-	1	примеров 1, прошло 0, не прошло 1
+false-arrow-example.flang	check	-	1	FLANG_EXAMPLE
+false-arrow-example.flang	check	--proof	1	FLANG_EXAMPLE
+false-arrow-example.flang	check	--proof --строго	1	FLANG_EXAMPLE
+one-plan.flang	io	--plan Absent	2	FLANG_UNKNOWN_PLAN
+one-plan.flang	io	-	0	готово
+-	new	--trust	0	спеки согласны

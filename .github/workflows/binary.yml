@@ -2031,7 +2031,7 @@ jobs:
       # ПЛАН НАЗЫВАЕТСЯ ЯВНО: с 29 августа 2026 в файле два плана — дорогой
       # «Подделки остаются недоказанными» и дешёвый «Аксиом ноль», который читает
       # текст ядра и от семени не зависит. Без имени плана двоичный отвечает
-      # FLANG_UNKNOWN_PLAN и кодом 3.
+      # FLANG_UNKNOWN_PLAN и кодом 2.
       - name: Check kernel forgeries
         run: bootstrap/flang io flang/scripts/kernel-forgeries.fscript --на-веру --plan 'Подделки остаются недоказанными'
 
@@ -2042,6 +2042,8 @@ jobs:
 
       - name: Check strict mode
         run: bootstrap/flang io flang/proof/probes/strict/run.fscript --plan Binary
+      - name: Check the binary says the truth
+        run: bootstrap/flang io flang/proof/probes/binary-says-the-truth/run.fscript --plan Binary --timeout 900000
       - name: Check function value probes
         run: bootstrap/flang io flang/proof/probes/function-values/run.fscript --plan Binary
       - name: Check unproven gate

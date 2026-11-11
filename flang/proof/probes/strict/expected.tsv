@@ -16,7 +16,8 @@ precedence.flang	--proof	3	НЕ ПРОВЕРЕНО
 precedence.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО
 monad-with-arrow-example.flang	--proof	0	законов утверждениями 3: доказано ядром 3
 monad-with-arrow-example.flang	--proof	0	законов на сетке: 0 (значений в сетках 0)
-monad-with-arrow-example.flang	--proof --строго	3	НЕ УДАЛОСЬ ДОКАЗАТЬ — ПРОВЕРЕНО ВПУСТУЮ
+monad-with-arrow-example.flang	--proof --строго	0	ДОКАЗАНО — утверждений 3: доказано 3
+monad-with-arrow-example.flang	-	0	монада «Ящик»: сетка 1 значений, троек 4, нарушений 0
 not-judged.flang	--proof	1	сетку строить не из чего
 not-judged.flang	--proof --строго	1	FLANG_MONAD
 refuted.flang	--proof	1	FLANG_PROPERTY: нарушено свойство

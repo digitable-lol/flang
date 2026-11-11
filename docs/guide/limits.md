@@ -81,7 +81,7 @@ name. Write `случай вариант «Да»`, or rename the variant.
 **Side effects work through `план` only.** A function never reads a file
 itself: it returns a command as data (`вариант «Прочитать файл» с путь равным
 …`), and `flang io` executes it and calls the function again with the
-response. There are 27 commands, and the list is closed: <!-- СНЯТО 2026-10-12 список flang/self/parser.flang:6543 = 27 -->
+response. There are 28 commands, and the list is closed: <!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6645 = 28 -->
 read and write a file as text and as bytes, delete a file, make a temporary
 directory, list a directory, make an HTTP request, open and accept a
 connection, read and write a connection as text and as bytes, send and
@@ -105,7 +105,7 @@ system bundle. A response is at most 1,048,576 bytes. A plan has no raw TLS sock
 and `ts`**. `cpp`, `csharp`, `elixir` and `java` refuse with
 `FLANG_PLAN_UNSUPPORTED`, name the plan and write no files. In `c`, `go`,
 `python` and `rust` the runner runs the plan: `flang_cli --plan <name>
-[arg…]`; its host performs 9 kinds of orders out of 27 (files as text and as
+[arg…]`; its host performs 9 kinds of orders out of 28 (files as text and as
 bytes, directories, environment, arguments) and answers network, processes,
 clock, dice and screen with «Сбой» and `FLANG_IO_NOT_WIRED` or
 `FLANG_IO_NO_SCREEN`. Run such a plan with `flang io`.

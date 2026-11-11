@@ -54,8 +54,8 @@ none of them.
 DESCRIBED but not performed: `вариант «Прочитать файл» с путь равным …` builds a
 value — an order — and the host carries it out
 ([`docs/flang/SPEC.md`](../flang/SPEC.md), the "Ввод-вывод" section). There are
-27 orders, the set is closed, and connections are in it —
-<!-- СНЯТО 2026-10-12 список flang/self/parser.flang:6543 = 27 -->
+28 orders, the set is closed, and connections are in it —
+<!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6645 = 28 -->
 `«Принять соединение»`, `«Прочитать из соединения»`, `«Ответить в соединение»`.
 The boundary does not run along those; it runs along this section's own rule:
 **an HTTP server has no input on which you can declare an example.** It waits for

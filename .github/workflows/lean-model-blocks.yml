@@ -21,6 +21,8 @@ on:
       - "flang/proof/examples/**"
       - "flang/proof/tables/lean-soundness-debt.tsv"
       - ".github/workflows/lean-model-blocks.yml"
+  schedule:
+    - cron: "47 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -57,12 +59,12 @@ jobs:
           LC_ALL: C.UTF-8
           FLANG_TMP: ${{ runner.temp }}
         run: |
-          bootstrap/flang run-script lean-model:blocks -- --ceiling 205 --judged-floor 147
-          if bootstrap/flang run-script lean-model:blocks -- --ceiling 204; then
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 203 --judged-floor 145
+          if bootstrap/flang run-script lean-model:blocks -- --ceiling 202; then
             echo "the census kept silent at a ceiling below the fact" >&2
             exit 1
           fi
-          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 148; then
+          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 146; then
             echo "the census kept silent at a floor above the fact" >&2
             exit 1
           fi

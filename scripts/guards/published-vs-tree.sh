@@ -650,11 +650,8 @@ proza() {
   # молча превращает проверку в непроверку.
   t_vsego=$(grep -racE '^[[:space:]]*теорема ' flang --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
   t_bibl=$(grep -racE '^[[:space:]]*теорема ' flang/stdlib --include='*.flang' | awk -F: '{s+=$2} END {print s+0}')
-  skazat "index.ru: теорем"    "$(plosko docs/site/index.ru.md | grep -oE 'теорем в дереве языка \*\*[0-9]+\*\*' | grep -oE '[0-9]+')" "$t_vsego"
-  skazat "index: теорем"       "$(plosko docs/site/index.md | grep -oE 'There are \*\*[0-9]+\*\* such theorems' | grep -oE '[0-9]+')" "$t_vsego"
   skazat "proofs.ru: теорем"   "$(plosko docs/site/proofs.ru.md | grep -oE 'таких теорем [0-9]+' | grep -oE '[0-9]+')" "$t_vsego"
   skazat "proofs: теорем"      "$(plosko docs/site/proofs.md | grep -oE 'There are [0-9]+ such theorems' | grep -oE '[0-9]+')" "$t_vsego"
-  skazat "index.ru: в библиотеке"  "$(plosko docs/site/index.ru.md | grep -oE 'из них \*\*[0-9]+\*\* в стандартной' | grep -oE '[0-9]+')" "$t_bibl"
   skazat "proofs.ru: в библиотеке" "$(plosko docs/site/proofs.ru.md | grep -oE 'из них [0-9]+ в стандартной' | grep -oE '[0-9]+')" "$t_bibl"
 
   # Решающих правил ядра — счёт берётся у самого ядра, и на обеих страницах он

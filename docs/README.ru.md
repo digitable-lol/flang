@@ -128,7 +128,7 @@ fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result,
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
 flang/          язык: self/ (компилятор), core/, stdlib/, proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
-docs/examples/  348 программ на flang в 32 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
+docs/examples/  350 программ на flang в 33 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      готовые сборки (prebuilt/), формула Homebrew, плагин asdf, deb и rpm (nfpm.yaml), PKGBUILD для AUR, страница flang.1, проверки установки
 scripts/        проверки дерева, перепечатка точки раскрутки, релизный архив, журнал изменений
@@ -159,7 +159,7 @@ docs/tasks/     открытая работа дерева, по файлу на
 [`docs/examples/web/shortener`](examples/web/shortener/README.md), сокращатель ссылок, где между
 байтами запроса и байтами ответа нет ничего, кроме flang, и
 [`docs/examples/library-api`](examples/library-api/README.md), предметная половина библиотечной
-службы; ещё 333 программы в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
+службы; ещё 335 программ в остальных наборах — отдельные файлы, среди них набор LeetCode: 82
 решения с 806 примерами.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->

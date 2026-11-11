@@ -1,10 +1,10 @@
 # The road to 1.0
 
 The current release is {{выпуск.версия}}. Release 1.0 is a language that can be
-handed to people. Eight conditions must hold for it. What has already shipped
+handed to people. Seven conditions must hold for it. What has already shipped
 is on the [Releases](releases.html) page.
 
-## Eight conditions
+## Seven conditions
 
 | No. | Condition | What it means |
 |---|---|---|
@@ -14,12 +14,15 @@ is on the [Releases](releases.html) page.
 | 4 | No known typing holes | every known hole is written down and closed by a probe |
 | 5 | Stable formats | the `FLANG_*` refusal codes and the proof record format do not change silently |
 | 6 | Packages and modules | an outsider imports a module with one line, and the build is reproducible |
-| 7 | Services in production | not examples but services that run for months and get fixed when they fall |
 | 8 | The printed C does what is proved about the source | every function of a printed program is checked against the semantics of the language written in Lean |
+
+Number 7, "Services in production", was withdrawn by the owner on 11 November
+2026: how long a service has lived is a condition of the calendar, not a
+property of the language. The other numbers stay as they were.
 
 For each condition — what exists, what is missing and which command checks
 it — see the document
-["The road to 1.0: eight conditions"](https://github.com/digitable-lol/flang/blob/main/docs/road-to-1-0.md)
+["The road to 1.0: seven conditions"](https://github.com/digitable-lol/flang/blob/main/docs/road-to-1-0.md)
 (in Russian).
 
 ## What has already shipped

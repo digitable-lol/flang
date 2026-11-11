@@ -869,6 +869,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_PROOF_UNKNOWN_VAR` | `obligations.flang`, `parser.flang`, `types.flang` | — |
 | `FLANG_PROOF_VAR_TYPE` | `obligations.flang` | — |
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | property «{claim}» of function «{function}» is violated |
+| `FLANG_PROPERTY_NOT_JUDGED` | `compiler.flang` | — |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |

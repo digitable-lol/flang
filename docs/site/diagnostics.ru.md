@@ -859,6 +859,7 @@ $ echo $?
 | `FLANG_PROOF_UNKNOWN_VAR` | `obligations.flang`, `parser.flang`, `types.flang` | — |
 | `FLANG_PROOF_VAR_TYPE` | `obligations.flang` | — |
 | `FLANG_PROPERTY` | `compiler.flang`, `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `grid.flang`, `interpret.flang`, `parser.flang` | нарушено свойство «{claim}» функции «{function}» |
+| `FLANG_PROPERTY_NOT_JUDGED` | `compiler.flang` | — |
 | `FLANG_PULSE` | `flang_runtime.c` | — |
 | `FLANG_PULSE_TICK` | `flang_runtime.c` | — |
 | `FLANG_RECURSION_LIMIT` | `compiler.flang`, `conc.flang`, `factcheck.flang`, `failures.flang`, `interpret.flang` | — |

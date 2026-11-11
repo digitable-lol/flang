@@ -171,6 +171,7 @@
 | 0214 | [Пакет — это ссылка с отпечатком; реестра нет](0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md) | принято | да |  |
 | 0218 | [Независимые обязательства судят процессы-работники, ответ собирается по номерам](0218-independent-obligations-are-judged-in-worker-processes.md) | предложено | да |  |
 | 0220 | [Остальные ходы теоремы состоятельны относительно законов ядра: закон, переписать, поля, развернуть](0220-the-remaining-moves-are-sound-against-laws-of-the-kernel.md) | предложено | да |  |
+| 0224 | [Страница — это значение, которое план показывает; хозяин вкладки держит файлы и запускает программы](0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md) | предложено | нет |  |
 | 0228 | [Блок тотальности композицией читает модель: завершение в эталонном вычислителе](0228-the-model-reads-a-composition-totality-by-the-reference-evaluator.md) | предложено | да |  |
 | 0232 | [Блок тотальности композицией над рекурсивной функцией читает модель: рекурсия по части довода](0232-the-model-reads-a-composition-totality-over-a-function-recursive-on-a-part-of-its-argument.md) | предложено | да |  |
 | 0234 | [Утверждение, закрытое примером у функции без доводов, читает модель; что нужно остальным блокам «на слове»](0234-the-model-reads-a-claim-closed-by-example-on-a-function-without-parameters.md) | предложено | да |  |

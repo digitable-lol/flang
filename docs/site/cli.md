@@ -328,15 +328,41 @@ Computes one function and prints the value. The binary evaluates it itself; no
 C compiler or Node is needed.
 
 ```bash
-flang run <файл.flang> --function «Имя» [--args '{"н":10}'] [--max-steps N]
-                       [--max-depth N] [--trust] [--unproven refuse|warn|allow]
-                       [--cost]
+flang run <файл.flang> «Имя» [аргументы] [--max-steps N] [--max-depth N]
+                       [--trust] [--unproven refuse|warn|allow] [--cost]
 ```
+
+The function name is the first word after the file. Arguments are written as
+literals of the language, without JSON:
+
+```bash
+$ flang run docs/examples/leetcode/069-sqrtx.flang '«Корень в отрезке»' 9 0 9
+доказано: утверждений 2
+3
+$ flang run docs/examples/leetcode/069-sqrtx.flang '«Корень в отрезке»' верх=9 н=9 низ=0
+доказано: утверждений 2
+3
+```
+
+| How the argument is given | What happens |
+| --- | --- |
+| `9 0 9` | values go to the parameters in declaration order |
+| `низ=0` | the value goes to the named parameter; the name may be written in guillemets: `«низ»=0` |
+| `9 верх=9` | mixed: values without a name go, in order, to the parameters not given by name |
+| not given, input and output are a terminal | `flang` asks for each missing parameter by name and type (`низ: число = `); on a parse or type error it says why and asks again |
+| not given, input or output is not a terminal | no questions: refusal `FLANG_TYPE`, exit `1` |
+
+A value is a literal of the language: a number, a string in quotes, a list
+`[1, 2, 3]`, `запись «Точка» с «икс» равным 3 и «игрек» равным 4`,
+`вариант «Круг» с «радиус» равным 5`. A literal with spaces is quoted for the
+shell as one word. A string parameter also takes a bare word: `слово=дом` means
+`"дом"`. An extra value, an unknown name, a name given twice and a value that
+does not read as a literal are a bad call, exit `2`.
 
 | Flag | What it does |
 | --- | --- |
-| `--function «Имя»` | the function to compute. Required |
-| `--args '{…}'` | arguments as a JSON object keyed by parameter name; values may be lists, records and variants, checked against the declared types |
+| `--function «Имя»` | the same function name as a flag |
+| `--args '{…}'` | arguments as a JSON object keyed by parameter name; values may be lists, records and variants, checked against the declared types. Not combined with word arguments |
 | `--max-steps N` | the step limit of the evaluator |
 | `--max-depth N` | the depth limit of the program being evaluated (the binary's own limit is `--depth-limit`) |
 | `--memory-limit N` | memory limit; exit `5` at the limit |

@@ -28,8 +28,8 @@ docs/tasks/     открытая и закрытая работа дерева, 
 
 <!-- КАРТА-КОНЕЦ -->
 
-Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 67 файлов на flang —
-<!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar) -->
+Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 68 файлов на flang —
+<!-- СНЯТО 2026-11-11 файлов flang/self/*.flang = 68 (ADR-0230: flang/self/call-words.flang lays console words over parameters) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
 [`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **65 модулей, 2156 функций и 4171
 пример**, которые прогоняются при каждой проверке:

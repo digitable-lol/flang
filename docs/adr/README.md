@@ -173,6 +173,7 @@
 | 0220 | [Остальные ходы теоремы состоятельны относительно законов ядра: закон, переписать, поля, развернуть](0220-the-remaining-moves-are-sound-against-laws-of-the-kernel.md) | предложено | да |  |
 | 0224 | [Страница — это значение, которое план показывает; хозяин вкладки держит файлы и запускает программы](0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md) | предложено | нет |  |
 | 0228 | [Блок тотальности композицией читает модель: завершение в эталонном вычислителе](0228-the-model-reads-a-composition-totality-by-the-reference-evaluator.md) | предложено | да |  |
+| 0230 | [Функция зовётся из консоли без JSON: аргументы литералами, по месту и по имени, недостающие спрашиваются](0230-a-function-is-called-from-the-console-without-json.md) | предложено | да |  |
 | 0232 | [Блок тотальности композицией над рекурсивной функцией читает модель: рекурсия по части довода](0232-the-model-reads-a-composition-totality-over-a-function-recursive-on-a-part-of-its-argument.md) | предложено | да |  |
 | 0234 | [Утверждение, закрытое примером у функции без доводов, читает модель; что нужно остальным блокам «на слове»](0234-the-model-reads-a-claim-closed-by-example-on-a-function-without-parameters.md) | предложено | да |  |
 | 0236 | [Утверждения, закрытые правилами ядра «неотрицательность по построению» и «ограниченность точным потолком по построению», читает модель](0236-the-model-reads-claims-closed-by-kernel-rules-by-construction.md) | предложено | да |  |

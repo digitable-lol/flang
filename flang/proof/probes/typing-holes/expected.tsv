@@ -81,3 +81,5 @@ statement-cited-at-a-wider-type.flang	proof	0	доказано 2, условно
 statement-cited-at-a-wider-type.flang	run-statement-at-wider-type	1	FLANG_PROPERTY
 linear-bound-rounds-at-the-ceiling.flang	proof	3	доказано 1, условно 0
 linear-bound-rounds-at-the-ceiling.flang	run-sum-at-the-ceiling	1	FLANG_PROPERTY
+imported-property-library.flang	check	1	FLANG_NOT_COMMUTATIVE
+imported-property-refuted.flang	check	0	замечаний нет

@@ -3500,8 +3500,7 @@
 
 тотальная функция «Ключи склейки»
   возвращает список строки
-  ["transformations", "categories", "legacy", "monoids", "monads", "isomorphisms", "properties", "embeddings",
-   "intersections", "bifunctors"]
+  ["categories", "legacy", "monoids", "monads", "isomorphisms", "embeddings", "intersections", "bifunctors"]
 
 тотальная функция «Склеить поверхности»
   принимает «связанная»: «Значение», «разобранная»: «Значение»

@@ -1,0 +1,8 @@
+модуль «Imported property refuted»
+  использует «Imported property library» из "imported-property-library.flang"
+
+тотальная функция «Ответ»
+  возвращает число
+  пример «пять минус три»
+    ожидается 2
+  «Вычесть» от 5 и 3

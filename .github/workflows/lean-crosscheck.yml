@@ -108,19 +108,19 @@ jobs:
           bootstrap/flang run-script checker:second
 
       # Перепись блоков записи (задача 4572): сколько блоков корпуса модель Lean
-      # читает и сколько стоит вне её. Потолок — число с прогона 27 октября 2026;
+      # читает и сколько стоит вне её. Потолок — число с прогона;
       # блок вне модели сверх него красит шаг, снять потолок вниз — правкой здесь.
       # Проба: с потолком на единицу ниже тот же план обязан покраснеть.
       - name: Blocks outside the Lean model do not grow
         env:
           FLANG_TMP: ${{ runner.temp }}
         run: |
-          bootstrap/flang run-script lean-model:blocks -- --ceiling 521 --judged-floor 343
-          if bootstrap/flang run-script lean-model:blocks -- --ceiling 520; then
+          bootstrap/flang run-script lean-model:blocks -- --ceiling 205 --judged-floor 147
+          if bootstrap/flang run-script lean-model:blocks -- --ceiling 204; then
             echo "перепись блоков промолчала на потолке ниже факта" >&2
             exit 1
           fi
-          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 344; then
+          if bootstrap/flang run-script lean-model:blocks -- --judged-floor 148; then
             echo "перепись блоков промолчала на поле выше факта" >&2
             exit 1
           fi

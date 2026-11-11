@@ -11597,7 +11597,7 @@ static bool proof_tally_read(const char *json, size_t bytes, proof_tally *out) {
     return false;
   }
   /* ЗАКОНЫ УТВЕРЖДЕНИЯМИ (ADR-0121) — своя доля рядом с «claims», и в приговор
-     она входит наравне с прочими утверждениями.Поля нет — законов нет, это не беда. */
+     она входит наравне с прочими утверждениями. Поля нет — законов нет, это не беда. */
   if (proof_object_at(json, bytes, "lawClaims", &from, &to)) {
     long law_total = 0;
     long law_proved = 0;

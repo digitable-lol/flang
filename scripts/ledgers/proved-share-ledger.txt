@@ -1227,6 +1227,7 @@ e28d3964a2bea76c0ba96af43e4e6ec0|1|1|0|0|0|flang/proof/checker/tests/families/pa
 c3d110927d3b7a1b994d52259c0ce03e|1|1|0|0|0|flang/proof/checker/tests/families/pattern-shadow/variant-case.flang
 dcdf98a5c22b7eac4510ef6d47df7db2|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-is-in-the-originals.flang
 1bbcfccfab94346174f722d0ce22ab6a|1|×|×|×|1|flang/proof/checker/tests/families/nested-quantifier/each-with-each.flang
+2004ef6c873a51e37e0e1aa36fa1a735|1|1|0|0|0|flang/proof/checker/tests/families/nested-recursion/list-field.flang
 470696935cd27193b14a7ebe288068f5|1|×|×|×|0|flang/proof/checker/tests/families/all-elements/branch-choice.flang
 6ceaa7f17e408388d4447d40753e7a04|1|×|×|×|2|flang/proof/checker/tests/families/all-elements/call-with-a-listed-list.flang
 7e1c93a9588256efa0332d2af81e944f|1|×|×|×|2|flang/proof/checker/tests/families/all-elements/call-with-an-appended-list.flang

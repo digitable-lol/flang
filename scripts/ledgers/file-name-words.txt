@@ -461,6 +461,7 @@ direct
 directories
 directory
 disables
+disagreements
 discards
 discharge
 discharged
@@ -1912,6 +1913,7 @@ vectors
 verdict
 verdictcheck
 verdicts
+verified
 verifies
 verify
 version

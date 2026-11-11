@@ -235,9 +235,6 @@
       for (var i = 0; i < байты.length; i++) строка += String.fromCharCode(байты[i]);
       return btoa(строка).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-    /* Текст в адресе: сжатый (`code`: UTF-8 → deflate-raw → base64url), а где
-       браузер сжимать не умеет — старым полем `text`. Формат читает
-       `playground.js`; после «#» браузер серверу ничего не отправляет. */
     function вАдрес(текст) {
       var байты = new TextEncoder().encode(текст);
       var простой = 'text=' + вОснование64(байты);
@@ -249,9 +246,6 @@
     if (typeof document.querySelectorAll !== 'function') return;
     var место = document.querySelector('main pre.lang-playground');
     var блоки = document.querySelectorAll('main pre');
-    /* Целая программа — блок flang, первая значащая строка которого (пустые и
-       «//» не в счёт) открывает модуль или категорию: по тому же правилу
-       песочница решает, что перед ней программа. */
     function целаяПрограмма(текст) {
       var строки = текст.split('\n');
       for (var i = 0; i < строки.length; i++) {
@@ -265,8 +259,6 @@
       if (блок === место) return false;
       return блок.classList.contains('lang-flang') && целаяПрограмма(блок.textContent);
     }
-    /* Имя файла программы: страница называет его в обратных кавычках в
-       абзаце прямо перед блоком («Положите в файл `hello.flang`:»). */
     function имяФайла(блок) {
       var перед = блок.previousElementSibling;
       if (!перед || перед.tagName !== 'P') return '';
@@ -276,11 +268,6 @@
       }
       return '';
     }
-    /* Команда, которую страница показывает после программы: первый блок
-       оболочки до следующей программы со строкой
-       `flang check|test|run|emit файл.flang …`. Если программа названа по
-       имени, команда обязана называть тот же файл; если нет — поиск идёт
-       только до ближайшего заголовка. Песочница откроется сразу с ней. */
     function командаПосле(блок) {
       var имя = имяФайла(блок);
       for (var сосед = блок.nextElementSibling; сосед; сосед = сосед.nextElementSibling) {

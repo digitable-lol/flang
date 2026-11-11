@@ -13,9 +13,6 @@
    страницу блоком `#flang-lexicon`, второго списка слов здесь нет. */
 (function () {
   'use strict';
-  /* Заготовки: шесть коротких программ, с которых удобно начать. Каждую
-     сторож `playground:probe` прогоняет компилятором песочницы — заготовка,
-     которая не проходит проверку, красит сборку сайта. */
   var STARTERS = [
     { key: 'hello', fn: 'Удвоить', args: '{"н": 21}', text: [
       'модуль «Привет»', '',
@@ -68,7 +65,6 @@
     { key: 'emitC', slug: 'emit-c', emit: 'c', fn: 'Удвоить', args: '{"н": 21}', text: null }
   ];
   STARTERS[5].text = STARTERS[0].text;
-  /* Вне браузера файл отдаёт только заготовки — их берёт сторож песочницы. */
   if (typeof globalThis !== 'undefined') globalThis.флангЗаготовки = STARTERS;
   if (typeof document === 'undefined') return;
   var holder = document.querySelector('main pre.lang-playground');
@@ -244,11 +240,6 @@
       return null;
     }
   }
-  /* Адрес песочницы: поля после «#» через «&». Текст едет полем `code`
-     (UTF-8 → deflate-raw → base64url) или старым `text` (UTF-8 → base64url);
-     `example` зовёт заготовку по имени; `do`, `fn`, `args`, `target` говорят,
-     что сделать сразу. Формат записан для страниц сайта, его же пишет
-     `search.js` под блоками кода. */
   function addressFields(hash) {
     var out = {};
     String(hash || '').replace(/^#/, '').split('&').forEach(function (part) {
@@ -266,7 +257,6 @@
     if (typeof DecompressionStream === 'undefined') return Promise.reject(new Error('DecompressionStream'));
     return pipe(fromBase64(word), new DecompressionStream('deflate-raw')).then(function (b) { return new TextDecoder().decode(b); });
   }
-  /* Ссылка на текст: сжатая, а где браузер сжимать не умеет — старым полем. */
   function addressOf(text) {
     var plain = '#text=' + toAddress(text);
     if (typeof CompressionStream === 'undefined') return Promise.resolve(plain);
@@ -598,8 +588,6 @@
   var status = el('span', 'playground-status'); status.setAttribute('role', 'status');
   bar.appendChild(select); bar.appendChild(checkButton); bar.appendChild(runButton); bar.appendChild(testButton);
   bar.appendChild(shareButton); bar.appendChild(status);
-  /* Что запускать: имя функции и доводы объектом JSON — те же, что у
-     `flang run --function … --args …`. Пустое имя — первая функция текста. */
   var callBar = el('div', 'playground-call');
   var fnInput = el('input', 'playground-fn'); fnInput.type = 'text'; fnInput.placeholder = T.fnHint;
   fnInput.setAttribute('aria-label', T.fnLabel); fnInput.spellcheck = false; fnInput.setAttribute('autocapitalize', 'off');
@@ -742,8 +730,6 @@
 
   /* ── поток с компилятором ───────────────────────────────────────────────── */
   var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null;
-  /* Сколько ждать ответа на одно поручение, когда компилятор уже загружен.
-     Скачивание в этот срок не входит: его ждёт `warm`. */
   var TIME_LIMIT_MS = 120000;
   function stopWorker(why) {
     if (worker) worker.terminate();
@@ -784,7 +770,7 @@
   }
   /* Компилятор весит десятки мегабайт, поэтому качается не при открытии
      страницы, а при первом касании песочницы: пока человек правит текст,
-     модуль уже едет и собирается. Версию называет сам компилятор. */
+     модуль уже едет и собирается. */
   function warm() {
     if (warmed) return warmed;
     warmed = post('', { действие: 'прогреть' }, false).then(function (a) {
@@ -796,8 +782,6 @@
     });
     return warmed;
   }
-  /* Поручение ждёт загруженного компилятора, и только потом идёт его срок:
-     вечный цикл в программе останавливается, а медленная сеть — нет. */
   function ask(text, extra) {
     return warm().then(function (w) {
       if (w && w.остановлено) return w;
@@ -1651,8 +1635,6 @@
   }
   checkButton.addEventListener('click', function () { run(input.value); });
 
-  /* Команда как в терминале: `flang run` и `flang test` тем же компилятором.
-     Вывод показан как есть, над ним — одна строка о том, чем кончилось. */
   function firstFunction(text) {
     var m = /(?:функция|function)\s+«([^»]+)»/u.exec(text);
     return m ? m[1] : '';
@@ -1762,7 +1744,6 @@
       status.textContent = T.linkCopied;
     });
   });
-  /* Текст из адреса: `code` (сжатый), `text` (старый) или заготовка `example`. */
   function textFromFields(f) {
     if (f.code !== undefined) return inflate(f.code).catch(function () { return null; });
     if (f.text !== undefined) return Promise.resolve(fromAddress('#text=' + f.text));

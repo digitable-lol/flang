@@ -30,3 +30,5 @@ negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target cpp --out "
 negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target js --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | (cd "$d/p" && node flang_cli.js negative_zero.js); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
 negative-zero.flang	sh -c 'd=$(mktemp -d) && "$0" emit "$1" --target python --out "$d/p" > /dev/null 2>&1 && printf "%s\n" "{\"fn\":\"Остаток ноль\",\"args\":[{\"n\":\"-12\"},{\"n\":\"6\"}]}" | (cd "$d/p" && python3 -B flang_cli.py negative_zero); r=$?; rm -rf "$d"; exit $r' $flang @	0	{"ok":true,"value":true}
 -	sh -c 'v=$("$0" --version | head -1 | cut -d" " -f2); printf "%s\n" "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}" | "$0" --mcp-mode | grep -c "\"version\":\"$v\""' $flang	0	1
+negative-zero.flang	run @ --function '«Остаток ноль»'	1	вызов функции «Остаток ноль» функции «Остаток ноль» не задаёт аргумент «а»
+-	sh -c 'printf "1000 плюс 234\n\n" | "$0" repl' $flang	1	у функции «⟨выражение⟩» нет строки 'возвращает'

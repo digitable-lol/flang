@@ -89,3 +89,4 @@ selective-import-monoid-true-library.flang	check	0	замечаний нет
 selective-import-monoid-true.flang	check	0	замечаний нет
 written-step-cites-a-promise-at-a-wider-type.flang	proof	3	доказано 3, условно 0
 written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_PROPERTY
+written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0

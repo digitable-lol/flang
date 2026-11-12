@@ -91,8 +91,8 @@ c329a1618, семя партии 10: «печати совпали побайт�
 <!-- СНЯТО 2026-11-10 строк flang/proof/checker/checker.c = 16354 (ADR-0220: the unfold move binds its body to the source) --> 15 796 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
-<!-- СНЯТО 2026-11-11 файлов flang/proof/lean/*.lean = 31 (ADR-0228, ADR-0232, ADR-0234: Semantics/Termination, Tables, Recursion and Examples) --> 31 файл,
-<!-- СНЯТО 2026-11-11 строк-в flang/proof/lean/*.lean = 26189 (ADR-0228, ADR-0232, ADR-0234: the theorems of totality, tables, recursion and examples, and the census) --> 26 189 строк,
+<!-- СНЯТО 2026-11-12 файлов flang/proof/lean/*.lean = 32 (ADR-0222 step 2: Reading.lean, the reader on fuel) --> 32 файла,
+<!-- СНЯТО 2026-11-12 строк-в flang/proof/lean/*.lean = 26402 (ADR-0222 step 2: the reader on fuel and the theorem that more fuel keeps its answer) --> 26 402 строки,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -214,8 +214,12 @@ c329a1618, семя партии 10: «печати совпали побайт�
 блоков вне модели. Теоремы о самом `checker.c`: код связан с моделью сверкой вердиктов на
 наборе проб и с опорным сверщиком на Lean на корпусе (`checker:second`), а не выводом.
 Модель значений округляет не по binary64, и её совпадение с вычислителем не доказано
-(ADR-0041 §2.3). Чтение формул (`partial def` в `flang/proof/lean/RecordReader.lean`) стоит
-вне теоремы.
+(ADR-0041 §2.3). Чтение формул (`flang/proof/lean/RecordReader.lean`) — функции на запасе
+шагов: каждая из десяти функций читателя получает запас, и его исчерпание — третий ответ
+наряду с «прочёл» и «не прочёл», который проходит наружу через каждую развилку; теорема
+«ступень» (`flang/proof/lean/Reading.lean`) говорит, что больший запас не меняет ответа,
+кроме ответа «запас кончился». Что читатель режет текст так, как печать его пишет, — по-прежнему
+сверка на корпусе, а не теорема.
 
 **Как узнаем, что взято.** Блоков «вне модели» нет, и утверждение о состоятельности
 самого сверщика доказано выводом.

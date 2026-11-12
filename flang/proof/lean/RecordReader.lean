@@ -145,8 +145,22 @@ def «накопительСписком» (a : String) : «ТермС» → «�
 
 /-! ## Формулы и термы -/
 
-mutual
-partial def «число» (s0 : String) : Option «ТермЧ» :=
+abbrev «Чтение» (α : Type) := Except Bool α
+
+def «либо» {α β : Type} (x : «Чтение» α) (f : α → «Чтение» β) (k : «Чтение» β) : «Чтение» β :=
+  match x with
+  | .ok a => f a
+  | .error true => .error true
+  | .error false => k
+
+def «Чтение».«прочтено» {α : Type} : «Чтение» α → Option α
+  | .ok a => some a
+  | .error _ => none
+
+def «шагЧисла» («форм» : String → «Чтение» «Форм») («число» : String → «Чтение» «ТермЧ»)
+    («список» : String → «Чтение» «ТермС») («текст» : String → «Чтение» «ТермТ»)
+    («доводы» : List String → «Чтение» «Доводы») («сумма» : String → «Чтение» «ТермСм»)
+    (s0 : String) : «Чтение» «ТермЧ» :=
   let s := «ужать» s0
   if let some (u, a, b) := «выбор» s then
     do let u' ← «форм» u; let a' ← «число» a; let b' ← «число» b; pure (.«если» u' a' b')
@@ -162,11 +176,11 @@ partial def «число» (s0 : String) : Option «ТермЧ» :=
             if «имя?» a && «имя?» e then
               do pure (.«свёртка» (← «список» («словаПосле» («ужать» «сп») 1)) (← «число» «н»)
                         («ужать» a) («ужать» e) (← «число» «ш»))
-            else none
-          | _ => none
-        | _ => none
-      | _ => none
-    | _ => none
+            else .error false
+          | _ => .error false
+        | _ => .error false
+      | _ => .error false
+    | _ => .error false
   else if let some (l, r) := «надвое» s "плюс" then do pure (.«плюс» (← «число» l) (← «число» r))
   else if let some (l, r) := «надвое» s "минус" then do pure (.«минус» (← «число» l) (← «число» r))
   else if let some (l, r) := «надвое» s "умножить на" then do pure (.«умножить» (← «число» l) (← «число» r))
@@ -177,15 +191,17 @@ partial def «число» (s0 : String) : Option «ТермЧ» :=
   else if s.startsWith "к числу " then do pure (.«кЧислу» (← «число» (s.«сн» 8)))
   else if let some (f, args) := «вызов?» s then do pure (.«вызов» f (← «доводы» args))
   else if let some (c, p) := «проекция?» s then do pure (.«поле» (← «сумма» c) p)
-  else if let some f := «ярлык?» s then some (.«ярлык» f)
-  else if let some n := «литерал?» s then some (.«лит» n)
-  else if «имя?» s then some (.«имя» s)
-  else if let some x := «имяВЁлочках?» s then some (.«имя» x)
-  else none
+  else if let some f := «ярлык?» s then pure (.«ярлык» f)
+  else if let some n := «литерал?» s then pure (.«лит» n)
+  else if «имя?» s then pure (.«имя» s)
+  else if let some x := «имяВЁлочках?» s then pure (.«имя» x)
+  else .error false
 
-partial def «список» (s0 : String) : Option «ТермС» :=
+def «шагСписка» («форм» : String → «Чтение» «Форм») («число» : String → «Чтение» «ТермЧ»)
+    («список» : String → «Чтение» «ТермС») («доводы» : List String → «Чтение» «Доводы»)
+    («члены» : List String → «Чтение» «Члены») (s0 : String) : «Чтение» «ТермС» :=
   let s := «ужать» s0
-  if s = "пустой список" then some .«пустой»
+  if s = "пустой список" then pure .«пустой»
   -- списочная свёртка (М2, ADR-0042 §2): начало и шаг — списки
   else if s.startsWith "свёртка " then
     match «разделитьСверху» s "→" with
@@ -199,75 +215,107 @@ partial def «список» (s0 : String) : Option «ТермС» :=
             if «имя?» a && «имя?» e then
               do pure (.«свёрткаС» (← «список» («словаПосле» («ужать» «сп») 1)) (← «список» «н»)
                         («ужать» a) («ужать» e) («накопительСписком» («ужать» a) (← «список» «ш»)))
-            else none
-          | _ => none
-        | _ => none
-      | _ => none
-    | _ => none
+            else .error false
+          | _ => .error false
+        | _ => .error false
+      | _ => .error false
+    | _ => .error false
   else if s.startsWith "[" && s.endsWith "]" then
     let «вн» := («безКраёв» s).«обр»
-    if «вн».any (· = '[') || «вн».any (· = ']') then none
+    if «вн».any (· = '[') || «вн».any (· = ']') then .error false
     -- `[]` — тот же пустой список, что слово «пустой список»: Э1 судит `.«пустой»`,
     -- а печать ядра пишет хвост выписанного списка `[]` (мера длины формулы, 4058).
-    else if «вн» = "" then some .«пустой»
+    else if «вн» = "" then pure .«пустой»
     else do pure (.«выписан» (← «члены» ((«вн».splitOn ",").map «ужать»)))
   else if let some (u, a, b) := «выбор» s then
     do pure (.«еслиС» (← «форм» u) (← «список» a) (← «список» b))
   else if s.startsWith "приписать " then
     match «разделитьСверху» s "к" with
     | [«л», «хв»] => do pure (.«приписать» (← «число» («словаПосле» («ужать» «л») 1)) (← «список» «хв»))
-    | _ => none
+    | _ => .error false
   else if s.startsWith "добавить " then
     match «разделитьСверху» s "к" with
     | [«л», «хв»] => do pure (.«добавить» (← «число» («словаПосле» («ужать» «л») 1)) (← «список» «хв»))
-    | _ => none
+    | _ => .error false
   else if s.startsWith "отфильтровать " then
     match «надвое» (s.«сн» 14) "где" with
     | some («над», «хв») =>
       let «разрез» := match «надвое» «хв» "→" with | some p => some p | none => «надвое» «хв» ":"
       match «разрез» with
-      | some (x, «у») => if «имя?» x then do pure (.«отбор» (← «список» «над») («ужать» x) (← «форм» «у»)) else none
-      | none => none
-    | none => none
+      | some (x, «у») => if «имя?» x then do pure (.«отбор» (← «список» «над») («ужать» x) (← «форм» «у»)) else .error false
+      | none => .error false
+    | none => .error false
   -- отображение (Э6, задача 4058): прообраз, имя элемента, образ-число
   else if s.startsWith "отобразить " then
     match «надвое» (s.«сн» 11) "как" with
     | some («над», «хв») =>
       match «надвое» «хв» "→" with
-      | some (x, «ф») => if «имя?» x then do pure (.«отобразить» (← «список» «над») («ужать» x) (← «число» «ф»)) else none
-      | none => none
-    | none => none
+      | some (x, «ф») => if «имя?» x then do pure (.«отобразить» (← «список» «над») («ужать» x) (← «число» «ф»)) else .error false
+      | none => .error false
+    | none => .error false
   else if let some (f, args) := «вызов?» s then do pure (.«вызовС» f (← «доводы» args))
-  else if «имя?» s then some (.«имяС» s)
-  else if let some x := «имяВЁлочках?» s then some (.«имяС» x)
-  else none
+  else if «имя?» s then pure (.«имяС» s)
+  else if let some x := «имяВЁлочках?» s then pure (.«имяС» x)
+  else .error false
 
-partial def «текст» (s0 : String) : Option «ТермТ» :=
+def «шагТекста» («форм» : String → «Чтение» «Форм») («число» : String → «Чтение» «ТермЧ»)
+    («текст» : String → «Чтение» «ТермТ») («доводы» : List String → «Чтение» «Доводы»)
+    (s0 : String) : «Чтение» «ТермТ» :=
   let s := «ужать» s0
-  if s.length ≥ 2 && s.front = '"' && s.back = '"' then some (.«литТ» («безКраёв» s))
+  if s.length ≥ 2 && s.front = '"' && s.back = '"' then pure (.«литТ» («безКраёв» s))
   else if let some (u, a, b) := «выбор» s then
     do pure (.«еслиТ» (← «форм» u) (← «текст» a) (← «текст» b))
   else if s.startsWith "соединить " then
     match «разделитьСверху» s "с" with
     | [«л», «р»] => do pure (.«склейка» (← «текст» («словаПосле» («ужать» «л») 1)) (← «текст» «р»))
-    | _ => none
+    | _ => .error false
   -- число текстом (Ч5): «к строке Ч»
   else if s.startsWith "к строке " then do pure (.«кСтроке» (← «число» (s.«сн» 9)))
   else if let some (f, args) := «вызов?» s then do pure (.«вызовТ» f (← «доводы» args))
-  else if «имя?» s then some (.«имяТ» s)
-  else if let some x := «имяВЁлочках?» s then some (.«имяТ» x)
-  else none
+  else if «имя?» s then pure (.«имяТ» s)
+  else if let some x := «имяВЁлочках?» s then pure (.«имяТ» x)
+  else .error false
 
-partial def «форм» (s0 : String) : Option «Форм» :=
+def «шагСравнения» («число» : String → «Чтение» «ТермЧ») («список» : String → «Чтение» «ТермС»)
+    («текст» : String → «Чтение» «ТермТ») («доводы» : List String → «Чтение» «Доводы»)
+    (s : String) : «Чтение» «Форм» :=
+  if let some (l, r) := «надвое» s ":" then
+    if r = "кон" then do pure (.«кон» (← «число» l))
+    else if r = "цел" then do pure (.«цел» (← «число» l))
+    else .error false
+  else if s.endsWith " помещается" then do pure (.«помещается» (← «число» (s.«снК» 11)))
+  else if s.endsWith " не убывает" then do pure (.«неУбывает» (← «список» (s.«снК» 11)))
+  else if let some (l, r) := «надвое» s "не больше" then do pure (.«неБольше» (← «число» l) (← «число» r))
+  else if let some (l, r) := «надвое» s "не меньше" then do pure (.«неМеньше» (← «число» l) (← «число» r))
+  else if «содержитСлово» s "не меньше" || «содержитСлово» s "не больше" then .error false
+  else if let some (l, r) := «надвое» s "меньше" then do pure (.«меньше» (← «число» l) (← «число» r))
+  else if let some (l, r) := «надвое» s "больше" then do pure (.«больше» (← «число» l) (← «число» r))
+  else if let some (l, r) := (match «надвое» s "равен" with | some p => some p | none => «надвое» s "равно") then
+    let «текстом» : «Чтение» «Форм» := do pure (.«равенТ» (← «текст» l) (← «текст» r))
+    let «списком» : «Чтение» «Форм» :=
+      «либо» («список» l) (fun a => «либо» («список» r) (fun b => pure (.«равенС» a b)) «текстом»)
+        («либо» («список» r) (fun _ => «текстом») «текстом»)
+    «либо» («число» l) (fun a => «либо» («число» r) (fun b => pure (.«равен» a b)) «списком»)
+      («либо» («число» r) (fun _ => «списком») «списком»)
+  else if let some (l, r) := «надвое» s "содержит" then do pure (.«содержит» (← «список» l) (← «число» r))
+  else if let some (l, r) := «надвое» s "начинается с" then do pure (.«начинается» (← «текст» l) (← «текст» r))
+  else if let some (f, args) := «вызов?» s then do pure (.«вызовФ» f (← «доводы» args))
+  else if «имя?» s then pure (.«имяФ» s)
+  else .error false
+
+def «шагФормулы» («форм» : String → «Чтение» «Форм») («число» : String → «Чтение» «ТермЧ»)
+    («список» : String → «Чтение» «ТермС») («текст» : String → «Чтение» «ТермТ»)
+    («доводы» : List String → «Чтение» «Доводы») («сумма» : String → «Чтение» «ТермСм»)
+    («случаи» : List String → «Чтение» «Случаи») (s0 : String) : «Чтение» «Форм» :=
   let s := «ужать» s0
-  if s = "да" then some .«да»
-  else if s = "нет" then some .«нет»
+  if s = "да" then pure .«да»
+  else if s = "нет" then pure .«нет»
   else if s.startsWith "разбор " then
     match «разделитьСверху» s "случай" with
     | «гол» :: «сл» =>
-      if «сл».isEmpty then none else do
+      if «сл».isEmpty then .error false else do
         pure (.«разборСм» (← «сумма» ((«ужать» «гол»).«сн» 7)) (← «случаи» «сл»))
-    | [] => none
+    | [] => .error false
   else if let some (u, a, b) := «выбор» s then
     do pure (.«еслиФ» (← «форм» u) (← «форм» a) (← «форм» b))
   else if let some (l, r) := «надвое» s "или" then do pure (.«или» (← «форм» l) (← «форм» r))
@@ -276,85 +324,64 @@ partial def «форм» (s0 : String) : Option «Форм» :=
   else if s.startsWith "для всех " then
     match «разделитьСверху» s ":" with
     | «лево» :: «хвост» =>
-      if «хвост».isEmpty then none else
+      if «хвост».isEmpty then .error false else
       let «у» := «ужать» (" : ".intercalate «хвост»)
       match «надвое» ((«ужать» «лево»).«сн» 9) "из" with
-      | some («п», «л») => if «имя?» «п» then do pure (.«всех» («ужать» «п») (← «список» «л») (← «форм» «у»)) else none
-      | none => none
-    | [] => none
+      | some («п», «л») => if «имя?» «п» then do pure (.«всех» («ужать» «п») (← «список» «л») (← «форм» «у»)) else .error false
+      | none => .error false
+    | [] => .error false
   else if s.startsWith "есть такой " then
     match (s.«сн» 11).splitOn ", а именно " with
     | [«м», «хв»] =>
       match «хв».splitOn ", что " with
-      | [«т», «у»] => if «имя?» «м» then do pure (.«есть» («м».«обр») (← «число» «т») (← «форм» «у»)) else none
-      | _ => none
-    | _ => none
+      | [«т», «у»] => if «имя?» «м» then do pure (.«есть» («м».«обр») (← «число» «т») (← «форм» «у»)) else .error false
+      | _ => .error false
+    | _ => .error false
   else if s.startsWith "пусто " then
-    match «список» (s.«сн» 6) with
-    | some l => some (.«пусто» l)
-    | none => do pure (.«пустоТ» (← «текст» (s.«сн» 6)))
-  else if let some (l, r) := «надвое» s ":" then
-    if r = "кон" then do pure (.«кон» (← «число» l))
-    else if r = "цел" then do pure (.«цел» (← «число» l))
-    else none
-  else if s.endsWith " помещается" then do pure (.«помещается» (← «число» (s.«снК» 11)))
-  else if s.endsWith " не убывает" then do pure (.«неУбывает» (← «список» (s.«снК» 11)))
-  else if let some (l, r) := «надвое» s "не больше" then do pure (.«неБольше» (← «число» l) (← «число» r))
-  else if let some (l, r) := «надвое» s "не меньше" then do pure (.«неМеньше» (← «число» l) (← «число» r))
-  else if «содержитСлово» s "не меньше" || «содержитСлово» s "не больше" then none
-  else if let some (l, r) := «надвое» s "меньше" then do pure (.«меньше» (← «число» l) (← «число» r))
-  else if let some (l, r) := «надвое» s "больше" then do pure (.«больше» (← «число» l) (← «число» r))
-  else if let some (l, r) := (match «надвое» s "равен" with | some p => some p | none => «надвое» s "равно") then
-    match «число» l, «число» r with
-    | some a, some b => some (.«равен» a b)
-    | _, _ =>
-      match «список» l, «список» r with
-      | some a, some b => some (.«равенС» a b)
-      | _, _ => do pure (.«равенТ» (← «текст» l) (← «текст» r))
-  else if let some (l, r) := «надвое» s "содержит" then do pure (.«содержит» (← «список» l) (← «число» r))
-  else if let some (l, r) := «надвое» s "начинается с" then do pure (.«начинается» (← «текст» l) (← «текст» r))
-  else if let some (f, args) := «вызов?» s then do pure (.«вызовФ» f (← «доводы» args))
-  else if «имя?» s then some (.«имяФ» s)
-  else none
+    «либо» («список» (s.«сн» 6)) (fun l => pure (.«пусто» l)) (do pure (.«пустоТ» (← «текст» (s.«сн» 6))))
+  else «шагСравнения» «число» «список» «текст» «доводы» s
 
 /-- Довод вызова: выписанный конструктор — суммой; вызов с доводами — вызовом
     без сорта; иначе число, список, текст, признак, сумма — что прочтётся первым. -/
-partial def «тело» (s : String) : Option «Тело» :=
-  if («ужать» s).startsWith "вариант «" then (fun c => .«сумма» c) <$> «сумма» s
-  else match «число» s with
-  | some (.«вызов» f d) => if d matches .«нет» then some (.«число» (.«вызов» f d)) else some (.«вызов» f d)
-  | some t => some (.«число» t)
-  | none => match «список» s with
-    | some l => some (.«список» l)
-    | none => match «текст» s with
-      | some t => some (.«текст» t)
-      | none => match «форм» s with
-        | some u => some (.«признак» u)
-        | none => (fun c => .«сумма» c) <$> «сумма» s
+def «шагТела» («форм» : String → «Чтение» «Форм») («число» : String → «Чтение» «ТермЧ»)
+    («список» : String → «Чтение» «ТермС») («текст» : String → «Чтение» «ТермТ»)
+    («сумма» : String → «Чтение» «ТермСм») (s : String) : «Чтение» «Тело» :=
+  if («ужать» s).startsWith "вариант «" then «либо» («сумма» s) (fun c => pure (.«сумма» c)) (.error false)
+  else «либо» («число» s) (fun t => match t with
+      | .«вызов» f d => if d matches .«нет» then pure (.«число» (.«вызов» f d)) else pure (.«вызов» f d)
+      | t => pure (.«число» t))
+    («либо» («список» s) (fun l => pure (.«список» l))
+      («либо» («текст» s) (fun t => pure (.«текст» t))
+        («либо» («форм» s) (fun u => pure (.«признак» u))
+          («либо» («сумма» s) (fun c => pure (.«сумма» c)) (.error false)))))
 
 /-- Терм-сумма: выписанный конструктор, вызов, имя. -/
-partial def «сумма» (s0 : String) : Option «ТермСм» :=
+def «шагСуммы» («доводы» : List String → «Чтение» «Доводы») («поля» : List String → «Чтение» «Поля»)
+    (s0 : String) : «Чтение» «ТермСм» :=
   let s := «ужать» s0
   match «вариант?» s with
   | some (k, r) =>
-    if r = "" then some (.«вариант» k .«нет»)
+    if r = "" then pure (.«вариант» k .«нет»)
     else if r.startsWith "с " then do pure (.«вариант» k (← «поля» («разделитьСверху» (r.«сн» 2) "и")))
-    else none
+    else .error false
   | none =>
     if let some (f, args) := «вызов?» s then do pure (.«вызовСм» f (← «доводы» args))
-    else if «имя?» s then some (.«имяСм» s)
-    else none
+    else if «имя?» s then pure (.«имяСм» s)
+    else .error false
 
 /-- Поля конструктора: `«п» равным Т`. -/
-partial def «поля» : List String → Option «Поля»
-  | [] => some .«нет»
-  | x :: r => match «надвое» x "равным" with
+def «шагПолей» («тело» : String → «Чтение» «Тело») («поля» : List String → «Чтение» «Поля») :
+    List String → «Чтение» «Поля»
+  | [] => pure .«нет»
+  | x :: r =>
+    match «надвое» x "равным" with
     | some (p, t) => do pure (.«ещё» («голо» p) (← «тело» t) (← «поля» r))
-    | none => none
+    | none => .error false
 
 /-- Ветви разбора суммы: `вариант «В» с п как х и … то Ф`; разрез — по первому «то». -/
-partial def «случаи» : List String → Option «Случаи»
-  | [] => some .«нет»
+def «шагСлучаев» («форм» : String → «Чтение» «Форм») («случаи» : List String → «Чтение» «Случаи») :
+    List String → «Чтение» «Случаи»
+  | [] => pure .«нет»
   | x :: r =>
     match «разделитьСверху» («ужать» x) "то" with
     | «обр» :: «т» :: «ещё» =>
@@ -365,21 +392,69 @@ partial def «случаи» : List String → Option «Случаи»
           else if rr.startsWith "с " then
             («разделитьСверху» (rr.«сн» 2) "и").mapM (fun b => (fun (p, y) => («голо» p, y)) <$> «надвое» b "как")
           else none
-        do
-          let bs ← bs?
+        match bs? with
+        | some bs => do
           let u ← «форм» (" то ".intercalate («т» :: «ещё»))
           pure (.«ещё» k bs u (← «случаи» r))
-      | none => none
-    | _ => none
+        | none => .error false
+      | none => .error false
+    | _ => .error false
 
-partial def «доводы» : List String → Option «Доводы»
-  | [] => some .«нет»
+def «шагДоводов» («тело» : String → «Чтение» «Тело») («доводы» : List String → «Чтение» «Доводы») :
+    List String → «Чтение» «Доводы»
+  | [] => pure .«нет»
   | a :: r => do pure (.«ещё» (← «тело» a) (← «доводы» r))
 
-partial def «члены» : List String → Option «Члены»
-  | [] => some .«нет»
+def «шагЧленов» («число» : String → «Чтение» «ТермЧ») («члены» : List String → «Чтение» «Члены») :
+    List String → «Чтение» «Члены»
+  | [] => pure .«нет»
   | a :: r => do pure (.«ещё» (← «число» a) (← «члены» r))
+
+mutual
+def «числоЗ» : Nat → String → «Чтение» «ТермЧ»
+  | 0, _ => .error true
+  | n + 1, s => «шагЧисла» («формЗ» n) («числоЗ» n) («списокЗ» n) («текстЗ» n) («доводыЗ» n) («суммаЗ» n) s
+def «списокЗ» : Nat → String → «Чтение» «ТермС»
+  | 0, _ => .error true
+  | n + 1, s => «шагСписка» («формЗ» n) («числоЗ» n) («списокЗ» n) («доводыЗ» n) («членыЗ» n) s
+def «текстЗ» : Nat → String → «Чтение» «ТермТ»
+  | 0, _ => .error true
+  | n + 1, s => «шагТекста» («формЗ» n) («числоЗ» n) («текстЗ» n) («доводыЗ» n) s
+def «формЗ» : Nat → String → «Чтение» «Форм»
+  | 0, _ => .error true
+  | n + 1, s =>
+    «шагФормулы» («формЗ» n) («числоЗ» n) («списокЗ» n) («текстЗ» n) («доводыЗ» n) («суммаЗ» n) («случаиЗ» n) s
+def «телоЗ» : Nat → String → «Чтение» «Тело»
+  | 0, _ => .error true
+  | n + 1, s => «шагТела» («формЗ» n) («числоЗ» n) («списокЗ» n) («текстЗ» n) («суммаЗ» n) s
+def «суммаЗ» : Nat → String → «Чтение» «ТермСм»
+  | 0, _ => .error true
+  | n + 1, s => «шагСуммы» («доводыЗ» n) («поляЗ» n) s
+def «поляЗ» : Nat → List String → «Чтение» «Поля»
+  | 0, _ => .error true
+  | n + 1, l => «шагПолей» («телоЗ» n) («поляЗ» n) l
+def «случаиЗ» : Nat → List String → «Чтение» «Случаи»
+  | 0, _ => .error true
+  | n + 1, l => «шагСлучаев» («формЗ» n) («случаиЗ» n) l
+def «доводыЗ» : Nat → List String → «Чтение» «Доводы»
+  | 0, _ => .error true
+  | n + 1, l => «шагДоводов» («телоЗ» n) («доводыЗ» n) l
+def «членыЗ» : Nat → List String → «Чтение» «Члены»
+  | 0, _ => .error true
+  | n + 1, l => «шагЧленов» («числоЗ» n) («членыЗ» n) l
 end
+
+def «запасЧтения» (s : String) : Nat := 8 * s.length + 64
+
+def «число» (s : String) : Option «ТермЧ» := («числоЗ» («запасЧтения» s) s).«прочтено»
+
+def «список» (s : String) : Option «ТермС» := («списокЗ» («запасЧтения» s) s).«прочтено»
+
+def «текст» (s : String) : Option «ТермТ» := («текстЗ» («запасЧтения» s) s).«прочтено»
+
+def «форм» (s : String) : Option «Форм» := («формЗ» («запасЧтения» s) s).«прочтено»
+
+def «тело» (s : String) : Option «Тело» := («телоЗ» («запасЧтения» s) s).«прочтено»
 
 /-- Тело функции по объявленному типу возврата. -/
 def «телоПоТипу» («тип» : String) (s : String) : Option «Тело» :=

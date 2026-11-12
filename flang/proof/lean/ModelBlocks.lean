@@ -4,6 +4,7 @@ import Semantics.Termination
 import Semantics.Recursion
 import Semantics.Tables
 import Semantics.Examples
+import Reading
 import Premises
 import Lean.Util.CollectAxioms
 import Lean.Elab.Command
@@ -381,7 +382,8 @@ theorem «принятая-таблица» (P : «Эталон».«Програ
 open Lean Elab Command in
 run_cmd do
   for «имя» in [``«Перепись».«принятый-блок-тотальности», ``«Перепись».«принятый-блок-над-рекурсией»,
-      ``«Перепись».«принятый-пример», ``«Перепись».«принятое-снятие»,
+      ``«Перепись».«принятый-пример», ``«Перепись».«принятое-снятие», ``«Разбор».«ступень»,
+      ``«Разбор».«формула-не-зависит-от-запаса»,
       ``«Перепись».«принятая-таблица»] do
     let «аксиомы» ← liftCoreM (Lean.collectAxioms «имя»)
     let «лишние» := «аксиомы».filter (fun a => !(a == ``propext || a == ``Classical.choice || a == ``Quot.sound))

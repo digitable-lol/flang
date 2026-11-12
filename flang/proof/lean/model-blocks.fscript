@@ -88,11 +88,11 @@
   пример «The verdict module and the termination theorem are compiled into the work directory»
     ожидается ["mkdir -p \"$2/Semantics\" &&",
       "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Semantics/Recursion",
-      "Semantics/Tables Semantics/Examples Verdicts;",
+      "Semantics/Tables Semantics/Examples Verdicts Reading;",
       "do LEAN_PATH=\"$0:$2\" $1 -o \"$2/$m.olean\" \"$m.lean\" 2>&1 || exit 1; done"]
   ["mkdir -p \"$2/Semantics\" &&",
     "for m in Semantics/Eval Semantics/Fuel Semantics/Json Semantics/Termination Semantics/Recursion",
-    "Semantics/Tables Semantics/Examples Verdicts;",
+    "Semantics/Tables Semantics/Examples Verdicts Reading;",
     "do LEAN_PATH=\"$0:$2\" $1 -o \"$2/$m.olean\" \"$m.lean\" 2>&1 || exit 1; done"]
 
 тотальная функция «Census parts»

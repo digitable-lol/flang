@@ -50,7 +50,7 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Thirty two files in the order of their imports»
+  пример «Thirty three files in the order of their imports»
     ожидается [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
       ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
       ["RecordReader", "RecordReader"], ["Verdicts", "Verdicts"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval",
@@ -62,7 +62,7 @@
       ["Semantics/Examples", "Semantics/Examples"], ["Semantics/Nonnegative", "Semantics/Nonnegative"],
       ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
       ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
-      ["Semantics/Cases", "Semantics/Cases"],
+      ["Semantics/Cases", "Semantics/Cases"], ["Semantics/Lengths", "Semantics/Lengths"],
       ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
       ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
   [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
@@ -76,7 +76,7 @@
     ["Semantics/Examples", "Semantics/Examples"], ["Semantics/Nonnegative", "Semantics/Nonnegative"],
     ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
     ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
-    ["Semantics/Cases", "Semantics/Cases"],
+    ["Semantics/Cases", "Semantics/Cases"], ["Semantics/Lengths", "Semantics/Lengths"],
     ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
     ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
 
@@ -240,7 +240,7 @@
     ожидается пустой список
   пусть text равно (соединить [
       "import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\nimport RecordFormat\nimport Soundness\n",
-    "import Semantics.Ceiling\nimport Semantics.Cases\n",
+    "import Semantics.Ceiling\nimport Semantics.Cases\nimport Semantics.Lengths\n",
     "#print axioms «Эталон».«композиция-завершается»\n",
     "#print axioms «Эталон».«композиция-над-рекурсией-завершается»\n",
     "#print axioms «Эталон».«таблица-постоянна»\n",
@@ -259,6 +259,9 @@
     "#print axioms «Эталон».«влить-верно»\n",
     "#print axioms «Эталон».«держится-верно»\n",
     "#print axioms «Эталон».«разбор-цели-по-условию»\n",
+    "#print axioms «Эталон».«держитсяД-верно»\n",
+    "#print axioms «Эталон».«тождество-длин»\n",
+    "#print axioms «Эталон».«тождество-длин-в-эталоне»\n",
     "#print axioms «состоятельность»\n",
     "#print axioms «половина-верно»\n",
     "#print axioms «Эталон».«развёртка-доводами»\n",

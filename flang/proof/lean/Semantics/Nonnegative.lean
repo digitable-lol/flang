@@ -403,7 +403,7 @@ theorem «разобрать-нн» (P : «Программа») (S : List Strin
     · cases h
     · rename_i bs hbs
       simp only [«вставить»] at h
-      have hkeys := «подходит-ключи» p v0 bs hbs
+      have hkeys := «подходит-имена» p v0 bs hbs
       exact H _ _ _ _ b v ⟨«верно-связанные» hK.1 hkeys, «верно-связанные» hK.2.1 hkeys,
         «верно-связанные» hK.2.2 hkeys⟩ hc.1 h
     · exact «разобрать-нн» P S r d v0 v H K F Q ρ cs hK hc.2 h

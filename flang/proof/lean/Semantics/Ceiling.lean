@@ -73,7 +73,7 @@ theorem «верноП-случай» {M : List (String × Nat)} {T : List Strin
     (str : Bool) (hstr : str = true → ∃ s, v0 = .«строка» s) :
     «ВерноП» ((if str then «головаСтроки» p else []) ++ «безП» M («связанные» p))
       (T.filter (fun y => !(«связанные» p).contains y)) (bs ++ ρ) := by
-  have hkeys := «подходит-ключи» p v0 bs hbs
+  have hkeys := «подходит-имена» p v0 bs hbs
   have hmimo : ∀ y, y ∉ «связанные» p → «найти» y (bs ++ ρ) = «найти» y ρ :=
     fun y hy => «найти-мимо» y ρ bs (fun k hk e => hy (e ▸ hkeys k hk))
   constructor

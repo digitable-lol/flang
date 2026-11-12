@@ -220,4 +220,7 @@
 Файлы `Semantics/*.lean` собирают два шага CI: перепись (`lean-model-blocks`) собирает те,
 что импортирует `ModelBlocks.lean`, и проверяет аксиомы теорем этой записи; сверка Lean
 (`lean-crosscheck`, `flang/proof/lean/run.fscript`) собирает каждый файл каталога, в том числе
-`Walk`, `Symbolic`, `Bridge`, `Validate` и `Run`, которые перепись не импортирует.
+`Walk`, `Symbolic`, `Bridge`, `Validate` и `Run`, которые перепись не импортирует, и печатает
+`#print axioms` теорем модели из файла, который импортирует `Unfold`, `Ceiling` и `Bridge` вместе:
+лишняя аксиома у любой из них краснит шаг. `Validate` и `Run` в этот файл не входят: оба объявляют
+`main`, теорем в них нет.

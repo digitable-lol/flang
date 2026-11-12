@@ -221,7 +221,7 @@ theorem «найти-слева» {α : Type} (y : String) (ρ : List (String ×
     · simp only [hk, ↓reduceIte] at h ⊢
       exact «найти-слева» y ρ w t h
 
-theorem «связки-ключи» (fs : List (String × «Зн»)) :
+theorem «связки-имена» (fs : List (String × «Зн»)) :
     ∀ (bs : List (String × String)) (e : «Среда»), «связки» fs bs = .ok e → e.map (·.1) = bs.map (·.2)
   | [], e, h => by
     simp only [«связки»] at h
@@ -239,10 +239,10 @@ theorem «связки-ключи» (fs : List (String × «Зн»)) :
         injection h' with h'
         subst h'
         simp only [List.map_cons]
-        rw [«связки-ключи» fs t w hw]
+        rw [«связки-имена» fs t w hw]
     · simp [«беда»] at h
 
-theorem «подходит-ключи» (pat : «Образец») (v : «Зн») (bs : «Среда»)
+theorem «подходит-имена» (pat : «Образец») (v : «Зн») (bs : «Среда»)
     (h : «подходит» pat v = .ok (some bs)) : ∀ k ∈ bs.map (·.1), k ∈ «связанные» pat := by
   unfold «подходит» at h
   split at h
@@ -271,7 +271,7 @@ theorem «подходит-ключи» (pat : «Образец») (v : «Зн»
         injection h' with h'
         subst h'
         intro k' hk'
-        rw [«связки-ключи» fs bs' w hw] at hk'
+        rw [«связки-имена» fs bs' w hw] at hk'
         exact hk'
     · simp at h
   · split at h <;> simp at h <;> subst h <;> simp
@@ -442,7 +442,7 @@ theorem «хвост-вставить» {t : Option String} {vt : «Зн»} {ρ 
   subst hy
   show «найти» y (bs ++ ρ) = some vt
   rw [«найти-мимо» y ρ bs (fun k hk e => by
-    have hk' := «подходит-ключи» pat v bs hb k hk
+    have hk' := «подходит-имена» pat v bs hb k hk
     have := List.all_eq_true.mp hx k hk'
     subst e
     simp [«свободно»] at this)]

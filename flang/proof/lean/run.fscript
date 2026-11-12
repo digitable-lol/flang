@@ -238,6 +238,22 @@
     ожидается пустой список
   пусть text равно (соединить [
       "import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\nimport RecordFormat\nimport Soundness\n",
+    "import Semantics.Ceiling\nimport Semantics.Bridge\n",
+    "#print axioms «Эталон».«композиция-завершается»\n",
+    "#print axioms «Эталон».«композиция-над-рекурсией-завершается»\n",
+    "#print axioms «Эталон».«таблица-постоянна»\n",
+    "#print axioms «Эталон».«пример-исчерпывает»\n",
+    "#print axioms «Эталон».«пример-на-значении»\n",
+    "#print axioms «Эталон».«нн-верно»\n",
+    "#print axioms «Эталон».«тогда-верно»\n",
+    "#print axioms «Эталон».«иначе-верно»\n",
+    "#print axioms «Эталон».«неотрицательность-по-построению»\n",
+    "#print axioms «Эталон».«потолок-верен»\n",
+    "#print axioms «Эталон».«ограниченность-по-построению»\n",
+    "#print axioms «Эталон».«порядок-верен»\n",
+    "#print axioms «Эталон».«порядок-по-построению»\n",
+    "#print axioms «Эталон».«обход-верен»\n",
+    "#print axioms «Эталон».«смысл-C-верен»\n",
     "#print axioms «состоятельность»\n",
     "#print axioms «половина-верно»\n",
     "#print axioms «Эталон».«развёртка-доводами»\n",
@@ -712,7 +728,7 @@
   пусть words равно (отобразить (разделить found по ",") как word → «Without blanks» от word)
   пусть named равно (отфильтровать words где word → не (пусто word))
   пусть extra равно (отфильтровать named где word → не («Has» от word и («Standard axioms»)))
-  пусть head равно "аксиомы «состоятельность» и «половина-верно» — "
+  пусть head равно "аксиомы теорем ядра и модели — "
   пусть spare равно (соединить (отобразить extra как word → соединить [word, " "] по "") по "")
   пусть excess равно [(соединить [head, "лишние: ", spare] по "")]
   пусть plain равно [(соединить [head, "[", found, "], сверх трёх стандартных ни одной"] по "")]

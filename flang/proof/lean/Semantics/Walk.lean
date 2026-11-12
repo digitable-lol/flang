@@ -361,12 +361,12 @@ theorem «термы-расширение» (σ : «Среда») {res' res : «
   | t :: r, ⟨ht, hr⟩ => by simp only [«значВсех», «терм-расширение» σ h t ht, «термы-расширение» σ h r hr]
 end
 
-def «Согласны» (σ : «Среда») (res : «Итоги») (n : Nat) (ρ : List (String × «Терм»)) (γ : «Среда») : Prop :=
+def «СогласныОбхода» (σ : «Среда») (res : «Итоги») (n : Nat) (ρ : List (String × «Терм»)) (γ : «Среда») : Prop :=
   ∀ x t, «найти» x ρ = some t → «Ниже» n t ∧ ∃ w, «найти» x γ = some w ∧ «значТерм» σ res t = .ok w
 
 theorem «согласны-шире» {σ : «Среда»} {res : «Итоги»} {n : Nat} {ρ : List (String × «Терм»)} {γ : «Среда»}
-    (h : «Согласны» σ res n ρ γ) (x : String) (t : «Терм») (w : «Зн») (hn : «Ниже» n t)
-    (ht : «значТерм» σ res t = .ok w) : «Согласны» σ res n ((x, t) :: ρ) ((x, w) :: γ) := by
+    (h : «СогласныОбхода» σ res n ρ γ) (x : String) (t : «Терм») (w : «Зн») (hn : «Ниже» n t)
+    (ht : «значТерм» σ res t = .ok w) : «СогласныОбхода» σ res n ((x, t) :: ρ) ((x, w) :: γ) := by
   intro y s hs
   by_cases hy : x = y
   · subst hy
@@ -378,8 +378,8 @@ theorem «согласны-шире» {σ : «Среда»} {res : «Итоги�
     exact ⟨h1, w', by simp [«найти», hy, h2], h3⟩
 
 theorem «согласны-дальше» {σ : «Среда»} {res res' : «Итоги»} {n m : Nat} {ρ : List (String × «Терм»)}
-    {γ : «Среда»} (h : «Согласны» σ res n ρ γ) (hnm : n ≤ m) (he : «Расширяет» res' res n) :
-    «Согласны» σ res' m ρ γ := by
+    {γ : «Среда»} (h : «СогласныОбхода» σ res n ρ γ) (hnm : n ≤ m) (he : «Расширяет» res' res n) :
+    «СогласныОбхода» σ res' m ρ γ := by
   intro x t hx
   obtain ⟨h1, w, h2, h3⟩ := h x t hx
   refine ⟨«ниже-выше» hnm t h1, w, h2, ?_⟩
@@ -393,8 +393,8 @@ def «Соответствуют» (σ : «Среда») (res : «Итоги») 
   | _, _ => False
 
 theorem «согласны-префикс» {σ : «Среда»} {res : «Итоги»} {n : Nat} {ρ : List (String × «Терм»)} {γ : «Среда»}
-    (h : «Согласны» σ res n ρ γ) : ∀ (pr : List (String × «Терм»)) (pg : «Среда»), «Соответствуют» σ res n pr pg →
-      «Согласны» σ res n (pr ++ ρ) (pg ++ γ)
+    (h : «СогласныОбхода» σ res n ρ γ) : ∀ (pr : List (String × «Терм»)) (pg : «Среда»), «Соответствуют» σ res n pr pg →
+      «СогласныОбхода» σ res n (pr ++ ρ) (pg ++ γ)
   | [], [], _ => by simpa using h
   | (x, t) :: a, (y, w) :: b, ⟨hxy, hn, ht, hab⟩ => by
     subst hxy
@@ -623,7 +623,7 @@ mutual
 theorem «обход-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
     ∀ (e : «Выр») (ρ : List (String × «Терм»)) (γ : «Среда») (n : Nat) (res : «Итоги»)
       (k : «Терм» → Nat → Option «Дерево») (d : «Дерево») (m : Nat) (v : «Зн») (R : «Исход»),
-      «обход» ρ n k e = some d → «Согласны» σ res n ρ γ → «выч» P m γ e = .ok v → m ≤ M →
+      «обход» ρ n k e = some d → «СогласныОбхода» σ res n ρ γ → «выч» P m γ e = .ok v → m ≤ M →
       (∀ t n1 d' res', k t n1 = some d' → n ≤ n1 → «Ниже» n1 t → «Расширяет» res' res n →
         «значТерм» σ res' t = .ok v → «значДерева» P M σ res' d' = R) →
       «значДерева» P M σ res d = R
@@ -787,13 +787,13 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
                 simp only [hst, hr] at hd2
                 cases hd2
                 have he12 : «Расширяет» res2 res n := «расширяет-цепь» hn1 he2 he1
-                have hs2 : «Согласны» σ res2 n2 ρ γ := «согласны-дальше» hs (by omega) he12
+                have hs2 : «СогласныОбхода» σ res2 n2 ρ γ := «согласны-дальше» hs (by omega) he12
                 have hstep : ∀ (acc w acc' : «Зн»), «выч» P m ((a, acc) :: (x, w) :: γ) s = .ok acc' →
                     «значДерева» P M σ ((n2 + 1, w) :: (n2, acc) :: res2) st = .ok acc' := by
                   intro acc w acc' hb
                   have hext : «Расширяет» ((n2 + 1, w) :: (n2, acc) :: res2) res2 n2 :=
                     «расширяет-добавить» (by omega) w («расширяет-добавить» (Nat.le_refl n2) acc («расширяет-сам» res2 n2))
-                  have hs0 : «Согласны» σ ((n2 + 1, w) :: (n2, acc) :: res2) (n2 + 2) ρ γ :=
+                  have hs0 : «СогласныОбхода» σ ((n2 + 1, w) :: (n2, acc) :: res2) (n2 + 2) ρ γ :=
                     «согласны-дальше» hs2 (by omega) hext
                   have hsx := «согласны-шире» hs0 x (.«рез» (n2 + 1)) w (by simp [«Ниже»])
                     (by simp [«значТерм», «взять»])
@@ -841,13 +841,13 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
               | some r =>
                 simp only [hst, hr] at hd1
                 cases hd1
-                have hs1 : «Согласны» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
+                have hs1 : «СогласныОбхода» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
                 have hstep : ∀ (w c : «Зн»), «выч» P m ((x, w) :: γ) s = .ok c →
                     «значДерева» P M σ ((n1 + 1, w) :: res1) st = .ok c := by
                   intro w c hb
                   have hext : «Расширяет» ((n1 + 1, w) :: res1) res1 n1 :=
                     «расширяет-добавить» (by omega) w («расширяет-сам» res1 n1)
-                  have hs0 : «Согласны» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
+                  have hs0 : «СогласныОбхода» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
                   have hsx := «согласны-шире» hs0 x (.«рез» (n1 + 1)) w (by simp [«Ниже»])
                     (by simp [«значТерм», «взять»])
                   refine «обход-верен» P σ M s _ _ (n1 + 2) _ _ st m c _ hst hsx hb (by omega) ?_
@@ -892,13 +892,13 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
               | some r =>
                 simp only [hst, hr] at hd1
                 cases hd1
-                have hs1 : «Согласны» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
+                have hs1 : «СогласныОбхода» σ res1 n1 ρ γ := «согласны-дальше» hs hn1 he1
                 have hstep : ∀ (w c : «Зн»), «выч» P m ((x, w) :: γ) s = .ok c →
                     «значДерева» P M σ ((n1 + 1, w) :: res1) st = .ok c := by
                   intro w c hb
                   have hext : «Расширяет» ((n1 + 1, w) :: res1) res1 n1 :=
                     «расширяет-добавить» (by omega) w («расширяет-сам» res1 n1)
-                  have hs0 : «Согласны» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
+                  have hs0 : «СогласныОбхода» σ ((n1 + 1, w) :: res1) (n1 + 2) ρ γ := «согласны-дальше» hs1 (by omega) hext
                   have hsx := «согласны-шире» hs0 x (.«рез» (n1 + 1)) w (by simp [«Ниже»])
                     (by simp [«значТерм», «взять»])
                   refine «обход-верен» P σ M s _ _ (n1 + 2) _ _ st m c _ hst hsx hb (by omega) ?_
@@ -983,7 +983,7 @@ theorem «обход-верен» (P : «Программа») (σ : «Сред�
 theorem «обходВсех-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
     ∀ (args : List «Выр») (ρ : List (String × «Терм»)) (γ : «Среда») (n : Nat) (res : «Итоги»)
       (k : List «Терм» → Nat → Option «Дерево») (d : «Дерево») (m : Nat) (vs : List «Зн») (R : «Исход»),
-      «обходВсех» ρ n k args = some d → «Согласны» σ res n ρ γ → «вычВсе» («выч» P m) γ args = .ok vs →
+      «обходВсех» ρ n k args = some d → «СогласныОбхода» σ res n ρ γ → «вычВсе» («выч» P m) γ args = .ok vs →
       m ≤ M →
       (∀ ts n1 d' res', k ts n1 = some d' → n ≤ n1 → (∀ t, t ∈ ts → «Ниже» n1 t) → «Расширяет» res' res n →
         «значВсех» σ res' ts = .ok vs → «значДерева» P M σ res' d' = R) →
@@ -1018,7 +1018,7 @@ theorem «обходВсех-верен» (P : «Программа») (σ : «�
 theorem «обходСлучаев-верен» (P : «Программа») (σ : «Среда») (M : Nat) :
     ∀ (cs : List («Образец» × «Выр»)) (ρ : List (String × «Терм»)) (γ : «Среда») (n : Nat) (res : «Итоги»)
       (k : «Терм» → Nat → Option «Дерево») (tt : «Терм») (d : «Дерево») (m : Nat) (val v : «Зн») (R : «Исход»),
-      «обходСлучаев» ρ n k tt cs = some d → «Согласны» σ res n ρ γ → «Ниже» n tt → «значТерм» σ res tt = .ok val →
+      «обходСлучаев» ρ n k tt cs = some d → «СогласныОбхода» σ res n ρ γ → «Ниже» n tt → «значТерм» σ res tt = .ok val →
       «разобрать» («выч» P m) γ val cs = .ok v → m ≤ M →
       (∀ t n1 d' res', k t n1 = some d' → n ≤ n1 → «Ниже» n1 t → «Расширяет» res' res n →
         «значТерм» σ res' t = .ok v → «значДерева» P M σ res' d' = R) →
@@ -1183,7 +1183,7 @@ def «исходЭталона» (P : «Программа») (N : Nat) (pres : 
 theorem «обходПост-верен» (P : «Программа») (σ : «Среда») (M m : Nat) (hm : m ≤ M) (γ : «Среда»)
     (v : «Зн») : ∀ (posts : List «Постусловие») (ρ : List (String × «Терм»)) (t : «Терм») (n : Nat)
       (res : «Итоги») (d : «Дерево»),
-      «обходПост» ρ t n posts = some d → «Согласны» σ res n ρ γ → «Ниже» n t → «значТерм» σ res t = .ok v →
+      «обходПост» ρ t n posts = some d → «СогласныОбхода» σ res n ρ γ → «Ниже» n t → «значТерм» σ res t = .ok v →
       (∀ q, q ∈ posts → ∃ b, «выч» P m ((q.«связка», v) :: γ) q.«выражение» = .ok (.«признак» b)) →
       «значДерева» P M σ res d = «проверитьПост» («выч» P m) γ v posts
   | [], ρ, t, n, res, d, hd, _, _, ht, _ => by
@@ -1211,7 +1211,7 @@ theorem «обходПост-верен» (P : «Программа») (σ : «�
 theorem «обходВхода-верен» (P : «Программа») (σ : «Среда») (M N : Nat) (hN : N ≤ M) (γ : «Среда»)
     (kb : Nat → Option «Дерево») (R : «Исход») :
     ∀ (pres : List «Условие входа») (ρ : List (String × «Терм»)) (n : Nat) (res : «Итоги») (d : «Дерево»),
-      «обходВхода» ρ kb n pres = some d → «Согласны» σ res n ρ γ →
+      «обходВхода» ρ kb n pres = some d → «СогласныОбхода» σ res n ρ γ →
       (∀ q, q ∈ pres → ∃ b, «выч» P N γ q.«выражение» = .ok (.«признак» b)) →
       («проверитьВход» P N γ pres = none →
         ∀ n1 d' res', kb n1 = some d' → n ≤ n1 → «Расширяет» res' res n → «значДерева» P M σ res' d' = R) →
@@ -1269,7 +1269,7 @@ theorem «найти-привязка» (x : String) : ∀ (ps : List String) (v
   | _ :: _, [], hl, _ => by simp at hl
 
 theorem «согласны-параметры» (ps : List String) (vs : List «Зн») (hl : ps.length = vs.length) :
-    «Согласны» («привязать» ps vs) [] 0 (ps.map (fun p => (p, «Терм».«имя» p))) («привязать» ps vs) := by
+    «СогласныОбхода» («привязать» ps vs) [] 0 (ps.map (fun p => (p, «Терм».«имя» p))) («привязать» ps vs) := by
   intro x t hx
   obtain ⟨rfl, hm⟩ := «найти-имена» x ps t hx
   obtain ⟨w, hw⟩ := «найти-привязка» x ps vs hl hm
@@ -1286,7 +1286,7 @@ theorem «дерево-функции-верно» (P : «Программа») 
     «значДерева» P N («привязать» g.«параметры» vs) [] d = «исходСПостами» P N pres g qs vs := by
   let σ := «привязать» g.«параметры» vs
   let ρ := g.«параметры».map (fun p => (p, «Терм».«имя» p))
-  have hs : «Согласны» σ [] 0 ρ σ := «согласны-параметры» g.«параметры» vs hl
+  have hs : «СогласныОбхода» σ [] 0 ρ σ := «согласны-параметры» g.«параметры» vs hl
   unfold «исходСПостами»
   cases hc : «проверитьВход» P N σ pres with
   | some r =>

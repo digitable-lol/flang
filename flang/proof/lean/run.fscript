@@ -50,23 +50,33 @@
 
 тотальная функция «Modules»
   возвращает список список строки
-  пример «Twenty files in the order of their imports»
+  пример «Thirty one files in the order of their imports»
     ожидается [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
       ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
       ["RecordReader", "RecordReader"], ["Verdicts", "Verdicts"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval",
         "Semantics/Eval"],
       ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
       ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-      ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"],
-      ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
+      ["Semantics/Json", "Semantics/Json"], ["Semantics/Termination", "Semantics/Termination"],
+      ["Semantics/Recursion", "Semantics/Recursion"], ["Semantics/Tables", "Semantics/Tables"],
+      ["Semantics/Examples", "Semantics/Examples"], ["Semantics/Nonnegative", "Semantics/Nonnegative"],
+      ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
+      ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
+      ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
+      ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
   [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
     ["Record", "Запись"], ["Acceptance", "Приёмка"], ["Consistency", "Состоятельность"], ["Half", "Половина"],
     ["RecordReader", "RecordReader"], ["Verdicts", "Verdicts"], ["VerdictCheck", "VerdictCheck"], ["Semantics/Eval",
       "Semantics/Eval"],
     ["Semantics/Facts", "Semantics/Facts"], ["Semantics/Fuel", "Semantics/Fuel"],
     ["Semantics/Unfold", "Semantics/Unfold"], ["Semantics/Numbers", "Semantics/Numbers"],
-    ["Semantics/Json", "Semantics/Json"], ["CategoryPaths", "CategoryPaths"],
-    ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
+    ["Semantics/Json", "Semantics/Json"], ["Semantics/Termination", "Semantics/Termination"],
+    ["Semantics/Recursion", "Semantics/Recursion"], ["Semantics/Tables", "Semantics/Tables"],
+    ["Semantics/Examples", "Semantics/Examples"], ["Semantics/Nonnegative", "Semantics/Nonnegative"],
+    ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
+    ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
+    ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
+    ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
 
 тотальная функция «Standard axioms»
   возвращает список строки

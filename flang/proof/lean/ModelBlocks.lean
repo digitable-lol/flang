@@ -287,16 +287,24 @@ def «литералСДном?» (j : Lean.Json) : Bool :=
     | some (.num n) => decide (0 ≤ n.mantissa)
     | _ => false
 
+def «доводыОтрезком» (g : Lean.Json) : List String :=
+  («Эталон».«массив» g "params").filterMap (fun p =>
+    match «Эталон».«поле?» p "type" with
+    | some t =>
+      if «Эталон».«строка?» t "kind" = "named" && «натИмена».contains («Эталон».«строка?» t "name") then
+        some («Эталон».«строка?» p "name") else none
+    | none => none)
+
+def «конечныеДоводы» (j : Lean.Json) (f : String) : List String :=
+  match («Эталон».«массив» j "functions").find? (fun g => «Эталон».«строка?» g "name" = f) with
+  | none => []
+  | some g => («доводыОтрезком» g).eraseDups
+
 def «доводыСДном» (j : Lean.Json) (f : String) : List String :=
   match («Эталон».«массив» j "functions").find? (fun g => «Эталон».«строка?» g "name" = f) with
   | none => []
   | some g =>
-    let «типом» := («Эталон».«массив» g "params").filterMap (fun p =>
-      match «Эталон».«поле?» p "type" with
-      | some t =>
-        if «Эталон».«строка?» t "kind" = "named" && «натИмена».contains («Эталон».«строка?» t "name") then
-          some («Эталон».«строка?» p "name") else none
-      | none => none)
+    let «типом» := «доводыОтрезком» g
     let «требованием» := («Эталон».«массив» g "preconditions").filterMap (fun c =>
       match «Эталон».«поле?» c "expr" with
       | some e =>
@@ -310,7 +318,7 @@ def «доводыСДном» (j : Lean.Json) (f : String) : List String :=
     («типом» ++ «требованием»).eraseDups
 
 def «неотрицательныеПрограммы» (P : «Эталон».«Программа») (j : Lean.Json) : List String :=
-  «Эталон».«неотрицательныеВместе» P («доводыСДном» j) (P.length + 1)
+  «Эталон».«неотрицательныеВместе» P («доводыСДном» j) («конечныеДоводы» j) (P.length + 1)
     ((P.filter (fun g => «Эталон».«постНН-функции?» P g.«имя»)).map (·.«имя»))
 
 def «правилоПостроения» : String := "неотрицательность по построению"
@@ -346,9 +354,10 @@ def «судПостроения» (D : Option (Lean.Json)) («сырые» : Li
     let «строка» := «Второй».«номерПосле» h "строка "
     if «наПравиле?» «правилоПостроения» b then
       let K := «доводыСДном» j f
+      let F := «конечныеДоводы» j f
       let S := «неотрицательныеПрограммы» P j
-      if S.contains f && «Эталон».«принятьНеотрицательность» P «сырые» S f «имя» «строка» K then
-        some ("утверждение-по-построению", "ПРИНЯЛ", s!"{«правилоПостроения»}; доводы с дном: {K}")
+      if S.contains f && «Эталон».«принятьНеотрицательность» P «сырые» S f «имя» «строка» K F then
+        some ("утверждение-по-построению", "ПРИНЯЛ", s!"{«правилоПостроения»}; доводы с дном: {K}; конечные: {F}")
       else none
     else if «наПравиле?» «правилоПотолка» b then
       let T := «строковыеДоводы» j f

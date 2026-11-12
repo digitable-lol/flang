@@ -842,5 +842,5 @@
 
 тотальная функция «Объявление короткой команды lean-model:blocks»
   возвращает строка
-  (соединить ["bootstrap/flang io --plan Blocks --timeout 900000 — перепись ",
+  (соединить ["bootstrap/flang io --plan Blocks --timeout 900000 --max-steps 100000000 — перепись ",
       "блоков корпуса записей: что читает модель Lean, что вне её"] по "")

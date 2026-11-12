@@ -12,5 +12,5 @@ lie.flang	run	--на-веру	0	доказанность не считалась
 plan-proved.flang	io	-	0	доказано: утверждений 1
 plan-on-trust.flang	io	-	3	не доказано
 plan-on-trust.flang	io	--на-веру	0	доказанность не считалась
-law-on-grid.flang	run	-	0	доказано: утверждений 0
-law-broken.flang	run	-	0	доказано: утверждений 0
+law-on-grid.flang	run	-	3	законов на сетке 1
+law-broken.flang	run	-	3	FLANG_NOT_COMMUTATIVE

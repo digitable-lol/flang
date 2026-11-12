@@ -830,6 +830,7 @@ integers
 integrality
 interface
 intermediate
+interpretation
 interpreter
 into
 introduction

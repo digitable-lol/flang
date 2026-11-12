@@ -34,7 +34,7 @@ run-requirement-outside.flang	check	0	замечаний нет
 run-requirement-outside.flang	run-requirement-outside	1	FLANG_PRECONDITION
 function-value-outside-refinement.flang	check	1	получен функция из целого в число
 function-value-outside-refinement.flang	run-function-value	1	FLANG_TYPE
-promised-arithmetic-refusals.flang	check	1	не проверено — замечаний 2
+promised-arithmetic-refusals.flang	check	1	не проверено — замечаний 4
 empty-list-by-let.flang	check	1	а тело даёт список целого
 empty-list-by-let.flang	run-empty-list	1	FLANG_TYPE
 negative-zero-to-word.flang	run-negative-zero-word	0	true
@@ -58,35 +58,35 @@ fieldless-variant-argument-as-record.flang	run-fieldless-variant	1	не соот
 fieldless-variant-argument-as-record.flang	run-fieldless-variant-tagged	0	true
 selective-import-in-two-lines.flang	check	0	замечаний нет
 selective-import-helpers.flang	check	0	замечаний нет
-generic-call-in-match-branch.flang	check	0	замечаний нет
-generic-call-in-match-branch.flang	run-generic-call-in-match	0	-0.5
-branch-join-drops-second-type.flang	check	0	замечаний нет
-branch-join-drops-second-type.flang	run-branch-join	0	-0.5
-linear-equality-doubling-at-negative-zero.flang	proof	3	доказано 1, условно 0
-linear-equality-doubling-at-negative-zero.flang	run-doubling-at-negative-zero	1	FLANG_PROPERTY
-segment-sum-negative-zero-literal.flang	proof	3	доказано 1, условно 0
-segment-sum-negative-zero-literal.flang	run-sum-with-negative-zero-literal	1	FLANG_PROPERTY
-length-not-equal-negative-zero.flang	proof	0	доказано 1, условно 0
-length-not-equal-negative-zero.flang	run-length-of-empty-list	1	FLANG_PROPERTY
-exact-integer-from-computed-digit.flang	proof	0	доказано 2, условно 0
-exact-integer-from-computed-digit.flang	run-exact-zero-digit	1	FLANG_PROPERTY
-exact-integer-from-computed-digit.flang	run-exact-negative-digit	1	FLANG_PROPERTY
-segment-base-equal-zero-skips-negative-zero.flang	proof	0	доказано 1, условно 0
-segment-base-equal-zero-skips-negative-zero.flang	run-segment-base-negative-zero	1	FLANG_PROPERTY
-requirement-skipped-inside-a-promise.flang	proof	0	доказано 2, условно 0
-requirement-skipped-inside-a-promise.flang	run-requirement-inside-promise	1	FLANG_PROPERTY
-two-promises-under-one-name.flang	proof	0	доказано 3, условно 0
-two-promises-under-one-name.flang	run-two-promises-one-name	1	FLANG_PROPERTY
-statement-cited-at-a-wider-type.flang	proof	0	доказано 2, условно 0
-statement-cited-at-a-wider-type.flang	run-statement-at-wider-type	1	FLANG_PROPERTY
-linear-bound-rounds-at-the-ceiling.flang	proof	3	доказано 1, условно 0
-linear-bound-rounds-at-the-ceiling.flang	run-sum-at-the-ceiling	1	FLANG_PROPERTY
+generic-call-in-match-branch.flang	check	1	FLANG_TYPE
+generic-call-in-match-branch.flang	run-generic-call-in-match	1	FLANG_TYPE
+branch-join-drops-second-type.flang	check	1	FLANG_TYPE
+branch-join-drops-second-type.flang	run-branch-join	1	FLANG_TYPE
+linear-equality-doubling-at-negative-zero.flang	proof	3	доказано 0, условно 0
+linear-equality-doubling-at-negative-zero.flang	run-doubling-at-negative-zero	3	запуск только по явному согласию
+segment-sum-negative-zero-literal.flang	proof	3	доказано 0, условно 0
+segment-sum-negative-zero-literal.flang	run-sum-with-negative-zero-literal	3	запуск только по явному согласию
+length-not-equal-negative-zero.flang	proof	3	доказано 0, условно 0
+length-not-equal-negative-zero.flang	run-length-of-empty-list	3	запуск только по явному согласию
+exact-integer-from-computed-digit.flang	proof	1	FLANG_TYPE
+exact-integer-from-computed-digit.flang	run-exact-zero-digit	1	FLANG_TYPE
+exact-integer-from-computed-digit.flang	run-exact-negative-digit	1	FLANG_TYPE
+segment-base-equal-zero-skips-negative-zero.flang	proof	3	доказано 0, условно 0
+segment-base-equal-zero-skips-negative-zero.flang	run-segment-base-negative-zero	3	запуск только по явному согласию
+requirement-skipped-inside-a-promise.flang	proof	3	доказано 1, условно 0
+requirement-skipped-inside-a-promise.flang	run-requirement-inside-promise	3	запуск только по явному согласию
+two-promises-under-one-name.flang	proof	1	FLANG_PROOF_AMBIGUOUS
+two-promises-under-one-name.flang	run-two-promises-one-name	3	FLANG_PROOF_AMBIGUOUS
+statement-cited-at-a-wider-type.flang	proof	1	FLANG_PROOF_STEP
+statement-cited-at-a-wider-type.flang	run-statement-at-wider-type	3	FLANG_PROOF_STEP
+linear-bound-rounds-at-the-ceiling.flang	proof	3	доказано 0, условно 0
+linear-bound-rounds-at-the-ceiling.flang	run-sum-at-the-ceiling	3	запуск только по явному согласию
 imported-property-library.flang	check	1	FLANG_NOT_COMMUTATIVE
-imported-property-refuted.flang	check	0	замечаний нет
+imported-property-refuted.flang	check	1	FLANG_NOT_COMMUTATIVE
 selective-import-monoid-library.flang	check	1	FLANG_MONOID_ASSOC
-selective-import-monoid-refuted.flang	check	0	замечаний нет
+selective-import-monoid-refuted.flang	check	1	FLANG_MONOID_IDENTITY
 selective-import-monoid-true-library.flang	check	0	замечаний нет
 selective-import-monoid-true.flang	check	0	замечаний нет
-written-step-cites-a-promise-at-a-wider-type.flang	proof	3	доказано 3, условно 0
-written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_PROPERTY
+written-step-cites-a-promise-at-a-wider-type.flang	proof	1	FLANG_TYPE
+written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_TYPE
 written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0

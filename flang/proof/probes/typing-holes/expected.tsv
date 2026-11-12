@@ -83,5 +83,9 @@ linear-bound-rounds-at-the-ceiling.flang	proof	3	доказано 1, услов�
 linear-bound-rounds-at-the-ceiling.flang	run-sum-at-the-ceiling	1	FLANG_PROPERTY
 imported-property-library.flang	check	1	FLANG_NOT_COMMUTATIVE
 imported-property-refuted.flang	check	0	замечаний нет
+selective-import-monoid-library.flang	check	1	FLANG_MONOID_ASSOC
+selective-import-monoid-refuted.flang	check	0	замечаний нет
+selective-import-monoid-true-library.flang	check	0	замечаний нет
+selective-import-monoid-true.flang	check	0	замечаний нет
 written-step-cites-a-promise-at-a-wider-type.flang	proof	3	доказано 3, условно 0
 written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_PROPERTY

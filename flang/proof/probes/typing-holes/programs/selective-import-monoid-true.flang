@@ -1,0 +1,8 @@
+модуль «Selective import true monoid»
+  использует «Selective import true monoid library» из "selective-import-monoid-true-library.flang" только «Удвоить»
+
+тотальная функция «Ответ»
+  возвращает число
+  пример «дважды три»
+    ожидается 6
+  «Удвоить» от 3

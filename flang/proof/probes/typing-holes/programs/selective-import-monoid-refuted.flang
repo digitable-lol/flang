@@ -1,0 +1,8 @@
+модуль «Selective import monoid refuted»
+  использует «Selective import monoid library» из "selective-import-monoid-library.flang" только «Удвоить»
+
+тотальная функция «Ответ»
+  возвращает число
+  пример «дважды три»
+    ожидается 6
+  «Удвоить» от 3

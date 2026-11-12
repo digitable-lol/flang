@@ -6,6 +6,7 @@ import Semantics.Tables
 import Semantics.Examples
 import Semantics.Nonnegative
 import Semantics.Ceiling
+import Semantics.Cases
 import Reading
 import Premises
 import Lean.Util.CollectAxioms
@@ -345,6 +346,18 @@ def «наПравиле?» («правило» : String) (b : List String) : Bo
 
 def «правилоПорядка» : String := "порядок по построению"
 
+def «правилоРазбора» : String := "разбор цели по условию"
+
+def «наРазборе?» (b : List String) : Bool :=
+  let «голые» := «посылкиБезХодов» b
+  let «шаги» := b.filter (·.startsWith "шаг ")
+  «наПравиле?» «правилоРазбора» b ||
+    (b.contains "вид postcondition" && !«голые».isEmpty &&
+      «голые».all (fun p => p.«правило» = «правилоРазбора» || p.«правило» = "") &&
+      «голые».any (·.«правило» = «правилоРазбора») &&
+      «шаги».all (fun l => (l.splitOn " закрывающий по примеру «").length > 1 ||
+        l.endsWith " закрывающий по предположению" || (l.splitOn s!"правило «{«правилоРазбора»}»").length > 1))
+
 def «наПорядке?» (b : List String) : Bool :=
   let «голые» := «посылкиБезХодов» b
   b.contains "вид postcondition" && !(b.any (·.startsWith "шаг ")) && !«голые».isEmpty &&
@@ -433,6 +446,11 @@ def «судПостроения» (D : Option (Lean.Json)) («сырые» : Li
       let T := «строковыеДоводы» j f
       if «Эталон».«принятьПотолок» P «сырые» f «имя» «строка» T then
         some ("утверждение-по-построению", "ПРИНЯЛ", s!"{«правилоПотолка»}; строковые доводы: {T}")
+      else none
+    else if «наРазборе?» b then
+      if «Эталон».«принятьРазборЦели» P «сырые» f «имя» «строка» then
+        some ("утверждение-по-построению", "ПРИНЯЛ",
+          s!"{«правилоРазбора»}; каждое постусловие держится на каждом пути дерева тела")
       else none
     else none
 
@@ -553,7 +571,7 @@ run_cmd do
       ``«Разбор».«формула-не-зависит-от-запаса»,
       ``«Перепись».«принятая-таблица», ``«Эталон».«неотрицательность-по-построению»,
       ``«Эталон».«ограниченность-по-построению», ``«Эталон».«пример-на-значении»,
-      ``«Эталон».«порядок-по-построению»] do
+      ``«Эталон».«порядок-по-построению», ``«Эталон».«разбор-цели-по-условию»] do
     let «аксиомы» ← liftCoreM (Lean.collectAxioms «имя»)
     let «лишние» := «аксиомы».filter (fun a => !(a == ``propext || a == ``Classical.choice || a == ``Quot.sound))
     unless «лишние».isEmpty do

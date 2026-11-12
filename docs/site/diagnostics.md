@@ -806,7 +806,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_MEASURE` | `defunc.flang`, `failures.flang` | — |
 | `FLANG_MEET_NAME_TAKEN` | `sets.flang` | — |
 | `FLANG_MEET_NO_UNIVERSE` | `sets.flang` | — |
-| `FLANG_MEET_SAME_SIDE` | `sets.flang` | — |
+| `FLANG_MEET_SAME_SIDE` | `compiler.flang`, `sets.flang` | — |
 | `FLANG_MEET_TWICE` | `sets.flang` | — |
 | `FLANG_MEMO` | `flang_runtime.c` | — |
 | `FLANG_MEMORY` | `flang_cli.c`, `flang_repl.c` | — |

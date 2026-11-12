@@ -84,11 +84,11 @@ c329a1618, семя партии 10: «печати совпали побайт�
 только пробы, которые ложь отвергают.
 
 **Что есть.** Ядро решений — `flang/self/proof-kernel.flang`,
-<!-- СНЯТО 2026-11-08 строк flang/self/proof-kernel.flang = 9922 (kernel 9d slowdown fix: unfolding on a built record needs a branch-free body, unfolding stops at 2000 argument nodes) --> 9 922 строк.
+<!-- СНЯТО 2026-11-12 строк flang/self/proof-kernel.flang = 10039 (input of print batch 12: minus zero, interval bounds, proof stage speed) --> 10 039 строк.
 Список правил вывода закрыт: `flang/proof/tables/inference-rules.tsv`,
 <!-- СНЯТО 2026-11-08 строк flang/proof/tables/inference-rules.tsv = 169 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists) --> 169 строк
-с шапкой. Независимая проверяющая программа на C — `flang/proof/checker/checker.c` (16354 строки),
-<!-- СНЯТО 2026-11-10 строк flang/proof/checker/checker.c = 16354 (ADR-0220: the unfold move binds its body to the source) --> 15 796 строк;
+с шапкой. Независимая проверяющая программа на C — `flang/proof/checker/checker.c` (16360 строк),
+<!-- СНЯТО 2026-11-12 строк flang/proof/checker/checker.c = 16360 (input of print batch 12: minus zero product, rounded interval bound) --> 15 796 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-12 файлов flang/proof/lean/*.lean = 35 (ADR-0236 §11: Semantics/Cases.lean, the goal split by condition) --> 35 файлов,

@@ -487,6 +487,7 @@ domain
 door
 doors
 double
+doubling
 draft
 drained
 drift
@@ -1496,6 +1497,7 @@ rolled
 root
 rosetta
 round
+rounds
 row
 ru
 rule
@@ -1595,6 +1597,7 @@ size
 sized
 skills
 skip
+skipped
 skips
 slashes
 sleep
@@ -2022,6 +2025,7 @@ captured
 values
 narrow
 wide
+wider
 aaa
 aai
 aee
@@ -2188,6 +2192,7 @@ equalities
 includes
 capture
 cited
+cites
 fieldless
 selective
 helpers

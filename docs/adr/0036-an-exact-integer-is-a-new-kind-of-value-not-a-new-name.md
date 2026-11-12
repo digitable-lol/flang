@@ -179,19 +179,19 @@ flang check --proof --строго monoid.flang
 
 Три главных места, и у каждого свой род работы:
 
-- **Проверка типов** — `flang/self/types.flang`, 9346 строк. <!-- СНЯТО 2026-11-09 строк flang/self/types.flang = 9346 (print batch 11: typing holes 12-24 and 26 fixed in the type check) -->
+- **Проверка типов** — `flang/self/types.flang`, 9523 строки. <!-- СНЯТО 2026-11-12 строк flang/self/types.flang = 9523 (input of print batch 12: typing holes 17, 28, 29 and 36) -->
   Здесь числовые типы СТРОЯТСЯ, и строятся они все одинаково — отрезком на общей
   сетке: `«Тип отрезка» от «низ» и «верх» и «целое» и «масштаб»`. `неотрицательное`
   это `[0, Потолок точных]`, `целое` это `[Дно точных, Потолок точных]`, `сотых` —
   тот же отрезок с меткой масштаба. Постусловие в самом файле говорит прямо:
   «тип числа помечен меткой number», и в комментарии рядом — «носитель у них один
   и тот же double. Разойдись метки — и `неотрицательное` перестал бы…».
-- **Ядро доказательств** — `flang/self/proof-kernel.flang`, 9922 строк. <!-- СНЯТО 2026-11-08 строк flang/self/proof-kernel.flang = 9922 (kernel 9d slowdown fix: unfolding on a built record needs a branch-free body, unfolding stops at 2000 argument nodes) -->
+- **Ядро доказательств** — `flang/self/proof-kernel.flang`, 10039 строк. <!-- СНЯТО 2026-11-12 строк flang/self/proof-kernel.flang = 10039 (input of print batch 12: minus zero, interval bounds, proof stage speed) -->
   Тридцать пять доводов внутри него — это СЧЁТ IEEE-754, шаг за шагом: почему
   «Е не больше Е» не теорема, почему `0 × ∞` даёт не число, почему переставлять
   через скобки нельзя. Эти доводы не украшение: на них стоят посылки правил.
 - **Независимая проверяющая программа** — `flang/proof/checker/checker.c`,
-  16354 строки. <!-- СНЯТО 2026-11-10 строк flang/proof/checker/checker.c = 16354 (ADR-0220: the unfold move binds its body to the source) -->
+  16360 строк. <!-- СНЯТО 2026-11-12 строк flang/proof/checker/checker.c = 16360 (input of print batch 12: minus zero product, rounded interval bound) -->
   Она переигрывает записи и о новом виде значения не знает ничего.
 
 **И встречное число, которое меняет разговор о втором варианте.** Тип `целое`

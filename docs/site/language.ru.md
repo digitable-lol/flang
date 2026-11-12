@@ -1616,7 +1616,7 @@ $ echo $?
 | О8 | О | rule | порядок по построению | proof-kernel.flang:3348 «Отбор под длиной» | code-wider |
 | О9 | О | rule | порядок по построению | proof-kernel.flang:3185 «Свёртка не быстрее списка» | code-stricter |
 | О10 | О | rule | порядок по построению | proof-kernel.flang:2376 «Есть порядок через середину» | not-in-adr |
-| О11 | О | rule | порядок по построению | proof-kernel.flang:8202 «Нестрогий из строгого» | not-in-adr |
+| О11 | О | rule | порядок по построению | proof-kernel.flang:8251 «Нестрогий из строгого» | not-in-adr |
 | О✗ | О | ban | порядок по построению | proof-kernel.flang:2435 «По порядку», отсутствие случая "sub" | not-in-adr |
 | О✗✗ | О | ban | порядок по построению | proof-kernel.flang:3366 «Слагаемое в границе», требование обеих границ | not-in-adr |
 | О✗✗✗ | О | ban | порядок по построению | proof-kernel.flang:2255 «Дно произведения», отсутствие парного случая у порядка | not-in-adr |
@@ -1627,7 +1627,7 @@ $ echo $?
 | --- | --- | --- | --- | --- | --- |
 | Разв1 | Разв | rule | — | proof-kernel.flang:1539 «Правило развёртки», ветвь конструктора | code |
 | Разв2 | Разв | rule | — | proof-kernel.flang:1539 «Правило развёртки», ветвь плоского определения | code |
-| Яр1 | Разв | rule | — | proof-kernel.flang:6578 «Ярлык применения» | code-narrower |
+| Яр1 | Разв | rule | — | proof-kernel.flang:6624 «Ярлык применения» | code-narrower |
 | Разв3 | Разв | rule | — | proof-kernel.flang:1509 «Развернуть подстановкой» | code |
 | К↑ | Разв | rule | — | proof-kernel.flang:889 «Поле известного значения» | code |
 | Зап1 | Разв | rule | равенство записей по полям | proof-kernel.flang:5531 «Свести поля записей» | not-in-adr |

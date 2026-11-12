@@ -46,4 +46,4 @@ false-bound-away-from-the-edges.flang	--proof	3	нарушений на них �
 bound-held-under-requires.flang	--proof	3	НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ
 bound-refuted-at-the-requires-edge.flang	-	1	постусловие «удвоенное меньше двухсот» функции «Удвоить малое» нарушено на входе н = 100
 int-midpoint-overflows.flang	-	1	функции «midpoint» нарушено на входе lo = 1, hi = 2147483647
-property-without-examples.flang	-	0	свойство «коммутативность» у «Вычесть»: НЕ СЧИТАЛОСЬ
+property-without-examples.flang	-	1	FLANG_PROPERTY_NOT_JUDGED

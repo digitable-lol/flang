@@ -1003,7 +1003,7 @@
     ожидается запись «Sugar cut» с «found» равным да и «before» равным "цена: число" и «after» равным "хвост"
   «Cut once» от («Clause text» от loop и вариант «For each») и " из "
 
-тотальная функция «Element»
+тотальная функция «Each element»
   принимает loop: «Loop»
   возвращает «Parameter»
   пример «The element and its type»
@@ -1263,7 +1263,7 @@
   пусть bounded равно hasEach или («Has clause» от loop и вариант «Measure») или («Has clause» от loop и вариант «Fuel»)
   пусть names равно отобразить («Kept» от loop) как kept → kept.«name»
   пусть strangers равно отфильтровать rewriting.«updates» где update → не (names содержит update.«name»)
-  пусть untyped равно (длина («Element» от loop).«type») равен 0
+  пусть untyped равно (длина («Each element» от loop).«type») равен 0
   пусть typeless равно (не foldShape) и притом hasEach и притом untyped
   [(запись «Rule check» с «bad» равным (не (loop.«name» начинается с "«")) и
       «message» равным "у цикла нет имени в ёлочках"),
@@ -1300,7 +1300,7 @@
   [соединить [margin, "разбор ", «Generated» от loop и "остаток"] по "",
     соединить [margin, "  случай пусто"] по "",
     соединить [margin, "    то ", «Clause text» от loop и вариант «At the end»] по "",
-    соединить [margin, "  случай ", («Element» от loop).«name», " и ", «Generated» от loop и "дальше"] по ""]
+    соединить [margin, "  случай ", («Each element» от loop).«name», " и ", «Generated» от loop и "дальше"] по ""]
 
 тотальная функция «Head of fuel»
   принимает loop: «Loop», margin: строка
@@ -1443,7 +1443,7 @@
         «raw» равным нет), (запись «Source line» с «text» равным "    иначе" и «line» равным 4 и «shift» равным -2
             и «raw»
         равным нет)]
-  пусть listType равно соединить "список " с («Element» от loop).«type»
+  пусть listType равно соединить "список " с («Each element» от loop).«type»
   пусть hasEach равно «Generated parameter» от loop и вариант «For each» и "остаток" и listType
   пусть hasFuel равно «Generated parameter» от loop и вариант «Fuel» и "запас" и "неотрицательное"
   пусть kept равно отобразить («Kept» от loop) как kept → соединить [kept.«name», ": ", kept.«type»] по ""
@@ -1589,7 +1589,7 @@
   пусть body равно отфильтровать («Without last line» от loop.«body») где line → не («Blank» от line.«text»)
   пусть headPart равно соединить [margin, "пусть ", «Generated» от loop и "итог", " равно свёртка ",
     «Wrapped» от («Each part» от loop).«after», " начиная с ", «State record» от loop и starts, " как ",
-    «Generated» от loop и "шаг", " и ", («Element» от loop).«name»] по ""
+    «Generated» от loop и "шаг", " и ", («Each element» от loop).«name»] по ""
   пусть opened равно отобразить kept как one → соединить [margin, "  пусть ", one.«name», " равно ",
     «Generated» от loop и "шаг", ".", «In guillemets» от one.«name»] по ""
   пусть closing равно соединить [margin, "  ", «State record» от loop и values] по ""

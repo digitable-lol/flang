@@ -374,4 +374,190 @@ def «исходник» : List String :=
 
 end «ПробыПотолка»
 
+def «наименьшая» : «Образец» → Nat
+  | .«звено» _ _ => 1
+  | _ => 0
+
+theorem «наименьшая-верна» (p : «Образец») (s : String) (bs : «Среда»)
+    (h : «подходит» p (.«строка» s) = .ok (some bs)) : «наименьшая» p ≤ s.length := by
+  cases p with
+  | «звено» hd tl =>
+    simp only [«подходит»] at h
+    split at h
+    · cases h
+    · rename_i c r hs
+      have : s.toList.length = s.length := String.length_toList
+      rw [hs] at this
+      simp only [«наименьшая»]
+      simp at this
+      omega
+  | _ => simp [«наименьшая»]
+
+def «порядокСлучаев» (T : List String) : List («Образец» × «Выр») → Bool
+  | [] => true
+  | (p, b) :: r =>
+    (match «потолок» («головаСтроки» p ++ «безП» [] («связанные» p))
+        (T.filter (fun y => !(«связанные» p).contains y)) b with
+     | some a => decide (a ≤ «наименьшая» p)
+     | none => false) && «порядокСлучаев» T r
+
+def «порядокДлины» (T : List String) (t : String) : «Выр» → Bool
+  | .«разбор» (.«имя» x) cs => x == t && T.contains x && «порядокСлучаев» T cs
+  | _ => false
+
+theorem «порядок-верен» (P : «Программа») (T : List String) (t : String) (ρ : «Среда») (s : String)
+    (hT : ∀ x ∈ T, ∀ w, «найти» x ρ = some w → ∃ s, w = .«строка» s)
+    (ht : «найти» t ρ = some (.«строка» s)) :
+    ∀ n e v, «порядокДлины» T t e = true → «выч» P n ρ e = .ok v → «Влезает» v s.length := by
+  intro n e v he hv
+  cases e
+  case «разбор» d cs =>
+    cases d
+    case «имя» x =>
+      simp only [«порядокДлины», Bool.and_eq_true, beq_iff_eq] at he
+      obtain ⟨⟨rfl, _⟩, hc⟩ := he
+      cases n with
+      | zero => cases hv
+      | succ n =>
+        have hv' : «шаг» P («выч» P n) ρ (.«разбор» (.«имя» x) cs) = .ok v := hv
+        simp only [«шаг»] at hv'
+        obtain ⟨v0, hv0, hv'⟩ := «ок-связь» hv'
+        have hv0s : v0 = .«строка» s := by
+          cases n with
+          | zero => cases hv0
+          | succ n =>
+            have h0 : «шаг» P («выч» P n) ρ (.«имя» x) = .ok v0 := hv0
+            simp only [«шаг», ht] at h0
+            injection h0 with h0
+            exact h0.symm
+        subst hv0s
+        have hP : «ВерноП» [] T ρ := ⟨fun x n hx => absurd hx List.not_mem_nil, hT⟩
+        have key : ∀ cs, «порядокСлучаев» T cs = true →
+            «разобрать» («выч» P n) ρ (.«строка» s) cs = .ok v → «Влезает» v s.length := by
+          intro cs
+          induction cs with
+          | nil => intro _ h; simp [«разобрать», «беда»] at h
+          | cons c r ihc =>
+            intro hc h
+            obtain ⟨p, b⟩ := c
+            simp only [«порядокСлучаев», Bool.and_eq_true] at hc
+            obtain ⟨hb, hr⟩ := hc
+            unfold «разобрать» at h
+            split at h
+            · cases h
+            · rename_i bs hbs
+              split at hb
+              · rename_i a ha
+                simp only [decide_eq_true_eq] at hb
+                have hin := «потолок-верен» P n _ _ («вставить» bs ρ) b v a
+                  (by simpa [«вставить»] using «верноП-случай» hP p (.«строка» s) bs hbs true (fun _ => ⟨s, rfl⟩))
+                  ha h
+                exact «влезает-шире» hin (Nat.le_trans hb («наименьшая-верна» p s bs hbs))
+              · cases hb
+            · exact ihc hr h
+        exact key cs hc hv'
+    all_goals simp [«порядокДлины»] at he
+  all_goals simp [«порядокДлины»] at he
+
+def «постПорядок?» (t : String) (q : «Постусловие») : Bool :=
+  match q.«выражение» with
+  | .«двучлен» op (.«форма» n [.«имя» y]) (.«форма» n' [.«имя» z]) =>
+    op == "lte" && n == "длина" && n' == "длина" && y == q.«связка» && z == t && q.«связка» != t
+  | _ => false
+
+theorem «постПорядок-вид» {t : String} {q : «Постусловие»} (h : «постПорядок?» t q = true) :
+    q.«связка» ≠ t ∧
+      q.«выражение» = .«двучлен» "lte" (.«форма» "длина" [.«имя» q.«связка»]) (.«форма» "длина" [.«имя» t]) := by
+  unfold «постПорядок?» at h
+  split at h
+  · rename_i op n y n' z he
+    simp only [Bool.and_eq_true, beq_iff_eq, bne_iff_ne, ne_eq] at h
+    obtain ⟨⟨⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl⟩, rfl⟩, hne⟩ := h
+    exact ⟨hne, he⟩
+  · cases h
+
+theorem «пост-порядок-верно» (P : «Программа») {t : String} {q : «Постусловие»} (hq : «постПорядок?» t q = true)
+    {m : Nat} (hm : 3 ≤ m) (ρ : «Среда») {s : String} (ht : «найти» t ρ = some (.«строка» s)) {w : «Зн»}
+    (hw : «Влезает» w s.length) :
+    «выч» P m ((q.«связка», w) :: ρ) q.«выражение» = .ok (.«признак» true) := by
+  obtain ⟨hne, hex⟩ := «постПорядок-вид» hq
+  rw [hex]
+  obtain ⟨k, hk, hkB⟩ := hw
+  obtain ⟨j, rfl⟩ : ∃ j, m = j + 3 := ⟨m - 3, by omega⟩
+  have hlen : «форма» "длина" [w] = .ok (.«число» («изЦелого» k)) := by
+    cases w with
+    | «строка» s => simp only [«длинаЗн», Option.some.injEq] at hk; subst hk; simp [«форма»]
+    | «список» l => simp only [«длинаЗн», Option.some.injEq] at hk; subst hk; simp [«форма»]
+    | _ => simp [«длинаЗн»] at hk
+  have hlen2 : «форма» "длина" [.«строка» s] = .ok (.«число» («изЦелого» s.length)) := by simp [«форма»]
+  have hle : «неБольше64» («изЦелого» k) («изЦелого» s.length) = true := «целые-моно» hkB
+  show «шаг» P («выч» P (j + 2)) ((q.«связка», w) :: ρ)
+    (.«двучлен» "lte" (.«форма» "длина" [.«имя» q.«связка»]) (.«форма» "длина" [.«имя» t])) = .ok (.«признак» true)
+  simp only [«шаг», «выч», «вычВсе», «найти», ↓reduceIte, bind, Except.bind, pure, Except.pure, hlen, hne, ht, hlen2]
+  simp [«двучлен», «дробь?», «точно?», «разряды?», «порядок64», hle]
+
+def «принятьПорядок» (P : «Программа») («строки» : List String) (f «имя» : String) («строка» : Nat)
+    (T : List String) (t : String) : Bool :=
+  match «функцияПрограммы» P f with
+  | none => false
+  | some g =>
+    T.all (g.«параметры».contains ·) && T.contains t &&
+      (decide («хозяинСтроки» «строки» «строка» = some f) &&
+        (((«строкаИсходника» «строки» «строка»).splitOn
+            ("обеспечивает «" ++ «имя» ++ "» (длина результат) не больше (длина " ++ t ++ ")")).length == 2 &&
+          («порядокДлины» T t g.«тело» && g.«постусловия».any («постПорядок?» t))))
+
+theorem «порядок-по-построению» (P : «Программа») («строки» : List String) (f «имя» : String)
+    («строка» : Nat) (T : List String) (t : String) (h : «принятьПорядок» P «строки» f «имя» «строка» T t = true) :
+    ∃ g, «функцияПрограммы» P f = some g ∧ (∀ x ∈ T, x ∈ g.«параметры») ∧ t ∈ T ∧
+      «хозяинСтроки» «строки» «строка» = some f ∧
+      (∃ q ∈ g.«постусловия», «постПорядок?» t q = true) ∧
+      ∀ m ρ v s, (∀ x ∈ T, ∀ w, «найти» x ρ = some w → ∃ s, w = .«строка» s) →
+        «найти» t ρ = some (.«строка» s) → «выч» P m ρ g.«тело» = .ok v →
+        «Влезает» v s.length ∧ ∀ q ∈ g.«постусловия», «постПорядок?» t q = true → ∀ m', 3 ≤ m' →
+          «выч» P m' ((q.«связка», v) :: ρ) q.«выражение» = .ok (.«признак» true) := by
+  unfold «принятьПорядок» at h
+  cases hg : «функцияПрограммы» P f with
+  | none => rw [hg] at h; cases h
+  | some g =>
+    rw [hg] at h
+    simp only [Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, List.any_eq_true,
+      List.contains_iff_mem] at h
+    obtain ⟨⟨hT, ht⟩, hown, _, hb, hq⟩ := h
+    refine ⟨g, rfl, hT, ht, hown, hq, fun m ρ v s hρ hs hv => ?_⟩
+    have hin := «порядок-верен» P T t ρ s hρ hs m g.«тело» v hb hv
+    exact ⟨hin, fun q _ hq' m' hm' => «пост-порядок-верно» P hq' hm' ρ hs hin⟩
+
+namespace «ПробыПорядка»
+
+def «пост» (r t : String) : «Постусловие» :=
+  { «связка» := r, «код» := "FLANG_PROPERTY",
+    «выражение» := .«двучлен» "lte" (.«форма» "длина" [.«имя» r]) (.«форма» "длина" [.«имя» t]) }
+
+def «голова» (a b : «Выр») : «Функция» :=
+  { «имя» := "Голова", «параметры» := ["текст"],
+    «тело» := .«разбор» (.«имя» "текст") [(.«пусто», a), (.«звено» (some "г") (some "х"), b)],
+    «постусловия» := [«пост» "результат" "текст"] }
+
+def «пусто» : «Выр» := .«лит» (.«строка» "")
+
+def «исходник» : List String :=
+  ["тотальная функция «Голова»", "  принимает текст: строка",
+    "  обеспечивает «не длиннее» (длина результат) не больше (длина текст)"]
+
+#guard «постПорядок?» "текст" («пост» "результат" "текст")
+#guard !«постПорядок?» "текст" («пост» "текст" "текст")
+#guard !«постПорядок?» "текст" («пост» "результат" "иное")
+#guard «порядокДлины» ["текст"] "текст" («голова» «пусто» (.«имя» "г")).«тело»
+#guard !«порядокДлины» ["текст"] "текст" («голова» «пусто» (.«имя» "х")).«тело»
+#guard !«порядокДлины» ["текст"] "текст" («голова» (.«лит» (.«строка» "а")) (.«имя» "г")).«тело»
+#guard !«порядокДлины» [] "текст" («голова» «пусто» (.«имя» "г")).«тело»
+#guard !«порядокДлины» ["текст", "иное"] "иное" («голова» «пусто» (.«имя» "г")).«тело»
+#guard «принятьПорядок» [«голова» «пусто» (.«имя» "г")] «исходник» "Голова" "не длиннее" 3 ["текст"] "текст"
+#guard !«принятьПорядок» [«голова» «пусто» (.«имя» "г")] «исходник» "Голова" "не длиннее" 2 ["текст"] "текст"
+#guard !«принятьПорядок» [{ «голова» «пусто» (.«имя» "г") with «постусловия» := [«пост» "текст" "текст"] }]
+  «исходник» "Голова" "не длиннее" 3 ["текст"] "текст"
+
+end «ПробыПорядка»
+
 end «Эталон»

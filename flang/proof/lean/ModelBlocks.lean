@@ -8,6 +8,8 @@ import Semantics.Nonnegative
 import Semantics.Ceiling
 import Semantics.Cases
 import Semantics.Lengths
+import Semantics.Closed
+import Semantics.Requirement
 import Reading
 import Premises
 import Interpretation
@@ -486,6 +488,71 @@ def «судПостроения» (D : Option (Lean.Json)) («сырые» : Li
       else none
     else none
 
+def «родыСчёта» : List String := ["вычислить", "закрыть"]
+
+def «ходамиСчёта?» (b : List String) : Bool :=
+  let «ходы» := b.filter (fun l => l.startsWith "ход " && l ≠ "ход цель" && l ≠ "ход конец")
+  !«ходы».isEmpty && «ходы».all (fun l => «родыСчёта».contains ((l.splitOn " ").getD 2 ""))
+
+def «номерПостусловия» (j : Lean.Json) (f «имя» : String) : Option Nat :=
+  match («Эталон».«массив» j "functions").find? (fun g => «Эталон».«строка?» g "name" = f) with
+  | none => none
+  | some g => («Эталон».«массив» g "postconditions").findIdx? (fun q => «Эталон».«строка?» q "name" = «имя»)
+
+def «судСчёта» (D : Option (Lean.Json)) (h : String) (b : List String) : Option (String × String × String) :=
+  match D with
+  | none => none
+  | some j =>
+    let f := «вЁлочках» h 2
+    match «номерПостусловия» j f («вЁлочках» h 1) with
+    | none => none
+    | some i =>
+      if «ходамиСчёта?» b && «Эталон».«принятьЗамкнутое» («Эталон».«программаJson» j) f i «запасПримера» then
+        some ("утверждение-счётом", "ПРИНЯЛ", "цель без свободных имён вычислена в эталоне: «да» на любой среде")
+      else none
+
+def «ходамиТребования?» (b : List String) : Bool :=
+  let «ходы» := b.filter (fun l => l.startsWith "ход " && l ≠ "ход цель" && l ≠ "ход конец")
+  !«ходы».isEmpty && «ходы».all (fun l => (l.splitOn " закрыть требованием «").length > 1)
+
+def «выражениеJson» (j : Lean.Json) : «Эталон».«Выр» :=
+  «Эталон».«вырJson» ((«Эталон».«поле?» j "expr").getD .null)
+
+def «посылкиИЦель» (j : Lean.Json) (h : String) : Option (String × List «Эталон».«Выр» × «Эталон».«Выр») :=
+  let «имя» := «вЁлочках» h 1
+  let f := «вЁлочках» h 2
+  let «по» := fun (k : String) (x : Lean.Json) => «Эталон».«строка?» x k
+  if f = "" then
+    match («Эталон».«массив» j "statements").find? (fun s => «по» "name" s = «имя») with
+    | none => none
+    | some s => some ("результат", («Эталон».«массив» s "such").map «выражениеJson», «выражениеJson» s)
+  else
+    match («Эталон».«массив» j "functions").find? (fun g => «по» "name" g = f) with
+    | none => none
+    | some g =>
+      match («Эталон».«массив» g "postconditions").find? (fun q => «по» "name" q = «имя») with
+      | none => none
+      | some q =>
+        let «такие» := match «Эталон».«поле?» q "such" with
+          | some (.obj o) => [«Эталон».«вырJson» (.obj o)]
+          | _ => []
+        let «связка» := match «Эталон».«поле?» q "bind" with
+          | some (.str t) => t
+          | _ => "результат"
+        some («связка», («Эталон».«массив» g "preconditions").map «выражениеJson» ++ «такие», «выражениеJson» q)
+
+def «судПосылкой» (D : Option (Lean.Json)) (h : String) : Option (String × String × String) :=
+  match D with
+  | none => none
+  | some j =>
+    match «посылкиИЦель» j h with
+    | none => none
+    | some (x, ps, g) =>
+      if «Эталон».«принятьПосылкой» x ps g then
+        some ("утверждение-посылкой", "ПРИНЯЛ", s!"цель — посылка утверждения; посылок {ps.length}")
+      else
+        some ("утверждение-посылкой", "ОТВЕРГ", s!"цели нет среди посылок утверждения; посылок {ps.length}")
+
 def «одна» («деревья» «метка» «исх» «зап» : String) : IO Unit := do
   if «исх» = "-" then
     IO.println s!"{«метка»}\t#нет-исходника"
@@ -505,7 +572,11 @@ def «одна» («деревья» «метка» «исх» «зап» : Stri
     let «имя» := «вЁлочках» h 1
     let «вид» := «видУтверждения» b
     let «построение» := if «вид» = "утверждение-посылки" || «вид» = "утверждение-на-слове" then
-      «судПостроения» D «сырые» h b else none
+      («судПостроения» D «сырые» h b).orElse (fun _ =>
+        if «вид» = "утверждение-на-слове" && «чемЗакрыто» b = "по предположению" then «судПосылкой» D h else none)
+      else if «вид» = "утверждение-ходы" then
+        («судСчёта» D h b).orElse (fun _ => if «ходамиТребования?» b then «судПосылкой» D h else none)
+      else none
     if let some («видП», «вердикт», «причина») := «построение» then
       IO.println s!"{«метка»}\t{«видП»}\t{«имя»}\tЧИТАЕТ\t{«вердикт»}\t{«причина»}"
     else if «вид» = "утверждение-вывод" && «проигрывается» b then
@@ -580,6 +651,19 @@ theorem «принятый-пример» (P : «Эталон».«Програм
           ∀ q ∈ g.«постусловия», «Эталон».«выч» P m [(q.«связка», v)] q.«выражение» = .ok (.«признак» true) :=
   «Эталон».«пример-исчерпывает» P «строки» f «имя» «строка» N h
 
+theorem «принятый-счёт» (P : «Эталон».«Программа») (f : String) (i N : Nat)
+    (h : «Эталон».«принятьЗамкнутое» P f i N = true) :
+    ∃ g q, «Эталон».«функцияПрограммы» P f = some g ∧ g.«постусловия»[i]? = some q ∧
+      ∀ m, N ≤ m → ∀ ρ, «Эталон».«выч» P m ρ q.«выражение» = .ok (.«признак» true) := by
+  obtain ⟨g, q, hg, hq, _, hv⟩ := «Эталон».«замкнутое-верно» P f i N h
+  exact ⟨g, q, hg, hq, hv⟩
+
+theorem «принятая-посылка» («связка» : String) («посылки» : List «Эталон».«Выр») («цель» : «Эталон».«Выр»)
+    (h : «Эталон».«принятьПосылкой» «связка» «посылки» «цель» = true) :
+    ∀ P m ρ v, (∀ p ∈ «посылки», «Эталон».«выч» P m ρ p = .ok (.«признак» true)) →
+      «Эталон».«выч» P m ((«связка», v) :: ρ) «цель» = .ok (.«признак» true) :=
+  fun P m ρ v hpre => «Эталон».«посылкой-верно» «связка» «посылки» «цель» h P m ρ v hpre
+
 theorem «принятое-снятие» (c : «Второй».«Снятие») («цель» : String) («строки» : List String)
     («опр» : List «Определение») («звенья» : List «Звено»)
     (h : «Второй».«выводСнятия» c «цель» «строки» «опр» «звенья» = .ok none) :
@@ -605,6 +689,7 @@ run_cmd do
       ``«Эталон».«ограниченность-по-построению», ``«Эталон».«пример-на-значении»,
       ``«Эталон».«порядок-по-построению», ``«Эталон».«разбор-цели-по-условию»,
       ``«Эталон».«тождество-длин», ``«Эталон».«тождество-длин-в-эталоне», ``«Эталон».«база-по-пути-верна»,
+      ``«Перепись».«принятый-счёт», ``«Перепись».«принятая-посылка»,
       ``«Второй».«здесь-симм-М», ``«Второй».«метка-пуста-М», ``«Второй».«да-верно-М»] do
     let «аксиомы» ← liftCoreM (Lean.collectAxioms «имя»)
     let «лишние» := «аксиомы».filter (fun a => !(a == ``propext || a == ``Classical.choice || a == ``Quot.sound))

@@ -63,6 +63,7 @@
       ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
       ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
       ["Semantics/Cases", "Semantics/Cases"], ["Semantics/Lengths", "Semantics/Lengths"],
+      ["Semantics/Closed", "Semantics/Closed"], ["Semantics/Requirement", "Semantics/Requirement"],
       ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
       ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
   [["Binary64", "Binary64"], ["Model", "Модель"], ["Rules", "Правила"], ["Term", "Терм"],
@@ -77,6 +78,7 @@
     ["Semantics/Ceiling", "Semantics/Ceiling"], ["Semantics/Walk", "Semantics/Walk"],
     ["Semantics/Symbolic", "Semantics/Symbolic"], ["Semantics/Bridge", "Semantics/Bridge"],
     ["Semantics/Cases", "Semantics/Cases"], ["Semantics/Lengths", "Semantics/Lengths"],
+    ["Semantics/Closed", "Semantics/Closed"], ["Semantics/Requirement", "Semantics/Requirement"],
     ["Semantics/Validate", "Semantics/Validate"], ["Semantics/Run", "Semantics/Run"],
     ["CategoryPaths", "CategoryPaths"], ["RecordFormat", "RecordFormat"], ["Soundness", "Soundness"]]
 
@@ -241,6 +243,7 @@
   пусть text равно (соединить [
       "import «Половина»\nimport Semantics.Unfold\nimport Semantics.Numbers\nimport RecordFormat\nimport Soundness\n",
     "import Semantics.Ceiling\nimport Semantics.Cases\nimport Semantics.Lengths\n",
+    "import Semantics.Closed\nimport Semantics.Requirement\n",
     "#print axioms «Эталон».«композиция-завершается»\n",
     "#print axioms «Эталон».«композиция-над-рекурсией-завершается»\n",
     "#print axioms «Эталон».«таблица-постоянна»\n",
@@ -263,6 +266,8 @@
     "#print axioms «Эталон».«тождество-длин»\n",
     "#print axioms «Эталон».«тождество-длин-в-эталоне»\n",
     "#print axioms «Эталон».«база-по-пути-верна»\n",
+    "#print axioms «Эталон».«замкнутое-верно»\n",
+    "#print axioms «Эталон».«посылкой-верно»\n",
     "#print axioms «состоятельность»\n",
     "#print axioms «половина-верно»\n",
     "#print axioms «Эталон».«развёртка-доводами»\n",

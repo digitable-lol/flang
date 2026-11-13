@@ -32,10 +32,10 @@ docs/tasks/     the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 67 files of flang —
 <!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar) -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **64 modules, 2140 functions and 4144
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **65 modules, 2156 functions and 4171
 examples** that run on every check:
-<!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes) -->
+<!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) -->
+<!-- СНЯТО 2026-11-11 примеров-в flang/stdlib/*.flang = 4171 (the list facts module) -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.

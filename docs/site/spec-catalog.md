@@ -1,44 +1,37 @@
-# The spec catalogue: the stand, the guard, the snapshot
+# The spec catalogue: how it is built and what checks it
 
-The neighbouring page — [Specs: a proved business rule](fspec.html) — shows WHAT
-a spec-as-a-program is. This one answers the next question: how specs add up to a
-catalogue that does not drift apart, and what keeps it honest.
+The page [Specs: a business rule that is proved](fspec.html) shows one spec.
+This one is about a catalogue of many: how specs refer to one another, what
+counts as an accepted spec, and which program checks that.
 
-The catalogue lives in the tree under [`fspec/`](fspec). It is not the language
-specification — that one is [`docs/flang/SPEC.md`](../flang/SPEC.md). It is **a sample
-package and a working stand at once**: forty-odd domain rules written as
-programs, the rule by which they are accepted, a guard program, a memory of what
-stood yesterday, a set of deliberately broken cases, and a set of programs that
-show where the compiler stops speaking.
+The catalogue lives in [`fspec/`](fspec). It is not the language specification
+(that is [`docs/flang/SPEC.md`](../flang/SPEC.md)) but a sample: 43 rules of a
+business domain written as programs, and a check on top of them.
 
 ## What lies where
 
-| file | what it does | measured |
+| file | what it does | size |
 |---|---|---|
-| [`spec/*.flang`](fspec/spec) | the specs themselves: the domain rules | 43 files <!-- СНЯТО 2026-09-20 файлов fspec/spec/*.flang = 43 -->, 140 examples of their own <!-- СНЯТО 2026-09-08 примеров-в fspec/spec/*.flang = 140 --> |
-| [`policy.flang`](fspec/policy.flang) | the acceptance rule, written in the language itself: what counts as proved, what "agrees with its predecessor" means, what "the content was not rewritten" means | 534 lines <!-- СНЯТО 2026-10-04 строк fspec/policy.flang = 534 --> |
-| [`guard.flang`](fspec/guard.flang) | the plan: read the snapshot, find the specs, ask the compiler, name the trouble, set the exit code | 1378 lines <!-- СНЯТО 2026-10-04 строк fspec/guard.flang = 1378 -->, 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> |
-| [`snapshot.flang`](fspec/snapshot.flang) | the tooling: rewrite the snapshot from the current specs | 123 lines <!-- СНЯТО 2026-10-01 строк fspec/snapshot.flang = 123 --> |
-| [`snapshot.txt`](fspec/snapshot.txt) | the snapshot itself: one line per promise — file, function, name, goal | 102 lines <!-- СНЯТО 2026-09-20 строк fspec/snapshot.txt = 102 --> |
-| [`forgery.flang`](fspec/forgery.flang) | the forgery: deliberately broken catalogues, and the guard must redden on every one | 292 lines <!-- СНЯТО 2026-10-04 строк fspec/forgery.flang = 292 --> |
-| [`clarifications.flang`](fspec/clarifications.flang) | the clarifier: turns a failed proof into a question for the author of the requirement | 407 lines <!-- СНЯТО 2026-10-01 строк fspec/clarifications.flang = 407 --> |
-| [`experience/`](fspec/experience) | a coarse requirement and two answers to it — the bench for the clarifier | 3 files <!-- СНЯТО 2026-09-08 файлов fspec/experience/*.flang = 3 --> |
-| [`experiments/`](fspec/experiments) | programs that show the boundary; they are not meant to be fixed | 22 files <!-- СНЯТО 2026-09-08 файлов fspec/experiments/*.flang = 22 --> |
-| [`settings.txt`](fspec/settings.txt) | two lines: the path to the compiler and the spec directory | |
+| [`spec/*.flang`](fspec/spec) | the specs themselves | 43 files <!-- СНЯТО 2026-09-20 файлов fspec/spec/*.flang = 43 -->, 140 examples <!-- СНЯТО 2026-09-08 примеров-в fspec/spec/*.flang = 140 --> |
+| [`policy.flang`](fspec/policy.flang) | the acceptance rule: what counts as proved, what "agrees with its predecessor" means | 534 lines <!-- СНЯТО 2026-10-04 строк fspec/policy.flang = 534 --> |
+| [`guard.flang`](fspec/guard.flang) | the catalogue check: reads the snapshot and the specs, runs the compiler, names the troubles | 1378 lines <!-- СНЯТО 2026-10-04 строк fspec/guard.flang = 1378 -->, 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> |
+| [`snapshot.txt`](fspec/snapshot.txt) | the snapshot: one line per claim — file, function, name, goal | 102 lines <!-- СНЯТО 2026-09-20 строк fspec/snapshot.txt = 102 --> |
+| [`snapshot.flang`](fspec/snapshot.flang) | rewrites the snapshot from the current specs | 123 lines <!-- СНЯТО 2026-10-01 строк fspec/snapshot.flang = 123 --> |
+| [`forgery.flang`](fspec/forgery.flang) | deliberately broken catalogues: on each one the check must find a trouble | 292 lines <!-- СНЯТО 2026-10-04 строк fspec/forgery.flang = 292 --> |
+| [`clarifications.flang`](fspec/clarifications.flang) | turns a failed proof into a question for the author of the requirement | 407 lines <!-- СНЯТО 2026-10-01 строк fspec/clarifications.flang = 407 --> |
+| [`experience/`](fspec/experience) | a coarse requirement and two answers to it — material for `clarifications.flang` | 3 files <!-- СНЯТО 2026-09-08 файлов fspec/experience/*.flang = 3 --> |
+| [`experiments/`](fspec/experiments) | programs that show what `flang check` sees and what it does not | 22 files <!-- СНЯТО 2026-09-08 файлов fspec/experiments/*.flang = 22 --> |
+| [`settings.txt`](fspec/settings.txt) | the path to the compiler and the spec directory | 2 lines |
 
-How the clarifier is built is a separate document,
-[`docs/fspec/clarifications.md`](../fspec/clarifications.md).
-
-The stand is written in flang throughout: not a single JavaScript file in the
-directory. That became possible because the guard does not parse `.flang`
-itself — it runs the compiler as a process and reads the answer, and for that the
-language has the orders "list a directory", "read a file" and "run a process".
+The check is written in flang: it runs the compiler as a process and reads its
+answer with the orders "list a directory", "read a file" and "run a process".
 
 ## What a spec looks like
 
-A spec is not markdown, it is a program. Here is the first spec of the catalogue
-in full, [`fspec/spec/01-discount-cap.flang`](fspec/spec/01-discount-cap.flang),
-comments stripped:
+The first spec of the catalogue,
+[`fspec/spec/01-discount-cap.flang`](fspec/spec/01-discount-cap.flang),
+comments stripped — "the discount is at most 30", stated three times, in
+Russian, Chinese and English:
 
 ```flang
 модуль «Спека 1: потолок скидки»
@@ -55,65 +48,55 @@ comments stripped:
   30
 ```
 
-**The name of a claim is its identity mark.** Specs are matched against one
-another, and against the snapshot, by the pair "function plus name". Rename a
-claim and the link breaks — visibly, by a run rather than by reading.
+```
+$ flang check fspec/spec/01-discount-cap.flang --proof
+  утверждений 3: доказано 3 (из них без теоремы 3), сетка 0, объявлено, не доказано 0
+```
 
-The link to a spec written earlier is the `использует` line:
+3 claims, 3 proved. Specs are matched by the pair "function and claim name".
+Rename a claim and the link breaks; the check will name it.
+
+A spec that rests on an earlier one brings it in:
 
 ```flang fragment
 модуль «Спека 3: наценка за срочность»
   использует «Спека 2: промо» из "./02-promo.flang"
 ```
 
-That reference is part of the program, not prose: renaming a spec without fixing
-its heir breaks the import at once.
-
 ## The acceptance rule
 
-It is written in the language itself, in `policy.flang`. A spec is accepted only
-if **every** claim of its own is proved, and **every** claim of its predecessor
-is still proved in the heir's report.
+The rule is written in `policy.flang`. A spec is accepted if **every** claim of
+its own is proved and **every** claim of its predecessor is still proved in the
+heir's report.
 
-The argument is direct: the language has zero axioms. Falsehood cannot be derived
-from a set of proved claims — there is nothing to derive it from. As long as
-every rule is derived rather than declared, the whole set stays consistent, and
-there is no need to compare rules pairwise.
-
-What is rejected:
+Rejected:
 
 | what was found | why it will not do |
 |---|---|
-| "declared, not proved" | the claim may turn out false, and that will be learnt in production |
-| "grid" — counted on the author's values | this is not a claim about all inputs, and it cannot be added to another |
-| "VIOLATED by an example" | a falsehood already found by the author's own example |
-| a spec without a single `обеспечивает` | there is nothing to check, yet it greens exactly like one that holds |
-| a predecessor's claim gone or weakened | the new rule cancelled the old one silently |
-| a claim from the snapshot gone from the specs | a rule once proved has been withdrawn silently |
+| "stated, not proved" | the claim may turn out false |
+| "grid" | computed on the author's examples, not for all inputs |
+| "VIOLATED" | a falsehood found by an example |
+| a spec without a single `обеспечивает` | there is nothing to check |
+| a predecessor's claim gone or weakened | the new rule cancelled the old one |
+| a claim from the snapshot gone from the specs | a proved rule was withdrawn |
 | a claim from the snapshot with its goal rewritten | same name, different promise |
-| a claim present but absent from the snapshot | until it is recorded, it can be rewritten silently |
-| an empty spec directory | a check with nothing to disagree about greens always |
+| a claim present but absent from the snapshot | it can be rewritten unnoticed |
+| an empty spec directory | the check has nothing to disagree about |
 | one name carrying two different notions | the reader takes it for one thing while it is two |
-| an `принимает` line not parsed in full | until the input is parsed, a substituted notion under that name stays invisible |
+| a `принимает` line not parsed in full | a substituted notion under that name stays invisible |
 
-**The price is named honestly.** A true but underivable claim will be rejected
-too: the kernel is incomplete, and a sample of that incompleteness lies in the
-tree —
+A claim that is true but that the kernel cannot derive is rejected too: the
+kernel is incomplete. A sample is
 [`flang/proof/examples/precondition.flang`](flang/proof/examples/precondition.flang).
-A spec that runs into incompleteness is a request for a new kernel rule, not a
-reason to weaken acceptance with a threshold. Which forms the kernel takes today
-is laid out on [Which promises the kernel takes](what-the-kernel-accepts.html).
+Which spellings the kernel takes is laid out on the page
+[Which postconditions the prover proves](what-the-kernel-accepts.html).
 
-## What counts as a real claim
+## A claim that says nothing
 
-A claim can be proved and still say nothing. **A weakened claim** is one that
-survives replacing the body with a stub of the same signature: `0`, `""`, `нет`,
-the empty list. If the stub passes too, the claim is true of ANY function with
-that signature, and therefore says nothing about this one.
-
-This is settled by a run, not by argument: copy the function into a separate
-file, keep the signature and the `обеспечивает`, replace the body with a stub,
-and call `check`.
+A claim can be proved and still say nothing about the function. That happens
+when it also holds for a stub of the same signature — a body of `0`, `""`,
+`нет`, the empty list. It is checked by a run: keep the signature and the
+`обеспечивает`, replace the body with a stub.
 
 ```flang
 модуль «Заглушка»
@@ -126,251 +109,207 @@ and call `check`.
 ```
 
 ```
-$ flang check zaglushka.flang --proof
-zaglushka.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1 … код возврата 0
+$ flang check stub.flang --proof
+stub.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
 ```
 
-The stub passed — so the claim of the first spec is weakened, and that is not an
-oversight but part of the design: a function whose body is a constant has no
-contentful promise at all. The first two specs show what the LINK between two
-specs looks like, not what a strong claim looks like.
+The stub passed (1 claim, 1 proved, exit code 0): the claim of the first spec
+holds for any function that returns at most 30. The first two specs of the
+catalogue show the link between two specs, not a strong claim.
 
-Hence the shape of the promises further down the catalogue. Claims that do NOT
-survive a stub are those about **length** (`(длина результат) равен ((длина х)
-плюс 1)`), about **membership** (`результат содержит "…"`), about a **boolean
-formula**, about **record fields**, and about **a bound where the bound is the
-result itself** (`цена не больше результат`). Those that do survive are one-sided
-upper bounds (`результат не больше 30`) and non-negativity (`результат не меньше
-0`).
+Claims that do not survive a stub: about a length
+(`(длина результат) равен ((длина х) плюс 1)`), about containment
+(`результат содержит "…"`), about the fields of a record, and about a bound
+where the result itself is the bound (`цена не больше результат`). Claims that
+do survive: one-sided upper bounds (`результат не больше 30`) and
+non-negativity (`результат не меньше 0`).
 
-## The snapshot: a memory of what stood yesterday
+## The snapshot: what was proved before
 
-The acceptance rule looks at the specs AS THEY ARE NOW. Hence a hole: rewrite the
-goal of a claim without touching its name, and acceptance will not notice.
-
-The hole is closed by `snapshot.txt` — one line per promise, carrying, besides
-the file, the function and the name, THE GOAL ITSELF verbatim:
+The acceptance rule sees the specs as they are now. If the goal of a claim is
+rewritten without touching its name, the rule does not notice. That is what
+`snapshot.txt` is for — one line per claim, with the goal word for word:
 
 ```
 01-discount-cap.flang :: Потолок скидки :: скидка не больше 30 :: результат не больше 30
 ```
 
-The guard reads the snapshot first and matches it against the specs both ways:
+The check compares the snapshot with the specs in both directions:
 
-- **snapshot → specs**: every recorded promise is in place and carries the same
-  goal. Gone — "the rule was withdrawn silently". Goal rewritten — "same name,
-  different promise", and both goals are shown side by side;
-- **specs → snapshot**: every promise of a spec is recorded. Not recorded means
-  not protected by anything, and tomorrow it can be rewritten silently.
+- every claim of the snapshot stands in a spec with the same goal. Gone — the
+  rule was withdrawn. A different goal — both goals are shown side by side;
+- every claim of a spec is recorded in the snapshot.
 
-**The snapshot is written by a separate command, and that too is a rule:**
+The snapshot is rewritten by a separate command:
 
 ```sh
 flang io fspec/snapshot.flang
 ```
 
-A snapshot that refreshed itself silently along with the specs would protect
-nothing: it would record the weakening together with it. Editing a goal is TWO
-actions, and the second one shows up in the diff as a line of its own.
+It is deliberately not updated together with the specs: changing a goal is two
+actions, and the second shows as a line of its own in the diff.
 
-**Where the goal comes from.** From the spec source, not from the compiler's
-report: in the report a claim carries prose ("proved by reducing the goal against
-the function body…"), and matching content by that means matching by the wording
-of the proof. The parsed goal is in the report as well, but it is three times the
-size of the rest of it, and parsing such JSON in flang costs gigabytes of memory.
-So the goal is read from the primary source — the `обеспечивает` line of the spec
-itself, character for character.
+The goal is taken from the source of the spec, from its `обеспечивает` line.
+That is why a claim is written on one line: `обеспечивает «name» goal` or
+`для всех н обеспечивает «name» goal`.
 
-The convention this rests on: a promise is written on one line —
-`обеспечивает «name» goal`, or under a quantifier, `для всех н обеспечивает
-«name» goal`. The quantifier is part of the recorded goal, because "for all n"
-and "for all m" are different claims. There is a lock on the convention: the rule
-"the source was not parsed in full" compares the number of `обеспечивает` lines
-read out with the number of claims in the report. If they diverge, the guard
-reddens and says that content cannot be matched.
+The snapshot does not judge whether a new goal is weaker than the old one. "At
+most 1000" and "at most 30" are simply different to it.
 
-What the snapshot does NOT do: it does not judge whether the new goal is weaker
-than the old one. "At most 1000" and "at most 30" are simply DIFFERENT to it. It
-says something else and smaller: **the content of a proved promise does not
-change silently.**
+## A claim in another language
 
-## A requirement in another language
+A claim can be repeated in another language, with a language tag in its name —
+as in the first spec above. Every translation is a separate claim: the kernel
+proves it on its own, and it stands in the report and in the snapshot.
 
-For code, multilingualism is harmful: two names for one thing split the
-community. For a requirement it is the other way round — a requirement is read
-not by a programmer but by whoever pays. The proof stays one for all languages,
-because what is proved is the goal, not the text.
+The name of the claim is translated. Names of functions and parameters are
+not.
 
-A view is written with the same `обеспечивает`, with a language tag in the name —
-see the first spec above. Views are real claims, not marginal notes: the kernel
-proves each one separately, and each stands in the report and in the snapshot.
+There are nine tags: `ar`, `de`, `en`, `es`, `fr`, `hi`, `ja`, `pt`, `zh`. The
+list is closed so that a typo such as `zn:` does not become a separate claim
+that is compared with nothing. Hence a limit: `": "` in a claim name means a
+language tag.
 
-What is translated is the NAME of the promise. Names of functions, parameters and
-variables are not: the body is shared between views, and a translated function
-name is rejected by the guard as a trouble of its own.
+The check compares the goals of translations, not their words. A wrongly named
+translation with the right goal passes.
 
-**The list of language tags is CLOSED**, and it is spelled out in the guard's own
-«Метки языков» function. Were it open, the typo `zn:` would stop being a view and
-become a SEPARATE promise matched against nothing — a silent divergence instead
-of a red one. Hence the price, named outright: the separator `": "` in a promise
-name means a language tag and nothing else.
+## Checking the check
 
-What the matching CANNOT do: read the translation. If the Chinese view is named
-wrongly while its goal is right, the guard stays silent — it has nothing to judge
-WORDS with. It judges what is formal: two views of one promise must promise the
-same thing.
-
-## The forgery: the guard must redden
-
-Next to the specs lies `forgery.flang` — a set of deliberately broken catalogues.
-The guard must redden on each of them, and on an honest change it must **stay
-silent**. A rule that rejects everything looks just as healthy as a working one.
+`forgery.flang` is a set of deliberately broken catalogues. On each one the
+check must find a trouble, and on an honest change it must stay silent.
 
 ```sh
-flang io fspec/forgery.flang --timeout 600000
+flang run-script specs:forgery
 ```
 
-Among the things caught: a rule weakened under the same name; a spec whose
-predecessor is missing; a view in another language promising something else than
-the main one; a typo in the language tag; a translated function name; one rule
-name carrying two different signatures; a closed falsehood in a function without
-inputs.
+Among the cases: a rule weakened under its old name; a spec without its
+predecessor; a translation that promises something other than the main claim;
+a typo in a language tag; a translated function name.
 
-## The stand is red, and here is what by
+## What the check answers at present
 
-The guard program itself is not fully proved (133 claims: 80 proved, 53 on the
-grid), so `flang io fspec/guard.flang` refuses to run it without consent and
-exits with code 3. The shortcut `specs:check` runs it with `--на-веру`:
+The checking program is itself not proved in full, so `flang io` does not run
+it without consent:
+
+```
+$ flang io fspec/guard.flang
+не доказано: утверждений 133: доказано 80, сетка 53, на веру 0 — запуск только по явному согласию: --trust
+```
+
+(133 claims: 80 proved, 53 on the grid.) The `specs:check` command runs it
+with consent and at present finds 78 troubles:
 
 ```
 $ flang run-script specs:check
-бед в системе спек: 89
-03-urgency-markup.flang: утверждение «скидка с промо не больше 30» функции
-«Скидка с промо» доказано у 02-promo.flang, а здесь его нет или оно ослаблено
+бед в системе спек: 78
+03-urgency-markup.flang: утверждение «скидка с промо не больше 30» функции «Скидка с промо» доказано у 02-promo.flang, а здесь его нет или оно ослаблено
 …
 ```
 
-79 of the 89 troubles are of one kind, and they have one cause: **the
-`check --proof` report carries only the claims of the file itself, not those of
-imported modules.** The heir gets a proof report saying "CHECKED ON ITS OWN",
-holding only its own claims — while the second acceptance rule demands that the
-predecessor's claim be found there. The other ten: four claims whose goal differs
-from the snapshot and the same four goals reported as missing from the snapshot
-(`04-discount-tiers`, `14-tax-rates`, `31-loyalty-tiers`, `37-booking-slots`),
-and two claims of `26-order-invoice` that stand on the grid.
+| troubles | which | cause |
+|---:|---|---|
+| 69 | "proved in the predecessor, absent or weakened here" | the `check --proof` report holds only the claims of the file itself, not of the modules it uses; a predecessor's claim cannot be found in it |
+| 4 | "the GOAL is rewritten" | the specs `04-discount-tiers`, `14-tax-rates`, `31-loyalty-tiers`, `37-booking-slots`: a goal containing the word `иначе` is read from the source incompletely and does not match the snapshot |
+| 4 | "not recorded in the snapshot" | the same four claims |
+| 1 | "the spec does not pass the language check" | two claims of `26-order-invoice` are on the grid, and `check --proof` answers exit code 3 |
+
+The first row means that the check goes red on every spec with a `использует`
+line, not only on a real cancellation of a rule. The heir itself is proved:
 
 ```
 $ flang check fspec/spec/03-urgency-markup.flang --proof
-  утверждений 1: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 0
+  утверждений 1: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 0, объявлено, не доказано 0
 ```
 
-The forgery (`flang run-script specs:forgery`) answers "подлог спек ОТКАЗЫВАЕТ,
-расхождений 7 (подложенных случаев 21)". In all seven the expected words are
-missing and the answer quoted instead is the line "на веру: доказанность не
-считалась — запуск по ключу --на-веру": the guard run with `--на-веру` puts that
-line where the case waits for its own words.
+The set of broken catalogues does not pass at present either:
 
-If you are writing your own specs, keep in mind that in this state the guard
-reddens on every heir, not only on your mistake.
+```
+$ flang run-script specs:forgery
+подлог спек ОТКАЗЫВАЕТ, расхождений 7 (подложенных случаев 21)
+```
 
-## The boundary: what a lone `flang check` does not see
+("the spec forgery refuses: 7 mismatches, 21 planted cases"; exit code 1.) Of
+the seven mismatches one is the catalogue itself: the set expects the check to
+stay silent on the real specs, and it finds 78 troubles. In the other six the
+check does find a trouble but names it in words other than those the case
+expects: two cases with a claim "stated, not proved", the case with a lost
+predecessor claim (two troubles, not one), and three expectations in the case
+of a false claim on a function with no inputs.
 
-The programs in `experiments/` show where the compiler speaks and where it stays
-quiet. The codes are those of `flang check <file> --proof`:
+## What a lone `flang check` sees
+
+The programs in `experiments/` show which contradictions the compiler finds by
+itself. The code is the answer of `flang check <file> --proof`:
 
 | program | what is written in it | code |
 |---|---|---:|
-| `contradiction-without-example.flang` | two mutually unsatisfiable `обеспечивает` on one function | 3 |
-| `contradiction-one-function.flang` | the same contradiction plus the author's example | 1 |
-| `contradiction-in-requirements.flang` | two mutually unsatisfiable `требует` and a caller | 1 |
-| `contradiction-delivery-window.flang` | "no longer than three days" and "no faster than seven", with an example | 1 |
-| `contradiction-money-rounding.flang` | "the total is a whole rouble" and "the total ends in fifty kopecks", with an example | 1 |
-| `contradiction-return-defect.flang` | two return rules in one function, with an example | 1 |
-| `contradiction-tax-theorem.flang` | "the rate is at most 20" and "at least 27", each with a theorem | 1 |
-| `contradiction-weight-requirements.flang` | `требует` "heavier than ten" and "lighter than five", plus a caller | 1 |
-| `theorem-on-false.flang` | a theorem proving a falsehood | 1 |
+| `contradiction-without-example.flang` | two incompatible `обеспечивает` on one function, no example | 1 |
+| `contradiction-one-function.flang` | the same plus the author's example | 1 |
+| `contradiction-in-requirements.flang` | two incompatible `требует` and a caller | 1 |
+| `contradiction-delivery-window.flang` | "no longer than three days" and "no faster than seven" | 1 |
+| `contradiction-money-rounding.flang` | "the total is a whole rouble" and "the total has fifty kopecks" | 1 |
+| `contradiction-return-defect.flang` | two return rules in one function | 1 |
+| `contradiction-tax-theorem.flang` | "the rate is at most 20" and "at least 27", a theorem under each | 1 |
+| `contradiction-weight-requirements.flang` | `требует` "heavier than ten" and "lighter than five", and a caller | 1 |
+| `theorem-on-false.flang` | a theorem that proves a falsehood | 1 |
 | `false-claim-strict-discount.flang` | "a discount strictly lowers the price" — false on a zero order | 1 |
-| `false-claim-not-a-number.flang` | the same, but the price is declared `число`: false on "not a number" | 1 |
-| `false-claim-negative-zero.flang` | "reversing a zero payment gives zero" — false on minus zero | 1 |
-| `spec-legacy.flang` + `spec-new-feature.flang` | a contradiction ACROSS FILES: the heir promises the opposite | 0 and 3 |
-| `conflict-cap-legacy.flang` + `conflict-cap-heir.flang` | markup: the new spec demands "at least 50" and calls the old one | 0 and 3 |
-| `conflict-rights-legacy.flang` + `conflict-rights-heir.flang` | access: the new one promises the guest has no read left | 0 and 3 |
-| `silent-drop-legacy.flang` + `silent-drop-heir.flang` | stock: the heir imports its predecessor **selectively** (`только`) and drops one of its rules | 0 and 0 |
-| `superseded-cap-30.flang` + `replacement-cap-45.flang` | **replacing a rule**: a second edition of the cap, with no inheritance | 0 and 0 |
+| `false-claim-not-a-number.flang` | the same, the price declared `число`: false on NaN | 1 |
+| `false-claim-negative-zero.flang` | "reversing a zero payment is zero" — false on minus zero | 3 |
+| `spec-legacy.flang` + `spec-new-feature.flang` | the heir promises the opposite of its predecessor | 0 and 1 |
+| `conflict-cap-legacy.flang` + `conflict-cap-heir.flang` | the new spec demands "at least 50" and calls the earlier one | 0 and 1 |
+| `conflict-rights-legacy.flang` + `conflict-rights-heir.flang` | the new one promises the guest has no read access left | 0 and 3 |
+| `silent-drop-legacy.flang` + `silent-drop-heir.flang` | the heir brings in its predecessor with a selection (`только`) and loses one of its rules | 0 and 0 |
+| `superseded-cap-30.flang` + `replacement-cap-45.flang` | a second edition of a rule, with no inheritance | 0 and 0 |
 
-Here is how the table reads.
+**Code 1** — a falsehood was found. A contradiction without an author's example
+the compiler finds by itself: it computes the claim on a trial input.
 
-**The three `false-claim-*` rows are not about provability but about truth.**
-Proved ≠ right: the kernel derives what is written, and if a falsehood is
-written, it is an example that catches it, not a derivation. Zero, empty, the end
-of a range, minus zero and "not a number" cost one example line each — cheaper
-than a production run. For "not a number" the kernel answers outright, with a
-diagnostic of its own, `FLANG_BOUND_ON_NAN`, and names the counterexample in
-words.
+```
+$ flang check fspec/experiments/contradiction-without-example.flang --proof
+FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «скидка не меньше 50» функции «Скидка заказа» нарушено на входе сумма = 0 — посчитано вычислителем на этом входе
+```
 
-**Code 3 means "NOT CHECKED".** The claim is stated, no proof stands with it, and
-the kernel defers it to the runtime. Such a file gets a code of its own, so this
-case does not need the catalogue: the language itself reports it.
+**Code 3** — the claim is neither proved nor refuted. That is the answer on
+`false-claim-negative-zero.flang`: the claim is false on minus zero, but the
+compiler does not find that and leaves it on a grid of one example. Proved does
+not mean right, and not refuted means even less: zero, the empty value, the
+edge of a range and minus zero are worth writing down as examples.
 
-**The rows with code 0 are what the catalogue is guarded for.** Neither of the
-last two cases is a trouble to the compiler, and it is right: a selective import
-is a legal form, and replacing a rule is legal work. Telling a silent withdrawal
-from an honest replacement apart is possible only by knowing what stood
-yesterday — that is, by the snapshot and the acceptance rule, not by checking one
-file.
-
-**The kernel is not at fault here, and it does not need fixing.** Consistency of
-a set of specs is an acceptance rule on top of the proof report, not a new rule
-inside the kernel. That is exactly what `policy.flang` is.
+**Code 0 for the last two pairs** is what the catalogue is for. Bringing a
+module in with a selection and writing a new edition of a rule are both lawful
+programs. A cancelled rule can be told from a replaced one only by knowing what
+stood before, that is, by the snapshot.
 
 ## How to add a spec
 
-1. Put the file in `fspec/spec/` with a number at the front of the name:
-   `43-….flang`. The number sets the order in which a human reads the specs.
-2. First line — `модуль «Спека 43: …»`. If it builds on one written earlier, the
-   second line is `использует «Спека 42: …» из "./42-….flang"`.
-3. Write a function with `обеспечивает «name» …`. Word the name so that it reads
-   well in a trouble report: that is where it will end up.
-4. Run the guard: `flang run-script specs:check`. If a claim came back "declared,
-   not proved", either the goal is worded too broadly or the body has nothing to
-   carry it; weakening acceptance is not allowed, rewriting the goal or the body
-   is.
-5. Test the claim by replacing the body with a stub. If it survived, rewrite it:
-   what was proved is the signature, not your function.
-6. Record the promise in the snapshot: `flang io fspec/snapshot.flang`. Until it
-   is there, the guard reddens the spec with the words "not recorded in the
-   snapshot".
+1. Put a file into `fspec/spec/` with a number at the start of its name. The
+   file name is in English words.
+2. The first line is `модуль «Спека N: …»`. If the spec rests on an earlier
+   one, the second line is `использует «Спека M: …» из "./….flang"`.
+3. Write a function with `обеспечивает «name» …`. The name will appear in the
+   trouble report.
+4. Check it: `flang check fspec/spec/<file> --proof`. The claim has to be
+   proved; "grid" and "stated, not proved" are not accepted.
+5. Replace the body with a stub. If the claim survived, rewrite it.
+6. Record the claim in the snapshot: `flang io fspec/snapshot.flang`.
+7. Run `flang run-script specs:check`.
 
-File names are English words, contents are Russian. Transliteration will not do
-in either direction.
+## What the catalogue does not have
 
-## What is not here
-
-| the work | why it is needed |
+| what is missing | why it is needed |
 |---|---|
-| a check of **satisfiability**, not derivability | "not proved" ≠ "false". To tell them apart you need a search for a counterexample over a finite grid — then what is found is a falsehood presented as a value, not as silence |
-| a spec before the implementation | `обеспечивает` attaches only to a function with a body, and the claim is derived FROM THE BODY. A requirement whose implementation does not exist yet cannot be stated at all |
-| a judgement on whether the new goal is WEAKER than the old | the snapshot sees that the goal differs and reddens on any divergence. To tell weakening from strengthening you need an implication between two goals, and the kernel does not derive one |
-| running the guard's own examples | the 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> of `guard.flang` are written and are run by no target at all: the run hits the step limit. A guard nobody knows to be working is no better than a missing one |
+| a search for a contradicting example between specs | "not proved" does not mean "false"; the two can be told apart only by showing a value |
+| a spec before its implementation | `обеспечивает` is written at a function with a body, and the claim is derived from the body |
+| a judgement on whether a new goal is weaker than the old one | the snapshot sees only that the goal is different |
+| a run of the check's own examples | the 145 examples <!-- СНЯТО 2026-10-04 примеров-в fspec/guard.flang = 145 --> of `guard.flang` are run by no command: the run hits the step limit |
 
-The second row is the main open one. A specification without a body cannot be
-stated in the language today, and one with a body is already half an
-implementation.
+An external solver (Z3 and the like) is not connected: its answer
+"unsatisfiable" cannot be checked by the kernel.
 
-A full satisfiability solver (Z3 and the like) does not fit here and will not:
-it answers "unsatisfiable" without presenting the value that shows it. Accepting
-such an answer would mean taking on the axiom "the external solver does not lie",
-and the language has zero axioms. As a hint-giver it is admissible: it searches,
-the kernel decides by what it presented.
+## Next
 
-## What to read next
-
-- [Specs: a proved business rule](fspec.html) — what it is all for, on a
-  worked-through example.
-- [What is proved and what is not](what-is-proved.html) — numbers over the tree.
-- [Which promises the kernel takes](what-the-kernel-accepts.html) — which wording the kernel
-  will take and which it will defer.
-- [The kernel refused: whose mistake is it](proof-refused.html) — the kernel's
-  refusal codes.
-- [A service for an AI assistant](ai-assistant.html) — how an unproved promise turns
-  into a question for the author of the requirement.
+- [Specs: a business rule that is proved](fspec.html) — one spec on a running example.
+- [What is proved and what is not](what-is-proved.html) — where the boundary runs.
+- [Which postconditions the prover proves](what-the-kernel-accepts.html) — which spelling the kernel will prove.
+- [The kernel refused: whose mistake is it](proof-refused.html) — the kernel's refusal codes.
+- [The flang service for an AI assistant](ai-assistant.html) — the same check through MCP.

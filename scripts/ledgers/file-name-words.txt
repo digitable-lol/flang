@@ -167,6 +167,7 @@ bottom
 bound
 boundaries
 boundary
+bounded
 boundedness
 bounds
 box
@@ -437,6 +438,7 @@ derivation
 derivations
 derived
 descend
+descends
 descent
 desugared
 detached
@@ -643,6 +645,7 @@ flang
 flangrc
 flat
 flatness
+flatten
 flattened
 floating
 floor
@@ -816,6 +819,7 @@ inline
 inner
 input
 inquiry
+insert
 inside
 install
 installed
@@ -1080,6 +1084,7 @@ narrower
 narrowing
 nat
 natural
+naturals
 necessary
 need
 needed
@@ -1237,6 +1242,7 @@ pay
 payload
 pays
 peak
+peano
 pedigree
 peoples
 per
@@ -1291,6 +1297,7 @@ prelude
 premise
 premises
 prepend
+prepended
 preserved
 press
 presses
@@ -1586,6 +1593,7 @@ signs
 silence
 silent
 silently
+simp
 single
 sit
 site
@@ -1613,6 +1621,7 @@ socrates
 some
 sometimes
 sort
+sorted
 soundness
 source
 sources
@@ -1707,6 +1716,7 @@ suite
 sum
 summand
 summary
+sums
 supervision
 supervisor
 supervisors
@@ -1791,6 +1801,8 @@ ticks
 tied
 tier
 tiers
+tighten
+tightens
 tighter
 time
 timed
@@ -1939,6 +1951,7 @@ watched
 ways
 weakened
 weaker
+weekday
 went
 were
 what
@@ -2094,6 +2107,7 @@ mix
 weight
 weights
 binary64
+bind
 bracket
 eval
 ladder

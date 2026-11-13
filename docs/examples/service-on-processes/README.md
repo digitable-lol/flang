@@ -62,7 +62,7 @@ flang emit docs/examples/service-on-processes/service.flang --target elixir \
       --out <кат> --runtime flang/src/emit/elixir
 make -C <кат> build
 echo '{"run":"счётчик упал на ядовитом запросе — надзор поднял, служба отвечает дальше"}' \
-  | elixir -pa <кат>/_build -e 'Flang.Cli.main(["SluzhbaNaProcessah"])'
+  | elixir --erl '-kernel standard_io_encoding latin1' -pa <кат>/_build -e 'Flang.Cli.main(["SluzhbaNaProcessah"])'
 ```
 
 Примеры и отчёт о доказательствах:

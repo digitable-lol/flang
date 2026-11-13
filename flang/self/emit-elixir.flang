@@ -3821,7 +3821,7 @@
     «сборка»,
     ""
   ]
-  пусть «прогон» равно (если «прогонщик» то ["run: build", "\t$(ELIXIR) -pa _build -e 'Flang.Cli.main([\"$(MODULE)\"])'", ""] иначе пустой список)
+  пусть «прогон» равно (если «прогонщик» то ["run: build", "\t$(ELIXIR) --erl '-kernel standard_io_encoding latin1' -pa _build -e 'Flang.Cli.main([\"$(MODULE)\"])'", ""] иначе пустой список)
   пусть «хвост» равно ["clean:", "\trm -rf _build", "", (соединить [".PHONY: all build", (если «прогонщик» то " run" иначе ""), " clean"] по ""), ""]
   «Склеить строки Elixir» от («Слить списки строк Elixir» от («Слить списки строк Elixir» от «шапка» и «прогон») и «хвост»)
 

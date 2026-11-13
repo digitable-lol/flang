@@ -332,7 +332,8 @@
   возвращает строка
   соединить [
     "(cd \"$d/p\" && make -s build > \"$d/b\" 2>&1 ",
-    "&& elixir -pa _build -e \"Flang.Cli.main([\\\"$(sed -n 's/^MODULE ?= //p' Makefile)\\\"])\" < \"$d/q\") ",
+    "&& elixir --erl '-kernel standard_io_encoding latin1' ",
+    "-pa _build -e \"Flang.Cli.main([\\\"$(sed -n 's/^MODULE ?= //p' Makefile)\\\"])\" < \"$d/q\") ",
     "|| cat \"$d/b\""
   ] по ""
 

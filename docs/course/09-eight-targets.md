@@ -177,7 +177,7 @@ cd out-rust   && make && echo "$ЗАПРОС" | ./target/debug/flang_cli
 cd out-java   && make build && echo "$ЗАПРОС" | java -cp . FlangCli SearchInsertPosition
 cd out-python && echo "$ЗАПРОС" | python3 flang_cli.py search_insert_position
 cd out-js     && echo "$ЗАПРОС" | node flang_cli.js ./search_insert_position.js
-cd out-elixir && make build && echo "$ЗАПРОС" | elixir -pa _build -e 'Flang.Cli.main(["SearchInsertPosition"])'
+cd out-elixir && make build && echo "$ЗАПРОС" | elixir --erl '-kernel standard_io_encoding latin1' -pa _build -e 'Flang.Cli.main(["SearchInsertPosition"])'
 cd out-csharp && make build && echo "$ЗАПРОС" | dotnet bin/Debug/net10.0/flang.dll SearchInsertPosition
 ```
 

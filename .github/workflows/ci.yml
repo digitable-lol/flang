@@ -936,7 +936,7 @@ jobs:
           # вопрос идёт с ввода.
           if [ "${celi#*elixir}" != "$celi" ]; then
             make -C pechat-elixir build >/dev/null
-            printf '%s\n' "$vopros" | ( cd pechat-elixir && elixir -pa _build -e 'Flang.Cli.main(["Factorial"])' ) > otvet-elixir.txt
+            printf '%s\n' "$vopros" | ( cd pechat-elixir && elixir --erl '-kernel standard_io_encoding latin1' -pa _build -e 'Flang.Cli.main(["Factorial"])' ) > otvet-elixir.txt
           fi
           rashod=0
           for cel in $celi; do

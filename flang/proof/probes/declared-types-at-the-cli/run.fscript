@@ -82,7 +82,7 @@
   возвращает строка
   пусть сценарий равно "\"./$(ls | grep -v '^flang_' | grep -E '[.](js|ts)$' | head -n 1)\""
   пусть эликсир равно (соединить ["{ m=$(sed -n 's/^MODULE ?= //p' Makefile); ",
-    "elixir -pa _build -e \"Flang.Cli.main([\\\"$m\\\"])\"; }"] по "")
+    "elixir --erl '-kernel standard_io_encoding latin1' -pa _build -e \"Flang.Cli.main([\\\"$m\\\"])\"; }"] по "")
   если цель равен "elixir" то эликсир иначе (соединить ["node flang_cli.js ", сценарий] по "")
 
 тотальная функция «Вызов цели»

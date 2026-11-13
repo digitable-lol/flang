@@ -524,7 +524,7 @@
 
 тотальная функция «Runtime models»
   возвращает список (список строки)
-  обеспечивает «sixty-six model rows» (длина результат) равен 66
+  обеспечивает «sixty-seven model rows» (длина результат) равен 67
   [["fl_b_dlina", "Eval.lean «форма» \"длина\""],
     ["fl_b_dobavit", "Eval.lean «форма» \"добавить\""],
     ["fl_b_pripisat", "Eval.lean «форма» \"приписать\""],
@@ -548,6 +548,7 @@
     ["fl_b_simvol_po_kodu", "Eval.lean «форма» \"символ по коду\""],
     ["fl_b_simvoly", "Eval.lean «форма» \"символы\""],
     ["fl_b_k_chislu", "Eval.lean «форма» \"к числу\""],
+    ["fl_b_k_chislu_ili_beda", "Eval.lean «форма» \"к числу или беда\""],
     ["fl_add", "Eval.lean «двучлен» \"add\""],
     ["fl_sub", "Eval.lean «двучлен» \"sub\""],
     ["fl_mul", "Eval.lean «двучлен» \"mul\""],

@@ -17,7 +17,7 @@
    запись «Цель» с «имя» равным "rust" и «куда» равным "." и «сборка» равным "RUSTFLAGS='-D warnings' cargo build --offline" и «запуск» равным "./target/debug/flang_cli",
    запись «Цель» с «имя» равным "java" и «куда» равным "." и «сборка» равным "make build" и «запуск» равным "java -cp . FlangCli FlangProgram",
    запись «Цель» с «имя» равным "csharp" и «куда» равным "." и «сборка» равным "dotnet build -v quiet --nologo" и «запуск» равным "dotnet $(find bin -name flang.dll | head -1) FlangProgram",
-   запись «Цель» с «имя» равным "elixir" и «куда» равным "." и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex flang_program.ex flang_cli.ex" и «запуск» равным "elixir -pa _build -e 'Flang.Cli.main([\"SvyazUzlov\"])'"]
+   запись «Цель» с «имя» равным "elixir" и «куда» равным "." и «сборка» равным "elixirc --warnings-as-errors -o _build flang_runtime.ex flang_program.ex flang_cli.ex" и «запуск» равным "elixir --erl '-kernel standard_io_encoding latin1' -pa _build -e 'Flang.Cli.main([\"SvyazUzlov\"])'"]
 
 тотальная функция «Файл вопросов»
   принимает корень: строка

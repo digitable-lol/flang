@@ -1,8 +1,8 @@
 # Databases
 
-Two drivers ship with the language: PostgreSQL over the wire, and SQLite as a
-file — read, and now written into as well. Both are written in flang itself;
-both are checked by examples with no database present.
+Two drivers ship with the language: PostgreSQL over the wire, and SQLite as a file — reading
+and writing. Both are written in flang itself; both are checked by examples with no database
+present.
 
 ## Who carries the bytes
 
@@ -88,11 +88,11 @@ nothing on the wire.
 Make a sample database with someone else's `sqlite3` and read it back:
 
 ```bash
-$ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exist_ok=True); \
-  c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
+$ python3 -c "import sqlite3; c=sqlite3.connect('docs/examples/db/obrazec.db'); \
+  c.execute('create table люди(имя text, лет integer)'); \
   c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 
-$ flang io docs/examples/db/sqlite-read.flang | python3 -c \
+$ flang io docs/examples/db/sqlite-read.flang --trust --max-steps 2000000000 | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 магия SQLite: да
 размер страницы: 4096
@@ -107,9 +107,11 @@ SQL: CREATE TABLE люди(имя text, лет integer)
 3 | Вера | 7
 ```
 
-The plan is `docs/examples/db/sqlite-read.flang`; the path to the file and
-the name of the table stand in it as two one-line functions — `«Откуда»` and
-`«Какая таблица»`.
+The plan is `docs/examples/db/sqlite-read.flang`; the path to the file and the name of the table
+stand in it as two one-line functions — `«Откуда»` and `«Какая таблица»`. The path is resolved
+from the plan's directory. `--trust` is needed because some of the driver's promises are checked
+on examples rather than proved; `--max-steps` raises the per-turn step limit — the default of
+10,000,000 is not enough to parse the file, and the plan ends with `FLANG_RECURSION_LIMIT`.
 
 ### SQLite: what works and what does not
 

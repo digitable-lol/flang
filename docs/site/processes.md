@@ -185,7 +185,7 @@ whether a total handler can fail, and a recipient name computed at run time.
 
 ```bash
 $ flang test flang/concurrency/examples/supervision.flang
-flang/concurrency/examples/supervision.flang: примеров 2, прошло 2, не прошло 0
+flang/concurrency/examples/supervision.flang: примеров 5, прошло 5, не прошло 0
 $ echo $?
 0
 ```

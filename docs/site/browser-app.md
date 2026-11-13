@@ -1,156 +1,95 @@
 # An application in the browser
 
-"Hailstones" is an application in a browser tab, written entirely in flang. Not a
-harness: it shows state, answers a person's actions, computes.
+"Hailstones" is an application in a browser tab, written in flang. Type a number with the digit
+keys, press «пуск», and the number follows the Collatz rule: an even number is halved, an odd
+one is multiplied by three plus one. «Шаг» advances one tick, «бег» keeps going until stopped.
 
-Type a number in digits, press "start" — and the number falls by the Collatz
-rule: an even one is halved, an odd one is tripled plus one. "Step" moves it by
-one tick, "run" counts by itself until stopped.
+A browser does not run flang: the program is printed into JavaScript, and the printed module is
+what travels to the tab. The sources are in the repository, in `docs/examples/web/browser-app/`.
+
+## Run it
+
+From the root of a clone of the repository:
 
 ```sh
-sh docs/examples/web/build.sh                                          # emit the module in JavaScript
-bootstrap/flang io docs/examples/web/stand.flang --max-orders 100000    # bring the harness up
-# open http://127.0.0.1:8908/
+sh docs/examples/web/build.sh
+flang io docs/examples/web/stand.flang --max-orders 100000 --trust
+# open http://127.0.0.1:8908/docs/examples/web/browser-app/index.html
 ```
 
-No Node, no npm, no `python3 -m http.server`: the binary compiler emits the
-module, and a harness written in flang (`docs/examples/web/stand.flang`) serves the page.
+The first command prints the application into JavaScript next to the page (`flang emit --target
+js --no-cli`); the second starts the stand, a flang program that serves files over HTTP. Neither
+Node nor npm is needed. `--trust` is required: some of the stand's promises are checked on
+examples rather than proved, and without the switch `flang io` does not run such a program.
 
-The tab does not parse flang: an emitted module travels into it, 78 152 bytes
-(`sh docs/examples/web/build.sh`).
+In 0.7.34 the printer names a module with a Russian name `program.js` (91,788 bytes), while the
+application page asks for `gradiny.js` and gets a 404 from the stand. Copy the printed file under
+that name. The application was not exercised in an actual browser for this page.
 
-## How much of what is written
+## What it is made of
 
-| lines | what | in what |
-|---:|---|---|
-| **256** | `docs/examples/web/browser-app/hailstone.flang` — the whole application | flang |
-| **395** | `docs/examples/web/stand.flang` — the harness that serves the page | flang |
-| 398 | `flang/src/emit/js/flang_host_browser.js` — the tab's host | JavaScript |
-| 242 | `docs/examples/web/browser-probe.sh` — a run in a real browser | shell |
-| 88 | `docs/examples/web/browser-app/index.html` — markup; lines of JavaScript in it: **zero** | HTML |
+| what | where | lines |
+|---|---|---:|
+| the application: state, steps, screen | `docs/examples/web/browser-app/hailstone.flang` | 256 |
+| markup, without a line of JavaScript | `docs/examples/web/browser-app/index.html` | 88 |
+| the tab host, shared by every page | `flang/src/emit/js/flang_host_browser.js` | 1822 |
+| the stand that serves the page | `docs/examples/web/stand.flang` | 395 |
 
-Lines of JavaScript written by hand for this page: **zero**. The startup tag
-carries two attributes and not a single expression:
+The application has 16 functions, all total, and 31 examples:
+
+```sh
+$ flang check docs/examples/web/browser-app/hailstone.flang
+модуль «Градины»: функций 16, из них с доказанным завершением 16; типов 5
+$ flang test docs/examples/web/browser-app/hailstone.flang
+docs/examples/web/browser-app/hailstone.flang: примеров 31, прошло 31, не прошло 0
+```
+
+The page attaches the host with one tag and names the module for it:
 
 ```html
-<script type="module" src="../../flang/src/emit/js/flang_host_browser.js"
+<script type="module" src="../../../../flang/src/emit/js/flang_host_browser.js"
         данные-модуль="./gradiny.js"></script>
 ```
 
-The tab's host is not the application's own code but the body of the "js" emit
-target: it is one for every page in the tree and it must be in the target's
-language, exactly as `flang/src/emit/c/*.c` must be in C.
+## How the program talks to the tab
 
-Of the 256 flang lines, **106** are examples (`пример`, `дано`, `ожидается`) —
-over a third of the file is checks lying next to what they check. **16** functions,
-**16 of 16** total, **31** examples, **0** failed.
+The program is a `план`: a state, a starting function and a handler of responses.
 
-The host, without comments and blank lines, is **218** lines (`grep` count). It contains zero application logic:
-it knows nothing about Collatz and nothing about buttons — it knows about places
-and events.
-
-## The push loop fitted the existing arrangement. Edits in `runPlan`: zero
-
-This is the main measurement of the work, and the answer came out other than
-expected.
-
-The order loop is a **pull** loop: `runPlan` asks the program for the next order
-itself. The browser is a **push** world: events call the program. The estimate was
-"1 function + 1 edit in 1 file". The number of edits turned out to be **0**,
-because the inversion had already been done by one line written long before any
-browser:
-
-```js
-отклик = проверитьОтклик(await исполнить(поручение), поручение, план)
+```
+план «Градины»
+  состояние «Полёт»
+  начинает с «Начать»
+  обрабатывает «Дальше»
 ```
 
-`await` **is** the inversion of control. The browser host returns a promise
-resolved by `addEventListener`; while the plan waits, the stack is empty, the tab
-is alive and responsive, and what wakes the plan is not the program but a person
-or a clock. A run confirms it with a number: "run" took 27 down to one in **111
-ticks**, each of them a wake-up by the clock, and "reset" after them worked
-immediately.
+The handler does nothing itself. It receives the host's response and returns the next order:
 
-So a pull loop and a push world are not opposites. The loop looks like a pull loop
-from inside the program; from outside it is exactly as much of a push loop as the
-host wants it to be.
+| host response | what the program answers |
+|---|---|
+| «Пока ничего», «Показано» | show the screen, then wait for an event |
+| «Случилось» with a source and a value | apply the key press to the state and show the screen |
+| «Срок вышел» | take one step and show the screen |
+| «Сбой» with a code and a message | finish with a refusal carrying the same code |
 
-### What the inversion did cost — three things, all named
+There are two orders. `«Показать» с место равным "экран" и текст равным …` puts text into the
+place on the page marked with `данные-место`. `«Ждать событие» с срок равным 350` means "wake me
+on a human action or after 350 ms, whichever comes first"; a term of 0 waits for the human only.
+One wait thus covers both sources of events, buttons and the clock.
 
-**1. The order limit is a batch program's measure.** The executor's default is
-10 000 orders per run, and for a program that ends this is a trap for a looping
-one. For a tab the same number means "the application dies after a few thousand
-key presses". It is fixed by the caller: the tab's host calls `ioRun` with
-`{ поручений: 0 }`, and zero lifts the limit (`flang/src/emit/js/flang_host_browser.js`,
-executor `flang/src/emit/js/flang_io.js`). No edit in the effects dictionary was
-needed — but the default is wrong for an application, and that is worth remembering.
+Three consequences of this design:
 
-**2. The `runPlan` log is a leak that grows at the speed of a person's actions.**
-The log accumulates `{order, answer}` for every order and is handed to nobody
-until the end of the plan, which an application does not have. One flight of the
-number 27 is **225 records** over forty seconds. A tab left open for an hour with
-"run" on would accumulate hundreds of thousands of them. That is why the executor
-of the emitted module (`flang/src/emit/js/flang_io.js`) keeps no log by default:
-it is switched on by the `журнал` flag, not off. The effects dictionary
-(`flang/self/io.flang`) is untouched.
+- **The program knows nothing about the DOM.** It names a place with a string of its own and
+  hands over text. It does not build markup: the host does not use `innerHTML`.
+- **Totality holds.** «Шаг градины» is a total function, while whether the whole Collatz
+  sequence terminates is unknown. The step is repeated not by the program but by the human or
+  the clock: non-termination lives in the host's loop.
+- **The tab does not freeze.** While the program waits for an event the stack is empty; the
+  host wakes it.
 
-**3. The continuation machine waits for EXACTLY ONE thing.** `«Продолжение»`
-carries a single field, an order, so two simultaneous waits cannot be expressed.
-And the application has two sources: a person and a clock. So they are folded into
-one order — `«Ждать событие» с срок равным 350` means "wake me on a person's
-action or in 350 ms, whichever comes first". This is not a way around the
-restriction but its correct reading: the choice of "whichever comes first" belongs
-to the host, while the program names both conditions at once.
+## Which targets print a plan
 
-## What was not dragged into the language, and why
+A program with a `план` declaration is printed by `c`, `go`, `js`, `python`, `rust` and `ts`.
+Targets `cpp`, `csharp`, `elixir` and `java` refuse with `FLANG_PLAN_UNSUPPORTED`.
 
-Neither `DOM`, nor `window`, nor `addEventListener`, nor `querySelector` — not in
-the dictionary (`flang/self/io.flang`), not in the specification, not in a single
-line of `.flang`. The program names a **place** — the string `"экран"`, which it
-invented itself — and does not know where the host will put that place. The border
-is the same as the one between a path and a file descriptor.
-
-**An order carries TEXT, not markup.** This is a deliberate refusal, and here is
-its price. For the program to be able to describe appearance (lists, tables,
-nesting), the dictionary would need a fourth sum — a markup tree — whereas the
-fields of built-in sums are flat today: `string`, `number`, `any`. A recursive
-named type inside a built-in sum would have to be repeated in the reference
-implementation and in {{цели.поАнглийски}} emit targets. So the host draws the appearance and the
-program hands it text; there is no `innerHTML` in the host and there will not be —
-allowing markup would mean dragging into the dictionary a second language the
-program is not written in and nobody checks. The same argument with the same
-numbers stands in the [URL shortener](shortener.html), and that is no coincidence:
-both applications share one host.
-
-**Totality is intact.** The task was chosen for exactly that: `«Шаг градины»` is a
-total function, while whether the sequence terminates has been proved by nobody in
-the world. And the language does not demand it: no function repeats the step, the
-step is repeated by a person or by a clock. Non-termination lives in the host's
-loop — the same place it lives for a service — and the event handler turned out to
-be exactly the same total step the request handler already was.
-
-## What checks it without hands
-
-**`docs/examples/web/browser-probe.sh` — in a real browser, without Node and without npm.**
-Playwright is taken from the environment, it is not among flang's dependencies.
-Six screen comparisons, all byte-for-byte.
-
-A button in HTML **does** have a `value` property, and it is an empty string.
-So the host reads the declared `данные-значение` first: asked in the other order,
-it gets emptiness from every press, and the application answers "unknown key «»"
-to every digit. A stand-in document without `value` does not show this; the real
-browser does — with the reversed order, 3 checks out of 6 fail.
-
-## What is left of the seven points of the gap
-
-**5 of 7** are closed: screen orders (+2 instead of +4), screen answers (+3), the
-browser host (250 lines), the event loop (0 edits), agreement (6 files instead of
-7 — six is how many there turned out to be).
-
-**2** are not closed:
-
-* **a markup type** — deliberately, the reason is above: an order carries text;
-* **emitting plans into targets** — the `js` target emits plans, see the
-  [URL shortener](shortener.html); since ADR-0100 so do `ts`, `c`, `go`,
-  `python` and `rust`, while `cpp`, `csharp`, `elixir` and `java` refuse with
-  `FLANG_PLAN_UNSUPPORTED` and exit 1, and that is named there too.
+Next: [URL shortener](shortener.html) — a service with the same host;
+[Where flang ends and the host begins](host-boundary.html).

@@ -32,6 +32,8 @@ The entries below are about the language, not about the work on it. What has lan
 
 - `flang run` judges declared laws like `check`: grid-only or broken laws exit 3
 - `io --plan <missing>` exits 2 (was 3); `check --proof` with a failing example exits 1 (was 2); `emit` with unjudged laws exits 3 (was 0)
+- Intersecting a set with itself is rejected (FLANG_MEET_SAME_SIDE, exit 1; was 0)
+- A claim that rested on a closed kernel hole is now unproved: `check --proof` exits 3, `flang run` needs `--trust` (was: proved, exit 0)
 - FLANG_NOT_A_NUMBER and FLANG_PROPERTY_NOT_JUDGED are stable codes
 
 ### Improvements
@@ -45,8 +47,8 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### Known issues
 
-- Three typing holes are open: `flang run` rejects fixed-width words inside records and lists (flang/proof/tables/typing-holes.tsv, row 30)
-- Programs printed to C, Go, Rust and Java do not check fixed-width words and exact fractions on input (rows 31-32)
+- [run] `flang run` rejects fixed-width words inside records and lists (flang/proof/tables/typing-holes.tsv, row 30)
+- [emit] Programs printed to C, Go, Rust and Java do not check fixed-width words and exact fractions on input (rows 31-32)
 - Elixir target on OTP 26-27: piped non-ASCII input fails. Workaround: `elixir --erl '-kernel standard_io_encoding latin1' ...`
 
 ## 0.7.34 — 10 November 2026

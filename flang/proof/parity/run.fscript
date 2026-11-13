@@ -100,9 +100,9 @@
 
 тотальная функция «Lean script»
   возвращает строка
-  пример «lean is taken from the environment or from the path»
-    ожидается "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
-  "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+  пример «lean comes from the environment or the path, and a warning such as sorry is a refusal»
+    ожидается "\"${LEAN:-lean}\" -DwarningAsError=true \"$0\" >/dev/null 2>&1"
+  "\"${LEAN:-lean}\" -DwarningAsError=true \"$0\" >/dev/null 2>&1"
 
 тотальная функция «Run»
   принимает «script»: строка, «path»: строка
@@ -360,7 +360,7 @@
     ожидается (вариант «Сделать» с поручение равным
       (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
         ["-c"
-        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "\"${LEAN:-lean}\" -DwarningAsError=true \"$0\" >/dev/null 2>&1"
         "lean/a.lean"])
       и потом равным (вариант «Awaiting lean» с «walk» равным
         (запись «Walk» с «names» равным пустой список и «item» равным
@@ -403,7 +403,7 @@
     ожидается (вариант «Сделать» с поручение равным
       (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
         ["-c"
-        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "\"${LEAN:-lean}\" -DwarningAsError=true \"$0\" >/dev/null 2>&1"
         "lean/a.lean"])
       и потом равным (вариант «Awaiting lean» с «walk» равным
         (запись «Walk» с «names» равным ["a.flang"] и «item» равным
@@ -428,7 +428,7 @@
     ожидается (вариант «Сделать» с поручение равным
       (вариант «Запустить процесс» с программа равным "sh" и аргументы равным
         ["-c"
-        "\"${LEAN:-lean}\" \"$0\" >/dev/null 2>&1"
+        "\"${LEAN:-lean}\" -DwarningAsError=true \"$0\" >/dev/null 2>&1"
         "lean/a.lean"])
       и потом равным (вариант «Awaiting lean» с «walk» равным
         (запись «Walk» с «names» равным пустой список и «item» равным

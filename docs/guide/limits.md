@@ -2,9 +2,7 @@
 
 # Known limits
 
-What does not work in flang today, and what to do instead. The full lists are
-in [`docs/flang/SPEC.md`](../flang/SPEC.md) §10 and in the "Долги" sections of
-the specifications.
+What does not work in flang 0.7.34, and what to do instead.
 
 ## How to read the proof report
 
@@ -13,35 +11,32 @@ results. They are not the same thing:
 
 | The report says | What it means |
 | --- | --- |
-| `доказано` (proved) | true for **all** inputs. The prover proved it, and the separate C program `flang/proof/checker/checker.c` can re-check the proof step by step |
+| `доказано` (proved) | true for **all** inputs. The prover proved it, and a separate checker program can re-check the proof step by step |
 | `сетка N` (grid of N) | checked only on N values you wrote, like unit tests. Nothing is known about other inputs. **This is not a proof** |
 | `объявлено, не доказано` (declared, not proved) | written down, but there is neither a proof nor an example |
 
 Termination of `тотальная` functions, types and exhaustive pattern matching
 (`разбор`) are always proved, not tested.
 
-The checker does not re-check every place of a proof: it takes some on the
-kernel's word, names them in its report and answers with code 3. On 12 October
-2026 `bootstrap/flang run-script checker:second` counted 142 such records and
-229 places on the kernel's word among 634 probe and forgery records (144 and 232
-before ADR-0103). A postcondition with `таких что` whose restriction the
-argument's type discharges is now re-checked by the checker itself:
-[`step-by-restricted-postcondition-discharged.flang`](../../flang/proof/checker/tests/families/citation/step-by-restricted-postcondition-discharged.flang)
-gives code 0 from both the compiler and the checker.
+Plain `flang check` exits with code 0 even when a postcondition is only computed on a grid or
+is declared without a proof. The verdict is shown by `flang check --proof` (exit code 3) and by
+`flang run` (refusal, exit code 3).
+
+The independent checker does not re-check every place of a proof: the rest it names in its
+report as taken on the kernel's word.
 
 ## What you cannot prove
 
 | Does not work | What to do instead |
 | --- | --- |
 | "there exists x such that …" without naming x: the prover does not search for a value | name the value: `есть такой м, а именно н, что …` |
-| an order from the `иначе` branch over `число`: `не (х меньше 0)` does not give `х не меньше 0`, because on not-a-number both sides of a comparison are false (ADR-0098) | declare the argument `целое` if it is whole; for `число`, a theorem with steps or the run-time check |
-| a property of state over time, of side effects or of concurrency: there is no way to write it in the language (ADR-0026, ADR-0032) | test it with `пример` and, for processes, with `прогон` scenarios |
-| a property of the generated C, Go, Rust and other code: the proof covers the flang program, the code generator is not proved (ADR-0030) | test the generated program on its own; for the `c` target, check each printing run with the `--protocol` file and `flang/translation/matcher.c`, which replays the nodes, the measure guard included (ADR-0104), and names what it did not replay |
+| an order from the `иначе` branch over `число`: `не (х меньше 0)` does not give `х не меньше 0`, because on not-a-number both sides of a comparison are false | declare the argument `целое` if it is whole; for `число`, a theorem with steps or the run-time check |
+| a property of state over time, of side effects or of concurrency: there is no way to write it in the language | test it with `пример` and, for processes, with `прогон` scenarios |
+| a property of the generated C, Go, Rust and other code: the proof covers the flang program, the code generator is not proved | test the generated program on its own; for the `c` target, check each printing run with the `--protocol` file and `flang/translation/matcher.c`, which replays the nodes, the measure guard included, and names what it did not replay |
 | a postcondition the prover does not accept | see [What the prover accepts](../site/what-the-kernel-accepts.md); write a `теорема`, or rephrase the postcondition |
 
 No external SMT solver is used. Do not write software for medicine, aviation or
-space in flang: certification is a process, not a property of a language
-(ADR-0031).
+space in flang: certification is a process, not a property of a language.
 
 ## The language
 
@@ -76,10 +71,7 @@ strictly decreasing, and stops with `FLANG_MEASURE` instead of hanging. The
 same run-time check guards a constant step on a plain `число`, because numbers
 are IEEE-754 doubles and `x минус 1` equals `x` for large `x`. On a
 `неотрицательное` parameter the check is not needed and not generated: the type
-already bounds the value. The proof report counts these cases:
-{{носители.постоянныйШаг}} functions terminate by a constant step with the
-run-time check, {{носители.точныйШаг}} by an exact step without it, and the
-check stands at {{сторож.мест}} places in {{сторож.функций}} functions.
+already bounds the value.
 
 **A variant named like a keyword is not matched.** With variants `Да`, `Нет`,
 `Плюс` or `Больше`, `случай Да` is read as the keyword, and the error blames
@@ -101,84 +93,41 @@ fixes its length at 27.
 Reading invalid UTF-8 as text fails with `FLANG_IO_NOT_TEXT`; read binary
 files as bytes.
 
-**`https` uses the language's own client, after a seed reprint.** In the
-runtime sources, «Запросить» over `https` is executed by the TLS 1.3 client
-written in the language (`flang/stdlib/tls-client.flang`), printed to C and
-built into the binary itself
-([ADR-0101](../adr/0101-the-binary-host-speaks-tls-with-the-printed-language-client.md)).
-The binary in `bootstrap/` gets it only with a seed reprint; until then it
-still calls `curl`. The client supports only `TLS_AES_128_GCM_SHA256`, x25519,
-`rsa_pss_rsae_sha256` and an `sha256WithRSAEncryption` chain; a server without
-them is refused with `FLANG_IO_TLS`. Certificate revocation is not checked.
-Roots come from `--trust-roots <PEM file>` or the system bundle. A plan has no
-raw TLS socket: «Открыть соединение» is plain TCP. Datagrams are IPv4 only.
-Run of 12 October 2026 with a private build: a local `openssl s_server`
-answered in 1.66 s, against 0.015 s for `curl` (`flang/proof/probes/network`).
+**`https` uses a built-in TLS 1.3 client.** «Запросить» over `https` is executed by a client
+written in flang and built into the binary; `curl` is not needed. The client supports only
+`TLS_AES_128_GCM_SHA256`, x25519, `rsa_pss_rsae_sha256` and an `sha256WithRSAEncryption` chain; a
+server without them is refused with `FLANG_IO_TLS`. Certificate revocation is not checked, and
+certificate checking cannot be switched off. Roots come from `--trust-roots <PEM file>` or the
+system bundle. A response is at most 1,048,576 bytes. A plan has no raw TLS socket: «Открыть
+соединение» is plain TCP. Datagrams are IPv4 only.
 
 **A program with `план` is generated into `c`, `go`, `js`, `python`, `rust`
-and `ts`** (ADR-0100). `cpp`, `csharp`, `elixir` and `java` refuse with
+and `ts`**. `cpp`, `csharp`, `elixir` and `java` refuse with
 `FLANG_PLAN_UNSUPPORTED`, name the plan and write no files. In `c`, `go`,
 `python` and `rust` the runner runs the plan: `flang_cli --plan <name>
 [arg…]`; its host performs 9 kinds of orders out of 27 (files as text and as
 bytes, directories, environment, arguments) and answers network, processes,
 clock, dice and screen with «Сбой» and `FLANG_IO_NOT_WIRED` or
-`FLANG_IO_NO_SCREEN`. Run such a plan with `flang io`. The 0.7.25 binary
-prints a plan into these four targets only after the seed is reprinted.
+`FLANG_IO_NO_SCREEN`. Run such a plan with `flang io`.
 
-**The compiler answers in English only in part.** With `language = en` in
-`.flangrc` (or `FLANG_LANG=en`), `flang check` prints the location, the summary
-and the proof report in English and the text of a refusal from the catalog
-`flang/messages/catalog.tsv`: 13 of 129 codes have an English template
-(`bootstrap/flang run-script messages:check`, 12 October 2026). A refusal without
-a template and the kernel's explanation after the colon stay in Russian; the
-`FLANG_*` code is the same in every language. Help, `test`, `run`, `io` and
-`lint` answer in Russian. The binary learns the catalog with the seed reprint
-([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)).
+**The compiler answers in English only in part.** With `language = en` in `.flangrc` (or
+`FLANG_LANG=en`), `flang check` prints the summary and refusals in English, but some texts stay
+Russian — for example `FLANG_TYPE` about a literal pattern. The `FLANG_*` code is the same in
+every language. Help, `test`, `run`, `io` and `lint` answer in Russian.
 
 **There is no I/O monad.** Steps are chained by returning a command together
-with the next step as a declared value, not as a hidden closure. How this
-differs from a monad: [`docs/ct/spec.md`](../ct/spec.md).
+with the next step as a declared value, not as a hidden closure.
 
-**Not every arithmetic rule of `вес`, `сотых` and `тысячных` holds.** On
-`вес` (weight), subtraction, multiplication, weight-by-weight division,
-remainder and percent produce `число`: `а минус б` with `возвращает вес` is a
-`FLANG_TYPE` error ("тело даёт число"), but with `возвращает число` the check
-passes, although the specification promises `FLANG_INFINITY`. Hundredths and
-thousandths add up without a `FLANG_SCALE` refusal: `сотых плюс тысячных` with
-bounded operands passes even with `возвращает сотых`. Of the 12 rules of the
-specification the binary holds 7, does not hold 4, and one is not checked (run
-of 12 October 2026, ADR-0099, task 1747). Workaround: declare the result with the
-same type and do not mix scales in one expression.
-
-**`flang emit` does not run the examples.** `flang check` and `flang test` run
-them; `emit` prints even a program with a false example (task 8397). Run
-`flang test <file>` before printing. The compiler sources check the arguments of
-the printed runner against the declared types in all ten targets; the binary
-0.7.26, until the seed is reprinted, prints the type table into target `c` only
-and does not look at the floor of `вес`.
+**`flang emit` does not run the examples.** `flang check` and `flang test` run them; `emit`
+prints even a program with a false example. Run `flang test <file>` before printing.
 
 ## Category declarations
 
-`категория`, `морфизм`, `функтор`, `моноид`, `монада`, `изоморфизм`,
-`вложение`, `пересечение`, `свойство` and natural transformations are parsed,
-but the binary compiler checks their rules only in part. For monoids, monads,
-functors, isomorphisms, embeddings, intersections and declared properties it
-checks no laws at all; for categories and morphisms it does not check closure
-under composition, identities or matching ends of a composition. `flang check`
-names what it did not check and exits 2:
-
-```
-$ flang check flang/ct/monoid-and-monad.flang
-модуль «Monoid and monad»: функций 12, из них с доказанным завершением 12; типов 2
-проверено НЕ ВСЁ: в программе объявлено то, чего бинарник не судит вовсе — monoids, monads. Ответ «замечаний нет» здесь читался бы как «проверено», а это неправда. Судья, вшитый в замыкание, до них не достаёт: `flang/self/setoid.flang` и `flang/self/setoid-oracle.flang` (264 функции) считают законы категорий, морфизмов и преобразований, и только их. Правил, которые сверяли бы названное выше, в замыкании этого двоичного нет ни строкой. Часть их в дереве написана слоями, которые сюда не ввезены, — а правило, которое никто не запускает, от ненаписанного неотличимо. Пока это так, названное выше не судит НИКТО
-flang/ct/monoid-and-monad.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
-$ echo $?
-2
-```
-
-The functions inside such a file are checked as usual: types, termination,
-proofs, unit tests. If you need a law to hold, write it as an `обеспечивает` or
-a `пример` on the functions. Details: [`docs/ct/spec.md`](../ct/spec.md).
+The laws of `категория` and `изоморфизм` are computed on a finite grid of values from the
+examples, not proved. The laws of a `моноид` over `число` and `строка` are not proved by the
+kernel: they stay on the grid too, and `flang check --proof` exits with code 3. The laws of a
+`монада` and the laws of `отобразить` over a list are proved by the kernel. Details:
+[Categories and functors](../site/categories.md).
 
 ## Processes
 
@@ -195,4 +144,4 @@ The scheduler in the generated C has two modes: a single thread that orders
 messages by a seed, so the same seed gives the same delivery log, and a pool of
 worker threads (the `workers` field in the request). The pool is faster only
 when the program has parallel work; on a program without it, the pool is
-several times slower. Measurements: [`docs/scheduler-benchmark.md`](../scheduler-benchmark.md).
+several times slower.

@@ -52,9 +52,9 @@ Two of the example sets are full-size projects —
 nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library
 service; the 335 more programs in the other sets are single files, the LeetCode set among them:
-82 solutions carrying 806 examples.
+82 solutions carrying 908 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
-<!-- СНЯТО 2026-09-08 примеров-в docs/examples/leetcode/*.flang = 806 -->
+<!-- СНЯТО 2026-11-10 примеров-в docs/examples/leetcode/*.flang = 908 -->
 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the

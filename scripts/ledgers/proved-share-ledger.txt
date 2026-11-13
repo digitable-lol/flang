@@ -767,9 +767,9 @@ eb3fc68c4901b24dde8a6ceb2c7cf143|6|6|0|0|0|docs/examples/leetcode/004-median-of-
 f1b8c4e51ddc8cb491996e5fd4420f02|4|4|0|0|0|docs/examples/leetcode/011-container-with-most-water.flang
 f1b8c4e51ddc8cb491996e5fd4420f02|4|4|0|0|0|docs/examples/leetcode/011-container-with-most-water.flang
 f1b8c4e51ddc8cb491996e5fd4420f02|4|4|0|0|0|docs/examples/leetcode/011-container-with-most-water.flang
-295a369527eb668cb3c1e38eb8eb2d5e|6|6|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
-295a369527eb668cb3c1e38eb8eb2d5e|6|6|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
-295a369527eb668cb3c1e38eb8eb2d5e|6|6|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
+ade18e810bf5b63365dc9433db0af5e9|12|12|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
+ade18e810bf5b63365dc9433db0af5e9|12|12|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
+ade18e810bf5b63365dc9433db0af5e9|12|12|0|0|0|docs/examples/leetcode/013-roman-to-integer.flang
 f6e0850649bc6049256d1956b866ca18|2|2|0|0|0|docs/examples/leetcode/015-3sum.flang
 f6e0850649bc6049256d1956b866ca18|2|2|0|0|0|docs/examples/leetcode/015-3sum.flang
 f6e0850649bc6049256d1956b866ca18|2|2|0|0|0|docs/examples/leetcode/015-3sum.flang
@@ -821,9 +821,9 @@ ff01a2791b184f2791c70c452fba2b5a|3|3|0|0|0|docs/examples/leetcode/098-validate-b
 2d3097b2f22639f8b222b5b3e49a2eee|1|1|0|0|0|docs/examples/leetcode/125-valid-palindrome.flang
 2d3097b2f22639f8b222b5b3e49a2eee|1|1|0|0|0|docs/examples/leetcode/125-valid-palindrome.flang
 2d3097b2f22639f8b222b5b3e49a2eee|1|1|0|0|0|docs/examples/leetcode/125-valid-palindrome.flang
-ede32ea3067fc68ec9dba93a49342092|3|3|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
-ede32ea3067fc68ec9dba93a49342092|3|3|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
-ede32ea3067fc68ec9dba93a49342092|3|3|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
+207d904fb0d74f7d062cb5737b60c412|4|4|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
+207d904fb0d74f7d062cb5737b60c412|4|4|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
+207d904fb0d74f7d062cb5737b60c412|4|4|0|0|0|docs/examples/leetcode/150-evaluate-reverse-polish-notation.flang
 f32714325d3e78df7a78ed12623be2c2|2|2|0|0|0|docs/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang
 f32714325d3e78df7a78ed12623be2c2|2|2|0|0|0|docs/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang
 f32714325d3e78df7a78ed12623be2c2|2|2|0|0|0|docs/examples/leetcode/153-find-minimum-in-rotated-sorted-array.flang

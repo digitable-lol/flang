@@ -465,18 +465,18 @@ These are the only two functions in the catalogue without the word `тоталь
 | | |
 | --- | --- |
 | files | 82 |
-| lines | 6 224 |
-| functions | 301 |
-| of them total | 299 |
+| lines | 7 014 |
+| functions | 343 |
+| of them total | 341 |
 | declared measures (`убывает`) | 61 |
-| postconditions (`обеспечивает`) | 85 in 37 files |
-| examples | 806 |
+| postconditions (`обеспечивает`) | 92 in 37 files |
+| examples | 908 |
 
 The numbers are taken from the tree: `wc -l` and `grep` for the words `функция`,
 `убывает`, `обеспечивает`, `пример`.
 
-Termination is proved for 299 functions out of 301. Claims about the result
-number 85 for 301 functions, and they sit in 37 files out of 82. In the other
+Termination is proved for 341 functions out of 343. Claims about the result
+number 92 for 343 functions, and they sit in 37 files out of 82. In the other
 files only examples check that the answer is right, and an example is a claim
 about one input.
 

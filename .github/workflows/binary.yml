@@ -703,10 +703,10 @@ jobs:
   #
   # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
   # на двух
-  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 67
-  # файлов и 6680 примеров, объявленных внутри функций.
-  # СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar)
-  # СНЯТО 2026-11-12 примеров-в flang/self/*.flang = 6680 (input of print batch 12: typing, kernel and law fixes)
+  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 68
+  # файлов и 6750 примеров, объявленных внутри функций.
+  # СНЯТО 2026-11-13 файлов flang/self/*.flang = 68 (print batch 13: flang/self/call-words.flang of the console call)
+  # СНЯТО 2026-11-13 примеров-в flang/self/*.flang = 6750 (print batch 13: page orders, console call, postcondition self-call, sugar record)
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже
   # (`flang test . --ledger` внутри `обход-примеров.sh`). Она закрыта условием

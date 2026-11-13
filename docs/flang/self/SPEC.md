@@ -12,8 +12,8 @@
 
 ## Состав каталога
 
-<!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar) --> 67 файлов `.flang`,
-<!-- СНЯТО 2026-11-12 строк-в flang/self/*.flang = 150151 (input of print batch 12: typing, kernel and law fixes) --> 150 151 строка
+<!-- СНЯТО 2026-11-13 файлов flang/self/*.flang = 68 (print batch 13: flang/self/call-words.flang of the console call) --> 68 файлов `.flang`,
+<!-- СНЯТО 2026-11-13 строк-в flang/self/*.flang = 151054 (print batch 13: page orders, console call, postcondition self-call, sugar record) --> 151 054 строки
 Имя модуля — первая строка файла; здесь оно повторено, чтобы читать
 `использует «…»` в других файлах без поиска.
 

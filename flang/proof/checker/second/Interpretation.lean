@@ -32,4 +32,32 @@ theorem «метка-пуста-М» (w : «Мир») : «меткаМ» w "" :=
   subst hf
   exact ⟨fun h => by simp at h, fun h => by simp at h⟩
 
+theorem «обр-без-краёв» (s : String) (h1 : s.toList.head?.any Char.isWhitespace = false)
+    (h2 : s.toList.getLast?.any Char.isWhitespace = false) : s.«обр» = s := by
+  have a : s.toSlice.startsWith Char.isWhitespace = false := by
+    rw [String.Slice.startsWith_bool_eq_head?]; simpa using h1
+  have b : s.toSlice.endsWith Char.isWhitespace = false := by
+    rw [String.Slice.endsWith_bool_eq_getLast?]; simpa using h2
+  unfold String.«обр» String.trimAscii String.Slice.trimAscii String.Slice.trimAsciiStart
+    String.Slice.trimAsciiEnd
+  rw [String.Slice.dropWhile_eq_self a, String.Slice.dropEndWhile_eq_self b]
+  simp
+
+theorem «ужать-слова» (s : String) (h1 : s.toList.head?.any Char.isWhitespace = false)
+    (h2 : s.toList.getLast?.any Char.isWhitespace = false) (h3 : «однаПара» s = false) : «ужать» s = s := by
+  simp only [«ужать», «обр-без-краёв» s h1 h2, h3, Bool.false_eq_true, ite_false]
+
+theorem «форм-да» : «форм» "да" = some .«да» := by
+  have hz : «запасЧтения» "да" = 79 + 1 := by decide
+  have hu : «ужать» "да" = "да" := «ужать-слова» _ (by decide) (by decide) (by decide)
+  unfold «форм»
+  rw [hz, «формЗ»]
+  unfold «шагФормулы»
+  rw [hu]
+  simp only [ite_true]
+  rfl
+
+theorem «да-верно-М» (w : «Мир») : «истинноМ» w "да" :=
+  ⟨.«да», «форм-да», rfl⟩
+
 end «Второй»

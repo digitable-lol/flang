@@ -354,15 +354,6 @@
         (соединить (отобразить inner как line → «After» от "  " и line) по ", "))]))] и (запись «Declaration» с
         «kind» равным "" и «name» равным written и «cases» равным (пустой список))
 
-тотальная функция «Domain of values»
-  принимает values: список строки, complete: признак
-  возвращает «Domain»
-  пример «A finite domain»
-    дано values равно ["да", "нет"]
-    дано complete равно да
-    ожидается запись «Domain» с «values» равным ["да", "нет"] и «complete» равным да и «cut» равным нет
-  запись «Domain» с «values» равным values и «complete» равным complete и «cut» равным нет
-
 тотальная функция «Scalar domain»
   принимает written: строка
   возвращает «Domain»

@@ -145,7 +145,7 @@ loaded with a plain `import`, in Node and in the browser.
 
 ## The other targets
 
-There are ten targets. The same program and the same `in.json` gave
+There are ten targets. The same program and the same input gave
 `{"ok":true,"value":{"n":"2"}}` on each:
 
 | target | files | build and run | checked with |

@@ -31,7 +31,6 @@ docs/site/changelog.md	builtins.mjs	история: заголовок комм�
 docs/site/changelog.md	failures.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 docs/site/editor.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 docs/site/editor.ru.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
-docs/site/embedding.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 docs/site/embedding.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта
@@ -44,7 +43,6 @@ docs/site/embedding.md	src/factorial.rs	пример на чужом языке 
 docs/site/embedding.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/site/embedding.ru.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 docs/site/embedding.ru.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта

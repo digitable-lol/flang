@@ -81,8 +81,6 @@ docs/flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенн�
 docs/flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/guide/single-source.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/single-source.ru.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/guide/typescript-target.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/guide/typescript-target.ru.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/cli.md	privet.c	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.ru.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева

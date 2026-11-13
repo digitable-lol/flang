@@ -1,9 +1,12 @@
 [К README](../README.ru.md) · [Указатель документации](../README.md) · [English](emit-walkthrough.md)
 
-# Печать программы: один файл, напечатанный в C и JavaScript
+# Напечатать программу в C и JavaScript
 
-Это [`docs/examples/leetcode/035-search-insert-position.flang`](../examples/leetcode/035-search-insert-position.flang)
-как он лежит в дереве — место, куда значение встаёт в отсортированном списке:
+`flang emit` печатает проверенную программу исходным текстом другого языка: модуль, рантайм,
+прогонщик и файл сборки. Ниже одна программа — место, куда значение встаёт в отсортированном
+списке, — напечатана в C и JavaScript, собрана и запущена.
+
+## Программа
 
 ```flang
 модуль «Search insert position»
@@ -11,7 +14,7 @@
 тотальная функция «Шаг места вставки»
   принимает акк: число, эл: число, цель: число
   возвращает число
-  обеспечивает «элемент меньше цели двигает место на единицу» если эл меньше цель то (результат равен (акк плюс 1)) иначе да
+  обеспечивает «меньший элемент двигает место» если эл меньше цель то (результат равен (акк плюс 1)) иначе да
   обеспечивает «иначе место стоит на прежнем» если не (эл меньше цель) то (результат равен акк) иначе да
   пример «Элемент меньше цели — шаг вперёд»
     дано акк равно 2
@@ -43,33 +46,60 @@
   свёртка элементы начиная с 0 как акк и эл → «Шаг места вставки» от акк и эл и цель
 ```
 
+## Печать
+
+Сохраните программу в файл и назовите цель и каталог вывода:
+
 ```bash
-flang emit docs/examples/leetcode/035-search-insert-position.flang --target c  --out out-c
-flang emit docs/examples/leetcode/035-search-insert-position.flang --target js --out out-js
+$ flang emit insert.flang --target c --out out-c
+проверок при работе снято 2: постусловие доказано ядром обо всех входах и
+проверено примерами функции — в напечатанный код оно не едет.
+напечатано файлов 6, байт 612850, в out-c
+…
+$ flang emit insert.flang --target js --out out-js
+…
+напечатано файлов 3, байт 54552, в out-js
 ```
 
-Восемь целей печатают модуль, рантайм, прогонщик с JSON на входе и выходе, файл сборки и — где
-у цели он есть — манифест пакета (`go.mod`, `Cargo.toml`, `flang.csproj`, `package.json`); цель
-JavaScript печатает три файла: один самодостаточный модуль, рядом тот же прогонщик
-(`flang_cli.js`, снимается ключом `--no-cli`) и тот самый манифест. При этом
-сам модуль остаётся одним самодостаточным файлом, который идёт и в Node, и в браузере. Без `Makefile` остаются как раз эти двое: `js` и `ts` — последняя печатает модуль одним
-файлом `.ts` рядом с рантаймом и прогонщиком цели `js` и кладёт `tsconfig.json`, а сборка у неё
-`tsc -p .`. Здесь показаны две цели из десяти, у каждой только вторая функция, вставлено из
-прогона выше без правок:
+Перед печатью `emit` проверяет программу: разбор, типы, завершаемость и ядро доказательств.
+Примеры он не гоняет — для них `flang test insert.flang`. Постусловие, доказанное для всех
+входов, в напечатанный код не попадает; недоказанное печатается проверкой при работе.
 
-<details>
-<summary><b>C</b> — <code>out-c/search_insert_position.c</code></summary>
+## Что лежит в каталоге
+
+```bash
+$ ls out-c
+Makefile  flang_cli.c  flang_runtime.c  flang_runtime.h  search_insert_position.c  search_insert_position.h
+$ ls out-js
+flang_cli.js  package.json  search_insert_position.js
+```
+
+| часть | в C | в JavaScript |
+|---|---|---|
+| модуль программы: функция на функцию flang | пара `.c` и `.h` с именем модуля | один `.js`, рантайм внутри него |
+| рантайм: значения, арифметика, диагностики | `flang_runtime.c`, `flang_runtime.h` | — |
+| прогонщик: JSON на входе, JSON на выходе | `flang_cli.c` | `flang_cli.js` |
+| сборка | `Makefile` | `package.json` |
+
+Имя файла модуля берётся из имени модуля: «Search insert position» дал
+`search_insert_position`. Ключ `--no-cli` печатает без прогонщика, `--file <имя>` выводит один
+файл на стандартный вывод.
+
+Вторая функция программы в напечатанном виде:
 
 ```c
-fl_status search_insert_position_mesto_vstavki(fl_ctx *ctx, fl_value elementy, fl_value cel, fl_value *result, fl_error *error) {
+fl_status search_insert_position_mesto_vstavki(fl_ctx *ctx, fl_value elementy,
+                                               fl_value cel, fl_value *result,
+                                               fl_error *error) {
   fl_value fl_t2 = fl_nothing();
   FL_TRY(fl_require_list(ctx, elementy, "свёртка", &fl_t2, error));
-  fl_value akk = fl_number(0.0); /* «акк» */
+  fl_value akk = fl_number(0.0);
   const fl_mark fl_t4 = fl_region_open(ctx);
   for (size_t fl_t3 = 0; fl_t3 < fl_t2.as.list.count; fl_t3 += 1) {
-    const fl_value el = fl_t2.as.list.items[fl_t3]; /* «эл» */
+    const fl_value el = fl_t2.as.list.items[fl_t3];
     fl_value fl_t5 = fl_nothing();
-    FL_TRY(search_insert_position_shag_mesta_vstavki(ctx, akk, el, cel, &fl_t5, error));
+    FL_TRY(search_insert_position_shag_mesta_vstavki(ctx, akk, el, cel, &fl_t5,
+                                                     error));
     akk = fl_t5;
     FL_TRY(fl_region_recycle(ctx, fl_t4, &akk, error));
   }
@@ -79,37 +109,61 @@ fl_status search_insert_position_mesto_vstavki(fl_ctx *ctx, fl_value elementy, f
 }
 ```
 
-</details>
-
-<details>
-<summary><b>JavaScript</b> — <code>out-js/search_insert_position.js</code></summary>
-
 ```js
-/**
- * Функция flang «Место вставки».
- *
- * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- *
- * @param {Array<number>} elementy — «элементы»
- * @param {number} cel — «цель»
- * @returns {number}
- */
 export function mestoVstavki(elementy, cel) {
-  const $t1 = $requireList(elementy, "свёртка")
-  let akk = 0
+  const $t1 = $requireList(elementy, "свёртка");
+  let akk = 0;
   for (const el of $t1) {
-    akk = shagMestaVstavki(akk, el, cel)
+    akk = shagMestaVstavki(akk, el, cel);
   }
-  return akk
+  return akk;
 }
 ```
 
-</details>
+Свёртка стала обычным циклом. Имена переведены в латиницу, исходное имя стоит в комментарии над
+функцией. Напечатанное руками не правят: правится исходник на flang и печатается заново.
 
-Напечатанный код несёт имена предметной области в комментариях, дословно сообщает коды
-диагностик компилятора, а его шапка говорит, что он такое: *«Правьте исходник на flang и
-печатайте заново: любая правка здесь потеряется.»* Шапка JavaScript всё ещё называет файл,
-которого в дереве больше нет; эту строку пишет печать, и вставка оставлена как напечатана.
-Исходники рантайма каждой цели копируются в вывод дословно — из `share/flang/<цель>/` рядом с
-двоичным или из `--runtime <каталог>`. Как проверяются цели и насколько неровно —
-[Известные ограничения](limits.ru.md).
+## Собрать и запустить
+
+Прогонщик читает со стандартного ввода по вызову на строку и отвечает строкой на вызов. Функция
+зовётся исходным именем flang, значения размечены тегами (`n` — число, `l` — список; полная
+таблица — [«Встроить flang в чужую программу»](../site/embedding.ru.md)):
+
+```bash
+$ cat in.json
+{"fn":"Место вставки","args":[{"l":[{"n":"1"},{"n":"3"},{"n":"5"},{"n":"6"}]},{"n":"5"}]}
+$ cd out-c && make
+$ ./flang_cli < ../in.json
+{"ok":true,"value":{"n":"2"}}
+$ cd ../out-js && node flang_cli.js ./search_insert_position.js < ../in.json
+{"ok":true,"value":{"n":"2"}}
+```
+
+Кроме прогонщика, `make` в каталоге C собирает статическую библиотеку
+`libsearch_insert_position.a` — её линкуют в свою программу. Модуль JavaScript подключается
+обычным `import` и в Node, и в браузере.
+
+## Остальные цели
+
+Целей десять. Та же программа и тот же `in.json` на каждой дали `{"ok":true,"value":{"n":"2"}}`:
+
+| цель | файлов | собрать и запустить | проверено на |
+|---|---|---|---|
+| `c` | 6 | `make`, затем `./flang_cli` | gcc 15.2 |
+| `cpp` | 7 | `make`, затем `./flang_cli` | g++ 15.2 |
+| `csharp` | 9 | `dotnet run -- SearchInsertPosition` | .NET 10.0 |
+| `elixir` | 4 | `make run` | Elixir 1.20, OTP 29 |
+| `go` | 5 | `make flang_cli`, затем `./flang_cli` | Go 1.26 |
+| `java` | 8 | `make run` | OpenJDK 26 |
+| `js` | 3 | `node flang_cli.js ./search_insert_position.js` | Node 26.7 |
+| `python` | 4 | `python3 flang_cli.py search_insert_position` | Python 3.14 |
+| `rust` | 7 | `make build`, затем `./target/debug/flang_cli search_insert_position` | Rust 1.97 |
+| `ts` | 5 | `node flang_cli.js ./search_insert_position.ts` | Node 26.7 |
+
+- У `csharp` напечатанное правило `make run` на .NET 10 падает: ключи `-v quiet --nologo`
+  уходят программе вместо `dotnet`. Команда из таблицы работает.
+- У `ts` модуль запускается Node 23.6 и новее без сборки. Проверка типов `tsc -p .` здесь не
+  прогонялась: `tsc` на машине не было. Подробности цели — [«Цель TypeScript»](typescript-target.ru.md).
+
+Объявления `процесс` и `надзор` с планировщиком печатают только `c` и `elixir`. Остальные
+различия между целями — в [«Известных ограничениях»](limits.ru.md).

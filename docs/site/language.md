@@ -1070,13 +1070,9 @@ compilation: function values are resolved over the whole program at once.
 
 Four forms are expanded by the compiler into ordinary flang before the lexer reads the
 text. The kernel, the types and the checkers see only the expansion, so proofs and
-totality of the short form are those of the long one. Details: [Sugar](../guide/surface-sugar.md);
-the decisions are ADR-0206 and ADR-0208.
-
-The compiler does this after the seed is reprinted; until then the source compiler runs
-the expansion, and `bootstrap/flang run-script sugar:expand -- a.flang b.flang` prints the
-expanded text. That is why the examples below are marked as fragments and the binary does
-not judge them.
+totality of the short form are those of the long one. It works since 0.7.34. Whole
+programs with commands and output are on the page
+[Loops, classes, interfaces](../guide/surface-sugar.md); below are fragments.
 
 ### One-line header
 
@@ -1234,8 +1230,7 @@ the list serves as fuel:
   «Поиск в диапазоне» от элементы и элементы и цель и 1 и (длина элементы)
 ```
 
-The `check --proof` verdict of the sugared form is the verdict of its expanded text; the
-probes in `flang/proof/probes/surface-sugar` compare them.
+The `check --proof` verdict of the sugared form is the verdict of its expanded text.
 
 A malformed form is refused before the lexer, with the line and column of the source:
 `FLANG_SUGAR_LOOP` (a loop without `в конце` or a `пока` without a bound),
@@ -2415,7 +2410,7 @@ The words of this section on all four surfaces, from the lexer's table:
 | a variable | `let`, which binds once |
 | a lambda | a declared function, passed as `function «Name»` |
 | a closure that captures a local variable | partial application by parameter name: `function «Name» with a equal to 10` |
-| bitwise operations: `and`, `or`, `xor`, shifts | arithmetic: `times`, `divided by`, `modulo` |
+| bitwise operations on `число` | fixed-width words `u8` … `u64`, `i8` … `i64`: `побитовое и`, `побитовое или`, `исключающее или`, `сдвиг влево на` |
 | writing into a list by index (`x[i] = v`) | `map` builds a new list |
 | a dependent type (`list of length n`) | `ensures` about the length, and a theorem about it |
 

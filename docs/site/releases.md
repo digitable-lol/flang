@@ -2,38 +2,52 @@
 
 A release is a `vX.Y.Z` tag, and behind it an archive and a package publication. This page is printed from the tags: as many entries as there are tags, and a release cannot be skipped.
 
-There are three boxes: **what appeared**, **what changed**, **what broke**. An empty box is not printed — "broke: nothing" nine releases in a row tells the reader nothing.
+An entry has four lists: **Soundness fixes**, **Breaking changes**, **Improvements**, **Known issues**, one line per change; details live in the journals below and in the docs. Entries up to 0.7.34 have three boxes: what appeared, what changed, what broke. An empty list is not printed.
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
 ## 0.7.35 — 13 November 2026
 
-**0.7.34 had soundness holes, 15 are closed; the shell computes expressions again; emit does not print what is refuted**
+**Fixes 15 soundness bugs in the proof kernel and type checker. 0.7.34 can report false statements as proved; upgrading is recommended.**
 
-### What appeared
+### Soundness fixes
 
-- **The Lean model census holds a ceiling.** `bootstrap/flang run-script lean-model:blocks` over the 100 records of `flang/proof/checker/tests/records/corpus/` prints how many record blocks the reference model in Lean does not read: 105 of 603, and 86 of them are judged by a path with a theorem. The model reads `вывод` (deduction) blocks, totality by composition, claims closed by an example, and claims closed by the kernel rules «non-negative by construction», «bounded by an exact ceiling by construction», «order by construction» and «goal split by the branch condition». CI holds the ceiling 105 and the floor 86 on every change to the Lean files, the second checker, the corpus and the debt table: a census above the ceiling or below the floor is red.
-- **Analysis of a Russian utterance (experimental).** The module `flang/ct/russian/syntax.flang` reads the analysis of a sentence line by line: for a concept it finds the paragraph of the Russian Academy Grammar, a quote and the path from the general concept; for levels it checks that graph arrows link them; for agreement it compares the tags of word forms. The line format and the run command are in `docs/site/russian-syntax.md`.
+- [kernel] `a + a = 2 * a` over `неотрицательное` was proved; false at a = -0
+- [kernel] Segment induction with base `п равно 0` was accepted; false at -0. Write the base as `п не больше 0`
+- [kernel] `длина л больше 0` was derived from `не (длина л равен -0)`
+- [kernel] `а плюс -0 равен а плюс 0` was accepted inside a sum over a segment
+- [kernel] A callee's postcondition was used without its `требует`
+- [kernel] Bounds of sums were rounded to 2^53; `а + 2 > а + 1` was proved at a = 2^53-1
+- [kernel] Two `обеспечивает` with one name in a function are rejected (FLANG_PROOF_AMBIGUOUS)
+- [kernel] A fact about `неотрицательное` applied to a `целое` term is rejected (FLANG_PROOF_STEP)
+- [types] `точное целое` built from a computed digit is a type error
+- [types] Written proof steps are type-checked
+- [types] `а остаток от 0` and non-literal 0/0 give FLANG_NOT_A_NUMBER
+- [types] A match branch returning a wider type than declared is rejected
+- [modules] Laws of imported modules were dropped, also with `только` imports
+- [emit] `emit` refuses a program whose postcondition has a counterexample
+- [checker] The proof record checkers reject four more forged records
 
-### What changed
+### Breaking changes
 
-- **The shell computes expressions again.** `1000 плюс 234` (1000 plus 234) and an empty line in `flang repl` give `1234`, code 0. From 0.7.32 to 0.7.34: `FLANG_PARSE, строка 1, столбец 1: у функции «⟨выражение⟩» нет строки 'возвращает'` (the function has no returns line), code 1: the parser demanded a result type from the wrapper the shell puts an expression in.
-- **Help and exit codes say what the binary does.** `flang io` with a plan that does not exist (`--plan Absent`) gives `FLANG_UNKNOWN_PLAN`, code 2, like any bad call; in 0.7.34: code 3. `check --proof` with a wrong example gives `FLANG_EXAMPLE`, code 1; in 0.7.34: code 2. `emit` of a program whose laws were not counted gives `НЕ СЧИТАЛИСЬ` (not counted), code 3; in 0.7.34: code 0. The help no longer says that monoids, monads, isomorphisms, sets and declared properties are not judged, and no longer names a guard and a language server that do not exist.
-- **A call without an argument names the function once.** `run --function «Остаток ноль»` without an argument gives `вызов функции «Остаток ноль» не задаёт аргумент «а»` (the call does not give argument a); in 0.7.34 the function name appeared twice.
-- **Printing a large program to C is faster.** The kernel prepares the evaluator once per program, not for every closed part of an identity; duplicate names are found with a hash trie; the C printer does not build the list of all names for every call; spread workers run under `FLANG_TICKS_OUT` too. The compiler (12 030 functions) prints itself in 1 h 43 min against 3 h 14 min for the 0.7.34 printer on the same machine with `FLANG_JOBS=16`; the printed C is byte-identical.
-- **Translation validation: the six forgery examples are not printed.** `emit` refuses a program whose postcondition the counterexample search refutes, so all six forgery examples of `flang/proof/examples` are now not printed (three were before). On the default corpus `bootstrap/flang run-script translation:validate` checks 167 functions, all 167 are proved for every input, 110 of them with the reference tree taken by the theorem; 6 files are unprinted, 0 disagreements, 14 of 14 forgeries of the printed C are refused. The CI floors are 167 checked, 167 proved and 110 by the theorem, the unprinted ceiling is 6 (`docs/road-to-1-0.md`).
-- **The proof record checkers refuse four more false records.** Two records with an unfold move — without a source line, and by the variant of the first argument — give code 3; the record of `а плюс а равен 2 умножить на а` (a + a = 2 * a) over `неотрицательное` (non-negative) and a record with a sum bound rounded to 2⁵³ give code 1. In 0.7.34 all four gave code 0.
-- **The road to 1.0 has seven conditions.** Condition 7, «Services in production», is withdrawn: how long a service has lived is a condition of the calendar, not a property of the language. The other numbers stay: 1–6 and 8 (`docs/road-to-1-0.md`).
+- `flang run` judges declared laws like `check`: grid-only or broken laws exit 3
+- `io --plan <missing>` exits 2 (was 3); `check --proof` with a failing example exits 1 (was 2); `emit` with unjudged laws exits 3 (was 0)
+- FLANG_NOT_A_NUMBER and FLANG_PROPERTY_NOT_JUDGED are stable codes
 
-### What broke
+### Improvements
 
-- **0.7.34 called false statements proved: nine kernel holes.** An attack on the kernel found nine programs (`flang/proof/tables/typing-holes.tsv`, rows 33–41) where `check --proof` of 0.7.34 answered `доказано` (proved) with code 0 and `flang run` on a named input broke what was proved: `а плюс а равен 2 умножить на а` (a + a = 2 * a) over `неотрицательное` (at a = −0 the sum is −0, the product +0); `а плюс -0 равен а плюс 0` in a sum over a segment; `длина л больше 0` (length > 0) derived from `не (длина л равен -0)`; a `точное целое` (exact integer) built from a computed digit; segment induction with the base `п равно 0` (p = 0), false at p = −0; the postcondition of a callee taken as a fact without its `требует` (requires); two `обеспечивает` (ensures) under one name in one function; a statement about `неотрицательное` applied `по свойству` (by property) to a term of type `целое` (integer); `(а плюс 2) больше (а плюс 1)` at a = 2⁵³−1, where the bound of the sum was rounded to 2⁵³. Now the false claim is `объявлено, не доказано` (declared, not proved), code 3, and `flang run` runs such a program only with explicit consent; the computed digit gives `FLANG_TYPE`, two promises under one name `FLANG_PROOF_AMBIGUOUS`, a statement at a foreign type `FLANG_PROOF_STEP`, code 1. To fix: give the promises different names; write the base of segment induction as `п не больше 0` (p ≤ 0); take an exact integer from a literal or from an action over exact values.
-- **0.7.34 lost the laws of an imported module.** A library with `свойство «коммутативность»` (a commutativity property) of subtraction is refused alone with `FLANG_NOT_COMMUTATIVE`, while a program importing it passed `check` with code 0 in 0.7.34 (row 42). An import with a `только` (only) list likewise dropped monoids, categories, monads, isomorphisms, embeddings, meets, bifunctors, morphisms and functors the list did not name (row 44). Now the laws of every linked file reach the program: `FLANG_NOT_COMMUTATIVE`, `FLANG_MONOID_IDENTITY` and `FLANG_MONOID_ASSOC`, code 1. To fix: correct the law in the library or remove it.
-- **0.7.34 did not type-check written proof steps.** A step `затем … по свойству` (then … by property) with a call whose argument of type `целое` stands in a `неотрицательное` parameter closed `результат не меньше 0` (result ≥ 0) of a function of an integer: `доказано 3` (3 proved), code 0, though at y = −1234567 the proved claim breaks (row 43). Now: `FLANG_TYPE: аргумент «н» функции «Как есть нат»: ожидался неотрицательное, получен целое` (non-negative expected, integer given), code 1; the same step over `неотрицательное` stays proved.
-- **Type checking is stricter: rows 17, 28 and 29 are closed.** `а остаток от 0` (a mod 0) and zero divided by zero not written as literals (`пусть ноль равно 0`, `ноль делить на ноль`) give `FLANG_NOT_A_NUMBER`; in 0.7.34: code 0 and `NaN` at run time. The literal `0 делить на 0` stays the way to write not-a-number. `«Обернуть» от (-0.5)` (wrap −0.5) in a `разбор` (match) branch of a function returning `«Возможно» от целое` (Maybe of integer) gives `FLANG_TYPE: … а тело даёт «Возможно» от числа` (the body gives Maybe of number), code 1; in 0.7.34: code 0 and the answer `-0.5`. The same holds in an `иначе` (else) branch, a later match case and a later list element. To fix: declare the type the body really gives.
-- **`flang emit` does not print what is refuted.** `emit` runs no examples, and the search for a counterexample to a postcondition was not reached: `«Квадрат»` (square) of `неотрицательное` with `обеспечивает «не больше ста» результат не больше 100` (result ≤ 100) and the body `а умножить на а` was printed to C by 0.7.34 with code 0. Now: `FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «не больше ста» функции «Квадрат» нарушено на входе а = 2147483647` (postcondition broken on input a = 2147483647), the print is cancelled, code 1.
-- **`flang run` judges laws like `check`.** A program whose declared law is only counted on a grid does not run: `законов на сетке 1` (laws on the grid 1), code 3; one with a broken law gives `FLANG_NOT_COMMUTATIVE`, code 3. In 0.7.34 both ran. A property that was not counted because its operation has no examples gives `FLANG_PROPERTY_NOT_JUDGED`, code 1; in 0.7.34: a «not counted» line and code 0. A meet of a set with itself gives `FLANG_MEET_SAME_SIDE`, code 1; in 0.7.34: code 0.
-- **Known limitation: 3 typing holes are open** (`flang/proof/tables/typing-holes.tsv`, rows 30–32). `flang run` does not accept a fixed-width word inside a record or a list: the argument `[7]` for a `список u8` (list of u8) parameter gives `FLANG_TYPE`. Programs printed to C, Go, Rust and Java do not check a fixed-width word on input (`u8` takes 256) nor an exact fraction off its canon (`[[2],[4]]`).
+- [repl] Expressions evaluate again (broken since 0.7.32)
+- [emit] The compiler prints itself to C in 1 h 43 min (was 3 h 14 min, FLANG_JOBS=16)
+- [cli] A missing argument error names the function once
+- [cli] `--help` no longer names a guard and a language server that do not exist, nor calls judged laws unjudged
+- [lean] `run-script lean-model:blocks` reports proof record blocks the Lean model does not read; CI holds the ceiling at 105 of 603
+- [experimental] `flang/ct/russian/syntax.flang` checks the analysis of a Russian sentence
+
+### Known issues
+
+- Three typing holes are open: `flang run` rejects fixed-width words inside records and lists (flang/proof/tables/typing-holes.tsv, row 30)
+- Programs printed to C, Go, Rust and Java do not check fixed-width words and exact fractions on input (rows 31-32)
+- Elixir target on OTP 26-27: piped non-ASCII input fails. Workaround: `elixir --erl '-kernel standard_io_encoding latin1' ...`
 
 ## 0.7.34 — 10 November 2026
 

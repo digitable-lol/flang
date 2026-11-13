@@ -1,32 +1,81 @@
 # The TypeScript target
 
-`flang emit program.flang --target ts --out dir` prints the program as
-TypeScript. It is the same printer as target `js` — same function bodies, same
-runner, same runtime — with one addition: every printed function, record and
-sum type carries its declared type.
+`flang emit --target ts` prints a program as TypeScript. Function bodies, the runner and the
+runtime are the same as for target `js`; the one addition is that every function, record and sum
+type carries its declared type.
+
+```flang
+модуль «Shapes»
+
+тип «Фигура»
+  вариант «Круг» с радиус: число
+  вариант «Прямоугольник» с ширина: число и высота: число
+
+объект «Точка»
+  «х»: число
+  «у»: число
+
+тотальная функция «Площадь»
+  принимает ф: «Фигура»
+  возвращает число
+  пример «Прямоугольник два на три»
+    дано ф равно вариант «Прямоугольник» с ширина равным 2 и высота равным 3
+    ожидается 6
+  разбор ф
+    случай вариант «Круг» с радиус как р
+      то 3 умножить на р умножить на р
+    случай вариант «Прямоугольник» с ширина как ш и высота как вы
+      то ш умножить на вы
+
+тотальная функция «Сдвиг»
+  принимает х: число
+  возвращает «Точка»
+  запись «Точка» с «х» равным х и «у» равным 0
+```
+
+```sh
+$ flang emit shapes.flang --target ts --out out-ts
+напечатано файлов 5, байт 57146, в out-ts
+…
+$ ls out-ts
+flang_cli.js  flang_runtime.js  package.json  shapes.ts  tsconfig.json
+```
+
+Declarations from the printed module:
+
+```ts
+export type Tochka = { х: number; у: number };
+export function sozdatTochka(fields: Partial<Tochka> = {}): Tochka
+export type Figura = $FlangVariant;
+export function Krug(fields: { радиус: number }): $FlangVariant
+export function Pryamougolnik(fields: { ширина: number; высота: number }): $FlangVariant
+export function ploschad(f: Figura): number
+export function sdvig(h: number): Tochka
+```
 
 ## What the output directory holds
 
 | file | what it is |
 |---|---|
-| `<name>.ts` | the program: `export function f(n: number): number`, `export type Zapis = { "поле": number }`, `export type Summa = $FlangVariant`, the `$PROGRAM` table for the runner |
-| `flang_runtime.js` | the runtime — the same pieces target `js` inlines into the module, as a separate file with an `export` line; the `.ts` imports what it needs |
+| the `.ts` module | the program: functions, record and sum types, the `$PROGRAM` table for the runner |
+| `flang_runtime.js` | the runtime; target `js` inlines it into the module, here it is a separate file |
 | `flang_cli.js` | the runner, the same as for target `js`: JSON in, JSON out |
-| `tsconfig.json` | `tsc` settings: `strict`, `allowJs`, `noEmit`; placed next to the output so checking needs no flags |
-| `flang_host_node.js` | the I/O host — only for a program with a `план` declaration, as with target `js` |
+| `tsconfig.json` | `tsc` settings: `strict`, `allowJs`, `noEmit` — checking needs no flags |
+| `package.json` | the single line `"type": "module"` |
 
 ## Check and run
 
 ```sh
-cd dir && tsc -p .                           # strict type check, exit code 0 means the module holds
-printf '%s\n' '{"fn":"Факториал","args":[{"n":"10"}]}' | node flang_cli.js ./factorial.ts
+$ cd out-ts
+$ tsc -p .
+$ printf '%s\n' '{"fn":"Сдвиг","args":[{"n":"10"}]}' | node flang_cli.js ./shapes.ts
+{"ok":true,"value":{"r":[["х",{"n":"10"}],["у",{"n":"0"}]]}}
 ```
 
-Node 23.6 and newer reads `.ts` directly by stripping types; Node 22.6–23.5
-needs `--experimental-strip-types`. Only erasable syntax is printed — type
-annotations, `type`, `as` — so there are no `enum`s or parameter properties in
-the output and no build step is required. To get `.js` files:
-`tsc -p . --noEmit false --outDir dist`.
+`tsc -p .` is a strict type check; exit code 0 means the module holds. Node 23.6 and newer reads
+`.ts` directly by stripping types; Node 22.6–23.5 needs `--experimental-strip-types`. Only
+erasable syntax is printed — type annotations, `type`, `as` — so no build step is needed. To get
+`.js` files: `tsc -p . --noEmit false --outDir dist`.
 
 ## How types map
 
@@ -37,42 +86,23 @@ the output and no build step is required. To get `.js` files:
 | `признак` | `boolean` |
 | `ничто` | `null` |
 | `список X` | `Array<X>` |
-| record «Имя» | `export type Imya = { "поле": T; … }`; factory `(fields: Partial<Imya> = {}): Imya` — a missing field becomes `null`, as in the interpreter |
-| sum type «Имя» | `export type Imya = $FlangVariant`; variant constructor `(fields: { "поле": T }): $FlangVariant` |
-| optional `X` | `(X\|null)` |
-| function as a value | removed before printing in one pass; never appears in a signature |
+| `объект «Имя»` | `export type Imya = { поле: T; … }` and a factory `sozdatImya(fields: Partial<Imya> = {})`; a missing field becomes `null` |
+| `тип «Имя»` with variants | `export type Imya = $FlangVariant` and one constructor per variant: `(fields: { поле: T }): $FlangVariant` |
 | unknown type | `any` |
 
-Limits, stated plainly:
+Three limits:
 
-* **A sum type is `$FlangVariant`, not a union over variants.** Function bodies
-  take variants apart with runtime helpers and `instanceof`; a strict union
-  `{ variant: "Лист" } | …` would flag code that is correct.
-* **Temporaries inside bodies are `any`.** The type contract lives on the
-  signatures of functions, records and sums; temporaries (`$t1`, a fold
-  accumulator) are compiler slots, and `tsc` cannot infer them without a mark.
-* **The runtime is not rewritten in TypeScript.** `tsc` infers its types from
-  the JavaScript (`allowJs`): helper parameters are `any`, return types follow
-  the bodies. There is deliberately no second copy of the runtime in the tree:
-  two texts would drift apart.
+* **A sum type is `$FlangVariant`, not a union of its variants.** Function bodies take variants
+  apart with runtime helpers and `instanceof`; a strict union would make `tsc` complain where the
+  code is correct.
+* **Temporaries inside bodies are annotated `any`.** Types sit on the signatures of functions,
+  records and sums; the fold accumulator and temporaries such as `$t1` have none.
+* **The runtime stays JavaScript.** `tsc` infers its types (`allowJs`).
 
 ## How it differs from target `js`
 
-* the module is not self-contained: `flang_runtime.js` has to sit next to it;
-* `$callDeep` (evaluation on a stack sized for the declared depth limit) is a
-  wrapper in the `.ts` that hands the runtime the program module's address: the
-  worker has to import the program, not the runtime;
-* everything else — refusal texts, codes, step and depth limits, field order —
-  is identical, and a comparison of the two outputs shows no difference: the runner
-  answers the same questions the same way.
+* The module is not self-contained: `flang_runtime.js` must sit next to it.
+* Everything else matches: refusal texts and codes, step and depth limits, field order. The
+  runner answers the same questions the same way.
 
-## Where it lives in the tree
-
-The printer is `flang/self/emit-ts.flang` on top of `flang/self/emit-js.flang`
-(a "typed" flag in the shared printer); the target's runtime directory is
-`flang/src/emit/ts/` (one file, `tsconfig.json`; the rest comes from
-`flang/src/emit/js/`); the target table row is in
-`flang/src/emit/c/flang_repl.c`.
-`./bootstrap/flang emit docs/examples/import-check.flang --target ts --out dir`
-produces `import_check.ts`, `flang_runtime.js`, `flang_cli.js`, `package.json` and
-`tsconfig.json`, exit 0. `flang emit --help` lists `ts` among the ten targets.
+The other nine targets: [Print a program into C and JavaScript](emit-walkthrough.md).

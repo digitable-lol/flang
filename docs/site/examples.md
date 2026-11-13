@@ -48,7 +48,7 @@ bootstrap/flang test docs/examples/           # the whole catalogue
 ```
 
 The sets cost very different amounts, and that is worth knowing before you start.
-On a shared machine: `leetcode` — 82 files, 806 examples, about 14 seconds;
+On a shared machine: `leetcode` — 82 files, 908 examples, about 14 seconds;
 `crypto` — 8 files, 1802 examples (77 of its own, the rest come from the library
 modules it imports), about 19 minutes, because it computes real AES and ECDSA
 test vectors. A file the

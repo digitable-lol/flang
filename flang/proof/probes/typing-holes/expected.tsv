@@ -90,3 +90,5 @@ selective-import-monoid-true.flang	check	0	замечаний нет
 written-step-cites-a-promise-at-a-wider-type.flang	proof	1	FLANG_TYPE
 written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_TYPE
 written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0
+postcondition-calls-its-own-function.flang	check	0	замечаний нет
+postcondition-calls-its-own-function-one-step-down.flang	check	0	замечаний нет

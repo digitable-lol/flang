@@ -187,5 +187,5 @@ for the sake of the formulation, not for its proving power.
 * [Catalogue of examples](examples.html)
 * [Where flang ends and the host begins](host-boundary.html)
 * [What is proved and what is not](what-is-proved.html)
-* [Which promises the kernel takes](what-the-kernel-accepts.html)
+* [Which postconditions the prover proves](what-the-kernel-accepts.html)
 * [Memory allocator](allocator.html)

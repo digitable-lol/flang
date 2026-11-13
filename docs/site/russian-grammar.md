@@ -71,20 +71,20 @@ is checked.
 The dictionary is `flang/ct/russian/lexicon.flang`. A noun is written as its
 form and a list of "case gender number":
 
-```flang
+```flang fragment
 «Существительное» от "книгу" и ["вин ж ед"]
 ```
 
 A form that reads several ways has several readings:
 
-```flang
+```flang fragment
 «Существительное» от "книги" и ["род ж ед", "им * мн", "вин * мн"]
 ```
 
 A verb is written as what it waits for. The program builds the types for every
 word order itself:
 
-```flang
+```flang fragment
 «Переходный» от "читает" и («Подлежащее настоящего» от "ед" и "3") и "вин"
 «Непереходный» от "спала" и («Подлежащее прошедшего» от "ж" и "ед")
 ```

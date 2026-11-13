@@ -153,5 +153,5 @@ merits.
 
 * [Catalogue of examples](examples.html)
 * [What is proved and what is not](what-is-proved.html)
-* [Which promises the kernel takes](what-the-kernel-accepts.html)
+* [Which postconditions the prover proves](what-the-kernel-accepts.html)
 * [The MSI driver in flang](msi-driver.html)

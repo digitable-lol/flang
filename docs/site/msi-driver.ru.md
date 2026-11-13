@@ -185,5 +185,5 @@ docs/examples/driver/msi/msi.flang: примеров 42, прошло 42, не �
 * [Каталог примеров](examples.html)
 * [Где кончается flang и начинается хозяин](host-boundary.html)
 * [Что доказано, а что нет](what-is-proved.html)
-* [Какие обещания ядро берёт](what-the-kernel-accepts.html)
+* [Какие постусловия prover доказывает](what-the-kernel-accepts.html)
 * [Распределитель памяти](allocator.html)

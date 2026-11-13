@@ -146,5 +146,5 @@ docs/examples/allocator/allocator.flang: примеров 37, прошло 37, �
 
 * [Каталог примеров](examples.html)
 * [Что доказано, а что нет](what-is-proved.html)
-* [Какие обещания ядро берёт](what-the-kernel-accepts.html)
+* [Какие постусловия prover доказывает](what-the-kernel-accepts.html)
 * [Драйвер MSI на flang](msi-driver.html)

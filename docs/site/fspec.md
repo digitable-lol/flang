@@ -1,37 +1,18 @@
 # Specs: a business rule that is proved
 
-An ordinary specification is prose. It gets written, agreed on, and a month later
-the code has moved ahead — and the two part company silently: the document still
-reads well, it simply is no longer about this program.
+A spec here is not a document next to the code but a line in the program. A
+rule is written at a function with the word `обеспечивает` (ensures), and the
+compiler proves it for all inputs. Such a spec cannot drift from the code:
+change the function so that the rule no longer holds, and the check fails.
 
-Here a spec is a **program**, so there is nothing to part company with. The rule
-sits next to the function, the compiler proves it for **all** inputs rather than
-for the ones that showed up in production, and a separate check stops the next
-rule from quietly cancelling one already proved.
-
-So that this is visible on something other than a toy, what follows is one
-running example: **a marketplace API assembled from three services**, and an
-ordinary React front end that calls it.
-
-The listings are tree files as they are, so they are in flang, and flang is
-written in Russian words. A key to the ones used here:
-
-| flang | English |
-| --- | --- |
-| `модуль` / `использует` | module / uses |
-| `тотальная функция` | total function |
-| `принимает` / `возвращает` | takes / returns |
-| `обеспечивает` / `требует` | ensures / requires |
-| `для всех` | for all |
-| `пример` / `дано` / `ожидается` | example / given / expected |
-| `тип` / `вариант` | type / variant |
-| `теорема` / `индукция по` / `следовательно доказано` | theorem / induction over / therefore proved |
-| `если` / `то` / `иначе` | if / then / else |
+The example on this page is a marketplace API made of three services and a
+gateway, `docs/examples/web/marketplace/`. The programs are written in the
+Russian words of flang and are quoted as they are.
 
 ## What a rule looks like
 
-Here is a function from the cart service, whole, as it sits in the tree
-(`docs/examples/web/marketplace/cart.flang`):
+A function from the cart service (`cart.flang`) — "discount in percent", with
+the rule "the discount is only zero, five or ten percent":
 
 ```flang
 тотальная функция «Скидка в процентах»
@@ -52,99 +33,21 @@ Here is a function from the cart service, whole, as it sits in the tree
     иначе (если сумма не меньше 500000 то 5 иначе 0)
 ```
 
-Four parts, and each one does work:
-
-| part | what it is | who checks it |
+| part | what it is | what checks it |
 |---|---|---|
-| `обеспечивает «name» <goal>` | the rule itself | the compiler proves it for all inputs |
-| `требует «name» <condition>` | when the rule applies | whoever calls the function |
-| `пример … ожидается …` | a case from life | run on every check of the file |
-| `тотальная` | the function always terminates | the compiler proves it itself |
+| `обеспечивает «name» goal` | a rule about the result | the compiler proves it for all inputs; if it cannot, the report says so |
+| `требует «name» condition` | a condition on the input | checked at the call; a violation is the refusal `FLANG_PRECONDITION` |
+| `пример … ожидается …` | a sample (example … expected …) | run on every check of the file |
+| `тотальная` | the function ends on every input | the compiler proves it |
 
-**A claim's name is its identity.** Specs are matched against each other by the
-pair "function plus name": rename a claim and the link breaks, and the check says
-so.
+The name of a rule is what it is found by in the report and matched by between
+specs.
 
-You can also see why the rule is written as a list of values rather than as a
-bound. "The discount is at most ten" is a promise that survives replacing the
-body with zero: it is true of any function that always returns zero, and so it
-says nothing about this one. A list of values does not survive that replacement.
+The rule is written as a list of values, not as the bound "the discount is at
+most ten". A function that always returns zero satisfies the bound too; such a
+rule says nothing about this function.
 
-## The running example: a marketplace API
-
-Three services and a gateway in front of them, split into modules the way they
-would be split into services: each has its own state type and its own rules, and
-`использует` is all that ties them together. The catalogue knows nothing about
-the cart; the cart asks the catalogue for a price, because otherwise the price
-would live in two places and diverge at the first repricing.
-
-```
-docs/examples/web/marketplace/
-  catalog.flang   113   goods, price, stock, "how many to hand out"
-  cart.flang      117   line items, the bill, tiered discount
-  orders.flang    225   order states and the transitions between them
-  gateway.flang   430   response codes, routes, bytes in — bytes out
-                  ─────
-                  885   lines, all of them flang (wc -l)
-```
-
-What the gateway answers:
-
-| method | path | answer |
-|---|---|---|
-| GET | `/товары` | 200, one line per item |
-| GET | `/товары/{sku}` | 200 or 404 |
-| GET | `/корзина` | 200, the bill, one line per line item |
-| POST | `/корзина` | 201 + the recomputed bill; body `артикул=…&количество=…` |
-| DELETE | `/корзина` | 204 |
-| POST | `/заказы` | 201 + the order number; the cart empties |
-| GET | `/заказы/{number}` | 200 or 404 |
-| POST | `/заказы/{number}/{action}` | 200 or 422 |
-
-The refusals are named: 400 bad request, 404 no such path, item or order, 405
-wrong method for a known path (not 404 — the service does not lie about the
-reason), 409 stock is short of what was asked, 413 body over the limit, 422 the
-state transition is not allowed.
-
-## Where the language's boundary runs
-
-The gateway's input is the very text the host read off the connection; its output
-is the very text the host will send back:
-
-```flang
-тотальная функция «Обслужить»
-  принимает витрина: «Витрина», текст: строка
-  возвращает «Обслуживание»
-```
-
-But there is no socket here. No listening port. Waiting for bytes is something
-the language cannot do and will not learn: a flang program is given no access to
-the world, or neither termination nor "the same arguments give the same answer"
-could be proved. Whoever accepts the connection and holds it is the **host** —
-the runtime the program runs inside.
-
-The boundary is drawn by design, not out of poverty: flang is where you write
-**what to decide**, not how to wait for bytes off the network. In exchange,
-everything that is written is checked by example, without a single server being
-started.
-
-That this is not a sketch is visible next door: in `docs/examples/web/shortener/` the
-same boundary is carried through — a 1 150-line service that the host drives over
-a real socket, and `curl` gets 200, 201, 301 and 204 out of it.
-
-## A spec is not written, it is checked
-
-The report is printed by the `--proof` flag, and it distinguishes words that are
-easy to confuse. There are four of them, and they are not the same thing:
-
-| word | what it means |
-|---|---|
-| **доказано** (proved) | a claim about ALL inputs, derived from declarations and structure |
-| **сетка N** (grid of N) | computed on N of the author's values, no violation found. This is NOT a proof |
-| **объявлено, не доказано** (stated, not proved) | the claim is made and there is no proof under it |
-| **НАРУШЕНО** (violated) | a contradicting case was found and shown |
-
-Here is what the check answers for the orders service:
+## How to check
 
 ```
 flang check docs/examples/web/marketplace/orders.flang --proof
@@ -153,7 +56,7 @@ flang check docs/examples/web/marketplace/orders.flang --proof
 ```
 что высказано и чем это несётся:
   постусловие «из конечного состояния переходов нет» функции «Переходы из» — доказано индукцией по «Состояние заказа»: база 6 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Состояние заказа», а не о написанных
-  постусловие «из конечного состояния не разрешён никакой переход» функции «Переход разрешён» — сетка 4 значения (примеры функции): нарушений НЕ ИСКАЛИ — прогона примеров не было, посчитано только их число. Это не доказательство — теоремы при утверждении нет
+  постусловие «из конечного состояния не разрешён никакой переход» функции «Переход разрешён» — сетка 4 значения (примеры функции): нарушений на них нет: проверка прогнала каждый пример и посчитала постусловие на его ответе. Это не доказательство — теоремы при утверждении нет
   постусловие «у состояния есть непустое название» функции «Название состояния» — доказано индукцией по «Состояние заказа»: база 6 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Состояние заказа», а не о написанных
 
 итог:
@@ -161,14 +64,18 @@ flang check docs/examples/web/marketplace/orders.flang --proof
   утверждений 3: доказано 2 (из них индукцией 2), сетка 1, объявлено, не доказано 0 (шагов в термах 12)
 ```
 
-Three claims, three different answers, and they stand together on purpose. Two
-are proved by induction over a declared sum: the cases are matched against the
-**declaration** of the type, and had the author missed one, the compiler would
-refuse. The third is honestly marked "сетка 4" — computed on four of the author's
-examples and not a proof.
+The exit code is 3: one claim is not proved. Every claim in the report carries
+one of four words:
 
-Where the difference comes from is visible too. Order states are declared as a
-sum:
+| word | what it means |
+|---|---|
+| **доказано** (proved) | true for all inputs |
+| **сетка N** (grid of N) | computed on N of the author's examples; not a proof |
+| **объявлено, не доказано** (stated, not proved) | no proof and no examples |
+| **НАРУШЕНО** (violated) | an input was found on which the claim is false |
+
+Two claims are proved by induction over a type. The order states are declared
+as variants, and the proof takes each one apart:
 
 ```flang
 тип «Состояние заказа»
@@ -180,126 +87,45 @@ sum:
   вариант «Отменён»
 ```
 
-A state carried as a string (`"paid"`, `"shipped"`) offers no such possibility at
-all: the set of strings is infinite, and a case analysis over it is not
-exhaustive.
+Were the state a string (`"paid"`, `"shipped"`), taking every case apart would
+be impossible: there are infinitely many strings.
+
+The third claim stays on the grid. The body of «Переход разрешён» (transition
+allowed) folds not the parameter itself but a list computed from it
+(`«Переходы из» от откуда`), and the kernel has nothing to hang an induction
+over the parameter on.
+
+`flang check` without `--proof` answers "no remarks" and exit code 0 on the
+same file: it does not show the verdicts of the claims.
 
 ## What is proved across the whole example
 
-All four files of the example are checked by the same program, and each answers
-with its own summary line:
+| file | lines | what is in it | functions | claims | proved | grid | `--proof` exit code |
+|---|---:|---|---:|---:|---:|---:|---:|
+| `catalog.flang` | 113 | goods, price, stock | 8 | 1 | 1 | 0 | 0 |
+| `cart.flang` | 117 | items, the bill, the discount | 8 | 5 | 2 | 3 | 3 |
+| `orders.flang` | 225 | order states and transitions | 7 | 3 | 2 | 1 | 3 |
+| `gateway.flang` | 430 | routes and response codes | 17 | 2 | 2 | 0 | 0 |
 
-```
-$ flang check docs/examples/web/marketplace/catalog.flang --proof
-  функций 8: тотальных 8, обычных 0
-  утверждений 1: доказано 1 (из них без теоремы 1), сетка 0, объявлено, не доказано 0
+All 40 functions are total. The report counts only the claims of the file
+itself: the claims of the modules it uses and of the HTTP library are not in
+it.
 
-$ flang check docs/examples/web/marketplace/cart.flang --proof
-  функций 8: тотальных 8, обычных 0
-  утверждений 5: доказано 2 (из них без теоремы 2), сетка 3, объявлено, не доказано 0
+The gateway takes the text of an HTTP request and returns the text of the
+response:
 
-$ flang check docs/examples/web/marketplace/orders.flang --proof
-  функций 7: тотальных 7, обычных 0
-  утверждений 3: доказано 2 (из них индукцией 2), сетка 1, объявлено, не доказано 0 (шагов в термах 12)
-
-$ flang check docs/examples/web/marketplace/gateway.flang --proof
-  функций 17: тотальных 17, обычных 0
-  утверждений 2: доказано 2 (из них индукцией 2), сетка 0, объявлено, не доказано 0 (шагов в термах 18)
-```
-
-The report counts only the functions and claims of the file itself, the imported
-HTTP parsing library is not in these numbers. The gateway's own claims are two,
-and both are proved by induction over the declared sum of outcomes:
-
-```
-  постусловие «код ответа из объявленного набора» функции «Код исхода» — доказано индукцией по «Исход»: база 9 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Исход», а не о написанных
-  постусловие «пояснение кода непусто» функции «Код исхода» — доказано индукцией по «Исход»: база 9 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Исход», а не о написанных
+```flang fragment
+тотальная функция «Обслужить»
+  принимает витрина: «Витрина», текст: строка
+  возвращает «Обслуживание»
 ```
 
-The report neither hides `сетка` nor renames it. The cart has three, the order
-service one, and it reads exactly as written: computed on the author's values,
-with nothing known about the remaining inputs.
+It does not hold the socket: `flang io` accepts connections. How the same
+scheme works on a real socket is shown on the page
+[The link shortener](shortener.html).
 
-Why these four in particular, the compiler says itself once a theorem is written
-against them. It answers that it reads a case's conclusion **from two shapes of
-the body and from nowhere else**: from a `разбор` branch over the same variable,
-and from the seed and step of a `свёртка` over the same variable. In all four the
-body folds not the variable itself but a list computed from it
-(`«Переходы из» от откуда`, `корзина.«позиции»`) — there is nothing for a proof to
-hang on. Unfolding them into a `разбор` over the variable is possible, but for the
-order service it would mean keeping a second copy of the transition table, and two
-copies drifting apart is the very trouble this example warns against. The proof
-would cost more than the honest mark, so the mark stays.
-
-## What stops a spec from lying
-
-A spec that cannot be forged is not a promise but a property, and it is checked
-by running it. Spoil one line in the gateway's code table — let "not enough
-stock" answer 500 instead of 409:
-
-```sh
-flang check docs/examples/web/marketplace/gateway.flang --proof
-```
-
-```
-место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 7, а диагностика компилятора имени файла не несёт
-FLANG_PROOF_STEP, строка 101, столбец 10: шаг 1, база «Товара не хватает» теоремы «код ответа из объявленного набора»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
-место указано строкой и столбцом, но без файла: вместе с импортами проверено файлов 7, а диагностика компилятора имени файла не несёт
-FLANG_PROOF_STEP, строка 125, столбец 10: шаг 1, база «Товара не хватает» теоремы «пояснение кода непусто»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
-docs/examples/web/marketplace/gateway.flang: не проверено — ведомость не печатается у программы с замечаниями
-```
-
-Five hundred is not in the declared set, and the claim falls. Not "a test on that
-code fails" — what falls is the **claim about every outcome**, because the code
-table and the set of outcomes are tied by a theorem, not by convention.
-
-A spoiled example is caught the same way. Change an expected value in the
-catalogue — let a stock of 5 with 2 asked for hand out 3:
-
-```sh
-flang check docs/examples/web/marketplace/catalog.flang --proof
-```
-
-```
-FLANG_EXAMPLE: пример «остатка хватает» функции «Сколько выдать»: значение не совпало с ожидаемым: ожидалось 3, получено 2
-docs/examples/web/marketplace/catalog.flang: не проверено — ведомость не печатается у программы с замечаниями
-```
-
-Examples are part of the program, not a separate test suite: they run on every
-check of the file, and the check goes red.
-
-## React stays outside, and the contract stays checkable
-
-The browser code is ordinary. Nobody writes it in flang and nobody is going to:
-
-```jsx
-// Ordinary React, not one line of flang.
-function Cart() {
-  const [bill, setBill] = useState("");
-  const [error, setError] = useState("");
-
-  async function add(sku, qty) {
-    const res = await fetch("/корзина", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `артикул=${sku}&количество=${qty}`,
-    });
-    const text = await res.text();
-    switch (res.status) {
-      case 201: setBill(text); setError(""); break;      // added, bill recomputed
-      case 400: setError("quantity is not a number"); break;
-      case 404: setError("no item with that sku"); break;
-      case 409: setError("stock is short of what was asked"); break;
-      case 413: setError("request body over the limit"); break;
-    }
-  }
-  // …
-}
-```
-
-What is interesting here is not that React calls the service but that **the list
-of cases in the `switch` is a consequence, not a convention**. The set of codes is
-declared in the service as a type:
+Both claims of the gateway are about response codes, and both are proved by
+induction over the type of outcomes:
 
 ```flang
 тип «Исход»
@@ -314,91 +140,85 @@ declared in the service as a type:
   вариант «Переход запрещён»
 ```
 
-and the claim "the response code is from the declared set" is proved by induction
-over that type — nine base cases. Two things follow that are usually paid for
-with discipline:
-
-| what a front end usually learns in production | what is known here before launch |
-|---|---|
-| "where did that 500 come from?" | there is no 500 in the set, and that is proved, not tested |
-| "an unknown method came back 404" | 405 is separated from 404 by routing on the path's section and depth |
-| "an outcome was added and its code forgotten" | the compiler refuses: the case is not covered |
-| "the reason field arrived empty" | "the code's reason phrase is non-empty" is proved by the same nine cases |
-
-The specification here is not a document beside the code but the code itself: the
-list of outcomes, the code table, and the theorem that ties them. The front end
-does not check it and does not have to — it is checked where it is written.
-
-## The rule that arrives second
-
-A test answers for the inputs written into it. A proved promise answers for
-**all** of them. The difference shows up at the first requirement that arrives
-second.
-
-In `fspec/spec/` the first spec writes down the rule "discount is at most 30". A
-month later comes "a promo order gets a bigger discount", and someone writes a
-second function and a second spec. The question is not whether the new one works
-— the question is whether **the first rule is still true**. With tests you answer that by having
-two people read the code. Here it is one command:
-
-```sh
-bootstrap/flang run-script specs:check
+```
+  постусловие «код ответа из объявленного набора» функции «Код исхода» — доказано индукцией по «Исход»: база 9 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Исход», а не о написанных
+  постусловие «пояснение кода непусто» функции «Код исхода» — доказано индукцией по «Исход»: база 9 случаев, шаг при допущении на частях (0 случаев) — утверждение обо ВСЕХ входах типа «Исход», а не о написанных
 ```
 
-The answer "specs agree" is the goal of this command, not what it prints on the
-current tree: there the command answers `бед в системе спек: 89` (89 troubles in
-the spec system), exit code 1. 79 of them are of one kind — the `check --proof`
-report does not carry the claims of imported modules, and the rule "the
-predecessor's claim is still proved" cannot find them; the other ten are two
-claims checked only on a grid, four rewritten goals and four goals missing from
-the snapshot. What this means and how to read it is laid out on
-[The spec catalogue: the stand, the check and the snapshot](spec-catalog.html).
-The acceptance rule itself does not change: a
-spec is accepted only if every claim of it is proved, and nothing is taken on
-faith — under every claim there is a chain that reaches the rules of the
-language itself.
+The two claims read "the response code is from the declared set" and "the
+reason phrase of a code is not empty"; both are proved by induction over
+«Исход», base of 9 cases. For a client of the service this means: there are
+exactly as many response codes as the set holds; 500 is not among them; every
+code has a reason phrase. A client only has to handle the listed codes.
 
-The first two specs in the catalogue show exactly the LINK between two rules, not
-a strong claim: they are written as an upper bound, and an upper bound survives
-replacing the body with zero. For strong claims look at specs 3–27 and at the
-marketplace example above.
+## What happens if a rule is broken
 
-Next to the specs lives a **forgery set**: cases where a spec is deliberately
-spoiled, and the check must go red on every one.
+Change one line in the gateway's code table: let «Товара не хватает» (not
+enough stock) answer 500 instead of 409.
 
-```sh
-bootstrap/flang run-script specs:forgery
+```
+flang check docs/examples/web/marketplace/gateway.flang --proof
 ```
 
-Among the things it catches: a rule weakened under the same name; a spec with no
-predecessor; a translated view promising something the original does not; a typo
-in the language tag; a translated function name. The check must catch each forged case — while staying **silent** on an honest change,
-otherwise it is not catching forgery, it is catching movement.
+```
+FLANG_PROOF_STEP, строка 101, столбец 10: шаг 1, база «Товара не хватает» теоремы «код ответа из объявленного набора»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
+FLANG_PROOF_STEP, строка 125, столбец 10: шаг 1, база «Товара не хватает» теоремы «пояснение кода непусто»: пример «товара не хватает — четыреста девять» не проходит: нарушено свойство «код ответа из объявленного набора» функции «Код исхода». Утверждение на этом значении неверно, значит случай им не закрывается. к этому месту не известно ничего, кроме гипотез «дано»
+docs/examples/web/marketplace/gateway.flang: не проверено — ведомость не печатается у программы с замечаниями
+```
 
-## A rule in another language is the same rule
+The exit code is 1. Before each remark the compiler adds a line saying that the
+place is named without a file name; it is left out here.
 
-A promise can be written in the language of the team that uses it:
+A spoiled example is caught the same way. Change an expected value in the
+catalogue: let a stock of 5 with a request for 2 give out 3.
 
-```flang
+```
+flang check docs/examples/web/marketplace/catalog.flang --proof
+```
+
+```
+FLANG_EXAMPLE: пример «остатка хватает» функции «Сколько выдать»: значение не совпало с ожидаемым: ожидалось 3, получено 2
+docs/examples/web/marketplace/catalog.flang: не проверено — ведомость не печатается у программы с замечаниями
+```
+
+## A second rule must not cancel the first
+
+Rules pile up. The directory `fspec/spec/` holds 43 specs of a business domain,
+and a new spec brings in the one it rests on with a `использует` (uses) line.
+The check of the catalogue answers a question that `flang check` on one file
+does not see: did the earlier rule stay proved after the new one arrived.
+
+```
+flang run-script specs:check
+```
+
+At present the command answers `бед в системе спек: 78` ("troubles in the
+spec system: 78") and exit code 1. 69 of the 78 remarks are of one kind: the
+`check --proof` report does not contain the claims of the modules a file uses,
+so the check does not find the earlier spec's claim in the new one. It goes red
+on every spec with a `использует` line, not only on a real cancellation of a
+rule.
+
+How the catalogue is built, what exactly it compares, and what of that does not
+work at present is on the page [The spec catalogue](spec-catalog.html).
+
+## A rule in another language
+
+A claim can be repeated in the language of those who read it. The language tag
+stands in the name:
+
+```flang fragment
 обеспечивает «zh: 折扣不超过 30» результат не больше 30
 ```
 
-This is a real claim, not a note beside one: it gets proved along with the rest.
-The subject stays single not by agreement but because the translated goal is
-compared with the original character for character. Promise different things and
-the check goes red.
+It is a separate claim, proved like the others. The catalogue check compares
+the goal of the translation with the goal of the main claim. It does not read
+the translation itself: a wrongly translated name with the right goal passes.
 
-The price, named: a colon in a promise's name now means a language tag. And the
-limit, named: the check cannot read the translation itself — if the Chinese view
-is named wrongly while the goal is right, it stays silent.
+## Next
 
-## What to read next
-
-- [A case taken apart: leetcode tasks](case-studies.html) — five whole solutions and what is proved about them.
-- [What is proved](what-is-proved.html) — numbers from the tree, not promises.
-- [When a proof is refused](proof-refused.html) — why the kernel refuses and what to do.
-- [Clarifying questions](ai-assistant.html) — how an unproved promise turns into a question for whoever wrote the requirement.
-- `docs/examples/web/marketplace/README.md` in the tree — the same example in more detail, with the file layout.
-- [The spec catalogue: the stand, the guard, the snapshot](spec-catalog.html) —
-  how `fspec/` is laid out: the acceptance rule, the snapshot, the forgery and
-  the boundaries.
+- [The spec catalogue](spec-catalog.html) — how specs are gathered into a catalogue and what checks it.
+- [Leetcode tasks](case-studies.html) — three solutions and what is proved about them.
+- [What is proved and what is not](what-is-proved.html) — where the boundary runs.
+- [The kernel refused: whose mistake is it](proof-refused.html) — what to do with a refusal.
+- [The flang service for an AI assistant](ai-assistant.html) — the same check through MCP.

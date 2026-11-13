@@ -9553,13 +9553,6 @@ static bool fl_spread_read(int fd, void *bytes, size_t size) {
   return true;
 }
 
-/*
- * The named tick ledger (FLANG_TICKS_OUT) of a worker. A worker starts from
- * empty tables and, once its task pipe closes, sends back every row it
- * counted under a head with status 2; the host adds the rows to its own
- * tables. Function names are string constants of the program image, so a
- * forked worker names them by the same address as the host.
- */
 static void fl_spread_ticks_clear(void) {
   memset(fl_ticks_table, 0, sizeof fl_ticks_table);
   memset(fl_enters_table, 0, sizeof fl_enters_table);

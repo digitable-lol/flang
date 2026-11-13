@@ -65,8 +65,6 @@ docs/site/getting-started.md	hello.flang	иллюстративное имя в 
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
 docs/site/spec-catalog.md	43-….flang	шаблон-многоточие в имени, не файл
 docs/site/spec-catalog.ru.md	43-….flang	шаблон-многоточие в имени, не файл
 docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается

@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.34",
-  "latest": "0.7.34",
+  "declared": "0.7.35",
+  "latest": "0.7.35",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -13,6 +13,314 @@
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.35",
+      "tag": "v0.7.35",
+      "date": "2026-11-13",
+      "human": "13 ноября 2026",
+      "commit": "1071d54",
+      "title": "В 0.7.34 были дыры состоятельности, 15 закрыто; оболочка снова считает выражения; emit не печатает опровергнутое",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.35 archive",
+          "commit": "1071d54"
+        },
+        {
+          "text": "docs(codes): the two codes of 0.7.35 become stable",
+          "commit": "573fd00"
+        },
+        {
+          "text": "chore(release): version 0.7.35",
+          "commit": "8751b7b"
+        },
+        {
+          "text": "test(probes): the meet-same-side row takes the printed answer",
+          "commit": "31f4f61"
+        },
+        {
+          "text": "test(probes): the run rows of two law programs take the printed answers",
+          "commit": "81bf6b9"
+        },
+        {
+          "text": "chore(numbers): the site corpus and checker marks after the rebase",
+          "commit": "f24c371"
+        },
+        {
+          "text": "test(probes): share rows and the strict row take the printed answers",
+          "commit": "244fbeb"
+        },
+        {
+          "text": "test(probes): typing holes and small bugs expect the printed answers",
+          "commit": "d247f5c"
+        },
+        {
+          "text": "fix(proof): row 43 of the typing-holes table keeps its probe column",
+          "commit": "2f1d124"
+        },
+        {
+          "text": "chore(seed): print batch 12 seed from 63eac79e4",
+          "commit": "e129b23"
+        },
+        {
+          "text": "fix(types): a written step is checked against the types",
+          "commit": "8ecdcd2"
+        },
+        {
+          "text": "fix(link): category laws survive an import with an only list",
+          "commit": "8fcc868"
+        },
+        {
+          "text": "fix(self): the loop element helper stops colliding with Lists",
+          "commit": "2be1ec4"
+        },
+        {
+          "text": "chore(proof): holes 36 and 37 wait for print batch 12",
+          "commit": "5b9d386"
+        },
+        {
+          "text": "fix(kernel): equality with zero is not a base of segment induction",
+          "commit": "749b1b9"
+        },
+        {
+          "text": "fix(types): a computed digit does not flow into an exact integer",
+          "commit": "b60e233"
+        },
+        {
+          "text": "test(proof): probe a written step that calls past the parameter type",
+          "commit": "e7e4a9e"
+        },
+        {
+          "text": "fix(kernel): a statement variable takes only a term of its own type",
+          "commit": "324edf8"
+        },
+        {
+          "text": "fix(kernel): a call in a promise text must meet the callee requirement",
+          "commit": "7797318"
+        },
+        {
+          "text": "test(probes): the shell expression and the doubled function name",
+          "commit": "a5ccc87"
+        },
+        {
+          "text": "fix(types): a missing call argument names the function once",
+          "commit": "fa0d993"
+        },
+        {
+          "text": "fix(parser): the shell's expression wrapper needs no returns line",
+          "commit": "09bb36d"
+        },
+        {
+          "text": "fix(link): laws of imported modules reach the judged program",
+          "commit": "b0697ab"
+        },
+        {
+          "text": "fix(sets): a meet of a set with itself is refused",
+          "commit": "6ed9e91"
+        },
+        {
+          "text": "fix(run): the run gate judges declared laws like check does",
+          "commit": "1465ee6"
+        },
+        {
+          "text": "fix(ledger): the totals name the laws that the kernel closed",
+          "commit": "6b3a2d3"
+        },
+        {
+          "text": "fix(laws): a declared property that was not judged is refused",
+          "commit": "f1c8d2f"
+        },
+        {
+          "text": "fix(emit): the counterexample search is callable without the examples",
+          "commit": "cad6491"
+        },
+        {
+          "text": "chore(proof): four kernel hole rows wait for print batch 12",
+          "commit": "967d93e"
+        },
+        {
+          "text": "fix(proof): two promises of one function under one name are refused",
+          "commit": "dbc8e4c"
+        },
+        {
+          "text": "chore(proof): rule anchors and the checker ceiling follow batch 12",
+          "commit": "3599db0"
+        },
+        {
+          "text": "perf(printer): no list of all names per printed call or node",
+          "commit": "49559a8"
+        },
+        {
+          "text": "perf(kernel): a closed part reuses the once prepared program",
+          "commit": "97cfb27"
+        },
+        {
+          "text": "perf(runtime): the spread map keeps its workers under FLANG_TICKS_OUT",
+          "commit": "54a0e6f"
+        },
+        {
+          "text": "fix(kernel): an interval bound that rounds at 2^53 is not exact",
+          "commit": "92e8ada"
+        },
+        {
+          "text": "test(probes): eight open soundness holes of the 0.7.34 kernel",
+          "commit": "ab32075"
+        },
+        {
+          "text": "fix(kernel): three rules stop reading minus zero as plus zero",
+          "commit": "2125f52"
+        },
+        {
+          "text": "fix(checker): a product is never minus zero in the linear equality guard",
+          "commit": "bb527a5"
+        },
+        {
+          "text": "fix(types): arithmetic proved to give not-a-number is refused",
+          "commit": "3f331c6"
+        },
+        {
+          "text": "fix(types): branch join keeps the wider sum, record and function type",
+          "commit": "f3b3632"
+        },
+        {
+          "text": "feat(lean): the model reads the goal split by condition on every path",
+          "commit": "fcd3b71"
+        },
+        {
+          "text": "fix(lean): one file imports every model theorem and prints its axioms",
+          "commit": "21a706c"
+        },
+        {
+          "text": "ci(lean): the Lean cross-check builds every file of the semantic model",
+          "commit": "2868258"
+        },
+        {
+          "text": "feat(lean): a sum of variants without fields is evaluated per variant",
+          "commit": "7d19618"
+        },
+        {
+          "text": "feat(lean): the model reads order by construction on lengths",
+          "commit": "7280233"
+        },
+        {
+          "text": "feat(lean): a base premise closed by example is evaluated on its value",
+          "commit": "e18ee50"
+        },
+        {
+          "text": "feat(lean): the nonnegativity rule reads the condition of a branch",
+          "commit": "c0a8263"
+        },
+        {
+          "text": "feat(lean): the model reads two kernel rules by construction",
+          "commit": "74f13d8"
+        },
+        {
+          "text": "feat(lean): the formula reader runs on fuel instead of partial defs",
+          "commit": "2df9a5d"
+        },
+        {
+          "text": "fix(lean): the census declares the step limit its shortcut carries",
+          "commit": "eedfe30"
+        },
+        {
+          "text": "feat(lean): the census counts blocks in records the checker refuses",
+          "commit": "d1b9ca9"
+        },
+        {
+          "text": "feat(lean): the model reads a claim closed by example on a constant",
+          "commit": "82216b9"
+        },
+        {
+          "text": "feat(lean): the model reads a composition over structural recursion",
+          "commit": "ade871c"
+        },
+        {
+          "text": "fix(lean): the census tells premises without moves from replayed ones",
+          "commit": "2b10253"
+        },
+        {
+          "text": "feat(lean): the census names the move kinds of each block of moves",
+          "commit": "27da2bf"
+        },
+        {
+          "text": "feat(lean): the model reads the table of contents of tables",
+          "commit": "7ec4d62"
+        },
+        {
+          "text": "feat(lean): the model reads a removal whose block is a deduction",
+          "commit": "9ecd431"
+        },
+        {
+          "text": "feat(lean): the model reads composition totality blocks",
+          "commit": "3adcd32"
+        },
+        {
+          "text": "feat(guards): the codes guard reads the released version",
+          "commit": "40ebbe5"
+        },
+        {
+          "text": "chore(numbers): the site counts follow the truth probe set",
+          "commit": "4a90426"
+        },
+        {
+          "text": "test(probes): the truth probe set passes the tree guards",
+          "commit": "f0c49e8"
+        },
+        {
+          "text": "fix(driver): help and exit codes of the binary say what it does",
+          "commit": "347ee8d"
+        },
+        {
+          "text": "style(checker): two comments leave checker.c for the decision record",
+          "commit": "3d120e2"
+        },
+        {
+          "text": "fix(checker): the fields and unfold moves are sound, all moves proved",
+          "commit": "2d7e8c7"
+        },
+        {
+          "text": "test(holes): rows 31 and 32 hold for the Go, Java and Rust prints",
+          "commit": "0d3ccf3"
+        },
+        {
+          "text": "test(holes): row 32, an exact fraction off canon at the printed entry",
+          "commit": "588db75"
+        },
+        {
+          "text": "test(holes): rows 30 and 31, a word inside an argument and at entry",
+          "commit": "0a72ee7"
+        },
+        {
+          "text": "refactor(russian): the utterance analysis reads tags from the lexicon",
+          "commit": "d43f152"
+        },
+        {
+          "text": "feat(russian): the lexicon gains the instrumental and 35 word forms",
+          "commit": "a15828c"
+        },
+        {
+          "text": "chore(bench): the two bench plans carry no claims outside the ledger",
+          "commit": "798d24c"
+        },
+        {
+          "text": "chore(bench): the node stand is generated and built without Node",
+          "commit": "69489f2"
+        },
+        {
+          "text": "fix(probes): the non-negative field probe stops failing by chance",
+          "commit": "c43ee3a"
+        },
+        {
+          "text": "chore(bench): drop two shell scripts their flang plans replace",
+          "commit": "c6034ad"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.34, releases page",
+          "commit": "e6c5b9d"
+        }
+      ],
+      "hidden": 147
+    },
     {
       "version": "0.7.34",
       "tag": "v0.7.34",

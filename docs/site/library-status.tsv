@@ -209,7 +209,7 @@ flang/stdlib/aes.flang		Начальный счётчик	вектору в дв
 flang/stdlib/aes.flang		Тег GCM	тег GCM — ровно шестнадцать байтов	доказано
 flang/stdlib/aes.flang		Зашифровать GCM	тег шифрования GCM — ровно шестнадцать байтов	сетка
 flang/stdlib/aes.flang		Зашифровать GCM	шифротекст GCM ровно той же длины, что и открытый текст	сетка
-flang/stdlib/aes.flang		Текст исхода	у отказа текста нет	сетка
+flang/stdlib/aes.flang		Текст исхода	у отказа текста нет	доказано
 flang/stdlib/aes.flang		Расшифровать GCM	при отказе открытого текста не выдаётся	доказано
 flang/stdlib/aes.flang		Расшифровать GCM	при успехе открытый текст той же длины, что и шифротекст	объявлено, не доказано
 flang/stdlib/aes.flang		Обратная таблица подстановки	в обратной таблице ровно двести пятьдесят шесть байтов	доказано
@@ -322,7 +322,7 @@ flang/stdlib/aes.flang		Расшифровать GCM 256	при отказе о�
 flang/stdlib/aes.flang		Расшифровать GCM 256	при успехе открытый текст той же длины, что и шифротекст	сетка
 flang/stdlib/aes.flang		Байт двумя знаками	байт печатается ровно двумя знаками	сетка
 flang/stdlib/aes.flang		Байты шестнадцатеричной строкой	на каждый байт — по два знака	сетка
-flang/stdlib/automaton.flang	950efc5d4545ba781d9d79570f7f6b127a7cc742e657d0aecfd3a8791c9f132f	Это тупик		доказано композицией
+flang/stdlib/automaton.flang	e0c73a47ffe9cd05cfed57b6d0fb2c0b4ea259984b240858f4eb10b237c2ebe5	Это тупик		доказано композицией
 flang/stdlib/automaton.flang		Это пустое слово		доказано композицией
 flang/stdlib/automaton.flang		Есть ветвь		доказано структурой
 flang/stdlib/automaton.flang		Слить в ряд		доказано композицией
@@ -401,6 +401,7 @@ flang/stdlib/automaton.flang		Пусто допустимо	якорь нача�
 flang/stdlib/automaton.flang		Пусто допустимо	якорь конца спрашивает только про конец	доказано
 flang/stdlib/automaton.flang		В отрезке	точка между низом и верхом отрезку принадлежит	доказано
 flang/stdlib/automaton.flang		В отрезке	точка вне низа и верха отрезку не принадлежит	доказано
+flang/stdlib/automaton.flang		В отрезках	в пустом перечне отрезков точки нет	доказано
 flang/stdlib/automaton.flang		Производная	производная тупика — тупик	доказано
 flang/stdlib/automaton.flang		Производная	производная пустого слова — тупик	доказано
 flang/stdlib/automaton.flang		Производная	производная якоря начала — тупик	доказано
@@ -465,6 +466,8 @@ flang/stdlib/automaton.flang		Шаг лексера	после беды лекс
 flang/stdlib/automaton.flang		Шаг лексера	в обычном режиме шаг обычный	доказано
 flang/stdlib/automaton.flang		Рамка чистая	у порожней рамки хвоста нет	доказано
 flang/stdlib/automaton.flang		Рамка чистая	порожняя рамка ничего не выбирает	доказано
+flang/stdlib/automaton.flang		Низ рамок	у пустых рамок низа нет	доказано
+flang/stdlib/automaton.flang		Низ рамок	низ не длиннее рамок	доказано
 flang/stdlib/automaton.flang		Положить атом	после атома хвост есть	доказано
 flang/stdlib/automaton.flang		Положить атом	положенный атом и становится хвостом	доказано
 flang/stdlib/automaton.flang		Положить атом	атом выбора не трогает	доказано
@@ -634,7 +637,7 @@ flang/stdlib/base64.flang		Закрыть раскодирование	хвос�
 flang/stdlib/base64.flang		Закрыть раскодирование	хвост из трёх знаков даёт два байта	доказано
 flang/stdlib/base64.flang		Закрыть раскодирование	прочий хвост байтов не даёт	доказано
 flang/stdlib/base64.flang		Раскодировать в байты	байтов не больше, чем знаков	сетка
-flang/stdlib/bignum.flang	c774c5f0acde7a9fe8b304e9af9de18cff3af9f79899d0514fbcd67edf6494c4	Основание		доказано композицией
+flang/stdlib/bignum.flang	ec05dc384aa0c4af159792c300da006d8f6ba5e4e6133733ecc629bf2a9cc92c	Основание		доказано композицией
 flang/stdlib/bignum.flang		Нулевые разряды		доказано постоянным шагом
 flang/stdlib/bignum.flang		Разряд		доказано структурой
 flang/stdlib/bignum.flang		Взять первые		доказано структурой
@@ -680,14 +683,25 @@ flang/stdlib/bignum.flang		Запас алгоритма Евклида		док�
 flang/stdlib/bignum.flang		Значение двух разрядов		доказано композицией
 flang/stdlib/bignum.flang		НОД малых чисел		доказано точным шагом
 flang/stdlib/bignum.flang		НОД		доказано композицией
+flang/stdlib/bignum.flang		Основание	разряд несёт двадцать два бита	доказано
+flang/stdlib/bignum.flang		Нулевые разряды	без разрядов нулей нет	доказано
+flang/stdlib/bignum.flang		Нулевые разряды	нулей ровно сколько просили	доказано
+flang/stdlib/bignum.flang		Разряд	за концом числа разряд нулевой	доказано
 flang/stdlib/bignum.flang		Взять первые	взято не больше, чем было	доказано
 flang/stdlib/bignum.flang		Отбросить первые	отброшенное не удлиняет	доказано
 flang/stdlib/bignum.flang		Обрезать старшие нули	обрезка не удлиняет	доказано
+flang/stdlib/bignum.flang		Сложить по разрядам	пустое слева отдаёт правое	доказано
 flang/stdlib/bignum.flang		Ширина	ширина не меньше каждой длины	сетка
+flang/stdlib/bignum.flang		Дополнить нулями до	широкое не дополняется	доказано
+flang/stdlib/bignum.flang		Сдвинуть на разряды	нулевой сдвиг ничего не меняет	доказано
 flang/stdlib/bignum.flang		Шаг переноса	шаг переноса ставит ровно один столбец	доказано
 flang/stdlib/bignum.flang		Вычесть с займом	столбцов разности столько же, сколько у уменьшаемого	доказано
+flang/stdlib/bignum.flang		Равны	равные не меньше друг друга	доказано
 flang/stdlib/bignum.flang		Вычитание	меньшее минус большее — ноль	сетка
+flang/stdlib/bignum.flang		Свёртка разрядов	пустой множитель даёт пустое	доказано
+flang/stdlib/bignum.flang		Карацуба	короткие множатся столбиком	доказано
 flang/stdlib/bignum.flang		Обратить разряды	обращение длины не меняет	доказано
+flang/stdlib/bignum.flang		Обратить разряды	пустое обращается в пустое	доказано
 flang/stdlib/bignum.flang		Шаг деления	шаг деления ставит ровно одну цифру частного	доказано
 flang/stdlib/certificate-path.flang	c6c1bfd767e06207d8ff25ec61b172e1f376859963f60a1fb7efce8f1ff00972	Строчный октет		доказано композицией
 flang/stdlib/certificate-path.flang		Строчные октеты		доказано композицией
@@ -1250,10 +1264,10 @@ flang/stdlib/dns.flang		Разобрать заголовок	короче дв�
 flang/stdlib/dns.flang		Разобрать заголовок	заголовок разобран только от двенадцати октетов, а отказ несёт непустую причину	сетка
 flang/stdlib/dns.flang		Собрать заголовок	заголовок — ровно двенадцать октетов	доказано
 flang/stdlib/dns.flang		Собрать заголовок	круг заголовка: собранный из полей в два октета разбирается в него же	сетка
-flang/stdlib/dns.flang		Имя по указателю	конец имени по указателю — сразу за двумя октетами указателя, куда бы он ни вёл	сетка
+flang/stdlib/dns.flang		Имя по указателю	конец имени по указателю — сразу за двумя октетами указателя, куда бы он ни вёл	доказано
 flang/stdlib/dns.flang		Имя по указателю	порча имени проходит через указатель как есть	сетка
 flang/stdlib/dns.flang		Имя с меткой	имя с меткой не длиннее 255 знаков	сетка
-flang/stdlib/dns.flang		Имя с меткой	имя с меткой начинается с метки	сетка
+flang/stdlib/dns.flang		Имя с меткой	имя с меткой начинается с метки	доказано
 flang/stdlib/dns.flang		Имя с меткой	порча хвоста проходит как есть	сетка
 flang/stdlib/dns.flang		Разобрать имя	разобранное имя не длиннее 255 знаков, а отказ несёт непустую причину	сетка
 flang/stdlib/dns.flang		Разобрать имя	без витков — указатель имени зациклен	доказано
@@ -1270,7 +1284,7 @@ flang/stdlib/dns.flang		Данные с именем	тип 5 с разобра�
 flang/stdlib/dns.flang		Разобрать данные записи	тип вне шести известных отдаёт данные как есть	сетка
 flang/stdlib/dns.flang		Разобрать данные записи	отказ данных несёт непустую причину	сетка
 flang/stdlib/dns.flang		Запись с данными	порча данных проходит в запись с той же причиной и местом	сетка
-flang/stdlib/dns.flang		Запись с данными	разобранная запись кончается на переданном конце	сетка
+flang/stdlib/dns.flang		Запись с данными	разобранная запись кончается на переданном конце	доказано
 flang/stdlib/dns.flang		Запись после имени	без десяти октетов после имени — байтов не хватило на месте после имени	доказано
 flang/stdlib/dns.flang		Разобрать запись	разобранная запись кончается дальше начала, а отказ несёт непустую причину	сетка
 flang/stdlib/dns.flang		Разобрать вопросы	когда вопросов не осталось — собранное как есть, с тем же местом	доказано
@@ -1292,7 +1306,7 @@ flang/stdlib/dns.flang		Пара шестнадцатеричных	октет �
 flang/stdlib/dns.flang		Шаг печати IPv6	шаг дописывает два знака, а перед новой группой ещё двоеточие	доказано
 flang/stdlib/dns.flang		Напечатать IPv6	шестнадцать октетов — тридцать девять знаков: восемь групп по четыре и семь двоеточий	сетка
 flang/stdlib/dns.flang		Напечатать IPv6	сжатия двумя двоеточиями печать не применяет	сетка
-flang/stdlib/ecdsa.flang	beea3400a2ff07a711889a429a4247c0363611c8874bb206bb84e285932ebe59	Нулевые разряды		доказано постоянным шагом
+flang/stdlib/ecdsa.flang	4352423a26f81176c53bfbed82402ca44850f0ed1d44d8f3e75587231d23c308	Нулевые разряды		доказано постоянным шагом
 flang/stdlib/ecdsa.flang		Разряд		доказано структурой
 flang/stdlib/ecdsa.flang		Взять первые		доказано структурой
 flang/stdlib/ecdsa.flang		Отбросить первые		доказано структурой
@@ -1349,14 +1363,18 @@ flang/stdlib/ecdsa.flang		Целое подписи		доказано компо
 flang/stdlib/ecdsa.flang		Годно для подписи		доказано композицией
 flang/stdlib/ecdsa.flang		Проверка ECDSA		доказано композицией
 flang/stdlib/ecdsa.flang		Слово о подписи		доказано композицией
+flang/stdlib/ecdsa.flang		Нулевые разряды	без разрядов нулей нет	доказано
+flang/stdlib/ecdsa.flang		Разряд	за концом числа разряд нулевой	доказано
 flang/stdlib/ecdsa.flang		Взять первые	взято не больше, чем было	доказано
 flang/stdlib/ecdsa.flang		Отбросить первые	отброшенное не удлиняет	доказано
+flang/stdlib/ecdsa.flang		Сложить по разрядам	пустое слева отдаёт правое	доказано
 flang/stdlib/ecdsa.flang		Добавить к первому	добавка не меняет числа разрядов	доказано
 flang/stdlib/ecdsa.flang		Шаг переноса	шаг переноса ставит ровно один столбец	доказано
 flang/stdlib/ecdsa.flang		Перенос	столбцов ровно столько, сколько разрядов	доказано
 flang/stdlib/ecdsa.flang		Уложить	разрядов не больше двенадцати	сетка
 flang/stdlib/ecdsa.flang		Вычесть с займом	столбцов разности столько же, сколько у уменьшаемого	доказано
 flang/stdlib/ecdsa.flang		Привести	приведение не меняет числа разрядов	доказано
+flang/stdlib/ecdsa.flang		Это ноль	число без разрядов есть ноль	доказано
 flang/stdlib/ecdsa.flang		Простое	двенадцать разрядов	доказано
 flang/stdlib/ecdsa.flang		Порядок	двенадцать разрядов	доказано
 flang/stdlib/ecdsa.flang		Ноль поля	двенадцать разрядов	доказано
@@ -1373,15 +1391,23 @@ flang/stdlib/ecdsa.flang		Образующая	у образующей з в д�
 flang/stdlib/ecdsa.flang		Бесконечность	у бесконечности х в двенадцати разрядах	доказано
 flang/stdlib/ecdsa.flang		Бесконечность	у бесконечности у в двенадцати разрядах	доказано
 flang/stdlib/ecdsa.flang		Бесконечность	у бесконечности знаменатель нулевой длины двенадцать	доказано
+flang/stdlib/ecdsa.flang		Свёртка разрядов	пустой множитель даёт пустое	доказано
 flang/stdlib/ecdsa.flang		Витки Монтгомери	без витков остаётся то, что дали	доказано
+flang/stdlib/ecdsa.flang		Вычитание поля	без займа разность — столбцы вычитания	доказано
 flang/stdlib/ecdsa.flang		Степень двойки	нулевая степень двойки — единица	доказано
 flang/stdlib/ecdsa.flang		Виток степени	на нулевом бите остаётся один квадрат	доказано
 flang/stdlib/ecdsa.flang		Виток степени	на единичном бите к квадрату домножается основа	доказано
 flang/stdlib/ecdsa.flang		Степень	без витков остаётся накопитель	доказано
 flang/stdlib/ecdsa.flang		Коэффициент b	двенадцать разрядов	доказано
+flang/stdlib/ecdsa.flang		Образующая на кривой	образующая лежит на кривой	доказано
+flang/stdlib/ecdsa.flang		Удвоенная образующая на кривой	удвоенная образующая лежит на кривой	доказано
+flang/stdlib/ecdsa.flang		Утроенная образующая на кривой	утроенная образующая лежит на кривой	доказано
 flang/stdlib/ecdsa.flang		Виток Шамира	оба бита нулевые — только удвоение	доказано
 flang/stdlib/ecdsa.flang		Лестница Шамира	без витков остаётся накопитель	доказано
+flang/stdlib/ecdsa.flang		Число из байтов	без байтов число — двенадцать нулевых разрядов	доказано
 flang/stdlib/ecdsa.flang		Точка ключа	у точки ключа знаменатель ровно в двенадцать разрядов	доказано
+flang/stdlib/ecdsa.flang		Годно для подписи	годное значение не ноль	доказано
+flang/stdlib/ecdsa.flang		Годно для подписи	годное значение меньше порядка	доказано
 flang/stdlib/ecdsa.flang		Слово о подписи	верную подпись называют верной	доказано
 flang/stdlib/ecdsa.flang		Слово о подписи	неверную подпись называют неверной	доказано
 flang/stdlib/fmath.flang	0a38bde3596b1631f5509a30a8f9441e8bacfec24cc2c196f585ad2a99108875			
@@ -1441,7 +1467,7 @@ flang/stdlib/hashmap.flang		Найти в словаре	чего в слова�
 flang/stdlib/hashmap.flang		Есть ключ в словаре	в пустом словаре ключей нет	доказано
 flang/stdlib/hashmap.flang		Спуск грозди	у пустого места спуска нет	доказано
 flang/stdlib/hashmap.flang		Звенья словаря	у пустого места звеньев нет	доказано
-flang/stdlib/hashmap.flang		Звенья словаря	у грозди звенья — весь её набор	сетка
+flang/stdlib/hashmap.flang		Звенья словаря	у грозди звенья — весь её набор	доказано
 flang/stdlib/hashmap.flang		Размер словаря	размер — это сколько у словаря ключей	доказано
 flang/stdlib/hashmap.flang		Ключи словаря	ключей ровно столько, сколько звеньев	доказано
 flang/stdlib/hashmap.flang		Значения словаря	значений ровно столько, сколько звеньев	доказано
@@ -1451,7 +1477,7 @@ flang/stdlib/hashmap.flang		Глубина словаря	где есть зве
 flang/stdlib/hashmap.flang		Глубина словаря	у грозди глубина один	доказано
 flang/stdlib/hashmap.flang		Глубина словаря	у пустого места глубина ноль	доказано
 flang/stdlib/hashmap.flang		Словарь из ключей	из пустого списка ключей выходит пустое место	доказано
-flang/stdlib/higher-order.flang	d2bef5e3c13a953ad2d50dff7bc18b8b185a1887e7ffc0fef6eb4c4cf12a0f6c	Удвоить		доказано композицией
+flang/stdlib/higher-order.flang	766d4e4d18009e87647610e08cd7d65c314fcd33cc824d42f0925583f684157e	Удвоить		доказано композицией
 flang/stdlib/higher-order.flang		Возвести в квадрат		доказано композицией
 flang/stdlib/higher-order.flang		Утроить		доказано композицией
 flang/stdlib/higher-order.flang		Противоположное		доказано композицией
@@ -1527,9 +1553,11 @@ flang/stdlib/higher-order.flang		Шаг любой	пока не найдено 
 flang/stdlib/higher-order.flang		Любой	хоть один подходит ровно тогда, когда подходящих не меньше одного	сетка
 flang/stdlib/higher-order.flang		Найти первое	всё, что не запасное, подходит	доказано
 flang/stdlib/higher-order.flang		Найти первое	на пустом списке отдаётся запасное	доказано
-flang/stdlib/higher-order.flang		Позиция где	на найденном месте стоит подходящее, а ноль значит: не найдено	сетка
+flang/stdlib/higher-order.flang		Позиция где	в пустом списке место не найдено	доказано
+flang/stdlib/higher-order.flang		Позиция где	в непустом списке на найденном месте стоит подходящее, а ноль значит: не найдено	сетка
 flang/stdlib/higher-order.flang		Вставить по	вставка удлиняет список ровно на один	доказано
-flang/stdlib/higher-order.flang		Вставить по	во главе результата стоит либо вставленное, либо прежняя голова	сетка
+flang/stdlib/higher-order.flang		Вставить по	вставка в пустой список даёт один элемент	доказано
+flang/stdlib/higher-order.flang		Вставить по	во главе непустого результата стоит вставленное либо прежняя голова	доказано
 flang/stdlib/higher-order.flang		Сортировать по	сортировка по порядку не теряет и не добавляет элементов	доказано
 flang/stdlib/higher-order.flang		Сортировать по направлению	сортировка не теряет и не добавляет элементов	доказано
 flang/stdlib/higher-order.flang		Сортировать по направлению	при убывании сортируется порядком назад	доказано
@@ -1540,8 +1568,10 @@ flang/stdlib/higher-order.flang		Отобразить составом	отоб�
 flang/stdlib/higher-order.flang		Сжать	сжато ровно столько, сколько в коротком из списков	сетка
 flang/stdlib/higher-order.flang		Сумма сложением	сумма положительных не меньше наибольшего из них	сетка
 flang/stdlib/higher-order.flang		Произведение умножением	произведение одного элемента есть он сам	сетка
-flang/stdlib/higher-order.flang		Минимум меньшим из двух	наименьшее взято из самого списка, а на пустом это ноль	сетка
-flang/stdlib/higher-order.flang		Максимум большим из двух	наибольшее взято из самого списка, а на пустом это ноль	сетка
+flang/stdlib/higher-order.flang		Минимум меньшим из двух	наименьшее непустого списка взято из него самого	сетка
+flang/stdlib/higher-order.flang		Минимум меньшим из двух	наименьшее пустого списка есть ноль	доказано
+flang/stdlib/higher-order.flang		Максимум большим из двух	наибольшее непустого списка взято из него самого	сетка
+flang/stdlib/higher-order.flang		Максимум большим из двух	наибольшее пустого списка есть ноль	доказано
 flang/stdlib/higher-order.flang		Обратить знаки	обращение знаков сохраняет длину списка	доказано
 flang/stdlib/higher-order.flang		Обратить знаки	у положительной головы знак меняется на противоположный	сетка
 flang/stdlib/higher-order.flang		Заглавная точка	точка удлиняет строку ровно на один знак	доказано
@@ -2130,7 +2160,7 @@ flang/stdlib/math-classics-lists.flang		Отобразить склейку	от
 flang/stdlib/math-classics-lists.flang		Отобразить склейку	длина отображённой склейки есть сумма длин	доказано
 flang/stdlib/math-classics-lists.flang		Отобразить дважды	два отображения подряд суть одно отображение составом	сетка
 flang/stdlib/math-classics-lists.flang		Отобразить дважды	отображение составом сохраняет длину	доказано
-flang/stdlib/math-classics-lists.flang		Отобразить тождеством	отображение тождеством не меняет список	сетка
+flang/stdlib/math-classics-lists.flang		Отобразить тождеством	отображение тождеством не меняет список	доказано
 flang/stdlib/math-classics-lists.flang		Отобразить тождеством	отображение тождеством сохраняет длину	доказано
 flang/stdlib/math-classics-lists.flang		Свернуть слева	на пустом списке левая свёртка есть само основание	доказано
 flang/stdlib/math-classics-lists.flang		Свернуть слева склейку	левая свёртка склейки есть свёртка второго от свёртки первого	сетка
@@ -2567,7 +2597,7 @@ flang/stdlib/postgres.flang		Разобрать настройку	без нул
 flang/stdlib/postgres.flang		Разобрать настройку	взятая строка становится именем настройки, а её остаток до следующего нуля — значением	доказано
 flang/stdlib/postgres.flang		Разобрать поля	полей выходит не больше, чем обещало их число, и не больше запаса, а испорченное число полей не даёт ни одного	сетка
 flang/stdlib/postgres.flang		Разобрать поля	испорченное число полей не даёт ни одного поля	доказано
-flang/stdlib/postgres.flang		Разобрать поля	целое число полей собирается с того места, где оно кончилось	сетка
+flang/stdlib/postgres.flang		Разобрать поля	целое число полей собирается с того места, где оно кончилось	доказано
 flang/stdlib/postgres.flang		Собрать поля	полей не больше, чем просили	сетка
 flang/stdlib/postgres.flang		Собрать поля	нулевое число полей не даёт ни одного	доказано
 flang/stdlib/postgres.flang		Собрать поля	полей не больше запаса	сетка
@@ -2580,8 +2610,8 @@ flang/stdlib/postgres.flang		Разобрать поток	вестей выхо
 flang/stdlib/postgres.flang		Разобрать поток	полный кадр готовности разбирается ровно в одну весть без остатка	сетка
 flang/stdlib/postgres.flang		Разобрать поток	пока вести мало, поток разобран без единой вести и вход не тронут	доказано
 flang/stdlib/postgres.flang		Приписать весть	приписка удлиняет список вестей ровно на одну, исхода потока не меняет и ни остатка, ни причины не трогает	сетка
-flang/stdlib/postgres.flang		Приписать весть	к разобранному потоку весть приписывается спереди, а остаток остаётся тем же	сетка
-flang/stdlib/postgres.flang		Приписать весть	к оборванному потоку весть приписывается спереди, а причина остаётся той же	сетка
+flang/stdlib/postgres.flang		Приписать весть	к разобранному потоку весть приписывается спереди, а остаток остаётся тем же	доказано
+flang/stdlib/postgres.flang		Приписать весть	к оборванному потоку весть приписывается спереди, а причина остаётся той же	доказано
 flang/stdlib/postgres.flang		Ответ дочитан	проверка на шесть знаков здесь лишняя: её делает сама проверка на готовность	сетка
 flang/stdlib/postgres.flang		Ответ дочитан	от шести знаков ответ дочитан ровно по готовности хвоста	доказано
 flang/stdlib/postgres.flang		Ответ дочитан	короче шести знаков хвоста готовности не бывает	доказано
@@ -2610,7 +2640,7 @@ flang/stdlib/postgres.flang		Это разрешение	разрешение в
 flang/stdlib/postgres.flang		Это разрешение	весть о том, что данных не будет, разрешением не зовётся	доказано
 flang/stdlib/postgres.flang		Строки ответа	строк выходит ровно столько, сколько среди вестей строк данных	сетка
 flang/stdlib/postgres.flang		Досыпать строку	строка данных досыпается в конец ровно одна, прочее проносит собранное нетронутым, и собранное всегда остаётся началом	сетка
-flang/stdlib/postgres.flang		Досыпать строку	строка данных досыпается строкой своих полей	сетка
+flang/stdlib/postgres.flang		Досыпать строку	строка данных досыпается строкой своих полей	доказано
 flang/stdlib/postgres.flang		Досыпать строку	весть о том, что данных не будет, проносит собранное нетронутым	доказано
 flang/stdlib/postgres.flang		Шаг строки полей	шаг удлиняет набранное ровно на один	доказано
 flang/stdlib/postgres.flang		Строка полей	поля склеены табуляциями: длина есть сумма длин полей плюс разделители	сетка
@@ -2618,11 +2648,11 @@ flang/stdlib/postgres.flang		Текст поля	текст поля — это 
 flang/stdlib/postgres.flang		Итог дела	у пустого списка итога нет	доказано
 flang/stdlib/postgres.flang		Итог дела	на одной вести итог — её же досыпка к пустому	сетка
 flang/stdlib/postgres.flang		Досыпать метку	метку берёт только весть о сделанном деле, прочее проносит собранное нетронутым	сетка
-flang/stdlib/postgres.flang		Досыпать метку	весть о сделанном деле отдаёт свою метку	сетка
+flang/stdlib/postgres.flang		Досыпать метку	весть о сделанном деле отдаёт свою метку	доказано
 flang/stdlib/postgres.flang		Досыпать метку	весть о том, что данных не будет, проносит собранную метку нетронутой	доказано
 flang/stdlib/postgres.flang		Текст отказа	текст отказа пуст ровно тогда, когда отказа среди вестей нет	сетка
 flang/stdlib/postgres.flang		Досыпать отказ	текст берёт только весть об отказе, прочее проносит собранное нетронутым	сетка
-flang/stdlib/postgres.flang		Досыпать отказ	весть об отказе отдаёт текст своей беды	сетка
+flang/stdlib/postgres.flang		Досыпать отказ	весть об отказе отдаёт текст своей беды	доказано
 flang/stdlib/postgres.flang		Досыпать отказ	весть о том, что данных не будет, проносит собранный текст нетронутым	доказано
 flang/stdlib/postgres.flang		Текст беды	текст беды — важность, код и сообщение через два пробела, и начинается он с важности	сетка
 flang/stdlib/postgres.flang		Текст беды	текст беды складывается из важности, кода и сообщения через пробел	доказано
@@ -2643,7 +2673,7 @@ flang/stdlib/postgres.flang		Причина обрыва	у целого пот�
 flang/stdlib/postgres.flang		Причина обрыва	у целого потока причины нет, у оборванного она — та самая, что записана	сетка
 flang/stdlib/postgres.flang		Настройки потока	пар выходит ровно столько, сколько среди вестей настроек	сетка
 flang/stdlib/postgres.flang		Досыпать настройку	настройка досыпается в конец одной парой из имени, знака равенства и значения, прочее проносит собранное нетронутым	сетка
-flang/stdlib/postgres.flang		Досыпать настройку	настройка досыпается парой имени и значения через знак равенства	сетка
+flang/stdlib/postgres.flang		Досыпать настройку	настройка досыпается парой имени и значения через знак равенства	доказано
 flang/stdlib/postgres.flang		Досыпать настройку	весть о том, что данных не будет, проносит собранные настройки нетронутыми	доказано
 flang/stdlib/protobuf.flang	43ed6d9c90af2a0fac5ce7809e559eee44ede3e419e2006916066aeaf022f6e3	Целое в отрезке		доказано композицией
 flang/stdlib/protobuf.flang		Октет годен		доказано композицией
@@ -2757,13 +2787,13 @@ flang/stdlib/protobuf.flang		Разобрать сообщение	пусто �
 flang/stdlib/protobuf.flang		Разобрать сообщение	полей не больше, чем байтов	сетка
 flang/stdlib/protobuf.flang		Разобрать сообщение	место порчи — номер байта внутри сообщения	сетка
 flang/stdlib/protobuf.flang		Разобрать сообщение	причина порчи — одна из четырёх названных	сетка
-flang/stdlib/protobuf.flang		Перекодировать сообщение	пусто перекодируется в пусто	доказано
+flang/stdlib/protobuf.flang		Перекодировать сообщение	пусто перекодируется в пусто	сетка
 flang/stdlib/protobuf.flang		Перекодировать сообщение	перекодировка октетов не длиннее входа	сетка
 flang/stdlib/protobuf.flang		Перекодировать сообщение	перекодировка октетов устойчива: второй раз даёт то же	сетка
 flang/stdlib/protobuf.flang		Поле годно	годное поле кодируется непустым	сетка
 flang/stdlib/protobuf.flang		Поля годны	без полей — годно	сетка
 flang/stdlib/protobuf.flang		Поля годны	одно поле годно ровно тогда, когда годно само	сетка
-flang/stdlib/rationals.flang	2ba099067a1908f29e7851b2f2dea825350d4125c9e5596de8c0dee701f53cb7	Ненулевое длинное		доказано композицией
+flang/stdlib/rationals.flang	0758657986c6e2908aae4a4d7b95dcdaf410bf25703b94aab7f23b9d94b3dc02	Ненулевое длинное		доказано композицией
 flang/stdlib/rationals.flang		Сократить		доказано композицией
 flang/stdlib/rationals.flang		Дробь из целых		доказано композицией
 flang/stdlib/rationals.flang		Дробь из записей		доказано композицией
@@ -2780,6 +2810,7 @@ flang/stdlib/rationals.flang		Дробь записью		доказано ком
 flang/stdlib/rationals.flang		Единица на следующее		доказано композицией
 flang/stdlib/rationals.flang		Гармоническая сумма		доказано точным шагом
 flang/stdlib/rationals.flang		Гармоническая сумма записью		доказано композицией
+flang/stdlib/rationals.flang		Ненулевое длинное	пустая запись — ноль	доказано
 flang/stdlib/rationals.flang		Сократить	ноль не бывает отрицательным	доказано
 flang/stdlib/rationals.flang		Сократить	знак берётся только из заказанного	доказано
 flang/stdlib/rationals.flang		Сократить	заказанный знак у ненулевого сохраняется	доказано
@@ -2793,6 +2824,8 @@ flang/stdlib/rationals.flang		Знак суммы	из двух отрицате
 flang/stdlib/rationals.flang		Умножить дроби	произведение отрицательно только при разных знаках	доказано
 flang/stdlib/rationals.flang		Умножить дроби	нулевое произведение не отрицательно	доказано
 flang/stdlib/rationals.flang		Разделить дроби	частное отрицательно только при разных знаках	доказано
+flang/stdlib/rationals.flang		Дроби равны	у равных дробей один знак	доказано
+flang/stdlib/rationals.flang		Гармоническая сумма	сумма без слагаемых — ноль	доказано
 flang/stdlib/redis.flang	c7f3fc5da93e9de4fd19baa644d81ca4a6de8cf0d593c8dfc846474e8352b2e7	Край строки		доказано композицией
 flang/stdlib/redis.flang		Груз строкой		доказано композицией
 flang/stdlib/redis.flang		Грузы		доказано композицией
@@ -2872,7 +2905,7 @@ flang/stdlib/redis.flang		Остаток взятого края	у отсутс
 flang/stdlib/redis.flang		Число ответа Redis	неразобранное число отдаётся нулём	доказано
 flang/stdlib/redis.flang		Дописать знак к краю	дописка к краю исхода не меняет, удлиняет текст ровно на длину знака и остатка не трогает	сетка
 flang/stdlib/redis.flang		Дописать знак к краю	отсутствие края дописку переживает	доказано
-flang/stdlib/redis.flang		Дописать знак к краю	взятый край дописку принимает знаком спереди, остатка не трогая	сетка
+flang/stdlib/redis.flang		Дописать знак к краю	взятый край дописку принимает знаком спереди, остатка не трогая	доказано
 flang/stdlib/redis.flang		Взять край	взятый текст — начало входа, а остаток короче входа ровно на этот текст и два знака края	сетка
 flang/stdlib/redis.flang		Край за возвратом	край берётся только при переводе строки следом, и снимает он ровно один знак	сетка
 flang/stdlib/redis.flang		Край за возвратом	перевод строки следом снимает ровно один знак, а без него края нет	доказано
@@ -2880,7 +2913,7 @@ flang/stdlib/redis.flang		Край за возвратом	за возврато
 flang/stdlib/redis.flang		Край за возвратом	нет перевода за возвратом — края нет	доказано
 flang/stdlib/redis.flang		Ответ числом	разобранное целое становится счётом с тем же значением, а неразобранное — названной порчей	сетка
 flang/stdlib/redis.flang		Ответ числом	неразобранное целое ответа названо порчей	доказано
-flang/stdlib/redis.flang		Ответ числом	разобранное целое становится счётом с тем же значением	сетка
+flang/stdlib/redis.flang		Ответ числом	разобранное целое становится счётом с тем же значением	доказано
 flang/stdlib/redis.flang		Груз с краем	край сразу за телом даёт груз с тем же текстом, край с лишними знаками — названную порчу, а отсутствие края — нехватку	сетка
 flang/stdlib/redis.flang		Груз с краем	без края груза нет — байты ещё едут	доказано
 flang/stdlib/redis.flang		Груз с краем	лишние знаки между телом и краем названы порчей	доказано
@@ -2914,10 +2947,10 @@ flang/stdlib/redis.flang		Шаг текстов частей	шаг удлиня
 flang/stdlib/redis.flang		Тексты частей	пустой набор даёт пустую запись	доказано
 flang/stdlib/redis.flang		Текст ответа	набор берётся в скобки и ровно на них длиннее своего содержимого, а всё прочее печатается как простой ответ	сетка
 flang/stdlib/redis.flang		Текст ответа	отсутствие значения печатается как простой ответ	доказано
-flang/stdlib/redis.flang		Текст ответа	набор печатается своими частями в квадратных скобках	сетка
+flang/stdlib/redis.flang		Текст ответа	набор печатается своими частями в квадратных скобках	доказано
 flang/stdlib/redis.flang		Шаг текстов ответов	шаг удлиняет набранное ровно на один	доказано
 flang/stdlib/redis.flang		Тексты ответов	пустой список даёт пустую запись	доказано
-flang/stdlib/redis.flang		Это отказ Redis	отказом считается только беда	сетка
+flang/stdlib/redis.flang		Это отказ Redis	отказом считается только беда	доказано
 flang/stdlib/redis.flang		Это отказ Redis	отсутствие значения отказом не считается	доказано
 flang/stdlib/redis.flang		Это отказ Redis	беда отказом и зовётся	доказано
 flang/stdlib/redis.flang		Это отказ Redis	слово отказом не зовётся	доказано
@@ -2926,7 +2959,7 @@ flang/stdlib/redis.flang		Это отказ Redis	набор отказом не
 flang/stdlib/redis.flang		Шаг поиска отказа Redis	однажды найденный отказ уже не теряется	доказано
 flang/stdlib/redis.flang		Шаг поиска отказа Redis	пока не найдено, отвечает сам ответ	доказано
 flang/stdlib/redis.flang		Есть отказ Redis	в пустом списке отказа нет	сетка
-flang/stdlib/registry.flang	c7ea7a143d1900399b847573fdd9f99ebb86d4a1bfd537dac42147bb4f95de1b	Цифра ли		доказано композицией
+flang/stdlib/registry.flang	65d2777a98ba172da322ec44511d663bd98ec2d4ee98afee984a5fa493cdfa03	Цифра ли		доказано композицией
 flang/stdlib/registry.flang		Только цифры		доказано композицией
 flang/stdlib/registry.flang		Число из цифр		доказано композицией
 flang/stdlib/registry.flang		Пробелы вместо переводов		доказано композицией
@@ -2970,26 +3003,39 @@ flang/stdlib/registry.flang		Пройти круг		доказано компо�
 flang/stdlib/registry.flang		Разрешить		доказано постоянным шагом
 flang/stdlib/registry.flang		Выбор строкой		доказано композицией
 flang/stdlib/registry.flang		Выборы строкой		доказано композицией
+flang/stdlib/registry.flang		Цифра ли	пустой знак не цифра	доказано
+flang/stdlib/registry.flang		Цифра ли	цифра лежит между нулём и девяткой	доказано
 flang/stdlib/registry.flang		Только цифры	пустой текст цифрами не считается	доказано
 flang/stdlib/registry.flang		Часть версии	часть в пределах списка — это она и есть	доказано
 flang/stdlib/registry.flang		Часть версии	за пределами списка часть читается нулём	доказано
+flang/stdlib/registry.flang		Все цифры	в пустом перечне все части цифры	доказано
 flang/stdlib/registry.flang		Версия раньше	меньшая старшая часть решает дело сразу	доказано
 flang/stdlib/registry.flang		Версия раньше	большая старшая часть тоже решает дело сразу	доказано
+flang/stdlib/registry.flang		Версии равны	у равных версий старшие части равны	доказано
+flang/stdlib/registry.flang		Версии равны	у равных версий младшие части равны	доказано
+flang/stdlib/registry.flang		Годится	любой версии диапазон без границ годится	доказано
+flang/stdlib/registry.flang		Диапазон строкой	диапазон без границ печатается словом	доказано
 flang/stdlib/registry.flang		Разобрать диапазон	слово любая читается как любая версия	доказано
 flang/stdlib/registry.flang		Учесть нужду	пустая нужда ничего к сбору не добавляет	доказано
 flang/stdlib/registry.flang		Поле записи	поле в пределах строки — это оно и есть	доказано
 flang/stdlib/registry.flang		Поле записи	за пределами строки поле пусто	доказано
 flang/stdlib/registry.flang		Учесть строку реестра	пустая строка и комментарий реестр не меняют	доказано
+flang/stdlib/registry.flang		Нужды строкой	без нужд строка пуста	доказано
+flang/stdlib/registry.flang		Шапка реестра	шапка начинается знаком заметки	доказано
 flang/stdlib/registry.flang		Найти по имени	найдено не больше, чем есть в реестре	доказано
 flang/stdlib/registry.flang		Нужды имени	нужд по имени не больше, чем нужд всего	доказано
+flang/stdlib/registry.flang		Все годятся	без нужд годится любая версия	доказано
 flang/stdlib/registry.flang		Кандидаты	кандидатов не больше, чем записей в реестре	доказано
+flang/stdlib/registry.flang		Наибольшая	без записей остаётся первая	доказано
 flang/stdlib/registry.flang		Версии словами	пустому списку версий отвечает ни одной	доказано
 flang/stdlib/registry.flang		Добавить имя	уже известное имя набор не меняет	доказано
 flang/stdlib/registry.flang		Добавить имя	новое имя дописывается в конец набора	доказано
+flang/stdlib/registry.flang		Имена нужд	без нужд имён нет	доказано
 flang/stdlib/registry.flang		Добавить нужду	повторная нужда список нужд не меняет	доказано
 flang/stdlib/registry.flang		Добавить нужду	новая нужда дописывается в конец	доказано
 flang/stdlib/registry.flang		Учесть имя	после первой беды круг больше не трогается	доказано
 flang/stdlib/registry.flang		Разрешить	без топлива разрешение отказывает названной причиной	доказано
+flang/stdlib/registry.flang		Выборы строкой	без выбора строка пуста	доказано
 flang/stdlib/result.flang	55b7368d6d9a3dbd6f57bc4b50308e42f514ea235907956ffdc1b873c1fc11f9	Успешный результат		доказано композицией
 flang/stdlib/result.flang		Ошибочный результат		доказано композицией
 flang/stdlib/result.flang		Успешно		доказано композицией
@@ -3098,7 +3144,7 @@ flang/stdlib/rsa.flang		Битов в октете	битов не больше 
 flang/stdlib/rsa.flang		Подпись PSS верна	подпись чужой длины неверна	доказано
 flang/stdlib/rsa.flang		Строчные шестнадцать	в азбуке шестнадцать знаков	доказано
 flang/stdlib/rsa.flang		Прописные шестнадцать	в азбуке шестнадцать знаков	доказано
-flang/stdlib/samples.flang	b5314fda36e9a7e2075ebdf82be9a8723dff4957eec26bf6bed24e821a657eda	Точка кириллицы		доказано композицией
+flang/stdlib/samples.flang	1dbb676d46da565a17da8940fdbdaa218404329f193cb5783af6175ba3849a04	Точка кириллицы		доказано композицией
 flang/stdlib/samples.flang		Точка латиницы		доказано композицией
 flang/stdlib/samples.flang		Точка цифры		доказано композицией
 flang/stdlib/samples.flang		Точка ханя		доказано композицией
@@ -3132,6 +3178,12 @@ flang/stdlib/samples.flang		Есть точка класса		доказано �
 flang/stdlib/samples.flang		Смесь алфавитов		доказано композицией
 flang/stdlib/samples.flang		Шаг замены		доказано композицией
 flang/stdlib/samples.flang		Заменить кусок		доказано композицией
+flang/stdlib/samples.flang		Точка кириллицы	кириллица не ниже начала своего блока	доказано
+flang/stdlib/samples.flang		Точка кириллицы	кириллица не выше конца своего блока	доказано
+flang/stdlib/samples.flang		Точка цифры	цифра не ниже нуля ASCII	доказано
+flang/stdlib/samples.flang		Точка цифры	цифра не выше девятки ASCII	доказано
+flang/stdlib/samples.flang		Точка буквы	латинская точка есть буква	доказано
+flang/stdlib/samples.flang		Точка пробела	пробел ASCII есть пробел	доказано
 flang/stdlib/samples.flang		В классе	класс кириллицы спрашивает точку кириллицы	доказано
 flang/stdlib/samples.flang		В классе	класс латиницы спрашивает точку латиницы	доказано
 flang/stdlib/samples.flang		В классе	класс цифр спрашивает точку цифры	доказано
@@ -3157,7 +3209,8 @@ flang/stdlib/samples.flang		Знак вверх	прочий знак подни
 flang/stdlib/samples.flang		Вверх	подъём регистра не меняет длины	сетка
 flang/stdlib/samples.flang		Вверх	на одном знаке подъём совпадает с побуквенным	сетка
 flang/stdlib/samples.flang		Вверх	спуск после подъёма даёт тот же нижний, что и один спуск	сетка
-flang/stdlib/samples.flang		Точка в месте	за краем строки — минус один, и только там	сетка
+flang/stdlib/samples.flang		Точка в месте	за краем строки точка — минус один	доказано
+flang/stdlib/samples.flang		Точка в месте	минус один бывает только за краем строки	сетка
 flang/stdlib/samples.flang		Точка в месте	за краем строки стоит минус один	доказано
 flang/stdlib/samples.flang		Точка в месте	внутри строки стоит код знака этого места	доказано
 flang/stdlib/samples.flang		Совпало с места	пустой кусок совпадает где угодно	доказано
@@ -3535,7 +3588,7 @@ flang/stdlib/sha256.flang		Цифра 16	цифра — ровно один зн
 flang/stdlib/sha256.flang		Слово шестнадцатеричным	слово печатается ровно восемью знаками	сетка
 flang/stdlib/sha256.flang		Свод шестнадцатеричным	хеш печатается ровно шестьюдесятью четырьмя знаками	сетка
 flang/stdlib/sha256.flang		Хеш байтов	хеш — ровно шестьдесят четыре знака	доказано
-flang/stdlib/sqlite.flang	4c1d430ebab4ebbbb50f3c1418b3c63598e7df4617c1437e8400b811b747eea8	Отбросить октеты		доказано структурой
+flang/stdlib/sqlite.flang	0241670a2c3541d238624ee62ffe80fdac9a76dbf3b56e956bad02c772b5660f	Отбросить октеты		доказано структурой
 flang/stdlib/sqlite.flang		Взять октеты		доказано структурой
 flang/stdlib/sqlite.flang		Кусок октетов		доказано постоянным шагом
 flang/stdlib/sqlite.flang		Шаг взятия		доказано композицией
@@ -3687,7 +3740,8 @@ flang/stdlib/sqlite.flang		Ширина по типу	у серийного ти
 flang/stdlib/sqlite.flang		Ширина по типу	типы от одного до четырёх — ширина ровно сам тип	доказано
 flang/stdlib/sqlite.flang		Ширина по типу	пятый тип — ровно шесть октетов	доказано
 flang/stdlib/sqlite.flang		Ширина по типу	шестой тип — ровно восемь октетов	доказано
-flang/stdlib/sqlite.flang		Значение по типу	ничто выходит ровно у серийного типа 0	сетка
+flang/stdlib/sqlite.flang		Значение по типу	у серийного типа 0 выходит ничто	доказано
+flang/stdlib/sqlite.flang		Значение по типу	ничто выходит только у серийного типа 0	сетка
 flang/stdlib/sqlite.flang		Значение по типу	серийный тип ноль даёт ровно ничто	доказано
 flang/stdlib/sqlite.flang		Значение по типу	типы от одного до шести дают ровно целое из октетов	доказано
 flang/stdlib/sqlite.flang		Значение по типу	седьмой тип даёт ровно дробное из октетов	доказано
@@ -3760,13 +3814,13 @@ flang/stdlib/sqlite.flang		Серийный тип целого	единица �
 flang/stdlib/sqlite.flang		Серийный тип целого	один октет вмещает ровно первый серийный тип	доказано
 flang/stdlib/sqlite.flang		Серийный тип значения	серийный тип неотрицателен	доказано
 flang/stdlib/sqlite.flang		Серийный тип значения	у ничто серийный тип ровно ноль	доказано
-flang/stdlib/sqlite.flang		Серийный тип значения	у текста серийный тип считается по его октетам	сетка
+flang/stdlib/sqlite.flang		Серийный тип значения	у текста серийный тип считается по его октетам	доказано
 flang/stdlib/sqlite.flang		Целое значением	нолю и единице тела не нужно	доказано
 flang/stdlib/sqlite.flang		Целое значением	нулевая ширина даёт ровно пустой список	доказано
 flang/stdlib/sqlite.flang		Октеты значения	у ничто тела нет	доказано
 flang/stdlib/sqlite.flang		Октеты значения	у ничто тело ровно пустой список	доказано
-flang/stdlib/sqlite.flang		Октеты значения	у текста тело — его октеты UTF-8	сетка
-flang/stdlib/sqlite.flang		Октеты значения	у целого тело — его число октетами	сетка
+flang/stdlib/sqlite.flang		Октеты значения	у текста тело — его октеты UTF-8	доказано
+flang/stdlib/sqlite.flang		Октеты значения	у целого тело — его число октетами	доказано
 flang/stdlib/sqlite.flang		Запись октетами	запись непуста, пока есть хоть одно значение	сетка
 flang/stdlib/sqlite.flang		Ячейка октетами	ячейка длиннее нагрузки: перед ней два варинта	сетка
 flang/stdlib/sqlite.flang		Восемь нулей	ровно восемь	доказано
@@ -3787,8 +3841,8 @@ flang/stdlib/sqlite.flang		Заголовок файла	свой же заго�
 flang/stdlib/sqlite.flang		Заголовок файла	свой же заголовок называет тот же размер страницы, пока размер допустим	объявлено, не доказано
 flang/stdlib/sqlite.flang		Заголовок файла	свой же заголовок называет то же число страниц	объявлено, не доказано
 flang/stdlib/sqlite.flang		Ряд схемы	в строке схемы ровно пять колонок	доказано
-flang/stdlib/sqlite.flang		Ряд схемы	своя же строка схемы читается обратно тем же именем	сетка
-flang/stdlib/sqlite.flang		Ряд схемы	своя же строка схемы читается обратно тем же корнем	сетка
+flang/stdlib/sqlite.flang		Ряд схемы	своя же строка схемы читается обратно тем же именем	доказано
+flang/stdlib/sqlite.flang		Ряд схемы	своя же строка схемы читается обратно тем же корнем	доказано
 flang/stdlib/sqlite.flang		Листы рядов	листов не больше, чем рядов	объявлено, не доказано
 flang/stdlib/sqlite.flang		Листы рядов	пустой список рядов не даёт ни одного листа	доказано
 flang/stdlib/sqlite.flang		Наибольший номер листа	у пустого листа ключа нет	доказано
@@ -3802,7 +3856,7 @@ flang/stdlib/sqlite.flang		Следующий номер	следующий но
 flang/stdlib/sqlite.flang		Счётчик правок вперёд	на файле не короче заголовка длина не меняется	сетка
 flang/stdlib/sqlite.flang		База со строкой	либо отказ пустотой, либо файл прежней длины	сетка
 flang/stdlib/sqlite.flang		Значение строкой	ничто печатается словом ничто	доказано
-flang/stdlib/sqlite.flang		Значение строкой	текст печатается собой	сетка
+flang/stdlib/sqlite.flang		Значение строкой	текст печатается собой	доказано
 flang/stdlib/sqlite.flang		Строка текстом	печать непуста, пока в строке есть хоть одно значение	сетка
 flang/stdlib/stats.flang	89747b27fda940809aa2e79700b82bff899c0008323f7184c0d69a25f3881e2b	Это число		доказано композицией
 flang/stdlib/stats.flang		Среднее		доказано композицией
@@ -4006,7 +4060,7 @@ flang/stdlib/strings.flang		Цифра числом	не цифра даёт р�
 flang/stdlib/strings.flang		Цифра числом	не цифра даёт минус один, охраной из тела	доказано
 flang/stdlib/strings.flang		Цифра числом	цифра даёт позицию среди десяти без единицы	доказано
 flang/stdlib/strings.flang		Сколько дополнить	дополнение — это ровно недостача, а при достатке ноль	доказано
-flang/stdlib/strings.flang		Сколько дополнить	набранное вместе с дополнением покрывает ширину	сетка
+flang/stdlib/strings.flang		Сколько дополнить	набранное вместе с дополнением покрывает ширину	доказано
 flang/stdlib/strings.flang		Дополнить слева	исходное целиком стоит в дополненном слева	сетка
 flang/stdlib/strings.flang		Дополнить слева	дополнением слева в один знак ширина не превышена	сетка
 flang/stdlib/strings.flang		Дополнить справа	дополненное справа начинается исходным	доказано
@@ -4057,7 +4111,7 @@ flang/stdlib/strlists.flang		Общее начало	начинает перву
 flang/stdlib/strlists.flang		Слова	склейка слов та же, что склейка кусков	сетка
 flang/stdlib/strlists.flang		Слова	слов не больше, чем кусков	доказано
 flang/stdlib/strlists.flang		Слова	пустого слова среди слов нет	сетка
-flang/stdlib/text-decoding.flang	fa7268432eb2837fe81a7eb40e7b87f0b746d61e776506f8aaea148cbd9e801d	Начало раскодирования		доказано композицией
+flang/stdlib/text-decoding.flang	04273495aa486c1fe92afc25be4f2f2e66a101e8edb2ee2134b1d3edf78f1be9	Начало раскодирования		доказано композицией
 flang/stdlib/text-decoding.flang		Текст точек		доказано композицией
 flang/stdlib/text-decoding.flang		Байт ли		доказано композицией
 flang/stdlib/text-decoding.flang		Первый не байт		доказано композицией
@@ -4086,6 +4140,21 @@ flang/stdlib/text-decoding.flang		Сместить отказ		доказано 
 flang/stdlib/text-decoding.flang		Раскодировать страницей		доказано композицией
 flang/stdlib/text-decoding.flang		Раскодировать из		доказано композицией
 flang/stdlib/text-decoding.flang		Раскодировать байты		доказано композицией
+flang/stdlib/text-decoding.flang		Начало раскодирования	вначале точек нет	доказано
+flang/stdlib/text-decoding.flang		Начало раскодирования	вначале отказа нет	доказано
+flang/stdlib/text-decoding.flang		Текст точек	без точек текст пуст	доказано
+flang/stdlib/text-decoding.flang		Байт ли	байт не меньше нуля	доказано
+flang/stdlib/text-decoding.flang		Байт ли	байт не больше двухсот пятидесяти пяти	доказано
+flang/stdlib/text-decoding.flang		Шаг поиска не байта	счёт поиска остаётся парой	доказано
+flang/stdlib/text-decoding.flang		Отказ хода	отказ записывает место	доказано
+flang/stdlib/text-decoding.flang		Отказ хода	отказ записывает причину	доказано
+flang/stdlib/text-decoding.flang		Отказ хода	отказ не трогает раскодированного	доказано
+flang/stdlib/text-decoding.flang		С точкой	точка прибавляет к раскодированному ровно одну	доказано
+flang/stdlib/text-decoding.flang		С точкой	после точки продолжений не ждут	доказано
+flang/stdlib/text-decoding.flang		Единица ли суррогатом	суррогат не ниже начала своей половины	доказано
+flang/stdlib/text-decoding.flang		Первые байты	без байтов первых нет	доказано
+flang/stdlib/text-decoding.flang		Первые байты	первых не больше, чем байтов	доказано
+flang/stdlib/text-decoding.flang		Шаг пропуска	ход пропуска остаётся парой	доказано
 flang/stdlib/tls-client.flang	8bcf8e9b53c8c7428bfb6c165e4bea9e35ade7101e0c2a2359a8b16f75c2f537	Расширения привета клиента		доказано композицией
 flang/stdlib/tls-client.flang		Привет клиента		доказано композицией
 flang/stdlib/tls-client.flang		Запись привета		доказано композицией
@@ -4579,7 +4648,7 @@ flang/stdlib/toml.flang		Шаг разбора toml		доказано компо
 flang/stdlib/toml.flang		Разобрать toml		доказано композицией
 flang/stdlib/toml.flang		Значение по пути		доказано структурой
 flang/stdlib/toml.flang		Значение по пути в тексте toml		доказано композицией
-flang/stdlib/toml.flang		Это таблица toml	таблицей признаётся ровно вариант таблицы	сетка
+flang/stdlib/toml.flang		Это таблица toml	таблицей признаётся ровно вариант таблицы	доказано
 flang/stdlib/toml.flang		Пробельный знак toml	пробельный знак — ровно один знак	доказано
 flang/stdlib/toml.flang		Снять пробелы слева toml	снятие не удлиняет	доказано
 flang/stdlib/toml.flang		Снять пробелы слева toml	слева пробела не осталось	сетка
@@ -4629,7 +4698,7 @@ flang/stdlib/toml.flang		Напечатать ключ toml	прочий клю�
 flang/stdlib/toml.flang		Имя пути toml	пустой путь — пустое имя	сетка
 flang/stdlib/toml.flang		Напечатать число toml	конечное вещественное печатается с точкой или порядком	сетка
 flang/stdlib/toml.flang		Напечатать значение toml	напечатанное значение непусто	сетка
-flang/stdlib/toml.flang		Напечатать раздел toml	не таблица печатается строчной записью значения	сетка
+flang/stdlib/toml.flang		Напечатать раздел toml	не таблица печатается строчной записью значения	доказано
 flang/stdlib/toml.flang		Напечатать toml	печать не начинается пустой строкой	сетка
 flang/stdlib/toml.flang		Шаг разбора toml	после беды ход не меняется	сетка
 flang/stdlib/toml.flang		Шаг разбора toml	номер растёт не больше чем на один	сетка
@@ -4696,7 +4765,7 @@ flang/stdlib/tree.flang		Найти в дереве	в дереве без уз�
 flang/stdlib/tree.flang		Найти в дереве	в листе находится только запасное	доказано
 flang/stdlib/tree.flang		Есть ключ в дереве	в дереве поиска ответ да значит ключ среди ключей	сетка
 flang/stdlib/tree.flang		Есть ключ в дереве	в дереве поиска ключ среди ключей значит ответ да	сетка
-flang/stdlib/tree.flang		Есть ключ в дереве	есть ключ — значит запасное не проступает	сетка
+flang/stdlib/tree.flang		Есть ключ в дереве	есть ключ — значит запасное не проступает	доказано
 flang/stdlib/tree.flang		Есть ключ в дереве	запасное не проступает — значит ключ есть	сетка
 flang/stdlib/tree.flang		Есть ключ в дереве	в дереве без узлов ключа нет	сетка
 flang/stdlib/tree.flang		Есть ключ в дереве	в листе ключей нет	доказано
@@ -4815,7 +4884,7 @@ flang/stdlib/unicode-grapheme-data.flang		Кусок графем страниц
 flang/stdlib/unicode-grapheme-data.flang		Таблица графем	записей в таблице 2168	доказано
 flang/stdlib/unicode-grapheme-data.flang		Таблица графем: куски	кусков 8	доказано
 flang/stdlib/unicode-grapheme-data.flang		Таблица графем: страницы	кусков 5	доказано
-flang/stdlib/unicode-graphemes.flang	ecfff4d79daf75c1ea43436352a62de5f28af8402604eed7790a8db19a7ebe0a	Свойства знака графемы		доказано композицией
+flang/stdlib/unicode-graphemes.flang	4762e7036ad04ef048cc63496338610a91d20d63c52636e018ec514744a55d73	Свойства знака графемы		доказано композицией
 flang/stdlib/unicode-graphemes.flang		Обрыв перед знаком		доказано композицией
 flang/stdlib/unicode-graphemes.flang		Первое правило		доказано композицией
 flang/stdlib/unicode-graphemes.flang		Правило		доказано композицией
@@ -4826,6 +4895,10 @@ flang/stdlib/unicode-graphemes.flang		Следующая связка		дока�
 flang/stdlib/unicode-graphemes.flang		Шаг графем		доказано композицией
 flang/stdlib/unicode-graphemes.flang		Графемы		доказано композицией
 flang/stdlib/unicode-graphemes.flang		Длина в графемах		доказано композицией
+flang/stdlib/unicode-graphemes.flang		Правило	правило хранит признак годности	доказано
+flang/stdlib/unicode-graphemes.flang		Правило	правило хранит свой обрыв	доказано
+flang/stdlib/unicode-graphemes.flang		Управляющий вид	управляющий вид не меньше единицы	доказано
+flang/stdlib/unicode-graphemes.flang		Управляющий вид	управляющий вид не больше тройки	доказано
 flang/stdlib/unicode-normalization-data.flang	18f6f9c52671ffed18adc5bb4f99a5aed845d3b81e4ba475bc9de2ff95c3efbf	Версия данных нормализации		доказано композицией
 flang/stdlib/unicode-normalization-data.flang		Таблица нормализации		доказано композицией
 flang/stdlib/unicode-normalization-data.flang		Таблица нормализации: куски		доказано композицией
@@ -4948,7 +5021,7 @@ flang/stdlib/unicode-normalization.flang		NFKD		доказано компози�
 flang/stdlib/unicode-normalization.flang		NFKC		доказано композицией
 flang/stdlib/unicode-normalization.flang		В NFC ли		доказано композицией
 flang/stdlib/unicode-normalization.flang		Равны канонически		доказано композицией
-flang/stdlib/unicode-tables.flang	a8517d7a75183ed1a241488f060b1e7e403da4fcc8a1bcd1e0b89fd03dc02530	Шестнадцатеричная цифра		доказано композицией
+flang/stdlib/unicode-tables.flang	d374798d1e62c056692c2058f2f524ccf34a09735fb70a9905845fe68f33cfeb	Шестнадцатеричная цифра		доказано композицией
 flang/stdlib/unicode-tables.flang		Шестнадцатеричное число		доказано композицией
 flang/stdlib/unicode-tables.flang		Поле таблицы		доказано композицией
 flang/stdlib/unicode-tables.flang		Ключ записи		доказано композицией
@@ -4959,6 +5032,9 @@ flang/stdlib/unicode-tables.flang		Последняя запись не боль
 flang/stdlib/unicode-tables.flang		Запись с ключом		доказано композицией
 flang/stdlib/unicode-tables.flang		Правило числа при		доказано композицией
 flang/stdlib/unicode-tables.flang		Первое годное значение		доказано композицией
+flang/stdlib/unicode-tables.flang		Шаг поиска	шаг поиска либо стоит, либо идёт ровно на шаг	доказано
+flang/stdlib/unicode-tables.flang		Правило числа при	правило хранит свой признак	доказано
+flang/stdlib/unicode-tables.flang		Правило числа при	правило хранит своё значение	доказано
 flang/stdlib/utf8.flang	84310e83b5efb775496a89bcca8959b25d74a5ec4f1fe1b2b75ad9ce153ec4ec	Одинокий суррогат		доказано композицией
 flang/stdlib/utf8.flang		Байты кодовой точки		доказано композицией
 flang/stdlib/utf8.flang		Байтов в точке		доказано композицией

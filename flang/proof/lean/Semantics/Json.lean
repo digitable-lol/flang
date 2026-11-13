@@ -97,6 +97,10 @@ partial def «вырJson» (j : Json) : «Выр» :=
   | "fold" => .«свёртка» (sub "over") (sub "init") («строка?» j "acc") («строка?» j "item") (sub "body")
   | "map" => .«отобразить» (sub "over") («строка?» j "item") (sub "body")
   | "filter" => .«отфильтровать» (sub "over") («строка?» j "item") (sub "body")
+  | "forallIn" =>
+    if («строка?» j "item").isEmpty then .«форма» "узел forallIn" []
+    else .«свёртка» (sub "over") (.«лит» (.«признак» true)) "накопитель (все элементы)" («строка?» j "item")
+      (.«если» (.«имя» "накопитель (все элементы)") (sub "body") (.«лит» (.«признак» false)))
   | "list" => .«список» (subs "items")
   | "record" => .«запись» (flds "fields")
   | "construct" => .«конструктор» («строка?» j "variant") (flds "fields")

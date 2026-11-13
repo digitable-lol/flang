@@ -157,7 +157,7 @@ def «счёт64» (op : String) (a b : «Д64») : Option «Д64» :=
   | "fmul" => some («умножить64» a b)
   | "fdiv" => some («делить64» a b)
   | "fmod" => some («остаток64» a b)
-  | "percent" => some («умножить64» («делить64» a («изЦелого» 100)) b)
+  | "percent" => some («безМинусНуля» («умножить64» («делить64» a («изЦелого» 100)) b))
   | _ => none
 
 def «точныйСчёт» (op : String) (a b : Nat) : Except «Сбой» «Зн» :=
@@ -382,6 +382,31 @@ def «кЧислу» (s : String) : «Исход» :=
       | .«кон» sg v => .ok (.«число» (.«кон» sg v))
       | _ => «беда» "FLANG_BUILTIN_ARGS"
 
+/-- Почему строка не число, словами языка; `none` — число есть. Два случая те же, что у `«кЧислу»`:
+запись не числа и число, которое не конечно. -/
+def «бедаЧисла» (s : String) : Option String :=
+  let cs := ((s.toList.dropWhile «пробелJS?»).reverse.dropWhile «пробелJS?»).reverse
+  match «записьЧисла» cs with
+  | none => some "не является числом"
+  | some (neg, p, k) =>
+    let digits : Int := (toString p).length
+    if p = 0 then none
+    else if k + digits > 400 then some "не является конечным числом"
+    else if k + digits < -400 then none
+    else
+      match «дробьВД64» neg p k with
+      | .«кон» _ _ => none
+      | _ => some "не является конечным числом"
+
+/-- Строка в кавычках, как её пишет язык в сообщении «к числу». -/
+def «вКавычках» (s : String) : String :=
+  let hex := fun (k : Nat) => String.singleton ("0123456789abcdef".toList.getD (k % 16) '0')
+  "\"" ++ s.foldl (fun acc c =>
+    acc ++ (if c = '"' then "\\\"" else if c = '\\' then "\\\\" else if c.toNat = 8 then "\\b"
+      else if c.toNat = 12 then "\\f" else if c = '\n' then "\\n" else if c = '\r' then "\\r"
+      else if c = '\t' then "\\t"
+      else if c.toNat < 32 then "\\u00" ++ hex (c.toNat / 16) ++ hex c.toNat else String.singleton c)) "" ++ "\""
+
 def «форма» (n : String) (vs : List «Зн») : «Исход» :=
   if n.startsWith "#отказ " then «беда» (n.drop 7).toString else
   match n, vs with
@@ -452,6 +477,12 @@ def «форма» (n : String) (vs : List «Зн») : «Исход» :=
   | "к строке", [.«строка» s] => .ok (.«строка» s)
   | "к строке", [.«число» d] => .ok (.«строка» («строкаЧисла» d))
   | "к числу", [.«строка» t] => «кЧислу» t
+  | "к числу или беда", [.«строка» t] =>
+    match «кЧислу» t with
+    | .ok v => .ok (.«вариант» "Разобрано" [("значение", v)])
+    | .error _ => .ok (.«вариант» "Не разобрано" [("код", .«строка» "FLANG_BUILTIN_ARGS"),
+        ("сообщение", .«строка» ("«к числу»: строка " ++ «вКавычках» t ++ " " ++
+          ((«бедаЧисла» t).getD "не является числом")))])
   | "к строке", [.«признак» b] => .ok (.«строка» (if b then "да" else "нет"))
   | "к строке", [.«ничто»] => .ok (.«строка» "ничто")
   | "к строке", _ => «беда» "FLANG_BUILTIN_ARGS"

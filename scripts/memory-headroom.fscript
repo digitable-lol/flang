@@ -154,10 +154,6 @@
     ожидается 0
   «Count» от («Word» от 1 и («Value after» от "Mem:" и text))
 
-тотальная функция «Nothing seen»
-  возвращает «Low»
-  запись «Low» с «total» равным 0 и «lowest» равным 0 и «position» равным 0 и «samples» равным 0
-
 тотальная функция «Seen»
   принимает low: «Low», available: число
   возвращает «Low»

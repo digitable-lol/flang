@@ -130,7 +130,7 @@ Until the version number changes:
 
 - The header lines stand in the same order and start with the same words:
   `исходник`, `строк`, `знаков`, `отпечаток`, `ядро`, `утверждений`,
-  `отпечаток256`, `тотальностей`, `законов`.
+  `отпечаток256`, `отпечаток раскрытия` (in a file with sugar), `тотальностей`, `законов`.
 - Every kind of line and every block reads the way it read. A line is not
   renamed, removed or given another meaning.
 - A version 1 record issued earlier is read by a program built later.
@@ -164,6 +164,7 @@ a journal entry).
 | 2026-10-15 | 1 | the line `законов N` and the unfolding of laws past the end of the file; proved statements carry moves read off the body (`ход цель … ход конец`) |
 | 2026-10-17 | 1 | category theorem blocks (`категорная теорема … конец категорной теоремы`) |
 | 2026-10-24 | 1 | the check `record-format:check`; fingerprints: printer `50f33cdf7bb8…`, reader `971a7a854e1c…` |
+| 2026-11-13 | 1 | a file with sugar (class, interface, loop) is recorded by its expanded text: the header line `отпечаток раскрытия` is the SHA-256 of the expanded text, and the block `раскрытие строк N … конец раскрытия` before `конец записи` carries the text itself ([ADR-0238](https://github.com/digitable-lol/flang/blob/dev/docs/adr/0238-a-class-is-checked-by-its-expanded-text-and-the-expansion-is-trusted-like-the-c-compiler.md)); reader fingerprint `54a82e1f14c1…` |
 
 Next: [Diagnostics reference](diagnostics.html) — the second promise outward: the
 `FLANG_*` codes do not appear or vanish silently.

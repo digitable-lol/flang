@@ -4847,6 +4847,10 @@
       то "Flang.TypeSum"
     случай "точное целое"
       то "Flang.TypeExact"
+    случай "точное дробное"
+      то "Flang.TypeFraction"
+    случай "слово"
+      то "Flang.TypeWord"
     случай любое
       то "Flang.TypeUnknown"
 

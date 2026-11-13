@@ -357,6 +357,8 @@ function checkTyped(program, table, at, value, label) {
       return checkNumber(spec, value, label, mismatch)
     case "точное целое":
       return checkExact(value, mismatch)
+    case "точное дробное":
+      return checkFraction(value, mismatch)
     case "строка":
       return typeof value === "string" ? null : mismatch
     case "признак":
@@ -422,17 +424,58 @@ function checkNumber(spec, value, label, mismatch) {
 }
 
 function checkExact(value, mismatch) {
-  const canon = "точное целое записано не в каноне"
-  if (!Array.isArray(value) || !value.every((digit) => typeof digit === "number")) return mismatch
-  if (value.length > 0 && value[value.length - 1] === 0) {
-    return `${canon}: старший разряд нулевой, а канон требует снять старшие нули`
+  if (!Array.isArray(value)) return mismatch
+  const defect = exactDefect(value)
+  return defect === null ? null : `точное целое записано не в каноне: ${defect}`
+}
+
+function checkFraction(value, mismatch) {
+  if (!Array.isArray(value)) return mismatch
+  const defect = fractionDefect(value)
+  return defect === null ? null : `точное дробное записано не в каноне: ${defect}`
+}
+
+function exactDefect(digits) {
+  const top = digits[digits.length - 1]
+  if (digits.length > 0 && top === 0 && !Object.is(top, -0)) {
+    return "старший разряд нулевой, а канон требует снять старшие нули"
   }
-  for (const digit of value.filter((item) => Number.isFinite(item))) {
-    if (digit < 0) return `${canon}: разряд ${digit} отрицателен, а точное целое ниже нуля значений не имеет`
-    if (!Number.isInteger(digit)) return `${canon}: разряд ${digit} не целый, а разряды точного целого целы`
-    if (digit >= 4194304) return `${canon}: разряд ${digit} не меньше основания 4194304`
+  for (const digit of digits) {
+    if (typeof digit !== "number" || !Number.isFinite(digit)) {
+      return "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает"
+    }
+    if (digit < 0) return `разряд ${digit} отрицателен, а точное целое ниже нуля значений не имеет`
+    if (!Number.isInteger(digit)) return `разряд ${digit} не целый, а разряды точного целого целы`
+    if (Object.is(digit, -0)) return "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака"
+    if (digit >= 4194304) return `разряд ${digit} не меньше основания 4194304`
   }
   return null
+}
+
+function fractionDefect(halves) {
+  if (halves.length !== 2) return "точное дробное записывается парой: числитель над знаменателем"
+  const [top, bottom] = halves
+  if (!Array.isArray(top) || !Array.isArray(bottom)) {
+    return "обе половины точного дробного — списки разрядов: числитель и знаменатель"
+  }
+  const topDefect = exactDefect(top)
+  if (topDefect !== null) return `числитель: ${topDefect}`
+  const bottomDefect = exactDefect(bottom)
+  if (bottomDefect !== null) return `знаменатель: ${bottomDefect}`
+  if (bottom.length === 0) return "знаменатель пуст: ноль внизу не определён"
+  if (top.length === 0) {
+    return bottom.length === 1 && bottom[0] === 1 ? null : "нулевая дробь записывается пустыми разрядами над [1]"
+  }
+  if (top.length > 2 || bottom.length > 2) {
+    return "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением"
+  }
+  const small = (digits) => digits.reduceRight((total, digit) => digit + 4194304 * total, 0)
+  let left = small(top)
+  let right = small(bottom)
+  let steps = 128
+  for (; steps > 0 && right !== 0; steps -= 1) [left, right] = [right, left % right]
+  if (steps === 0) return "сокращённость не установлена за 128 шагов Евклида"
+  return left === 1 ? null : `дробь не сокращена: числитель и знаменатель делятся на ${left}`
 }
 
 /** Поля записи или варианта — сплошной отрезок общего списка полей. */

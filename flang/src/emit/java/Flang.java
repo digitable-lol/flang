@@ -1835,6 +1835,8 @@ public final class Flang {
   /** Сумма типов. */
   public static final int TYPE_SUM = 7;
   public static final int TYPE_EXACT = 8;
+  public static final int TYPE_FRACTION = 9;
+  public static final int TYPE_WORD = 10;
 
   /** Поле записи или варианта: имя и место его типа в таблице типов. */
   public record TypeField(String name, int type) {}
@@ -1886,55 +1888,128 @@ public final class Flang {
     }
   }
 
-  private static void checkExactType(TypeSpec spec, Value value, String label) {
-    String canon = "точное целое записано не в каноне";
-    if (!exactDigits(value)) {
-      throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
-    }
-    Value[] digits = Value.elements(value);
-    if (digits.length > 0 && digits[digits.length - 1].num == 0) {
-      throw fail(
-          FlangError.CODE_TYPE, canon + ": старший разряд нулевой, а канон требует снять старшие нули");
+  private static String exactDefect(Value[] digits) {
+    if (digits.length > 0) {
+      Value top = digits[digits.length - 1];
+      if (top.tag == Value.TAG_NUMBER && top.num == 0 && Double.doubleToRawLongBits(top.num) == 0L) {
+        return "старший разряд нулевой, а канон требует снять старшие нули";
+      }
     }
     for (Value item : digits) {
       double digit = item.num;
-      if (!Double.isFinite(digit)) {
-        continue;
-      }
       String text = Value.numberText(digit);
-      if (digit < 0) {
-        throw fail(
-            FlangError.CODE_TYPE,
-            canon + ": разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет");
+      if (item.tag != Value.TAG_NUMBER || !Double.isFinite(digit)) {
+        return "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает";
+      } else if (digit < 0) {
+        return "разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет";
+      } else if (Math.floor(digit) != digit) {
+        return "разряд " + text + " не целый, а разряды точного целого целы";
+      } else if (Double.doubleToRawLongBits(digit) < 0L) {
+        return "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака";
+      } else if (digit >= 4194304) {
+        return "разряд " + text + " не меньше основания 4194304";
       }
-      if (Math.floor(digit) != digit) {
-        throw fail(
-            FlangError.CODE_TYPE, canon + ": разряд " + text + " не целый, а разряды точного целого целы");
-      }
-      if (digit >= 4194304) {
-        throw fail(FlangError.CODE_TYPE, canon + ": разряд " + text + " не меньше основания 4194304");
-      }
+    }
+    return null;
+  }
+
+  private static double exactSmall(Value[] digits) {
+    double total = 0;
+    for (int at = digits.length - 1; at >= 0; at--) {
+      total = digits[at].num + 4194304.0 * total;
+    }
+    return total;
+  }
+
+  private static String fractionDefect(Value[] halves) {
+    if (halves.length != 2) {
+      return "точное дробное записывается парой: числитель над знаменателем";
+    }
+    if (halves[0].tag != Value.TAG_LIST || halves[1].tag != Value.TAG_LIST) {
+      return "обе половины точного дробного — списки разрядов: числитель и знаменатель";
+    }
+    Value[] top = Value.elements(halves[0]);
+    Value[] bottom = Value.elements(halves[1]);
+    String defect = exactDefect(top);
+    if (defect != null) {
+      return "числитель: " + defect;
+    }
+    defect = exactDefect(bottom);
+    if (defect != null) {
+      return "знаменатель: " + defect;
+    }
+    if (bottom.length == 0) {
+      return "знаменатель пуст: ноль внизу не определён";
+    }
+    if (top.length == 0) {
+      return bottom.length == 1 && bottom[0].num == 1
+          ? null
+          : "нулевая дробь записывается пустыми разрядами над [1]";
+    }
+    if (top.length > 2 || bottom.length > 2) {
+      return "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением";
+    }
+    double left = exactSmall(top);
+    double right = exactSmall(bottom);
+    int steps = 128;
+    for (; steps > 0 && right != 0; steps--) {
+      double rest = left % right;
+      left = right;
+      right = rest;
+    }
+    if (steps == 0) {
+      return "сокращённость не установлена за 128 шагов Евклида";
+    }
+    return left == 1 ? null : "дробь не сокращена: числитель и знаменатель делятся на " + Value.numberText(left);
+  }
+
+  private static void checkCountedType(TypeSpec spec, Value value, String label) {
+    if (value.tag != Value.TAG_LIST) {
+      throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+    }
+    boolean fraction = spec.kind() == TYPE_FRACTION;
+    String defect = fraction ? fractionDefect(Value.elements(value)) : exactDefect(Value.elements(value));
+    if (defect != null) {
+      throw fail(
+          FlangError.CODE_TYPE,
+          (fraction ? "точное дробное" : "точное целое") + " записано не в каноне: " + defect);
     }
   }
 
-  private static void checkFields(
+  private static Value checkWordType(TypeSpec spec, Value value, boolean take, String label) {
+    if (value.tag == Value.TAG_WORD && value.str.equals(spec.name())) {
+      return value;
+    }
+    if (take && value.tag != Value.TAG_WORD) {
+      try {
+        return wordConvert(spec.name(), value);
+      } catch (FlangError refused) {
+        throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+      }
+    }
+    throw fail(FlangError.CODE_TYPE, label + " не соответствует типу " + spec.name());
+  }
+
+  private static Field[] checkFields(
       EntryTable table,
       int from,
       int count,
       Field[] given,
+      boolean take,
       String label,
       String owner,
       boolean ofVariant) {
+    Field[] taken = given.clone();
     for (int index = 0; index < count; index++) {
       TypeField declared = table.fields()[from + index];
-      Field found = null;
-      for (Field field : given) {
-        if (field.name().equals(declared.name())) {
-          found = field;
+      int found = -1;
+      for (int at = 0; at < taken.length; at++) {
+        if (taken[at].name().equals(declared.name())) {
+          found = at;
           break;
         }
       }
-      if (found == null) {
+      if (found < 0) {
         /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
         if (table.types()[declared.type()].optional()) {
           continue;
@@ -1948,24 +2023,29 @@ public final class Flang {
             FlangError.CODE_TYPE,
             label + ": не задано поле «" + declared.name() + "» записи «" + owner + "»");
       }
-      checkTyped(table, declared.type(), found.value(), label + "." + declared.name());
+      Value checked =
+          checkTyped(table, declared.type(), taken[found].value(), take, label + "." + declared.name());
+      taken[found] = new Field(taken[found].name(), checked);
     }
+    return taken;
   }
 
-  private static void checkTyped(EntryTable table, int index, Value value, String label) {
+  private static Value checkTyped(
+      EntryTable table, int index, Value value, boolean take, String label) {
     if (index < 0 || index >= table.types().length) {
-      return;
+      return value;
     }
     TypeSpec spec = table.types()[index];
-    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
-       пропуск. Так же считает и ядро FTS. */
     if (spec.optional() && value.tag == Value.TAG_NOTHING) {
-      return;
+      return value;
     }
     String mismatch = label + " не соответствует типу " + spec.name();
     switch (spec.kind()) {
       case TYPE_NUMBER -> checkNumberType(spec, value, label);
-      case TYPE_EXACT -> checkExactType(spec, value, label);
+      case TYPE_EXACT, TYPE_FRACTION -> checkCountedType(spec, value, label);
+      case TYPE_WORD -> {
+        return checkWordType(spec, value, take, label);
+      }
       case TYPE_TEXT -> {
         if (value.tag != Value.TAG_STRING) {
           throw fail(FlangError.CODE_TYPE, mismatch);
@@ -1985,17 +2065,18 @@ public final class Flang {
         if (value.tag != Value.TAG_LIST) {
           throw fail(FlangError.CODE_TYPE, mismatch);
         }
-        for (int at = 0; at < value.items.length; at++) {
-          checkTyped(table, spec.of(), value.items[at], label + "[" + at + "]");
+        Value[] items = Value.elements(value).clone();
+        for (int at = 0; at < items.length; at++) {
+          items[at] = checkTyped(table, spec.of(), items[at], take, label + "[" + at + "]");
         }
+        return take ? Value.list(items) : value;
       }
       case TYPE_RECORD -> {
         if (value.tag != Value.TAG_RECORD) {
           throw fail(FlangError.CODE_TYPE, mismatch);
         }
-        checkFields(table, spec.fieldFrom(), spec.fieldCount(), value.fields, label, spec.owner(), false);
-        /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
-           сверх объявленных в ней взяться неоткуда. */
+        Field[] taken =
+            checkFields(table, spec.fieldFrom(), spec.fieldCount(), value.fields, take, label, spec.owner(), false);
         for (Field field : value.fields) {
           boolean declared = false;
           for (int at = 0; at < spec.fieldCount(); at++) {
@@ -2010,6 +2091,7 @@ public final class Flang {
                 label + ": запись «" + spec.owner() + "» не имеет поля «" + field.name() + "»");
           }
         }
+        return take ? Value.record(taken) : value;
       }
       case TYPE_SUM -> {
         if (value.tag != Value.TAG_VARIANT && value.tag != Value.TAG_RECORD) {
@@ -2029,23 +2111,13 @@ public final class Flang {
               FlangError.CODE_TYPE, label + ": ожидался вариант типа «" + spec.owner() + "»");
         }
         checkFields(
-            table, found.fieldFrom(), found.fieldCount(), value.fields, label, found.name(), true);
+            table, found.fieldFrom(), found.fieldCount(), value.fields, false, label, found.name(), true);
       }
-      default -> {
-        /* TYPE_UNKNOWN: сверять нечем, и молчание здесь то же самое, каким
-           отвечает проверка значений свидетеля на джокер. */
-      }
+      default -> {}
     }
+    return value;
   }
 
-  /**
-   * Сверка набора значений с объявленными типами параметров функции.
-   *
-   * <p>Молчит там, где сверять нечем: имени в таблице нет, число значений с
-   * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
-   * приехал видом TYPE_UNKNOWN. Тексты отказов дословно те же, что у
-   * {@code checkValue} свидетеля.
-   */
   public static void checkEntry(EntryTable table, String name, Value[] args) {
     int declared = 0;
     for (EntryParam param : table.params()) {
@@ -2061,8 +2133,9 @@ public final class Flang {
       if (!param.function().equals(name)) {
         continue;
       }
-      checkTyped(
-          table, param.type(), args[at], "вызов функции «" + name + "»: аргумент «" + param.name() + "»");
+      args[at] =
+          checkTyped(
+              table, param.type(), args[at], true, "вызов функции «" + name + "»: аргумент «" + param.name() + "»");
       at++;
     }
   }

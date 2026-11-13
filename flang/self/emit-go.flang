@@ -2227,6 +2227,10 @@
       то "rt.TypeSum"
     случай "точное целое"
       то "rt.TypeExact"
+    случай "точное дробное"
+      то "rt.TypeFraction"
+    случай "слово"
+      то "rt.TypeWord"
     случай любое
       то "rt.TypeUnknown"
 

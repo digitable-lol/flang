@@ -860,7 +860,9 @@ typedef enum fl_type_kind {
   FL_TYPE_LIST,
   FL_TYPE_RECORD,
   FL_TYPE_SUM,
-  FL_TYPE_EXACT
+  FL_TYPE_EXACT,
+  FL_TYPE_FRACTION,
+  FL_TYPE_WORD
 } fl_type_kind;
 
 /* Поле записи или варианта: имя и индекс его типа в таблице типов. */
@@ -917,18 +919,12 @@ typedef struct fl_entry_table {
   size_t param_count;
 } fl_entry_table;
 
-/**
- * Сверка набора значений с объявленными типами параметров функции.
- *
- * Молчит (FL_OK) там, где сверять нечем: имени в таблице нет, число значений с
- * числом параметров не сошлось (об этом скажет диспетчер своим текстом), тип
- * приехал видом `неизвестно`. Тексты отказов дословно те же, что у
- * `checkValue` свидетеля, потому что расхождение здесь означало бы, что у языка
- * два ответа на вопрос «подходит ли значение типу».
- */
 fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
                          const char *name, const fl_value *args, size_t count,
                          fl_error *error);
+fl_status fl_take_entry(fl_ctx *ctx, const fl_entry_table *table,
+                        const char *name, fl_value *args, size_t count,
+                        fl_error *error);
 
 /* ───────────────────────────── операции языка ───────────────────────────── */
 

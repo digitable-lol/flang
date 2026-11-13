@@ -476,10 +476,6 @@ public final class FlangCli {
 
     Value result;
     try {
-      /* Граница входа — ДО вызова: значения приехали снаружи, программой не
-         являются и сверяются с объявленными типами. Значение вне типа выносит
-         вместе с типом и доказательство завершения `тотальной`, а поймать
-         вечную цепочку потом нечем — сторожа в тотальной функции нет. */
       Flang.checkEntry(program.entry(), (String) name, args);
       result = program.call(ctx, (String) name, args);
     } catch (java.lang.reflect.InvocationTargetException wrapped) {

@@ -2284,87 +2284,134 @@ defmodule Flang.Rt do
     declared = Enum.filter(params, fn {function, _, _} -> function == name end)
 
     if declared == [] or length(declared) != length(args) do
-      :ok
+      args
     else
       table = {List.to_tuple(types), List.to_tuple(fields), List.to_tuple(variants)}
 
       declared
       |> Enum.zip(args)
-      |> Enum.each(fn {{_, param, at}, value} ->
-        check_typed(table, at, value, "вызов функции «#{name}»: аргумент «#{param}»")
+      |> Enum.map(fn {{_, param, at}, value} ->
+        check_typed(table, at, value, true, "вызов функции «#{name}»: аргумент «#{param}»")
       end)
-
-      :ok
     end
   end
 
-  defp check_typed({types, _, _} = table, index, value, label) do
-    if index < 0 or index >= tuple_size(types) do
-      :ok
-    else
-      spec = elem(types, index)
-      # Необязательный аргумент можно не задавать: отсутствие — это «ничто», а
-      # не пропуск. Так же считает и ядро FTS.
-      if elem(spec, 3) and value == :nothing do
-        :ok
-      else
-        check_kind(table, spec, value, label)
-      end
+  defp check_typed({types, _, _} = table, index, value, take, label) do
+    cond do
+      index < 0 or index >= tuple_size(types) -> value
+      elem(elem(types, index), 3) and value == :nothing -> value
+      true -> check_kind(table, elem(types, index), value, take, label)
     end
   end
 
-  defp check_kind(table, spec, value, label) do
+  defp check_kind(table, spec, value, take, label) do
     kind = elem(spec, 0)
     name = elem(spec, 1)
     owner = elem(spec, 2)
 
     case kind do
       :number -> check_number_type(spec, value, label, name)
-      :exact -> check_exact_type(value, label, name)
+      :exact -> check_counted(value, "точное целое", &exact_defect/1, label, name)
+      :fraction -> check_counted(value, "точное дробное", &fraction_defect/1, label, name)
+      :word -> check_word(value, take, label, name)
       :text -> want(match?({:str, _}, value), label, name)
       :flag -> want(match?({:flag, _}, value), label, name)
       :null -> want(value == :nothing, label, name)
-      :list -> check_list(table, spec, value, label, name)
-      :record -> check_record(table, spec, value, label, name, owner)
+      :list -> check_list(table, spec, value, take, label, name)
+      :record -> check_record(table, spec, value, take, label, name, owner)
       :sum -> check_sum(table, spec, value, label, name, owner)
       _ -> :ok
     end
-  end
-
-  defp check_exact_type(value, label, name) do
-    want(exact_digits?(value), label, name)
-    digits = Enum.map(items(value), fn {:num, digit} -> digit end)
-    last = List.last(digits)
-
-    if is_float(last) and last == 0.0 do
-      raise fail(@code_type, "#{exact_canon_word()}: старший разряд нулевой, а канон требует снять старшие нули")
+    |> case do
+      :ok -> value
+      taken -> taken
     end
-
-    digits |> Enum.filter(&is_float/1) |> Enum.each(&check_exact_digit/1)
   end
 
-  defp exact_canon_word, do: "точное целое записано не в каноне"
+  defp check_word({:word, name, _} = value, _take, _label, name), do: value
 
-  defp check_exact_digit(digit) do
+  defp check_word(value, take, label, name) do
+    taken =
+      if take and not match?({:word, _, _}, value) do
+        try do
+          word_convert(name, value)
+        rescue
+          _ -> nil
+        end
+      end
+
+    if taken == nil, do: want(false, label, name), else: taken
+  end
+
+  defp check_counted({:list, _, _} = value, kind, defect, _label, _name) do
+    case defect.(items(value)) do
+      nil -> :ok
+      found -> raise fail(@code_type, "#{kind} записано не в каноне: #{found}")
+    end
+  end
+
+  defp check_counted(_value, _kind, _defect, label, name), do: want(false, label, name)
+
+  defp minus_zero?(digit) when is_float(digit), do: match?(<<1::1, _::63>>, <<digit::float>>)
+  defp minus_zero?(_), do: false
+
+  defp exact_defect(digits) do
+    case List.last(digits) do
+      {:num, top} when is_float(top) and top == 0.0 ->
+        if minus_zero?(top), do: exact_digit_defect(digits), else: "старший разряд нулевой, а канон требует снять старшие нули"
+
+      _ ->
+        exact_digit_defect(digits)
+    end
+  end
+
+  defp exact_digit_defect(digits), do: Enum.find_value(digits, &digit_defect/1)
+
+  defp digit_defect({:num, digit}) when is_float(digit) do
     text = number_text(digit)
 
     cond do
-      digit < 0 ->
-        raise fail(
-                @code_type,
-                "#{exact_canon_word()}: разряд #{text} отрицателен, а точное целое ниже нуля значений не имеет"
-              )
-
-      Float.floor(digit) != digit ->
-        raise fail(@code_type, "#{exact_canon_word()}: разряд #{text} не целый, а разряды точного целого целы")
-
-      digit >= 4_194_304 ->
-        raise fail(@code_type, "#{exact_canon_word()}: разряд #{text} не меньше основания 4194304")
-
-      true ->
-        :ok
+      digit < 0 -> "разряд #{text} отрицателен, а точное целое ниже нуля значений не имеет"
+      Float.floor(digit) != digit -> "разряд #{text} не целый, а разряды точного целого целы"
+      minus_zero?(digit) -> "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака"
+      digit >= 4_194_304 -> "разряд #{text} не меньше основания 4194304"
+      true -> nil
     end
   end
+
+  defp digit_defect(_), do: "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает"
+
+  defp exact_small(digits), do: List.foldr(digits, 0.0, fn {:num, digit}, total -> digit + 4_194_304.0 * total end)
+
+  defp fraction_defect([{:list, _, _} = top, {:list, _, _} = bottom]) do
+    halves_defect(items(top), items(bottom), exact_defect(items(top)), exact_defect(items(bottom)))
+  end
+
+  defp fraction_defect([_, _]), do: "обе половины точного дробного — списки разрядов: числитель и знаменатель"
+  defp fraction_defect(_), do: "точное дробное записывается парой: числитель над знаменателем"
+
+  defp halves_defect(_top, _bottom, found, _) when found != nil, do: "числитель: " <> found
+  defp halves_defect(_top, _bottom, nil, found) when found != nil, do: "знаменатель: " <> found
+
+  defp halves_defect(top, bottom, nil, nil) do
+    cond do
+      bottom == [] -> "знаменатель пуст: ноль внизу не определён"
+      top == [] and bottom == [{:num, 1.0}] -> nil
+      top == [] -> "нулевая дробь записывается пустыми разрядами над [1]"
+      length(top) > 2 or length(bottom) > 2 -> "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением"
+      true -> common_divisor_defect(exact_small(top), exact_small(bottom), 128)
+    end
+  end
+
+  defp common_divisor_defect(_left, _right, 0), do: "сокращённость не установлена за 128 шагов Евклида"
+
+  defp common_divisor_defect(left, right, steps) when right != 0.0,
+    do: common_divisor_defect(right, :math.fmod(left, right), steps - 1)
+
+  defp common_divisor_defect(left, _right, _steps) when left == 1.0, do: nil
+
+  defp common_divisor_defect(left, _right, _steps),
+    do: "дробь не сокращена: числитель и знаменатель делятся на " <> number_text(left)
 
   defp want(true, _label, _name), do: :ok
 
@@ -2399,23 +2446,22 @@ defmodule Flang.Rt do
   # а не плоский список BEAM, поэтому элементы берутся через `items/1`: образец
   # по двухместному `{:list, items}` отправлял бы КАЖДЫЙ настоящий список в
   # отказ по типу.
-  defp check_list(table, spec, {:list, _front, _back} = value, label, _name) do
-    value
-    |> items()
-    |> Enum.with_index()
-    |> Enum.each(fn {item, at} -> check_typed(table, elem(spec, 8), item, "#{label}[#{at}]") end)
+  defp check_list(table, spec, {:list, _front, _back} = value, take, label, _name) do
+    taken =
+      value
+      |> items()
+      |> Enum.with_index()
+      |> Enum.map(fn {item, at} -> check_typed(table, elem(spec, 8), item, take, "#{label}[#{at}]") end)
 
-    :ok
+    if take, do: list(taken), else: value
   end
 
-  defp check_list(_table, _spec, _value, label, name) do
+  defp check_list(_table, _spec, _value, _take, label, name) do
     raise fail(@code_type, "#{label} не соответствует типу #{name}")
   end
 
-  defp check_record(table, spec, {:rec, given}, label, _name, owner) do
-    check_fields(table, elem(spec, 9), elem(spec, 10), given, label, owner, false)
-    # Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
-    # сверх объявленных в ней взяться неоткуда.
+  defp check_record(table, spec, {:rec, given} = value, take, label, _name, owner) do
+    taken = check_fields(table, elem(spec, 9), elem(spec, 10), given, take, label, owner, false)
     {_, fields, _} = table
     from = elem(spec, 9)
     count = elem(spec, 10)
@@ -2429,10 +2475,10 @@ defmodule Flang.Rt do
       end
     end)
 
-    :ok
+    if take, do: {:rec, taken}, else: value
   end
 
-  defp check_record(_table, _spec, _value, label, name, _owner) do
+  defp check_record(_table, _spec, _value, _take, label, name, _owner) do
     raise fail(@code_type, "#{label} не соответствует типу #{name}")
   end
 
@@ -2449,7 +2495,8 @@ defmodule Flang.Rt do
     end
 
     variant = elem(variants, found)
-    check_fields(table, elem(variant, 1), elem(variant, 2), given, label, elem(variant, 0), true)
+    check_fields(table, elem(variant, 1), elem(variant, 2), given, false, label, elem(variant, 0), true)
+    :ok
   end
 
   defp check_sum(_table, _spec, {:rec, _}, label, _name, owner) do
@@ -2460,13 +2507,12 @@ defmodule Flang.Rt do
     raise fail(@code_type, "#{label} не соответствует типу #{name}")
   end
 
-  defp check_fields({types, fields, _} = table, from, count, given, label, owner, of_variant) do
-    Enum.each(0..(count - 1)//1, fn index ->
+  defp check_fields({types, fields, _} = table, from, count, given, take, label, owner, of_variant) do
+    Enum.reduce(0..(count - 1)//1, given, fn index, taken ->
       {field, at} = elem(fields, from + index)
 
-      case List.keyfind(given, field, 0) do
+      case List.keyfind(taken, field, 0) do
         nil ->
-          # Необязательное поле можно не задавать: отсутствие — это «ничто».
           unless elem(elem(types, at), 3) do
             if of_variant do
               raise fail(@code_type, "#{label}: вариант «#{owner}» требует поле «#{field}»")
@@ -2475,11 +2521,11 @@ defmodule Flang.Rt do
             end
           end
 
+          taken
+
         {_, value} ->
-          check_typed(table, at, value, "#{label}.#{field}")
+          List.keyreplace(taken, field, 0, {field, check_typed(table, at, value, take, "#{label}.#{field}")})
       end
     end)
-
-    :ok
   end
 end

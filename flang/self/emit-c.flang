@@ -5371,6 +5371,10 @@
       то "FL_TYPE_SUM"
     случай "точное целое"
       то "FL_TYPE_EXACT"
+    случай "точное дробное"
+      то "FL_TYPE_FRACTION"
+    случай "слово"
+      то "FL_TYPE_WORD"
     случай любое
       то "FL_TYPE_UNKNOWN"
 

@@ -2013,6 +2013,8 @@ public static class Flang
     /// <summary>Сумма типов.</summary>
     public const int TypeSum = 7;
     public const int TypeExact = 8;
+    public const int TypeFraction = 9;
+    public const int TypeWord = 10;
 
     /// <summary>Поле записи или варианта: имя и место его типа в таблице типов.</summary>
     /// <remarks>Собирает описание поля.</remarks>
@@ -2156,53 +2158,148 @@ public static class Flang
         }
     }
 
-    private static void CheckExactType(TypeSpec spec, Value value, string label)
+    private static string? ExactDefect(Value[] digits)
     {
-        const string canon = "точное целое записано не в каноне";
-        if (!ExactDigits(value))
+        if (digits.Length > 0)
         {
-            throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
-        }
-        Value[] digits = Value.Elements(value);
-        if (digits.Length > 0 && digits[digits.Length - 1].Num == 0)
-        {
-            throw Fail(FlangError.CodeType, canon + ": старший разряд нулевой, а канон требует снять старшие нули");
+            Value top = digits[digits.Length - 1];
+            if (top.Tag == Value.TagNumber && top.Num == 0 && !double.IsNegative(top.Num))
+            {
+                return "старший разряд нулевой, а канон требует снять старшие нули";
+            }
         }
         foreach (Value item in digits)
         {
             double digit = item.Num;
-            if (double.IsNaN(digit) || double.IsInfinity(digit))
-            {
-                continue;
-            }
             string text = Value.NumberText(digit);
+            if (item.Tag != Value.TagNumber || !double.IsFinite(digit))
+            {
+                return "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает";
+            }
             if (digit < 0)
             {
-                throw Fail(
-                    FlangError.CodeType,
-                    canon + ": разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет");
+                return "разряд " + text + " отрицателен, а точное целое ниже нуля значений не имеет";
             }
             if (System.Math.Floor(digit) != digit)
             {
-                throw Fail(FlangError.CodeType, canon + ": разряд " + text + " не целый, а разряды точного целого целы");
+                return "разряд " + text + " не целый, а разряды точного целого целы";
+            }
+            if (double.IsNegative(digit))
+            {
+                return "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака";
             }
             if (digit >= 4194304)
             {
-                throw Fail(FlangError.CodeType, canon + ": разряд " + text + " не меньше основания 4194304");
+                return "разряд " + text + " не меньше основания 4194304";
             }
+        }
+        return null;
+    }
+
+    private static double ExactSmall(Value[] digits)
+    {
+        double total = 0;
+        for (int at = digits.Length - 1; at >= 0; at--)
+        {
+            total = digits[at].Num + 4194304.0 * total;
+        }
+        return total;
+    }
+
+    private static string? FractionDefect(Value[] halves)
+    {
+        if (halves.Length != 2)
+        {
+            return "точное дробное записывается парой: числитель над знаменателем";
+        }
+        if (halves[0].Tag != Value.TagList || halves[1].Tag != Value.TagList)
+        {
+            return "обе половины точного дробного — списки разрядов: числитель и знаменатель";
+        }
+        Value[] top = Value.Elements(halves[0]);
+        Value[] bottom = Value.Elements(halves[1]);
+        string? defect = ExactDefect(top);
+        if (defect != null)
+        {
+            return "числитель: " + defect;
+        }
+        defect = ExactDefect(bottom);
+        if (defect != null)
+        {
+            return "знаменатель: " + defect;
+        }
+        if (bottom.Length == 0)
+        {
+            return "знаменатель пуст: ноль внизу не определён";
+        }
+        if (top.Length == 0)
+        {
+            return bottom.Length == 1 && bottom[0].Num == 1 ? null : "нулевая дробь записывается пустыми разрядами над [1]";
+        }
+        if (top.Length > 2 || bottom.Length > 2)
+        {
+            return "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением";
+        }
+        double left = ExactSmall(top);
+        double right = ExactSmall(bottom);
+        int steps = 128;
+        for (; steps > 0 && right != 0; steps--)
+        {
+            double rest = left % right;
+            left = right;
+            right = rest;
+        }
+        if (steps == 0)
+        {
+            return "сокращённость не установлена за 128 шагов Евклида";
+        }
+        return left == 1 ? null : "дробь не сокращена: числитель и знаменатель делятся на " + Value.NumberText(left);
+    }
+
+    private static void CheckCountedType(TypeSpec spec, Value value, string label)
+    {
+        if (value.Tag != Value.TagList)
+        {
+            throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
+        }
+        bool fraction = spec.Kind == TypeFraction;
+        string? defect = fraction ? FractionDefect(Value.Elements(value)) : ExactDefect(Value.Elements(value));
+        if (defect != null)
+        {
+            throw Fail(FlangError.CodeType, (fraction ? "точное дробное" : "точное целое") + " записано не в каноне: " + defect);
         }
     }
 
-    private static void CheckFields(
-        EntryTable table, int from, int count, Field[] given, string label, string owner, bool ofVariant)
+    private static Value CheckWordType(TypeSpec spec, Value value, bool take, string label)
     {
+        if (value.Tag == Value.TagWord && value.Str == spec.Name)
+        {
+            return value;
+        }
+        if (take && value.Tag != Value.TagWord)
+        {
+            try
+            {
+                return WordConvert(spec.Name, value);
+            }
+            catch (FlangError)
+            {
+            }
+        }
+        throw Fail(FlangError.CodeType, label + " не соответствует типу " + spec.Name);
+    }
+
+    private static Field[] CheckFields(
+        EntryTable table, int from, int count, Field[] given, bool take, string label, string owner, bool ofVariant)
+    {
+        Field[] taken = (Field[])given.Clone();
         for (int index = 0; index < count; index++)
         {
             TypeField declared = table.Fields[from + index];
             int found = -1;
-            for (int at = 0; at < given.Length; at++)
+            for (int at = 0; at < taken.Length; at++)
             {
-                if (given[at].Name == declared.Name)
+                if (taken[at].Name == declared.Name)
                 {
                     found = at;
                     break;
@@ -2225,68 +2322,70 @@ public static class Flang
                     FlangError.CodeType,
                     label + ": не задано поле «" + declared.Name + "» записи «" + owner + "»");
             }
-            CheckTyped(table, declared.Type, given[found].Value, label + "." + declared.Name);
+            Value checkedValue = CheckTyped(table, declared.Type, taken[found].Value, take, label + "." + declared.Name);
+            taken[found] = new Field(taken[found].Name, checkedValue);
         }
+        return taken;
     }
 
-    private static void CheckTyped(EntryTable table, int index, Value value, string label)
+    private static Value CheckTyped(EntryTable table, int index, Value value, bool take, string label)
     {
         if (index < 0 || index >= table.Types.Length)
         {
-            return;
+            return value;
         }
         TypeSpec spec = table.Types[index];
-        // Необязательный аргумент можно не задавать: отсутствие — это «ничто», а
-        // не пропуск. Так же считает и ядро FTS.
         if (spec.Optional && value.Tag == Value.TagNothing)
         {
-            return;
+            return value;
         }
         string mismatch = label + " не соответствует типу " + spec.Name;
         switch (spec.Kind)
         {
             case TypeNumber:
                 CheckNumberType(spec, value, label);
-                return;
+                return value;
             case TypeExact:
-                CheckExactType(spec, value, label);
-                return;
+            case TypeFraction:
+                CheckCountedType(spec, value, label);
+                return value;
+            case TypeWord:
+                return CheckWordType(spec, value, take, label);
             case TypeText:
                 if (value.Tag != Value.TagString)
                 {
                     throw Fail(FlangError.CodeType, mismatch);
                 }
-                return;
+                return value;
             case TypeFlag:
                 if (value.Tag != Value.TagFlag)
                 {
                     throw Fail(FlangError.CodeType, mismatch);
                 }
-                return;
+                return value;
             case TypeNull:
                 if (value.Tag != Value.TagNothing)
                 {
                     throw Fail(FlangError.CodeType, mismatch);
                 }
-                return;
+                return value;
             case TypeList:
                 if (value.Tag != Value.TagList)
                 {
                     throw Fail(FlangError.CodeType, mismatch);
                 }
-                for (int at = 0; at < value.Items.Length; at++)
+                Value[] items = (Value[])Value.Elements(value).Clone();
+                for (int at = 0; at < items.Length; at++)
                 {
-                    CheckTyped(table, spec.Of, value.Items[at], label + "[" + at + "]");
+                    items[at] = CheckTyped(table, spec.Of, items[at], take, label + "[" + at + "]");
                 }
-                return;
+                return take ? Value.List(items) : value;
             case TypeRecord:
                 if (value.Tag != Value.TagRecord)
                 {
                     throw Fail(FlangError.CodeType, mismatch);
                 }
-                CheckFields(table, spec.FieldFrom, spec.FieldCount, value.Fields, label, spec.Owner, false);
-                // Лишнее поле — тоже несоответствие типу: запись flang тотальна,
-                // и поля сверх объявленных в ней взяться неоткуда.
+                Field[] taken = CheckFields(table, spec.FieldFrom, spec.FieldCount, value.Fields, take, label, spec.Owner, false);
                 foreach (Field field in value.Fields)
                 {
                     bool declared = false;
@@ -2305,7 +2404,7 @@ public static class Flang
                             label + ": запись «" + spec.Owner + "» не имеет поля «" + field.Name + "»");
                     }
                 }
-                return;
+                return take ? Value.Record(taken) : value;
             case TypeSum:
                 if (value.Tag != Value.TagVariant && value.Tag != Value.TagRecord)
                 {
@@ -2333,24 +2432,16 @@ public static class Flang
                     table.Variants[variant].FieldFrom,
                     table.Variants[variant].FieldCount,
                     value.Fields,
+                    false,
                     label,
                     table.Variants[variant].Name,
                     true);
-                return;
+                return value;
             default:
-                // TypeUnknown: сверять нечем, и молчание здесь то же самое, каким
-                // отвечает проверка значений свидетеля на джокер.
-                return;
+                return value;
         }
     }
 
-    /// <summary>
-    /// Сверка набора значений с объявленными типами параметров функции.
-    /// Молчит там, где сверять нечем: имени в таблице нет, число значений с
-    /// числом параметров не сошлось (об этом скажет диспетчер своим текстом),
-    /// тип приехал видом TypeUnknown. Тексты отказов дословно те же, что у
-    /// <c>checkValue</c> свидетеля.
-    /// </summary>
     public static void CheckEntry(EntryTable table, string name, Value[] args)
     {
         int declared = 0;
@@ -2372,8 +2463,8 @@ public static class Flang
             {
                 continue;
             }
-            CheckTyped(
-                table, param.Type, args[at], "вызов функции «" + name + "»: аргумент «" + param.Name + "»");
+            args[at] = CheckTyped(
+                table, param.Type, args[at], true, "вызов функции «" + name + "»: аргумент «" + param.Name + "»");
             at++;
         }
     }

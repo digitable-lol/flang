@@ -2515,6 +2515,8 @@ pub enum TypeKind {
     /// сумма типов
     Sum,
     Exact,
+    Fraction,
+    Word,
 }
 
 /// Поле записи или варианта: имя и место его типа в таблице типов.
@@ -2613,50 +2615,99 @@ fn check_number_type(spec: &Type, value: &Value, label: &str) -> Result<(), Erro
     Ok(())
 }
 
-fn check_exact_type(spec: &Type, value: &Value, label: &str) -> Result<(), Error> {
-    let canon = "точное целое записано не в каноне";
-    let digits: Vec<f64> = match value {
-        Value::List(items) if exact_digits(value) => items
-            .as_slice()
-            .iter()
-            .map(|item| match item {
-                Value::Number(number) => *number,
-                _ => 0.0,
-            })
-            .collect(),
+fn exact_defect(digits: &[Value]) -> Option<String> {
+    if let Some(Value::Number(top)) = digits.last() {
+        if *top == 0.0 && !top.is_sign_negative() {
+            return Some("старший разряд нулевой, а канон требует снять старшие нули".to_string());
+        }
+    }
+    digits.iter().find_map(|item| match item {
+        Value::Number(digit) if !digit.is_finite() => Some(
+            "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает".to_string(),
+        ),
+        Value::Number(digit) if *digit < 0.0 => Some(format!(
+            "разряд {} отрицателен, а точное целое ниже нуля значений не имеет",
+            number_text(*digit)
+        )),
+        Value::Number(digit) if digit.floor() != *digit => {
+            Some(format!("разряд {} не целый, а разряды точного целого целы", number_text(*digit)))
+        }
+        Value::Number(digit) if digit.is_sign_negative() => {
+            Some("разряд минус ноль — не ноль канона: нулевой разряд пишется без знака".to_string())
+        }
+        Value::Number(digit) if *digit >= 4194304.0 => {
+            Some(format!("разряд {} не меньше основания 4194304", number_text(*digit)))
+        }
+        Value::Number(_) => None,
+        _ => Some("разряд не написан числом: посчитанное в точное целое без названного перевода не втекает".to_string()),
+    })
+}
+
+fn exact_small(digits: &[Value]) -> f64 {
+    digits.iter().rev().fold(0.0, |total, digit| match digit {
+        Value::Number(number) => number + 4194304.0 * total,
+        _ => total,
+    })
+}
+
+fn fraction_defect(halves: &[Value]) -> Option<String> {
+    let (top, bottom) = match halves {
+        [Value::List(top), Value::List(bottom)] => (top.as_slice(), bottom.as_slice()),
+        [_, _] => {
+            return Some("обе половины точного дробного — списки разрядов: числитель и знаменатель".to_string())
+        }
+        _ => return Some("точное дробное записывается парой: числитель над знаменателем".to_string()),
+    };
+    let (top, bottom): (&[Value], &[Value]) = (&top, &bottom);
+    if let Some(defect) = exact_defect(top) {
+        return Some(format!("числитель: {}", defect));
+    }
+    if let Some(defect) = exact_defect(bottom) {
+        return Some(format!("знаменатель: {}", defect));
+    }
+    if bottom.is_empty() {
+        return Some("знаменатель пуст: ноль внизу не определён".to_string());
+    }
+    if top.is_empty() {
+        return match bottom {
+            [Value::Number(one)] if *one == 1.0 => None,
+            _ => Some("нулевая дробь записывается пустыми разрядами над [1]".to_string()),
+        };
+    }
+    if top.len() > 2 || bottom.len() > 2 {
+        return Some(
+            "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением".to_string(),
+        );
+    }
+    let (mut left, mut right, mut steps) = (exact_small(top), exact_small(bottom), 128);
+    while steps > 0 && right != 0.0 {
+        let rest = left % right;
+        left = right;
+        right = rest;
+        steps -= 1;
+    }
+    if steps == 0 {
+        Some("сокращённость не установлена за 128 шагов Евклида".to_string())
+    } else if left != 1.0 {
+        Some(format!("дробь не сокращена: числитель и знаменатель делятся на {}", number_text(left)))
+    } else {
+        None
+    }
+}
+
+fn check_counted_type(spec: &Type, value: &Value, label: &str) -> Result<(), Error> {
+    let items = match value {
+        Value::List(items) => items.as_slice(),
         _ => return Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name))),
     };
-    if digits.last() == Some(&0.0) {
-        return Err(fail(
-            CODE_TYPE,
-            format!("{}: старший разряд нулевой, а канон требует снять старшие нули", canon),
-        ));
+    let (kind, defect) = match spec.kind {
+        TypeKind::Fraction => ("точное дробное", fraction_defect(&items)),
+        _ => ("точное целое", exact_defect(&items)),
+    };
+    match defect {
+        Some(defect) => Err(fail(CODE_TYPE, format!("{} записано не в каноне: {}", kind, defect))),
+        None => Ok(()),
     }
-    for digit in digits.iter().copied().filter(|digit| digit.is_finite()) {
-        if digit < 0.0 {
-            return Err(fail(
-                CODE_TYPE,
-                format!(
-                    "{}: разряд {} отрицателен, а точное целое ниже нуля значений не имеет",
-                    canon,
-                    number_text(digit)
-                ),
-            ));
-        }
-        if digit.floor() != digit {
-            return Err(fail(
-                CODE_TYPE,
-                format!("{}: разряд {} не целый, а разряды точного целого целы", canon, number_text(digit)),
-            ));
-        }
-        if digit >= 4194304.0 {
-            return Err(fail(
-                CODE_TYPE,
-                format!("{}: разряд {} не меньше основания 4194304", canon, number_text(digit)),
-            ));
-        }
-    }
-    Ok(())
 }
 
 fn check_fields(
@@ -2664,13 +2715,15 @@ fn check_fields(
     from: usize,
     count: usize,
     given: &[Field],
+    take: bool,
     label: &str,
     owner: &str,
     of_variant: bool,
-) -> Result<(), Error> {
+) -> Result<Vec<Field>, Error> {
+    let mut taken = given.to_vec();
     for index in 0..count {
         let declared = &table.fields[from + index];
-        match given.iter().find(|field| &*field.name == declared.name) {
+        match taken.iter_mut().find(|field| &*field.name == declared.name) {
             /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
             None if table.types[declared.type_at].optional => continue,
             None if of_variant => {
@@ -2685,62 +2738,65 @@ fn check_fields(
                     format!("{}: не задано поле «{}» записи «{}»", label, declared.name, owner),
                 ))
             }
-            Some(found) => check_typed(
-                table,
-                declared.type_at,
-                &found.value,
-                &format!("{}.{}", label, declared.name),
-            )?,
+            Some(found) => {
+                found.value = check_typed(
+                    table,
+                    declared.type_at,
+                    &found.value,
+                    take,
+                    &format!("{}.{}", label, declared.name),
+                )?
+            }
         }
     }
-    Ok(())
+    Ok(taken)
 }
 
-fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> Result<(), Error> {
+fn check_typed(table: &EntryTable, index: usize, value: &Value, take: bool, label: &str) -> Result<Value, Error> {
     let spec = match table.types.get(index) {
         Some(spec) => spec,
-        None => return Ok(()),
+        None => return Ok(value.clone()),
     };
-    /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
-    пропуск. Так же считает и ядро FTS. */
     if spec.optional && matches!(value, Value::Nothing) {
-        return Ok(());
+        return Ok(value.clone());
     }
-    let mismatch = || Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name)));
+    let mismatch = || -> Result<Value, Error> {
+        Err(fail(CODE_TYPE, format!("{} не соответствует типу {}", label, spec.name)))
+    };
     match spec.kind {
-        TypeKind::Number => check_number_type(spec, value, label),
-        TypeKind::Exact => check_exact_type(spec, value, label),
+        TypeKind::Number => check_number_type(spec, value, label).map(|_| value.clone()),
+        TypeKind::Exact | TypeKind::Fraction => check_counted_type(spec, value, label).map(|_| value.clone()),
+        TypeKind::Word => match value {
+            Value::Word(name, _) if *name == spec.name => Ok(value.clone()),
+            Value::Word(_, _) => mismatch(),
+            _ if take => word_convert(spec.name, value).or_else(|_| mismatch()),
+            _ => mismatch(),
+        },
         TypeKind::Text => match value {
-            Value::Text(_) => Ok(()),
+            Value::Text(_) => Ok(value.clone()),
             _ => mismatch(),
         },
         TypeKind::Flag => match value {
-            Value::Flag(_) => Ok(()),
+            Value::Flag(_) => Ok(value.clone()),
             _ => mismatch(),
         },
         TypeKind::Null => match value {
-            Value::Nothing => Ok(()),
+            Value::Nothing => Ok(value.clone()),
             _ => mismatch(),
         },
         TypeKind::List => match value {
             Value::List(items) => {
-                /* `Items` — это вид на общий массив с запасом, а не `Vec`, и
-                своего `iter` у него нет: элементы берутся заимствованием
-                (`as_slice`). Держать его тут можно — граница входа кода
-                программы не исполняет, а значит и «добавить» на живом
-                заимствовании не случится. */
+                let mut taken = Vec::with_capacity(items.as_slice().len());
                 for (at, item) in items.as_slice().iter().enumerate() {
-                    check_typed(table, spec.of, item, &format!("{}[{}]", label, at))?;
+                    taken.push(check_typed(table, spec.of, item, take, &format!("{}[{}]", label, at))?);
                 }
-                Ok(())
+                Ok(if take { list(taken) } else { value.clone() })
             }
             _ => mismatch(),
         },
         TypeKind::Record => match value {
             Value::Record(fields) => {
-                check_fields(table, spec.field_from, spec.field_count, fields, label, spec.owner, false)?;
-                /* Лишнее поле — тоже несоответствие типу: запись flang тотальна,
-                и поля сверх объявленных в ней взяться неоткуда. */
+                let taken = check_fields(table, spec.field_from, spec.field_count, fields, take, label, spec.owner, false)?;
                 for field in fields.iter() {
                     let declared =
                         (0..spec.field_count).any(|at| table.fields[spec.field_from + at].name == &*field.name);
@@ -2751,7 +2807,7 @@ fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> 
                         ));
                     }
                 }
-                Ok(())
+                Ok(if take { record(taken) } else { value.clone() })
             }
             _ => mismatch(),
         },
@@ -2774,33 +2830,29 @@ fn check_typed(table: &EntryTable, index: usize, value: &Value, label: &str) -> 
                     variant.field_from,
                     variant.field_count,
                     &data.fields,
+                    false,
                     label,
                     variant.name,
                     true,
-                ),
+                )
+                .map(|_| value.clone()),
             }
         }
-        TypeKind::Unknown => Ok(()),
+        TypeKind::Unknown => Ok(value.clone()),
     }
 }
 
-/// Сверка набора значений с объявленными типами параметров функции.
-///
-/// Молчит там, где сверять нечем: имени в таблице нет, число значений с числом
-/// параметров не сошлось (об этом скажет диспетчер своим текстом), тип приехал
-/// видом `Unknown`. Тексты отказов дословно те же, что у `checkValue` свидетеля:
-/// расхождение здесь означало бы, что у языка два ответа на вопрос «подходит ли
-/// значение типу».
-pub fn check_entry(table: &EntryTable, name: &str, args: &[Value]) -> Result<(), Error> {
+pub fn check_entry(table: &EntryTable, name: &str, args: &mut [Value]) -> Result<(), Error> {
     let declared = table.params.iter().filter(|param| param.function == name).count();
     if declared == 0 || declared != args.len() {
         return Ok(());
     }
     for (at, param) in table.params.iter().filter(|param| param.function == name).enumerate() {
-        check_typed(
+        args[at] = check_typed(
             table,
             param.type_at,
             &args[at],
+            true,
             &format!("вызов функции «{}»: аргумент «{}»", name, param.name),
         )?;
     }

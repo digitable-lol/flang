@@ -2111,6 +2111,8 @@ const (
 	TypeRecord
 	TypeSum
 	TypeExact
+	TypeFraction
+	TypeWord
 )
 
 // TypeField — поле записи или варианта: имя и место его типа в таблице типов.
@@ -2174,33 +2176,102 @@ func checkNumberType(spec *Type, value Value, label string) error {
 	return nil
 }
 
-func checkExactType(spec *Type, value Value, label string) error {
-	const canon = "точное целое записано не в каноне"
-	if !exactDigits(value) {
+func exactDefect(digits []Value) string {
+	if count := len(digits); count > 0 && digits[count-1].Tag == TagNumber && digits[count-1].Num == 0 && !math.Signbit(digits[count-1].Num) {
+		return "старший разряд нулевой, а канон требует снять старшие нули"
+	}
+	for _, item := range digits {
+		digit := item.Num
+		switch {
+		case item.Tag != TagNumber || math.IsNaN(digit) || math.IsInf(digit, 0):
+			return "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает"
+		case digit < 0:
+			return "разряд " + NumberText(digit) + " отрицателен, а точное целое ниже нуля значений не имеет"
+		case math.Floor(digit) != digit:
+			return "разряд " + NumberText(digit) + " не целый, а разряды точного целого целы"
+		case math.Signbit(digit):
+			return "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака"
+		case digit >= 4194304:
+			return "разряд " + NumberText(digit) + " не меньше основания 4194304"
+		}
+	}
+	return ""
+}
+
+func exactSmall(digits []Value) float64 {
+	total := 0.0
+	for at := len(digits) - 1; at >= 0; at-- {
+		total = digits[at].Num + 4194304*total
+	}
+	return total
+}
+
+func fractionDefect(value Value) string {
+	if len(value.List) != 2 {
+		return "точное дробное записывается парой: числитель над знаменателем"
+	}
+	top, bottom := value.List[0], value.List[1]
+	if top.Tag != TagList || bottom.Tag != TagList {
+		return "обе половины точного дробного — списки разрядов: числитель и знаменатель"
+	}
+	if defect := exactDefect(top.List); defect != "" {
+		return "числитель: " + defect
+	}
+	if defect := exactDefect(bottom.List); defect != "" {
+		return "знаменатель: " + defect
+	}
+	switch {
+	case len(bottom.List) == 0:
+		return "знаменатель пуст: ноль внизу не определён"
+	case len(top.List) == 0 && (len(bottom.List) != 1 || bottom.List[0].Num != 1):
+		return "нулевая дробь записывается пустыми разрядами над [1]"
+	case len(top.List) == 0:
+		return ""
+	case len(top.List) > 2 || len(bottom.List) > 2:
+		return "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением"
+	}
+	left, right, steps := exactSmall(top.List), exactSmall(bottom.List), 128
+	for ; steps > 0 && right != 0; steps-- {
+		left, right = right, math.Mod(left, right)
+	}
+	switch {
+	case steps == 0:
+		return "сокращённость не установлена за 128 шагов Евклида"
+	case left != 1:
+		return "дробь не сокращена: числитель и знаменатель делятся на " + NumberText(left)
+	}
+	return ""
+}
+
+func checkCountedType(spec *Type, value Value, label string) error {
+	if value.Tag != TagList {
 		return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
 	}
-	if count := len(value.List); count > 0 && value.List[count-1].Num == 0 {
-		return Fail(CodeType, "%s: старший разряд нулевой, а канон требует снять старшие нули", canon)
-	}
-	for _, item := range value.List {
-		digit := item.Num
-		if math.IsNaN(digit) || math.IsInf(digit, 0) {
-			continue
+	if spec.Kind == TypeFraction {
+		if defect := fractionDefect(value); defect != "" {
+			return Fail(CodeType, "точное дробное записано не в каноне: %s", defect)
 		}
-		if digit < 0 {
-			return Fail(CodeType, "%s: разряд %s отрицателен, а точное целое ниже нуля значений не имеет", canon, NumberText(digit))
-		}
-		if math.Floor(digit) != digit {
-			return Fail(CodeType, "%s: разряд %s не целый, а разряды точного целого целы", canon, NumberText(digit))
-		}
-		if digit >= 4194304 {
-			return Fail(CodeType, "%s: разряд %s не меньше основания 4194304", canon, NumberText(digit))
-		}
+	} else if defect := exactDefect(value.List); defect != "" {
+		return Fail(CodeType, "точное целое записано не в каноне: %s", defect)
 	}
 	return nil
 }
 
-func checkFields(table *EntryTable, from, count int, given []Field, label, owner string, ofVariant bool) error {
+func checkWordType(spec *Type, slot *Value, take bool, label string) error {
+	value := *slot
+	if value.Tag == TagWord && value.Str == spec.Name {
+		return nil
+	}
+	if take && value.Tag != TagWord {
+		if converted, err := wordConvert(spec.Name, value); err == nil {
+			*slot = converted
+			return nil
+		}
+	}
+	return Fail(CodeType, "%s не соответствует типу %s", label, spec.Name)
+}
+
+func checkFields(table *EntryTable, from, count int, given []Field, take bool, label, owner string, ofVariant bool) error {
 	for index := 0; index < count; index++ {
 		declared := table.Fields[from+index]
 		found := -1
@@ -2221,20 +2292,19 @@ func checkFields(table *EntryTable, from, count int, given []Field, label, owner
 			return Fail(CodeType, "%s: не задано поле «%s» записи «%s»", label, declared.Name, owner)
 		}
 		inner := fmt.Sprintf("%s.%s", label, declared.Name)
-		if err := checkTyped(table, declared.Type, given[found].Value, inner); err != nil {
+		if err := checkTyped(table, declared.Type, &given[found].Value, take, inner); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func checkTyped(table *EntryTable, index int, value Value, label string) error {
+func checkTyped(table *EntryTable, index int, slot *Value, take bool, label string) error {
 	if index < 0 || index >= len(table.Types) {
 		return nil
 	}
 	spec := &table.Types[index]
-	// Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
-	// пропуск. Так же считает и ядро FTS.
+	value := *slot
 	if spec.Optional && value.Tag == TagNothing {
 		return nil
 	}
@@ -2244,8 +2314,10 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 	switch spec.Kind {
 	case TypeNumber:
 		return checkNumberType(spec, value, label)
-	case TypeExact:
-		return checkExactType(spec, value, label)
+	case TypeExact, TypeFraction:
+		return checkCountedType(spec, value, label)
+	case TypeWord:
+		return checkWordType(spec, slot, take, label)
 	case TypeText:
 		if value.Tag != TagString {
 			return mismatch()
@@ -2262,8 +2334,13 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 		if value.Tag != TagList {
 			return mismatch()
 		}
-		for at, item := range value.List {
-			if err := checkTyped(table, spec.Of, item, fmt.Sprintf("%s[%d]", label, at)); err != nil {
+		items := value.List
+		if take {
+			items = append([]Value(nil), value.List...)
+			slot.List = items
+		}
+		for at := range items {
+			if err := checkTyped(table, spec.Of, &items[at], take, fmt.Sprintf("%s[%d]", label, at)); err != nil {
 				return err
 			}
 		}
@@ -2271,11 +2348,14 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 		if value.Tag != TagRecord {
 			return mismatch()
 		}
-		if err := checkFields(table, spec.FieldFrom, spec.FieldCount, value.Fields, label, spec.Owner, false); err != nil {
+		fields := value.Fields
+		if take {
+			fields = append([]Field(nil), value.Fields...)
+			slot.Fields = fields
+		}
+		if err := checkFields(table, spec.FieldFrom, spec.FieldCount, fields, take, label, spec.Owner, false); err != nil {
 			return err
 		}
-		// Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
-		// сверх объявленных в ней взяться неоткуда.
 		for _, field := range value.Fields {
 			declared := false
 			for at := 0; at < spec.FieldCount; at++ {
@@ -2305,7 +2385,7 @@ func checkTyped(table *EntryTable, index int, value Value, label string) error {
 			return Fail(CodeType, "%s: ожидался вариант типа «%s»", label, spec.Owner)
 		}
 		variant := table.Variants[found]
-		return checkFields(table, variant.FieldFrom, variant.FieldCount, value.Fields, label, variant.Name, true)
+		return checkFields(table, variant.FieldFrom, variant.FieldCount, value.Fields, false, label, variant.Name, true)
 	}
 	return nil
 }
@@ -2331,7 +2411,7 @@ func CheckEntry(table *EntryTable, name string, args []Value) error {
 			continue
 		}
 		label := fmt.Sprintf("вызов функции «%s»: аргумент «%s»", name, param.Name)
-		if err := checkTyped(table, param.Type, args[at], label); err != nil {
+		if err := checkTyped(table, param.Type, &args[at], true, label); err != nil {
 			return err
 		}
 		at++

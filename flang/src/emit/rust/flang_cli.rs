@@ -458,11 +458,7 @@ fn run_request(line: &str) -> String {
         }
     }
 
-    /* Граница входа — ДО вызова: значения приехали снаружи, программой не
-    являются и сверяются с объявленными типами. Значение вне типа выносит вместе
-    с типом и доказательство завершения `тотальной`, а поймать вечную цепочку
-    потом нечем — сторожа в доказанно тотальной функции нет. */
-    if let Err(error) = rt::check_entry(program::entry(), &name, &args) {
+    if let Err(error) = rt::check_entry(program::entry(), &name, &mut args) {
         return failure(&error.code, &error.message);
     }
 

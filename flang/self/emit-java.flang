@@ -4023,6 +4023,10 @@
       то "Flang.TYPE_SUM"
     случай "точное целое"
       то "Flang.TYPE_EXACT"
+    случай "точное дробное"
+      то "Flang.TYPE_FRACTION"
+    случай "слово"
+      то "Flang.TYPE_WORD"
     случай любое
       то "Flang.TYPE_UNKNOWN"
 

@@ -31,10 +31,10 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 67 файлов на flang —
 <!-- СНЯТО 2026-11-09 файлов flang/self/*.flang = 67 (print batch 11: flang/self/sugar.flang expands loop and class sugar) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **64 модуля, 2140 функций и 4144
-примеров**, которые прогоняются при каждой проверке:
-<!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 -->
-<!-- СНЯТО 2026-10-18 примеров-в flang/stdlib/*.flang = 4144 (print batch 9a over dev 2a71e57b8: lookup without copies, stdlib heal, parse and import, namesakes in linking, category theorems, refuted statements, small fixes) -->
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **65 модулей, 2156 функций и 4171
+пример**, которые прогоняются при каждой проверке:
+<!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) -->
+<!-- СНЯТО 2026-11-11 примеров-в flang/stdlib/*.flang = 4171 (the list facts module) -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.

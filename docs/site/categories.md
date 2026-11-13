@@ -1,27 +1,133 @@
-# The categorical surface
+# Categories and functors
 
-This page shows which words flang gives you beyond functions and types — object,
-morphism, category, functor, transformation, monoid, monad — and what the
-compiler does with them today. By the end you will be able to declare a category
-over your own task, read the compiler's answer, and know exactly which part of
-the promise is computed and which is not.
+Beyond functions and types, flang has declarations of structures: `моноид` (monoid), `монада`
+(monad), `морфизм` (morphism), `категория` (category), `функтор` (functor), `преобразование`
+(natural transformation), `изоморфизм` (isomorphism). A declaration says which laws must hold,
+and the compiler answers what was done with each law: proved by the kernel for all values, or
+computed on a finite grid of values taken from the examples.
 
-## Why this is here at all
+## A monad: the kernel proves all three laws
 
-An ordinary function says *what* it computes. A structure declaration says what
-is **always true** about it — and thereby makes a claim you can hold it to.
-
-Addition of numbers is not merely a function of two arguments: it is an
-operation with an identity, it is associative, and every value has an inverse.
-String concatenation is the same, minus the inverse — and promising one would be
-a lie. Both facts are written in one form:
+A monad is declared by a type and two functions, `возврат` (return) and `соединение` (join):
 
 ```flang
+модуль «Maybe»
+
+тип «Возможно» от «А»
+  вариант «Ничего»
+  вариант «Нечто» содержит значение: «А»
+
+тотальная функция «Обернуть» от «А»
+  принимает значение: «А»
+  возвращает «Возможно» от «А»
+  пример «число в обёртке»
+    дано значение равно 5
+    ожидается вариант «Нечто» с значение равным 5
+  вариант «Нечто» с значение равным значение
+
+тотальная функция «Сплющить» от «А»
+  принимает вложенное: «Возможно» от («Возможно» от «А»)
+  возвращает «Возможно» от «А»
+  пример «две обёртки становятся одной»
+    дано вложенное равно вариант «Нечто» с значение равным (вариант «Нечто» с значение равным 5)
+    ожидается вариант «Нечто» с значение равным 5
+  пример «пустое остаётся пустым»
+    дано вложенное равно вариант «Ничего»
+    ожидается вариант «Ничего»
+  разбор вложенное
+    случай вариант «Ничего»
+      то вариант «Ничего»
+    случай вариант «Нечто» с значение как внутри
+      то внутри
+
+монада «Возможно» от «А»
+  возврат «Обернуть»
+  соединение «Сплющить»
+```
+
+```
+$ flang check --proof maybe.flang
+…
+законы как утверждения (ядро судит о ВСЕХ значениях носителя, а не о написанных):
+  закон «Возможно — левая единица» — доказано сведением цели с телом функции: …
+  закон «Возможно — правая единица» — доказано индукцией по «Возможно»: …
+  закон «Возможно — ассоциативность связывания» — доказано индукцией по «Возможно»: …
+  законов утверждениями 3: доказано ядром 3, не доказано 0
+…
+$ echo $?
+0
+```
+
+All three laws are proved — left unit, right unit and associativity. The grid is still computed,
+but only to look for a counterexample. Examples on `возврат` or `соединение` are required:
+without them there is nothing to build the grid from, and the compiler refuses with
+`FLANG_MONAD`.
+
+Plain `flang check` prints only the grid for this monad — «ПОСЧИТАНО НА СЕТКЕ, не доказано»
+("computed on a grid, not proved"). What the kernel proved is shown by `check --proof`.
+
+## The list functor: two laws proved
+
+The laws of `отобразить` (map) — identity, and fusion of two maps into one — are written as
+statements, and the kernel proves them:
+
+```flang
+модуль «List functor»
+
+утверждение «отображение тождеством не меняет список»
+  для всех а: список числа
+  утверждаем (отобразить а как э → э) равен а
+
+утверждение «два отображения есть одно»
+  для всех а: список числа
+  утверждаем ((отобразить (отобразить а как э → э плюс 1) как э → э умножить на 2)
+    равен (отобразить а как э → (э плюс 1) умножить на 2))
+```
+
+```
+$ flang check --proof listmap.flang
+…
+  утверждений 2: доказано 2 (из них без теоремы 2), сетка 0, объявлено, не доказано 0
+$ echo $?
+0
+```
+
+## A monoid: laws are computed on a grid
+
+```flang
+модуль «Monoids»
+
+тотальная функция «Сложить»
+  принимает первое: число, второе: число
+  возвращает число
+  пример «два числа»
+    дано первое равно 2
+    дано второе равно 3
+    ожидается 5
+  первое плюс второе
+
+тотальная функция «Обратить»
+  принимает значение: число
+  возвращает число
+  пример «положительное»
+    дано значение равно 3
+    ожидается -3
+  0 минус значение
+
 моноид «Сумма»
   носитель число
   операция «Сложить»
   единица 0
   обратный элемент «Обратить»
+
+тотальная функция «Склеить»
+  принимает первая: строка, вторая: строка
+  возвращает строка
+  пример «две части»
+    дано первая равно "аб"
+    дано вторая равно "вг"
+    ожидается "абвг"
+  соединить первая с вторая
 
 моноид «Склейка»
   носитель строка
@@ -29,29 +135,28 @@ a lie. Both facts are written in one form:
   единица ""
 ```
 
-There is deliberately no separate word for "group": a group is a monoid with an
-inverse, and a second word would split two checks that must agree in everything
-but a single law.
+`обратный элемент` (inverse) turns a monoid into a group; the language has no separate word for
+a group.
 
-A monad is declared just as briefly — a type name and two functions:
-
-```flang
-монада «Возможно» от «А»
-  возврат «Обернуть»
-  соединение «Сплющить»
+```
+$ flang check monoid.flang
+моноид «Сумма»: сетка 5 значений, троек 125, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+моноид «Склейка»: сетка 4 значений, троек 64, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+…
 ```
 
-## A category: objects, arrows, and its own equality
+Here the kernel does not prove the laws, and `check --proof` says why: «законов утверждениями 8:
+доказано ядром 0, не доказано 8», exit code 3. For «Сумма» the reason is the carrier: `число` is
+a binary float, addition rounds, and the sum is not associative above 2⁵³; the report suggests
+the carrier `точное целое` (exact integer). "Computed on a grid" is not "proved": five values
+are five values, and a sixth may break the law.
 
-A category is a set of objects, arrows between them, and a rule saying when two
-arrows count as the same one. That last part is what makes anything checkable:
-until it is said when two values are equal, "associativity of composition" means
-nothing.
+## A category: objects, arrows and its own equality
 
-Here is a working excerpt from `flang/ct/order-shipment.flang` — an
-order, a shipment, an invoice:
+A category is a set of objects, arrows between them, and a rule by which two values of an object
+count as equal. A piece of `flang/ct/order-shipment.flang` — order, shipment, invoice:
 
-```flang
+```
 морфизм «отгрузить» из «Заказ» в «Отгрузка»
   даёт «Отгрузить заказ»
   закон «номер отгрузки берётся из суммы заказа»
@@ -61,10 +166,6 @@ order, a shipment, an invoice:
 
 морфизм «выписать» из «Отгрузка» в «Накладная»
   даёт «Выписать накладную»
-  закон «итог накладной равен номеру отгрузки»
-    пример «обычная отгрузка»
-      дано отгрузка равно запись «Отгрузка» с номер равным 500
-      ожидается запись «Накладная» с итог равным 500
 
 морфизм «оформить» это «выписать» после «отгрузить»
 
@@ -81,181 +182,72 @@ order, a shipment, an invoice:
   объект «Накладная» даёт «Накладные равны»
 ```
 
-`даёт` on a morphism names the function that computes it. `даёт` on an object
-names the function that says when two values of that object are the same one.
-Equality of arrows follows from equality of values, and everything else follows
-from that.
+`даёт` on a morphism names the function that computes it. `даёт` on an object names the
+equality function for the values of that object; equality of arrows is derived from it.
 
-## What the compiler does with this today
-
-Three different answers, and they must not be confused.
-
-```mermaid Three answers the compiler gives to the categorical surface
-flowchart TD
-  A[surface declarations] --> B[parsing, types, termination,<br>proof kernel, examples]
-  B --> C{what is declared}
-  C -->|category, morphism,<br>transformation| D[LAWS ARE COMPUTED<br>over a finite grid of values]
-  D --> E([0 violations:<br>the grid size is stated])
-  D --> F([a violation found:<br>exit 1, both values shown])
-  C -->|the shape of those<br>same declarations| G([not checked:<br>exit 2, said in a separate line])
-  C -->|monoid, functor,<br>isomorphism| H([laws are kernel statements:<br>about all values])
-  class E vyvod
-  class F glavnoe
-  class G otkaz
-  class H vyvod
-```
-
-### The compiler COMPUTES the laws of a category — over a grid
-
-Three things are computed: that the declared equality is an equivalence
-(reflexive, symmetric, transitive), that composition respects it, and that
-composition is associative. For a transformation, the commuting square is
-computed. The values come from the examples attached to the arrows.
-
-The report must state the size of the grid, and it does:
+Three things are computed: the declared equality is an equivalence (reflexive, symmetric,
+transitive), composition respects it, composition is associative. For a transformation the
+commuting square is computed, for an isomorphism the inverses. Values come from the examples on
+the arrows, and the report names the grid size:
 
 ```
 $ flang check flang/ct/order-shipment.flang
-категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7,
-нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+изоморфизм «Отгрузка и накладная»: сетка 2 значений, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
+модуль «Order shipment»: функций 6, из них с доказанным завершением 6; типов 3
+flang/ct/order-shipment.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-The same file further down also declares an `isomorphism`, which the binary
-does not judge (see the sections below), so the whole command answers with
-exit code 2 and the line «проверено НЕ ДО КОНЦА» ("checked, not to the end").
+## A violation is a refusal, and printing is cancelled
 
-**"Computed over a grid" is not "proved".** Five values are five values; a sixth
-may break the law, and the count says nothing about that. The word "proved" is
-deliberately not used here.
-
-### A violation rejects the file and cancels emission
-
-Replace the equality with a relation that is not one — say `не больше` instead of
-`равен` — and the compiler refuses, showing the pair of values it caught it on:
+An equality that is not an equality is rejected, with the pair of values that shows it:
 
 ```
 $ flang check flang/test/fixtures/binary-rules/equality-not-symmetric.flang
-категория «Отгрузки»: сетка 4 значений на 2 объектах, троек стрелок 0,
-нарушений 1 — ПОСЧИТАНО НА СЕТКЕ, не доказано; оборвано: объявленное равенство
-не эквивалентность
-FLANG_EQUALITY_NOT_SYMMETRIC, строка 50: категория «Отгрузки»: равенство на
-«Заказ» не симметрично: {"сумма":500} и {"сумма":0} — нет, а {"сумма":0} и
-{"сумма":500} — да
+категория «Отгрузки»: сетка 4 значений на 2 объектах, троек стрелок 0, нарушений 1 — ПОСЧИТАНО НА СЕТКЕ, не доказано;
+оборвано: объявленное равенство не эквивалентность: …
+FLANG_EQUALITY_NOT_SYMMETRIC в файле …/equality-not-symmetric.flang, строка 37, столбец 1: категория «Отгрузки»:
+равенство на «Заказ» не симметрично: {"сумма":500} и {"сумма":0} — нет, а {"сумма":0} и {"сумма":500} — да
 $ echo $?
 1
 ```
 
-Emitting the same program is cancelled:
+On such a file `flang emit` answers «печать отменена — программа не проходит проверку»
+("printing cancelled — the program does not pass the check") and writes no file.
 
-```
-$ flang emit flang/test/fixtures/binary-rules/equality-not-symmetric.flang --target c --out ./out
-flang emit: печать отменена — программа не проходит проверку, замечаний 1.
-$ echo $?
-1
-```
+The structure of declarations is checked too. A category that is not closed, a transformation
+square that does not commute — these are refusals with exit code 1:
 
-There are zero files in `./out`. The same holds for a faked transformation
-square: `FLANG_TRANSFORM_NOT_NATURAL`, with both paths and their values in the
-message — on `{"рубли":100}` one path gave `{"копейки":10100}` and the other
-`{"копейки":11000}`.
+| problem | diagnostic code |
+|---|---|
+| equality is not symmetric | `FLANG_EQUALITY_NOT_SYMMETRIC` |
+| a composition is built from an arrow the category does not have | `FLANG_CATEGORY_NOT_CLOSED` |
+| a transformation square does not commute | `FLANG_TRANSFORM_NOT_NATURAL` |
+| a monad has no example at all | `FLANG_MONAD` |
 
-### The compiler does NOT check the shape of the declarations
+A category with no declared equality is not computed at all, and the compiler says so in words:
+«НЕ СЧИТАЛАСЬ — своего равенства не объявлено».
 
-Closure of a category under composition, an identity on every object, the
-endpoints of composed arrows agreeing, the kind of the declared equality, the
-shape of a transformation — none of that is checked by anything today. The
-compiler says so in a separate line and answers with exit code 2 rather than
-going green in silence:
+## What is done with what
 
-```
-УСТРОЙСТВО этих объявлений бинарник не судит вовсе — categories, morphisms:
-замкнутость категории под композицией, единицы, сходимость концов у композиций,
-вид объявленного равенства и устройство преобразования. ЗАКОН посчитан на сетке,
-устройство не сверялось, и первое второго не заменяет
-```
+| declaration | what the compiler does |
+|---|---|
+| `монада` | the kernel proves three laws for all values; the grid looks for a counterexample |
+| statements about `отобразить` over a list | identity and fusion are proved by the kernel |
+| `функтор`, `преобразование` | laws are handed to the kernel as statements; unproved ones are named |
+| `моноид` | laws are handed to the kernel; on `число` and `строка` they are not proved and are computed on a grid |
+| `категория` with equality, `изоморфизм` | laws are computed on a grid, the grid size is named |
+| `категория` without equality | not computed, said in words |
+| a law on an arrow | run as an example by `flang test` |
 
-The difference matters. A category with no declared equality builds — and its
-laws simply are not computed:
+For functors and transformations the proved share is in the same section of `check --proof`: on
+`flang/ct/yoneda-preorder.flang` it is «законов утверждениями 9: доказано ядром 9, не доказано 0».
 
-```
-$ flang check flang/test/fixtures/binary-rules/category-not-closed.flang
-категория «Продажи»: НЕ СЧИТАЛАСЬ — своего равенства не объявлено: равенство
-стрелок не выразимо, ассоциативность не считана
-$ echo $?
-2
-```
+The full form of every declaration and the diagnostic codes are in `docs/ct/spec.md` in the
+repository; examples are in the directory `flang/ct/`.
 
-### The laws of a monoid, functor and isomorphism are kernel statements
+## Where next
 
-The laws that follow from a monoid, functor, isomorphism or natural
-transformation declaration are written out as statements and handed to the
-kernel: it judges them for ALL values of the carrier, not for the points of a
-grid. `check --proof` prints them in a section of their own and counts them as a
-share of their own:
-
-```
-$ flang check --proof flang/ct/yoneda-preorder.flang
-законы как утверждения (ядро судит о ВСЕХ значениях носителя, а не о написанных):
-  закон «Вложить этапы — квадрат на согласовать» — доказано сведением цели с телом функции: …
-  …
-  законов утверждениями 9: доказано ядром 9, не доказано 0
-```
-
-In `--json` the same share is the `lawClaims` field: `{"total":9,"proved":9}`. A
-law the kernel did not prove is named with «ядром НЕ доказан», and then only the
-grid speaks for it. The laws of a monad are not written out as statements yet —
-the grid computes them. All 25 files of `flang/ct` (21 at the top and 4 in
-`modules/`) pass `flang check` with exit code 0.
-
-The examples still run, as in any program:
-
-```
-$ flang test flang/ct/monoid-and-monad.flang
-flang/ct/monoid-and-monad.flang: примеров 20, прошло 20, не прошло 0
-$ echo $?
-0
-```
-
-## What it comes to for you
-
-| What you declared | What the compiler does with it |
-| --- | --- |
-| a category with a declared equality | computes three laws over a grid and states its size; a violation is a refusal and cancels emission |
-| a transformation | computes the commuting square over a grid; a violation is a refusal |
-| a category without an equality | the laws are not computed, and it says so in words |
-| closure, identities, endpoints of composites | not checked; said in a separate line, exit code 2 |
-| monoid, functor, isomorphism, transformation | the laws are kernel statements about all values; unproved ones are named one by one |
-| monad | the laws are computed over a grid |
-| a law attached to an arrow | run as an example under `flang test` |
-
-In one line: **everything can be declared; the laws of a category and of a monad
-are computed over a finite grid, and the laws of a monoid, functor, isomorphism
-and transformation are judged by the kernel for all values.**
-
-## The `в монаде` form
-
-A chain of computations, any of which may fail, is written without binding each
-step by hand. The compiler parses and expands the form; in the tree it stands in
-`docs/examples/monad/order-total.flang`. That file does carry diagnostics
-today, and they are not about the monad: `FLANG_TYPE_PARAM` inside the expanded
-code — the type parameter `«Беда»` is determined neither by the arguments nor by
-the expected type.
-
-## Where the rest is written
-
-The full surface contract is `docs/ct/spec.md`: the form of every declaration
-down to the last case ending, the diagnostic code for every trouble, and a
-by-name list of what the compiler does not check. Beside it are the pieces:
-`docs/ct/sets.md`, `docs/ct/laws.md`.
-
-It is a contract, not a tutorial, and on the site it sits behind the [for
-contributors](contributing.html) door.
-
-## Where to go next
-
-- [What is proved and what is not](what-is-proved.html) — the same line drawn
-  across the whole language at once.
-- [Processes, supervision, distribution](processes.html) — the second surface,
-  where the line falls differently.
-- [How to keep learning the language](learning.html) — where this page sits on
-  the road.
+- [What is proved and what is not](what-is-proved.html) — the same line drawn across the whole language.
+- [Processes, supervision, distribution](processes.html)
+- [How to keep learning the language](learning.html)

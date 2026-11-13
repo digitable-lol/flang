@@ -3,8 +3,7 @@
 This page shows how to check in flang whether a Russian sentence is
 grammatical. Every word has a type, the types are multiplied, and the sentence
 is grammatical when the product reduces to the single type `s`, "sentence".
-This is Lambek's pregroup grammar. The program lives in `flang/ct/russian/`;
-the decision and the literature are in ADR-0109.
+This is Lambek's pregroup grammar. The program lives in `flang/ct/russian/`.
 
 ## Check a sentence
 
@@ -16,7 +15,8 @@ $ flang run flang/ct/russian/parse.flang --function «Разобрать» --arg
 "грамматично: мама: n[им ж ед 3]; читает: n[им ед 3]ʳ · s · n[вин]ˡ; книгу: n[вин ж ед 3]; связи: мама—читает, читает—книгу"
 ```
 
-("Mum reads a book.") The answer names the type chosen for each word and the
+("Mum reads a book.") The first line says how many claims about the program are
+proved; `run` prints it before the answer. The answer names the type chosen for each word and the
 pairs of words whose types cancelled (`связи`). Capital letters and the full
 stop do not matter. The answer is in Russian, like the data: `грамматично`
 means grammatical, `не грамматично` means not.
@@ -50,8 +50,7 @@ The reasons are: wrong case; no agreement in gender, number or person; no
 predicate; unknown word. A fifth one, `типы слов не сводятся к s`, means the
 types do not reduce to `s` for any other reason.
 
-Each run takes about 3.7 seconds; most of it is checking the program itself
-before it runs.
+A run takes a few seconds: the program itself is checked before it runs.
 
 ## How to read a type
 
@@ -113,10 +112,13 @@ $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --
 
 - **Proved** for all inputs: adjoints and multiplication of types keep the
   length they should, and one contraction never makes a type longer. See
-  `flang check flang/ct/russian/pregroup.flang --proof`: 9 of 9 proved.
+  `flang check flang/ct/russian/pregroup.flang --proof`: 9 of 9 proved. The
+  independent proof checker (`FLANG_CHECKER`) replayed 2 of them; 7 rest on the
+  kernel's word.
 - **Counted on examples:** the pregroup laws — associativity of
   multiplication, `(aˡ)ʳ = a`, `aˡ · a → 1` — in
-  `flang/ct/russian/category.flang`. These are examples, not a proof.
+  `flang/ct/russian/category.flang`. The `--proof` report on that file: 7
+  claims, 0 proved, 7 on the grid; exit code 3.
 - **Checked by probes:** 75 sentences, 39 grammatical and 36 not. Run:
   `flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary`.
 - **Checked by nothing:** that the dictionary is right and that the reason
@@ -124,8 +126,7 @@ $ flang run flang/ct/russian/parse.flang --function '«Типы слова»' --
 
 What the grammar cannot do yet: adverbials in the middle of a sentence
 ("мама в доме читает"), sentences without a verb ("кошка на столе"),
-questions, "и" (and) and subordinate clauses. The list is in
-ADR-0109.
+questions, "и" (and) and subordinate clauses.
 
 ## Where next
 

@@ -2,15 +2,12 @@
 
 `docs/examples/driver/msi/msi.flang` is the MSI controller of the JH7110 PCIe bridge
 (the VisionFive 2 board, PLDA XpressRICH bridge), rewritten in flang from a
-driver in the NetBSD kernel. The source is the files jh7110_pcie_msi.c (the
-controller itself) and jh7110_pcievar.h (types and register addresses) in the
-directory sys/arch/riscv/starfive of our branch of the NetBSD tree; upstream
-does not have this driver. One claim was tested: porting a driver to a language
-with proofs runs into volume, not into possibility.
+driver for the NetBSD kernel: jh7110_pcie_msi.c (the controller itself) and
+jh7110_pcievar.h (types and register addresses) from sys/arch/riscv/starfive.
+The main NetBSD tree does not have this driver.
 
-**Limits.** This does not build into the kernel, has not been tried on the
-board, and does not replace the working driver. The NetBSD tree was only read
-during this work.
+This is a model of the driver, not a driver: it does not build into the kernel
+and has not been run on the board.
 
 ## The approach: the driver writes nothing, it answers what to write
 
@@ -19,7 +16,7 @@ register writes and a list of bits to dispatch". The same approach as in the
 UART driver `docs/examples/driver/uart.flang` and the [memory
 allocator](allocator.html).
 
-```flang
+```flang fragment
 тотальная функция «Занять вектор»
   принимает контроллер: «Состояние MSI», вектор: неотрицательное, безопасен: признак
   возвращает «Отклик MSI»
@@ -86,27 +83,53 @@ exclusion, memory allocation and debug printing — those are the host's work.
 ## How to run
 
 ```
-bootstrap/flang check docs/examples/driver/msi/msi.flang --proof
-bootstrap/flang test  docs/examples/driver/msi/msi.flang
+flang test docs/examples/driver/msi/msi.flang
+flang run docs/examples/driver/msi/msi.flang --function '«Вес вектора»' --args '{"вектор":5}' --trust
+flang check docs/examples/driver/msi/msi.flang --proof
 ```
 
-The `--proof` report prints a verdict for every postcondition and, on its last
-line, how many assertions are proved, how many are on the grid and how many are
-declared without a proof. Those numbers are not on this page: they change
-together with the kernel. A measurement on a given date, before and after the
-fold rewrite, is in the section on inequalities of [which promises the kernel
-takes](what-the-kernel-accepts.html).
+`test` runs the examples (42 of 42 pass):
+
+```
+docs/examples/driver/msi/msi.flang: примеров 42, прошло 42, не прошло 0
+```
+
+`run` calls one function. «Вес вектора» (the weight of a vector) of 5 is a one
+shifted left by five bits:
+
+```
+на веру: доказанность не считалась — запуск по ключу --trust
+32
+```
+
+Without `--trust`, `run` refuses with exit code 3: not everything in the file
+is proved.
+
+`check --proof` prints a verdict for every claim. The last lines:
+
+```
+итог:
+  функций 26: тотальных 26, обычных 0
+  обещание несёт: композиция 24, структура 0, точный шаг 0, постоянный шаг 2, объявленная мера 0
+  сторожей в рантайме: 2 места
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 98: доказано 95 (из них индукцией 2) (из них без теоремы 93, объявленным типом 2), сетка 3, объявлено, не доказано 0
+```
+
+26 functions, all total; 98 claims: 95 proved, 3 on the grid. The exit code is
+3 — because of the three claims on the grid. The independent proof checker
+(`FLANG_CHECKER`) replayed 70 proofs out of 95; the other 25 rest on the
+kernel's word.
 
 ## What is proved and what is not
 
-All functions are total. For two — «Вес вектора» and «Бит взведён» — termination
-is proved by a constant step, and for them a descent check is placed in the
-printed code: the descent runs over the type `число` (the difference `неотрицательное минус
-1` does not flow back into `нат`), and on IEEE-754 a constant step does not
-always change the magnitude. For the rest — by composition, with no checks in
-the printed code.
+All 26 functions are total. For two — «Вес вектора» and «Бит взведён» —
+termination is proved by a constant step, and their descent is checked while
+the program runs: the descent goes over the type `число`, and on IEEE-754 a
+constant step does not always change the magnitude. For the other 24 it is
+proved by composition, with no run-time checks.
 
-The report has no assertions "declared, not proved".
+Of the 98 claims 95 are proved and 3 are on the grid.
 
 **Proved for all inputs:**
 

@@ -1,0 +1,21 @@
+program	surface	code	word	contract: codes and words are taken by the binary 0.7.34 on 10 November 2026; each row of the road table has a proved program and a refused neighbour
+natural-induction-free-statement.flang	proof	0	доказано индукцией по «неотрицательное»
+natural-induction-over-declared-naturals.flang	proof	0	доказано индукцией по «Нат»
+finite-sum-free-statement.flang	proof	0	доказано индукцией по «Цвет»: база 3 случая
+finite-sum-false.flang	proof	3	утверждений 1: доказано 0
+strict-order-tightens-on-integers.flang	proof	0	утверждений 2: доказано 2
+strict-order-does-not-tighten-on-numbers.flang	proof	3	утверждений 1: доказано 0
+linear-arithmetic-several-assumptions.flang	proof	0	утверждений 1: доказано 1
+linear-arithmetic-false.flang	proof	3	утверждений 1: доказано 0, условно 0, сетка 1
+rewrite-by-proved-equalities.flang	proof	0	правило «переписка доказанными равенствами»
+rewrite-by-callee-postcondition.flang	proof	0	утверждений 2: доказано 2
+declared-measure-descends.flang	proof	0	сторожей в рантайме: 0 мест
+declared-measure-through-a-call.flang	proof	0	спуск ядром не выведен
+ring-square-of-sum.flang	proof	0	правило «кольцо точного целого»
+ring-over-the-bounded-integer.flang	proof	3	утверждений 1: доказано 0
+bare-list-variable.flang	proof	3	утверждений 2: доказано 1
+lemma-in-an-induction-step.flang	proof	3	утверждений 3: доказано 2
+builtin-form-on-a-prepended-list.flang	proof	3	утверждений 2: доказано 1
+induction-over-an-exact-step.flang	proof	0	утверждений 1: доказано 1
+induction-over-a-declared-measure.flang	proof	3	утверждений 1: доказано 0
+mutual-induction.flang	proof	3	утверждений 1: доказано 0

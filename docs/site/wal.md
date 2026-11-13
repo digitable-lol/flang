@@ -1,9 +1,10 @@
 # Write-ahead log
 
-`docs/examples/wal/` holds two flang programs: parsing, printing and recovery of a
-write-ahead log after truncation, and a plan that appends one record to the log
-through input-output orders. Both are written entirely in flang; neither writes
-to disk — the host that carries out the plan's orders does.
+`docs/examples/wal/` holds two programs. The first parses, prints and recovers a
+write-ahead log after truncation. The second is a plan that appends one record
+to the log. The programs themselves do not write to disk: the plan returns the
+orders «Прочитать файл» (read file) and «Записать файл» (write file), and
+`flang io` carries them out.
 
 ## What is in the directory
 
@@ -15,7 +16,7 @@ There are 2 `.flang` files: <!-- СНЯТО 2026-09-08 файлов docs/example
 | `docs/examples/wal/append-plan.flang` | module «Append plan»: the plan «Дописать в журнал» — read the file, append a record, confirm with its number. Uses the first module | 95 <!-- СНЯТО 2026-09-08 строк docs/examples/wal/append-plan.flang = 95 --> |
 
 The two files together carry 110 examples <!-- СНЯТО 2026-09-08 примеров-в docs/examples/wal/*.flang = 110 -->;
-they are declared inside the functions and run with `bootstrap/flang test`.
+they are written inside the functions.
 
 ## Record format
 
@@ -45,34 +46,91 @@ tail of its body as the start of the next record.
 
 ## How to run
 
+The examples:
+
 ```
-bootstrap/flang check docs/examples/wal/write-ahead-log.flang --proof
-bootstrap/flang check docs/examples/wal/append-plan.flang --proof
-bootstrap/flang test  docs/examples/wal/write-ahead-log.flang
-bootstrap/flang test  docs/examples/wal/append-plan.flang
+flang test docs/examples/wal/write-ahead-log.flang
+flang test docs/examples/wal/append-plan.flang
 ```
 
-The first line of `check` prints the number of functions and the number with a
-proved termination; `--proof` adds a report on every assertion; `test` prints the
-number of examples and how many passed.
+```
+docs/examples/wal/write-ahead-log.flang: примеров 98, прошло 98, не прошло 0
+docs/examples/wal/append-plan.flang: примеров 110, прошло 110, не прошло 0
+```
 
-The plan runs with `bootstrap/flang io`. The plan resolves the path to the file журнал.wal
-relative to the directory of the program, and the file must exist: on a missing
-file the plan answers «Провал» with the code `FLANG_IO_READ` (exit code 1). To
-avoid writing into the tree, copy both files to a separate directory:
+That is 98 examples, 98 passed, and 110 of 110. The second run also counts the
+examples of the module it uses: the plan has 12 of its own.
+
+The plan is run by `flang io`. It looks for the file журнал.wal in the directory
+of the program, and the file must exist. To avoid writing into the tree, copy
+the programs to a separate directory:
 
 ```
 mkdir -p /tmp/wal && cp docs/examples/wal/*.flang /tmp/wal/ && : > /tmp/wal/журнал.wal
-bootstrap/flang io /tmp/wal/append-plan.flang
+flang io /tmp/wal/append-plan.flang
 ```
 
-Every run prints, as JSON, two orders — «Прочитать файл» and «Записать файл» —
-with the host's replies, and appends one record with the body «выдача товара»
-and the next number. A record with a damaged frame at the end of the file (for
-instance, without its end mark) is dropped on the next run: the file is
-rewritten as the whole records plus the new one.
+```
+не доказано: утверждений 17: доказано 10, сетка 7, на веру 0 — запуск только по явному согласию: --trust
+```
 
-## What is checked and what is proved
+The exit code is 3: `flang io` does not run a plan unless every claim under it
+is proved ("not proved: 17 claims: 10 proved, 7 on the grid, 0 on trust — runs
+only with explicit consent"). Consent is the `--trust` flag:
+
+```
+flang io /tmp/wal/append-plan.flang --trust
+```
+
+```
+на веру: доказанность не считалась — запуск по ключу --trust
+{"plan":"Дописать в журнал","result":1,"orders":2,"log":[{"поручение":{"variant":"Прочитать файл","fields":{"путь":"журнал.wal"}},"отклик":{"variant":"Прочитано","fields":{"содержимое":""}}},{"поручение":{"variant":"Записать файл","fields":{"путь":"журнал.wal","содержимое":"#1:13:выдача товара;"}},"отклик":{"variant":"Записано","fields":{"сколько":20}}}]}
+```
+
+Every run appends one record with the body «выдача товара» and the next number.
+After two runs the file holds:
+
+```
+#1:13:выдача товара;#2:13:выдача товара;
+```
+
+A record with a damaged frame at the end of the file is dropped. If the scrap
+`#3:5:обрыв`, with no end mark, is appended to that file, the next run leaves:
+
+```
+#1:13:выдача товара;#2:13:выдача товара;#3:13:выдача товара;
+```
+
+Without the log file the plan gets no further than its first order; the exit
+code is 1:
+
+```
+{"error":"файл не прочитан: No such file or directory","diagnostics":[{"code":"FLANG_IO_READ","message":"файл не прочитан: No such file or directory","severity":"error","span":{"line":92,"column":1}}]}
+```
+
+## What is proved and what is not
+
+```
+flang check docs/examples/wal/write-ahead-log.flang --proof
+```
+
+The last lines of the report:
+
+```
+итог:
+  функций 25: тотальных 25, обычных 0
+  обещание несёт: композиция 21, структура 4, точный шаг 0, постоянный шаг 0, объявленная мера 0
+  сторожей в рантайме: 0 мест
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 17: доказано 10 (из них индукцией 3) (из них без теоремы 7), сетка 7, объявлено, не доказано 0
+```
+
+25 functions, all total; 17 claims: 10 proved (3 by induction, 7 without a
+theorem), 7 on the grid, 0 stated without proof. The exit code is 3 — because of
+the seven claims on the grid. `flang check` without `--proof` answers "no
+remarks" and exit code 0 on the same file: it does not show the verdicts of the
+claims. `append-plan.flang` has no claims of its own; its six functions are
+total.
 
 The main statement about reading: a log truncated at any character is read up
 to the last whole record and no further. It is written as four postconditions:
@@ -91,15 +149,14 @@ whole input string to the string itself (the print equals a prefix of the
 input); the kernel has no rule of that shape. What the kernel takes and what it
 does not is named on [which promises the kernel takes](what-the-kernel-accepts.html).
 
-Besides these four, three small ones are on the grid too: «цифра не больше
-девяти» («Цифра числом»), «печать не короче шести знаков» («Напечатать запись»)
-and «разрез не теряет и не добавляет ни знака» («Разрез сходится») — `check --proof`
-on `write-ahead-log.flang`: 17 claims, 10 proved, 7 on the grid.
+Besides these four, three more are on the grid: «цифра не больше девяти»
+(«Цифра числом»), «печать не короче шести знаков» («Напечатать запись») and
+«разрез не теряет и не добавляет ни знака» («Разрез сходится»).
 
 What the kernel proved for all inputs:
 
 * termination of every function in both modules — by composition and by
-  structure, with no descent checks in the printed code;
+  structure, with no descent checks at run time;
 * by induction over the string — «начало не длиннее целого» («Начало строки»)
   and «хвост не длиннее целого» («Хвост строки»); by induction over the list —
   «наибольший не меньше начала поиска» («Наибольший номер»);
@@ -107,10 +164,11 @@ What the kernel proved for all inputs:
   дальше», «Сбиться», «Закрыть запись», «Обратный порядок», «Сколько записей»,
   «Следующий номер».
 
-There are no assertions "declared, not proved" and none taken on faith: the
-report prints zeros for both. How many assertions there are, how many are proved
-and how many are on the grid is not given on this page — the last line of the
-`--proof` report prints those numbers, and they change together with the kernel.
+There are no claims "stated, not proved" and none taken on trust.
+
+The independent proof checker (`FLANG_CHECKER`, built with
+`make -C flang/proof/checker`) replayed 4 proofs out of 10; the other 6 rest on
+the kernel's word.
 
 Confirmation of the write in the plan: the variant «Конец работы» is built in
 one place of the module «Append plan» — the «Записано» branch of «После записи

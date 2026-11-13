@@ -6,7 +6,7 @@ request is a value: «Взять» (take) so many, or «Вернуть» (return
 a length. The allocator is the function «Шаг кучи», which returns the new heap,
 an address and the flag «удалось» (succeeded):
 
-```flang
+```flang fragment
 тотальная функция «Шаг кучи»
   принимает куча: «Куча», запрос: «Запрос»
   возвращает «Отклик кучи»
@@ -16,9 +16,8 @@ The function does not touch memory — it answers what is now to be considered
 taken. The approach is the same as in the UART driver
 `docs/examples/driver/uart.flang` and in the [MSI driver](msi-driver.html).
 
-The program answers the question "can an allocator be expressed in flang, and
-what about it is provable". It is not a replacement for `malloc` in the runtime
-printed to C: the runtime needs memory before the first «Куча» value exists.
+The program does not replace `malloc`: the runtime built from C needs memory
+before the first «Куча» value exists.
 
 ## What is in the file
 
@@ -49,21 +48,48 @@ What the functions do:
 ## How to run
 
 ```
-bootstrap/flang check docs/examples/allocator/allocator.flang --proof
-bootstrap/flang test  docs/examples/allocator/allocator.flang
+flang test docs/examples/allocator/allocator.flang
+flang run docs/examples/allocator/allocator.flang --function '«Отклик первой выдачи»' --args '{}' --trust
+flang check docs/examples/allocator/allocator.flang --proof
 ```
 
-The `--proof` report prints a verdict for every postcondition and, on its last
-line, how many assertions are proved, how many are on the grid and how many are
-declared without a proof. Those numbers are not on this page: they change
-together with the kernel. A measurement on a given date, before and after the
-fold rewrite, is in the section on inequalities of [which promises the kernel
-takes](what-the-kernel-accepts.html).
+`test` runs the examples (37 of 37 pass):
+
+```
+docs/examples/allocator/allocator.flang: примеров 37, прошло 37, не прошло 0
+```
+
+`run` calls one function. «Отклик первой выдачи» (the reply to the first
+allocation) takes 64 units from a fresh heap of 4096:
+
+```
+на веру: доказанность не считалась — запуск по ключу --trust
+{"куча":{"свободные":[{"начало":64,"длина":4032}],"всего":4096},"адрес":0,"удалось":true}
+```
+
+Without `--trust`, `run` refuses with exit code 3 and lists the unproved
+claims: not everything in the file is proved.
+
+`check --proof` prints a verdict for every claim. The last lines:
+
+```
+итог:
+  функций 25: тотальных 25, обычных 0
+  обещание несёт: композиция 25, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 0
+  сторожей в рантайме: 0 мест
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 90: доказано 82 (из них индукцией 3) (из них без теоремы 79, объявленным типом 13), сетка 8, объявлено, не доказано 0
+```
+
+25 functions, all total; 90 claims: 82 proved, 8 on the grid. The exit code is
+3 — because of the eight claims on the grid. The independent proof checker
+(`FLANG_CHECKER`) replayed 42 proofs out of 82; the other 40 rest on the
+kernel's word.
 
 ## What is proved and what is not
 
-Every function in the file is total, and each termination is proved by
-composition. The report has no assertions "declared, not proved".
+All 25 functions are total, and each termination is proved by composition. Of
+the 90 claims 82 are proved and 8 are on the grid.
 
 **Proved for all inputs** — everything written as an equality to a term of the
 same branch or as a condition on a flag: honest refusal («ОТКАЗ ЧЕСТЕН: места

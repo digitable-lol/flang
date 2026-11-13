@@ -20,9 +20,7 @@ flowchart TD
 ```
 
 "Host" here means a program in another language that takes events from the world
-and carries out the answer — usually C. The decision that draws this line is
-written down in full in `docs/adr/0008-layer-boundary.md`, together with the runs that
-refuted the earlier explanation.
+and carries out the answer — usually C.
 
 ## What the line does NOT mean
 
@@ -55,12 +53,9 @@ both the evaluator and the printed program count steps and turn exhaustion into
 a named refusal, `FLANG_RECURSION_LIMIT`. So what the language forbids is not
 the infinite loop but **lying about termination**.
 
-**A scheduler has already been written in flang.** It was quoted for years as
-the example of what cannot be written. It sits in the tree —
-`flang/concurrency/scheduler.flang` — and every one of its functions has a proved
-termination. "Being a scheduler" turned out to be a property not of the code but
-of whoever holds control: take waiting and calling a handler by name out of a
-scheduler, and what is left is decisions.
+**A scheduler in flang exists.** It is in `flang/concurrency/scheduler.flang`, and termination
+is proved for every one of its functions. Take the waiting and the call of a handler by name out
+of a scheduler, and what remains is decisions.
 
 ## What cannot be written in flang
 
@@ -86,8 +81,7 @@ every promise of the function it sits in.
 
 ## What can be written in flang
 
-Everything that turns input into output and waits for nothing. This is not a
-promise but an inventory of what is already written:
+Everything that turns input into output and waits for nothing. Already written:
 
 | what | where | functions | of them marked `тотальная` |
 | --- | --- | ---: | ---: |
@@ -157,14 +151,72 @@ are twenty order variants, and the set is deliberately closed: a function from a
 foreign library cannot be called, neither through a shared object nor through a
 system call.
 
-From this follows a property that is otherwise lost: a program that goes to the
-network is proved to terminate, because the network is not inside it. What
-terminates is the description; what waits is the host.
+A program with orders declares a `план`: a state, a starting function and a handler of
+responses. The command `flang io` runs the plan:
 
-Authority stays with the host rather than with the program: six prohibitions
-(`--no-read`, `--no-write`, `--no-net`, `--no-clock`, `--no-random`,
-`--no-spawn`), and a forbidden order comes back as `FLANG_IO_DENIED`. That works
-precisely because the host knows **what** it is being asked to do.
+```flang
+модуль «Note»
+
+тип «Ход»
+  вариант «Пишем»
+  вариант «Ждём запись»
+
+план «Заметка»
+  состояние «Ход»
+  начинает с «Начало»
+  обрабатывает «Дальше»
+
+тотальная функция «Начало»
+  возвращает «Ход»
+  вариант «Пишем»
+
+тотальная функция «Записать»
+  возвращает «Поручение»
+  вариант «Записать файл» с путь равным "note.txt" и содержимое равным "привет\n"
+
+тотальная функция «Дальше»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «отказ хозяина становится отказом плана»
+    дано ход равно вариант «Ждём запись»
+    дано отклик равно вариант «Сбой» с код равным "FLANG_IO_DENIED" и сообщение равным "запись запрещена"
+    ожидается вариант «Провал» с код равным "FLANG_IO_DENIED" и сообщение равным "запись запрещена"
+  разбор отклик
+    случай вариант «Пока ничего»
+      то вариант «Сделать» с поручение равным «Записать» и потом равным (вариант «Ждём запись»)
+    случай вариант «Записано»
+      то вариант «Конец работы» с значение равным "записано"
+    случай вариант «Сбой» с код как код и сообщение как сообщение
+      то вариант «Провал» с код равным код и сообщение равным сообщение
+    случай любое
+      то вариант «Провал» с код равным "FLANG_IO_ORDER" и сообщение равным "ждали ответа на запись"
+```
+
+```
+$ flang io note.flang
+доказано: утверждений 0
+{"plan":"Заметка","result":"записано","orders":1,"log":[{"поручение":{"variant":"Записать файл",
+"fields":{"путь":"note.txt","содержимое":"привет\n"}},"отклик":{"variant":"Записано","fields":{"сколько":7}}}]}
+$ cat note.txt
+привет
+```
+
+The answer is JSON: the plan's result, the number of orders and the log of order and response.
+A plan with unproved promises is not run by `flang io` until `--trust` is given.
+
+A program that goes to the network is proved to terminate, because the network is not inside it.
+What terminates is the description; what waits is the host.
+
+Authority stays with the host. There are nine prohibitions: `--no-read`, `--no-write`,
+`--no-net`, `--no-clock`, `--no-random`, `--no-spawn`, `--no-env`, `--no-args`, `--no-screen`.
+A forbidden order is not carried out, and the run ends with the refusal `FLANG_IO_DENIED`:
+
+```
+$ flang io note.flang --no-write
+доказано: утверждений 0
+{"error":"хозяину запрещено писать файлы","diagnostics":[{"code":"FLANG_IO_DENIED",
+"message":"хозяину запрещено писать файлы","severity":"error","span":{"line":7,"column":1}}]}
+```
 
 **Second: printing to a target language plus a hand-written host.** The program
 is printed into C (or one of the ten print targets), and the host is written by
@@ -178,7 +230,7 @@ looks like this:
 
 | what | where | lines |
 | --- | --- | ---: |
-| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4652 |
+| scheduler: loop, threads, network wait | `flang/src/emit/c/flang_conc.c` | 4954 |
 | decisions about processes, supervision, links | `flang/concurrency/*.flang` | 2507 |
 
 Line counts by `wc -l`. The first file has six loops
@@ -193,9 +245,9 @@ a matter of style.
 
 ```c
 /* computation: argument types are NOT checked */
-fl_status privratnik_call (fl_ctx *ctx, const char *name, ...);
+fl_status gatekeeper_call (fl_ctx *ctx, const char *name, ...);
 /* entry boundary: declared types are checked BEFORE the call */
-fl_status privratnik_enter(fl_ctx *ctx, const char *name, ...);
+fl_status gatekeeper_enter(fl_ctx *ctx, const char *name, ...);
 ```
 
 Values that came from outside — from a person, from the network, from another
@@ -207,13 +259,6 @@ Preconditions live on that same boundary. The line `требует «имя» у
 contract with the caller; a check for it is printed into the generated code only
 where the value arrives from outside. Internal calls do not pay for it.
 
-And the other side of the same rule: a `требует` on an internal function usually
-has to be removed. An `если` branch in the caller does not become an assumption —
-the compiler asks that the precondition be discharged by a proof at the call
-site, and it names the six shapes of condition it knows how to close. This is not
-pedantry: a precondition belongs to the boundary, and inside, its place is taken
-by promises.
-
 ## An example that actually runs
 
 `docs/examples/host-boundary/` is the whole junction, three files:
@@ -222,7 +267,7 @@ by promises.
 |---|---|
 | `docs/examples/host-boundary/gatekeeper.flang` | the decision: who gets through, who is refused, with which code. Module «Gatekeeper» |
 | `docs/examples/host-boundary/host.c` | the execution: the loop, input-output, mutable state |
-| `docs/examples/host-boundary/run.sh` | print to C, build with the system `cc`, run |
+| `docs/examples/host-boundary/run.sh` | the run script; it fails in 0.7.34, the commands below replace it |
 
 The decisions — parsing the request, checking rights, the budget and its
 refill, the state transition, the response codes — are all on this side of the
@@ -247,7 +292,7 @@ On the C side is what flang cannot write:
 for (;;) {
   if (fgets(line, sizeof line, stdin) == NULL) break;  /* the world says there are no more events */
   ...
-  privratnik_enter(&ctx, "Шаг привратника", args, 2, &decision, &error);
+  gatekeeper_enter(&ctx, "Шаг привратника", args, 2, &decision, &error);
   ...
 }
 ```
@@ -258,45 +303,27 @@ functions. It is in C because of one line inside it: `fgets` **waits**.
 The decision is checked with the usual commands:
 
 ```
-bootstrap/flang check docs/examples/host-boundary/gatekeeper.flang --proof
-bootstrap/flang test  docs/examples/host-boundary/gatekeeper.flang
-```
-
-The `--proof` report says: all functions are total, each termination is proved
-by composition; there are no assertions "declared, not proved"; some
-postconditions are proved for all inputs by reducing the goal to the function
-body, some are on the grid of examples — among them «ГЛАВНОЕ: из годных врат
-выходят годные» of «Шаг привратника»: an inequality over record fields is not
-taken by the kernel. How many of each is printed on the last line of the report:
-«утверждений 31: доказано 22, сетка 9,
-объявлено, не доказано 0», exit code 0; 15 examples, 15 passed.
-Proved postconditions are not printed into the generated code as checks — the
-printer says so on its first line («проверок при работе снято …»); an unproved
-promise would ride along as a check on every return.
-
-**The run does not build.** The module is named «Gatekeeper» — example modules
-carry English names so that the printed file is not a transliteration — and the
-printer emits files and functions under that name, while the host and the run
-script expect the transliterated ones:
-
-```
-printer: gatekeeper.c  gatekeeper.h      gatekeeper_enter(…)  gatekeeper_sozdat_vrata(…)
-host.c:  #include "privratnik.h"         privratnik_enter(…)  privratnik_sozdat_vrata(…)
-run.sh:  cc … privratnik.c …
-```
-
-Besides, `run.sh` looks for the module under `examples/host-boundary/` at the
-root of the tree, not under `docs/examples/`, so `bash
-docs/examples/host-boundary/run.sh` stops at the first step: «FLANG_CLI: не
-прочитан файл …/examples/host-boundary/gatekeeper.flang», «печать отказала, код 2».
-Both commands above pass. The output below is what the run prints once its paths
-and names match the printer; to reproduce it, the paths and names in `docs/examples/host-boundary/host.c` and
-`docs/examples/host-boundary/run.sh` have to be brought in line with it.
-
-```
-$ bash docs/examples/host-boundary/run.sh
+$ flang test docs/examples/host-boundary/gatekeeper.flang
+docs/examples/host-boundary/gatekeeper.flang: примеров 15, прошло 15, не прошло 0
+$ flang check docs/examples/host-boundary/gatekeeper.flang --proof
 …
-== 3. прогон: девять событий на стандартный ввод
+утверждений 31: доказано 25, условно 0, сетка 6, объявлено, не доказано 0, отвергнуто 0, нарушено 0
+```
+
+All eight functions are total. Of 31 postconditions, 25 are proved for all inputs and 6 are only
+computed on examples — among them «ГЛАВНОЕ: из годных врат выходят годные». That is why
+`check --proof` returns code 3. Proved postconditions do not travel into the printed code as
+checks («проверок при работе снято 25»).
+
+To build and run the seam: the host and `run.sh` are written for the names `privratnik_*`, while
+printing module «Gatekeeper» gives `gatekeeper_*`, so the names are replaced in a copy of the
+host:
+
+```
+$ flang emit docs/examples/host-boundary/gatekeeper.flang --target c --no-cli --out out
+$ sed 's/privratnik/gatekeeper/g' docs/examples/host-boundary/host.c > host.c
+$ cc -std=c99 -Wall -Wextra -O2 -I out -o host host.c out/gatekeeper.c out/flang_runtime.c -lm -lpthread
+$ printf 'запрос 1\nтакт\nтакт\nтакт\nтакт\nзапрос 1\nзапрос 5\nзапрос 1\nзапрос 1\n' | ./host
 хозяин: врата открыты. ёмкость 3, уровень ключа 2, запас 0
 хозяин: жду событий на стандартном вводе: «такт» или «запрос N»
 запрос 1 → код 429, ОТКАЗАНО, запас 0, пропущено 0, отказано 1
@@ -311,7 +338,6 @@ $ bash docs/examples/host-boundary/run.sh
 хозяин: событий 9, пропущено 3, отказано 2
 хозяин: нарочно порчу довод — запас 4 при ёмкости 3
 граница отвергла довод: FLANG_PRECONDITION — не выполнено требование «запас не выше ёмкости» функции «Шаг привратника»
-код возврата: 0
 ```
 
 Exit code 0. Every outcome is visible: refusal on an exhausted budget (429),

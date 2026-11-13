@@ -63,9 +63,8 @@ diagnostics), the **program module** (one function per flang function), a
 **runner**, and a build file. With `--no-cli` the runner is gone: `js` is left
 with `factorial.js` and `package.json`, `c` with five files out of six.
 
-A program with `процесс` and `надзор` declarations is emitted with a scheduler
-on `c` and `elixir` only; on the other targets the handlers arrive as ordinary
-functions and the calling is yours.
+A program with `процесс` and `надзор` declarations is printed by targets `c`, `elixir`, `js`
+and `ts`. The other six refuse: "the target has no concurrency scheduler", exit code 1.
 
 ## C: build it and link it into your program
 
@@ -384,8 +383,7 @@ the functions: `factorial_entry` in C, `$PROGRAM.entry` in JavaScript.
 - **diagnostic texts** — only codes. The texts are Russian on every target;
 - **types in JavaScript.** On target `js` they are JSDoc comments; strict types come with
   target `ts`;
-- **concurrency everywhere.** Processes run on `c` and `elixir`, parallelism on
-  `elixir`;
+- **concurrency everywhere.** Processes are printed by `c`, `elixir`, `js` and `ts`;
 - **type-checked arguments on a direct call.** The runner and `enter` on target `c` check;
   a function called directly trusts its caller.
 

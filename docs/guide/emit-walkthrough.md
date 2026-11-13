@@ -167,5 +167,6 @@ There are ten targets. The same program and the same input gave
   `tsc -p .` was not run here: the machine had no `tsc`. Target details:
   [The TypeScript target](typescript-target.md).
 
-Declarations `процесс` and `надзор` are printed with a scheduler only by `c` and `elixir`. Other
-differences between targets are in [Known limits](limits.md).
+A program with `процесс` and `надзор` declarations is printed by `c`, `elixir`, `js` and `ts`;
+a program with a `план` declaration by `c`, `go`, `js`, `python`, `rust` and `ts`; the other
+targets refuse. Other differences between targets are in [Known limits](limits.md).

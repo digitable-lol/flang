@@ -30,6 +30,26 @@
 `nat-order-chain`, `list-filter-length-bound`, `and-introduction`, `contradiction`,
 `tree-mirror-mirror`, `nat-maximum-bound`. Ходов ядро под этими местами не печатает.
 
+10 ноября 2026, двоичный 0.7.34 (метка `v0.7.34`), набор вырос до шестидесяти задач, сверщик на C
+собран `make -C flang/proof/checker`; второй сверщик в этом замере не запускался. Команда —
+`bootstrap/flang check <файл> --proof --strict`, строка «независимо, сверщиком, проиграно … из …».
+При непереигранной записи итоговая строка всё равно «ДОКАЗАНО», код 0.
+Задач с доказанным итогом 52, переиграно целиком 30; обязательств
+доказано 56, переиграно 31, на слове ядра 25. Не переиграны:
+
+| чем доказано | задач | какие |
+| --- | ---: | --- |
+| «цель есть допущение»: постусловие ввезённого модуля | 5 | `list-length-append`, `list-length-reverse`, `list-rewrite-user-lemma`, `list-flatten-length`, `sort-insert-length` |
+| индукция, шаг — «линейная арифметика» после «вычисление замкнутой цели» | 3 | `nat-sum-formula`, `nat-factorial-positive`, `peano-power-of-two-positive` |
+| индукция, шаг — «кольцо точного целого» и «линейная арифметика» | 3 | `list-fold-accumulator`, `loop-sum-fold`, `loop-countdown-while` |
+| индукция, шаг — «линейная арифметика» и «тождество после переписки допущением» | 3 | `list-count-reverse-permutation`, `tree-size-mirror`, `tree-flatten-length` |
+| индукция по встроенному списку, «тождество после переписки допущением» | 2 | `list-append-associative`, `simp-map-through-append` |
+| индукция, «разбор цели по условию» | 2 | `list-member-append`, `search-found-is-member` |
+| «линейная арифметика» с нульместной функцией | 1 | `nat-subtract-self` |
+| «запись из своих полей» | 1 | `record-swap-swap` |
+| «тождество после переписки допущением» над `длина` и `отобразить` | 1 | `simp-map-length-chain` |
+| «все элементы по построению» | 1 | `finite-bounded-quantifier` |
+
 ## Что должно быть
 
 Каждое из 14 мест переиграно обоими сверщиками; подделка к каждому новому приёму
@@ -46,7 +66,7 @@
   `kernel-replay` в `flang/proof/checker/tests/probes.tsv`: 7 честных → 0, подделки → 1
   или 3, ни одна не принята кодом 0.
 - `bootstrap/flang run-script checker:second` — «расхождений 0».
-- `docs/lean-parity.md`: «переигрывает все 14».
+- `docs/lean-parity.md`: столбец «сверщик» — «да» у каждой задачи с доказанным итогом.
 
 ## Где живёт правка
 

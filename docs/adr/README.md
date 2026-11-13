@@ -178,6 +178,7 @@
 | 0234 | [Утверждение, закрытое примером у функции без доводов, читает модель; что нужно остальным блокам «на слове»](0234-the-model-reads-a-claim-closed-by-example-on-a-function-without-parameters.md) | предложено | да |  |
 | 0236 | [Утверждения, закрытые правилами ядра «неотрицательность по построению» и «ограниченность точным потолком по построению», читает модель](0236-the-model-reads-claims-closed-by-kernel-rules-by-construction.md) | предложено | да |  |
 | 0238 | [Класс проверяется по раскрытому тексту, а раскрытию доверяют, как компилятору C](0238-a-class-is-checked-by-its-expanded-text-and-the-expansion-is-trusted-like-the-c-compiler.md) | предложено | нет |  |
+| 0240 | [Постусловие — часть вызова: его самовызов обязан убывать](0240-a-postcondition-is-part-of-the-call-and-its-self-call-needs-descent.md) | предложено | нет |  |
 
 ## Команды старых решений, которых больше нет
 

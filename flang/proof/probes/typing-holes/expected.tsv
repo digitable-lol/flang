@@ -92,3 +92,4 @@ written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-typ
 written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0
 postcondition-calls-its-own-function.flang	check	0	замечаний нет
 postcondition-calls-its-own-function-one-step-lower.flang	check	0	замечаний нет
+postconditions-call-each-other.flang	check	0	замечаний нет

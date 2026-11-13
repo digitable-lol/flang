@@ -1104,6 +1104,7 @@ f7523d73e729c9d57e38d8fd22fa9fc2|1|0|0|1|0|flang/proof/probes/typing-holes/progr
 e3ca8a3008f2489a40fe3b2584c23cef|1|0|0|1|0|flang/proof/probes/typing-holes/programs/linear-equality-doubling-at-negative-zero.flang
 cefe22d28d2a45bdf6b329f02f78dc47|1|1|0|0|0|flang/proof/probes/typing-holes/programs/postcondition-calls-its-own-function.flang
 535797f7c62317e4f43ce1863bcad00a|1|1|0|0|0|flang/proof/probes/typing-holes/programs/postcondition-calls-its-own-function-one-step-lower.flang
+da1ec66deb71d6f3cda3fc51183d337f|2|2|0|0|0|flang/proof/probes/typing-holes/programs/postconditions-call-each-other.flang
 2a6dc706312e30f4de0f0d0905ab6416|2|1|0|1|1|flang/proof/probes/typing-holes/programs/requirement-skipped-inside-a-promise.flang
 4db83532cd0f412cccb2ae2a9ba6d17b|1|0|1|0|0|flang/proof/probes/typing-holes/programs/segment-base-equal-zero-skips-negative-zero.flang
 56d61e1517e7ac96acf22ed1af92f8d3|1|0|0|1|0|flang/proof/probes/typing-holes/programs/segment-sum-negative-zero-literal.flang

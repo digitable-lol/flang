@@ -1344,7 +1344,6 @@ d6d765704cb9d7b4e987687d663ebef5|1|×|×|×|0|flang/proof/checker/tests/families
 cd38f9047f7402a4d063b18a08a71807|3|×|×|×|0|flang/proof/checker/tests/families/statement/ring-laws-provable.flang
 8c5c75c3c5302651cf027620cfa37337|3|×|×|×|0|flang/proof/checker/tests/families/statement/ring-laws-banned.flang
 ae5f395a5a682cf58723197aabf0a420|3|×|×|×|2|flang/proof/checker/tests/families/ledger-steps/steps.flang
-ea1158594f0caa46237101fc3a6b2ddf|1|0|1|0|0|flang/scripts/binary.fscript
 47700ac76c714a188e2e9ea3e0bcfa95|2|0|2|0|0|flang/scripts/claim-guard.fscript
 44d471d298687c75ab7111710b28ca0f|1|1|0|0|0|flang/scripts/closed-length-guard.fscript
 da7fad16a84c755f2638b38faa0a9c94|20|19|1|0|0|flang/scripts/code-forgery.fscript
@@ -1622,7 +1621,7 @@ e3e12eb0215c5a68744c935ef6ee0619|9|9|0|0|0|scripts/editors/vim-highlighting.fscr
 6d3f808f631c688e4a87d590d305e029|12|12|0|0|0|scripts/editors/vscode-rules.flang
 7c778e2f2a3914e85057e6673f31af9e|22|15|7|0|0|scripts/guards/adr-numbers-guard.fscript
 22c4edbe688f3595740c7f4c0ed6a51b|20|20|0|0|0|scripts/guards/asdf-plugin-guard.fscript
-cb2cf795f15ebcb1d40f13c7369cc380|25|25|0|0|0|scripts/guards/bidi-control-guard.fscript
+80ba97833dc6f57d5db71b59f15b9c21|24|24|0|0|0|scripts/guards/bidi-control-guard.fscript
 ef40ff2896acbf39dafc13d9db8c1ef9|15|14|0|0|0|scripts/guards/check-before-run.fscript
 1c201b5246739e1556af13cba2128f27|4|4|0|0|0|scripts/guards/child-timeout.fscript
 0073c9e32ae573edaa5eb5bd6f1e521b|5|4|1|0|0|scripts/guards/cli-commands-guard.fscript
@@ -1633,7 +1632,7 @@ ec91150a76853aeccde1fc314f3f9644|14|14|0|0|0|scripts/guards/delivery-guard.flang
 60ba6b1b924d9a35ab819f72b0e5d41c|3|2|1|0|0|scripts/guards/description-census-guard.fscript
 9a1d779542ab08a5a1416bbdc99c0563|10|10|0|0|0|scripts/guards/dictionary-guard.fscript
 35bc4b6ceba5235a93625a25ded7023f|12|12|0|0|0|scripts/guards/emit-promises-guard.fscript
-bb9f8dadc0aa937a5fc4dbda79707edd|18|16|2|0|0|scripts/guards/file-extensions.fscript
+069a5cb63a8e5f5359845c41bf1a1c45|16|15|1|0|0|scripts/guards/file-extensions.fscript
 1f370e06afbea2343cf585f244528f95|1|1|0|0|0|scripts/guards/guard-runner.fscript
 ce0f26e8f64ce11b7f2f8e559d0f090b|11|11|0|0|0|scripts/guards/guards-without-forgery-probe.fscript
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
@@ -1695,7 +1694,7 @@ e478585ce80d5ce042ca3d7066de63e1|21|15|6|0|0|scripts/targets/conc-link-emit.fscr
 ce97ff0ab2094dce6783702de4290b85|34|32|0|2|0|scripts/targets/emit-and-examples.fscript
 5f0d2e189fb05b4383ad353ab7f23fa7|48|42|3|3|0|scripts/targets/emit-law.fscript
 8d77245282ed034860ef3855371b30a0|26|26|0|0|0|scripts/targets/plan-across-targets.fscript
-9c2d3aecbfe7786b9701fb51fd4b1147|33|30|0|0|0|scripts/targets/region-in-c-target.fscript
+ec78329a84545cbeb836cd0b0c149d93|32|31|0|1|0|scripts/targets/region-in-c-target.fscript
 cb3ed219317c23a2cbbf7c59f05978b6|3|3|0|0|0|scripts/targets/target-canons.fscript
 198cf373ae6cb9c1db86d1b84a527ace|1|0|0|0|0|flang/proof/probes/run/programs/induction.flang
 9452cb5e4e2fe36982fcc81e9c0ebd4b|0|0|0|0|1|flang/proof/probes/run/programs/law-on-grid.flang

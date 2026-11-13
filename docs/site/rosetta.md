@@ -5,7 +5,7 @@ which solutions have their termination proved, which do not, and why.
 
 The set holds <!-- СНЯТО 2026-09-08 файлов docs/examples/rosetta/*.flang = 28 --> 28 files,
 two per task: one is written in the Russian words of the language, the other in
-the English ones (`*-english.flang`). They are the same program: the language has
+the English ones (`*-english.flang`). The solution is the same, the words differ: the language has
 four equal spellings, and `тотальная функция` and `total function` are one
 keyword ([Four writing surfaces](../surfaces.html), in Russian). All four
 spellings of one task are in `docs/examples/surfaces/`.

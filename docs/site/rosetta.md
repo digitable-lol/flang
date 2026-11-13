@@ -1,50 +1,56 @@
 # Rosetta Code in flang
 
-`docs/examples/rosetta/` — the canonical Rosetta Code tasks, solved in flang. It is a
-showcase: here the language is compared with the same solution in other languages,
-so what matters is not brevity but what is visible on reading — where termination
-is proved, and where the language says it cannot prove it.
+`docs/examples/rosetta/` holds solutions to 14 Rosetta Code tasks. This page shows
+which solutions have their termination proved, which do not, and why.
 
 The set holds <!-- СНЯТО 2026-09-08 файлов docs/examples/rosetta/*.flang = 28 --> 28 files,
-two per task: each is written on the Russian surface of the language and on the
-English one (`*-english.flang`). This is not a translation of documentation: the
-language has four equal writing surfaces — Russian, English, Esperanto and
-Chinese — and `тотальная функция` / `total function` are one and the same keyword
-(the word table is `flang/self/lexer.flang`; the page is [Four writing
-surfaces](../surfaces.html), in Russian). Two are taken here because on a Rosetta Code task page
-the second listing is there for the reader: next to the Russian listing, the
-English one shows that the Russian spelling is a choice, not a limitation. All four
-surfaces on one task are in `docs/examples/surfaces/`.
+two per task: one is written in the Russian words of the language, the other in
+the English ones (`*-english.flang`). They are the same program: the language has
+four equal spellings, and `тотальная функция` and `total function` are one
+keyword ([Four writing surfaces](../surfaces.html), in Russian). All four
+spellings of one task are in `docs/examples/surfaces/`.
 
-Ready text for the wiki pages is in `docs/examples/rosetta/WIKI.en.md`. The publishing
-procedure, the licence caveat and the language page are described outside this
-repository.
+The text for the Rosetta Code wiki pages is `docs/examples/rosetta/WIKI.en.md`.
 
 ## How to run it
 
 ```bash
-bootstrap/flang test docs/examples/rosetta/                                # the examples of every file in the set
-bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang --proof  # the ledger of one file
+flang test docs/examples/rosetta/
+flang check docs/examples/rosetta/towers-of-hanoi.flang --proof
 ```
 
-`test` runs the examples declared inside the functions. `check --proof` prints the
-proof report: what carries the promise «тотальная» for each function, and what carries
-each stated claim. For the Towers of Hanoi it ends like this:
+`test` runs the examples written inside the functions, over every file of the
+set (28 files, 422 examples, 422 passed):
+
+```
+корпус «docs/examples/rosetta/»: файлов 28, взято 28, отказано 0, примеров 422 (своих 422), на чужих примерах 0, потеряно своих 0, прошло 422, не прошло 0, за … мс
+```
+
+`check --proof` prints the proof report of one file: what proves the termination
+of each function, and what proves each `обеспечивает` (ensures) claim. The
+Towers of Hanoi has one claim:
 
 ```
 что высказано и чем это несётся:
   постусловие «ходов не бывает отрицательно» функции «Число ходов» — доказано индукцией по «список»: база 1 случай, шаг при допущении на частях (1 случай), правила сведения: неотрицательность по построению — утверждение обо ВСЕХ входах типа «список», а не о написанных
 ```
 
-The words of the proof report are not interchangeable: «доказано» (proved) is a claim
-about all inputs; «сетка N» (grid N) is computed on N values of the author's, and
-that is not a proof; «объявлено, не доказано» (stated, not proved) is a claim with
-no proof attached. In every file of the set every stated claim
-stands in the proof report with the word «доказано»; there is no «сетка» line
-and no «объявлено, не доказано» line in any of them.
+The words of the report are not interchangeable: «доказано» (proved) is true on
+all inputs; «сетка N» (grid N) is computed on N of the author's examples and is
+not a proof; «объявлено, не доказано» (stated, not proved) has no proof.
 
-Both files of each task are checked by the run separately. A check that the two
-listings are one program up to renaming does not exist in the tree.
+## What is proved
+
+`check --proof` over all 28 files: there are 54 `обеспечивает` claims, they
+stand in 20 files, and all 54 are proved. No report has a «сетка» line or an
+«объявлено, не доказано» line.
+
+Not proved:
+
+- termination of the functions in the "not total" column of the table below —
+  it is not promised either;
+- that the Russian and the English file of a task are one program. Each is
+  checked separately.
 
 ## The tasks
 
@@ -64,41 +70,50 @@ the same functions stand under English names.
 | Merge sort | `merge-sort.flang` | — | all total; merging and sorting go "with fuel" — over a list that becomes a part of itself on every turn |
 | Palindrome detection | `palindrome.flang` | — | all total: normalisation of case and punctuation, comparison; the claims about «Позиция подстроки» are proved; the same task is shown separately on a list |
 | Sequence of primes by trial division | `primes-by-trial-division.flang` | «Просеять», «Числа от и до», «Простые до», «Простые до, с топливом» | only «Просеять с топливом» is total; a real sieve of Eratosthenes crosses out by writing at an index, and the language has no such write — so the file lies under the trial-division task |
-| Quicksort | `quicksort.flang` | «Быстрая сортировка» | recursion on filtered sublists: the sublist is smaller than the original but is not a part of it — no proof; «Сортировка вставками» next to it is total |
+| Quicksort | `quicksort.flang` | «Быстрая сортировка» | recursion on filtered sublists: the sublist is smaller than the original but is not a part of it; «Сортировка вставками» next to it is total |
 | Reverse a string | `reverse-string.flang` | — | all total; the reversal goes by code points — the example holds the string `"а🙂"` |
 | Roman numerals | `roman-numerals.flang` | — | all total; claims about «Значение цифры»: at least 0, at most 1000, and one per numeral |
 | Run-length encoding | `run-length-encoding.flang` | — | all total; «Туда и обратно» — encoding and decoding are inverse to each other |
 | Towers of Hanoi | `towers-of-hanoi.flang` | — | all total; the non-negativity of «Число ходов» is proved by induction on the structure of the list |
 
-The "not total" column is taken from a file by
-`grep '^функция ' docs/examples/rosetta/<file>`; what proves each total one is printed
-by `bootstrap/flang check docs/examples/rosetta/<file> --proof`.
+The "not total" column is `grep '^функция ' docs/examples/rosetta/<file>`. What
+proves each total function is printed by `flang check docs/examples/rosetta/<file> --proof`.
 
 ## Why some solutions are not total
 
-This is a border the language draws deliberately, not unfinished work. The ways of
-proving termination are laid out on the page [What the mark «тотальная»
-gives](totality.html); here only what the set shows that border on is named.
+The functions of this set are written without an `убывает …` (decreases) line,
+and the compiler derives termination itself — from the shape of the recursion.
+Three shapes it does not take:
 
-- **Counting upwards.** «Числа от и до» grows the start, and the end is a
-  parameter, not a number: it cannot serve as the bound, because it changes from
-  call to call itself. The compiler does not reason "the start will overtake the
-  end sooner or later". This function stands in five files of the set and is total
-  in none.
+- **Counting upwards.** «Числа от и до» grows the start until it overtakes the
+  end. The end is a parameter, not a constant, and the compiler does not derive
+  such a descent itself. The function stands in five files of the set and is
+  total in none.
 - **Recursion on a sublist rather than a tail.** In quicksort the filtered sublist
-  is smaller than the original but is not a part of it, and it is not a number at
-  all. Neither structural descent nor a measure.
+  is shorter than the original but is not a part of it.
 - **Two arguments, neither decreasing on its own.** The Ackermann function.
 
-That a constant step has a footing outside the shape of the program, the proof
-report says itself: «на IEEE-754 шаг не всегда меняет число, поэтому сторож» — into
-every call proved by a step the compiler inserts a check of the decrease, and a step
-that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless loop.
+The first two shapes are accepted if the author names the measure. «Числа от и
+до» with the line `убывает конец минус начало плюс 1` (decreases: end minus
+start plus 1) passes as `тотальная`, and the report answers:
+
+```
+«Числа от и до»  доказано объявленной мерой: убывает «конец» минус «начало» плюс 1; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
+```
+
+The measure is then not proved; it is checked while the program runs. A sort
+with a declared measure is taken apart on the page [Leetcode tasks](case-studies.html).
+All the ways are on the page [What the mark «тотальная» gives](totality.html).
+
+A run-time check also stands in functions proved by a constant step. The report
+says why: «на IEEE-754 шаг не всегда меняет число, поэтому сторож» ("on IEEE-754
+a step does not always change the number, hence the guard"). A step that did not
+decrease gives the refusal `FLANG_MEASURE` rather than an endless loop.
 
 ## What the set does not have
 
-- **Tasks with input and output.** The language has I/O orders (`docs/examples/io/`),
-  but the Rosetta Code tasks here are about the algorithm, not about the host.
+- **Tasks with input and output.** The language has I/O (`docs/examples/io/`), but
+  the tasks here were picked for the algorithm.
 - **Tasks that need strings ordered** (Anagrams, Letter frequency). `меньше` and
   `больше` on strings are refused by the type check —
   `FLANG_TYPE: … сравнения порядка допустимы только для чисел`. The letters of a word cannot be sorted
@@ -112,4 +127,4 @@ that did not decrease gives the refusal `FLANG_MEASURE` rather than an endless l
 
 - [The catalogue of examples](examples.html) — every set in the `docs/examples/` directory
 - [What the mark «тотальная» gives](totality.html) — the ways of proving termination
-- [A study of leetcode problems](case-studies.html) — five problems with their proof reports in full
+- [Leetcode tasks](case-studies.html) — three solutions with their proof reports

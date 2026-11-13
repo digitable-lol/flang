@@ -114,8 +114,14 @@ partial def «типJson» (j : Json) : «Тип» :=
     if «натИмена».contains n then .«нат»
     else if «целыеИмена».contains n then .«целое»
     else if «числаИмена».contains n then .«число»
-    else .«ссылка» n
-  | "fn" => .«функция» ((«массив» j "params").map «типJson») («типJson» ((«поле?» j "returns").getD .null))
+    else
+      match «поле?» j "args" with
+      | some (.arr a) => if a.isEmpty then .«ссылка» n else .«ссылка» (n ++ "\x01" ++ (Json.arr a).compress)
+      | _ => .«ссылка» n
+  | "fn" =>
+    match «поле?» j "from", «поле?» j "to" with
+    | some a, some b => .«функция» [«типJson» a] («типJson» b)
+    | _, _ => .«функция» ((«массив» j "params").map «типJson») («типJson» ((«поле?» j "returns").getD .null))
   | k => .«вне» ("вид типа " ++ k)
 
 def «объявленияТипов» (j : Json) : List (String × Json) :=
@@ -124,14 +130,42 @@ def «объявленияТипов» (j : Json) : List (String × Json) :=
 def «поляТипа» (fs : List Json) : List (String × «Тип») :=
   fs.map (fun f => («строка?» f "name", «типJson» ((«поле?» f "type").getD .null)))
 
+/-- Подставить доводы типа на место его параметров в типе поля. -/
+partial def «подставитьТип» (σ : List (String × Json)) (j : Json) : Json :=
+  match j with
+  | .arr a => .arr (a.map («подставитьТип» σ))
+  | .obj m =>
+    let named := «строка?» j "kind" = "named" && («массив» j "args").isEmpty
+    match (if named then «найти» («строка?» j "name") σ else none) with
+    | some v => v
+    | none => Json.mkObj (m.toList.map (fun p => (p.1, «подставитьТип» σ p.2)))
+  | v => v
+
+/-- Описание именованного типа. Имя обобщённого типа несёт свои доводы после знака `\x01` (их кладёт
+`«типJson»`): `«Возможно» от число` раскрывается с числом на месте параметра «А», а не оставляет его
+неописанным. -/
 def «раскрыть» (decls : List (String × Json)) (n : String) : «Тип» :=
-  match «найти» n decls with
-  | none => .«вне» ("тип «" ++ n ++ "» не описан деревом")
+  let parts := n.splitOn "\x01"
+  let base := parts.headD n
+  let args := match parts with
+    | [_, a] => match Json.parse a with
+      | .ok (.arr xs) => xs.toList
+      | _ => []
+    | _ => []
+  match «найти» base decls with
+  | none => .«вне» ("тип «" ++ base ++ "» не описан деревом")
   | some t =>
+    let ps := («массив» t "typeParams").filterMap (fun x => match x with
+      | .str s => some s
+      | _ => none)
+    let σ := ps.zip args
+    let fields := fun (o : Json) => «поляТипа» ((«массив» o "fields").map (fun f =>
+      match «поле?» f "type" with
+      | some ty => f.setObjVal! "type" («подставитьТип» σ ty)
+      | none => f))
     match «строка?» t "kind" with
-    | "record" => .«запись» n («поляТипа» («массив» t "fields"))
-    | "sum" => .«сумма» n ((«массив» t "variants").map (fun v =>
-        («строка?» v "name", «поляТипа» («массив» v "fields"))))
+    | "record" => .«запись» n (fields t)
+    | "sum" => .«сумма» n ((«массив» t "variants").map (fun v => («строка?» v "name", fields v)))
     | "param" => .«число»
     | k => .«вне» ("объявление вида " ++ k)
 
@@ -712,8 +746,9 @@ def «символьно» (P : «Программа») (cx : «Контекст
           (word0, ",".intercalate called)
         else ("не сошлось: эталон " ++ «текстД» r ++ " | C " ++ «текстД» c, "")
 
-def «строкиФункции» (P : «Программа») (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json))
-    (cx : «КонтекстC») (numeric : List String) (f : Json) : List String :=
+def «печатьФункции» (emit : String → IO Unit) (slow : List Nat) (cut : Nat) (nosym : Bool) (P : «Программа»)
+    (fns : List (String × List «Тип» × «Тип»)) (common : List (String × Json)) (cx : «КонтекстC»)
+    (numeric : List String) (f : Json) : IO Unit := do
   let decls := «параметрыТипа» f ++ common
   let name := «строка?» f "name"
   let params := («массив» f "params").map (fun p => («строка?» p "name", «типJson» ((«поле?» p "type").getD .null)))
@@ -721,8 +756,8 @@ def «строкиФункции» (P : «Программа») (fns : List (Str
   let rows := params.map (fun p => «образцы» fns decls [] 2 p.2)
   let why := rows.flatMap (·.«вне») ++ ret.«вне»
   match why.head?, «функцияПрограммы» P name with
-  | some w, _ => [name ++ "\tвне\t" ++ w ++ "\t"]
-  | none, none => [name ++ "\tвне\tфункции нет в эталоне\t"]
+  | some w, _ => emit (name ++ "\tвне\t" ++ w ++ "\t")
+  | none, none => emit (name ++ "\tвне\tфункции нет в эталоне\t")
   | none, some g =>
     let finite := rows.all (·.«конечно»)
     let cols := rows.map (·.«значения»)
@@ -738,18 +773,33 @@ def «строкиФункции» (P : «Программа») (fns : List (Str
     let all := «безПовторов» («наборыПримеров» f (params.map (·.1)) ++ sets ++ bounds)
     let cls := if params.isEmpty then "без параметров" else if full then "перебор" else "свидетели"
     let pre := «предусловияJson» f
-    let answers := all.map («ответЭталона» P pre g)
-    let sym := «символьно» P cx decls numeric f g types all answers
-    if all.isEmpty then [name ++ "\tвне\tнет ни одного свидетеля\t"]
-    else (all.zip answers).map (fun (vs, a) => name ++ "\t" ++ cls ++ "\t" ++ «запрос» name vs ++ "\t" ++ a) ++
-      [name ++ "\tсимвол\t" ++ sym.1 ++ "\t" ++ sym.2]
+    if all.isEmpty then emit (name ++ "\tвне\tнет ни одного свидетеля\t")
+    else
+      let mut answers : Array String := #[]
+      for vs in all do
+        let i := answers.size
+        let a := if slow.contains i || cut ≤ i then "топливо" else «ответЭталона» P pre g vs
+        emit (name ++ "\t" ++ cls ++ "\t" ++ «запрос» name vs ++ "\t" ++ a)
+        answers := answers.push a
+      emit "#символ"
+      let sym := if nosym then ("вне: символьное сравнение не уложилось в срок", "")
+        else «символьно» P cx decls numeric f g types all answers.toList
+      emit (name ++ "\tсимвол\t" ++ sym.1 ++ "\t" ++ sym.2)
 
 def «доказанныеJson» (j : Json) : List (String × String) :=
   («массив» j "obligations").filterMap (fun o =>
     if «строка?» o "kind" = "postcondition" && «строка?» ((«поле?» o "discharge").getD .null) "verdict" = "доказано"
     then some («строка?» o "of", «строка?» o "name") else none)
 
-def «планФайла» (path : String) (cpath proof : Option String) : IO (List String) := do
+structure «Разобранное» where
+  «программа» : «Программа»
+  «сигнатуры» : List (String × List «Тип» × «Тип»)
+  «объявления» : List (String × Json)
+  «контекст» : «КонтекстC»
+  «числовые» : List String
+  «функции» : Array Json
+
+def «разобратьФайл» (path : String) (cpath proof : Option String) : IO (Except String «Разобранное») := do
   let text ← IO.FS.readFile path
   let ctext ← match cpath with
     | some c => do
@@ -760,14 +810,13 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     | some q => IO.FS.readFile q
     | none => pure ""
   match Json.parse text with
-  | .error m => pure ["\tнечитаемо\t" ++ m ++ "\t"]
+  | .error m => pure (.error m)
   | .ok j =>
     let P := «программаJson» j
     let decls := «объявленияТипов» j
     let fs := match ctext with
       | some t => «функцииC» («лексемы» t.toList []) []
       | none => []
-    let _ := fs.length
     let proved := match Json.parse ptext with
       | .ok pj => «доказанныеJson» pj
       | .error _ => []
@@ -787,7 +836,188 @@ def «планФайла» (path : String) (cpath proof : Option String) : IO (L
     let fns := («массив» j "functions").map (fun f => («строка?» f "name",
       («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
       «типJson» ((«поле?» f "returns").getD .null)))
-    pure ((«массив» j "functions").flatMap («строкиФункции» P fns decls cx numeric))
+    pure (.ok ⟨P, fns, decls, cx, numeric, («массив» j "functions").toArray⟩)
+
+/-- Строки плана без надзора: каждая функция считается в этом же процессе, сколько бы это ни длилось. -/
+def «планФайла» (path : String) (cpath proof : Option String) : IO (List String) := do
+  match ← «разобратьФайл» path cpath proof with
+  | .error m => pure ["\tнечитаемо\t" ++ m ++ "\t"]
+  | .ok r =>
+    let acc ← IO.mkRef (#[] : Array String)
+    for f in r.«функции» do
+      «печатьФункции» (fun s => if s.startsWith "#" then pure () else acc.modify (·.push s)) [] 1000000 false
+        r.«программа» r.«сигнатуры» r.«объявления» r.«контекст» r.«числовые» f
+    pure (← acc.get).toList
+
+/-- Часть плана для надзора: функции `start`, `start + stride`, … по порядку. Каждая строка уходит сразу;
+строки с `#` размечают, где работа: надзор по ним знает, на какой функции и на каком свидетеле встал счёт.
+Доводы `slow`, `cut`, `nosym` относятся только к первой функции части. -/
+def «частьПлана» (path cpath proof : String) (start stride : Nat) (slow : List Nat) (cut : Nat) (nosym : Bool) :
+    IO UInt32 := do
+  let out ← IO.getStdout
+  let emit : String → IO Unit := fun s => do
+    out.putStrLn s
+    out.flush
+  match ← «разобратьФайл» path (some cpath) (some proof) with
+  | .error m =>
+    emit ("#нечитаемо\t" ++ m)
+    pure 0
+  | .ok r =>
+    emit ("#начало\t" ++ toString r.«функции».size)
+    let mut i := start
+    while i < r.«функции».size do
+      let f := r.«функции»[i]!
+      emit ("#имя\t" ++ toString i)
+      if i = start then
+        «печатьФункции» emit slow cut nosym r.«программа» r.«сигнатуры» r.«объявления» r.«контекст» r.«числовые» f
+      else
+        «печатьФункции» emit [] 1000000 false r.«программа» r.«сигнатуры» r.«объявления» r.«контекст» r.«числовые» f
+      emit ("#готово\t" ++ toString i)
+      i := i + (if stride = 0 then 1 else stride)
+    pure 0
+
+partial def «читатьСтроки» (h : IO.FS.Handle) (buf : IO.Ref (Array String)) (eof : IO.Ref Bool) : IO Unit := do
+  let l ← h.getLine
+  if l.isEmpty then eof.set true
+  else
+    buf.modify (·.push (if l.endsWith "\n" then (l.dropEnd 1).toString else l))
+    «читатьСтроки» h buf eof
+
+/-- Чем кончилась одна попытка части плана. -/
+inductive «Попытка» where
+  | «дошла»
+  | «встала» (i : Nat) (w : Nat) (sym : Bool)
+  | «срок» (i : Nat)
+  | «беда» (m : String)
+
+structure «Сроки» where
+  «свидетель» : Nat
+  «начало» : Nat
+  «конец» : Nat
+
+/-- Запустить часть плана отдельным процессом и читать её строки, пока она пишет не реже срока. -/
+partial def «попытка» (exe path cpath proof : String) (stride : Nat) (t : «Сроки») (k : Nat) (slow : List Nat)
+    (cut : Nat) (nosym : Bool) (acc : IO.Ref (Array (Nat × Array String))) : IO «Попытка» := do
+  let child ← IO.Process.spawn { cmd := exe, args := #["plan-part", path, cpath, proof, toString k, toString stride,
+    ",".intercalate (slow.map toString), toString cut, if nosym then "1" else "0"], stdout := .piped, stdin := .null }
+  let buf ← IO.mkRef (#[] : Array String)
+  let eof ← IO.mkRef false
+  let _ ← IO.asTask (prio := .dedicated) («читатьСтроки» child.stdout buf eof)
+  let stop : «Попытка» → IO «Попытка» := fun r => do
+    child.kill
+    let _ ← child.wait
+    pure r
+  let rec loop (cur : Option Nat) (rows : Array String) (w : Nat) (sym : Bool) (started : Bool) (last : Nat)
+      (next : Nat) : IO «Попытка» := do
+    let done ← eof.get
+    let lines ← buf.modifyGet (fun a => (a, #[]))
+    let now ← IO.monoMsNow
+    let mut cur := cur
+    let mut rows := rows
+    let mut w := w
+    let mut sym := sym
+    let mut started := started
+    let mut next := next
+    let mut bad : Option String := none
+    for l in lines do
+      if l.startsWith "#начало" then started := true
+      else if l.startsWith "#имя\t" then
+        cur := some ((l.drop 5).toString.toNat!)
+        rows := #[]
+        w := 0
+        sym := false
+      else if l = "#символ" then sym := true
+      else if l.startsWith "#готово\t" then
+        acc.modify (·.push (((l.drop 8).toString.toNat!), rows))
+        next := (l.drop 8).toString.toNat! + stride
+        cur := none
+      else if l.startsWith "#нечитаемо\t" then bad := some (l.drop 11).toString
+      else
+        rows := rows.push l
+        if !sym then w := w + 1
+    let last := if lines.isEmpty then last else now
+    match bad with
+    | some m => stop (.«беда» m)
+    | none =>
+      if done && lines.isEmpty then
+        let _ ← child.wait
+        match cur with
+        | some i => pure (.«встала» i w sym)
+        | none => if started then pure .«дошла» else pure (.«беда» "часть плана не началась")
+      else if t.«конец» < now then stop (.«срок» next)
+      else if (if started then t.«свидетель» else t.«начало») < now - last then
+        match cur with
+        | some i => stop (.«встала» i w sym)
+        | none => stop (.«беда» "часть плана молчит между функциями")
+      else
+        IO.sleep 5
+        loop cur rows w sym started last next
+  loop none #[] 0 false false (← IO.monoMsNow) k
+
+/-- Надзор над одной полосой функций: функция, на которой часть плана встала, пробуется заново, и свидетель,
+на котором кончился срок, получает ответ «топливо»; после трёх таких свидетелей остальные её свидетели не
+считаются; не уложилось символьное сравнение — оно называется строкой «вне». -/
+partial def «полоса» (exe path cpath proof : String) (names : Array String) (stride : Nat) (t : «Сроки») (k : Nat)
+    (slow : List Nat) (cut : Nat) (nosym : Bool) (tries : Nat) (acc : IO.Ref (Array (Nat × Array String))) :
+    IO (Option String) := do
+  if names.size ≤ k then return none
+  let late : Nat → String → IO (Option String) := fun from_ why => do
+    let mut i := from_
+    while i < names.size do
+      acc.modify (·.push (i, #[names[i]! ++ "\tвне\t" ++ why ++ "\t"]))
+      i := i + stride
+    pure none
+  match ← «попытка» exe path cpath proof stride t k slow cut nosym acc with
+  | .«дошла» => pure none
+  | .«беда» m => pure (some m)
+  | .«срок» i => late i "срок файла вышел раньше, чем эталон дошёл до функции"
+  | .«встала» i w sym =>
+    let same := i = k
+    let slow := if same then slow else []
+    let cut := if same then cut else 1000000
+    let nosym := same && nosym
+    let tries := if same then tries else 0
+    if 6 ≤ tries || (sym && nosym) then do
+      acc.modify (·.push (i, #[names[i]! ++ "\tвне\tэталон не уложился в срок на этой функции\t"]))
+      «полоса» exe path cpath proof names stride t (i + stride) [] 1000000 false 0 acc
+    else if sym then «полоса» exe path cpath proof names stride t i slow cut true (tries + 1) acc
+    else if 3 ≤ slow.length then «полоса» exe path cpath proof names stride t i slow (min cut w) nosym (tries + 1) acc
+    else «полоса» exe path cpath proof names stride t i (w :: slow) cut nosym (tries + 1) acc
+
+def «числоСреды» (name : String) (usual : Nat) : IO Nat := do
+  match ← IO.getEnv name with
+  | some s => pure (s.toNat?.getD usual)
+  | none => pure usual
+
+/-- План файла под надзором: счёт идёт в отдельных процессах, по полосам функций, и у каждого свидетеля есть
+срок. Файл, в котором одна функция считается без конца, теряет её свидетеля, а не себя целиком. -/
+def «планПодНадзором» (path cpath proof : String) : IO (List String) := do
+  let text ← IO.FS.readFile path
+  match Json.parse text with
+  | .error m => pure ["\tнечитаемо\t" ++ m ++ "\t"]
+  | .ok j =>
+    let names := ((«массив» j "functions").map (fun f => «строка?» f "name")).toArray
+    let exe ← IO.appPath
+    let witness ← «числоСреды» "FLANG_VALIDATION_WITNESS_MS" 5000
+    let whole ← «числоСреды» "FLANG_VALIDATION_FILE_MS" 540000
+    let jobs ← «числоСреды» "FLANG_VALIDATION_JOBS" 4
+    let stride := max 1 (min jobs names.size)
+    let now ← IO.monoMsNow
+    let t : «Сроки» := ⟨witness, 300000, now + whole⟩
+    let acc ← IO.mkRef (#[] : Array (Nat × Array String))
+    let tasks ← (List.range stride).mapM (fun k => IO.asTask (prio := .dedicated)
+      («полоса» exe.toString path cpath proof names stride t k [] 1000000 false 0 acc))
+    let mut bad : List String := []
+    for task in tasks do
+      match ← IO.wait task with
+      | .ok (some m) => bad := m :: bad
+      | .ok none => pure ()
+      | .error e => bad := toString e :: bad
+    match bad with
+    | m :: _ => throw (IO.userError m)
+    | [] =>
+      let done := (← acc.get).qsort (fun a b => a.1 < b.1)
+      pure (done.toList.flatMap (fun p => p.2.toList))
 
 def «канонФайла» (path : String) : IO (List String) := do
   let text ← IO.FS.readFile path
@@ -806,9 +1036,11 @@ def main (args : List String) : IO UInt32 := do
       IO.println line
     pure 0
   | ["plan", f, c, q] =>
-    for line in ← «планФайла» f (some c) (some q) do
+    for line in ← «планПодНадзором» f c q do
       IO.println line
     pure 0
+  | ["plan-part", f, c, q, start, stride, slow, cut, nosym] =>
+    «частьПлана» f c q start.toNat! stride.toNat! ((slow.splitOn ",").filterMap (·.toNat?)) cut.toNat! (nosym = "1")
   | ["canon", f] =>
     for line in ← «канонФайла» f do
       IO.println line

@@ -191,7 +191,7 @@ flang check --proof --строго monoid.flang
   «Е не больше Е» не теорема, почему `0 × ∞` даёт не число, почему переставлять
   через скобки нельзя. Эти доводы не украшение: на них стоят посылки правил.
 - **Независимая проверяющая программа** — `flang/proof/checker/checker.c`,
-  16350 строк. <!-- СНЯТО 2026-11-13 строк flang/proof/checker/checker.c = 16350 (one table of body declarations and one bracket matcher replace their copies) -->
+  16359 строк. <!-- СНЯТО 2026-11-14 строк flang/proof/checker/checker.c = 16359 (ADR-0238: the checker reads the expanded text a record carries) -->
   Она переигрывает записи и о новом виде значения не знает ничего.
 
 **И встречное число, которое меняет разговор о втором варианте.** Тип `целое`

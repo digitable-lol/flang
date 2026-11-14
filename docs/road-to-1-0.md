@@ -89,7 +89,7 @@ c329a1618, семя партии 10: «печати совпали побайт�
 Список правил вывода закрыт: `flang/proof/tables/inference-rules.tsv`,
 <!-- СНЯТО 2026-11-08 строк flang/proof/tables/inference-rules.tsv = 169 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists) --> 169 строк
 с шапкой. Независимая проверяющая программа на C — `flang/proof/checker/checker.c`,
-<!-- СНЯТО 2026-11-13 строк flang/proof/checker/checker.c = 16350 (one table of body declarations and one bracket matcher replace their copies) --> 16 350 строк;
+<!-- СНЯТО 2026-11-14 строк flang/proof/checker/checker.c = 16359 (ADR-0238: the checker reads the expanded text a record carries) --> 16 359 строк;
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-13 файлов flang/proof/lean/*.lean = 38 (ADR-0236 §13: Semantics/Closed.lean and Semantics/Requirement.lean) --> 38 файлов,

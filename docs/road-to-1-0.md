@@ -93,7 +93,7 @@ c329a1618, семя партии 10: «печати совпали побайт�
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-13 файлов flang/proof/lean/*.lean = 38 (ADR-0236 §13: Semantics/Closed.lean and Semantics/Requirement.lean) --> 38 файлов,
-<!-- СНЯТО 2026-11-13 строк-в flang/proof/lean/*.lean = 31190 (ADR-0236 §13: a closed goal and a goal that is a premise) --> 31 190 строк,
+<!-- СНЯТО 2026-11-14 строк-в flang/proof/lean/*.lean = 31469 (the docs branch rebased onto the closed goal and premise files) --> 31 469 строк,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не

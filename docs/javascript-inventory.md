@@ -129,8 +129,8 @@ HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
 долг вне JavaScript — **46 файлов, 4 442 строки при потолке 63**: храповик
 зелён, запас 17 файлов, разбор прежней красноты — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-23 261 строка этой описи — нижняя оценка.
-<!-- СНЯТО 2026-11-10 строк-в *.js,*.mjs = 23261 (the site map names the Russian syntax page) -->
+23 709 строк этой описи — нижняя оценка.
+<!-- СНЯТО 2026-11-14 строк-в *.js,*.mjs = 23709 (playground: run and test commands, the compiler version, starters, limits and run links in playground.js, search.js and flang_host_browser.js) -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

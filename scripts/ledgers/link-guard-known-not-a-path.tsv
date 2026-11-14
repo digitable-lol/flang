@@ -31,7 +31,6 @@ docs/site/changelog.md	builtins.mjs	история: заголовок комм�
 docs/site/changelog.md	failures.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 docs/site/editor.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
 docs/site/editor.ru.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
-docs/site/embedding.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 docs/site/embedding.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта
@@ -44,7 +43,6 @@ docs/site/embedding.md	src/factorial.rs	пример на чужом языке 
 docs/site/embedding.md	src/lib.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	src/main.rs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.md	src/runtime.rs	пример на чужом языке (embedding/rosetta), не файл проекта
-docs/site/embedding.ru.md	.d.ts	обозначение расширения/суффикса-конвенции, не имя файла
 docs/site/embedding.ru.md	Factorial.cs	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	Factorial.java	пример на чужом языке (embedding/rosetta), не файл проекта
 docs/site/embedding.ru.md	cli/main.go	пример на чужом языке (embedding/rosetta), не файл проекта
@@ -67,10 +65,6 @@ docs/site/getting-started.md	hello.flang	иллюстративное имя в 
 docs/site/getting-started.ru.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/site/install.ru.md	privet.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/site/shortener.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/site/shortener.ru.md	flang/stdlib/view.flang	явное отрицание в тексте: «не заведён» / «does not exist»
-docs/site/spec-catalog.md	43-….flang	шаблон-многоточие в имени, не файл
-docs/site/spec-catalog.ru.md	43-….flang	шаблон-многоточие в имени, не файл
 docs/site/troubleshooting.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
 docs/site/troubleshooting.ru.md	./bootstrap/flang	собранный двоичный, а не файл дерева: bootstrap/flang не отслеживается
 docs/editors/vscode/README.md	.vscode/tasks.json	локальный: редакторский файл, не в дереве
@@ -83,8 +77,6 @@ docs/flang/core/SPEC.md	src/parser.ts	внешний: файл вынесенн�
 docs/flang/core/SPEC.md	src/utility.ts	внешний: файл вынесенного проекта FTS, не файл этого дерева
 docs/guide/single-source.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/guide/single-source.ru.md	вывод/fine.py	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/guide/typescript-target.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
-docs/guide/typescript-target.ru.md	import_check.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/cli.md	privet.c	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева
 docs/site/embedding.ru.md	factorial.ts	имя файла, напечатанного flang emit в примере страницы, не файл дерева

@@ -6,10 +6,12 @@ The translator reads functions written in C, prints their translation into flang
 the translation to the kernel. Every verdict here is about the **translation**: "the
 translation of function X has property P". For a verdict about the translation to say
 anything about the C itself, the translation is printed back into C and compared with the
-source on a grid of inputs. The decision and its limits are in
-[ADR-0058](../adr/0058-a-foreign-language-enters-through-an-untrusted-translator.md).
+source on a grid of inputs.
 
 ## How to call it
+
+The translator is a tool of the repository; it does not come with an installed `flang`. The
+commands work from the root of a clone where the binary is built in `bootstrap/`:
 
 ```
 bootstrap/flang run-script foreign-c:demo     # the corpus flang/foreign/c/corpus, report and verdict
@@ -17,7 +19,7 @@ bootstrap/flang run-script foreign-c:census   # the share of the tree's C functi
 ```
 
 It needs `clang` and a `cc` with `-fsanitize=undefined`. Temporary files go under
-`FLANG_TMP`.
+`FLANG_TMP`. The first command takes up to half an hour.
 
 ## What the example set holds
 

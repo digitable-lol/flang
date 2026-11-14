@@ -184,7 +184,7 @@ unit-тесты проверены; у `процесс` и `надзор` ком
 
 ```bash
 $ flang test flang/concurrency/examples/supervision.flang
-flang/concurrency/examples/supervision.flang: примеров 2, прошло 2, не прошло 0
+flang/concurrency/examples/supervision.flang: примеров 5, прошло 5, не прошло 0
 $ echo $?
 0
 ```

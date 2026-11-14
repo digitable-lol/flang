@@ -128,7 +128,8 @@ def «формыC» : List (String × String) :=
     ("fl_b_pripisat", "приписать"), ("fl_b_pusto", "пусто"), ("fl_b_razdelit", "разделить"), ("fl_b_simvol", "символ"),
     ("fl_b_simvol_po_kodu", "символ по коду"), ("fl_b_simvoly", "символы"), ("fl_b_soderzhit", "содержит"),
     ("fl_b_soedinit", "соединить"), ("fl_b_golova_dokazano", "голова"), ("fl_b_hvost_dokazano", "хвост"),
-    ("fl_b_kod_simvola_dokazano", "код символа"), ("fl_b_razdelit_dokazano", "разделить"), ("fl_b_k_chislu", "к числу")]
+    ("fl_b_kod_simvola_dokazano", "код символа"), ("fl_b_razdelit_dokazano", "разделить"), ("fl_b_k_chislu", "к числу"),
+    ("fl_b_k_chislu_ili_beda", "к числу или беда")]
 
 def «формыЭталона» : List String := «формыC».map (·.2)
 
@@ -188,7 +189,7 @@ partial def «сим» (P : «Программа») (ρ : List (String × «Т»
     | none => .error ("имя «" ++ x ++ "» не связано")
   | .«двучлен» "percent" a b =>
     «сим» P ρ n a (fun ta n1 => «сим» P ρ n1 b (fun tb n2 =>
-      k (.«оп» "fmul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb]) n2))
+      k (.«оп» "mul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb]) n2))
   | .«двучлен» op a b =>
     if «операцииИсходника».contains op then
       «сим» P ρ n a (fun ta n1 => «сим» P ρ n1 b (fun tb n2 => k (.«оп» op [ta, tb]) n2))
@@ -1053,7 +1054,7 @@ where
             | some x => do
               let ta ← «выражениеC» σ a
               let tb ← «выражениеC» σ b
-              let t := if op = "percent" then .«оп» "fmul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb] else .«оп» op [ta, tb]
+              let t := if op = "percent" then .«оп» "mul" [.«оп» "fdiv" [ta, .«ч» («изЦелого» 100)], tb] else .«оп» op [ta, tb]
               «исполнить» { σ with «знач» := (x, t) :: σ.«знач» } n q
             | none => .error h
           | _ => .error h

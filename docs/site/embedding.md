@@ -40,17 +40,6 @@ $ ls ./out
 ls: cannot access './out': No such file or directory
 ```
 
-Emission also warns about the entry boundary:
-
-```
-аргументы напечатанной программы по типам не проверяются: это ограничение
-двоичного flang
-```
-
-The emitted code builds and runs; the runner's arguments are simply not checked
-against the declared types. The way around it is below, in the section on the
-runner over a pipe.
-
 ## What arrives in the directory
 
 One run per target, the same program every time —
@@ -74,10 +63,8 @@ diagnostics), the **program module** (one function per flang function), a
 **runner**, and a build file. With `--no-cli` the runner is gone: `js` is left
 with `factorial.js` and `package.json`, `c` with five files out of six.
 
-A program with `процесс` and `надзор` declarations is emitted with a scheduler
-on `c` and `elixir` only; on the other targets the handlers arrive as ordinary
-functions and the calling is yours. Concurrency per target is also named in the
-`возможности` field of the `emit` answer.
+A program with `процесс` and `надзор` declarations is printed by targets `c`, `elixir`, `js`
+and `ts`. The other six refuse: "the target has no concurrency scheduler", exit code 1.
 
 ## C: build it and link it into your program
 
@@ -100,8 +87,9 @@ cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o f
 ```
 
 The library is `lib<module>.a`, where `<module>` is the same slug the files
-carry: module «Factorial» gave `libfactorial.a`, module «Хранилище ссылок» gave
-`libhranilische_ssylok.a`. There are exactly two dependencies: `-lm` and
+carry: module «Factorial» gave `libfactorial.a`. A module with a Russian name is printed under
+the name `program`: both the files and the library `libprogram.a`. There are
+exactly two dependencies: `-lm` and
 `-lpthread`.
 
 **The entry point is not `main` — it is one function per function.** The header
@@ -181,7 +169,12 @@ Three rules are visible right there, and you will have to keep them:
 3. **`fl_ctx` carries the limits**: depth, step count and a check on remaining
    stack. One context can be reused across calls, as above.
 
-WebAssembly comes from the same place: the emitted C moves there without edits.
+A direct call does not check argument types: the string given for a number reached the
+comparison and was refused there. Bring values that come from outside in through
+`factorial_enter`, which checks the declared types before the call.
+
+WebAssembly comes from the same place: the emitted C compiles to it without edits —
+[An application in the browser](browser-app.html).
 
 ## The value at the boundary
 
@@ -289,11 +282,11 @@ console.log(product([1, 2, 3, 4]))  // 24
 
 Names are camelCase from the flang name: «Factorial» → `factorial`, «Numbers from
 and to» → `numbersFromAndTo`. For a program on the Russian surface they are
-transliterated: module «Разбор числа» gives the file `razbor_chisla.js` and the
-function `razobratChislo`, while **fields and variant names stay as they were**:
+transliterated: function «Разобрать число» of module «Number parsing» becomes
+`razobratChislo` in the file `number_parsing.js`, while **fields and variant names stay as they were**:
 
 ```js
-import { razobratChislo, Vyshlo } from "./razbor_chisla.js"
+import { razobratChislo, Vyshlo } from "./number_parsing.js"
 
 for (const текст of ["42", "abc"]) {
   const итог = razobratChislo(текст)
@@ -339,7 +332,7 @@ of falling over with someone else's error:
 
 ```
 прямой вызов 9000: FLANG_RECURSION_LIMIT | функция «Numbers from and to» исчерпала стек хозяина
-на глубине 6952, не дойдя до предела глубины вызовов (10000)
+на глубине 6949, не дойдя до предела глубины вызовов (10000)
 $callDeep 9000: длина 9000
 ```
 
@@ -347,36 +340,6 @@ The lever is `await $callDeep(fn, [args], limits)`: the computation moves into a
 thread with an explicitly sized stack, and the declared limit becomes reachable.
 In a browser, and anywhere the thread did not start, the computation runs as
 before and the guard tells the truth about it.
-
-### A real host: an HTTP service in flang, called from Node
-
-The tree holds a link shortener (`docs/examples/web/shortener/`) — an HTTP
-handler written entirely in flang, whose state is passed by value. Emit it to
-`js`, and the Node host wraps the emitted module:
-
-```js
-import { obsluzhit, $newContext } from "./sluzhba_ssylok.js"
-
-$newContext({ maxSteps: 40000000 })
-let состояние = { записи: [], выдано: 0 }
-/* СЦЕНАРИЙ is a list of «name, request bytes» pairs; in a real server its place
-   is taken by `while (true) accept()`. */
-for (const [имя, текст] of СЦЕНАРИЙ) {
-  const о = obsluzhit(состояние, текст)     // a record in, a record out
-  состояние = о["состояние"]
-  console.log(о["код"], имя, (о["ответ"] || "").split("\r\n")[0])
-}
-```
-
-```
-200 | здоровье                | HTTP/1.1 200 OK
-201 | создание ссылки         | HTTP/1.1 201 Created
-301 | переход по коду         | HTTP/1.1 301 Moved Permanently
-422 | ЗЛАЯ СХЕМА javascript:  | HTTP/1.1 422 Unprocessable Content
-хранилище: {"записи":[{"код":"к1","адрес":"https://пример.рф/док","переходов":1}],"выдано":1}
-```
-
-Non-termination lives in the host's loop, while the handler always terminates.
 
 ## Any language: the runner over a pipe
 
@@ -391,7 +354,7 @@ $ printf '%s\n' '{"fn":"Factorial","args":[{"n":"10"}]}' \
                 '{"fn":"Factorial","args":[{"s":"x"}]}' | node flang_cli.js ./factorial.js
 {"ok":true,"value":{"n":"3628800"}}
 {"ok":true,"value":{"n":"24"}}
-{"ok":false,"code":"FLANG_TYPE","message":"сравнения порядка допустимы только для чисел"}
+{"ok":false,"code":"FLANG_TYPE","message":"вызов функции «Factorial»: аргумент «n» не соответствует типу неотрицательное"}
 ```
 
 The same input fed to the `./flang_cli` binary built from the `c` target gives
@@ -407,28 +370,22 @@ slug. Values are tagged, because JSON is poorer than the language:
 | `{"v":"Name","f":[…]}` | a variant |
 | `null`, `true`/`false` | "nothing", a flag |
 
-The table of declared parameter types is printed beside the module
-(`factorial_entry` in C, `$PROGRAM.entry` in JS), but the binary
-leaves it empty and says so on every print: «аргументы напечатанной программы по
-типам не проверяются» — "the arguments of the printed program are not checked
-against types". So the runner answers `{"s":"x"}` with the same words as the
-direct call `factorial("x")` — «сравнения порядка допустимы только для чисел»,
-"order comparisons are only allowed for numbers" — and not with "argument does
-not match the type"; a type check before the call exists only on the `c` target
-at the `enter` door (see [the host boundary](host-boundary.html)).
+The runner checks arguments against the declared parameter types before the call: to
+`{"s":"x"}` it answers "argument «n» does not match the type", while the direct call
+`factorial("x")` reaches the body and is refused with «сравнения порядка допустимы только для
+чисел» ("order comparisons are only allowed for numbers"). The table of types is printed beside
+the functions: `factorial_entry` in C, `$PROGRAM.entry` in JavaScript.
 
 ## What is not promised
 
 - **the bytes of the emitted code.** The promise is behavioural: the same
   program yields the same values and the same refusal codes, not the same bytes;
 - **diagnostic texts** — only codes. The texts are Russian on every target;
-- **TypeScript declarations.** There is no `.d.ts`; types arrive as JSDoc
-  comments inside the module, enough for editor hints, not for a strict build;
-- **concurrency everywhere.** Processes run on `c` and `elixir`, parallelism on
-  `elixir`;
-- **type-checked arguments** — neither on a direct call nor in the runner over a
-  pipe: the table on the entry boundary is left empty, and the binary
-  says so when printing. The exception is the `enter` door on the `c` target.
+- **types in JavaScript.** On target `js` they are JSDoc comments; strict types come with
+  target `ts`;
+- **concurrency everywhere.** Processes are printed by `c`, `elixir`, `js` and `ts`;
+- **type-checked arguments on a direct call.** The runner and `enter` on target `c` check;
+  a function called directly trusts its caller.
 
 ## Next
 

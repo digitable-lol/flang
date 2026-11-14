@@ -1,158 +1,101 @@
 # Settings: the `.flangrc` file
 
-flang reads the settings file `.flangrc`. It selects the language flang uses to answer a
-person, the surface of the templates, terminal colour, the language of the `man flang` page —
-and what to do with an unproved program when someone asks to run it.
-
-The page says plainly **what works and what does not yet**. The decision is
-[ADR-0024](../adr/0024-the-settings-file-and-the-language-of-output.md).
+`.flangrc` is the project's settings file: which language `flang check` answers in, what to do
+with an unproved program, which library modules may be imported, the linter limits and the
+project's short commands.
 
 ## What the file looks like
 
-This project's file has thirteen keys and short commands `script.<name>`
-([ADR-0049](../adr/0049-short-commands-live-in-the-settings-file.md)). Keys and value words
-are in English:
-
 ```
 language = ru
-surface = ru
-color = auto
-page = ru
-
-version = 0.7.28
-name = @digitable-lol/flang
-license = BSD-2-Clause
-repository = https://github.com/digitable-lol/flang
-issues = https://github.com/digitable-lol/flang/issues
-
 unproven = refuse
+
+profile = programmer
 
 max-line-length = 120
 max-conditional-depth = 2
 lint = refuse
+
+script.test = flang test main.flang
 ```
 
-There are three syntax rules:
-
-* a line is "key = value"; spaces around the equals sign do not matter;
-* a line starting with "#" is skipped; an empty line means nothing;
-* if the same key appears twice, the last one wins.
-
-An unknown key is skipped silently: a file written for a newer flang must work on an older
-one.
-
-## A file with the old keys
-
-A file with Russian keys and words is read, and for each such entry the reader
-prints one line saying which English entry replaces it:
-
-| Russian key | English key |
-| --- | --- |
-| `язык` | `language` |
-| `поверхность` | `surface` |
-| `цвет` with the words `да`, `нет`, `авто` | `color` with the words `always`, `never`, `auto` |
-| `страница` | `page` |
-| `версия` | `version` |
-| `имя` | `name` |
-| `лицензия` | `license` |
-| `склад` | `repository` |
-| `беды` | `issues` |
-| `недоказанное` with the words `отказ`, `предупреждение`, `разрешение` | `unproven` with the words `refuse`, `warn`, `allow` |
-
-```
-$ flang run m.flang --function «Ответ»          # в файле: недоказанное = разрешение
-flang: /work/.flangrc: запись «недоказанное = разрешение» устарела и пока читается — замените её на «unproven = allow»
-на веру: доказанность не считалась — запуск по настройке «недоказанное = разрешение» (/work/.flangrc)
-42
-```
-
-If the file holds both entries, the English one is read, and the reader says that the old one
-is not read and should be deleted.
+- A line is "key = value"; spaces around the equals sign do not matter.
+- A line starting with "#" and an empty line are skipped.
+- If a key occurs twice, the last one wins.
+- An unknown key is skipped silently.
 
 ## Keys
 
 | key | values | default | read by |
 | --- | --- | --- | --- |
-| `language` | `ru` `en` `eo` `zh` | `ru` (the locale is asked first) | `scripts/flangrc.fscript`, the tutorial `flang/bin/flangtutor`; the compiler — `flang check` ([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)), which does not consult the locale |
-| `surface` | `ru` `en` `eo` `zh` | `ru` | `scripts/flangrc.fscript` |
-| `color` | `always` `never` `auto` | `auto` | `scripts/flangrc.fscript` |
-| `page` | `ru` `en` | `ru` (the locale is asked first) | `scripts/flangrc.fscript` |
-| `version` | a number of the form `X.Y.Z` | none | the version, man page, Homebrew formula and release guards in `scripts/guards/`, `scripts/site/build-changelog.fscript`, `scripts/site/release-body.fscript`, `docs/site/site-numbers.flang`, `.github/workflows/release.yml` |
-| `name` | a string | none | `scripts/guards/version-derivations-guard.fscript` |
-| `license` | an SPDX identifier | none | `scripts/guards/license-guard.fscript`, the site footer — `docs/site/build.flang` |
-| `repository` | the repository URL | none | the site footer — `docs/site/build.flang` |
-| `issues` | the URL for reporting tasks and bugs | none | the site footer — `docs/site/build.flang` |
-| `unproven` | `refuse` `warn` `allow` | `refuse` | the binary itself: `flang run` and `flang io` (`flang/src/emit/c/flang_repl.c`) |
-| `profile` | a profile name, or several separated by commas | none — the library is unrestricted | the binary itself when looking up a module by name (`flang/src/emit/c/flang_repl.c`) |
-| `modules` | library module names separated by commas | none | same |
-| `profile.<name>` | module names separated by commas — a profile declaration | the profiles in `flang/stdlib/profiles.flangrc` | same |
-| `max-line-length` | an integer greater than zero | none: line length is unlimited | `flang lint` |
-| `max-conditional-depth` | an integer greater than zero | none: depth is unlimited | `flang lint` |
+| `language` | `ru` `en` | `ru` | `flang check` |
+| `unproven` | `refuse` `warn` `allow` | `refuse` | `flang run`, `flang io` |
+| `profile` | a profile name, or several separated by commas | none — the library is unrestricted | module lookup by name |
+| `modules` | library module names separated by commas | none | the same |
+| `profile.<name>` | module names separated by commas — declares your own profile | the library's three profiles | the same |
+| `max-line-length` | an integer above zero | none: length is unlimited | `flang lint` |
+| `max-conditional-depth` | an integer above zero | none: depth is unlimited | `flang lint` |
 | `lint` | `refuse` `warn` | `refuse` | `flang lint` |
+| `script.<name>` | a command line | none | `flang run-script` |
 
-The top four keys are a person's choice from a closed list: an invalid value is discarded, and
-the default decides. The next five carry facts about the project: they have no closed list and
-no default. They are not edited by hand — the values are propagated by
+The key `registry` is gone: since 0.7.34 the package registry and the command `flang install`
+are removed, and a module is attached by a link — [Packages](../site/packages.md). A line
+`registry = …` in an old file is skipped as an unknown key.
+
+The keys `surface`, `color`, `page`, `version`, `name`, `license`, `repository`, `issues` are
+read by the build tools of the flang repository itself. The `flang` commands ignore them.
+
+## The answer language
 
 ```
-bootstrap/flang run-script version <НОВОЕ ЧИСЛО>
+$ flang check m.flang                     # in the file: language = en
+module «M»: functions 2, with termination proved 2; types 0
+m.flang: verified — parsing, types, termination, proof kernel and examples; no problems found
 ```
 
-from the functions «Версия», «Имя пакета», «Лицензия», «Адрес репозитория» and «Адрес задач»
-in `scripts/release/emit-package.flang`. A mismatch is reported by
-`bootstrap/flang run-script version-derivations:check`.
-
-The bottom three keys set the linter's limits; what exactly is counted is described in the
-`lint` section of the [command reference](../site/cli.md#lint).
-
-**What of this works.** The binary itself reads the key `unproven`, the profile keys —
-`profile`, `modules`, `profile.<name>` — and the three linter keys from the file. The key
-`language` (and the variable `FLANG_LANG`, which takes precedence over the file) is read by
-`flang check`
-([ADR-0102](../adr/0102-the-compiler-answers-in-the-language-of-the-settings.md)):
-the `FLANG_*` code stays the same, and the text comes from the catalogue
-`flang/messages/catalog.tsv`. The catalogue is a table: a header row `key<TAB>ru<TAB>en`, then
-one row per template. The key is the `FLANG_*` code of a diagnostic, the name of a summary line
-(`check.*`, `proof.*`, `place.*`, `ledger`), or `{stem}` for the words of a placeholder. A
-placeholder is `{name}` of lowercase Latin letters, digits, `-` and `.`, and both templates of a
-row name the same placeholders. 13 of the 144 codes have an English template
-(`bootstrap/flang run-script messages:check`); the rest answer in Russian — task
-[2510](../tasks/2510-most-compiler-messages-have-no-english-template.md).
-The other commands always answer in Russian — task
-[5413](../tasks/5413-the-compiler-cannot-be-told-which-language-to-speak.md).
-The key `language` also changes the language of the `flangtutor` tutorial.
+A `FLANG_*` code does not depend on the language. Not every diagnostic has an English text:
+those without one arrive in Russian. The other commands always answer in Russian.
 
 ## What to do with an unproved program
 
-`flang run` and `flang io` compute the verdict before running and do not run an unproved
-program: exit code `3`
-([ADR-0045](../adr/0045-run-and-io-print-the-verdict-and-refuse-an-unproved-program.md)).
-The `--trust` flag decides for one run; the key in the file decides once and for all:
+`flang run` and `flang io` compute the verdict before working. A program with an unproved
+promise is not run, and the exit code is `3`:
+
+```
+$ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'
+не доказано: утверждений 2: доказано 1, сетка 1, на веру 0 — запуск только по явному согласию: --на-веру
+…
+$ echo $?
+3
+```
+
+The switch `--trust` decides one run; the key in the file decides all of them:
 
 ```
 unproven = warn
 ```
 
+```
+$ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'
+не доказано: утверждений 2: доказано 1, сетка 1, на веру 0 — запуск по настройке «unproven = warn» (/work/.flangrc)
+6
+```
+
 | value | what it does |
 | --- | --- |
-| `refuse` | do not run: the verdict is printed, exit code `3`. The default |
-| `warn` | compute the verdict, print it as a line — and run anyway, exit code `0` |
-| `allow` | do not compute the verdict at all; the same as `--trust` |
+| `refuse` | do not run: the verdict is stated, exit code `3`. The default |
+| `warn` | compute the verdict, say it in one line and run, exit code `0` |
+| `allow` | do not compute the verdict; the same as `--trust` |
 
-The command-line flag `--unproven` accepts the same words, and it takes precedence over the
-file.
-
-**An invalid value here is a loud refusal with exit code `2`, not silence:**
+The command-line switch `--unproven` takes the same words. A bad value is a refusal with exit
+code `2`:
 
 ```
-$ flang run m.flang --function «Ответ»          # в файле: unproven = allowed
+$ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'    # in the file: unproven = allowed
 flang: «allowed» — такого значения у «unproven» нет (/work/.flangrc).
 Годны три: refuse — не запускать; warn — сказать и запустить;
 allow — запустить, вердикта не считая.
 ```
-
-Probes for every outcome are in `flang/proof/probes/unproven/`
-(`bootstrap/flang io flang/proof/probes/unproven/run.fscript --plan Binary`).
 
 ## Profile: which library modules are imported
 
@@ -161,87 +104,115 @@ profile = mathematician
 modules = UUID
 ```
 
-A profile is a list of library modules that the project's files import by name. A library
-module outside the profile and outside `modules` is not found: the binary writes to stderr
-which profile and which file excluded it, and the check answers `FLANG_IMPORT_NOT_FOUND`. With
-neither `profile` nor `modules` there are no restrictions.
+A profile is a list of library modules that the project's files import by name. A module
+outside the profile and outside `modules` is not found:
 
-The language ships three profiles, in `flang/stdlib/profiles.flangrc`:
+```
+$ flang check u.flang                     # in the file: profile = mathematician; u.flang imports «UUID»
+flang: модуль «UUID» библиотеки не входит в профиль «mathematician» (/work/.flangrc) — по имени не ввозится;
+допишите его в «modules» или выберите другой профиль
+FLANG_IMPORT_NOT_FOUND в файле u.flang, строка 1, столбец 1: не найден модуль «UUID»: …
+```
 
-| profile | for what |
+With neither `profile` nor `modules` there are no restrictions. Three profiles come with the
+language:
+
+| profile | what for |
 | --- | --- |
-| `mathematician` | numbers, big integers, fractions, classic problems, statistics, logic |
+| `mathematician` | numbers, big integers, rationals, classic problems, statistics, logic |
 | `analyst` | numbers, statistics, lists and strings, dictionaries, date and time, JSON, TOML, SQLite, Postgres |
-| `programmer` | general modules, data formats, networking, databases, cryptography |
+| `programmer` | general modules, data formats, network, databases, cryptography |
 
-You declare your own profile with a line `profile.<name> = Модуль, Модуль`; it overrides the
-library profile of the same name. Project modules, imports from the library's own files,
-`flang/core` and imports by path (`из "…"`) are not restricted by the profile. The profile
-keys are read only from the project's `.flangrc`, not from `~/.flangrc`. The profile does not
-change the proof verdict: the verdict is computed over all imported files. The decision is
-[ADR-0054](../adr/0054-a-profile-in-the-settings-file-selects-library-modules.md).
+Your own profile is declared with a line `profile.<name> = Module, Module`; it overrides a
+library profile of the same name. Project modules and imports by path (`из "…"`) are not
+restricted by a profile. Profile keys are read only from the project's `.flangrc`, not from
+`~/.flangrc`. A profile does not change the proof verdict: it is computed over all imported
+files.
+
+## Linter limits
+
+```
+max-line-length = 40
+lint = refuse
+```
+
+```
+$ flang lint m.flang
+flang lint: файлов 1; max-line-length 40: 3; max-conditional-depth: без предела; не разобрано 0
+m.flang:5: длина строки 53 > 40 (max-line-length)
+m.flang:13: длина строки 59 > 40 (max-line-length)
+m.flang:17: длина строки 62 > 40 (max-line-length)
+$ echo $?
+1
+```
+
+With `lint = warn` the same findings are printed and the exit code is `0`. What exactly is
+measured is in the `lint` section of the [command reference](../site/cli.md#lint).
 
 ## Short commands
 
-A line `script.<name> = <command>` defines a short project command — the same way as the
-`scripts` section in `package.json`. The name is written in English: lowercase Latin letters,
-digits, hyphen and colon.
+A line `script.<name> = <command>` defines a short command of the project, like the `scripts`
+section of `package.json`. The name uses lowercase Latin letters, digits, hyphen and colon.
 
 ```
-script.site:build = node docs/site/build.mjs
-script.site:check = node docs/site/build.mjs --check
+script.hello = echo привет
 ```
 
-The binary itself runs it: `flang run-script site:build`; in this tree,
-`bootstrap/flang run-script site:build`. Without a name, the command prints the list. The line
-is passed to `/bin/sh -c` in the file's directory, and the exit code is its own. Only the
-project's file is used: the home file provides no short commands, and there is no environment
-variable or argument for them. The decision is
-[ADR-0049](../adr/0049-short-commands-live-in-the-settings-file.md); flags and exit codes are
-on the [commands](../site/cli.md) page.
+```
+$ flang run-script hello
+привет
+$ flang run-script
+короткие команды проекта (/work/.flangrc):
+
+  hello                              echo привет
+
+звать: flang run-script <имя> [доводы…]
+```
+
+The line is given to `/bin/sh -c` in the directory of the file; the exit code is its own. Only
+the project file counts: `~/.flangrc` gives no short commands.
 
 ## Where the file is looked up
 
-1. **The project's `.flangrc`** — from the working directory upward. The search stops at the
-   first directory that contains `.flangrc`, `.git` or `flang.package`.
+1. **The project's `.flangrc`** — from the working directory upwards. The climb stops at the
+   first directory that holds `.flangrc`, `.git` or `flang.package`.
 2. **`~/.flangrc`** — the person's file on this machine.
 
-The search does not go above the home directory or above the file system root. A farther file
-does not override a nearer one. This is checked by a run:
-
-```
-bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Check
-bootstrap/flang io scripts/guards/flangrc-guard.fscript --plan Forgery
-```
+A farther file does not override a nearer one.
 
 ## What takes precedence over what
 
 ```
-довод командной строки → переменная среды → .flangrc проекта
-  → .flangrc дома → локаль → умолчание
+command-line switch → environment variable → project .flangrc → home .flangrc → default
 ```
 
-Seven keys have environment variables: `FLANG_LANG`, `FLANG_SURFACE`, `FLANG_COLOR`,
-`FLANG_MANPAGE`, `FLANG_PROJECT_VERSION`, `FLANG_PROJECT_NAME` and `FLANG_UNPROVEN`. The
-locale (`LC_ALL`, then `LC_MESSAGES`, then `LANG`) has a say only in `language` and `page`.
-
-## Seeing the result
-
-The plan's answer is a JSON line; the value is in the `result` field.
+Environment variables: `FLANG_LANG` for `language`, `FLANG_UNPROVEN` for `unproven`.
 
 ```
-bootstrap/flang io scripts/flangrc.fscript                  все тринадцать ключей
-bootstrap/flang io scripts/flangrc.fscript -- version       одно значение
-bootstrap/flang io scripts/flangrc.fscript -- --sources     значения и откуда каждое взято
-bootstrap/flang io scripts/flangrc.fscript -- --places      какие каталоги просмотрены
-bootstrap/flang io scripts/flangrc.fscript -- --file        путь взятого файла проекта
+$ FLANG_UNPROVEN=allow flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'
+на веру: доказанность не считалась — запуск по переменной среды FLANG_UNPROVEN=allow
+6
 ```
 
-The flags `--from DIRECTORY` and `--home DIRECTORY` set the start of the search and the home
-directory.
+## The old spelling of the key
+
+The old Russian spelling of the key `unproven` is still read, and `flang` answers it with the replacement:
+
+| Russian key | English key |
+| --- | --- |
+| `недоказанное` with the words `отказ`, `предупреждение`, `разрешение` | `unproven` with the words `refuse`, `warn`, `allow` |
+
+```
+$ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'    # in the file: недоказанное = разрешение
+flang: /work/.flangrc: запись «недоказанное = разрешение» устарела и пока читается — замените её на «unproven = allow»
+на веру: доказанность не считалась — запуск по настройке «недоказанное = разрешение» (/work/.flangrc)
+6
+```
+
+If both lines are in the file, the English one is read, and the old one is reported as a line to
+delete.
 
 ## What the file does not have
 
-There is no key for "write only in Russian words" or "only in English words": all four
-surfaces are accepted at the same time. The key `surface` only says which words `flang new`
-uses to write a template. Details: [Surfaces](surfaces.md).
+There is no key for "write only in Russian words" or "only in English": all surfaces are
+accepted at once — [Surfaces](surfaces.md).

@@ -1,41 +1,61 @@
-name	area	lean	expected	gap
-nat-plus-zero	nat	simp	none	minus-zero
-nat-zero-plus	nat	induction, rw	none	minus-zero
-nat-plus-commutative	nat	omega	auto	-
-nat-plus-associative	nat	omega	auto	-
-nat-successor-of-less	nat	omega	none	linear-arithmetic
-nat-subtract-self	nat	simp	none	literal-identity
-nat-plus-subtract-cancel	nat	omega	none	linear-arithmetic
-nat-closed-power	nat	decide	auto	-
-nat-double	nat	unfold, omega	none	linear-arithmetic
-nat-sum-formula	nat	induction, simp, omega	none	exact-natural
-nat-factorial-positive	nat	induction, Nat.mul_pos	none	strict-order
-nat-maximum-bound	nat	unfold, split, omega	auto	-
-nat-even-odd-mutual	nat	mutual, induction, simp	none	mutual-induction
-nat-halving-measure	nat	termination_by, strongRecOn, omega	none	number-to-natural
-nat-order-chain	nat	calc	auto	-
-list-length-append	list	induction, simp, omega	none	exact-natural
-list-append-empty	list	induction, simp	none	empty-list-base
-list-append-associative	list	induction, simp	none	unfold-on-cons
-list-map-identity	list	induction, simp	none	empty-list-base
-list-map-composition	list	induction, simp	none	empty-list-base
-list-length-reverse	list	induction, simp with lemma	none	exact-natural
-list-reverse-append	list	induction, simp with lemmas	none	empty-list-base
-list-reverse-reverse	list	induction, calc, lemma	none	empty-list-base
-list-fold-accumulator	list	induction generalizing, rw, omega	none	exact-ring-atoms
-list-member-append	list	induction, cases on membership	none	empty-list-base
-list-filter-length-bound	list	induction, cases, omega	auto	-
-list-filter-subset	list	List.mem_filter	none	empty-list-base
-list-count-reverse-permutation	list	induction, simp with lemma, omega	none	empty-list-base
-list-rewrite-user-lemma	list	simp with user lemma	none	exact-natural
-tree-mirror-mirror	type	induction, simp	by-hand	-
-tree-size-mirror	type	induction, simp, omega	none	exact-natural
-enumeration-next-cycle	type	cases, rfl	auto	-
-option-map-identity	type	cases, rfl	auto	-
-option-map-composition	type	cases, rfl	auto	-
-record-swap-swap	type	cases, rfl	auto	-
-exists-greater	logic	exists, omega	none	strict-order
-and-introduction	logic	constructor, omega	auto	-
-or-elimination-maximum	logic	unfold, split, Or.inl	auto	-
-string-concat-associative	logic	simp with String.append_assoc	auto	-
-contradiction	logic	omega	auto	-
+name	area	lean	expected	gap	class
+nat-plus-zero	nat	simp	by-hand	minus-zero	г
+nat-zero-plus	nat	induction, rw	by-hand	minus-zero	г
+nat-plus-commutative	nat	omega	auto	-	-
+nat-plus-associative	nat	omega	auto	-	-
+nat-successor-of-less	nat	omega	auto	-	-
+nat-subtract-self	nat	simp	by-hand	exact-natural	г
+nat-plus-subtract-cancel	nat	omega	auto	-	-
+nat-closed-power	nat	decide	auto	-	-
+nat-double	nat	unfold, omega	auto	-	-
+nat-sum-formula	nat	induction, simp, omega	by-hand	exact-natural	г
+nat-factorial-positive	nat	induction, Nat.mul_pos	auto	-	-
+nat-maximum-bound	nat	unfold, split, omega	auto	-	-
+nat-even-odd-mutual	nat	mutual, induction, simp	none	mutual-induction	а
+nat-halving-measure	nat	termination_by, strongRecOn, omega	none	measure-induction	а
+nat-order-chain	nat	calc	auto	-	-
+list-length-append	list	induction, simp, omega	by-hand	exact-natural	в
+list-append-empty	list	induction, simp	none	bare-list-variable	а
+list-append-associative	list	induction, simp	auto	-	-
+list-map-identity	list	induction, simp	auto	-	-
+list-map-composition	list	induction, simp	auto	-	-
+list-length-reverse	list	induction, simp with lemma	by-hand	lemma-chain	в
+list-reverse-append	list	induction, simp with lemmas	none	bare-list-variable	а
+list-reverse-reverse	list	induction, calc, lemma	none	bare-list-variable	а
+list-fold-accumulator	list	induction generalizing, rw, omega	by-hand	accumulator-generalization	г
+list-member-append	list	induction, cases on membership	by-hand	builtin-membership	в
+list-filter-length-bound	list	induction, cases, omega	auto	-	-
+list-filter-subset	list	List.mem_filter	none	builtin-membership	а
+list-count-reverse-permutation	list	induction, simp with lemma, omega	by-hand	lemma-chain	а
+list-rewrite-user-lemma	list	simp with user lemma	by-hand	lemma-chain	в
+tree-mirror-mirror	type	induction, simp	auto	-	-
+tree-size-mirror	type	induction, simp, omega	by-hand	exact-natural	г
+enumeration-next-cycle	type	cases, rfl	auto	-	-
+option-map-identity	type	cases, rfl	auto	-	-
+option-map-composition	type	cases, rfl	auto	-	-
+record-swap-swap	type	cases, rfl	auto	-	-
+exists-greater	logic	exists, omega	auto	-	-
+and-introduction	logic	constructor, omega	auto	-	-
+or-elimination-maximum	logic	unfold, split, Or.inl	auto	-	-
+string-concat-associative	logic	simp with String.append_assoc	auto	-	-
+contradiction	logic	omega	auto	-	-
+peano-plus-zero	nat	induction, simp	auto	-	-
+peano-plus-commutative	nat	induction, simp with lemmas	none	lemma-chain	а
+peano-power-of-two-positive	nat	induction, omega	auto	-	-
+list-flatten-length	list	induction, simp with lemma	by-hand	lemma-chain	в
+tree-flatten-length	type	induction, simp with lemma, omega	by-hand	lemma-chain	в
+linear-three-assumptions	nat	omega	auto	-	-
+linear-sum-of-bounds	nat	omega	auto	-	-
+simp-map-length-chain	list	simp	auto	-	-
+simp-map-through-append	list	induction, simp	by-hand	builtin-forms-on-cons	а
+simp-option-bind-chain	type	simp	auto	-	-
+simp-string-empty-chain	logic	simp	auto	-	-
+finite-weekday-round-trip	type	cases, decide	auto	-	-
+finite-bounded-quantifier	logic	decide	auto	-	-
+ring-square-of-sum	nat	grind	auto	-	-
+ring-product-of-sums	nat	grind	auto	-	-
+sort-insert-length	list	induction, split, simp with lemma	by-hand	lemma-chain	в
+sort-insert-keeps-sorted	list	induction, split, simp with lemmas, omega	none	lemma-chain	а
+search-found-is-member	list	induction, split, simp_all	by-hand	number-index	г
+loop-sum-fold	loop	for loop, induction generalizing, simp	by-hand	builtin-forms-on-cons	а
+loop-countdown-while	loop	termination_by, fun_induction, omega	by-hand	measure-induction	а

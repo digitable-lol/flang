@@ -56,6 +56,21 @@ def «образецJson» (j : Json) : «Образец» :=
   | "literal" => .«лит» («значениеJson» ((«поле?» j "value").getD .null))
   | _ => .«любое»
 
+/-- Место узла в исходнике: строка и столбец из `span`; узел без места стоит первым. -/
+def «местоJson» (j : Json) : Nat × Nat :=
+  match «поле?» j "span" with
+  | some s =>
+    ((s.getObjValAs? Nat "line").toOption.getD 0, (s.getObjValAs? Nat "column").toOption.getD 0)
+  | none => (0, 0)
+
+/-- Поля записи и варианта в порядке исходника. Объект JSON порядка не хранит (Lean читает его в дерево по
+ключу), а язык вычисляет поля в том порядке, в каком они написаны; порядок возвращает место выражения поля. -/
+def «поИсходнику» (ps : List (String × Json)) : List (String × Json) :=
+  ps.mergeSort (fun a b =>
+    let x := «местоJson» a.2
+    let y := «местоJson» b.2
+    x.1 < y.1 || (x.1 == y.1 && x.2 ≤ y.2))
+
 def «отказМеры» : «Выр» := .«форма» "#отказ FLANG_MEASURE" []
 
 def «сторожМеры» (f : String) (args : List «Выр») (current next : «Выр») (callee : List String) : «Выр» :=
@@ -74,7 +89,7 @@ def «сторожМеры» (f : String) (args : List «Выр») (current next
 partial def «вырJson» (j : Json) : «Выр» :=
   let sub := fun (k : String) => «вырJson» ((«поле?» j k).getD .null)
   let subs := fun (k : String) => («массив» j k).map «вырJson»
-  let flds := fun (k : String) => («пары» j k).map (fun p => (p.1, «вырJson» p.2))
+  let flds := fun (k : String) => («поИсходнику» («пары» j k)).map (fun p => (p.1, «вырJson» p.2))
   match «строка?» j "kind" with
   | "literal" => .«лит» («значениеJson» ((«поле?» j "value").getD .null))
   | "var" => .«имя» («строка?» j "name")

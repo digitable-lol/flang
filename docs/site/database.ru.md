@@ -1,8 +1,7 @@
 # Базы данных
 
-С языком идут два драйвера: PostgreSQL по проводу и SQLite файлом — чтение, а
-теперь и запись в него. Оба написаны на самом flang, оба проверяются примерами
-без всякой базы.
+С языком идут два драйвера: PostgreSQL по проводу и SQLite файлом — чтение и запись. Оба
+написаны на самом flang, оба проверяются примерами без всякой базы.
 
 ## Кто носит байты
 
@@ -87,11 +86,11 @@ JSON: в поле `result` — отчёт выше, в `log` — каждое п
 Сделайте образец сторонней `sqlite3` и прочитайте его обратно:
 
 ```bash
-$ python3 -c "import sqlite3,os; d='/srv/tmp/sqlite-obrazec'; os.makedirs(d,exist_ok=True); \
-  c=sqlite3.connect(d+'/proba.db'); c.execute('create table люди(имя text, лет integer)'); \
+$ python3 -c "import sqlite3; c=sqlite3.connect('docs/examples/db/obrazec.db'); \
+  c.execute('create table люди(имя text, лет integer)'); \
   c.executemany('insert into люди values (?,?)',[('Аня',31),('Боря',44),('Вера',7)]); c.commit()"
 
-$ flang io docs/examples/db/sqlite-read.flang | python3 -c \
+$ flang io docs/examples/db/sqlite-read.flang --trust --max-steps 2000000000 | python3 -c \
     "import sys,json; print(json.load(sys.stdin)['result'])"
 магия SQLite: да
 размер страницы: 4096
@@ -106,8 +105,11 @@ SQL: CREATE TABLE люди(имя text, лет integer)
 3 | Вера | 7
 ```
 
-План — `docs/examples/db/sqlite-read.flang`; путь к файлу и имя таблицы
-стоят в нём двумя однострочными функциями: `«Откуда»` и `«Какая таблица»`.
+План — `docs/examples/db/sqlite-read.flang`; путь к файлу и имя таблицы стоят в нём двумя
+однострочными функциями: `«Откуда»` и `«Какая таблица»`. Путь считается от каталога плана. Ключ
+`--trust` нужен, потому что часть обещаний драйвера проверена примерами, а не доказана;
+`--max-steps` поднимает предел шагов на виток — умолчания в 10 000 000 на разбор файла не
+хватает, и план кончается отказом `FLANG_RECURSION_LIMIT`.
 
 ### SQLite: что работает, а что нет
 

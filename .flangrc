@@ -77,6 +77,7 @@ script.checker:second = bootstrap/flang io flang/proof/second-checker.fscript --
 script.checker:second-forgery = bootstrap/flang io flang/proof/second-checker.fscript --plan Forgery --timeout 900000
 script.checker:second-both = bootstrap/flang io flang/proof/second-checker.fscript --plan 'Forgery both' --timeout 900000
 script.lean-parity:probe = bootstrap/flang io flang/proof/parity/run.fscript --plan Parity --timeout 900000
+script.lean-parity:gaps = bootstrap/flang io flang/proof/probes/lean-parity-gaps/run.fscript --plan Binary --timeout 900000
 script.plan-rules:probe = bootstrap/flang io flang/proof/probes/plan-rules-asked/run.fscript --plan Binary
 script.kernel-memo:probe = bootstrap/flang io flang/proof/probes/kernel-memo/run.fscript
 script.ru-morphology:probe = bootstrap/flang io flang/proof/probes/ru-morphology/run.fscript --plan Binary

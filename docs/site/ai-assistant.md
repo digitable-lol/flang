@@ -74,9 +74,10 @@ first line of the text:
 | `Обещания «…» в программе нет.` | the name in `claim` was not found; the program itself is fine |
 
 Under the "НЕ ПРОШЛА" (did not pass) line come remarks of the form
-`FLANG_CODE, строка N, столбец M: …` (line N, column M). A typo, a type
-mismatch, a failed example and a file not found are told apart only by the
-code — see [Diagnostics reference](diagnostics.html).
+`<code>, строка N, столбец M: …` (line N, column M), where the code is a name
+such as `FLANG_NOT_TOTAL`. A typo, a type mismatch, a failed example and a file
+not found are told apart only by the code — see
+[Diagnostics reference](diagnostics.html).
 
 ## The words of the report
 

@@ -670,10 +670,10 @@ jobs:
           set -u
           podlog=docs/guide/emit-walkthrough.ru.md
           cp "$podlog" "$podlog.do"
-          sed 's/Здесь показаны две цели из десяти/Здесь показаны две цели из девяти/' "$podlog.do" > "$podlog"
+          sed 's/Целей десять\./Целей девять./' "$podlog.do" > "$podlog"
           if cmp -s "$podlog.do" "$podlog"; then
             rm -f "$podlog.do"; git checkout -- "$podlog"
-            echo "ПОДЛОГ НЕ СОБРАЛСЯ: фразы про две цели из десяти в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
+            echo "ПОДЛОГ НЕ СОБРАЛСЯ: фразы «Целей десять.» в $podlog уже нет — поправить подлог, сторож ни при чём" >&2
             exit 1
           fi
           rm -f "$podlog.do"

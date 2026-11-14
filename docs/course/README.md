@@ -121,8 +121,8 @@ flang run-script docs:examples
 | размеры напечатанного в восемь целей | `flang emit … --target …`, восемь прогонов подряд; байты — из собственной расшифровки `emit` |
 | ответы девяти целей | сборка и запуск девяти напечатанных программ настоящими тулчейнами этой машины: `cc`/`g++` 15.2.0, go 1.26.5, rustc 1.97.1, javac 26-internal, Elixir 1.20.3 на Erlang/OTP 29, node 26.7.0, Python 3.14.4, .NET 10.0.110 |
 | 82 задачи LeetCode, десятка самых коротких | `ls`, `wc -l`, счёт строк `пример` |
-| 64 файлов и 63 403 строки библиотеки <!-- СНЯТО 2026-10-17 файлов flang/stdlib/*.flang = 64 --><!-- СНЯТО 2026-11-01 строк-в flang/stdlib/*.flang = 63403 (the gcd claim on two lines and the hex loop of rsa) --> | `ls flang/stdlib/*.flang`, `cat … \| wc -l` |
-| 350 примеров, 974 файлов доказательств <!-- СНЯТО 2026-11-10 файлов docs/examples/*.flang = 350 (two DSL examples: shipping and access rules) --><!-- СНЯТО 2026-11-12 файлов flang/proof/*.flang = 974 (print batch 12 over dev: probes of the fixed holes and the truth probe set) --> | `ls`, `find` |
+| 65 файлов и 63 749 строк библиотеки <!-- СНЯТО 2026-11-13 файлов flang/stdlib/*.flang = 65 (the list facts module) --><!-- СНЯТО 2026-11-13 строк-в flang/stdlib/*.flang = 63749 (the list facts module and postconditions on functions that had none) --> | `ls flang/stdlib/*.flang`, `cat … \| wc -l` |
+| 350 примеров, 1023 файла доказательств <!-- СНЯТО 2026-11-10 файлов docs/examples/*.flang = 350 (two DSL examples: shipping and access rules) --><!-- СНЯТО 2026-11-13 файлов flang/proof/*.flang = 1023 (lean parity programs and the gap probes) --> | `ls`, `find` |
 | 2 из 20 и 10 из 20 — цена доказательств | ручной замер на двадцати функциях `docs/benchmarks/proof-cost/functions/`; `bootstrap/flang run-script proofs:count-20` |
 
 **Чего этим деревом не переснять, и это надо знать.**

@@ -319,7 +319,7 @@ flang check flang/self/types.flang
 | `flang/stdlib/ecdsa.flang` | 694 | 58 | 2²² = 4194304, 12 разрядов | 143 | 11,2 с | 0 |
 | `bignum.flang` соседнего дерева `r/bignum` | 600 | 34 | 2²², длина свободная | 82 | 4,9 с | 0 |
 
-<!-- СНЯТО 2026-11-10 строк flang/stdlib/ecdsa.flang = 694 (twelve postconditions added; до них 679, снято 2026-10-01) -->
+<!-- СНЯТО 2026-11-13 строк flang/stdlib/ecdsa.flang = 694 (twelve postconditions added) -->
 
 Соседнее дерево (`/srv/tmp/dokazuemyy/bignum`, ветка `r/bignum`, коммит
 `cfd82f54b`) пишет библиотеку прямо сейчас; она взята как данность и не правлена.

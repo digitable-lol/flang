@@ -93,7 +93,7 @@ c329a1618, семя партии 10: «печати совпали побайт�
 её пробы на подлог гоняет `bootstrap/flang run-script checker:check`.
 Состоятельность правил доказана в Lean 4 —
 <!-- СНЯТО 2026-11-12 файлов flang/proof/lean/*.lean = 35 (ADR-0236 §11: Semantics/Cases.lean, the goal split by condition) --> 35 файлов,
-<!-- СНЯТО 2026-11-12 строк-в flang/proof/lean/*.lean = 29168 (ADR-0236 §11: the goal split by condition over the walk tree) --> 29 168 строк,
+<!-- СНЯТО 2026-11-13 строк-в flang/proof/lean/*.lean = 29447 (the reference follows the language on three points and runs under a per-witness budget) --> 29 447 строк,
 `sorry` нет. Сколько приёмов сверщика покрыто теоремой, печатает
 `bootstrap/flang run-script lean-rules:numbers`: приёмов 91, все 91 в приёмке Lean, таблица
 долга `flang/proof/tables/lean-acceptance-debt.tsv` пуста, и сторож `lean-rules:check` не
@@ -320,7 +320,7 @@ c329a1618, семя партии 10: «печати совпали побайт�
 HOME, повторяет сборку без сети и без исходников и сравнивает замки побайтно;
 работа CI `link-import` гоняет её на чистом образе. Профили в
 `.flangrc` выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) --> 65 файлов, <!-- СНЯТО 2026-11-11 строк-в flang/stdlib/*.flang = 63649 (the list facts module) --> 63 649 строк.
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-13 файлов flang/stdlib/*.flang = 65 (the list facts module) --> 65 файлов, <!-- СНЯТО 2026-11-13 строк-в flang/stdlib/*.flang = 63749 (the list facts module and postconditions on functions that had none) --> 63 749 строк.
 
 На двоичном 0.7.34 `bootstrap/flang run-script link-import:check` отвечает «импорт по
 ссылке: шагов 35, замок, кеш и отказы сошлись»: первая сборка скачивает модуль и

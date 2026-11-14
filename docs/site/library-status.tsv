@@ -1982,7 +1982,7 @@ flang/stdlib/kdf.flang		Кусок вывода	кусок — ровно три
 flang/stdlib/kdf.flang		Кусок вывода	один виток — это ровно одна подпись соли с номером	доказано
 flang/stdlib/kdf.flang		Кусок вывода	один виток даёт ровно тридцать два байта	доказано
 flang/stdlib/kdf.flang		Вывод ключа	ключ ровно заказанной длины	сетка
-flang/stdlib/lists.flang	811cfe8260bd600ca8dc4721b80ef3ad0cda92ebbadb800a6986e9a79a84f6c7	Длина		доказано композицией
+flang/stdlib/lists.flang	c599d1c99bd196e127cdb99fc9ee5abb4ad372b1cc2b5786877eed78f448062e	Длина		доказано композицией
 flang/stdlib/lists.flang		Приписать в начало		доказано композицией
 flang/stdlib/lists.flang		Соединить списки		доказано композицией
 flang/stdlib/lists.flang		Обратить		доказано композицией
@@ -2086,7 +2086,7 @@ flang/stdlib/lists.flang		Без значения	удалено ровно ст
 flang/stdlib/lists.flang		Шаг сжатия пар	шаг сжатия удлиняет ровно на одну пару	доказано
 flang/stdlib/lists.flang		Сжать в пары	пар ровно столько, сколько в коротком из списков	сетка
 flang/stdlib/lists.flang		Сжать суммами	сумм ровно столько, сколько в коротком из списков	сетка
-flang/stdlib/logic.flang	e01bd21a997a7de4997548ba3c8630fdd992a8b75a5b14908af140c4cb91a3f0	Оба верны		доказано композицией
+flang/stdlib/logic.flang	b40683e9cc913e778e0a4a1357eb7084e106dbece2da3fc58f451c06681f4606	Оба верны		доказано композицией
 flang/stdlib/logic.flang		Хотя бы одно		доказано композицией
 flang/stdlib/logic.flang		Не так		доказано композицией
 flang/stdlib/logic.flang		Ровно одно		доказано композицией
@@ -2100,7 +2100,6 @@ flang/stdlib/logic.flang		Хотя бы одно	истинный первый �
 flang/stdlib/logic.flang		Не так	отрицание есть импликация в ложь	доказано
 flang/stdlib/logic.flang		Не так	А или не А — истина	доказано
 flang/stdlib/logic.flang		Не так	А и не А — ложь	доказано
-flang/stdlib/logic.flang		Не так	не не А равно А	доказано
 flang/stdlib/logic.flang		Ровно одно	исключающее или есть неравенство признаков	сетка
 flang/stdlib/logic.flang		Ровно одно	исключающее или читается и со второго довода: при истинном втором ответ есть отрицание первого, при ложном — сам первый	доказано
 flang/stdlib/logic.flang		Ровно одно	исключающее или читается и с первого довода: при истинном первом ответ есть отрицание второго, при ложном — сам второй	доказано
@@ -2675,7 +2674,7 @@ flang/stdlib/postgres.flang		Настройки потока	пар выходи
 flang/stdlib/postgres.flang		Досыпать настройку	настройка досыпается в конец одной парой из имени, знака равенства и значения, прочее проносит собранное нетронутым	сетка
 flang/stdlib/postgres.flang		Досыпать настройку	настройка досыпается парой имени и значения через знак равенства	доказано
 flang/stdlib/postgres.flang		Досыпать настройку	весть о том, что данных не будет, проносит собранные настройки нетронутыми	доказано
-flang/stdlib/protobuf.flang	43ed6d9c90af2a0fac5ce7809e559eee44ede3e419e2006916066aeaf022f6e3	Целое в отрезке		доказано композицией
+flang/stdlib/protobuf.flang	d464c11a42ba3e3b1fd736284bf1615543ef4377366b504f2b6892738d7fee31	Целое в отрезке		доказано композицией
 flang/stdlib/protobuf.flang		Октет годен		доказано композицией
 flang/stdlib/protobuf.flang		Октеты годны		доказано композицией
 flang/stdlib/protobuf.flang		Байты varint		доказано точным шагом
@@ -2789,7 +2788,6 @@ flang/stdlib/protobuf.flang		Разобрать сообщение	место п
 flang/stdlib/protobuf.flang		Разобрать сообщение	причина порчи — одна из четырёх названных	сетка
 flang/stdlib/protobuf.flang		Перекодировать сообщение	пусто перекодируется в пусто	сетка
 flang/stdlib/protobuf.flang		Перекодировать сообщение	перекодировка октетов не длиннее входа	сетка
-flang/stdlib/protobuf.flang		Перекодировать сообщение	перекодировка октетов устойчива: второй раз даёт то же	сетка
 flang/stdlib/protobuf.flang		Поле годно	годное поле кодируется непустым	сетка
 flang/stdlib/protobuf.flang		Поля годны	без полей — годно	сетка
 flang/stdlib/protobuf.flang		Поля годны	одно поле годно ровно тогда, когда годно само	сетка
@@ -3588,7 +3586,7 @@ flang/stdlib/sha256.flang		Цифра 16	цифра — ровно один зн
 flang/stdlib/sha256.flang		Слово шестнадцатеричным	слово печатается ровно восемью знаками	сетка
 flang/stdlib/sha256.flang		Свод шестнадцатеричным	хеш печатается ровно шестьюдесятью четырьмя знаками	сетка
 flang/stdlib/sha256.flang		Хеш байтов	хеш — ровно шестьдесят четыре знака	доказано
-flang/stdlib/sqlite.flang	0241670a2c3541d238624ee62ffe80fdac9a76dbf3b56e956bad02c772b5660f	Отбросить октеты		доказано структурой
+flang/stdlib/sqlite.flang	ae002449c039f9b00aae01c678a83f841c6a4ce3b4d3d942901ba308193b0dfb	Отбросить октеты		доказано структурой
 flang/stdlib/sqlite.flang		Взять октеты		доказано структурой
 flang/stdlib/sqlite.flang		Кусок октетов		доказано постоянным шагом
 flang/stdlib/sqlite.flang		Шаг взятия		доказано композицией
@@ -3917,7 +3915,7 @@ flang/stdlib/stats.flang		Стандартное отклонение по вы�
 flang/stdlib/stats.flang		Квантиль	на пустом — ноль	доказано
 flang/stdlib/stats.flang		Квантиль	доля не выше нуля — первый элемент	доказано
 flang/stdlib/stats.flang		Квантиль	доля не ниже единицы — последний элемент	сетка
-flang/stdlib/strings.flang	0ca90eb91fefbf351b82773eaa42c92e5d167fb9146d9862beda35c351883edb	Приписать строку в начало		доказано композицией
+flang/stdlib/strings.flang	4841ac95420a54975364f3138aa7bb3fdddf07343247c1d0f6dd6cea7052d010	Приписать строку в начало		доказано композицией
 flang/stdlib/strings.flang		Шаг склейки строк		доказано композицией
 flang/stdlib/strings.flang		Соединить строки		доказано композицией
 flang/stdlib/strings.flang		Разбить по символу		доказано композицией
@@ -4603,7 +4601,7 @@ flang/stdlib/tls.flang		Расширение подписей клиента	в�
 flang/stdlib/tls.flang		Расширение подписей клиента	номер расширения — 13, signature_algorithms	доказано
 flang/stdlib/tls.flang		Расширение ключа клиента	десять октетов обвязки и сам ключ	доказано
 flang/stdlib/tls.flang		Свой привет	запись на пять октетов длиннее тела рукопожатия	доказано
-flang/stdlib/toml.flang	77958f63e25c62fb3438bed3870f171893679e461f080574471a9497752118b9	Это таблица toml		доказано композицией
+flang/stdlib/toml.flang	9eba17b2a1912b0ade20dd515ad8f1e1dadff7407d58a14dab596bbf50716a49	Это таблица toml		доказано композицией
 flang/stdlib/toml.flang		Пробельный знак toml		доказано композицией
 flang/stdlib/toml.flang		Снять пробелы слева toml		доказано структурой
 flang/stdlib/toml.flang		Обратить строку toml		доказано композицией
@@ -4629,6 +4627,7 @@ flang/stdlib/toml.flang		Разобрать ключ toml		доказано ко
 flang/stdlib/toml.flang		Шаг пути заголовка toml		доказано композицией
 flang/stdlib/toml.flang		Разобрать заголовок toml		доказано композицией
 flang/stdlib/toml.flang		Разобрать строку toml		доказано композицией
+flang/stdlib/toml.flang		Строка toml переживает печать		доказано композицией
 flang/stdlib/toml.flang		Шаг поиска в таблице toml		доказано композицией
 flang/stdlib/toml.flang		Найти в таблице toml		доказано композицией
 flang/stdlib/toml.flang		Есть в таблице toml		доказано композицией
@@ -4646,6 +4645,7 @@ flang/stdlib/toml.flang		Напечатать раздел toml		доказан�
 flang/stdlib/toml.flang		Напечатать toml		доказано композицией
 flang/stdlib/toml.flang		Шаг разбора toml		доказано композицией
 flang/stdlib/toml.flang		Разобрать toml		доказано композицией
+flang/stdlib/toml.flang		Документ toml переживает печать		доказано композицией
 flang/stdlib/toml.flang		Значение по пути		доказано структурой
 flang/stdlib/toml.flang		Значение по пути в тексте toml		доказано композицией
 flang/stdlib/toml.flang		Это таблица toml	таблицей признаётся ровно вариант таблицы	доказано
@@ -4683,7 +4683,6 @@ flang/stdlib/toml.flang		Разобрать ключ toml	голый ключ б
 flang/stdlib/toml.flang		Шаг пути заголовка toml	отказ липкий	сетка
 flang/stdlib/toml.flang		Разобрать заголовок toml	двойная скобка — массив таблиц вне подмножества	доказано
 flang/stdlib/toml.flang		Разобрать строку toml	пустая после обрезки строка — пустая	сетка
-flang/stdlib/toml.flang		Разобрать строку toml	строка пары и заголовок печатаются и разбираются снова в то же	сетка
 flang/stdlib/toml.flang		Шаг поиска в таблице toml	найденное не теряется	сетка
 flang/stdlib/toml.flang		Найти в таблице toml	найдено ровно то, что есть в таблице	сетка
 flang/stdlib/toml.flang		Есть в таблице toml	в пустой таблице ключей нет	сетка
@@ -4703,10 +4702,9 @@ flang/stdlib/toml.flang		Напечатать toml	печать не начин�
 flang/stdlib/toml.flang		Шаг разбора toml	после беды ход не меняется	сетка
 flang/stdlib/toml.flang		Шаг разбора toml	номер растёт не больше чем на один	сетка
 flang/stdlib/toml.flang		Разобрать toml	отказ несёт номер строки от единицы до числа строк	сетка
-flang/stdlib/toml.flang		Разобрать toml	разобранное печатается и разбирается снова в то же значение	сетка
 flang/stdlib/toml.flang		Значение по пути	пустой путь даёт саму таблицу	доказано
 flang/stdlib/toml.flang		Значение по пути в тексте toml	неразобранный текст значения не даёт	сетка
-flang/stdlib/tree.flang	062baa285c7ab7e2f38bf33b544f453839705a22207fc15187f8b646cb80f626	Строка раньше		доказано структурой
+flang/stdlib/tree.flang	24102476637147ff7dff2493902b4564c5906286ebccfdbccb1bee9dde6ae4d2	Строка раньше		доказано структурой
 flang/stdlib/tree.flang		Шаг хеша строки		доказано композицией
 flang/stdlib/tree.flang		Хеш строки		доказано композицией
 flang/stdlib/tree.flang		Это дерево поиска		доказано структурой
@@ -4735,7 +4733,7 @@ flang/stdlib/tree.flang		Хеш строки	хеш меньше модуля 10
 flang/stdlib/tree.flang		Хеш строки	хеш строго меньше модуля	сетка
 flang/stdlib/tree.flang		Хеш строки	у пустой строки хеш — начало свёртки, семь	сетка
 flang/stdlib/tree.flang		Это дерево поиска	лист — дерево поиска	доказано
-flang/stdlib/tree.flang		Это дерево поиска	у узла — порядок ключей в обоих поддеревьях и они сами деревья поиска	доказано
+flang/stdlib/tree.flang		Это дерево поиска	у узла — порядок ключей в обоих поддеревьях и они сами деревья поиска	сетка
 flang/stdlib/tree.flang		Приоритет	у листа приоритета нет, а у узла он — записанный в узле	доказано
 flang/stdlib/tree.flang		Ключ корня	у листа ключа нет	доказано
 flang/stdlib/tree.flang		Значение корня	у листа значения нет	доказано
@@ -4772,13 +4770,13 @@ flang/stdlib/tree.flang		Есть ключ в дереве	в листе клю�
 flang/stdlib/tree.flang		Размер дерева	размер неотрицателен	доказано
 flang/stdlib/tree.flang		Размер дерева	дерево с ненулевым приоритетом корня — не пустое	доказано
 flang/stdlib/tree.flang		Размер дерева	у листа размер ноль	доказано
-flang/stdlib/tree.flang		Размер дерева	у узла размер — единица и оба поддерева	доказано
+flang/stdlib/tree.flang		Размер дерева	у узла размер — единица и оба поддерева	сетка
 flang/stdlib/tree.flang		Глубина дерева	без ключей глубина ноль	сетка
 flang/stdlib/tree.flang		Глубина дерева	есть ключи — глубина не меньше одного	доказано
 flang/stdlib/tree.flang		Глубина дерева	глубина неотрицательна	доказано
 flang/stdlib/tree.flang		Глубина дерева	у дерева без узлов глубина ноль	сетка
 flang/stdlib/tree.flang		Глубина дерева	у листа глубина ноль	доказано
-flang/stdlib/tree.flang		Глубина дерева	у узла глубина — глубже обоих поддеревьев	доказано
+flang/stdlib/tree.flang		Глубина дерева	у узла глубина — глубже обоих поддеревьев	сетка
 flang/stdlib/tree.flang		Глубже	левая не мельче правой — глубже не мельче левой	доказано
 flang/stdlib/tree.flang		Глубже	правая глубже левой — глубже всё равно не мельче левой	сетка
 flang/stdlib/tree.flang		Глубже	глубже не мельче правой половины	доказано
@@ -4790,7 +4788,7 @@ flang/stdlib/tree.flang		Шаг сбора ключей дерева	допис�
 flang/stdlib/tree.flang		Ключи дерева	ключей ровно столько, сколько узлов	сетка
 flang/stdlib/tree.flang		Ключи дерева	у дерева без узлов ключей нет	сетка
 flang/stdlib/tree.flang		Ключи дерева	у листа ключей нет	доказано
-flang/stdlib/tree.flang		Ключи дерева	у узла ключи — левые, свой сверху, и правые поверх	доказано
+flang/stdlib/tree.flang		Ключи дерева	у узла ключи — левые, свой сверху, и правые поверх	сетка
 flang/stdlib/tree.flang		Дерево из ключей	из пустого списка — пустое дерево	доказано
 flang/stdlib/tree.flang		Дерево из ключей	из непустого списка — непустое дерево	сетка
 flang/stdlib/trust-store.flang	37e86976b5a627135061989c45406fe4b07d1a4bf1132a5983830954e7cd3d02	Начало связки		доказано композицией
@@ -5135,7 +5133,7 @@ flang/stdlib/utf8.flang		Байты годны как UTF-8	один байт г
 flang/stdlib/utf8.flang		Круговой ход держится	круговой ход держится ровно там, где одиноких суррогатов нет	сетка
 flang/stdlib/utf8.flang		Списки точек равны	равные списки одной длины и с одной головой	доказано
 flang/stdlib/utf8.flang		Списки точек равны	на одиночках ответ — сравнение голов	сетка
-flang/stdlib/uuid.flang	cd15f0d84291d353508d17d7305172987cfca2c0c4fef00e248ac9f23d8b60d9	Нулевой УУИД		доказано композицией
+flang/stdlib/uuid.flang	8e92e30bad2ad40bee546bbd82336dfa64d55a373dcd6fbe1e3da0bb3b912179	Нулевой УУИД		доказано композицией
 flang/stdlib/uuid.flang		Пространство имён DNS		доказано композицией
 flang/stdlib/uuid.flang		Пространство имён URL		доказано композицией
 flang/stdlib/uuid.flang		Свести к октету		доказано композицией
@@ -5152,6 +5150,7 @@ flang/stdlib/uuid.flang		Место не шестнадцатеричного з
 flang/stdlib/uuid.flang		Шаг сбора октетов УУИД		доказано композицией
 flang/stdlib/uuid.flang		Октеты из знаков УУИД		доказано композицией
 flang/stdlib/uuid.flang		Разобрать УУИД		доказано композицией
+flang/stdlib/uuid.flang		Разбор УУИД переживает печать		доказано композицией
 flang/stdlib/uuid.flang		Шаг печати УУИД		доказано композицией
 flang/stdlib/uuid.flang		Напечатать УУИД		доказано композицией
 flang/stdlib/uuid.flang		Канонический вид УУИД		доказано композицией
@@ -5165,12 +5164,12 @@ flang/stdlib/uuid.flang		Текст УУИД версии 5		доказано к
 flang/stdlib/uuid.flang		УУИД версии 4		доказано композицией
 flang/stdlib/uuid.flang		Текст УУИД версии 4		доказано композицией
 flang/stdlib/uuid.flang		Нулевой УУИД	в нулевом УУИД шестнадцать октетов	доказано
-flang/stdlib/uuid.flang		Нулевой УУИД	нулевой УУИД печатается тридцатью двумя нулями через дефисы	сетка
+flang/stdlib/uuid.flang		Нулевой УУИД	нулевой УУИД печатается тридцатью двумя нулями через дефисы	доказано
 flang/stdlib/uuid.flang		Пространство имён DNS	в пространстве DNS шестнадцать октетов	доказано
-flang/stdlib/uuid.flang		Пространство имён DNS	пространство DNS печатается как в RFC 4122	сетка
+flang/stdlib/uuid.flang		Пространство имён DNS	пространство DNS печатается как в RFC 4122	доказано
 flang/stdlib/uuid.flang		Пространство имён DNS	пространство DNS — УУИД первой версии	доказано
 flang/stdlib/uuid.flang		Пространство имён URL	в пространстве URL шестнадцать октетов	доказано
-flang/stdlib/uuid.flang		Пространство имён URL	пространство URL печатается как в RFC 4122	сетка
+flang/stdlib/uuid.flang		Пространство имён URL	пространство URL печатается как в RFC 4122	доказано
 flang/stdlib/uuid.flang		Пространство имён URL	пространство URL — УУИД первой версии	доказано
 flang/stdlib/uuid.flang		Свести к октету	октет не меньше нуля	сетка
 flang/stdlib/uuid.flang		Свести к октету	октет меньше двухсот пятидесяти шести	сетка
@@ -5210,7 +5209,6 @@ flang/stdlib/uuid.flang		Разобрать УУИД	длина не та наз
 flang/stdlib/uuid.flang		Разобрать УУИД	дефис не на месте называет одно из четырёх мест дефисов	сетка
 flang/stdlib/uuid.flang		Разобрать УУИД	не шестнадцатеричный знак назван местом внутри записи	сетка
 flang/stdlib/uuid.flang		Разобрать УУИД	в разобранном УУИД ровно шестнадцать октетов	сетка
-flang/stdlib/uuid.flang		Разобрать УУИД	разобранный УУИД печатается и разбирается снова в тот же итог	сетка
 flang/stdlib/uuid.flang		Шаг печати УУИД	номер растёт ровно на один	доказано
 flang/stdlib/uuid.flang		Шаг печати УУИД	текст начинается с прежнего	доказано
 flang/stdlib/uuid.flang		Шаг печати УУИД	после четвёртого, шестого, восьмого и десятого октета текст длиннее на три знака	доказано
@@ -5220,7 +5218,6 @@ flang/stdlib/uuid.flang		Напечатать УУИД	дефисы стоят �
 flang/stdlib/uuid.flang		Напечатать УУИД	в печати только строчные шестнадцатеричные знаки и дефисы	сетка
 flang/stdlib/uuid.flang		Напечатать УУИД	печать разбирается обратно в те же шестнадцать октетов	сетка
 flang/stdlib/uuid.flang		Канонический вид УУИД	канонический вид — тридцать шесть знаков либо пустая строка	сетка
-flang/stdlib/uuid.flang		Канонический вид УУИД	канонический вид канонического вида — он сам	сетка
 flang/stdlib/uuid.flang		Канонический вид УУИД	пустая строка — ровно у неразобранной записи	сетка
 flang/stdlib/uuid.flang		Версия УУИД	версия не меньше нуля	сетка
 flang/stdlib/uuid.flang		Версия УУИД	версия не больше пятнадцати	сетка

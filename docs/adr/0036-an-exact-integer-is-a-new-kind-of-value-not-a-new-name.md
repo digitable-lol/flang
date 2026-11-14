@@ -179,7 +179,7 @@ flang check --proof --строго monoid.flang
 
 Три главных места, и у каждого свой род работы:
 
-- **Проверка типов** — `flang/self/types.flang`, 9606 строк. <!-- СНЯТО 2026-11-12 строк flang/self/types.flang = 9606 (input of print batch 12: typing holes 17, 28, 29, 36 and 43) -->
+- **Проверка типов** — `flang/self/types.flang`, 9680 строк. <!-- СНЯТО 2026-11-14 строк flang/self/types.flang = 9680 (typing holes 30-32: words inside lists and records, entry words and fractions) -->
   Здесь числовые типы СТРОЯТСЯ, и строятся они все одинаково — отрезком на общей
   сетке: `«Тип отрезка» от «низ» и «верх» и «целое» и «масштаб»`. `неотрицательное`
   это `[0, Потолок точных]`, `целое` это `[Дно точных, Потолок точных]`, `сотых` —

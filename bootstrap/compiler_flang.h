@@ -662,6 +662,25 @@ compiler_flang_sozdat_sbor_strok_kategoriy(fl_ctx *ctx, fl_value r,
                                            fl_value konec, fl_value *out,
                                            fl_error *error);
 
+/* Запись FTS «Довод слова»: «имя», «значение». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_dovod_slova(fl_ctx *ctx, fl_value imya,
+                                            fl_value znachenie, fl_value *out,
+                                            fl_error *error);
+
+/* Запись FTS «Половины слова»: «делится», «до», «после». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_poloviny_slova(fl_ctx *ctx, fl_value delitsya,
+                                               fl_value do_2, fl_value posle,
+                                               fl_value *out, fl_error *error);
+
+/* Запись FTS «Раскладка слов вызова»: «отказ», «пары», «по месту». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status
+compiler_flang_sozdat_raskladka_slov_vyzova(fl_ctx *ctx, fl_value otkaz,
+                                            fl_value pary, fl_value po_mestu,
+                                            fl_value *out, fl_error *error);
+
 /* Запись FTS «Известная функция»: «имя», «арность», «тотальная», «параметры». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_izvestnaya_funkciya(fl_ctx *ctx, fl_value imya,
@@ -3576,14 +3595,15 @@ fl_status compiler_flang_sozdat_obyavlennaya_mera(fl_ctx *ctx, fl_value est,
                                                   fl_value uzel, fl_value *out,
                                                   fl_error *error);
 
-/* Запись FTS «Описание функции»: «имя», «требует», «тотальная», «параметры», «тело», «точные позиции», «мера». */
+/* Запись FTS «Описание функции»: «имя», «требует», «обеспечивает», «тотальная», «параметры», «тело», «точные позиции», «мера». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status
 compiler_flang_sozdat_opisanie_funkcii(fl_ctx *ctx, fl_value imya,
-                                       fl_value trebuet, fl_value totalnaya,
-                                       fl_value parametry, fl_value telo,
-                                       fl_value tochnye_pozicii, fl_value mera,
-                                       fl_value *out, fl_error *error);
+                                       fl_value trebuet, fl_value obespechivaet,
+                                       fl_value totalnaya, fl_value parametry,
+                                       fl_value telo, fl_value tochnye_pozicii,
+                                       fl_value mera, fl_value *out,
+                                       fl_error *error);
 
 /* Запись FTS «Сбор среды»: «индекс», «среда». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -7605,6 +7625,20 @@ fl_status compiler_flang_sozdat_itog_zapuska(fl_ctx *ctx, fl_value stroka,
                                              fl_value progon, fl_value *out,
                                              fl_error *error);
 
+/* Запись FTS «Вопрос довода»: «имя», «вопрос». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_vopros_dovoda(fl_ctx *ctx, fl_value imya,
+                                              fl_value vopros, fl_value *out,
+                                              fl_error *error);
+
+/* Запись FTS «Доводы из слов»: «удалось», «отказ», «аргументы», «недостаёт». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_dovody_iz_slov(fl_ctx *ctx, fl_value udalos,
+                                               fl_value otkaz,
+                                               fl_value argumenty,
+                                               fl_value nedostayot,
+                                               fl_value *out, fl_error *error);
+
 /* Запись FTS «Итог примера»: «функция», «пример», «прошёл», «код», «сообщение». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_itog_primera(fl_ctx *ctx, fl_value funkciya,
@@ -8012,6 +8046,23 @@ fl_status compiler_flang_variant_skobki_net(fl_ctx *ctx, fl_value *out,
                                             fl_error *error);
 fl_status compiler_flang_variant_ne_resheno(fl_ctx *ctx, fl_value *out,
                                             fl_error *error);
+
+/* Сумма типов FTS «Разбор слова вызова»: «Слово именованное» | «Слово по месту» | «Слово с чужим именем» | «Слово в несколько строк». */
+/* Дискриминант — имя варианта: fl_variant_is(значение, "Имя"). */
+fl_status compiler_flang_variant_slovo_imenovannoe(fl_ctx *ctx, fl_value imya,
+                                                   fl_value znachenie,
+                                                   fl_value *out,
+                                                   fl_error *error);
+fl_status compiler_flang_variant_slovo_po_mestu(fl_ctx *ctx, fl_value znachenie,
+                                                fl_value *out, fl_error *error);
+fl_status compiler_flang_variant_slovo_s_chuzhim_imenem(fl_ctx *ctx,
+                                                        fl_value imya,
+                                                        fl_value *out,
+                                                        fl_error *error);
+fl_status compiler_flang_variant_slovo_v_neskolko_strok(fl_ctx *ctx,
+                                                        fl_value znachenie,
+                                                        fl_value *out,
+                                                        fl_error *error);
 
 /* Сумма типов FTS «Поиск тега»: «Тег найден» | «Не тег». */
 /* Дискриминант — имя варианта: fl_variant_is(значение, "Имя"). */
@@ -20895,6 +20946,44 @@ fl_status compiler_flang_uzel_tipa_porucheniya(fl_ctx *ctx, fl_value *result,
                                                fl_error *error);
 
 /*
+ * Функция flang «Узел типа свойства страницы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_tipa_svoystva_stranicy(fl_ctx *ctx,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Узел типа узла страницы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_uzel_tipa_uzla_stranicy(fl_ctx *ctx, fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Варианты свойства страницы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_varianty_svoystva_stranicy(fl_ctx *ctx,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Варианты узла страницы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_varianty_uzla_stranicy(fl_ctx *ctx, fl_value *result,
+                                                fl_error *error);
+
+/*
  * Функция flang «Узел типа отклика».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -20964,6 +21053,18 @@ fl_status compiler_flang_svoboden_dlya_slovarya(fl_ctx *ctx, fl_value zanyato,
                                                 fl_value varianty,
                                                 fl_value *result,
                                                 fl_error *error);
+
+/*
+ * Функция flang «Типы страницы».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tipy — «типы»: список: «Значение»
+ * @param zanyato — «занято»: список: строка
+ * @return значение: список: «Значение»
+ */
+fl_status compiler_flang_tipy_stranicy(fl_ctx *ctx, fl_value tipy,
+                                       fl_value zanyato, fl_value *result,
+                                       fl_error *error);
 
 /*
  * Функция flang «Типы ввода-вывода».
@@ -23789,6 +23890,350 @@ fl_status compiler_flang_tip_rezultata_propuschen(fl_ctx *ctx, fl_value tip,
                                                   fl_value imya,
                                                   fl_value *result,
                                                   fl_error *error);
+
+/*
+ * Функция flang «Шаг до равенства».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Половины слова»
+ * @param znak — «знак»: строка
+ * @return значение: «Половины слова»
+ */
+fl_status compiler_flang_shag_do_ravenstva(fl_ctx *ctx, fl_value akk,
+                                           fl_value znak, fl_value *result,
+                                           fl_error *error);
+
+/*
+ * Функция flang «Шаг половин слова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param akk — «акк»: «Половины слова»
+ * @param znak — «знак»: строка
+ * @return значение: «Половины слова»
+ */
+fl_status compiler_flang_shag_polovin_slova(fl_ctx *ctx, fl_value akk,
+                                            fl_value znak, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Половины слова вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param slovo — «слово»: строка
+ * @return значение: «Половины слова»
+ */
+fl_status compiler_flang_poloviny_slova_vyzova(fl_ctx *ctx, fl_value slovo,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Без ёлочек вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tekst — «текст»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_bez_yolochek_vyzova(fl_ctx *ctx, fl_value tekst,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово с именем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param imya — «имя»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Разбор слова вызова»
+ */
+fl_status compiler_flang_slovo_s_imenem(fl_ctx *ctx, fl_value parametry,
+                                        fl_value imya, fl_value znachenie,
+                                        fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Слово в одну строку».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param poloviny — «половины»: «Половины слова»
+ * @param slovo — «слово»: строка
+ * @return значение: «Разбор слова вызова»
+ */
+fl_status compiler_flang_slovo_v_odnu_stroku(fl_ctx *ctx, fl_value parametry,
+                                             fl_value poloviny, fl_value slovo,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Разобрать слово вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param slovo — «слово»: строка
+ * @return значение: «Разбор слова вызова»
+ */
+fl_status compiler_flang_razobrat_slovo_vyzova(fl_ctx *ctx, fl_value parametry,
+                                               fl_value slovo, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Есть довод с именем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Довод слова»
+ * @param imya — «имя»: строка
+ * @return значение
+ */
+fl_status compiler_flang_est_dovod_s_imenem(fl_ctx *ctx, fl_value pary,
+                                            fl_value imya, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Перечень параметров вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_perechen_parametrov_vyzova(fl_ctx *ctx,
+                                                    fl_value parametry,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Раскладка из пар».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Довод слова»
+ * @param po_mestu — «по месту»: список: строка
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_raskladka_iz_par(fl_ctx *ctx, fl_value pary,
+                                          fl_value po_mestu, fl_value *result,
+                                          fl_error *error);
+
+/*
+ * Функция flang «Отказ раскладки слов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param soobschenie — «сообщение»: строка
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_otkaz_raskladki_slov(fl_ctx *ctx, fl_value soobschenie,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Пара довода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Довод слова»
+ */
+fl_status compiler_flang_para_dovoda(fl_ctx *ctx, fl_value imya,
+                                     fl_value znachenie, fl_value *result,
+                                     fl_error *error);
+
+/*
+ * Функция flang «Уложить именованное слово».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Раскладка слов вызова»
+ * @param imya — «имя»: строка
+ * @param znachenie — «значение»: строка
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_ulozhit_imenovannoe_slovo(fl_ctx *ctx, fl_value hod,
+                                                   fl_value imya,
+                                                   fl_value znachenie,
+                                                   fl_value *result,
+                                                   fl_error *error);
+
+/*
+ * Функция flang «Уложить слово вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param hod — «ход»: «Раскладка слов вызова»
+ * @param slovo — «слово»: «Разбор слова вызова»
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_ulozhit_slovo_vyzova(fl_ctx *ctx, fl_value parametry,
+                                              fl_value hod, fl_value slovo,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Шаг раскладки слов».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param hod — «ход»: «Раскладка слов вызова»
+ * @param slovo — «слово»: строка
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_shag_raskladki_slov(fl_ctx *ctx, fl_value parametry,
+                                             fl_value hod, fl_value slovo,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Свободные параметры вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param pary — «пары»: список: «Довод слова»
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_svobodnye_parametry_vyzova(fl_ctx *ctx,
+                                                    fl_value parametry,
+                                                    fl_value pary,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Раздать слова по месту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param svobodnye — «свободные»: список: строка
+ * @param znacheniya — «значения»: список: строка
+ * @param vse — «все»: список: строка
+ * @param pary — «пары»: список: «Довод слова»
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_razdat_slova_po_mestu(fl_ctx *ctx, fl_value svobodnye,
+                                               fl_value znacheniya,
+                                               fl_value vse, fl_value pary,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Раздать названные слова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param nazvannye — «названные»: «Раскладка слов вызова»
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_razdat_nazvannye_slova(fl_ctx *ctx, fl_value parametry,
+                                                fl_value nazvannye,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Разложить слова вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param parametry — «параметры»: список: строка
+ * @param slova — «слова»: список: строка
+ * @return значение: «Раскладка слов вызова»
+ */
+fl_status compiler_flang_razlozhit_slova_vyzova(fl_ctx *ctx, fl_value parametry,
+                                                fl_value slova,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Строка дано вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param para — «пара»: «Довод слова»
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_dano_vyzova(fl_ctx *ctx, fl_value para,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Исходник доводов вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Довод слова»
+ * @return значение: строка
+ */
+fl_status compiler_flang_ishodnik_dovodov_vyzova(fl_ctx *ctx, fl_value pary,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Имя довода по счёту».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Хвостовой самовызов развёрнут в цикл: стек не растёт.
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param pary — «пары»: список: «Довод слова»
+ * @param nomer — «номер»: число
+ * @return значение: строка
+ */
+fl_status compiler_flang_imya_dovoda_po_schyotu(fl_ctx *ctx, fl_value pary,
+                                                fl_value nomer,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Отказ разбора с именем».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param imya — «имя»: строка
+ * @param soobschenie — «сообщение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_razbora_s_imenem(fl_ctx *ctx, fl_value imya,
+                                                fl_value soobschenie,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Отказ разбора довода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pary — «пары»: список: «Довод слова»
+ * @param stroka — «строка»: число
+ * @param soobschenie — «сообщение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_otkaz_razbora_dovoda(fl_ctx *ctx, fl_value pary,
+                                              fl_value stroka,
+                                              fl_value soobschenie,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Кавычка в литерале вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_kavychka_v_literale_vyzova(fl_ctx *ctx, fl_value znak,
+                                                    fl_value *result,
+                                                    fl_error *error);
+
+/*
+ * Функция flang «Знак в литерале вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znak — «знак»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_znak_v_literale_vyzova(fl_ctx *ctx, fl_value znak,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Строка литералом вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param znachenie — «значение»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_stroka_literalom_vyzova(fl_ctx *ctx,
+                                                 fl_value znachenie,
+                                                 fl_value *result,
+                                                 fl_error *error);
 
 /*
  * Функция flang «Узел ничто при понижении».
@@ -77299,11 +77744,12 @@ fl_status compiler_flang_dovody_slovami(fl_ctx *ctx, fl_value programma,
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param parametry — «параметры»: список: «Параметр»
  * @param argumenty — «аргументы»: «Значение»
+ * @param tablicy — «таблицы»: «Таблицы»
  * @return значение: «Значение»
  */
 fl_status compiler_flang_slova_v_dovodah(fl_ctx *ctx, fl_value parametry,
-                                         fl_value argumenty, fl_value *result,
-                                         fl_error *error);
+                                         fl_value argumenty, fl_value tablicy,
+                                         fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Довод словом».
@@ -77311,23 +77757,53 @@ fl_status compiler_flang_slova_v_dovodah(fl_ctx *ctx, fl_value parametry,
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param parametry — «параметры»: список: «Параметр»
  * @param pole — «поле»: «Поле значения»
+ * @param tablicy — «таблицы»: «Таблицы»
  * @return значение: «Поле значения»
  */
 fl_status compiler_flang_dovod_slovom(fl_ctx *ctx, fl_value parametry,
-                                      fl_value pole, fl_value *result,
-                                      fl_error *error);
+                                      fl_value pole, fl_value tablicy,
+                                      fl_value *result, fl_error *error);
 
 /*
  * Функция flang «Значение словом».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ *
+ * Рекурсивная: считает глубину, на превышении — FLANG_RECURSION_LIMIT.
+ * @param tip — «тип»: «Тип»
+ * @param znachenie — «значение»: «Значение»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_znachenie_slovom(fl_ctx *ctx, fl_value tip,
+                                          fl_value znachenie, fl_value tablicy,
+                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Тип поля довода».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param tip — «тип»: «Тип»
+ * @param klyuch — «ключ»: строка
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @return значение: «Тип»
+ */
+fl_status compiler_flang_tip_polya_dovoda(fl_ctx *ctx, fl_value tip,
+                                          fl_value klyuch, fl_value tablicy,
+                                          fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Скаляр довода словом».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
  * @param tip — «тип»: «Тип»
  * @param znachenie — «значение»: «Значение»
  * @return значение: «Значение»
  */
-fl_status compiler_flang_znachenie_slovom(fl_ctx *ctx, fl_value tip,
-                                          fl_value znachenie, fl_value *result,
-                                          fl_error *error);
+fl_status compiler_flang_skalyar_dovoda_slovom(fl_ctx *ctx, fl_value tip,
+                                               fl_value znachenie,
+                                               fl_value *result,
+                                               fl_error *error);
 
 /*
  * Функция flang «Отметить доказанные».
@@ -81184,6 +81660,44 @@ fl_status compiler_flang_vyzovy_funkcii(fl_ctx *ctx, fl_value vyzovy,
                                         fl_value opisanie, fl_value primeneniya,
                                         fl_value opisaniya, fl_value *result,
                                         fl_error *error);
+
+/*
+ * Функция flang «Вызовы постусловий».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param opisanie — «описание»: «Описание функции»
+ * @param sreda — «среда»: список: «Связка»
+ * @return значение: список: «Вызов»
+ */
+fl_status compiler_flang_vyzovy_postusloviy(fl_ctx *ctx, fl_value opisanie,
+                                            fl_value sreda, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Обход постусловия».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param postuslovie — «постусловие»: «Значение»
+ * @param sreda — «среда»: список: «Связка»
+ * @return значение: «Обход»
+ */
+fl_status compiler_flang_obhod_postusloviya(fl_ctx *ctx, fl_value postuslovie,
+                                            fl_value sreda, fl_value *result,
+                                            fl_error *error);
+
+/*
+ * Функция flang «Самовызовы постусловия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param prezhnie — «прежние»: список: «Вызов»
+ * @param itog — «итог»: «Обход»
+ * @param imya — «имя»: строка
+ * @return значение: список: «Вызов»
+ */
+fl_status compiler_flang_samovyzovy_postusloviya(fl_ctx *ctx, fl_value prezhnie,
+                                                 fl_value itog, fl_value imya,
+                                                 fl_value *result,
+                                                 fl_error *error);
 
 /*
  * Функция flang «Все вызовы при анализе».
@@ -123498,6 +124012,63 @@ fl_status compiler_flang_zapis_dokazatelstva(fl_ctx *ctx,
                                              fl_error *error);
 
 /*
+ * Функция flang «Строки отпечатков раскрытия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroka — «строка»: строка
+ * @param ishodnik — «исходник»: строка
+ * @param raskrytyy — «раскрытый»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_stroki_otpechatkov_raskrytiya(fl_ctx *ctx,
+                                                       fl_value stroka,
+                                                       fl_value ishodnik,
+                                                       fl_value raskrytyy,
+                                                       fl_value *result,
+                                                       fl_error *error);
+
+/*
+ * Функция flang «Шапка с отпечатками раскрытия».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param stroki — «строки»: список: строка
+ * @param ishodnik — «исходник»: строка
+ * @param raskrytyy — «раскрытый»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_shapka_s_otpechatkami_raskrytiya(fl_ctx *ctx,
+                                                          fl_value stroki,
+                                                          fl_value ishodnik,
+                                                          fl_value raskrytyy,
+                                                          fl_value *result,
+                                                          fl_error *error);
+
+/*
+ * Функция flang «Блок раскрытия записи».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param raskrytyy — «раскрытый»: строка
+ * @return значение: список: строка
+ */
+fl_status compiler_flang_blok_raskrytiya_zapisi(fl_ctx *ctx, fl_value raskrytyy,
+                                                fl_value *result,
+                                                fl_error *error);
+
+/*
+ * Функция flang «Запись с раскрытием».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param zapis — «запись»: строка
+ * @param ishodnik — «исходник»: строка
+ * @param raskrytyy — «раскрытый»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_zapis_s_raskrytiem(fl_ctx *ctx, fl_value zapis,
+                                            fl_value ishodnik,
+                                            fl_value raskrytyy,
+                                            fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Имя функции заголовка записи».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -162194,6 +162765,232 @@ fl_status compiler_flang_progon_svyazannogo(fl_ctx *ctx, fl_value programma,
                                             fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Пустые доводы вызова».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_pustye_dovody_vyzova(fl_ctx *ctx, fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Вопрос о параметре».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param parametr — «параметр»: «Параметр»
+ * @return значение: «Вопрос довода»
+ */
+fl_status compiler_flang_vopros_o_parametre(fl_ctx *ctx, fl_value parametr,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Параметр спрашивается».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param parametr — «параметр»: «Параметр»
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение
+ */
+fl_status compiler_flang_parametr_sprashivaetsya(fl_ctx *ctx, fl_value parametr,
+                                                 fl_value argumenty,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Вопросы доводов».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param parametry — «параметры»: список: «Параметр»
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение: список: «Вопрос довода»
+ */
+fl_status compiler_flang_voprosy_dovodov(fl_ctx *ctx, fl_value parametry,
+                                         fl_value argumenty, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Отказ доводов из слов».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param otkaz — «отказ»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @param parametry — «параметры»: список: «Параметр»
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_otkaz_dovodov_iz_slov(fl_ctx *ctx, fl_value otkaz,
+                                               fl_value argumenty,
+                                               fl_value parametry,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Годные доводы из слов».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param argumenty — «аргументы»: «Значение»
+ * @param parametry — «параметры»: список: «Параметр»
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_godnye_dovody_iz_slov(fl_ctx *ctx, fl_value argumenty,
+                                               fl_value parametry,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Первый узел вызова».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzly — «узлы»: список: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_pervyy_uzel_vyzova(fl_ctx *ctx, fl_value uzly,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Дописать доводы».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param uzhe — «уже»: «Значение»
+ * @param novye — «новые»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_dopisat_dovody(fl_ctx *ctx, fl_value uzhe,
+                                        fl_value novye, fl_value *result,
+                                        fl_error *error);
+
+/*
+ * Функция flang «Довод по типу параметра».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param parametry — «параметры»: список: «Параметр»
+ * @param para — «пара»: «Довод слова»
+ * @return значение: «Довод слова»
+ */
+fl_status compiler_flang_dovod_po_tipu_parametra(fl_ctx *ctx,
+                                                 fl_value parametry,
+                                                 fl_value para,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
+ * Функция flang «Доводы разобранного примера».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @return значение: «Значение»
+ */
+fl_status compiler_flang_dovody_razobrannogo_primera(fl_ctx *ctx,
+                                                     fl_value programma,
+                                                     fl_value *result,
+                                                     fl_error *error);
+
+/*
+ * Функция flang «Доводы из пар».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param parametry — «параметры»: список: «Параметр»
+ * @param uzhe — «уже»: «Значение»
+ * @param pary — «пары»: список: «Довод слова»
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_dovody_iz_par(fl_ctx *ctx, fl_value parametry,
+                                       fl_value uzhe, fl_value pary,
+                                       fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Доводы по сигнатуре».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param slova — «слова»: список: строка
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_dovody_po_signature(fl_ctx *ctx, fl_value signatura,
+                                             fl_value slova, fl_value *result,
+                                             fl_error *error);
+
+/*
+ * Функция flang «Доводы вызова из слов».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @param slova — «слова»: список: строка
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_dovody_vyzova_iz_slov(fl_ctx *ctx, fl_value programma,
+                                               fl_value imya, fl_value slova,
+                                               fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Беды одного довода вызова».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param parametr — «параметр»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @return значение: список: «Беда»
+ */
+fl_status
+compiler_flang_bedy_odnogo_dovoda_vyzova(fl_ctx *ctx, fl_value signatura,
+                                         fl_value tablicy, fl_value parametr,
+                                         fl_value argumenty, fl_value *result,
+                                         fl_error *error);
+
+/*
+ * Функция flang «Довод после сверки».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param bedy — «беды»: список: «Беда»
+ * @param prinyato — «принято»: «Доводы из слов»
+ * @param prezhnie — «прежние»: «Значение»
+ * @param parametry — «параметры»: список: «Параметр»
+ * @return значение: «Доводы из слов»
+ */
+fl_status compiler_flang_dovod_posle_sverki(fl_ctx *ctx, fl_value bedy,
+                                            fl_value prinyato,
+                                            fl_value prezhnie,
+                                            fl_value parametry,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Довод по сигнатуре из ответа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param signatura — «сигнатура»: «Сигнатура»
+ * @param tablicy — «таблицы»: «Таблицы»
+ * @param argumenty — «аргументы»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @param otvet — «ответ»: строка
+ * @return значение: «Доводы из слов»
+ */
+fl_status
+compiler_flang_dovod_po_signature_iz_otveta(fl_ctx *ctx, fl_value signatura,
+                                            fl_value tablicy,
+                                            fl_value argumenty,
+                                            fl_value parametr, fl_value otvet,
+                                            fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Довод вызова из ответа».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param programma — «программа»: «Значение»
+ * @param imya — «имя»: строка
+ * @param argumenty — «аргументы»: «Значение»
+ * @param parametr — «параметр»: строка
+ * @param otvet — «ответ»: строка
+ * @return значение: «Доводы из слов»
+ */
+fl_status
+compiler_flang_dovod_vyzova_iz_otveta(fl_ctx *ctx, fl_value programma,
+                                      fl_value imya, fl_value argumenty,
+                                      fl_value parametr, fl_value otvet,
+                                      fl_value *result, fl_error *error);
+
+/*
  * Функция flang «Сообщение отказа входа».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -163280,6 +164077,45 @@ fl_status compiler_flang_primerov_v_funkciyah(fl_ctx *ctx, fl_value funkcii,
 fl_status compiler_flang_vedomost_ishodnikov(fl_ctx *ctx, fl_value fayly,
                                              fl_value vhod, fl_value *result,
                                              fl_error *error);
+
+/*
+ * Функция flang «Ведомость раскрытого».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @param ishodnik — «исходник»: строка
+ * @param raskrytyy — «раскрытый»: строка
+ * @return значение: «Итог ведомости»
+ */
+fl_status compiler_flang_vedomost_raskrytogo(fl_ctx *ctx, fl_value fayly,
+                                             fl_value vhod, fl_value ishodnik,
+                                             fl_value raskrytyy,
+                                             fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Сахар раскрыт».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param ishodnik — «исходник»: строка
+ * @return значение
+ */
+fl_status compiler_flang_sahar_raskryt(fl_ctx *ctx, fl_value ishodnik,
+                                       fl_value *result, fl_error *error);
+
+/*
+ * Функция flang «Ведомость прочитанных исходников».
+ *
+ * Обычная (не тотальная): завершение не доказано, зацикливание не ловится.
+ * @param fayly — «файлы»: список: «Исходник»
+ * @param vhod — «вход»: строка
+ * @return значение: «Итог ведомости»
+ */
+fl_status compiler_flang_vedomost_prochitannyh_ishodnikov(fl_ctx *ctx,
+                                                          fl_value fayly,
+                                                          fl_value vhod,
+                                                          fl_value *result,
+                                                          fl_error *error);
 
 /*
  * Функция flang «Ведомость исходников без законов».

@@ -626,15 +626,14 @@ static const char HELP_TEST[] =
     "счёт «примеров N»: не сошедшийся даёт код 1.";
 
 static const char HELP_RUN[] =
-    "flang run <файл.flang> --function «Имя» [--args '{\"н\":10}'] [--max-steps N]\n"
-    "                       [--max-depth N] [--trust] [--unproven refuse|warn|allow]\n"
-    "                       [--cost]\n"
+    "flang run <файл.flang> «Имя» [аргументы] [--max-steps N] [--max-depth N]\n"
+    "                       [--trust] [--unproven refuse|warn|allow] [--cost]\n"
     "\n"
-    "Вычисляет ОДНУ функцию и печатает значение. Считает сам flang — ни Node, ни\n"
-    "«cc» для этого не нужны.\n"
-    "\n"
-    "Аргументы сверяются объявленным типам ДО вычисления: «Факториал» от −3\n"
-    "отвергается FLANG_TYPE, а не считается.\n"
+    "Вычисляет ОДНУ функцию и печатает значение. Аргументы — литералы языка:\n"
+    "по порядку (flang run м.flang «Ф» 9 0 9), по имени (низ=0 н=9) или\n"
+    "вперемешку. Чего не хватило, flang спросит по имени и типу, если ввод и\n"
+    "вывод — терминал; в трубе — отказ FLANG_TYPE, код 1. Типы сверяются ДО\n"
+    "вычисления.\n"
     "\n"
     "ПЕРЕД ВЫЧИСЛЕНИЕМ СЧИТАЕТСЯ ВЕРДИКТ и одной строкой уходит в поток ошибок:\n"
     "«доказано: утверждений N» либо «не доказано: …». Судится ЗАМЫКАНИЕ — всё,\n"
@@ -642,11 +641,10 @@ static const char HELP_RUN[] =
     "код 3 (ADR-0045). Запустить её всё же — «--trust» на один прогон либо ключ\n"
     "«unproven» в «.flangrc» — раз и навсегда.\n"
     "\n"
-    "  --function «Имя»   что вычислять\n"
+    "  --function «Имя»   то же имя функции ключом\n"
     "  --args '{…}'       аргументы объектом JSON по именам параметров, вроде\n"
-    "                     '{\"н\":10}' или '{\"элементы\":[1,2,3]}'. Списки, записи\n"
-    "                     и варианты ({\"variant\":\"Имя\",\"fields\":{…}}) — любой\n"
-    "                     вложенности; не тот тип — FLANG_TYPE до вычисления\n"
+    "                     '{\"н\":10}'; варианты — {\"variant\":\"Имя\",\"fields\":{…}}.\n"
+    "                     Вместе со словами-аргументами не пишется\n"
     "  --max-steps N      предел шагов вычислителя\n"
     "  --max-depth N      предел глубины ВЫЧИСЛЯЕМОЙ программы. Предел самого\n"
     "                     бинарника — другой счётчик и другой ключ:\n"
@@ -12573,33 +12571,6 @@ static int test_file(int argc, char **argv) {
 
 /* ══════════════════════════════ flang run ═══════════════════════════════ */
 
-/*
- * `flang run <файл> --function «Имя» [--args JSON]` — вычислить названную
- * функцию и напечатать её значение.
- *
- * Появилось это только теперь и ровно потому, что раньше было НЕЧЕМ: вычислителя
- * в бинарнике не было. Теперь `flang/self/interpret.flang` втащен в замыкание
- * компилятора, и точка входа «Прогон исходников» считает без всякого Node.
- *
- * ── Долг, который здесь стоял и теперь закрыт ───────────────────────────────
- * Свидетель на JavaScript (`commandRun` в `flang/bin/flang.mjs`) перед вычислением
- * сверяет аргументы с объявленными типами (`checkArguments`), и делает это не
- * для красоты: доказательство завершения `тотальной` функции стоит НА ТИПЕ, и
- * значение вне типа выносит вместе с типом и доказательство. Этой сверки здесь
- * не было, и `flang run` в бинарнике ПРИНИМАЛ `«Факториал» от −3`, печатая `1`
- * там, где свидетель отказывает `FLANG_TYPE` и кодом 1. Закрыто на стороне flang:
- * «Прогон исходников» зовёт «Проверить аргументы вызова» (`self/types.flang`)
- * ДО вычисления, и оба инструмента отвечают одним кодом и одним текстом.
- *
- * ── Почему свой разбор JSON, а не разбор компилятора ────────────────────────
- * Компилятор умеет JSON ПЕЧАТАТЬ («Печать значения»), а читать — нет: читает
- * прогонщик, и его разборщик (`flang_cli.c`) говорит на своём языке тегов
- * («{"n":…}», «{"s":…}»), заведённом для передачи готовых значений рантайма, а
- * не для человека. Человеку `--args '{"н":10}'` писать удобнее, поэтому `--args`
- * читает обычный JSON — тем же `facts_json`, что и факты `flang facts`: скаляры,
- * списки, записи и варианты `{"variant": …, "fields": …}` (задача #460).
- */
-
 /** Вариант с одним полем: «Значение записи» и «Значение списка» строятся так. */
 static fl_value repl_value_variant_fields(const char *variant, const char *field, fl_value held) {
   fl_value out = fl_nothing();
@@ -12858,16 +12829,6 @@ static bool run_value(const char *text, size_t *at, fl_value *out) {
   }
 }
 
-/**
- * `--args` в «Значение записи»: объект JSON, ключи — имена параметров,
- * значения — скаляры, списки `[…]`, записи `{…}` и варианты
- * `{"variant": "Имя", "fields": {…}}` любой вложенности. Разбирает тот же
- * `facts_json`, что читает факты `flang facts` и сообщения языкового сервера.
- * Сверку с объявленным типом делает не разбор, а «Проверить аргументы вызова»:
- * неверный тип — FLANG_TYPE до вычисления. Пустая строка и отсутствие ключа
- * дают пустую запись — функция без параметров зовётся без `--args`, и
- * требовать `{}` от человека было бы обрядом.
- */
 static bool run_args(const char *text, fl_value *out) {
   size_t at = 0;
   if (text == NULL) {
@@ -12992,25 +12953,6 @@ static void run_print(fl_value value) {
   fputs("null", stdout);
 }
 
-/**
- * `flang run` целиком. Код возврата тот же, что у `check`: 0 — посчиталось,
- * 1 — программа отказала, 2 — ошибка вызова. Разделение не косметика: сценарий
- * вправе отличать «программа сказала нет» от «я позвал неправильно».
- */
-/**
- * Ёлочки с имени функции, если человек их написал.
- *
- * Справка показывает `--function «Имя»`, и показывает не по недосмотру: имена
- * функций в языке ПИШУТСЯ в ёлочках, и человек копирует их из исходника вместе
- * с ними. А ключ ёлочек не принимал и отвечал `не найдена функция ««Имя»»` —
- * то есть отвергал ровно ту форму, которой сам же учил.
- *
- * Свидетель на Node — `снятьЁлочки` в `flang/bin/flang.mjs`, и правились они
- * одним движением: почини одну сторону — и бинарник начал бы принимать то, что
- * свидетель отвергает.
- *
- * «» в UTF-8 — это C2 AB и C2 BB; снимается ровно одна внешняя пара.
- */
 static const char *run_bare_name(const char *name, size_t *bytes) {
   const size_t length = strlen(name);
   *bytes = length;
@@ -14857,10 +14799,57 @@ static bool run_checked(fl_value sources, const char *full, const char *path, si
   return ok;
 }
 
+static bool run_words(fl_value program, const char *name, const repl_strings *words, fl_value *bound) {
+  fl_value args[5];
+  fl_value got = fl_nothing();
+  fl_value field = fl_nothing();
+  fl_value asked = fl_nothing();
+  const char *say = NULL;
+  size_t bytes = 0;
+  char prompt[512];
+  repl_buf line;
+  bool first = true;
+  bool ok = false;
+  say = run_bare_name(name, &bytes);
+  args[0] = program;
+  args[1] = repl_value_text(say, bytes);
+  args[2] = repl_value_strings(words);
+  if (repl_call("Доводы вызова из слов", args, 3, &got) != FL_OK) {
+    return words->count == 0;
+  }
+  buf_init(&line);
+  for (;;) {
+    ok = val_field(got, "удалось", &field) && field.tag == FL_FLAG && field.as.flag;
+    if (!ok && val_field(got, "отказ", &field) && val_text(field, &say, &bytes)) {
+      fprintf(stderr, "flang run: %.*s\n", (int)bytes, say);
+    }
+    val_field(got, "аргументы", bound);
+    if ((!ok && first) || !repl_can_edit() || !val_field(got, "недостаёт", &asked) || asked.tag != FL_LIST ||
+        asked.as.list.count == 0 || !val_field(asked.as.list.items[0], "вопрос", &field) ||
+        !val_text(field, &say, &bytes)) {
+      break;
+    }
+    first = false;
+    snprintf(prompt, sizeof(prompt), "%.*s = ", (int)bytes, say);
+    if (repl_read_input(&line, prompt, HUE_CYAN, NULL) != REPL_LINE) {
+      break;
+    }
+    args[2] = *bound;
+    val_field(asked.as.list.items[0], "имя", &args[3]);
+    args[4] = repl_value_say(line.data);
+    if (repl_call("Довод вызова из ответа", args, 5, &got) != FL_OK) {
+      break;
+    }
+  }
+  buf_free(&line);
+  return ok;
+}
+
 static int run_file(int argc, char **argv) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
+  repl_strings words;
   fl_value sources = fl_nothing();
   fl_value result = fl_nothing();
   fl_value args[7];
@@ -14887,6 +14876,7 @@ static int run_file(int argc, char **argv) {
 
   said.say = NULL;
   said.bytes = 0;
+  strings_init(&words);
   unproven_start(&how);
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--function") == 0 && index + 1 < argc) {
@@ -14930,17 +14920,28 @@ static int run_file(int argc, char **argv) {
       index += 1;
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
+    } else if (argv[index][0] != '-' || (argv[index][1] >= '0' && argv[index][1] <= '9')) {
+      strings_say(&words, argv[index]);
     } else {
       fprintf(stderr, "flang run: непонятный ключ «%s»\n", argv[index]);
       return 2;
     }
   }
   if (path == NULL) {
-    fputs("flang run: не назван файл. Пример: flang run м.flang --function «Ф» --args '{\"н\":10}'\n", stderr);
+    fputs("flang run: не назван файл. Пример: flang run м.flang «Ф» н=10\n", stderr);
     return 2;
   }
+  if (name == NULL && words.count > 0) {
+    name = words.items[0];
+    words.items += 1;
+    words.count -= 1;
+  }
   if (name == NULL) {
-    fputs("flang run требует «--function «Имя»»: какую из функций считать, программа сама не решает\n", stderr);
+    fputs("flang run требует имя функции: какую из функций считать, программа сама не решает\n", stderr);
+    return 2;
+  }
+  if (given != NULL && words.count > 0) {
+    fputs("flang run: аргументы заданы и ключом «--args», и словами — нужно что-то одно\n", stderr);
     return 2;
   }
   if (!unproven_decide(&how)) {
@@ -14990,9 +14991,6 @@ static int run_file(int argc, char **argv) {
    */
   {
     char repeat[1024];
-    /* Имя в одинарных кавычках, а не в «ёлочках»: строку вставляют в оболочку,
-       и пробел в имени функции без кавычек разорвал бы её на два довода. Оба
-       написания `flang run` принимает — `run_bare_name` снимает «ёлочки» сам. */
     if (given == NULL) {
       snprintf(repeat, sizeof(repeat), "flang run %s --function '%s'", full, name);
     } else {
@@ -15007,6 +15005,8 @@ static int run_file(int argc, char **argv) {
     code = 2;
   } else if (!run_checked(sources, full, path, paths.count, &linked)) {
     code = 1;
+  } else if (given == NULL && !run_words(linked, name, &words, &bound)) {
+    code = 2;
   } else {
     args[0] = sources;
     args[1] = repl_value_say(full);
@@ -15019,9 +15019,6 @@ static int run_file(int argc, char **argv) {
     args[4] = fl_number(strtod(steps, NULL));
     args[5] = fl_number(strtod(depth, NULL));
     if (how.mode == UNPROVEN_ALLOW) {
-      /* Согласие дано, и проверка выше прошла: вердикт не считается, запуск
-         идёт по уже связанной программе — так же, как «Запуск исходников»
-         под признаком «на веру», только без второго связывания. */
       fl_value direct[5];
       direct[0] = linked;
       direct[1] = args[2];

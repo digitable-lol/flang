@@ -865,8 +865,11 @@ static const char *fl_label(fl_ctx *ctx, const char *format, ...) {
 }
 
 static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
-                                size_t index, fl_value value, const char *label,
-                                fl_error *error);
+                                size_t index, fl_value *value, bool take,
+                                const char *label, fl_error *error);
+static fl_status fl_word_convert(fl_ctx *ctx, const char *form, unsigned width,
+                                 bool sign, fl_value value, fl_value *out,
+                                 fl_error *error);
 
 static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type,
                                       fl_value value, const char *label,
@@ -893,48 +896,108 @@ static fl_status fl_check_number_type(fl_ctx *ctx, const fl_type *type,
   return FL_OK;
 }
 
-static fl_status fl_check_exact_type(fl_ctx *ctx, const fl_type *type,
-                                     fl_value value, const char *label,
-                                     fl_error *error) {
-  static const char canon[] = "точное целое записано не в каноне";
+static bool fl_exact_defect(fl_value digits, char *defect, size_t size) {
   char text[FL_NUMBER_TEXT_MAX];
   size_t index = 0;
+  const size_t count = digits.as.list.count;
+  const fl_value *items = digits.as.list.items;
+  if (count > 0 && items[count - 1].tag == FL_NUMBER &&
+      items[count - 1].as.number == 0.0 && !signbit(items[count - 1].as.number)) {
+    snprintf(defect, size, "старший разряд нулевой, а канон требует снять старшие нули");
+    return true;
+  }
+  for (index = 0; index < count; index += 1) {
+    const double digit = items[index].as.number;
+    fl_number_text(digit, text);
+    if (items[index].tag != FL_NUMBER || !isfinite(digit)) {
+      snprintf(defect, size, "разряд не написан числом: посчитанное в точное целое без названного перевода не втекает");
+    } else if (digit < 0.0) {
+      snprintf(defect, size, "разряд %s отрицателен, а точное целое ниже нуля значений не имеет", text);
+    } else if (floor(digit) != digit) {
+      snprintf(defect, size, "разряд %s не целый, а разряды точного целого целы", text);
+    } else if (signbit(digit)) {
+      snprintf(defect, size, "разряд минус ноль — не ноль канона: нулевой разряд пишется без знака");
+    } else if (digit >= 4194304.0) {
+      snprintf(defect, size, "разряд %s не меньше основания 4194304", text);
+    } else {
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+
+static double fl_exact_small(fl_value digits) {
+  const fl_value *items = digits.as.list.items;
+  return digits.as.list.count == 0 ? 0.0
+         : digits.as.list.count == 1
+             ? items[0].as.number
+             : items[0].as.number + 4194304.0 * items[1].as.number;
+}
+
+static bool fl_fraction_defect(fl_value value, char *defect, size_t size) {
+  char text[FL_NUMBER_TEXT_MAX];
+  char half[256];
+  fl_value top;
+  fl_value bottom;
+  double left = 0.0;
+  double right = 0.0;
+  int steps = 128;
+  if (value.as.list.count != 2) {
+    snprintf(defect, size, "точное дробное записывается парой: числитель над знаменателем");
+    return true;
+  }
+  top = value.as.list.items[0];
+  bottom = value.as.list.items[1];
+  if (top.tag != FL_LIST || bottom.tag != FL_LIST) {
+    snprintf(defect, size, "обе половины точного дробного — списки разрядов: числитель и знаменатель");
+  } else if (fl_exact_defect(top, half, sizeof half)) {
+    snprintf(defect, size, "числитель: %s", half);
+  } else if (fl_exact_defect(bottom, half, sizeof half)) {
+    snprintf(defect, size, "знаменатель: %s", half);
+  } else if (bottom.as.list.count == 0) {
+    snprintf(defect, size, "знаменатель пуст: ноль внизу не определён");
+  } else if (top.as.list.count == 0) {
+    if (bottom.as.list.count == 1 && bottom.as.list.items[0].as.number == 1.0) {
+      return false;
+    }
+    snprintf(defect, size, "нулевая дробь записывается пустыми разрядами над [1]");
+  } else if (top.as.list.count > 2 || bottom.as.list.count > 2) {
+    snprintf(defect, size, "дробь длиннее двух разрядов в записи не сверяется на сокращённость — получите её вычислением");
+  } else {
+    left = fl_exact_small(top);
+    right = fl_exact_small(bottom);
+    for (; steps > 0 && right != 0.0; steps -= 1) {
+      const double rest = fmod(left, right);
+      left = right;
+      right = rest;
+    }
+    if (left == 1.0 && steps > 0) {
+      return false;
+    }
+    fl_number_text(left, text);
+    if (steps == 0) {
+      snprintf(defect, size, "сокращённость не установлена за 128 шагов Евклида");
+    } else {
+      snprintf(defect, size, "дробь не сокращена: числитель и знаменатель делятся на %s", text);
+    }
+  }
+  return true;
+}
+
+static fl_status fl_check_counted_type(fl_ctx *ctx, const fl_type *type,
+                                       fl_value value, const char *label,
+                                       fl_error *error) {
+  char defect[512];
+  const bool fraction = type->kind == FL_TYPE_FRACTION;
   if (value.tag != FL_LIST) {
     return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
                    label, type->name);
   }
-  for (index = 0; index < value.as.list.count; index += 1) {
-    if (value.as.list.items[index].tag != FL_NUMBER) {
-      return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
-                     label, type->name);
-    }
-  }
-  if (value.as.list.count > 0 &&
-      value.as.list.items[value.as.list.count - 1].as.number == 0.0) {
-    return fl_fail(ctx, error, FL_CODE_TYPE,
-                   "%s: старший разряд нулевой, а канон требует снять старшие нули",
-                   canon);
-  }
-  for (index = 0; index < value.as.list.count; index += 1) {
-    const double digit = value.as.list.items[index].as.number;
-    if (!isfinite(digit)) {
-      continue;
-    }
-    fl_number_text(digit, text);
-    if (digit < 0.0) {
-      return fl_fail(ctx, error, FL_CODE_TYPE,
-                     "%s: разряд %s отрицателен, а точное целое ниже нуля значений не имеет",
-                     canon, text);
-    }
-    if (floor(digit) != digit) {
-      return fl_fail(ctx, error, FL_CODE_TYPE,
-                     "%s: разряд %s не целый, а разряды точного целого целы",
-                     canon, text);
-    }
-    if (digit >= 4194304.0) {
-      return fl_fail(ctx, error, FL_CODE_TYPE,
-                     "%s: разряд %s не меньше основания 4194304", canon, text);
-    }
+  if (fraction ? fl_fraction_defect(value, defect, sizeof defect)
+               : fl_exact_defect(value, defect, sizeof defect)) {
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s записано не в каноне: %s",
+                   fraction ? "точное дробное" : "точное целое", defect);
   }
   return FL_OK;
 }
@@ -988,60 +1051,6 @@ static bool fl_bytes_same(const char *left, const char *right, size_t bytes) {
   return memcmp(left, right, bytes) == 0;
 }
 
-/*
- * ── ДВА ПРОХОДА: сперва одни указатели, потом имена ────────────────────────
- *
- * Замер 24 августа, счётчики врезаны прямо в `fl_field_get` семени, прогон
- * `check flang/stdlib/strings.flang --proof`:
- *
- *     вызовов        53 614 560      шагов цикла     78 527 481
- *     СОВПАЛО ПО УКАЗАТЕЛЮ  53 614 560      совпало по strcmp   0
- *
- * и на `check flang/self/builtins.flang --proof` — 243 879 126 вызовов,
- * 416 544 557 шагов, и снова ВСЕ до единого совпадения по указателю, ни одного
- * по strcmp. Имя поля в напечатанном коде — литерал и на постройке записи, и на
- * её чтении; одинаковые литералы единицы трансляции компилятор сливает, и
- * указатели у них равны.
- *
- * ОТСЮДА ПРОВЕРЕННЫЙ ОТКАЗ ОТ ИНТЕРНИРОВАНИЯ. Общая таблица имён, где все копии
- * одного имени получают один указатель, чинила бы совпадение по strcmp — а его
- * НОЛЬ из 297 миллионов. Интернирование стоило бы таблицы, хеша и лишнего шага
- * на каждой постройке записи и не убрало бы ни одного strcmp. Не сделано, и
- * дальше пробовать незачем: числа выше это закрывают.
- *
- * Работа сидит не в совпадении, а В ПРОМАХАХ: 24,9 млн промахов на strings,
- * 172,7 млн на builtins — это те поля, мимо которых цикл прошёл до нужного. У
- * промаха указатели разные ВСЕГДА, и `fl_name_same` идёт дальше — читать имя. А
- * имя лежит в другой строке кэша, чем массив полей, и этот поход и есть цена.
- *
- * Поэтому цикл разделён надвое: первый проход сверяет ТОЛЬКО указатели и в
- * память имён не заглядывает вовсе, второй (полный, посимвольный) заводится,
- * лишь если первый ничего не нашёл. Ответ тот же: второй проход — прежний цикл
- * целиком.
- *
- * Цена, снятая прогоном (эталон `check ... --proof`, машина свободна, прогоны
- * по одному):
- *
- *     flang/self/builtins.flang   78,31 с → 76,53 с   (−2,3 %)
- *     flang/stdlib/strings.flang   4,70 с →  4,68 с   (−0,4 %, на грани шума)
- *
- * Отсчёт вёлся от семени, в которое уже внесён `fl_name_same` выше, — то есть
- * это цена ИМЕННО двух проходов, а не сравнения имён вообще. Сам `fl_name_same`
- * против голого strcmp дал на том же эталоне 83,30 с → 78,31 с (−6,0 %).
- *
- * Вывод `--proof` сверен полностью и совпал знак в знак на обоих файлах
- * (md5 006b9622a844a6acb429277c92d1b103 у всех четырёх сборок).
- *
- * Что осталось и чего здесь НЕТ. В профиле после правки первое место занимает
- * не взятие поля (4,7 %), а обмер области — `fl_region_size` с
- * `fl_region_fields_size` и `fl_region_close` вместе около 40 %. Пробная правка
- * обмера (не звать себя рекурсивно на число, признак и «ничто», подняв проверку
- * глубины перед цикл) на семени дала 76,53 с → 75,08 с на builtins и
- * 4,68 с → 4,53 с на strings при том же выводе знак в знак, но сюда не
- * внесена: обмер в этом файле уже переписан на пропуск подграфа ниже отметки
- * (`fl_live`), и старое число к новому коду не относится. Мерить надо заново.
- */
-/* Поле по имени среди полей записи или варианта; NULL — поля нет. */
 static const fl_field *fl_find_field(const fl_field *fields, size_t count,
                                      const char *name) {
   size_t index = 0;
@@ -1058,20 +1067,24 @@ static const fl_field *fl_find_field(const fl_field *fields, size_t count,
   return NULL;
 }
 
-/*
- * Объявленные поля против заданных. `owner` — имя записи либо имя варианта:
- * сообщения о пропущенном поле у них разной формы, и обе выписаны здесь
- * дословно, потому что сверяются они со свидетелем равенством строк.
- */
+static fl_field *fl_own_fields(fl_ctx *ctx, const fl_field *fields,
+                               size_t count) {
+  fl_field *own = (fl_field *)fl_arena_alloc(ctx->arena, (count + 1u) * sizeof *own);
+  if (own != NULL && count > 0u) {
+    memcpy(own, fields, count * sizeof *own);
+  }
+  return own;
+}
+
 static fl_status fl_check_fields(fl_ctx *ctx, const fl_entry_table *table,
                                  size_t from, size_t count,
-                                 const fl_field *given, size_t given_count,
+                                 fl_field *given, size_t given_count, bool take,
                                  const char *label, const char *owner,
                                  bool of_variant, fl_error *error) {
   size_t index = 0;
   for (index = 0; index < count; index += 1) {
     const fl_type_field *declared = &table->fields[from + index];
-    const fl_field *found = fl_find_field(given, given_count, declared->name);
+    fl_field *found = (fl_field *)fl_find_field(given, given_count, declared->name);
     const char *inner = NULL;
     if (found == NULL) {
       /* Необязательное поле можно не задавать: отсутствие — это «ничто». */
@@ -1091,23 +1104,22 @@ static fl_status fl_check_fields(fl_ctx *ctx, const fl_entry_table *table,
     if (inner == NULL) {
       return fl_no_memory(error);
     }
-    FL_TRY(
-        fl_check_typed(ctx, table, declared->type, found->value, inner, error));
+    FL_TRY(fl_check_typed(ctx, table, declared->type, &found->value, take,
+                          inner, error));
   }
   return FL_OK;
 }
 
 static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
-                                size_t index, fl_value value, const char *label,
-                                fl_error *error) {
+                                size_t index, fl_value *slot, bool take,
+                                const char *label, fl_error *error) {
   const fl_type *type = NULL;
+  const fl_value value = *slot;
   size_t item = 0;
   if (index >= table->type_count) {
     return FL_OK;
   }
   type = &table->types[index];
-  /* Необязательный аргумент можно не задавать: отсутствие — это «ничто», а не
-     пропуск. Так же считает и ядро FTS. */
   if (type->optional && value.tag == FL_NOTHING) {
     return FL_OK;
   }
@@ -1115,7 +1127,19 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
   case FL_TYPE_NUMBER:
     return fl_check_number_type(ctx, type, value, label, error);
   case FL_TYPE_EXACT:
-    return fl_check_exact_type(ctx, type, value, label, error);
+  case FL_TYPE_FRACTION:
+    return fl_check_counted_type(ctx, type, value, label, error);
+  case FL_TYPE_WORD: {
+    const bool sign = type->name[0] == 'i';
+    const unsigned width = (unsigned)strtoul(type->name + 1, NULL, 10);
+    if (value.tag == FL_WORD ? value.as.word.width == width && value.as.word.sign == sign
+        : take && fl_word_convert(ctx, type->name, width, sign, value, slot,
+                                  NULL) == FL_OK) {
+      return FL_OK;
+    }
+    return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
+                   label, type->name);
+  }
   case FL_TYPE_STRING:
     if (value.tag != FL_STRING) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
@@ -1134,30 +1158,48 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
                      label, type->name);
     }
     return FL_OK;
-  case FL_TYPE_LIST:
+  case FL_TYPE_LIST: {
+    fl_value *items = (fl_value *)value.as.list.items;
     if (value.tag != FL_LIST) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
                      label, type->name);
+    }
+    if (take && value.as.list.count > 0) {
+      FL_TRY(fl_list_alloc(ctx, value.as.list.count, &items, error));
+      memcpy(items, value.as.list.items, value.as.list.count * sizeof *items);
+      *slot = fl_list(items, value.as.list.count);
     }
     for (item = 0; item < value.as.list.count; item += 1) {
       const char *inner = fl_label(ctx, "%s[%lu]", label, (unsigned long)item);
       if (inner == NULL) {
         return fl_no_memory(error);
       }
-      FL_TRY(fl_check_typed(ctx, table, type->of, value.as.list.items[item],
-                            inner, error));
+      FL_TRY(fl_check_typed(ctx, table, type->of, &items[item], take, inner,
+                            error));
     }
     return FL_OK;
+  }
   case FL_TYPE_RECORD: {
+    fl_record *record = (fl_record *)value.as.record;
     if (value.tag != FL_RECORD) {
       return fl_fail(ctx, error, FL_CODE_TYPE, "%s не соответствует типу %s",
                      label, type->name);
     }
+    if (take) {
+      record = (fl_record *)fl_arena_alloc(ctx->arena, sizeof *record);
+      if (record == NULL) {
+        return fl_no_memory(error);
+      }
+      record->count = value.as.record->count;
+      record->fields = fl_own_fields(ctx, value.as.record->fields, record->count);
+      if (record->fields == NULL) {
+        return fl_no_memory(error);
+      }
+      slot->as.record = record;
+    }
     FL_TRY(fl_check_fields(ctx, table, type->field_from, type->field_count,
-                           value.as.record->fields, value.as.record->count,
+                           (fl_field *)record->fields, record->count, take,
                            label, type->owner, false, error));
-    /* Лишнее поле — тоже несоответствие типу: запись flang тотальна, и поля
-       сверх объявленных в ней взяться неоткуда. */
     for (item = 0; item < value.as.record->count; item += 1) {
       size_t at = 0;
       bool declared = false;
@@ -1196,9 +1238,10 @@ static fl_status fl_check_typed(fl_ctx *ctx, const fl_entry_table *table,
                      label, type->owner);
     }
     return fl_check_fields(ctx, table, variant->field_from,
-                           variant->field_count, value.as.variant->fields,
-                           value.as.variant->count, label, variant->name, true,
-                           error);
+                           variant->field_count,
+                           (fl_field *)value.as.variant->fields,
+                           value.as.variant->count, false, label, variant->name,
+                           true, error);
   }
   case FL_TYPE_UNKNOWN:
   default:
@@ -1780,28 +1823,21 @@ static void fl_watch_note(const fl_entry_table *table, const char *name,
   snprintf(fl_watch_repeat + at, sizeof(fl_watch_repeat) - at, "}'");
 }
 
-fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
-                         const char *name, const fl_value *args, size_t count,
-                         fl_error *error) {
+static fl_status fl_entry(fl_ctx *ctx, const fl_entry_table *table,
+                          const char *name, fl_value *args, size_t count,
+                          bool take, fl_error *error) {
   size_t index = 0;
   size_t declared = 0;
   size_t at = 0;
   if (ctx == NULL || table == NULL || name == NULL) {
     return FL_OK;
   }
-  /* Дверь программы — единственное место, где рантайм видит доводы вызова.
-     Отсюда снимок и берёт строку «повторить»; цена — один `snprintf` на
-     ВНЕШНИЙ вызов, не на виток. */
   fl_watch_note(table, name, args, count);
   for (index = 0; index < table->param_count; index += 1) {
     if (fl_name_same(table->params[index].function, name)) {
       declared += 1;
     }
   }
-  /* Сверять нечем: имени в таблице нет (о нём скажет диспетчер), параметров у
-     функции нет вовсе, либо число значений не сошлось с числом параметров —
-     это отдельный отказ, и он тоже принадлежит диспетчеру, чтобы текст про
-     арность был в программе один. */
   if (declared == 0 || declared != count) {
     return FL_OK;
   }
@@ -1816,49 +1852,27 @@ fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
     if (label == NULL) {
       return fl_no_memory(error);
     }
-    FL_TRY(fl_check_typed(ctx, table, param->type, args[at], label, error));
+    FL_TRY(fl_check_typed(ctx, table, param->type, &args[at], take, label,
+                          error));
     at += 1;
   }
   return FL_OK;
 }
 
+fl_status fl_check_entry(fl_ctx *ctx, const fl_entry_table *table,
+                         const char *name, const fl_value *args, size_t count,
+                         fl_error *error) {
+  return fl_entry(ctx, table, name, (fl_value *)args, count, false, error);
+}
+
+fl_status fl_take_entry(fl_ctx *ctx, const fl_entry_table *table,
+                        const char *name, fl_value *args, size_t count,
+                        fl_error *error) {
+  return fl_entry(ctx, table, name, args, count, true, error);
+}
+
 /*
- * Виток на элемент: цена цикла по списку, снятая до входа в цикл.
- *
- * До 26 августа 2026 счётчик витков не видел `отфильтровать`, `отобразить` и
- * `свёртку` вовсе: `fl_tick` стоит на `fl_enter` и на витке хвостового цикла, а
- * три эти формы печатаются обычным `for` со встроенным телом — ни одного тика
- * на элемент. Замер задачи 0052 на синтетике из n функций: витков на функцию
- * 387,6 → 390,7 при росте входа в 12 раз, показатель роста 1,00, тогда как
- * время шло в квадрат (2,34). Счётчик считал ВЫЗОВЫ, а не РАБОТУ.
- *
- * Почему это опасно, а не просто неточно. Граница «функция стоит не больше N
- * витков», выведенная из убывающей меры (задача 0060), ограничивала бы
- * СЧЁТЧИК, а не работу: функция с фильтром по списку из миллиона элементов
- * честно уложилась бы в свою границу и считалась бы час. Обещание было бы
- * верным и бесполезным — и поехало бы в SLO.
- *
- * Почему заряд снимается ЗДЕСЬ, до цикла, а не внутри него. Внутрь рантайм не
- * попадает: на элемент напечатанный цикл зовёт `fl_keep` только у фильтра, а у
- * отображения и свёртки не зовёт ничего. Единственная точка, общая всем трём и
- * знающая длину, — вот эта: `fl_require_list` получает сам список. Число витков
- * от места заряда не меняется: печатаемый цикл идёт `for (i = 0; i < count; …)`
- * без единого досрочного выхода, значит витков ровно `count`.
- *
- * Так же считает и толкователь на flang: у него список обходится кадрами
- * «Кадр шага свёртки» и «Кадр шага обхода», по кадру на элемент, а
- * «Шаг машины» тратит виток на каждый кадр (`обеспечивает «виток тратит не
- * меньше одного шага»`, flang/self/interpret.flang). Расходились не замеры —
- * расходились бэкенд C и толкователь, и здесь это сходится.
- */
-/*
- * ── ГДЕ ЕЩЁ СНИМАЕТСЯ ЗАРЯД, и почему список именно такой ──────────────────
- *
- * Сперва `fl_charge` звалась из одного места — `fl_require_list`, вход трёх
- * форм по списку. Замер 27 августа 2026 показал, что этого мало: встроенные
- * формы, которые тоже проходят вход целиком, шли счётчику бесплатно.
- * `соединить` списка из 100 000 строк стоил 395,8 мкс и НОЛЬ витков, и время
- * росло линейно, пока счётчик стоял.
+ * ── ГДЕ СНИМАЕТСЯ ЗАРЯД, и почему список именно такой ──────────────────────
  *
  * Заряжается ровно то, что пройдено, и в тех единицах, в каких работа и идёт:
  *
@@ -2163,13 +2177,6 @@ static void fl_charge_count(size_t count) {
 /*
  * ВЫБОРКА ПО ВРЕМЕНИ.
  *
- * Ни счёт входов, ни счёт витков ВРЕМЕНЕМ не являются, и это не мелочь: на
- * `check flang/self/lexer.flang --proof` «Найти описание» берёт 9,94 % ВИТКОВ и
- * 0,26 % ВРЕМЕНИ. Причина в том, что встроенные формы — «равен» над записью,
- * «длина», «добавить», обход списка внутри рантайма — делают работу, за которую
- * НЕ НАЧИСЛЯЕТСЯ НИ ОДНОГО ВИТКА. Петля, крутящая такую форму, стоит минуты при
- * тысячах витков, и оба счётных прибора покажут, что её почти нет.
- *
  * Здесь мерится время. Каждый виток и каждый вход кладут своё имя в `fl_now`
  * (одна запись в глобальную переменную), часы ITIMER_PROF будят обработчик раз
  * в 10 мс ПРОЦЕССОРНОГО времени, и он начисляет точку тому имени, которое
@@ -2193,8 +2200,6 @@ static struct {
   unsigned long long count;
 } fl_time_table[FL_TIME_SLOTS];
 
-/* `fl_now` объявлено выше, у `fl_charge`: ведомость зарядов читает его раньше.
- */
 static volatile sig_atomic_t fl_time_points = 0;
 static volatile sig_atomic_t fl_time_nameless = 0;
 static const char *fl_time_path = NULL;
@@ -9561,13 +9566,6 @@ static bool fl_spread_read(int fd, void *bytes, size_t size) {
   return true;
 }
 
-/*
- * The named tick ledger (FLANG_TICKS_OUT) of a worker. A worker starts from
- * empty tables and, once its task pipe closes, sends back every row it
- * counted under a head with status 2; the host adds the rows to its own
- * tables. Function names are string constants of the program image, so a
- * forked worker names them by the same address as the host.
- */
 static void fl_spread_ticks_clear(void) {
   memset(fl_ticks_table, 0, sizeof fl_ticks_table);
   memset(fl_enters_table, 0, sizeof fl_enters_table);

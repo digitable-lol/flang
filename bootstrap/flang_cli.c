@@ -1171,10 +1171,8 @@ static void run_request(fl_arena *arena, const char *line, size_t bytes) {
     return;
   }
 
-  /* Граница входа — ДО вызова: значение вне объявленного типа выносит вместе с
-     типом и доказательство завершения, и поймать вечную цепочку потом нечем. */
   started = clock();
-  status = fl_check_entry(&ctx, FL_PROGRAM_ENTRY(), name, args, count, &error);
+  status = fl_take_entry(&ctx, FL_PROGRAM_ENTRY(), name, args, count, &error);
   if (status == FL_OK) {
     status = FL_PROGRAM_CALL(&ctx, name, args, count, &result, &error);
   }

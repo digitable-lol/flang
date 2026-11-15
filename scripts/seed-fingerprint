@@ -4,7 +4,7 @@
 предел-глубины 20000
 вход flang/self/bootstrap/compiler.flang
 ключи --cli --repl
-коммит ac6b0c3dd86a71f83e5fbbf6479aa2a52866ca07
+коммит c3c85a5b3935ce508a1c52d92531af8ad701209c
 e200119e04672d9c574cd22cb41f6358a9508a1810f8a4f43ad287a8add8f923  flang/core/evaluate.flang
 363ef4fdf66c10a13853083b3aa4aea6b6308c21045171cf5196e02c7871991f  flang/core/json.flang
 23bea4eeb65311799b1898021573cfc8ba38091fb753dd72356a2003394a10e4  flang/self/bootstrap/compiler.flang
@@ -91,8 +91,8 @@ f29b59b18de89c10196e708bd474035ece36a69c7b8564ca4e90054a188d2255  flang/stdlib/x
 # То, что печать положила в bootstrap/ и из чего соберётся двоичный.
 # Сверяется с рабочим деревом; расхождение красное всегда — довод у SEED_STAMP.
 bd38e01d24a9498332f5cf6b7f71ca8f20290d40ce69fa776a9266d185f7718d  bootstrap/Makefile
-e9729a1a21c22619f39ce0a84b6dee9c8b023f45affca4aaf82c6a3f8c50c64b  bootstrap/compiler_flang.c
-55d9a01f36d59fb55893f06e94d060705b3615b08facd62b80c075e9683b91f4  bootstrap/compiler_flang.h
+ed133f5283b39a779427461cd89e6629efdae9046ddfbe8ad66e64944615840e  bootstrap/compiler_flang.c
+354b6ee6d2378a78484786dcf38d740dedd7d82caabe5efea49c5577146df2b6  bootstrap/compiler_flang.h
 11391db4e84f02a57525e34de73ba583aaee761c37ac882a37c73f7f1694e16c  bootstrap/flang_cli.c
 f3397c8779464432f8492c9605050d50d9ba8be697ee7d686f85db7846870657  bootstrap/flang_repl.c
 34a353e069c66329de9f2bccc57223c62719c391259b0b45dbea02ab2a5c63aa  bootstrap/flang_runtime.c

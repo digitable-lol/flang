@@ -381,8 +381,7 @@
   принимает answers: список «Answer»
   возвращает список «Question»
   [(«Run» от "binary present" и "test" и ["-x", («Binary» от answers)]),
-   («Run» от "terminal present" и "sh" и ["-c", "command -v script && command -v timeout"]),
-   («Run» от "compiler present" и "sh" и ["-c", "command -v cc"])]
+   («Run» от "terminal present" и "sh" и ["-c", "command -v script && command -v timeout"])]
 
 тотальная функция «Working place»
   принимает answers: список «Answer»
@@ -467,7 +466,6 @@
     («When» от («Failed» от "binary present" и answers) и [
       (соединить ["нет двоичного: ", («Binary» от answers), " — судить нечем (код 3)"] по "")]),
     («When» от («Failed» от "terminal present" и answers) и ["нет script или timeout — pty взять нечем (код 3)"]),
-    («When» от («Failed» от "compiler present" и answers) и ["нет cc — выражения не вычислятся (код 3)"]),
     («When» от ((«Answered» от "work" и answers) и притом (пусто («Work» от answers))) и [
       (соединить ["не создался каталог в ", («Temporary» от answers), " (код 3)"] по "")]),
     («When» от ((«Answered» от "digest" и answers) и притом (пусто («Digest» от answers))) и [

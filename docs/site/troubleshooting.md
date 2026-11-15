@@ -12,7 +12,6 @@ type. Messages are quoted verbatim.
 | `cc: command not found` when building from a clone | no C compiler | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`) |
 | `make: command not found` when building from a clone | `make` is not installed | build with one call to `cc` — [Installing](install.html#from-source) |
 | `flang --version` does not answer `flang <version>` | LLVM Flang, the Fortran compiler with the same name, comes first on `PATH` | put the directory of our `flang` first on `PATH`, or call it by full path |
-| The shell answers `вычислять нечем: не найден libcompiler_flang.a` | the binary is installed without the library, so expressions cannot be evaluated | name the directory with `libcompiler_flang.a` in `FLANG_LIB_DIR` and the one with the headers in `FLANG_INCLUDE_DIR` |
 
 ## The check answers about something else
 

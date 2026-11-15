@@ -1055,11 +1055,11 @@ $ printf 'тотальная функция «Три»\n  возвращает �
 1. тотальная функция «Три» — завершение доказано
 ```
 
-To compute an expression, the shell generates C for the session (as
-`flang emit` does), builds it with the system C compiler and runs it. The C
-compiler and its files are found through `FLANG_CC`, `FLANG_INCLUDE_DIR` and
-`FLANG_LIB_DIR`; without them the shell checks parsing, types and termination
-and says so at startup.
+An expression is wrapped into a function without parameters at the end of the
+session source, checked the same way as `flang check` checks a file, and
+computed by the evaluator built into the binary, the one `flang run` uses. No C
+compiler, `lib/` or `include/` is needed, so every install computes
+expressions.
 
 **Known bug in {{выпуск.версия}}.** To any expression the shell answers
 `FLANG_PARSE … у функции «⟨выражение⟩» нет строки 'возвращает'` and does not
@@ -1785,11 +1785,8 @@ flang repl [<файл.flang>] [--max-steps N] [--max-depth N]
 Объявления накапливаются в сессии, выражения вычисляются сразу, «.помощь»
 показывает команды. Файл в аргументе загружается в сессию при запуске.
 
-Выражение считается так: сессия печатается в C тем же способом, что у
-«flang emit», собирается системным «cc» против lib/libcompiler_flang.a и
-запускается. Нет «cc» — оболочка не выключается, а проверяет разбор, типы и
-завершаемость и говорит об этом при запуске.
-Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.
+Выражение считает вычислитель внутри этого же двоичного — тот, что у
+«flang run»: ни компилятора C, ни lib/ и include/ рядом ему не нужно.
 ```
 
 ### `flang lsp --help`
@@ -1820,8 +1817,6 @@ JSON, как требует спецификация LSP. Запускается
 | Variable | What it sets |
 | --- | --- |
 | `FLANG_RUNTIME_DIR` | where `emit` looks for target runtime sources when `--runtime` is not given |
-| `FLANG_CC` | the C compiler `repl` calls |
-| `FLANG_INCLUDE_DIR`, `FLANG_LIB_DIR` | where `repl` looks for headers and the library |
 | `FLANG_UNPROVEN` | what `run` and `io` do with unproved programs: `refuse`, `warn`, `allow` |
 | `FLANG_JOBS` | how many processes `check` uses for independent proofs; by default, one per core |
 | `FLANG_CHECKER` | the path to the independent checker of proof records for `check --proof` |

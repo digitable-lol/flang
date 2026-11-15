@@ -1,0 +1,7 @@
+program	code	word
+sum.txt	0	1234
+declared-function.txt	0	1234
+values.txt	0	[1, 2]
+values.txt	0	пустой список
+values.txt	0	"а\"б"
+values.txt	0	да

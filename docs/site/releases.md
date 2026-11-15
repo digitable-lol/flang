@@ -38,7 +38,6 @@ The entries below are about the language, not about the work on it. What has lan
 
 ### Improvements
 
-- [repl] Expressions evaluate again (broken since 0.7.32)
 - [emit] The compiler prints itself to C in 1 h 43 min (was 3 h 14 min, FLANG_JOBS=16)
 - [cli] A missing argument error names the function once
 - [cli] `--help` no longer names a guard and a language server that do not exist, nor calls judged laws unjudged
@@ -50,6 +49,7 @@ The entries below are about the language, not about the work on it. What has lan
 - [run] `flang run` rejects fixed-width words inside records and lists (flang/proof/tables/typing-holes.tsv, row 30)
 - [emit] Programs printed to C, Go, Rust and Java do not check fixed-width words and exact fractions on input (rows 31-32)
 - Elixir target on OTP 26-27: piped non-ASCII input fails. Workaround: `elixir --erl '-kernel standard_io_encoding latin1' ...`
+- [repl] Prebuilt Linux builds check expressions but do not evaluate them: the archive has no lib/ or include/
 
 ## 0.7.34 — 10 November 2026
 

@@ -12,7 +12,6 @@
 | `cc: command not found` при сборке из клона | нет компилятора C | `sudo apt install build-essential` (Fedora — `sudo dnf install gcc make`, Alpine — `apk add build-base`, macOS — `xcode-select --install`) |
 | `make: command not found` при сборке из клона | `make` не поставлен | соберите одним вызовом `cc` — [Установка](install.html#из-исходников) |
 | `flang --version` отвечает не строкой `flang <версия>` | раньше на `PATH` стоит LLVM Flang, компилятор Фортрана с тем же именем | поставьте каталог нашего `flang` в `PATH` первым или зовите его полным путём |
-| Оболочка отвечает `вычислять нечем: не найден libcompiler_flang.a` | двоичный поставлен без библиотеки, выражения считать нечем | укажите каталог с `libcompiler_flang.a` в `FLANG_LIB_DIR`, с заголовками — в `FLANG_INCLUDE_DIR` |
 
 ## Проверка отвечает не про то
 

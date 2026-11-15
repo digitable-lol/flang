@@ -104,6 +104,7 @@ script.kernel-speed:forgery = bootstrap/flang io flang/proof/probes/kernel-speed
 script.randomness:probe = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Binary
 script.randomness:forgery = bootstrap/flang io flang/proof/probes/randomness/run.fscript --plan Forgery
 script.network:probe = bootstrap/flang io flang/proof/probes/network/run.fscript --plan Binary --timeout 120000
+script.repl-expressions:probe = bootstrap/flang io flang/proof/probes/repl-expressions/run.fscript --plan Binary --timeout 300000
 script.network:forgery = bootstrap/flang io flang/proof/probes/network/run.fscript --plan Forgery --timeout 120000
 script.tls:engine = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-engine" && bootstrap/flang emit flang/stdlib/tls-client.flang --target c --cli --no-check --no-postconditions --out "$d" && make -C "$d" -j8
 script.tls:get = d="${FLANG_TMP:-${TMPDIR:-/tmp}}/tls-engine" && bootstrap/flang io docs/examples/https/https-get.flang --timeout 600000 -- www.google.com /generate_204 - - "$d/flang_cli" "$d/request"

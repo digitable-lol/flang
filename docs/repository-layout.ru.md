@@ -31,10 +31,10 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 68 файлов на flang —
 <!-- СНЯТО 2026-11-11 файлов flang/self/*.flang = 68 (ADR-0230: flang/self/call-words.flang lays console words over parameters) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **65 модулей, 2156 функций и 4171
-пример**, которые прогоняются при каждой проверке:
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **65 модулей, 2159 функций и 4173
+примера**, которые прогоняются при каждой проверке:
 <!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) -->
-<!-- СНЯТО 2026-11-11 примеров-в flang/stdlib/*.flang = 4171 (the list facts module) -->
+<!-- СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang = 4173 (list facts over dev with the print batch 13 stdlib claims) -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
@@ -57,9 +57,9 @@ docs/tasks/     открытая и закрытая работа дерева, 
 **Точка раскрутки.** В `bootstrap/` лежит компилятор, уже напечатанный в C99, — поэтому один
 `make` даёт рабочий `flang`. Этот двоичный печатает исходники компилятора заново, и результат
 сверяется с закоммиченным: `sh scripts/bootstrap-reprint.sh --check`. Входы последней печати записаны в
-`scripts/seed-fingerprint`, по хешированной строке на файл — 81 строка во входной половине; вместе
-со второй половиной, телом семени, в файле 100 строк.
-<!-- СНЯТО 2026-11-09 строк scripts/seed-fingerprint = 100 (print batch 11: flang/self/sugar.flang joins the inputs) -->
+`scripts/seed-fingerprint`, по хешированной строке на файл — 82 строки во входной половине; вместе
+со второй половиной, телом семени, в файле 101 строка.
+<!-- СНЯТО 2026-11-15 строк scripts/seed-fingerprint = 101 (print batch 13: flang/self/call-words.flang joins the inputs) -->
 Семя отстаёт от исходников: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` перечисляет, какие файлы и
 функции новее семени, а перепечатка (`sh scripts/bootstrap-reprint.sh`, часы на одном ядре) — единственный
 путь, которым правки `flang/self/` доезжают до двоичного. **Правка исходника не попадает в

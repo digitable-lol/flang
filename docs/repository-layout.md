@@ -32,10 +32,10 @@ docs/tasks/     the open and closed work of the tree, one file per task
 Inside `flang/`: [`flang/self/`](../flang/self) is the compiler, 68 files of flang —
 <!-- СНЯТО 2026-11-11 файлов flang/self/*.flang = 68 (ADR-0230: flang/self/call-words.flang lays console words over parameters) -->
 lexer, parser, types, totality, proof kernel and one printer per target.
-[`flang/stdlib/`](../flang/stdlib) is the standard library — **65 modules, 2156 functions and 4171
+[`flang/stdlib/`](../flang/stdlib) is the standard library — **65 modules, 2159 functions and 4173
 examples** that run on every check:
 <!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) -->
-<!-- СНЯТО 2026-11-11 примеров-в flang/stdlib/*.flang = 4171 (the list facts module) -->
+<!-- СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang = 4173 (list facts over dev with the print batch 13 stdlib claims) -->
 lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`postgres`,
 `sqlite`), networking (`http`, `tls`, `redis`), a cryptography set written in flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`) and a regular-expression engine.
@@ -59,9 +59,9 @@ service; the 335 more programs in the other sets are single files, the LeetCode 
 **The bootstrap point.** `bootstrap/` holds the compiler already printed to C99, which is why
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
-last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 81 lines in the
-input half; with the second half, the seed body, the file is 100 lines.
-<!-- СНЯТО 2026-11-09 строк scripts/seed-fingerprint = 100 (print batch 11: flang/self/sugar.flang joins the inputs) -->
+last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 82 lines in the
+input half; with the second half, the seed body, the file is 101 lines.
+<!-- СНЯТО 2026-11-15 строк scripts/seed-fingerprint = 101 (print batch 13: flang/self/call-words.flang joins the inputs) -->
 The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that

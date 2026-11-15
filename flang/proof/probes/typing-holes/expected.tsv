@@ -21,12 +21,12 @@ fixed-width-word-in-run.flang	check	0	замечаний нет
 fixed-width-word-in-run.flang	run-word-answer	0	5
 fixed-width-word-in-run.flang	run-word-argument	0	5
 word-inside-record-argument.flang	check	0	замечаний нет
-word-inside-record-argument.flang	run-word-in-record	1	аргумент «а».байт не соответствует типу u8
-word-inside-record-argument.flang	run-word-in-list	1	аргумент «а»[0] не соответствует типу u8
+word-inside-record-argument.flang	run-word-in-record	0	7
+word-inside-record-argument.flang	run-word-in-list	0	7
 word-inside-record-argument.flang	run-word-argument	0	5
 word-argument-at-printed-entry.flang	check	0	замечаний нет
 word-argument-at-printed-entry.flang	run-word-entry	1	аргумент «а» не соответствует типу u8
-word-argument-at-printed-entry.flang	emit-c-word-entry	0	{"ok":true,"value":{"n":"256"}}
+word-argument-at-printed-entry.flang	emit-c-word-entry	0	аргумент «а» не соответствует типу u8
 weight-from-number-by-match.flang	check	1	объявлена как вес, а тело даёт число
 weight-from-number-by-match.flang	run-weight-from-number	1	FLANG_TYPE
 weight-from-number-by-match.flang	run-weight-first-branch	1	FLANG_TYPE
@@ -47,7 +47,7 @@ exact-integer-off-canon-at-printed-entry.flang	run-exact-entry	1	разряд -1
 exact-integer-off-canon-at-printed-entry.flang	emit-c-exact-entry	0	{"ok":false,"code":"FLANG_TYPE"
 exact-fraction-off-canon-at-printed-entry.flang	check	0	замечаний нет
 exact-fraction-off-canon-at-printed-entry.flang	run-fraction-entry	1	дробь не сокращена
-exact-fraction-off-canon-at-printed-entry.flang	emit-c-fraction-entry	0	{"ok":true,"value":{"l":[{"l":[{"n":"2"}]},{"l":[{"n":"4"}]}]}}
+exact-fraction-off-canon-at-printed-entry.flang	emit-c-fraction-entry	0	дробь не сокращена
 requirement-bypassed-by-function-value.flang	check	1	FLANG_PRECONDITION_CALL
 requirement-bypassed-by-function-value.flang	run-requirement-bypass	1	FLANG_PRECONDITION_CALL
 shortest-number-tie-in-rust.flang	check	0	замечаний нет
@@ -90,6 +90,6 @@ selective-import-monoid-true.flang	check	0	замечаний нет
 written-step-cites-a-promise-at-a-wider-type.flang	proof	1	FLANG_TYPE
 written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-type	1	FLANG_TYPE
 written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0
-postcondition-calls-its-own-function.flang	check	0	замечаний нет
+postcondition-calls-its-own-function.flang	check	1	FLANG_NOT_TOTAL
 postcondition-calls-its-own-function-one-step-lower.flang	check	0	замечаний нет
 postconditions-call-each-other.flang	check	0	замечаний нет

@@ -213,7 +213,7 @@
 
 тотальная функция «Объявлено, не сделано»
   возвращает список «Отсрочка»
-  пример «Записей четырнадцать: четыре отвергнутых кода, восемь снятых и два обещанных»
+  пример «Записей шестнадцать: четыре отвергнутых кода, десять снятых и два обещанных»
     ожидается [
       (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
         "docs/flang/concurrency/DISTRIBUTED.md"] и «почему» равным [
@@ -306,7 +306,17 @@
           "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
           "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
           "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
-          "его отказы именно по этим именам, и без имени разбор не читается"])
+          "его отказы именно по этим именам, и без имени разбор не читается"]),
+        (запись «Отсрочка» с «код» равным "FLANG_IO_NO_FILES" и «род» равным "снят" и «где» равным [
+          "docs/adr/0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md"]
+          и «почему» равным [
+          "прежний отказ вкладки на файловые поручения; ушёл из flang_host_browser.js в коммите f8cf06d52, когда у ",
+          "вкладки появился склад файлов. ADR-0224 разбирает переход именно по этому имени"]),
+        (запись «Отсрочка» с «код» равным "FLANG_IO_NO_SPAWN" и «род» равным "снят" и «где» равным [
+          "docs/adr/0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md"]
+          и «почему» равным [
+          "прежний отказ вкладки на запуск процесса; ушёл из flang_host_browser.js в коммите f8cf06d52, когда вкладка ",
+          "стала запускать программы. ADR-0224 разбирает переход именно по этому имени"])
     ]
   [
     (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
@@ -400,16 +410,27 @@
         "docs/tasks/3403-package-installer-manifest-network-lock.md"] и «почему» равным [
         "код отказа плана установки по имени scripts/package-install.fscript; план ушёл вместе с командой ",
         "flang install в коммите 7e9784118 (импорт по ссылке, ADR-0214). ADR-0168 и задачи об установщике разбирают ",
-        "его отказы именно по этим именам, и без имени разбор не читается"])
+        "его отказы именно по этим именам, и без имени разбор не читается"]),
+      (запись «Отсрочка» с «код» равным "FLANG_IO_NO_FILES" и «род» равным "снят" и «где» равным [
+        "docs/adr/0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md"]
+        и «почему» равным [
+        "прежний отказ вкладки на файловые поручения; ушёл из flang_host_browser.js в коммите f8cf06d52, когда у ",
+        "вкладки появился склад файлов. ADR-0224 разбирает переход именно по этому имени"]),
+      (запись «Отсрочка» с «код» равным "FLANG_IO_NO_SPAWN" и «род» равным "снят" и «где» равным [
+        "docs/adr/0224-a-page-is-a-value-the-plan-shows-and-the-tab-host-keeps-files-and-runs-programs.md"]
+        и «почему» равным [
+        "прежний отказ вкладки на запуск процесса; ушёл из flang_host_browser.js в коммите f8cf06d52, когда вкладка ",
+        "стала запускать программы. ADR-0224 разбирает переход именно по этому имени"])
   ]
 
 тотальная функция «Отсроченные имена»
   возвращает список строки
-  пример «Четырнадцать имён»
+  пример «Шестнадцать имён»
     ожидается ["FLANG_NODE_DEAD", "FLANG_ZAMER", "FLANG_PROBE_MAX_DEPTH",
       "FLANG_SLOVO_PUSTOTA", "FLANG_IO_UNSUPPORTED", "FLANG_SELF_EVAL_UNSUPPORTED",
       "FLANG_TARGET", "FLANG_INSTALL_BUILD", "FLANG_INSTALL_CONFLICT", "FLANG_INSTALL_FINGERPRINT",
-      "FLANG_INSTALL_LEDGER", "FLANG_INSTALL_NEEDS", "FLANG_INSTALL_PROBE", "FLANG_INSTALL_UNPROVED"]
+      "FLANG_INSTALL_LEDGER", "FLANG_INSTALL_NEEDS", "FLANG_INSTALL_PROBE", "FLANG_INSTALL_UNPROVED",
+      "FLANG_IO_NO_FILES", "FLANG_IO_NO_SPAWN"]
   отобразить («Объявлено, не сделано») как отсрочка → (отсрочка.«код»)
 
 тотальная функция «Файл места»

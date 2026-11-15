@@ -1499,7 +1499,7 @@ dd5b92bc8d039261789911a13f5e023b|6|×|×|×|0|flang/test/fixtures/honest-halves/
 1ae9df659600211379d40b24380001be|5|×|×|×|0|flang/test/fixtures/honest-halves/order-arithmetic-honest.flang
 ea6522b9a55441b91b011dfd3c7e4b7b|4|×|×|×|0|flang/test/fixtures/honest-halves/product-floor-honest.flang
 a006d05278b799b7c14b69e94f5db5ef|4|×|×|×|0|flang/test/fixtures/honest-halves/strict-order-honest.flang
-12e4a6f0e40bd10b5d179e7dffc95e4f|3|0|3|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
+3a1b5932aa3c55bd9ba51d610e095748|2|0|2|0|0|flang/test/fixtures/krug-tuda-i-obratno.flang
 052d07f9abd740282567e21a713e2995|7|1|6|0|0|flang/test/fixtures/nachalo-po-postroeniyu-chestnaya.flang
 a21b59921919e74faa90a69b8090d9d8|1|0|0|1|0|flang/test/fixtures/ohrana-daet-fakt.flang
 eaa405616cb9b1d49e0cf69a2ad55917|10|0|10|0|0|flang/test/fixtures/poddelka-builtin-emptiness-fact.flang
@@ -1511,7 +1511,7 @@ d6974a0612439d2962922bcc788a3453|7|×|×|×|0|flang/test/fixtures/poddelka-grani
 79b5359ba8c70bbaf323a8b532b74bda|7|0|7|0|0|flang/test/fixtures/poddelka-integrality-from-fact.flang
 ba3ff737fa48a1d47ea8c52f7f162594|2|0|0|2|0|flang/test/fixtures/poddelka-istinnaya-vetv.flang
 d4c093b152f3438a95aec810ca17db24|2|1|0|1|0|flang/test/fixtures/poddelka-konyunkciya.flang
-2904ab3db6b57daaf2ef4824694bce3c|1|0|1|0|0|flang/test/fixtures/poddelka-krug-pri-rabote.flang
+46d31f5bfc6a5ead9467c7a94efa5570|2|0|2|0|0|flang/test/fixtures/poddelka-krug-pri-rabote.flang
 ecb064891250cdecebb243ae5530c2e5|1|0|1|0|0|flang/test/fixtures/poddelka-lozhnaya-polovina.flang
 654518b4181c287ef7631f64a1135ce5|3|0|0|3|2|flang/test/fixtures/poddelka-mera-dliny-stroki.flang
 c48fd3fe7e291a72fa685665e9945741|6|0|0|6|0|flang/test/fixtures/poddelka-nachalo-po-postroeniyu.flang
@@ -1526,7 +1526,7 @@ d70a8d789ea2a2eec53ccc4e8e0edaec|3|1|0|2|6|flang/test/fixtures/poddelka-protivor
 2b5b236234280f3c92609bbcb633386b|12|0|12|0|0|flang/test/fixtures/poddelka-razbor-spiska.flang
 7ef83bff44f8493adb93702881942d05|3|2|0|1|0|flang/test/fixtures/poddelka-razbor-vnutrennim.flang
 d692c0fe0fc43495a0ad25aa06aa04c0|1|0|1|0|0|flang/test/fixtures/poddelka-razdvoenie-diz.flang
-6a37dda87c2fad6d9923ad3817031c8d|1|×|×|×|0|flang/test/fixtures/poddelka-razvyazka-postusloviy.flang
+35385820007bfa2235a215b4c3b30cdc|2|×|×|×|0|flang/test/fixtures/poddelka-razvyazka-postusloviy.flang
 53a325dfa8b822dfd69a3859b33c946e|2|0|0|2|0|flang/test/fixtures/poddelka-refleksivnost.flang
 f09262456856a3a7c8171e9aff33f35f|4|3|1|0|0|flang/test/fixtures/poddelka-slovo-o-dokazannosti.flang
 fe8525b99f0c4512283b206fff3cfe86|3|2|1|0|0|flang/test/fixtures/poddelka-snyatie-storozha.flang

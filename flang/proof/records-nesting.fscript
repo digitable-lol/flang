@@ -30,8 +30,8 @@
 
 тотальная функция «Allowed to be refused»
   возвращает список строки
-  пример «Programs the check refuses: 2 since 0.7.24, 21 since 0.7.31, 3 by the self-call rule»
-    ожидается ["krug-tuda-i-obratno", "order", "poddelka-krug-pri-rabote",
+  пример «Programs the check refuses: 2 since 0.7.24, 21 since 0.7.31, 1 by the self-call rule»
+    ожидается ["order",
       "forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
       "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
       "forgery-case-split-captures-a-bound-name", "poddelka-dno-proizvedeniya", "poddelka-element-po-nomeru",
@@ -41,7 +41,7 @@
       "poddelka-razdvoenie-diz", "poddelka-raznost-bez-poryadka", "poddelka-razv2-sebya",
       "poddelka-razv3-raznost", "poddelka-strict-order", "poddelka-svyortka-nad-pustym",
       "negative-zero-zero-times-a"]
-  ["krug-tuda-i-obratno", "order", "poddelka-krug-pri-rabote",
+  ["order",
     "forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
     "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
     "forgery-case-split-captures-a-bound-name", "poddelka-dno-proizvedeniya", "poddelka-element-po-nomeru",

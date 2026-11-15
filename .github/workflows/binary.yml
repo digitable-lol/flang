@@ -2384,6 +2384,7 @@ jobs:
           check bootstrap/flang io flang/proof/probes/console-call/run.fscript --plan Binary --timeout 900000 ,
           check bootstrap/flang io flang/proof/probes/lists-and-cases/run.fscript --plan Binary --timeout 900000 ,
           check bootstrap/flang io flang/proof/probes/message-language/run.fscript --plan Binary --timeout 900000 ,
+          check bootstrap/flang run-script repl-expressions:probe ,
           check bootstrap/flang io flang/proof/probes/same-name-functions/run.fscript --plan Binary --timeout 900000 ,
           check bootstrap/flang io flang/proof/probes/settled-kernel-issues/run.fscript --plan Binary --timeout 900000 ,
           check bootstrap/flang io flang/proof/probes/small-compiler-bugs/run.fscript --plan Binary --timeout 900000 ,

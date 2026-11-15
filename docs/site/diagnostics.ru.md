@@ -686,7 +686,7 @@ $ echo $?
 Таблица собрана из исходников компилятора и его рантайма: в ней каждый код,
 который они поднимают. Прочерк в третьем столбце значит, что текст сообщения
 собирается на месте. В таблицу попадают и имена переменных окружения
-(`FLANG_CC`, `FLANG_JOBS` и другие): они начинаются с того же префикса.
+(`FLANG_JOBS`, `FLANG_TMP` и другие): они начинаются с того же префикса.
 
 Код `FLANG_*` — часть договора с тем, кто читает вывод компилятора снаружи:
 редактором, CI, учебным курсом. Код не появляется и не исчезает молча: каждый
@@ -721,7 +721,6 @@ $ echo $?
 | `FLANG_CATEGORY_STEP` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_TYPE` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
-| `FLANG_CC` | `flang_repl.c` | — |
 | `FLANG_CHECKER` | `flang_repl.c` | — |
 | `FLANG_CLI` | `flang_repl.c`, `cli.flang`, `repl.flang` | — |
 | `FLANG_COMPOSE_MISMATCH` | `compiler.flang` | — |
@@ -745,7 +744,6 @@ $ echo $?
 | `FLANG_IMPORT_CYCLE` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
-| `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
 | `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
@@ -783,7 +781,6 @@ $ echo $?
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
-| `FLANG_LIB_DIR` | `flang_repl.c` | — |
 | `FLANG_LINK_CHANGED` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
 | `FLANG_LINK_FETCH` | `flang_repl.c` | — |

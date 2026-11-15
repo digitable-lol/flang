@@ -64,22 +64,6 @@
  * завершаемость. Совпадение дорог не оптимизация: разойдись они, и оболочка
  * принимала бы то, что компилятор отвергает.
  *
- * ── Чем вычисляется выражение ───────────────────────────────────────────────
- * Вычислитель в этом бинарнике теперь ЕСТЬ — `flang/self/interpret.flang` втащен
- * в замыкание компилятора, — но ОБОЛОЧКА ЕГО ПОКА НЕ ЗОВЁТ, и это долг, а не
- * решение: сессия у неё живёт исходником, а не связанной программой, и точка
- * входа «Прогон исходников» просит имя функции и аргументы, которых у свободного
- * выражения нет. Пока долг не закрыт, выражение вычисляется прежним способом —
- * сессия печатается в C (та же «Печать программы», что у `flang emit`),
- * собирается системным `cc` и запускается. Пересобирать при этом нечего, кроме
- * самой сессии: рантайм уже стоит рядом с бинарником — `lib/libcompiler_flang.a`
- * и заголовки в `include/` кладут и формула Homebrew, и плагин asdf.
- *
- * Без `cc` оболочка не выключается: она по-прежнему проверяет разбор, типы и
- * завершаемость — то есть делает ровно то, что бинарник умеет. Про то, что
- * значения при этом не считаются, сказано один раз при запуске, а не на каждой
- * строке.
- *
  * ── Команды через точку ─────────────────────────────────────────────────────
  * Те же, что в Node-версии, и по той же причине: ни одна конструкция flang не
  * может начинаться с точки, значит строка с точки заведомо не программа. Имена
@@ -318,9 +302,6 @@ static char *repl_read_all(FILE *stream, size_t *length) {
 /** Имя файла сессии — от него связывание отсчитывает относительные пути. */
 #define REPL_FILE "«оболочка».flang"
 
-/** Архив рантайма, который кладут формула и плагин; каталог ищется, имя — нет. */
-#define REPL_ARCHIVE "libcompiler_flang.a"
-
 /** Сколько объявлений печатать поимённо, прежде чем перейти к счёту. */
 #define REPL_VERBOSE 6
 
@@ -363,15 +344,6 @@ static char *repl_read_all(FILE *stream, size_t *length) {
 static const char REPL_GREETING[] =
     "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
     "Объявление заканчивается пустой строкой, выражение вычисляется сразу.";
-
-/*
- * То же приветствие, когда вычислять нечем. Обещать вычисление и тут же, второй
- * строкой в stderr, признаваться, что его не будет, — ровно тот способ врать,
- * от которого этот файл и заводился: человек читает первое и не читает второе.
- */
-static const char REPL_GREETING_NO_EVAL[] =
-    "flang " FLANG_VERSION " — оболочка. «.помощь» — команды, «.выход» или Ctrl-D — конец.\n"
-    "Объявление заканчивается пустой строкой; выражение проверяется, но не вычисляется — почему, сказано ниже.";
 
 /*
  * СПРАВКА В ДВА ЭТАЖА, и здесь перечислено то, что умеет ФАЙЛ, поставленный из
@@ -1157,11 +1129,8 @@ static const char HELP_REPL[] =
     "Объявления накапливаются в сессии, выражения вычисляются сразу, «.помощь»\n"
     "показывает команды. Файл в аргументе загружается в сессию при запуске.\n"
     "\n"
-    "Выражение считается так: сессия печатается в C тем же способом, что у\n"
-    "«flang emit», собирается системным «cc» против lib/libcompiler_flang.a и\n"
-    "запускается. Нет «cc» — оболочка не выключается, а проверяет разбор, типы и\n"
-    "завершаемость и говорит об этом при запуске.\n"
-    "Где искать: FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.";
+    "Выражение считает вычислитель внутри этого же двоичного — тот, что у\n"
+    "«flang run»: ни компилятора C, ни lib/ и include/ рядом ему не нужно.";
 
 /**
  * Второй этаж справки: раздел команды, если он есть, иначе первый этаж.
@@ -1678,7 +1647,7 @@ static void repl_history_save(void) {
  * Все ответы сняты здесь и сейчас, а не записаны словами: сборка, терминал,
  * окружение и найденный `cc` расходятся даже на одной машине.
  */
-static void repl_say_build(const char *why_no_eval) {
+static void repl_say_build(void) {
   const char *path = repl_history_file();
   printf("Эта сборка: flang %s, оболочка %s.\n", FLANG_VERSION, FLANG_SHELL_ID);
   if (repl_can_edit()) {
@@ -1693,7 +1662,7 @@ static void repl_say_build(const char *why_no_eval) {
                          : repl_depth_out == REPL_SIXTEEN ? "шестнадцать цветов, тема digitable"
                          : getenv("NO_COLOR") != NULL     ? "выключен: стоит NO_COLOR"
                                                           : "выключен: вывод не терминал или TERM без цвета");
-  printf("  вычисление: %s\n", why_no_eval == NULL ? "системным cc, рядом с двоичным" : why_no_eval);
+  printf("  вычисление: вычислителем внутри двоичного, тем же, что у flang run\n");
   printf("  история: строк в этой сессии %lu; между запусками — %s\n", (unsigned long)repl_lines.count,
          path == NULL ? "выключена (FLANG_HISTORY)" : path);
 }
@@ -2082,20 +2051,10 @@ static char *repl_dir_of_real(char *path) {
 }
 
 /*
- * Каталог, из которого запущен сам бинарник: от него отсчитываются lib и include.
+ * Каталог, из которого запущен сам бинарник.
  *
  * ССЫЛКИ РАСКРЫВАЮТСЯ, И ЭТО НЕ ЗАПАС. И npm, и Homebrew, и asdf кладут в
- * `<префикс>/bin` не сам бинарник, а СИМВОЛЬНУЮ ССЫЛКУ на него; заголовки и
- * архив лежат рядом с настоящим файлом, то есть по другому `..`. Без раскрытия
- * «свой каталог» — каталог ссылки, `../include` и `../lib` в нём пусты, и
- * оболочка отвечает «не найден flang_runtime.h ($FLANG_INCLUDE_DIR, ../include
- * или каталог самого бинарника)». Отказ при этом называет НЕ ТУ ПРИЧИНУ: файл
- * лежит ровно там, где обещано, — смотрели не туда. Человек по такому отказу
- * лезет искать пропавшие заголовки, которых никто не терял.
- *
- * Улика, а не догадка: раскладка `<п>/pkg/bin/flang` + `<п>/pkg/{include,lib}`,
- * ссылка `<п>/bin/flang`. Тот же двоичный по настоящему пути находит и то и
- * другое; по ссылке — ни того, ни другого.
+ * `<префикс>/bin` не сам бинарник, а СИМВОЛЬНУЮ ССЫЛКУ на него.
  */
 static char *repl_self_dir(const char *argv0) {
   if (argv0 == NULL || argv0[0] == '\0') {
@@ -2165,48 +2124,6 @@ static char *repl_in_path(const char *name) {
       break;
     }
     scan = colon + 1;
-  }
-  return NULL;
-}
-
-/*
- * Каталог установки ищется от самого бинарника, а не от захардкоженного места:
- * `bin/flang` → `../lib` и `../include` (так кладут и формула Homebrew, и
- * плагин asdf), а если бинарник запущен прямо из каталога сборки — рядом с ним.
- * Переопределяется переменной окружения: это единственный способ починить
- * необычную установку, не пересобирая бинарник.
- */
-static char *repl_find_dir(const char *variable, const char *self_dir, const char *sub, const char *probe) {
-  const char *set = getenv(variable);
-  if (set != NULL && set[0] != '\0') {
-    char *candidate = repl_join(set, probe);
-    const bool found = repl_exists(candidate);
-    free(candidate);
-    return found ? repl_say(set) : NULL;
-  }
-  if (self_dir == NULL) {
-    return NULL;
-  }
-  {
-    char *parent = repl_dirname(self_dir);
-    char *directory = repl_join(parent, sub);
-    char *candidate = repl_join(directory, probe);
-    const bool found = repl_exists(candidate);
-    free(parent);
-    free(candidate);
-    if (found) {
-      return directory;
-    }
-    free(directory);
-  }
-  {
-    /* Каталог сборки: рядом с flang_cli лежат и заголовки, и архив. */
-    char *candidate = repl_join(self_dir, probe);
-    const bool found = repl_exists(candidate);
-    free(candidate);
-    if (found) {
-      return repl_say(self_dir);
-    }
   }
   return NULL;
 }
@@ -2770,15 +2687,9 @@ typedef struct repl_session {
      вызов функции без аргументов остался бы несвязанным именем. */
   repl_strings known;
   repl_strings total;
-  /* Чем вычислять. NULL в `why_no_eval` означает «вычислять можно». */
-  char *cc;
-  char *include_dir;
-  char *lib_dir;
   char *tmp_dir;
-  char *why_no_eval;
   char *steps;
   char *depth;
-  repl_strings litter;
   repl_strings claims_proved;
   repl_strings claims_open;
   bool syllogisms_open;
@@ -7748,468 +7659,130 @@ static void repl_merge_header(repl_session *session, fl_value program, const cha
   }
 }
 
-/* ───────────────────── вычисление: печать в C, cc, запуск ──────────────── */
+static void run_print_word(fl_value value);
+static fl_value repl_value_variant_fields(const char *variant, const char *field, fl_value held);
+static void repl_show(fl_value value);
 
-/*
- * Прогонщик сессии. Печатается вместе с ней и собирается вместе с ней; всё, что
- * он делает, — вызывает одну функцию без аргументов и печатает значение
- * поверхностью языка: да, нет, ничто, "текст", [1, 2], пустой список,
- * {поле: значение}, Вариант(поле: значение). Печатать иначе значило бы учить
- * человека второму словарю: то же самое пишут бэкенды («к строке» в emit/js) и
- * оболочка на Node (formatValue в repl.mjs).
- *
- * Экранирование строки идёт числами (34 — кавычка, 92 — косая), а не escape-
- * последовательностями: этот текст сам живёт в строковом литерале C, и вторая
- * ступень экранирования сделала бы его нечитаемым.
- */
-static const char REPL_RUNNER[] =
-    "#include \"flang_runtime.h\"\n"
-    "\n"
-    "#include <stdio.h>\n"
-    "#include <stdlib.h>\n"
-    "\n"
-    "extern fl_status FL_PROGRAM_CALL(fl_ctx *ctx, const char *name, const fl_value *args, size_t count,\n"
-    "                                 fl_value *result, fl_error *error);\n"
-    "\n"
-    "static void show_text(const char *utf8, size_t bytes) {\n"
-    "  size_t index = 0;\n"
-    "  putchar(34);\n"
-    "  for (index = 0; index < bytes; index += 1) {\n"
-    "    const unsigned char symbol = (unsigned char)utf8[index];\n"
-    "    if (symbol == 34 || symbol == 92) {\n"
-    "      putchar(92);\n"
-    "      putchar((char)symbol);\n"
-    "    } else if (symbol == 10) {\n"
-    "      putchar(92);\n"
-    "      putchar('n');\n"
-    "    } else if (symbol == 13) {\n"
-    "      putchar(92);\n"
-    "      putchar('r');\n"
-    "    } else if (symbol == 9) {\n"
-    "      putchar(92);\n"
-    "      putchar('t');\n"
-    "    } else if (symbol == 8) {\n"
-    "      putchar(92);\n"
-    "      putchar('b');\n"
-    "    } else if (symbol == 12) {\n"
-    "      putchar(92);\n"
-    "      putchar('f');\n"
-    "    } else if (symbol < 32) {\n"
-    "      printf(\"%c%c%04x\", 92, 'u', (unsigned)symbol);\n"
-    "    } else {\n"
-    "      putchar((char)symbol);\n"
-    "    }\n"
-    "  }\n"
-    "  putchar(34);\n"
-    "}\n"
-    "\n"
-    "static void show(fl_value value) {\n"
-    "  size_t index = 0;\n"
-    "  char number[FL_NUMBER_TEXT_MAX];\n"
-    "  switch (value.tag) {\n"
-    "    case FL_NOTHING:\n"
-    "      fputs(\"ничто\", stdout);\n"
-    "      return;\n"
-    "    case FL_FLAG:\n"
-    "      fputs(value.as.flag ? \"да\" : \"нет\", stdout);\n"
-    "      return;\n"
-    "    case FL_NUMBER:\n"
-    "      if (value.as.number == 0.0 && !(1.0 / value.as.number > 0.0)) {\n"
-    "        fputs(\"-0\", stdout);\n"
-    "        return;\n"
-    "      }\n"
-    "      fl_number_text(value.as.number, number);\n"
-    "      fputs(number, stdout);\n"
-    "      return;\n"
-    "    case FL_STRING:\n"
-    "      show_text(value.as.string.utf8, value.as.string.bytes);\n"
-    "      return;\n"
-    "    case FL_LIST:\n"
-    "      if (value.as.list.count == 0) {\n"
-    "        fputs(\"пустой список\", stdout);\n"
-    "        return;\n"
-    "      }\n"
-    "      putchar('[');\n"
-    "      for (index = 0; index < value.as.list.count; index += 1) {\n"
-    "        if (index > 0) {\n"
-    "          fputs(\", \", stdout);\n"
-    "        }\n"
-    "        show(value.as.list.items[index]);\n"
-    "      }\n"
-    "      putchar(']');\n"
-    "      return;\n"
-    "    case FL_RECORD:\n"
-    "      putchar('{');\n"
-    "      for (index = 0; index < value.as.record->count; index += 1) {\n"
-    "        if (index > 0) {\n"
-    "          fputs(\", \", stdout);\n"
-    "        }\n"
-    "        fputs(value.as.record->fields[index].name, stdout);\n"
-    "        fputs(\": \", stdout);\n"
-    "        show(value.as.record->fields[index].value);\n"
-    "      }\n"
-    "      putchar('}');\n"
-    "      return;\n"
-    "    case FL_VARIANT:\n"
-    "      fputs(value.as.variant->name, stdout);\n"
-    "      if (value.as.variant->count == 0) {\n"
-    "        return;\n"
-    "      }\n"
-    "      putchar('(');\n"
-    "      for (index = 0; index < value.as.variant->count; index += 1) {\n"
-    "        if (index > 0) {\n"
-    "          fputs(\", \", stdout);\n"
-    "        }\n"
-    "        fputs(value.as.variant->fields[index].name, stdout);\n"
-    "        fputs(\": \", stdout);\n"
-    "        show(value.as.variant->fields[index].value);\n"
-    "      }\n"
-    "      putchar(')');\n"
-    "      return;\n"
-    "  }\n"
-    "  fputs(\"ничто\", stdout);\n"
-    "}\n"
-    "\n"
-    "int main(int argc, char **argv) {\n"
-    "  fl_arena arena;\n"
-    "  fl_ctx ctx;\n"
-    "  fl_error error;\n"
-    "  fl_value result = fl_nothing();\n"
-    "  fl_value args[1];\n"
-    "  args[0] = fl_nothing();\n"
-    "  if (argc < 2) {\n"
-    "    fputs(\"прогонщик сессии: не названа функция\\n\", stderr);\n"
-    "    return 2;\n"
-    "  }\n"
-    "  fl_arena_init(&arena);\n"
-    "  fl_ctx_init(&ctx, &arena);\n"
-    "  /* Пределы приходят снаружи: рантайм собран заранее, и «--max-steps»\n"
-    "     оболочки иначе было бы нечем исполнить. Ноль означает «как собрано». */\n"
-    "  if (argc > 2 && strtoul(argv[2], NULL, 10) > 0) {\n"
-    "    ctx.max_steps = (size_t)strtoul(argv[2], NULL, 10);\n"
-    "  }\n"
-    "  if (argc > 3 && strtoul(argv[3], NULL, 10) > 0) {\n"
-    "    ctx.max_depth = (size_t)strtoul(argv[3], NULL, 10);\n"
-    "  }\n"
-    "  error.code = NULL;\n"
-    "  error.message = NULL;\n"
-    "  if (FL_PROGRAM_CALL(&ctx, argv[1], args, 0, &result, &error) != FL_OK) {\n"
-    "    fprintf(stderr, \"%s: %s\\n\", error.code == NULL ? \"FLANG_UNKNOWN\" : error.code,\n"
-    "            error.message == NULL ? \"\" : error.message);\n"
-    "    fl_arena_release(&arena);\n"
-    "    return 1;\n"
-    "  }\n"
-    "  show(result);\n"
-    "  putchar('\\n');\n"
-    "  fl_arena_release(&arena);\n"
-    "  return 0;\n"
-    "}\n";
-
-/** Аргумент для оболочки: одинарные кавычки не раскрывают ничего. */
-static void buf_shell(repl_buf *buf, const char *text) {
+static void repl_show_text(const char *utf8, size_t bytes) {
   size_t index = 0;
-  buf_char(buf, '\'');
-  for (index = 0; text[index] != '\0'; index += 1) {
-    if (text[index] == '\'') {
-      buf_put(buf, "'\\''");
+  putchar('"');
+  for (index = 0; index < bytes; index += 1) {
+    const unsigned char symbol = (unsigned char)utf8[index];
+    const char *named = symbol == '\n' ? "\\n" : symbol == '\r' ? "\\r" : symbol == '\t' ? "\\t"
+                        : symbol == '\b' ? "\\b" : symbol == '\f' ? "\\f" : NULL;
+    if (symbol == '"' || symbol == '\\') {
+      putchar('\\');
+      putchar((char)symbol);
+    } else if (named != NULL) {
+      fputs(named, stdout);
+    } else if (symbol < 32) {
+      printf("\\u%04x", (unsigned)symbol);
     } else {
-      buf_char(buf, text[index]);
+      putchar((char)symbol);
     }
   }
-  buf_char(buf, '\'');
+  putchar('"');
 }
 
-/** Всё созданное во временном каталоге записывается, чтобы быть убранным. */
-static void repl_litter(repl_session *session, const char *name) {
-  char *path = repl_join(session->tmp_dir, name);
-  if (!strings_has(&session->litter, path, strlen(path))) {
-    strings_say(&session->litter, path);
-  }
-  free(path);
-}
-
-/** Число из «#define FL_MAX_TAIL_ARGS N» напечатанного заголовка рантайма. */
-static size_t repl_defined(const char *text, size_t bytes, const char *macro) {
-  repl_buf needle;
-  const char *found = NULL;
-  size_t value = 0;
+static void repl_show_fields(fl_value fields, char open, char close) {
   size_t index = 0;
-  buf_init(&needle);
-  buf_put(&needle, "#define ");
-  buf_put(&needle, macro);
-  buf_char(&needle, ' ');
-  /* Заголовок приезжает строкой рантайма — она не обязана кончаться нулём,
-     поэтому ищем руками, а не strstr. */
-  for (index = 0; index + needle.used <= bytes; index += 1) {
-    if (memcmp(text + index, needle.data, needle.used) == 0) {
-      found = text + index + needle.used;
-      break;
-    }
-  }
-  if (found != NULL) {
-    while (*found >= '0' && *found <= '9') {
-      value = value * 10 + (size_t)(*found - '0');
-      found += 1;
-    }
-  }
-  buf_free(&needle);
-  return value;
-}
-
-/**
- * Печать сессии в C и её сборка.
- *
- * Рантайм не печатается и не пересобирается: он уже стоит рядом с бинарником
- * готовым архивом, а его заголовок берётся оттуда же. Собирается ровно сессия —
- * два файла, — и это доли секунды вместо пересборки компилятора.
- *
- * Ширину отскока батута заголовок диктует свою (FL_MAX_TAIL_ARGS входит в
- * fl_bounce), поэтому сессия, которой нужно больше, честно отвергается: собрать
- * её с готовым рантаймом нельзя, а тихо переполнить массив — тем более.
- *
- * Запись «Настройки» здесь обязана нести ВСЕ поля цели «c» из EMIT_FIELDS_C —
- * не только те, что сессии пригождаются. `emit-c.flang` читает «планировщик
- * заголовок»/«планировщик исходник» у записи БЕЗУСЛОВНО (для «заголовка
- * движка»/«исходника движка»), и только потом решает, класть ли получившиеся
- * файлы в ответ — сама подстановка в запись это не условие. Значит поле
- * обязано быть в записи, даже когда сессия не конкурентна и файлы движка
- * никуда не попадут. Ровно так же, как рантайм, движок сессией не печатается
- * и не пересобирается, поэтому оба поля — пустые строки. Отстанет отсюда
- * список полей от EMIT_FIELDS_C ещё раз — оболочка откажет отказом
- * `FLANG_UNKNOWN_NAME: запись не содержит поле «…»` на КАЖДОМ вводе, не только
- * на том, что до нового поля дотрагивается: прецедент — тот же провал у цели
- * «js» с полем «исходник исполнителя», см. комментарий у EMIT_TARGET_TABLE.
- */
-static bool repl_compile(repl_session *session, fl_value program, char **error) {
-  /* Прогонщик сессии — не тот, что печатается обычно, а наш маленький: ему
-     нужно вычислить одну функцию и напечатать значение поверхностью языка.
-     Своей оболочки сессии не нужно — «оболочка» здесь нет, и ста килобайт
-     чужого кода в неё не попадает. */
-  /*
-   * Границы входа у сессии нет, и это не упущение. Таблица объявленных типов
-   * приходит от слоя типов, а сессия печатается здесь, в готовом бинарнике, где
-   * этого слоя под рукой нет. Пустые списки означают «сверять нечего»: сессия
-   * зовётся своим маленьким прогонщиком (REPL_RUNNER), а он в границу и не
-   * ходит — значения ему подаёт человек через ту же оболочку, а не сеть.
-   */
-  static const char *const names[17] = {"путь",              "есть путь",        "база",
-                                        "предел глубины",    "предел шагов",     "прогонщик",
-                                        "рантайм заголовок", "рантайм исходник", "исходник прогонщика",
-                                        "оболочка",          "исходник оболочки", "типы входа",
-                                        "поля входа",        "варианты входа",   "параметры входа",
-                                        "планировщик заголовок", "планировщик исходник"};
-  fl_value values[17];
-  fl_value args[2];
-  fl_value emitted = fl_nothing();
-  fl_value files = fl_nothing();
-  fl_value failure = fl_nothing();
-  repl_buf command;
-  repl_strings sources;
-  size_t index = 0;
-  bool ok = true;
-  *error = NULL;
-  values[0] = repl_value_say("session");
-  values[1] = fl_flag(true);
-  values[2] = fl_number((double)FL_INDEX_BASE);
-  values[3] = fl_number((double)FL_MAX_DEPTH);
-  values[4] = fl_number((double)FL_MAX_STEPS);
-  values[5] = fl_flag(true);
-  values[6] = repl_value_say("");
-  values[7] = repl_value_say("");
-  values[8] = repl_value_say(REPL_RUNNER);
-  values[9] = fl_flag(false);
-  values[10] = repl_value_say("");
-  values[11] = fl_list(NULL, 0);
-  values[12] = fl_list(NULL, 0);
-  values[13] = fl_list(NULL, 0);
-  values[14] = fl_list(NULL, 0);
-  values[15] = repl_value_say("");
-  values[16] = repl_value_say("");
-  args[0] = program;
-  args[1] = repl_value_record(names, values, 17);
-  if (repl_call("Напечатать связанное", args, 2, &emitted) != FL_OK) {
-    *error = repl_say("печать сессии в C прекращена");
-    return false;
-  }
-  if (val_field(emitted, "ошибка", &failure) && !val_same(failure, "")) {
-    *error = val_copy(failure);
-    return false;
-  }
-  if (!val_field(emitted, "файлы", &files) || files.tag != FL_LIST) {
-    *error = repl_say("печать сессии в C не вернула файлов");
-    return false;
-  }
-  strings_init(&sources);
-  for (index = 0; index < files.as.list.count && ok; index += 1) {
-    fl_value path = fl_nothing();
-    fl_value content = fl_nothing();
+  putchar(open);
+  for (index = 0; fields.tag == FL_LIST && index < fields.as.list.count; index += 1) {
+    fl_value key = fl_nothing();
+    fl_value held = fl_nothing();
     const char *text = NULL;
     size_t bytes = 0;
-    char *name = NULL;
-    if (!val_field(files.as.list.items[index], "путь", &path) ||
-        !val_field(files.as.list.items[index], "содержимое", &content) || !val_text(content, &text, &bytes)) {
-      continue;
+    if (index > 0) {
+      fputs(", ", stdout);
     }
-    name = val_copy(path);
-    if (strcmp(name, "flang_runtime.h") == 0) {
-      const size_t needed = repl_defined(text, bytes, "FL_MAX_TAIL_ARGS");
-      if (needed > FL_MAX_TAIL_ARGS) {
-        repl_buf say;
-        buf_init(&say);
-        buf_put(&say, "во взаимной рекурсии сессии ");
-        buf_number(&say, needed);
-        buf_put(&say, " аргументов, а установленный рантайм собран на ");
-        buf_number(&say, (size_t)FL_MAX_TAIL_ARGS);
-        buf_put(&say, ": проверить такую сессию оболочка может, вычислить — нет");
-        *error = repl_dup(say.data, say.used);
-        buf_free(&say);
-        ok = false;
-      }
-      free(name);
-      continue;
-    }
-    if (strcmp(name, "flang_runtime.c") == 0 || strcmp(name, "Makefile") == 0) {
-      free(name);
-      continue;
-    }
-    {
-      char *full = repl_join(session->tmp_dir, name);
-      FILE *stream = fopen(full, "wb");
-      if (stream == NULL) {
-        repl_buf say;
-        buf_init(&say);
-        buf_put(&say, "не удалось записать ");
-        buf_put(&say, full);
-        *error = repl_dup(say.data, say.used);
-        buf_free(&say);
-        ok = false;
-      } else {
-        const size_t length = strlen(name);
-        fwrite(text, 1, bytes, stream);
-        fclose(stream);
-        repl_litter(session, name);
-        if (length > 2 && strcmp(name + length - 2, ".c") == 0) {
-          strings_say(&sources, full);
-        }
-      }
-      free(full);
-    }
-    free(name);
-  }
-  if (!ok) {
-    strings_free(&sources);
-    return false;
-  }
-
-  buf_init(&command);
-  buf_shell(&command, session->cc);
-  buf_put(&command, " -std=c99 -I");
-  buf_shell(&command, session->include_dir);
-  buf_put(&command, " -o ");
-  {
-    char *binary = repl_join(session->tmp_dir, "session");
-    buf_shell(&command, binary);
-    repl_litter(session, "session");
-    free(binary);
-  }
-  for (index = 0; index < sources.count; index += 1) {
-    buf_char(&command, ' ');
-    buf_shell(&command, sources.items[index]);
-  }
-  buf_char(&command, ' ');
-  {
-    char *archive = repl_join(session->lib_dir, REPL_ARCHIVE);
-    buf_shell(&command, archive);
-    free(archive);
-  }
-  buf_put(&command, " -lm > ");
-  {
-    char *log = repl_join(session->tmp_dir, "cc.log");
-    buf_shell(&command, log);
-    repl_litter(session, "cc.log");
-    free(log);
-  }
-  buf_put(&command, " 2>&1");
-  if (system(command.data) != 0) {
-    /* Отказ cc — это внятное сообщение, а не молчаливый пропуск: без него
-       человек видел бы «ничего не произошло» и не знал бы, где искать. */
-    char *log = repl_join(session->tmp_dir, "cc.log");
-    size_t bytes = 0;
-    char *text = repl_read_file(log, &bytes);
-    repl_buf say;
-    buf_init(&say);
-    buf_put(&say, "cc не собрал сессию (");
-    buf_put(&say, session->cc);
-    buf_put(&say, "):\n");
-    buf_put(&say, text == NULL ? "вывод компилятора не прочитан" : text);
-    *error = repl_dup(say.data, say.used);
-    buf_free(&say);
-    free(text);
-    free(log);
-    ok = false;
-  }
-  buf_free(&command);
-  strings_free(&sources);
-  return ok;
-}
-
-/** Запуск собранной сессии; печатает значение или диагностику вычисления. */
-static bool repl_run(repl_session *session, const char *function) {
-  repl_buf command;
-  char *binary = repl_join(session->tmp_dir, "session");
-  char *out = repl_join(session->tmp_dir, "out.txt");
-  char *err = repl_join(session->tmp_dir, "err.txt");
-  size_t bytes = 0;
-  char *text = NULL;
-  bool ok = true;
-  buf_init(&command);
-  buf_shell(&command, binary);
-  buf_char(&command, ' ');
-  buf_shell(&command, function);
-  buf_char(&command, ' ');
-  buf_shell(&command, session->steps);
-  buf_char(&command, ' ');
-  buf_shell(&command, session->depth);
-  buf_put(&command, " > ");
-  buf_shell(&command, out);
-  buf_put(&command, " 2> ");
-  buf_shell(&command, err);
-  repl_litter(session, "out.txt");
-  repl_litter(session, "err.txt");
-  if (system(command.data) == 0) {
-    text = repl_read_file(out, &bytes);
-    if (text != NULL && bytes > 0 && repl_depth_out != REPL_PLAIN) {
-      const size_t tail = text[bytes - 1] == '\n' ? 1 : 0;
-      repl_buf shown;
-      buf_init(&shown);
-      repl_ink(&shown, repl_depth_out, HUE_WHITE, true);
-      buf_add(&shown, text, bytes - tail);
-      repl_ink_off(&shown, repl_depth_out);
-      if (tail == 1) {
-        buf_char(&shown, '\n');
-      }
-      fwrite(shown.data, 1, shown.used, stdout);
-      buf_free(&shown);
-    } else if (text != NULL) {
+    if (val_field(fields.as.list.items[index], "ключ", &key) && val_text(key, &text, &bytes)) {
       fwrite(text, 1, bytes, stdout);
     }
-  } else {
-    /* Предел шагов приходит сюда обычным FLANG_RECURSION_LIMIT рантайма. Текст
-       не подменяем: в нём названы функция, лимит и глубина. */
-    text = repl_read_file(err, &bytes);
-    if (text != NULL && bytes > 0) {
-      fwrite(text, 1, bytes, stderr);
-    } else {
-      fputs("FLANG_INTERNAL: собранная сессия прекратила работу без сообщения\n", stderr);
+    fputs(": ", stdout);
+    if (val_field(fields.as.list.items[index], "значение", &held)) {
+      repl_show(held);
     }
-    ok = false;
   }
-  free(text);
-  buf_free(&command);
-  free(binary);
-  free(out);
-  free(err);
-  return ok;
+  putchar(close);
+}
+
+static void repl_show(fl_value value) {
+  fl_value inner = fl_nothing();
+  fl_value named = fl_nothing();
+  const char *text = NULL;
+  size_t bytes = 0;
+  size_t index = 0;
+  char number[FL_NUMBER_TEXT_MAX];
+  if (val_is(value, "Знач число") && val_field(value, "число", &inner) && inner.tag == FL_NUMBER) {
+    const bool negative_zero = inner.as.number == 0.0 && signbit(inner.as.number);
+    fwrite(negative_zero ? "-0" : number, 1, negative_zero ? 2 : fl_number_text(inner.as.number, number), stdout);
+  } else if (val_is(value, "Знач признак") && val_field(value, "признак", &inner) && inner.tag == FL_FLAG) {
+    fputs(inner.as.flag ? "да" : "нет", stdout);
+  } else if (val_is(value, "Знач строка") && val_field(value, "текст", &inner) && val_text(inner, &text, &bytes)) {
+    repl_show_text(text, bytes);
+  } else if (val_is(value, "Знач слово")) {
+    run_print_word(value);
+  } else if (val_is(value, "Знач список") && val_field(value, "элементы", &inner) && inner.tag == FL_LIST) {
+    fputs(inner.as.list.count == 0 ? "пустой список" : "[", stdout);
+    for (index = 0; index < inner.as.list.count; index += 1) {
+      fputs(index > 0 ? ", " : "", stdout);
+      repl_show(inner.as.list.items[index]);
+    }
+    fputs(inner.as.list.count == 0 ? "" : "]", stdout);
+  } else if (val_is(value, "Знач запись") && val_field(value, "поля", &inner)) {
+    repl_show_fields(inner, '{', '}');
+  } else if (val_is(value, "Знач вариант") && val_field(value, "имя", &named) && val_text(named, &text, &bytes) &&
+             val_field(value, "поля", &inner)) {
+    fwrite(text, 1, bytes, stdout);
+    if (inner.tag == FL_LIST && inner.as.list.count > 0) {
+      repl_show_fields(inner, '(', ')');
+    }
+  } else {
+    fputs("ничто", stdout);
+  }
+}
+
+static bool repl_run(const repl_session *session, fl_value program, const char *function) {
+  fl_value args[5];
+  fl_value result = fl_nothing();
+  fl_value field = fl_nothing();
+  const char *word = NULL;
+  const char *say = NULL;
+  size_t word_bytes = 0;
+  size_t say_bytes = 0;
+  const double steps = strtod(session->steps, NULL);
+  const double depth = strtod(session->depth, NULL);
+  args[0] = program;
+  args[1] = repl_value_say(function);
+  args[2] = repl_value_variant_fields("Значение записи", "поля", repl_value_list(NULL, 0));
+  args[3] = fl_number(steps > 0 ? steps : (double)FL_MAX_STEPS);
+  args[4] = fl_number(depth > 0 ? depth : (double)FL_MAX_DEPTH);
+  if (repl_call("Прогон связанного", args, 5, &result) != FL_OK) {
+    fputs("FLANG_INTERNAL: вычислитель прекратил работу без итога\n", stderr);
+    return false;
+  }
+  if (val_field(result, "удалось", &field) && field.tag == FL_FLAG && field.as.flag &&
+      val_field(result, "значение", &field)) {
+    repl_buf ink;
+    buf_init(&ink);
+    repl_ink(&ink, repl_depth_out, HUE_WHITE, true);
+    fwrite(ink.data == NULL ? "" : ink.data, 1, ink.used, stdout);
+    repl_show(field);
+    ink.used = 0;
+    repl_ink_off(&ink, repl_depth_out);
+    fwrite(ink.data == NULL ? "" : ink.data, 1, ink.used, stdout);
+    putchar('\n');
+    buf_free(&ink);
+    return true;
+  }
+  if (val_field(result, "код", &field)) {
+    val_text(field, &word, &word_bytes);
+  }
+  if (val_field(result, "сообщение", &field)) {
+    val_text(field, &say, &say_bytes);
+  }
+  fprintf(stderr, "%.*s: %.*s\n", (int)word_bytes, word == NULL ? "" : word, (int)say_bytes, say == NULL ? "" : say);
+  return false;
 }
 
 /* ────────────────────────── принятие ввода в сессию ─────────────────────── */
@@ -9073,7 +8646,6 @@ static bool repl_evaluate(repl_session *session, const char *text, size_t indent
   repl_strings proven;
   fl_value program = fl_nothing();
   char *tail = NULL;
-  char *error = NULL;
   bool has_program = false;
   bool ok = false;
   buf_init(&name);
@@ -9096,22 +8668,9 @@ static bool repl_evaluate(repl_session *session, const char *text, size_t indent
   repl_assemble(&view, tail, 1, 2 + indent, &source, &map);
   if (!repl_check(session, source.data, &session->imports, &bads, &program, &has_program, &proven)) {
     repl_print_bads(&bads, &map, NULL, NULL, 0, 0);
-  } else if (session->why_no_eval != NULL) {
-    /* Вычислять нечем — но проверка прошла, и сказать об этом надо: молчание
-       читалось бы как «ничего не случилось». Чем именно нечем, сказано один раз
-       при запуске, а не на каждой строке. */
-    char *word = repl_painted(repl_depth_out, HUE_GREEN, false, "проверено");
-    printf("%s\n", word);
-    free(word);
-    ok = true;
-  } else if (!repl_compile(session, program, &error)) {
-    char *code = repl_painted(repl_depth_err, HUE_RED, true, "FLANG_CLI");
-    fprintf(stderr, "%s: %s\n", code, error == NULL ? "сессия не собралась" : error);
-    free(code);
   } else {
-    ok = repl_run(session, name.data);
+    ok = repl_run(session, program, name.data);
   }
-  free(error);
   free(tail);
   buf_free(&name);
   buf_free(&source);
@@ -9828,7 +9387,7 @@ static bool repl_command(repl_session *session, const char *line, bool *quit) {
   if (strcmp(name.data, ".помощь") == 0 || strcmp(name.data, ".help") == 0 || strcmp(name.data, ".?") == 0) {
     printf("%s%s\n", REPL_HELP, REPL_HELP_2);
     printf("\n");
-    repl_say_build(session->why_no_eval);
+    repl_say_build();
   } else if (repl_syllogism_name(name.data, name.used)) {
     ok = repl_command_syllogism(session, argument);
   } else if (repl_text_name(name.data, name.used)) {
@@ -10061,12 +9620,8 @@ static bool repl_needs_more(repl_session *session, const char *text) {
 static repl_session *repl_open = NULL;
 
 static void repl_sweep(void) {
-  size_t index = 0;
   if (repl_open == NULL) {
     return;
-  }
-  for (index = 0; index < repl_open->litter.count; index += 1) {
-    remove(repl_open->litter.items[index]);
   }
   if (repl_open->tmp_dir != NULL) {
     rmdir(repl_open->tmp_dir);
@@ -10734,61 +10289,7 @@ static bool repl_make_tmp(repl_session *session) {
   return ok;
 }
 
-/**
- * Чем вычислять. Ищется честно: компилятор C — в PATH, каталоги установки — от
- * самого бинарника, и всё вместе переопределяется переменными окружения
- * FLANG_CC, FLANG_INCLUDE_DIR, FLANG_LIB_DIR.
- */
-static void repl_tools(repl_session *session, const char *self) {
-  char *self_dir = repl_self_dir(self);
-  const char *chosen = getenv("FLANG_CC");
-  repl_buf why;
-  buf_init(&why);
-  if (chosen != NULL && chosen[0] != '\0') {
-    session->cc = repl_in_path(chosen);
-  } else {
-    session->cc = repl_in_path("cc");
-    if (session->cc == NULL) {
-      session->cc = repl_in_path("gcc");
-    }
-    if (session->cc == NULL) {
-      session->cc = repl_in_path("clang");
-    }
-  }
-  session->include_dir = repl_find_dir("FLANG_INCLUDE_DIR", self_dir, "include", "flang_runtime.h");
-  session->lib_dir = repl_find_dir("FLANG_LIB_DIR", self_dir, "lib", REPL_ARCHIVE);
-  if (session->cc == NULL) {
-    buf_put(&why, "компилятора C нет (ни $FLANG_CC, ни cc, ни gcc, ни clang в PATH)");
-  }
-  if (session->include_dir == NULL) {
-    if (why.used > 0) {
-      buf_put(&why, "; ");
-    }
-    buf_put(&why, "не найден flang_runtime.h ($FLANG_INCLUDE_DIR, ../include или каталог самого бинарника)");
-  }
-  if (session->lib_dir == NULL) {
-    if (why.used > 0) {
-      buf_put(&why, "; ");
-    }
-    buf_put(&why, "не найден " REPL_ARCHIVE " ($FLANG_LIB_DIR, ../lib или каталог самого бинарника)");
-  }
-  if (why.used == 0 && !repl_make_tmp(session)) {
-    buf_put(&why, "не создан временный каталог (см. $TMPDIR)");
-  }
-  if (why.used > 0) {
-    repl_buf say;
-    buf_init(&say);
-    buf_put(&say, "вычислять нечем: ");
-    buf_put(&say, why.data);
-    buf_put(&say, ".\nРазбор, типы и завершаемость проверяются по-прежнему; выражение отвечает «проверено».");
-    session->why_no_eval = repl_dup(say.data, say.used);
-    buf_free(&say);
-  }
-  buf_free(&why);
-  free(self_dir);
-}
-
-static void repl_open_session(repl_session *session, const char *self) {
+static void repl_open_session(repl_session *session) {
   char buffer[4096];
   session->base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   session->file = repl_resolve(session->base, REPL_FILE);
@@ -10798,18 +10299,12 @@ static void repl_open_session(repl_session *session, const char *self) {
   decls_init(&session->decls);
   strings_init(&session->known);
   strings_init(&session->total);
-  strings_init(&session->litter);
   strings_init(&session->claims_proved);
   strings_init(&session->claims_open);
   session->syllogisms_open = false;
-  session->cc = NULL;
-  session->include_dir = NULL;
-  session->lib_dir = NULL;
   session->tmp_dir = NULL;
-  session->why_no_eval = NULL;
   session->steps = repl_say("0");
   session->depth = repl_say("0");
-  repl_tools(session, self);
 }
 
 static void repl_close_session(repl_session *session) {
@@ -10822,14 +10317,9 @@ static void repl_close_session(repl_session *session) {
   decls_free(&session->decls);
   strings_free(&session->known);
   strings_free(&session->total);
-  strings_free(&session->litter);
   strings_free(&session->claims_proved);
   strings_free(&session->claims_open);
-  free(session->cc);
-  free(session->include_dir);
-  free(session->lib_dir);
   free(session->tmp_dir);
-  free(session->why_no_eval);
   free(session->steps);
   free(session->depth);
 }
@@ -17001,7 +16491,7 @@ static void repl_greet(const char *text) {
  * `flang repl < сценарий.flang` терял бы последнее объявление файла, если автор
  * не оставил в конце пустую строку.
  */
-static int repl_loop(int argc, char **argv, const char *self) {
+static int repl_loop(int argc, char **argv) {
   repl_session session;
   repl_buf buffer;
   repl_buf line;
@@ -17013,7 +16503,7 @@ static int repl_loop(int argc, char **argv, const char *self) {
   bool quit = false;
   int index = 0;
 
-  repl_open_session(&session, self);
+  repl_open_session(&session);
   repl_open = &session;
   atexit(repl_sweep);
   repl_paint_init();
@@ -17038,12 +16528,9 @@ static int repl_loop(int argc, char **argv, const char *self) {
   sigaction(SIGINT, &action, NULL);
 
   /* Приглашения печатаются только человеку: под конвейером они попали бы в
-     вывод и испортили его тому, кто читает результат сценария. Приветствие
-     выбирается по тому, чем оболочка на самом деле располагает: обещать
-     вычисление, а следующей строкой признаваться, что вычислять нечем, значит
-     соврать первой строкой — её и прочтут. */
+     вывод и испортили его тому, кто читает результат сценария. */
   if (interactive) {
-    repl_greet(session.why_no_eval == NULL ? REPL_GREETING : REPL_GREETING_NO_EVAL);
+    repl_greet(REPL_GREETING);
     /* Вторая строка — про ЭТУ сборку и ЭТОТ терминал. Она и разрешает спор
        «почему у меня стрелки печатаются знаками»: поставленный двоичный, где
        оболочка строку не правит, такой строки не печатает вовсе, а тот, где
@@ -17064,11 +16551,6 @@ static int repl_loop(int argc, char **argv, const char *self) {
       buf_free(&say);
     }
     repl_history_load();
-  }
-  /* Про отсутствие вычислителя — один раз и в stderr: stdout принадлежит
-     результату сценария. */
-  if (session.why_no_eval != NULL) {
-    fprintf(stderr, "%s\n", session.why_no_eval);
   }
   if (file != NULL && !repl_command_load(&session, file)) {
     failed = true;
@@ -25575,7 +25057,7 @@ int fl_human_main(int argc, char **argv, const char *self) {
   } else if (argc <= 1) {
     /* Сюда приходит голая команда с терминала: прогонщик уступил дорогу
        человеку, а человеку без доводов нужна оболочка. */
-    code = repl_loop(0, argv, self);
+    code = repl_loop(0, argv);
   } else if (strcmp(command, "check") == 0) {
     human_memory_default(command);
     code = check_command(argc, argv);
@@ -25612,7 +25094,7 @@ int fl_human_main(int argc, char **argv, const char *self) {
   } else if (strcmp(command, "--машина") == 0 || strcmp(command, "--machine") == 0) {
     code = machine_command(argc, argv);
   } else if (strcmp(command, "repl") == 0) {
-    code = repl_loop(argc - 1, argv + 1, self);
+    code = repl_loop(argc - 1, argv + 1);
   } else {
     const char *elsewhere = human_elsewhere(command);
     if (elsewhere != NULL) {

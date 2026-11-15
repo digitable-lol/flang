@@ -695,7 +695,7 @@ The exit code is `2`.
 The table is collected from the sources of the compiler and its runtime: it
 has every code they raise. A dash in the third column means the message text is
 put together where it is raised. The table also picks up the names of
-environment variables (`FLANG_CC`, `FLANG_JOBS` and others): they start with
+environment variables (`FLANG_JOBS`, `FLANG_TMP` and others): they start with
 the same prefix.
 
 A `FLANG_*` code is part of the contract with whoever reads the compiler's
@@ -731,7 +731,6 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_CATEGORY_STEP` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_TYPE` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
-| `FLANG_CC` | `flang_repl.c` | — |
 | `FLANG_CHECKER` | `flang_repl.c` | — |
 | `FLANG_CLI` | `flang_repl.c`, `cli.flang`, `repl.flang` | — |
 | `FLANG_COMPOSE_MISMATCH` | `compiler.flang` | — |
@@ -755,7 +754,6 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_IMPORT_CYCLE` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
 | `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
-| `FLANG_INCLUDE_DIR` | `flang_repl.c` | — |
 | `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
@@ -793,7 +791,6 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_KERNEL_STAGES` | `flang_repl.c` | — |
 | `FLANG_LANG` | `flang_repl.c` | — |
 | `FLANG_LEX` | `lexer.flang` | — |
-| `FLANG_LIB_DIR` | `flang_repl.c` | — |
 | `FLANG_LINK_CHANGED` | `flang_repl.c` | — |
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
 | `FLANG_LINK_FETCH` | `flang_repl.c` | — |

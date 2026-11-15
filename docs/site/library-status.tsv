@@ -1982,6 +1982,30 @@ flang/stdlib/kdf.flang		Кусок вывода	кусок — ровно три
 flang/stdlib/kdf.flang		Кусок вывода	один виток — это ровно одна подпись соли с номером	доказано
 flang/stdlib/kdf.flang		Кусок вывода	один виток даёт ровно тридцать два байта	доказано
 flang/stdlib/kdf.flang		Вывод ключа	ключ ровно заказанной длины	сетка
+flang/stdlib/list-facts.flang	550ecf190837832e4884d65ad0519c4cf6f178e714b56ea4d64d061ae66b19fd	Ноль точно		доказано композицией
+flang/stdlib/list-facts.flang		Один точно		доказано композицией
+flang/stdlib/list-facts.flang		Звеньев		доказано структурой
+flang/stdlib/list-facts.flang		Сцепить		доказано структурой
+flang/stdlib/list-facts.flang		Дописать		доказано структурой
+flang/stdlib/list-facts.flang		Развернуть ряд		доказано структурой
+flang/stdlib/list-facts.flang		Сплющить ряды		доказано структурой
+flang/stdlib/list-facts.flang		Длины рядов		доказано структурой
+flang/stdlib/list-facts.flang		Точная сумма		доказано структурой
+flang/stdlib/list-facts.flang		Накопить сумму		доказано структурой
+flang/stdlib/list-facts.flang		Встречается		доказано структурой
+flang/stdlib/list-facts.flang		Вклад		доказано композицией
+flang/stdlib/list-facts.flang		Сколько		доказано структурой
+flang/stdlib/list-facts.flang		Поставить		доказано структурой
+flang/stdlib/list-facts.flang		Упорядочить вставками		доказано структурой
+flang/stdlib/list-facts.flang		Под всеми		доказано структурой
+flang/stdlib/list-facts.flang		Звеньев	у пустого списка длина ноль	доказано
+flang/stdlib/list-facts.flang		Сцепить	длины складываются	доказано
+flang/stdlib/list-facts.flang		Дописать	на один длиннее	доказано
+flang/stdlib/list-facts.flang		Развернуть ряд	разворот сохраняет длину	доказано
+flang/stdlib/list-facts.flang		Сплющить ряды	длина сплющенного есть сумма длин рядов	доказано
+flang/stdlib/list-facts.flang		Накопить сумму	накопитель выносится из свёртки	доказано
+flang/stdlib/list-facts.flang		Поставить	вставка удлиняет на один	доказано
+flang/stdlib/list-facts.flang		Упорядочить вставками	упорядочение сохраняет длину	доказано
 flang/stdlib/lists.flang	c599d1c99bd196e127cdb99fc9ee5abb4ad372b1cc2b5786877eed78f448062e	Длина		доказано композицией
 flang/stdlib/lists.flang		Приписать в начало		доказано композицией
 flang/stdlib/lists.flang		Соединить списки		доказано композицией
@@ -3586,7 +3610,7 @@ flang/stdlib/sha256.flang		Цифра 16	цифра — ровно один зн
 flang/stdlib/sha256.flang		Слово шестнадцатеричным	слово печатается ровно восемью знаками	сетка
 flang/stdlib/sha256.flang		Свод шестнадцатеричным	хеш печатается ровно шестьюдесятью четырьмя знаками	сетка
 flang/stdlib/sha256.flang		Хеш байтов	хеш — ровно шестьдесят четыре знака	доказано
-flang/stdlib/sqlite.flang	ae002449c039f9b00aae01c678a83f841c6a4ce3b4d3d942901ba308193b0dfb	Отбросить октеты		доказано структурой
+flang/stdlib/sqlite.flang	4d7ff5868f0b01a83af266cefe2dae4b654b86bcf8764732ba537927cc1a7317	Отбросить октеты		доказано структурой
 flang/stdlib/sqlite.flang		Взять октеты		доказано структурой
 flang/stdlib/sqlite.flang		Кусок октетов		доказано постоянным шагом
 flang/stdlib/sqlite.flang		Шаг взятия		доказано композицией

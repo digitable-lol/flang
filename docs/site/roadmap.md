@@ -12,7 +12,7 @@ a number that show whether it holds. There are no dates.
 ### 1. The compiler builds from its own sources, and the builds match
 
 The flang compiler is written in flang. You build it from the sources and get
-the same file, byte for byte. Then the published compiler can be trusted as
+exactly the same file, down to the last byte. Then the published compiler can be trusted as
 much as its sources.
 
 - **Done.** An automatic check builds the compiler twice and compares the

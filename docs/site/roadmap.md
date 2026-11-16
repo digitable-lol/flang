@@ -12,8 +12,8 @@ a number that show whether it holds. There are no dates.
 ### 1. The compiler builds from its own sources, and the builds match
 
 The flang compiler is written in flang. You build it from the sources and get
-exactly the same file, down to the last byte. Then the published compiler can be trusted as
-much as its sources.
+exactly the same file, down to the last byte. Then the published compiler can
+be trusted as much as its sources.
 
 - **Done.** An automatic check builds the compiler twice and compares the
   results. The latest runs in a row matched.
@@ -25,7 +25,7 @@ much as its sources.
 After any change the compiler rebuilds itself. While that is slow, fixes ship
 less often.
 
-- **Done.** A full rebuild takes from 80 minutes to two and a half hours on
+- **Done.** A full rebuild takes from 76 minutes to almost three hours on
   different machines.
 - **Missing.** The goal is under an hour.
 

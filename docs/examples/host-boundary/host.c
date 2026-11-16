@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "privratnik.h"
+#include "gatekeeper.h"
 
 #define ZAPROS "запрос "
 
@@ -74,7 +74,7 @@ static int flag_field(fl_ctx *ctx, fl_value record, const char *name, int *out,
 /*
  * ОДИН ВИТОК: событие → решение → исполнение.
  *
- * Зовётся `privratnik_enter`, а НЕ `privratnik_call`. Разница объявлена в
+ * Зовётся `gatekeeper_enter`, а НЕ `gatekeeper_call`. Разница объявлена в
  * напечатанном заголовке и она здесь по существу: значения пришли снаружи, от
  * человека со стандартного ввода, и объявленные типы обязаны быть сверены до
  * вызова. Доказательство завершения стоит на типе и вместе с типом теряется.
@@ -86,14 +86,14 @@ static int one_turn(fl_ctx *ctx, struct gate *state, fl_value event, double *cod
   fl_value decision = fl_nothing();
   fl_value inner = fl_nothing();
 
-  if (privratnik_sozdat_vrata(ctx, fl_number(state->budget), fl_number(state->capacity),
+  if (gatekeeper_sozdat_vrata(ctx, fl_number(state->budget), fl_number(state->capacity),
                               fl_number(state->level), fl_number(state->passed),
                               fl_number(state->refused), &gate, error) != FL_OK) {
     return 0;
   }
   args[0] = gate;
   args[1] = event;
-  if (privratnik_enter(ctx, "Шаг привратника", args, 2, &decision, error) != FL_OK) {
+  if (gatekeeper_enter(ctx, "Шаг привратника", args, 2, &decision, error) != FL_OK) {
     return 0;
   }
 
@@ -156,7 +156,7 @@ int main(void) {
     turns += 1;
 
     if (strcmp(line, "такт") == 0) {
-      if (privratnik_variant_takt(&ctx, &event, &error) != FL_OK) {
+      if (gatekeeper_variant_takt(&ctx, &event, &error) != FL_OK) {
         fprintf(stderr, "хозяин: %s: %s\n", error.code, error.message);
         return 1;
       }
@@ -168,7 +168,7 @@ int main(void) {
         printf("хозяин: не понял событие «%s»\n", line);
         continue;
       }
-      if (privratnik_variant_zapros(&ctx, fl_number(need), &event, &error) != FL_OK) {
+      if (gatekeeper_variant_zapros(&ctx, fl_number(need), &event, &error) != FL_OK) {
         fprintf(stderr, "хозяин: %s: %s\n", error.code, error.message);
         return 1;
       }
@@ -209,7 +209,7 @@ int main(void) {
     state.budget = state.capacity + 1.0;
     printf("хозяин: нарочно порчу довод — запас %g при ёмкости %g\n", state.budget,
            state.capacity);
-    if (privratnik_variant_zapros(&ctx, fl_number(1.0), &event, &error) != FL_OK) {
+    if (gatekeeper_variant_zapros(&ctx, fl_number(1.0), &event, &error) != FL_OK) {
       fprintf(stderr, "хозяин: %s: %s\n", error.code, error.message);
       return 1;
     }

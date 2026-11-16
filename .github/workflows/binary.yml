@@ -1951,6 +1951,19 @@ jobs:
           fi
       - name: Typing holes have probes, and the probes still catch
         run: bootstrap/flang run-script typing-holes:check
+      # Проба, которая ждёт отказа, сверяет ответ на файл целиком: отказ одной
+      # функции прячет то, что соседняя в том же файле принимается (issue 491).
+      # Сторож требует одну отвергаемую функцию на файл либо контроль рядом —
+      # тот же файл без неё, проходящий проверку. Подлог убирает отсрочку у
+      # файла с двумя отвергаемыми функциями, и сторож обязан покраснеть.
+      - name: Single refusal guard goes red on forgery
+        run: |
+          if ! bootstrap/flang io scripts/guards/typing-holes-single-refusal.fscript --plan Подлог --timeout 600000; then
+            echo "сторож одного отказа на файл промолчал на подлоге — проверять им нечего" >&2
+            exit 1
+          fi
+      - name: A refusing typing-holes probe holds one refused function
+        run: bootstrap/flang run-script typing-holes-single-refusal:check
       # Адрес привязки «Принять соединение» (issue 475): без FLANG_LISTEN_ADDRESS
       # порт слушается только на 127.0.0.1, с 0.0.0.0 — на всех адресах, негодный
       # адрес отказан. Что слушается, читает ss; подлог пускает первого слушателя на

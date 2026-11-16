@@ -1,11 +1,11 @@
 # Каталог примеров
 
-Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 355 --> 355 файлов в
+Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 361 --> 361 файлов в
 двадцати семи наборах и одном полноразмерном проекте. Второго каталога с примерами
 в репозитории нет.
 
 Число пересчитывается одной командой:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 355 --> 355.
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 361 --> 361.
 
 ## Наборы
 

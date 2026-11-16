@@ -11,6 +11,63 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.40 — 16 ноября 2026
+
+**repl считает выражения в любой установке; функцию можно вызвать из консоли без JSON; постусловие, зовущее свою функцию без убывания, отвергается**
+
+- chore(release): sha256 of the 0.7.40 archive (`f9b4168`)
+- chore(release): version 0.7.40 and its release notes (`958453a`)
+- chore(seed): the seed carries the shell with the built-in evaluator (`3c0fbd1`)
+- feat(repl): evaluate expressions with the built-in evaluator (`0d04683`)
+- fix(fixtures): the contract circles go through two functions (`6750edd`)
+- fix(records): three corpus programs are refused by the self-call rule (`8e7148b`)
+- fix(holes): rows 30-32 and 45 are closed by the batch 13 seed (`2118b26`)
+- chore(seed): batch 13 seed printed by itself reaches a fixed point (`d8259e6`)
+- chore(seed): print batch 13 seed from ac6b0c3dd (`9d71795`)
+- refactor(checker): the expanded-text reading fits the code ceiling (`b940557`)
+- fix(run): the console call hands the tables to the word reading (`1993af2`)
+- refactor(stdlib): postconditions call their own function only on descent (`ecebdd1`)
+- fix(entry): printed programs check words and exact fractions (`c20ce56`)
+- fix(run): word arguments inside lists and records (`33f88d8`)
+- docs(adr): a postcondition's self-call needs descent, cycles stay open (`f527fb3`)
+- chore(ledgers): the share and task ledgers follow print batch 13 (`79d07f8`)
+- feat(record): a file with sugar is recorded by its expanded text (`6c21e4e`)
+- fix(totality): a postcondition's self-call joins the termination graph (`dfa2bdb`)
+- chore(runtime): the C runtime drops the comment over the worker ticks (`b40d260`)
+- fix(elixir): the printed run line reads piped stdin as bytes (`ba40d20`)
+- feat(run): a function is called from the console without JSON (`9ff97eb`)
+- fix(host): a failed mount of the tab archives is tried again (`989a964`)
+- feat(host): the tab host shows pages, keeps files and runs programs (`f8cf06d`)
+- feat(io): the dictionary gains the order to show a page as a tree (`a09c81d`)
+- fix(emit-js): a function named Then is not exported as then (`2b7ce46`)
+- feat(translation): the reference plan runs under a per-witness budget (`76970b9`)
+- fix(reference): the reference follows the language on three points (`ea072fe`)
+- feat(stdlib): six claims are split into halves the kernel can take (`e25ef24`)
+- feat(stdlib): eight modules state facts on functions that had none (`53d9541`)
+- feat(stdlib): bignum states eleven facts the kernel proves (`8138e5a`)
+- test(probes): the gap table next to lean is held by twenty probes (`1c2a0cc`)
+- feat(proof): the lean parity set grows to sixty tasks (`e89db7f`)
+- feat(stdlib): list facts over an exact length, proved by the kernel (`ffa25f7`)
+- style(site): the playground scripts and the pages job carry no comments (`4d6032f`)
+- test(site): slow known blocks are skipped, a command waits 120 seconds (`7cc7cca`)
+- feat(playground): the tab host runs check, test and run commands (`1b1c04e`)
+- feat(lean): the model reads a closed goal and a goal that is a premise (`90ee601`)
+- feat(lean): the reference evaluator reads forallIn as a fold (`c6c16ee`)
+- feat(lean): the model reads the word yes, so yes is true in it (`7f3bff4`)
+- feat(lean): the first laws of the model interpretation of goals (`fda6dde`)
+- feat(lean): read a base premise of a multi-argument function by path (`98515a3`)
+- feat(lean): the model reads the identity of lengths on every path (`8ef8aba`)
+- refactor(checker): one body-declaration table, one bracket matcher (`3a501fb`)
+- style(checker): new checker comments leave, the marks follow the rebase (`1cc134f`)
+- feat(checker): both checkers run on the records of examples and library (`17a5746`)
+- fix(checker): the C checker refuses three records the Lean one refused (`358f27b`)
+- feat(proof): the answer VERIFIED of the Lean checker is a theorem (`bc4b11d`)
+- fix(checker): a list of the own type is not a recursive field (`7784fec`)
+- fix(elixir): the runner reads stdin as bytes on OTP 26 and 27 too (`148b93e`)
+- chore(release): the tap serves flang-package 0.7.35, releases page (`ba7ca77`)
+
+Ещё 55 правок языка снаружи не меняют.
+
 ## 0.7.35 — 13 ноября 2026
 
 **В 0.7.34 были дыры состоятельности, 15 закрыто; оболочка снова считает выражения; emit не печатает опровергнутое**

@@ -6,6 +6,45 @@ An entry has four lists: **Soundness fixes**, **Breaking changes**, **Improvemen
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.40 — 16 November 2026
+
+**`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function without descent is refused.**
+
+### Soundness fixes
+
+- [repl] Prebuilt Linux packages evaluate expressions instead of only checking them: the shell calls the built-in evaluator, no cc, lib/ or include/
+- [types] `flang run` takes a fixed-width word inside a list or record from a number or a digit string (typing hole 30)
+- [emit] Printed C, Go, Rust, Java, C# and Elixir check fixed-width words and exact fractions at entry (holes 31 and 32)
+- [totality] A postcondition that calls its own function without descent is refused with FLANG_NOT_TOTAL (hole 45, ADR-0240)
+- [emit-js] A function named Then is printed like other reserved names, so the module is no longer a thenable
+- [elixir] Piped non-ASCII input works on OTP 26 and 27: the printed run line reads stdin as bytes
+- [checker] The C checker refuses three kinds of broken record the Lean checker refused: totality line order, call line, discharge without a goal
+- [checker] A variant holding a list of its own type is not a recursive field; the honest toml and redis records are accepted
+- [playground] A failed mount of the tab archives is retried on the next order instead of until reload
+- [reference] The reference evaluates record fields in source order, a zero percentage is plus zero, and "to number or trouble" is executed
+
+### Breaking changes
+
+- A total function whose postcondition calls itself without descent is refused with FLANG_NOT_TOTAL (was: accepted). Write such a claim as a free statement
+- The proof record of a file with classes, interfaces or loops is built over the expanded text and carries it; the record format fingerprint changed (ADR-0238)
+- FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read and are withdrawn
+- The browser tab no longer refuses file orders and process runs: it has a file store and runs programs
+
+### Improvements
+
+- [run] `flang run file function 3 name=value` calls a function with console words; a missing one is asked on a terminal; `--args` is unchanged (ADR-0230)
+- [io] The order "show a page" builds a node tree in the tab; the tab keeps files and runs `.wasm` (ADR-0224)
+- [playground] Run and Tests buttons, six starter programs, the compiler version; every whole program on the site opens in the playground
+- [stdlib] New proved postconditions: bignum 11, ecdsa 12, registry 13, text-decoding 15 and five more modules; the List facts module proves 11 of 11
+- [stdlib] Six claims are split into halves the kernel proves: higher-order, samples, sqlite
+- [Lean model] The model reads a closed goal, a premise goal, `for all … in` and the identity of lengths; outside the model 105 -> 93 blocks
+- [checker] The VERIFIED answer of the Lean checker is a theorem; both checkers run on the records of examples and the library
+- [translation] Translation validation computes the reference under a per-witness budget: one slow function no longer costs the whole file
+
+### Known issues
+
+- Two functions whose postconditions call each other without descent pass the termination check (typing hole 46, ADR-0240)
+
 ## 0.7.35 — 13 November 2026
 
 **Fixes 15 soundness bugs in the proof kernel and type checker. 0.7.34 can report false statements as proved; upgrading is recommended.**

@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.35",
-  "latest": "0.7.35",
+  "declared": "0.7.40",
+  "latest": "0.7.40",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -13,6 +13,218 @@
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.40",
+      "tag": "v0.7.40",
+      "date": "2026-11-16",
+      "human": "16 ноября 2026",
+      "commit": "f9b4168",
+      "title": "repl считает выражения в любой установке; функцию можно вызвать из консоли без JSON; постусловие, зовущее свою функцию без убывания, отвергается",
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.40 archive",
+          "commit": "f9b4168"
+        },
+        {
+          "text": "chore(release): version 0.7.40 and its release notes",
+          "commit": "958453a"
+        },
+        {
+          "text": "chore(seed): the seed carries the shell with the built-in evaluator",
+          "commit": "3c0fbd1"
+        },
+        {
+          "text": "feat(repl): evaluate expressions with the built-in evaluator",
+          "commit": "0d04683"
+        },
+        {
+          "text": "fix(fixtures): the contract circles go through two functions",
+          "commit": "6750edd"
+        },
+        {
+          "text": "fix(records): three corpus programs are refused by the self-call rule",
+          "commit": "8e7148b"
+        },
+        {
+          "text": "fix(holes): rows 30-32 and 45 are closed by the batch 13 seed",
+          "commit": "2118b26"
+        },
+        {
+          "text": "chore(seed): batch 13 seed printed by itself reaches a fixed point",
+          "commit": "d8259e6"
+        },
+        {
+          "text": "chore(seed): print batch 13 seed from ac6b0c3dd",
+          "commit": "9d71795"
+        },
+        {
+          "text": "refactor(checker): the expanded-text reading fits the code ceiling",
+          "commit": "b940557"
+        },
+        {
+          "text": "fix(run): the console call hands the tables to the word reading",
+          "commit": "1993af2"
+        },
+        {
+          "text": "refactor(stdlib): postconditions call their own function only on descent",
+          "commit": "ecebdd1"
+        },
+        {
+          "text": "fix(entry): printed programs check words and exact fractions",
+          "commit": "c20ce56"
+        },
+        {
+          "text": "fix(run): word arguments inside lists and records",
+          "commit": "33f88d8"
+        },
+        {
+          "text": "docs(adr): a postcondition's self-call needs descent, cycles stay open",
+          "commit": "f527fb3"
+        },
+        {
+          "text": "chore(ledgers): the share and task ledgers follow print batch 13",
+          "commit": "79d07f8"
+        },
+        {
+          "text": "feat(record): a file with sugar is recorded by its expanded text",
+          "commit": "6c21e4e"
+        },
+        {
+          "text": "fix(totality): a postcondition's self-call joins the termination graph",
+          "commit": "dfa2bdb"
+        },
+        {
+          "text": "chore(runtime): the C runtime drops the comment over the worker ticks",
+          "commit": "b40d260"
+        },
+        {
+          "text": "fix(elixir): the printed run line reads piped stdin as bytes",
+          "commit": "ba40d20"
+        },
+        {
+          "text": "feat(run): a function is called from the console without JSON",
+          "commit": "9ff97eb"
+        },
+        {
+          "text": "fix(host): a failed mount of the tab archives is tried again",
+          "commit": "989a964"
+        },
+        {
+          "text": "feat(host): the tab host shows pages, keeps files and runs programs",
+          "commit": "f8cf06d"
+        },
+        {
+          "text": "feat(io): the dictionary gains the order to show a page as a tree",
+          "commit": "a09c81d"
+        },
+        {
+          "text": "fix(emit-js): a function named Then is not exported as then",
+          "commit": "2b7ce46"
+        },
+        {
+          "text": "feat(translation): the reference plan runs under a per-witness budget",
+          "commit": "76970b9"
+        },
+        {
+          "text": "fix(reference): the reference follows the language on three points",
+          "commit": "ea072fe"
+        },
+        {
+          "text": "feat(stdlib): six claims are split into halves the kernel can take",
+          "commit": "e25ef24"
+        },
+        {
+          "text": "feat(stdlib): eight modules state facts on functions that had none",
+          "commit": "53d9541"
+        },
+        {
+          "text": "feat(stdlib): bignum states eleven facts the kernel proves",
+          "commit": "8138e5a"
+        },
+        {
+          "text": "test(probes): the gap table next to lean is held by twenty probes",
+          "commit": "1c2a0cc"
+        },
+        {
+          "text": "feat(proof): the lean parity set grows to sixty tasks",
+          "commit": "e89db7f"
+        },
+        {
+          "text": "feat(stdlib): list facts over an exact length, proved by the kernel",
+          "commit": "ffa25f7"
+        },
+        {
+          "text": "style(site): the playground scripts and the pages job carry no comments",
+          "commit": "4d6032f"
+        },
+        {
+          "text": "test(site): slow known blocks are skipped, a command waits 120 seconds",
+          "commit": "7cc7cca"
+        },
+        {
+          "text": "feat(playground): the tab host runs check, test and run commands",
+          "commit": "1b1c04e"
+        },
+        {
+          "text": "feat(lean): the model reads a closed goal and a goal that is a premise",
+          "commit": "90ee601"
+        },
+        {
+          "text": "feat(lean): the reference evaluator reads forallIn as a fold",
+          "commit": "c6c16ee"
+        },
+        {
+          "text": "feat(lean): the model reads the word yes, so yes is true in it",
+          "commit": "7f3bff4"
+        },
+        {
+          "text": "feat(lean): the first laws of the model interpretation of goals",
+          "commit": "fda6dde"
+        },
+        {
+          "text": "feat(lean): read a base premise of a multi-argument function by path",
+          "commit": "98515a3"
+        },
+        {
+          "text": "feat(lean): the model reads the identity of lengths on every path",
+          "commit": "8ef8aba"
+        },
+        {
+          "text": "refactor(checker): one body-declaration table, one bracket matcher",
+          "commit": "3a501fb"
+        },
+        {
+          "text": "style(checker): new checker comments leave, the marks follow the rebase",
+          "commit": "1cc134f"
+        },
+        {
+          "text": "feat(checker): both checkers run on the records of examples and library",
+          "commit": "17a5746"
+        },
+        {
+          "text": "fix(checker): the C checker refuses three records the Lean one refused",
+          "commit": "358f27b"
+        },
+        {
+          "text": "feat(proof): the answer VERIFIED of the Lean checker is a theorem",
+          "commit": "bc4b11d"
+        },
+        {
+          "text": "fix(checker): a list of the own type is not a recursive field",
+          "commit": "7784fec"
+        },
+        {
+          "text": "fix(elixir): the runner reads stdin as bytes on OTP 26 and 27 too",
+          "commit": "148b93e"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.35, releases page",
+          "commit": "ba7ca77"
+        }
+      ],
+      "hidden": 55
+    },
     {
       "version": "0.7.35",
       "tag": "v0.7.35",

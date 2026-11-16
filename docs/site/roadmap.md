@@ -1,51 +1,114 @@
-# The road to 1.0
+# What is left before 1.0
 
-The current release is {{выпуск.версия}}. Release 1.0 is a language that can be
-handed to people. Seven conditions must hold for it. What has already shipped
-is on the [Releases](releases.html) page.
+This page answers one question: what flang still lacks for release 1.0. The
+current release is {{выпуск.версия}}. What has already shipped is on the
+[Releases](releases.html) page.
+
+Release 1.0 ships when seven conditions hold. Each condition has a command and
+a number that show whether it holds. There are no dates.
 
 ## Seven conditions
 
-| No. | Condition | What it means |
+### 1. The compiler builds from its own sources, and the builds match
+
+The flang compiler is written in flang. You build it from the sources and get
+the same file, byte for byte. Then the published compiler can be trusted as
+much as its sources.
+
+- **Done.** An automatic check builds the compiler twice and compares the
+  results. The latest runs in a row matched.
+- **Missing.** One such check takes four to six hours. The match must hold on
+  every change to the compiler.
+
+### 2. A compiler fix reaches you quickly
+
+After any change the compiler rebuilds itself. While that is slow, fixes ship
+less often.
+
+- **Done.** A full rebuild takes from 80 minutes to two and a half hours on
+  different machines.
+- **Missing.** The goal is under an hour.
+
+### 3. The word "proved" can be trusted
+
+When `flang check` says "proved", you rely on the proof checking inside the
+compiler. The condition requires a proof that it accepts no false statement.
+
+- **Done.** Every inference rule has a theorem in Lean 4. A separate program,
+  `checker`, re-checks proof records without the compiler.
+- **Missing.** The formal model covers 510 of the 603 proofs in the compiler's
+  own records. There is no theorem about the code of `checker` yet.
+
+### 4. No known type-checking bugs
+
+A program that passed `flang check` must not break its declared types. Every
+type-checking bug found is written into a list. Each has a test that notices
+its return.
+
+- **Done.** 46 such bugs were found and 45 are fixed. A program generator looks
+  for new ones every day.
+- **Missing.** One bug is open: two functions whose postconditions call each
+  other pass the termination check. There is no proof that the list is
+  complete.
+
+### 5. Error codes and the proof record format do not change unnoticed
+
+Your scripts and CI may parse the `FLANG_*` codes and proof records. The
+condition requires that they do not change without notice.
+
+- **Done.** Every code is in a table with a status, and a stable code cannot
+  disappear. The record format has a version number.
+- **Missing.** The text of an error message is not stable. The format version
+  has never changed, so changing it is untested in practice.
+
+### 6. Someone else's module is imported with one line
+
+A module is named by its address in the import line:
+`использует «Логика» из "https://…/logic.flang"`. The first `flang check`
+downloads the module and writes its text into `flang.lock`. Later builds need
+no network and give the same result.
+
+- **Done.** This works today: see [Modules and packages](packages.html).
+- **Missing.** Author signatures. The `flang.lock` file confirms that the
+  module did not change, but does not say who wrote it.
+
+### 8. The generated C code does what is proved about the source
+
+A proof is about the flang source. The command `flang emit --target c` creates
+C code from it. The condition requires checking every function of that code
+against the formal description of the language in Lean.
+
+- **Done.** On the base set of 56 example files all 167 functions are proved
+  for every input.
+- **Missing.** Across all examples in the repository 1332 of 9375 functions
+  are proved. `flang emit` does not run this check itself. A fully proved code
+  generator is outside 1.0.
+
+There is no condition number 7: it was removed, and the other numbers stay as
+they were.
+
+## Release plan
+
+This is a plan, and it may change.
+
+| Release | Meaning | What goes in |
 |---|---|---|
-| 1 | Reproducible self-build | the compiler builds itself, and two builds of one tree are byte-identical |
-| 2 | Fast compiler rebuild | a change to the compiler reaches the binary in a time that does not slow the work |
-| 3 | A kernel proved sound | there is a proof that the checker accepts nothing false, not only probes that reject falsehoods |
-| 4 | No known typing holes | every known hole is written down and closed by a probe |
-| 5 | Stable formats | the `FLANG_*` refusal codes and the proof record format do not change silently |
-| 6 | Packages and modules | an outsider imports a module with one line, and the build is reproducible |
-| 8 | The printed C does what is proved about the source | every function of a printed program is checked against the semantics of the language written in Lean |
-
-Number 7, "Services in production", is not a condition: how long a service
-has lived is a condition of the calendar, not a property of the language. The
-other numbers stay as they were.
-
-For each condition — what exists, what is missing and which command checks
-it — see the document
-["The road to 1.0: seven conditions"](https://github.com/digitable-lol/flang/blob/main/docs/road-to-1-0.md)
-(in Russian).
-
-## What has already shipped
-
-- **Condition 4.** 0.7.34 closed 13 of the 14 known typing holes. Two remain
-  open; both are named in the release notes.
-- **Condition 6.** Since 0.7.34 a module is imported by a link in the import
-  line: `использует «Логика» из "https://…/logic.flang"`. The first
-  `flang check` downloads it and writes the fingerprint and the source into
-  `flang.lock`; later builds need no network. There is no install command and
-  no package registry — see [Modules and packages](packages.html).
-- **The kernel proves the monad laws.** Since 0.7.34, all three, associativity
-  included.
-- **Prebuilt builds** for Linux and macOS ship with every release since
-  0.7.29 — see [Installation](install.html).
+| 0.8.0 | gives no wrong answer | the known wrong answers of the checks are fixed; `flang check` names every unproved statement; automatic proofs are checked in CI |
+| 0.9.0 | ready to hand to people | documentation, playground, formatter, compatibility rules; the release passes every check |
+| 1.0.0-rc | candidate | conditions 3 and 8 meet their written thresholds; release archives are signed; the syntax is frozen |
+| 1.0.0 | release | only fixes from feedback on the candidate |
 
 ## What we decided not to do
 
 - **No closures.** Capturing the environment breaks the termination proof and
-  the direct printing into C, Go and Rust. Function values exist, closures do
-  not.
+  the direct generation of C, Go and Rust code. Function values exist.
 - **No two versions of one library in one program.**
 - **No package registry and no install command.** A module is named by its
   address.
-- **No storing code in a database instead of files.** Only content addressing
-  is taken.
+- **Code is kept in files.** From storing code in a database only content
+  addressing is taken.
+
+## Details
+
+The commands, thresholds and state of each condition are collected on the page
+[For language developers](contributing.html).

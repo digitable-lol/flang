@@ -3,71 +3,71 @@
   "выпуски": {
     "0.7.40": {
       "ru": {
-        "заголовок": "`flang repl` вычисляет выражения в любой установке, функцию можно вызвать из консоли без JSON, постусловие, которое зовёт свою функцию без убывания, отвергается.",
+        "заголовок": "`flang repl` вычисляет выражения в любой установке, функцию можно вызвать из консоли без JSON, постусловие, которое вызывает свою функцию, даёт ошибку.",
         "исправления": [
-          "[repl] В готовых сборках для Linux выражения вычисляются, а не только проверяются: оболочка зовёт встроенный вычислитель, без cc, lib/ и include/",
-          "[типы] Слово фиксированной ширины внутри списка и записи принимается из числа и строки цифр в `flang run` (дыра типизации 30)",
-          "[emit] Напечатанные C, Go, Rust, Java, C# и Elixir проверяют на входе слова фиксированной ширины и точные дроби (дыры 31 и 32)",
-          "[тотальность] Постусловие, которое зовёт свою функцию без убывания, отвергается FLANG_NOT_TOTAL (дыра 45, ADR-0240)",
-          "[emit-js] Функция с именем Then печатается как прочие зарезервированные имена: модуль больше не становится thenable",
-          "[elixir] Ввод не-ASCII через пайп работает на OTP 26 и 27: напечатанная строка запуска читает stdin байтами",
-          "[сверщик] Сверщик на C отвергает три вида испорченной записи, которые отвергал сверщик на Lean: порядок строк блока тотальности, строка вызова, снятие без цели",
-          "[сверщик] Вариант со списком своего типа не считается рекурсивным полем; честные записи toml и redis принимаются",
-          "[площадка] Неудачное подключение архивов вкладки повторяется при следующем поручении, а не до перезагрузки страницы",
-          "[эталон] Эталон считает поля записи в порядке исходника, ноль процентов даёт плюс ноль, «к числу или беда» вычисляется"
+          "[repl] `flang repl` вычисляет выражения в готовых сборках для Linux; компилятор C и каталоги `lib/`, `include/` для этого не нужны",
+          "[run] `flang run` принимает `u8` и другие слова фиксированной ширины внутри списка и записи: `--args '{\"а\":[7,\"8\"]}'`",
+          "[emit] Код на C, Go, Rust, Java, C# и Elixir проверяет на входе слова фиксированной ширины и точные дроби",
+          "[завершение] Постусловие, которое вызывает свою же функцию на результате, даёт ошибку FLANG_NOT_TOTAL",
+          "[emit-js] Функция с именем Then получает в JavaScript безопасное имя: модуль с ней больше не считается thenable-объектом",
+          "[elixir] Программа на Elixir читает ввод с кириллицей через пайп на OTP 26 и 27",
+          "[проверка записей] Программа `checker` отвергает ещё три вида испорченных записей доказательства",
+          "[проверка записей] `checker` принимает записи модулей toml и redis: вариант со списком своего типа не считается рекурсивным полем",
+          "[песочница] Если архивы не загрузились, песочница пробует снова при следующем запуске; перезагружать страницу не нужно",
+          "[проверка перевода] Поля записи вычисляются в порядке исходника, ноль процентов даёт +0, выражение `к числу или беда` вычисляется"
         ],
         "ломающие": [
-          "Постусловие, которое зовёт свою функцию без убывания, отвергается FLANG_NOT_TOTAL (было: принималось); пишите свободное `утверждение`",
-          "Запись доказательства файла с классами, интерфейсами или циклами строится по раскрытому тексту и несёт его в себе; отпечаток формата записи сменился (ADR-0238)",
-          "FLANG_CC, FLANG_INCLUDE_DIR и FLANG_LIB_DIR больше не читаются и сняты",
-          "Вкладка браузера больше не отказывает в файловых поручениях и запуске процессов: у неё есть склад файлов и запуск программ"
+          "Постусловие, которое вызывает свою функцию на результате, даёт FLANG_NOT_TOTAL. Вынесите его в отдельное `утверждение` с `для всех`",
+          "Записи доказательства файлов с классами, интерфейсами и циклами создайте заново: `flang check файл.flang --proof --record файл.record`",
+          "Переменные FLANG_CC, FLANG_INCLUDE_DIR и FLANG_LIB_DIR больше не читаются. Уберите их из скриптов: `flang repl` работает без них",
+          "Программа в браузере теперь работает с файлами и запускает процессы. Если код ждал ошибки на таких вызовах, проверьте его"
         ],
         "улучшения": [
-          "[run] `flang run файл функция 3 имя=знач` вызывает функцию словами из консоли; недостающее спрашивается в терминале; `--args` как раньше (ADR-0230)",
-          "[io] Поручение «Показать страницу» строит дерево узлов во вкладке; вкладка хранит файлы и запускает `.wasm` (ADR-0224)",
-          "[площадка] Кнопки «Запустить» и «Тесты», шесть стартовых программ, версия компилятора; каждый пример-программа на сайте открывается в площадке",
-          "[stdlib] Новые доказанные постусловия: bignum 11, ecdsa 12, registry 13, text-decoding 15 и ещё пять модулей; модуль List facts — 11 из 11",
-          "[stdlib] Шесть утверждений разбиты на половины, которые ядро доказывает: higher-order, samples, sqlite",
-          "[модель Lean] Модель читает закрытую цель, цель-посылку, кванторы `для всех … в` и тождество длин; вне модели 105 -> 93 блока",
-          "[сверщик] Ответ VERIFIED сверщика на Lean доказан теоремой; оба сверщика гоняются на записях примеров и библиотеки",
-          "[перевод] Проверка перевода считает эталон с бюджетом на свидетеля: одна медленная функция больше не роняет весь файл"
+          "[run] Функцию можно вызвать из консоли без JSON: `flang run файл.flang '«Имя»' 9 низ=0`; недостающий аргумент `flang` спросит в терминале",
+          "[браузер] Программа в браузере строит страницу из дерева узлов, хранит файлы и запускает `.wasm`",
+          "[песочница] Кнопки «Запустить» и «Тесты», шесть стартовых программ, версия компилятора; программы-примеры с сайта открываются в песочнице",
+          "[stdlib] Новые доказанные постусловия в bignum, ecdsa, registry, text-decoding и ещё пяти модулях; в модуле List facts доказаны все 11",
+          "[stdlib] Шесть утверждений в higher-order, samples и sqlite разбиты на части, которые доказываются автоматически",
+          "[надёжность] Модель проверки доказательств на Lean читает больше видов доказательств: вне модели осталось 93 блока вместо 105",
+          "[проверка записей] Ответ VERIFIED программы проверки на Lean доказан теоремой; записи примеров и библиотеки проверяются обеими программами",
+          "[проверка перевода] Одна медленная функция больше не оставляет без проверки весь файл: время ограничено для каждого теста отдельно"
         ],
         "известные": [
-          "Две функции, чьи постусловия зовут друг друга без убывания, проходят проверку завершения (дыра типизации 46, ADR-0240)"
+          "Две функции, чьи постусловия вызывают друг друга, проходят проверку завершения без ошибки; одна такая функция уже даёт FLANG_NOT_TOTAL"
         ]
       },
       "en": {
-        "заголовок": "`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function without descent is refused.",
+        "заголовок": "`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function is an error.",
         "исправления": [
-          "[repl] Prebuilt Linux packages evaluate expressions instead of only checking them: the shell calls the built-in evaluator, no cc, lib/ or include/",
-          "[types] `flang run` takes a fixed-width word inside a list or record from a number or a digit string (typing hole 30)",
-          "[emit] Printed C, Go, Rust, Java, C# and Elixir check fixed-width words and exact fractions at entry (holes 31 and 32)",
-          "[totality] A postcondition that calls its own function without descent is refused with FLANG_NOT_TOTAL (hole 45, ADR-0240)",
-          "[emit-js] A function named Then is printed like other reserved names, so the module is no longer a thenable",
-          "[elixir] Piped non-ASCII input works on OTP 26 and 27: the printed run line reads stdin as bytes",
-          "[checker] The C checker refuses three kinds of broken record the Lean checker refused: totality line order, call line, discharge without a goal",
-          "[checker] A variant holding a list of its own type is not a recursive field; the honest toml and redis records are accepted",
-          "[playground] A failed mount of the tab archives is retried on the next order instead of until reload",
-          "[reference] The reference evaluates record fields in source order, a zero percentage is plus zero, and \"to number or trouble\" is executed"
+          "[repl] `flang repl` evaluates expressions in the prebuilt Linux packages; it needs no C compiler and no `lib/` or `include/` directory",
+          "[run] `flang run` accepts `u8` and other fixed-width words inside a list or a record: `--args '{\"а\":[7,\"8\"]}'`",
+          "[emit] Generated C, Go, Rust, Java, C# and Elixir code checks fixed-width words and exact fractions at entry",
+          "[termination] A postcondition that calls its own function on the result is the error FLANG_NOT_TOTAL",
+          "[emit-js] A function named Then gets a safe name in JavaScript: a module with it is no longer treated as a thenable",
+          "[elixir] An Elixir program reads piped non-ASCII input on OTP 26 and 27",
+          "[record checking] The `checker` program rejects three more kinds of broken proof record",
+          "[record checking] `checker` accepts the records of the toml and redis modules: a variant holding a list of its own type is not a recursive field",
+          "[playground] If the archives failed to load, the playground tries again on the next run; no page reload is needed",
+          "[translation validation] Record fields are evaluated in source order, zero percent gives +0, and `to number or trouble` is evaluated"
         ],
         "ломающие": [
-          "A total function whose postcondition calls itself without descent is refused with FLANG_NOT_TOTAL (was: accepted). Write such a claim as a free statement",
-          "The proof record of a file with classes, interfaces or loops is built over the expanded text and carries it; the record format fingerprint changed (ADR-0238)",
-          "FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read and are withdrawn",
-          "The browser tab no longer refuses file orders and process runs: it has a file store and runs programs"
+          "A postcondition that calls its own function on the result is FLANG_NOT_TOTAL. Move it into a separate free statement with `for all`",
+          "Regenerate the proof records of files with classes, interfaces or loops: `flang check file.flang --proof --record file.record`",
+          "FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read. Remove them from your scripts: `flang repl` works without them",
+          "A program in the browser now works with files and starts processes. If your code expected an error from such calls, review it"
         ],
         "улучшения": [
-          "[run] `flang run file function 3 name=value` calls a function with console words; a missing one is asked on a terminal; `--args` is unchanged (ADR-0230)",
-          "[io] The order \"show a page\" builds a node tree in the tab; the tab keeps files and runs `.wasm` (ADR-0224)",
-          "[playground] Run and Tests buttons, six starter programs, the compiler version; every whole program on the site opens in the playground",
-          "[stdlib] New proved postconditions: bignum 11, ecdsa 12, registry 13, text-decoding 15 and five more modules; the List facts module proves 11 of 11",
-          "[stdlib] Six claims are split into halves the kernel proves: higher-order, samples, sqlite",
-          "[Lean model] The model reads a closed goal, a premise goal, `for all … in` and the identity of lengths; outside the model 105 -> 93 blocks",
-          "[checker] The VERIFIED answer of the Lean checker is a theorem; both checkers run on the records of examples and the library",
-          "[translation] Translation validation computes the reference under a per-witness budget: one slow function no longer costs the whole file"
+          "[run] A function can be called from the console without JSON: `flang run file.flang '«Name»' 9 low=0`; `flang` asks for a missing argument on a terminal",
+          "[browser] A program in the browser builds a page from a node tree, keeps files and runs `.wasm`",
+          "[playground] Run and Tests buttons, six starter programs, the compiler version; whole example programs on the site open in the playground",
+          "[stdlib] New proved postconditions in bignum, ecdsa, registry, text-decoding and five more modules; the List facts module proves all 11",
+          "[stdlib] Six statements in higher-order, samples and sqlite are split into parts that are proved automatically",
+          "[reliability] The Lean model of proof checking reads more kinds of proof: 93 blocks remain outside the model instead of 105",
+          "[record checking] The VERIFIED answer of the Lean checking program is a theorem; example and library records are checked by both programs",
+          "[translation validation] One slow function no longer leaves a whole file unchecked: time is limited for each test separately"
         ],
         "известные": [
-          "Two functions whose postconditions call each other without descent pass the termination check (typing hole 46, ADR-0240)"
+          "Two functions whose postconditions call each other pass the termination check without an error; one such function alone is already FLANG_NOT_TOTAL"
         ]
       }
     },

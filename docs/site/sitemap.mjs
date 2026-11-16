@@ -131,7 +131,7 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Разработка', англ: 'Development', дляУчастников: true,
     страницы: [
-      { адрес: 'contributing.html', имя: 'Тем, кто делает язык', из: 'docs/site/contributing.ru.md' },
+      { адрес: 'contributing.html', имя: 'Для разработчиков языка', из: 'docs/site/contributing.ru.md' },
       { адрес: 'developing.html', имя: 'Развитие языка', из: 'docs/guide/developing.ru.md' },
       { адрес: 'project-layout.html', имя: 'Раскладка репозитория', из: 'docs/guide/project-layout.ru.md' },
       { адрес: 'bootstrap-circle.html', имя: 'Компилятор собирает сам себя', из: 'docs/guide/bootstrap-circle.ru.md' },

@@ -72,8 +72,10 @@ The loose files in the root: `README.md` (the front page of the repository; its 
 [`docs/README.ru.md`](README.ru.md)), `LICENSE` · `LICENSE-RU.md`,
 `CONTRIBUTING.md`, `AGENTS.md` (a symbolic link to `.ai/AGENTS.md`),
 [`docs/DESCRIPTION.md`](DESCRIPTION.md) (a long-form description, in Russian) and
-[`docs/ROADMAP.md`](ROADMAP.md) (measured, not intended) — both reachable through symbolic
-links in the root, which keep the addresses other repositories already point at; `CHANGELOG.md` ·
+[`docs/roadmap-in-brief.md`](roadmap-in-brief.md) (a short page for visitors: what is ready and
+what is left before 1.0) — both reachable through symbolic links in the root, `DESCRIPTION.md` and
+`ROADMAP.md`, which keep the addresses other repositories already point at; the working roadmap of
+the language developers is [`docs/ROADMAP.md`](ROADMAP.md); `CHANGELOG.md` ·
 `changelog.json` (printed from tags and commit subjects, never edited by hand); `.flangrc` (the
 settings file, and the one place the version, the licence and the two addresses are read from —
 [the settings page](guide/settings.md)), which also holds the short commands of the tree, one

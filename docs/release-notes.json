@@ -1,6 +1,76 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.40": {
+      "ru": {
+        "заголовок": "`flang repl` вычисляет выражения в любой установке, функцию можно вызвать из консоли без JSON, постусловие, которое зовёт свою функцию без убывания, отвергается.",
+        "исправления": [
+          "[repl] В готовых сборках для Linux выражения вычисляются, а не только проверяются: оболочка зовёт встроенный вычислитель, без cc, lib/ и include/",
+          "[типы] Слово фиксированной ширины внутри списка и записи принимается из числа и строки цифр в `flang run` (дыра типизации 30)",
+          "[emit] Напечатанные C, Go, Rust, Java, C# и Elixir проверяют на входе слова фиксированной ширины и точные дроби (дыры 31 и 32)",
+          "[тотальность] Постусловие, которое зовёт свою функцию без убывания, отвергается FLANG_NOT_TOTAL (дыра 45, ADR-0240)",
+          "[emit-js] Функция с именем Then печатается как прочие зарезервированные имена: модуль больше не становится thenable",
+          "[elixir] Ввод не-ASCII через пайп работает на OTP 26 и 27: напечатанная строка запуска читает stdin байтами",
+          "[сверщик] Сверщик на C отвергает три вида испорченной записи, которые отвергал сверщик на Lean: порядок строк блока тотальности, строка вызова, снятие без цели",
+          "[сверщик] Вариант со списком своего типа не считается рекурсивным полем; честные записи toml и redis принимаются",
+          "[площадка] Неудачное подключение архивов вкладки повторяется при следующем поручении, а не до перезагрузки страницы",
+          "[эталон] Эталон считает поля записи в порядке исходника, ноль процентов даёт плюс ноль, «к числу или беда» вычисляется"
+        ],
+        "ломающие": [
+          "Постусловие, которое зовёт свою функцию без убывания, отвергается FLANG_NOT_TOTAL (было: принималось); пишите свободное `утверждение`",
+          "Запись доказательства файла с классами, интерфейсами или циклами строится по раскрытому тексту и несёт его в себе; отпечаток формата записи сменился (ADR-0238)",
+          "FLANG_CC, FLANG_INCLUDE_DIR и FLANG_LIB_DIR больше не читаются и сняты",
+          "Вкладка браузера больше не отказывает в файловых поручениях и запуске процессов: у неё есть склад файлов и запуск программ"
+        ],
+        "улучшения": [
+          "[run] `flang run файл функция 3 имя=знач` вызывает функцию словами из консоли; недостающее спрашивается в терминале; `--args` как раньше (ADR-0230)",
+          "[io] Поручение «Показать страницу» строит дерево узлов во вкладке; вкладка хранит файлы и запускает `.wasm` (ADR-0224)",
+          "[площадка] Кнопки «Запустить» и «Тесты», шесть стартовых программ, версия компилятора; каждый пример-программа на сайте открывается в площадке",
+          "[stdlib] Новые доказанные постусловия: bignum 11, ecdsa 12, registry 13, text-decoding 15 и ещё пять модулей; модуль List facts — 11 из 11",
+          "[stdlib] Шесть утверждений разбиты на половины, которые ядро доказывает: higher-order, samples, sqlite",
+          "[модель Lean] Модель читает закрытую цель, цель-посылку, кванторы `для всех … в` и тождество длин; вне модели 105 -> 93 блока",
+          "[сверщик] Ответ VERIFIED сверщика на Lean доказан теоремой; оба сверщика гоняются на записях примеров и библиотеки",
+          "[перевод] Проверка перевода считает эталон с бюджетом на свидетеля: одна медленная функция больше не роняет весь файл"
+        ],
+        "известные": [
+          "Две функции, чьи постусловия зовут друг друга без убывания, проходят проверку завершения (дыра типизации 46, ADR-0240)"
+        ]
+      },
+      "en": {
+        "заголовок": "`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function without descent is refused.",
+        "исправления": [
+          "[repl] Prebuilt Linux packages evaluate expressions instead of only checking them: the shell calls the built-in evaluator, no cc, lib/ or include/",
+          "[types] `flang run` takes a fixed-width word inside a list or record from a number or a digit string (typing hole 30)",
+          "[emit] Printed C, Go, Rust, Java, C# and Elixir check fixed-width words and exact fractions at entry (holes 31 and 32)",
+          "[totality] A postcondition that calls its own function without descent is refused with FLANG_NOT_TOTAL (hole 45, ADR-0240)",
+          "[emit-js] A function named Then is printed like other reserved names, so the module is no longer a thenable",
+          "[elixir] Piped non-ASCII input works on OTP 26 and 27: the printed run line reads stdin as bytes",
+          "[checker] The C checker refuses three kinds of broken record the Lean checker refused: totality line order, call line, discharge without a goal",
+          "[checker] A variant holding a list of its own type is not a recursive field; the honest toml and redis records are accepted",
+          "[playground] A failed mount of the tab archives is retried on the next order instead of until reload",
+          "[reference] The reference evaluates record fields in source order, a zero percentage is plus zero, and \"to number or trouble\" is executed"
+        ],
+        "ломающие": [
+          "A total function whose postcondition calls itself without descent is refused with FLANG_NOT_TOTAL (was: accepted). Write such a claim as a free statement",
+          "The proof record of a file with classes, interfaces or loops is built over the expanded text and carries it; the record format fingerprint changed (ADR-0238)",
+          "FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read and are withdrawn",
+          "The browser tab no longer refuses file orders and process runs: it has a file store and runs programs"
+        ],
+        "улучшения": [
+          "[run] `flang run file function 3 name=value` calls a function with console words; a missing one is asked on a terminal; `--args` is unchanged (ADR-0230)",
+          "[io] The order \"show a page\" builds a node tree in the tab; the tab keeps files and runs `.wasm` (ADR-0224)",
+          "[playground] Run and Tests buttons, six starter programs, the compiler version; every whole program on the site opens in the playground",
+          "[stdlib] New proved postconditions: bignum 11, ecdsa 12, registry 13, text-decoding 15 and five more modules; the List facts module proves 11 of 11",
+          "[stdlib] Six claims are split into halves the kernel proves: higher-order, samples, sqlite",
+          "[Lean model] The model reads a closed goal, a premise goal, `for all … in` and the identity of lengths; outside the model 105 -> 93 blocks",
+          "[checker] The VERIFIED answer of the Lean checker is a theorem; both checkers run on the records of examples and the library",
+          "[translation] Translation validation computes the reference under a per-witness budget: one slow function no longer costs the whole file"
+        ],
+        "известные": [
+          "Two functions whose postconditions call each other without descent pass the termination check (typing hole 46, ADR-0240)"
+        ]
+      }
+    },
     "0.7.35": {
       "ru": {
         "заголовок": "Исправлено 15 ошибок состоятельности в ядре доказательств и проверке типов. 0.7.34 может выдавать ложные утверждения за доказанные; обновиться рекомендуется.",

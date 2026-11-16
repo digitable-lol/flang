@@ -88,7 +88,7 @@
 тотальная функция «Вызов цели»
   принимает цель: строка, путь: строка, запрос: строка
   возвращает строка
-  соединить ["d=${FLANG_TMP:-${TMPDIR:-/tmp}}/declared-types-at-the-cli/",
+  соединить ["d=${FLANG_TMP:-${TMPDIR:-/tmp}}/declared-types-at-the-cli-$(id -u)/",
     "$(cat \"$flang\" '", путь, "' | cksum | tr ' ' -)/", цель, "; ",
     "[ -f \"$d/.built\" ] || { rm -rf \"$d\"; \"$flang\" emit '", путь, "' --target ", цель,
     " --out \"$d\" > /dev/null 2>&1 && (cd \"$d\" && ", («Сборка цели» от цель),

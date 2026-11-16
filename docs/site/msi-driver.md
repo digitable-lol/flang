@@ -1,20 +1,19 @@
 # The MSI driver in flang
 
-`docs/examples/driver/msi/msi.flang` is the MSI controller of the JH7110 PCIe bridge
-(the VisionFive 2 board, PLDA XpressRICH bridge), rewritten in flang from a
-driver for the NetBSD kernel: jh7110_pcie_msi.c (the controller itself) and
-jh7110_pcievar.h (types and register addresses) from sys/arch/riscv/starfive.
-The main NetBSD tree does not have this driver.
+What driver logic looks like when it is written as pure functions, and what can
+be proved about it. The example is the MSI controller of the JH7110 PCIe bridge
+(the VisionFive 2 board, the PLDA XpressRICH bridge).
 
-This is a model of the driver, not a driver: it does not build into the kernel
-and has not been run on the board.
+The source `docs/examples/driver/msi/msi.flang` is rewritten from a NetBSD
+driver: the files `jh7110_pcie_msi.c` and `jh7110_pcievar.h` in
+`sys/arch/riscv/starfive`. It is a model of a driver: it is not built into a
+system and has not run on the board.
 
-## The approach: the driver writes nothing, it answers what to write
+## The approach: a function returns what to write
 
-Every function is pure: "controller state and event → new state, a list of
-register writes and a list of bits to dispatch". The same approach as in the
-UART driver `docs/examples/driver/uart.flang` and the [memory
-allocator](allocator.html).
+Every function takes the controller state and an event. It returns the new
+state, a list of register writes and a list of vectors to handle. The function
+itself writes no registers:
 
 ```flang fragment
 тотальная функция «Занять вектор»
@@ -22,170 +21,239 @@ allocator](allocator.html).
   возвращает «Отклик MSI»
 ```
 
-There is no C host in this directory. Its job is a loop: read the MSI status
-word, call «Раздать прерывание», and for every bit in the reply perform the
-«сброс» (clear) write and, if the field «звать» is true, call the vector's
-handler.
+The register writes are done by the host: the C code that calls these
+functions. The example directory has no host. Its job is a loop: read the MSI
+status word, call «Раздать прерывание» (dispatch the interrupt), perform the
+writes from the reply and call the handlers. How this boundary works:
+[The boundary between flang and the host](host-boundary.html).
 
-The order "first clear the bit by writing one, then the handler" — which a
-comment holds in the C source — is held here by the shape of the data: the clear
-is the field «сброс» of the object «Разряд», not a separate step, and there is
-nothing to move after the call.
+In the original driver the order "clear the bit first, then call the handler"
+rests on a comment. Here the clear is the field `«сброс»` of the record
+`«Разряд»`, next to the vector number. It cannot be moved after the handler
+call.
 
-What the language had to replace:
+## Bits: with arithmetic or with machine words
 
-* **no bitwise operations** — the status word is taken apart by descent over
-  remainders of two («Шаг раздачи», «Младший бит взведён», «Бит взведён»), and
-  shifting one by the vector number is a multiplication («Вес вектора»);
-* **no hexadecimal literals** — register addresses are written in decimal, and
-  every conversion stands as its own promise: «PLDA_IMASK_LOCAL — 0x180, оно же
-  384», «PLDA_ISTATUS_LOCAL — 0x184, оно же 388», «PLDA_IMSI_ADDR — 0x190, оно
-  же 400», «PLDA_ISTATUS_MSI — 0x194, оно же 404»;
-* **no silent `return NULL`** — an unknown vector gives a refusal named in words
-  in the reply field «отказ»; nothing is written to the hardware or to the state
-  (the family of promises «ОТКАЗ ЧЕСТЕН»).
+The language has machine words `u8` … `u64` with bitwise operations and shifts.
+`msi.flang` does not use them: its mask and status word are declared `число`
+(number), and the bits are read with arithmetic.
 
-## What is in the file
+| Action | In `msi.flang` (arithmetic) | In `msi-words.flang` (`u32`) |
+| --- | --- | --- |
+| the bit of a vector | «Вес вектора»: recursive multiplication by 2 | `(u32 1) сдвиг влево на вектор` |
+| is the bit set? | «Бит взведён»: recursion over remainders of 2 | `((слово сдвиг вправо на вектор) побитовое и 1) равен 1` |
+| set the bit | «Маска со взведённым»: add the weight | `маска побитовое или бит` |
+| clear the bit | «Маска со сброшенным»: subtract the weight | `маска побитовое и (побитовое не бит)` |
 
-1 file, 458 lines <!-- СНЯТО 2026-09-08 файлов docs/examples/driver/msi/*.flang = 1 --> <!-- СНЯТО 2026-10-01 строк docs/examples/driver/msi/msi.flang = 458 -->.
+The reason for the choice is proofs. About a machine word the compiler proves
+only the range of its type. About arithmetic it proves more, and in `msi.flang`
+95 postconditions out of 98 are proved. The word version is shorter and closer
+to C, but its postconditions are only tested on examples.
 
-Types: «Запись в регистр» (register write: address, value), «Разряд» (bit:
-vector, clear, call), «Вектор MSI» (taken, handler, safe), «Состояние MSI»
-(doorbell, mask address, mask, vectors, enabled), «Отклик MSI» (state, writes,
-bits, refusal).
+The second version is next to the first, in
+`docs/examples/driver/msi/msi-words.flang`:
 
-Functions by group:
+```flang insert docs/examples/driver/msi/msi-words.flang
+модуль «MSI bit operations on machine words»
 
-| group | functions |
-|---|---|
-| register constants and their distinctness | «Регистр местной маски», «Регистр местного состояния», «Регистр звонка», «Регистр состояния MSI», «Бит MSI в местной маске», «Число векторов», «Адреса регистров различны» |
-| bound and bits | «Вектор в пределах», «Вес вектора», «Бит взведён», «Младший бит взведён», «Маска со взведённым», «Маска со сброшенным», «Предел маски» |
+примечание "Те же действия над маской и словом состояния, что в msi.flang, записанные побитовыми операциями над u32"
+
+тотальная функция «Бит вектора»
+  принимает вектор: u32
+  возвращает u32
+  требует «вектор меньше тридцати двух» вектор меньше 32
+  пример «нулевой вектор — единица»
+    дано вектор равно u32 0
+    ожидается u32 1
+  пример «двадцать восьмой — PLDA_IMASK_INT_MSI, 0x10000000»
+    дано вектор равно u32 28
+    ожидается u32 268435456
+  (u32 1) сдвиг влево на вектор
+
+тотальная функция «Бит слова взведён»
+  принимает слово: u32, вектор: u32
+  возвращает признак
+  требует «вектор меньше тридцати двух» вектор меньше 32
+  пример «в пятёрке нулевой бит взведён»
+    дано слово равно u32 5
+    дано вектор равно u32 0
+    ожидается да
+  пример «в пятёрке первый бит сброшен»
+    дано слово равно u32 5
+    дано вектор равно u32 1
+    ожидается нет
+  ((слово сдвиг вправо на вектор) побитовое и 1) равен 1
+
+тотальная функция «Маска слова со взведённым»
+  принимает маска: u32, вектор: u32
+  возвращает u32
+  требует «вектор меньше тридцати двух» вектор меньше 32
+  пример «взводим нулевой в пустой маске»
+    дано маска равно u32 0
+    дано вектор равно u32 0
+    ожидается u32 1
+  пример «взводим уже взведённый»
+    дано маска равно u32 5
+    дано вектор равно u32 2
+    ожидается u32 5
+  маска побитовое или («Бит вектора» от вектор)
+
+тотальная функция «Маска слова со сброшенным»
+  принимает маска: u32, вектор: u32
+  возвращает u32
+  требует «вектор меньше тридцати двух» вектор меньше 32
+  пример «сбрасываем второй из пятёрки»
+    дано маска равно u32 5
+    дано вектор равно u32 2
+    ожидается u32 1
+  пример «сбрасываем уже сброшенный»
+    дано маска равно u32 5
+    дано вектор равно u32 1
+    ожидается u32 5
+  маска побитовое и (побитовое не («Бит вектора» от вектор))
+
+тотальная функция «Взведение не снимает чужих битов»
+  принимает маска: u32, вектор: u32
+  возвращает признак
+  требует «вектор меньше тридцати двух» вектор меньше 32
+  обеспечивает «каждый прежний бит остался» результат равен да
+  пример «пятёрка и первый вектор»
+    дано маска равно u32 5
+    дано вектор равно u32 1
+    ожидается да
+  ((«Маска слова со взведённым» от маска и вектор) побитовое и маска) равен маска
+```
+
+```text
+$ flang test docs/examples/driver/msi/msi-words.flang
+docs/examples/driver/msi/msi-words.flang: примеров 9, прошло 9, не прошло 0
+$ flang check docs/examples/driver/msi/msi-words.flang --proof
+…
+docs/examples/driver/msi/msi-words.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 1: доказано 0, условно 0, сетка 1, … — код возврата 3
+```
+
+All nine examples pass. The only postcondition, «каждый прежний бит остался»
+(every earlier bit stays), is not proved: it is tested on one example (the word
+«сетка» in the output). The exit code is 3.
+
+The language has no hexadecimal literals. Register addresses are written in
+decimal, and a postcondition with the hexadecimal form in its name checks the
+match: «PLDA_IMASK_LOCAL — 0x180, оно же 384».
+
+An unknown vector number gives `return NULL` in the C driver. Here the function
+returns the error text in the field `«отказ»` of the reply and writes nothing
+to the registers or to the state.
+
+## What is in `msi.flang`
+
+Types: «Запись в регистр» (address, value), «Разряд» (vector, clear, call),
+«Вектор MSI» (taken, handler, safe), «Состояние MSI» (doorbell, mask address,
+mask, vectors, enabled), «Отклик MSI» (state, writes, bits, error).
+
+| Group | Functions |
+| --- | --- |
+| register addresses | «Регистр местной маски», «Регистр местного состояния», «Регистр звонка», «Регистр состояния MSI», «Бит MSI в местной маске», «Число векторов», «Адреса регистров различны» |
+| bounds and bits | «Вектор в пределах», «Вес вектора», «Бит взведён», «Младший бит взведён», «Маска со взведённым», «Маска со сброшенным», «Предел маски» |
 | state validity | «Годное состояние» |
 | vector table | «Номера векторов», «Свежие векторы», «Шаг правки», «Проход правки», «Правка вектора» |
-| establishing and removing a handler | «Занять вектор», «Освободить вектор» |
+| installing and removing a handler | «Занять вектор», «Освободить вектор» |
 | interrupt dispatch | «Шаг раздачи», «Начало раздачи», «Раздать прерывание» |
 | start-up | «Запустить контроллер» |
 
-Taken from the driver: parsing the MSI status word and dispatching by vector
-(`jh7110_pcie_msi_dispatch`), establishing a handler with the bound check and
-setting the mask bit (`jh7110_pcie_msi_intr_establish`), removing a handler
-with clearing the same bit (the MSI branch of `jh7110_pcie_intr_disestablish`),
-start-up — reading the doorbell, re-arming the MSI capture, zeroing the table,
-unmasking (`jh7110_pcie_msi_init`), all register addresses and constants.
+Carried over from the driver:
 
-Left out: programming the device's MSI capability (`jh7110_pcie_msi_program` —
-the offsets are found by `pci_get_capability` at run time), allocation of
-aligned runs of vectors (`jh7110_pcie_msi_find_run`,
-`jh7110_pcie_msi_alloc_common`), the MSI/MSI-X/INTx negotiation
-(`jh7110_pcie_intr_alloc`), the MSI-X functions (this bridge has none), mutual
-exclusion, memory allocation and debug printing — those are the host's work.
+| What | Function in C |
+| --- | --- |
+| parsing the MSI status word and dispatch by vector | `jh7110_pcie_msi_dispatch` |
+| installing a handler with a bounds check | `jh7110_pcie_msi_intr_establish` |
+| removing a handler | the MSI branch of `jh7110_pcie_intr_disestablish` |
+| starting the controller | `jh7110_pcie_msi_init` |
+
+Not carried over: setting up MSI in the device (`jh7110_pcie_msi_program`),
+choosing free vectors (`jh7110_pcie_msi_find_run`,
+`jh7110_pcie_msi_alloc_common`), choosing between MSI, MSI-X and INTx
+(`jh7110_pcie_intr_alloc`). Locking, memory allocation and debug output stay
+with the host.
 
 ## How to run
 
-```
-flang test docs/examples/driver/msi/msi.flang
-flang run docs/examples/driver/msi/msi.flang --function '«Вес вектора»' --args '{"вектор":5}' --trust
-flang check docs/examples/driver/msi/msi.flang --proof
-```
-
-`test` runs the examples (42 of 42 pass):
-
-```
+```text
+$ flang test docs/examples/driver/msi/msi.flang
 docs/examples/driver/msi/msi.flang: примеров 42, прошло 42, не прошло 0
 ```
 
-`run` calls one function. «Вес вектора» (the weight of a vector) of 5 is a one
-shifted left by five bits:
+All 42 examples gave the expected answer.
 
-```
+```text
+$ flang run docs/examples/driver/msi/msi.flang --function '«Вес вектора»' --args '{"вектор":5}' --trust
 на веру: доказанность не считалась — запуск по ключу --trust
 32
 ```
 
-Without `--trust`, `run` refuses with exit code 3: not everything in the file
-is proved.
+`run` calls one function. The first line warns that the run skips the proof
+check because of the flag `--trust`. The second is the answer: the bit of
+vector five is 32. Without `--trust` the command returns exit code 3, because
+the file has unproved postconditions.
 
-`check --proof` prints a verdict for every claim. The last lines:
-
-```
-итог:
-  функций 26: тотальных 26, обычных 0
-  обещание несёт: композиция 24, структура 0, точный шаг 0, постоянный шаг 2, объявленная мера 0
-  сторожей в рантайме: 2 места
-  законов на сетке: 0 (значений в сетках 0); на веру: 0
+```text
+$ flang check docs/examples/driver/msi/msi.flang --proof
+…
   утверждений 98: доказано 95 (из них индукцией 2) (из них без теоремы 93, объявленным типом 2), сетка 3, объявлено, не доказано 0
+…
+docs/examples/driver/msi/msi.flang: независимо, сверщиком, проиграно 70 из 95 доказанных; на слове ядра 25 — код сверщика 3
+docs/examples/driver/msi/msi.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 98: доказано 95, условно 0, сетка 3, … — код возврата 3
 ```
 
-26 functions, all total; 98 claims: 95 proved, 3 on the grid. The exit code is
-3 — because of the three claims on the grid. The independent proof checker
-(`FLANG_CHECKER`) replayed 70 proofs out of 95; the other 25 rest on the
-kernel's word.
+The first line shown: of 98 postconditions, 95 are proved for every input and 3
+are only tested on examples (the word «сетка»). The second: the independent
+check, the program `checker` («сверщик» in the output), repeated 70 proofs out
+of 95. The other 25 are accepted without a re-check. The third line is the
+summary and exit code 3.
 
 ## What is proved and what is not
 
-All 26 functions are total. For two — «Вес вектора» and «Бит взведён» —
-termination is proved by a constant step, and their descent is checked while
-the program runs: the descent goes over the type `число`, and on IEEE-754 a
-constant step does not always change the magnitude. For the other 24 it is
-proved by composition, with no run-time checks.
+All 26 functions always terminate. In «Вес вектора» and «Бит взведён» the
+recursion goes over the type `число`, so the decrease of the argument is also
+checked at run time.
 
-Of the 98 claims 95 are proved and 3 are on the grid.
+**Proved for every input:**
 
-**Proved for all inputs:**
+* the bound on the vector number: a vector below 32 is accepted, 32 and above
+  is rejected. In the C driver, crossing this bound is a write past the end of
+  the handler array;
+* register addresses: each one equals the hexadecimal value from the header,
+  and a write goes only to its own address;
+* one step of parsing the status word: a set bit gives one vector in the reply,
+  a clear bit gives nothing;
+* the error on a foreign vector: the error text is returned, the registers and
+  the state are untouched;
+* the vector table keeps its length when a handler is installed or removed.
+  This is proved by induction over the fold;
+* dispatching an interrupt does not change the controller state.
 
-* the vector-number bound — «ВЕКТОР МЕНЬШЕ ТРИДЦАТИ ДВУХ — СВОЙ», «ВЕКТОР ОТ
-  ТРИДЦАТИ ДВУХ И ВЫШЕ — ЧУЖОЙ»; on the hardware, crossing it is a write past
-  the end of the handler array;
-* addresses — every conversion from hexadecimal, «ЗВОНОК НЕ ПУТАЕТСЯ С
-  ОСТАЛЬНЫМИ ТРЕМЯ», «ЗВОНОК ПИШЕТСЯ ПО СВОЕМУ АДРЕСУ И ТОЛЬКО ПО НЕМУ»
-  (start-up writes exactly two records, and both are named), «W1C ПИШЕТСЯ ПО
-  PLDA_ISTATUS_MSI И ТОЛЬКО ПО НЕМУ», «МАСКА ПИШЕТСЯ ПО СВОЕМУ АДРЕСУ, А НЕ ПО
-  ЗВОНКУ»;
-* mask parsing on one step — a set bit yields exactly one dispatch entry and
-  grows the count by exactly one, a clear bit yields nothing;
-* refusal — «ОТКАЗ ЧЕСТЕН: чужой вектор назван словами», «… в железо не пишут»,
-  «… состояние не трогают», «СВОЙ ВЕКТОР ОТКАЗА НЕ ДАЁТ» — for both establishing
-  and removing;
-* the vector table — «ПРОХОД СОБИРАЕТ РОВНО СТОЛЬКО, СКОЛЬКО ПРОШЁЛ» and «ЦЕЛЬ
-  ПРОХОДОМ НЕ МЕНЯЕТСЯ» of «Проход правки» are proved by induction over the
-  fold, and from them «ТАБЛИЦА НЕ МЕНЯЕТ ДЛИНЫ» of «Правка вектора». For this the
-  fold is moved into a separate function whose whole body it is: a fold under a
-  field projection does not show the kernel the induction principle;
-* validity under dispatch — «ШАГ СОХРАНЯЕТ ГОДНОСТЬ ЦЕЛИКОМ» of «Раздать
-  прерывание»: dispatch does not change the state.
+**Only tested on examples:**
 
-**On the grid** (checked on the function's examples, not proved):
+| Postcondition | Function | Why it is not proved |
+| --- | --- | --- |
+| «это тот же нулевой разряд, что читает Бит взведён» | «Младший бит взведён» | the right-hand side is a recursive function |
+| «ШАГ СОХРАНЯЕТ ГОДНОСТЬ ЦЕЛИКОМ: из годного состояния выходит годное» | «Занять вектор» | it needs the inequality "mask below the limit", and the compiler does not derive inequalities over arithmetic |
+| the same | «Освободить вектор» | the same reason |
 
-| postcondition | function | why |
-|---|---|---|
-| «это тот же нулевой разряд, что читает Бит взведён» | «Младший бит взведён» | a recursive function on the right; the kernel checks the equality on a finite set of values |
-| «ШАГ СОХРАНЯЕТ ГОДНОСТЬ ЦЕЛИКОМ: из годного состояния выходит годное» | «Занять вектор» | validity contains the inequality "mask below the limit", and the kernel has no arithmetic of inequalities |
-| «ШАГ СОХРАНЯЕТ ГОДНОСТЬ ЦЕЛИКОМ: из годного состояния выходит годное» | «Освободить вектор» | the same |
+**One proved postcondition checks nothing.** «НЕ ТЕРЯЕТ ВЕКТОРОВ (ИНВАРИАНТ
+ЦИКЛА)» of «Шаг раздачи» holds for any body that adds the same amount to the
+counter and to the list. The content is checked by four postconditions next to
+it: they name the increment as a number.
 
-What of validity is still proved for establishing and removing: the table
-length does not change, the vector's mask bit is set and cleared, the doorbell
-and the mask address do not change, on a foreign vector the state is untouched.
+## What the example does not show
 
-**One proved promise is empty as a statement.** «НЕ ТЕРЯЕТ ВЕКТОРОВ (ИНВАРИАНТ
-ЦИКЛА)» of «Шаг раздачи» — "if before the step there were as many entries as set
-bits, then after it too" — holds for any body that adds the same amount to the
-count and to the list of entries. The content is carried by the four promises
-next to it, which pin the increment to a concrete number. The invariant is kept
-for the sake of the formulation, not for its proving power.
+* Running on the board and building into a system: this was not checked.
+* State validity after installing and removing a handler in general: tested on
+  examples.
+* Choosing free vectors, setting up MSI in the device, MSI-X: not carried over.
+* Locking and memory: a pure function has none, they are the host's job.
 
-## What it does not guarantee
+## Next
 
-* **Working on the board or building into the kernel.** Not tried.
-* **State validity after establishing and removing** in general — grid, see
-  above.
-* **Vector allocation**, programming the MSI capability, MSI-X — not rewritten.
-* **Mutual exclusion and memory** — a pure function has none; that is the
-  host's work.
-
-## Nearby
-
-* [Catalogue of examples](examples.html)
-* [Where flang ends and the host begins](host-boundary.html)
+* [The boundary between flang and the host](host-boundary.html)
+* [Machine words](language.html#machine-words-u8-u64-i8-i64)
 * [What is proved and what is not](what-is-proved.html)
-* [Which postconditions the prover proves](what-the-kernel-accepts.html)
-* [Memory allocator](allocator.html)

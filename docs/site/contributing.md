@@ -1,13 +1,29 @@
-# For contributors
+# For language developers
 
-This page is for changing flang itself rather than writing in it. If you came to
-write in it: [Install](install.html) → [Your first program](getting-started.html)
+This page is for changing flang itself. If you came to write in it, go here:
+[Install](install.html) → [Your first program](getting-started.html)
 → [Tutorial](tutorial.html).
 
+Everything internal is collected here: decisions, tasks, working plans and how
+the compiler is built. Pages for users of the language link to internal
+documents only through this page.
+
 The tree is written in Russian: identifiers, commit messages and most of the
-prose. An English surface of the language exists and lexes to the same
-identifiers; a patch written in English is accepted — nobody will ask you to
-write Russian.
+prose. An English form of the language exists and lexes to the same
+identifiers. A patch written in English is accepted.
+
+## What is where
+
+| What | Where | What is in it |
+|---|---|---|
+| Conditions for release 1.0 | [`docs/road-to-1-0.md`](https://github.com/digitable-lol/flang/blob/main/docs/road-to-1-0.md) | seven conditions: what exists, what is missing, the command and threshold that check it (in Russian) |
+| Working roadmap | [`docs/ROADMAP.md`](https://github.com/digitable-lol/flang/blob/main/docs/ROADMAP.md) | stages of work, measurements, what the language does not have (in Russian) |
+| Decisions | [`docs/adr/`](https://github.com/digitable-lol/flang/tree/main/docs/adr) | why it is done this way: one decision, one numbered file |
+| Tasks | [`docs/tasks/`](https://github.com/digitable-lol/flang/tree/main/docs/tasks) | what is in progress and what is free: one task, one file |
+| Repository layout | [Repository layout](project-layout.html) | which directory is responsible for what |
+| Lists of checks and files | [`docs/ci-inventory.md`](https://github.com/digitable-lol/flang/blob/main/docs/ci-inventory.md), [`docs/tree-inventory.md`](https://github.com/digitable-lol/flang/blob/main/docs/tree-inventory.md) | which checks run in CI and what the tree consists of |
+| Numbers in documents | [`docs/prose-numbers.md`](https://github.com/digitable-lol/flang/blob/main/docs/prose-numbers.md) | how to mark a number so an automatic check re-measures it |
+| Building the compiler | [The compiler builds itself](bootstrap-circle.html), [`docs/reprint-cost.md`](https://github.com/digitable-lol/flang/blob/main/docs/reprint-cost.md) | how the compiler rebuilds itself and what it costs |
 
 ## Build it
 

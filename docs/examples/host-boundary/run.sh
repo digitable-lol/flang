@@ -23,12 +23,12 @@ export LC_ALL=C.UTF-8
 
 KOREN=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 FLANG=${FLANG:-$KOREN/bootstrap/flang}
-RAB=${RAB:-$(mktemp -d -p /srv/tmp host-boundary-XXXXXX)}
+RAB=${RAB:-$(mktemp -d)}
 CC=${CC:-cc}
 mkdir -p "$RAB"
 
 echo "== 1. печать решения в C"
-"$FLANG" emit "$KOREN/examples/host-boundary/gatekeeper.flang" \
+"$FLANG" emit "$KOREN/docs/examples/host-boundary/gatekeeper.flang" \
   --target c --no-cli --out "$RAB/vyvod"
 kod=$?
 if [ $kod -ne 0 ]; then echo "печать отказала, код $kod"; exit 1; fi
@@ -38,8 +38,8 @@ echo
 echo "== 2. сборка хозяина вместе с напечатанным"
 "$CC" -std=c99 -Wall -Wextra -O2 -I "$RAB/vyvod" \
   -o "$RAB/gatekeeper-host" \
-  "$KOREN/examples/host-boundary/host.c" \
-  "$RAB/vyvod"/privratnik.c "$RAB/vyvod"/flang_runtime.c \
+  "$KOREN/docs/examples/host-boundary/host.c" \
+  "$RAB/vyvod"/gatekeeper.c "$RAB/vyvod"/flang_runtime.c \
   -lm -lpthread
 kod=$?
 if [ $kod -ne 0 ]; then echo "сборка отказала, код $kod"; exit 1; fi

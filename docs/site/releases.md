@@ -8,42 +8,42 @@ The entries below are about the language, not about the work on it. What has lan
 
 ## 0.7.40 — 16 November 2026
 
-**`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function without descent is refused.**
+**`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function is an error.**
 
 ### Soundness fixes
 
-- [repl] Prebuilt Linux packages evaluate expressions instead of only checking them: the shell calls the built-in evaluator, no cc, lib/ or include/
-- [types] `flang run` takes a fixed-width word inside a list or record from a number or a digit string (typing hole 30)
-- [emit] Printed C, Go, Rust, Java, C# and Elixir check fixed-width words and exact fractions at entry (holes 31 and 32)
-- [totality] A postcondition that calls its own function without descent is refused with FLANG_NOT_TOTAL (hole 45, ADR-0240)
-- [emit-js] A function named Then is printed like other reserved names, so the module is no longer a thenable
-- [elixir] Piped non-ASCII input works on OTP 26 and 27: the printed run line reads stdin as bytes
-- [checker] The C checker refuses three kinds of broken record the Lean checker refused: totality line order, call line, discharge without a goal
-- [checker] A variant holding a list of its own type is not a recursive field; the honest toml and redis records are accepted
-- [playground] A failed mount of the tab archives is retried on the next order instead of until reload
-- [reference] The reference evaluates record fields in source order, a zero percentage is plus zero, and "to number or trouble" is executed
+- [repl] `flang repl` evaluates expressions in the prebuilt Linux packages; it needs no C compiler and no `lib/` or `include/` directory
+- [run] `flang run` accepts `u8` and other fixed-width words inside a list or a record: `--args '{"а":[7,"8"]}'`
+- [emit] Generated C, Go, Rust, Java, C# and Elixir code checks fixed-width words and exact fractions at entry
+- [termination] A postcondition that calls its own function on the result is the error FLANG_NOT_TOTAL
+- [emit-js] A function named Then gets a safe name in JavaScript: a module with it is no longer treated as a thenable
+- [elixir] An Elixir program reads piped non-ASCII input on OTP 26 and 27
+- [record checking] The `checker` program rejects three more kinds of broken proof record
+- [record checking] `checker` accepts the records of the toml and redis modules: a variant holding a list of its own type is not a recursive field
+- [playground] If the archives failed to load, the playground tries again on the next run; no page reload is needed
+- [translation validation] Record fields are evaluated in source order, zero percent gives +0, and `to number or trouble` is evaluated
 
 ### Breaking changes
 
-- A total function whose postcondition calls itself without descent is refused with FLANG_NOT_TOTAL (was: accepted). Write such a claim as a free statement
-- The proof record of a file with classes, interfaces or loops is built over the expanded text and carries it; the record format fingerprint changed (ADR-0238)
-- FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read and are withdrawn
-- The browser tab no longer refuses file orders and process runs: it has a file store and runs programs
+- A postcondition that calls its own function on the result is FLANG_NOT_TOTAL. Move it into a separate free statement with `for all`
+- Regenerate the proof records of files with classes, interfaces or loops: `flang check file.flang --proof --record file.record`
+- FLANG_CC, FLANG_INCLUDE_DIR and FLANG_LIB_DIR are no longer read. Remove them from your scripts: `flang repl` works without them
+- A program in the browser now works with files and starts processes. If your code expected an error from such calls, review it
 
 ### Improvements
 
-- [run] `flang run file function 3 name=value` calls a function with console words; a missing one is asked on a terminal; `--args` is unchanged (ADR-0230)
-- [io] The order "show a page" builds a node tree in the tab; the tab keeps files and runs `.wasm` (ADR-0224)
-- [playground] Run and Tests buttons, six starter programs, the compiler version; every whole program on the site opens in the playground
-- [stdlib] New proved postconditions: bignum 11, ecdsa 12, registry 13, text-decoding 15 and five more modules; the List facts module proves 11 of 11
-- [stdlib] Six claims are split into halves the kernel proves: higher-order, samples, sqlite
-- [Lean model] The model reads a closed goal, a premise goal, `for all … in` and the identity of lengths; outside the model 105 -> 93 blocks
-- [checker] The VERIFIED answer of the Lean checker is a theorem; both checkers run on the records of examples and the library
-- [translation] Translation validation computes the reference under a per-witness budget: one slow function no longer costs the whole file
+- [run] A function can be called from the console without JSON: `flang run file.flang '«Name»' 9 low=0`; `flang` asks for a missing argument on a terminal
+- [browser] A program in the browser builds a page from a node tree, keeps files and runs `.wasm`
+- [playground] Run and Tests buttons, six starter programs, the compiler version; whole example programs on the site open in the playground
+- [stdlib] New proved postconditions in bignum, ecdsa, registry, text-decoding and five more modules; the List facts module proves all 11
+- [stdlib] Six statements in higher-order, samples and sqlite are split into parts that are proved automatically
+- [reliability] The Lean model of proof checking reads more kinds of proof: 93 blocks remain outside the model instead of 105
+- [record checking] The VERIFIED answer of the Lean checking program is a theorem; example and library records are checked by both programs
+- [translation validation] One slow function no longer leaves a whole file unchecked: time is limited for each test separately
 
 ### Known issues
 
-- Two functions whose postconditions call each other without descent pass the termination check (typing hole 46, ADR-0240)
+- Two functions whose postconditions call each other pass the termination check without an error; one such function alone is already FLANG_NOT_TOTAL
 
 ## 0.7.35 — 13 November 2026
 

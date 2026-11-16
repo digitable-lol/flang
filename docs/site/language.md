@@ -594,6 +594,228 @@ Limits:
 The whole design is in the [Language specification](../spec.html), section
 «Типы» (in Russian).
 
+### Machine words: `u8` … `u64`, `i8` … `i64`
+
+A machine word is an integer of fixed width, like `uint32_t` in C or `u32` in
+Rust. There are eight types: unsigned `u8`, `u16`, `u32`, `u64` and signed `i8`,
+`i16`, `i32`, `i64`. Use them for bit fields, checksums and formats where the
+width of a field is fixed.
+
+The example takes apart the first 32-bit word of an IPv4 header and builds it
+back. File `docs/examples/reference/en/machine-words.flang`:
+
+```flang insert docs/examples/reference/en/machine-words.flang
+module «Machine words»
+
+note "The first word of an IPv4 header: version, header length, type of service, total length"
+note "The word in the examples is 1157627924, which is 0x45000014 in hexadecimal"
+
+total function «Protocol version»
+  accepts word: u32
+  returns u32
+  example «version 4 in the top four bits»
+    given word equals u32 1157627924
+    expected u32 4
+  word shifted right by 28
+
+total function «Header length in words»
+  accepts word: u32
+  returns u32
+  example «five words of 32 bits»
+    given word equals u32 1157627924
+    expected u32 5
+  (word shifted right by 24) bitwise and 15
+
+total function «Total packet length»
+  accepts word: u32
+  returns u16
+  example «twenty bytes, mask 0xFFFF»
+    given word equals u32 1157627924
+    expected u16 20
+  u16 (word bitwise and 65535)
+
+total function «Build the first word»
+  accepts version: u32, header: u32, total: u32
+  returns u32
+  example «back to 0x45000014»
+    given version equals u32 4
+    given header equals u32 5
+    given total equals u32 20
+    expected u32 1157627924
+  (version shifted left by 28) bitwise or (header shifted left by 24) bitwise or total
+
+total function «Sum modulo the width»
+  accepts a: u32, b: u32
+  returns u32
+  example «4294967295 plus 2 wraps around zero»
+    given a equals u32 4294967295
+    given b equals u32 2
+    expected u32 1
+  a plus b with overflow
+
+total function «Header length in bytes»
+  accepts word: u32
+  returns number
+  ensures «at most sixty bytes» result is at most 60
+  example «five words are twenty bytes»
+    given word equals u32 1157627924
+    expected 20
+  4 times (to number («Header length in words» of word))
+
+total function «Byte as a number»
+  accepts byte: u8
+  returns number
+  ensures «fits in a byte» result is at most 255
+  example «the largest byte»
+    given byte equals u8 255
+    expected 255
+  to number byte
+```
+
+```text insert output: check docs/examples/reference/en/machine-words.flang
+$ flang check docs/examples/reference/en/machine-words.flang
+модуль «Machine words»: функций 7, из них с доказанным завершением 7; типов 0
+docs/examples/reference/en/machine-words.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+```
+
+The line that starts with «модуль» counts the functions: there are seven, and
+each always terminates. The next line says that the types agree and every
+example gave the expected answer. The exit code is 0.
+
+**Literals.** A word is written as the type name followed by the value.
+
+| Form | What it is |
+| --- | --- |
+| `u32 5` | a word of type `u32` with value 5 |
+| `u64 "18446744073709551615"` | a value above 2⁵³−1: decimal digits in quotes |
+| `word bitwise and 15` | a number next to a word takes the type of the word |
+| `u8 300` | the error `FLANG_OVERFLOW` at check time: 300 does not fit in `u8` |
+
+There is no hexadecimal form: a line with `0xFF` gives the error `FLANG_PARSE`.
+Write a decimal number: 255 for `0xFF`, 65535 for `0xFFFF`. Keep the
+hexadecimal form in the name of an example or in a `note` line, as the file
+above does.
+
+**Operations.** Ordinary arithmetic on words checks for overflow. Wrapping
+modulo 2^w, familiar from C, is written out with the words `with overflow`.
+
+| Operation | How it is written | What it gives |
+| --- | --- | --- |
+| checked arithmetic | `a plus b`, `minus`, `times`, `divided by`, `modulo` | the exact result; if it does not fit the type or the divisor is zero, the error `FLANG_OVERFLOW` at run time |
+| wrapping arithmetic | `a plus b with overflow`, likewise `minus` and `times` | the result modulo 2^w |
+| bitwise operations | `bitwise and`, `bitwise or`, `bitwise xor`, `bitwise not a` | the same as `&`, `\|`, `^`, `~` in C |
+| shifts | `shifted left by n`, `shifted right by n` | `n` is below the word width; a right shift of a signed word is arithmetic |
+| rotations | `rotated left by n`, `rotated right by n` | `n` is taken modulo the width |
+| comparisons | `equals`, `is less than`, `is at most` and the rest | values are compared with their sign |
+| full product | `a times b with double width` | a record with the fields «старшая» (high) and «младшая» (low); unsigned words only |
+
+Bitwise operations and shifts have the precedence of addition and read left to
+right. Use parentheses, as the function «Header length in words» does.
+
+**Conversions.** A word does not mix in one operation with `number` or with a
+word of another width. The expression `a plus b` with `a: u32` and `b: u8` gives
+the error `FLANG_TYPE` with the hint «нужен перевод «u32 …»» (a conversion
+`u32 …` is needed).
+
+| Form | What it does |
+| --- | --- |
+| `u16 (word bitwise and 65535)` | a word of another width with the same value |
+| `u8 n` with `n: nat` | number → word |
+| `to number word` | word → number; a `u64` value above 2⁵³−1 gives `FLANG_OVERFLOW` |
+| `to text word` | the decimal form with a sign |
+
+A conversion keeps the value. If the value does not fit the new type, the run
+stops with `FLANG_OVERFLOW`; the high bits are not dropped.
+
+**What is proved.** `flang check` checks syntax, types, termination and
+examples. It does not tell whether the postconditions (`ensures`) are proved,
+and it exits with code 0 either way. `flang check --proof` does: it writes the
+proof report and returns exit code 3 if at least one postcondition is not
+proved.
+
+```text
+$ flang check docs/examples/reference/en/machine-words.flang --proof
+…
+  постусловие «at most sixty bytes» функции «Header length in bytes» — сетка 1 значение (примеры функции): …
+  постусловие «fits in a byte» функции «Byte as a number» — доказано по объявленным типам аргументов: …
+…
+docs/examples/reference/en/machine-words.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 2: доказано 1, условно 0, сетка 1, … — код возврата 3
+```
+
+The second line shown: the postcondition «fits in a byte» is proved («доказано»)
+for every input. The argument is declared `u8`, and the compiler knows the range
+of that type: 0 to 255. The first line: the postcondition «at most sixty bytes»
+is only tested on one example of the function (the word «сетка»). The mask
+`bitwise and 15` bounds the result by 60, but the compiler does not derive
+that. The last line is the summary: one postcondition of two is proved, exit
+code 3.
+
+About a word the compiler proves only the range of its type, and only for
+unsigned arguments of the function. A postcondition about the result of a mask,
+a shift or an addition is tested on examples.
+
+**A function that always terminates can still stop with an error.** The keyword
+`total` says one thing: the computation ends. A run-time error counts as ending
+too. File `docs/examples/reference/en/word-division.flang`:
+
+```flang insert docs/examples/reference/en/word-division.flang
+module «Word division»
+
+total function «Packets in the buffer»
+  accepts buffer: u64, packet: u64
+  returns u64
+  example «two packets of 1500 fit in 4096 bytes»
+    given buffer equals u64 4096
+    given packet equals u64 1500
+    expected u64 2
+  buffer divided by packet
+
+total function «Packets in the buffer or zero»
+  accepts buffer: u64, packet: u64
+  returns u64
+  example «a packet of zero length gives zero packets»
+    given buffer equals u64 4096
+    given packet equals u64 0
+    expected u64 0
+  if packet equals 0
+    then u64 0
+    else buffer divided by packet
+```
+
+```text insert output: check docs/examples/reference/en/word-division.flang
+$ flang check docs/examples/reference/en/word-division.flang
+модуль «Word division»: функций 2, из них с доказанным завершением 2; типов 0
+docs/examples/reference/en/word-division.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+```
+
+The check passes with no warnings, and `flang check --proof` returns 0 as well.
+A run of the first function with a divisor of 0 stops with an error:
+
+```text insert output: run docs/examples/reference/en/word-division.flang --function "Packets in the buffer" --args '{"buffer":4096,"packet":0}'
+$ flang run docs/examples/reference/en/word-division.flang --function "Packets in the buffer" --args '{"buffer":4096,"packet":0}'
+доказано: утверждений 0
+FLANG_OVERFLOW: 4096 «div» 0: деление на ноль
+$ echo $?
+1
+```
+
+The line «доказано: утверждений 0» says the file has no unproved
+postconditions. The next line is the division error: `div` is the internal name
+of `divided by`. The exit code is 1. An addition that does not fit the type
+behaves the same way. Guard such places as the second function does, with an
+`if` branch. The other way is a precondition:
+`requires «the packet is not empty» packet is greater than 0`.
+
+**What machine words do not have.**
+
+| Missing | What to use |
+| --- | --- |
+| a byte array type (`байты` is an unknown type) | `list u8` |
+| a fixed-size array | a list and a postcondition about its length |
+| hexadecimal literals | a decimal number |
+| division on `exact integer` | for fields up to 64 bits, `u64` and `shifted right by` |
+| proofs of bit properties | examples on the function |
+
 ### List
 
 `list Type` — homogeneous. The literal is `[1, 2, 3]`, the empty one is
@@ -2435,7 +2657,8 @@ The words of this section on all four surfaces, from the lexer's table:
 | a variable | `let`, which binds once |
 | a lambda | a declared function, passed as `function «Name»` |
 | a closure that captures a local variable | partial application by parameter name: `function «Name» with a equal to 10` |
-| bitwise operations on `число` | fixed-width words `u8` … `u64`, `i8` … `i64`: `побитовое и`, `побитовое или`, `исключающее или`, `сдвиг влево на` |
+| bitwise operations on `number` | [machine words](#machine-words-u8-u64-i8-i64) `u8` … `u64`, `i8` … `i64`: `bitwise and`, `bitwise or`, `bitwise xor`, `shifted left by` |
+| a hexadecimal literal `0xFF` | a decimal number: `255` |
 | writing into a list by index (`x[i] = v`) | `map` builds a new list |
 | a dependent type (`list of length n`) | `ensures` about the length, and a theorem about it |
 

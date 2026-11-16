@@ -730,6 +730,7 @@ b191b765603843509872cea954ea2e5d|19|×|×|×|0|docs/examples/db/postgres-plan.fl
 139ff6cb0dc4850e03d4516630b9240e|4|0|0|4|0|docs/examples/db/sqlite-read.flang
 139ff6cb0dc4850e03d4516630b9240e|4|0|0|4|0|docs/examples/db/sqlite-read.flang
 139ff6cb0dc4850e03d4516630b9240e|4|0|0|4|0|docs/examples/db/sqlite-read.flang
+c6e6098abea853ef745b7c1ec18853c7|1|0|1|0|5|docs/examples/driver/msi/msi-words.flang
 e257752320734279a328e9ee416f98ac|98|88|4|6|0|docs/examples/driver/msi/msi.flang
 e257752320734279a328e9ee416f98ac|98|88|4|6|0|docs/examples/driver/msi/msi.flang
 e257752320734279a328e9ee416f98ac|98|88|4|6|0|docs/examples/driver/msi/msi.flang
@@ -2195,6 +2196,7 @@ f9aa27872ecb5af69d1fdab45ad3ddd9|0|×|×|×|1|docs/examples/reference/ru/exact-t
 290991862277372d17502a0237daca9a|1|×|×|×|0|docs/examples/reference/ru/for-all-after-filter.flang
 1a87ca73fb27bdc6a28482b3b32da16a|2|×|×|×|0|docs/examples/reference/ru/free-statements.flang
 dedba5c7a0bcf804c7d502d56303b9c1|1|×|×|×|0|docs/examples/reference/ru/if-as-expression.flang
+ac5c45b143adf69f58d11b42b89e3e7d|2|1|1|0|0|docs/examples/reference/ru/machine-words.flang
 d757c4561ccd08358be4cc6a71d026b7|0|×|×|×|1|docs/examples/reference/ru/order-pipeline.flang
 d703a30a7e32ac7e4e5e36cf42274d7d|1|×|×|×|0|docs/examples/reference/ru/own-natural.flang
 fafd71328429b7183fff270c03508207|1|×|×|×|0|docs/examples/reference/ru/postcondition.flang

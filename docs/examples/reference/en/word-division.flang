@@ -1,0 +1,21 @@
+module «Word division»
+
+total function «Packets in the buffer»
+  accepts buffer: u64, packet: u64
+  returns u64
+  example «two packets of 1500 fit in 4096 bytes»
+    given buffer equals u64 4096
+    given packet equals u64 1500
+    expected u64 2
+  buffer divided by packet
+
+total function «Packets in the buffer or zero»
+  accepts buffer: u64, packet: u64
+  returns u64
+  example «a packet of zero length gives zero packets»
+    given buffer equals u64 4096
+    given packet equals u64 0
+    expected u64 0
+  if packet equals 0
+    then u64 0
+    else buffer divided by packet

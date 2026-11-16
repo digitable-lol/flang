@@ -1,0 +1,65 @@
+module «Machine words»
+
+note "The first word of an IPv4 header: version, header length, type of service, total length"
+note "The word in the examples is 1157627924, which is 0x45000014 in hexadecimal"
+
+total function «Protocol version»
+  accepts word: u32
+  returns u32
+  example «version 4 in the top four bits»
+    given word equals u32 1157627924
+    expected u32 4
+  word shifted right by 28
+
+total function «Header length in words»
+  accepts word: u32
+  returns u32
+  example «five words of 32 bits»
+    given word equals u32 1157627924
+    expected u32 5
+  (word shifted right by 24) bitwise and 15
+
+total function «Total packet length»
+  accepts word: u32
+  returns u16
+  example «twenty bytes, mask 0xFFFF»
+    given word equals u32 1157627924
+    expected u16 20
+  u16 (word bitwise and 65535)
+
+total function «Build the first word»
+  accepts version: u32, header: u32, total: u32
+  returns u32
+  example «back to 0x45000014»
+    given version equals u32 4
+    given header equals u32 5
+    given total equals u32 20
+    expected u32 1157627924
+  (version shifted left by 28) bitwise or (header shifted left by 24) bitwise or total
+
+total function «Sum modulo the width»
+  accepts a: u32, b: u32
+  returns u32
+  example «4294967295 plus 2 wraps around zero»
+    given a equals u32 4294967295
+    given b equals u32 2
+    expected u32 1
+  a plus b with overflow
+
+total function «Header length in bytes»
+  accepts word: u32
+  returns number
+  ensures «at most sixty bytes» result is at most 60
+  example «five words are twenty bytes»
+    given word equals u32 1157627924
+    expected 20
+  4 times (to number («Header length in words» of word))
+
+total function «Byte as a number»
+  accepts byte: u8
+  returns number
+  ensures «fits in a byte» result is at most 255
+  example «the largest byte»
+    given byte equals u8 255
+    expected 255
+  to number byte

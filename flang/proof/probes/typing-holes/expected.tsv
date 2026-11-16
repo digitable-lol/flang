@@ -34,7 +34,11 @@ run-requirement-outside.flang	check	0	замечаний нет
 run-requirement-outside.flang	run-requirement-outside	1	FLANG_PRECONDITION
 function-value-outside-refinement.flang	check	1	получен функция из целого в число
 function-value-outside-refinement.flang	run-function-value	1	FLANG_TYPE
-promised-arithmetic-refusals.flang	check	1	не проверено — замечаний 4
+arithmetic-refusal-remainder-by-zero.flang	check	1	FLANG_NOT_A_NUMBER
+arithmetic-refusal-zero-by-zero-by-name.flang	check	1	FLANG_NOT_A_NUMBER
+arithmetic-refusal-scale-mismatch.flang	check	1	FLANG_SCALE
+arithmetic-refusal-weight-difference.flang	check	1	FLANG_INFINITY
+not-a-number-written-by-literals.flang	check	0	замечаний нет
 empty-list-by-let.flang	check	1	а тело даёт список целого
 empty-list-by-let.flang	run-empty-list	1	FLANG_TYPE
 negative-zero-to-word.flang	run-negative-zero-word	0	true
@@ -60,8 +64,15 @@ selective-import-in-two-lines.flang	check	0	замечаний нет
 selective-import-helpers.flang	check	0	замечаний нет
 generic-call-in-match-branch.flang	check	1	FLANG_TYPE
 generic-call-in-match-branch.flang	run-generic-call-in-match	1	FLANG_TYPE
-branch-join-drops-second-type.flang	check	1	FLANG_TYPE
+branch-join-drops-second-type.flang	check	1	функция «Половина в иначе» объявлена как
 branch-join-drops-second-type.flang	run-branch-join	1	FLANG_TYPE
+branch-join-name-in-else.flang	check	1	функция «Имя в иначе» объявлена как
+branch-join-name-in-second-case.flang	check	1	функция «Имя во втором случае» объявлена как
+branch-join-name-in-list.flang	check	1	функция «Имя в списке» объявлена как
+branch-join-list-in-else.flang	check	1	функция «Список в иначе» объявлена как
+branch-join-record-in-else.flang	check	1	функция «Запись в иначе» объявлена как
+branch-join-function-in-else.flang	check	1	функция «Функция в иначе» объявлена как
+branch-join-function-in-second-case.flang	check	1	функция «Функция во втором случае» объявлена как
 linear-equality-doubling-at-negative-zero.flang	proof	3	доказано 0, условно 0
 linear-equality-doubling-at-negative-zero.flang	run-doubling-at-negative-zero	3	запуск только по явному согласию
 segment-sum-negative-zero-literal.flang	proof	3	доказано 0, условно 0

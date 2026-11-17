@@ -1370,6 +1370,20 @@ jobs:
       - name: Check docs built from code
         run: bootstrap/flang run-script docs:check
 
+      - name: Probe tour exercises
+        run: |
+          set -u
+          stub=docs/examples/tour/exercises/1-total-price/stub/total-price.flang
+          cp docs/examples/tour/exercises/1-total-price/solution/total-price.flang "$stub"
+          if bootstrap/flang run-script tour:exercises; then
+            git checkout -- "$stub"
+            echo "tour:exercises промолчал на заготовке, которая проходит проверку" >&2
+            exit 1
+          fi
+          git checkout -- "$stub"
+      - name: Check tour exercises
+        run: bootstrap/flang run-script tour:exercises
+
       - name: Probe description census
         run: |
           if bootstrap/flang io scripts/guards/description-census-guard.fscript --plan Forgery --на-веру; then

@@ -1,6 +1,6 @@
-# The cost of a batch
+# The cost of an order
 
-Write the body of `«Стоимость партии»`: the price times the number of pieces,
+Write the body of `«Стоимость заказа»`: the price times the number of pieces,
 plus delivery.
 
 Done when `flang check` answers «замечаний нет».

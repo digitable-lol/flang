@@ -39,9 +39,15 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Тур по языку', англ: 'Language tour',
     страницы: [
-      { адрес: 'tutorial.html', имя: 'Учебник', из: 'docs/site/tutorial.ru.md' },
-      { адрес: 'surface-sugar.html', имя: 'Циклы, классы, интерфейсы', из: 'docs/guide/surface-sugar.ru.md' },
-      { адрес: 'totality.html', имя: 'Тотальные функции', из: 'docs/guide/totality.ru.md' },
+      { адрес: 'tour-functions.html', имя: 'Функции и тесты', из: 'docs/site/tour-functions.ru.md' },
+      { адрес: 'tour-lists-and-strings.html', имя: 'Списки и строки', из: 'docs/site/tour-lists-and-strings.ru.md' },
+      { адрес: 'tour-branching-and-recursion.html', имя: 'Ветвление, разбор и рекурсия', из: 'docs/site/tour-branching-and-recursion.ru.md' },
+      { адрес: 'tour-termination.html', имя: 'Всегда завершающиеся функции', из: 'docs/site/tour-termination.ru.md' },
+      { адрес: 'tour-types.html', имя: 'Свои типы', из: 'docs/site/tour-types.ru.md' },
+      { адрес: 'tour-loops-and-classes.html', имя: 'Циклы, классы, интерфейсы', из: 'docs/site/tour-loops-and-classes.ru.md' },
+      { адрес: 'flang-for-rust-and-typescript-users.html', имя: 'flang для знающих Rust или TypeScript', из: 'docs/site/flang-for-rust-and-typescript-users.ru.md' },
+      { адрес: 'surface-sugar.html', имя: 'Во что переписываются циклы и классы', из: 'docs/guide/surface-sugar.ru.md' },
+      { адрес: 'totality.html', имя: 'Тотальность: завершение функций подробно', из: 'docs/guide/totality.ru.md' },
       { адрес: 'which-construct.html', имя: 'Какую конструкцию когда брать', из: 'docs/site/which-construct.ru.md' },
       { адрес: 'dsl.html', имя: 'Свой язык за 30 минут', из: 'docs/site/dsl.ru.md' },
       { адрес: 'how-to-write-flang.html', имя: 'Как писать на flang', из: 'docs/guide/how-to-write-flang.ru.md' },
@@ -202,6 +208,8 @@ export const ПЕРЕЕЗДЫ = {
   'memory.html': 'contributing.html',
   'modules.html': 'packages.html',
   'wasm.html': 'embedding.html',
+  // Учебник разделён на шесть страниц тура; старый адрес ведёт на первую.
+  'tutorial.html': 'tour-functions.html',
 };
 
 /**

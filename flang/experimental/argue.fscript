@@ -1,0 +1,334 @@
+модуль «Argue»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "argue/logic.flang"
+  использует «Argue claims» из "argue/claims.flang"
+  использует «Argue judge» из "argue/judge.flang"
+  использует «Argue report» из "argue/report.flang"
+
+объект «Options»
+  «text»: строка
+  «claims»: строка
+  «out»: строка
+  «pending»: строка
+  «fault»: строка
+
+тип «Argue step»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting text» содержит options: «Options»
+  вариант «Awaiting claims» содержит options: «Options», text: строка
+  вариант «Judging» содержит options: «Options», text: строка, judged: «Judged», waiting: список «Job»
+  вариант «Written» содержит words: строка
+  вариант «Said» содержит words: строка
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «The plan names how it is called»
+    ожидается "звать: flang run-script argue -- <текст> [--claims <разметка>] [--out <отчёт>]"
+  "звать: flang run-script argue -- <текст> [--claims <разметка>] [--out <отчёт>]"
+
+тотальная функция «Without extension»
+  принимает path: строка
+  возвращает строка
+  пример «The text extension is dropped»
+    дано path равно "docs/статья.txt"
+    ожидается "docs/статья"
+  пример «Another name is kept whole»
+    дано path равно "docs/статья"
+    ожидается "docs/статья"
+  пусть size равно (длина path)
+  если (size больше 4) и притом ((подстрока path с (size минус 3) по size) равен ".txt")
+    то подстрока path с 1 по (size минус 4)
+    иначе path
+
+тотальная функция «With argument»
+  принимает held: «Options», word: строка
+  возвращает «Options»
+  пример «A word after a key is the value of the key»
+    дано held равно (запись «Options» с «text» равным "a.txt" и «claims» равным "" и «out» равным ""
+        и «pending» равным "--out" и «fault» равным "")
+    дано word равно "b.md"
+    ожидается (запись «Options» с «text» равным "a.txt" и «claims» равным "" и «out» равным "b.md"
+        и «pending» равным "" и «fault» равным "")
+  пример «An unknown key is a fault»
+    дано held равно (запись «Options» с «text» равным "a.txt" и «claims» равным "" и «out» равным ""
+        и «pending» равным "" и «fault» равным "")
+    дано word равно "--fast"
+    ожидается (запись «Options» с «text» равным "a.txt" и «claims» равным "" и «out» равным ""
+        и «pending» равным "" и «fault» равным "ключ «--fast» не понят")
+  пусть keyed равно (запись «Options» с «text» равным (held.«text»)
+      и «claims» равным (если (held.«pending») равен "--claims" то word иначе (held.«claims»))
+      и «out» равным (если (held.«pending») равен "--out" то word иначе (held.«out»))
+      и «pending» равным "" и «fault» равным (held.«fault»))
+  если пусто (held.«pending») то («Bare argument» от held и word) иначе keyed
+
+тотальная функция «Bare argument»
+  принимает held: «Options», word: строка
+  возвращает «Options»
+  пусть keyed равно (word начинается с "--")
+  пусть strange равно (если ["--claims", "--out"] содержит word то ""
+      иначе (соединить ["ключ «", word, "» не понят"] по ""))
+  пусть extra равно (если пусто (held.«text») то ""
+      иначе (соединить ["лишний довод «", word, "»: текст уже назван"] по ""))
+  пусть fault равно (если keyed то strange иначе extra)
+  (запись «Options» с «text» равным (если keyed или (не (пусто (held.«text»))) то (held.«text») иначе word)
+      и «claims» равным (held.«claims») и «out» равным (held.«out»)
+      и «pending» равным (если ["--claims", "--out"] содержит word то word иначе "")
+      и «fault» равным (если пусто (held.«fault») то fault иначе (held.«fault»)))
+
+тотальная функция «Options of»
+  принимает words: список строки
+  возвращает «Options»
+  пример «The markup and the report stand next to the text unless named»
+    дано words равно ["docs/статья.txt"]
+    ожидается (запись «Options» с «text» равным "docs/статья.txt" и «claims» равным "docs/статья.claims"
+        и «out» равным "docs/статья.argue.md" и «pending» равным "" и «fault» равным "")
+  пример «Without a text there is nothing to check»
+    дано words равно пустой список
+    ожидается (запись «Options» с «text» равным "" и «claims» равным ".claims" и «out» равным ".argue.md"
+        и «pending» равным "" и «fault» равным "не назван файл текста")
+  пусть read равно (свёртка words начиная с (запись «Options» с «text» равным "" и «claims» равным ""
+      и «out» равным "" и «pending» равным "" и «fault» равным "") как held и word → «With argument» от held и word)
+  пусть stem равно («Without extension» от (read.«text»))
+  пусть fault равно (свёртка [[(если пусто (read.«text») то "да" иначе "нет"), "не назван файл текста"],
+      [(если пусто (read.«pending») то "нет" иначе "да"), (соединить ["после ключа «", (read.«pending»),
+      "» не названо значение"] по "")]] начиная с (read.«fault») как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
+  (запись «Options» с «text» равным (read.«text»)
+      и «claims» равным (если пусто (read.«claims») то (соединить [stem, ".claims"] по "") иначе (read.«claims»))
+      и «out» равным (если пусто (read.«out») то (соединить [stem, ".argue.md"] по "") иначе (read.«out»))
+      и «pending» равным "" и «fault» равным fault)
+
+тотальная функция «Path from root»
+  принимает path: строка
+  возвращает строка
+  пример «A path is taken from the root of the tree»
+    дано path равно "a.txt"
+    ожидается "../../a.txt"
+  пример «An absolute path is taken as it is»
+    дано path равно "/tmp/a.txt"
+    ожидается "/tmp/a.txt"
+  если path начинается с "/" то path иначе (соединить [(«Root»), "/", path] по "")
+
+тотальная функция «Refusal»
+  принимает code: строка, words: строка
+  возвращает «Продолжение»
+  пример «A refusal carries its code and its words»
+    дано code равно "FLANG_ARGUE_USAGE"
+    дано words равно "не назван файл текста"
+    ожидается вариант «Провал» с код равным "FLANG_ARGUE_USAGE" и сообщение равным "не назван файл текста"
+  вариант «Провал» с код равным code и сообщение равным words
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without a text the plan says how to call it»
+    дано reply равно вариант «Доводы» с доводы равным пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_ARGUE_USAGE" и сообщение равным
+        "не назван файл текста\nзвать: flang run-script argue -- <текст> [--claims <разметка>] [--out <отчёт>]")
+  разбор reply
+    случай вариант «Доводы» с доводы как said
+      то «Reading of text» от («Options of» от said)
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_USAGE" и («Usage»)
+
+тотальная функция «Reading of text»
+  принимает options: «Options»
+  возвращает «Продолжение»
+  если пусто (options.«fault»)
+    то (вариант «Сделать» с поручение равным (вариант «Прочитать файл»
+        с путь равным («Path from root» от (options.«text»)))
+        и потом равным (вариант «Awaiting text» с options равным options))
+    иначе («Refusal» от "FLANG_ARGUE_USAGE" и (соединить [(options.«fault»), "\n", («Usage»)] по ""))
+
+тотальная функция «After text»
+  принимает options: «Options», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A text that was not read fails»
+    дано options равно (запись «Options» с «text» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «pending» равным "" и «fault» равным "")
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_ARGUE_CANNOT_LOOK" и сообщение равным "текст не прочитан: a.txt"
+  разбор reply
+    случай вариант «Прочитано» с содержимое как text
+      то (вариант «Сделать» с поручение равным (вариант «Прочитать файл»
+          с путь равным («Path from root» от (options.«claims»)))
+          и потом равным (вариант «Awaiting claims» с options равным options и text равным text))
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["текст не прочитан: ", (options.«text»)] по "")
+
+тотальная функция «After claims»
+  принимает options: «Options», text: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A markup that was not read fails and names how to get one»
+    дано options равно (запись «Options» с «text» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «pending» равным "" и «fault» равным "")
+    дано text равно "Идёт дождь."
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Провал» с код равным "FLANG_ARGUE_CANNOT_LOOK" и сообщение равным
+        "разметка не прочитана: a.claims. Как её получить — docs/examples/argue/claims-prompt.md")
+  разбор reply
+    случай вариант «Прочитано» с содержимое как claims
+      то «Judged text» от options и text и («Read markup» от claims)
+    случай любое
+      то («Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["разметка не прочитана: ", (options.«claims»),
+          ". Как её получить — docs/examples/argue/claims-prompt.md"] по ""))
+
+тотальная функция «Judged text»
+  принимает options: «Options», text: строка, markup: «Markup»
+  возвращает «Продолжение»
+  пример «A quote that is not in the text refuses the whole markup with its line»
+    дано options равно (запись «Options» с «text» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «pending» равным "" и «fault» равным "")
+    дано text равно "Идёт дождь."
+    дано markup равно (запись «Markup»
+        с «notions» равным [(запись «Notion» с «name» равным "дождь" и «arity» равным 0 и «note» равным ""
+        и «line» равным 1)]
+        и «names» равным пустой список
+        и «entries» равным [(запись «Entry» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Шёл дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    ожидается (вариант «Провал» с код равным "FLANG_ARGUE_QUOTE" и сообщение равным
+        "a.claims: строка 3 разметки: цитата суждения [1] не стоит в тексте дословно: «Шёл дождь»")
+  пусть faults равно («Markup faults» от markup)
+  пусть quotes равно («Quote faults» от markup и text)
+  если не (пусто faults)
+    то «Refusal» от "FLANG_ARGUE_MARKUP" и («Fault words» от (options.«claims») и faults)
+    иначе (если пусто quotes то («First judgment» от options и text и markup)
+        иначе («Refusal» от "FLANG_ARGUE_QUOTE" и («Fault words» от (options.«claims») и quotes)))
+
+тотальная функция «Fault words»
+  принимает path: строка, faults: список строки
+  возвращает строка
+  пример «Every fault stands on its own line behind the name of the markup»
+    дано path равно "a.claims"
+    дано faults равно ["строка 1 разметки: раз", "строка 2 разметки: два"]
+    ожидается "a.claims: строка 1 разметки: раз\na.claims: строка 2 разметки: два"
+  соединить (отобразить faults как fault → соединить [path, ": ", fault] по "") по "\n"
+
+тотальная функция «First judgment»
+  принимает options: «Options», text: строка, markup: «Markup»
+  возвращает «Продолжение»
+  пусть verdicts равно («Verdicts of» от markup)
+  пусть clashes равно («Clashes of» от markup)
+  («Next judgment» от options и text и (запись «Judged» с «markup» равным markup и «verdicts» равным verdicts
+      и «clashes» равным clashes и «outcomes» равным пустой список) и («Jobs of» от verdicts и clashes))
+
+тотальная функция «Check script»
+  возвращает строка
+  пример «The program is written to a temporary place, judged strictly and removed»
+    ожидается """
+      d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
+      printf '%s' "$1" > "$d/step.flang"
+      "${FLANG_BIN:-$0/bootstrap/flang}" check "$d/step.flang" --proof --strict 2>&1
+      c=$?
+      rm -rf "$d"
+      exit $c
+      """
+  """
+  d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
+  printf '%s' "$1" > "$d/step.flang"
+  "${FLANG_BIN:-$0/bootstrap/flang}" check "$d/step.flang" --proof --strict 2>&1
+  c=$?
+  rm -rf "$d"
+  exit $c
+  """
+
+тотальная функция «Kernel order»
+  принимает job: «Job»
+  возвращает «Поручение»
+  (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", («Check script»), («Root»), (job.«program»)])
+
+тотальная функция «Words of the end»
+  принимает options: «Options», text: строка, judged: «Judged»
+  возвращает строка
+  пусть verdicts равно (judged.«verdicts»)
+  пусть outcomes равно (judged.«outcomes»)
+  (соединить ["отчёт записан: ", (options.«out»), "; находок: ",
+      (к строке («Finding count» от judged)),
+      "; шагов: ", (к строке (длина verdicts)),
+      ", следует: ", (к строке («Counted» от verdicts и outcomes и "follows")),
+      ", не следует: ", (к строке («Counted» от verdicts и outcomes и "fails")),
+      ", ядро не решило: ", (к строке («Counted» от verdicts и outcomes и "undecided")), "\n"] по "")
+
+тотальная функция «Next judgment»
+  принимает options: «Options», text: строка, judged: «Judged», waiting: список «Job»
+  возвращает «Продолжение»
+  разбор waiting
+    случай пусто
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл»
+          с путь равным («Path from root» от (options.«out»))
+          и содержимое равным («Report of» от (options.«text») и text и judged))
+          и потом равным (вариант «Written» с words равным («Words of the end» от options и text и judged)))
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Kernel order» от голова)
+          и потом равным (вариант «Judging» с options равным options и text равным text и judged равным judged
+          и waiting равным waiting))
+
+тотальная функция «With outcome»
+  принимает judged: «Judged», job: «Job», proven: признак
+  возвращает «Judged»
+  (запись «Judged» с «markup» равным (judged.«markup») и «verdicts» равным (judged.«verdicts»)
+      и «clashes» равным (judged.«clashes») и «outcomes» равным (добавить (запись «Outcome»
+      с «id» равным (job.«id») и «role» равным (job.«role») и «proven» равным proven) к (judged.«outcomes»)))
+
+тотальная функция «After kernel»
+  принимает options: «Options», text: строка, judged: «Judged», waiting: список «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор waiting
+    случай пусто
+      то «Next judgment» от options и text и judged и пустой список
+    случай голова и хвост
+      то разбор reply
+        случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+          то («Next judgment» от options и text и («With outcome» от judged и голова
+              и ((code равен 0) и притом («Kernel proved» от out))) и хвост)
+        случай любое
+          то «Next judgment» от options и text и («With outcome» от judged и голова и нет) и хвост
+
+тотальная функция «After writing»
+  принимает words: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как cried
+      то «Refusal» от "FLANG_ARGUE_CANNOT_WRITE" и (соединить ["отчёт не записан: ", cried] по "")
+    случай любое
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "/dev/stderr"
+          и содержимое равным words) и потом равным (вариант «Said» с words равным words))
+
+тотальная функция «Begin»
+  возвращает «Argue step»
+  пример «The plan starts from the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Onward»
+  принимает stage: «Argue step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то «After arguments» от reply
+    случай вариант «Awaiting text» с options как options
+      то «After text» от options и reply
+    случай вариант «Awaiting claims» с options как options и text как text
+      то «After claims» от options и text и reply
+    случай вариант «Judging» с options как options и text как text и judged как judged и waiting как waiting
+      то «After kernel» от options и text и judged и waiting и reply
+    случай вариант «Written» с words как words
+      то «After writing» от words и reply
+    случай вариант «Said» с words как words
+      то вариант «Конец работы» с значение равным words
+
+план «Argue»
+  состояние «Argue step»
+  начинает с «Begin»
+  обрабатывает «Onward»

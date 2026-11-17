@@ -823,3 +823,12 @@ body {
   .content .pg-tab { padding: .5rem .6rem; }
   .content .playground-fn, .content .playground-args { font-size: 16px; }
 }
+
+/* ── Страницы модулей библиотеки ───────────────────────────────────────
+   Список служебных функций свёрнут: он нужен тому, кто читает исходник
+   модуля, а не тому, кто ищет функцию для вызова. */
+.content .lib-internal { margin: 0 0 1.3rem; }
+.content .lib-internal > summary { cursor: pointer; color: var(--accent); margin: 0 0 .8rem; }
+.content .lib-internal > pre { max-height: 32rem; overflow: auto; }
+.content pre.lang-sig { padding: .7rem 1rem; margin: 0 0 1rem; }
+.content pre.lang-sig code { white-space: pre-wrap; overflow-wrap: anywhere; }

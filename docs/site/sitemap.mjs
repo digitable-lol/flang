@@ -82,8 +82,12 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Библиотека', англ: 'Library',
     страницы: [
-      { адрес: 'stdlib.html', имя: 'Справочник библиотеки', из: 'docs/site/stdlib.ru.md' },
-      { адрес: 'library-api.html', имя: 'API: каждая функция', из: 'docs/site/library-api.ru.md' },
+      /* Страницы модулей (`lib/<модуль>.html`) в этом списке не стоят: их печатает
+         сборка по файлам `flang/stdlib/` — см. `docs/site/library-pages.mjs`.
+         `library-api.html` — прежний адрес справочника: короткий указатель на
+         страницы модулей, в меню его нет (`внеМеню`). */
+      { адрес: 'stdlib.html', имя: 'Стандартная библиотека', из: 'docs/site/stdlib.ru.md' },
+      { адрес: 'library-api.html', имя: 'Справочник функций: страницы модулей', из: 'docs/site/library-api.ru.md', внеМеню: true },
       { адрес: 'packages.html', имя: 'Модули и пакеты', из: 'docs/site/packages.ru.md' },
       { адрес: 'processes.html', имя: 'Процессы и надзор', из: 'docs/site/processes.ru.md' },
       { адрес: 'database.html', имя: 'Базы данных', из: 'docs/site/database.ru.md' },

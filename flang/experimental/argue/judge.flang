@@ -16,7 +16,7 @@
   «falses»: список строки
   «program»: строка
 
-объект «Verdict»
+объект «Step verdict»
   «step»: «Inference»
   «status»: строка
   «repeats»: признак
@@ -43,18 +43,18 @@
   7
 
 тотальная функция «Universe of»
-  принимает premises: список «Entry», conclusions: список «Entry»
+  принимает premises: список «Thesis», conclusions: список «Thesis»
   возвращает список строки
   пример «Named things, a thing of every premise of existence and an arbitrary thing of a general conclusion»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "есть x: любит(x, Мария)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
-    дано conclusions равно [(запись «Entry» с «number» равным "2" и «line» равным 2
+    дано conclusions равно [(запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "все y: любит(y, Мария)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
     ожидается ["Мария", "x_из_1", "y_любой"]
   пример «Without any thing a nameless one is taken»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "все x: если кит(x), то зверь(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
     дано conclusions равно пустой список
@@ -66,7 +66,7 @@
       и (соединить ["из_", (entry.«number»)] по "")))
   пусть arbitrary равно (свёртка conclusions начиная с (пустой список) как found и entry →
       «Соединить списки» от found и («Own things» от («Form of» от (entry.«formula»)) и "все" и "любой"))
-  пусть every равно («Kept once» от («Words joined» от named и («Words joined» от witnesses и arbitrary)))
+  пусть every равно («Each once» от («Words joined» от named и («Words joined» от witnesses и arbitrary)))
   если пусто every то ["нечто"] иначе every
 
 тотальная функция «Words joined»
@@ -79,10 +79,10 @@
   «Соединить списки» от left и right
 
 тотальная функция «Own things»
-  принимает form: «Form», quantifier: строка, tag: строка
+  принимает form: «Quantified», quantifier: строка, tag: строка
   возвращает список строки
   пример «A form of another kind brings no thing of its own»
-    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
     дано quantifier равно "есть"
     дано tag равно "из_1"
@@ -92,7 +92,7 @@
     иначе пустой список
 
 тотальная функция «Instances of»
-  принимает premises: список «Entry», universe: список строки
+  принимает premises: список «Thesis», universe: список строки
   возвращает список «Formula»
   пример «No premises give no instances»
     дано premises равно пустой список
@@ -126,7 +126,7 @@
   пусть reached равно (свёртка instances начиная с («Atoms of» от goal) как atoms и round →
       свёртка instances начиная с atoms как grown и instance →
       если «Shares an atom» от instance и grown
-      то («Kept once» от («Соединить списки» от grown и («Atoms of» от instance))) иначе grown)
+      то («Each once» от («Соединить списки» от grown и («Atoms of» от instance))) иначе grown)
   если пусто («Atoms of» от goal)
     то instances
     иначе (отфильтровать instances где instance → «Shares an atom» от instance и reached)
@@ -184,14 +184,14 @@
         и «program» равным («Proof program» от title и core))
 
 тотальная функция «Signatures of»
-  принимает entries: список «Entry»
+  принимает entries: список «Thesis»
   возвращает список строки
   пример «A notion is named with the number of its places»
-    дано entries равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано entries равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "все x: если кит(x), то любит(x, Мария)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
     ожидается ["кит/1", "любит/2"]
-  («Kept once» от (свёртка entries начиная с (пустой список) как found и entry →
+  («Each once» от (свёртка entries начиная с (пустой список) как found и entry →
       «Соединить списки» от found и (отобразить («Mentions of» от ((«Form of» от (entry.«formula»)).«body»))
       как mention → соединить [(элемент 1 в mention), "/", (к строке ((длина mention) минус 1))] по "")))
 
@@ -235,12 +235,12 @@
           иначе (приписать голова к («Taken» от хвост и (count минус 1))))
 
 тотальная функция «Bridges of»
-  принимает premises: список «Entry», conclusion: «Entry»
+  принимает premises: список «Thesis», conclusion: «Thesis»
   возвращает список строки
   пример «Notions with as many places are tied both ways, from the premises to the conclusion first»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "кит(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)]
-    дано conclusion равно (запись «Entry» с «number» равным "2" и «line» равным 2
+    дано conclusion равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "зверь(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается ["все x: если кит(x), то зверь(x)", "все x: если зверь(x), то кит(x)"]
   пусть sources равно («Signatures of» от premises)
@@ -250,26 +250,42 @@
       «Words joined» от made и (отобразить targets как target → «Bridge text» от source и target))
   пусть backward равно (свёртка targets начиная с (пустой список) как made и target →
       «Words joined» от made и (отобразить sources как source → «Bridge text» от target и source))
-  (отфильтровать («Kept once» от («Words joined» от forward и backward))
+  (отфильтровать («Each once» от («Words joined» от forward и backward))
       где text → (не (пусто text)) и притом (не (text равен said)))
 
+тотальная функция «Is one statement»
+  принимает formula: «Formula»
+  возвращает признак
+  пример «A statement without connectives»
+    дано formula равно вариант «Atom» с name равным "дождь" и terms равным пустой список
+    ожидается да
+  пример «A negation is a compound formula»
+    дано formula равно (вариант «Not» с inner равным (вариант «Atom» с name равным "дождь"
+        и terms равным пустой список))
+    ожидается нет
+  разбор formula
+    случай вариант «Atom» с name как name и terms как terms
+      то да
+    случай любое
+      то нет
+
 тотальная функция «Whole bridge»
-  принимает premises: список «Entry», conclusion: «Entry»
+  принимает premises: список «Thesis», conclusion: «Thesis»
   возвращает список строки
   пример «Judgments without quantifiers are tied as they stand»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "дождь" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список),
-        (запись «Entry» с «number» равным "2" и «line» равным 2
+        (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "ветер или град" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
-    дано conclusion равно (запись «Entry» с «number» равным "3" и «line» равным 3
+    дано conclusion равно (запись «Thesis» с «number» равным "3" и «line» равным 3
         и «formula» равным "мокро" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается ["если дождь и (ветер или град), то мокро"]
   пример «A judgment with a quantifier is not tied this way»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "все x: кит(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
-    дано conclusion равно (запись «Entry» с «number» равным "3" и «line» равным 3
+    дано conclusion равно (запись «Thesis» с «number» равным "3" и «line» равным 3
         и «formula» равным "мокро" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается пустой список
   пусть forms равно (отобразить (добавить conclusion к premises) как entry → «Form of» от (entry.«formula»))
@@ -289,22 +305,25 @@
       и притом ((«Model against» от (вариант «Not» с inner равным together)).«found»))
 
 тотальная функция «Chosen bridge»
-  принимает premises: список «Entry», conclusion: «Entry», universe: список строки
+  принимает premises: список «Thesis», conclusion: «Thesis», universe: список строки
   возвращает строка
   пример «The bridge that makes the conclusion follow is named»
-    дано premises равно [(запись «Entry» с «number» равным "1" и «line» равным 1
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "все x: если птица(x), то летает(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
-    дано conclusion равно (запись «Entry» с «number» равным "2" и «line» равным 2
+    дано conclusion равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "все x: если пингвин(x), то летает(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)
     дано universe равно ["x_любой"]
     ожидается "все x: если пингвин(x), то птица(x)"
   пусть instances равно («Instances of» от premises и universe)
   пусть goal равно («Conclusion instance» от («Form of» от (conclusion.«formula»)) и universe)
-  разбор (отфильтровать («Соединить списки» от («Whole bridge» от premises и conclusion)
-      и («Bridges of» от premises и conclusion))
-      где text → «Bridge fits» от text и instances и goal и universe)
+  пусть whole равно («Whole bridge» от premises и conclusion)
+  пусть plain равно (пусто (отфильтровать (добавить conclusion к premises) где entry →
+      не («Is one statement» от ((«Form of» от (entry.«formula»)).«body»))))
+  пусть candidates равно (если plain то («Words joined» от whole и («Bridges of» от premises и conclusion))
+      иначе («Words joined» от («Bridges of» от premises и conclusion) и whole))
+  разбор (отфильтровать candidates где text → «Bridge fits» от text и instances и goal и universe)
     случай пусто
       то ""
     случай голова и хвост
@@ -337,25 +356,25 @@
   соединить ["вывод ", (step.«conclusion»), " из ", (соединить (step.«premises») по ", ")] по ""
 
 тотальная функция «Same form»
-  принимает left: «Entry», right: «Entry»
+  принимает left: «Thesis», right: «Thesis»
   возвращает признак
   пример «Two judgments written with other spacing say the same»
-    дано left равно (запись «Entry» с «number» равным "1" и «line» равным 1
+    дано left равно (запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "кит( Моби )" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
-    дано right равно (запись «Entry» с «number» равным "2" и «line» равным 2
+    дано right равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "кит(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается да
   («Form text» от («Form of» от (left.«formula»))) равен («Form text» от («Form of» от (right.«formula»)))
 
 тотальная функция «Plain verdict»
   принимает step: «Inference», status: строка, repeats: признак, jobs: список «Job»
-  возвращает «Verdict»
-  (запись «Verdict» с «step» равным step и «status» равным status и «repeats» равным repeats
+  возвращает «Step verdict»
+  (запись «Step verdict» с «step» равным step и «status» равным status и «repeats» равным repeats
       и «truths» равным пустой список и «falses» равным пустой список и «bridge» равным "" и «jobs» равным jobs)
 
 тотальная функция «Failed verdict»
-  принимает step: «Inference», premises: список «Entry», conclusion: «Entry», trial: «Trial», proof: список «Job»
-  возвращает «Verdict»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», trial: «Trial», proof: список «Job»
+  возвращает «Step verdict»
   пусть universe равно («Universe of» от premises и [conclusion])
   пусть instances равно («Instances of» от premises и universe)
   пусть goal равно («Conclusion instance» от («Form of» от (conclusion.«formula»)) и universe)
@@ -364,13 +383,13 @@
       " с добавленной посылкой"] по "") и bridge и instances и goal и universe))
   пусть extra равно (если пусто program то пустой список иначе [(запись «Job»
       с «id» равным («Step id» от step) и «role» равным "bridge" и «program» равным program)])
-  (запись «Verdict» с «step» равным step и «status» равным "fails" и «repeats» равным нет
+  (запись «Step verdict» с «step» равным step и «status» равным "fails" и «repeats» равным нет
       и «truths» равным (trial.«truths») и «falses» равным (trial.«falses»)
       и «bridge» равным (если пусто program то "" иначе bridge) и «jobs» равным («Соединить списки» от proof и extra))
 
 тотальная функция «Goal verdict»
-  принимает step: «Inference», premises: список «Entry», conclusion: «Entry», repeats: признак
-  возвращает «Verdict»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», repeats: признак
+  возвращает «Step verdict»
   пусть universe равно («Universe of» от premises и [conclusion])
   пусть instances равно («Instances of» от premises и universe)
   пусть goal равно («Conclusion instance» от («Form of» от (conclusion.«formula»)) и universe)
@@ -382,8 +401,8 @@
     иначе «Plain verdict» от step и (trial.«status») и repeats и proof
 
 тотальная функция «Judged step»
-  принимает step: «Inference», premises: список «Entry», conclusion: «Entry»
-  возвращает «Verdict»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis»
+  возвращает «Step verdict»
   пусть universe равно («Universe of» от premises и [conclusion])
   пусть together равно («Trial of» от (соединить ["посылки шага ", («Step title» от step), " вместе"] по "")
       и («Instances of» от premises и universe) и (вариант «Truth» с holds равным нет))
@@ -396,12 +415,12 @@
     иначе (если (together.«status») равен "large" то («Plain verdict» от step и "large" и repeats и пустой список)
         иначе («Goal verdict» от step и premises и conclusion и repeats))
 
-тотальная функция «Verdict of»
+тотальная функция «Step verdict of»
   принимает markup: «Markup», step: «Inference»
-  возвращает «Verdict»
+  возвращает «Step verdict»
   пусть premises равно (свёртка (step.«premises») начиная с (пустой список) как found и label →
-      «Соединить списки» от found и («Entries by» от (markup.«entries») и label))
-  разбор («Entries by» от (markup.«entries») и (step.«conclusion»))
+      «Соединить списки» от found и («Theses by» от (markup.«entries») и label))
+  разбор («Theses by» от (markup.«entries») и (step.«conclusion»))
     случай пусто
       то «Plain verdict» от step и "none" и нет и пустой список
     случай голова и хвост
@@ -410,28 +429,28 @@
 
 тотальная функция «Verdicts of»
   принимает markup: «Markup»
-  возвращает список «Verdict»
-  отобразить (markup.«steps») как step → «Verdict of» от markup и step
+  возвращает список «Step verdict»
+  отобразить (markup.«steps») как step → «Step verdict of» от markup и step
 
 тотальная функция «Share a notion»
-  принимает left: «Entry», right: «Entry»
+  принимает left: «Thesis», right: «Thesis»
   возвращает признак
   пример «Judgments about different notions cannot clash»
-    дано left равно (запись «Entry» с «number» равным "1" и «line» равным 1
+    дано left равно (запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "кит(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
-    дано right равно (запись «Entry» с «number» равным "2" и «line» равным 2
+    дано right равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "зверь(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается нет
   (не (пусто (отфильтровать («Signatures of» от [left]) где signature →
       («Signatures of» от [right]) содержит signature)))
 
 тотальная функция «Pair clash»
-  принимает left: «Entry», right: «Entry»
+  принимает left: «Thesis», right: «Thesis»
   возвращает список «Clash»
   пример «Judgments that can hold together do not clash»
-    дано left равно (запись «Entry» с «number» равным "1" и «line» равным 1
+    дано left равно (запись «Thesis» с «number» равным "1" и «line» равным 1
         и «formula» равным "кит(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
-    дано right равно (запись «Entry» с «number» равным "2" и «line» равным 2
+    дано right равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "все x: если кит(x), то зверь(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)
     ожидается пустой список
@@ -453,19 +472,19 @@
       «Соединить списки» от grown и («Pair clash» от left и right))
 
 тотальная функция «Jobs of»
-  принимает verdicts: список «Verdict», clashes: список «Clash»
+  принимает verdicts: список «Step verdict», clashes: список «Clash»
   возвращает список «Job»
   («Соединить списки» от (свёртка verdicts начиная с (пустой список) как jobs и verdict →
       «Соединить списки» от jobs и (verdict.«jobs»))
       и (свёртка clashes начиная с (пустой список) как jobs и clash → «Соединить списки» от jobs и (clash.«jobs»)))
 
-объект «Outcome»
+объект «Kernel answer»
   «id»: строка
   «role»: строка
   «proven»: признак
 
 тотальная функция «Proven»
-  принимает outcomes: список «Outcome», id: строка, role: строка
+  принимает outcomes: список «Kernel answer», id: строка, role: строка
   возвращает признак
   пример «A job nobody ran is not proven»
     дано outcomes равно пустой список

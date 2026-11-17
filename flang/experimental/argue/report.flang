@@ -6,21 +6,21 @@
 
 объект «Judged»
   «markup»: «Markup»
-  «verdicts»: список «Verdict»
+  «verdicts»: список «Step verdict»
   «clashes»: список «Clash»
-  «outcomes»: список «Outcome»
+  «outcomes»: список «Kernel answer»
 
 тотальная функция «Entry line»
   принимает markup: «Markup», label: строка
   возвращает строка
   пример «A judgment is shown with its quote and its form»
     дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
-        и «entries» равным [(запись «Entry» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
         и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)]
         и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
     дано label равно "1"
     ожидается "> [1] «Идёт дождь» — `дождь`"
-  разбор («Entries by» от (markup.«entries») и label)
+  разбор («Theses by» от (markup.«entries») и label)
     случай пусто
       то соединить ["> [", label, "] суждения в разметке нет"] по ""
     случай голова и хвост
@@ -29,7 +29,7 @@
 тотальная функция «Entry lines»
   принимает markup: «Markup», labels: список строки
   возвращает строка
-  соединить (отобразить («Kept once» от labels) как label → «Entry line» от markup и label) по "\n>\n"
+  соединить (отобразить («Each once» от labels) как label → «Entry line» от markup и label) по "\n>\n"
 
 тотальная функция «Step label»
   принимает step: «Inference»
@@ -68,17 +68,17 @@
   ["дедукция", "определение"] содержит (step.«kind»)
 
 тотальная функция «Final status»
-  принимает verdict: «Verdict», outcomes: список «Outcome»
+  принимает verdict: «Step verdict», outcomes: список «Kernel answer»
   возвращает строка
   пример «A step the kernel was not asked about is not decided»
-    дано verdict равно (запись «Verdict» с «step» равным (запись «Inference» с «line» равным 7
+    дано verdict равно (запись «Step verdict» с «step» равным (запись «Inference» с «line» равным 7
         и «conclusion» равным "3" и «premises» равным ["1"] и «kind» равным "дедукция")
         и «status» равным "follows" и «repeats» равным нет и «truths» равным пустой список
         и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
     дано outcomes равно пустой список
     ожидается "undecided"
   пример «A step without premises needs no kernel»
-    дано verdict равно (запись «Verdict» с «step» равным (запись «Inference» с «line» равным 7
+    дано verdict равно (запись «Step verdict» с «step» равным (запись «Inference» с «line» равным 7
         и «conclusion» равным "3" и «premises» равным пустой список и «kind» равным "дедукция")
         и «status» равным "none" и «repeats» равным нет и «truths» равным пустой список
         и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
@@ -121,7 +121,7 @@
   соединить ["верно: ", held, "; неверно: ", failed] по ""
 
 тотальная функция «Missing words»
-  принимает verdict: «Verdict», outcomes: список «Outcome»
+  принимает verdict: «Step verdict», outcomes: список «Kernel answer»
   возвращает строка
   пусть step равно (verdict.«step»)
   пусть named равно ((не (пусто (verdict.«bridge»)))
@@ -147,7 +147,7 @@
       если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
 
 тотальная функция «Failure block»
-  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome»
+  принимает markup: «Markup», verdict: «Step verdict», outcomes: список «Kernel answer»
   возвращает строка
   пусть step равно (verdict.«step»)
   (соединить [(соединить ["Вывод не следует: ", («Step label» от step)] по ""), "",
@@ -170,7 +170,7 @@
       по "\n")
 
 тотальная функция «Premise clash block»
-  принимает markup: «Markup», verdict: «Verdict»
+  принимает markup: «Markup», verdict: «Step verdict»
   возвращает строка
   пусть step равно (verdict.«step»)
   (соединить [(соединить ["Посылки противоречат друг другу: ", («Step label» от step)] по ""), "",
@@ -181,7 +181,7 @@
       "] из этих посылок не засчитан."] по "")] по "\n")
 
 тотальная функция «None block»
-  принимает markup: «Markup», verdict: «Verdict»
+  принимает markup: «Markup», verdict: «Step verdict»
   возвращает строка
   пусть step равно (verdict.«step»)
   (соединить [(соединить ["Вывод без посылок: [", (step.«conclusion»), "]"] по ""), "",
@@ -232,7 +232,7 @@
       по "\n")
 
 тотальная функция «Soft line»
-  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome»
+  принимает markup: «Markup», verdict: «Step verdict», outcomes: список «Kernel answer»
   возвращает строка
   пусть step равно (verdict.«step»)
   пусть status равно («Final status» от verdict и outcomes)
@@ -263,7 +263,7 @@
       если (элемент 1 в row) равен status то (элемент 2 в row) иначе found)
 
 тотальная функция «Table row»
-  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome», circles: список (список строки)
+  принимает markup: «Markup», verdict: «Step verdict», outcomes: список «Kernel answer», circles: список (список строки)
   возвращает строка
   пусть step равно (verdict.«step»)
   (соединить ["| ", («Step label» от step), " | ", («Kind words» от (step.«kind»)), " | ",
@@ -272,7 +272,7 @@
       иначе "; шаг входит в порочный круг"), " |"] по "")
 
 тотальная функция «Counted»
-  принимает verdicts: список «Verdict», outcomes: список «Outcome», status: строка
+  принимает verdicts: список «Step verdict», outcomes: список «Kernel answer», status: строка
   возвращает число
   длина (отфильтровать verdicts где verdict → («Final status» от verdict и outcomes) равен status)
 
@@ -311,7 +311,7 @@
   пусть quotes равно (свёртка (markup.«steps») начиная с (пустой список) как found и step →
       «Words joined» от found и (свёртка (приписать (step.«conclusion») к (step.«premises»))
       начиная с (пустой список) как taken и label → «Words joined» от taken
-      и (отобразить («Entries by» от (markup.«entries») и label) как entry → entry.«quote»)))
+      и (отобразить («Theses by» от (markup.«entries») и label) как entry → entry.«quote»)))
   (отфильтровать sentences где sentence → (не (пусто («Markers in» от sentence)))
       и притом (пусто (отфильтровать quotes где quote → «Touches» от sentence и quote)))
 
@@ -322,7 +322,7 @@
       где entry → «Touches» от sentence и (entry.«quote»))))
 
 тотальная функция «Finding blocks»
-  принимает markup: «Markup», verdicts: список «Verdict», clashes: список «Clash», outcomes: список «Outcome»
+  принимает markup: «Markup», verdicts: список «Step verdict», clashes: список «Clash», outcomes: список «Kernel answer»
   возвращает список строки
   пусть circles равно («Circles of» от («Canonical steps» от markup))
   пусть proved равно (отфильтровать clashes где clash → «Proven» от outcomes
@@ -374,7 +374,7 @@
     (к строке (длина («Uncovered markers» от markup и sentences))), "."] по "")]
 
 тотальная функция «Failures by kind»
-  принимает failed: список «Verdict»
+  принимает failed: список «Step verdict»
   возвращает строка
   пример «No failures are named so»
     дано failed равно пустой список

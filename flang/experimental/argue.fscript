@@ -191,7 +191,7 @@
         с «notions» равным [(запись «Notion» с «name» равным "дождь" и «arity» равным 0 и «note» равным ""
         и «line» равным 1)]
         и «names» равным пустой список
-        и «entries» равным [(запись «Entry» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
         и «quote» равным "Шёл дождь" и «quote line» равным 3 и «terms» равным пустой список)]
         и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
     ожидается (вариант «Провал» с код равным "FLANG_ARGUE_QUOTE" и сообщение равным
@@ -276,7 +276,7 @@
   принимает judged: «Judged», job: «Job», proven: признак
   возвращает «Judged»
   (запись «Judged» с «markup» равным (judged.«markup») и «verdicts» равным (judged.«verdicts»)
-      и «clashes» равным (judged.«clashes») и «outcomes» равным (добавить (запись «Outcome»
+      и «clashes» равным (judged.«clashes») и «outcomes» равным (добавить (запись «Kernel answer»
       с «id» равным (job.«id») и «role» равным (job.«role») и «proven» равным proven) к (judged.«outcomes»)))
 
 тотальная функция «After kernel»

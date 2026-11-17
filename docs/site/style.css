@@ -627,37 +627,125 @@ body {
 .content a.run-in-playground {
   display: inline-block; margin: -.6rem 0 1rem; font-size: .85em; font-family: var(--sans);
 }
-.content .playground { margin: 1rem 0 1.5rem; }
-.content .playground-bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; }
-.content .playground-examples, .content .playground-check, .content .playground-share {
-  font: inherit; font-size: .9em; padding: .3rem .6rem; border: 1px solid var(--rule);
-  border-radius: 4px; background: var(--surface); color: var(--ink); cursor: pointer;
+/* ── Песочница: рабочее место ──────────────────────────────────────────────
+   Страница песочницы — не статья с виджетом, а рабочее место во всю ширину
+   окна: плитки сетапов, под ними редактор слева и результат справа. Класс
+   `pg-page` ставит на `body` сборка (docs/site/build.mjs) только этой
+   странице: левое меню сайта свёрнуто в кнопку шапки, правого оглавления нет,
+   поясняющий текст идёт под рабочим местом обычной колонкой. */
+.menu {
+  display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+  background: none; border: 1px solid var(--rule); color: var(--muted);
+  border-radius: 3px; padding: .15rem .55rem; font: inherit; font-size: .82rem;
 }
-.content .playground-examples { flex: 1 1 14rem; max-width: 30rem; min-width: 0; }
-.content .playground-check { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-.content .playground-check:disabled { opacity: .6; cursor: progress; }
-.content .playground-status { color: var(--muted); font-size: .85em; }
-/* Что запускать и чем: имя функции, доводы и версия компилятора вкладки. На
-   узком экране поля встают друг под другом во всю ширину, кнопки — в ряд по
-   две: пальцем попасть можно, вбок страница не едет. */
-.content .playground-call { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .5rem; font-size: .85em; color: var(--muted); }
-.content .playground-field { display: flex; gap: .35rem; align-items: center; flex: 0 1 15rem; min-width: 0; white-space: nowrap; }
-.content .playground-field-wide { flex: 1 1 18rem; }
+.menu:hover, .menu[aria-expanded="true"] { background: var(--accent-bg); color: var(--accent); }
+.pg-page .shell { display: block; max-width: none; }
+.pg-page .side {
+  position: fixed; top: 53px; left: 0; bottom: 0; z-index: 6; width: min(var(--side-w), 86vw);
+  max-height: none; transform: translateX(-102%); visibility: hidden; transition: transform .15s ease, visibility .15s;
+}
+.pg-page.pg-menu-open .side { transform: none; visibility: visible; box-shadow: 8px 0 28px rgba(0, 0, 0, .22); }
+.pg-page .content { max-width: none; padding: 0 1.5rem 5rem; }
+.pg-page .content > *:not(.playground) { max-width: 46rem; margin-left: auto; margin-right: auto; }
+/* Код ошибки в песочнице ведёт на строку таблицы кодов: строка не прячется
+   под липкой шапкой и подсвечена. */
+.content tr[id^="FLANG_"] { scroll-margin-top: 5rem; }
+.content tr[id^="FLANG_"]:target td { background: var(--accent-bg); }
+.pg-page .content > h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.pg-page .bottom { max-width: none; }
+
+.content .playground {
+  display: flex; flex-direction: column; margin: 0 -1.5rem 2.5rem;
+  background: var(--ground); border-bottom: 1px solid var(--rule);
+}
+.content .playground [hidden] { display: none !important; }
+
+/* Плитки сетапов. На узком экране ряд прокручивается вбок, подпись плитки
+   прячется: редактор должен остаться на первом экране. */
+.content .pg-setups {
+  display: flex; gap: .4rem; padding: .5rem .75rem; overflow-x: auto; flex: none;
+  background: var(--surface); border-bottom: 1px solid var(--rule); scrollbar-width: thin;
+}
+.content .pg-setup {
+  flex: 1 1 auto; min-width: 7rem; display: flex; flex-direction: column; justify-content: center; line-height: 1.25; overflow: hidden;
+  padding: .38rem .65rem; border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--ground); color: var(--ink); text-decoration: none;
+}
+.content .pg-setup:hover { border-color: var(--accent); }
+.content .pg-setup-name { font-weight: 650; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.content .pg-setup-note { font-size: .74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.content .pg-setup[aria-current] { border-color: var(--accent); background: var(--accent-bg); box-shadow: inset 0 -2px 0 var(--accent); }
+.content .pg-setup[aria-current] .pg-setup-name { color: var(--accent); }
+
+/* Две колонки от 1000 пикселей: редактор и результат на всю высоту окна под
+   шапкой. Уже — одна колонка, редактор первым. */
+.content .pg-work { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1 1 auto; min-height: 0; }
+.content .pg-left, .content .pg-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.content .pg-right { background: var(--surface); }
+.content .pg-editors { display: flex; flex: 1 1 auto; min-height: 15rem; height: 46vh; }
+.content .pg-panels { flex: 1 1 auto; min-height: 12rem; padding: .9rem 1rem 1.5rem; font-size: .92rem; }
+.content .pg-panels p { margin: 0 0 .7rem; }
+@media (min-width: 1000px) {
+  .pg-page .content .playground { height: calc(100vh - 53px); min-height: 32rem; }
+  .content .pg-work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .content .pg-left { border-right: 1px solid var(--rule); }
+  .content .pg-editors { height: auto; min-height: 0; }
+  .content .pg-panels { overflow: auto; min-height: 0; }
+}
+
+/* Кнопки над редактором: слева действия сетапа (главная залита), справа —
+   примеры, ссылка и сброс. */
+.content .playground-bar {
+  display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; flex: none;
+  padding: .45rem .75rem; background: var(--surface); border-bottom: 1px solid var(--rule-soft);
+}
+.content .pg-actions { display: flex; gap: .4rem; }
+.content .pg-tools { display: flex; gap: .4rem; margin-left: auto; min-width: 0; }
+.content .pg-action, .content .pg-tool, .content .playground-examples {
+  font: inherit; font-size: .86rem; line-height: 1.3; padding: .32rem .7rem; border: 1px solid var(--rule);
+  border-radius: 5px; background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap;
+}
+.content .pg-action:hover, .content .pg-tool:hover { border-color: var(--accent); color: var(--accent); }
+.content .pg-action.pg-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.content .pg-action.pg-primary::before { content: "▶"; font-size: .7em; margin-right: .45em; vertical-align: .08em; }
+.content .pg-action.pg-primary:hover { filter: brightness(1.12); color: var(--on-accent); }
+.content .pg-action:disabled { opacity: .6; cursor: progress; }
+.content .playground-examples { min-width: 0; max-width: 11rem; text-overflow: ellipsis; }
+/* Что запускать: имя функции и аргументы. */
+.content .playground-call {
+  display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: center; flex: none;
+  padding: .35rem .75rem; font-size: .8rem; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--rule-soft);
+}
+.content .playground-field { display: flex; gap: .4rem; align-items: center; flex: 0 1 15rem; min-width: 0; white-space: nowrap; }
+.content .playground-field-wide { flex: 1 1 16rem; }
 .content .playground-fn, .content .playground-args {
-  font-family: var(--mono); font-size: .95em; padding: .25rem .45rem; border: 1px solid var(--rule);
-  border-radius: 4px; background: var(--surface); color: var(--ink); flex: 1 1 auto; min-width: 0; width: 100%;
+  font-family: var(--mono); font-size: .82rem; padding: .22rem .45rem; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--ground); color: var(--ink); flex: 1 1 auto; min-width: 0; width: 100%;
 }
-.content .playground-version { margin-left: auto; white-space: nowrap; }
-.content .playground-share:disabled { opacity: .6; cursor: progress; }
-.content .pg-verdict .playground-share { margin-top: .5rem; }
-.content .pg-terminal { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .82rem; max-height: 32rem; overflow: auto; }
+/* Строка состояния под редактором: итог последнего запуска, подсказка,
+   черновик и версия компилятора. */
+.content .pg-statusbar {
+  display: flex; flex-wrap: wrap; gap: .1rem 1rem; align-items: baseline; flex: none;
+  padding: .3rem .75rem; font-size: .76rem; color: var(--muted);
+  background: var(--surface); border-top: 1px solid var(--rule);
+}
+.content .playground-status { color: var(--ink); font-weight: 600; }
+.content .pg-hintline { color: var(--pg-warn); flex: 1 1 12rem; }
+.content .pg-hintline:empty, .content .pg-draft:empty, .content .playground-status:empty { display: none; }
+.content .playground-version { margin-left: auto; }
+.content .pg-terminal { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .82rem; }
+.content .pg-loader { flex: none; padding: .8rem 1rem .2rem; border-bottom: 1px solid var(--rule-soft); }
+.content .pg-loader p { margin: 0 0 .4rem; }
+.content .pg-loader-text { font-weight: 600; }
+.content .pg-loader-bar { display: block; width: 100%; height: .5rem; accent-color: var(--accent); }
+.content .pg-loader .pg-hint { font-size: .82rem; }
 
 /* Редактор: под прозрачным полем ввода лежит раскрашенная копия того же
    текста. Шрифт, кегль, интерлиньяж и отступы у обоих обязаны совпадать до
    пикселя — иначе курсор уедет от букв; поэтому они заданы одним правилом, а
    жирного у имён здесь нет (жирное начертание шире). Карточка тёмная в обеих
    темах — как каждый блок кода на сайте. */
-.content .pg-editor { position: relative; }
+.content .pg-editor { position: relative; flex: 1 1 auto; min-width: 0; }
 .content .pg-editor pre, .content .pg-editor pre ~ .playground-input {
   box-sizing: border-box; margin: 0; border: 0; padding: .8rem 1rem .8rem calc(3.6rem + 2px);
   font-family: var(--mono); font-size: .85rem; line-height: 1.45; letter-spacing: 0; tab-size: 2;
@@ -669,13 +757,18 @@ body {
 }
 .content .pg-editor pre::-webkit-scrollbar { display: none; }
 .content .pg-editor pre ~ .playground-input {
-  position: relative; display: block; resize: vertical; min-height: 12em;
+  position: relative; display: block; resize: none; height: 100%;
   background: transparent; color: transparent; caret-color: var(--flang-kod-tekst); outline: none;
 }
 .content .pg-editor pre ~ .playground-input:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 .content .pg-editor pre ~ .playground-input::selection { background: var(--flang-kod-ramka); color: transparent; }
 .content .pg-editor pre .pg-line, .content pre code .pg-line { display: block; min-height: 1.45em; }
-.content .pg-editor pre .pg-line-bad { background: var(--flang-kod-ramka); box-shadow: inset 4px 0 0 #ff5b5b; }
+.content .pg-editor pre .pg-line-bad { background: var(--flang-kod-ramka); box-shadow: inset 4px 0 0 var(--digitable-red); }
+/* Слово, на которое указал компилятор: волна под ним и лёгкая подложка. */
+.content .pg-editor pre .pg-squiggle {
+  text-decoration: underline wavy var(--digitable-red); text-decoration-thickness: 1.5px;
+  text-decoration-skip-ink: none; text-underline-offset: 3px; background: var(--flang-kod-ramka); border-radius: 2px;
+}
 .content .pg-editor pre .tok-slovo { color: var(--flang-syn-slovo); }
 .content .pg-editor pre .tok-imya { color: var(--flang-syn-imya); }
 .content .pg-editor pre .tok-stroka { color: var(--flang-syn-stroka); }
@@ -697,23 +790,57 @@ body {
   color: var(--flang-syn-zametka); background: var(--flang-kod-fon); border-right: 1px solid var(--flang-kod-ramka);
 }
 .content .pg-editor pre.pg-gutter .pg-num { display: block; min-height: 1.45em; }
-.content .pg-editor pre.pg-gutter .pg-num-bad { color: var(--flang-kod-tekst); background: var(--flang-kod-ramka); font-weight: 700; box-shadow: inset 3px 0 0 #ff5b5b; }
-.content .pg-marks { list-style: none; margin: .4rem 0 0; padding: 0; font-size: .88em; color: var(--bad); }
-.content .pg-marks li { margin: .15rem 0; }
+.content .pg-editor pre.pg-gutter .pg-num-bad { color: var(--flang-kod-tekst); background: var(--flang-kod-ramka); font-weight: 700; box-shadow: inset 3px 0 0 var(--digitable-red); }
 .content .pg-mark-line {
-  font: inherit; font-family: var(--mono); font-size: .9em; padding: 0 .35rem; cursor: pointer;
-  border: 1px solid var(--bad); border-radius: 3px; background: var(--bad-bg); color: var(--bad);
+  font: inherit; font-family: var(--mono); font-size: .78rem; padding: 0 .4rem; cursor: pointer; white-space: nowrap;
+  border: 1px solid var(--rule); border-radius: 3px; background: var(--ground); color: var(--accent);
 }
+.content .pg-mark-line:hover { border-color: var(--accent); }
 
-/* Вкладки вывода. */
-.content .pg-tabs { display: flex; flex-wrap: wrap; gap: .2rem; margin: 1rem 0 0; border-bottom: 1px solid var(--rule); }
+/* Вкладки справа: у каждого сетапа свой набор. */
+.content .pg-tabs { display: flex; gap: .15rem; flex: none; padding: .45rem .75rem 0; border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
 .content .pg-tab {
-  font: inherit; font-size: .9em; padding: .4rem .8rem; cursor: pointer; color: var(--muted);
-  background: none; border: 1px solid transparent; border-bottom: 0; border-radius: 4px 4px 0 0; margin-bottom: -1px;
+  font: inherit; font-size: .86rem; padding: .38rem .8rem; cursor: pointer; color: var(--muted); white-space: nowrap;
+  background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
-.content .pg-tab[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--rule); border-bottom: 1px solid var(--surface); }
-.content .pg-panel { padding: 1rem 0 0; }
-.content .pg-hint { color: var(--muted); }
+.content .pg-tab:hover { color: var(--ink); }
+.content .pg-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.content .pg-panel { padding: 0; }
+.content .pg-hint { color: var(--muted); font-size: .86rem; }
+.content .pg-note { color: var(--muted); font-size: .85rem; }
+.content .pg-libhint { margin-top: .5rem !important; color: var(--pg-warn); }
+
+/* Таблицы доказательств и тестов. Строка со ссылкой на исходник нажимается
+   целиком. */
+.content .pg-table-wrap { overflow-x: auto; margin: 0 0 1rem; }
+.content .pg-table { border-collapse: collapse; width: 100%; font-size: .88rem; margin: 0; }
+.content .pg-table th {
+  text-align: left; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+  color: var(--faint); padding: .3rem .6rem; border: 0; border-bottom: 1px solid var(--rule); background: none;
+}
+.content .pg-table td { padding: .5rem .6rem; border: 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; background: none; }
+.content .pg-table code { background: none; padding: 0; overflow-wrap: anywhere; }
+.content .pg-row-go { cursor: pointer; }
+.content .pg-row-go:hover td { background: var(--accent-bg); }
+.content .pg-row.pg-violated td:first-child, .content .pg-row.pg-failed td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.content .pg-cell-status { white-space: nowrap; }
+.content .pg-claim-kind { color: var(--muted); }
+.content .pg-claim-name { font-weight: 600; }
+.content .pg-claim-of { color: var(--muted); }
+.content .pg-table .pg-counter { margin: .3rem 0 0; color: var(--bad); }
+.content .pg-section { margin: 1.2rem 0 .5rem; font-size: .95rem; color: var(--ink); }
+.content .pg-section.pg-proved { color: var(--good); }
+.content .pg-section.pg-violated { color: var(--bad); }
+
+/* Сообщение об ошибке: место, текст и код со ссылкой на справочник. */
+.content .pg-problem { display: flex; flex-wrap: wrap; gap: .35rem .6rem; align-items: baseline; margin-top: .55rem; }
+.content .pg-problem-text { flex: 1 1 14rem; overflow-wrap: anywhere; }
+.content .pg-code { font-family: var(--mono); font-size: .76rem; white-space: nowrap; background: none; padding: 0; }
+/* Результат функции: вызов и значение крупно. */
+.content .pg-run-line { margin-top: .5rem !important; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .5rem; }
+.content .pg-run-call { background: none; padding: 0; color: var(--muted); }
+.content .pg-run-arrow { color: var(--faint); }
+.content .pg-run-value { font-family: var(--mono); font-size: 1.5rem; font-weight: 650; color: var(--ink); overflow-wrap: anywhere; }
 
 /* Выбор языка и файла: ряд кнопок, нажатая — цветом акцента. */
 .content .pg-langs, .content .pg-files { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0 0 .7rem; }
@@ -724,23 +851,17 @@ body {
 .content .pg-file { font-family: var(--mono); font-size: .78em; }
 .content .pg-lang[aria-pressed="true"], .content .pg-file[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .content .pg-lang:disabled { cursor: not-allowed; color: var(--muted); border-style: dashed; }
-.content .pg-emit-code pre, .content .pg-fn pre { max-height: 32rem; overflow: auto; }
+.content .pg-emit-code pre, .content .pg-fn pre { overflow: auto; }
 .content .pg-stale { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
-.content .pg-stale[hidden] { display: none; }
 .content .pg-fn { border-top: 1px solid var(--rule-soft); padding: .8rem 0 0; margin: .8rem 0 0; }
 .content .pg-fn-name { margin: 0 0 .5rem; font-family: var(--mono); font-size: .95em; }
 .content .pg-foreign-out { margin-top: 1rem; }
-/* На вкладке «язык → flang» свой редактор; главный и его кнопки прячутся,
-   чтобы наверху не стоял текст, к которому вкладка не относится. */
-.content .playground[data-tab="foreign"] > .pg-editor, .content .playground[data-tab="foreign"] > .pg-marks,
-.content .playground[data-tab="foreign"] .playground-bar .playground-check,
-.content .playground[data-tab="foreign"] .playground-bar .playground-share { display: none; }
-.content .pg-panel > .playground-check { margin: .6rem 0 0; }
 .content .pg-fallacy { margin-top: .5rem !important; }
 .content .pg-boundary { font-size: .9em; }
 
 /* Итог: одна карточка, цвет — по исходу. */
-.content .pg-verdict { border-left: 4px solid var(--rule); background: var(--surface); padding: .7rem 1rem; margin: 0 0 1rem; border-radius: 0 4px 4px 0; }
+.content .pg-verdict { border-left: 4px solid var(--rule); background: var(--ground); padding: .7rem 1rem; margin: 0 0 1rem; border-radius: 0 4px 4px 0; }
+.content .pg-verdict .pg-tool { margin-top: .6rem; }
 .content .pg-verdict p { margin: 0; }
 .content .pg-verdict-title { font-size: 1.15em; font-weight: 650; }
 .content .pg-verdict-lead { margin-top: .3rem !important; color: var(--muted); }
@@ -763,7 +884,7 @@ body {
 .content .pg-details { margin: .5rem 0 0; }
 .content .pg-details > summary, .content .pg-nested > summary { cursor: pointer; color: var(--accent); }
 .content .pg-nested { margin: .6rem 0 0 .2rem; }
-.content .pg-details .playground-output { white-space: pre-wrap; font-size: .78rem; max-height: 28rem; }
+.content .pg-details .playground-output { white-space: pre-wrap; font-size: .78rem; }
 .content .pg-sentences { margin: .5rem 0; }
 
 /* Формулы. */
@@ -790,10 +911,11 @@ body {
 .content .pg-figure-note { margin: 0; padding: 0 .8rem .6rem; color: var(--muted); font-size: .85em; }
 .content .pg-figure .pg-items { padding: 0 .8rem .4rem; margin: 0; }
 .content .pg-mark { font-size: .8em; padding: .05rem .45rem; border-radius: 999px; border: 1px solid currentColor; }
-.content .pg-mark.pg-proved { color: var(--good); }
-.content .pg-mark.pg-examples { color: var(--pg-warn); }
-.content .pg-mark.pg-violated { color: var(--bad); }
-.content .pg-mark.pg-unknown, .content .pg-mark.pg-unproved { color: var(--muted); }
+.content .pg-mark { white-space: nowrap; }
+.content .pg-mark.pg-proved, .content .pg-mark.pg-passed { color: var(--good); background: var(--good-bg); }
+.content .pg-mark.pg-examples { color: var(--pg-warn); background: var(--pg-warn-bg); }
+.content .pg-mark.pg-violated, .content .pg-mark.pg-failed, .content .pg-mark.pg-error { color: var(--bad); background: var(--bad-bg); }
+.content .pg-mark.pg-unknown, .content .pg-mark.pg-unproved, .content .pg-mark.pg-conditional { color: var(--muted); }
 .content .pg-svg { display: block; max-width: none; font-family: var(--sans); font-size: 13px; }
 .content .pg-svg .pg-node rect { fill: var(--code-bg); stroke: var(--quote-bar); stroke-width: 1.2; }
 .content .pg-svg .pg-node text { fill: var(--ink); }
@@ -813,15 +935,26 @@ body {
 .content .pg-svg .pg-set-item { fill: var(--ink); font-family: var(--mono); font-size: 13px; }
 
 /* Песочница на узком экране — в конце файла, чтобы правила не перебивались
-   основными, объявленными выше. */
+   основными, объявленными выше. Подписи плиток и слово у кнопки меню
+   прячутся, поиск шапки на этой странице уходит: редактор обязан остаться на
+   первом экране телефона. */
 @media (max-width: 760px) {
-  .content .playground-examples { flex-basis: 100%; max-width: none; }
-  .content .playground-check, .content .playground-share { flex: 1 1 40%; padding: .55rem .6rem; }
-  .content .playground-status { flex-basis: 100%; }
+  .pg-page .poisk { display: none; }
+  .pg-page .top { flex-wrap: nowrap; }
+  .pg-page .menu-word { display: none; }
+  .pg-page .content { padding: 0 1.2rem 4rem; }
+  .content .playground { margin: 0 -1.2rem 2rem; }
+  .content .pg-setups { padding: .4rem .6rem; }
+  .content .pg-setup { flex: 0 0 auto; min-width: 0; padding: .35rem .65rem; }
+  .content .pg-setup-note { display: none; }
+  .content .playground-bar { padding: .4rem .6rem; }
+  .content .pg-action, .content .pg-tool, .content .playground-examples { padding: .45rem .6rem; }
+  .content .playground-examples { max-width: 7.5rem; }
   .content .playground-field, .content .playground-field-wide { flex: 1 1 100%; }
-  .content .playground-version { margin-left: 0; white-space: normal; }
-  .content .pg-tab { padding: .5rem .6rem; }
   .content .playground-fn, .content .playground-args { font-size: 16px; }
+  .content .pg-editors { height: 44vh; }
+  .content .playground-version { margin-left: 0; }
+  .content .pg-panels { padding: .8rem .75rem 1.2rem; }
 }
 
 /* ── Страницы модулей библиотеки ───────────────────────────────────────

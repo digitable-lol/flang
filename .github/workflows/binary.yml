@@ -2341,6 +2341,15 @@ jobs:
       - name: Check claims over a function not known to terminate
         run: bootstrap/flang io flang/proof/probes/unverified-measure/run.fscript --plan Binary --timeout 900000
 
+      # ТАБЛИЦА РАЗРЫВА С LEAN. У каждой строки таблицы в docs/lean-parity.md
+      # есть доказанная программа и отвергнутая соседка; проба сверяет код и
+      # слово ответа двоичного с `expected.tsv`. До этого шага ярлык
+      # `lean-parity:gaps` не звал никто. Lean этой пробе не нужен; сверка с
+      # самим Lean (`lean-parity:probe`) стоит в `lean-crosscheck.yml`, где он
+      # установлен.
+      - name: Check the lean parity gap table
+        run: bootstrap/flang run-script lean-parity:gaps
+
       # ПАМЯТЬ ВЫЗОВОВ ЯДРА НЕ СМЕЕТ МЕНЯТЬ ОТВЕТ, и до 4 октября 2026 этого не
       # спрашивал никто. Проба лежала в дереве с ветки задачи 5709 и не звалась
       # ниоткуда: ни работой, ни ярлыком, ни хуком, — на неё и краснела работа

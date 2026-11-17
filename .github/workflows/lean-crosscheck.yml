@@ -103,6 +103,15 @@ jobs:
           FLANG_TMP: ${{ runner.temp }}
         run: bootstrap/flang io flang/proof/lean/run.fscript --max-steps 4000000000 --timeout 900000
 
+      # СРАВНЕНИЕ С LEAN НА ЗАДАЧАХ `flang/proof/parity`. Каждую задачу берут
+      # двоичный (`check --proof --strict`) и Lean; класс «автоматически»,
+      # «вручную» или «никак» сверяется с `corpus.tsv`, отказ Lean — тоже
+      # расхождение. Шаг стоит здесь, потому что Lean установлен только в этой
+      # работе. До него ярлык `lean-parity:probe` не звал никто, и строка
+      # `nat-double` разошлась с двоичным незамеченной.
+      - name: Compare the prover with Lean on the parity tasks
+        run: bootstrap/flang run-script lean-parity:probe
+
       - name: Category theory corpus
         env:
           FLANG_TMP: ${{ runner.temp }}

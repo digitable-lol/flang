@@ -1,76 +1,32 @@
 [Back to README](../../README.md) · [Documentation index](../README.md)
 
-# Loops, classes, interfaces and the one-line header
+# What loops and classes are rewritten into
 
-flang has no mutable variables, yet you can write a loop and a class. The
-compiler expands these four forms into plain flang — a fold, a total function,
-an `объект` (record), a `тип` (type) with variants — and checks the expanded
-text: types, termination and proofs. An error names the line of your source.
+How to write loops and classes is shown on the tour page
+[Loops, classes, interfaces](../site/tour-loops-and-classes.md). This page
+answers a different question: what the compiler rewrites `цикл` (loop), `класс`
+(class) and `интерфейс` (interface) into, what proves termination and which
+errors there are.
 
-The words `цикл` (loop), `класс` (class), `интерфейс` (interface) and `метод`
-(method) have no English spelling, so the examples are in Russian.
+The compiler rewrites these forms into plain flang: functions, records, types
+with variants. Then it checks the result: types, termination, proofs. An error
+message names the line of your file.
+
+The words `цикл`, `класс`, `интерфейс` and `метод` (method) have no English
+spelling, so the examples are in Russian.
 
 ## The one-line header
 
-```
+```flang
 тотальная функция «Меньшее из двух» принимает первый: число, второй: число возвращает число
 ```
 
 The same as three lines: `тотальная функция «Меньшее из двух»`, `принимает …`,
 `возвращает …`. Without parameters: `функция «Ноль» возвращает число`.
 
-## A loop over a list
+## A loop
 
-Put this in `stock.flang`:
-
-```flang
-модуль «Сделка»
-
-тотальная функция «Лучшая прибыль» принимает цены: список числа возвращает число
-  пример «купить за 1, продать за 6»
-    дано цены равно [7, 1, 5, 3, 6, 4]
-    ожидается 5
-  разбор цены
-    случай пусто
-      то 0
-    случай голова и хвост
-      цикл «Сделка»
-        для каждого цена из хвост
-        храним минимум: число равным голова, прибыль: число равным 0
-        в конце прибыль
-        пусть сегодня равно цена минус минимум
-        пусть ниже равно если цена меньше минимум то цена иначе минимум
-        пусть лучше равно если сегодня больше прибыль то сегодня иначе прибыль
-        дальше: минимум станет ниже, прибыль станет лучше
-```
-
-```bash
-$ flang check stock.flang
-модуль «Сделка»: функций 1, из них с доказанным завершением 1; типов 1
-stock.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-
-$ flang run stock.flang --function "Лучшая прибыль" --args '{"цены": [7, 1, 5, 3, 6, 4]}'
-доказано: утверждений 0
-5
-```
-
-| Loop line | Meaning |
-|---|---|
-| `для каждого х из список` | walk the list; `х: тип` is needed when a branch returns early |
-| `храним имя: тип равным начало, …` | the values kept between steps |
-| `в конце значение` | the answer when the list ends |
-| `дальше: имя станет значение, …` | the next step; kept values not named stay as they were |
-
-A branch without `дальше` is the answer of the loop: an early return. A name
-bound by `пусть` before the loop enters it through `храним`.
-
-## The `пока` (while) loop
-
-A `пока` loop needs a bound: without one termination cannot be proved, and the
-compiler refuses with `FLANG_SUGAR_LOOP`. There are two bounds.
-
-**`убывает мера`** (decreases) — a non-negative integer expression that gets
-smaller on every step:
+The file `countdown.flang` sums the numbers from 1 to `н`:
 
 ```flang
 модуль «Счёт»
@@ -88,60 +44,46 @@ smaller on every step:
 ```
 
 ```bash
-$ flang run countdown.flang --function "Сумма до" --args '{"н": 4}'
-доказано: утверждений 0
-10
+$ flang check countdown.flang --proof
+…
+  «Сумма до»  доказано композицией: рекурсии нет, …
+  «Сложение»  доказано объявленной мерой: убывает «осталось»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
+…
 ```
 
-The measure is checked at run time. On the fractional input `{"н": 2.5}` it
-stops being an integer, and instead of looping forever the run answers
-`FLANG_MEASURE`, exit code 1.
+The file has one function, the report has two. The loop `«Сложение»` became a
+separate function that calls itself. The values of the `храним` ("keep") line
+became its parameters. The second report line says that the decrease of the
+expression in the `убывает` line is not proved; it is checked on every step of
+the loop.
 
-**`шагов не больше n, иначе v`** (at most n steps, otherwise v) — a step budget
-and the answer when it runs out. There is no run-time check: the budget goes
-down by one, and termination is proved.
-
-```flang
-модуль «Binary search»
-
-тотальная функция «Двоичный поиск» принимает элементы: список числа, цель: число возвращает число
-  пример «Один элемент»
-    дано элементы равно [5]
-    дано цель равно 5
-    ожидается 0
-  цикл «Поиск»
-    пока низ не больше верх
-    шагов не больше длина элементы, иначе -1
-    храним низ: число равным 1, верх: число равным длина элементы
-    в конце -1
-    пусть сумма равно низ плюс верх
-    пусть середина равно (сумма минус (сумма остаток от 2)) делить на 2
-    пусть значение равно элемент середина в элементы
-    если значение равен цель
-      то середина минус 1
-      иначе если значение меньше цель
-        то дальше: низ станет середина плюс 1
-        иначе дальше: верх станет середина минус 1
-```
+On a fractional argument the check fires, with exit code 1:
 
 ```bash
-$ flang run search.flang --function "Двоичный поиск" --args '{"элементы": [1, 3, 5, 7], "цель": 5}'
+$ flang run countdown.flang --function "Сумма до" --args '{"н": 2.5}'
 доказано: утверждений 0
-2
+FLANG_MEASURE: тотальная функция «Сложение»: мера на вызове «Сложение» — «осталось» — перестала быть целой. …
 ```
 
-What a loop expands into and how termination is proved:
+Each kind of loop is rewritten in its own way:
 
-| Loop | Expansion | Termination |
+| Loop | Rewritten into | What proves termination |
 |---|---|---|
-| `для каждого`, the body ends with one `дальше` | a `свёртка` (fold) over a record of the kept values | by construction |
-| `для каждого` with an early return | a function with `разбор` (match) on the rest of the list | by the structure of the list |
-| `пока` with `шагов не больше` | a function with a budget that goes down by one | by the exact step |
-| `пока` with `убывает` | a function with a declared measure | by the measure, checked at run time |
+| `для каждого` (for each), the body ends with a single `дальше` | a `свёртка` (fold) over a record of the `храним` values | the list is finite |
+| `для каждого` with an early exit | a function with `разбор` over the rest of the list | the rest is shorter than the list |
+| `пока` (while) with a `шагов не больше` line | a function with a counter that goes down by one | the counter has the type `неотрицательное` |
+| `пока` with an `убывает` line | a function with an `убывает` line | a run-time check |
 
-## Class
+A branch without `дальше` gives the result of the loop at once: this is the
+early exit. A name declared with `пусть` before the loop enters it through
+`храним`.
 
-Put this in `account.flang`:
+The ways of proving are covered in
+[How the compiler proves that a function terminates](totality.md).
+
+## A class
+
+The file `account.flang`:
 
 ```flang
 модуль «Счета»
@@ -172,21 +114,25 @@ $ flang run account.flang --function "Счёт: Положить" --args '{"эт
 {"владелец":"Аня","остаток":40}
 ```
 
-A class is an `объект «Счёт»` plus the functions `«Счёт: Положить»` and
-`«Счёт: Пусто ли»` whose first parameter is `этот` (this). There is no mutable
-state:
+The class is rewritten into the record `объект «Счёт»` and the functions
+`«Счёт: Положить»` and `«Счёт: Пусто ли»`, whose first parameter is `этот`
+("this"). There is no mutable state:
 
-- a field inside a method is written as a bare name and is read from `этот`;
-- a method that ends with `поле станет значение` lines returns a new `«Счёт»`;
-  fields not named carry over;
-- `всегда` (always) gives every method a `требует`, and a method that returns
-  `«Счёт»` also gets an `обеспечивает` about the result. Here it is proved:
-  that is the "утверждений 1" in the output.
+- a field name in a method is read from `этот`;
+- a method that ends with `field станет value` lines returns a new `«Счёт»`
+  record; the other fields are copied;
+- the `всегда` ("always") line gives every method a precondition. A method that
+  returns `«Счёт»` also gets a postcondition about the result.
+
+«утверждений 1» in the output is the postcondition of `«Положить»`: the
+compiler proved it.
 
 A call from code: `«Счёт: Положить» от счёт и 30`. A negative amount breaks
-the `требует`, and `run` answers `FLANG_PRECONDITION`, exit code 1.
+`требует`, and `flang run` answers `FLANG_PRECONDITION` with exit code 1.
 
-## Interface
+## An interface
+
+The file `shapes.flang`:
 
 ```flang
 модуль «Фигуры»
@@ -222,25 +168,31 @@ $ flang test shapes.flang
 shapes.flang: примеров 2, прошло 2, не прошло 0
 ```
 
-An interface is a `тип «Фигура»` with one variant per class in the file that
-says `есть «Фигура»`, plus the functions `«Фигура: Площадь»` and
-`«Фигура: Название»` that match on the classes. A method without a body is
-required from a class; a method with a body is the default. An `обеспечивает`
-on an interface method lands on that method of every class.
+The interface is rewritten into `тип «Фигура»`. The type has a variant for
+every class of the file that says `есть «Фигура»`. The methods became the
+functions `«Фигура: Площадь»` and `«Фигура: Название»` with `разбор` over the
+classes.
 
-## Refusals
+A method without a body is required of every class. A method with a body is
+the default implementation. An `обеспечивает` line on an interface method is
+carried over to the method of every class.
 
-`check` exits with code 1; the message names the line and column.
+## Errors
+
+The exit code of `flang check` is 1. The message names the line and the column.
 
 | Code | When |
 |---|---|
-| `FLANG_SUGAR_LOOP` | no `в конце`; neither `для каждого` nor `пока`; `пока` has no bound; `дальше` changes a name that is not in `храним` |
-| `FLANG_SUGAR_HEADER` | `возвращает` before `принимает`; a word said twice; nothing after a word |
-| `FLANG_SUGAR_CLASS` | a class line is not a field, `всегда` or `метод`; `станет` changes a field that does not exist; a field named twice |
-| `FLANG_SUGAR_INTERFACE` | a class lacks a required method; the header of a class method differs from the interface; the interface has no classes |
+| `FLANG_SUGAR_LOOP` | no `в конце` line; neither `для каждого` nor `пока`; `пока` has no bound; `дальше` changes a name that is not in `храним` |
+| `FLANG_SUGAR_HEADER` | `возвращает` before `принимает`; a word is repeated; nothing follows a word |
+| `FLANG_SUGAR_CLASS` | a class line is not a field, `всегда` or `метод`; `станет` changes a field that does not exist; a field is declared twice |
+| `FLANG_SUGAR_INTERFACE` | a class did not declare a required method; the header of a class method differs from the one in the interface; the interface has no classes |
 
 For example, a loop without the `в конце` line:
 
 ```
 FLANG_SUGAR_LOOP в файле no-end.flang, строка 11, столбец 7: цикл «Сделка»: нет строки «в конце …»: цикл не говорит, что он отдаёт, когда кончается
 ```
+
+The message says: the loop has no «в конце …» line, so it does not say what it
+gives back when it ends.

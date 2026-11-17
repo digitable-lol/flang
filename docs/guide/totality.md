@@ -1,26 +1,23 @@
 [Back to README](../../README.md) · [Documentation index](../README.md)
 
-# What `тотальная` buys you
+# How the compiler proves that a function terminates
 
-`тотальная` in front of `функция` is a promise to the compiler: this function
-terminates on every input. Two of the three ways below the compiler proves at
-build time, and without a proof it will not build the file; for the third the
-check moves to run time, and that has a section of its own below. A function
-without the marker may be written any way you like, but it cannot be called from
-the fact checker (`flang facts`) or from a process handler.
+What does the compiler use to prove that a function marked `тотальная` ends on
+any arguments, and what do you do when it could not? This property is called
+totality. A short introduction with an exercise is
+[Functions that always terminate](../site/tour-termination.md).
 
-The sample files below have short names — `nt1.flang`, `nt2.flang` and so on; the
-refusals are quoted verbatim, file name included, exactly as the compiler prints
-them.
+| | `тотальная функция` (total) | plain `функция` |
+| --- | --- | --- |
+| recursion | must decrease in one of the three ways below | any |
+| termination not proved | the error `FLANG_NOT_TOTAL`, the file does not pass the check | no check |
+| a call from a `тотальная` function | allowed | not allowed |
+| `flang facts` | evaluates it | does not evaluate it |
+| a process handler | fits | needs the line `с запасом N витков` (a turn budget) |
 
-|                       | `тотальная`                                    | plain `функция`            |
-| --------------------- | ---------------------------------------------- | -------------------------- |
-| recursion             | must decrease one of the three ways below       | any                        |
-| on failure            | `FLANG_NOT_TOTAL`, the file does not build      | —                          |
-| `flang facts`         | accepts it                                      | refuses it                 |
-| process handler       | fine                                            | needs a fuel bound         |
+## The error you will see first
 
-## The first refusal you will see
+The file `countdown.flang`:
 
 ```flang refused
 модуль «Проба»
@@ -34,71 +31,58 @@ them.
 ```
 
 ```bash
-flang check nt1.flang
-```
-
-```
+$ flang check countdown.flang
 модуль «Проба»: функций 1, из них с доказанным завершением 0; типов 0
 без доказанного завершения: «Обратный отсчёт»
-FLANG_NOT_TOTAL в файле nt1.flang, строка 8, столбец 11: тотальная функция «Обратный отсчёт»: рекурсивный вызов «Обратный отсчёт» не убывает — аргумент 1 («н» sub 1) уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида «если н не больше 0». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
-nt1.flang: не проверено — замечаний 1
+FLANG_NOT_TOTAL в файле countdown.flang, строка 8, столбец 11: тотальная функция «Обратный отсчёт»: рекурсивный вызов «Обратный отсчёт» не убывает — аргумент 1 («н» sub 1) уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида «если н не больше 0». …
+countdown.flang: не проверено — замечаний 1
 ```
 
-The refusal names both the place and the cure. The difference between `равен 0`
-and `не больше 0` is not a matter of taste: at `н` equal to `-1` the first check
-does not fire and the chain runs to minus infinity. One word, and the file builds:
+The message names the call, the reason and the fix: "nothing bounds «н» from
+below: add a check like «если н не больше 0»". `«н» sub 1` in it stands for
+`н минус 1`. For the argument −1 the condition `равен 0` (equals 0) never
+holds, and the calls never end. The exit code is 1.
 
-```flang
-тотальная функция «Обратный отсчёт»
-  принимает н: число
-  возвращает число
-  пример «Считает до нуля»
-    дано н равно 5
-    ожидается 0
-  если н не больше 0
-    то 0
-    иначе «Обратный отсчёт» от (н минус 1)
-```
-
-```bash
-flang test nt2.flang
-```
-
-```
-nt2.flang: примеров 1, прошло 1, не прошло 0
-```
+Replace `равен 0` with `не больше 0` (not greater than 0), and the file passes
+the check.
 
 ## Three ways to decrease
 
 ### 1. By a part of the value
 
-The tail of a list, a field of a variant, a field of a record. Nothing to
-declare — the compiler sees it. Half the library is written this way; here is
-`«Длина»` from [`flang/stdlib/lists.flang`](../../flang/stdlib/lists.flang):
+The call receives the tail of a list, a field of a variant or a field of a
+record. Nothing has to be declared. The file `length.flang`:
 
 ```flang
-тотальная функция «Длина» от «А»
-  принимает элементы: список «А»
+модуль «Проба»
+
+тотальная функция «Число элементов»
+  принимает элементы: список числа
   возвращает число
-  обеспечивает «счёт звеньев сходится со встроенной длиной» результат равен (длина элементы)
-  пример «Три элемента»
+  пример «три элемента»
     дано элементы равно [7, 8, 9]
     ожидается 3
-  разбор элементов
+  разбор элементы
     случай пусто
       то 0
     случай голова и хвост
-      то 1 плюс «Длина» от хвоста
+      то 1 плюс («Число элементов» от хвост)
 ```
 
-`хвоста` is a part of `элементов`, not a new value. That is enough.
+```bash
+$ flang check length.flang --proof
+…
+  «Число элементов»  доказано структурой: аргумент 1 («элементы») на каждом витке становится частью себя; цепочка частей конечного дерева обрывается сама, сторожа нет
+…
+```
 
-Functions that call each other in a circle are read the same way, by the
-size-change principle: every call gives a graph of which argument comes from
-which parameter and whether it is a part of it. The circle terminates when every
-way around it that repeats itself makes some parameter a part of itself. The
-positions need not match: here `таблица` goes as a tail into «Прочитать в» and
-comes back unchanged, so each turn shortens the list.
+«доказано структурой» ("proved by structure") means that `хвост` (the tail) is
+shorter than the list, and the list is finite. The last words of the line say
+that there is no run-time check.
+
+Two functions that call each other are checked the same way. It is enough that
+on every round of calls some parameter becomes a part of itself. The file
+`read.flang`:
 
 ```flang
 модуль «Проба»
@@ -126,79 +110,80 @@ comes back unchanged, so each turn shortens the list.
       то «Прочитать» от ост и п
 ```
 
-A call through a function value counts too. `функция «Ф» с п равным хвост`
-bound to one strict part of a parameter is no larger than that parameter, and
-applying it hands `хвост` to «Ф» as a part of the applied value.
+The list goes to `«Прочитать в»` as a tail and comes back unchanged. Every
+round makes it one element shorter.
 
-### 2. A constant step with a floor
+### 2. A number that decreases by a constant step
 
-A number that shrinks by a constant, plus a branch that stops the descent. Both
-are required: without the step the chain may not decrease at all, without the
-floor it runs to minus infinity. `«Факториал»` from
-[`flang/stdlib/numbers.flang`](../../flang/stdlib/numbers.flang):
+Two things are needed: the argument of the call is smaller than the parameter
+by a constant, and there is a branch that stops the count. The file
+`factorial.flang`:
 
 ```flang
-тотальная функция «Факториал»
-  принимает число: неотрицательное
+модуль «Проба»
+
+тотальная функция «Произведение до»
+  принимает н: неотрицательное
   возвращает число
-  обеспечивает «факториал не меньше единицы» 1 не больше результат
-  пример «Пять факториал»
-    дано число равно 5
+  пример «до пяти»
+    дано н равно 5
     ожидается 120
-  если число не больше 1
+  если н не больше 1
     то 1
-    иначе число умножить на («Факториал» от (число минус 1))
-```
-
-A parameter works as the step too (`н минус ш`) — provided it arrives in the call
-unchanged in its own position and is known to be strictly `ш больше 0`, by a
-branch or by `требует ш не меньше 1`. A parameter declared `неотрицательное`
-has its floor from the type, and `н минус ш` under `если н не меньше ш` stays
-`неотрицательное`. Without
-the strict bound the step may be zero, and a changing step never reaches the
-floor at all: `ш`, `ш делить на 2`, … add up to less than `2ш`.
-
-### 3. A declared measure, `убывает`
-
-For when what decreases is not an argument but an expression over them. The
-`убывает …` line goes right after `возвращает`. The full example is
-[`docs/examples/measure/binary-search.flang`](../examples/measure/binary-search.flang):
-
-```flang
-тотальная функция «Поиск в диапазоне»
-  принимает элементы: список числа, цель: число, низ: число, верх: число
-  возвращает число
-  убывает верх минус низ плюс 1
-  если низ больше верх
-    то -1
-    иначе
-      пусть сумма равно низ плюс верх
-      пусть середина равно (сумма минус (сумма остаток от 2)) делить на 2
-      пусть значение равно элемент середина в элементы
-      если значение равен цель
-        то середина минус 1
-        иначе
-          если значение меньше цель
-            то «Поиск в диапазоне» от элементы и цель и (середина плюс 1) и верх
-            иначе «Поиск в диапазоне» от элементы и цель и низ и (середина минус 1)
+    иначе н умножить на («Произведение до» от (н минус 1))
 ```
 
 ```bash
-flang test docs/examples/measure/binary-search.flang
+$ flang check factorial.flang --proof
+…
+  «Произведение до»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 1; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
+…
 ```
 
+The type `неотрицательное` is an integer from 0 to 2⁵³−1. It gives a lower and
+an upper bound, so there is no run-time check.
+
+With a parameter of type `число` the same function passes as well. The report
+then says «доказано постоянным шагом … 1 место» ("proved by a constant step …
+1 place"). One check stays in the program: on very large floating-point numbers
+subtracting one does not change the value.
+
+The step may be a parameter too. It needs a `требует` line with a strict bound
+and a branch under which the difference stays non-negative. The file
+`step.flang`:
+
+```flang
+модуль «Проба»
+
+тотальная функция «Сколько шагов»
+  принимает н: неотрицательное, ш: неотрицательное
+  возвращает число
+  требует «шаг положителен» ш не меньше 1
+  пример «десять по три»
+    дано н равно 10
+    дано ш равно 3
+    ожидается 3
+  если н не меньше ш
+    то 1 плюс («Сколько шагов» от (н минус ш) и ш)
+    иначе 0
 ```
-docs/examples/measure/binary-search.flang: примеров 5, прошло 5, не прошло 0
-```
 
-## `убывает`: proved, refused, or checked at run time
+The call stands in the branch `если н не меньше ш` (if n is at least the
+step). In the `иначе` branch of the condition `н меньше ш` the compiler does
+not narrow the type of the difference, and the type check fails.
 
-The first two ways the compiler proves. For the third it reads every recursive
-call by the shape of its argument and gives one of three answers.
+### 3. The line `убывает`
 
-**Proved.** A measure declared on a `неотрицательное` parameter, and a call that
-passes that parameter minus a constant: the type gives the floor and the ceiling,
-and the step is exact. No check is left in the generated code:
+Sometimes what decreases is an expression over several parameters. It is named
+in the line `убывает …` ("decreases") right after `возвращает`. The binary
+search in
+[`docs/examples/measure/binary-search.flang`](../examples/measure/binary-search.flang)
+is written this way: `верх минус низ плюс 1` decreases there.
+
+The compiler looks at every recursive call and gives one of three answers.
+
+**Proved.** The expression is a parameter of type `неотрицательное`, and the
+call passes it minus a constant. The file `two.flang`:
 
 ```flang
 модуль «Проба»
@@ -212,13 +197,15 @@ and the step is exact. No check is left in the generated code:
     иначе «Через два» от (н минус 2)
 ```
 
-```
+```bash
+$ flang check two.flang --proof
+…
   «Через два»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 2; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
+…
 ```
 
-**Refused.** A call that cannot lower the measure — the name itself, `н плюс 1`,
-`(3 умножить на н) плюс 1` — is refused at `check` time, naming the call and the
-argument:
+**An error.** The call certainly does not decrease the expression: it passes
+the name itself, `н плюс 1` or `3 умножить на н`. The file `forever.flang`:
 
 ```flang refused
 модуль «Проба»
@@ -230,12 +217,19 @@ argument:
   «Вечность» от (н плюс 1)
 ```
 
-```
-FLANG_NOT_TOTAL в файле nt7.flang, строка 7, столбец 3: тотальная функция «Вечность»: мера «н» на вызове «Вечность» не убывает — аргумент «н» плюс 1 не меньше меры при любом её неотрицательном значении (Мер✗: само имя, сумма с неотрицательным литералом, произведение на литерал не меньше единицы). Спуск этим вызовом не доказуем, и сторож при работе отказал бы на первом же таком витке; перепишите вызов или меру
+```bash
+$ flang check forever.flang
+…
+FLANG_NOT_TOTAL в файле forever.flang, строка 7, столбец 3: тотальная функция «Вечность»: мера «н» на вызове «Вечность» не убывает — аргумент «н» плюс 1 не меньше меры при любом её неотрицательном значении … перепишите вызов или меру
+forever.flang: не проверено — замечаний 1
 ```
 
-**Checked at run time.** Everything else is taken on the author's word and
-turned into a check inside the generated code. The build passes:
+«мера» ("measure") in the message is the expression from the `убывает` line.
+The exit code is 1.
+
+**A run-time check.** In the other cases the compiler does not prove the
+decrease. It inserts a check on every call into the program. The file
+`closing.flang`:
 
 ```flang
 модуль «Проба»
@@ -249,50 +243,40 @@ turned into a check inside the generated code. The build passes:
     иначе «Сближение» от (низ плюс 2) и верх
 ```
 
-```bash
-flang check nt6.flang
-```
-
-```
-модуль «Проба»: функций 1, из них с доказанным завершением 1; типов 0
-nt6.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-```
-
-The run does not. From `0` to `5` in steps of two the measure goes 5, 3, 1, −1,
-and the check stops it:
+`flang check closing.flang` answers «замечаний нет» (no errors). The run stops:
 
 ```bash
-flang run nt6.flang --function "Сближение" --args '{"низ": 0, "верх": 5}'
+$ flang run closing.flang --function "Сближение" --args '{"низ": 0, "верх": 5}'
+доказано: утверждений 0
+FLANG_MEASURE: тотальная функция «Сближение»: мера на вызове «Сближение» — «верх» минус «низ» — ушла ниже нуля. Мера обязана оставаться неотрицательной …
 ```
 
-```
-FLANG_MEASURE: тотальная функция «Сближение»: мера на вызове «Сближение» — «верх» минус «низ» — ушла ниже нуля. Мера обязана оставаться неотрицательной: иначе цепочка уходит в минус бесконечность и убывание ничего не доказывает. Чаще всего это выбор меры, а не ошибка вызова — мере, которая на последнем витке становится −1, обычно не хватает «плюс 1»
-```
+From 0 to 5 with a step of two the difference goes 5, 3, 1, −1. The expression
+must stay a non-negative integer, so an error comes at −1. The exit code is 1.
 
-The proof report says which answer each function got:
+The report shows how many such checks are left in the program:
 
 ```bash
-flang check nt6.flang --proof
-```
-
-```
-чем несётся обещание «тотальная»:
+$ flang check closing.flang --proof
+…
   «Сближение»  доказано объявленной мерой: убывает «верх» минус «низ»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
-
-итог:
-  функций 1: тотальных 1, обычных 0
-  обещание несёт: композиция 0, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 1
+…
   сторожей в рантайме: 1 место
+…
 ```
 
-The practical rule: if termination has to be proven rather than watched, use the
-first or the second way, or a measure on a `неотрицательное` parameter with a
-constant step. The `сторожей в рантайме` line of the report counts the places in
-your program that are not proven all the way.
+Both lines say one thing: the decrease is accepted without a proof and is
+checked on every call. The last line counts such places over the whole file.
 
-## Counting up is not a measure
+If termination has to be proved completely, write the first or the second way.
 
-```flang
+## Counting up does not fit
+
+The file `up.flang`:
+
+```flang refused
+модуль «Проба»
+
 тотальная функция «Счёт вверх»
   принимает н: число, предел: число
   возвращает число
@@ -301,27 +285,30 @@ your program that are not proven all the way.
     иначе «Счёт вверх» от (н плюс 1) и предел
 ```
 
+```bash
+$ flang check up.flang
+…
+FLANG_NOT_TOTAL в файле up.flang, строка 8, столбец 11: тотальная функция «Счёт вверх»: рекурсивный вызов «Счёт вверх» не убывает — аргумент 1 («н» add 1) увеличивает параметр «н»; аргумент 2 («предел») — это сам параметр «предел», а не его часть. …
+up.flang: не проверено — замечаний 1
 ```
-FLANG_NOT_TOTAL в файле nt3.flang, строка 8, столбец 11: тотальная функция «Счёт вверх»: рекурсивный вызов «Счёт вверх» не убывает — аргумент 1 («н» add 1) увеличивает параметр «н»; аргумент 2 («предел») — это сам параметр «предел», а не его часть. Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
-```
 
-`предел` cannot serve as the floor: it is a parameter rather than a number, and it
-arrives unchanged on every turn. Turn the count around and go down.
+`«н» add 1` stands for `н плюс 1`. The parameter `предел` (the limit) does not
+count as a bound: it comes into every call unchanged. Count down, or add the
+line `убывает предел минус н`.
 
-String code crossed the same border differently: the built-in form
-`разложить … на символы` turns a string into a list of one-character strings by
-code points, and the walk becomes recursion over a tail. That is why
-[`docs/examples/rosetta/reverse-string.flang`](../examples/rosetta/reverse-string.flang)
-is total throughout, emoji and Cyrillic included.
+A string is walked by recursion over the list of its characters: the form
+`разложить … на символы` gives such a list. An example is
+[`docs/examples/rosetta/reverse-string.flang`](../examples/rosetta/reverse-string.flang).
 
-## Why it is worth it: the fact checker refuses non-total functions
+## Where proved termination is required
 
-`flang facts` answers "does this claim hold about this data", and it is not
-allowed to hang. A non-total function it does not evaluate at all — here recursion
-goes through the function's OWN result rather than a part of the value, so there
-is nothing to prove termination with:
+**`flang facts`.** The command answers whether a statement about data holds,
+and it must not hang. It does not evaluate a plain function. The file
+`digits.flang`:
 
 ```flang
+модуль «Проба»
+
 функция «Цифр в числе»
   принимает число: число
   возвращает число
@@ -331,35 +318,33 @@ is nothing to prove termination with:
 ```
 
 ```bash
-flang facts fc1.flang --claims '["«Цифр в числе» от 5 равно 1"]'
+$ flang facts digits.flang --claims '["«Цифр в числе» от 5 равно 1"]'
+{"ok":false,"results":[{"claim":"«Цифр в числе» от 5 равно 1","holds":false,"why":"функция «Цифр в числе» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить", …,"status":"refused"}]}
 ```
 
-```json
-{"ok":false,"results":[{"claim":"«Цифр в числе» от 5 равно 1","holds":false,"why":"функция «Цифр в числе» не помечена как «тотальная»; факт-чекинг допускает только тотальные функции — иначе ответ может не наступить","steps":[…],"status":"refused"}]}
-```
+The `why` field names the reason: the function is not marked `тотальная`. The
+exit code is 1.
 
-Exit code 1. The mode has no file, network or clock access, and a hard step
-budget: the answer depends only on `(program, facts, claims, limits)`, which is
-what makes it reproducible.
+**A process handler.** A flang server runs forever, but every call of a handler
+must end. A handler without `тотальная` and without the line
+`с запасом N витков` does not pass the check:
 
-## Processes: the rule is written down, the check exists, the code differs
-
-By the specification a server in flang is an infinite sequence of terminating
-turns: the scheduler is infinite, the handler it calls must terminate. A handler
-that is neither `тотальная` nor carries `с запасом N витков` should not get
-through — code `FLANG_HANDLER_NOT_TOTAL`.
-
-The binary judges it, but answers with a different code. Here is what
-it answers on
-[`docs/examples/web/shortener/handler-without-budget.flang`](../examples/web/shortener/handler-without-budget.flang),
-a file written precisely to test this rule:
-
-```
-FLANG_UNCOVERED_FAILURE в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: у процесса «Разборщик» обработчик «шаг разбора» без доказанного завершения — значит отказ «запас витков исчерпан» достижим, — а под надзором этот процесс не стоит: такой отказ уронит программу целиком
+```bash
+$ flang check docs/examples/web/shortener/handler-without-budget.flang
+…
+FLANG_HANDLER_NOT_TOTAL в файле docs/examples/web/shortener/handler-without-budget.flang, строка 13, столбец 1: обработчик «шаг разбора» процесса «Разборщик» не помечен тотальным, и запаса витков процесс не называет: строки «с запасом N витков» нет. …
 …
 docs/examples/web/shortener/handler-without-budget.flang: не проверено — замечаний 2
 ```
 
-Exit code 1. `FLANG_HANDLER_NOT_TOTAL` is still not issued: a non-total handler
-without a budget is caught as an uncovered failure (`FLANG_UNCOVERED_FAILURE`),
-not under the name from the specification.
+The second error in the same output, `FLANG_UNCOVERED_FAILURE`, is about the
+consequence: the process may fail, and nothing restarts it. The exit code is 1.
+
+## Next
+
+- [Functions that always terminate](../site/tour-termination.md) — the same in
+  short, with an exercise
+- [What loops and classes are rewritten into](surface-sugar.md) — how
+  termination is proved for loops
+- [Processes and supervision](../site/processes.md) — handlers and the turn
+  budget

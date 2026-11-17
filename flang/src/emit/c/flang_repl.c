@@ -15226,7 +15226,7 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
  * ПЕЧАТЬ В C БЕЗ LIBC: «--target c --freestanding».
  *
  * Не строка таблицы, а её двойник: слово цели остаётся «c», ключ выбирает другую
- * точку входа на flang — «Печать без libc» (flang/self/emit-c-freestanding.flang).
+ * точку входа на flang — «Печать без libc» (flang/self/c-without-libc.flang).
  * Её код собирается «-ffreestanding -nostdlib» и не вызывает ни libc, ни
  * потоков, ни сигналов, ни выделения памяти.
  *

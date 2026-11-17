@@ -744,7 +744,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
-| `FLANG_FREESTANDING_UNSUPPORTED` | `emit-c-freestanding.flang` | — |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `c-without-libc.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |

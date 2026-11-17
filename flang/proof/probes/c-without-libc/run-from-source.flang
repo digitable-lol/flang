@@ -2,7 +2,7 @@
   использует «Печать JSON» из "../../../core/json.flang"
   использует «Парсер flang» из "../../../self/parser.flang"
   использует «Печать в C» из "../../../self/emit-c.flang"
-  использует «Печать в C без libc» из "../../../self/emit-c-freestanding.flang"
+  использует «Печать в C без libc» из "../../../self/c-without-libc.flang"
   использует «Связывание flang» из "../../../self/link.flang"
 
 функция «Файлы одним текстом»

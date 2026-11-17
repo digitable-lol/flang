@@ -652,8 +652,8 @@ proza() {
   # Решающих правил ядра — счёт берётся у самого ядра, и на обеих страницах он
   # стоит дважды: цифрой в скобках при команде и словом в прозе.
   pravil=$(grep -c 'тотальная функция «Правило' flang/self/proof-kernel.flang | tr -d ' ')
-  skazat "proofs: правил ядра"    "$(plosko docs/site/proofs.md | grep -oE 'The prover has [0-9]+ rules' | grep -oE '[0-9]+')" "$pravil"
-  skazat "proofs.ru: правил ядра" "$(plosko docs/site/proofs.ru.md | grep -oE 'У prover.а [0-9]+ правил' | grep -oE '[0-9]+')" "$pravil"
+  skazat "proofs: правил ядра"    "$(plosko docs/site/proofs.md | grep -oE 'The kernel has [0-9]+ rules' | grep -oE '[0-9]+')" "$pravil"
+  skazat "proofs.ru: правил ядра" "$(plosko docs/site/proofs.ru.md | grep -oE 'У ядра [0-9]+ правил' | grep -oE '[0-9]+')" "$pravil"
   if grep -q 'три решающих правила\|the three decision rules' docs/site/proofs.ru.md docs/site/proofs.md docs/site/learning.ru.md 2>/dev/null; then
     echo "  правил ядра словом    на странице «три решающих правила» при $pravil в ядре  РАЗОШЛОСЬ"
     plohih=$((plohih + 1))

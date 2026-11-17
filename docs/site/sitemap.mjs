@@ -138,8 +138,8 @@ export const РАЗДЕЛЫ = [
       { адрес: 'single-source.html', имя: 'Один источник правды', из: 'docs/guide/single-source.ru.md' },
       { адрес: 'c-into-flang.html', имя: 'Код на C в flang', из: 'docs/guide/c-into-flang.ru.md' },
       /* Контракты: рабочие документы с кодами отказа и границами обещаний.
-         Спецификация языка — контракт на 2165 строк.
-         СНЯТО 2026-11-14 строк docs/flang/SPEC.md = 2165 (typing holes 31 and 32: printed programs check words and exact fractions at entry) */
+         Спецификация языка — контракт на 2161 строку.
+         СНЯТО 2026-11-17 строк docs/flang/SPEC.md = 2161 (the three arithmetic refusals are issued by the compiler) */
       { адрес: 'spec.html', имя: 'Спецификация языка — контракт', из: 'docs/flang/SPEC.md', безПары: 'английской редакции ещё нет — долг задачи 7660' },
       { адрес: 'spec-proof.html', имя: 'Ядро доказательств — контракт', из: 'docs/flang/proof/SPEC.md', безПары: 'английской редакции ещё нет — долг задачи 7660' },
       { адрес: 'spec-cat.html', имя: 'Категории и функторы — контракт', из: 'docs/ct/spec.md', безПары: 'английской редакции ещё нет — долг задачи 7660' },

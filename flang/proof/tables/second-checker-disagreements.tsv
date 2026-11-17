@@ -1,6 +1,11 @@
 corpus	record	c	lean	reason
 records	flang/proof/checker/tests/families/unfold-on-constructor/built-constructor.record	0	3	второй отстаёт: развёртку вызова на выписанном конструкторе (ADR-0133) по телу не проигрывает, 4 места идут на слово
 records	flang/proof/checker/tests/families/unfold-on-constructor/two-argument-match.record	0	3	второй отстаёт: узел индукции с развёрткой по двум доводам не проигрывает, 3 места идут на слово
+records	flang/proof/checker/tests/records/6341/same-goal-but-the-branch-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/statement/corrupt/optional-empty-case-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/if-body/corrupt/option-flag-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/case-split-facts/corrupt/linked-facts-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/fmath/difference-of-lengths.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
 examples	docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
 examples	docs/examples/genetic/evolution.flang	3	1	приёмка модели уже: шаг Р8 «разбор цели по условию» с веткой, где условие сокращает вложенное «если», не принят; ядро и сверщик на C его принимают
 examples	docs/examples/guide/lookup-table.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово

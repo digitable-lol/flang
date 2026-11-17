@@ -37,7 +37,7 @@
 цели она даёт только пути блоком `вывод`, который принят приёмкой модели
 (`flang/proof/lean/Acceptance.lean`, теорема «состоятельность»). Остальные пути названы
 в заключении своей приёмкой: что из неё следует, говорит теорема пути в `Paths.lean`,
-`Goals.lean`, `Canon.lean`, а у путей без модели — ничего. Их перечень и состояние —
+`Goals.lean`, `Canon.lean`, `Polynomial.lean`, `Certificate.lean`, а у путей без модели — ничего. Их перечень и состояние —
 `flang/proof/tables/lean-soundness-debt.tsv`, сторож `bootstrap/flang run-script
 lean-soundness:check`.
 
@@ -46,7 +46,7 @@ lean-soundness:check`.
 | компонент | где | состояние | чем держится |
 |---|---|---|---|
 | правила вывода и приёмка блока `вывод` | `flang/proof/lean/` — `Model`, `Rules`, `Term`, `Record`, `Acceptance`, `Consistency` | доказано | теорема «состоятельность»: принятый блок — вывод, цель следует из окружения |
-| пути приёмки второго сверщика с моделью | `second/Paths.lean`, `Goals.lean`, `Canon.lean`, `Order.lean`, `Theorem.lean`, `Sections.lean` | доказано | по теореме на путь: строки «доказано» таблицы `lean-soundness-debt.tsv` |
+| пути приёмки второго сверщика с моделью | `second/Paths.lean`, `Goals.lean`, `Canon.lean`, `Order.lean`, `Theorem.lean`, `Sections.lean`, `Polynomial.lean`, `Certificate.lean` | доказано | по теореме на путь: строки «доказано» таблицы `lean-soundness-debt.tsv` |
 | ответ программы по судам частей | `second/Checker.lean` (`«Нарезка».«суды»`, `«сверить»`, `«исход»`), `second/Verified.lean` | доказано | восемь теорем таблицы выше |
 | пути приёмки без модели | строки «нет модели» таблицы `lean-soundness-debt.tsv` | пробы | сверка вердиктов с `checker.c` на корпусе и на подделках |
 | нарезка записи | `«нарезать»` в `second/Checker.lean` | пробы | корпус записей |

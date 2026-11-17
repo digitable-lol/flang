@@ -9,7 +9,7 @@ TOOLCHAIN := $(shell cat ../lean/lean-toolchain 2>/dev/null)
 PINNED := $(TOOLCHAIN:leanprover/lean4:v%=%)
 export ELAN_TOOLCHAIN ?= $(TOOLCHAIN)
 OUT ?= second/out
-SECOND = Exploration Surfaces Source Terms Totality Moves Goals Canon Evaluator Order Body Node Sections Premises Theorem Ring Linear Laws Category Checker Paths Verified Interpretation
+SECOND = Exploration Surfaces Source Terms Totality Moves Goals Canon Evaluator Order Body Node Sections Premises Theorem Ring Polynomial Linear Certificate Laws Category Checker Paths Verified Interpretation
 MODULES = Binary64:Binary64 Model:Модель Rules:Правила Term:Терм Record:Запись Acceptance:Приёмка Consistency:Состоятельность RecordReader:RecordReader
 all: сверщик
 сверщик: checker.c

@@ -1,12 +1,22 @@
-# Proofs: why and how
+# What a proof is in flang
 
-## A proof versus a test
+This page answers the question: what does the word «доказано» (proved) in the
+compiler output mean, and when do you need it. Five minutes to read.
+
+## A test and a proof
 
 A test checks the inputs you thought of. A proof answers for all inputs at
-once. In flang you write both right in the function: `пример` (example) is a
-unit test, `обеспечивает` (ensures) is a postcondition.
+once. In flang both are written inside the function:
 
-```flang
+| Line | What it is | In other languages |
+| --- | --- | --- |
+| `пример` (example) | a test with concrete arguments | a unit test |
+| `требует` (requires) | a precondition: what the caller must ensure | `requires` in Dafny |
+| `обеспечивает` (ensures) | a postcondition: what holds for the result | `ensures` in Dafny |
+
+File `docs/examples/proofs/discount.flang`:
+
+```flang insert docs/examples/proofs/discount.flang
 модуль «Скидка»
 
 тотальная функция «Цена со скидкой»
@@ -21,117 +31,114 @@ unit test, `обеспечивает` (ensures) is a postcondition.
   цена минус скидка
 ```
 
-```
-$ flang check --proof skidka.flang
-  постусловие «в минус не уходим» функции «Цена со скидкой» — доказано по
-  объявленным типам аргументов: цель сведена правилом «неотрицательность по
-  построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при
-  нём нет и не нужно
+```bash
+flang check discount.flang --proof
 ```
 
-The example speaks about one input: 100 and 10. The line «доказано» (proved)
-speaks about any price and any discount not greater than the price ("a
-statement about ALL inputs, not the written ones; there is no theorem and none
-is needed"). It was proved by the prover, the part of the compiler its output
-calls «ядро» (kernel); all you supplied were the types and `требует`
-(requires).
-
-## What "proved" means
-
-**True for all inputs, not "no bug found".** The prover answers every
-postcondition with one of three words: «доказано» (proved), «сетка N» (passed
-only on N examples) or «объявлено, не доказано» (declared, not proved). Only
-the first counts; the other two stay as a run-time check. All three on live
-output: [How a proof works](how-proofs-work.html).
-
-**What is proved costs nothing at run time.** The compiler removes the check of
-a proved postcondition from the generated code.
-
-**Two programs agreed.** `flang check <file> --proof --record <record>` writes
-the proof to a file, and a separate C program re-checks it without the
-compiler. It says how much of the proved it checked itself and how much it
-took on the prover's word — [The proof record](record-format.html).
-
-**There are no axioms.** An axiom is a statement accepted without proof; Coq
-and Lean let you declare them, and people do. The flang prover has no way to
-declare one. A command that reads its source checks this:
-
 ```
-$ flang io flang/scripts/kernel-forgeries.fscript --plan 'Аксиом ноль' --trust
-… аксиом ноль, нарушений 0
+постусловие «в минус не уходим» функции «Цена со скидкой» — доказано по
+объявленным типам аргументов: цель сведена правилом «неотрицательность по
+построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при
+нём нет и не нужно
 ```
 
-("zero axioms, 0 violations"). The price: without the law of excluded middle
-some classical statements cannot be proved. For programs this rarely matters:
-they compute.
+The test speaks about one input: 100 and 10. The line «доказано» speaks about
+any price and any discount not above the price. The compiler found the proof.
+All it needed from you was the argument types and the `требует` line.
 
-**There is no external solver.** The prover has 20 rules, each one can be
-read in full ([The kernel specification](../spec-proof.html), in Russian); refusals call them
-by name. No SMT solver is taken as a judge: that would mean trusting
-correctness to hundreds of thousands of lines of someone else's code.
+The part of the compiler that looks for proofs is called the proof kernel, «the
+kernel» from here on. It works by a closed list of rules. The rule name is in
+the output: here it is «неотрицательность по построению» (non-negative by
+construction).
 
-## What "proved" does not mean
+## Four answers of the compiler
 
-> A proof says the code matches the postcondition. It does not say the
-> postcondition expresses what you meant.
+For every postcondition the compiler gives one of four answers:
 
-If the postcondition is written wrong, the code will correctly do the wrong
-thing. A human reads the postcondition. You also have to trust the prover's
-rules, the compiler under it, and the hardware. Real cases and the full list of
-limits: [What is proved and what is not](what-is-proved.html).
+| In the output | What it means | What to do |
+| --- | --- | --- |
+| `доказано` | true for all inputs of the declared types | nothing |
+| `сетка N` | passed on N tests, no proof | [prove it or keep it as a check](proof-refused.html) |
+| `объявлено, не доказано` | neither a proof nor tests | the same |
+| `FLANG_PROPERTY … нарушено на входе` | an input was found on which the postcondition is false | fix the code or the postcondition |
 
-## When the prover did not manage
+With the word «сетка» (grid) the compiler names the answer «checked on tests
+only».
 
-Most postconditions need no theorem: the prover derives them from the types and
-the shape of the code. The rest you can:
+The last answer is an error; the file does not pass the check. The same file
+without the `требует` line is in `docs/examples/proofs/before/discount.flang`:
 
-- rewrite so that the prover takes it by itself —
-  [What the kernel proves by itself](what-the-kernel-accepts.html);
-- prove by hand, with a step-by-step theorem as in Coq or Isabelle —
-  [Proofs by hand](manual-proofs.html);
-- leave as a run-time check.
+```bash
+flang check before/discount.flang; echo "код $?"
+```
 
-A refusal of a theorem you wrote is explained on
-[The kernel refused: whose mistake is it](proof-refused.html).
+```
+FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «в минус не уходим» функции «Цена
+со скидкой» нарушено на входе цена = 0, скидка = 1 — посчитано вычислителем на
+этом входе
+before/discount.flang: не проверено — замечаний 1
+код 1
+```
 
-## How much is proved in the language itself
+The compiler picked the input itself: price 0, discount 1, result −1.
 
-The compiler, the standard library and the examples are written in flang and
-checked by the same prover. Termination: {{носители.композиция}} functions have
-no recursion at all, and in {{носители.структура}} it runs over a part of the
-input. Postconditions proved: **{{утверждения.доказано}} of
-{{утверждения.высказано}}**. The full breakdown and what stands behind the rest:
-[What is proved and what is not](what-is-proved.html).
+## What changes in the program
 
-## What it costs
+A precondition is checked at compile time at every call site. At run time it
+is checked once, where data comes in from outside:
 
-Twenty library functions, picked by a fixed stride over the list of
-declarations so that convenient ones could not be chosen
-(`docs/benchmarks/proof-cost/functions/`). Each got both tests and a proof:
+```bash
+flang run discount.flang --function 'Цена со скидкой' --args '{"цена": 100, "скидка": 130}'
+```
 
-| | tests | proof |
-|---|---:|---:|
-| Lines | 390 | 196 |
-| Time | 7 min 49 s | 9 min 39 s |
-| Real bugs found | **4** | 0 |
+```
+доказано: утверждений 1
+FLANG_PRECONDITION: не выполнено требование «скидка не больше цены» функции «Цена со скидкой»
+```
 
-Today a proof costs more than tests and finds fewer bugs. But it is written
-once and covers all inputs, while tests have to be extended with every change
-to the code. The goal of the language:
+The first line is about the file: its only postcondition is proved. The second
+is about this call: the arguments failed the precondition, and the function was
+not computed. Exit code 1.
 
-> A proof must cost less than the tests it replaces.
+An unproved postcondition is checked on every return from the function.
+`flang run` starts a program with such a postcondition only with the key
+`--trust`.
+
+A proved postcondition does not get into the generated code if the function has
+at least one `пример`. For a function without tests the check stays even for a
+proved postcondition.
+
+## When you need a proof
+
+Write a postcondition where a mistake is expensive and the condition is short:
+
+- bounds: a sum is not negative, an index is inside the list, a percentage is at
+  most a hundred;
+- lengths: the result is as long as the input;
+- case analysis: every input has an answer;
+- money and counters on exact types: `неотрицательное`, `точное целое`.
+
+Make do with a test where the property is long or the kernel does not derive
+it: the order after sorting, properties of floating-point numbers, work with
+the outside world.
+
+## What «доказано» does not mean
+
+A proof ties the code to the postcondition. Whether the postcondition describes
+the task correctly is for you to decide: a function that always returns 0 also
+passes the check «the result is at least 0».
+
+Behind the word «доказано» stand the kernel, the compiler and the C compiler. A
+second, independent program repeats part of the proofs. Which part, and where
+the check has a known error: [What you are trusting](trust.html).
+
+flang does not replace Lean or Coq. It proves pre- and postconditions of
+programs; arbitrary theorems are out of its reach. The comparison:
+[flang for Lean and Dafny users](flang-for-lean-and-dafny-users.html).
 
 ## Next
 
-1. [How a proof works](how-proofs-work.html) — termination, `требует`,
-   `обеспечивает` and the three answers on live output.
-2. [The kernel refused: whose mistake is it](proof-refused.html) — how to read
-   a refusal.
-3. [What the kernel proves by itself](what-the-kernel-accepts.html) — which
-   postconditions pass without a theorem.
-4. [Proofs by hand](manual-proofs.html) — theorems, induction, laws.
-5. [The proof record](record-format.html) — what the independent program
-   checks.
-6. [What is proved and what is not](what-is-proved.html) — the limits.
-7. [The Coq and Lean classics](mathematics.html) — a comparison on seventy-five
-   lemmas.
+- [How to read the report](how-proofs-work.html) — every line of the `--proof`
+  output.
+- [When it is not proved](proof-refused.html) — recipes for each kind of answer.
+- [What you are trusting](trust.html) — what stands behind the word «доказано».

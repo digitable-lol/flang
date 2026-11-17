@@ -59,6 +59,8 @@ Replace the parameter type with `number` in `hello.flang` and check again:
 flang check hello.flang
 ```
 
+The compiler answers:
+
 ```text
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_BOUND_ON_NAN в файле hello.flang, строка 6, столбец 3: постусловие

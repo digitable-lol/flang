@@ -20,7 +20,7 @@
   «terms»: список строки
   «inside»: признак
 
-объект «Form»
+объект «Quantified»
   «quantifier»: строка
   «variables»: список строки
   «body»: «Formula»
@@ -321,8 +321,8 @@
   отфильтровать («Pieces of» от («Replaced in» от piece и "," и " ")) где word → не (word равен "для")
 
 тотальная функция «With prefix»
-  принимает form: «Form», piece: строка
-  возвращает «Form»
+  принимает form: «Quantified», piece: строка
+  возвращает «Quantified»
   пусть words равно («Prefix words» от piece)
   пусть kind равно (если пусто words то "" иначе («Quantifier kind» от (элемент 1 в words)))
   пусть mixed равно ((не (пусто (form.«quantifier»))) и притом (не ((form.«quantifier») равен kind)))
@@ -334,7 +334,7 @@
       "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида"]]
       начиная с (form.«fault») как found и row →
       если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
-  (запись «Form» с «quantifier» равным kind
+  (запись «Quantified» с «quantifier» равным kind
       и «variables» равным («Соединить списки» от (form.«variables») и (отфильтровать («Numbered words» от words)
       где word → не ((form.«variables») содержит word)))
       и «body» равным (form.«body») и «fault» равным fault)
@@ -353,26 +353,26 @@
 
 тотальная функция «Form of»
   принимает text: строка
-  возвращает «Form»
+  возвращает «Quantified»
   пример «A general statement with one variable»
     дано text равно "все x: если кит(x), то зверь(x)"
-    ожидается (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+    ожидается (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Implies» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
         и right равным (вариант «Atom» с name равным "зверь" и terms равным ["x"])) и «fault» равным "")
   пример «A statement about a named thing has no quantifier»
     дано text равно "кит(Моби)"
-    ожидается (запись «Form» с «quantifier» равным "" и «variables» равным пустой список
+    ожидается (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["Моби"]) и «fault» равным "")
   пример «Mixed quantifiers are refused»
     дано text равно "все x: есть y: любит(x, y)"
-    ожидается (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x", "y"]
+    ожидается (запись «Quantified» с «quantifier» равным "есть" и «variables» равным ["x", "y"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"])
         и «fault» равным "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида")
   пусть pieces равно (разделить text по ":")
   пусть parsed равно («Parsed formula» от (элемент (длина pieces) в pieces))
   пусть body равно (если пусто (parsed.«out») то (вариант «Truth» с holds равным да)
       иначе (элемент 1 в (parsed.«out»)))
-  пусть bare равно (запись «Form» с «quantifier» равным "" и «variables» равным пустой список и «body» равным body
+  пусть bare равно (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список и «body» равным body
       и «fault» равным (parsed.«fault»))
   (свёртка («Without the last» от pieces) начиная с bare как form и piece → «With prefix» от form и piece)
 
@@ -444,10 +444,10 @@
       то соединить ["(если ", («Bracketed text» от left), ", то ", («Bracketed text» от right), ")"] по ""
 
 тотальная функция «Form text»
-  принимает form: «Form»
+  принимает form: «Quantified»
   возвращает строка
   пример «The quantifier stands before the body»
-    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x", "y"]
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x", "y"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
     ожидается "все x, y: любит(x, y)"
   если пусто (form.«quantifier»)
@@ -476,7 +476,7 @@
     случай вариант «Implies» с left как left и right как right
       то «Соединить списки» от («Mentions of» от left) и («Mentions of» от right)
 
-тотальная функция «Kept once»
+тотальная функция «Each once»
   принимает words: список строки
   возвращает список строки
   пример «A repeated word is kept once, in the order of the first meeting»
@@ -491,17 +491,17 @@
     дано formula равно (вариант «And» с left равным (вариант «Atom» с name равным "кит" и terms равным ["а"])
         и right равным (вариант «Atom» с name равным "кит" и terms равным ["а"]))
     ожидается ["кит(а)"]
-  («Kept once» от (отобразить («Mentions of» от formula) как mention →
+  («Each once» от (отобразить («Mentions of» от formula) как mention →
       «Atom text» от (элемент 1 в mention) и («Numbered words» от mention)))
 
 тотальная функция «Constants of»
-  принимает form: «Form»
+  принимает form: «Quantified»
   возвращает список строки
   пример «A term that is not a variable of the quantifier is a constant»
-    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "Мария"]) и «fault» равным "")
     ожидается ["Мария"]
-  («Kept once» от (отфильтровать (свёртка («Mentions of» от (form.«body»)) начиная с (пустой список)
+  («Each once» от (отфильтровать (свёртка («Mentions of» от (form.«body»)) начиная с (пустой список)
       как gathered и mention → «Соединить списки» от gathered и («Numbered words» от mention))
       где term → не ((form.«variables») содержит term)))
 
@@ -590,17 +590,17 @@
   отобразить variables как variable → [variable, (соединить [variable, "_", tag] по "")]
 
 тотальная функция «Premise instances»
-  принимает form: «Form», universe: список строки, tag: строка
+  принимает form: «Quantified», universe: список строки, tag: строка
   возвращает список «Formula»
   пример «A general premise is said of every thing»
-    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
     дано universe равно ["а", "б"]
     дано tag равно "из_1"
     ожидается ([вариант «Atom» с name равным "кит" и terms равным ["а"],
         вариант «Atom» с name равным "кит" и terms равным ["б"]])
   пример «A premise of existence is said of a thing of its own»
-    дано form равно (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "есть" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
     дано universe равно ["а"]
     дано tag равно "из_1"
@@ -611,15 +611,15 @@
     иначе [(«Substituted» от (form.«body») и («Named after» от (form.«variables») и tag))]
 
 тотальная функция «Conclusion instance»
-  принимает form: «Form», universe: список строки
+  принимает form: «Quantified», universe: список строки
   возвращает «Formula»
   пример «A general conclusion is said of an arbitrary thing»
-    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
     дано universe равно ["а"]
     ожидается вариант «Atom» с name равным "кит" и terms равным ["x_любой"]
   пример «A conclusion of existence holds when some thing fits»
-    дано form равно (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x"]
+    дано form равно (запись «Quantified» с «quantifier» равным "есть" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
     дано universe равно ["а", "б"]
     ожидается (вариант «Or» с left равным (вариант «Atom» с name равным "кит" и terms равным ["а"])

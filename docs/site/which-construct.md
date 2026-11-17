@@ -29,10 +29,10 @@ they are. The compiler prints its output in Russian.
 | `теорема` | a proof you write yourself | — |
 | `план` | side effects: the function returns a command ("read the file"), the runtime executes it and calls the function again with the response | reducer, state machine |
 
-The **prover** is the part of the compiler that proves `обеспечивает` for all
-possible inputs, not only for your examples. In the compiler output it is called
-«ядро» (kernel), and an `обеспечивает` line is called «постусловие»
-(postcondition). Below, "guarantee" means an `обеспечивает` line.
+The compiler proves an `обеспечивает` line for all possible inputs; your
+examples are only a part of them. In the compiler output this line is called
+«постусловие» (postcondition), and the part that proves is called «ядро».
+Below, "guarantee" means an `обеспечивает` line.
 
 ## Quick pick
 
@@ -60,7 +60,7 @@ possible inputs, not only for your examples. In the compiler output it is called
 | pass a function as an argument (callback) | `функция «Имя»` | 21 |
 | guarantee a property of every item of the result | `обеспечивает … для всех … из результат` | 22 |
 | forbid bad arguments | `требует` | 23 |
-| prove what the prover could not | `теорема` and `индукция по` | 24 |
+| prove what the compiler could not | `теорема` and `индукция по` | 24 |
 | state a property apart from a function | `утверждение` | 25 |
 | read a file | `план` and the command «Прочитать файл» | 26 |
 | run an external program | `план` and the command «Запустить процесс» | 27 |
@@ -73,10 +73,10 @@ When the code chooses by what kind of value it has, write `разбор` (match)
 a chain of `если … иначе если` (if, else if). There are two reasons.
 
 The compiler checks that every variant is handled: a forgotten variant is the
-error `FLANG_MATCH_NOT_EXHAUSTIVE`. In an `если` chain a forgotten case silently
+error `FLANG_MATCH_NOT_EXHAUSTIVE`. In an `если` chain a forgotten case quietly
 falls into the last `иначе`.
 
-The prover proves guarantees over `разбор`: it goes through the variants of the
+The compiler proves guarantees over `разбор`: it goes through the variants of the
 type and checks each one. Over a chain of `если … иначе если` it either cannot
 prove the guarantee at all or proves only a weaker one.
 
@@ -149,7 +149,7 @@ proper place for `если` is the exit of a recursion over a number (example 16
 ### Anti-example: a chain of `если … иначе если`
 
 Do not write this. The code passes the check, and that is exactly the problem:
-a typo in the name of the zone («горд» instead of «город») silently returns 0.
+a typo in the name of the zone («горд» instead of «город») returns 0 without an error.
 
 File: `docs/examples/guide/ladder-before.flang`
 
@@ -189,7 +189,7 @@ There are three zones and they are known in advance, so this is an enum: a
 `тип` with three variants. The typo cannot be written any more: there is no
 variant «Горд», and the compiler will not let it through. Add a fourth zone and
 the compiler makes you handle it. The guarantee can also be made stronger, from
-"the price is not negative" to "the price is greater than zero": the prover
+"the price is not negative" to "the price is greater than zero": the compiler
 proves it for all zones at once.
 
 File: `docs/examples/guide/ladder-as-match.flang`
@@ -295,7 +295,7 @@ $ echo $?
 ### Do not replace `если` with `разбор` over yes and no
 
 The opposite mistake is to write `разбор (condition)` with the cases `да` and
-`нет` instead of `если`. The code works, but the prover stops proving the
+`нет` instead of `если`. The code works, but the compiler stops proving the
 guarantee. Below is one function written two ways.
 
 File: `docs/examples/guide/two-outcomes.flang`
@@ -381,7 +381,7 @@ guarantees on output), at least one `пример`, and only then the body.
 sequenceDiagram
   participant П as Programmer
   participant К as Compiler
-  participant Я as Prover
+  participant Я as Proof kernel
   participant Н as Independent<br>checker
   Note over П: writes in order:<br>signature, contract,<br>example, body
   П->>К: flang check
@@ -426,7 +426,7 @@ sequenceDiagram
 | `flang check file` | after every change | code 0 — syntax, types, termination and examples are fine; code 1 — an error: its `FLANG_…` code, line and column |
 | `flang check file --proof` | when you have written `обеспечивает` | for every guarantee, whether it is proved; code 3 — a guarantee has neither a proof nor examples |
 | `flang check file --proof --strict` | in CI | code 0 only when everything is proved; a guarantee checked on examples only gives code 3 |
-| `flang check file --proof --record record` | when the proof must be re-checked independently | writes the proof to a file; a separate program, `flang/proof/checker/checker.c`, re-checks it without trusting the prover |
+| `flang check file --proof --record record` | when the proof must be re-checked independently | writes the proof to a file; a separate program, `checker`, re-checks it without trusting the compiler |
 | `flang test file` | when you only need to run the examples | how many examples there are and how many passed |
 | `flang run file --function «Имя» --args '{…}'` | when you need a value | checks the proofs first; if something is not proved it computes nothing, code 3 |
 
@@ -444,8 +444,8 @@ How to read the other words of the `--proof` report:
 | --- | --- |
 | «что высказано и чем это несётся» | the list of guarantees and what backs each one |
 | «постусловие» | your `обеспечивает` line |
-| «доказано индукцией по «Тип»» | the prover went through every variant of the type |
-| «доказано по объявленным типам аргументов» | the prover went through the branches of `если` using the types of the arguments |
+| «доказано индукцией по «Тип»» | the compiler went through every variant of the type |
+| «доказано по объявленным типам аргументов» | the compiler went through the branches of `если` using the types of the arguments |
 | «ПРОВЕРЕНО САМОСТОЯТЕЛЬНО» | every guarantee in the file is proved |
 | «НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ» | some guarantees rest on examples only or on an unproved premise: code 3 |
 | «НЕ УДАЛОСЬ ДОКАЗАТЬ» | the same under `--strict`: code 3 |
@@ -537,7 +537,7 @@ ellipsis marks the lines of the `--proof` report that are left out.
 
 ### 1. I want to choose by the kind of value
 
-What to write: a `тип` with variants (an enum with data) and `разбор` over it — this is pattern matching. Forget a variant and the compiler stops with `FLANG_MATCH_NOT_EXHAUSTIVE`. The guarantee «углов не больше четырёх» is proved by the prover on its own: it goes through every variant of the type.
+What to write: a `тип` with variants (an enum with data) and `разбор` over it — this is pattern matching. Forget a variant and the compiler stops with `FLANG_MATCH_NOT_EXHAUSTIVE`. The guarantee «углов не больше четырёх» is proved by the compiler on its own: it goes through every variant of the type.
 
 File: `docs/examples/guide/choose-by-variant.flang`
 
@@ -994,7 +994,7 @@ $ echo $?
 
 ### 10. I want to convert every item
 
-What to write: `отобразить` — this is map. The prover proves the guarantee about the length of the result on its own.
+What to write: `отобразить` — this is map. The compiler proves the guarantee about the length of the result on its own.
 
 File: `docs/examples/guide/map-each.flang`
 
@@ -1251,7 +1251,7 @@ $ echo $?
 
 ### 15. I want to choose one of two by one condition
 
-What to write: `если … то … иначе` (if, then, else). One condition and two outcomes is exactly the case for `если`. The prover proves the guarantee by going through both branches; the report calls this rule «разбор цели по условию».
+What to write: `если … то … иначе` (if, then, else). One condition and two outcomes is exactly the case for `если`. The compiler proves the guarantee by going through both branches; the report calls this rule «разбор цели по условию».
 
 File: `docs/examples/guide/two-outcomes.flang`
 
@@ -1296,7 +1296,7 @@ $ echo $?
 
 ### 16. I want to repeat N times
 
-What to write: recursion over a number of the type `неотрицательное` (non-negative): every call decreases the counter by 1 and the exit is an `если`. This replaces a `for` loop. The compiler derives termination from the "minus 1" step and the prover proves the guarantee by induction. Write the exit with `если` and nothing else: that is the only form in which the compiler recognises the decreasing counter.
+What to write: recursion over a number of the type `неотрицательное` (non-negative): every call decreases the counter by 1 and the exit is an `если`. This replaces a `for` loop. The compiler derives termination from the "minus 1" step and the compiler proves the guarantee by induction. Write the exit with `если` and nothing else: that is the only form in which the compiler recognises the decreasing counter.
 
 File: `docs/examples/guide/count-down.flang`
 
@@ -1532,7 +1532,7 @@ $ echo $?
 
 ### 22. I want to guarantee a property of every item of the result
 
-What to write: `обеспечивает … для всех … из результат:` — a guarantee about every item of the resulting list. No `теорема` is needed: the prover proves both guarantees on its own.
+What to write: `обеспечивает … для всех … из результат:` — a guarantee about every item of the resulting list. No `теорема` is needed: the compiler proves both guarantees on its own.
 
 File: `docs/examples/guide/promise.flang`
 
@@ -1572,7 +1572,7 @@ $ echo $?
 
 ### 23. I want to forbid bad arguments
 
-What to write: `требует` — a precondition. The caller must satisfy it: in the example the second function calls the first, and the prover has proved that the condition holds there.
+What to write: `требует` — a precondition. The caller must satisfy it: in the example the second function calls the first, and the compiler has proved that the condition holds there.
 
 File: `docs/examples/guide/precondition.flang`
 
@@ -1620,7 +1620,7 @@ $ echo $?
 0
 ```
 
-### 24. I want to prove what the prover could not
+### 24. I want to prove what the compiler could not
 
 What to write: `теорема` (theorem) with `индукция по` (induction on) — a proof you lead yourself. The induction goes over the variants of your type; `убывает` is not needed.
 
@@ -1682,7 +1682,7 @@ $ echo $?
 
 ### 25. I want to state a property apart from a function
 
-What to write: `утверждение` — a property stated apart from a function. The prover proves it the same way as `обеспечивает`.
+What to write: `утверждение` — a property stated apart from a function. The compiler proves it the same way as `обеспечивает`.
 
 File: `docs/examples/guide/statement.flang`
 
@@ -1718,7 +1718,7 @@ $ echo $?
 
 ### 26. I want to read a file
 
-What to write: a `план` (plan). The function does not read the file itself: it returns the command «Прочитать файл», the runtime executes it and calls the function again with the response. So all the logic is ordinary functions checked by examples without a disk. Only the command `flang io` works with the real file. In the code the command is called «поручение» and the response of the runtime «отклик».
+What to write: a `план` (plan). The function does not read the file itself: it returns the command «Прочитать файл», the runtime executes it and calls the function again with the response. So all the logic is ordinary functions checked by examples without a disk. Only the command `flang io` works with the real file. In the output of `flang io` the command and the response of the runtime stand as a pair in the `log` field.
 
 File: `docs/examples/guide/read-file.flang`
 
@@ -1872,7 +1872,7 @@ $ echo $?
 
 ### 28. I want to make an HTTP request
 
-What to write: a `план` with the command «Запросить». The output below was taken where nothing listens at this address: the network error reached the plan as the response «Сбой», and the plan ended by itself with code 1.
+What to write: a `план` with the command «Запросить». The output below was obtained where nothing listens at this address: the network error reached the plan as the response «Сбой», and the plan ended by itself with code 1.
 
 File: `docs/examples/guide/ask-network.flang`
 
@@ -1964,5 +1964,5 @@ All three kinds of such languages step by step, with errors that name a column a
 
 - [Map of the language constructs](language-map.html) — every keyword of the language in one diagram
 - [Language reference](language.html) — the syntax of every construct
-- [Which promises the kernel takes](what-the-kernel-accepts.html) — how to write a guarantee so that the prover proves it
+- [What the compiler proves on its own](what-the-kernel-accepts.html) — how to write a guarantee so that the compiler proves it
 - [Command reference](cli.html) — keys and exit codes

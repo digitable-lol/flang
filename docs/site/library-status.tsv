@@ -2472,6 +2472,149 @@ flang/stdlib/optional.flang		Умножить значение	значение 
 flang/stdlib/optional.flang		Первый удвоенный или запасное	первый удваивается, а у пустого списка берётся запасное	сетка
 flang/stdlib/optional.flang		Первый удвоенный или запасное	у пустого списка удваивать нечего — берётся запасное	доказано
 flang/stdlib/optional.flang		Первый удвоенный или запасное	у непустого списка берётся ровно удвоенное	доказано
+flang/stdlib/parsing.flang	8b0a8f72c1187fee64ed9d74ffb9d068ebeea9f240f2f0624f8ebd0a6dc60214	Обычные правила разметки		доказано композицией
+flang/stdlib/parsing.flang		Цифра текста		доказано композицией
+flang/stdlib/parsing.flang		Буква имени		доказано композицией
+flang/stdlib/parsing.flang		Пробел текста		доказано композицией
+flang/stdlib/parsing.flang		Начало разметки		доказано композицией
+flang/stdlib/parsing.flang		Ход с ладом		доказано композицией
+flang/stdlib/parsing.flang		Сломать разметку		доказано композицией
+flang/stdlib/parsing.flang		Выпустить лексему		доказано композицией
+flang/stdlib/parsing.flang		Сбросить кусок		доказано композицией
+flang/stdlib/parsing.flang		Сбросить кусок по ладу		доказано композицией
+flang/stdlib/parsing.flang		Знак в строке		доказано композицией
+flang/stdlib/parsing.flang		Знак после черты		доказано композицией
+flang/stdlib/parsing.flang		Знак в комментарии		доказано композицией
+flang/stdlib/parsing.flang		Принять цифру		доказано композицией
+flang/stdlib/parsing.flang		Принять цифру по ладу		доказано композицией
+flang/stdlib/parsing.flang		Принять букву		доказано композицией
+flang/stdlib/parsing.flang		Принять одиночный знак		доказано композицией
+flang/stdlib/parsing.flang		Принять второй знак		доказано композицией
+flang/stdlib/parsing.flang		Принять знак препинания		доказано композицией
+flang/stdlib/parsing.flang		Знак вне строки		доказано композицией
+flang/stdlib/parsing.flang		Знак не буква и не цифра		доказано композицией
+flang/stdlib/parsing.flang		Продвинуть место		доказано композицией
+flang/stdlib/parsing.flang		Принять знак текста		доказано композицией
+flang/stdlib/parsing.flang		Принять знак по ладу		доказано композицией
+flang/stdlib/parsing.flang		Шаг разметки		доказано композицией
+flang/stdlib/parsing.flang		Закончить разметку		доказано композицией
+flang/stdlib/parsing.flang		Итог разметки		доказано композицией
+flang/stdlib/parsing.flang		Разметить по правилам		доказано композицией
+flang/stdlib/parsing.flang		Разметить		доказано композицией
+flang/stdlib/parsing.flang		Описать лексему		доказано композицией
+flang/stdlib/parsing.flang		Знак лексемы		доказано композицией
+flang/stdlib/parsing.flang		Число лексемы		доказано композицией
+flang/stdlib/parsing.flang		Текст лексемы		доказано композицией
+flang/stdlib/parsing.flang		Первая лексема		доказано композицией
+flang/stdlib/parsing.flang		Без первой лексемы		доказано композицией
+flang/stdlib/parsing.flang		Ошибка на лексеме		доказано композицией
+flang/stdlib/parsing.flang		Отказать на первой		доказано композицией
+flang/stdlib/parsing.flang		Строка текста по номеру		доказано структурой
+flang/stdlib/parsing.flang		Отступ указателя		доказано постоянным шагом
+flang/stdlib/parsing.flang		Напечатать ошибку в тексте		доказано композицией
+flang/stdlib/parsing.flang		Взять число		доказано композицией
+flang/stdlib/parsing.flang		Взять имя		доказано композицией
+flang/stdlib/parsing.flang		Взять строку в кавычках		доказано композицией
+flang/stdlib/parsing.flang		Взять знак		доказано композицией
+flang/stdlib/parsing.flang		Взять слово		доказано композицией
+flang/stdlib/parsing.flang		Длина остатка		доказано композицией
+flang/stdlib/parsing.flang		До конца текста		доказано композицией
+flang/stdlib/parsing.flang		Дальняя из ошибок		доказано композицией
+flang/stdlib/parsing.flang		Преобразовать разобранное		обещания нет
+flang/stdlib/parsing.flang		Разобрать затем		обещания нет
+flang/stdlib/parsing.flang		Склеить со вторым		обещания нет
+flang/stdlib/parsing.flang		Разобрать и пропустить		обещания нет
+flang/stdlib/parsing.flang		Оставить левое		доказано композицией
+flang/stdlib/parsing.flang		Пропустить и разобрать		обещания нет
+flang/stdlib/parsing.flang		Разобрать или		обещания нет
+flang/stdlib/parsing.flang		Исход или дальняя ошибка		доказано композицией
+flang/stdlib/parsing.flang		Приписать разобранное		доказано композицией
+flang/stdlib/parsing.flang		Ошибка на первой лексеме		доказано композицией
+flang/stdlib/parsing.flang		Ничего или ошибка		доказано композицией
+flang/stdlib/parsing.flang		Разобрать много		обещания нет
+flang/stdlib/parsing.flang		Разобрать один или больше		обещания нет
+flang/stdlib/parsing.flang		Разобрать через разделитель		обещания нет
+flang/stdlib/parsing.flang		Продолжить через разделитель		обещания нет
+flang/stdlib/parsing.flang		Разобрать необязательно		обещания нет
+flang/stdlib/parsing.flang		Разобрать весь текст		обещания нет
+flang/stdlib/parsing.flang		Найти действие		доказано композицией
+flang/stdlib/parsing.flang		Собрать действие		доказано композицией
+flang/stdlib/parsing.flang		Обернуть приставкой		доказано композицией
+flang/stdlib/parsing.flang		Закрыть скобку выражения		доказано композицией
+flang/stdlib/parsing.flang		Род знака операнда		доказано композицией
+flang/stdlib/parsing.flang		Разобрать выражение с силой		доказано постоянным шагом
+flang/stdlib/parsing.flang		Разобрать операнд		доказано постоянным шагом
+flang/stdlib/parsing.flang		Операнд с головы		доказано постоянным шагом
+flang/stdlib/parsing.flang		Операнд со знака		доказано постоянным шагом
+flang/stdlib/parsing.flang		Продолжить действия		доказано постоянным шагом
+flang/stdlib/parsing.flang		Продолжить после левого		доказано постоянным шагом
+flang/stdlib/parsing.flang		Применить действие		доказано постоянным шагом
+flang/stdlib/parsing.flang		Разобрать выражение		доказано композицией
+flang/stdlib/parsing.flang		Выражение из текста		доказано композицией
+flang/stdlib/parsing.flang		Напечатать лист выражения		доказано композицией
+flang/stdlib/parsing.flang		Напечатать дерево выражения		доказано структурой
+flang/stdlib/parsing.flang		Расставить скобки		доказано композицией
+flang/stdlib/parsing.flang		Собрать пару имени и числа		доказано композицией
+flang/stdlib/parsing.flang		Разобрать имя перед равенством		обещания нет
+flang/stdlib/parsing.flang		Разобрать пару имени и числа		обещания нет
+flang/stdlib/parsing.flang		Разобрать пары имён и чисел		обещания нет
+flang/stdlib/parsing.flang		Разобрать пары подряд		обещания нет
+flang/stdlib/parsing.flang		Разобрать числа через запятую		обещания нет
+flang/stdlib/parsing.flang		Разобрать числа до скобки		обещания нет
+flang/stdlib/parsing.flang		Разобрать числа в скобках		обещания нет
+flang/stdlib/parsing.flang		Разобрать числа подряд		обещания нет
+flang/stdlib/parsing.flang		Разобрать число или числа в скобках		обещания нет
+flang/stdlib/parsing.flang		Разобрать список чисел		обещания нет
+flang/stdlib/parsing.flang		Разобрать скобочную запись		доказано постоянным шагом
+flang/stdlib/parsing.flang		Род лексемы записи		доказано композицией
+flang/stdlib/parsing.flang		Скобочная запись с головы		доказано постоянным шагом
+flang/stdlib/parsing.flang		Части скобочной записи		доказано постоянным шагом
+flang/stdlib/parsing.flang		Закрыть скобочную запись		доказано композицией
+flang/stdlib/parsing.flang		Добавить часть записи		доказано постоянным шагом
+flang/stdlib/parsing.flang		Скобочная запись из текста		доказано композицией
+flang/stdlib/parsing.flang		Обычные правила разметки	обычные правила без комментариев и составных знаков	доказано
+flang/stdlib/parsing.flang		Цифра текста	цифра — ровно один знак	доказано
+flang/stdlib/parsing.flang		Начало разметки	разметка начинается с первой строки и первого столбца	доказано
+flang/stdlib/parsing.flang		Ход с ладом	смена лада готового не трогает	доказано
+flang/stdlib/parsing.flang		Ход с ладом	смена лада лексем не теряет	доказано
+flang/stdlib/parsing.flang		Ход с ладом	смена лада места не сдвигает	доказано
+flang/stdlib/parsing.flang		Сломать разметку	поломка готового не трогает	доказано
+flang/stdlib/parsing.flang		Сломать разметку	поломка лексем не теряет	доказано
+flang/stdlib/parsing.flang		Сломать разметку	первую причину вторая не затирает	доказано
+flang/stdlib/parsing.flang		Выпустить лексему	выпуск прибавляет ровно одну лексему	доказано
+flang/stdlib/parsing.flang		Выпустить лексему	выпуск лексем не теряет	доказано
+flang/stdlib/parsing.flang		Выпустить лексему	выпуск места не сдвигает	доказано
+flang/stdlib/parsing.flang		Сбросить кусок	сброс лексем не теряет	доказано
+flang/stdlib/parsing.flang		Сбросить кусок по ладу	сброс по ладу лексем не теряет	доказано
+flang/stdlib/parsing.flang		Знак в строке	знак в строке лексем не теряет	доказано
+flang/stdlib/parsing.flang		Знак после черты	знак после черты готового не трогает	доказано
+flang/stdlib/parsing.flang		Знак в комментарии	комментарий лексем не даёт	доказано
+flang/stdlib/parsing.flang		Принять цифру	цифра лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять цифру по ладу	цифра по ладу лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять букву	буква лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять одиночный знак	одиночный знак лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять второй знак	второй знак лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять знак препинания	знак препинания лексем не теряет	доказано
+flang/stdlib/parsing.flang		Знак вне строки	знак вне строки лексем не теряет	доказано
+flang/stdlib/parsing.flang		Знак не буква и не цифра	прочий знак лексем не теряет	доказано
+flang/stdlib/parsing.flang		Продвинуть место	продвижение готового не трогает	доказано
+flang/stdlib/parsing.flang		Принять знак текста	принятый знак лексем не теряет	доказано
+flang/stdlib/parsing.flang		Принять знак по ладу	знак по ладу лексем не теряет	доказано
+flang/stdlib/parsing.flang		Шаг разметки	шаг лексем не теряет	доказано
+flang/stdlib/parsing.flang		Закончить разметку	конец разметки лексем не теряет	доказано
+flang/stdlib/parsing.flang		Без первой лексемы	без первой не длиннее	доказано
+flang/stdlib/parsing.flang		Ошибка на лексеме	ошибка стоит на месте лексемы	доказано
+flang/stdlib/parsing.flang		Взять число	после числа остаток не длиннее входа	доказано
+flang/stdlib/parsing.flang		Взять имя	после имени остаток не длиннее входа	доказано
+flang/stdlib/parsing.flang		Взять строку в кавычках	после строки остаток не длиннее входа	доказано
+flang/stdlib/parsing.flang		Взять знак	после знака остаток не длиннее входа	доказано
+flang/stdlib/parsing.flang		Взять слово	после слова остаток не длиннее входа	доказано
+flang/stdlib/parsing.flang		Оставить левое	оставленное левое остатка не меняет	доказано
+flang/stdlib/parsing.flang		Приписать разобранное	приписанное остатка не меняет	доказано
+flang/stdlib/parsing.flang		Ничего или ошибка	запасное лексем не съедает	доказано
+flang/stdlib/parsing.flang		Найти действие	найденных не больше, чем действий	доказано
+flang/stdlib/parsing.flang		Собрать действие	собранное действие остатка не меняет	доказано
+flang/stdlib/parsing.flang		Закрыть скобку выражения	закрытая скобка остатка не удлиняет	доказано
 flang/stdlib/postgres.flang	c4f8727c322ae5966ddfdc88d338b55e6ad7bedab89664ae977c69787d3dc5f0	Кадр		доказано композицией
 flang/stdlib/postgres.flang		Пуск		доказано композицией
 flang/stdlib/postgres.flang		Тело пуска		доказано композицией

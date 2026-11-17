@@ -2365,3 +2365,8 @@ c936c07d6023bd3712da01daa6721b48|2|2|0|0|1|flang/proof/probes/lean-parity-gaps/p
 788ffa3b4cfa9f32e80e3195f7289b12|15|15|0|0|0|flang/stdlib/text-decoding.flang
 fb142bafe8e373ae6a992c54d05260d8|4|4|0|0|0|flang/stdlib/unicode-graphemes.flang
 d735e7903d9209963435cf99e550b9dd|3|3|0|0|0|flang/stdlib/unicode-tables.flang
+2e2aecf520875aca855df2e766e33778|1|×|×|×|0|docs/examples/first-proof/step1/change.flang
+f4750d1e79073b75cc2da61c2447ba51|1|1|0|0|1|docs/examples/first-proof/step2/change.flang
+5468a68fa2b97ebee90c17fda61504c5|1|0|1|0|1|docs/examples/first-proof/step3/total.flang
+2f99676e891392ef905075df96009e46|1|1|0|0|1|docs/examples/first-proof/step4/total.flang
+7b0890c6dcb3313072956eb0789ce50d|1|×|×|×|0|docs/examples/first-proof/step5/total.flang

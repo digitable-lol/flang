@@ -1,11 +1,12 @@
 # Your first program
 
-Five steps: write a file, check it, run its unit tests, run a function,
-generate C from it. You need `flang` installed — [how to install it](install.html).
+How do you write a function in flang, check it and run it? Four steps: a file,
+a check, the tests, a run. You need `flang` installed —
+[how to install it](install.html).
 
 ## Write
 
-Put this in `hello.flang`:
+File `hello.flang`:
 
 ```flang
 module «Hello»
@@ -22,35 +23,17 @@ total function «Twice»
 
 What each part does:
 
-| Part | Usual name | What the compiler does with it |
+| Part | Familiar name | What the compiler does with it |
 | --- | --- | --- |
-| `total` | a function that always terminates | proves termination; if it cannot, the file is rejected |
-| `accepts` / `returns` | parameter and return types | checks them before anything runs |
-| `ensures` | postcondition | the prover tries to prove it for every input. The name in `«…»` is required: the proof report refers to the postcondition by it |
-| `example` | a unit test inside the function | runs it on every `check` |
-| the last line | the body | — |
+| `total` | a function that always terminates | proves termination; if it cannot, the file fails the check |
+| `accepts` / `returns` | parameter and result types | checks them before anything runs |
+| `ensures` | postcondition | tries to prove it for every input; the name in `«…»` is required, messages refer to the postcondition by it |
+| `example` | a unit test inside the function | runs it on every check |
+| last line | the function body | — |
 
-Names of modules, functions and examples are always written in guillemets
-`«…»`. `"` or `'` do not work instead: the guillemets tell the parser that this
-is your name and not a keyword.
-
-The parameter is declared `nat` (non-negative), not `number`, and this matters.
-With `accepts n: number` the check fails, because `number` includes "not a
-number" (for example, the result of `0 divided by 0`), and that value is neither
-greater nor smaller than anything:
-
-```
-FLANG_BOUND_ON_NAN в файле hello.flang, строка 6, столбец 3: постусловие
-«the doubled value is at least the original» функции «Twice» ЛОЖНО, и
-контрпример назван: «n» объявлен типом «число», а «не число» живёт в этом типе
-и стоит ВНЕ ПОРЯДКА — оно не больше и не меньше ничего, включая самоё себя.
-…
-```
-
-The error message offers three fixes. This page uses the first one: declare the
-parameter `nat`, so NaN cannot get in. The second is a precondition,
-`requires «n is at least zero» n is at least 0`; then every caller must
-guarantee it.
+Names of modules, functions and tests are written in guillemets `«…»`. The
+quotes `"` and `'` do not work for names: guillemets are how the compiler
+tells your name from a keyword.
 
 ## Check
 
@@ -58,187 +41,123 @@ guarantee it.
 flang check hello.flang
 ```
 
-```
+```text
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
-Exit code 0. `check` runs five steps in order: parsing, types, termination, the
-prover («ядро» in the output), the unit tests. If any step fails, `emit` will
-not generate code either.
+Exit code 0. The compiler writes its messages in Russian with either keyword
+spelling. The first line reads "module «Hello»: 1 function, 1 of them proved to
+terminate; 0 types". The second lists five checks that passed — syntax, types,
+termination, proofs, tests — and ends with "no errors".
 
-The compiler answers in Russian whichever spelling of keywords you use. Words
-quoted from your code stay yours: in an English file an error quotes `'if'`,
-not `'если'`.
+### Why the parameter has the type `nat`
 
-## Run the unit tests
+Replace the parameter type with `number` in `hello.flang` and check again:
+
+```bash
+flang check hello.flang
+```
+
+```text
+модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
+FLANG_BOUND_ON_NAN в файле hello.flang, строка 6, столбец 3: постусловие
+«the doubled value is at least the original» функции «Twice» ЛОЖНО, и контрпример назван:
+«n» объявлен типом «число», а «не число» живёт в этом типе и стоит ВНЕ ПОРЯДКА
+…
+hello.flang: не проверено — замечаний 1
+```
+
+Exit code 1. The message reads: line 6, column 3, the postcondition is false,
+and the counterexample is NaN. The type `number` is a floating-point number and
+includes NaN. NaN is neither greater nor less than any number, so the
+postcondition fails for it. The type `nat` is an integer from 0 to 2⁵³−1 and
+has no NaN. Put `nat` back.
+
+## Run the tests
 
 ```bash
 flang test hello.flang
 ```
 
-```
+```text
 hello.flang: примеров 1, прошло 1, не прошло 0
 ```
 
-One example, one passed, none failed.
+Exit code 0. The line reads "1 test, 1 passed, 0 failed".
 
-## Run
+## Run a function
 
 ```bash
 flang run hello.flang --function Twice --args '{"n": 21}'
 ```
 
-```
+```text
 доказано: утверждений 1
 42
 ```
 
-The first line says the one postcondition of the file is proved; `run` refuses
-to compute anything while a postcondition is unproved. The second line is the
-value.
+Exit code 0. The first line reads "proved: 1 postcondition". The second is the
+result. When a file has a postcondition without a proof, `run` computes
+nothing.
 
-On the command line the function name is written **without guillemets**.
-
-`--args` takes a JSON object whose keys are the parameter names from
-`accepts`. Values are numbers, strings, `true`, `false`, `null`, lists and
-records, nested as deep as the declared type needs:
+On the command line the function name is written without guillemets. `--args`
+takes a JSON object whose keys are the parameter names from the `accepts` line.
+Each argument is checked against the declared type before the computation:
 
 ```bash
-flang run sum.flang --function Sum --args '{"items": [1,2,3]}'
+flang run hello.flang --function Twice --args '{"n": -3}'
 ```
 
-Each value is checked against the declared type before anything is computed.
-More in [Operations](operations.html), the `--args` section.
-
-`flang run` checks argument types. The parameter `n` is declared `nat`; on
-`{"n": -3}` the answer is this, with exit code 1:
-
-```
+```text
 доказано: утверждений 1
 FLANG_TYPE: вызов функции «Twice»: аргумент «n»: -3 вне неотрицательное
 ```
 
-## Read the proof report
+Exit code 1. The second line reads "argument «n»: -3 is outside `nat`". The
+function was not computed.
+
+## See what is proved
+
+The `--proof` flag adds a proof report to the check:
 
 ```bash
 flang check hello.flang --proof
 ```
 
-The prover tries to show that the postcondition holds for every input, not
-only for the 2 from the example. For this program the report says:
+The report is long. Two of its entries matter for this program:
 
-```
+```text
 …
 чем несётся обещание «тотальная»:
-  «Twice»  доказано композицией: рекурсии нет, обещание сложено из обещаний тех, кого зовёт
+  «Twice»  доказано композицией: рекурсии нет, …
 …
-что высказано и чем это несётся:
-  постусловие «the doubled value is at least the original» функции «Twice» — доказано по
-  объявленным типам аргументов: цель сведена правилом «порядок по построению» — утверждение
-  обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
+  постусловие «the doubled value is at least the original» функции «Twice» — доказано по объявленным
+типам аргументов: … — утверждение обо ВСЕХ входах, а не о написанных; теоремы при
+нём нет и не нужно
 …
 ```
 
-The first part: `«Twice»` terminates because it has no recursion and calls only
-functions that terminate. The second part: the postcondition is proved from the
-parameter type alone — `n` is non-negative, so `n plus n` is at least `n`. You
-did not have to write a proof. The summary line of the report ends with
-`код возврата 0` (exit code 0).
+Exit code 0. The first entry is about termination: the function has no
+recursion, so it terminates. The second is about the postcondition: it is
+proved from the parameter type for all inputs, and the test with 2 is one case.
+"Теорема" is a hand-written proof; none was needed here.
 
-A postcondition can end up in one of three states:
+What to do when the compiler does not prove a postcondition by itself is shown
+in [Your first proof](first-proof.html).
 
-| The report says | What it means |
-| --- | --- |
-| доказано (proved) | true for **all** inputs |
-| сетка N (grid of N) | checked only on your N examples, like unit tests; **there is no proof** |
-| объявлено, не доказано (declared, not proved) | the prover could not prove it and there are no examples; the generated code checks it at run time |
+## Code in another language
 
-How to get a postcondition to "proved": [tutorial](tutorial.html), chapter 6.
-
-## Generate C
-
-```bash
-flang emit hello.flang --target c --out ./output
-```
-
-```
-проверок при работе снято 1: постусловие доказано ядром обо всех входах и
-проверено примерами функции — в напечатанный код оно не едет.
-напечатано файлов 6, байт …, в ./output
-проверено перед печатью — разбор, типы, завершаемость и ядро доказательств.
-ПРИМЕРЫ НЕ ПРОГНАНЫ: их считает вычислитель на самом языке, и на самых больших
-программах он в предел шагов этого бинарника не укладывается — свяжи с ними
-печать, и компилятор перестал бы печатать сам себя. Прогоните их отдельно:
-flang test <файл>
-```
-
-How to read it:
-
-- The first two lines: the postcondition is proved, so no runtime check for it
-  goes into the C code.
-- The third: six files were written to `./output`.
-- The last lines: `emit` does not run the unit tests. Run `flang test` for that.
-
-The output directory is created for you. The generated code builds with plain
-`make`:
-
-```bash
-make -C ./output
-```
-
-```
-make: Entering directory '…/output'
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_runtime.o flang_runtime.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o hello.o hello.c
-ar rcs libhello.a flang_runtime.o hello.o
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto   -c -o flang_cli.o flang_cli.c
-cc -std=c99 -Wall -Wextra -Werror -pedantic -O2 -flto -o flang_cli flang_cli.o flang_runtime.o hello.o -lm -lpthread
-make: Leaving directory '…/output'
-```
-
-No warnings under `-Wall -Wextra -Werror -pedantic`.
-
-One pitfall: your names become identifiers in the target language, and a
-clash is an error, not a silent rename. Call the function `«Double»` and C
-generation fails, exit code 1:
-
-```
-FLANG_CLI: имена «Double» и «зарезервировано в целевом языке: double» дают один идентификатор «double» — переименуйте одно из них в модели
-flang emit: печать отменена — программа не проходит проверку, замечаний 1.
-Разбор, типы, завершаемость и ядро доказательств смотрит «flang check» этого же
-бинарника: он назовёт то же самое и полнее.
-```
-
-The message names both sides of the clash (`double` is a C keyword). Rename the
-function and run `emit` again.
-
-## Other target languages
-
-There are {{цели.поАнглийски}} target languages: {{цели.список}}. The command
-is the same, only `--target` changes:
-
-```bash
-flang emit hello.flang --target rust --out ./output-rust
-```
-
-```
-…
-напечатано файлов 7, байт …, в ./output-rust
-…
-собрать: cd <каталог> && cargo build, запустить target/debug/flang_cli <модуль>
-```
-
-The output directory contains a `Makefile` and a `Cargo.toml`; `cargo build`
-builds `target/debug/flang_cli`, which calls the same function.
+The command `flang emit hello.flang --target c --out ./out` generates a C
+project from the program; `make -C ./out` builds it. There are
+{{цели.поАнглийски}} target languages: {{цели.список}}. Step by step:
+[Generating C and JavaScript](emit-walkthrough.html).
 
 ## Next
 
-- [Tutorial](tutorial.html) — six chapters from your first function to a
-  postcondition the prover proves
-- [Loops, classes, interfaces](surface-sugar.html) — familiar forms and what
-  they expand into
-- [Which construct to use when](which-construct.html) — what to write for a
-  task: enum, Optional, Result, map, filter, reduce
-- [Operations](operations.html) — standard library functions for lists,
-  strings and numbers
+- [Your first proof](first-proof.html) — the compiler finds a bug, you fix it
+  and write a proof
+- [Tutorial](tutorial.html) — the language in order, six chapters with
+  exercises
+- [Which construct to use when](which-construct.html) — what to write instead
+  of enum, Optional, Result, map, filter, reduce

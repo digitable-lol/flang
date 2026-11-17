@@ -12,8 +12,8 @@ In short:
   of the declared types.
 - A second, independent program repeats part of what was proved. The rest
   stands on the kernel alone, and the report gives both shares as numbers.
-- Release {{выпуск.версия}} has a known error with functions that carry the
-  line `убывает` (decreases). It is described
+- Release 0.7.40 has a known error with functions that carry the line
+  `убывает` (decreases). It is described
   [below](#a-known-error-a-function-with-убывает).
 
 ## What «доказано» means
@@ -204,8 +204,10 @@ The sign is the words «спуск ядром не выведен — на ве�
 derive the descent — taken on faith). They mean: termination is accepted without
 proof. The word `сторож` here is the run-time check.
 
-This particular function does terminate, and nothing is wrong with it. The error
-is elsewhere. In release {{выпуск.версия}} the kernel uses the postconditions of
+On ordinary numbers this function terminates. On NaN it does not: a comparison
+with NaN is always false, and the run-time check stops it. That is by design.
+
+The error is elsewhere. In release 0.7.40 the kernel uses the postconditions of
 such a function as proved facts. If the function does not in fact terminate, a
 false statement can be derived from its postconditions, and the report says
 «доказано» about it.

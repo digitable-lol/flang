@@ -1823,6 +1823,12 @@ fe51d1d52d0266bdec14f79a067c0dbd|4|4|0|0|0|flang/proof/probes/memory-limit/run.f
 111637abf07cd0e3d3dc5402b59ea31a|1|1|0|0|0|docs/examples/guide/split-text.flang
 192b3c6fa819eff0e9a209de9df728a5|2|2|0|0|0|docs/examples/guide/statement.flang
 0cadc725143144226bdf2cd493893617|1|1|0|0|0|docs/examples/guide/theorem.flang
+aacc53ef44b3d65750705d9dd3c07650|4|4|0|0|0|docs/examples/dsl/discount-rules.flang
+7f8f23d658c3f3caab7e8aae1099de7b|2|2|0|0|0|docs/examples/dsl/order-automaton-typed.flang
+02a9ac0a75a88dc082e532ef16bc908e|4|4|0|0|0|docs/examples/dsl/order-automaton.flang
+22b6374a5eff09a54d21344b51f61a9f|2|×|×|×|0|docs/examples/dsl/refused/order-typed-missing-case.flang
+277949deb2b7762d3cbe5766a49c57c4|1|0|0|1|0|docs/examples/dsl/unproved/false-statement.flang
+369b2f30e1cd58733922be38dc5e9623|2|1|0|1|0|docs/examples/dsl/unproved/order-typed-cancel-after-delivery.flang
 709ba629a82f0d9b4c3ca37ee70b3551|1|1|0|0|0|docs/examples/guide/fold-total.flang
 9b33f67e33734093a9b2a7942c307d5a|1|1|0|0|0|docs/examples/guide/two-outcomes.flang
 0d98c6ea99ae733aabf1e27463f8ab04|1|1|0|0|0|docs/examples/guide/walk-list.flang

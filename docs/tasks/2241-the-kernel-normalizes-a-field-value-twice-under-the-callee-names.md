@@ -1,7 +1,7 @@
 ---
 номер: 2241
 заголовок: Ядро сводит значение поля выписанного конструктора второй раз под именами вызванной функции и доказывает ложное постусловие
-статус: в работе
+статус: сделана — на выпуске 0.7.40 `check --proof` пробы field-twice.flang отвечает «объявлено, не доказано», код 3; строка нарушения закрыта
 приоритет: P0
 исполнитель: a
 ветка: a/kernel-unfolds-calls-on-constructors
@@ -74,4 +74,13 @@ field-twice.flang: независимо, сверщиком, проиграно 
 
 ## Где живёт правка
 
-`flang/self/proof-kernel.flang`, «Связь из значения». Ждёт печати семени.
+`flang/self/proof-kernel.flang`, «Связь из значения».
+
+## Чем закрыта
+
+Правка ядра вошла в выпуск 0.7.40. На нём
+`bootstrap/flang check flang/proof/checker/tests/families/unfold-on-constructor/field-twice.flang --proof`
+отвечает «постусловие «ложь» функции «Ложь» — объявлено, не доказано», код 3. Строка
+`kernel-unfolds-a-field-twice-under-the-callee-names` в
+`flang/proof/tables/consistency-violations.tsv` переведена в `closed` коммитом
+`proof(tables): two violations fixed in 0.7.40 are closed`.

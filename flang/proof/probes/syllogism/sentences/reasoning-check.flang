@@ -1104,7 +1104,29 @@
             и «fallacy» равным («No fallacy») и «premises» равным told и «conclusion» равным drawn
             и «counterexample» равным "" и «unparsed» равным («Unparsed of» от prepared)
             и «hints» равным («Hints of» от text) и «dictionary» равным («Derived dictionary of» от text)
-            и «kernel» равным "" и «boundary» равным («Boundary words» от "not-judged"))
+            и «kernel» равным "" и «boundary» равным («Unread boundary» от prepared))
+
+тотальная функция «Read without a step»
+  принимает prepared: строка
+  возвращает признак
+  пример «A text that is read but draws no conclusion»
+    дано prepared равно "Понятие: кит, киты.\nПонятие: рыба, рыбы; она.\n\nНи один кит не рыба.\n"
+    ожидается да
+  пример «A text with an unread sentence»
+    дано prepared равно "Проводимость растёт.\n"
+    ожидается нет
+  пусть faults равно («Text faults» от prepared)
+  пусть ordered равно («Order faults» от («Statements of» от prepared))
+  (не (пусто faults)) и притом (пусто (отфильтровать faults где fault → не (ordered содержит fault)))
+
+тотальная функция «Unread boundary»
+  принимает prepared: строка
+  возвращает строка
+  если «Read without a step» от prepared
+    то (соединить ["по форме вывод не судим: предложения прочитаны, но вывода с посылками среди них ",
+        "нет — судить нечего; содержательные ошибки вида переход на личность, соломенное ",
+        "чучело, апелляция к авторитету формой не определяются вовсе"] по "")
+    иначе «Boundary words» от "not-judged"
 
 тотальная функция «Json string»
   принимает text: строка

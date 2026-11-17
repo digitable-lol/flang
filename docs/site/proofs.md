@@ -1,7 +1,8 @@
 # What a proof is in flang
 
 This page answers the question: what does the word «доказано» (proved) in the
-compiler output mean, and when do you need it. Five minutes to read.
+compiler output mean, and when do you need it. Five minutes to read. To try
+the same by hand step by step, see the lesson [First proof](first-proof.html).
 
 ## A test and a proof
 
@@ -65,44 +66,14 @@ For every postcondition the compiler gives one of four answers:
 With the word «сетка» (grid) the compiler names the answer «checked on tests
 only».
 
-The last answer is an error; the file does not pass the check. The same file
-without the `требует` line is in `docs/examples/proofs/before/discount.flang`:
-
-```bash
-flang check before/discount.flang; echo "код $?"
-```
-
-```
-FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «в минус не уходим» функции «Цена
-со скидкой» нарушено на входе цена = 0, скидка = 1 — посчитано вычислителем на
-этом входе
-before/discount.flang: не проверено — замечаний 1
-код 1
-```
-
-The compiler picked the input itself: price 0, discount 1, result −1.
-
-## What changes in the program
+The last answer is an error: the file does not pass the check. How the
+compiler finds such an input by itself and how a precondition fixes it:
+sections 1 and 2 of the lesson [First proof](first-proof.html).
 
 A precondition is checked at compile time at every call site. At run time it
-is checked once, where data comes in from outside:
-
-```bash
-flang run discount.flang --function 'Цена со скидкой' --args '{"цена": 100, "скидка": 130}'
-```
-
-```
-доказано: утверждений 1
-FLANG_PRECONDITION: не выполнено требование «скидка не больше цены» функции «Цена со скидкой»
-```
-
-The first line is about the file: its only postcondition is proved. The second
-is about this call: the arguments failed the precondition, and the function was
-not computed. Exit code 1.
-
-An unproved postcondition is checked on every return from the function.
-`flang run` starts a program with such a postcondition only with the key
-`--trust`.
+is checked once, where data comes in from outside. An unproved postcondition is
+checked on every return from the function, and `flang run` starts such a
+program only with the key `--trust`.
 
 A proved postcondition does not get into the generated code if the function has
 at least one `пример`. For a function without tests the check stays even for a

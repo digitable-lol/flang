@@ -137,11 +137,11 @@ Until the version number changes:
 
 The number changes on a removed or renamed line, a different order of header
 lines, a different meaning of a value, or a different way to compute the
-fingerprints. A new kind of line or block does not change the number but goes
-into the journal below.
+fingerprints. A new kind of line or block does not change the number but changes
+the fingerprints written below.
 
 The promise is checked: `bootstrap/flang run-script record-format:check` takes
-two fingerprints of the format and compares them with the journal.
+two fingerprints of the format and compares them with the ones written below.
 
 - **The printer fingerprint** is the SHA-256 of the set of line kinds in fresh
   records of five reference programs of the tree. A new kind of line or block
@@ -149,22 +149,21 @@ two fingerprints of the format and compares them with the journal.
 - **The reader fingerprint** is the SHA-256 of the closed list of line
   templates by which the C program refuses an unknown line.
 
-If a fingerprint disagrees with the journal, the check refuses with the words
+If a fingerprint disagrees with the written one, the check fails with the words
 «смена формата записи без записи в журнал» (the record format changed without
 a journal entry).
 
-## Version journal
+## Fingerprints of version 1
 
-| date | version | what changed |
-| --- | --- | --- |
-| 2026-08-22 | 1 | the record appears: a header of seven lines (`запись доказательства 1`, `исходник`, `строк`, `знаков`, `отпечаток`, `ядро`, `утверждений`), statement blocks with theorems and steps, `конец записи` |
-| 2026-09-01 | 1 | the header line `отпечаток256` — SHA-256 of the source; the term next to a step's line number; the table of contents of list literals |
-| 2026-09-07 | 1 | the header line `тотальностей N`; totality blocks |
-| 2026-09-14 | 1 | blocks for a precondition discharged at a call (`снятие … конец снятия`) |
-| 2026-10-15 | 1 | the line `законов N` and the unfolding of laws past the end of the file; proved statements carry moves read off the body (`ход цель … ход конец`) |
-| 2026-10-17 | 1 | category theorem blocks (`категорная теорема … конец категорной теоремы`) |
-| 2026-10-24 | 1 | the check `record-format:check`; fingerprints: printer `50f33cdf7bb8…`, reader `971a7a854e1c…` |
-| 2026-11-13 | 1 | a file with sugar (class, interface, loop) is recorded by its expanded text: the header line `отпечаток раскрытия` is the SHA-256 of the expanded text, and the block `раскрытие строк N … конец раскрытия` before `конец записи` carries the text itself ([ADR-0238](https://github.com/digitable-lol/flang/blob/dev/docs/adr/0238-a-class-is-checked-by-its-expanded-text-and-the-expansion-is-trusted-like-the-c-compiler.md)); reader fingerprint `54a82e1f14c1…` |
+Format version 1 is recognised today by two fingerprints:
+
+```
+запись доказательства 1
+printer fingerprint 50f33cdf7bb8346ed2a78955a88b346f1277f36ca53c9c8ae982638beacfc3ab
+reader fingerprint 54a82e1f14c1be38c78cc2339089c61513001ce426060617e30f8e41a6cd7f38
+```
+
+A new kind of line or block changes the fingerprints, not the version number.
 
 Next: [Diagnostics reference](diagnostics.html) — the second promise outward: the
 `FLANG_*` codes do not appear or vanish silently.

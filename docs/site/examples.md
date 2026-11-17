@@ -25,6 +25,7 @@ The number is recounted by one command:
 | [`frameworks/`](docs/examples/frameworks) | <!-- СНЯТО 2026-09-08 файлов docs/examples/frameworks/*.flang = 6 --> 6 | a flang decision core under a JavaScript framework host: NestJS, React, Vue. The core is printed to JS and lies next to the host — see below |
 | [`https/`](docs/examples/https) | 3 | TLS: the RFC 8448 records, the system trust store, a hello to a real host |
 | [`proof-probes/`](docs/examples/proof-probes) | 3 | probes of the proof core itself: the typed-AST door, a refused generic descent, a variant with fields |
+| [`proofs/`](docs/examples/proofs) | 38 | the examples of the Proofs section: a file for every example on a page, «before» and «after» pairs for the recipes, postcondition forms in `kernel/` |
 | [`driver/`](docs/examples/driver) | 2 | hardware drivers where every function must provably terminate: a UART and an MSI |
 | [`measure/`](docs/examples/measure) | 3 | termination by a declared measure: Euclid, binary search, natural numbers |
 | [`errors/`](docs/examples/errors) | 2 | failure as a value rather than a crash: summing a column of numbers that arrived as strings, parsing numbers |

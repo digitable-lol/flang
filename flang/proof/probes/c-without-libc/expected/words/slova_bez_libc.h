@@ -1,5 +1,5 @@
 /*
- * Сгенерировано flang: C без libc (flang/self/emit-c-freestanding.flang).
+ * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
  * Модуль flang: «Слова без libc». Файл: slova_bez_libc.h.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.

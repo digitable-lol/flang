@@ -323,6 +323,30 @@ jobs:
       - name: The starter programs of the playground pass
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:starters
 
+      # The page script has a pure half (compiler answer -> title, messages,
+      # line marks, table rows) that Node can run. Real compiler answers go
+      # through it; an exception, an empty title or a title stuck on the
+      # waiting word is what a visitor sees as an empty panel.
+      - name: The playground page answers every button
+        run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:page
+
+      # Negative control: the misspelled field of issue 478 put back into a
+      # copy of the page script must turn the check red.
+      - name: The page check sees a misspelled answer field
+        run: |
+          forged="$RUNNER_TEMP/playground-forged.js"
+          sed 's/diag\.текст\.indexOf/diag.text.indexOf/' docs/site/playground.js > "$forged"
+          if cmp -s docs/site/playground.js "$forged"; then
+            echo "the forgery changed nothing: the field name is gone from playground.js" >&2
+            exit 1
+          fi
+          if LC_ALL=C.UTF-8 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --страница "$forged" > "$RUNNER_TEMP/page.out" 2>&1; then
+            echo "THE CHECK KEPT SILENT: a misspelled answer field passed" >&2
+            tail -20 "$RUNNER_TEMP/page.out" >&2
+            exit 1
+          fi
+          grep -F 'исключение' "$RUNNER_TEMP/page.out"
+
       - name: Everything the site shows works in the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:site
 

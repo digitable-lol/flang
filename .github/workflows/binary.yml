@@ -419,9 +419,9 @@ jobs:
       #
       # Счётчиков долга в дереве было три — раздел «Вне языка» в docs/ROADMAP.md,
       # docs/javascript-inventory.md и числа сайта, — и все три считали ОДИН
-      # язык: JavaScript. Оболочка (42 файла, 8169 строк), HTML, CSS, пробы на
-      # СНЯТО 2026-11-10 файлов *.sh = 42 (shell twins: flang/concurrency/bench/limit.sh and node-death.sh removed, the plans limit.fscript and node-death.fscript give the same answers on a run)
-      # СНЯТО 2026-11-11 строк-в *.sh = 8169 (the published guard dropped three rows that read theorem counts the proofs pages no longer print)
+      # язык: JavaScript. Оболочка (43 файла, 8279 строк), HTML, CSS, пробы на
+      # СНЯТО 2026-11-17 файлов *.sh = 43 (packaging/prebuilt/publish-tap.sh puts the formula of a published release into the tap)
+      # СНЯТО 2026-11-17 строк-в *.sh = 8279 (publish-tap.sh is new, install.sh checks provenance on request, the published guard lost two lines)
       # C, Python, awk и Erlang не считались нигде и ни в одной проверке. Долг,
       # которого никто не считает, не убывает: его не видно ни в отчёте, ни в
       # ленте, и растёт он молча.

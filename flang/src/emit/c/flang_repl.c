@@ -637,7 +637,7 @@ static const char HELP_EMIT[] =
     "                        [--out каталог | --file имя] [--cli|--no-cli] [--repl]\n"
     "                        [--runtime каталог] [--index-base 0|1]\n"
     "                        [--max-steps N] [--max-depth N] [--no-check]\n"
-    "                        [--no-postconditions]\n"
+    "                        [--no-postconditions] [--freestanding]\n"
     "\n"
     "Печатает программу без Node — во все десять целей. Каталог из «--out»\n"
     "заводится сам, вместе с промежуточными и с подкаталогами, которых просит цель\n"
@@ -763,6 +763,21 @@ static const char HELP_EMIT_POST[] =
     "\n";
 
 /* Четвёртая часть: разрез там же и по той же причине. */
+/* Часть про «--freestanding» — отдельным литералом по той же причине: 4095 знаков C99. */
+static const char HELP_EMIT_FREE[] =
+    "«--freestanding» (только у цели «c») генерирует C без libc — для ядра ОС,\n"
+    "загрузчика и прошивки. Код собирается «cc -ffreestanding -nostdlib» и не\n"
+    "вызывает ни одной внешней функции: только <stdint.h>, <stddef.h> и\n"
+    "<stdbool.h>, ни потоков, ни файлов, ни выделения памяти. Слова u8, u16, u32\n"
+    "и u64 становятся uint8_t … uint64_t, признак — bool, запись — структурой C,\n"
+    "сумма типов — структурой с меткой; число переводится, только пока оно целое.\n"
+    "Функция, в которой ошибки быть не может, возвращает ответ прямо; остальные\n"
+    "возвращают код (FL_FS_OK или причину), а ответ кладут в последний аргумент.\n"
+    "Рядом с исходником ложится заголовок .h с прототипами. Строки, списки,\n"
+    "дробные числа, рекурсия, планы и процессы не поддержаны: на них генерация\n"
+    "останавливается с ошибкой FLANG_FREESTANDING_UNSUPPORTED и называет функцию.\n"
+    "\n";
+
 static const char HELP_EMIT_4[] =
     "РАНТАЙМ ЦЕЛИ уезжает в вывод ДОСЛОВНО, поэтому читается с диска: от двух\n"
     "файлов у go, rust, js и python до шести у java и csharp, у cpp четыре (три\n"
@@ -1138,7 +1153,7 @@ static void human_help(const char *topic) {
   } else if (strcmp(topic, "run") == 0) {
     printf("%s\n", HELP_RUN);
   } else if (strcmp(topic, "emit") == 0) {
-    printf("%s\n%s%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_POST, HELP_EMIT_4);
+    printf("%s\n%s%s%s%s%s\n", HELP_EMIT, HELP_EMIT_2, HELP_EMIT_3, HELP_EMIT_POST, HELP_EMIT_FREE, HELP_EMIT_4);
   } else if (strcmp(topic, "repl") == 0) {
     printf("%s\n", HELP_REPL);
   } else if (strcmp(topic, "lsp") == 0) {
@@ -14917,6 +14932,22 @@ static const emit_target EMIT_TARGET_TABLE[EMIT_TARGET_COUNT] = {
      NULL, NULL},
 };
 
+/*
+ * ПЕЧАТЬ В C БЕЗ LIBC: «--target c --freestanding».
+ *
+ * Не строка таблицы, а её двойник: слово цели остаётся «c», ключ выбирает другую
+ * точку входа на flang — «Печать без libc» (flang/self/emit-c-freestanding.flang).
+ * Её код собирается «-ffreestanding -nostdlib» и не вызывает ни libc, ни
+ * потоков, ни сигналов, ни выделения памяти.
+ *
+ * Файлов рантайма с диска ей не нужно: заголовок fl_freestanding.h короткий, и
+ * печать держит его в себе литералом. Поэтому runtime_count равен нулю и каталог
+ * рантайма не ищется вовсе.
+ */
+static const emit_target EMIT_FREESTANDING = {
+    "c", "C без libc", "", {"", ""}, "Печать без libc", false, 2, {"путь", "есть путь"}, 0, {""},
+    NULL, {"cc", NULL, NULL}, NULL, "Столкновения имён"};
+
 /** Ключи командной строки печати — одни на все цели. */
 typedef struct {
   const char *own;
@@ -15878,6 +15909,9 @@ static int emit_file(int argc, char **argv, const char *self) {
    */
   bool postconditions = true;
   size_t dropped_by_key = 0;
+  /* «--freestanding»: печать в C без libc (EMIT_FREESTANDING выше). */
+  bool freestanding = false;
+  const emit_target *row = NULL;
 
   wish.own = "";
   wish.steps = "1000000";
@@ -15925,6 +15959,8 @@ static int emit_file(int argc, char **argv, const char *self) {
       kernel = false;
     } else if (strcmp(argv[argument], "--no-postconditions") == 0) {
       postconditions = false;
+    } else if (strcmp(argv[argument], "--freestanding") == 0) {
+      freestanding = true;
     } else if (argv[argument][0] != '-' && path == NULL) {
       path = argv[argument];
     } else {
@@ -15966,6 +16002,19 @@ static int emit_file(int argc, char **argv, const char *self) {
           stderr);
     return 2;
   }
+  if (freestanding && (chosen != EMIT_TARGET_C || wish.shell || protocol != NULL)) {
+    fputs("flang emit: «--freestanding» есть только у цели «c» и не сочетается с «--repl» и\n"
+          "«--protocol»: C без libc генерируется без оболочки и без протокола перевода\n",
+          stderr);
+    return 2;
+  }
+  row = freestanding ? &EMIT_FREESTANDING : &EMIT_TARGET_TABLE[chosen];
+  if (freestanding && !repl_has_function(EMIT_FREESTANDING.entry)) {
+    fputs("flang emit: этот компилятор генерировать C без libc ещё не умеет.\n"
+          "Возьмите выпуск новее.\n",
+          stderr);
+    return 2;
+  }
   if (protocol != NULL && protocol[0] == '\0') {
     fputs("flang emit: «--протокол» назван пустым именем файла — назовите, куда класть протокол\n", stderr);
     return 2;
@@ -15978,8 +16027,8 @@ static int emit_file(int argc, char **argv, const char *self) {
   }
 
   self_dir = repl_self_dir(self);
-  runtime = emit_target_dir(self_dir, given_runtime, EMIT_TARGET_TABLE[chosen].probe,
-                            EMIT_TARGET_TABLE[chosen].places);
+  runtime = row->runtime_count == 0 ? repl_say("")
+                                    : emit_target_dir(self_dir, given_runtime, row->probe, row->places);
   free(self_dir);
   if (runtime == NULL) {
     fprintf(stderr,
@@ -15988,8 +16037,8 @@ static int emit_file(int argc, char **argv, const char *self) {
             "Искали в «--runtime», в $FLANG_RUNTIME_DIR и рядом с установленным flang (%s).\n"
             "Что делать: назвать каталог с ними ключом «--runtime каталог» или переменной\n"
             "FLANG_RUNTIME_DIR; в дереве исходников это %s.\n",
-            EMIT_TARGET_TABLE[chosen].title, EMIT_TARGET_TABLE[chosen].probe,
-            EMIT_TARGET_TABLE[chosen].places[1], EMIT_TARGET_TABLE[chosen].places[0]);
+            row->title, row->probe,
+            row->places[1], row->places[0]);
     return 2;
   }
 
@@ -16061,7 +16110,7 @@ static int emit_file(int argc, char **argv, const char *self) {
       bool has_program = false;
       bads_init(&list);
       if (!repl_check_sources(sources, full, &list, &program, &has_program, NULL, kernel, false, true,
-                              EMIT_TARGET_TABLE[chosen].collision, &linked, &dropped, &own)) {
+                              row->collision, &linked, &dropped, &own)) {
         check_print_bads(&list, path, paths.count);
         fprintf(stderr,
                 "flang emit: печать отменена — программа не проходит проверку, замечаний %lu.\n"
@@ -16147,7 +16196,7 @@ static int emit_file(int argc, char **argv, const char *self) {
           } else {
             program = thinner;
           }
-          if (code == 0 && EMIT_TARGET_TABLE[chosen].from_linked) {
+          if (code == 0 && row->from_linked) {
             fl_value inner = fl_nothing();
             fl_value bare = fl_nothing();
             fl_value shaved = fl_nothing();
@@ -16169,7 +16218,7 @@ static int emit_file(int argc, char **argv, const char *self) {
           if (repl_call("Программа без снятых постусловий", drop_args, 2, &thinner) == FL_OK) {
             program = thinner;
           }
-          if (EMIT_TARGET_TABLE[chosen].from_linked) {
+          if (row->from_linked) {
             fl_value thinner_linked = fl_nothing();
             drop_args[0] = linked;
             drop_args[1] = dropped;
@@ -16199,8 +16248,8 @@ static int emit_file(int argc, char **argv, const char *self) {
             sha256_init(&sha);
             sha256_add(&sha, text, bytes);
             sha256_hex(&sha, source_sha);
-            code = emit_call(&EMIT_TARGET_TABLE[chosen],
-                             EMIT_TARGET_TABLE[chosen].from_linked ? linked : program, program, fits, table,
+            code = emit_call(row,
+                             row->from_linked ? linked : program, program, fits, table,
                              runtime, &wish, with_plans, &files, protocol, path, source_sha);
           }
           if (code == 0 && protocol != NULL) {
@@ -16350,8 +16399,8 @@ static int emit_file(int argc, char **argv, const char *self) {
         fprintf(stderr, "%s\n", unjudged);
         code = 3;
       }
-      if (EMIT_TARGET_TABLE[chosen].build_say != NULL && one == NULL) {
-        fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].build_say);
+      if (row->build_say != NULL && one == NULL) {
+        fprintf(stderr, "%s\n", row->build_say);
       }
       /*
        * ЧЕМ СОБИРАТЬ — ЕСТЬ ЛИ ОНО ЗДЕСЬ.
@@ -16397,7 +16446,7 @@ static int emit_file(int argc, char **argv, const char *self) {
         size_t need = 0;
         missing[0] = '\0';
         for (need = 0; need < EMIT_BUILD_MAX; need += 1) {
-          const char *name = EMIT_TARGET_TABLE[chosen].build_needs[need];
+          const char *name = row->build_needs[need];
           char *found = NULL;
           if (name == NULL) {
             break;
@@ -16425,15 +16474,15 @@ static int emit_file(int argc, char **argv, const char *self) {
                   "она и не отказывает — печатать на одной машине, а собирать на другой законно.\n"
                   "Что делать: поставить названное, или собрать напечатанное там, где оно есть.\n"
                   "Код не меняется и остаётся прежним: ответ emit — это ФАЙЛЫ, и они напечатаны.\n",
-                  missing, EMIT_TARGET_TABLE[chosen].title);
+                  missing, row->title);
         }
       }
       /* Про хозяина говорится ТОЛЬКО программе с планом, потому что только ей
          его и кладут. Сказать это всем значило бы назвать файл, которого рядом
          с напечатанным нет; промолчать — оставить человека с прогонщиком,
          который план не исполняет, и без единого указания, чем исполнять. */
-      if (with_plans && EMIT_TARGET_TABLE[chosen].plan_say != NULL && one == NULL) {
-        fprintf(stderr, "%s\n", EMIT_TARGET_TABLE[chosen].plan_say);
+      if (with_plans && row->plan_say != NULL && one == NULL) {
+        fprintf(stderr, "%s\n", row->plan_say);
       }
     }
   }

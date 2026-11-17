@@ -3,12 +3,12 @@
 A flang package is **one file** that holds a library together with everything
 it imports. There is no package manager: the file is put next to the program or
 imported by a link right in the import line (`использует «X» из "https://…"`),
-and then the binary fetches it once and pins it by a fingerprint in
+and then the compiler fetches it once and writes its fingerprint (sha256) to
 `flang.lock`. To publish a package, commit the file to git. Building on another
 machine needs only your program and its `flang.lock`, and such a build does not
 touch the network.
 
-Two commands of the `flang` binary do the work: `flang package` builds a
+Two commands do the work: `flang package` builds a
 package, `flang lock` writes a lock file for a whole program. Both have
 `--help`. The examples below use `docs/examples/package/`.
 
@@ -44,6 +44,7 @@ Otherwise the check fails and names both:
 
 ```bash
 $ flang check shop.flang
+…
 FLANG_IMPORT_NAME, строка 1, столбец 1: модуль в …/discount.flang-package называется «Скидка», а импортируется как «Скидочка»
 shop.flang: не проверено — замечаний 1
 ```
@@ -55,7 +56,8 @@ change:
 
 ```bash
 $ flang check shop.flang
-FLANG_PRECONDITION_CALL, строка 34, столбец 3: вызов «Скидка в копейках» в функции «Сколько скинули» не снимает предусловие «доля не больше ста»: …
+…
+FLANG_PRECONDITION_CALL, строка 20, столбец 3: вызов «Скидка в копейках» в функции «Сколько скинули» не снимает предусловие «доля не больше ста»: …
 shop.flang: не проверено — замечаний 1
 ```
 
@@ -98,7 +100,7 @@ the address.
 Without network (`FLANG_OFFLINE=1`) a build takes the bodies from the lock and
 the cache.
 
-### Link refusal codes
+### Link errors
 
 The exit status of all of them is 1; the code is in the answer together with the
 link and the reason.
@@ -148,10 +150,8 @@ refuses with `FLANG_PACKAGE`. The package `shop/discount.flang-package` that
 ```bash
 $ flang package skidka/discount.flang > skidka/discount.flang-package
 
-$ ls -la skidka/
--rw-rw-r-- 1 b b 3644 discount.flang
--rw-rw-r-- 1 b b 4343 discount.flang-package
--rw-rw-r-- 1 b b  122 flang.package
+$ ls skidka/
+discount.flang  discount.flang-package  flang.package
 ```
 
 `flang package` builds **only checked code**: it first runs the same checks as
@@ -180,12 +180,12 @@ field: the full module text, not compressed, not base64) shortened:
 }
 ```
 
-The field `ведомость` is the proof report: for each postcondition of the
-library, whether the prover proved it (`доказано`), checked it only on the
-examples (`сетка N`), or has neither a proof nor examples (`объявлено, не
-доказано`). Use it to choose a library. You do not have to trust it: when you
-import the package, your compiler proves everything again, because the full
-source is inside.
+The second list in the file, after the list of modules, is the proof report.
+For every postcondition of the library it gives a status: proved (`доказано`),
+checked on tests only (`сетка N`), or not proved (`объявлено, не доказано`).
+Use it to choose a library. You do not have to rely on it: when you import the
+package, your compiler proves everything again, because the full source is
+inside.
 
 **Step 3. Publish it.** Commit one file:
 
@@ -234,8 +234,8 @@ $ flang package skidka/discount.flang --pretty | grep '"версия"'
   "версия": "1.1.0",
 ```
 
-Do not edit the version inside a built package. The package carries a
-checksum (`печать`) over its name, version, source URL and the function
+Do not edit the version inside a built package. The last field of the file is
+a checksum over the name, version, source URL and the function
 count of each module, and each module has its own address (see above). Both are
 recomputed when the package is read, and an edited package is rejected:
 
@@ -247,13 +247,13 @@ $ echo $?
 1
 ```
 
-There are no version ranges in symbols (`^1.2`, `~> 1.2`). Your program uses
-exactly the file next to it, and nothing updates by itself.
+There are no version ranges (`^1.2`, `~> 1.2`). Your program uses
+the file next to it, and nothing updates by itself.
 
 ## Build offline
 
-There is no flag for that because none is needed: **a build never uses the
-network**. The code is already in the package file.
+A package file needs no network: the code is already in it. A module by link
+is downloaded once and is then taken from `flang.lock`.
 
 ```bash
 $ ls
@@ -272,15 +272,18 @@ flang emit shop.flang --target c --out ./from-sources   # where the sources live
 diff -r ./from-package ./from-sources && echo same
 ```
 
-## What an edited package looks like
+## If a package was edited after it was built
 
-| What was edited | Error |
-| --- | --- |
-| one character of a module's source | `FLANG_PACKAGE`: "адрес модуля «Скидка» не сходится с его исходником: правлен или испорчен" |
-| the version | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
-| the package name | the same, with the edited name in the quotes |
-| the source URL | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
-| a module's function count | `FLANG_PACKAGE`: "печать пакета «Скидка» не сходится: пакет правлен или испорчен" |
+There are two errors:
+
+```
+FLANG_PACKAGE: адрес модуля «Скидка» не сходится с его исходником: правлен или испорчен
+FLANG_PACKAGE: печать пакета «Скидка» не сходится: пакет правлен или испорчен
+```
+
+The first means the source of a module was changed, even by one character. The
+second means the version, the package name, the source URL or a module's
+function count was changed; `печать` in the message is the checksum.
 
 The checksum shows that the file was not edited after it was built. It is not
 a signature: it does not tell you who built the file.

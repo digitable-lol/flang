@@ -63,7 +63,7 @@ You declare the return record yourself, with exactly these two fields:
 
 The type `«Действие»` (action) is built into the language: it appears as soon
 as the file declares a process. Because the handler is a pure function, you
-test it like any other function, with `пример` (unit tests), and the prover can
+test it like any other function, with `пример` (unit tests), and the compiler can
 prove `обеспечивает` (postconditions) about it — for example, "the handler
 always returns exactly one action".
 
@@ -170,7 +170,9 @@ elixir` refuses such a program with code 1.
 ```bash
 $ flang check flang/concurrency/examples/supervision.flang
 модуль «Цех и учёт»: функций 4, из них с доказанным завершением 4; типов 7
-объявления эти сверены НЕ ДО КОНЦА — processes, supervisors, runs: сверено, что имена сходятся, что у нетотального обработчика назван запас витков, что у отказа один судья, что начальное состояние помечено тотальным, что вид «породить» назван литералом и что адресату послан вариант объявленного им типа. НЕ сверено одно: достижим ли отказ ВНУТРИ тотальной функции — множество отказов считает отдельный слой, в замыкание бинарника не ввезённый. Адресат «отправить», названный вычислением, не судится и судиться не может: до запуска такого имени не существует
+объявления эти сверены НЕ ДО КОНЦА — processes, supervisors, runs: сверено, что имена сходятся, … НЕ сверено одно: достижим ли отказ ВНУТРИ тотальной функции … Адресат «отправить», названный вычислением, не судится …
+замечание: «Счёт» объявлено здесь, строка 4, и в соседнем модуле backpressure.flang, строка 4: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
+…
 flang/concurrency/examples/supervision.flang: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли
 $ echo $?
 2
@@ -179,7 +181,9 @@ $ echo $?
 Exit code 2 means "checked, but not completely". The handlers, their types and
 their unit tests are checked; for `процесс` and `надзор` the compiler checks
 names and message types. Two things it does not check, and the output says so:
-whether a total handler can fail, and a recipient name computed at run time.
+whether a total handler can fail, and a recipient name computed at run time. The `замечание: …` lines are about
+declarations with the same name in neighbouring files of the examples
+directory; they do not affect this file.
 
 `flang test` runs the unit tests of the handlers:
 
@@ -201,9 +205,9 @@ supervisor's decisions.
 | Target | Processes and supervision |
 | --- | --- |
 | `c`, `elixir`, `js`, `ts` | the code is generated together with a scheduler |
-| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | `flang emit` refuses with code 1: the target has no scheduler, and a handler is not generated as a plain function nobody calls |
+| `cpp`, `csharp`, `go`, `java`, `python`, `rust` | `flang emit` fails with exit code 1: the target has no scheduler |
 
-The binary compiler itself does not run processes: they run in the generated
+The compiler itself does not run processes: they run in the generated
 C, Elixir, JavaScript or TypeScript.
 
 ## Nodes
@@ -223,7 +227,7 @@ which node is described in a separate file:
 }
 ```
 
-The binary compiler does not read this file yet: `flang check` rejects the key
+The compiler does not read this file yet: `flang check` rejects the key
 `--размещение` with exit code 2 as unknown. The format is described in
 `docs/flang/concurrency/DISTRIBUTED.md`.
 

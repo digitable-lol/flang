@@ -124,7 +124,7 @@ on examples rather than proved; `--max-steps` raises the per-turn step limit —
 | cell overflow | read: a payload too big for one page is followed through its chain of overflow pages |
 | a record | null, integers of all six widths, the 0 and 1 of serial types 8 and 9, text through UTF-8, binary |
 | real numbers (serial type 7) | read whole, in variant «Дробное»; not written back — there is no inverse into sign, exponent and mantissa |
-| building a file from scratch | `«Собрать база»` — a whole image, header through leaves, checked by reading its own output back |
+| building a file from scratch | `«Собрать базу»` — a whole image, header through leaves, checked by reading its own output back |
 | inserting a row into an existing file | `«База со строкой»` (`docs/examples/db/sqlite-insert.flang`, checked against real `sqlite3`): into a ready leaf's free middle, file length unchanged, row number one past the last. A page split, an out-of-order insertion, a row needing an overflow page, an edit, a delete, a journal — every one of those is refused as empty, not a corrupt file |
 | indexes (page kinds 2 and 10) | no: they are not table rows |
 

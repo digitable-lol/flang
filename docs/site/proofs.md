@@ -47,9 +47,9 @@ any price and any discount not above the price. The compiler found the proof.
 All it needed from you was the argument types and the `требует` line.
 
 The part of the compiler that looks for proofs is called the proof kernel, «the
-kernel» from here on. It works by a closed list of rules. The rule name is in
-the output: here it is «неотрицательность по построению» (non-negative by
-construction).
+kernel» from here on. It works by a closed list of rules. The kernel has 20
+rules. The rule name is in the output: here it is «неотрицательность по
+построению» (non-negative by construction).
 
 ## Four answers of the compiler
 

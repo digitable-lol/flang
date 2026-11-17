@@ -44,7 +44,7 @@ What each answer means:
 
 | What | How many |
 | --- | --- |
-| Kernel rules that have a lemma in Lean 4 | 93 of 93 |
+| Kinds of proof steps that have a lemma in Lean 4 | 93 of 93 |
 | Paths by which the second checking program accepts a record, with a theorem | 45 of 52 |
 | Corrupted proof records accepted by the `checker` program | 0 of 833 |
 

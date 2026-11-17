@@ -101,7 +101,7 @@ looks for the proof.
 | The proof as an object | yes: a term that can be stored and checked again | a record of steps exists (`--record`), but not every proof can be repeated from it |
 | A small kernel | yes: it only checks the types of terms | the kernel is about 11 thousand lines inside the compiler |
 | Independent re-check | yes: third-party kernel implementations check the term too | two separate programs; on the comparison set 30 proofs of 55 are repeated |
-| Is the checker itself checked | the kernel is small; people read it and reimplement it independently | 93 rules have a Lean lemma; no theorems about the kernel code |
+| Is the checker itself checked | the kernel is small; people read it and reimplement it independently | each of the 93 kinds of proof steps has a Lean lemma; no theorems about the kernel code |
 | Axioms | three standard ones; `#print axioms` shows what a theorem rests on | no way to declare an axiom; the assumptions are listed on [What you are trusting](trust.html) |
 | Logic | dependent types, classical if you want | a closed list of rules over pre- and postconditions |
 | Quantifiers | any, including over functions and types | «for all» over the arguments; inside, only over list elements |

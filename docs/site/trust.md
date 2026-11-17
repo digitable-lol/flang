@@ -61,14 +61,15 @@ For «доказано» to be true, four programs must be correct:
 
 | What | What is known about it |
 | --- | --- |
-| The proof kernel | about 11 thousand lines inside the compiler; each of its 93 rules has a lemma in Lean 4 |
+| The proof kernel | about 11 thousand lines inside the compiler; proof steps come in 93 kinds, and each kind has a lemma in Lean 4 |
 | The flang compiler | parsing, type checking and code generation; covered by tests, no theorems about it |
 | The C compiler | an external program (`cc`); flang does not check it |
 | The runtime library | written in C by hand; covered by tests |
 
-A Lean lemma says: the rule is correct in a model of the language. The model is
+A kind of step is the short name in the `вывод` lines of the report: `Н3`,
+`Разв2`. A Lean lemma says: such a step is correct in a model of the language. The model is
 written by people and is simpler than the language. A finite number in it is an
-integer; it knows no fractional values. Whether the kernel code matches the rule
+integer; it knows no fractional values. Whether the kernel code matches the step
 in the lemma is not proved: tests check that.
 
 ## The line «N of M»: the independent check
@@ -138,8 +139,8 @@ Two programs, written apart, read the proof record:
 The seven paths without a theorem include linear arithmetic and the arithmetic
 of exact integers.
 
-There are no theorems about the kernel itself. It rests on the lemmas about its
-rules, on tests, and on a set of corrupted proofs it must reject.
+There are no theorems about the kernel itself. It rests on the lemmas about the
+steps, on tests, and on a set of corrupted proofs it must reject.
 
 ## A known error: a function with `убывает`
 
@@ -354,7 +355,7 @@ need them. The last three need Lean 4.
 | Number on the page | Command |
 | --- | --- |
 | about 11 thousand lines of kernel | `bootstrap/flang run-script trust:ceiling` |
-| 93 rules, a lemma for each | `bootstrap/flang run-script lean-rules:check` |
+| 93 kinds of steps, a lemma for each | `bootstrap/flang run-script lean-rules:check` |
 | 833 corrupted records, 0 accepted | `bootstrap/flang run-script checker:check` |
 | 45 paths of 52 | `bootstrap/flang run-script lean-soundness:check` |
 | 33, 18 and 9 tasks of 60 | `bootstrap/flang run-script lean-parity:probe` |

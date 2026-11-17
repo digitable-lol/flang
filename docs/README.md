@@ -58,6 +58,7 @@
 | [`commit-messages.md`](commit-messages.md) | правило сообщений коммитов |
 | [`zero-bug-policy.md`](zero-bug-policy.md) | что делается с дефектом |
 | [`prose-numbers.md`](prose-numbers.md) | числа в прозе и их приметы |
+| [`playground-internals.md`](playground-internals.md) | песочница сайта: сетапы, формат ссылки, проверки и швы для расширения |
 | [`page-examples.md`](page-examples.md) | проверка примеров на страницах: какой блок обязан собраться, какой — отказать |
 | [`reprint-cost.md`](reprint-cost.md), [`reprint-runs-start-from-a-clean-tree.md`](reprint-runs-start-from-a-clean-tree.md) | перепечатка семени: цена и порядок захода |
 | [`scheduler-benchmark.md`](scheduler-benchmark.md) | сколько процессов держит планировщик |

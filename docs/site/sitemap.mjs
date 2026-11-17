@@ -127,6 +127,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'msi-driver.html', имя: 'Драйвер MSI', из: 'docs/site/msi-driver.ru.md' },
       { адрес: 'russian-grammar.html', имя: 'Грамматика русского на прегруппах', из: 'docs/site/russian-grammar.ru.md' },
       { адрес: 'russian-syntax.html', имя: 'Разбор высказывания по графу понятий', из: 'docs/site/russian-syntax.ru.md' },
+      { адрес: 'argue.html', имя: 'Проверить рассуждение в тексте', из: 'docs/site/argue.ru.md' },
     ],
   },
   {

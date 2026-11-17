@@ -83,4 +83,4 @@ field-twice.flang: независимо, сверщиком, проиграно 
 отвечает «постусловие «ложь» функции «Ложь» — объявлено, не доказано», код 3. Строка
 `kernel-unfolds-a-field-twice-under-the-callee-names` в
 `flang/proof/tables/consistency-violations.tsv` переведена в `closed` коммитом
-`proof(tables): two violations fixed in 0.7.40 are closed`.
+`docs(proof): two violations fixed in 0.7.40 are closed`.

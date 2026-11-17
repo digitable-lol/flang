@@ -57,6 +57,19 @@ jobs:
       - name: Check Lean version
         run: lean --version
 
+      # ПАМЯТЬ. Ловушка, где Lean должен отвергнуть ложную ассоциативность
+      # сложения двоичных чисел, перебирает случаи через `simp_all` и держит
+      # до 16 ГБ, прежде чем отказать. У работника 16 ГБ; без подкачки он
+      # теряет связь с сервером, и прогон краснеет без единого слова о деле.
+      - name: Add swap for the Lean traps
+        run: |
+          set -eu
+          sudo fallocate -l 16G /mnt/lean-swap
+          sudo chmod 600 /mnt/lean-swap
+          sudo mkswap /mnt/lean-swap
+          sudo swapon /mnt/lean-swap
+          free -g
+
       # Сверка вердиктов C ↔ Lean гоняет весь набор проб сверщика, поэтому
       # сверщик обязан быть собран.
       - name: Build proof checker

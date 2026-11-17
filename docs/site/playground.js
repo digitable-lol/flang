@@ -1,18 +1,28 @@
-/* Песочница flang на странице: редактор с подсветкой, итог проверки
-   человеческими словами, формулы с кванторами, ввод формулы и рисунки.
+/* Песочница flang на странице: рабочее место из редактора слева и результата
+   справа, с именованными раскладками (сетапами) под разные занятия.
 
    Проверяет не этот файл, а компилятор, собранный в WebAssembly: он работает
    в отдельном потоке (`playground/flang_host_browser.js`) и отдаёт сюда
-   разобранный ответ — машинную ведомость `check --proof --json`, дерево
-   разбора `flang ast`, замечания с местом и ответ независимой проверки
-   записи. Здесь этот ответ только РАСКЛАДЫВАЕТСЯ: ни одно слово итога не
-   выуживается из русского текста компилятора.
+   разобранный ответ — машинный отчёт `check --proof --json`, дерево разбора
+   `flang ast`, сообщения об ошибках с местом и ответ независимой проверки.
+   Здесь этот ответ только раскладывается по экрану.
+
+   Файл делится на две части. Первая — таблицы и чистые функции: что открыть
+   по ссылке, как назвать ответ компилятора, какие строки отметить. Она не
+   трогает документ, поэтому её исполняет и Node: рецепт `playground:page`
+   гонит через неё настоящие ответы компилятора и краснеет на исключении или
+   пустом заголовке. Вторая часть (после проверки `typeof document`) строит
+   страницу и рисует то, что вернула первая.
 
    Слова языка для подсветки берутся из таблицы лексера
    (flang/self/lexer.flang, «Куски таблицы»): сборка сайта кладёт их на
    страницу блоком `#flang-lexicon`, второго списка слов здесь нет. */
 (function () {
   'use strict';
+
+  /* ── Стартовые программы ────────────────────────────────────────────────
+     У каждой названы функция и аргументы её примера: кнопка «Запустить»
+     работает сразу. `playground:starters` гонит каждую через три кнопки. */
   var STARTERS = [
     { key: 'hello', fn: 'Удвоить', args: '{"н": 21}', text: [
       'модуль «Привет»', '',
@@ -26,7 +36,7 @@
       '  пример «один, два, три»', '    дано числа равно [1, 2, 3]', '    ожидается 6',
       '  разбор числа', '    случай пусто', '      то 0', '    случай голова и хвост',
       '      то голова плюс («Сумма» от хвост)', ''].join('\n') },
-    { key: 'monad', text: [
+    { key: 'monad', fn: 'Обернуть', args: '{"значение": 7}', text: [
       'модуль «Монада»', '',
       'тип «Возможно» от «А»', '  вариант «Есть» содержит значение: «А»', '  вариант «Нет»', '',
       'монада «Возможно» от «А»', '  возврат «Обернуть»', '  соединение «Сплющить»', '',
@@ -65,148 +75,679 @@
     { key: 'emitC', slug: 'emit-c', emit: 'c', fn: 'Удвоить', args: '{"н": 21}', text: null }
   ];
   STARTERS[5].text = STARTERS[0].text;
-  if (typeof globalThis !== 'undefined') globalThis.флангЗаготовки = STARTERS;
+  function starterOf(word) {
+    return STARTERS.filter(function (s) { return (s.slug || s.key) === word || s.key === word; })[0] || null;
+  }
+
+  /* ── Сетапы ─────────────────────────────────────────────────────────────
+     Сетап — именованная рабочая раскладка: с чего начать, что показано справа
+     и что делает главная кнопка. Его адрес — `#setup=<key>`.
+
+       key      имя в адресе
+       name     название на плитке; note — строка под ним
+       starter  стартовая программа: ключ из STARTERS; либо text — свой текст
+       lang     язык редактора слева, если это не flang
+       views    что справа, вкладками; первая открыта сразу
+       enter    что делает Ctrl+Enter и главная кнопка:
+                run | check | test | emit | translate
+       buttons  какие кнопки видны, главная первой
+       call     показать поля «функция» и «аргументы»
+       passes   как узнать, что стартовая программа прошла главную кнопку
+                (сверяет `playground:page`)
+
+     Новый сетап — новая строка этой таблицы: плитка, адрес, проверка страницы
+     и черновик появляются сами. */
+  var SETUPS = [
+    { key: 'first', starter: 'hello', views: ['run', 'result', 'terminal'], enter: 'run', buttons: ['run', 'check'], call: true,
+      name: { ru: 'Первая программа', en: 'First program' },
+      note: { ru: 'функция и её тесты', en: 'a function and its tests' } },
+    { key: 'proof', starter: 'proof', views: ['result', 'formula', 'picture', 'terminal'], enter: 'check', buttons: ['check'],
+      labels: { result: { ru: 'Доказательства', en: 'Proofs' } },
+      name: { ru: 'Доказательства', en: 'Proofs' },
+      note: { ru: 'что доказано, что нет', en: 'what is proved, what is not' } },
+    { key: 'tests', views: ['tests', 'terminal'], enter: 'test', buttons: ['test', 'check'],
+      name: { ru: 'Тесты', en: 'Tests' },
+      note: { ru: 'вход, ожидалось, получено', en: 'input, expected, actual' },
+      text: [
+        'модуль «Скидка»', '',
+        'тотальная функция «Цена со скидкой»', '  принимает цена: неотрицательное, скидка: неотрицательное',
+        '  возвращает число',
+        '  пример «без скидки»', '    дано цена равно 200', '    дано скидка равно 0', '    ожидается 200',
+        '  пример «четверть»', '    дано цена равно 200', '    дано скидка равно 25', '    ожидается 150',
+        '  пример «даром»', '    дано цена равно 80', '    дано скидка равно 100', '    ожидается 0',
+        '  цена минус ((цена умножить на скидка) делить на 100)', ''].join('\n') },
+    { key: 'emit', starter: 'emit-c', views: ['emit', 'terminal'], enter: 'emit', buttons: ['emit', 'check'],
+      name: { ru: 'Генерация кода', en: 'Code generation' },
+      note: { ru: 'C, Go, Rust, JS и другие', en: 'C, Go, Rust, JS and more' } },
+    { key: 'reasoning', views: ['result', 'terminal'], enter: 'check', buttons: ['check'],
+      labels: { result: { ru: 'Вывод', en: 'Verdict' } },
+      name: { ru: 'Рассуждение по-русски', en: 'Reasoning in Russian' },
+      note: { ru: 'следует или нет', en: 'follows or not' },
+      text: [
+        'Понятие: человек, люди.', 'Понятие: грек, греки.', 'Свойство: смертен, смертны.', '',
+        'Все люди смертны. Все греки — люди. Следовательно, все греки смертны.', ''].join('\n') },
+    { key: 'formula', views: ['result', 'formula', 'terminal'], enter: 'check', buttons: ['check'],
+      labels: { result: { ru: 'Проверка', en: 'Check' } },
+      name: { ru: 'Формула', en: 'Formula' },
+      note: { ru: '∀ и ∃ → проверка', en: '∀ and ∃ → check' },
+      text: '∀ x ∈ ℤ, ∀ y ∈ ℤ, x + y = y + x\n' },
+    { key: 'c', lang: 'c', views: ['foreign'], enter: 'translate', buttons: ['translate'],
+      name: { ru: 'C → flang', en: 'C → flang' },
+      note: { ru: 'перевод и проверка', en: 'translate and check' },
+      text: ['int max(int a, int b) {', '  if (a > b) return a;', '  return b;', '}', ''].join('\n') }
+  ];
+  function setupOf(key) { return SETUPS.filter(function (s) { return s.key === key; })[0] || null; }
+  function setupText(s) { return s.starter ? starterOf(s.starter).text : s.text; }
+
+  /* ── Слова интерфейса ───────────────────────────────────────────────────── */
+  function inputs(map) { return Object.keys(map || {}).map(function (k) { return k + ' = ' + map[k]; }).join(', '); }
+  var WORDS = { en: {
+    example: 'Example', check: 'Check', share: 'Share', reset: 'Reset', checking: 'checking…',
+    runGo: 'Run', testGo: 'Tests', running: 'running…', fnLabel: 'function', argsLabel: 'arguments, JSON', fnHint: 'name without « »',
+    version: function (v) { return 'flang ' + v + ', runs in this tab'; }, versionUnknown: 'the compiler is not loaded yet',
+    done: 'Done', notDone: 'Not done', exitCode: 'exit code ', starters: 'Starters', pageExamples: 'Examples on this page',
+    limitTitle: 'Stopped: the step limit', timeoutTitle: 'Stopped: took too long',
+    timeoutLead: function (sec) { return 'The run took more than ' + sec + ' seconds, so the playground stopped it to keep the tab alive. The compiler will load again on the next run. Check that your functions terminate, or run this program in a terminal.'; },
+    unprovenLead: '«flang run» does not run a program that is not fully proved. Fix the proof, or run it without one.', trustGo: 'Run without the proof (--trust)',
+    noFunction: 'There is no function in the text to run.', badArgs: 'The arguments are not a JSON object, for example {"н": 21}.',
+    needProgram: 'This button works with a flang program: the first line is «модуль …».',
+    workerDown: 'The compiler did not load. Check the connection and reload the page; without WebAssembly the playground does not work.',
+    starterNames: { hello: 'First program', proof: 'Proof by induction', monad: 'Monad: three laws proved', loop: 'Loop with kept values', klass: 'Class and interface', emitC: 'Code generation: C' },
+    linkCopied: 'link copied: the text is in the address, nothing is sent to a server', ms: 'ms',
+    tabs: { run: 'Result', result: 'Check', tests: 'Tests', formula: 'Formulas', emit: 'Code', foreign: 'Translation', picture: 'Pictures', terminal: 'Terminal' },
+    loading: function (pct) { return 'downloading the compiler: ' + pct + ' %'; }, ready: 'compiler loaded', preparing: 'preparing the compiler…',
+    loadNote: 'The first run downloads the compiler, about 10 MB. After that it stays in the browser cache.',
+    emitLead: 'The same program in another language, generated by «flang emit». The compiler runs in this tab.',
+    emitting: 'generating…', emitFailed: 'No code generated', emitRefusedLead: '«flang emit» generates code only for a program that passes the check.', runtimeNote: 'Runtime library files are copied as they are and are not shown here: ',
+    emitFrom: { 'формула': 'The formula was first translated to flang; the code is generated from that program.', 'рассуждение': 'The reasoning was first turned into a flang program; the code is generated from it.' },
+    emitStale: 'The text has changed.', print: 'Generate', emitGo: 'Generate', emitDone: 'Code generated',
+    foreignLead: 'Write a function in C. A translator turns it into a flang program, and the kernel checks the result right away.',
+    translateGo: 'Translate and check', translating: 'translating…', soon: 'soon', soonNote: 'The Python translator is not in this build yet.',
+    readFailed: 'The text was not read', notTranslated: 'Not translated', fnProved: 'Translated and proved', fnUnproved: 'Translated, not everything is proved',
+    fnFailed: 'Translated, the check failed', fnRefuted: 'Translated: a counterexample is found',
+    refutedLead: function (c) { return 'The postcondition «' + c.обещание + '» is broken on ' + inputs(c.входы) + '. flang computed this at the bounds of int.'; },
+    refuted: function (c) { return 'refuted: ' + inputs(c.входы); }, boundsClean: 'not proved; no violation at the bounds of int, but that is not a proof',
+    intNote: 'The result is declared «число»: in flang a sum of «целое» values is «число», so the translator writes «возвращает число» and states the bounds of int as postconditions.',
+    noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
+    cSubset: 'The C subset: int and struct of int fields, if/else, while, for, return, + − * / % and comparisons. Overflow and division by zero become conditions the kernel has to prove.',
+    foreignLabel: 'source in C', fallacy: 'Fallacy: ', card: 'fallacy card', hints: 'Possible fallacies (check them yourself): ', boundary: 'What the form does not decide: ', unparsedSentence: 'Not read: sentence ',
+    editor: 'flang source, reasoning or formula',
+    press: function (word) { return 'Press «' + word + '» or Ctrl+Enter.'; },
+    proved: 'Proved for all values', examples: 'Checked on tests only', counter: 'Does not hold: here is a counterexample',
+    unproved: 'Not proved', error: 'Error', errorAt: 'Error on line ', errors: function (n) { return 'Errors: ' + n; }, clean: 'No errors', partial: 'Not everything was checked',
+    follows: 'Follows', notRead: 'The text was not read', formulaRefused: 'The formula was not read', failed: 'The check did not run',
+    provedLead: 'Every statement holds for every input, not only for the tests written.',
+    examplesLead: 'The tests found no violation, but this is not a proof for the remaining values.',
+    unprovedLead: 'Some statements have neither a proof nor tests.',
+    cleanLead: 'Syntax, types and termination are fine. The program states nothing to prove.',
+    partialLead: 'Some declarations are accepted but their structure is not checked by the compiler.',
+    terminal: 'Compiler output, as in a terminal', program: 'The program the reasoning became', noTerminal: 'The compiler output appears here after the first run.',
+    independent: { ok: 'Independent check: a separate program replayed the proof record and it matched.', bad: 'The independent check did not confirm the proof record.', partial: 'The independent check went through only a part of the proof record: it has no method for the rest, so that part stands unconfirmed.', imports: 'The independent check is not available for programs with «использует».', none: '' },
+    kinds: { 'утверждение': 'statement', 'постусловие': 'postcondition', 'закон': 'law', 'statement': 'statement', 'postcondition': 'postcondition' },
+    of: ' of ', premises: 'premises', from: ' is derived from ', notFrom: ' is not derived from ', counterexample: 'Counterexample: ',
+    line: 'line ', goLine: function (n) { return 'line ' + n; }, about: 'about this error',
+    noFormula: 'There are no statements to show as a formula yet. Check a program with «утверждение» or «обеспечивает».',
+    outside: 'Outside the formula notation: ', latexSource: 'LaTeX source', toEditor: 'Open in the editor', asFlang: 'In flang', rendered: 'Formula',
+    noPicture: 'Pictures are drawn for categories, functors, monoids, sets and proofs. This text has none of them.',
+    category: 'Category ', functor: 'Functor ', monoid: 'Monoid ', sets: 'Sets', proof: 'Proof of ',
+    square: 'square for ', triangle: 'composition ', assoc: 'associativity', units: 'unit laws',
+    marks: { proved: 'proved', examples: 'tests only', violated: 'refuted', unproved: 'not proved', conditional: 'not proved', unknown: 'not checked', passed: 'passed', failed: 'failed', error: 'error' },
+    induction: 'induction on ', cases: 'case ', base: 'base', step: 'step', rule: 'rule ', byTypes: 'from the declared argument types',
+    byComputation: 'by computing a closed goal', hypothesis: 'by the induction hypothesis',
+    claim: {
+      proved: 'proved for all inputs', induction: function (c) { return 'proved by induction on «' + c.param + '» (type «' + c.type + '»)'; },
+      conditional: 'proved under a condition that is not proved itself', grid: function (n) { return 'checked on tests only: ' + n + ' values'; },
+      declared: 'no proof and no tests — add a theorem', refused: 'the kernel could not derive the goal', violated: 'there is an input where it is false',
+      unchecked: 'not checked: the compiler stopped earlier'
+    },
+    law: function (kind, n) { return (kind === 'моноид' ? 'monoid laws' : kind === 'категория' ? 'category laws' : 'commuting squares') + ' checked on tests: ' + n + ' values'; },
+    lawProved: 'laws proved for all values', assumed: 'accepted without checking: ',
+    lawKinds: { 'категория': 'category', 'моноид': 'monoid', 'связь': 'functor', 'преобразование': 'natural transformation' },
+    cols: { status: 'Status', what: 'Statement', how: 'How', name: 'Test', input: 'Input', expected: 'Expected', got: 'Actual' },
+    noClaims: 'The program states nothing to prove. Add «обеспечивает» to a function or an «утверждение».',
+    testsPassed: function (n) { return 'Tests passed: ' + n + ' of ' + n; },
+    testsFailed: function (bad, n) { return 'Tests failed: ' + bad + ' of ' + n; },
+    noTests: 'There are no tests in the program', noTestsLead: 'A test is an «пример» inside a function: «дано» names the arguments, «ожидается» the result.',
+    testsHead: 'Tests', callOf: function (fn, args) { return '«' + fn + '»' + (args ? ' with ' + args : ''); },
+    draftSaved: 'draft saved in this browser', draftOff: 'the draft is not saved: browser storage is unavailable', draftReset: 'the draft is reset to the starter program',
+    libSlow: 'With a library the check takes about 10 s — press «Check».',
+    libUnknown: function (name, similar) { return 'There is no module «' + name + '» in the library. Library modules have English names' + (similar.length ? '; similar ones: ' + similar.map(function (x) { return '«' + x + '»'; }).join(', ') : '') + '.'; },
+    libList: 'all modules', setups: 'Setups', menu: 'Sections'
+  }, ru: {
+    example: 'Пример', check: 'Проверить', share: 'Поделиться', reset: 'Сбросить', checking: 'проверяю…',
+    runGo: 'Запустить', testGo: 'Тесты', running: 'считаю…', fnLabel: 'функция', argsLabel: 'аргументы, JSON', fnHint: 'имя без ёлочек',
+    version: function (v) { return 'flang ' + v + ', работает в этой вкладке'; }, versionUnknown: 'компилятор ещё не загружен',
+    done: 'Выполнено', notDone: 'Не выполнено', exitCode: 'код возврата ', starters: 'Стартовые программы', pageExamples: 'Примеры этой страницы',
+    limitTitle: 'Остановлено: предел шагов', timeoutTitle: 'Остановлено: слишком долго',
+    timeoutLead: function (sec) { return 'Запуск шёл дольше ' + sec + ' секунд, и песочница остановила его, чтобы вкладка не зависла. Компилятор загрузится заново при следующем запуске. Проверьте, что функции завершаются, или запустите программу в терминале.'; },
+    unprovenLead: '«flang run» не запускает программу, в которой доказано не всё. Исправьте доказательство или запустите без него.', trustGo: 'Запустить без доказательства (--trust)',
+    noFunction: 'В тексте нет функции, которую можно запустить.', badArgs: 'Аргументы — не объект JSON; пример: {"н": 21}.',
+    needProgram: 'Эта кнопка работает с программой на flang: первая строка — «модуль …».',
+    workerDown: 'Компилятор не загрузился. Проверьте связь и обновите страницу; без WebAssembly песочница не работает.',
+    starterNames: { hello: 'Первая программа', proof: 'Доказательство индукцией', monad: 'Монада: три закона доказаны', loop: 'Цикл с хранимыми значениями', klass: 'Класс и интерфейс', emitC: 'Генерация кода на C' },
+    linkCopied: 'ссылка скопирована: текст в адресе, на сервер не уходит ничего', ms: 'мс',
+    tabs: { run: 'Результат', result: 'Проверка', tests: 'Тесты', formula: 'Формулы', emit: 'Код', foreign: 'Перевод', picture: 'Рисунки', terminal: 'Терминал' },
+    loading: function (pct) { return 'загружаю компилятор: ' + pct + ' %'; }, ready: 'компилятор загружен', preparing: 'готовлю компилятор…',
+    loadNote: 'Первый запуск скачивает компилятор, около 10 МБ. Дальше он берётся из кеша браузера.',
+    emitLead: 'Та же программа на другом языке: её генерирует команда «flang emit». Компилятор работает в этой вкладке.',
+    emitting: 'генерирую…', emitFailed: 'Код не сгенерирован', emitRefusedLead: '«flang emit» генерирует код только для программы, которая проходит проверку.', runtimeNote: 'Файлы библиотеки времени выполнения копируются как есть и здесь не показаны: ',
+    emitFrom: { 'формула': 'Формулу сначала перевели на flang; код сгенерирован из этой программы.', 'рассуждение': 'Рассуждение сначала превратили в программу на flang; код сгенерирован из неё.' },
+    emitStale: 'Текст изменился.', print: 'Сгенерировать', emitGo: 'Сгенерировать', emitDone: 'Код сгенерирован',
+    foreignLead: 'Напишите функцию на C. Переводчик сделает из неё программу на flang, и ядро сразу её проверит.',
+    translateGo: 'Перевести и проверить', translating: 'перевожу…', soon: 'скоро', soonNote: 'Переводчика с Python в этой сборке ещё нет.',
+    readFailed: 'Текст не прочитан', notTranslated: 'Не переведена', fnProved: 'Переведена и доказана', fnUnproved: 'Переведена, доказано не всё',
+    fnFailed: 'Переведена, проверка не прошла', fnRefuted: 'Переведена: найден контрпример',
+    refutedLead: function (c) { return 'Постусловие «' + c.обещание + '» нарушено на входе ' + inputs(c.входы) + '. Это посчитал flang на границах int.'; },
+    refuted: function (c) { return 'опровергнуто: ' + inputs(c.входы); }, boundsClean: 'не доказано; на границах int нарушений нет, но это не доказательство',
+    intNote: 'Результат объявлен числом: в flang сумма целых — число, поэтому переводчик пишет «возвращает число», а границы int записывает постусловиями.',
+    noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
+    cSubset: 'Подмножество C: int и struct из полей int, if/else, while, for, return, + − * / % и сравнения. Переполнение и деление на ноль становятся условиями, которые ядро должно доказать.',
+    foreignLabel: 'исходник на C', fallacy: 'Ошибка: ', card: 'карточка ошибки', hints: 'Возможные ошибки (проверьте сами): ', boundary: 'Чего форма не решает: ', unparsedSentence: 'Не прочитано предложение ',
+    editor: 'исходник на flang, рассуждение или формула',
+    press: function (word) { return 'Нажмите «' + word + '» или Ctrl+Enter.'; },
+    proved: 'Доказано для всех значений', examples: 'Проверено только на тестах', counter: 'Не выполняется: вот контрпример',
+    unproved: 'Не доказано', error: 'Ошибка', errorAt: 'Ошибка в строке ', errors: function (n) { return 'Ошибок: ' + n; }, clean: 'Ошибок нет', partial: 'Проверено не всё',
+    follows: 'Следует', notRead: 'Текст не прочитан', formulaRefused: 'Формула не прочитана', failed: 'Проверка не запустилась',
+    provedLead: 'Каждое утверждение верно на всех входах, а не только на написанных тестах.',
+    examplesLead: 'На тестах нарушений нет, но для остальных значений это не доказательство.',
+    unprovedLead: 'У части утверждений нет ни доказательства, ни тестов.',
+    cleanLead: 'Разбор, типы и завершение в порядке. Доказывать в программе нечего.',
+    partialLead: 'Часть объявлений принята, но их устройство компилятор не проверяет.',
+    terminal: 'Вывод компилятора, как в терминале', program: 'Программа, в которую превратилось рассуждение', noTerminal: 'Здесь появится вывод компилятора после первого запуска.',
+    independent: { ok: 'Независимая проверка: отдельная программа заново прошла запись доказательства, и она сошлась.', bad: 'Независимая проверка не подтвердила запись доказательства.', partial: 'Независимая проверка прошла только часть записи доказательства: для остального у неё нет способа, и эта часть осталась без перепроверки.', imports: 'Независимая проверка программ с «использует» здесь недоступна.', none: '' },
+    kinds: { 'утверждение': 'утверждение', 'постусловие': 'постусловие', 'закон': 'закон', 'statement': 'утверждение', 'postcondition': 'постусловие' },
+    of: ' функции ', premises: 'посылок', from: ' выводится из ', notFrom: ' не выводится из ', counterexample: 'Контрпример: ',
+    line: 'строка ', goLine: function (n) { return 'строка ' + n; }, about: 'справка по этой ошибке',
+    noFormula: 'Показывать формулой пока нечего. Проверьте программу с «утверждение» или «обеспечивает».',
+    outside: 'Вне записи формул: ', latexSource: 'Исходник LaTeX', toEditor: 'Открыть в редакторе', asFlang: 'На flang', rendered: 'Формула',
+    noPicture: 'Рисунки строятся для категорий, функторов, моноидов, множеств и доказательств. В этом тексте их нет.',
+    category: 'Категория ', functor: 'Функтор ', monoid: 'Моноид ', sets: 'Множества', proof: 'Доказательство: ',
+    square: 'квадрат для ', triangle: 'композиция ', assoc: 'ассоциативность', units: 'единица',
+    marks: { proved: 'доказано', examples: 'проверено только на тестах', violated: 'опровергнуто', unproved: 'не доказано', conditional: 'не доказано', unknown: 'не проверялось', passed: 'прошёл', failed: 'не прошёл', error: 'ошибка' },
+    induction: 'индукция по ', cases: 'случай ', base: 'база', step: 'шаг', rule: 'правило ', byTypes: 'из объявленных типов аргументов',
+    byComputation: 'вычислением замкнутой цели', hypothesis: 'по предположению индукции',
+    claim: {
+      proved: 'доказано для всех входов', induction: function (c) { return 'доказано индукцией по «' + c.param + '» (тип «' + c.type + '»)'; },
+      conditional: 'доказано при условии, которое само не доказано', grid: function (n) { return 'проверено только на тестах: значений ' + n; },
+      declared: 'нет ни доказательства, ни тестов — добавьте теорему', refused: 'ядро не смогло вывести цель', violated: 'есть вход, на котором утверждение ложно',
+      unchecked: 'не проверялось: компилятор остановился раньше'
+    },
+    law: function (kind, n) { return (kind === 'моноид' ? 'законы моноида' : kind === 'категория' ? 'законы категории' : 'коммутативность квадратов') + ' проверены на тестах: значений ' + n; },
+    lawProved: 'законы доказаны для всех значений', assumed: 'принято без проверки: ',
+    lawKinds: { 'категория': 'категория', 'моноид': 'моноид', 'связь': 'функтор', 'преобразование': 'преобразование' },
+    cols: { status: 'Статус', what: 'Утверждение', how: 'Как', name: 'Тест', input: 'Вход', expected: 'Ожидалось', got: 'Получено' },
+    noClaims: 'Доказывать в программе нечего. Добавьте функции «обеспечивает» или напишите «утверждение».',
+    testsPassed: function (n) { return 'Тесты пройдены: ' + n + ' из ' + n; },
+    testsFailed: function (bad, n) { return 'Не прошло тестов: ' + bad + ' из ' + n; },
+    noTests: 'В программе нет тестов', noTestsLead: 'Тест — это «пример» внутри функции: «дано» называет аргументы, «ожидается» — результат.',
+    testsHead: 'Тесты', callOf: function (fn, args) { return '«' + fn + '»' + (args ? ' от ' + args : ''); },
+    draftSaved: 'черновик сохранён в этом браузере', draftOff: 'черновик не сохраняется: хранилище браузера недоступно', draftReset: 'черновик сброшен к стартовой программе',
+    libSlow: 'С библиотекой проверка занимает около 10 с — нажмите «Проверить».',
+    libUnknown: function (name, similar) { return 'Модуля «' + name + '» в библиотеке нет. Модули библиотеки названы по-английски' + (similar.length ? '; похожие: ' + similar.map(function (x) { return '«' + x + '»'; }).join(', ') : '') + '.'; },
+    libList: 'все модули', setups: 'Сетапы', menu: 'Разделы'
+  } };
+  var T = WORDS.ru;
+  function useWords(lang) { T = WORDS[lang] || WORDS.ru; return T; }
+
+  /* ── Адрес ──────────────────────────────────────────────────────────────── */
+  function addressFields(hash) {
+    var out = {};
+    String(hash || '').replace(/^#/, '').split('&').forEach(function (part) {
+      var eq = part.indexOf('=');
+      var key = eq < 0 ? part : part.slice(0, eq);
+      if (!key) return;
+      try { out[key] = eq < 0 ? '' : decodeURIComponent(part.slice(eq + 1)); } catch (e) { out[key] = part.slice(eq + 1); }
+    });
+    return out;
+  }
+  /* Вид текста по первой значащей строке — то же правило, что у компилятора
+     (text-kind.flang). Здесь оно нужно только чтобы выбрать сетап для ссылки,
+     в которой сетап не назван; чем проверять текст, решает компилятор. */
+  function guessKind(text) {
+    var lines = String(text || '').split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      var s = lines[i].trim();
+      if (!s || s.indexOf('//') === 0) continue;
+      if (/^(модуль|module|категория|category)(\s|$)/.test(s)) return 'flang';
+      if (/^(∀|∃|\\forall|\\exists|forall\b|exists\b)/.test(s)) return 'формула';
+      return 'рассуждение';
+    }
+    return 'flang';
+  }
+  var STARTER_SETUP = { hello: 'first', proof: 'proof', monad: 'proof', loop: 'first', klass: 'first', emitC: 'emit' };
+  var TODO_SETUP = { check: 'proof', test: 'tests', run: 'first', emit: 'emit' };
+  /* Что открыть по адресу. Поля прежних ссылок (`code`, `text`, `example`,
+     `do`, `fn`, `args`, `target`, флаг `run`) читаются как раньше; `setup`
+     называет сетап прямо. `text` здесь — уже расшифрованный текст программы
+     из `code`/`text` или null. Возвращает null, если адрес ничего не просит. */
+  function planOf(fields, text) {
+    var f = fields || {};
+    var todo = f.do !== undefined ? f.do : f.run !== undefined ? 'check' : '';
+    var starter = f.example ? starterOf(f.example) : null;
+    var named = f.setup ? setupOf(f.setup) : null;
+    var hasText = text !== null && text !== undefined;
+    if (!named && !hasText && !starter) return null;
+    var key = named ? named.key : null;
+    if (!key && hasText && (todo === '' || todo === 'check')) {
+      var kind = guessKind(text);
+      key = kind === 'рассуждение' ? 'reasoning' : kind === 'формула' ? 'formula' : todo ? 'proof' : 'first';
+    }
+    if (!key && TODO_SETUP[todo]) key = TODO_SETUP[todo];
+    if (!key && starter) key = STARTER_SETUP[starter.key];
+    var setup = setupOf(key || 'first');
+    return {
+      setup: setup.key,
+      text: hasText ? text : starter ? starter.text : null,
+      fn: f.fn !== undefined ? f.fn : starter && !hasText ? starter.fn || '' : hasText ? '' : null,
+      args: f.args !== undefined ? f.args : starter && !hasText ? starter.args || '' : hasText ? '' : null,
+      todo: todo,
+      target: f.target || (starter && starter.emit) || ''
+    };
+  }
+
+  /* ── Ответ компилятора → заголовок, отметки, сообщения ──────────────────── */
+  function claimState(c) {
+    var v = c.verdict || '';
+    if (v === 'proved' || v === 'proved-induction') return 'proved';
+    if (v === 'violated') return 'violated';
+    if (v === 'grid') return 'examples';
+    if (v === 'conditional' || v === 'proved-conditional') return 'conditional';
+    return 'unproved';
+  }
+  function claimWords(c) {
+    var v = c.verdict || '';
+    if (v === 'proved-induction' && c.induction) return T.claim.induction(c.induction);
+    if (v === 'proved') return c.byType ? T.claim.proved + ' (' + T.byTypes + ')' : T.claim.proved;
+    if (v === 'grid') return T.claim.grid(c.grid || 0);
+    if (v === 'conditional' || v === 'proved-conditional') return T.claim.conditional;
+    if (v === 'refused') return T.claim.refused;
+    if (v === 'violated') return T.claim.violated;
+    return T.claim.declared;
+  }
+  function lawState(l) { return l.verdict === 'violated' ? 'violated' : l.verdict === 'grid' ? 'examples' : l.verdict === 'proved' ? 'proved' : 'unknown'; }
+
+  var VIOLATION = /^FLANG_(EXAMPLE|PROPERTY|EQUALITY_|TRANSFORM_|FUNCTOR_|MONOID_|CATEGORY_|LAW)/;
+
+  /* Сообщения компилятора: по одному на ошибку, без повторов. Код, вложенный
+     в текст («FLANG_EXAMPLE: FLANG_PROPERTY: …»), поднимается в код сообщения. */
+  function problemsOf(diags) {
+    var seen = {}, out = [];
+    (diags || []).forEach(function (d) {
+      var code = d.код || '', text = String(d.текст || '');
+      var inner = /^(FLANG_[A-Z0-9_]+):\s*(.*)$/.exec(text);
+      if (inner) { code = inner[1]; text = inner[2]; }
+      var key = code + '\u0000' + (d.строка || '') + '\u0000' + text;
+      if (seen[key]) return;
+      seen[key] = true;
+      out.push({ code: code, line: d.строка || null, column: d.столбец || null, text: text });
+    });
+    return out;
+  }
+  function problemMarks(list) {
+    return list.filter(function (p) { return p.line; }).map(function (p) { return { line: p.line, column: p.column, length: p.length || 0, kind: 'error' }; });
+  }
+  /* Ненайденный модуль компилятор относит к первой строке файла. Место
+     переносится на саму строку «использует «…»» с этим именем. */
+  function placeImports(list, text) {
+    var lines = String(text || '').split('\n');
+    list.forEach(function (p) {
+      if (p.code !== 'FLANG_IMPORT_NOT_FOUND') return;
+      for (var j = 0; j < lines.length; j++) {
+        var m = /^(\s*(?:использует|uses)\s+)«([^»]+)»/u.exec(lines[j]);
+        if (m && p.text.indexOf('«' + m[2] + '»') >= 0) { p.line = j + 1; p.column = m[1].length + 1; p.length = m[2].length + 2; return; }
+      }
+    });
+    return list;
+  }
+  function errorTitle(list) {
+    if (list.length > 1) return T.errors(list.length);
+    return list[0] && list[0].line ? T.errorAt + list[0].line : T.error;
+  }
+
+  /* Функции самого текста: дерево программы с «использует» несёт и функции
+     библиотеки, а строки и примеры нужны только свои. */
+  function ownNames(text) {
+    var names = [], re = /(?:функция|function)\s+«([^»]+)»/gu, m;
+    while ((m = re.exec(String(text || '')))) names.push(m[1]);
+    return names;
+  }
+  function ownFunctions(tree, text) {
+    var fns = (tree && tree.functions) || [];
+    if (text === undefined || text === null) return fns;
+    var names = ownNames(text);
+    return names.map(function (n) { return fns.filter(function (f) { return f.name === n; })[0]; }).filter(Boolean);
+  }
+  function firstFunction(text) { return ownNames(text)[0] || ''; }
+
+  function exampleOf(tree, diag) {
+    var fns = (tree && tree.functions) || [];
+    for (var i = 0; i < fns.length; i++) {
+      var f = fns[i];
+      if (diag.текст.indexOf('«' + f.name + '»') < 0) continue;
+      var exs = f.examples || [];
+      for (var j = 0; j < exs.length; j++) if (diag.текст.indexOf('«' + exs[j].name + '»') >= 0) return { fn: f, ex: exs[j] };
+    }
+    return null;
+  }
+  function postconditionOf(tree, diag) {
+    var fns = (tree && tree.functions) || [];
+    for (var i = 0; i < fns.length; i++) {
+      var f = fns[i];
+      if (diag.текст.indexOf('«' + f.name + '»') < 0) continue;
+      var posts = f.postconditions || [];
+      for (var j = 0; j < posts.length; j++) if (diag.текст.indexOf('«' + posts[j].name + '»') >= 0) return { fn: f, post: posts[j] };
+    }
+    return null;
+  }
+  function valueText(v) {
+    if (v === null || v === undefined) return 'ничто';
+    if (typeof v === 'string') return '"' + v + '"';
+    if (Array.isArray(v)) return '[' + v.map(valueText).join(', ') + ']';
+    if (typeof v === 'object') return '{' + Object.keys(v).map(function (k) { return k + ': ' + valueText(v[k]); }).join(', ') + '}';
+    return String(v);
+  }
+  function argsText(args) { return Object.keys(args || {}).map(function (k) { return k + ' = ' + valueText(args[k]); }).join(', '); }
+  function lineOf(node) { return (node && node.span && node.span.line) || null; }
+
+  var TIME_LIMIT_MS = 120000;
+
+  /* Итог проверки: заголовок, одна фраза, сообщения об ошибках (каждое один
+     раз) и отметки строк. */
+  function summarize(answer, text) {
+    var r = answer.разбор || {};
+    var s = { state: 'error', title: T.failed, lead: '', items: [], marks: [], counter: '', problems: [] };
+    if (answer.остановлено) {
+      s.title = answer.остановлено === 'время' ? T.timeoutTitle : T.failed;
+      s.lead = answer.остановлено === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown;
+      return s;
+    }
+    if (r.рассуждение) {
+      var q = r.рассуждение;
+      if (!q.прочитано) {
+        s.title = T.notRead; s.items = (q.жалобы || []).map(function (x) { return { state: 'error', text: x }; });
+        return s;
+      }
+      var nums = T.premises + ' ' + (q.номераПосылок || []).join(', ');
+      var said = '«' + q.заключение.replace(/^Следовательно,\s*/u, '').replace(/[.!]\s*$/u, '') + '»';
+      if (q.приговор === 'Follows') { s.state = 'proved'; s.title = T.follows; s.lead = said + T.from + nums; }
+      else if (q.приговор === 'Does not follow') { s.state = 'violated'; s.title = T.counter; s.lead = said + T.notFrom + nums; s.counter = q.контрпример; }
+      else { s.state = 'unproved'; s.title = T.unproved; }
+      return s;
+    }
+    if (r.формула && r.формула.code) {
+      s.title = T.formulaRefused; s.lead = r.формула.why;
+      return s;
+    }
+    var diags = r.замечания || [];
+    var ledger = r.ведомость;
+    if (!ledger) {
+      if (!diags.length) { s.title = T.failed; s.lead = r.ловушка || ''; return s; }
+      var violation = diags.filter(function (d) { return VIOLATION.test(d.код); })[0];
+      if (violation) {
+        s.state = 'violated'; s.title = T.counter;
+        var said1 = problemsOf([violation])[0];
+        var hit = exampleOf(r.дерево, violation), post = postconditionOf(r.дерево, violation);
+        if (hit) {
+          s.counter = '«' + hit.fn.name + '»: ' + argsText(hit.ex.args);
+          said1.line = lineOf(hit.ex);
+        } else if (post) said1.line = lineOf(post.post);
+        if (said1.line) s.marks.push({ line: said1.line, kind: 'fail' });
+        if (hit && post && lineOf(post.post)) s.marks.push({ line: lineOf(post.post), kind: 'fail' });
+        s.problems = [said1];
+        return s;
+      }
+      s.problems = placeImports(problemsOf(diags), text);
+      s.title = errorTitle(s.problems);
+      s.marks = problemMarks(s.problems);
+      return s;
+    }
+    var claims = ledger.claims || [];
+    var laws = ledger.laws || [];
+    var states = [];
+    claims.forEach(function (c) {
+      var st = claimState(c); states.push(st);
+      var who = (T.kinds[c.kind] || c.kind) + ' «' + c.name + '»' + (c.of ? T.of + '«' + c.of + '»' : '');
+      s.items.push({ state: st, text: who + ' — ' + claimWords(c) });
+    });
+    var lawProved = ledger.lawClaims && ledger.lawClaims.total > 0 && ledger.lawClaims.proved === ledger.lawClaims.total;
+    laws.forEach(function (l) {
+      var st = lawProved && l.verdict === 'grid' ? 'proved' : lawState(l); states.push(st);
+      var kind = T.lawKinds[l.kind] || l.kind;
+      s.items.push({ state: st, text: kind + ' «' + l.name + '» — ' + (st === 'proved' ? T.lawProved : T.law(l.kind, (l.grid && l.grid.values) || 0)) });
+    });
+    (ledger.assumed || []).forEach(function (a) { states.push('unproved'); s.items.push({ state: 'unproved', text: T.assumed + (a.name || a.claim || JSON.stringify(a)) }); });
+    var has = function (x) { return states.indexOf(x) >= 0; };
+    if (has('violated')) { s.state = 'violated'; s.title = T.counter; }
+    else if (has('unproved') || has('conditional')) { s.state = 'unproved'; s.title = T.unproved; s.lead = T.unprovedLead; }
+    else if (has('examples')) { s.state = 'examples'; s.title = T.examples; s.lead = T.examplesLead; }
+    else if (states.length) { s.state = 'proved'; s.title = T.proved; s.lead = T.provedLead; }
+    else { s.state = 'proved'; s.title = T.clean; s.lead = T.cleanLead; }
+    if (answer.код === 2 && s.state === 'proved') { s.state = 'unproved'; s.title = T.partial; s.lead = T.partialLead; }
+    return s;
+  }
+
+  /* Панель доказательств: по строке на каждое постусловие, утверждение и
+     закон. У строки статус (доказано / проверено только на тестах / не
+     доказано / опровергнуто), слова о том, как это получено, и номер строки
+     исходника. Когда компилятор остановился на нарушении и отчёта нет,
+     строки берутся из дерева разбора: нарушенное — «опровергнуто» с ответом
+     компилятора, остальные — «не проверялось». */
+  function proofRows(answer, text) {
+    var r = answer.разбор || {}, tree = r.дерево, ledger = r.ведомость, rows = [];
+    var fns = ownFunctions(tree, text), statements = (tree && tree.statements) || [];
+    function lineFor(kind, name, of) {
+      if (of) {
+        var f = fns.filter(function (x) { return x.name === of; })[0];
+        var p = f && (f.postconditions || []).filter(function (x) { return x.name === name; })[0];
+        return lineOf(p) || lineOf(f);
+      }
+      return lineOf(statements.filter(function (x) { return x.name === name; })[0]);
+    }
+    if (ledger) {
+      (ledger.claims || []).forEach(function (c) {
+        rows.push({ state: claimState(c), kind: T.kinds[c.kind] || c.kind, name: c.name, of: c.of || '', how: claimWords(c), line: lineFor(c.kind, c.name, c.of), counter: '' });
+      });
+      var lawProved = ledger.lawClaims && ledger.lawClaims.total > 0 && ledger.lawClaims.proved === ledger.lawClaims.total;
+      (ledger.laws || []).forEach(function (l) {
+        var st = lawProved && l.verdict === 'grid' ? 'proved' : lawState(l);
+        rows.push({ state: st, kind: T.lawKinds[l.kind] || l.kind, name: l.name, of: '', how: st === 'proved' ? T.lawProved : T.law(l.kind, (l.grid && l.grid.values) || 0), line: null, counter: '' });
+      });
+      (ledger.assumed || []).forEach(function (a) {
+        rows.push({ state: 'unproved', kind: '', name: a.name || a.claim || JSON.stringify(a), of: '', how: T.assumed.replace(/:\s*$/, ''), line: null, counter: '' });
+      });
+      return rows;
+    }
+    var broken = (r.замечания || []).filter(function (d) { return VIOLATION.test(d.код); });
+    function brokenBy(name, of) {
+      return broken.filter(function (d) { return d.текст.indexOf('«' + name + '»') >= 0 && (!of || d.текст.indexOf('«' + of + '»') >= 0); })[0];
+    }
+    fns.forEach(function (f) {
+      (f.postconditions || []).forEach(function (p) {
+        var hit = brokenBy(p.name, f.name);
+        rows.push({ state: hit ? 'violated' : 'unknown', kind: T.kinds['постусловие'], name: p.name, of: f.name, how: hit ? T.claim.violated : T.claim.unchecked, line: lineOf(p), counter: '' });
+      });
+    });
+    statements.forEach(function (st) {
+      var hit = brokenBy(st.name, '');
+      rows.push({ state: hit ? 'violated' : 'unknown', kind: T.kinds['утверждение'], name: st.name, of: '', how: hit ? T.claim.violated : T.claim.unchecked, line: lineOf(st), counter: '' });
+    });
+    return rows;
+  }
+
+  function independentWords(answer, text) {
+    var r = answer.разбор || {};
+    if (!r.сверка || r.сверка.код === null || r.сверка.код === undefined) return '';
+    if (r.сверка.код === 0) return T.independent.ok;
+    if (r.сверка.код === 3) return T.independent.partial;
+    if (/использует/.test(text)) return T.independent.imports;
+    var proved = ((r.ведомость && r.ведомость.claims) || []).some(function (c) { return claimState(c) === 'proved'; });
+    return proved || r.рассуждение ? T.independent.bad : '';
+  }
+
+  /* Таблица тестов: имя, вход и ожидаемое — из дерева разбора; прошёл тест или
+     нет и что получено — из ответа `flang test`. Строка ответа о несошедшемся
+     тесте называет функцию и тест в ёлочках; полученное значение стоит в ней
+     после последнего «получено». Если формат строки сменится, вместо значения
+     в ячейке окажется вся строка компилятора — таблица не опустеет. */
+  function testRows(answer, text) {
+    var lines = String(answer.вывод || '').split('\n'), rows = [];
+    ownFunctions(answer.дерево, text).forEach(function (f) {
+      (f.examples || []).forEach(function (ex) {
+        var said = lines.filter(function (l) { return l.indexOf('«' + ex.name + '»') >= 0 && l.indexOf('«' + f.name + '»') >= 0; })[0];
+        var got = said ? /(?:получено|got)\s+(.*)$/u.exec(said) : null;
+        rows.push({
+          state: said ? 'failed' : answer.код === 0 || answer.код === 1 ? 'passed' : 'unknown',
+          fn: f.name, name: ex.name, input: argsText(ex.args), expected: valueText(ex.expected),
+          got: said ? (got ? got[1] : said) : answer.код === 0 || answer.код === 1 ? valueText(ex.expected) : '', line: lineOf(ex)
+        });
+      });
+    });
+    return rows;
+  }
+
+  /* Ответ на команду (`run`, `test`, `emit`) или проверку — одним видом для
+     страницы: состояние, заголовок, фраза, сообщения, отметки строк и строки
+     таблиц. Заголовок не бывает пустым: страница ставит его в строку состояния
+     вместо «проверяю…». */
+  function present(action, answer, text) {
+    answer = answer || {};
+    var v = { action: action, state: 'error', title: '', lead: '', counter: '', items: [], problems: [], marks: [], rows: [], tests: [], value: '', call: '', retry: false, terminal: '' };
+    if (action === 'check') {
+      var s = summarize(answer, text);
+      v.state = s.state; v.title = s.title; v.lead = s.lead; v.counter = s.counter; v.items = s.items; v.problems = s.problems; v.marks = s.marks;
+      v.rows = (answer.разбор || {}).рассуждение || (answer.разбор || {}).формула && (answer.разбор || {}).формула.code ? [] : proofRows(answer, text);
+      v.note = independentWords(answer, String(text || ''));
+      v.terminal = String((answer.разбор || {}).терминал || answer.вывод || '').trim();
+      return v;
+    }
+    v.terminal = ((answer.команда ? '$ ' + answer.команда + '\n' : '') + String(answer.вывод || '')).trim();
+    if (answer.остановлено) {
+      v.title = answer.остановлено === 'время' ? T.timeoutTitle : T.notDone;
+      v.lead = answer.остановлено === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown;
+      return v;
+    }
+    v.problems = placeImports(problemsOf(answer.замечания).filter(function (p) { return p.code !== 'FLANG_PLAYGROUND'; }), text);
+    v.marks = problemMarks(v.problems);
+    if (action === 'test') {
+      v.tests = testRows(answer, text);
+      var bad = v.tests.filter(function (t) { return t.state === 'failed'; });
+      bad.forEach(function (t) { if (t.line) v.marks.push({ line: t.line, kind: 'fail' }); });
+      if (v.problems.length) v.title = errorTitle(v.problems);
+      else if (answer.вид && answer.вид !== 'flang' && answer.вид !== 'категория') { v.title = T.notDone; v.lead = T.needProgram; }
+      else if (answer.код !== 0 && answer.код !== 1) { v.title = T.notDone; v.lead = T.exitCode + answer.код; }
+      else if (!v.tests.length) { v.state = 'unproved'; v.title = T.noTests; v.lead = T.noTestsLead; }
+      else if (bad.length || answer.код !== 0) {
+        if (!bad.length) v.tests.forEach(function (t) { t.state = 'unknown'; t.got = ''; });
+        v.state = 'violated'; v.title = T.testsFailed(bad.length || v.tests.length, v.tests.length);
+      }
+      else { v.state = 'proved'; v.title = T.testsPassed(v.tests.length); }
+      return v;
+    }
+    if (action === 'emit') {
+      var files = answer.файлы || [];
+      if (answer.код === 0 && files.length) { v.state = 'proved'; v.title = T.emitDone; }
+      else { v.title = v.problems.length ? errorTitle(v.problems) : T.emitFailed; v.lead = v.problems.length ? '' : T.emitRefusedLead; }
+      return v;
+    }
+    v.value = String(answer.стандартный || '').trim();
+    if (answer.предел) { v.title = T.limitTitle; v.lead = T.exitCode + answer.код; }
+    else if (answer.код === 0) { v.state = 'proved'; v.title = T.done; }
+    else if (answer.код === 3) { v.state = 'unproved'; v.title = T.notDone; v.lead = T.unprovenLead; v.retry = true; }
+    else if (v.problems.length) v.title = errorTitle(v.problems);
+    else if (answer.вид && answer.вид !== 'flang' && answer.вид !== 'категория') { v.title = T.notDone; v.lead = T.needProgram; }
+    else { v.title = T.notDone; v.lead = T.exitCode + answer.код; }
+    return v;
+  }
+
+  /* Что запустить кнопкой «Запустить», когда поля пусты: первая функция
+     текста и аргументы её первого теста. Поле, заполненное человеком, не
+     трогается. */
+  function callOf(tree, text, fn, args) {
+    var name = String(fn || '').trim().replace(/^«|»$/g, '') || firstFunction(text);
+    var f = ownFunctions(tree, text).filter(function (x) { return x.name === name; })[0];
+    var out = { fn: name, args: String(args || '').trim() };
+    if (!out.args && f && (f.params || []).length && (f.examples || []).length) out.args = JSON.stringify(f.examples[0].args || {});
+    return out;
+  }
+
+  /* Слово под ошибкой: от столбца до конца слова, имя в ёлочках — целиком. */
+  var LETTER = /[\p{L}\p{N}_]/u;
+  function wordAt(lineText, column) {
+    var s = String(lineText || ''), i = Math.max(0, (column || 1) - 1);
+    if (!s.length) return [0, 0];
+    if (i >= s.length) return [s.length - 1, s.length];
+    var e = i + 1;
+    if (s[i] === '«') { e = s.indexOf('»', i); e = e < 0 ? s.length : e + 1; }
+    else if (LETTER.test(s[i])) while (e < s.length && LETTER.test(s[e])) e += 1;
+    return [i, e];
+  }
+
+  /* Модули библиотеки названы по-английски. «использует «Списки»» компилятор
+     не найдёт; подсказка называет похожие модули. Похожесть: совпадение без
+     учёта регистра, общее начало слова или русская основа из словаря ниже. */
+  var STEMS = [['спис', 'list'], ['строк', 'string'], ['числ', 'number'], ['множеств', 'set'], ['словар', 'dictionar'], ['дерев', 'tree'],
+    ['логик', 'logic'], ['дат', 'date'], ['врем', 'time'], ['рациональн', 'rational'], ['дроб', 'rational'], ['статистик', 'statistic'],
+    ['результат', 'result'], ['возможн', 'optional'], ['необязательн', 'optional'], ['автомат', 'automaton'], ['математик', 'math'],
+    ['текст', 'text'], ['хеш', 'hash'], ['хэш', 'hash'], ['таблиц', 'hash'], ['реестр', 'registry'], ['формат', 'format'], ['юникод', 'unicode'],
+    ['высш', 'higher'], ['больш', 'bignum'], ['json', 'json']];
+  function libraryHint(text, modules) {
+    var known = modules || [], lines = String(text || '').split('\n');
+    if (!known.length) return null;
+    for (var j = 0; j < lines.length; j++) {
+      var m = /^(\s*(?:использует|uses)\s+)«([^»]+)»(\s+(?:из|from)\s+")?/u.exec(lines[j]);
+      if (!m || m[3] || known.indexOf(m[2]) >= 0) continue;
+      var low = m[2].toLowerCase(), wanted = [low];
+      STEMS.forEach(function (p) { if (low.indexOf(p[0]) >= 0) wanted.push(p[1]); });
+      var rank = function (k) {
+        var kl = k.toLowerCase(), best = 9;
+        wanted.forEach(function (w, n) {
+          if (n === 0 && (kl === w || (w.length > 2 && (kl.indexOf(w) === 0 || w.indexOf(kl) === 0)))) best = 0;
+          else if (n > 0 && kl.indexOf(w) === 0) best = Math.min(best, 1);
+          else if (n > 0 && kl.indexOf(w) > 0) best = Math.min(best, 2);
+        });
+        return best;
+      };
+      var similar = known.filter(function (k) { return rank(k) < 9; })
+        .sort(function (a, b) { return rank(a) - rank(b) || a.length - b.length || (a < b ? -1 : 1); }).slice(0, 4);
+      return { line: j + 1, column: m[1].length + 1, name: m[2], similar: similar, text: T.libUnknown(m[2], similar) };
+    }
+    return null;
+  }
+  function usesLibrary(text) { return /^\s*(?:использует|uses)\s/mu.test(String(text || '')); }
+
+  var PAGE = {
+    starters: STARTERS, setups: SETUPS, setupOf: setupOf, setupText: setupText, starterOf: starterOf, words: WORDS, useWords: useWords,
+    addressFields: addressFields, guessKind: guessKind, planOf: planOf, present: present, summarize: summarize, proofRows: proofRows,
+    testRows: testRows, problemsOf: problemsOf, callOf: callOf, wordAt: wordAt, libraryHint: libraryHint, usesLibrary: usesLibrary,
+    firstFunction: firstFunction
+  };
+  if (typeof globalThis !== 'undefined') { globalThis.флангЗаготовки = STARTERS; globalThis.флангСтраница = PAGE; }
   if (typeof document === 'undefined') return;
   var holder = document.querySelector('main pre.lang-playground');
   if (!holder) return;
 
   var EN = document.documentElement.lang === 'en';
+  var LANG = EN ? 'en' : 'ru';
+  useWords(LANG);
   var ROOT = (document.querySelector('.poisk') || { getAttribute: function () { return ''; } }).getAttribute('data-koren') || '';
   /* KaTeX 0.16.11 лежит в дереве (docs/site/vendor/katex, лицензия MIT рядом):
      со стороннего адреса формулы пропадали там, где он закрыт, а без стилей и
      шрифтов разметка KaTeX показывает формулу дважды и вперемешку. */
   var KATEX = ROOT + 'vendor/katex/';
-
-  var T = EN ? {
-    example: 'Example', check: 'Check', share: 'Share', checking: 'checking… (the first run downloads the compiler)',
-    runGo: 'Run', testGo: 'Test', running: 'running…', fnLabel: 'function', argsLabel: 'arguments, JSON', fnHint: 'name without « »',
-    version: function (v) { return 'compiler flang ' + v + ', in this tab'; }, versionUnknown: 'the compiler is not loaded yet',
-    done: 'Done', notDone: 'Not done', exitCode: 'exit code ', starters: 'Starters', pageExamples: 'Examples on this page',
-    limitTitle: 'Stopped: the step limit', timeoutTitle: 'Stopped: took too long',
-    timeoutLead: function (sec) { return 'The run took more than ' + sec + ' seconds, so the playground stopped it to keep the tab alive. The compiler will load again on the next run. Check termination of your functions, or run this program in a terminal.'; },
-    unprovenLead: '«flang run» does not compute a program that is not proved. Fix the proof, or run it on trust.', trustGo: 'Run on trust (--trust)',
-    noFunction: 'There is no function in the text to run.', badArgs: 'The arguments are not a JSON object, for example {"н": 21}.',
-    workerDown: 'The compiler did not load. Check the connection and reload the page; without WebAssembly the playground does not work.',
-    starterNames: { hello: 'First program', proof: 'Proof by induction', monad: 'Monad: three laws proved', loop: 'Loop with kept values', klass: 'Class and interface', emitC: 'Print to C' },
-    linkCopied: 'the link carries the text; nothing is sent to a server', ms: 'ms',
-    tabs: { result: 'Result', formula: 'Formulas', emit: 'flang → language', foreign: 'language → flang', input: 'Formula → flang', picture: 'Pictures' },
-    loading: function (mb) { return 'downloading the compiler: ' + mb + ' MB'; }, ready: 'compiler loaded',
-    emitLead: 'The same program printed by «flang emit» into every target language. The compiler in this tab prints it, nothing is sent anywhere.',
-    emitting: 'printing…', emitFailed: 'Not printed', emitRefusedLead: 'flang emit prints only a program that passes the check; here is what stopped it.', runtimeNote: 'Runtime files are copied into the output as they are and are not shown here: ',
-    emitFrom: { 'формула': 'The formula was first translated to flang; this is that program.', 'рассуждение': 'The reasoning was first turned into a flang program; this is that program.' },
-    buildHow: 'Compiler output', emitStale: 'The text in the editor changed. Press «Print» to print it again.', print: 'Print',
-    foreignLead: 'Write a function in another language. A translator turns it into flang, and the kernel checks the result right away. The translator is not trusted: whatever it writes, the kernel judges.',
-    translateGo: 'Translate and check', translating: 'translating…', soon: 'soon', soonNote: 'The Python translator is not in this build yet.',
-    readFailed: 'The text was not read', notTranslated: 'Not translated', fnProved: 'Translated and proved', fnUnproved: 'Translated, not everything is proved',
-    fnFailed: 'Translated, the check failed', fnRefuted: 'Translated: a counterexample is found',
-    refutedLead: function (c) { return 'The promise «' + c.обещание + '» is broken on ' + inputs(c.входы) + '. flang itself computed this at the int bounds.'; },
-    refuted: function (c) { return 'refuted: ' + inputs(c.входы); }, boundsClean: 'not proved; no violation at the int bounds, but that is not a proof',
-    intNote: 'The result is declared «число»: in flang a sum of «целое» values is «число», so the translator always writes «возвращает число» and states the int bounds as promises.',
-    noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
-    cSubset: 'The C subset: int and struct of int fields, if/else, while, for, return, + − * / % and comparisons. Overflow and division by zero become obligations the kernel has to prove.',
-    foreignLabel: 'source in another language', fallacy: 'Fallacy: ', card: 'fallacy card', hints: 'Possible fallacies (check them yourself): ', boundary: 'What the form does not decide: ', unparsedSentence: 'Not read: sentence ',
-    lineNo: 'line numbers',
-    editor: 'flang source or reasoning', press: 'Press «Check» or Ctrl+Enter.',
-    proved: 'Proved for all values', examples: 'Checked on examples only', counter: 'Does not follow: here is a counterexample',
-    unproved: 'Not proved', error: 'Error', errorAt: 'Error on line ', clean: 'No errors', partial: 'Not everything was checked',
-    follows: 'Follows', notRead: 'The text was not read', formulaRefused: 'The formula was not read', failed: 'The check did not run',
-    provedLead: 'Every statement holds for every input, not only for the examples written.',
-    examplesLead: 'No violations on the examples, but this is not a proof for the remaining values.',
-    unprovedLead: 'Some statements have neither a proof nor examples.',
-    cleanLead: 'Syntax, types and termination are fine. The program states nothing to prove.',
-    partialLead: 'Some declarations are accepted but their structure is not checked by the compiler.',
-    errorLead: 'The compiler stopped here; the line is marked in the editor.',
-    details: 'Details', terminal: 'Compiler output, as in a terminal', program: 'The program the reasoning became',
-    independent: { ok: 'Independent check: a separate program replayed the proof record and it matched.', bad: 'Independent check did not confirm the proof record.', imports: 'Independent check is not available for programs with «использует».', none: '' },
-    kinds: { 'утверждение': 'statement', 'постусловие': 'postcondition', 'закон': 'law', 'statement': 'statement', 'postcondition': 'postcondition' },
-    of: ' of ', premises: 'premises', from: ' is derived from ', notFrom: ' is not derived from ', counterexample: 'Counterexample: ',
-    line: 'line ', column: ', column ',
-    noFormula: 'There are no statements to show as a formula yet. Check a program with «утверждение» or «обеспечивает».',
-    outside: 'Outside the formula notation: ', latexSource: 'LaTeX source',
-    inputLead: 'Write a statement with ∀ / ∃ or in LaTeX. It is translated to flang and checked by the kernel right away.',
-    inputPlaceholder: '∀ x ∈ ℤ, ∀ y ∈ ℤ, x + y = y + x', translate: 'Translate and check', toEditor: 'Open in the editor',
-    asFlang: 'In flang', rendered: 'Formula',
-    noPicture: 'Pictures are drawn for categories, functors, monoids, sets and proofs. This text has none of them.',
-    category: 'Category ', functor: 'Functor ', monoid: 'Monoid ', sets: 'Sets', proof: 'Proof of ',
-    square: 'square for ', triangle: 'composition ', assoc: 'associativity', units: 'unit laws',
-    marks: { proved: 'proved', examples: 'on examples', violated: 'violated', unknown: 'not checked' },
-    induction: 'induction on ', cases: 'case ', base: 'base', step: 'step', rule: 'rule ', byTypes: 'from the declared argument types',
-    byComputation: 'by computing a closed goal', hypothesis: 'by the induction hypothesis',
-    claim: {
-      proved: 'proved for all inputs', induction: function (c) { return 'proved by induction on «' + c.param + '» (type «' + c.type + '»)'; },
-      conditional: 'proved under a condition that is not proved itself', grid: function (n) { return 'checked on ' + n + ' example values only'; },
-      declared: 'not proved: no proof and no examples — add a theorem', refused: 'not proved: the kernel could not derive the goal', violated: 'refuted: there is an input where it is false'
-    },
-    law: function (kind, n) { return (kind === 'моноид' ? 'monoid laws' : kind === 'категория' ? 'category laws' : 'commuting squares') + ' checked on ' + n + ' example values'; },
-    lawProved: 'laws proved for all values', assumed: 'accepted without checking: ',
-    lawKinds: { 'категория': 'category', 'моноид': 'monoid', 'связь': 'functor', 'преобразование': 'natural transformation' }
-  } : {
-    example: 'Пример', check: 'Проверить', share: 'Поделиться', checking: 'проверяю… (первый прогон скачивает компилятор)',
-    runGo: 'Запустить', testGo: 'Тесты', running: 'считаю…', fnLabel: 'функция', argsLabel: 'доводы, JSON', fnHint: 'имя без ёлочек',
-    version: function (v) { return 'компилятор flang ' + v + ', работает в этой вкладке'; }, versionUnknown: 'компилятор ещё не загружен',
-    done: 'Выполнено', notDone: 'Не выполнено', exitCode: 'код возврата ', starters: 'Заготовки', pageExamples: 'Примеры этой страницы',
-    limitTitle: 'Остановлено: предел шагов', timeoutTitle: 'Остановлено: слишком долго',
-    timeoutLead: function (sec) { return 'Прогон шёл дольше ' + sec + ' секунд, и песочница остановила его, чтобы вкладка не зависла. Компилятор загрузится заново при следующем прогоне. Проверьте завершение функций или запустите программу в терминале.'; },
-    unprovenLead: '«flang run» не считает недоказанную программу. Почините доказательство или запустите на веру.', trustGo: 'Запустить на веру (--trust)',
-    noFunction: 'В тексте нет функции, которую можно запустить.', badArgs: 'Доводы — не объект JSON; пример: {"н": 21}.',
-    workerDown: 'Компилятор не загрузился. Проверьте связь и обновите страницу; без WebAssembly песочница не работает.',
-    starterNames: { hello: 'Первая программа', proof: 'Доказательство индукцией', monad: 'Монада: три закона доказаны', loop: 'Цикл с хранимыми значениями', klass: 'Класс и интерфейс', emitC: 'Печать в C' },
-    linkCopied: 'текст едет в адресе; на сервер не уходит ничего', ms: 'мс',
-    tabs: { result: 'Итог', formula: 'Формулы', emit: 'flang → язык', foreign: 'язык → flang', input: 'Формула → flang', picture: 'Рисунки' },
-    loading: function (mb) { return 'скачиваю компилятор: ' + mb + ' МБ'; }, ready: 'компилятор загружен',
-    emitLead: 'Та же программа, напечатанная командой «flang emit» во все целевые языки. Печатает компилятор в этой вкладке, на сервер не уходит ничего.',
-    emitting: 'печатаю…', emitFailed: 'Не напечатано', emitRefusedLead: 'flang emit печатает только программу, которая проходит проверку; вот что её остановило.', runtimeNote: 'Файлы рантайма копируются в вывод как есть и здесь не показаны: ',
-    emitFrom: { 'формула': 'Формулу сначала перевели на flang; напечатана эта программа.', 'рассуждение': 'Рассуждение сначала превратили в программу на flang; напечатана она.' },
-    buildHow: 'Вывод компилятора', emitStale: 'Текст в редакторе изменился. Нажмите «Напечатать», чтобы напечатать его заново.', print: 'Напечатать',
-    foreignLead: 'Напишите функцию на другом языке. Переводчик сделает из неё программу на flang, и ядро сразу её проверит. Переводчику не доверяют: что бы он ни написал, судит ядро.',
-    translateGo: 'Перевести и проверить', translating: 'перевожу…', soon: 'скоро', soonNote: 'Переводчика с Python в этой сборке ещё нет.',
-    readFailed: 'Текст не прочитан', notTranslated: 'Не переведена', fnProved: 'Переведена и доказана', fnUnproved: 'Переведена, доказано не всё',
-    fnFailed: 'Переведена, проверка не прошла', fnRefuted: 'Переведена: найден контрпример',
-    refutedLead: function (c) { return 'Обещание «' + c.обещание + '» нарушено на входе ' + inputs(c.входы) + '. Это посчитал сам flang на границах int.'; },
-    refuted: function (c) { return 'опровергнуто: ' + inputs(c.входы); }, boundsClean: 'не доказано; на границах int нарушений не нашлось, но это не доказательство',
-    intNote: 'Результат объявлен числом: в flang сумма целых — число, поэтому переводчик всегда пишет «возвращает число», а границы int записывает обещаниями.',
-    noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
-    cSubset: 'Подмножество C: int и struct из полей int, if/else, while, for, return, + − * / % и сравнения. Переполнение и деление на ноль становятся обязательствами, которые ядро должно доказать.',
-    foreignLabel: 'исходник на другом языке', fallacy: 'Ошибка: ', card: 'карточка ошибки', hints: 'Возможные ошибки (проверьте сами): ', boundary: 'Чего форма не решает: ', unparsedSentence: 'Не прочитано предложение ',
-    lineNo: 'номера строк',
-    editor: 'исходник на flang или рассуждение', press: 'Нажмите «Проверить» или Ctrl+Enter.',
-    proved: 'Доказано для всех значений', examples: 'Проверено только на примерах', counter: 'Не следует: вот контрпример',
-    unproved: 'Не доказано', error: 'Ошибка', errorAt: 'Ошибка в строке ', clean: 'Ошибок нет', partial: 'Проверено не всё',
-    follows: 'Следует', notRead: 'Текст не прочитан', formulaRefused: 'Формула не прочитана', failed: 'Проверка не запустилась',
-    provedLead: 'Каждое утверждение верно на всех входах, а не только на написанных примерах.',
-    examplesLead: 'На примерах нарушений нет, но для остальных значений это не доказательство.',
-    unprovedLead: 'У части утверждений нет ни доказательства, ни примеров.',
-    cleanLead: 'Разбор, типы и завершение в порядке. Доказывать в программе нечего.',
-    partialLead: 'Часть объявлений принята, но их устройство компилятор не проверяет.',
-    errorLead: 'Компилятор остановился здесь; строка отмечена в редакторе.',
-    details: 'Подробности', terminal: 'Вывод компилятора, как в терминале', program: 'Программа, в которую превратилось рассуждение',
-    independent: { ok: 'Независимая проверка: отдельная программа заново проиграла запись доказательства, и она сошлась.', bad: 'Независимая проверка не подтвердила запись доказательства.', imports: 'Независимая проверка программ с «использует» здесь недоступна.', none: '' },
-    kinds: { 'утверждение': 'утверждение', 'постусловие': 'постусловие', 'закон': 'закон', 'statement': 'утверждение', 'postcondition': 'постусловие' },
-    of: ' функции ', premises: 'посылок', from: ' выводится из ', notFrom: ' не выводится из ', counterexample: 'Контрпример: ',
-    line: 'строка ', column: ', столбец ',
-    noFormula: 'Показывать формулой пока нечего. Проверьте программу с «утверждение» или «обеспечивает».',
-    outside: 'Вне записи формул: ', latexSource: 'Исходник LaTeX',
-    inputLead: 'Напишите утверждение с ∀ / ∃ или в LaTeX. Оно переводится на flang и сразу проверяется ядром.',
-    inputPlaceholder: '∀ x ∈ ℤ, ∀ y ∈ ℤ, x + y = y + x', translate: 'Перевести и проверить', toEditor: 'Открыть в редакторе',
-    asFlang: 'На flang', rendered: 'Формула',
-    noPicture: 'Рисунки строятся для категорий, функторов, моноидов, множеств и доказательств. В этом тексте их нет.',
-    category: 'Категория ', functor: 'Функтор ', monoid: 'Моноид ', sets: 'Множества', proof: 'Доказательство: ',
-    square: 'квадрат для ', triangle: 'композиция ', assoc: 'ассоциативность', units: 'единица',
-    marks: { proved: 'доказано', examples: 'на примерах', violated: 'нарушено', unknown: 'не проверялось' },
-    induction: 'индукция по ', cases: 'случай ', base: 'база', step: 'шаг', rule: 'правило ', byTypes: 'из объявленных типов аргументов',
-    byComputation: 'вычислением замкнутой цели', hypothesis: 'по предположению индукции',
-    claim: {
-      proved: 'доказано для всех входов', induction: function (c) { return 'доказано индукцией по «' + c.param + '» (тип «' + c.type + '»)'; },
-      conditional: 'доказано при условии, которое само не доказано', grid: function (n) { return 'проверено только на примерах: значений ' + n; },
-      declared: 'не доказано: нет ни доказательства, ни примеров — добавьте теорему', refused: 'не доказано: ядро не смогло вывести цель', violated: 'опровергнуто: есть вход, на котором утверждение ложно'
-    },
-    law: function (kind, n) { return (kind === 'моноид' ? 'законы моноида' : kind === 'категория' ? 'законы категории' : 'коммутативность квадратов') + ' проверены на примерах: значений ' + n; },
-    lawProved: 'законы доказаны для всех значений', assumed: 'принято без проверки: ',
-    lawKinds: { 'категория': 'категория', 'моноид': 'моноид', 'связь': 'функтор', 'преобразование': 'преобразование' }
-  };
+  function jsonBlock(id, otherwise) {
+    try {
+      var node = document.getElementById(id);
+      return node ? JSON.parse(node.textContent) : otherwise;
+    } catch (e) {
+      return otherwise;
+    }
+  }
+  /* Сборка сайта кладёт на страницу имена модулей библиотеки и коды ошибок,
+     у которых есть строка в справочнике. */
+  var MODULES = jsonBlock('flang-library', []);
+  var CODES = jsonBlock('flang-codes', []);
 
   /* ── мелочи ─────────────────────────────────────────────────────────────── */
-  function inputs(map) { return Object.keys(map || {}).map(function (k) { return k + ' = ' + map[k]; }).join(', '); }
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -240,16 +781,6 @@
       return null;
     }
   }
-  function addressFields(hash) {
-    var out = {};
-    String(hash || '').replace(/^#/, '').split('&').forEach(function (part) {
-      var eq = part.indexOf('=');
-      var key = eq < 0 ? part : part.slice(0, eq);
-      if (!key) return;
-      try { out[key] = eq < 0 ? '' : decodeURIComponent(part.slice(eq + 1)); } catch (e) { out[key] = part.slice(eq + 1); }
-    });
-    return out;
-  }
   function pipe(bytes, stream) {
     return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer().then(function (b) { return new Uint8Array(b); });
   }
@@ -280,7 +811,6 @@
     PHRASES.get(first).push(w);
   });
   PHRASES.forEach(function (list) { list.sort(function (a, b) { return b.length - a.length; }); });
-  var LETTER = /[\p{L}\p{N}_]/u;
 
   function segments(src) {
     var out = [], i = 0, n = src.length, plain = '';
@@ -332,7 +862,7 @@
     return out;
   }
 
-  function highlightHtml(src, badLines) { return linesHtml(segments(src), badLines); }
+  function highlightHtml(src, deco) { return linesHtml(segments(src), deco); }
 
   /* Подсветка напечатанного и чужих языков: пять тех же видов токенов, что у
      flang (слово, строка, число, комментарий), по таблице слов языка. Это не
@@ -391,17 +921,30 @@
     flush();
     return out;
   }
-  function linesHtml(segs, badLines) {
-    var lines = [[]];
+  /* Раскрашенные строки. `deco.bad` — номера строк, отмеченных целиком;
+     `deco.ranges` — по номеру строки отрезок столбцов, подчёркнутый волной. */
+  function linesHtml(segs, deco) {
+    var bad = deco && deco.bad, ranges = (deco && deco.ranges) || {};
+    var lines = [[]], cols = [0];
+    function put(text, cls) {
+      var j = lines.length - 1, start = cols[j], r = ranges[j + 1], pieces = [[text, false]];
+      var a = r ? Math.max(r[0], start) : 0, b = r ? Math.min(r[1], start + text.length) : 0;
+      if (r && a < b) pieces = [[text.slice(0, a - start), false], [text.slice(a - start, b - start), true], [text.slice(b - start), false]];
+      pieces.forEach(function (p) {
+        if (!p[0]) return;
+        var c = (cls ? cls : '') + (p[1] ? (cls ? ' ' : '') + 'pg-squiggle' : '');
+        lines[j].push(c ? '<span class="' + c + '">' + esc(p[0]) + '</span>' : esc(p[0]));
+      });
+      cols[j] = start + text.length;
+    }
     segs.forEach(function (s) {
       s[0].split('\n').forEach(function (part, j) {
-        if (j > 0) lines.push([]);
-        if (part) lines[lines.length - 1].push(s[1] ? '<span class="' + s[1] + '">' + esc(part) + '</span>' : esc(part));
+        if (j > 0) { lines.push([]); cols.push(0); }
+        if (part) put(part, s[1]);
       });
     });
     return lines.map(function (parts, j) {
-      var bad = badLines && badLines.has(j + 1);
-      return '<span class="pg-line' + (bad ? ' pg-line-bad' : '') + '">' + (parts.join('') || ' ') + '</span>';
+      return '<span class="pg-line' + (bad && bad.has(j + 1) ? ' pg-line-bad' : '') + '">' + (parts.join('') || ' ') + '</span>';
     }).join('');
   }
   /* Подсветка рассуждения и формулы. Какой текст в редакторе, решает не эта
@@ -480,11 +1023,11 @@
     }
     return out;
   }
-  function codeHtml(src, lang, badLines) {
-    if (lang === 'flang') return highlightHtml(src, badLines);
-    if (lang === 'reasoning') return linesHtml(reasoningSegments(src), badLines);
-    if (lang === 'formula') return linesHtml(formulaSegments(src), badLines);
-    return linesHtml(codeSegments(src, lang), badLines);
+  function codeHtml(src, lang, deco) {
+    if (lang === 'flang') return highlightHtml(src, deco);
+    if (lang === 'reasoning') return linesHtml(reasoningSegments(src), deco);
+    if (lang === 'formula') return linesHtml(formulaSegments(src), deco);
+    return linesHtml(codeSegments(src, lang), deco);
   }
   function codeBlock(src, lang) {
     var pre = el('pre', 'lang-' + lang), code = el('code');
@@ -541,10 +1084,10 @@
     return box;
   }
 
-  /* ── разметка песочницы ─────────────────────────────────────────────────── */
+  /* ── разметка рабочего места ────────────────────────────────────────────── */
   /* Языки, с которых песочница переводит во flang. Один язык — одна строка;
      готовым язык делает переводчик в сборке песочницы (`ПЕРЕВОДЧИКИ` в
-     обвязке). Неготовый показан честно — кнопкой с подписью «скоро». */
+     обвязке). Неготовый показан кнопкой с подписью «скоро». */
   var FOREIGN = [
     { lang: 'c', name: 'C', ready: true, note: function () { return T.cSubset; } },
     { lang: 'python', name: 'Python', ready: false, note: function () { return T.soonNote; } }
@@ -569,25 +1112,47 @@
 
   var root = el('div', 'playground');
   holder.replaceWith(root);
+  var current = SETUPS[0];
+
+  /* Плитки сетапов: обычные ссылки `#setup=<key>`, открывает их тот же код,
+     что читает адрес при загрузке. */
+  var setupBar = el('nav', 'pg-setups'); setupBar.setAttribute('aria-label', T.setups);
+  var setupTiles = {};
+  SETUPS.forEach(function (s) {
+    var a = el('a', 'pg-setup'); a.href = '#setup=' + s.key; a.setAttribute('data-setup', s.key);
+    a.appendChild(el('span', 'pg-setup-name', s.name[LANG]));
+    a.appendChild(el('span', 'pg-setup-note', s.note[LANG]));
+    setupBar.appendChild(a); setupTiles[s.key] = a;
+  });
 
   var bar = el('div', 'playground-bar');
+  var actionBox = el('div', 'pg-actions');
+  var ACTIONS = { run: T.runGo, check: T.check, test: T.testGo, emit: T.emitGo, translate: T.translateGo };
+  var actionButtons = {};
+  Object.keys(ACTIONS).forEach(function (k) {
+    var bt = el('button', 'pg-action playground-' + k, ACTIONS[k]); bt.type = 'button'; bt.setAttribute('data-action', k);
+    bt.addEventListener('click', function () { doAction(k, false); });
+    actionButtons[k] = bt;
+  });
   var select = el('select', 'playground-examples');
   select.setAttribute('aria-label', T.example);
   var groups = { starter: el('optgroup'), page: el('optgroup') };
   groups.starter.label = T.starters; groups.page.label = T.pageExamples;
+  var placeholder = el('option', null, T.example + '…'); placeholder.value = ''; placeholder.disabled = true;
+  select.appendChild(placeholder);
   examples.forEach(function (ex, j) {
     var o = el('option', null, ex.name); o.value = String(j);
     groups[ex.starter ? 'starter' : 'page'].appendChild(o);
   });
   select.appendChild(groups.starter);
   if (groups.page.children.length) select.appendChild(groups.page);
-  var checkButton = el('button', 'playground-check', T.check); checkButton.type = 'button';
-  var runButton = el('button', 'playground-share playground-run', T.runGo); runButton.type = 'button';
-  var testButton = el('button', 'playground-share playground-test', T.testGo); testButton.type = 'button';
-  var shareButton = el('button', 'playground-share', T.share); shareButton.type = 'button';
-  var status = el('span', 'playground-status'); status.setAttribute('role', 'status');
-  bar.appendChild(select); bar.appendChild(checkButton); bar.appendChild(runButton); bar.appendChild(testButton);
-  bar.appendChild(shareButton); bar.appendChild(status);
+  select.value = '';
+  var shareButton = el('button', 'pg-tool playground-share', T.share); shareButton.type = 'button';
+  var resetButton = el('button', 'pg-tool playground-reset', T.reset); resetButton.type = 'button';
+  var tools = el('div', 'pg-tools');
+  tools.appendChild(select); tools.appendChild(shareButton); tools.appendChild(resetButton);
+  bar.appendChild(actionBox); bar.appendChild(tools);
+
   var callBar = el('div', 'playground-call');
   var fnInput = el('input', 'playground-fn'); fnInput.type = 'text'; fnInput.placeholder = T.fnHint;
   fnInput.setAttribute('aria-label', T.fnLabel); fnInput.spellcheck = false; fnInput.setAttribute('autocapitalize', 'off');
@@ -595,24 +1160,49 @@
   argsInput.setAttribute('aria-label', T.argsLabel); argsInput.spellcheck = false; argsInput.setAttribute('autocapitalize', 'off');
   var fnWrap = el('label', 'playground-field', T.fnLabel + ' '); fnWrap.appendChild(fnInput);
   var argsWrap = el('label', 'playground-field playground-field-wide', T.argsLabel + ' '); argsWrap.appendChild(argsInput);
+  callBar.appendChild(fnWrap); callBar.appendChild(argsWrap);
+
+  var statusBar = el('div', 'pg-statusbar');
+  var status = el('span', 'playground-status'); status.setAttribute('role', 'status');
+  var hintLine = el('span', 'pg-hintline');
+  var draftNote = el('span', 'pg-draft');
   var versionNote = el('span', 'playground-version', T.versionUnknown);
-  callBar.appendChild(fnWrap); callBar.appendChild(argsWrap); callBar.appendChild(versionNote);
+  statusBar.appendChild(status); statusBar.appendChild(hintLine); statusBar.appendChild(draftNote); statusBar.appendChild(versionNote);
 
   /* Редактор: прозрачное поле ввода над раскрашенной копией текста и столбец
-     номеров строк слева. Строка с ошибкой отмечена и в тексте, и в номере. */
-  function makeEditor(lang, label, onRun) {
+     номеров строк слева. Ошибка с известным столбцом подчёркивает слово;
+     несошедшийся тест и ошибка без столбца отмечают строку. Правки клавишами
+     (Tab, Enter, ёлочки) идут через `insertText` — отмена браузера их помнит.
+
+     Шов для настоящего редактора: остальной код знает редактор только по
+     этому набору — `root`, `input.value`, `set`, `mark`, `goTo`, `onEdit`,
+     `lang`, `repaint`. Замена поля ввода на CodeMirror — новая `makeEditor`
+     с теми же шестью именами. */
+  var OPENER = /^\s*(?:(?:тотальная\s+)?функция|пример|разбор|случай|цикл|класс|интерфейс|тип|метод|утверждение|теорема|монада|моноид|объект|категория\s+«)/u;
+  function makeEditor(lang, label, onRun, smart) {
     var box = el('div', 'pg-editor');
     var gutter = el('pre', 'pg-gutter'); gutter.setAttribute('aria-hidden', 'true');
     var paintLayer = el('pre', 'pg-paint'); paintLayer.setAttribute('aria-hidden', 'true');
     var area = el('textarea', 'playground-input');
     area.spellcheck = false; area.setAttribute('wrap', 'off'); area.setAttribute('aria-label', label);
-    area.setAttribute('autocapitalize', 'off'); area.setAttribute('autocomplete', 'off');
+    area.setAttribute('autocapitalize', 'off'); area.setAttribute('autocomplete', 'off'); area.setAttribute('autocorrect', 'off');
     box.appendChild(gutter); box.appendChild(paintLayer); box.appendChild(area);
-    var ed = { root: box, input: area, bad: new Set(), lang: lang };
+    var ed = { root: box, input: area, marks: [], lang: lang };
+    function deco() {
+      var bad = new Set(), ranges = {}, lines = null;
+      ed.marks.forEach(function (m) {
+        if (!m.line) return;
+        if (!m.column) { bad.add(m.line); return; }
+        lines = lines || area.value.split('\n');
+        if (!ranges[m.line]) ranges[m.line] = m.length ? [m.column - 1, m.column - 1 + m.length] : wordAt(lines[m.line - 1], m.column);
+      });
+      return { bad: bad, ranges: ranges };
+    }
     ed.repaint = function () {
-      paintLayer.innerHTML = codeHtml(area.value, ed.lang, ed.bad) + '<span class="pg-line"> </span>';
+      var marked = new Set(ed.marks.map(function (m) { return m.line; }));
+      paintLayer.innerHTML = codeHtml(area.value, ed.lang, deco()) + '<span class="pg-line"> </span>';
       var count = area.value.split('\n').length, html = '';
-      for (var j = 1; j <= count; j++) html += '<span class="pg-num' + (ed.bad.has(j) ? ' pg-num-bad' : '') + '">' + j + '</span>';
+      for (var j = 1; j <= count; j++) html += '<span class="pg-num' + (marked.has(j) ? ' pg-num-bad' : '') + '">' + j + '</span>';
       gutter.innerHTML = html + '<span class="pg-num"> </span>';
       ed.sync();
     };
@@ -620,42 +1210,88 @@
       paintLayer.scrollTop = area.scrollTop; paintLayer.scrollLeft = area.scrollLeft;
       gutter.scrollTop = area.scrollTop;
     };
-    ed.fit = function () {
-      var lines = area.value.split('\n').length;
-      area.style.height = Math.min(Math.max(lines + 1, 8), 30) * 1.45 + 1.6 + 'em';
-    };
-    ed.set = function (text) { area.value = text; ed.bad = new Set(); ed.fit(); ed.repaint(); };
-    ed.mark = function (lines) { ed.bad = new Set(lines); ed.repaint(); };
-    ed.goTo = function (line) {
+    ed.set = function (text) { area.value = text; ed.marks = []; area.scrollTop = 0; ed.repaint(); };
+    ed.mark = function (list) { ed.marks = (list || []).filter(function (m) { return m && m.line; }); ed.repaint(); };
+    ed.goTo = function (line, column) {
       var all = area.value.split('\n'), pos = 0;
       for (var j = 0; j < line - 1 && j < all.length; j++) pos += all[j].length + 1;
+      pos += Math.max(0, Math.min((column || 1) - 1, (all[line - 1] || '').length));
       area.focus(); area.selectionStart = area.selectionEnd = pos;
       var lh = parseFloat(getComputedStyle(area).lineHeight) || 18;
       area.scrollTop = Math.max(0, (line - 3) * lh);
     };
-    area.addEventListener('input', function () { ed.bad = new Set(); ed.fit(); ed.repaint(); if (ed.onEdit) ed.onEdit(); });
+    /* Вставка, которую помнит отмена: `insertText` кладёт правку в историю
+       поля. Где команды нет, текст меняется напрямую — без истории, но верно. */
+    function insert(text, from, to, caret) {
+      area.focus(); area.setSelectionRange(from, to);
+      var done = false;
+      try { done = document.execCommand(text === '' ? 'delete' : 'insertText', false, text); } catch (e) { done = false; }
+      if (!done) { area.setRangeText(text, from, to, 'end'); area.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (caret !== undefined) area.setSelectionRange(caret, caret);
+    }
+    ed.insert = insert;
+    function lineStart(pos) { return area.value.lastIndexOf('\n', pos - 1) + 1; }
+    function indentBlock(s, e, out) {
+      var from = lineStart(s), to = area.value.indexOf('\n', Math.max(e - 1, s)); if (to < 0) to = area.value.length;
+      var linesIn = area.value.slice(from, to).split('\n');
+      var linesOut = linesIn.map(function (l) { return out ? l.replace(/^ {1,2}/, '') : (l ? '  ' + l : l); });
+      var first = linesOut[0].length - linesIn[0].length, textOut = linesOut.join('\n');
+      insert(textOut, from, to);
+      area.setSelectionRange(Math.max(from, s + first), from + textOut.length);
+    }
+    var fixing = false;
+    area.addEventListener('input', function (ev) {
+      /* `<<` → «…», `>>` → »: ёлочки набираются с любой раскладки. */
+      if (smart && !fixing && !ev.isComposing && area.selectionStart === area.selectionEnd) {
+        var c = area.selectionStart, two = area.value.slice(c - 2, c);
+        if (two === '<<' || two === '>>') {
+          fixing = true;
+          if (two === '<<') insert('«»', c - 2, c, c - 1);
+          else if (area.value[c] === '»') insert('', c - 2, c, c - 1);
+          else insert('»', c - 2, c);
+          fixing = false;
+          return;
+        }
+      }
+      if (fixing) return;
+      ed.marks = []; ed.repaint(); if (ed.onEdit) ed.onEdit();
+    });
     area.addEventListener('scroll', ed.sync);
     area.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); onRun(); }
-      else if (ev.key === 'Tab' && !ev.shiftKey && !ev.ctrlKey) {
+      var s = area.selectionStart, e = area.selectionEnd, v = area.value;
+      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); onRun(); return; }
+      if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing) return;
+      if (ev.key === 'Tab') {
         ev.preventDefault();
-        var s = area.selectionStart, e = area.selectionEnd;
-        area.value = area.value.slice(0, s) + '  ' + area.value.slice(e);
-        area.selectionStart = area.selectionEnd = s + 2; ed.repaint();
+        if (ev.shiftKey || v.slice(s, e).indexOf('\n') >= 0) indentBlock(s, e, ev.shiftKey);
+        else insert('  ', s, e);
+      } else if (ev.key === 'Enter' && !ev.shiftKey) {
+        ev.preventDefault();
+        var head = v.slice(lineStart(s), s), pad = /^[ \t]*/.exec(head)[0];
+        if (smart && ed.lang === 'flang' && OPENER.test(head)) pad += '  ';
+        insert('\n' + pad, s, e);
+      } else if (smart && ev.key === '«') {
+        ev.preventDefault();
+        insert('«' + v.slice(s, e) + '»', s, e, s === e ? s + 1 : undefined);
+      } else if (smart && ev.key === '»' && s === e && v[s] === '»') {
+        ev.preventDefault(); area.setSelectionRange(s + 1, s + 1);
+      } else if (smart && ev.key === 'Backspace' && s === e && v[s - 1] === '«' && v[s] === '»') {
+        ev.preventDefault(); insert('', s - 1, s + 1);
       }
     });
     return ed;
   }
 
-  var main = makeEditor('flang', T.editor, function () { run(main.input.value); });
+  var main = makeEditor('flang', T.editor, function () { doAction(current.enter, false); }, true);
   var input = main.input;
-  var editor = main.root;
-  var marks = el('ul', 'pg-marks'); marks.hidden = true;
+  var editors = el('div', 'pg-editors');
+  editors.appendChild(main.root);
 
+  var VIEWS = ['run', 'result', 'tests', 'emit', 'foreign', 'formula', 'picture', 'terminal'];
   var tabs = el('div', 'pg-tabs'); tabs.setAttribute('role', 'tablist');
   var panels = {};
   var tabButtons = {};
-  ['result', 'formula', 'emit', 'foreign', 'input', 'picture'].forEach(function (key) {
+  VIEWS.forEach(function (key) {
     var t = el('button', 'pg-tab', T.tabs[key]);
     t.type = 'button'; t.setAttribute('role', 'tab'); t.id = 'pg-tab-' + key;
     t.setAttribute('aria-controls', 'pg-panel-' + key);
@@ -666,6 +1302,8 @@
   });
   var tabShown = {};
   function showTab(key) {
+    if (!panels[key]) return;
+    tabButtons[key].hidden = false;
     Object.keys(panels).forEach(function (k) {
       panels[k].hidden = k !== key;
       tabButtons[k].setAttribute('aria-selected', k === key ? 'true' : 'false');
@@ -675,65 +1313,118 @@
     if (tabShown[key]) tabShown[key]();
   }
   tabs.addEventListener('keydown', function (ev) {
-    var keys = Object.keys(panels), now = keys.indexOf(root.getAttribute('data-tab'));
+    var keys = Object.keys(panels).filter(function (k) { return !tabButtons[k].hidden; }), now = keys.indexOf(root.getAttribute('data-tab'));
     if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
       var next = keys[(now + (ev.key === 'ArrowRight' ? 1 : keys.length - 1)) % keys.length];
       showTab(next); tabButtons[next].focus(); ev.preventDefault();
     }
   });
 
-  root.appendChild(bar); root.appendChild(callBar); root.appendChild(editor); root.appendChild(marks); root.appendChild(tabs);
-  Object.keys(panels).forEach(function (k) { root.appendChild(panels[k]); });
-  panels.result.appendChild(el('p', 'pg-hint', T.press));
-  panels.formula.appendChild(el('p', 'pg-hint', T.noFormula));
-  panels.picture.appendChild(el('p', 'pg-hint', T.noPicture));
+  /* Первая загрузка компилятора: полоса с долей скачанного. */
+  var loader = el('div', 'pg-loader'); loader.hidden = true; loader.setAttribute('role', 'status');
+  var loaderText = el('p', 'pg-loader-text');
+  var loaderBar = el('progress', 'pg-loader-bar'); loaderBar.max = 100;
+  loader.appendChild(loaderText); loader.appendChild(loaderBar); loader.appendChild(el('p', 'pg-hint', T.loadNote));
+
+  var left = el('section', 'pg-left'), right = el('section', 'pg-right'), work = el('div', 'pg-work');
+  left.appendChild(bar); left.appendChild(callBar); left.appendChild(editors); left.appendChild(statusBar);
+  right.appendChild(tabs); right.appendChild(loader);
+  var panelBox = el('div', 'pg-panels');
+  Object.keys(panels).forEach(function (k) { panelBox.appendChild(panels[k]); });
+  right.appendChild(panelBox);
+  work.appendChild(left); work.appendChild(right);
+  root.appendChild(setupBar); root.appendChild(work);
+
+  /* ── черновик ───────────────────────────────────────────────────────────
+     Текст каждого сетапа сохраняется в хранилище браузера на каждую правку.
+     Хранилища может не быть (частное окно, запрет в настройках) — тогда
+     страница работает как раньше, а в строке состояния сказано, что черновик
+     не сохраняется. */
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+    del: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* хранилища нет */ } }
+  };
+  var DRAFT = 'flang-playground-draft:', LAST = 'flang-playground-setup';
+  /* Значение поля, набранное человеком (а не подставленное страницей), и текст
+     программы, для которого страница подставляла значения. */
+  var autoFor = null;
+  function own(field) { return field.getAttribute('data-auto') !== field.value; }
+  function kept(field) { return own(field) ? field.value.trim() : ''; }
+  function editorOf(s) { return s.lang === 'c' ? foreignState.editor : main; }
+  function saveDraft() {
+    var saved = store.set(DRAFT + current.key, JSON.stringify({ text: editorOf(current).input.value, fn: kept(fnInput), args: kept(argsInput) }));
+    draftNote.textContent = saved ? T.draftSaved : T.draftOff;
+    root.setAttribute('data-draft', saved ? 'saved' : 'off');
+  }
+  function readDraft(key) {
+    try {
+      var d = JSON.parse(store.get(DRAFT + key) || 'null');
+      return d && typeof d.text === 'string' ? d : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  [fnInput, argsInput].forEach(function (field) { field.addEventListener('input', saveDraft); });
 
   /* ── редактор ───────────────────────────────────────────────────────────── */
   function repaint() { main.repaint(); }
   function setText(text) {
-    main.set(text); marks.hidden = true; marks.textContent = '';
+    main.set(text);
     kindSoon();
   }
-  main.onEdit = function () { marks.hidden = true; emitStale(); kindSoon(); };
+  /* Проверка при наборе: через полсекунды после правки срабатывает главная
+     кнопка сетапа. Программу с библиотекой так не проверяют — это около десяти
+     секунд; вместо этого строка состояния подсказывает нажать кнопку, а если
+     модуль назван не так, как в библиотеке, называет похожие. */
+  var liveTimer = null;
+  function libraryNote(text) {
+    var hint = libraryHint(text, MODULES);
+    hintLine.textContent = hint ? hint.text : T.libSlow;
+    if (hint) main.mark([{ line: hint.line, column: hint.column, length: hint.name.length + 2, kind: 'error' }]);
+    return hint;
+  }
+  function liveSoon() {
+    clearTimeout(liveTimer);
+    if (current.enter === 'translate') return;
+    liveTimer = setTimeout(function () {
+      var text = input.value;
+      hintLine.textContent = '';
+      if (!text.trim()) return;
+      if (usesLibrary(text)) { status.textContent = ''; libraryNote(text); return; }
+      doAction(current.enter, true);
+    }, 500);
+  }
+  main.onEdit = function () { saveDraft(); emitStale(); kindSoon(); liveSoon(); };
   /* Вид текста для подсветки спрашивается у потока с компилятором — там то же
      правило, что выбирает проверку. Пока ответа нет (или песочница не
-     собрана), текст красится как flang. */
+     собрана), текст красится по первой строке. */
   var KIND_LANG = { 'flang': 'flang', 'категория': 'flang', 'рассуждение': 'reasoning', 'формула': 'formula' };
   var kindAsked = 0, kindTimer = null;
+  function paintAs(kind) {
+    root.setAttribute('data-text-kind', kind);
+    if (main.lang !== KIND_LANG[kind]) { main.lang = KIND_LANG[kind]; main.repaint(); }
+  }
   function askKind() {
     var n = ++kindAsked;
+    if (!warmed) { paintAs(guessKind(main.input.value)); return; }
     post(main.input.value, { действие: 'вид' }, false).then(function (a) {
       if (n !== kindAsked || !a || !KIND_LANG[a.вид]) return;
-      root.setAttribute('data-text-kind', a.вид);
-      if (main.lang !== KIND_LANG[a.вид]) { main.lang = KIND_LANG[a.вид]; main.repaint(); }
+      paintAs(a.вид);
     });
   }
   function kindSoon() { clearTimeout(kindTimer); kindTimer = setTimeout(askKind, 150); }
-  function goToLine(line) { main.goTo(line); }
-  function markLines(list) {
-    marks.textContent = '';
-    list.forEach(function (m) {
-      var li = el('li');
-      if (m.line) {
-        var a = el('button', 'pg-mark-line', T.line + m.line);
-        a.type = 'button';
-        a.addEventListener('click', function () { goToLine(m.line); });
-        li.appendChild(a);
-        li.appendChild(document.createTextNode(' '));
-      }
-      li.appendChild(el('span', null, m.text));
-      marks.appendChild(li);
-    });
-    marks.hidden = list.length === 0;
-    main.mark(list.filter(function (m) { return m.line; }).map(function (m) { return m.line; }));
-  }
+  function goToLine(line, column) { main.goTo(line, column); }
 
   /* ── поток с компилятором ───────────────────────────────────────────────── */
   var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null;
-  var TIME_LIMIT_MS = 120000;
+  /* Размер несжатого компилятора: сервер отдаёт его сжатым и длины не называет,
+     поэтому доля считается от этого числа и не доходит до ста, пока файл не
+     пришёл целиком. */
+  var COMPILER_BYTES = 42000000;
   function stopWorker(why) {
     if (worker) worker.terminate();
-    worker = null; warmed = null; loadedOnce = false;
+    worker = null; warmed = null; loadedOnce = false; loader.hidden = true;
     Object.keys(waiting).forEach(function (k) {
       var cb = waiting[k]; delete waiting[k];
       cb({ код: 5, итог: 'остановлено', остановлено: why, вывод: 'FLANG_PLAYGROUND ' + (why === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown), разбор: null, замечания: [] });
@@ -746,8 +1437,10 @@
       if (ev.data && ev.data.прогресс) {
         var pr = ev.data.прогресс;
         if (pr.файл === 'flang.wasm' && !loadedOnce) {
-          status.textContent = pr.готово ? T.ready : T.loading((pr.байт / 1048576).toFixed(1));
-          if (pr.готово) loadedOnce = true;
+          var pct = Math.min(99, Math.round(100 * pr.байт / (pr.всего || COMPILER_BYTES)));
+          if (pr.готово) { loadedOnce = true; loaderText.textContent = T.preparing; loaderBar.removeAttribute('value'); }
+          else { loaderText.textContent = T.loading(pct); loaderBar.value = pct; }
+          root.setAttribute('data-compiler-load', pr.готово ? 'ready' : String(pct));
         }
         return;
       }
@@ -770,10 +1463,12 @@
   }
   /* Компилятор весит десятки мегабайт, поэтому качается не при открытии
      страницы, а при первом касании песочницы: пока человек правит текст,
-     модуль уже едет и собирается. */
+     модуль уже загружается. */
   function warm() {
     if (warmed) return warmed;
+    loader.hidden = false; loaderText.textContent = T.loading(0); loaderBar.value = 0;
     warmed = post('', { действие: 'прогреть' }, false).then(function (a) {
+      loader.hidden = true;
       if (a && a.версия) {
         versionNote.textContent = T.version(a.версия);
         root.setAttribute('data-compiler-version', a.версия);
@@ -790,175 +1485,161 @@
   }
   ['pointerdown', 'focusin', 'keydown'].forEach(function (evName) { root.addEventListener(evName, warm, { once: true }); });
 
-  /* ── раскладка ответа ───────────────────────────────────────────────────── */
-  function claimState(c) {
-    var v = c.verdict || '';
-    if (v === 'proved' || v === 'proved-induction') return 'proved';
-    if (v === 'violated') return 'violated';
-    if (v === 'grid') return 'examples';
-    if (v === 'conditional' || v === 'proved-conditional') return 'conditional';
-    return 'unproved';
+  /* ── рисование ответа ───────────────────────────────────────────────────── */
+  /* Код ошибки — ссылка на строку справочника, если такая строка есть. */
+  function codeNode(code) {
+    if (!/^FLANG_/.test(code || '')) return null;
+    if (CODES.length && CODES.indexOf(code) < 0) return el('code', 'pg-code', code);
+    var a = el('a', 'pg-code', code);
+    a.href = ROOT + (EN ? 'en/' : '') + 'diagnostics.html#' + code; a.target = '_blank'; a.rel = 'noopener'; a.title = T.about;
+    return a;
   }
-  function claimWords(c) {
-    var v = c.verdict || '';
-    if (v === 'proved-induction' && c.induction) return T.claim.induction(c.induction);
-    if (v === 'proved') return c.byType ? T.claim.proved + ' (' + T.byTypes + ')' : T.claim.proved;
-    if (v === 'grid') return T.claim.grid(c.grid || 0);
-    if (v === 'conditional' || v === 'proved-conditional') return T.claim.conditional;
-    if (v === 'refused') return T.claim.refused;
-    if (v === 'violated') return T.claim.violated;
-    return T.claim.declared;
+  function lineButton(line, column, ed) {
+    var bt = el('button', 'pg-mark-line', T.goLine(line)); bt.type = 'button';
+    bt.addEventListener('click', function (ev) { ev.stopPropagation(); (ed || main).goTo(line, column); });
+    return bt;
   }
-  function lawState(l) { return l.verdict === 'violated' ? 'violated' : l.verdict === 'grid' ? 'examples' : l.verdict === 'proved' ? 'proved' : 'unknown'; }
-
-  var VIOLATION = /^FLANG_(EXAMPLE|PROPERTY|EQUALITY_|TRANSFORM_|FUNCTOR_|MONOID_|CATEGORY_|LAW)/;
-
-  function exampleOf(tree, diag) {
-    var fns = (tree && tree.functions) || [];
-    for (var i = 0; i < fns.length; i++) {
-      var f = fns[i];
-      if (diag.text.indexOf('«' + f.name + '»') < 0) continue;
-      var exs = f.examples || [];
-      for (var j = 0; j < exs.length; j++) if (diag.text.indexOf('«' + exs[j].name + '»') >= 0) return { fn: f, ex: exs[j] };
-    }
-    return null;
+  function problemNode(p, ed) {
+    var box = el('div', 'pg-problem');
+    if (p.line) box.appendChild(lineButton(p.line, p.column, ed));
+    box.appendChild(el('span', 'pg-problem-text', p.text));
+    var code = codeNode(p.code);
+    if (code) box.appendChild(code);
+    return box;
   }
-  function valueText(v) {
-    if (v === null || v === undefined) return 'ничто';
-    if (typeof v === 'string') return '"' + v + '"';
-    if (Array.isArray(v)) return '[' + v.map(valueText).join(', ') + ']';
-    if (typeof v === 'object') return '{' + Object.keys(v).map(function (k) { return k + ': ' + valueText(v[k]); }).join(', ') + '}';
-    return String(v);
-  }
-
-  /* Итог: заголовок, одна фраза, список пунктов и метки строк. */
-  function summarize(answer) {
-    var r = answer.разбор || {};
-    var s = { state: 'error', title: T.failed, lead: '', items: [], marks: [], counter: '' };
-    if (answer.остановлено) {
-      s.title = answer.остановлено === 'время' ? T.timeoutTitle : T.failed;
-      s.lead = answer.остановлено === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown;
-      return s;
-    }
-    if (r.рассуждение) {
-      var q = r.рассуждение;
-      if (!q.прочитано) {
-        s.title = T.notRead; s.items = (q.жалобы || []).map(function (x) { return { state: 'error', text: x }; });
-        return s;
-      }
-      var nums = T.premises + ' ' + (q.номераПосылок || []).join(', ');
-      var said = '«' + q.заключение.replace(/^Следовательно,\s*/u, '').replace(/[.!]\s*$/u, '') + '»';
-      if (q.приговор === 'Follows') { s.state = 'proved'; s.title = T.follows; s.lead = said + T.from + nums; }
-      else if (q.приговор === 'Does not follow') { s.state = 'violated'; s.title = T.counter; s.lead = said + T.notFrom + nums; s.counter = q.контрпример; }
-      else { s.state = 'unproved'; s.title = T.unproved; }
-      return s;
-    }
-    if (r.формула && r.формула.code) {
-      s.title = T.formulaRefused; s.lead = r.формула.why;
-      return s;
-    }
-    var diags = r.замечания || [];
-    var ledger = r.ведомость;
-    if (!ledger) {
-      if (!diags.length) { s.title = T.failed; s.lead = r.ловушка || ''; return s; }
-      var violation = diags.filter(function (d) { return VIOLATION.test(d.код); })[0];
-      diags.forEach(function (d) { s.marks.push({ line: d.строка, text: d.текст }); });
-      if (violation) {
-        s.state = 'violated'; s.title = T.counter;
-        var hit = exampleOf(r.дерево, violation);
-        if (hit) {
-          var args = Object.keys(hit.ex.args || {}).map(function (k) { return k + ' = ' + valueText(hit.ex.args[k]); }).join(', ');
-          s.counter = '«' + hit.fn.name + '»: ' + args;
-          s.marks.unshift({ line: hit.ex.span && hit.ex.span.line, text: violation.текст });
-          (hit.fn.postconditions || []).forEach(function (p) {
-            if (violation.текст.indexOf('«' + p.name + '»') >= 0 && p.span) s.marks.push({ line: p.span.line, text: p.message || p.name });
-          });
-        } else s.counter = violation.текст;
-        s.lead = violation.текст;
-        return s;
-      }
-      var first = diags.filter(function (d) { return d.строка; })[0] || diags[0];
-      s.title = first.строка ? T.errorAt + first.строка : T.error;
-      s.lead = first.текст;
-      s.items = diags.map(function (d) { return { state: 'error', text: (d.строка ? T.line + d.строка + ': ' : '') + d.текст }; });
-      return s;
-    }
-    var claims = ledger.claims || [];
-    var laws = ledger.laws || [];
-    var states = [];
-    claims.forEach(function (c) {
-      var st = claimState(c); states.push(st);
-      var who = (T.kinds[c.kind] || c.kind) + ' «' + c.name + '»' + (c.of ? T.of + '«' + c.of + '»' : '');
-      s.items.push({ state: st, text: who + ' — ' + claimWords(c) });
-    });
-    var lawProved = ledger.lawClaims && ledger.lawClaims.total > 0 && ledger.lawClaims.proved === ledger.lawClaims.total;
-    laws.forEach(function (l) {
-      var st = lawProved && l.verdict === 'grid' ? 'proved' : lawState(l); states.push(st);
-      var kind = T.lawKinds[l.kind] || l.kind;
-      s.items.push({ state: st, text: kind + ' «' + l.name + '» — ' + (st === 'proved' ? T.lawProved : T.law(l.kind, (l.grid && l.grid.values) || 0)) });
-    });
-    (ledger.assumed || []).forEach(function (a) { states.push('unproved'); s.items.push({ state: 'unproved', text: T.assumed + (a.name || a.claim || JSON.stringify(a)) }); });
-    var has = function (x) { return states.indexOf(x) >= 0; };
-    if (has('violated')) { s.state = 'violated'; s.title = T.counter; }
-    else if (has('unproved') || has('conditional')) { s.state = 'unproved'; s.title = T.unproved; s.lead = T.unprovedLead; }
-    else if (has('examples')) { s.state = 'examples'; s.title = T.examples; s.lead = T.examplesLead; }
-    else if (states.length) { s.state = 'proved'; s.title = T.proved; s.lead = T.provedLead; }
-    else { s.state = 'proved'; s.title = T.clean; s.lead = T.cleanLead; }
-    if (answer.код === 2 && s.state === 'proved') { s.state = 'unproved'; s.title = T.partial; s.lead = T.partialLead; }
-    return s;
-  }
-
-  function independentWords(answer, text) {
-    var r = answer.разбор || {};
-    if (!r.сверка || r.сверка.код === null || r.сверка.код === undefined) return '';
-    if (r.сверка.код === 0) return T.independent.ok;
-    if (/использует/.test(text)) return T.independent.imports;
-    var proved = ((r.ведомость && r.ведомость.claims) || []).some(function (c) { return claimState(c) === 'proved'; });
-    return proved || r.рассуждение ? T.independent.bad : '';
-  }
-
-  function renderResult(panel, answer, text) {
-    panel.textContent = '';
-    var s = summarize(answer);
-    var card = el('div', 'pg-verdict pg-' + s.state);
-    card.appendChild(el('p', 'pg-verdict-title', s.title));
-    if (s.lead) card.appendChild(el('p', 'pg-verdict-lead', s.lead));
-    if (s.counter) {
+  function verdictCard(v) {
+    var card = el('div', 'pg-verdict pg-' + v.state);
+    card.appendChild(el('p', 'pg-verdict-title', v.title));
+    if (v.lead) card.appendChild(el('p', 'pg-verdict-lead', v.lead));
+    if (v.counter) {
       var ce = el('p', 'pg-counter');
       ce.appendChild(el('strong', null, T.counterexample));
-      ce.appendChild(el('code', null, s.counter));
+      ce.appendChild(el('code', null, v.counter));
       card.appendChild(ce);
     }
+    (v.problems || []).forEach(function (p) { card.appendChild(problemNode(p)); });
+    return card;
+  }
+  function libraryNode(text) {
+    var hint = usesLibrary(text) ? libraryHint(text, MODULES) : null;
+    if (!hint) return null;
+    var p = el('p', 'pg-libhint', hint.text + ' ');
+    var a = el('a', null, T.libList); a.href = ROOT + (EN ? 'en/' : '') + 'library-api.html'; a.target = '_blank'; a.rel = 'noopener';
+    p.appendChild(a);
+    return p;
+  }
+  function table(cls, heads) {
+    var t = el('table', 'pg-table ' + cls), head = el('thead'), tr = el('tr');
+    heads.forEach(function (h) { tr.appendChild(el('th', null, h)); });
+    head.appendChild(tr); t.appendChild(head);
+    var body = el('tbody'); t.appendChild(body);
+    var wrap = el('div', 'pg-table-wrap'); wrap.appendChild(t);
+    return { node: wrap, body: body };
+  }
+  function clickableRow(tr, line) {
+    if (!line) return;
+    tr.classList.add('pg-row-go'); tr.setAttribute('data-line', String(line));
+    tr.addEventListener('click', function () { goToLine(line); });
+  }
+  function proofTable(rows) {
+    var t = table('pg-proofs', [T.cols.status, T.cols.what, T.cols.how]);
+    rows.forEach(function (row) {
+      var tr = el('tr', 'pg-row pg-' + row.state);
+      var st = el('td', 'pg-cell-status'); st.appendChild(mark(row.state)); tr.appendChild(st);
+      var what = el('td');
+      what.appendChild(el('span', 'pg-claim-kind', row.kind ? row.kind + ' ' : ''));
+      what.appendChild(el('span', 'pg-claim-name', '«' + row.name + '»'));
+      if (row.of) what.appendChild(el('span', 'pg-claim-of', T.of + '«' + row.of + '»'));
+      if (row.line) { what.appendChild(document.createTextNode(' ')); what.appendChild(lineButton(row.line)); }
+      tr.appendChild(what);
+      var how = el('td', null, row.how);
+      if (row.counter) { var c = el('p', 'pg-counter'); c.appendChild(el('strong', null, T.counterexample)); c.appendChild(el('span', null, row.counter)); how.appendChild(c); }
+      tr.appendChild(how);
+      clickableRow(tr, row.line);
+      t.body.appendChild(tr);
+    });
+    return t.node;
+  }
+  function testTable(rows) {
+    var t = table('pg-tests', [T.cols.name, T.cols.input, T.cols.expected, T.cols.got]);
+    rows.forEach(function (row) {
+      var tr = el('tr', 'pg-row pg-' + row.state);
+      var nameCell = el('td');
+      nameCell.appendChild(mark(row.state));
+      nameCell.appendChild(el('span', 'pg-claim-name', ' «' + row.name + '»'));
+      nameCell.appendChild(el('span', 'pg-claim-of', T.of + '«' + row.fn + '»'));
+      tr.appendChild(nameCell);
+      [row.input, row.expected, row.got].forEach(function (x) { var td = el('td'); td.appendChild(el('code', null, x)); tr.appendChild(td); });
+      clickableRow(tr, row.line);
+      t.body.appendChild(tr);
+    });
+    return t.node;
+  }
+
+  function renderCheck(panel, v, answer, text) {
+    panel.textContent = '';
+    var card = verdictCard(v);
     panel.appendChild(card);
     var r = answer.разбор || {};
     var rc = r.рассуждение && r.рассуждение.проверка;
     if (rc) reasoningCheck(card, panel, rc);
-    if (r.формула && !r.формула.code) panel.appendChild(formulaCard({ name: '', plain: r.формула.plain, tex: r.формула.tex }));
-    if (s.items.length) {
-      var ul = el('ul', 'pg-items');
-      s.items.forEach(function (it) { var li = el('li', 'pg-item pg-' + it.state, it.text); ul.appendChild(li); });
-      panel.appendChild(ul);
+    var lib = libraryNode(text);
+    if (lib && v.problems.length) card.appendChild(lib);
+    if (r.формула && !r.формула.code) {
+      panel.appendChild(formulaCard({ name: '', plain: r.формула.plain, tex: r.формула.tex }));
+      if (r.формула.unit) {
+        panel.appendChild(el('p', 'pg-formula-name', T.asFlang));
+        panel.appendChild(codeBlock(r.формула.unit, 'flang'));
+      }
     }
-    var ind = independentWords(answer, text);
-    var details = el('details', 'pg-details');
-    details.appendChild(el('summary', null, T.details));
-    if (ind) details.appendChild(el('p', null, ind));
+    if (v.rows.length) panel.appendChild(proofTable(v.rows));
+    else if (v.items.length) {
+      var ul = el('ul', 'pg-items');
+      v.items.forEach(function (it) { ul.appendChild(el('li', 'pg-item pg-' + it.state, it.text)); });
+      panel.appendChild(ul);
+    } else if (r.ведомость && !r.формула) panel.appendChild(el('p', 'pg-hint', T.noClaims));
+    if (v.note) panel.appendChild(el('p', 'pg-note', v.note));
     if (r.рассуждение && r.рассуждение.прочитано) {
       var ol = el('ol', 'pg-sentences');
       (r.рассуждение.предложения || []).forEach(function (x) { ol.appendChild(el('li', null, x.replace(/^\d+\.\s*/, ''))); });
-      details.appendChild(ol);
-      var pd = el('details', 'pg-nested');
+      panel.appendChild(ol);
+      var pd = el('details', 'pg-details');
       pd.appendChild(el('summary', null, T.program));
-      var pre = el('pre', 'lang-flang'); var code = el('code'); code.innerHTML = highlightHtml(r.рассуждение.программа, null);
-      pre.appendChild(code); pd.appendChild(pre); details.appendChild(pd);
+      pd.appendChild(codeBlock(r.рассуждение.программа, 'flang'));
+      panel.appendChild(pd);
     }
-    var td = el('details', 'pg-nested');
-    td.appendChild(el('summary', null, T.terminal));
-    td.appendChild(el('pre', 'playground-output', (r.терминал || answer.вывод || '').trim()));
-    details.appendChild(td);
-    panel.appendChild(details);
-    markLines(s.marks.filter(function (m) { return m.text; }));
-    return s;
+  }
+  function renderTests(panel, v) {
+    panel.textContent = '';
+    panel.appendChild(verdictCard(v));
+    if (v.tests.length) panel.appendChild(testTable(v.tests));
+  }
+  function renderRun(panel, v, tv, retry) {
+    panel.textContent = '';
+    var card = verdictCard(v);
+    if (v.state === 'proved') {
+      var line = el('p', 'pg-run-line');
+      line.appendChild(el('code', 'pg-run-call', v.call));
+      line.appendChild(el('span', 'pg-run-arrow', ' → '));
+      line.appendChild(el('strong', 'pg-run-value', v.value));
+      card.appendChild(line);
+    }
+    if (v.retry && retry) {
+      var again = el('button', 'pg-tool', T.trustGo); again.type = 'button';
+      again.addEventListener('click', retry);
+      card.appendChild(again);
+    }
+    panel.appendChild(card);
+    if (tv && (tv.tests.length || tv.state === 'unproved')) {
+      panel.appendChild(el('h4', 'pg-section pg-' + tv.state, tv.title));
+      if (tv.tests.length) panel.appendChild(testTable(tv.tests));
+      else panel.appendChild(el('p', 'pg-hint', tv.lead));
+    }
+  }
+  function renderTerminal(textOut) {
+    panels.terminal.textContent = '';
+    if (!textOut) { panels.terminal.appendChild(el('p', 'pg-hint', T.noTerminal)); return; }
+    panels.terminal.appendChild(el('pre', 'playground-output pg-terminal', textOut));
   }
 
   /* Разбор рассуждения: имя ошибки формы со ссылкой на карточку, возможные
@@ -1013,54 +1694,7 @@
     });
   }
 
-  /* ── ввод формулы ───────────────────────────────────────────────────────── */
-  (function buildInput() {
-    var p = panels.input;
-    p.appendChild(el('p', 'pg-hint', T.inputLead));
-    var area = el('textarea', 'pg-formula-input');
-    area.rows = 3; area.spellcheck = false; area.placeholder = T.inputPlaceholder; area.setAttribute('aria-label', T.rendered);
-    var preview = el('div', 'pg-formula-preview');
-    var go = el('button', 'playground-check', T.translate); go.type = 'button';
-    var out = el('div', 'pg-formula-out');
-    p.appendChild(area); p.appendChild(preview); p.appendChild(go); p.appendChild(out);
-    var timer = null;
-    function showPreview() {
-      preview.textContent = '';
-      var v = area.value.trim();
-      if (!v) return;
-      if (/\\/.test(v)) preview.appendChild(texBlock(v));
-      else preview.appendChild(el('p', 'pg-formula-plain', v));
-    }
-    area.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(showPreview, 250); });
-    function translate() {
-      var v = area.value.trim();
-      if (!v) return;
-      go.disabled = true; out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.checking));
-      ask(v).then(function (answer) {
-        go.disabled = false; out.textContent = '';
-        var s = summarize(answer);
-        var card = el('div', 'pg-verdict pg-' + s.state);
-        card.appendChild(el('p', 'pg-verdict-title', s.title));
-        if (s.lead) card.appendChild(el('p', 'pg-verdict-lead', s.lead));
-        out.appendChild(card);
-        var f = (answer.разбор || {}).формула;
-        if (f && !f.code) {
-          out.appendChild(formulaCard({ name: '', plain: f.plain, tex: f.tex }));
-          out.appendChild(el('p', 'pg-formula-name', T.asFlang));
-          var pre = el('pre', 'lang-flang'); var code = el('code'); code.innerHTML = highlightHtml(f.unit, null);
-          pre.appendChild(code); out.appendChild(pre);
-          var open = el('button', 'playground-share', T.toEditor); open.type = 'button';
-          open.addEventListener('click', function () { setText(f.unit); showTab('result'); input.focus(); });
-          out.appendChild(open);
-        }
-        root.setAttribute('data-formula-verdict', s.state);
-      });
-    }
-    go.addEventListener('click', translate);
-    area.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); translate(); } });
-  })();
-
-  /* ── flang → язык ───────────────────────────────────────────────────────── */
+  /* ── генерация кода: flang → язык ───────────────────────────────────────── */
   var TARGETS = [
     { target: 'c', name: 'C' }, { target: 'cpp', name: 'C++' }, { target: 'go', name: 'Go' }, { target: 'rust', name: 'Rust' },
     { target: 'java', name: 'Java' }, { target: 'js', name: 'JavaScript' }, { target: 'ts', name: 'TypeScript' },
@@ -1070,32 +1704,30 @@
   var emitStale = function () {};
   (function buildEmit() {
     var p = panels.emit;
-    p.appendChild(el('p', 'pg-hint', T.emitLead));
     var picker = el('div', 'pg-langs'); picker.setAttribute('role', 'group'); picker.setAttribute('aria-label', T.tabs.emit);
     var buttons = {};
     TARGETS.forEach(function (t) {
       var bt = el('button', 'pg-lang', t.name); bt.type = 'button'; bt.setAttribute('data-target', t.target);
-      bt.addEventListener('click', function () { emitState.target = t.target; refresh(); });
+      bt.addEventListener('click', function () { emitState.target = t.target; refresh(false); });
       picker.appendChild(bt); buttons[t.target] = bt;
     });
-    var again = el('button', 'playground-share', T.print); again.type = 'button';
-    var note = el('p', 'pg-hint pg-stale'); note.hidden = true; note.textContent = T.emitStale;
+    var again = el('button', 'pg-tool', T.print); again.type = 'button';
+    var note = el('p', 'pg-hint pg-stale'); note.hidden = true; note.textContent = T.emitStale + ' ';
+    note.appendChild(again);
     var out = el('div', 'pg-emit-out');
     p.appendChild(picker); p.appendChild(note); p.appendChild(out);
-    again.addEventListener('click', function () { emitState.cache = {}; emitState.text = input.value; refresh(); });
-    emitStale = function () { if (emitState.text !== null && emitState.text !== input.value) { note.hidden = false; note.appendChild(again); } };
-    function show(answer) {
+    out.appendChild(el('p', 'pg-hint', T.emitLead));
+    again.addEventListener('click', function () { emitState.cache = {}; emitState.text = input.value; refresh(false); });
+    emitStale = function () { if (emitState.text !== null && emitState.text !== input.value) note.hidden = false; };
+    function show(answer, v) {
       out.textContent = '';
       root.setAttribute('data-emit-target', answer.цель || emitState.target);
       root.setAttribute('data-emit-code', String(answer.код));
-      if (answer.код !== 0 || !(answer.файлы || []).length) {
-        var card = el('div', 'pg-verdict pg-error');
-        card.appendChild(el('p', 'pg-verdict-title', T.emitFailed));
-        card.appendChild(el('p', 'pg-verdict-lead', T.emitRefusedLead));
-        var first = (answer.замечания || [])[0];
-        if (first) card.appendChild(el('p', 'pg-verdict-lead', (first.строка ? T.line + first.строка + ': ' : '') + first.текст));
+      if (v.state !== 'proved') {
+        var card = verdictCard(v);
+        var lib = libraryNode(emitState.text || '');
+        if (lib && v.problems.length) card.appendChild(lib);
         out.appendChild(card);
-        if (first && first.строка) markLines((answer.замечания || []).map(function (d) { return { line: d.строка, text: d.текст }; }));
       } else {
         if (T.emitFrom[answer.вид]) out.appendChild(el('p', 'pg-hint', T.emitFrom[answer.вид]));
         var files = answer.файлы;
@@ -1117,42 +1749,47 @@
         out.appendChild(fileBar); out.appendChild(code);
         if ((answer.рантайм || []).length) out.appendChild(el('p', 'pg-hint', T.runtimeNote + answer.рантайм.join(', ')));
       }
-      var d = el('details', 'pg-details');
-      d.appendChild(el('summary', null, T.buildHow));
-      d.appendChild(el('pre', 'playground-output', (answer.вывод || '').trim()));
-      out.appendChild(d);
     }
-    function refresh() {
+    function refresh(quiet) {
       Object.keys(buttons).forEach(function (k) { buttons[k].setAttribute('aria-pressed', k === emitState.target ? 'true' : 'false'); });
       if (emitState.text === null) emitState.text = input.value;
       note.hidden = emitState.text === input.value;
       var key = emitState.target, text = emitState.text, cached = emitState.cache[key];
-      if (cached) { show(cached); return Promise.resolve(cached); }
-      out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.emitting));
+      var job = begin(T.emitting, quiet);
+      if (!cached && !quiet) { out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.emitting)); }
       root.removeAttribute('data-emit-code');
-      return ask(text, { действие: 'напечатать', цель: key }).then(function (answer) {
-        if (emitState.text !== text) return answer;
-        emitState.cache[key] = answer;
-        if (emitState.target === key) show(answer);
+      return guard(job, (cached ? Promise.resolve(cached) : ask(text, { действие: 'напечатать', цель: key })).then(function (answer) {
+        if (emitState.text === text) emitState.cache[key] = answer;
+        if (!alive(job)) return answer;
+        if (emitState.text === text && emitState.target !== key) return refresh(quiet);
+        var v = present('emit', answer, text);
+        if (emitState.text === text && emitState.target === key) show(answer, v);
+        renderTerminal(String(answer.вывод || '').trim());
+        settle(job, v, 'emit');
         return answer;
-      });
+      }));
     }
     emitState.refresh = refresh;
-    emitState.reset = function () { emitState.cache = {}; emitState.text = null; note.hidden = true; };
-    tabShown.emit = function () { if (emitState.text !== input.value) { emitState.cache = {}; emitState.text = input.value; } refresh(); };
+    emitState.reset = function () {
+      emitState.cache = {}; emitState.text = null; note.hidden = true;
+      out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.emitLead));
+      root.removeAttribute('data-emit-code');
+    };
+    emitState.fresh = function () { if (emitState.text !== input.value) { emitState.cache = {}; emitState.text = input.value; } };
   })();
 
-  /* ── язык → flang ───────────────────────────────────────────────────────── */
+  /* ── перевод: C → flang ─────────────────────────────────────────────────── */
   var foreignState = { lang: 'c', editor: null };
   (function buildForeign() {
     var p = panels.foreign;
-    p.appendChild(el('p', 'pg-hint', T.foreignLead));
     var picker = el('div', 'pg-langs'); picker.setAttribute('role', 'group'); picker.setAttribute('aria-label', T.tabs.foreign);
     var buttons = {};
-    var ed = makeEditor('c', T.foreignLabel, function () { translate(); });
+    var ed = makeEditor('c', T.foreignLabel, function () { doAction('translate', false); }, false);
+    ed.root.hidden = true;
+    ed.onEdit = function () { saveDraft(); };
+    editors.appendChild(ed.root);
     foreignState.editor = ed;
     var note = el('p', 'pg-hint');
-    var go = el('button', 'playground-check', T.translateGo); go.type = 'button';
     var out = el('div', 'pg-foreign-out');
     FOREIGN.forEach(function (f) {
       var bt = el('button', 'pg-lang', f.name + (f.ready ? '' : ' · ' + T.soon)); bt.type = 'button';
@@ -1167,29 +1804,29 @@
       Object.keys(buttons).forEach(function (k) { buttons[k].setAttribute('aria-pressed', k === lang ? 'true' : 'false'); });
       note.textContent = f.note();
     }
-    p.appendChild(picker); p.appendChild(note); p.appendChild(ed.root); p.appendChild(go); p.appendChild(out);
-    FOREIGN.filter(function (f) { return !f.ready; }).forEach(function (f) { p.insertBefore(el('p', 'pg-hint pg-soon', f.name + ': ' + f.note()), ed.root); });
+    p.appendChild(picker); p.appendChild(el('p', 'pg-hint', T.foreignLead)); p.appendChild(note); p.appendChild(out);
     choose('c');
-    var firstC = examples.filter(function (x) { return x.lang === 'c'; })[0];
-    ed.set(firstC ? firstC.text : '');
-    function translate() {
+    function translate(quiet) {
       var text = ed.input.value;
       if (!text.trim()) return Promise.resolve(null);
-      var started0 = Date.now();
-      status.textContent = T.translating;
-      go.disabled = true; out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.translating));
+      var job = begin(T.translating, quiet);
+      out.textContent = ''; out.appendChild(el('p', 'pg-hint', T.translating));
       root.removeAttribute('data-foreign-verdict');
       ed.mark([]);
-      return ask(text, { действие: 'перевести', язык: foreignState.lang }).then(function (answer) {
-        go.disabled = false; out.textContent = '';
+      return guard(job, ask(text, { действие: 'перевести', язык: foreignState.lang }).then(function (answer) {
+        if (!alive(job)) return answer;
+        out.textContent = '';
         var verdict = 'proved';
-        if (answer.отказ) {
+        if (answer.остановлено) {
+          verdict = 'error';
+          out.appendChild(verdictCard(present('run', answer, text)));
+        } else if (answer.отказ) {
           verdict = 'error';
           var card = el('div', 'pg-verdict pg-error');
           card.appendChild(el('p', 'pg-verdict-title', answer.отказ.строка ? T.errorAt + answer.отказ.строка : T.readFailed));
-          card.appendChild(el('p', 'pg-verdict-lead', answer.отказ.причина));
+          card.appendChild(problemNode({ line: answer.отказ.строка, column: null, text: answer.отказ.причина, code: '' }, ed));
           out.appendChild(card);
-          if (answer.отказ.строка) ed.mark([answer.отказ.строка]);
+          if (answer.отказ.строка) ed.mark([{ line: answer.отказ.строка, kind: 'error' }]);
         } else if (!(answer.функции || []).length) {
           verdict = answer.код === 2 ? 'error' : 'unproved';
           out.appendChild(el('p', 'pg-hint', answer.код === 2 ? answer.вывод : T.noFunctions));
@@ -1197,11 +1834,12 @@
         var badLines = [];
         (answer.функции || []).forEach(function (f) {
           var box = el('section', 'pg-fn');
-          var head = el('h4', 'pg-fn-name', f.имя + ' · ' + T.line + f.строка);
+          var head = el('h4', 'pg-fn-name', f.имя + ' ');
+          head.appendChild(lineButton(f.строка, 1, ed));
           box.appendChild(head);
           if (f.отказы.length) {
             verdict = verdict === 'error' ? 'error' : 'unproved';
-            badLines.push(f.строка);
+            badLines.push({ line: f.строка, kind: 'error' });
             var c1 = el('div', 'pg-verdict pg-unproved');
             c1.appendChild(el('p', 'pg-verdict-title', T.notTranslated));
             var ul = el('ul', 'pg-items');
@@ -1220,6 +1858,7 @@
           c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'violated' ? T.fnRefuted : st === 'unproved' ? T.fnUnproved : T.fnFailed));
           if (st === 'violated') refuted.forEach(function (c) { c2.appendChild(el('p', 'pg-verdict-lead', T.refutedLead(c))); });
           else if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
+          if (st === 'error') s.problems.forEach(function (pr) { c2.appendChild(problemNode({ line: null, column: null, text: pr.text, code: pr.code })); });
           box.appendChild(c2);
           var claims = ((f.разбор && f.разбор.ведомость && f.разбор.ведомость.claims) || []);
           var fnItems = claims.length ? claims.map(function (c) {
@@ -1238,26 +1877,26 @@
           box.appendChild(el('p', 'pg-formula-name', T.inFlang));
           box.appendChild(codeBlock(f.исходник, 'flang'));
           box.appendChild(el('p', 'pg-hint', T.intNote));
-          var open = el('button', 'playground-share', T.toEditor); open.type = 'button';
-          open.addEventListener('click', function () { setText(f.исходник); showTab('result'); input.focus(); });
+          var open = el('button', 'pg-tool', T.toEditor); open.type = 'button';
+          open.addEventListener('click', function () { openSetup('proof', { text: f.исходник, fn: '', args: '' }); input.focus(); });
           box.appendChild(open);
           out.appendChild(box);
         });
         if (badLines.length) ed.mark(badLines);
         root.setAttribute('data-foreign-verdict', verdict);
-        var titles = { proved: T.fnProved, violated: T.fnRefuted, unproved: T.fnUnproved, error: answer.отказ ? T.readFailed : T.fnFailed };
-        status.textContent = (answer.функции || []).length || answer.отказ ? titles[verdict] + ' · ' + (Date.now() - started0) + ' ' + T.ms : '';
         root.setAttribute('data-foreign-functions', String((answer.функции || []).length));
+        var titles = { proved: T.fnProved, violated: T.fnRefuted, unproved: T.fnUnproved, error: answer.отказ ? T.readFailed : T.fnFailed };
         var td = el('details', 'pg-details');
         td.appendChild(el('summary', null, T.terminal));
         td.appendChild(el('pre', 'playground-output', (answer.вывод || '').trim()));
         out.appendChild(td);
+        settle(job, { state: verdict, title: (answer.функции || []).length || answer.отказ ? titles[verdict] : T.noFunctions, marks: null }, 'foreign');
         return answer;
-      });
+      }));
     }
-    go.addEventListener('click', translate);
     foreignState.translate = translate;
     foreignState.choose = choose;
+    foreignState.reset = function () { out.textContent = ''; root.removeAttribute('data-foreign-verdict'); };
   })();
 
   /* ── рисунки (SVG своими руками) ────────────────────────────────────────── */
@@ -1614,173 +2253,276 @@
     return figs.length;
   }
 
-  /* ── прогон ─────────────────────────────────────────────────────────────── */
-  var started = 0;
-  function run(text) {
-    started = Date.now();
-    checkButton.disabled = true;
+  /* ── действия ───────────────────────────────────────────────────────────
+     У каждого запуска номер: ответ, который пришёл после того, как начат
+     следующий запуск, не рисуется. Исключение при рисовании не оставляет в
+     строке состояния «проверяю…» — оно показано карточкой ошибки. */
+  var seq = 0;
+  function setBusy(on) { Object.keys(actionButtons).forEach(function (k) { actionButtons[k].disabled = on; }); }
+  function begin(word, quiet) {
+    seq += 1;
     root.removeAttribute('data-playground-verdict');
-    status.textContent = T.checking;
-    return ask(text).then(function (answer) {
-      checkButton.disabled = false;
-      var s = renderResult(panels.result, answer, text);
+    status.textContent = word;
+    if (!quiet) setBusy(true);
+    return { n: seq, at: Date.now(), quiet: !!quiet };
+  }
+  function alive(job) {
+    if (!job.quiet) setBusy(false);
+    return job.n === seq;
+  }
+  function settle(job, v, view) {
+    root.setAttribute('data-playground-verdict', v.state);
+    status.textContent = v.title + ' · ' + (Date.now() - job.at) + ' ' + T.ms;
+    if (v.marks) editorOf(current).mark(v.marks);
+    if (!job.quiet || root.getAttribute('data-tab') === view) showTab(view);
+  }
+  function guard(job, promise) {
+    return promise.catch(function (e) {
+      setBusy(false);
+      if (job.n !== seq) return null;
+      var v = { state: 'error', title: T.failed, lead: String((e && e.message) || e), problems: [], marks: null };
+      var panel = panels[root.getAttribute('data-tab')] || panels.result;
+      panel.textContent = ''; panel.appendChild(verdictCard(v));
+      settle(job, v, root.getAttribute('data-tab') || 'result');
+      return null;
+    });
+  }
+
+  function doCheck(quiet) {
+    var text = input.value, job = begin(T.checking, quiet);
+    return guard(job, ask(text).then(function (answer) {
+      if (!alive(job)) return answer;
+      var v = present('check', answer, text);
+      renderCheck(panels.result, v, answer, text);
       renderFormulas(panels.formula, answer);
       var pics = renderPictures(panels.picture, answer);
-      root.setAttribute('data-playground-verdict', s.state);
+      renderTerminal(v.terminal);
       root.setAttribute('data-playground-pictures', String(pics));
-      status.textContent = s.title + ' · ' + (Date.now() - started) + ' ' + T.ms;
-      showTab('result');
+      root.removeAttribute('data-playground-command');
+      settle(job, v, 'result');
       return answer;
-    });
+    }));
   }
-  checkButton.addEventListener('click', function () { run(input.value); });
-
-  function firstFunction(text) {
-    var m = /(?:функция|function)\s+«([^»]+)»/u.exec(text);
-    return m ? m[1] : '';
-  }
-  function renderCommand(panel, answer, retry) {
-    panel.textContent = '';
-    var stopped = answer.остановлено === 'время';
-    var state = answer.код === 0 ? 'proved' : answer.код === 3 ? 'unproved' : 'error';
-    var title = stopped ? T.timeoutTitle : answer.предел ? T.limitTitle : answer.код === 0 ? T.done : T.notDone;
-    var card = el('div', 'pg-verdict pg-' + state);
-    card.appendChild(el('p', 'pg-verdict-title', title));
-    if (stopped) card.appendChild(el('p', 'pg-verdict-lead', T.timeoutLead(TIME_LIMIT_MS / 1000)));
-    else if (answer.остановлено) card.appendChild(el('p', 'pg-verdict-lead', T.workerDown));
-    else if (answer.код !== 0) card.appendChild(el('p', 'pg-verdict-lead', T.exitCode + answer.код));
-    if (answer.код === 3 && retry) {
-      card.appendChild(el('p', 'pg-verdict-lead', T.unprovenLead));
-      var again = el('button', 'playground-share', T.trustGo); again.type = 'button';
-      again.addEventListener('click', retry);
-      card.appendChild(again);
-    }
-    panel.appendChild(card);
-    if (!answer.остановлено) {
-      var out = el('pre', 'playground-output pg-terminal');
-      out.textContent = (answer.команда ? '$ ' + answer.команда + '\n' : '') + String(answer.вывод || '').trim();
-      panel.appendChild(out);
-    }
-    markLines((answer.замечания || []).filter(function (d) { return d.строка; }).map(function (d) { return { line: d.строка, text: d.текст }; }));
-    return state;
-  }
-  function command(word, keys) {
-    var text = input.value;
-    started = Date.now();
-    [checkButton, runButton, testButton].forEach(function (b) { b.disabled = true; });
-    root.removeAttribute('data-playground-verdict');
-    status.textContent = T.running;
-    showTab('result');
-    return ask(text, { действие: 'команда', команда: word, ключи: keys || {} }).then(function (answer) {
-      [checkButton, runButton, testButton].forEach(function (b) { b.disabled = false; });
-      var retry = word === 'run' && !(keys && keys.наВеру) ? function () {
-        var k = {}; Object.keys(keys || {}).forEach(function (x) { k[x] = keys[x]; }); k.наВеру = true;
-        command('run', k);
-      } : null;
-      var state = renderCommand(panels.result, answer, retry);
-      root.setAttribute('data-playground-verdict', state);
-      root.setAttribute('data-playground-command', word);
+  function doTest(quiet) {
+    var text = input.value, job = begin(T.running, quiet);
+    return guard(job, ask(text, { действие: 'команда', команда: 'test', ключи: {} }).then(function (answer) {
+      if (!alive(job)) return answer;
+      var v = present('test', answer, text);
+      renderTests(panels.tests, v);
+      renderTerminal(v.terminal);
+      root.setAttribute('data-playground-command', 'test');
       root.setAttribute('data-playground-code', String(answer.код));
-      status.textContent = (answer.код === 0 ? T.done : T.notDone) + ' · ' + (Date.now() - started) + ' ' + T.ms;
+      settle(job, v, 'tests');
       return answer;
-    });
+    }));
   }
-  function refuse(words) {
-    panels.result.textContent = '';
-    var card = el('div', 'pg-verdict pg-error');
-    card.appendChild(el('p', 'pg-verdict-title', T.notDone));
-    card.appendChild(el('p', 'pg-verdict-lead', words));
-    panels.result.appendChild(card);
-    root.setAttribute('data-playground-verdict', 'error');
-    showTab('result');
+  /* Поле, которое заполнила сама страница, считается пустым, как только текст
+     программы изменился: функцию могли переименовать, и тогда берётся новая
+     первая функция и её тест. */
+  function typed(field) { return own(field) || input.value === autoFor ? field.value.trim() : ''; }
+  [fnInput, argsInput].forEach(function (field) { field.addEventListener('input', function () { field.removeAttribute('data-auto'); }); });
+  function objectOf(json) {
+    if (!json) return {};
+    try {
+      var parsed = JSON.parse(json);
+      return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function doRun(quiet, trust) {
+    var text = input.value, job = begin(T.running, quiet);
+    var fn = typed(fnInput), args = typed(argsInput), call = null, v = null;
+    var withTests = current.enter === 'run';
+    function refused(words) {
+      v = present('run', { код: 2 }, text); v.title = T.notDone; v.lead = words;
+      renderRun(panels.run, v, null, null); renderTerminal('');
+      settle(job, v, 'run');
+      return null;
+    }
+    return guard(job, (!fn || !args ? ask(text, { действие: 'дерево' }) : Promise.resolve(null)).then(function (t) {
+      call = callOf(t && (t.дерево || (t.разбор && t.разбор.дерево)), text, fn, args);
+      if (!call.fn || objectOf(call.args) === null) return null;
+      if (!fn) { fnInput.value = call.fn; fnInput.setAttribute('data-auto', call.fn); }
+      if (!args) { argsInput.value = call.args; argsInput.setAttribute('data-auto', call.args); }
+      if (!fn || !args) autoFor = text;
+      return ask(text, { действие: 'команда', команда: 'run', ключи: { функция: call.fn, доводы: call.args, наВеру: !!trust } });
+    }).then(function (answer) {
+      if (!alive(job)) return answer;
+      if (!call.fn) return refused(T.noFunction);
+      if (objectOf(call.args) === null) return refused(T.badArgs);
+      v = present('run', answer, text);
+      v.call = T.callOf(call.fn, argsText(objectOf(call.args)));
+      root.setAttribute('data-playground-command', 'run');
+      root.setAttribute('data-playground-code', String(answer.код));
+      var retry = v.retry && !trust ? function () { doRun(false, true); } : null;
+      if (!withTests || answer.остановлено) {
+        renderRun(panels.run, v, null, retry); renderTerminal(v.terminal);
+        settle(job, v, 'run');
+        return answer;
+      }
+      return ask(text, { действие: 'команда', команда: 'test', ключи: {} }).then(function (testAnswer) {
+        if (!alive(job)) return answer;
+        var tv = present('test', testAnswer, text);
+        renderRun(panels.run, v, tv.problems.length ? null : tv, retry);
+        renderTerminal(v.terminal + '\n\n' + tv.terminal);
+        v.marks = v.marks.concat(tv.problems.length ? [] : tv.marks);
+        settle(job, v, 'run');
+        return answer;
+      });
+    }));
+  }
+  function doAction(word, quiet) {
+    if (word === 'run') return doRun(quiet, false);
+    if (word === 'check') return doCheck(quiet);
+    if (word === 'test') return doTest(quiet);
+    if (word === 'emit') { emitState.fresh(); return emitState.refresh(quiet); }
+    if (word === 'translate') return foreignState.translate(quiet);
     return Promise.resolve(null);
   }
-  function runFunction() {
-    var fn = fnInput.value.trim().replace(/^«|»$/g, '') || firstFunction(input.value);
-    if (!fn) return refuse(T.noFunction);
-    var args = argsInput.value.trim();
-    if (args) {
-      try {
-        var parsed = JSON.parse(args);
-        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return refuse(T.badArgs);
-      } catch (e) {
-        return refuse(T.badArgs);
-      }
-    }
-    fnInput.value = fn;
-    return command('run', { функция: fn, доводы: args });
-  }
-  runButton.addEventListener('click', runFunction);
-  testButton.addEventListener('click', function () { command('test', {}); });
+  tabShown.emit = function () { if (emitState.text === null) doAction('emit', true); };
   [fnInput, argsInput].forEach(function (field) {
-    field.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); runFunction(); } });
+    field.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); doRun(false, false); } });
   });
+
+  /* ── сетапы ─────────────────────────────────────────────────────────────
+     Открыть сетап: плитка, кнопки, вкладки справа и текст. Текст берётся из
+     `given.text` (адрес, пример), иначе из черновика, иначе стартовый. */
+  function openSetup(key, given) {
+    var s = setupOf(key) || SETUPS[0];
+    given = given || {};
+    current = s; seq += 1; clearTimeout(liveTimer); setBusy(false);
+    root.setAttribute('data-setup', s.key);
+    Object.keys(setupTiles).forEach(function (k) {
+      if (k === s.key) setupTiles[k].setAttribute('aria-current', 'page'); else setupTiles[k].removeAttribute('aria-current');
+    });
+    actionBox.textContent = '';
+    s.buttons.forEach(function (k, j) {
+      actionButtons[k].classList.toggle('pg-primary', j === 0);
+      actionButtons[k].title = j === 0 ? 'Ctrl+Enter' : '';
+      actionBox.appendChild(actionButtons[k]);
+    });
+    callBar.hidden = !s.call;
+    VIEWS.forEach(function (k) {
+      tabButtons[k].hidden = s.views.indexOf(k) < 0;
+      tabButtons[k].textContent = s.labels && s.labels[k] ? s.labels[k][LANG] : T.tabs[k];
+    });
+    main.root.hidden = s.lang === 'c'; foreignState.editor.root.hidden = s.lang !== 'c';
+    var hasText = given.text !== null && given.text !== undefined;
+    var draft = hasText ? null : readDraft(s.key);
+    var starter = s.starter ? starterOf(s.starter) : null;
+    var text = hasText ? given.text : draft ? draft.text : setupText(s);
+    var fn = typeof given.fn === 'string' ? given.fn : draft ? draft.fn || '' : '';
+    var args = typeof given.args === 'string' ? given.args : draft ? draft.args || '' : '';
+    fnInput.value = fn; argsInput.value = args;
+    fnInput.removeAttribute('data-auto'); argsInput.removeAttribute('data-auto');
+    /* Функция и аргументы стартовой программы стоят в полях как подсказка:
+       стоит переписать программу — и они уступят её первой функции. */
+    autoFor = text;
+    if (starter && text === starter.text) {
+      if (!fn) { fnInput.value = starter.fn || ''; fnInput.setAttribute('data-auto', fnInput.value); }
+      if (!args) { argsInput.value = starter.args || ''; argsInput.setAttribute('data-auto', argsInput.value); }
+    }
+    if (s.lang === 'c') foreignState.editor.set(text); else setText(text);
+    draftNote.textContent = draft ? T.draftSaved : '';
+    root.setAttribute('data-draft', draft ? 'saved' : 'none');
+    ['run', 'result', 'tests'].forEach(function (k) {
+      panels[k].textContent = ''; panels[k].appendChild(el('p', 'pg-hint', T.press(ACTIONS[s.enter])));
+    });
+    panels.formula.textContent = ''; panels.formula.appendChild(el('p', 'pg-hint', T.noFormula));
+    panels.picture.textContent = ''; panels.picture.appendChild(el('p', 'pg-hint', T.noPicture));
+    renderTerminal('');
+    emitState.reset(); foreignState.reset();
+    if (given.target) emitState.target = given.target;
+    else if (starter && starter.emit && !draft && !hasText) emitState.target = starter.emit;
+    status.textContent = ''; hintLine.textContent = '';
+    root.removeAttribute('data-playground-verdict');
+    showTab(s.views[0]);
+    store.set(LAST, s.key);
+    /* Компилятор уже загружен — результат показан сразу, без нажатия. */
+    if (warmed && !given.hold && text.trim()) {
+      if (s.lang !== 'c' && usesLibrary(text)) libraryNote(text);
+      else doAction(s.enter, true);
+    }
+    return s;
+  }
 
   function chooseExample(j) {
     var ex = examples[j];
     if (!ex) return;
-    select.value = String(j);
     root.setAttribute('data-example-lang', ex.lang);
-    status.textContent = '';
-    fnInput.value = ex.fn || ''; argsInput.value = ex.args || '';
-    if (ex.emit) { setText(ex.text); emitState.target = ex.emit; showTab('emit'); return; }
-    if (ex.lang !== 'flang') {
-      foreignState.choose(ex.lang); foreignState.editor.set(ex.text); showTab('foreign');
-      return foreignState.translate();
-    }
-    setText(ex.text);
-    var tab = root.getAttribute('data-tab');
-    if (tab === 'emit') showTab('emit');
-    else if (tab === 'foreign') showTab('result');
+    var kind = guessKind(ex.text);
+    var away = current.lang === 'c' || current.key === 'reasoning' || current.key === 'formula';
+    var key = ex.lang === 'c' ? 'c' : ex.emit ? 'emit' : kind === 'рассуждение' ? 'reasoning' : kind === 'формула' ? 'formula'
+      : away ? (ex.starter ? STARTER_SETUP[starterOf(ex.starter).key] : 'proof') : current.key;
+    openSetup(key, { text: ex.text, fn: ex.fn || '', args: ex.args || '', target: ex.emit || '' });
+    saveDraft();
+    select.value = '';
   }
-  select.addEventListener('change', function () { chooseExample(Number(select.value)); });
+  select.addEventListener('change', function () { if (select.value !== '') chooseExample(Number(select.value)); });
+  resetButton.addEventListener('click', function () {
+    store.del(DRAFT + current.key);
+    openSetup(current.key, {});
+    status.textContent = T.draftReset;
+  });
   shareButton.addEventListener('click', function () {
-    addressOf(input.value).then(function (tail) {
+    addressOf(editorOf(current).input.value).then(function (tail) {
       var fn = fnInput.value.trim(), args = argsInput.value.trim();
-      var address = location.href.replace(/#.*$/, '') + tail +
-        (fn ? '&fn=' + encodeURIComponent(fn) : '') + (args ? '&args=' + encodeURIComponent(args) : '');
+      var address = location.href.replace(/#.*$/, '') + '#setup=' + current.key + '&' + tail.slice(1) +
+        (current.call && fn ? '&fn=' + encodeURIComponent(fn) : '') + (current.call && args ? '&args=' + encodeURIComponent(args) : '') +
+        (current.enter === 'emit' ? '&target=' + emitState.target : '');
       history.replaceState(null, '', address);
       if (navigator.clipboard) navigator.clipboard.writeText(address).catch(function () {});
       status.textContent = T.linkCopied;
     });
   });
+
+  /* ── адрес ──────────────────────────────────────────────────────────────── */
   function textFromFields(f) {
     if (f.code !== undefined) return inflate(f.code).catch(function () { return null; });
     if (f.text !== undefined) return Promise.resolve(fromAddress('#text=' + f.text));
     return Promise.resolve(null);
   }
-  function act(f) {
-    var todo = f.do !== undefined ? f.do : f.run !== undefined ? 'check' : '';
-    if (todo === 'check') return run(input.value);
-    if (todo === 'test') return command('test', {});
-    if (todo === 'run') return runFunction();
-    if (todo === 'emit') { if (f.target) emitState.target = f.target; showTab('emit'); return emitState.refresh(); }
-    return Promise.resolve(null);
-  }
   function fromHash() {
     var f = addressFields(location.hash);
-    var starter = examples.map(function (x) { return x.starter; }).indexOf(f.example || '');
     return textFromFields(f).then(function (t) {
-      if (t !== null) { setText(t); fnInput.value = ''; argsInput.value = ''; }
-      else if (f.example && starter >= 0) chooseExample(starter);
-      else return false;
-      if (f.fn !== undefined) fnInput.value = f.fn;
-      if (f.args !== undefined) argsInput.value = f.args;
+      var plan = planOf(f, t);
+      if (!plan) return false;
+      openSetup(plan.setup, { text: plan.text, fn: plan.fn, args: plan.args, target: plan.target, hold: !!plan.todo });
       root.setAttribute('data-address', 'read');
-      act(f);
+      if (plan.todo) doAction(plan.todo, false);
       return true;
     });
   }
   window.addEventListener('hashchange', fromHash);
-  showTab('result');
-  fromHash().then(function (read) { if (!read) chooseExample(0); });
+  fromHash().then(function (read) {
+    if (!read) openSetup((setupOf(store.get(LAST)) || SETUPS[0]).key, {});
+    root.setAttribute('data-ready', 'yes');
+  });
 
-  /* Для проб из браузера без рук. */
+  /* Для проб из браузера без рук и для следующих слоёв страницы (несколько
+     файлов, обозреватель библиотеки, консоль): всё, что умеет рабочее место,
+     доступно отсюда. `ask` — прямой вопрос потоку с компилятором. */
   window.флангПесочница = {
-    run: run, setText: setText, showTab: showTab, examples: examples, highlight: highlightHtml, code: codeHtml,
-    choose: chooseExample, command: command, runFunction: runFunction, addressOf: addressOf, warm: warm,
+    run: function (text) { if (text !== undefined && text !== input.value) setText(text); return doCheck(false); },
+    setText: setText, showTab: showTab, examples: examples, highlight: highlightHtml, code: codeHtml,
+    choose: chooseExample, addressOf: addressOf, warm: warm, ask: ask, page: PAGE,
+    command: function (word, keys) {
+      if (word !== 'run') return doAction(word, false);
+      if (keys && keys.функция !== undefined) fnInput.value = keys.функция;
+      if (keys && keys.доводы !== undefined) argsInput.value = keys.доводы;
+      return doRun(false, !!(keys && keys.наВеру));
+    },
+    runFunction: function () { return doRun(false, false); },
     setTimeLimit: function (ms) { TIME_LIMIT_MS = ms; },
-    print: function (target) { emitState.target = target; showTab('emit'); return emitState.refresh(); },
-    translate: function (text, lang) { if (lang) foreignState.choose(lang); if (text !== undefined) foreignState.editor.set(text); showTab('foreign'); return foreignState.translate(); }
+    print: function (target) { emitState.target = target; return doAction('emit', false); },
+    translate: function (text, lang) {
+      if (current.lang !== 'c') openSetup('c', { hold: true, text: text });
+      else if (text !== undefined) foreignState.editor.set(text);
+      if (lang) foreignState.choose(lang);
+      return foreignState.translate(false);
+    },
+    setup: function (key, given) { return openSetup(key, given || {}); }, act: doAction,
+    editor: function () { return editorOf(current); }, current: function () { return current; }
   };
 })();

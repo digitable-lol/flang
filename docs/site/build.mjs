@@ -757,6 +757,43 @@ const ЛЕКСИКОН = словаЛексера();
 if (ЛЕКСИКОН.беда) беды.push(ЛЕКСИКОН.беда);
 const естьПесочница = (с) => с.html.includes('<pre class="lang-playground">');
 
+// ── Справка для песочницы ───────────────────────────────────────────────────
+// Сообщение об ошибке в песочнице несёт код `FLANG_…`, и код там — ссылка на
+// строку таблицы кодов. Поэтому строка таблицы на странице кодов получает
+// `id` с кодом (первое вхождение кода на странице: дальше по странице тот же
+// код стоит в таблице «где исходник», и якорь ему не нужен). Список кодов с
+// якорем кладётся на страницу песочницы — ссылкой становится только код, у
+// которого строка есть.
+const СТРАНИЦЫ_КОДОВ = new Set(['docs/site/diagnostics.ru.md', 'docs/site/diagnostics.md']);
+const КОДЫ_С_ЯКОРЕМ = { ru: [], en: [] };
+for (const с of страницы) {
+  if (!СТРАНИЦЫ_КОДОВ.has(с.из)) continue;
+  const есть = new Set();
+  с.html = с.html.replace(/<tr><td><code>(FLANG_[A-Z0-9_]+)<\/code>/g, (всё, код) => {
+    if (есть.has(код)) return всё;
+    есть.add(код);
+    return `<tr id="${код}"><td><code>${код}</code>`;
+  });
+  КОДЫ_С_ЯКОРЕМ[с.язык ?? 'ru'] = [...есть].sort();
+}
+// Модули библиотеки названы по-английски; песочница подсказывает похожие имена
+// тому, кто написал `использует «Списки»`. Имена берутся из шапок самих файлов
+// библиотеки — тех же, что едут в песочницу архивом `library.tar`.
+function модулиБиблиотеки() {
+  const имена = [];
+  for (const каталог of ['flang/stdlib', 'flang/core']) {
+    const место = join(КОРЕНЬ, каталог);
+    if (!existsSync(место)) continue;
+    for (const файл of readdirSync(место).filter((ф) => ф.endsWith('.flang')).sort()) {
+      const шапка = /^\s*(?:модуль|module)\s+«([^»]+)»/mu.exec(readFileSync(join(место, файл), 'utf8').slice(0, 4096));
+      if (шапка) имена.push(шапка[1]);
+    }
+  }
+  return имена.sort();
+}
+const МОДУЛИ_БИБЛИОТЕКИ = модулиБиблиотеки();
+const вРазметку = (значение) => JSON.stringify(значение).replace(/</g, '\\u003c');
+
 // ── Ссылки по собранному сайту ──────────────────────────────────────────────
 // Сторож не по исходнику, а по тому, что увидит читатель: каждый href и src
 // на странице либо внешний, либо ведёт на страницу или файл сборки. Считается
@@ -1065,6 +1102,10 @@ function страницаЦеликом(с) {
   const сл = СЛОВА[язык];
   const заголовок = `${с.имя} · flang`;
   const корень = относительно(с.адрес, '');
+  /* Страница песочницы — рабочее место во всю ширину окна: левое меню свёрнуто
+     в кнопку шапки, правого оглавления нет, текст страницы идёт под песочницей.
+     Без JavaScript кнопки нечем открыть, поэтому меню тогда стоит на месте. */
+  const рабочееМесто = с.адрес === адресПесочницы(язык);
   // Переключатель стоит только там, где пара есть: ссылка на несуществующий
   // перевод хуже отсутствия ссылки.
   const переключатель = с.пара
@@ -1085,11 +1126,13 @@ function страницаЦеликом(с) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${экранировать(заголовок)}</title>
 <link rel="icon" href="${ЗНАЧОК}">
-<link rel="stylesheet" href="${корень}style.css">
+<link rel="stylesheet" href="${корень}style.css">${рабочееМесто ? `
+<noscript><style>.pg-page .side { position: static; transform: none; visibility: visible; } .pg-page .menu { display: none; }</style></noscript>` : ''}
 </head>
-<body>
+<body${рабочееМесто ? ' class="pg-page"' : ''}>
 <a class="skip" href="#soderzhanie">${сл.кСодержанию}</a>
 <header class="top">
+  ${рабочееМесто ? `<button class="menu" type="button" aria-expanded="false" aria-controls="razdely" title="${сл.разделы}"><span aria-hidden="true">☰</span><span class="menu-word">${сл.разделы}</span></button>` : ''}
   <a class="brand" href="${относительно(с.адрес, язык === 'en' ? 'en/index.html' : 'index.html')}" aria-label="${сл.наГлавную}">${ЗНАК}<span>flang</span></a>
   <span class="tagline">${сл.подзаголовок}</span>
   <a class="version" href="${относительно(с.адрес, язык === 'en' ? 'en/releases.html' : 'releases.html')}" title="${экранировать(сл.выпуск)} ${ВЕРСИЯ}">${ВЕРСИЯ}</a>
@@ -1100,9 +1143,9 @@ function страницаЦеликом(с) {
   <button class="theme" type="button" aria-label="${сл.тема}">◐</button>
 </header>
 <div class="shell">
-  <nav class="side" aria-label="${сл.разделы}">${боковое(с.адрес, язык)}</nav>
+  <nav class="side" id="razdely" aria-label="${сл.разделы}">${боковое(с.адрес, язык)}</nav>
   <main id="soderzhanie" class="content">${сПризывом(с, сл)}</main>
-  ${оглавлениеСправа(с.оглавление, язык)}
+  ${рабочееМесто ? '' : оглавлениеСправа(с.оглавление, язык)}
 </div>
 <footer class="bottom">
   <p class="about">${оПроекте(сл)}</p>
@@ -1121,9 +1164,26 @@ function страницаЦеликом(с) {
     localStorage.setItem('flang-tema', стало);
   });
 })();
-</script>
+</script>${рабочееМесто ? `
+<script>
+(function () {
+  var меню = document.querySelector('.menu');
+  if (!меню) return;
+  var открыть = function (да) {
+    document.body.classList.toggle('pg-menu-open', да);
+    меню.setAttribute('aria-expanded', да ? 'true' : 'false');
+  };
+  меню.addEventListener('click', function () { открыть(!document.body.classList.contains('pg-menu-open')); });
+  document.addEventListener('keydown', function (с) { if (с.key === 'Escape') открыть(false); });
+  document.addEventListener('click', function (с) {
+    if (!с.target.closest('.menu') && !с.target.closest('.side')) открыть(false);
+  });
+})();
+</script>` : ''}
 <script src="${корень}search.js" defer></script>${естьПесочница(с) ? `
 <script type="application/json" id="flang-lexicon">${JSON.stringify(ЛЕКСИКОН.слова).replace(/</g, '\\u003c')}</script>
+<script type="application/json" id="flang-library">${вРазметку(МОДУЛИ_БИБЛИОТЕКИ)}</script>
+<script type="application/json" id="flang-codes">${вРазметку(КОДЫ_С_ЯКОРЕМ[язык] ?? [])}</script>
 <script src="${корень}playground.js" defer></script>` : ''}
 </body>
 </html>

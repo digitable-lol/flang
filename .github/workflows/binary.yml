@@ -1609,6 +1609,50 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # ── ВНУТРЕННИЕ СЛОВА НЕ ВОЗВРАЩАЮТСЯ В ТЕКСТ ДЛЯ ПОСЕТИТЕЛЯ ─────────────────
+  #
+  # `scripts/guards/jargon-guard.fscript` читает страницы меню сайта (кроме
+  # раздела для участников), их английские пары, README, man-страницу, уроки
+  # проводника и заметки о выпусках новее 0.7.40. Ищет слова внутренней кухни,
+  # номера решений и задач, даты правок, sha, пути разработчика, число строк,
+  # слова заглавными, два имени одного понятия и блок кода без пометки языка на
+  # учебных страницах. У каждой страницы потолок в `docs/jargon.json`: больше
+  # потолка — красно, меньше — тоже красно, пока потолок не опущен.
+  #
+  # До 16 ноября 2026 сторожа звал только выключенный на GitHub `ci.yml`, то есть
+  # никто, и на dev он стоял красным. Три шага ниже — проба порчи изнутри
+  # (копия страницы в памяти), проба порчи снаружи (страница в дереве) и сама
+  # проверка.
+  jargon:
+    name: jargon
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build flang from the seed
+        run: make -C bootstrap -j4
+      - name: Test the jargon guard
+        run: LC_ALL=C.UTF-8 bootstrap/flang test flang/test/jargon.flang
+      - name: Probe - a forged copy of the front page must fail
+        run: |
+          if bootstrap/flang run-script jargon:forgery; then
+            echo "the jargon guard kept silent on a forged copy of docs/site/index.ru.md" >&2
+            exit 1
+          fi
+      - name: Probe - a forged page in the tree must fail
+        run: |
+          set -u
+          forged=docs/site/index.ru.md
+          printf '\nADR-0001 и семя.\n' >> "$forged"
+          if bootstrap/flang run-script jargon:changed; then
+            git checkout -- "$forged"
+            echo "the jargon guard kept silent on a forged $forged" >&2
+            exit 1
+          fi
+          git checkout -- "$forged"
+      - name: Check jargon
+        run: bootstrap/flang run-script jargon:check
+
   # ── СЛИЧИТЕЛЬ ПЕРЕВОДА: ПРОТОКОЛ ПЕЧАТНИКА ПЕРЕИГРЫВАЕТСЯ НА C ──────────────
   #
   # ADR-0030, задача 1401: печатник C ведёт протокол перевода, и отдельная

@@ -239,8 +239,9 @@ Four programs outside this repository: [flang-tui](https://github.com/digitable-
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) and
 [flang-env](https://github.com/digitable-lol/flang-env).
 
-In `0.x` versions the JSON formats and the error codes stay compatible; the syntax may change. What
-the compiler proves by itself and where it stops is described in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+What stays compatible between releases and what 1.0 freezes is written in
+[Compatibility](docs/site/stability.md). What the compiler proves by itself and where it stops is
+described in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## License
 

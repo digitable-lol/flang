@@ -239,8 +239,9 @@ git config core.hooksPath .githooks      # быстрые проверки пе�
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) и
 [flang-env](https://github.com/digitable-lol/flang-env).
 
-В версиях `0.x` совместимость сохраняют форматы JSON и коды ошибок; синтаксис может меняться. Что
-компилятор доказывает сам и где останавливается, описано в [`docs/ROADMAP.md`](ROADMAP.md).
+Что остаётся совместимым от выпуска к выпуску и что замораживает 1.0, написано на странице
+[«Совместимость»](site/stability.ru.md). Что компилятор доказывает сам и где останавливается,
+описано в [`docs/ROADMAP.md`](ROADMAP.md).
 
 ## Лицензия
 

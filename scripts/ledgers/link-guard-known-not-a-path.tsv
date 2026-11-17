@@ -5,9 +5,6 @@ CHANGELOG.md	obligations.mjs	история: заголовок коммита �
 CHANGELOG.md	src/types.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	flang/src/proof.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
 CHANGELOG.md	io.mjs	история: заголовок коммита в журнале, напечатанном из git (node scripts/site/build-changelog.mjs); правится только историей
-docs/course/02-first-program.md	hello.flang	иллюстративное имя в разборе задачи/заметки, не файл
-docs/course/09-eight-targets.md	out-c/mesto_vstavki.c	учебный пример docs/course/09-eight-targets.md
-docs/course/README.md	content/post/flang-kurs/NN-slug.md	шаблон курса (нумерованный слаг), не файл
 docs/guide/naming.ru.md	moy_kalkulyator.c	учебный/иллюстративный пример на C или Python, не файл проекта
 docs/guide/naming.ru.md	имя-english.flang	иллюстративное имя в разборе задачи/заметки, не файл
 docs/guide/naming.ru.md	имя.flang	иллюстративное имя в разборе задачи/заметки, не файл

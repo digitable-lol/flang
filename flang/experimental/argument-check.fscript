@@ -3,144 +3,198 @@
   использует «Lists» только «Соединить списки»
   использует «Reasoning sentences» из "../proof/probes/syllogism/sentences/translator.flang"
   использует «Reasoning check» из "../proof/probes/syllogism/sentences/reasoning-check.flang"
-  использует «Russian morphology» из "ru-morphology.flang"
-  использует «Russian parser» из "../ct/russian/parse.flang"
+  использует «Argue logic» из "argue/logic.flang"
+  использует «Argue claims» из "argue/claims.flang"
+  использует «Argue judge» из "argue/judge.flang"
+
+объект «Placed»
+  «number»: число
+  «paragraph»: число
+  «text»: строка
+
+объект «Read row»
+  «sentence»: строка
+  «faults»: список строки
+  «formula»: строка
+  «plain»: признак
 
 объект «Row»
   «number»: число
+  «paragraph»: число
   «text»: строка
-  «words»: число
-  «read»: число
-  «complete»: число
-  «grammatical»: признак
+  «normal»: строка
   «faults»: список строки
   «concludes»: признак
+  «formula»: строка
+  «plain»: признак
 
 объект «Argument»
   «number»: число
+  «kind»: строка
   «text»: строка
   «program»: строка
   «reason»: строка
 
 объект «Gathering»
   «declared»: список строки
-  «recent»: список строки
+  «recent»: список «Row»
   «arguments»: список «Argument»
 
 объект «Verdict line»
   «number»: число
   «verdict»: строка
+  «kind»: строка
   «line»: строка
+
+объект «Call»
+  «path»: строка
+  «out»: строка
+  «pending»: признак
+  «fault»: строка
+
+объект «Paper»
+  «call»: «Call»
+  «faults»: список строки
+  «rows»: список «Row»
 
 тип «Paper step»
   вариант «Start»
   вариант «Awaiting arguments»
-  вариант «Awaiting text» содержит path: строка
-  вариант «Judging» содержит path: строка, rows: список «Row», waiting: список «Argument», done: список «Verdict line»
+  вариант «Awaiting text» содержит call: «Call»
+  вариант «Judging» содержит paper: «Paper», waiting: список «Argument», done: список «Verdict line»
   вариант «Printed» содержит path: строка
 
-тотальная функция «Marks»
+тотальная функция «Marker phrases»
   возвращает список строки
-  пример «Marks that never belong to a word»
-    ожидается [",", ";", ":", "(", ")", "«", "»", "\"", "[", "]", "—", "–"]
-  [",", ";", ":", "(", ")", "«", "»", "\"", "[", "]", "—", "–"]
+  пример «Phrases of several words that open a conclusion»
+    ожидается ["таким образом", "из этого следует, что", "из этого следует", "тем самым", "отсюда следует, что",
+      "отсюда следует", "стало быть", "в силу этого"]
+  ["таким образом", "из этого следует, что", "из этого следует", "тем самым", "отсюда следует, что",
+    "отсюда следует", "стало быть", "в силу этого"]
 
-тотальная функция «Word tokens»
+тотальная функция «Behind the marker»
+  принимает sentence: строка, size: число
+  возвращает строка
+  пример «The marker and its comma are dropped»
+    дано sentence равно "Таким образом, Сократ смертен"
+    дано size равно 13
+    ожидается "Сократ смертен"
+  пример «Nothing behind the marker leaves nothing»
+    дано sentence равно "Стало быть"
+    дано size равно 10
+    ожидается ""
+  пусть rest равно (если (длина sentence) больше size то («Trimmed» от (подстрока sentence с (size плюс 1)
+      по (длина sentence))) иначе "")
+  если (rest начинается с ",") или (rest начинается с ":")
+    то «Trimmed» от («Words after the cut» от rest и (подстрока rest с 1 по 1))
+    иначе rest
+
+тотальная функция «Plain marker»
   принимает sentence: строка
-  возвращает список строки
-  пример «Punctuation and dashes are not words»
-    дано sentence равно "Сократ — человек, (как известно)"
-    ожидается ["Сократ", "человек", "как", "известно"]
-  «Spaced words» от (свёртка («Marks») начиная с sentence как flat и mark → «Replaced» от flat и mark и " ")
+  возвращает строка
+  пример «A phrase of two words becomes the word the translator reads»
+    дано sentence равно "Таким образом, Сократ смертен"
+    ожидается "Следовательно, Сократ смертен"
+  пример «The phrase is found in any case and without a comma»
+    дано sentence равно "стало быть Сократ смертен"
+    ожидается "Следовательно, Сократ смертен"
+  пример «"Отсюда следует, что" is one marker, not the word "отсюда" with a claim»
+    дано sentence равно "Отсюда следует, что Сократ смертен"
+    ожидается "Следовательно, Сократ смертен"
+  пример «A sentence without such a phrase stays»
+    дано sentence равно "Все люди смертны"
+    ожидается "Все люди смертны"
+  пусть small равно («In small letters» от sentence)
+  пусть phrase равно (свёртка («Marker phrases») начиная с "" как found и each →
+      если (пусто found) и притом (small начинается с each) то each иначе found)
+  если пусто phrase
+    то sentence
+    иначе (соединить ["Следовательно, ", («Behind the marker» от sentence и (длина phrase))] по "")
 
-тотальная функция «Complete»
-  принимает candidates: список «Candidate»
-  возвращает признак
-  пример «No candidate is not complete»
-    дано candidates равно пустой список
-    ожидается нет
-  не (пусто (отфильтровать candidates где candidate → пусто (candidate.«gaps»)))
+тотальная функция «Placed step»
+  принимает made: список «Placed», piece: строка
+  возвращает список «Placed»
+  пример «A sentence on a new line opens a new paragraph»
+    дано made равно [запись «Placed» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Все люди смертны"]
+    дано piece равно "¶ Сократ — человек"
+    ожидается ([запись «Placed» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Все люди смертны",
+        запись «Placed» с «number» равным 2 и «paragraph» равным 2 и «text» равным "Сократ — человек",
+        запись «Placed» с «number» равным 0 и «paragraph» равным 2 и «text» равным ""])
+  пример «A line end inside a sentence does not move the sentence»
+    дано made равно пустой список
+    дано piece равно "Все люди ¶ смертны"
+    ожидается ([запись «Placed» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Все люди смертны",
+        запись «Placed» с «number» равным 0 и «paragraph» равным 2 и «text» равным ""])
+  пусть tokens равно («Spaced words» от piece)
+  пусть words равно (отфильтровать tokens где token → не (token равен "¶"))
+  пусть breaks равно ((длина tokens) минус (длина words))
+  пусть leading равно («Leading breaks» от tokens)
+  пусть last равно (свёртка made начиная с 1 как found и placed → placed.«paragraph»)
+  пусть settled равно (отфильтровать made где placed → (placed.«number») больше 0)
+  пусть here равно (если пусто words то settled иначе (добавить (запись «Placed»
+      с «number» равным ((длина settled) плюс 1) и «paragraph» равным (last плюс leading)
+      и «text» равным (соединить words по " ")) к settled))
+  (добавить (запись «Placed» с «number» равным 0 и «paragraph» равным (last плюс breaks) и «text» равным "")
+      к here)
 
-тотальная функция «Is Cyrillic letter»
-  принимает sign: строка
-  возвращает признак
-  пример «A Russian letter»
-    дано sign равно "ж"
-    ожидается да
-  пример «A Latin letter is not»
-    дано sign равно "p"
-    ожидается нет
-  пример «A hyphen inside a word counts»
-    дано sign равно "-"
-    ожидается да
-  пусть code равно (код символа sign)
-  ((code не меньше 1040) и притом (code не больше 1105)) или ((code равен 1025) или (sign равен "-"))
-
-тотальная функция «Is Russian word»
-  принимает form: строка
-  возвращает признак
-  пример «A Russian word»
-    дано form равно "простое"
-    ожидается да
-  пример «A digit is not a word»
-    дано form равно "2"
-    ожидается нет
-  (не (пусто form)) и притом (пусто (отфильтровать (разложить form на символы)
-      где sign → не («Is Cyrillic letter» от sign)))
-
-тотальная функция «Reading level»
-  принимает form: строка, opens: признак
-  возвращает нат
-  пример «A plural short form is read, but its singular stays a gap»
-    дано form равно "тихи"
-    дано opens равно нет
-    ожидается 1
-  пример «A quantifier is read completely»
-    дано form равно "Все"
-    дано opens равно да
-    ожидается 2
-  пример «A digit is not read»
-    дано form равно "2"
-    дано opens равно нет
-    ожидается 0
-  разбор (если «Is Russian word» от form то («Reading of» от form и opens) иначе (вариант «Not read» с why равным ""))
-    случай вариант «One way» с candidate как candidate
-      то (если «Complete» от [candidate] то 2 иначе 1)
-    случай вариант «Two ways» с candidates как candidates и telling как telling
-      то (если «Complete» от candidates то 2 иначе 1)
-    случай любое
-      то 0
-
-тотальная функция «Levels of»
+тотальная функция «Leading breaks»
   принимает tokens: список строки
-  возвращает список нат
-  пример «Every word gets its level, the first one as the opening of a sentence»
-    дано tokens равно ["Все", "мохнатые", "тихи"]
-    ожидается [2, 1, 1]
-  пример «A formula is not read»
-    дано tokens равно ["p", "=", "2"]
-    ожидается [0, 0, 0]
-  отобразить («Numbered ones» от tokens) как token → «Reading level» от (token.«text») и ((token.«number») равен 1)
-
-тотальная функция «At least»
-  принимает levels: список нат, level: нат
   возвращает число
-  пример «Levels are counted from the floor up»
-    дано levels равно [2, 1, 0]
-    дано level равно 1
+  пример «Line ends in front of the first word are counted»
+    дано tokens равно ["¶", "¶", "Все", "¶", "коты"]
     ожидается 2
-  длина (отфильтровать levels где each → each не меньше level)
+  разбор tokens
+    случай пусто
+      то 0
+    случай голова и хвост
+      то (если голова равен "¶" то (1 плюс («Leading breaks» от хвост)) иначе 0)
 
-тотальная функция «Is grammatical»
-  принимает sentence: строка
-  возвращает признак
-  пример «A sentence of the lexicon reduces to s»
-    дано sentence равно "Мама спит"
-    ожидается да
-  пример «A sentence of an article does not»
-    дано sentence равно "Простое число делится только на себя"
-    ожидается нет
-  («Разобрать» от sentence) начинается с "грамматично"
+тотальная функция «Placed sentences»
+  принимает text: строка
+  возвращает список «Placed»
+  пример «Sentences keep their place in the text and the paragraph they stand in»
+    дано text равно "Понятие: кот, коты.\n\nВсе коты тихи. Барсик — кот.\nЗначит, Барсик тих."
+    ожидается ([запись «Placed» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Понятие: кот, коты",
+        запись «Placed» с «number» равным 2 и «paragraph» равным 3 и «text» равным "Все коты тихи",
+        запись «Placed» с «number» равным 3 и «paragraph» равным 3 и «text» равным "Барсик — кот",
+        запись «Placed» с «number» равным 4 и «paragraph» равным 4 и «text» равным "Значит, Барсик тих"])
+  пусть marked равно (свёртка ["!", "?", "…"] начиная с («Replaced» от text и "\n" и " ¶ ") как flat и mark →
+      «Replaced» от flat и mark и ".")
+  (отфильтровать (свёртка (разделить marked по ".") начиная с (пустой список) как made и piece →
+      «Placed step» от made и piece) где placed → (placed.«number») больше 0)
+
+тотальная функция «File line of»
+  принимает text: строка, sentence: строка
+  возвращает число
+  пример «The line of the file where the sentence stands»
+    дано text равно "Понятие: кот, коты.\nПонятие: пёс."
+    дано sentence равно "Понятие: пёс"
+    ожидается 2
+  пример «A sentence that is not found has no line»
+    дано text равно "Понятие: кот, коты."
+    дано sentence равно "Понятие: пёс"
+    ожидается 0
+  (свёртка («Numbered lines» от text) начиная с 0 как found и line →
+      если (found равен 0) и притом ((«Flat» от (line.«text»)) содержит sentence) то (line.«at») иначе found)
+
+тотальная функция «Dictionary faults»
+  принимает text: строка
+  возвращает список строки
+  пример «A dictionary line with a fault is named with its line in the file and skipped»
+    дано text равно "Понятие: кот, коты.\nПонятие: пёс.\nВсе коты тихи."
+    ожидается ["строка 2 файла: строка словаря «Понятие: пёс» называет форм: 1, а нужно 2. Строка пропущена"]
+  (свёртка («Declaration lines of» от text) начиная с (пустой список) как faults и line →
+      «Соединить списки» от faults и (отобразить («Declaration faults» от line) как fault →
+      соединить ["строка ", (к строке («File line of» от text и line)), " файла: ", fault,
+      ". Строка пропущена"] по ""))
+
+тотальная функция «Sound declarations»
+  принимает text: строка
+  возвращает список строки
+  пример «Only the dictionary lines without faults are used»
+    дано text равно "Понятие: кот, коты.\nПонятие: пёс.\nВсе коты тихи."
+    ожидается ["Понятие: кот, коты"]
+  отфильтровать («Declaration lines of» от text) где line → пусто («Declaration faults» от line)
 
 тотальная функция «With declarations»
   принимает declared: список строки, sentences: список строки
@@ -151,21 +205,277 @@
     ожидается "Понятие: человек, люди. Свойство: смертен, смертны. Все люди смертны."
   соединить (отобразить («Соединить списки» от declared и sentences) как line → соединить [line, "."] по "") по " "
 
-тотальная функция «Formal faults»
+тотальная функция «Fault words»
+  принимает fault: строка
+  возвращает строка
+  пример «The sentence is not repeated in front of its fault»
+    дано fault равно "предложение 1 «Число делится.»: слово «Число» не объявлено"
+    ожидается "слово «Число» не объявлено"
+  пример «A fault without a sentence stays whole»
+    дано fault равно "в рассуждении нет ни одной посылки"
+    ожидается "в рассуждении нет ни одной посылки"
+  пусть parts равно (разделить fault по ".»: ")
+  если (fault начинается с "предложение ") и притом ((длина parts) больше 1)
+    то соединить («Without the first» от parts) по ".»: "
+    иначе fault
+
+тотальная функция «Notion name»
+  принимает words: строка
+  возвращает строка
+  пример «Words of a notion are joined into one name»
+    дано words равно "летучая мышь"
+    ожидается "летучая_мышь"
+  «Replaced» от («Replaced» от («Trimmed» от words) и " " и "_") и "-" и "_"
+
+тотальная функция «Formula of judgment»
+  принимает judgment: «Judgment»
+  возвращает строка
+  пример «A general affirmative»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «All») и «subject» равным "летучая мышь"
+        и «predicate» равным "птица")
+    ожидается "все x: если летучая_мышь(x), то птица(x)"
+  пример «A particular negative»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Some not») и «subject» равным "кит"
+        и «predicate» равным "рыба")
+    ожидается "есть x: кит(x) и не рыба(x)"
+  пример «A judgment about a named thing»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Is not») и «subject» равным "Графит"
+        и «predicate» равным "металл")
+    ожидается "не металл(Графит)"
+  пример «A sentence that was not read has no formula»
+    дано judgment равно (запись «Judgment» с «form» равным (вариант «Is») и «subject» равным ""
+        и «predicate» равным "")
+    ожидается ""
+  пусть who равно («Notion name» от (judgment.«subject»))
+  пусть what равно («Notion name» от (judgment.«predicate»))
+  если (пусто who) или (пусто what) то "" иначе («Written judgment» от (judgment.«form») и who и what)
+
+тотальная функция «Written judgment»
+  принимает form: «Form», who: строка, what: строка
+  возвращает строка
+  пример «A general negative»
+    дано form равно вариант «None»
+    дано who равно "кит"
+    дано what равно "рыба"
+    ожидается "все x: если кит(x), то не рыба(x)"
+  разбор form
+    случай вариант «All»
+      то соединить ["все x: если ", who, "(x), то ", what, "(x)"] по ""
+    случай вариант «None»
+      то соединить ["все x: если ", who, "(x), то не ", what, "(x)"] по ""
+    случай вариант «Some»
+      то соединить ["есть x: ", who, "(x) и ", what, "(x)"] по ""
+    случай вариант «Some not»
+      то соединить ["есть x: ", who, "(x) и не ", what, "(x)"] по ""
+    случай вариант «Is»
+      то соединить [what, "(", who, ")"] по ""
+    случай вариант «Is not»
+      то соединить ["не ", what, "(", who, ")"] по ""
+
+тотальная функция «Simple reading»
   принимает declared: список строки, sentence: строка
-  возвращает список строки
-  пример «A categorical sentence is formalized with the declared word and the forms morphology reads»
+  возвращает «Read row»
+  пример «A categorical sentence is read with its formula»
     дано declared равно ["Понятие: человек, люди", "Свойство: смертен, смертны"]
     дано sentence равно "Все люди смертны"
-    ожидается пустой список
+    ожидается (запись «Read row» с «sentence» равным "Все люди смертны" и «faults» равным пустой список
+        и «formula» равным "все x: если человек(x), то смертен(x)" и «plain» равным да)
   пример «Without the declaration the irregular plural is not read»
     дано declared равно пустой список
     дано sentence равно "Все люди смертны"
-    ожидается ["слово «люди» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"]
+    ожидается (запись «Read row» с «sentence» равным "Все люди смертны" и «faults» равным
+        ["слово «люди» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»"]
+        и «formula» равным "" и «plain» равным да)
   пусть prepared равно («Prepared text» от («With declarations» от declared и [sentence]))
-  пусть ordered равно («Order faults» от («Statements of» от prepared))
-  пусть faults равно (отфильтровать («Text faults» от prepared) где fault → не (ordered содержит fault))
-  отобразить faults как fault → «Fault words» от fault
+  пусть statements равно («Statements of» от prepared)
+  пусть ordered равно («Order faults» от statements)
+  пусть faults равно (отобразить (отфильтровать («Text faults» от prepared) где fault → не (ordered содержит fault))
+      как fault → «Fault words» от fault)
+  пусть single равно ((пусто faults) и притом ((длина statements) равен 1))
+  (запись «Read row» с «sentence» равным sentence и «faults» равным faults и «formula» равным (если single
+      то («Formula of judgment» от («Judgment of» от («Read claim» от («Words of» от prepared)
+      и («Claim tokens» от («Tokens of» от («First of» от statements))))))
+      иначе "") и «plain» равным да)
+
+тотальная функция «Raised»
+  принимает text: строка
+  возвращает строка
+  пример «The first letter becomes a capital»
+    дано text равно "студент успешен"
+    ожидается "Студент успешен"
+  пример «An empty text stays empty»
+    дано text равно ""
+    ожидается ""
+  пусть code равно (если пусто text то 0 иначе (код символа (подстрока text с 1 по 1)))
+  пусть shift равно (свёртка [[1072, 1103, 32], [97, 122, 32], [1105, 1105, 80]] начиная с 0 как found и row →
+      если (code не меньше (элемент 1 в row)) и притом (code не больше (элемент 2 в row))
+      то (элемент 3 в row) иначе found)
+  если shift равен 0
+    то text
+    иначе (соединить [(символ по коду (code минус shift)), («Words after the cut» от text
+        и (подстрока text с 1 по 1))] по "")
+
+тотальная функция «With the subject»
+  принимает part: строка, lead: строка
+  возвращает строка
+  пример «A pronoun stands for the subject of the first part»
+    дано part равно "он успешен"
+    дано lead равно "студент пользуется платформой"
+    ожидается "студент успешен"
+  пример «A part without a pronoun stays»
+    дано part равно "улица мокрая"
+    дано lead равно "идёт дождь"
+    ожидается "улица мокрая"
+  пусть words равно («Spaced words» от part)
+  если (не (пусто words)) и притом (["он", "она", "оно"] содержит («In small letters» от («First of» от words)))
+    то соединить (приписать («First of» от («Spaced words» от lead)) к («Without the first» от words)) по " "
+    иначе part
+
+тотальная функция «Part formula»
+  принимает declared: список строки, part: строка
+  возвращает строка
+  пример «A part about a named thing gives a formula without a quantifier»
+    дано declared равно ["Понятие: металл, металлы", "Имя: Графит"]
+    дано part равно "Графит — металл"
+    ожидается "металл(Графит)"
+  пример «A general part is not taken inside a compound sentence»
+    дано declared равно ["Понятие: человек, люди", "Свойство: смертен, смертны"]
+    дано part равно "все люди смертны"
+    ожидается ""
+  пусть read равно («Simple reading» от declared и («Raised» от («Trimmed» от part)))
+  если (пусто (read.«faults»)) и притом (не ((read.«formula») содержит ":")) то (read.«formula») иначе ""
+
+тотальная функция «Pair formula»
+  принимает declared: список строки, parts: список строки, joint: строка
+  возвращает строка
+  пусть left равно (если (длина parts) равен 2 то («Part formula» от declared и (элемент 1 в parts)) иначе "")
+  пусть right равно (если (длина parts) равен 2 то («Part formula» от declared
+      и («With the subject» от (элемент 2 в parts) и (элемент 1 в parts))) иначе "")
+  если (пусто left) или (пусто right)
+    то ""
+    иначе (если joint равен "если" то (соединить ["если ", left, ", то ", right] по "")
+        иначе (соединить ["(", left, ") ", joint, " (", right, ")"] по ""))
+
+тотальная функция «Compound formula»
+  принимает declared: список строки, sentence: строка
+  возвращает строка
+  пример «A conditional about a named thing»
+    дано declared равно ["Понятие: металл, металлы", "Свойство: проводит ток, проводят ток", "Имя: Графит"]
+    дано sentence равно "Если Графит — металл, то Графит проводит ток"
+    ожидается "если металл(Графит), то проводит_ток(Графит)"
+  пример «A pronoun in the second part stands for the subject of the first»
+    дано declared равно ["Понятие: металл, металлы", "Свойство: проводит ток, проводят ток", "Имя: Графит"]
+    дано sentence равно "Графит — металл, или он проводит ток"
+    ожидается "(металл(Графит)) или (проводит_ток(Графит))"
+  пример «A denial of a whole sentence»
+    дано declared равно ["Понятие: металл, металлы", "Имя: Графит"]
+    дано sentence равно "Неверно, что Графит — металл"
+    ожидается "не (металл(Графит))"
+  пример «A sentence that is not compound has no such formula»
+    дано declared равно ["Понятие: металл, металлы", "Имя: Графит"]
+    дано sentence равно "Проводимость растёт"
+    ожидается ""
+  пусть small равно («In small letters» от sentence)
+  пусть denied равно (если small начинается с "неверно, что "
+      то («Part formula» от declared и («Words after the cut» от sentence и (подстрока sentence с 1 по 13))) иначе "")
+  пусть conditional равно (если small начинается с "если "
+      то («Pair formula» от declared и («Cut at» от («Words after the cut» от sentence
+      и (подстрока sentence с 1 по 5)) и ", то ") и "если") иначе "")
+  пусть either равно («Pair formula» от declared и («First cut» от sentence и [", или ", " или ", ", либо "])
+      и "или")
+  пусть both равно («Pair formula» от declared и («First cut» от sentence и [", и ", " и ", ", а "]) и "и")
+  (свёртка [(если пусто denied то "" иначе (соединить ["не (", denied, ")"] по "")), conditional, either, both]
+      начиная с "" как found и each → если пусто found то each иначе found)
+
+тотальная функция «Claim of»
+  принимает sentence: строка
+  возвращает строка
+  пример «The conclusion word is not a part of the claim»
+    дано sentence равно "Значит, Сократ смертен"
+    ожидается "Сократ смертен"
+  пример «A premise is its own claim»
+    дано sentence равно "Все люди смертны"
+    ожидается "Все люди смертны"
+  если «Opens with a conclusion word» от sentence то («Words behind the first» от sentence) иначе sentence
+
+тотальная функция «Lowered start»
+  принимает text: строка
+  возвращает строка
+  пример «The first letter becomes small»
+    дано text равно "Дельфины умны"
+    ожидается "дельфины умны"
+  пример «An empty text stays empty»
+    дано text равно ""
+    ожидается ""
+  если пусто text
+    то ""
+    иначе (соединить [(«In small letters» от (подстрока text с 1 по 1)), («Words after the cut» от text
+        и (подстрока text с 1 по 1))] по "")
+
+тотальная функция «About all»
+  принимает sentence: строка
+  возвращает строка
+  пример «A plural subject without a quantifier is read as a general statement»
+    дано sentence равно "Следовательно, дельфины умны"
+    ожидается "Следовательно, все дельфины умны"
+  пример «A premise gets the quantifier in front»
+    дано sentence равно "Дельфины умны"
+    ожидается "Все дельфины умны"
+  если «Opens with a conclusion word» от sentence
+    то (соединить [(«First of» от («Spaced words» от sentence)), " все ",
+        («Lowered start» от («Words behind the first» от sentence))] по "")
+    иначе (соединить ["Все ", («Lowered start» от sentence)] по "")
+
+тотальная функция «Part fault»
+  принимает declared: список строки, part: строка
+  возвращает строка
+  пусть read равно («Simple reading» от declared и («Raised» от («Trimmed» от part)))
+  пусть general равно ((пусто (read.«faults»)) и притом ((read.«formula») содержит ":"))
+  пусть named равно (если пусто (read.«faults») то "" иначе («First of» от (read.«faults»)))
+  если general
+    то (соединить ["часть «", («Trimmed» от part),
+        "» — общее, а в составном читаются суждения о названном предмете"] по "")
+    иначе (если пусто named то "" иначе (соединить ["не прочитана часть «", («Trimmed» от part), "»: ", named] по ""))
+
+тотальная функция «Compound fault»
+  принимает declared: список строки, sentence: строка
+  возвращает строка
+  пример «A conditional whose part is not read names the part and the reason»
+    дано declared равно ["Понятие: кот, коты", "Свойство: тих, тихи", "Имя: Том"]
+    дано sentence равно "Если все коты тихи, то Том тих"
+    ожидается "в условном суждении часть «все коты тихи» — общее, а в составном читаются суждения о названном предмете"
+  пример «Another sentence has no such fault»
+    дано declared равно пустой список
+    дано sentence равно "Проводимость растёт"
+    ожидается ""
+  пусть parts равно (если («In small letters» от sentence) начинается с "если "
+      то («Cut at» от («Words after the cut» от sentence и (подстрока sentence с 1 по 5)) и ", то ")
+      иначе пустой список)
+  пусть named равно (если (длина parts) равен 2 то [(элемент 1 в parts),
+      («With the subject» от (элемент 2 в parts) и (элемент 1 в parts))] иначе parts)
+  пусть faults равно (отфильтровать (отобразить named как part → «Part fault» от declared и part)
+      где fault → не (пусто fault))
+  если пусто faults то "" иначе (соединить ["в условном суждении ", («First of» от faults)] по "")
+
+тотальная функция «Second reading»
+  принимает declared: список строки, sentence: строка, simple: «Read row»
+  возвращает «Read row»
+  пусть compound равно («Compound formula» от declared и («Claim of» от sentence))
+  пусть broken равно («Compound fault» от declared и («Claim of» от sentence))
+  пусть general равно («Simple reading» от declared и («About all» от sentence))
+  пусть kept равно (если пусто (general.«faults») то general иначе simple)
+  пусть failed равно (запись «Read row» с «sentence» равным sentence и «faults» равным [broken]
+      и «formula» равным "" и «plain» равным нет)
+  если не (пусто compound)
+    то (запись «Read row» с «sentence» равным sentence и «faults» равным пустой список
+        и «formula» равным compound и «plain» равным нет)
+    иначе (если пусто broken то kept иначе failed)
+
+тотальная функция «Reading of sentence»
+  принимает declared: список строки, sentence: строка
+  возвращает «Read row»
+  пусть simple равно («Simple reading» от declared и sentence)
+  если пусто (simple.«faults») то simple иначе («Second reading» от declared и sentence и simple)
 
 тотальная функция «Draws a conclusion»
   принимает sentence: строка
@@ -182,72 +492,93 @@
   не (пусто (отфильтровать («Claim lines of sentence» от sentence) где line → line.«concludes»))
 
 тотальная функция «Row of»
-  принимает declared: список строки, phrase: «Numbered»
+  принимает declared: список строки, placed: «Placed»
   возвращает «Row»
-  пример «A sentence is measured on every layer»
+  пример «A sentence is read once: its faults, its formula and whether it concludes»
     дано declared равно ["Понятие: человек, люди", "Свойство: смертен, смертны"]
-    дано phrase равно запись «Numbered» с «number» равным 2 и «text» равным "Все люди смертны"
-    ожидается (запись «Row» с «number» равным 2 и «text» равным "Все люди смертны" и «words» равным 3 и «read» равным 3
-        и «complete» равным 1 и «grammatical» равным нет и «faults» равным пустой список и «concludes» равным нет)
-  пусть tokens равно («Word tokens» от (phrase.«text»))
-  пусть levels равно («Levels of» от tokens)
-  (запись «Row» с «number» равным (phrase.«number») и «text» равным (phrase.«text») и «words» равным (длина tokens)
-      и «read» равным («At least» от levels и 1) и «complete» равным («At least» от levels и 2)
-      и «grammatical» равным («Is grammatical» от (phrase.«text»))
-      и «faults» равным («Formal faults» от declared и (phrase.«text»))
-      и «concludes» равным («Draws a conclusion» от (phrase.«text»)))
+    дано placed равно запись «Placed» с «number» равным 3 и «paragraph» равным 2 и «text» равным "Все люди смертны"
+    ожидается (запись «Row» с «number» равным 3 и «paragraph» равным 2 и «text» равным "Все люди смертны"
+        и «normal» равным "Все люди смертны" и «faults» равным пустой список и «concludes» равным нет
+        и «formula» равным "все x: если человек(x), то смертен(x)" и «plain» равным да)
+  пусть normal равно («Plain marker» от (placed.«text»))
+  пусть read равно («Reading of sentence» от declared и normal)
+  (запись «Row» с «number» равным (placed.«number») и «paragraph» равным (placed.«paragraph»)
+      и «text» равным (placed.«text») и «normal» равным (read.«sentence») и «faults» равным (read.«faults»)
+      и «concludes» равным («Draws a conclusion» от normal) и «formula» равным (read.«formula»)
+      и «plain» равным (read.«plain»))
 
 тотальная функция «Rows of»
   принимает text: строка
   возвращает список «Row»
-  пример «Declarations are not rows, and rows keep their place in the text»
-    дано text равно "Понятие: человек, люди. Свойство: смертен, смертны. Все люди смертны."
-    ожидается [(запись «Row» с «number» равным 3 и «text» равным "Все люди смертны" и «words» равным 3 и «read» равным 3
-        и «complete» равным 1 и «grammatical» равным нет и «faults» равным пустой список и «concludes» равным нет)]
-  пусть declared равно («Declaration lines of» от text)
-  пусть phrases равно (отфильтровать («Numbered ones» от («Text sentences» от text))
-      где phrase → пусто («Kind of» от (phrase.«text»)))
-  отобразить phrases как phrase → «Row of» от declared и phrase
+  пусть declared равно («Sound declarations» от text)
+  (отобразить (отфильтровать («Placed sentences» от text) где placed → пусто («Kind of» от (placed.«text»)))
+      как placed → «Row of» от declared и placed)
 
 тотальная функция «Is formalized»
   принимает row: «Row»
   возвращает признак
   пример «A row without faults is formalized»
-    дано row равно (запись «Row» с «number» равным 1 и «text» равным "Все люди смертны" и «words» равным 3
-        и «read» равным 3 и «complete» равным 3 и «grammatical» равным нет и «faults» равным пустой список
-        и «concludes» равным нет)
+    дано row равно (запись «Row» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Все люди смертны"
+        и «normal» равным "Все люди смертны" и «faults» равным пустой список и «concludes» равным нет
+        и «formula» равным "все x: если человек(x), то смертен(x)" и «plain» равным да)
     ожидается да
   пусто (row.«faults»)
 
 тотальная функция «Premise window»
-  возвращает нат
+  возвращает число
   пример «At most three sentences before a conclusion are its premises»
     ожидается 3
   3
 
-тотальная функция «Last of»
-  принимает items: список строки, count: нат
-  возвращает список строки
-  пример «The last two of three»
-    дано items равно ["а", "б", "в"]
-    дано count равно 2
-    ожидается ["б", "в"]
-  пример «Fewer than asked are kept whole»
-    дано items равно ["а"]
-    дано count равно 3
-    ожидается ["а"]
-  разбор items
+тотальная функция «Last rows»
+  принимает rows: список «Row», count: число
+  возвращает список «Row»
+  разбор rows
+    случай пусто
+      то rows
     случай голова и хвост
-      то (если (длина items) больше count то («Last of» от хвост и count) иначе items)
-    случай любое
-      то items
+      то (если (длина rows) больше count то («Last rows» от хвост и count) иначе rows)
+
+тотальная функция «Without prose»
+  принимает rows: список «Row», paragraph: число
+  возвращает список «Row»
+  разбор rows
+    случай пусто
+      то rows
+    случай голова и хвост
+      то (если «Is prose» от голова и paragraph то («Without prose» от хвост и paragraph) иначе rows)
+
+тотальная функция «Is prose»
+  принимает row: «Row», paragraph: число
+  возвращает признак
+  (не («Is formalized» от row)) и притом (не ((row.«paragraph») равен paragraph))
+
+тотальная функция «Thesis of row»
+  принимает row: «Row»
+  возвращает «Thesis»
+  (запись «Thesis» с «number» равным (к строке (row.«number»)) и «line» равным (row.«number»)
+      и «formula» равным (row.«formula») и «quote» равным (row.«text») и «quote line» равным (row.«number»)
+      и «terms» равным пустой список)
+
+тотальная функция «Bracketed numbers»
+  принимает rows: список «Row»
+  возвращает строка
+  соединить (отобразить rows как row → соединить ["[", (к строке (row.«number»)), "]"] по "") по ", "
+
+тотальная функция «Refusal»
+  принимает number: число, reason: строка
+  возвращает «Argument»
+  пример «A conclusion that is not judged keeps its reason and no program»
+    дано number равно 4
+    дано reason равно "посылка [2] не прочитана: вывод не судится"
+    ожидается (запись «Argument» с «number» равным 4 и «kind» равным "refused" и «text» равным ""
+        и «program» равным "" и «reason» равным "посылка [2] не прочитана: вывод не судится")
+  (запись «Argument» с «number» равным number и «kind» равным "refused" и «text» равным "" и «program» равным ""
+      и «reason» равным reason)
 
 тотальная функция «First reason»
   принимает text: строка
   возвращает строка
-  пример «A text that is read has no reason against it»
-    дано text равно "Понятие: кот, коты. Свойство: тих, тихи. Все коты тихи. Следовательно, все коты тихи."
-    ожидается ""
   пусть report равно («Check report of» от "ru" и text и "")
   разбор (report.«unparsed»)
     случай пусто
@@ -255,68 +586,121 @@
     случай голова и хвост
       то голова.«reason»
 
-тотальная функция «Argument of»
-  принимает declared: список строки, number: число, premises: список строки, conclusion: строка
+тотальная функция «Syllogism of»
+  принимает declared: список строки, premises: список «Row», conclusion: «Row»
   возвращает «Argument»
-  пример «An argument nobody can read keeps its reason and no program»
-    дано declared равно пустой список
-    дано number равно 2
-    дано premises равно пустой список
-    дано conclusion равно "Следовательно, число делится на себя"
-    ожидается (запись «Argument» с «number» равным 2 и «text» равным "Следовательно, число делится на себя."
-        и «program» равным ""
-        и «reason» равным
-        "слово «число» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»")
-  пусть text равно («With declarations» от declared и (добавить conclusion к premises))
+  пусть text равно («With declarations» от declared и (отобразить (добавить conclusion к premises)
+      как row → row.«normal»))
   пусть program равно («Kernel program of» от "ru" и text)
-  (запись «Argument» с «number» равным number и «text» равным text и «program» равным program
-      и «reason» равным (если пусто program то («First reason» от text) иначе ""))
+  (запись «Argument» с «number» равным (conclusion.«number»)
+      и «kind» равным (если пусто program то "refused" иначе "syllogism") и «text» равным text
+      и «program» равным program и «reason» равным (если пусто program то («First reason» от text) иначе ""))
+
+тотальная функция «Formula argument»
+  принимает premises: список «Row», conclusion: «Row»
+  возвращает «Argument»
+  пусть theses равно (отобразить premises как row → «Thesis of row» от row)
+  пусть goal равно («Thesis of row» от conclusion)
+  пусть universe равно («Universe of» от theses и [goal])
+  пусть trial равно («Trial of» от (соединить ["вывод ", (к строке (conclusion.«number»))] по "")
+      и («Instances of» от theses и universe)
+      и («Conclusion instance» от («Form of» от (conclusion.«formula»)) и universe))
+  пусть against равно (соединить ["верно: ", (соединить (trial.«truths») по ", "), "; неверно: ",
+      (соединить (trial.«falses») по ", ")] по "")
+  если пусто (trial.«program»)
+    то («Refusal» от (conclusion.«number») и "шаг слишком крупный для ядра: разбейте его на промежуточные выводы")
+    иначе (запись «Argument» с «number» равным (conclusion.«number»)
+        и «kind» равным (если (trial.«status») равен "follows" то "formula-follows" иначе "formula-fails")
+        и «text» равным "" и «program» равным (trial.«program»)
+        и «reason» равным (если (trial.«status») равен "follows" то "" иначе against))
+
+тотальная функция «Clash words»
+  принимает pairs: список «Clash», premises: список «Row»
+  возвращает строка
+  пример «The pair that clashes is named»
+    дано pairs равно [запись «Clash» с «left» равным "1" и «right» равным "2" и «jobs» равным пустой список]
+    дано premises равно пустой список
+    ожидается "посылки [1] и [2] противоречат друг другу"
+  разбор pairs
+    случай пусто
+      то соединить ["посылки ", («Bracketed numbers» от premises), " вместе противоречивы"] по ""
+    случай голова и хвост
+      то соединить ["посылки [", (голова.«left»), "] и [", (голова.«right»), "] противоречат друг другу"] по ""
+
+тотальная функция «Clash of premises»
+  принимает premises: список «Row», conclusion: «Row»
+  возвращает список «Argument»
+  пусть theses равно (отобразить (отфильтровать premises где row → не (пусто (row.«formula»)))
+      как row → «Thesis of row» от row)
+  пусть trial равно («Trial of» от (соединить ["посылки вывода ", (к строке (conclusion.«number»)), " вместе"] по "")
+      и («Instances of» от theses и («Universe of» от theses и пустой список))
+      и (вариант «Truth» с holds равным нет))
+  пусть pairs равно (свёртка theses начиная с (пустой список) как found и left →
+      свёртка (отфильтровать theses где right → (right.«line») больше (left.«line»)) начиная с found
+      как grown и right → «Соединить списки» от grown и («Pair clash» от left и right))
+  пусть named равно («Clash words» от pairs и premises)
+  если ((trial.«status») равен "follows") и притом (не (пусто (trial.«program»)))
+    то [(запись «Argument» с «number» равным (conclusion.«number») и «kind» равным "clash" и «text» равным ""
+        и «program» равным (trial.«program») и «reason» равным named)]
+    иначе пустой список
+
+тотальная функция «Judged argument»
+  принимает declared: список строки, premises: список «Row», conclusion: «Row»
+  возвращает «Argument»
+  пусть every равно (добавить conclusion к premises)
+  пусть formal равно (пусто (отфильтровать every где row → пусто (row.«formula»)))
+  пусть plain равно (пусто (отфильтровать every где row → не (row.«plain»)))
+  пусть direct равно (formal и притом (не plain))
+  разбор («Clash of premises» от premises и conclusion)
+    случай пусто
+      то (если direct то («Formula argument» от premises и conclusion)
+          иначе («Syllogism of» от declared и premises и conclusion))
+    случай голова и хвост
+      то голова
+
+тотальная функция «Argument of»
+  принимает declared: список строки, recent: список «Row», conclusion: «Row»
+  возвращает «Argument»
+  пусть premises равно («Without prose» от recent и (conclusion.«paragraph»))
+  пусть unread равно (отфильтровать premises где row → не («Is formalized» от row))
+  если не («Is formalized» от conclusion)
+    то «Refusal» от (conclusion.«number») и (соединить ["вывод не формализован: ",
+        («First of» от (conclusion.«faults»))] по "")
+    иначе (если пусто unread то («Judged argument» от declared и premises и conclusion)
+        иначе («Refusal» от (conclusion.«number») и (соединить ["посылка ", («Bracketed numbers» от unread),
+        " не прочитана: вывод не судится"] по "")))
 
 тотальная функция «Gathered»
   принимает held: «Gathering», row: «Row»
   возвращает «Gathering»
-  пример «A formalized premise is kept for the next conclusion»
-    дано held равно (запись «Gathering» с «declared» равным пустой список и «recent» равным пустой список
-        и «arguments» равным пустой список)
-    дано row равно (запись «Row» с «number» равным 1 и «text» равным "Все люди смертны" и «words» равным 3
-        и «read» равным 3 и «complete» равным 3 и «grammatical» равным нет и «faults» равным пустой список
-        и «concludes» равным нет)
-    ожидается (запись «Gathering» с «declared» равным пустой список и «recent» равным ["Все люди смертны"]
-        и «arguments» равным пустой список)
-  пример «A sentence that is not formalized breaks the chain of premises»
-    дано held равно (запись «Gathering» с «declared» равным пустой список и «recent» равным ["Все люди смертны"]
-        и «arguments» равным пустой список)
-    дано row равно (запись «Row» с «number» равным 2 и «text» равным "Число делится" и «words» равным 2
-        и «read» равным 0 и «complete» равным 0 и «grammatical» равным нет и «faults» равным ["нет"]
-        и «concludes» равным нет)
-    ожидается (запись «Gathering» с «declared» равным пустой список и «recent» равным пустой список
-        и «arguments» равным пустой список)
   пусть declared равно (held.«declared»)
-  пусть drawn равно («Argument of» от declared и (row.«number») и (held.«recent») и (row.«text»))
-  пусть kept равно («Last of» от (добавить (row.«text») к (held.«recent»)) и («Premise window»))
-  («Chosen» от [
-    («When» от (row.«concludes») и (запись «Gathering» с «declared» равным declared и «recent» равным пустой список
-        и «arguments» равным (добавить drawn к (held.«arguments»)))),
-    («When» от («Is formalized» от row) и (запись «Gathering» с «declared» равным declared и «recent» равным kept
-        и «arguments» равным (held.«arguments»)))]
-    и (запись «Gathering» с «declared» равным declared и «recent» равным пустой список
-        и «arguments» равным (held.«arguments»)))
+  если row.«concludes»
+    то (запись «Gathering» с «declared» равным declared и «recent» равным пустой список
+        и «arguments» равным (добавить («Argument of» от declared и (held.«recent») и row) к (held.«arguments»)))
+    иначе (запись «Gathering» с «declared» равным declared
+        и «recent» равным («Last rows» от (добавить row к (held.«recent»)) и («Premise window»))
+        и «arguments» равным (held.«arguments»))
+
+тотальная функция «Pair arguments»
+  принимает rows: список «Row»
+  возвращает список «Argument»
+  пусть theses равно (отобразить (отфильтровать rows где row → не (пусто (row.«formula»)))
+      как row → «Thesis of row» от row)
+  (свёртка theses начиная с (пустой список) как found и left →
+      свёртка (отфильтровать theses где right → ((right.«line») больше (left.«line»))
+      и притом («Share a notion» от left и right)) начиная с found как grown и right →
+      «Соединить списки» от grown и (отобразить («Pair clash» от left и right) как clash →
+      запись «Argument» с «number» равным 0 и «kind» равным "pair"
+      и «text» равным (соединить ["[", (clash.«left»), "] и [", (clash.«right»), "]"] по "")
+      и «program» равным (свёртка (clash.«jobs») начиная с "" как found и job → job.«program»)
+      и «reason» равным ""))
 
 тотальная функция «Arguments of»
   принимает declared: список строки, rows: список «Row»
   возвращает список «Argument»
-  пример «A conclusion after a sentence that is not formalized has no premises»
-    дано declared равно пустой список
-    дано rows равно ([(запись «Row» с «number» равным 1 и «text» равным "Число делится" и «words» равным 2
-        и «read» равным 0 и «complete» равным 0 и «grammatical» равным нет и «faults» равным ["нет"]
-        и «concludes» равным нет), (запись «Row» с «number» равным 2 и «text» равным
-        "Следовательно, число делится на себя" и «words» равным 5 и «read» равным 1 и «complete» равным 1
-        и «grammatical» равным нет и «faults» равным ["нет"] и «concludes» равным да)])
-    ожидается ([(запись «Argument» с «number» равным 2 и «text» равным "Следовательно, число делится на себя."
-        и «program» равным "" и «reason» равным
-        "слово «число» не объявлено: впишите его в словарь строкой «Понятие: …», «Свойство: …» или «Имя: …»")])
-  (свёртка rows начиная с (запись «Gathering» с «declared» равным declared и «recent» равным пустой список
-      и «arguments» равным пустой список) как held и row → «Gathered» от held и row).«arguments»
+  («Соединить списки» от ((свёртка rows начиная с (запись «Gathering» с «declared» равным declared
+      и «recent» равным пустой список и «arguments» равным пустой список) как held и row →
+      «Gathered» от held и row).«arguments») и («Pair arguments» от rows))
 
 тотальная функция «Root»
   возвращает строка
@@ -324,111 +708,132 @@
     ожидается "../.."
   "../.."
 
-тотальная функция «Verdict words»
+тотальная функция «Syllogism verdict»
   принимает argument: «Argument», output: строка
   возвращает «Verdict line»
-  пример «A text the translator does not read gets no kernel verdict»
-    дано argument равно (запись «Argument» с «number» равным 2 и «text» равным "x" и «program» равным ""
-        и «reason» равным "слово «x» не объявлено")
-    дано output равно ""
-    ожидается (запись «Verdict line» с «number» равным 2 и «verdict» равным "not-formalized"
-        и «line» равным "вывод не формализован: слово «x» не объявлено")
   пусть report равно («Check report of» от "ru" и (argument.«text») и output)
   пусть said равно (соединить («Fallacy words» от report) по "; ")
+  пусть kind равно (если пусто ((report.«fallacy»).«name») то "без названия" иначе ((report.«fallacy»).«name»))
   пусть against равно (если пусто (report.«counterexample») то ""
       иначе соединить ["; пример против (нашёл переводчик, проверяется подстановкой): ",
       (report.«counterexample»)] по "")
   («Chosen» от [
-    («When» от (пусто (argument.«program»)) и (запись «Verdict line» с «number» равным (argument.«number»)
-        и «verdict» равным "not-formalized" и «line» равным (соединить ["вывод не формализован: ",
-            (argument.«reason»)] по ""))),
     («When» от ((report.«verdict») равен "follows") и (запись «Verdict line» с «number» равным (argument.«number»)
-        и «verdict» равным "follows" и «line» равным (соединить ["вывод следует (ядро: ", (report.«kernel»), ")",
+        и «verdict» равным "follows" и «kind» равным "" и «line» равным (соединить ["вывод следует (доказано ядром)",
         (если пусто said то "" иначе соединить ["; ", said] по "")] по ""))),
     («When» от (((report.«verdict») равен "does-not-follow") и притом (не (пусто (report.«counterexample»))))
         и (запись «Verdict line» с «number» равным (argument.«number»)
-        и «verdict» равным "does-not-follow" и «line» равным (соединить ["вывод не следует: ", said, against] по "")))]
-    и (запись «Verdict line» с «number» равным (argument.«number») и «verdict» равным "undecided"
+        и «verdict» равным "does-not-follow" и «kind» равным kind
+        и «line» равным (соединить ["вывод не следует: ", said, against] по "")))]
+    и (запись «Verdict line» с «number» равным (argument.«number») и «verdict» равным "undecided" и «kind» равным ""
         и «line» равным (соединить ["ядро не доказало, а примера против нет: ", (report.«kernel»)] по "")))
 
-тотальная функция «Verdict for»
-  принимает number: число, done: список «Verdict line»
-  возвращает список «Verdict line»
-  пример «The verdict of the sentence is found by its number»
-    дано number равно 2
-    дано done равно ([(запись «Verdict line» с «number» равным 2 и «verdict» равным "follows" и «line» равным
-        "вывод следует")])
-    ожидается [запись «Verdict line» с «number» равным 2 и «verdict» равным "follows" и «line» равным "вывод следует"]
-  отфильтровать done где judged → (judged.«number») равен number
+тотальная функция «Formula verdict»
+  принимает argument: «Argument», proven: признак
+  возвращает «Verdict line»
+  пример «A proved step follows»
+    дано argument равно (запись «Argument» с «number» равным 3 и «kind» равным "formula-follows" и «text» равным ""
+        и «program» равным "п" и «reason» равным "")
+    дано proven равно да
+    ожидается (запись «Verdict line» с «number» равным 3 и «verdict» равным "follows" и «kind» равным ""
+        и «line» равным "вывод следует (доказано ядром)")
+  пример «Contradictory premises are named and the conclusion is not counted»
+    дано argument равно (запись «Argument» с «number» равным 3 и «kind» равным "clash" и «text» равным ""
+        и «program» равным "п" и «reason» равным "посылки [1] и [2] противоречат друг другу")
+    дано proven равно да
+    ожидается (запись «Verdict line» с «number» равным 3 и «verdict» равным "clash" и «kind» равным ""
+        и «line» равным
+        "посылки [1] и [2] противоречат друг другу (доказано ядром); вывод из них не засчитан")
+  пример «A check the kernel did not accept is not a verdict»
+    дано argument равно (запись «Argument» с «number» равным 3 и «kind» равным "formula-fails" и «text» равным ""
+        и «program» равным "п" и «reason» равным "верно: а; неверно: б")
+    дано proven равно нет
+    ожидается (запись «Verdict line» с «number» равным 3 и «verdict» равным "undecided" и «kind» равным ""
+        и «line» равным "ядро не решило: проверка этого шага ядром не принята")
+  пусть rows равно [["formula-follows", "follows", "", "вывод следует (доказано ядром)"],
+      ["formula-fails", "does-not-follow", "без названия", (соединить
+      ["вывод не следует: есть случай, когда посылки верны, а вывод ложен (подтверждено ядром): ",
+      (argument.«reason»)] по "")],
+      ["clash", "clash", "", (соединить [(argument.«reason»),
+      " (доказано ядром); вывод из них не засчитан"] по "")],
+      ["pair", "pair", "", (соединить ["противоречие: ", (argument.«text»),
+      " не могут быть верны вместе (доказано ядром)"] по "")]]
+  пусть chosen равно (свёртка rows
+      начиная с ["", "undecided", "", "ядро не решило: проверка этого шага ядром не принята"] как found и row →
+      если proven и притом ((элемент 1 в row) равен (argument.«kind»)) то row иначе found)
+  (запись «Verdict line» с «number» равным (argument.«number») и «verdict» равным (элемент 2 в chosen)
+      и «kind» равным (элемент 3 в chosen) и «line» равным (элемент 4 в chosen))
 
-тотальная функция «Layers of»
-  принимает row: «Row»
-  возвращает строка
-  пример «Morphology and the pregroup are reported for every sentence»
-    дано row равно (запись «Row» с «number» равным 1 и «text» равным "Все люди смертны" и «words» равным 3
-        и «read» равным 3 и «complete» равным 3 и «grammatical» равным нет и «faults» равным пустой список
-        и «concludes» равным нет)
-    ожидается "морфология 3/3 (без недостач 3), прегруппа нет"
-  соединить ["морфология ", (к строке (row.«read»)), "/", (к строке (row.«words»)), " (без недостач ",
-      (к строке (row.«complete»)), "), прегруппа ",
-      (если row.«grammatical» то "s" иначе "нет")] по ""
-
-тотальная функция «Fault words»
-  принимает fault: строка
-  возвращает строка
-  пример «The sentence is not repeated in front of its fault»
-    дано fault равно "предложение 1 «Число делится.»: слово «Число» не объявлено"
-    ожидается "слово «Число» не объявлено"
-  пример «A fault without a sentence stays whole»
-    дано fault равно "в рассуждении нет ни одной посылки"
-    ожидается "в рассуждении нет ни одной посылки"
-  пусть parts равно (разделить fault по ".»: ")
-  если (fault начинается с "предложение ") и притом ((длина parts) больше 1)
-    то соединить («Without the first» от parts) по ".»: "
-    иначе fault
+тотальная функция «Verdict words»
+  принимает argument: «Argument», output: строка
+  возвращает «Verdict line»
+  пример «A conclusion that is not judged gets no kernel verdict»
+    дано argument равно (запись «Argument» с «number» равным 2 и «kind» равным "refused" и «text» равным ""
+        и «program» равным "" и «reason» равным "посылка [1] не прочитана: вывод не судится")
+    дано output равно ""
+    ожидается (запись «Verdict line» с «number» равным 2 и «verdict» равным "unread-premise" и «kind» равным ""
+        и «line» равным "посылка [1] не прочитана: вывод не судится")
+  пусть refused равно (запись «Verdict line» с «number» равным (argument.«number»)
+      и «verdict» равным (если (argument.«reason») начинается с "посылка " то "unread-premise" иначе "not-formalized")
+      и «kind» равным "" и «line» равным (argument.«reason»))
+  если (argument.«kind») равен "refused"
+    то refused
+    иначе (если (argument.«kind») равен "syllogism" то («Syllogism verdict» от argument и output)
+        иначе («Formula verdict» от argument и («Kernel proved» от output)))
 
 тотальная функция «Row line»
   принимает row: «Row», done: список «Verdict line»
   возвращает строка
   пример «A formalized premise»
-    дано row равно (запись «Row» с «number» равным 1 и «text» равным "Все люди смертны" и «words» равным 3
-        и «read» равным 3 и «complete» равным 3 и «grammatical» равным нет и «faults» равным пустой список
-        и «concludes» равным нет)
+    дано row равно (запись «Row» с «number» равным 1 и «paragraph» равным 1 и «text» равным "Все люди смертны"
+        и «normal» равным "Все люди смертны" и «faults» равным пустой список и «concludes» равным нет
+        и «formula» равным "все x: если человек(x), то смертен(x)" и «plain» равным да)
     дано done равно пустой список
-    ожидается "[1] Все люди смертны\n    морфология 3/3 (без недостач 3), прегруппа нет → формализовано: посылка"
-  пример «A sentence that is not formalized names why»
-    дано row равно (запись «Row» с «number» равным 4 и «text» равным "Число делится" и «words» равным 2
-        и «read» равным 1 и «complete» равным 1 и «grammatical» равным нет
-        и «faults» равным ["предложение 1 «Число делится.»: не читается"] и «concludes» равным нет)
+    ожидается "[1] Все люди смертны\n    → прочитано: все x: если человек(x), то смертен(x)"
+  пример «A sentence that is not read names why»
+    дано row равно (запись «Row» с «number» равным 4 и «paragraph» равным 1 и «text» равным "Число делится"
+        и «normal» равным "Число делится" и «faults» равным ["не читается"] и «concludes» равным нет
+        и «formula» равным "" и «plain» равным да)
     дано done равно пустой список
-    ожидается "[4] Число делится\n    морфология 1/2 (без недостач 1), прегруппа нет → не формализовано: не читается"
-  пусть judged равно («Verdict for» от (row.«number») и done)
+    ожидается "[4] Число делится\n    → не прочитано: не читается"
+  пусть judged равно (отфильтровать done где one → (one.«number») равен (row.«number»))
+  пусть read равно (если пусто (row.«formula») то "прочитано" иначе (соединить ["прочитано: ", (row.«formula»)] по ""))
   пусть outcome равно («Chosen» от [
     («When» от (не (пусто judged)) и (соединить (отобразить judged как one → one.«line») по "; ")),
-    («When» от («Is formalized» от row) и "формализовано: посылка")]
-    и (соединить ["не формализовано: ", («Fault words» от («First of» от (row.«faults»)))] по ""))
-  соединить ["[", (к строке (row.«number»)), "] ", (row.«text»), "\n    ", («Layers of» от row), " → ", outcome] по ""
+    («When» от («Is formalized» от row) и read)]
+    и (соединить ["не прочитано: ", («First of» от (row.«faults»))] по ""))
+  соединить ["[", (к строке (row.«number»)), "] ", (row.«text»), "\n    → ", outcome] по ""
 
 тотальная функция «Counted»
   принимает done: список «Verdict line», verdict: строка
   возвращает число
   пример «Verdicts are counted by their word»
-    дано done равно [запись «Verdict line» с «number» равным 2 и «verdict» равным "follows" и «line» равным ""]
+    дано done равно ([(запись «Verdict line» с «number» равным 2 и «verdict» равным "follows" и «kind» равным ""
+        и «line» равным "")])
     дано verdict равно "follows"
     ожидается 1
   длина (отфильтровать done где judged → (judged.«verdict») равен verdict)
 
-тотальная функция «Whole rows»
-  принимает rows: список «Row», complete: признак
-  возвращает число
-  пример «A row counts when every word is read»
-    дано rows равно ([(запись «Row» с «number» равным 1 и «text» равным "Все мохнатые тихи" и «words» равным 3
-        и «read» равным 3 и «complete» равным 1 и «grammatical» равным нет и «faults» равным пустой список
-        и «concludes» равным нет)])
-    дано complete равно нет
-    ожидается 1
-  длина (отфильтровать rows где row → ((row.«words») больше 0) и притом ((если complete то row.«complete»
-      иначе row.«read») равен (row.«words»)))
+тотальная функция «Kinds of failure»
+  принимает done: список «Verdict line»
+  возвращает строка
+  пример «Failures are counted by the name of the mistake»
+    дано done равно ([(запись «Verdict line» с «number» равным 2 и «verdict» равным "does-not-follow"
+        и «kind» равным "обращение следствия" и «line» равным ""),
+        (запись «Verdict line» с «number» равным 5 и «verdict» равным "does-not-follow"
+        и «kind» равным "обращение следствия" и «line» равным "")])
+    ожидается " (обращение следствия — 2)"
+  пример «No failures have no kinds»
+    дано done равно пустой список
+    ожидается ""
+  пусть failed равно (отфильтровать done где judged → (judged.«verdict») равен "does-not-follow")
+  пусть kinds равно (свёртка failed начиная с (пустой список) как kept и judged →
+      если kept содержит (judged.«kind») то kept иначе (добавить (judged.«kind») к kept))
+  если пусто kinds
+    то ""
+    иначе (соединить [" (", (соединить (отобразить kinds как kind → соединить [kind, " — ",
+        (к строке (длина (отфильтровать failed где judged → (judged.«kind») равен kind)))] по "") по ", "), ")"]
+        по "")
 
 тотальная функция «Summary»
   принимает rows: список «Row», done: список «Verdict line»
@@ -437,57 +842,57 @@
     дано rows равно пустой список
     дано done равно пустой список
     ожидается """
-      итог:
-        предложений 0
-        все слова прочла морфология 0, из них без недостач 0
-        прегруппа свела к s 0
-        формализовано 0
-        выводов 0: следует 0, не следует 0, ядро не решило 0, не формализовано 0
-        слов 0, с чтением 0, с чтением без недостач 0
+      сводка:
+        предложений 0, прочитано 0, не прочитано 0
+        шагов рассуждения 0, из них проверено ядром 0
+        найдено: противоречий 0, неследований 0, шагов с противоречивыми посылками 0
+        не судится: посылка не прочитана 0, вывод не формализован 0, ядро не решило 0
       """
-  соединить ["итог:\n  предложений ", (к строке (длина rows)),
-      "\n  все слова прочла морфология ", (к строке («Whole rows» от rows и нет)),
-      ", из них без недостач ", (к строке («Whole rows» от rows и да)),
-      "\n  прегруппа свела к s ", (к строке (длина (отфильтровать rows где row → row.«grammatical»))),
-      "\n  формализовано ", (к строке (длина (отфильтровать rows где row → «Is formalized» от row))),
-      "\n  выводов ", (к строке (длина done)),
-      ": следует ", (к строке («Counted» от done и "follows")),
-      ", не следует ", (к строке («Counted» от done и "does-not-follow")),
-      ", ядро не решило ", (к строке («Counted» от done и "undecided")),
-      ", не формализовано ", (к строке («Counted» от done и "not-formalized")),
-      "\n  слов ", (к строке (свёртка rows начиная с 0 как sum и row → sum плюс (row.«words»))),
-      ", с чтением ", (к строке (свёртка rows начиная с 0 как sum и row → sum плюс (row.«read»))),
-      ", с чтением без недостач ",
-      (к строке (свёртка rows начиная с 0 как sum и row → sum плюс (row.«complete»))), "\n"] по ""
+  пусть steps равно (отфильтровать done где judged → не ((judged.«verdict») равен "pair"))
+  пусть read равно (длина (отфильтровать rows где row → «Is formalized» от row))
+  соединить ["сводка:\n  предложений ", (к строке (длина rows)), ", прочитано ", (к строке read),
+      ", не прочитано ", (к строке ((длина rows) минус read)),
+      "\n  шагов рассуждения ", (к строке (длина steps)), ", из них проверено ядром ",
+      (к строке ((«Counted» от done и "follows") плюс («Counted» от done и "does-not-follow")
+      плюс («Counted» от done и "clash"))),
+      "\n  найдено: противоречий ", (к строке («Counted» от done и "pair")),
+      ", неследований ", (к строке («Counted» от done и "does-not-follow")), («Kinds of failure» от done),
+      ", шагов с противоречивыми посылками ", (к строке («Counted» от done и "clash")),
+      "\n  не судится: посылка не прочитана ", (к строке («Counted» от done и "unread-premise")),
+      ", вывод не формализован ", (к строке («Counted» от done и "not-formalized")),
+      ", ядро не решило ", (к строке («Counted» от done и "undecided")), "\n"] по ""
 
 тотальная функция «Boundary»
   возвращает строка
   пример «The trust boundary is said in every report»
-    ожидается "граница: перевод текста в утверждения не доверен; доказано только то, что доказало ядро"
-  "граница: перевод текста в утверждения не доверен; доказано только то, что доказало ядро"
+    ожидается "граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро"
+  "граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро"
+
+тотальная функция «Block»
+  принимает title: строка, lines: список строки
+  возвращает строка
+  пример «An empty block prints nothing»
+    дано title равно "словарь:"
+    дано lines равно пустой список
+    ожидается ""
+  пример «A block is its title and its lines»
+    дано title равно "словарь:"
+    дано lines равно ["раз"]
+    ожидается "словарь:\n  раз\n"
+  если пусто lines
+    то ""
+    иначе (соединить [title, "\n", (соединить (отобразить lines как line → соединить ["  ", line, "\n"] по "")
+        по "")] по "")
 
 тотальная функция «Report»
-  принимает path: строка, rows: список «Row», done: список «Verdict line»
+  принимает paper: «Paper», done: список «Verdict line»
   возвращает строка
-  пример «The report names the text and ends with the summary and the boundary»
-    дано path равно "a.txt"
-    дано rows равно пустой список
-    дано done равно пустой список
-    ожидается """
-      ── a.txt ──
-      итог:
-        предложений 0
-        все слова прочла морфология 0, из них без недостач 0
-        прегруппа свела к s 0
-        формализовано 0
-        выводов 0: следует 0, не следует 0, ядро не решило 0, не формализовано 0
-        слов 0, с чтением 0, с чтением без недостач 0
-      граница: перевод текста в утверждения не доверен; доказано только то, что доказало ядро
-      """
-  пусть lines равно (отобразить rows как row → «Row line» от row и done)
-  соединить [(соединить ["── ", path, " ──\n"] по ""), (соединить (отобразить lines как line → соединить [line, "\n"] по
-      "")
-      по ""), («Summary» от rows и done), («Boundary»), "\n"] по ""
+  пусть rows равно (paper.«rows»)
+  пусть lines равно (отобразить rows как row → соединить [(«Row line» от row и done), "\n"] по "")
+  (соединить [(соединить ["── ", ((paper.«call»).«path»), " ──\n"] по ""), («Summary» от rows и done),
+      («Block» от "словарь:" и (paper.«faults»)), (соединить lines по ""),
+      («Block» от "противоречия:" и (отобразить (отфильтровать done где judged → (judged.«verdict») равен "pair")
+      как judged → judged.«line»)), («Boundary»), "\n"] по "")
 
 тотальная функция «Begin»
   возвращает «Paper step»
@@ -495,43 +900,29 @@
     ожидается вариант «Start»
   вариант «Start»
 
-тотальная функция «Next judgment»
-  принимает path: строка, rows: список «Row», waiting: список «Argument», done: список «Verdict line»
-  возвращает «Продолжение»
-  пример «Nothing left to judge prints the report»
+тотальная функция «Path from root»
+  принимает path: строка
+  возвращает строка
+  пример «A path is taken from the root of the tree»
     дано path равно "a.txt"
-    дано rows равно пустой список
-    дано waiting равно пустой список
-    дано done равно пустой список
-    ожидается вариант «Сделать» с поручение равным (вариант «Записать файл»
-        с путь равным "/dev/stdout" и содержимое равным """
-      ── a.txt ──
-      итог:
-        предложений 0
-        все слова прочла морфология 0, из них без недостач 0
-        прегруппа свела к s 0
-        формализовано 0
-        выводов 0: следует 0, не следует 0, ядро не решило 0, не формализовано 0
-        слов 0, с чтением 0, с чтением без недостач 0
-      граница: перевод текста в утверждения не доверен; доказано только то, что доказало ядро
-      """
-        ) и потом равным (вариант «Printed» с path равным "a.txt")
+    ожидается "../../a.txt"
+  пример «A path from the root of the disk or a device is taken as it is»
+    дано path равно "/dev/stdout"
+    ожидается "/dev/stdout"
+  если path начинается с "/" то path иначе (соединить [(«Root»), "/", path] по "")
+
+тотальная функция «Next judgment»
+  принимает paper: «Paper», waiting: список «Argument», done: список «Verdict line»
+  возвращает «Продолжение»
   разбор waiting
     случай пусто
-      то (вариант «Сделать» с поручение равным («Print» от («Report» от path и rows и done))
-          и потом равным (вариант «Printed»
-          с path равным path))
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл»
+          с путь равным («Path from root» от ((paper.«call»).«out»))
+          и содержимое равным («Report» от paper и done))
+          и потом равным (вариант «Printed» с path равным ((paper.«call»).«path»)))
     случай голова и хвост
       то (вариант «Сделать» с поручение равным («Kernel order» от («Check script») и голова) и потом равным
-          (вариант «Judging» с path равным path и rows равным rows и waiting равным waiting и done равным done))
-
-тотальная функция «Print»
-  принимает text: строка
-  возвращает «Поручение»
-  пример «The report goes to the standard output as plain text»
-    дано text равно "отчёт\n"
-    ожидается вариант «Записать файл» с путь равным "/dev/stdout" и содержимое равным "отчёт\n"
-  вариант «Записать файл» с путь равным "/dev/stdout" и содержимое равным text
+          (вариант «Judging» с paper равным paper и waiting равным waiting и done равным done))
 
 тотальная функция «Check script»
   возвращает строка
@@ -558,52 +949,94 @@
   возвращает «Поручение»
   пример «The program goes to the kernel through the script»
     дано script равно "s"
-    дано argument равно (запись «Argument» с «number» равным 1 и «text» равным "т" и «program» равным "п"
-        и «reason» равным "")
+    дано argument равно (запись «Argument» с «number» равным 1 и «kind» равным "syllogism" и «text» равным "т"
+        и «program» равным "п" и «reason» равным "")
     ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "s", "../..", "п"]
   вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", script, («Root»), (argument.«program»)]
 
 тотальная функция «Judged text»
-  принимает path: строка, text: строка
+  принимает call: «Call», text: строка
   возвращает «Продолжение»
   пусть rows равно («Rows of» от text)
-  пусть every равно («Arguments of» от («Declaration lines of» от text) и rows)
+  пусть every равно («Arguments of» от («Sound declarations» от text) и rows)
   пусть unread равно (отфильтровать every где argument → пусто (argument.«program»))
   пусть waiting равно (отфильтровать every где argument → не (пусто (argument.«program»)))
-  «Next judgment» от path и rows и waiting и (отобразить unread как argument → «Verdict words» от argument и "")
+  («Next judgment» от (запись «Paper» с «call» равным call и «faults» равным («Dictionary faults» от text)
+      и «rows» равным rows) и waiting и (отобразить unread как argument → «Verdict words» от argument и ""))
 
 тотальная функция «After text»
-  принимает path: строка, reply: «Отклик»
+  принимает call: «Call», reply: «Отклик»
   возвращает «Продолжение»
   пример «A text that was not read fails»
-    дано path равно "a.txt"
+    дано call равно (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным нет
+        и «fault» равным "")
     дано reply равно вариант «Пока ничего»
     ожидается вариант «Провал» с код равным "FLANG_ARGUMENT_CANNOT_LOOK" и сообщение равным "текст не прочитан: a.txt"
   разбор reply
     случай вариант «Прочитано» с содержимое как text
-      то «Judged text» от path и text
+      то «Judged text» от call и text
     случай любое
       то (вариант «Провал» с код равным "FLANG_ARGUMENT_CANNOT_LOOK"
-          и сообщение равным (соединить ["текст не прочитан: ", path] по ""))
+          и сообщение равным (соединить ["текст не прочитан: ", (call.«path»)] по ""))
 
 тотальная функция «Usage»
   возвращает «Продолжение»
   пример «The plan names how it is called»
     ожидается (вариант «Провал» с код равным "FLANG_ARGUMENT_CANNOT_LOOK" и сообщение равным
-        "звать: argument-check.fscript --plan Check -- <путь к тексту>")
+        "звать: argument-check.fscript --plan Check -- <путь к тексту> [--out <файл отчёта>]")
   (вариант «Провал» с код равным "FLANG_ARGUMENT_CANNOT_LOOK"
-      и сообщение равным "звать: argument-check.fscript --plan Check -- <путь к тексту>")
+      и сообщение равным "звать: argument-check.fscript --plan Check -- <путь к тексту> [--out <файл отчёта>]")
+
+тотальная функция «With word»
+  принимает held: «Call», word: строка
+  возвращает «Call»
+  пример «The word after the key names the file of the report»
+    дано held равно (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным да
+        и «fault» равным "")
+    дано word равно "report.txt"
+    ожидается (запись «Call» с «path» равным "a.txt" и «out» равным "report.txt" и «pending» равным нет
+        и «fault» равным "")
+  пример «An unknown key is a fault»
+    дано held равно (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным нет
+        и «fault» равным "")
+    дано word равно "--fast"
+    ожидается (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным нет
+        и «fault» равным "ключ «--fast» не понят")
+  пусть keyed равно (word начинается с "--")
+  пусть strange равно (keyed и притом (не (word равен "--out")))
+  пусть named равно (keyed или (не (пусто (held.«path»))))
+  пусть valued равно (запись «Call» с «path» равным (held.«path») и «out» равным word и «pending» равным нет
+      и «fault» равным (held.«fault»))
+  пусть other равно (запись «Call» с «path» равным (если named то (held.«path») иначе word)
+      и «out» равным (held.«out») и «pending» равным (word равен "--out")
+      и «fault» равным (если strange то (соединить ["ключ «", word, "» не понят"] по "") иначе (held.«fault»)))
+  если held.«pending» то valued иначе other
+
+тотальная функция «Call of»
+  принимает words: список строки
+  возвращает «Call»
+  пример «Without the key the report goes to the standard output»
+    дано words равно ["a.txt"]
+    ожидается (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным нет
+        и «fault» равным "")
+  пример «The key names a file for the report»
+    дано words равно ["a.txt", "--out", "b.txt"]
+    ожидается (запись «Call» с «path» равным "a.txt" и «out» равным "b.txt" и «pending» равным нет
+        и «fault» равным "")
+  (свёртка words начиная с (запись «Call» с «path» равным "" и «out» равным "/dev/stdout" и «pending» равным нет
+      и «fault» равным "") как held и word → «With word» от held и word)
 
 тотальная функция «Reading of path»
-  принимает path: строка
+  принимает call: «Call»
   возвращает «Продолжение»
   пример «The text is read from the root of the tree»
-    дано path равно "a.txt"
+    дано call равно (запись «Call» с «path» равным "a.txt" и «out» равным "/dev/stdout" и «pending» равным нет
+        и «fault» равным "")
     ожидается (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "../../a.txt")
-        и потом равным (вариант «Awaiting text» с path равным "a.txt"))
-  пусть order равно (вариант «Прочитать файл» с путь равным (если path начинается с "/" то path
-      иначе соединить [(«Root»), "/", path] по ""))
-  вариант «Сделать» с поручение равным order и потом равным (вариант «Awaiting text» с path равным path)
+        и потом равным (вариант «Awaiting text» с call равным (запись «Call» с «path» равным "a.txt"
+        и «out» равным "/dev/stdout" и «pending» равным нет и «fault» равным "")))
+  (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным («Path from root» от (call.«path»)))
+      и потом равным (вариант «Awaiting text» с call равным call))
 
 тотальная функция «After arguments»
   принимает reply: «Отклик»
@@ -611,25 +1044,32 @@
   пример «Without a text the plan says how to call it»
     дано reply равно вариант «Доводы» с доводы равным пустой список
     ожидается (вариант «Провал» с код равным "FLANG_ARGUMENT_CANNOT_LOOK" и сообщение равным
-        "звать: argument-check.fscript --plan Check -- <путь к тексту>")
+        "звать: argument-check.fscript --plan Check -- <путь к тексту> [--out <файл отчёта>]")
   разбор reply
     случай вариант «Доводы» с доводы как said
-      то (если пусто said то («Usage») иначе («Reading of path» от («First of» от said)))
+      то «Called» от («Call of» от said)
     случай любое
       то «Usage»
 
+тотальная функция «Called»
+  принимает call: «Call»
+  возвращает «Продолжение»
+  если (пусто (call.«path»)) или (call.«pending») или (не (пусто (call.«fault»)))
+    то «Usage»
+    иначе «Reading of path» от call
+
 тотальная функция «After kernel»
-  принимает path: строка, rows: список «Row», waiting: список «Argument», done: список «Verdict line», reply: «Отклик»
+  принимает paper: «Paper», waiting: список «Argument», done: список «Verdict line», reply: «Отклик»
   возвращает «Продолжение»
   разбор waiting
     случай пусто
-      то «Next judgment» от path и rows и пустой список и done
+      то «Next judgment» от paper и пустой список и done
     случай голова и хвост
       то разбор reply
         случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
-          то «Next judgment» от path и rows и хвост и (добавить («Verdict words» от голова и out) к done)
+          то «Next judgment» от paper и хвост и (добавить («Verdict words» от голова и out) к done)
         случай любое
-          то «Next judgment» от path и rows и хвост и (добавить («Verdict words» от голова и "") к done)
+          то «Next judgment» от paper и хвост и (добавить («Verdict words» от голова и "") к done)
 
 тотальная функция «Onward»
   принимает stage: «Paper step», reply: «Отклик»
@@ -639,10 +1079,10 @@
       то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
     случай вариант «Awaiting arguments»
       то «After arguments» от reply
-    случай вариант «Awaiting text» с path как path
-      то «After text» от path и reply
-    случай вариант «Judging» с path как path и rows как rows и waiting как waiting и done как done
-      то «After kernel» от path и rows и waiting и done и reply
+    случай вариант «Awaiting text» с call как call
+      то «After text» от call и reply
+    случай вариант «Judging» с paper как paper и waiting как waiting и done как done
+      то «After kernel» от paper и waiting и done и reply
     случай вариант «Printed» с path как path
       то вариант «Конец работы» с значение равным (соединить ["отчёт напечатан: ", path] по "")
 

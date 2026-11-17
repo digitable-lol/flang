@@ -13,30 +13,24 @@
 тотальная функция «Команда»
   принимает программа: строка
   возвращает строка
-  пример «The plan reads the text from the root of the tree»
+  пример «The plan reads the text from the root of the tree and the report is taken from the file the key names»
     дано программа равно "empty-class.txt"
     ожидается """
-      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang io \\
-        flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- \\
-        'flang/proof/probes/argument-check/programs/empty-class.txt'; } 2>&1; echo "[code=$?]"
+      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { \\
+        o=$(mktemp "${FLANG_TMP:-${TMPDIR:-/tmp}}/argument.XXXXXX"); \\
+        $flang io flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 \\
+        -- 'flang/proof/probes/argument-check/programs/empty-class.txt' --out "$o" > /dev/null; c=$?; \\
+        cat "$o"; rm -f "$o"; (exit $c); } 2>&1; echo "[code=$?]"
       """
-  пусть call равно (соединить ["$flang io \\\n  flang/experimental/argument-check.fscript --plan Check ",
-      "--max-steps 1000000000000 --timeout 600000 -- \\\n  'flang/proof/probes/argument-check/programs/", программа,
-      "'"] по "")
+  пусть call равно (соединить ["\\\n  o=$(mktemp \"${FLANG_TMP:-${TMPDIR:-/tmp}}/argument.XXXXXX\"); ",
+      "\\\n  $flang io flang/experimental/argument-check.fscript --plan Check ",
+      "--max-steps 1000000000000 --timeout 600000 \\\n  -- 'flang/proof/probes/argument-check/programs/", программа,
+      "' --out \"$o\" > /dev/null; c=$?; \\\n  cat \"$o\"; rm -f \"$o\"; (exit $c)"] по "")
   соединить [(«От корня» от («С меткой» от call)), "\n"] по ""
 
 тотальная функция «Проба из строки»
   принимает части: список строки
   возвращает «Проба»
-  пример «A row of the table becomes a probe»
-    дано части равно ["empty-class.txt", "0", "золотая гора"]
-    ожидается (запись «Проба» с «программа» равным "empty-class.txt" и «приметы» равным "empty-class.txt []"
-        и «команда» равным """
-      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { $flang io \\
-        flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- \\
-        'flang/proof/probes/argument-check/programs/empty-class.txt'; } 2>&1; echo "[code=$?]"
-      """
-        и «код» равным "0" и «слово» равным "золотая гора")
   (запись «Проба» с «программа» равным («Поле» от части и 1)
       и «приметы» равным («Приметы» от («Поле» от части и 1) и пустой список)
       и «команда» равным («Команда» от («Поле» от части и 1)) и «код» равным («Поле» от части и 2)

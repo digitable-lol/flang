@@ -56,6 +56,7 @@
 | [`repository-layout.md`](repository-layout.md) · [ru](repository-layout.ru.md) | раскладка репозитория |
 | [`bootstrap-point.md`](bootstrap-point.md) | каталог `bootstrap/`: компилятор, напечатанный в C99 |
 | [`commit-messages.md`](commit-messages.md) | правило сообщений коммитов |
+| [`releasing.md`](releasing.md) | как выпустить версию: шаги по порядку, с командами |
 | [`zero-bug-policy.md`](zero-bug-policy.md) | что делается с дефектом |
 | [`prose-numbers.md`](prose-numbers.md) | числа в прозе и их приметы |
 | [`playground-internals.md`](playground-internals.md) | песочница сайта: сетапы, формат ссылки, проверки и швы для расширения |

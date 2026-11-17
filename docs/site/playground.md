@@ -1,90 +1,112 @@
 # Playground
 
-Here flang checks a text right in the tab: a syllogism written in words, a formula with
-the quantifiers ∀ and ∃, or a flang program with statements, theorems and laws. The
-compiler with its proof kernel is built to WebAssembly and runs in the browser; nothing
-is sent to a server, and the "Share" link carries the text in the address after `#`,
-which the browser does not send to the server.
-
 ```playground
-The playground needs JavaScript and a browser with WebAssembly. Without them the same
-checks are done by the binary compiler: flang check file.flang --proof.
+The playground needs JavaScript and a browser with WebAssembly. Without them the
+compiler in a terminal does the same checks: flang check file.flang --proof.
 ```
 
-## What you see
+Write flang here and see the result at once: the editor is on the left, the compiler's
+answer on the right. Nothing to install. The compiler is built to WebAssembly and runs
+in this tab; the text is not sent to a server.
 
-The editor highlights language words, strings, numbers, names in «guillemets» and
-comments; line numbers are on the left. The line where the compiler found an error is
-marked both in the text and in its number.
+## Where to start
 
-Reasoning and formulas get their own highlighting. In reasoning the editor marks the
-connectives («все», «некоторые», «ни один», «не», «следовательно», «значит», «если … то»
-— all, some, no, not, therefore, so, if … then), the terms — words of the dictionary
-and of the sentences, the names (the `Имя:` line and capitalised words that do not open
-a sentence) and the dictionary headings. In a formula it marks the quantifiers, signs
-and LaTeX commands, the sets ℕ, ℤ, ℚ and the variables. Which highlighting to use is
-decided by the same rule that picks the check (next section), so the colour in the
-editor always tells how the text will be checked.
+Tiles above the editor are setups. A setup is a ready layout for one activity: a starter
+program, what is shown on the right, and the main button. Ctrl+Enter presses the main
+button too.
 
-The answer is split into six tabs.
+| Setup | On the right | Address |
+|---|---|---|
+| First program | the value of a function and a table of tests | `#setup=first` |
+| Proofs | every postcondition and statement with its status | `#setup=proof` |
+| Tests | a table: test, input, expected, actual | `#setup=tests` |
+| Code generation | the same program in C, Go, Rust and seven more languages | `#setup=emit` |
+| Reasoning in Russian | whether the conclusion follows from the premises | `#setup=reasoning` |
+| Formula | a formula with ∀ and ∃, its flang translation and the check | `#setup=formula` |
+| C → flang | a C function translated and the result checked | `#setup=c` |
 
-- **Result** — one line about what matters and the list of statements with marks:
-  - "Proved for all values" — every statement holds for every input, not only for the
-    examples written;
-  - "Checked on examples only" — no violations were found, but for the other values this
-    is not a proof;
-  - "Does not follow: here is a counterexample" — an input on which the statement is
-    false;
-  - "Not proved" — a statement has neither a proof nor examples;
-  - "Error on line N" — the line is marked in the editor, and the button with its number
-    puts the cursor there.
+Append a setup address to the page address and send it as a link. The "Share" button
+also puts the editor text into the link — after the `#` sign, which a browser does not
+send to the server.
 
-  Under the result, the details are folded: what the independent proof check said, and
-  the full compiler output as in a terminal.
-- **Formulas** — every statement of the program as a typeset formula, with its LaTeX
-  source folded below it. KaTeX does the typesetting, and the site serves it itself, from
-  no third-party address. If it did not load, the formula stays in plain quantifier
-  notation.
-- **flang → language** — the same program printed by `flang emit` into C, C++, Go, Rust,
-  Java, JavaScript, TypeScript, Elixir, Python and C#. The same compiler in the tab does
-  the printing. The program's files are shown; runtime files are copied into the output
-  as they are, and only their names are listed here. If the editor holds a formula or a
-  reasoning, the flang program it became is printed.
-- **language → flang** — a field for a C function. The translator (`flang/foreign/c`)
-  turns it into a flang program, and the kernel checks it right away: `int` overflow and
-  division by zero become promises that have to be proved. Python comes when its
-  translator is in the build; until then its button says "soon".
-- **Formula → flang** — a field for a formula with ∀ / ∃ or in LaTeX: it is translated
-  to flang and checked right away.
-- **Pictures** — diagrams of what is declared: objects and arrows of a category, functor
-  squares, monoid laws, Euler–Venn circles for sets and the proof tree. Every picture
-  carries a mark: "proved", "on examples" or "violated".
+## The editor
 
-## What becomes what
+While you type, the playground checks the text by itself: half a second after an edit
+the main button of the setup fires. A program with `использует` is not checked this way:
+with a library the check takes about ten seconds, so a button starts it.
 
-The playground decides what it is looking at by the first meaningful line of the text:
-blank lines and `//` comments do not count. The rule is shared by the playground and the
-`flang repl` shell (the `.text` command): the function `«Text kind»` in
-`flang/proof/probes/syllogism/sentences/text-kind.flang`.
+An error is shown as one message on the right. The editor underlines the word the
+compiler pointed at, and the error code (`FLANG_…`) leads to its row in the
+[code reference](diagnostics.html). The "line N" button puts the cursor on the error.
 
-- A line that starts with `модуль`, `module`, `категория` or `category` is a flang
-  program (when a category is declared at the top level, the kind is called "category"
-  and it is checked the same way). `flang check
-  --proof --json` checks it; the result is built from the compiler's machine-readable
-  answer, not from its text.
-- A line that starts with `∀`, `∃`, `\forall`, `\exists`, `forall` or `exists` is a
-  formula. The formula
-  translator (`flang/foreign/formula`) turns it into a flang statement, and the kernel
-  checks it. When a formula cannot be read, the translator names the reason: "a chain of
-  comparisons without parentheses is ambiguous", "there is no ℝ in flang" and so on.
-- Any other text is reasoning in Russian: a dictionary (`Понятие:`, `Свойство:`,
-  `Имя:`), premises and a conclusion after the word «Следовательно». The translator
-  `flang/proof/probes/syllogism/sentences/translator.flang` builds a program from it, and
-  the kernel decides whether the conclusion follows from the premises.
+Keys:
 
-After the kernel, the proof record is replayed by a separate program
-(`flang/proof/checker/checker.c`, also in WebAssembly). When it matches, what is proved
-rests on more than the compiler's word.
+- Tab and Shift+Tab shift a line or the selected lines by two spaces;
+- Enter keeps the indent and adds one after a line that opens a block (`функция`,
+  `пример`, `разбор`, `случай`);
+- `<<` becomes `«»` with the cursor inside, `>>` becomes `»`.
+
+The text of every setup is saved in the browser on each edit and comes back after a page
+reload. The "Reset" button restores the starter program. A text from a link wins over
+the draft: a link opens what is written in it.
+
+## What is shown on the right
+
+**Result** (the "First program" setup). The "Run" button computes a function and runs
+the tests. The function name and the arguments are in the fields above the editor. If
+the fields are empty, the first function of the text and the arguments of its first test
+are used.
+
+**Proofs.** One row for every postcondition (`обеспечивает`) and statement. A click on a
+row leads to its place in the source. The statuses:
+
+- "proved" — true for every input, not only for the tests written;
+- "tests only" — no violation was found, but that is not a proof;
+- "not proved" — there is neither a proof nor tests, or the kernel could not derive the
+  goal;
+- "refuted" — an input where the statement is false is shown.
+
+Next to it are the "Formulas" tab (statements written with ∀ and ∃) and the "Pictures"
+tab (a proof tree, arrows of a category, monoid laws, circles for sets).
+
+**Tests.** A test in flang is an `пример` inside a function. The table shows the input,
+the expected and the actual value of every test. A failed test marks its line in the
+editor.
+
+**Code** (the "Code generation" setup). The program in the chosen language, generated by
+`flang emit`. Buttons above the code choose the language and the file. Runtime library
+files are copied into the result as they are, so only their names are listed.
+
+**Verdict** (the "Reasoning in Russian" setup). A dictionary (`Понятие:`, `Свойство:`,
+`Имя:`), premises, and a conclusion after the word «Следовательно». The answer is
+"follows" or "does not follow" with a counterexample.
+
+**Translation** (the "C → flang" setup). A C function becomes a flang program, and the
+proof kernel checks it right away. `int` overflow and division by zero turn into
+conditions that have to be proved.
+
+The "Terminal" tab of every setup holds the compiler output as the command prints it in
+a terminal.
+
+## How the playground reads a text
+
+The playground decides what the text is by its first significant line; blank lines and
+`//` comments do not count.
+
+- The line starts with `модуль`, `module`, `категория` or `category` — it is a flang
+  program. `flang check --proof` checks it.
+- The line starts with `∀`, `∃`, `\forall`, `\exists`, `forall` or `exists` — it is a
+  formula. A translator turns it into a flang statement, and the proof kernel checks it.
+  If the formula cannot be read, the reason is named: "a chain of comparisons without
+  parentheses is ambiguous", "there is no ℝ in flang".
+- Any other text is reasoning in Russian. A translator builds a program from it, and the
+  kernel decides whether the conclusion follows from the premises.
+
+After the kernel a separate program, `checker`, also built to WebAssembly, goes through
+the proof record again. This is the independent check: what is proved is confirmed twice.
+
+Library modules have English names: `использует «Lists»`, not `использует «Списки»`. If
+a module is named differently, the playground suggests similar names.
 
 ## Examples
 
@@ -285,8 +307,8 @@ picture shows Euler–Venn circles with the letters in their regions.
   утверждаем («Пересечение» от («Буквы слова мир») и («Буквы слова ум»)) равно ["м"]
 ```
 
-A formula with quantifiers in LaTeX: addition of integers is commutative. The same
-formula can be entered on the "Formula → flang" tab.
+A formula with quantifiers in LaTeX: addition of integers is commutative. Open it in the
+"Formula" setup.
 
 ```text playground Formula with ∀ in LaTeX
 \forall x \in \mathbb{Z},\ \forall y \in \mathbb{Z},\ x + y = y + x
@@ -302,8 +324,8 @@ A formula with quantifiers in Unicode: multiplication of integers commutes.
 ```
 
 A C function translated to flang. `clamp` is proved in full. For `midpoint` the kernel
-does not prove the promise "`lo + hi` is at most INT_MAX", so the playground computes the
-function at the `int` bounds: with `lo = hi = 2147483647` the promise is broken. This is
+does not prove the condition "`lo + hi` is at most INT_MAX", so the playground computes the
+function at the `int` bounds: with `lo = hi = 2147483647` the condition is broken. This is
 a real C bug, and the translation does not hide it.
 
 ```c playground A C function — translated to flang
@@ -362,7 +384,7 @@ proof tree: the base, the step and the rule of each case.
   следовательно доказано
 ```
 
-A function with a postcondition: the `обеспечивает` promise is proved for every input.
+A function with a postcondition: the condition after `обеспечивает` is proved for every input.
 
 ```flang playground Function with a postcondition
 модуль «Привет»
@@ -394,58 +416,16 @@ playground" link: it opens this page with the block's text in the address.
 
 ## How it is built
 
-| what | where | built by |
-|---|---|---|
-| compiler with the kernel | `playground/flang.wasm` | `bootstrap/*.c`, `clang --target=wasm32-wasi` |
-| independent proof check | `playground/checker.wasm` | `flang/proof/checker/checker.c`, the same `clang` |
-| reasoning translator | `playground/reasoning.js` | `bootstrap/flang emit --target js` |
-| formula translator | `playground/formula.js` | `flang/foreign/formula/browser.fscript`, `bootstrap/flang emit --target js` |
-| C translator | `playground/c.js` | `flang/foreign/c/browser.fscript`, `bootstrap/flang emit --target js` |
-| library | `playground/library.tar` | `flang/stdlib/*.flang` and `flang/core/*.flang` |
-| WASI host | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
-| playground page | `playground.js` | `docs/site/playground.js` |
-| formula typesetting | `vendor/katex/` | KaTeX 0.16.11 (MIT licence), kept in the tree: `docs/site/vendor/katex` |
+The tab runs the same programs as a terminal, built to WebAssembly: the `flang`
+compiler with the proof kernel and the independent checker, `checker`. They run in a
+separate thread, so the page does not freeze.
 
-The files of the `playground/` directory are built by a step of the site build
-(`bootstrap/flang run-script playground:build`); they are not in the tree. The WASI host
-keeps a file system in the tab's memory: the user's source, the library (downloaded only
-when the text has `использует`) and a temporary directory `/tmp`. The compiler runs in a
-separate thread (a Web Worker), so the page does not freeze.
+Files live in the tab's memory: your text, a temporary directory and the library. The
+playground downloads the library only if the text has `использует`.
 
-C text is read by the host: it builds the same tree that `clang -Xclang -ast-dump`
-prints, only for the subset the translator knows. The probe compares this tree with
-clang's on the nine files of `flang/foreign/c/corpus`, line by line. What the subset does
-not have (pointers, `long`, `switch`, the preprocessor except `#include`) the host names
-with its line instead of guessing a translation.
-
-The editor takes its keywords from the lexer's table (`flang/self/lexer.flang`, the
-function «Куски таблицы»): the site build puts them on the page, and there is no second
-list of words. LaTeX formulas are drawn by KaTeX, which the page loads from
-`cdn.jsdelivr.net`; without a network the formula stays LaTeX source. Pictures are SVG
-the page draws itself from the parse tree (`flang ast`) and the compiler's
-machine-readable answer.
-
-The same host runs under Node, without a browser:
-
-```sh
-node flang/src/emit/js/flang_host_browser.js docs/site/out/playground "$(cat text.txt)"
-node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --json "$(cat text.txt)"
-node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --на go "$(cat program.flang)"
-node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --из c "$(cat function.c)"
-```
-
-Its exit code is the check's: 0 — follows or proved, 1 — does not follow, 3 — not proved.
-With `--json` it prints the whole parsed answer — the one the page builds the result and
-the pictures from.
-
-This is how the site build probes the playground (`bootstrap/flang run-script
-playground:probe`, the plan `scripts/site/playground-probe.fscript`): Barbara must
-follow and the independent check must match the record; affirming the consequent must
-give "does not follow" with code 1; the false statement must give code 3 and nothing
-proved; the LaTeX formula must be translated to flang, proved and matched by the
-independent check; printing into all ten languages must give the same program files the
-binary compiler prints; a C function must be translated and checked by the kernel; the
-playground's C reading must give clang's tree on every file of the corpus.
+The first run downloads the compiler, about 10 MB; the share downloaded is shown on the
+right. After that it comes from the browser cache. Limits of a run: 3,000,000 steps of
+computation and 120 seconds per command.
 
 ## What the playground does not have
 

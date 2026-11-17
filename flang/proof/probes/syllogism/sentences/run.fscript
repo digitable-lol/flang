@@ -87,6 +87,19 @@
     ожидается "СЛЕДУЕТ\nграница: по форме"
   соединить (приписать report к extras) по "\n"
 
+тотальная функция «Unread heading»
+  принимает text: строка
+  возвращает строка
+  пример «A text with an unread sentence is not read»
+    дано text равно "Проводимость растёт."
+    ожидается "текст не прочитан:"
+  пример «A text that is read but has no conclusion has nothing to judge»
+    дано text равно "Понятие: кит, киты. Понятие: рыба, рыбы; она. Ни один кит не рыба."
+    ожидается "текст прочитан, но судить в нём нечего:"
+  если «Read without a step» от («Prepared text» от text)
+    то "текст прочитан, но судить в нём нечего:"
+    иначе "текст не прочитан:"
+
 тотальная функция «Judged»
   принимает text: строка, output: строка
   возвращает «Продолжение»
@@ -94,7 +107,7 @@
   разбор («Prepared reading» от text)
     случай вариант «Unread» с faults как faults
       то (вариант «Провал» с код равным "FLANG_REASONING_TEXT"
-          и сообщение равным (соединить (приписать "текст не прочитан:" к («Соединить списки» от
+          и сообщение равным (соединить (приписать («Unread heading» от text) к («Соединить списки» от
           (отобразить faults как fault → «Plain fault» от fault) и extras)) по "\n"))
     случай вариант «Read» с words как words и sentences как sentences
       то разбор («Verdict of» от words и sentences и output)

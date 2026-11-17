@@ -1,32 +1,50 @@
 # What to read next
 
-A reading order from installation to a program of your own. On the right is
-the command or the sign that shows the step is done.
+In what order should you read the documentation? Below is a route of eight
+steps, from installation to your own program with proofs. Each step says what
+you can do after it. Steps 1–3 take about half an hour.
 
-| Step | What to read | The step is done when |
+## The main route
+
+| Step | What to read | After the step you can |
 | --- | --- | --- |
-| 1. Install | [Installation](install.html) | `flang --version` answers with a version |
-| 2. First program | [Your first program](getting-started.html) | you wrote a file, checked it and ran a function |
-| 3. The basics | [Tutorial](tutorial.html), six chapters with exercises; or `flangtutor` in the terminal — twelve lessons with blanks to fill, the compiler checks the answer (`flangtutor --lang en`) | you can read a `FLANG_NOT_TOTAL` refusal and know what to fix |
-| 4. Familiar forms | [Loops, classes, interfaces](../guide/surface-sugar.md) | you know what a loop expands into |
-| 5. A task of your own | [Which construct to use when](which-construct.html), [Operations](operations.html) | a task you solved before in another language passes `flang check` and `flang test` |
-| 6. Proofs | [Why and how](proofs.html), [How a proof works](how-proofs-work.html), [The kernel refused: whose error is it](proof-refused.html) | you tell «доказано» (proved) from «сетка N» (examples only) in the output of `flang check --proof` |
-| 7. Files, network, processes | [Where flang ends and the host begins](host-boundary.html), [Processes and supervision](processes.html), [Databases](database.html) | your program reads a file through `flang io` |
-| 8. Code in another language | [Embedding flang in another program](embedding.html), [Modules and packages](packages.html) | `flang emit` prints your program, and it builds |
+| 1 | [Installation](install.html) | call `flang --version` and get a version |
+| 2 | [Your first program](getting-started.html) | write a function with a test, check it (`flang check`) and run it (`flang run`) |
+| 3 | [Your first proof](first-proof.html) | write a precondition and a postcondition, read a counterexample, write a proof by induction |
+| 4 | [Tutorial](tutorial.html), six chapters with exercises | write functions with a fold, your own types and `match`; fix a `FLANG_NOT_TOTAL` error |
+| 5 | [Which construct to use when](which-construct.html), [Operations](operations.html) | move a task you solved in another language to flang |
 
-Reference pages to come back to: [Language reference](language.html),
-[Command reference](cli.html), [Refusal reference](diagnostics.html),
-[Glossary](../glossary.html), [Known limitations](limits.html).
+Instead of step 4 you can take `flangtutor`: twelve lessons in the terminal,
+the compiler checks each answer (`flangtutor --lang en`). The program ships
+with the prebuilt builds.
+
+## Further, by task
+
+After step 5 the order is free. Choose by what your program needs.
+
+| Task | What to read | After the step you can |
+| --- | --- | --- |
+| familiar loops and classes | [Loops, classes, interfaces](surface-sugar.html) | write a loop and a class and know what they are rewritten into |
+| more proofs | [How to read the proof report](how-proofs-work.html), [Theorems step by step](manual-proofs.html), [The compiler rejected a proof](proof-refused.html) | read the whole output of `flang check --proof` and fix a theorem from a `FLANG_PROOF_…` message |
+| files, network, processes | [The boundary between flang and the host](host-boundary.html), [Processes and supervision](processes.html), [Databases](database.html) | read a file from a program with `flang io` |
+| code in another language | [Generating C and JavaScript](emit-walkthrough.html), [Embedding in another program](embedding.html), [Modules and packages](packages.html) | generate a project with `flang emit` and build it |
+
+## Reference pages
+
+You return to these as needed: [Language constructs](language.html),
+[Commands](cli.html), [Error codes](diagnostics.html),
+[Known limitations](limits.html).
 
 ## If you are stuck
 
-```bash
-flang check file.flang          # what did not match
-flang check file.flang --proof  # what is proved and what is not
-flang --help                    # every command
-```
+| What you need | Command |
+| --- | --- |
+| see the errors of a file | `flang check file.flang` |
+| see what is proved | `flang check file.flang --proof` |
+| see all commands | `flang --help` |
 
-A refusal starts with a code: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,
-`FLANG_PROOF_INDUCTION_STEP`. The `FLANG_PROOF_` codes are explained on the
-page [The kernel refused: whose error is it](proof-refused.html), the rest in
-the [Refusal reference](diagnostics.html).
+An error message starts with a code: `FLANG_TYPE`, `FLANG_NOT_TOTAL`,
+`FLANG_PROOF_INDUCTION_STEP`. Codes starting with `FLANG_PROOF_` are explained
+in [The compiler rejected a proof](proof-refused.html), the rest in the
+[error code reference](diagnostics.html). Install and start-up errors are on
+the page [If it does not work](troubleshooting.html).

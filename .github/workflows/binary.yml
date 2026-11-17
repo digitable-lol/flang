@@ -2286,6 +2286,19 @@ jobs:
         env:
           LC_ALL: C.UTF-8
 
+      # C без libc (--freestanding): сгенерированный код собирается для x86_64 и
+      # riscv64 с -ffreestanding -nostdlib, и `nm -u` обязан быть пуст — иначе
+      # красно. Заодно: чужая программа без libc линкуется и запускается, а
+      # 1000 входов на функцию дают те же ответы, что обычный сгенерированный C.
+      # Пока собранный компилятор ключа не знает, шаг `fresh` печатает «skip».
+      - name: Check the C without libc pulls in no external symbol
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-riscv64-linux-gnu
+          make -C flang/proof/probes/c-without-libc check REQUIRE_RISCV=1
+        env:
+          LC_ALL: C.UTF-8
+
       - name: Check user programs are replayed by the checker
         run: cd flang/proof/probes/user-programs && ../../../../bootstrap/flang io run.fscript
         env:

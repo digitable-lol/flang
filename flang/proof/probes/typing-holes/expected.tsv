@@ -94,3 +94,25 @@ written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, �
 postcondition-calls-its-own-function.flang	check	1	FLANG_NOT_TOTAL
 postcondition-calls-its-own-function-one-step-lower.flang	check	0	замечаний нет
 postconditions-call-each-other.flang	check	0	замечаний нет
+total-substring-outside-string.flang	check	0	замечаний нет
+total-element-outside-list.flang	check	0	замечаний нет
+total-character-outside-string.flang	check	0	замечаний нет
+total-split-by-empty-separator.flang	check	0	замечаний нет
+total-code-of-empty-string.flang	check	0	замечаний нет
+total-character-by-wrong-code.flang	check	0	замечаний нет
+total-head-of-empty-list.flang	check	0	замечаний нет
+total-tail-of-empty-list.flang	check	0	замечаний нет
+total-head-under-a-check.flang	check	0	замечаний нет
+total-word-division-by-zero.flang	check	0	замечаний нет
+total-word-remainder-by-zero.flang	check	0	замечаний нет
+total-word-division-under-a-check.flang	check	0	замечаний нет
+total-word-division-by-requirement.flang	check	0	замечаний нет
+total-number-from-text.flang	check	0	замечаний нет
+total-word-to-number-above-exact.flang	check	0	замечаний нет
+total-word-conversion-out-of-range.flang	check	0	замечаний нет
+total-word-conversion-inside-range.flang	check	0	замечаний нет
+total-word-narrowing-out-of-range.flang	check	0	замечаний нет
+total-word-shift-beyond-width.flang	check	0	замечаний нет
+total-word-sum-overflow.flang	check	0	замечаний нет
+total-exact-remainder-by-zero.flang	check	0	замечаний нет
+total-requirement-takes-head-of-empty-list.flang	check	0	замечаний нет

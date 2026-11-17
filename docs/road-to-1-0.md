@@ -337,7 +337,7 @@ c329a1618, семя партии 10: «печати совпали побайт�
 HOME, повторяет сборку без сети и без исходников и сравнивает замки побайтно;
 работа CI `link-import` гоняет её на чистом образе. Профили в
 `.flangrc` выбирают модули библиотеки ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-13 файлов flang/stdlib/*.flang = 65 (the list facts module) --> 65 файлов, <!-- СНЯТО 2026-11-15 строк-в flang/stdlib/*.flang = 63814 (list facts over dev with the print batch 13 postconditions) --> 63 814 строк.
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-16 файлов flang/stdlib/*.flang = 66 (the parsing module) --> 66 файлов, <!-- СНЯТО 2026-11-16 строк-в flang/stdlib/*.flang = 65076 (the parsing module) --> 65 076 строк.
 
 На двоичном 0.7.34 `bootstrap/flang run-script link-import:check` отвечает «импорт по
 ссылке: шагов 35, замок, кеш и отказы сошлись»: первая сборка скачивает модуль и

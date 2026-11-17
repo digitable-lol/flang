@@ -31,10 +31,10 @@ docs/tasks/     открытая и закрытая работа дерева, 
 Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 68 файлов на flang —
 <!-- СНЯТО 2026-11-11 файлов flang/self/*.flang = 68 (ADR-0230: flang/self/call-words.flang lays console words over parameters) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
-[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **65 модулей, 2159 функций и 4173
+[`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **66 модулей, 2259 функций и 4223
 примера**, которые прогоняются при каждой проверке:
-<!-- СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module) -->
-<!-- СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang = 4173 (list facts over dev with the print batch 13 stdlib claims) -->
+<!-- СНЯТО 2026-11-16 файлов flang/stdlib/*.flang = 66 (the parsing module) -->
+<!-- СНЯТО 2026-11-16 примеров-в flang/stdlib/*.flang = 4223 (the parsing module) -->
 списки, строки, числа, множества, словари, JSON, UTF-8, даты, два драйвера баз данных
 (`postgres`, `sqlite`), сеть (`http`, `tls`, `redis`), криптография, написанная на flang (`aes`,
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.

@@ -34,8 +34,8 @@ name: Binary
 #   дым (`--version`, `--help`, `check` одного файла)              3 с
 #   обходчик проверок на flang, 211 проверок                       3 с
 #   СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-#   примеры stdlib и ядра, 4357 штук                      44 мин 07 с
-#   СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4357 (list facts over dev with the print batch 13 stdlib claims)
+#   примеры stdlib и ядра, 4407 штук                      44 мин 07 с
+#   СНЯТО 2026-11-16 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4407 (the parsing module)
 #   ─────────────────────────────────────────────────────────────────
 #   обходчик примеров корпуса, всё дерево                    ДЕСЯТКИ МИНУТ
 #
@@ -61,7 +61,7 @@ name: Binary
 # из 4357 ниже) с пуша сняты на тег (задача 6890): их прогон брал 44 минуты, и
 # пуш из-за них не влезал в пять минут — та самая утечка, ради которой заведено.
 # СНЯТО 2026-09-13 строк flang/test/ledger.txt = 211
-# СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4357 (list facts over dev with the print batch 13 stdlib claims)
+# СНЯТО 2026-11-16 примеров-в flang/stdlib/*.flang,flang/core/*.flang = 4407 (the parsing module)
 # (число 98 стояло здесь ещё дважды после того, как строкой 21 его уже сняли
 #  и назвали протухшим: одна правка прошла по одному месту из трёх.)
 # Здесь же — глубокая сверка всего дерева, и её место там, где решают выпуск.
@@ -365,9 +365,9 @@ jobs:
       # Примеры двух каталогов, которые СХОДЯТСЯ ЦЕЛИКОМ и потому годятся в
       # дешёвый гейт по голому коду возврата, без ведомости:
       #
-      #   flang/stdlib   65 файлов, 4173 примера, прошли все  44 мин
-      #   СНЯТО 2026-11-11 файлов flang/stdlib/*.flang = 65 (the list facts module)
-      #   СНЯТО 2026-11-15 примеров-в flang/stdlib/*.flang = 4173 (list facts over dev with the print batch 13 stdlib claims)
+      #   flang/stdlib   66 файлов, 4223 примера, прошли все  44 мин
+      #   СНЯТО 2026-11-16 файлов flang/stdlib/*.flang = 66 (the parsing module)
+      #   СНЯТО 2026-11-16 примеров-в flang/stdlib/*.flang = 4223 (the parsing module)
       #   flang/core      4 файла,  184 примера,  прошли все     15 с
       #   СНЯТО 2026-09-05 файлов flang/core/*.flang = 4
       #   СНЯТО 2026-09-05 примеров-в flang/core/*.flang = 184

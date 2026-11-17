@@ -63,6 +63,8 @@ Replace `plus` with `minus` in `sum.flang` and check again:
 flang check sum.flang
 ```
 
+The compiler answers:
+
 ```text
 модуль «Example»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «one, two, three» функции «Sum»: FLANG_PROPERTY: нарушено свойство «the sum is not negative» функции «Sum»

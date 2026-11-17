@@ -12,7 +12,7 @@
 
 Файл `change.flang`:
 
-```flang
+```flang refused
 модуль «Касса»
 
 тотальная функция «Сдача»
@@ -39,6 +39,8 @@
 ```bash
 flang check change.flang
 ```
+
+Ответ компилятора:
 
 ```text
 модуль «Касса»: функций 1, из них с доказанным завершением 1; типов 0
@@ -138,6 +140,8 @@ FLANG_PRECONDITION: не выполнено требование «денег х
 ```bash
 flang check total.flang --proof
 ```
+
+Ответ компилятора:
 
 ```text
 …
@@ -242,6 +246,8 @@ flang run total.flang --function Итог --args '{"цены": [100, 50], "до�
 ```bash
 flang check total.flang --proof
 ```
+
+Ответ компилятора:
 
 ```text
 FLANG_PROOF_INDUCTION_STEP в файле total.flang, строка 23, столбец 10: шаг 1,

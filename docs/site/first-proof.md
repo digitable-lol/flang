@@ -25,7 +25,7 @@ its messages in Russian, and each one is translated under its block.
 
 File `change.flang`:
 
-```flang
+```flang refused
 модуль «Касса»
 
 тотальная функция «Сдача»
@@ -53,6 +53,8 @@ The test passes: 100 − 90 = 10. Check the file:
 ```bash
 flang check change.flang
 ```
+
+The compiler answers:
 
 ```text
 модуль «Касса»: функций 1, из них с доказанным завершением 1; типов 0
@@ -157,6 +159,8 @@ a non-empty one gives the first price plus the total of the rest.
 ```bash
 flang check total.flang --proof
 ```
+
+The compiler answers:
 
 ```text
 …
@@ -272,6 +276,8 @@ The compiler checks every step of a theorem. Delete the line `требует` fr
 ```bash
 flang check total.flang --proof
 ```
+
+The compiler answers:
 
 ```text
 FLANG_PROOF_INDUCTION_STEP в файле total.flang, строка 23, столбец 10: шаг 1,

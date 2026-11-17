@@ -1982,6 +1982,8 @@ c8dbb7179b35f785da41f5990dd41238|82|44|0|0|0|flang/self/proof-kernel.flang
 1880ce56bb426cf1802c224455273e46|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/false-zero.flang
 9f4af10b6f645ab264cd446665d22220|1|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/non-canon-literal.flang
 5e7a909cd8e20d5169ba7ff77e753d78|2|×|×|×|0|flang/proof/checker/tests/families/exact-ring/forged/over-number.flang
+438fe6cb5534177c20b0789c9259aced|1|0|0|1|0|flang/proof/checker/tests/families/exact-ring/forged/zero-equals-one.flang
+1c03defa254823ff3a4d516c80e55bcb|1|0|0|1|0|flang/proof/checker/tests/families/exact-ring/forged/zero-remainder-equals-one-remainder.flang
 1c40267274311ec4479e99c16fed524f|7|×|×|×|0|flang/proof/checker/tests/families/exact-ring/ring-laws.flang
 c8dbb7179b35f785da41f5990dd41238|85|44|0|0|0|flang/self/proof-kernel.flang
 16be58c2df9f4e5f41fecc556cd10aeb|1|×|×|×|0|flang/proof/probes/ring-laws/programs/ring-false-over-exact.flang
@@ -2304,6 +2306,7 @@ cfe81680e8183e16d1f664777a25eb78|2|×|×|×|0|flang/proof/probes/settled-kernel-
 94fa31a05ecf086d31d0af8542edb24b|1|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/box.flang
 2eb545b0adebff532ea0161f157df179|2|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/lists.flang
 d5027123566bbe06027583bbbe55f236|3|×|×|×|0|flang/proof/checker/tests/families/replay-by-body/shapes.flang
+ecf8458e09bf2479b7a9c8e748d06881|1|1|0|0|0|flang/proof/checker/tests/families/linear-arithmetic/product-of-a-difference.flang
 c3c60d0da7b857e4d23e24911ab80036|1|×|×|×|0|flang/proof/checker/tests/families/linear-arithmetic/plus-subtract-cancel.flang
 f7523d73e729c9d57e38d8fd22fa9fc2|1|0|0|1|0|flang/proof/checker/tests/families/linear-arithmetic/sum-bound-rounds-at-the-ceiling.flang
 1722e15c9b1dbbfaea87808be8630f00|1|×|×|×|0|flang/proof/checker/tests/families/linear-over-calls/over-calls.flang

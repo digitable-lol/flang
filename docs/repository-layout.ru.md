@@ -28,8 +28,8 @@ docs/tasks/     открытая и закрытая работа дерева, 
 
 <!-- КАРТА-КОНЕЦ -->
 
-Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 68 файлов на flang —
-<!-- СНЯТО 2026-11-11 файлов flang/self/*.flang = 68 (ADR-0230: flang/self/call-words.flang lays console words over parameters) -->
+Внутри `flang/`: [`flang/self/`](../flang/self) — компилятор, 69 файлов на flang —
+<!-- СНЯТО 2026-11-17 файлов flang/self/*.flang = 69 (the libc-free C generator flang/self/c-without-libc.flang and its probe) -->
 лексер, разбор, типы, завершаемость, ядро доказательств и по печати на каждую цель.
 [`flang/stdlib/`](../flang/stdlib) — стандартная библиотека: **66 модулей, 2259 функций и 4223
 примера**, которые прогоняются при каждой проверке:

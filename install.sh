@@ -7,6 +7,10 @@
 #   FLANG_VERSION  version to install, e.g. 0.7.29 (default: the latest release)
 #   PREFIX         where to install (default: $HOME/.local); the binary goes
 #                  to $PREFIX/bin/flang
+#   FLANG_VERIFY_PROVENANCE
+#                  set to 1 to also check, with the GitHub CLI, that the build
+#                  was made by the release workflow of this repository from
+#                  the tag of that version; a failed check installs nothing
 #
 # What it does: picks the build for this OS and CPU, downloads it and the
 # release's SHA256SUMS from GitHub, refuses to go on if the checksum differs,
@@ -88,6 +92,25 @@ if [ "$actual" != "$expected" ]; then
   die "checksum mismatch for $name.tar.gz: expected $expected, got $actual. The download is damaged or was tampered with; nothing was installed."
 fi
 say "checksum ok: $actual"
+
+# The checksum says the file arrived whole. Provenance says who built it:
+# GitHub signs a record naming the repository, the workflow file, the tag and
+# the commit. The check is optional because it needs the GitHub CLI, signed in.
+case "${FLANG_VERIFY_PROVENANCE:-}" in
+  "" | 0)
+    say "provenance not checked. To check that this build came from the release workflow: FLANG_VERIFY_PROVENANCE=1 (needs the GitHub CLI, gh)" ;;
+  *)
+    command -v gh >/dev/null 2>&1 \
+      || die "FLANG_VERIFY_PROVENANCE is set, but the GitHub CLI (gh) is not installed. Install it from https://cli.github.com, or unset the variable to rely on the checksum alone. Nothing was installed."
+    if gh attestation verify "$tmp/$name.tar.gz" --repo "$repo" \
+        --signer-workflow "$repo/.github/workflows/release.yml" \
+        --source-ref "refs/tags/v$version" > "$tmp/provenance.log" 2>&1; then
+      say "provenance ok: built by the release workflow of $repo from tag v$version"
+    else
+      sed 's/^/flang:   gh: /' "$tmp/provenance.log" >&2
+      die "the provenance of $name.tar.gz could not be verified. Check that gh is signed in (gh auth login); releases up to 0.7.40 carry no provenance record. Nothing was installed."
+    fi ;;
+esac
 
 tar -xzf "$tmp/$name.tar.gz" -C "$tmp"
 src="$tmp/$name"

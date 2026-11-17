@@ -72,6 +72,13 @@ jobs:
   release:
     name: release
     runs-on: ubuntu-latest
+    # id-token и attestations нужны одному шагу — «Attest the release archive»:
+    # GitHub подписывает запись о том, из какого коммита и каким прогоном
+    # собран архив. Ключей в репозитории для этого нет.
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     # The C archive name goes to the jobs below: they build the prebuilt
     # tarballs from that very archive, so a prebuilt build and a source build
     # (brew, asdf) compile the same C99.
@@ -98,6 +105,52 @@ jobs:
           # отстал от дерева» читает его формулу. Без развёрнутого сабмодуля
           # читать нечего, а «нечего читать» здесь — красное, не зелёное.
           submodules: true
+
+      # ПОРЯДОК ВЫПУСКА ПРОВЕРЯЕТСЯ ПЕРВЫМ ШАГОМ, до сборки и до выкладки.
+      #
+      # Выпуск идёт с main: метка обязана стоять на коммите, достижимом из
+      # main, а main — быть предком dev или равным ему. Метка v0.7.40 встала на
+      # dev, когда main отставал на 104 коммита: `install.sh` берётся с main и
+      # ставил бы выпуск, которого в main нет. Шаг занимает секунды и падает
+      # раньше, чем прогон успеет создать релиз.
+      #
+      # На ручном запуске с ветки шаг только называет положение дел: сухой
+      # прогон с ветки ничего не выкладывает, и требовать от него main нельзя.
+      - name: Check release order
+        run: |
+          set -eu
+          git fetch --quiet --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' '+refs/heads/dev:refs/remotes/origin/dev'
+          here="$(git rev-parse 'HEAD^{commit}')"
+          main="$(git rev-parse origin/main)"
+          dev="$(git rev-parse origin/dev)"
+          short() { git rev-parse --short "$1"; }
+          trouble=0
+          if ! git merge-base --is-ancestor "$here" "$main"; then
+            trouble=1
+            case "$GITHUB_REF" in
+              refs/tags/v*)
+                echo "::error::метка $GITHUB_REF_NAME стоит на коммите $(short "$here"), которого нет в main ($(short "$main")). Выпуск идёт с main."
+                echo "::error::Что делать: удалить метку (git push origin :refs/tags/$GITHUB_REF_NAME), перемотать main (git push origin $(short "$here"):main) и поставить метку заново. Порядок — docs/releasing.md."
+                ;;
+              *) echo "::notice::коммит $(short "$here") не лежит в main ($(short "$main")) — для ручного запуска с ветки это обычно" ;;
+            esac
+          fi
+          if ! git merge-base --is-ancestor "$main" "$dev"; then
+            trouble=1
+            case "$GITHUB_REF" in
+              refs/tags/v*)
+                echo "::error::main ($(short "$main")) не предок dev ($(short "$dev")): в main есть коммиты, которых нет в dev."
+                echo "::error::Что делать: влить их в dev (git log origin/dev..origin/main покажет какие) и выпускать после этого. Порядок — docs/releasing.md."
+                ;;
+              *) echo "::notice::main ($(short "$main")) не предок dev ($(short "$dev"))" ;;
+            esac
+          fi
+          case "$GITHUB_REF" in
+            refs/tags/v*) [ "$trouble" -eq 0 ] || exit 1 ;;
+          esac
+          [ "$trouble" -ne 0 ] || echo "порядок выпуска соблюдён: $(short "$here") лежит в main, main — предок dev"
+
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
         with:
@@ -352,7 +405,9 @@ jobs:
           if [ "$sobran" != "$v_formule" ]; then
             echo "::error::архив собрался с sha256 $sobran, а packaging/homebrew/flang.rb ждёт $v_formule."
             echo "::error::Хеш описывает ДЕРЕВО, а не номер версии, и пересчитывается при каждом выпуске."
-            echo "::error::Впишите в формулу: sha256 \"$sobran\" — и повторите тег."
+            echo "::error::Хеш считают ДО метки: bootstrap/flang run-script release:archive, затем release:formula,"
+            echo "::error::и его же сверяет работа «Install path» на запросе слияния с коммитом версии (docs/releasing.md)."
+            echo "::error::Метку переставлять не надо: впишите sha256 \"$sobran\" следующим выпуском-исправлением."
             exit 1
           fi
           echo "хеш архива совпал с формулой: $sobran"
@@ -385,7 +440,7 @@ jobs:
           v_derevo="$(sed -n 's/^  version "\([^"]*\)".*/\1/p' packaging/homebrew/flang.rb)"
           v_kran="$(sed -n 's/^  version "\([^"]*\)".*/\1/p' "$kran")"
           if [ "$v_derevo" != "$v_kran" ]; then
-            echo "::notice::кран на ${v_kran}, дерево на ${v_derevo}: после выкладки положите flang-package.rb из артефакта package-manifests в Formula/flang-package.rb крана, push, git add packaging/homebrew-tap"
+            echo "::notice::кран на ${v_kran}, дерево на ${v_derevo}: формулу этого выпуска в кран кладёт работа packages (шаг «Publish the formula to the tap») либо команда bootstrap/flang run-script release:tap ${v_derevo}"
           fi
           echo "кран устроен как надо: $(git -C packaging/homebrew-tap rev-parse --short HEAD)"
 
@@ -448,6 +503,20 @@ jobs:
           fi
           gh release upload "$GITHUB_REF_NAME" "$ARHIV" --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
+
+      # ПРОИСХОЖДЕНИЕ СБОРКИ. До этого шага у выпуска была только сумма
+      # SHA256SUMS: она говорит, что файл скачан целым, и ничего не говорит о
+      # том, кто его собрал. Запись о происхождении подписывает GitHub: в ней
+      # названы репозиторий, файл этого workflow, метка и коммит. Проверяется
+      # она командой `gh attestation verify <файл> --repo digitable-lol/flang`,
+      # её же зовёт `install.sh` при FLANG_VERIFY_PROVENANCE=1.
+      # Только на метке: запись о сборке с ветки удостоверяла бы файл, которого
+      # нет ни в одном выпуске.
+      - name: Attest the release archive
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ steps.archive.outputs.arhiv }}
 
       - name: Install Elixir
         run: sudo apt-get update && sudo apt-get install -y elixir
@@ -549,12 +618,20 @@ jobs:
   # deb and rpm from the two Linux tarballs, one SHA256SUMS for every asset of
   # the release (the C archive included), the Homebrew formula and the AUR
   # PKGBUILD filled with those checksums. The manifests are kept as a workflow
-  # artifact: they go into digitable-lol/homebrew-tap and the AUR by hand.
+  # artifact. The formula goes into digitable-lol/homebrew-tap by the last step
+  # of this job (or by `bootstrap/flang run-script release:tap <version>`); the
+  # PKGBUILD goes to the AUR by hand.
   packages:
     name: packages
     needs: [release, prebuilt]
     if: ${{ !cancelled() && needs.prebuilt.result == 'success' }}
     runs-on: ubuntu-24.04
+    # id-token and attestations: the provenance record of the prebuilt builds
+    # (step "Attest the prebuilt builds"). No key is kept in the repository.
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     env:
       ARCHIVE: ${{ needs.release.outputs.archive }}
       NFPM_VERSION: "2.47.0"
@@ -659,6 +736,36 @@ jobs:
           cd assets
           gh release upload "$GITHUB_REF_NAME" flang-package* SHA256SUMS --clobber
           gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name'
+
+      # Provenance of everything a user downloads: the four tarballs, deb, rpm.
+      # `install.sh` checks it with `gh attestation verify` when
+      # FLANG_VERIFY_PROVENANCE=1 is set. Only on a tag, like the upload above.
+      - name: Attest the prebuilt builds
+        if: startsWith(github.ref, 'refs/tags/v') && needs.release.result == 'success'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: assets/flang-package*
+
+      # The Homebrew tap gets the formula of this release from the same run
+      # that produced its checksums, so the tag never has to move and nobody
+      # copies hashes by hand. It needs the secret HOMEBREW_TAP_TOKEN (a token
+      # that may push to digitable-lol/homebrew-tap). Without the secret the
+      # step says so and passes; the same script is then run from a developer
+      # machine: bootstrap/flang run-script release:tap <version>.
+      - name: Publish the formula to the tap
+        if: startsWith(github.ref, 'refs/tags/v') && needs.release.result == 'success'
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -eu
+          if [ -z "${HOMEBREW_TAP_TOKEN:-}" ]; then
+            echo "::notice::the secret HOMEBREW_TAP_TOKEN is not set: the tap is not updated by this run. Run on a developer machine: bootstrap/flang run-script release:tap $VERSION"
+            exit 0
+          fi
+          git clone --quiet --depth 1 "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/digitable-lol/homebrew-tap.git" "$RUNNER_TEMP/tap"
+          git -C "$RUNNER_TEMP/tap" config user.name "github-actions[bot]"
+          git -C "$RUNNER_TEMP/tap" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          sh packaging/prebuilt/publish-tap.sh "$VERSION" --sums assets/SHA256SUMS --tap "$RUNNER_TEMP/tap"
 
   # Every channel installed from the assets of this run, then compared by the
   # parity instrument (packaging/install-parity.flang, `install-parity:check`):

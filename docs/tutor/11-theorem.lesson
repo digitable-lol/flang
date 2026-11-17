@@ -1,94 +1,123 @@
 =номер=
 11
 =имя-ru=
-Теорема: когда обещание держится на чужом обещании
+Теорема: доказательство по индукции
 =имя-en=
-A theorem: when a promise rests on another promise
+A theorem: a proof by induction
 =текст-ru=
-Обещание одной функции часто следует из обещания другой. «Вдвое больше» отдаёт
-(«Сколько» от числа) умножить на 2, и раз «Сколько» обещает результат не меньше
-нуля, то и удвоенное не меньше нуля. Компилятор сам так не рассуждает — ему
-говорят теоремой:
+Функция «Итог» в шаблоне складывает цены и доставку рекурсией по списку. Её
+постусловие «итог неотрицателен» верно, но компилятор сам его не доказывает:
+отчёт отвечает «объявлено, не доказано», код возврата 3.
 
-    теорема «вдвое неотрицательно»
-      дано числа: список числа
+Человеку причина понятна. Список пуст — итог равен доставке, а она не
+отрицательна по предусловию. Список не пуст — итог равен первой цене плюс итог
+остальных; цена не отрицательна по типу, а для более короткого списка
+утверждение считаем уже верным. Это индукция по списку. Записывается она
+теоремой:
+
+    теорема «итог неотрицателен»
+      дано цены: список неотрицательное
+      дано доставка: число
       утверждаем результат не меньше 0
-      по свойству «счёт неотрицателен»
+      индукция по цены
+        случай пусто
+          то по предположению
+        случай голова и хвост
+          то по предположению
       следовательно доказано
 
-Теорема носит имя того обещания, которое доказывает. «Дано» перечисляет входы
-функции, «утверждаем» повторяет обещание, «по свойству» называет чужое
-обещание, на котором держится вывод, «следовательно доказано» закрывает
-теорему. Неверный шаг компилятор отвергает с кодом FLANG_PROOF_STEP.
+Имя теоремы совпадает с именем постусловия. «Дано» повторяет параметры
+функции, «утверждаем» — условие из «обеспечивает». «Индукция по» разбирает те
+же два случая, что и «разбор» в функции. «По предположению» значит «следует из
+уже известного»: в первом случае это предусловие, во втором — утверждение для
+хвоста. Каждый шаг компилятор проверяет; неверный шаг — ошибка с кодом,
+который начинается на FLANG_PROOF.
 
-Порядок работы всегда такой: сперва «обеспечивает», потом отчёт --proof, и
-только если обещание осталось недоказанным — теорема.
+Порядок работы такой: сначала «обеспечивает», потом отчёт --proof. Теорема
+нужна, только если постусловие осталось недоказанным.
 
-ЗАДАНИЕ. Впишите ⟨1⟩ — что утверждаем: результат не меньше 0; ⟨2⟩ — имя
-обещания функции «Сколько», на которое опираемся. Урок засчитается, когда
-доказаны оба утверждения.
+Задание. Впишите ⟨1⟩ — что утверждаем: результат не меньше 0. Впишите ⟨2⟩ —
+строку индукции: по какому параметру она идёт. Урок засчитается, когда в отчёте будет
+строка «утверждений 1: доказано 1».
 =текст-en=
-A promise of one function often follows from a promise of another. «Вдвое
-больше» (twice as many) returns («Сколько» от числа) умножить на 2, and since
-«Сколько» promises a result not below zero, the doubled value is not below zero
-either. The compiler does not reason that way by itself — you tell it with a
-theorem:
+The function «Итог» (total) in the template adds up prices and delivery by
+recursion over the list. Its postcondition «итог неотрицателен» (the total is
+not negative) is true, but the compiler does not prove it automatically: the
+report says "объявлено, не доказано" (stated, not proved), exit code 3.
 
-    теорема «вдвое неотрицательно»
-      дано числа: список числа
+A person sees why it holds. The list is empty — the total equals the delivery,
+which is not negative by the precondition. The list is not empty — the total is
+the first price plus the total of the rest; the price is not negative by its
+type, and for a shorter list we take the statement as already true. This is
+induction over the list. It is written as a theorem:
+
+    теорема «итог неотрицателен»
+      дано цены: список неотрицательное
+      дано доставка: число
       утверждаем результат не меньше 0
-      по свойству «счёт неотрицателен»
+      индукция по цены
+        случай пусто
+          то по предположению
+        случай голова и хвост
+          то по предположению
       следовательно доказано
 
-A theorem bears the name of the promise it proves. "Дано" lists the inputs of
-the function, "утверждаем" (we claim) repeats the promise, "по свойству" (by
-property) names the other promise the conclusion rests on, "следовательно
-доказано" (therefore proved) closes the theorem. A wrong step is refused with
-the code FLANG_PROOF_STEP.
+The theorem has the same name as the postcondition. "Дано" (given) repeats the
+parameters of the function, "утверждаем" (we claim) repeats the condition from
+"обеспечивает". "Индукция по" (induction on) goes through the same two cases
+as "разбор" in the function. "По предположению" (by hypothesis) means "follows
+from what is already known": the precondition in the first case, the statement
+for the tail in the second. The compiler checks every step; a wrong step is an
+error whose code starts with FLANG_PROOF.
 
-The order of work is always: first "обеспечивает", then the --proof report, and
-only if the promise stays unproved — a theorem.
+The order of work: first "обеспечивает", then the --proof report. A theorem is
+needed only if the postcondition stays unproved.
 
-YOUR TASK. Fill in ⟨1⟩ — what we claim: результат не меньше 0; ⟨2⟩ — the name
-of the promise of «Сколько» we rely on. The lesson counts as passed once both
-statements are proved.
+Your task. Fill in ⟨1⟩ — what we claim: результат не меньше 0; ⟨2⟩ — the
+induction line: which parameter it goes over. The lesson counts as passed once the
+report has the line "утверждений 1: доказано 1" (statements 1: proved 1).
 =шаблон=
 модуль «Урок»
 
-тотальная функция «Сколько»
-  принимает числа: список числа
-  возвращает нат
-  обеспечивает «счёт неотрицателен» результат не меньше 0
-  длина числа
-
-тотальная функция «Вдвое больше»
-  принимает числа: список числа
+тотальная функция «Итог»
+  принимает цены: список неотрицательное, доставка: число
   возвращает число
-  обеспечивает «вдвое неотрицательно» результат не меньше 0
-  («Сколько» от числа) умножить на 2
+  требует «доставка неотрицательна» доставка не меньше 0
+  обеспечивает «итог неотрицателен» результат не меньше 0
+  разбор цены
+    случай пусто
+      то доставка
+    случай голова и хвост
+      то голова плюс («Итог» от хвост и доставка)
 
-теорема «вдвое неотрицательно»
-  дано числа: список числа
+теорема «итог неотрицателен»
+  дано цены: список неотрицательное
+  дано доставка: число
   утверждаем ___
-  по свойству ___
+  ___
+    случай пусто
+      то по предположению
+    случай голова и хвост
+      то по предположению
   следовательно доказано
 =подсказки-ru=
 что утверждаем: результат не меньше 0
-имя обещания функции «Сколько»
+индукция: индукция по … и имя параметра со списком
 =подсказки-en=
 what we claim: результат не меньше 0
-the name of the promise of «Сколько»
+the induction: индукция по … and the name of the list parameter
 =впиши=
 результат не меньше 0
-«счёт неотрицателен»
+индукция по цены
+.
 =хвост=
 тотальная функция «Проверка урока»
   возвращает число
-  «Вдвое больше» от [1, 2, 3]
+  «Итог» от [100, 50] и 30
 =ждём=
-6
+180
 =примеров=
 0
 =отчёт=
-утверждений 2: доказано 2
-=печать=
+утверждений 1: доказано 1
+=цель=

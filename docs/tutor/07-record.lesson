@@ -5,8 +5,9 @@
 =имя-en=
 A record: several fields under one name
 =текст-ru=
-Когда у значения несколько частей, которые всегда идут вместе, заводится
-объект — запись с полями. Поля называются в кавычках, у каждого свой тип:
+Когда у значения несколько частей, которые всегда идут вместе, объявляют
+«объект» — запись с полями (struct). Поля называются в кавычках, у каждого
+свой тип:
 
     объект «Точка»
       «х»: число
@@ -19,11 +20,12 @@ A record: several fields under one name
 Поле читается через точку: точка.«х». Изменить поле нельзя — как и элемент
 списка, можно только собрать новую запись.
 
-ЗАДАНИЕ. Объект «Товар» с полями «цена» и «штук» уже в шаблоне. Впишите ⟨1⟩ —
+Задание. Объект «Товар» с полями «цена» и «штук» уже в шаблоне. Впишите ⟨1⟩ —
 тело функции «Стоимость»: цена товара умножить на число штук.
 =текст-en=
-When a value has several parts that always go together, you declare an object —
-a record with fields. Fields are named in quotes, each with its own type:
+When a value has several parts that always go together, you declare an
+"объект" — a record with fields (a struct). Fields are named in quotes, each
+with its own type:
 
     объект «Точка»
       «х»: число
@@ -36,7 +38,7 @@ A record is built with "запись … с … равным":
 A field is read through a dot: точка.«х». A field cannot be changed — like an
 element of a list, you can only build a new record.
 
-YOUR TASK. The object «Товар» (goods) with fields «цена» (price) and «штук»
+Your task. The object «Товар» (goods) with fields «цена» (price) and «штук»
 (pieces) is already in the template. Fill in ⟨1⟩ — the body of «Стоимость»
 (cost): the price of the goods times the number of pieces.
 =шаблон=
@@ -66,4 +68,4 @@ the body: the field «цена» times the field «штук»
 =примеров=
 0
 =отчёт=
-=печать=
+=цель=

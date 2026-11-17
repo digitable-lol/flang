@@ -1,12 +1,12 @@
 =номер=
 2
 =имя-ru=
-Несколько функций: одна зовёт другую
+Несколько функций: одна вызывает другую
 =имя-en=
 Several functions: one calls another
 =текст-ru=
-В модуле функций сколько угодно, и любая может звать любую — порядок, в котором
-они записаны, не важен. Вызов с двумя доводами пишется через «и»:
+В модуле функций сколько угодно, и любая может вызвать любую. Порядок, в
+котором они записаны, не важен. Вызов с двумя аргументами пишется через «и»:
 
     «Наибольшее» от 3 и 7
 
@@ -15,10 +15,10 @@ Several functions: one calls another
 
     («Квадрат» от а) плюс («Квадрат» от б)
 
-Своего имени функция в теле не зовёт без причины: «Удвоить» от 21 в теле
-«Удвоить» — это вызов самой себя, и он никогда не кончится.
+Саму себя функция без причины не вызывает: «Удвоить» от 21 в теле «Удвоить»
+никогда не закончится, и компилятор такую функцию не примет.
 
-ЗАДАНИЕ. В модуле уже есть «Квадрат». Впишите ⟨1⟩ — тело функции «Сумма
+Задание. В модуле уже есть «Квадрат». Впишите ⟨1⟩ — тело функции «Сумма
 квадратов»: квадрат а плюс квадрат б, через вызовы «Квадрат».
 =текст-en=
 A module holds any number of functions, and any of them may call any other —
@@ -33,9 +33,9 @@ differently from what you meant:
     («Квадрат» от а) плюс («Квадрат» от б)
 
 A function does not call itself without a reason: «Удвоить» от 21 inside the
-body of «Удвоить» calls itself and never finishes.
+body of «Удвоить» never finishes, and the compiler rejects such a function.
 
-YOUR TASK. The module already has «Квадрат» (square). Fill in ⟨1⟩ — the body of
+Your task. The module already has «Квадрат» (square). Fill in ⟨1⟩ — the body of
 «Сумма квадратов» (sum of squares): the square of а plus the square of б, using
 calls to «Квадрат».
 =шаблон=
@@ -66,4 +66,4 @@ the body: square of а plus square of б, calls in parentheses
 =примеров=
 0
 =отчёт=
-=печать=
+=цель=

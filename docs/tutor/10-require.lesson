@@ -1,64 +1,65 @@
 =номер=
 10
 =имя-ru=
-Условие на входе: требует
+Предусловие: условие на входе
 =имя-en=
-A condition on the input: требует
+A precondition: a condition on the input
 =текст-ru=
-Обещание бывает не только о результате, но и о входе. Пишется словом «требует»
-и стоит перед «обеспечивает»:
+Условие бывает и на входе. Оно называется предусловием (precondition, requires
+в Dafny), пишется словом «требует» и стоит перед «обеспечивает»:
 
     требует «х неотрицателен» х не меньше 0
 
-Доказывает его тот, кто зовёт функцию: вызов «Сдача» от 10 и 35 при условии
-«внесено не меньше цена» компилятор отвергает сразу, с кодом ошибки
-FLANG_PRECONDITION_CALL и словами «вызов не снимает предусловие».
+Предусловие обязан обеспечить тот, кто вызывает функцию. Пусть у функции
+«Сдача» стоит «требует внесено не меньше цена». Вызов «Сдача» от 10 и 35
+компилятор отвергает при проверке: код ошибки FLANG_PRECONDITION_CALL, в
+тексте — «не снимает предусловие», то есть вызов его не выполняет.
 
-Зато внутри функции условие уже известно, и на него опирается доказательство
-обещания о результате. Три прогона одной и той же функции «х плюс 1» с
-обещанием «результат не меньше 0» — и три разных ответа компилятора:
+Внутри функции предусловие уже известно, и на него опирается доказательство
+постусловия. Вот три функции с постусловием «результат не меньше 0» и ответы
+«flang check --proof»:
 
-    с «требует х не меньше 0»       доказано 1                   код 0
-    без «требует», х: число         ЛОЖНО, контрпример назван    код 1
-    «внесено минус цена не меньше 0» объявлено, не доказано      код 3
+    «х плюс 1», х: число, с «требует х не меньше 0»     доказано    код 0
+    «х плюс 1», х: число, без «требует»                 ложно       код 1
+    сумма списка и доставки, рекурсия, с «требует»      не доказано код 3
 
-Второй ответ честный: без условия на входе х бывает «не числом», и сравнение
-с ним ложно. Третий — обещание, которого компилятор вывести не может: разность
-двух чисел он неотрицательной не считает; такое обещание остаётся объявленным
-и проверяется при работе программы, а код 3 говорит об этом вслух.
+Во втором случае компилятор называет контрпример: в тип «число» входит «не
+число» (NaN), а оно не больше и не меньше нуля. В третьем случае постусловие
+верно, но само не доказывается: нужна теорема, о ней следующий урок. Пока
+теоремы нет, условие проверяется при каждом вызове.
 
-ЗАДАНИЕ. Впишите ⟨1⟩ — условие на входе для функции «Следующее» с именем «х
-неотрицателен»: х не меньше 0. Урок засчитается, когда обещание о результате
-окажется доказанным.
+Задание. Впишите ⟨1⟩ — предусловие функции «Следующее» с именем «х
+неотрицателен»: х не меньше 0. Урок засчитается, когда постусловие окажется
+доказанным.
 =текст-en=
-A promise can be about the input, not only about the result. It is written with
-"требует" (requires) and stands before "обеспечивает":
+A condition can also be on the input. It is called a precondition (requires in
+Dafny), is written with "требует" and stands before "обеспечивает":
 
     требует «х неотрицателен» х не меньше 0
 
-It is proved by whoever calls the function: the call «Сдача» от 10 и 35 under
-the condition "внесено не меньше цена" is refused at once, with the error code
-FLANG_PRECONDITION_CALL and the words "the call does not discharge the
-precondition".
+Whoever calls the function must make the precondition hold. Let «Сдача»
+(change) carry "требует внесено не меньше цена" (paid is at least the price).
+The call «Сдача» от 10 и 35 is rejected at check time: the error code is
+FLANG_PRECONDITION_CALL, and the text says "не снимает предусловие" — the call
+does not satisfy the precondition.
 
-Inside the function, though, the condition is already known, and the proof of
-the promise about the result rests on it. Three runs of the same function
-"х плюс 1" with the promise "результат не меньше 0" — and three different
-answers from the compiler:
+Inside the function the precondition is already known, and the proof of the
+postcondition rests on it. Here are three functions with the postcondition
+"результат не меньше 0" and the answers of "flang check --proof":
 
-    with «требует х не меньше 0»        proved 1                    code 0
-    without «требует», х: число         FALSE, counterexample named code 1
-    «внесено минус цена не меньше 0»    stated, not proved          code 3
+    «х плюс 1», х: число, with «требует х не меньше 0»   proved      code 0
+    «х плюс 1», х: число, without «требует»              false       code 1
+    sum of a list plus delivery, recursive, «требует»    not proved  code 3
 
-The second answer is honest: without a condition on the input, х may be "not a
-number", and a comparison with it is false. The third is a promise the compiler
-cannot derive: it does not take a difference of two numbers to be non-negative;
-such a promise stays stated and is checked while the program runs, and code 3
-says so out loud.
+In the second case the compiler names a counterexample: the type "число"
+includes "not a number" (NaN), which is neither above nor below zero. In the
+third case the postcondition is true but is not proved automatically: it needs
+a theorem, the subject of the next lesson. Until there is a theorem, the
+condition is checked on every call.
 
-YOUR TASK. Fill in ⟨1⟩ — the input condition for «Следующее» (next) named «х
-неотрицателен»: х не меньше 0. The lesson counts as passed once the promise
-about the result is proved.
+Your task. Fill in ⟨1⟩ — the precondition for «Следующее» (next) named «х
+неотрицателен»: х не меньше 0. The lesson counts as passed once the
+postcondition is proved.
 =шаблон=
 модуль «Урок»
 
@@ -69,9 +70,9 @@ about the result is proved.
   обеспечивает «результат неотрицателен» результат не меньше 0
   х плюс 1
 =подсказки-ru=
-условие на входе: требует «х неотрицателен» …
+предусловие: требует «х неотрицателен» …
 =подсказки-en=
-the input condition: требует «х неотрицателен» …
+the precondition: требует «х неотрицателен» …
 =впиши=
 требует «х неотрицателен» х не меньше 0
 .
@@ -85,4 +86,4 @@ the input condition: требует «х неотрицателен» …
 0
 =отчёт=
 утверждений 1: доказано 1
-=печать=
+=цель=

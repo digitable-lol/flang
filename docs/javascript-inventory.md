@@ -115,7 +115,7 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 строк **29 715**. На 15 сентября 2026, после снятия напечатанного задачей 1423: 51.
 На 26 сентября 2026, после снятия `proof-ledger.mjs` и `word-guard.mjs`
 (задача 4413): 49, строк 22 943. На 4 октября 2026, после снятия
-`flang/scripts/word-occupancy.mjs` (задача 0049): 48, строк 22 660. На 4 октября 2026, после водителя пробы `flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs` (задача 1413): 49, строк 22 696. На 18 октября 2026, после песочницы с рисунками (`docs/site/playground.js`): **50**, строк **24 328**. На 10 ноября 2026, после снятия десяти файлов оснастки (задача 0049): **41**, строк **23 260**. <!-- СНЯТО 2026-11-10 файлов *.js,*.mjs = 41 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten) -->
+`flang/scripts/word-occupancy.mjs` (задача 0049): 48, строк 22 660. На 4 октября 2026, после водителя пробы `flang/proof/probes/exact-integer-in-targets/drivers/driver.mjs` (задача 1413): 49, строк 22 696. На 18 октября 2026, после песочницы с рисунками (`docs/site/playground.js`): **50**, строк **24 328**. На 10 ноября 2026, после снятия десяти файлов оснастки (задача 0049): **41**, строк **23 260**. На 17 ноября 2026, после страниц модулей библиотеки (`docs/site/library-pages.mjs`, `docs/site/library-catalog.mjs`): **43**. <!-- СНЯТО 2026-11-17 файлов *.js,*.mjs = 43 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) -->
 
 Двоичный, которым сняты все остальные числа этой описи, —
 `/srv/flang-rabota/w-predely/bootstrap/flang` (0.6.2), собран 23 августа 2026
@@ -124,13 +124,13 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (10 ноября 2026: 229 файлов вне flang,
-<!-- СНЯТО 2026-11-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 229 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten) -->
+считает [`tree-inventory.md`](tree-inventory.md) (17 ноября 2026: 231 файл вне flang,
+<!-- СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 231 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) -->
 долг вне JavaScript — **46 файлов, 4 442 строки при потолке 63**: храповик
 зелён, запас 17 файлов, разбор прежней красноты — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-23 922 строки этой описи — нижняя оценка.
-<!-- СНЯТО 2026-11-17 строк-в *.js,*.mjs = 23922 (the first proof page in the site menu) -->
+25 461 строка этой описи — нижняя оценка.
+<!-- СНЯТО 2026-11-17 строк-в *.js,*.mjs = 25461 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

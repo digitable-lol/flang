@@ -2359,6 +2359,76 @@ jobs:
         env:
           FLANG_BIN: ${{ github.workspace }}/bootstrap/flang
 
+  # ── СТОРОЖА, КОТОРЫХ НЕ ЗВАЛ НИКТО (issue 488) ───────────────────────────────
+  #
+  # Перепись 17 ноября 2026 на 0.7.40 прогнала каждую короткую команду вида
+  # `*:check` и `*:forgery`. Здесь стоят те, что проходят и дёшевы, и те, что
+  # были красны по причине в самом стороже и починены:
+  #   surfaces — сверка страницы поверхностей отказывала до сверки;
+  #   bad-octet — напечатанные программы звались прежним именем модуля;
+  #   cli-keys, module-names — новый долг записан поимённо;
+  #   description — слово языка описано в контракте.
+  # Отдельная работа, а не шаг у соседей: соседние идут по 14–25 минут, и
+  # удлинять их нельзя; каждая команда здесь на двух ядрах идёт меньше двух минут.
+  # Подлог идёт перед своим сторожем: зелёному верят после того, как он
+  # покраснел на подложенном.
+  guards-called-again:
+    name: guards-called-again
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LC_ALL: C.UTF-8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: binary-cache-again
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.binary-cache-again.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Verify cached binary
+        if: steps.binary-cache-again.outputs.cache-hit == 'true'
+        run: |
+          set -u
+          if ! ./bootstrap/flang --version >/dev/null 2>&1; then
+            echo "::warning::двоичный из кеша не запускается — собираю заново"
+            make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+          fi
+      - name: Guards nobody called
+        run: >-
+          bootstrap/flang io scripts/guards/guard-runner.fscript --plan Run --timeout 900000 --max-orders 1000 --
+          shown bootstrap/flang run-script surfaces:forgery ,
+          check bootstrap/flang run-script surfaces:check ,
+          probe bootstrap/flang run-script description:forgery ,
+          check bootstrap/flang run-script description:check ,
+          shown bash scripts/guards/bad-octet-guard.sh --порча ,
+          check bootstrap/flang run-script bad-octet:check ,
+          shown bootstrap/flang run-script module-origin:forgery ,
+          check bootstrap/flang run-script module-origin:check ,
+          check bootstrap/flang run-script cli-keys:check ,
+          check bootstrap/flang run-script module-names:check ,
+          check bootstrap/flang run-script tab-host:check ,
+          check bootstrap/flang run-script child-timeout:check ,
+          shown bootstrap/flang run-script tasks:numbers:forgery ,
+          check bootstrap/flang run-script tasks:numbers ,
+          shown bootstrap/flang run-script randomness:forgery ,
+          check bootstrap/flang run-script randomness:probe ,
+          shown bootstrap/flang run-script network:forgery ,
+          check bootstrap/flang run-script network:probe ,
+          shown bootstrap/flang run-script proof-cache:forgery ,
+          shown bootstrap/flang run-script kernel-verdict:forgery ,
+          shown bootstrap/flang run-script cost:forgery ,
+          shown bootstrap/flang run-script share:forgery
+        env:
+          FLANG_TMP: ${{ runner.temp }}
+
   guards-without-a-caller:
     name: guards-without-a-caller
     runs-on: ubuntu-latest

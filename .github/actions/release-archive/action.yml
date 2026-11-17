@@ -26,13 +26,12 @@
 # `.github/workflows/**` живут в YAML. Здесь довод даже прямее: этот шаг ЧИТАЕТ
 # среду раннера (`GITHUB_ENV`, `GITHUB_OUTPUT`) и пишет в неё.
 #
-# ЦЕНА НАЗВАНА ВСЛУХ, как и у соседа: составное действие не позвать руками. На
-# своей машине те же три команды гоняют так (они и есть всё тело шага):
+# Составное действие не позвать руками, поэтому сама сборка архива живёт в
+# короткой команде `.flangrc`, а действие зовёт её и раскладывает путь и хеш по
+# среде раннера. На своей машине тот же архив собирают так:
 #
 #   make -C bootstrap -j4
-#   LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.fscript --timeout 1800000
-#   tar --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-#       --mtime=@0 --mode=u=rwX,go=rX -C output/release-c -cf - $files | gzip -9n
+#   bootstrap/flang run-script release:archive
 #
 # ── Ключи tar — ради ПОВТОРИМОСТИ, а не ради красоты ────────────────────────
 #
@@ -88,10 +87,17 @@ runs:
           make -C bootstrap -j"$(getconf _NPROCESSORS_ONLN)"
         fi
 
-        # Скрипт не только печатает компилятор в C99, но и СОБИРАЕТ
-        # напечатанное в окружении без Node в PATH и запускает собранное.
-        # Битый архив дальше этого шага не уедет.
-        LC_ALL=C.UTF-8 bootstrap/flang io scripts/release/release-in-c.fscript --на-веру --timeout 1800000
+        # КОМАНДА СБОРКИ АРХИВА ОДНА — короткая команда `release:archive` в
+        # `.flangrc`. Она печатает компилятор в C99, собирает напечатанное без
+        # Node в PATH, запускает собранное и упаковывает повторимым tar.
+        # Здесь стояла вторая копия той же строки tar, а на машине разработчика
+        # её набирали руками по шапке этого файла. Теперь команда одна, список
+        # файлов идёт в порядке локали C (`LC_ALL=C sort`), а не в порядке
+        # `ls`, и хеш архива считается до метки: `bootstrap/flang run-script
+        # release:archive`, затем `release:formula`. Измерено на 0.7.40: машина
+        # разработчика (GNU tar 1.35, gzip 1.14) и раннер дали один sha256,
+        # c3c2e16b…cec50d.
+        bootstrap/flang run-script release:archive
 
         version="$(bootstrap/flang io scripts/flangrc.fscript -- version | sed -n 's/^{"plan":"Settings","result":"\([^"\\]*\).*/\1/p')"
         if [ -z "$version" ]; then
@@ -99,27 +105,9 @@ runs:
           exit 1
         fi
 
-        # GNU tar под своим именем: на macOS он `gtar`, на Linux `tar`.
-        TAR=tar
-        if command -v gtar >/dev/null 2>&1; then TAR=gtar; fi
-        if ! "$TAR" --version 2>/dev/null | head -1 | grep -q 'GNU tar'; then
-          echo "::error::$TAR — не GNU tar: ключей --sort/--mtime у него нет, и архив вышел бы с другими байтами и другим sha256" >&2
-          echo "::error::На macOS: brew install gnu-tar (шаг «Install GNU tar»)." >&2
-          exit 1
-        fi
-
-        # Список файлов берётся ВЫЧИТАНИЕМ, а не перечислением: сборка идёт в
-        # том же каталоге и оставляет рядом *.o, libcompiler_flang.a и сам
-        # бинарник — `tar … .` унёс бы человеку бинарник чужой машины вместо
-        # исходников.
-        files="$(cd output/release-c && ls | grep -Ev '\.(o|a)$|^flang(_cli)?$')"
-        echo "в архив идут файлы:"; echo "$files" | sed 's/^/  /'
-
         arhiv="output/flang-$version-c.tar.gz"
-        "$TAR" --sort=name --format=ustar --owner=0 --group=0 --numeric-owner \
-               --mtime=@0 --mode=u=rwX,go=rX -C output/release-c -cf - $files \
-          | gzip -9n > "$arhiv"
         ls -l "$arhiv"
+        echo "в архиве файлов: $(gzip -dc "$arhiv" | tar -tf - | wc -l)"
 
         # sha256sum на macOS нет — там `shasum -a 256`. Имя счётчика называется
         # вслух: разойдись они, разошёлся бы и хеш, а не только команда.

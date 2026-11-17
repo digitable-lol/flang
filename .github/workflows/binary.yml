@@ -2335,6 +2335,12 @@ jobs:
       - name: Check the declared measure descent
         run: bootstrap/flang io flang/proof/probes/declared-measure-descent/run.fscript --plan Binary --timeout 900000
 
+      # УТВЕРЖДЕНИЕ О ФУНКЦИИ, ЧЬЁ ЗАВЕРШЕНИЕ НЕ ДОКАЗАНО (заявки #602, #604): мера на
+      # веру или обычная функция в круге вызовов. Строки держат ответ двоичного в
+      # работе и меняются вместе со следующей сборкой компилятора из flang/self.
+      - name: Check claims over a function not known to terminate
+        run: bootstrap/flang io flang/proof/probes/unverified-measure/run.fscript --plan Binary --timeout 900000
+
       # ПАМЯТЬ ВЫЗОВОВ ЯДРА НЕ СМЕЕТ МЕНЯТЬ ОТВЕТ, и до 4 октября 2026 этого не
       # спрашивал никто. Проба лежала в дереве с ветки задачи 5709 и не звалась
       # ниоткуда: ни работой, ни ярлыком, ни хуком, — на неё и краснела работа

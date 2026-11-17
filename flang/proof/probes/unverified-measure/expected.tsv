@@ -1,0 +1,15 @@
+program	keys	code	word	заявки 602 и 604: до пересборки компилятора двоичный отвечает «доказано» там, где правка в flang/self отвечает «условно» и кодом 3; строки ждут сегодняшнего ответа и меняются вместе с пересборкой, две последние строки обязаны остаться как есть
+self-call-through-identity.flang	--proof --strict	0	доказано 5, условно 0
+false-branch-chosen.flang	--proof --strict	0	доказано 6, условно 0
+measure-on-the-second-argument.flang	--proof --strict	0	доказано 3, условно 0
+mutual-pair.flang	--proof --strict	0	доказано 4, условно 0
+decoy-condition.flang	--proof --strict	0	доказано 3, условно 0
+measure-through-a-record-field.flang	--proof --strict	0	доказано 2, условно 0
+library.flang	--proof --strict	0	доказано 2, условно 0
+imported-function.flang	--proof --strict	0	доказано 1, условно 0
+caller-of-the-unverified.flang	--proof --strict	0	доказано 4, условно 0
+honest-remainder-step.flang	--proof --strict	0	доказано 1, условно 0
+ordinary-function-through-identity.flang	--proof --strict	0	доказано 3, условно 0
+ordinary-function-calls-itself.flang	--proof --strict	0	доказано 3, условно 0
+descent-derived-by-the-kernel.flang	--proof --strict	0	доказано 3, условно 0
+ordinary-function-without-a-cycle.flang	--proof --strict	0	доказано 2, условно 0

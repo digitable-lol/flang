@@ -1,6 +1,6 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Индекс кольца». Файл: fl_freestanding.h.
+ * Модуль flang: «Индекс кольца». Файл: flang_freestanding.h.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */

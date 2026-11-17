@@ -1,7 +1,8 @@
 /*
  * Труба между пробой и генератором, собранным из исходника (цель from-source).
  *
- *   pipe request <имя файла программы>   печатает запрос прогонщику: одна строка JSON
+ *   pipe request <файл программы> <имя>  печатает запрос прогонщику: одна строка JSON;
+ *                                        имя — как назвать файлы C (ключ --path у flang emit)
  *   pipe unpack <каталог>                читает ответ прогонщика и раскладывает файлы
  *
  * Ответ генератора — один текст: «==== имя\n» перед каждым файлом либо
@@ -59,7 +60,7 @@ static char *read_all(FILE *in, size_t *bytes) {
   return text;
 }
 
-static int request(const char *path) {
+static int request(const char *path, const char *name) {
   size_t bytes = 0;
   FILE *in = fopen(path, "rb");
   char *text = in == NULL ? NULL : read_all(in, &bytes);
@@ -72,6 +73,8 @@ static int request(const char *path) {
   put_text(path, strlen(path));
   fputs("},{\"s\":", stdout);
   put_text(text, bytes);
+  fputs("},{\"s\":", stdout);
+  put_text(name, strlen(name));
   fputs("}],\"steps\":\"100000000000\",\"depth\":\"100000\"}\n", stdout);
   free(text);
   return 0;
@@ -160,12 +163,12 @@ static int unpack(const char *dir) {
 }
 
 int main(int argc, char **argv) {
-  if (argc == 3 && strcmp(argv[1], "request") == 0) {
-    return request(argv[2]);
+  if (argc == 4 && strcmp(argv[1], "request") == 0) {
+    return request(argv[2], argv[3]);
   }
   if (argc == 3 && strcmp(argv[1], "unpack") == 0) {
     return unpack(argv[2]);
   }
-  fputs("pipe request <файл> | pipe unpack <каталог>\n", stderr);
+  fputs("pipe request <файл> <имя> | pipe unpack <каталог>\n", stderr);
   return 2;
 }

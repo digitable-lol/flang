@@ -1,10 +1,10 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Индекс кольца». Файл: indeks_kolca.c.
+ * Модуль flang: «Индекс кольца». Файл: index.c.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#include "indeks_kolca.h"
+#include "index.h"
 
 
 fl_fs_status indeks_kolca_sleduyuschiy_indeks(int64_t p0_indeks, int64_t *out) {

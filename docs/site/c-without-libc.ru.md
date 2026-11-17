@@ -62,11 +62,11 @@ ls kernel
 ```
 
 ```
-fl_freestanding.h  zagolovok_paketa.c  zagolovok_paketa.h
+flang_freestanding.h  zagolovok_paketa.c  zagolovok_paketa.h
 ```
 
 Файлов три. `zagolovok_paketa.h` — прототипы для вашего кода,
-`zagolovok_paketa.c` — сами функции, `fl_freestanding.h` — общие определения.
+`zagolovok_paketa.c` — сами функции, `flang_freestanding.h` — общие определения.
 Имена в C — это имя модуля и имя функции латиницей.
 
 В заголовке:

@@ -675,6 +675,7 @@ fractional
 frame
 frames
 free
+freestanding
 freshness
 from
 front
@@ -1591,6 +1592,7 @@ sides
 sign
 signature
 signatures
+signed
 signs
 silence
 silent

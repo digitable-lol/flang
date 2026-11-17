@@ -1,6 +1,6 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Слова без libc». Файл: fl_freestanding.h.
+ * Модуль flang: «Заголовок пакета». Файл: flang_freestanding.h.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */

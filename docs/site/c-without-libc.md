@@ -62,11 +62,11 @@ ls kernel
 ```
 
 ```
-fl_freestanding.h  zagolovok_paketa.c  zagolovok_paketa.h
+flang_freestanding.h  zagolovok_paketa.c  zagolovok_paketa.h
 ```
 
 There are three files. `zagolovok_paketa.h` holds the prototypes for your code,
-`zagolovok_paketa.c` holds the functions, `fl_freestanding.h` holds the shared
+`zagolovok_paketa.c` holds the functions, `flang_freestanding.h` holds the shared
 definitions. A C name is the module name and the function name in Latin letters.
 
 In the header:

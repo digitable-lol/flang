@@ -1,0 +1,63 @@
+модуль «Argue probes»
+
+использует «Таблица проб» из "../table.fscript"
+
+тотальная функция «Этот набор»
+  возвращает «Набор»
+  пример «The set is named, and a mismatch and blindness have different codes»
+    ожидается (запись «Набор» с «имя» равным "argue" и «код расхождения» равным "FLANG_PROBE_ARGUE"
+        и «код слепоты» равным "FLANG_PROBE_ARGUE_CANNOT_LOOK")
+  (запись «Набор» с «имя» равным "argue" и «код расхождения» равным "FLANG_PROBE_ARGUE"
+      и «код слепоты» равным "FLANG_PROBE_ARGUE_CANNOT_LOOK")
+
+тотальная функция «Команда»
+  принимает программа: строка
+  возвращает строка
+  пример «The plan reads the text and its markup from the root of the tree and the report is printed after it»
+    дано программа равно "textbook.txt"
+    ожидается """
+      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { \\
+        o=$(mktemp "${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX"); p=flang/proof/probes/argue; \\
+        $flang io flang/experimental/argue.fscript --plan Argue --max-steps 1000000000000 --timeout 600000 -- \\
+        "$p/programs/textbook.txt" --claims "$p/claims/textbook.claims" --out "$o" > /dev/null; c=$?; \\
+        cat "$o"; rm -f "$o"; (exit $c); } 2>&1; echo "[code=$?]"
+      """
+  пусть stem равно (подстрока программа с 1 по ((длина программа) минус 4))
+  пусть call равно (соединить ["\\\n  o=$(mktemp \"${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX\"); ",
+      "p=flang/proof/probes/argue; \\\n  $flang io flang/experimental/argue.fscript --plan Argue ",
+      "--max-steps 1000000000000 --timeout 600000 -- \\\n  \"$p/programs/", программа, "\" --claims \"$p/claims/",
+      stem, ".claims\" --out \"$o\" > /dev/null; c=$?; \\\n  cat \"$o\"; rm -f \"$o\"; (exit $c)"] по "")
+  соединить [(«От корня» от («С меткой» от call)), "\n"] по ""
+
+тотальная функция «Проба из строки»
+  принимает части: список строки
+  возвращает «Проба»
+  (запись «Проба» с «программа» равным («Поле» от части и 1)
+      и «приметы» равным («Приметы» от («Поле» от части и 1) и пустой список)
+      и «команда» равным («Команда» от («Поле» от части и 1)) и «код» равным («Поле» от части и 2)
+      и «слово» равным («Поле» от части и 3))
+
+тотальная функция «Пробы»
+  принимает текст: строка
+  возвращает список «Проба»
+  отобразить («Строки данных» от текст) как части → («Проба из строки» от части)
+
+тотальная функция «Начать»
+  возвращает «Ход»
+  пример «The plan starts from the start»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Дальше»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор ход
+    случай вариант «Ждём таблицу»
+      то «После таблицы» от («Этот набор») и («Пробы» от («Содержимое» от отклик))
+    случай любое
+      то «Шаг» от («Этот набор») и ход и отклик
+
+план «Binary»
+  состояние «Ход»
+  начинает с «Начать»
+  обрабатывает «Дальше»

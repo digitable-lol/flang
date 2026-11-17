@@ -1,0 +1,687 @@
+модуль «Argue logic»
+  использует «Lists» только «Соединить списки»
+
+тип «Formula»
+  вариант «Truth» содержит holds: признак
+  вариант «Atom» содержит name: строка, terms: список строки
+  вариант «Not» содержит inner: «Formula»
+  вариант «And» содержит left: «Formula», right: «Formula»
+  вариант «Or» содержит left: «Formula», right: «Formula»
+  вариант «Implies» содержит left: «Formula», right: «Formula»
+
+объект «Stack»
+  «out»: список «Formula»
+  «fault»: строка
+
+объект «Parse»
+  «stack»: «Stack»
+  «ops»: список строки
+  «name»: строка
+  «terms»: список строки
+  «inside»: признак
+
+объект «Form»
+  «quantifier»: строка
+  «variables»: список строки
+  «body»: «Formula»
+  «fault»: строка
+
+тотальная функция «Replaced in»
+  принимает text: строка, sought: строка, replacement: строка
+  возвращает строка
+  пример «Every occurrence is replaced»
+    дано text равно "а,б"
+    дано sought равно ","
+    дано replacement равно " , "
+    ожидается "а , б"
+  соединить (разделить text по sought) по replacement
+
+тотальная функция «Pieces of»
+  принимает text: строка
+  возвращает список строки
+  пример «Runs of spaces separate pieces once»
+    дано text равно "  все   x "
+    ожидается ["все", "x"]
+  отфильтровать (разделить text по " ") где piece → не (пусто piece)
+
+тотальная функция «Formula tokens»
+  принимает text: строка
+  возвращает список строки
+  пример «Brackets and commas are tokens of their own»
+    дано text равно "если кит(x), то любит(x,y)"
+    ожидается ["если", "кит", "(", "x", ")", ",", "то", "любит", "(", "x", ",", "y", ")"]
+  «Pieces of» от (свёртка ["(", ")", ","] начиная с text как flat и mark →
+      «Replaced in» от flat и mark и (соединить [" ", mark, " "] по ""))
+
+тотальная функция «Priority»
+  принимает operator: строка
+  возвращает число
+  пример «Negation binds tighter than conjunction»
+    дано operator равно "не"
+    ожидается 4
+  пример «A bracket has no priority»
+    дано operator равно "("
+    ожидается 0
+  (свёртка [["не", "4"], ["и", "3"], ["или", "2"], ["то", "1"]] начиная с 0 как found и row →
+      если (элемент 1 в row) равен operator то (к числу (элемент 2 в row)) иначе found)
+
+тотальная функция «Rest of»
+  принимает items: список «Formula»
+  возвращает список «Formula»
+  пример «Nothing is left of nothing»
+    дано items равно пустой список
+    ожидается пустой список
+  разбор items
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Joined pair»
+  принимает operator: строка, left: «Formula», right: «Formula»
+  возвращает «Formula»
+  пример «The word of the operator chooses the node»
+    дано operator равно "или"
+    дано left равно вариант «Truth» с holds равным да
+    дано right равно вариант «Truth» с holds равным нет
+    ожидается (вариант «Or» с left равным (вариант «Truth» с holds равным да)
+        и right равным (вариант «Truth» с holds равным нет))
+  если operator равен "и"
+    то вариант «And» с left равным left и right равным right
+    иначе (если operator равен "или" то (вариант «Or» с left равным left и right равным right)
+        иначе (вариант «Implies» с left равным left и right равным right))
+
+тотальная функция «Applied operator»
+  принимает operator: строка, stack: «Stack»
+  возвращает «Stack»
+  пример «Negation takes one formula from the stack»
+    дано operator равно "не"
+    дано stack равно (запись «Stack» с «out» равным [вариант «Truth» с holds равным да] и «fault» равным "")
+    ожидается (запись «Stack» с «out» равным [вариант «Not» с inner равным (вариант «Truth» с holds равным да)]
+        и «fault» равным "")
+  пример «A binary operator without two formulas is a fault»
+    дано operator равно "и"
+    дано stack равно (запись «Stack» с «out» равным [вариант «Truth» с holds равным да] и «fault» равным "")
+    ожидается (запись «Stack» с «out» равным [вариант «Truth» с holds равным да]
+        и «fault» равным "у связки «и» не хватает части слева или справа")
+  пусть out равно (stack.«out»)
+  пусть wanted равно (если operator равен "не" то 1 иначе 2)
+  если (не (пусто (stack.«fault»))) или ((длина out) меньше wanted)
+    то (запись «Stack» с «out» равным out и «fault» равным (если пусто (stack.«fault»)
+        то (соединить ["у связки «", operator, "» не хватает части слева или справа"] по "")
+        иначе (stack.«fault»)))
+    иначе (если operator равен "не"
+        то (запись «Stack» с «out» равным (приписать (вариант «Not» с inner равным (элемент 1 в out))
+            к («Rest of» от out)) и «fault» равным "")
+        иначе (запись «Stack» с «out» равным (приписать («Joined pair» от operator и (элемент 2 в out)
+            и (элемент 1 в out)) к («Rest of» от («Rest of» от out))) и «fault» равным ""))
+
+объект «Reduction»
+  «ops»: список строки
+  «stack»: «Stack»
+
+тотальная функция «Reduced»
+  принимает ops: список строки, stack: «Stack», floor: число
+  возвращает «Reduction»
+  пример «Operators not weaker than the floor are applied»
+    дано ops равно ["не", "("]
+    дано stack равно (запись «Stack» с «out» равным [вариант «Truth» с holds равным да] и «fault» равным "")
+    дано floor равно 1
+    ожидается (запись «Reduction» с «ops» равным ["("] и «stack» равным (запись «Stack»
+        с «out» равным [вариант «Not» с inner равным (вариант «Truth» с holds равным да)] и «fault» равным ""))
+  разбор ops
+    случай пусто
+      то запись «Reduction» с «ops» равным ops и «stack» равным stack
+    случай голова и хвост
+      то если (голова равен "(") или ((«Priority» от голова) меньше floor)
+        то запись «Reduction» с «ops» равным ops и «stack» равным stack
+        иначе «Reduced» от хвост и («Applied operator» от голова и stack) и floor
+
+тотальная функция «Parse of»
+  принимает stack: «Stack», ops: список строки, name: строка, terms: список строки, inside: признак
+  возвращает «Parse»
+  пример «The parts of the reading are put together»
+    дано stack равно (запись «Stack» с «out» равным пустой список и «fault» равным "")
+    дано ops равно ["и"]
+    дано name равно "кит"
+    дано terms равно ["x"]
+    дано inside равно да
+    ожидается (запись «Parse» с «stack» равным (запись «Stack» с «out» равным пустой список и «fault» равным "")
+        и «ops» равным ["и"] и «name» равным "кит" и «terms» равным ["x"] и «inside» равным да)
+  (запись «Parse» с «stack» равным stack и «ops» равным ops и «name» равным name и «terms» равным terms
+      и «inside» равным inside)
+
+тотальная функция «Pushed»
+  принимает stack: «Stack», formula: «Formula»
+  возвращает «Stack»
+  пример «A formula goes on top of the stack»
+    дано stack равно (запись «Stack» с «out» равным пустой список и «fault» равным "")
+    дано formula равно вариант «Truth» с holds равным да
+    ожидается (запись «Stack» с «out» равным [вариант «Truth» с holds равным да] и «fault» равным "")
+  запись «Stack» с «out» равным (приписать formula к (stack.«out»)) и «fault» равным (stack.«fault»)
+
+тотальная функция «Failed»
+  принимает stack: «Stack», fault: строка
+  возвращает «Stack»
+  пример «The first fault is kept»
+    дано stack равно (запись «Stack» с «out» равным пустой список и «fault» равным "первая")
+    дано fault равно "вторая"
+    ожидается (запись «Stack» с «out» равным пустой список и «fault» равным "первая")
+  (запись «Stack» с «out» равным (stack.«out»)
+      и «fault» равным (если пусто (stack.«fault») то fault иначе (stack.«fault»)))
+
+тотальная функция «Flushed»
+  принимает held: «Parse»
+  возвращает «Parse»
+  пример «A name without brackets is a statement without terms»
+    дано held равно (запись «Parse» с «stack» равным (запись «Stack» с «out» равным пустой список
+        и «fault» равным "") и «ops» равным пустой список и «name» равным "дождь" и «terms» равным пустой список
+        и «inside» равным нет)
+    ожидается (запись «Parse» с «stack» равным (запись «Stack»
+        с «out» равным [вариант «Atom» с name равным "дождь" и terms равным пустой список] и «fault» равным "")
+        и «ops» равным пустой список и «name» равным "" и «terms» равным пустой список и «inside» равным нет)
+  если пусто (held.«name»)
+    то held
+    иначе («Parse of» от («Pushed» от (held.«stack») и (вариант «Atom» с name равным (held.«name»)
+        и terms равным пустой список)) и (held.«ops») и "" и пустой список и нет)
+
+тотальная функция «Inside step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  пусть closed равно («Parse of» от («Pushed» от (held.«stack») и (вариант «Atom» с name равным (held.«name»)
+      и terms равным (held.«terms»))) и (held.«ops») и "" и пустой список и нет)
+  пусть longer равно («Parse of» от (held.«stack») и (held.«ops») и (held.«name»)
+      и (добавить token к (held.«terms»)) и да)
+  если token равен ")"
+    то closed
+    иначе (если token равен "," то held иначе longer)
+
+тотальная функция «Closed bracket»
+  принимает held: «Parse»
+  возвращает «Parse»
+  пусть reduction равно («Reduced» от (held.«ops») и (held.«stack») и 1)
+  разбор (reduction.«ops»)
+    случай пусто
+      то («Parse of» от («Failed» от (reduction.«stack») и "закрывающая скобка стоит без открывающей")
+          и пустой список и "" и пустой список и нет)
+    случай голова и хвост
+      то «Parse of» от (reduction.«stack») и хвост и "" и пустой список и нет
+
+тотальная функция «Operator step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  пусть floor равно (свёртка [["не", "5"], ["то", "2"]] начиная с («Priority» от token) как found и row →
+      если (элемент 1 в row) равен token то (к числу (элемент 2 в row)) иначе found)
+  пусть reduction равно («Reduced» от (held.«ops») и (held.«stack») и floor)
+  «Parse of» от (reduction.«stack») и (приписать token к (reduction.«ops»)) и "" и пустой список и нет
+
+тотальная функция «Word step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  если ["не", "и", "или", "то"] содержит token
+    то «Operator step» от held и token
+    иначе «Parse of» от (held.«stack») и (held.«ops») и token и пустой список и нет
+
+тотальная функция «Bracket step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  пусть opened равно («Parse of» от (held.«stack») и (приписать "(" к (held.«ops»)) и "" и пустой список и нет)
+  если token равен "("
+    то opened
+    иначе (если token равен ")" то («Closed bracket» от held) иначе («Word step» от held и token))
+
+тотальная функция «Outside step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  если ["если", ","] содержит token то held иначе («Bracket step» от held и token)
+
+тотальная функция «Opening step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  пусть opened равно («Parse of» от (held.«stack») и (held.«ops») и (held.«name») и пустой список и да)
+  если (token равен "(") и притом (не (пусто (held.«name»)))
+    то opened
+    иначе («Outside step» от («Flushed» от held) и token)
+
+тотальная функция «Token step»
+  принимает held: «Parse», token: строка
+  возвращает «Parse»
+  если held.«inside» то («Inside step» от held и token) иначе («Opening step» от held и token)
+
+тотальная функция «Finished»
+  принимает reduction: «Reduction», inside: признак
+  возвращает «Stack»
+  пример «Two formulas without a connective are a fault»
+    дано reduction равно (запись «Reduction» с «ops» равным пустой список и «stack» равным (запись «Stack»
+        с «out» равным [вариант «Truth» с holds равным да, вариант «Truth» с holds равным нет]
+        и «fault» равным ""))
+    дано inside равно нет
+    ожидается (запись «Stack»
+        с «out» равным [вариант «Truth» с holds равным да, вариант «Truth» с holds равным нет]
+        и «fault» равным "между частями формулы нет связки «и», «или» либо «если …, то …»")
+  пусть stack равно (reduction.«stack»)
+  пусть count равно (длина (stack.«out»))
+  пусть fault равно (свёртка [
+      [(если inside то "да" иначе "нет"), "скобка после имени не закрыта"],
+      [(если пусто (reduction.«ops») то "нет" иначе "да"), "открывающая скобка не закрыта"],
+      [(если count равен 0 то "да" иначе "нет"), "формула пуста"],
+      [(если count больше 1 то "да" иначе "нет"),
+      "между частями формулы нет связки «и», «или» либо «если …, то …»"]] начиная с "" как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
+  если пусто fault то stack иначе («Failed» от stack и fault)
+
+тотальная функция «Parsed formula»
+  принимает text: строка
+  возвращает «Stack»
+  пример «A conditional with a conjunction is read by priority»
+    дано text равно "если кит(x) и не рыба(x), то зверь(x)"
+    ожидается (запись «Stack» с «out» равным [(вариант «Implies»
+        с left равным (вариант «And» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
+        и right равным (вариант «Not» с inner равным (вариант «Atom» с name равным "рыба" и terms равным ["x"])))
+        и right равным (вариант «Atom» с name равным "зверь" и terms равным ["x"]))] и «fault» равным "")
+  пример «A relation keeps its terms in order»
+    дано text равно "любит(Иван, Мария) или дождь"
+    ожидается (запись «Stack» с «out» равным [(вариант «Or»
+        с left равным (вариант «Atom» с name равным "любит" и terms равным ["Иван", "Мария"])
+        и right равным (вариант «Atom» с name равным "дождь" и terms равным пустой список))] и «fault» равным "")
+  пример «A lost connective is named»
+    дано text равно "кит(x) рыба(x)"
+    ожидается (запись «Stack» с «out» равным [вариант «Atom» с name равным "рыба" и terms равным ["x"],
+        вариант «Atom» с name равным "кит" и terms равным ["x"]]
+        и «fault» равным "между частями формулы нет связки «и», «или» либо «если …, то …»")
+  пусть start равно («Parse of» от (запись «Stack» с «out» равным пустой список и «fault» равным "")
+      и пустой список и "" и пустой список и нет)
+  пусть read равно (свёртка («Formula tokens» от text) начиная с start как held и token →
+      «Token step» от held и token)
+  пусть last равно («Flushed» от read)
+  «Finished» от («Reduced» от (last.«ops») и (last.«stack») и 1) и (read.«inside»)
+
+тотальная функция «Quantifier kind»
+  принимает word: строка
+  возвращает строка
+  пример «Words of generality»
+    дано word равно "каждый"
+    ожидается "все"
+  пример «Words of existence»
+    дано word равно "некоторые"
+    ожидается "есть"
+  пример «Another word is not a quantifier»
+    дано word равно "кит"
+    ожидается ""
+  если ["все", "всех", "всякий", "каждый", "любой"] содержит word
+    то "все"
+    иначе (если ["есть", "существует", "некоторые", "некоторый"] содержит word то "есть" иначе "")
+
+тотальная функция «Prefix words»
+  принимает piece: строка
+  возвращает список строки
+  пример «Commas and the word before a quantifier are dropped»
+    дано piece равно "для всех x, y"
+    ожидается ["всех", "x", "y"]
+  отфильтровать («Pieces of» от («Replaced in» от piece и "," и " ")) где word → не (word равен "для")
+
+тотальная функция «With prefix»
+  принимает form: «Form», piece: строка
+  возвращает «Form»
+  пусть words равно («Prefix words» от piece)
+  пусть kind равно (если пусто words то "" иначе («Quantifier kind» от (элемент 1 в words)))
+  пусть mixed равно ((не (пусто (form.«quantifier»))) и притом (не ((form.«quantifier») равен kind)))
+  пусть fault равно (свёртка [
+      [(если пусто kind то "да" иначе "нет"), (соединить ["перед двоеточием ждали «все x:» или «есть x:», а стоит «",
+      piece, "»"] по "")],
+      [(если (длина words) меньше 2 то "да" иначе "нет"), "после «все» или «есть» не названа переменная"],
+      [(если mixed то "да" иначе "нет"),
+      "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида"]]
+      начиная с (form.«fault») как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
+  (запись «Form» с «quantifier» равным kind
+      и «variables» равным («Соединить списки» от (form.«variables») и (отфильтровать («Numbered words» от words)
+      где word → не ((form.«variables») содержит word)))
+      и «body» равным (form.«body») и «fault» равным fault)
+
+тотальная функция «Numbered words»
+  принимает words: список строки
+  возвращает список строки
+  пример «The quantifier word itself is not a variable»
+    дано words равно ["все", "x", "y"]
+    ожидается ["x", "y"]
+  разбор words
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Form of»
+  принимает text: строка
+  возвращает «Form»
+  пример «A general statement with one variable»
+    дано text равно "все x: если кит(x), то зверь(x)"
+    ожидается (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+        и «body» равным (вариант «Implies» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
+        и right равным (вариант «Atom» с name равным "зверь" и terms равным ["x"])) и «fault» равным "")
+  пример «A statement about a named thing has no quantifier»
+    дано text равно "кит(Моби)"
+    ожидается (запись «Form» с «quantifier» равным "" и «variables» равным пустой список
+        и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["Моби"]) и «fault» равным "")
+  пример «Mixed quantifiers are refused»
+    дано text равно "все x: есть y: любит(x, y)"
+    ожидается (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"])
+        и «fault» равным "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида")
+  пусть pieces равно (разделить text по ":")
+  пусть parsed равно («Parsed formula» от (элемент (длина pieces) в pieces))
+  пусть body равно (если пусто (parsed.«out») то (вариант «Truth» с holds равным да)
+      иначе (элемент 1 в (parsed.«out»)))
+  пусть bare равно (запись «Form» с «quantifier» равным "" и «variables» равным пустой список и «body» равным body
+      и «fault» равным (parsed.«fault»))
+  (свёртка («Without the last» от pieces) начиная с bare как form и piece → «With prefix» от form и piece)
+
+тотальная функция «Without the last»
+  принимает pieces: список строки
+  возвращает список строки
+  пример «The last piece is dropped»
+    дано pieces равно ["все x", " кит(x)"]
+    ожидается ["все x"]
+  разбор pieces
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если пусто хвост то (пустой список) иначе (приписать голова к («Without the last» от хвост))
+
+тотальная функция «Atom text»
+  принимает name: строка, terms: список строки
+  возвращает строка
+  пример «A relation lists its terms»
+    дано name равно "любит"
+    дано terms равно ["Иван", "Мария"]
+    ожидается "любит(Иван, Мария)"
+  пример «A statement without terms is its name»
+    дано name равно "дождь"
+    дано terms равно пустой список
+    ожидается "дождь"
+  если пусто terms то name иначе (соединить [name, "(", (соединить terms по ", "), ")"] по "")
+
+тотальная функция «Formula text»
+  принимает formula: «Formula»
+  возвращает строка
+  пример «A formula is printed the way it is written»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
+        и right равным (вариант «Not» с inner равным (вариант «Atom» с name равным "рыба" и terms равным ["x"])))
+    ожидается "если кит(x), то не рыба(x)"
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то если holds то "истина" иначе "ложь"
+    случай вариант «Atom» с name как name и terms как terms
+      то «Atom text» от name и terms
+    случай вариант «Not» с inner как inner
+      то соединить ["не ", («Bracketed text» от inner)] по ""
+    случай вариант «And» с left как left и right как right
+      то соединить [(«Bracketed text» от left), " и ", («Bracketed text» от right)] по ""
+    случай вариант «Or» с left как left и right как right
+      то соединить [(«Bracketed text» от left), " или ", («Bracketed text» от right)] по ""
+    случай вариант «Implies» с left как left и right как right
+      то соединить ["если ", («Formula text» от left), ", то ", («Formula text» от right)] по ""
+
+тотальная функция «Bracketed text»
+  принимает formula: «Formula»
+  возвращает строка
+  пример «A compound part is put in brackets»
+    дано formula равно (вариант «Or» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    ожидается "(а или б)"
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то если holds то "истина" иначе "ложь"
+    случай вариант «Atom» с name как name и terms как terms
+      то «Atom text» от name и terms
+    случай вариант «Not» с inner как inner
+      то соединить ["не ", («Bracketed text» от inner)] по ""
+    случай вариант «And» с left как left и right как right
+      то соединить ["(", («Bracketed text» от left), " и ", («Bracketed text» от right), ")"] по ""
+    случай вариант «Or» с left как left и right как right
+      то соединить ["(", («Bracketed text» от left), " или ", («Bracketed text» от right), ")"] по ""
+    случай вариант «Implies» с left как left и right как right
+      то соединить ["(если ", («Bracketed text» от left), ", то ", («Bracketed text» от right), ")"] по ""
+
+тотальная функция «Form text»
+  принимает form: «Form»
+  возвращает строка
+  пример «The quantifier stands before the body»
+    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
+    ожидается "все x, y: любит(x, y)"
+  если пусто (form.«quantifier»)
+    то «Formula text» от (form.«body»)
+    иначе (соединить [(form.«quantifier»), " ", (соединить (form.«variables») по ", "), ": ",
+        («Formula text» от (form.«body»))] по "")
+
+тотальная функция «Mentions of»
+  принимает formula: «Formula»
+  возвращает список (список строки)
+  пример «Every atom is listed with its name first»
+    дано formula равно (вариант «And» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
+        и right равным (вариант «Atom» с name равным "дождь" и terms равным пустой список))
+    ожидается [["кит", "x"], ["дождь"]]
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то пустой список
+    случай вариант «Atom» с name как name и terms как terms
+      то [(приписать name к terms)]
+    случай вариант «Not» с inner как inner
+      то «Mentions of» от inner
+    случай вариант «And» с left как left и right как right
+      то «Соединить списки» от («Mentions of» от left) и («Mentions of» от right)
+    случай вариант «Or» с left как left и right как right
+      то «Соединить списки» от («Mentions of» от left) и («Mentions of» от right)
+    случай вариант «Implies» с left как left и right как right
+      то «Соединить списки» от («Mentions of» от left) и («Mentions of» от right)
+
+тотальная функция «Kept once»
+  принимает words: список строки
+  возвращает список строки
+  пример «A repeated word is kept once, in the order of the first meeting»
+    дано words равно ["а", "б", "а"]
+    ожидается ["а", "б"]
+  свёртка words начиная с (пустой список) как kept и word → если kept содержит word то kept иначе (добавить word к kept)
+
+тотальная функция «Atoms of»
+  принимает formula: «Formula»
+  возвращает список строки
+  пример «Each atom is named once»
+    дано formula равно (вариант «And» с left равным (вариант «Atom» с name равным "кит" и terms равным ["а"])
+        и right равным (вариант «Atom» с name равным "кит" и terms равным ["а"]))
+    ожидается ["кит(а)"]
+  («Kept once» от (отобразить («Mentions of» от formula) как mention →
+      «Atom text» от (элемент 1 в mention) и («Numbered words» от mention)))
+
+тотальная функция «Constants of»
+  принимает form: «Form»
+  возвращает список строки
+  пример «A term that is not a variable of the quantifier is a constant»
+    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "Мария"]) и «fault» равным "")
+    ожидается ["Мария"]
+  («Kept once» от (отфильтровать (свёртка («Mentions of» от (form.«body»)) начиная с (пустой список)
+      как gathered и mention → «Соединить списки» от gathered и («Numbered words» от mention))
+      где term → не ((form.«variables») содержит term)))
+
+тотальная функция «Bound term»
+  принимает term: строка, bindings: список (список строки)
+  возвращает строка
+  пример «A bound variable becomes its value»
+    дано term равно "x"
+    дано bindings равно [["x", "Моби"]]
+    ожидается "Моби"
+  пример «Another term stays»
+    дано term равно "Иван"
+    дано bindings равно [["x", "Моби"]]
+    ожидается "Иван"
+  (свёртка bindings начиная с term как found и pair →
+      если (элемент 1 в pair) равен term то (элемент 2 в pair) иначе found)
+
+тотальная функция «Substituted»
+  принимает formula: «Formula», bindings: список (список строки)
+  возвращает «Formula»
+  пример «Variables are replaced inside every atom»
+    дано formula равно (вариант «Not» с inner равным (вариант «Atom» с name равным "кит" и terms равным ["x"]))
+    дано bindings равно [["x", "Моби"]]
+    ожидается (вариант «Not» с inner равным (вариант «Atom» с name равным "кит" и terms равным ["Моби"]))
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то formula
+    случай вариант «Atom» с name как name и terms как terms
+      то (вариант «Atom» с name равным name
+          и terms равным (отобразить terms как term → «Bound term» от term и bindings))
+    случай вариант «Not» с inner как inner
+      то вариант «Not» с inner равным («Substituted» от inner и bindings)
+    случай вариант «And» с left как left и right как right
+      то (вариант «And» с left равным («Substituted» от left и bindings)
+          и right равным («Substituted» от right и bindings))
+    случай вариант «Or» с left как left и right как right
+      то (вариант «Or» с left равным («Substituted» от left и bindings)
+          и right равным («Substituted» от right и bindings))
+    случай вариант «Implies» с left как left и right как right
+      то (вариант «Implies» с left равным («Substituted» от left и bindings)
+          и right равным («Substituted» от right и bindings))
+
+тотальная функция «Bindings over»
+  принимает variables: список строки, universe: список строки
+  возвращает список (список (список строки))
+  пример «Every variable takes every value»
+    дано variables равно ["x", "y"]
+    дано universe равно ["а", "б"]
+    ожидается ([[["x", "а"], ["y", "а"]], [["x", "а"], ["y", "б"]], [["x", "б"], ["y", "а"]],
+        [["x", "б"], ["y", "б"]]])
+  (свёртка variables начиная с [(пустой список)] как partial и variable →
+      свёртка partial начиная с (пустой список) как grown и chosen →
+      «Соединить списки» от grown и (отобразить universe как value → добавить [variable, value] к chosen))
+
+тотальная функция «All of»
+  принимает formulas: список «Formula»
+  возвращает «Formula»
+  пример «No formulas hold together trivially»
+    дано formulas равно пустой список
+    ожидается вариант «Truth» с holds равным да
+  разбор formulas
+    случай пусто
+      то вариант «Truth» с holds равным да
+    случай голова и хвост
+      то если пусто хвост то голова иначе (вариант «And» с left равным голова и right равным («All of» от хвост))
+
+тотальная функция «Any of»
+  принимает formulas: список «Formula»
+  возвращает «Formula»
+  пример «No formulas give no case»
+    дано formulas равно пустой список
+    ожидается вариант «Truth» с holds равным нет
+  разбор formulas
+    случай пусто
+      то вариант «Truth» с holds равным нет
+    случай голова и хвост
+      то если пусто хвост то голова иначе (вариант «Or» с left равным голова и right равным («Any of» от хвост))
+
+тотальная функция «Named after»
+  принимает variables: список строки, tag: строка
+  возвращает список (список строки)
+  пример «Each variable gets a thing of its own»
+    дано variables равно ["x"]
+    дано tag равно "из_2"
+    ожидается [["x", "x_из_2"]]
+  отобразить variables как variable → [variable, (соединить [variable, "_", tag] по "")]
+
+тотальная функция «Premise instances»
+  принимает form: «Form», universe: список строки, tag: строка
+  возвращает список «Formula»
+  пример «A general premise is said of every thing»
+    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+        и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
+    дано universe равно ["а", "б"]
+    дано tag равно "из_1"
+    ожидается ([вариант «Atom» с name равным "кит" и terms равным ["а"],
+        вариант «Atom» с name равным "кит" и terms равным ["б"]])
+  пример «A premise of existence is said of a thing of its own»
+    дано form равно (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x"]
+        и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
+    дано universe равно ["а"]
+    дано tag равно "из_1"
+    ожидается [вариант «Atom» с name равным "кит" и terms равным ["x_из_1"]]
+  если (form.«quantifier») равен "все"
+    то (отобразить («Bindings over» от (form.«variables») и universe) как bindings →
+        «Substituted» от (form.«body») и bindings)
+    иначе [(«Substituted» от (form.«body») и («Named after» от (form.«variables») и tag))]
+
+тотальная функция «Conclusion instance»
+  принимает form: «Form», universe: список строки
+  возвращает «Formula»
+  пример «A general conclusion is said of an arbitrary thing»
+    дано form равно (запись «Form» с «quantifier» равным "все" и «variables» равным ["x"]
+        и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
+    дано universe равно ["а"]
+    ожидается вариант «Atom» с name равным "кит" и terms равным ["x_любой"]
+  пример «A conclusion of existence holds when some thing fits»
+    дано form равно (запись «Form» с «quantifier» равным "есть" и «variables» равным ["x"]
+        и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["x"]) и «fault» равным "")
+    дано universe равно ["а", "б"]
+    ожидается (вариант «Or» с left равным (вариант «Atom» с name равным "кит" и terms равным ["а"])
+        и right равным (вариант «Atom» с name равным "кит" и terms равным ["б"]))
+  если (form.«quantifier») равен "есть"
+    то («Any of» от (отобразить («Bindings over» от (form.«variables») и universe) как bindings →
+        «Substituted» от (form.«body») и bindings))
+    иначе («Substituted» от (form.«body») и («Named after» от (form.«variables») и "любой"))
+
+тотальная функция «Holds»
+  принимает formula: «Formula», truths: список строки
+  возвращает признак
+  пример «A conditional with a false condition holds»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    дано truths равно пустой список
+    ожидается да
+  пример «A conditional with a true condition and a false outcome fails»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    дано truths равно ["а"]
+    ожидается нет
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то holds
+    случай вариант «Atom» с name как name и terms как terms
+      то truths содержит («Atom text» от name и terms)
+    случай вариант «Not» с inner как inner
+      то не («Holds» от inner и truths)
+    случай вариант «And» с left как left и right как right
+      то («Holds» от left и truths) и притом («Holds» от right и truths)
+    случай вариант «Or» с left как left и right как right
+      то («Holds» от left и truths) или («Holds» от right и truths)
+    случай вариант «Implies» с left как left и right как right
+      то (не («Holds» от left и truths)) или («Holds» от right и truths)
+
+тотальная функция «Assignments»
+  принимает atoms: список строки
+  возвращает список (список строки)
+  пример «Two atoms have four assignments»
+    дано atoms равно ["а", "б"]
+    ожидается [пустой список, ["а"], ["б"], ["а", "б"]]
+  (свёртка atoms начиная с [(пустой список)] как made и atom →
+      «Соединить списки» от made и (отобразить made как truths → добавить atom к truths))
+
+объект «Search»
+  «found»: признак
+  «truths»: список строки
+
+тотальная функция «Model against»
+  принимает formula: «Formula»
+  возвращает «Search»
+  пример «A formula that always holds has no model against it»
+    дано formula равно (вариант «Or» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Not» с inner равным (вариант «Atom» с name равным "а" и terms равным пустой список)))
+    ожидается запись «Search» с «found» равным нет и «truths» равным пустой список
+  пример «The first assignment that breaks the formula is given»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    ожидается запись «Search» с «found» равным да и «truths» равным ["а"]
+  разбор (отфильтровать («Assignments» от («Atoms of» от formula)) где truths → не («Holds» от formula и truths))
+    случай пусто
+      то запись «Search» с «found» равным нет и «truths» равным пустой список
+    случай голова и хвост
+      то запись «Search» с «found» равным да и «truths» равным голова

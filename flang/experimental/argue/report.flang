@@ -1,0 +1,450 @@
+модуль «Argue report»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+
+объект «Judged»
+  «markup»: «Markup»
+  «verdicts»: список «Verdict»
+  «clashes»: список «Clash»
+  «outcomes»: список «Outcome»
+
+тотальная функция «Entry line»
+  принимает markup: «Markup», label: строка
+  возвращает строка
+  пример «A judgment is shown with its quote and its form»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Entry» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    дано label равно "1"
+    ожидается "> [1] «Идёт дождь» — `дождь`"
+  разбор («Entries by» от (markup.«entries») и label)
+    случай пусто
+      то соединить ["> [", label, "] суждения в разметке нет"] по ""
+    случай голова и хвост
+      то соединить ["> [", label, "] «", (голова.«quote»), "» — `", (голова.«formula»), "`"] по ""
+
+тотальная функция «Entry lines»
+  принимает markup: «Markup», labels: список строки
+  возвращает строка
+  соединить (отобразить («Kept once» от labels) как label → «Entry line» от markup и label) по "\n>\n"
+
+тотальная функция «Step label»
+  принимает step: «Inference»
+  возвращает строка
+  пример «The conclusion and what it is drawn from»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1", "2"]
+        и «kind» равным "дедукция")
+    ожидается "[3] из [1], [2]"
+  пример «A conclusion drawn from nothing»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным пустой список
+        и «kind» равным "дедукция")
+    ожидается "[3] без посылок"
+  если пусто (step.«premises»)
+    то соединить ["[", (step.«conclusion»), "] без посылок"] по ""
+    иначе (соединить ["[", (step.«conclusion»), "] из ", (соединить (отобразить (step.«premises»)
+        как label → соединить ["[", label, "]"] по "") по ", ")] по "")
+
+тотальная функция «Kind words»
+  принимает kind: строка
+  возвращает строка
+  пример «A step from a correlation to a cause»
+    дано kind равно "корреляция"
+    ожидается "причинное заключение из корреляции"
+  (свёртка [["обобщение", "обобщение из примеров"], ["корреляция", "причинное заключение из корреляции"],
+      ["авторитет", "ссылка на авторитет"], ["определение", "вывод по определению"]]
+      начиная с "дедукция" как found и row →
+      если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
+
+тотальная функция «Is deductive»
+  принимает step: «Inference»
+  возвращает признак
+  пример «A generalisation is not a deduction»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "обобщение")
+    ожидается нет
+  ["дедукция", "определение"] содержит (step.«kind»)
+
+тотальная функция «Final status»
+  принимает verdict: «Verdict», outcomes: список «Outcome»
+  возвращает строка
+  пример «A step the kernel was not asked about is not decided»
+    дано verdict равно (запись «Verdict» с «step» равным (запись «Inference» с «line» равным 7
+        и «conclusion» равным "3" и «premises» равным ["1"] и «kind» равным "дедукция")
+        и «status» равным "follows" и «repeats» равным нет и «truths» равным пустой список
+        и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+    дано outcomes равно пустой список
+    ожидается "undecided"
+  пример «A step without premises needs no kernel»
+    дано verdict равно (запись «Verdict» с «step» равным (запись «Inference» с «line» равным 7
+        и «conclusion» равным "3" и «premises» равным пустой список и «kind» равным "дедукция")
+        и «status» равным "none" и «repeats» равным нет и «truths» равным пустой список
+        и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+    дано outcomes равно пустой список
+    ожидается "none"
+  пусть id равно («Step id» от (verdict.«step»))
+  если (verdict.«status») равен "none"
+    то "none"
+    иначе (если «Proven» от outcomes и id и (verdict.«status») то (verdict.«status») иначе "undecided")
+
+тотальная функция «Circle of»
+  принимает circles: список (список строки), step: «Inference»
+  возвращает список строки
+  пример «A step whose conclusion and premise lie on one circle belongs to it»
+    дано circles равно [["5", "6"]]
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "5" и «premises» равным ["6"]
+        и «kind» равным "дедукция")
+    ожидается ["5", "6"]
+  пример «A step that only leads into a circle does not»
+    дано circles равно [["5", "6"]]
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "7" и «premises» равным ["6"]
+        и «kind» равным "дедукция")
+    ожидается пустой список
+  (свёртка circles начиная с (пустой список) как found и group →
+      если (group содержит (step.«conclusion»))
+      и притом (не (пусто (отфильтровать (step.«premises») где label → group содержит label)))
+      то group иначе found)
+
+тотальная функция «Assignment words»
+  принимает truths: список строки, falses: список строки
+  возвращает строка
+  пример «What holds and what does not in the example against a step»
+    дано truths равно ["кит(а)"]
+    дано falses равно ["рыба(а)"]
+    ожидается "верно: `кит(а)`; неверно: `рыба(а)`"
+  пусть held равно (если пусто truths то "ничего"
+      иначе (соединить (отобразить truths как atom → соединить ["`", atom, "`"] по "") по ", "))
+  пусть failed равно (если пусто falses то "ничего"
+      иначе (соединить (отобразить falses как atom → соединить ["`", atom, "`"] по "") по ", "))
+  соединить ["верно: ", held, "; неверно: ", failed] по ""
+
+тотальная функция «Missing words»
+  принимает verdict: «Verdict», outcomes: список «Outcome»
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  пусть named равно ((не (пусто (verdict.«bridge»)))
+      и притом («Proven» от outcomes и («Step id» от step) и "bridge"))
+  пусть grounds равно (соединить (отобразить (step.«premises») как label → соединить ["[", label, "]"] по "")
+      по " и ")
+  если named
+    то (соединить ["посылки `", (verdict.«bridge»),
+        "`: с ней вывод следует (доказано ядром). В разметке такой посылки нет"] по "")
+    иначе (соединить ["посылки, которая связывает ", grounds, " с [", (step.«conclusion»),
+        "]: «если верно ", grounds, ", то верно [", (step.«conclusion»), "]». В разметке такой посылки нет"] по "")
+
+тотальная функция «Kind fault»
+  принимает kind: строка
+  возвращает строка
+  пример «Why a correlation is not a proof»
+    дано kind равно "корреляция"
+    ожидается "из того, что два признака встречаются вместе, не следует, что один вызывает другой"
+  (свёртка [["корреляция", "из того, что два признака встречаются вместе, не следует, что один вызывает другой"],
+      ["обобщение", "из сведений о части случаев не следует утверждение обо всех случаях"],
+      ["авторитет", "чьё-то мнение или оценка — не доказательство самого утверждения"]]
+      начиная с "шаг не помечен как дедукция" как found и row →
+      если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
+
+тотальная функция «Failure block»
+  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome»
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  (соединить [(соединить ["Вывод не следует: ", («Step label» от step)] по ""), "",
+      («Entry lines» от markup и («Соединить списки» от (step.«premises») и [(step.«conclusion»)])), "",
+      (соединить ["- **Что не так:** суждение [", (step.«conclusion»), "] выдано за вывод из ",
+      (соединить (отобразить (step.«premises») как label → соединить ["[", label, "]"] по "") по ", "),
+      ", но логически из них не следует."] по ""),
+      (соединить ["- **Почему:** есть случай, когда посылки верны, а вывод ложен (подтверждено ядром): ",
+      («Assignment words» от (verdict.«truths») и (verdict.«falses»)), "."] по ""),
+      (соединить ["- **Чего не хватает:** ", («Missing words» от verdict и outcomes), "."] по "")] по "\n")
+
+тотальная функция «Clash block»
+  принимает markup: «Markup», clash: «Clash»
+  возвращает строка
+  (соединить [(соединить ["Противоречие: [", (clash.«left»), "] и [", (clash.«right»), "]"] по ""), "",
+      («Entry lines» от markup и [(clash.«left»), (clash.«right»)]), "",
+      "- **Что не так:** оба суждения не могут быть верны вместе.",
+      "- **Почему:** из них двоих выводится ложь (доказано ядром).",
+      "- **Чего не хватает:** одно из суждений нужно снять или уточнить: вывод из обоих ничего не доказывает."]
+      по "\n")
+
+тотальная функция «Premise clash block»
+  принимает markup: «Markup», verdict: «Verdict»
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  (соединить [(соединить ["Посылки противоречат друг другу: ", («Step label» от step)] по ""), "",
+      («Entry lines» от markup и (step.«premises»)), "",
+      "- **Что не так:** посылки шага не могут быть верны вместе.",
+      "- **Почему:** из них выводится ложь (доказано ядром), а из лжи формально следует что угодно.",
+      (соединить ["- **Чего не хватает:** совместных посылок. Вывод [", (step.«conclusion»),
+      "] из этих посылок не засчитан."] по "")] по "\n")
+
+тотальная функция «None block»
+  принимает markup: «Markup», verdict: «Verdict»
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  (соединить [(соединить ["Вывод без посылок: [", (step.«conclusion»), "]"] по ""), "",
+      («Entry lines» от markup и [(step.«conclusion»)]), "",
+      "- **Что не так:** суждение подано как вывод, а посылок у него в разметке нет.",
+      "- **Почему:** в тексте перед ним нет суждений, из которых его выводят.",
+      "- **Чего не хватает:** посылок, на которые вывод опирается."] по "\n")
+
+тотальная функция «Circle block»
+  принимает markup: «Markup», group: список строки
+  возвращает строка
+  пусть steps равно (отфильтровать (markup.«steps») где step →
+      не (пусто («Circle of» от [group] и («Canonical step» от markup и step))))
+  пусть labels равно (свёртка steps начиная с (пустой список) как found и step →
+      «Соединить списки» от found и (отфильтровать (приписать (step.«conclusion») к (step.«premises»))
+      где label → group содержит («First label of» от markup и label)))
+  (соединить [(соединить ["Порочный круг: ", (соединить (отобразить group
+      как label → соединить ["[", label, "]"] по "") по " ↔ ")] по ""), "",
+      («Entry lines» от markup и labels), "",
+      (соединить ["- **Что не так:** суждения обосновывают друг друга по кругу (шаги: ",
+      (соединить (отобразить steps как step → «Step label» от step) по "; "), ")."] по ""),
+      "- **Почему:** вывод прямо или через цепочку шагов опирается сам на себя.",
+      "- **Чего не хватает:** посылки вне круга, из которой следовало бы хотя бы одно из этих суждений."] по "\n")
+
+тотальная функция «Shift row words»
+  принимает row: список строки
+  возвращает строка
+  пример «Where the word stands and what it is taken for»
+    дано row равно ["эффективность", "удобство", "6", "нет"]
+    ожидается "в [6] — `удобство`"
+  пример «A defining use is marked»
+    дано row равно ["эффективность", "доля_сдавших", "2", "да"]
+    ожидается "в [2] — `доля_сдавших` (определение)"
+  (соединить ["в [", (элемент 3 в row), "] — `", (элемент 2 в row), "`",
+      (если (элемент 4 в row) равен "да" то " (определение)" иначе "")] по "")
+
+тотальная функция «Shift block»
+  принимает markup: «Markup», shift: «Shift»
+  возвращает строка
+  пусть defined равно (не (пусто (отфильтровать (shift.«rows») где row → (элемент 4 в row) равен "да")))
+  (соединить [(соединить ["Подмена термина: «", (shift.«word»), "»"] по ""), "",
+      («Entry lines» от markup и (отобразить (shift.«rows») как row → элемент 3 в row)), "",
+      (соединить ["- **Что не так:** одно слово текста стоит за разными понятиями: ",
+      (соединить (отобразить (shift.«rows») как row → «Shift row words» от row) по ", "), "."] по ""),
+      (если defined то "- **Почему:** слово определено в тексте, а дальше употреблено в другом смысле."
+      иначе "- **Почему:** в разных местах текста слово размечено разными понятиями."),
+      "- **Чего не хватает:** одного смысла на всё рассуждение либо посылки, которая связывает эти понятия."]
+      по "\n")
+
+тотальная функция «Soft line»
+  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome»
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  пусть status равно («Final status» от verdict и outcomes)
+  пусть why равно (свёртка [["follows", "из посылок вывод логически следует (доказано ядром)"],
+      ["fails", (соединить ["из посылок вывод логически не следует; пример против подтверждён ядром: ",
+      («Assignment words» от (verdict.«truths») и (verdict.«falses»))] по "")],
+      ["clash", "посылки противоречат друг другу (доказано ядром)"],
+      ["none", "посылок в разметке нет"]] начиная с "ядро не решило, следует ли вывод" как found и row →
+      если (элемент 1 в row) равен status то (элемент 2 в row) иначе found)
+  пусть missing равно (если status равен "fails" то («Missing words» от verdict и outcomes)
+      иначе "ничего сверх названного")
+  (соединить [(соединить ["**", («Kind words» от (step.«kind»)), ": ", («Step label» от step), "**"] по ""), "",
+      («Entry lines» от markup и («Соединить списки» от (step.«premises») и [(step.«conclusion»)])), "",
+      (соединить ["- **Что не так:** шаг помечен в разметке как «", (step.«kind»), "»: ",
+      («Kind fault» от (step.«kind»)), "."] по ""),
+      (соединить ["- **Почему:** ", why, "."] по ""),
+      (соединить ["- **Чего не хватает:** ", missing, "."] по "")] по "\n")
+
+тотальная функция «Verdict words»
+  принимает status: строка
+  возвращает строка
+  пример «The kernel proved the step»
+    дано status равно "follows"
+    ожидается "следует (доказано ядром)"
+  (свёртка [["follows", "следует (доказано ядром)"], ["fails", "не следует (пример против подтверждён ядром)"],
+      ["clash", "посылки противоречат друг другу"], ["none", "посылок нет"]]
+      начиная с "ядро не решило" как found и row →
+      если (элемент 1 в row) равен status то (элемент 2 в row) иначе found)
+
+тотальная функция «Table row»
+  принимает markup: «Markup», verdict: «Verdict», outcomes: список «Outcome», circles: список (список строки)
+  возвращает строка
+  пусть step равно (verdict.«step»)
+  (соединить ["| ", («Step label» от step), " | ", («Kind words» от (step.«kind»)), " | ",
+      («Verdict words» от («Final status» от verdict и outcomes)),
+      (если пусто («Circle of» от circles и («Canonical step» от markup и step)) то ""
+      иначе "; шаг входит в порочный круг"), " |"] по "")
+
+тотальная функция «Counted»
+  принимает verdicts: список «Verdict», outcomes: список «Outcome», status: строка
+  возвращает число
+  длина (отфильтровать verdicts где verdict → («Final status» от verdict и outcomes) равен status)
+
+тотальная функция «Percent»
+  принимает part: число, whole: число
+  возвращает число
+  пример «Seven of ten»
+    дано part равно 7
+    дано whole равно 10
+    ожидается 70
+  пример «Nothing of nothing»
+    дано part равно 0
+    дано whole равно 0
+    ожидается 0
+  пусть scaled равно (part умножить на 100)
+  если whole равен 0 то 0 иначе ((scaled минус (scaled остаток от whole)) делить на whole)
+
+тотальная функция «Numbered blocks»
+  принимает blocks: список строки
+  возвращает список строки
+  пример «Findings are numbered from one»
+    дано blocks равно ["Круг", "Подмена"]
+    ожидается ["### 1. Круг", "### 2. Подмена"]
+  (свёртка blocks начиная с (пустой список) как made и block →
+      добавить (соединить ["### ", (к строке ((длина made) плюс 1)), ". ", block] по "") к made)
+
+тотальная функция «Boundary»
+  возвращает строка
+  пример «The trust boundary in one sentence»
+    ожидается "Граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро."
+  "Граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро."
+
+тотальная функция «Uncovered markers»
+  принимает markup: «Markup», sentences: список строки
+  возвращает список строки
+  пусть quotes равно (свёртка (markup.«steps») начиная с (пустой список) как found и step →
+      «Words joined» от found и (свёртка (приписать (step.«conclusion») к (step.«premises»))
+      начиная с (пустой список) как taken и label → «Words joined» от taken
+      и (отобразить («Entries by» от (markup.«entries») и label) как entry → entry.«quote»)))
+  (отфильтровать sentences где sentence → (не (пусто («Markers in» от sentence)))
+      и притом (пусто (отфильтровать quotes где quote → «Touches» от sentence и quote)))
+
+тотальная функция «Covered sentences»
+  принимает markup: «Markup», sentences: список строки
+  возвращает список строки
+  (отфильтровать sentences где sentence → не (пусто (отфильтровать (markup.«entries»)
+      где entry → «Touches» от sentence и (entry.«quote»))))
+
+тотальная функция «Finding blocks»
+  принимает markup: «Markup», verdicts: список «Verdict», clashes: список «Clash», outcomes: список «Outcome»
+  возвращает список строки
+  пусть circles равно («Circles of» от («Canonical steps» от markup))
+  пусть proved равно (отфильтровать clashes где clash → «Proven» от outcomes
+      и (соединить ["пара ", (clash.«left»), " и ", (clash.«right»)] по "") и "clash")
+  пусть failures равно (отфильтровать verdicts где verdict →
+      ((«Final status» от verdict и outcomes) равен "fails") и притом («Is deductive» от (verdict.«step»))
+      и притом (пусто («Circle of» от circles и («Canonical step» от markup и (verdict.«step»)))))
+  («Соединить списки» от («Соединить списки» от («Соединить списки» от
+      (отобразить proved как clash → «Clash block» от markup и clash)
+      и (отобразить (отфильтровать verdicts где verdict → («Final status» от verdict и outcomes) равен "clash")
+      как verdict → «Premise clash block» от markup и verdict))
+      и («Соединить списки» от (отобразить circles как group → «Circle block» от markup и group)
+      и (отобразить («Shifts of» от markup) как shift → «Shift block» от markup и shift)))
+      и («Соединить списки» от (отобразить failures как verdict → «Failure block» от markup и verdict и outcomes)
+      и (отобразить (отфильтровать verdicts где verdict → (verdict.«status») равен "none")
+      как verdict → «None block» от markup и verdict)))
+
+тотальная функция «Summary lines»
+  принимает judged: «Judged», text: строка
+  возвращает список строки
+  пусть markup равно (judged.«markup»)
+  пусть verdicts равно (judged.«verdicts»)
+  пусть clashes равно (judged.«clashes»)
+  пусть outcomes равно (judged.«outcomes»)
+  пусть sentences равно («Sentences of text» от text)
+  пусть covered равно (длина («Covered sentences» от markup и sentences))
+  пусть circles равно («Circles of» от («Canonical steps» от markup))
+  пусть proved равно (отфильтровать clashes где clash → «Proven» от outcomes
+      и (соединить ["пара ", (clash.«left»), " и ", (clash.«right»)] по "") и "clash")
+  пусть failed равно (отфильтровать verdicts где verdict → («Final status» от verdict и outcomes) равен "fails")
+  пусть judged равно ((«Counted» от verdicts и outcomes и "follows") плюс (длина failed)
+      плюс («Counted» от verdicts и outcomes и "clash"))
+  [(соединить ["- Предложений в тексте: ", (к строке (длина sentences)), "; покрыто цитатами разметки: ",
+    (к строке covered), " (", (к строке («Percent» от covered и (длина sentences))), " %)."] по ""),
+    (соединить ["- Суждений в разметке: ", (к строке (длина (markup.«entries»))), "; шагов рассуждения: ",
+    (к строке (длина verdicts)), ", из них ядро проверило: ", (к строке judged), ".",
+    (если пусто verdicts то " В разметке нет ни одной строки «вывод»: судить ядру нечего." иначе "")] по ""),
+    (соединить ["- Вердикты ядра: следует — ", (к строке («Counted» от verdicts и outcomes и "follows")),
+    ", не следует — ", (к строке (длина failed)), " (", («Failures by kind» от failed),
+    "), посылки противоречат друг другу — ", (к строке («Counted» от verdicts и outcomes и "clash")),
+    ", ядро не решило — ", (к строке («Counted» от verdicts и outcomes и "undecided")), "."] по ""),
+    (соединить ["- Найдено: противоречий между суждениями — ", (к строке (длина proved)),
+    ", порочных кругов — ", (к строке (длина circles)), ", подмен термина — ",
+    (к строке (длина («Shifts of» от markup))), ", выводов без посылок — ",
+    (к строке («Counted» от verdicts и outcomes и "none")), "."] по ""),
+    (соединить ["- Шагов, которые не являются доказательством (обобщение, корреляция, авторитет): ",
+    (к строке (длина (отфильтровать verdicts где verdict → не («Is deductive» от (verdict.«step»))))), "."] по ""),
+    (соединить ["- Предложений с маркером вывода, которых разметка не коснулась: ",
+    (к строке (длина («Uncovered markers» от markup и sentences))), "."] по "")]
+
+тотальная функция «Failures by kind»
+  принимает failed: список «Verdict»
+  возвращает строка
+  пример «No failures are named so»
+    дано failed равно пустой список
+    ожидается "по родам: нет"
+  пусть parts равно (отфильтровать (отобразить («Step kinds») как kind → [kind, (к строке (длина (отфильтровать failed
+      где verdict → ((verdict.«step»).«kind») равен kind)))]) где pair → не ((элемент 2 в pair) равен "0"))
+  если пусто parts
+    то "по родам: нет"
+    иначе (соединить ["по родам: ", (соединить (отобразить parts
+        как pair → соединить [(элемент 1 в pair), " — ", (элемент 2 в pair)] по "") по ", ")] по "")
+
+тотальная функция «As one»
+  принимает blocks: список строки
+  возвращает список строки
+  пример «Blocks are parted by an empty line»
+    дано blocks равно ["раз", "два"]
+    ожидается ["раз\n\nдва"]
+  пример «No blocks stay none»
+    дано blocks равно пустой список
+    ожидается пустой список
+  если пусто blocks то пустой список иначе [(соединить blocks по "\n\n")]
+
+тотальная функция «Section»
+  принимает title: строка, lines: список строки, otherwise: строка
+  возвращает список строки
+  пример «An empty section says so»
+    дано title равно "Находки"
+    дано lines равно пустой список
+    дано otherwise равно "Находок нет."
+    ожидается ["## Находки", "", "Находок нет.", ""]
+  если пусто lines
+    то [(соединить ["## ", title] по ""), "", otherwise, ""]
+    иначе («Соединить списки» от [(соединить ["## ", title] по ""), ""] и (добавить "" к lines))
+
+тотальная функция «Report of»
+  принимает path: строка, text: строка, judged: «Judged»
+  возвращает строка
+  пусть markup равно (judged.«markup»)
+  пусть verdicts равно (judged.«verdicts»)
+  пусть clashes равно (judged.«clashes»)
+  пусть outcomes равно (judged.«outcomes»)
+  пусть sentences равно («Sentences of text» от text)
+  пусть circles равно («Circles of» от («Canonical steps» от markup))
+  пусть findings равно («Numbered blocks» от («Finding blocks» от markup и verdicts и clashes и outcomes))
+  пусть soft равно (отобразить (отфильтровать verdicts где verdict → не («Is deductive» от (verdict.«step»)))
+      как verdict → «Soft line» от markup и verdict и outcomes)
+  пусть undecided равно (отобразить (отфильтровать verdicts
+      где verdict → («Final status» от verdict и outcomes) равен "undecided")
+      как verdict → соединить ["- ", («Step label» от (verdict.«step»)),
+      ": шаг слишком крупный для ядра или ядро не приняло проверку; разбейте шаг на промежуточные выводы."] по "")
+  пусть table равно («Соединить списки» от ["| Шаг | Род | Вердикт |", "| --- | --- | --- |"]
+      и (отобразить verdicts как verdict → «Table row» от markup и verdict и outcomes и circles))
+  пусть uncovered равно (отобразить («Uncovered markers» от markup и sentences) как sentence →
+      соединить ["- «", sentence, "» (маркер: ", (соединить («Markers in» от sentence) по ", "), ")"] по "")
+  (соединить («Соединить списки» от («Соединить списки» от («Соединить списки» от
+      [(соединить ["# Проверка рассуждения: ", path] по ""), ""]
+      и («Section» от "Сводка" и («Summary lines» от judged и text) и ""))
+      и («Соединить списки» от («Section» от "Находки" и («As one» от findings) и "Находок нет.")
+      и («Section» от "Не доказательство" и («As one» от soft)
+      и "Шагов с пометкой «обобщение», «корреляция» или «авторитет» в разметке нет.")))
+      и («Соединить списки» от («Соединить списки» от
+      («Section» от "Ядро не решило" и undecided и "Таких шагов нет.")
+      и («Section» от "Все шаги" и (если пусто verdicts то пустой список иначе table) и "Шагов в разметке нет."))
+      и («Соединить списки» от («Section» от "Покрытие: маркеры вывода вне разметки" и uncovered
+      и "Все предложения с маркерами вывода размечены шагами.") и [(«Boundary»), ""]))) по "\n")
+
+тотальная функция «Finding count»
+  принимает judged: «Judged»
+  возвращает число
+  пусть soft равно (отфильтровать (judged.«verdicts») где verdict → (не («Is deductive» от (verdict.«step»)))
+      и притом (не ((«Final status» от verdict и (judged.«outcomes»)) равен "follows")))
+  ((длина («Finding blocks» от (judged.«markup») и (judged.«verdicts») и (judged.«clashes»)
+      и (judged.«outcomes»))) плюс (длина soft))

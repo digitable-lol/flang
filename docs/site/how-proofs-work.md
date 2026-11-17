@@ -1,221 +1,26 @@
-# How a proof works
-<!-- замер: версия 0.7.34 · дерево 001d8df7c · сверено 2026-11-10 -->
+# How to read the proof report
 
-The compiler checks three kinds of statements about a function:
+This page answers the question: what does each part of the output of
+`flang check <file> --proof` mean. The output below comes from
+`flang {{выпуск.версия}}`; long lines are wrapped, `…` marks an omission.
 
-| You write | Usual term | What it means | Where it is checked |
-| --- | --- | --- | --- |
-| `тотальная` (total) | termination | the function stops on every input | in the function itself |
-| `требует` (requires) | precondition | what must hold on input | at every call site and at the program's entry |
-| `обеспечивает` (ensures) | postcondition | what the function guarantees on output | for all inputs, not only for the examples |
+## What the report consists of
 
-Each is shown below on a small file with the output of
-`flang {{выпуск.версия}}`. Long output lines are wrapped, and `…` marks a cut.
-In compiler output «ядро» (kernel) is the prover, the part of the compiler that
-proves postconditions, and `сторож` (guard) is a check the compiler adds to the
-generated code.
+File `docs/examples/proofs/three-answers.flang`:
 
-## Termination
-
-The recursive call gets a part of the input: the tail of the list. A part is
-smaller than the whole and lists are finite, so the recursion ends:
-
-```flang
-модуль «Спуск»
-
-тотальная функция «Сумма списка»
-  принимает ряд: список числа
-  возвращает число
-  разбор ряд
-    случай пусто
-      то 0
-    случай голова первый и хвост остальные
-      первый плюс («Сумма списка» от остальные)
-```
-
-```
-$ flang check --proof spusk.flang
-  «Сумма списка»  доказано структурой: аргумент 1 («ряд») на каждом витке
-  становится частью себя; цепочка частей конечного дерева обрывается сама,
-  сторожа нет
-```
-
-"Proved by structure: argument 1 becomes a part of itself on every turn; no
-guard."
-
-When the recursion counts a number down, the outcome depends on the type:
-
-```flang
-модуль «Отсчёт»
-
-тотальная функция «Обратный отсчёт»
-  принимает н: число
-  возвращает число
-  если н не больше 0
-    то 0
-    иначе 1 плюс («Обратный отсчёт» от (н минус 1))
-```
-
-```
-$ flang check --proof otschyot.flang
-  «Обратный отсчёт»  доказано постоянным шагом: аргумент 1 («н») убывает на
-  постоянный шаг и ограничен снизу; на IEEE-754 шаг не всегда меняет число,
-  поэтому сторож, 1 место
-```
-
-`число` (number) is a binary64 float, and above 2⁵³ subtracting one does not
-change it. So one check stays in the generated code ("guard, 1 place"). Change
-the type to `неотрицательное` (non-negative: the range [0, 2⁵³−1], where
-subtracting one is exact) and the check is gone:
-
-```
-  «Обратный отсчёт»  доказано точным шагом: аргумент 1 («н») объявлен
-  натуральным и убывает на 1; дно и потолок даёт тип, внутри потолка шаг точен
-  — сторожа нет
-```
-
-If what decreases is not an argument but an expression over the arguments, name
-it in a `убывает` (decreases) line:
-
-```flang
-модуль «Мера»
-
-тотальная функция «Шагов до края»
-  принимает место: число, край: число
-  возвращает число
-  убывает край минус место
-  если место не меньше край
-    то 0
-    иначе 1 плюс («Шагов до края» от (место плюс 1) и край)
-```
-
-```
-  «Шагов до края»  доказано объявленной мерой: убывает «край» минус «место»;
-  спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её
-  при работе на каждом витке — 1 место
-```
-
-"By the declared measure; the descent is not derived by the kernel, so a guard
-computes the measure on every turn — 1 place."
-
-A function whose termination is not proved is an error, not a warning:
-
-```flang refused
-модуль «Растёт»
-
-тотальная функция «До нуля»
-  принимает н: число
-  возвращает число
-  если н равен 0
-    то 0
-    иначе «До нуля» от (н плюс 1)
-```
-
-```
-$ flang check rastyot.flang; echo "exit $?"
-модуль «Растёт»: функций 1, из них с доказанным завершением 0; типов 0
-без доказанного завершения: «До нуля»
-FLANG_NOT_TOTAL в файле rastyot.flang, строка 8, столбец 11: тотальная функция
-«До нуля»: рекурсивный вызов «До нуля» не убывает — аргумент 1 («н» add 1)
-увеличивает параметр «н». Передавайте часть аргумента: хвост списка из образца
-«голова и хвост», поле варианта из образца, поле записи или элемент коллекции
-rastyot.flang: не проверено — замечаний 1
-exit 1
-```
-
-The message says the recursive call does not decrease: argument 1 grows. If the
-function really may run forever, drop `тотальная`. A `цикл` (loop) block does
-not bypass termination: the compiler expands it into a fold or a total function
-and checks the expansion.
-
-## `требует`: the precondition
-
-A precondition is proved not by the function but by whoever calls it:
-
-```flang refused
-модуль «Заказ»
-
-тотальная функция «Цена со скидкой»
-  принимает цена: неотрицательное, скидка: неотрицательное
-  требует «скидка не больше цены» скидка не больше цена
-  возвращает число
-  цена минус скидка
-
-тотальная функция «Счёт»
-  возвращает число
-  «Цена со скидкой» от 100 и 150
-```
-
-```
-$ flang check zakaz.flang; echo "exit $?"
-модуль «Заказ»: функций 2, из них с доказанным завершением 2; типов 0
-FLANG_PRECONDITION_CALL в файле zakaz.flang, строка 11, столбец 3: вызов «Цена
-со скидкой» в функции «Счёт» не снимает предусловие «скидка не больше цены»:
-… вызывающему здесь известно: собственных «требует» — 0, объявленных типов у
-параметров — 0, доказанных обещаний вызванных в доводе — 0; условие ветвления
-фактом ядру не является (граница названа в шапке файла)
-zakaz.flang: не проверено — замечаний 1
-exit 1
-```
-
-The end of the message lists where the caller can take the missing fact from:
-its own `требует`, the declared type of its parameter, or a proved postcondition
-of the function that computed the argument. With its own `требует` the file
-passes:
-
-```flang
-модуль «Заказ»
-
-тотальная функция «Цена со скидкой»
-  принимает цена: неотрицательное, скидка: неотрицательное
-  требует «скидка не больше цены» скидка не больше цена
-  возвращает число
-  цена минус скидка
-
-тотальная функция «Счёт»
-  принимает цена: неотрицательное, скидка: неотрицательное
-  требует «скидка по карману» скидка не больше цена
-  возвращает число
-  «Цена со скидкой» от цена и скидка
-```
-
-Calls inside the program are checked at compile time and carry no run-time
-check. The check stands in one place: at the entry, where data comes from
-outside:
-
-```
-$ flang run zakaz.flang --function 'Цена со скидкой' --args '{"цена": 100, "скидка": 150}'
-FLANG_PRECONDITION: не выполнено требование «скидка не больше цены» функции «Цена со скидкой»
-$ echo $?
-1
-```
-
-An example whose input breaks `требует` is rejected by `flang check`:
-
-```
-FLANG_EXAMPLE: пример «скидка больше цены» функции «Цена со скидкой»:
-FLANG_PRECONDITION: не выполнено требование «скидка не больше цены» функции
-«Цена со скидкой»
-```
-
-## `обеспечивает`: the postcondition and the three answers
-
-The prover answers every postcondition with one of three words. This file has
-all three:
-
-```flang
+```flang insert docs/examples/proofs/three-answers.flang
 модуль «Три ответа»
 
-тотальная функция «Цена со скидкой»
-  принимает цена: неотрицательное, скидка: неотрицательное
-  требует «скидка не больше цены» скидка не больше цена
+тотальная функция «Сдача»
+  принимает внесено: неотрицательное, цена: неотрицательное
+  требует «денег хватает» цена не больше внесено
   возвращает число
-  обеспечивает «в минус не уходим» результат не меньше 0
-  пример «сто минус десять»
-    дано цена равно 100
-    дано скидка равно 10
-    ожидается 90
-  цена минус скидка
+  обеспечивает «сдача не отрицательна» результат не меньше 0
+  пример «сто за девяносто»
+    дано внесено равно 100
+    дано цена равно 90
+    ожидается 10
+  внесено минус цена
 
 тотальная функция «Удвоить»
   принимает х: целое
@@ -233,141 +38,237 @@ all three:
   х умножить на 3
 ```
 
+```bash
+flang check three-answers.flang --proof; echo "код $?"
 ```
-$ flang check --proof tri.flang; echo "exit $?"
-  постусловие «в минус не уходим» функции «Цена со скидкой» — доказано по
-  объявленным типам аргументов: цель сведена правилом «неотрицательность по
-  построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при
-  нём нет и не нужно
-  постусловие «результат чётный» функции «Удвоить» — сетка 1 значение (примеры
-  функции): нарушений на них нет: проверка прогнала каждый пример и посчитала
-  постусловие на его ответе. Это не доказательство — теоремы при утверждении нет
-  постусловие «результат кратен трём» функции «Утроить» — объявлено, не
-  доказано: ни теоремы, ни примеров. Его считает рантайм после каждого
-  возврата — на тех входах, которые придут
+
+```
+── ведомость доказательства модуля «Три ответа» ──
+слова ведомости, и они не взаимозаменяемы:
 …
-  утверждений 3: доказано 1 (из них без теоремы 1, объявленным типом 1),
-  сетка 1, объявлено, не доказано 1
-exit 3
-```
-
-| The report says | What it means | At run time |
-| --- | --- | --- |
-| «доказано» (proved) | true for all inputs | no check |
-| «сетка N» (grid of N) | passed on the function's N examples, like a unit test; nothing about other inputs | checked on every return |
-| «объявлено, не доказано» (declared, not proved) | neither a proof nor an example | checked on every return |
-
-The last two postconditions are true, but the prover did not derive them. Only
-«доказано» counts; how to get the rest there is on
-[What the kernel proves by itself](what-the-kernel-accepts.html) and
-[Proofs by hand](manual-proofs.html).
-
-Exit codes: plain `flang check` gives 0 on this file — an unproved
-postcondition is not an error. With `--proof`, 0 means "everything is proved"
-and 3 means "something is not". `--proof --strict` also gives 3 where there are
-no postconditions at all.
-
-### A false postcondition
-
-Remove the `требует` line from «Цена со скидкой». The postcondition becomes
-false, and the compiler finds an input that breaks it by itself:
-
-```
-$ flang check skidka.flang; echo "exit $?"
-модуль «Скидка»: функций 1, из них с доказанным завершением 1; типов 0
-FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «в минус не уходим» функции «Цена
-со скидкой» нарушено на входе цена = 0, скидка = 1 — посчитано вычислителем на
-этом входе
-skidka.flang: не проверено — замечаний 1
-exit 1
-```
-
-### Unproved code runs only with consent
-
-```
-$ flang run tri.flang --function 'Удвоить' --args '{"х": 3}'; echo "exit $?"
-не доказано: утверждений 3: доказано 1, сетка 1, на веру 1 — запуск только по
-явному согласию: --на-веру
+чем несётся обещание «тотальная»:
 …
-exit 3
-$ flang run tri.flang --function 'Удвоить' --args '{"х": 3}' --trust
-на веру: доказанность не считалась — запуск по ключу --trust
-6
-```
-
-In Cyrillic the flag is `--на-веру`.
-
-### What is proved leaves the generated code
-
-```
-$ flang emit tri.flang --target c --out out
-проверок при работе снято 1: постусловие доказано ядром обо всех входах и
-проверено примерами функции — в напечатанный код оно не едет.
+что высказано и чем это несётся:
 …
-$ grep -c 'fl_post(' out/program.c
-2
+итог:
+…
+чем получен каждый шаг (правило и основания — строками записи доказательства):
+…
+three-answers.flang: независимо, сверщиком, проиграно 1 из 1 доказанных; на слове ядра 0 …
+three-answers.flang: НЕ ПРОВЕРЕНО — утверждений 3: доказано 1, … — код возврата 3
+код 3
 ```
 
-Two checks for two unproved postconditions ("run-time checks removed: 1"). In C
-«Цена со скидкой» is one subtraction:
+The headings are written in the compiler's internal words. A translation:
 
-```c
-fl_status tri_otveta_cena_so_skidkoy(fl_ctx *ctx, fl_value cena, fl_value skidka,
-                                     fl_value *result, fl_error *error) {
-  if (cena.tag != FL_NUMBER || skidka.tag != FL_NUMBER)
-    FL_TRY(fl_not_numbers(ctx, "sub", cena, skidka, error));
-  *result = fl_number(cena.as.number - skidka.as.number);
-  return FL_OK;
-}
-```
-
-The check is removed when the postcondition is proved and the function has at
-least one example: without an example `fl_post` stays even for a proved one.
-
-## On a real module
-
-The list module of the standard library, half a minute:
-
-```
-$ flang check --proof flang/stdlib/lists.flang
-  функций 38: тотальных 38, обычных 0
-  обещание несёт: композиция 28, структура 8, точный шаг 1, постоянный шаг 1,
-                  объявленная мера 0
-  сторожей в рантайме: 1 место
-  утверждений 66: доказано 42 (из них индукцией 5) (из них без теоремы 37),
-                  сетка 24, объявлено, не доказано 0
-```
-
-* Termination is proved for all 38 functions: 28 have no recursion
-  («композиция»), 8 recurse on a part of the input, one counts down a
-  `неотрицательное` and one a `число` — the only run-time termination check.
-* Of 66 postconditions 42 are proved for all inputs, 37 of them without a
-  written theorem. 24 passed only on examples.
-
-```
-$ flang emit flang/stdlib/lists.flang --target c --out out
-$ grep -c 'fl_post(' out/lists.c
-25
-```
-
-25 checks = 24 unproved postconditions + 1 termination check.
-
-## Commands
-
-| Command | What it does |
+| Heading in the output | What is under it |
 | --- | --- |
-| `flang check <file>` | syntax, types, termination, preconditions at call sites, examples; exit 1 on an error |
-| `flang check --proof <file>` | the report: what proves the termination of each function and each postcondition; exit 3 if something is not proved |
-| `flang check --proof --strict <file>` | the same, but exit 0 only if there is at least one postcondition and all are proved; for CI |
-| `flang check <file> --proof --record <record>` | also writes the [proof record](record-format.html) for the independent check |
-| `flang emit <file> --target c --out <dir>` | generates C; shows which checks remain |
-| `flang test <file>` | runs the examples |
+| `ведомость доказательства` | the proof report, the name of the whole output |
+| `слова ведомости` | a glossary of answers, the same for every file |
+| `чем несётся обещание «тотальная»` | what proves the termination of each function |
+| `законы` | laws of declared structures: `моноид`, `монада` |
+| `что высказано и чем это несётся` | the answer for each postcondition |
+| `принято на веру` | what is accepted without proof |
+| `итог` | counters for the file |
+| `чем получен каждый шаг` | the steps of each proof |
+
+The last two lines are the result of the independent check and the overall
+answer with the exit code. The sections are explained in order below.
+
+## Termination of functions
+
+The word `тотальная` (total) before a function demands a proof that it
+terminates on every input. The file `docs/examples/proofs/termination.flang`
+has five functions, one for each way of proving it:
+
+```flang insert docs/examples/proofs/termination.flang
+модуль «Завершение»
+
+тотальная функция «Вдвое»
+  принимает х: число
+  возвращает число
+  х умножить на 2
+
+тотальная функция «Сумма списка»
+  принимает ряд: список числа
+  возвращает число
+  разбор ряд
+    случай пусто
+      то 0
+    случай голова первый и хвост остальные
+      первый плюс («Сумма списка» от остальные)
+
+тотальная функция «Отсчёт»
+  принимает н: неотрицательное
+  возвращает число
+  если н не больше 0
+    то 0
+    иначе 1 плюс («Отсчёт» от (н минус 1))
+
+тотальная функция «Отсчёт дробного»
+  принимает н: число
+  возвращает число
+  если н не больше 0
+    то 0
+    иначе 1 плюс («Отсчёт дробного» от (н минус 1))
+
+тотальная функция «Шагов до края»
+  принимает место: число, край: число
+  возвращает число
+  убывает край минус место
+  если место не меньше край
+    то 0
+    иначе 1 плюс («Шагов до края» от (место плюс 1) и край)
+```
+
+```bash
+flang check termination.flang --proof
+```
+
+```
+чем несётся обещание «тотальная»:
+  «Вдвое»            доказано композицией: рекурсии нет …
+  «Сумма списка»     доказано структурой: аргумент 1 («ряд») на каждом витке
+                     становится частью себя … сторожа нет
+  «Отсчёт»           доказано точным шагом: аргумент 1 («н») объявлен натуральным
+                     и убывает на 1 … сторожа нет
+  «Отсчёт дробного»  доказано постоянным шагом: … на IEEE-754 шаг не всегда меняет
+                     число, поэтому сторож, 1 место
+  «Шагов до края»    доказано объявленной мерой: убывает «край» минус «место»;
+                     спуск ядром не выведен — на веру: … 1 место
+```
+
+The word `сторож` in the output is a run-time check; «виток» is one recursive call.
+
+| In the output | What it means | Run-time check |
+| --- | --- | --- |
+| `композицией` | no recursion | no |
+| `структурой` | the recursive call gets a part of the argument: a list tail, a field | no |
+| `точным шагом` | an argument of type `неотрицательное` goes down by 1 | no |
+| `постоянным шагом` | an argument of type `число` goes down by a constant | yes |
+| `объявленной мерой` | the expression from the `убывает` line goes down | yes |
+
+`число` is binary64. Above 2⁵³ subtracting one does not change it, so in the
+last two cases the compiler leaves a check in the code.
+
+The words «спуск ядром не выведен — на веру» at the last function mean:
+termination is accepted without proof. What follows from that for the rest of
+the report: [What you are trusting](trust.html#a-known-error-a-function-with-убывает).
+
+A function whose termination is not proved is the error `FLANG_NOT_TOTAL`, and
+there is no report with it. If the function really may run forever, remove the
+word `тотальная`.
+
+## `обеспечивает`: the postcondition and the three answers
+
+The section «что высказано и чем это несётся» answers for every postcondition.
+`three-answers.flang` has all three answers:
+
+```
+что высказано и чем это несётся:
+  постусловие «сдача не отрицательна» функции «Сдача» — доказано по объявленным
+  типам аргументов: цель сведена правилом «неотрицательность по построению» …
+  постусловие «результат чётный» функции «Удвоить» — сетка 1 значение (примеры
+  функции): нарушений на них нет … Это не доказательство …
+  постусловие «результат кратен трём» функции «Утроить» — объявлено, не
+  доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата …
+```
+
+| In the output | What it means | At run time |
+| --- | --- | --- |
+| `доказано` | true for all inputs of the declared types | no check, if the function has a `пример` |
+| `сетка N` | passed on N tests of the function; nothing is known about other inputs | a check on every return |
+| `объявлено, не доказано` | neither a proof nor tests | a check on every return |
+
+With the word «сетка» (grid) the compiler names the answer «checked on tests
+only».
+
+The last two postconditions are true: a doubled integer is even, a tripled one
+is a multiple of three. The kernel did not derive them. What to do about it:
+[When it is not proved](proof-refused.html).
+
+After the word «доказано» comes the method:
+
+| In the output | What it means |
+| --- | --- |
+| `по объявленным типам аргументов` | types and preconditions were enough, no theorem needed |
+| `сведением цели с телом функции` | the postcondition was obtained from the function body |
+| `индукцией по «Т»` | induction over the values of type «Т» |
+| `терм принят ядром, N шагов` | a theorem written in the file was checked |
+
+## Counters
+
+```
+итог:
+  функций 3: тотальных 3, обычных 0
+  обещание несёт: композиция 3, структура 0, точный шаг 0, постоянный шаг 0, объявленная мера 0
+  сторожей в рантайме: 0 мест
+  законов на сетке: 0 (значений в сетках 0); на веру: 0
+  утверждений 3: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 1,
+  объявлено, не доказано 1
+```
+
+- line one: termination is proved for all three functions;
+- line two: by which method, as the number of functions per method;
+- line three: how many termination checks remain in the code;
+- line four: laws of structures; this file has none;
+- line five: of three postconditions one is proved, one passed on tests only,
+  one has nothing.
+
+## Proof steps
+
+```
+чем получен каждый шаг (правило и основания — строками записи доказательства):
+  утверждение «сдача не отрицательна» функции «Сдача» строка 7
+    правило «неотрицательность по построению»
+    вывод цель ⟨результат не меньше 0⟩
+    вывод 1 Н3 ⟨цена не меньше 0⟩ строка 4
+    …
+    вывод 5 Разв2 ⟨результат не меньше 0⟩ из 4 строка 12
+```
+
+Each `вывод` line is one step: a number, a short rule name, the fact obtained
+and what it was obtained from. `строка 4` is a line of the source, `из 4` is
+the step with that number. Step 1 takes from the type `неотрицательное` that
+the price is at least zero. Step 5 puts the function body in place of the word
+`результат`.
+
+The compiler writes the same steps to a file with the key `--record`. The file
+format: [The proof record](record-format.html).
+
+## The last two lines
+
+```
+three-answers.flang: независимо, сверщиком, проиграно 1 из 1 доказанных; на слове ядра 0 …
+three-answers.flang: НЕ ПРОВЕРЕНО — утверждений 3: доказано 1, … — код возврата 3
+```
+
+The first is the result of the independent check. A separate program, `checker`
+(«сверщик» in the output), repeated one proof of one. If the first number is
+less than the second, part of what was proved stands on the kernel alone. In
+detail: [What you are trusting](trust.html#the-line-n-of-m-the-independent-check).
+
+The second is the overall answer and the exit code:
+
+| Command | Code 0 | Code 1 | Code 3 |
+| --- | --- | --- | --- |
+| `flang check file` | no errors; an unproved postcondition is allowed | an error | — |
+| `flang check file --proof` | everything is proved | an error | something is not proved |
+| `flang check file --proof --strict` | there are postconditions, and all are proved | a postcondition is refuted | something is not proved, or there are no postconditions |
+
+In CI use `flang check file --proof --strict`.
+
+## The report for programs
+
+`flang check file --proof --json` prints the same report as one line of JSON.
+Postconditions are in the array `claims`, the answer in the field `verdict`:
+`proved` for a proved one. Termination of functions is in the array
+`functions`, the counters in `totals`.
 
 ## Next
 
-- [The kernel refused: whose error is it](proof-refused.html) — how to read a
-  refusal.
-- [What the kernel proves by itself](what-the-kernel-accepts.html) — which
-  postconditions pass without a theorem.
-- [What is proved and what is not](what-is-proved.html) — what has to be
-  trusted, and where "proved" does not mean "correct".
+- [When it is not proved](proof-refused.html) — what to do with the answers
+  «сетка» and «объявлено, не доказано».
+- [What you are trusting](trust.html) — what stands behind the word «доказано».
+- [What the kernel can do](what-the-kernel-accepts.html) — which postconditions
+  are proved without a theorem.

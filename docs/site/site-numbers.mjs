@@ -403,12 +403,12 @@ export const ОБЯЗАТЕЛЬНЫЕ = [
   ["docs/site/index.md", "корпус.тотальных"],
   ["docs/site/index.md", "утверждения.высказано"],
   ["docs/site/index.md", "утверждения.доказано"],
-  ["docs/site/proofs.ru.md", "носители.композиция"],
-  ["docs/site/proofs.ru.md", "носители.структура"],
-  ["docs/site/proofs.ru.md", "утверждения.доказано"],
-  ["docs/site/proofs.md", "носители.композиция"],
-  ["docs/site/proofs.md", "носители.структура"],
-  ["docs/site/proofs.md", "утверждения.доказано"],
+  ["docs/site/what-is-proved.ru.md", "носители.композиция"],
+  ["docs/site/what-is-proved.ru.md", "носители.структура"],
+  ["docs/site/what-is-proved.ru.md", "утверждения.доказано"],
+  ["docs/site/what-is-proved.md", "носители.композиция"],
+  ["docs/site/what-is-proved.md", "носители.структура"],
+  ["docs/site/what-is-proved.md", "утверждения.доказано"],
   ["docs/site/roadmap.ru.md", "корпус.функций"],
   ["docs/site/roadmap.ru.md", "корпус.тотальных"],
   ["docs/site/roadmap.ru.md", "утверждения.высказано"],
@@ -432,15 +432,6 @@ export const ОБЯЗАТЕЛЬНЫЕ = [
   ["docs/site/tutorial.md", "словарь.наЧетырёх"],
   ["docs/site/operations.ru.md", "словарь.понятий"],
   ["docs/site/operations.md", "словарь.понятий"],
-  // Отказы ядра: страница обещает, что назвала ВСЕ, и делит их на два слоя.
-  // Обещание полноты, набранное рукой, — самое дешёвое из всех, что можно дать,
-  // и самое короткоживущее.
-  ["docs/site/proof-refused.ru.md", "отказы.всего"],
-  ["docs/site/proof-refused.ru.md", "отказы.обязательств"],
-  ["docs/site/proof-refused.ru.md", "отказы.вывода"],
-  ["docs/site/proof-refused.md", "отказы.всего"],
-  ["docs/site/proof-refused.md", "отказы.обязательств"],
-  ["docs/site/proof-refused.md", "отказы.вывода"],
 ]
 
 /**

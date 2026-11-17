@@ -1,119 +1,86 @@
-# Which postconditions the prover proves
+# What the kernel can do
 
-You wrote an `обеспечивает` (postcondition), ran `flang check file --proof`, and
-the line for it does not say «доказано». This page tells you which ways of
-writing a postcondition the prover proves and how to rewrite one it does not.
+This reference answers the question: which ways of writing a postcondition the
+kernel proves by itself, and how to rewrite one it did not prove. Under each
+example is the output of `flang check file --proof` from
+`flang {{выпуск.версия}}`. The files are in `docs/examples/proofs/kernel`.
 
-When the check fails with an error code instead, read
-[The kernel refused: whose mistake is it](proof-refused.html).
+The postcondition names in the examples start with a label (`g1`, `e2`) so that
+the text can refer to them.
 
-Words used below: the prover is the part of the compiler that proves
-postconditions (the compiler output calls it «ядро»); a guard is the condition
-`У` in a postcondition of the form `если У то Ц иначе да`; an enum is a `тип`
-with `вариант`s. Under each example is the report line of
-`flang {{выпуск.версия}}`.
+## Table of forms
 
-## Read the result first
-
-The last line of the report counts the results:
-
-```
-утверждений 18: доказано 13, условно 0, сетка 4, объявлено, не доказано 1, отвергнуто 0, нарушено 0
-```
-
-Count only `доказано` (proved). `сетка` and `объявлено` both mean "not proved"
-([the three answers](how-proofs-work.html#обеспечивает-the-postcondition-and-the-three-answers)).
-`условно` (in the line of the postcondition: «НО ПРИ УСЛОВИИ») means the proof
-uses a postcondition of another function that is itself not proved — prove
-that one.
-
-## Quick table
-
-| You wrote | Proved? | Write instead | Section |
+| You wrote | Proved | What to write | Section |
 | --- | --- | --- | --- |
-| a claim about one branch of an `если` body, without a guard | no | `если <the condition of that branch> то <claim> иначе да` | [1](#1-a-branching-body-put-the-branch-condition-in-the-guard) |
-| `(длина результат) больше 0` or `пусто результат` under a guard | no | equality to a concrete value: `результат равен "…"`, `результат равен пустой список` | [2](#2-under-a-guard-state-equality-to-a-value) |
-| `а не больше результат` with `а: число` | the file is rejected: `FLANG_BOUND_ON_NAN` | declare `а: неотрицательное`, or `требует а не меньше 0` | [3](#3-inequalities-depend-on-the-argument-types) |
-| a guard written with the comparison turned round (`1 не больше место` where the body says `место не меньше 1`) | no | the guard exactly as in the body | [3](#3-inequalities-depend-on-the-argument-types) |
-| a strict inequality (`меньше`, `больше`) over arguments | no | a non-strict one (`не больше`), or a closed goal | [3](#3-inequalities-depend-on-the-argument-types), [4](#4-a-goal-without-free-names-is-computed) |
-| a claim about the result of a recursive function that has no postcondition | no | add the postcondition to the called function | [5](#5-calls-the-prover-uses-the-callee-s-proved-postconditions) |
-| a claim about `(свёртка …) плюс 0` or about a fold bound with `пусть` | no | the fold as the whole body | [6](#6-folds-the-fold-must-be-the-whole-body) |
-| a fold over a field: `свёртка куча.свободные` | no | pass the list as an argument | [6](#6-folds-the-fold-must-be-the-whole-body) |
-| a claim about one variant of an enum argument | yes, with a guard | `если отклик равен (вариант «Пока ничего») то … иначе да` | [7](#7-enums-guard-by-equality-to-a-variant) |
-| a `разбор` inside the postcondition | does not parse | a guard by equality to a variant | [7](#7-enums-guard-by-equality-to-a-variant) |
-| a predicate call as the goal | sometimes | try the other form: with and without `равен да` | [8](#8-boolean-goals-try-both-forms) |
+| a statement about one branch of an `если` without a condition | no | `если <branch condition> то <statement> иначе да` | [1](#1-a-body-with-branches-add-the-branch-condition) |
+| `(длина результат) больше 0` or `пусто результат` under a condition | no | equality to a value: `результат равен пустой список` | [2](#2-under-a-condition-write-equality-to-a-value) |
+| `а не больше результат` with `а: число` | the error `FLANG_BOUND_ON_NAN` | `а: неотрицательное` or `требует а не меньше 0` | [3](#3-inequalities-depend-on-the-types) |
+| a condition with the sides of the comparison swapped | no | the condition in the same form as in the body | [3](#3-inequalities-depend-on-the-types) |
+| a strict inequality over the arguments | no | a non-strict one: `не больше` | [3](#3-inequalities-depend-on-the-types) |
+| a statement about the result of a recursive function with no postcondition | no | a postcondition on the called function | [5](#5-calls-a-proved-postcondition-of-the-called-function-is-needed) |
+| `(свёртка …) плюс 0`, a fold through `пусть`, a fold over a field | no | the fold as the whole body of a separate function | [6](#6-a-fold-must-be-the-whole-body) |
+| a statement about one variant of the argument | yes, with a condition | `если отклик равен (вариант «…») то … иначе да` | [7](#7-a-type-with-variants-a-condition-by-equality-to-a-variant) |
+| a `разбор` inside a postcondition | no | a condition by equality to a variant | [7](#7-a-type-with-variants-a-condition-by-equality-to-a-variant) |
 
-Without any rewriting the prover also proves things that are not
-postconditions: free `утверждение` statements by induction over a list, linear
-inequalities over `точное целое` (exact integer), the functor laws of the
-list, the monoid laws and all three monad laws. Examples:
-[Proving by hand](manual-proofs.html#a-statement-without-a-function).
+Without rewriting the kernel also proves free statements: properties of
+functions over lists, linear inequalities over `точное целое`, the laws of a
+monoid and a monad. Examples:
+[Theorems step by step](manual-proofs.html#4-a-statement-without-a-function).
 
-## 1. A branching body: put the branch condition in the guard
+## 1. A body with branches: add the branch condition
 
-If the body starts with `если`, the prover splits the goal by the body's
-condition. A claim about one branch needs a guard that names the branch.
+If the body starts with `если` (if), the kernel splits the postcondition by the
+body's condition. A statement about one branch needs a condition that names
+that branch. File `branch-condition.flang`:
 
-```flang
+```flang insert docs/examples/proofs/kernel/branch-condition.flang
+модуль «Условие ветви»
+
 тотальная функция «Имя кода»
   принимает код: число
   возвращает строка
-  обеспечивает «g1 охрана слово в слово» если (код меньше 1) или (код больше 3) то (результат равен "неизвестный") иначе да
-  обеспечивает «g2 без охраны» (результат равен "неизвестный") или (код не меньше 1)
-  обеспечивает «g4 охрана своими словами» если код меньше 1 то (результат равен "неизвестный") иначе да
-  обеспечивает «g5 двойник» не ((код меньше 1) или (код больше 3)) или (результат равен "неизвестный")
-  обеспечивает «g6 вторая ветвь иначе» если не ((код меньше 1) или (код больше 3)) то (если код равен 1 то (результат равен "первый") иначе да) иначе да
+  обеспечивает «g1 охрана слово в слово» если (код меньше 1) или (код больше 3) то (результат равен "нет") иначе да
+  обеспечивает «g2 без охраны» (результат равен "нет") или (код не меньше 1)
+  обеспечивает «g4 охрана своими словами» если код меньше 1 то (результат равен "нет") иначе да
+  обеспечивает «g5 двойник» не ((код меньше 1) или (код больше 3)) или (результат равен "нет")
+  обеспечивает «g6 ветвь иначе» если не ((код меньше 1) или (код больше 3)) то (результат равен "есть") иначе да
   пример «чужой»
     дано код равно 7
-    ожидается "неизвестный"
+    ожидается "нет"
   пример «первый»
     дано код равно 1
-    ожидается "первый"
+    ожидается "есть"
   если (код меньше 1) или (код больше 3)
-    то "неизвестный"
-    иначе если код равен 1 то "первый" иначе "второй"
+    то "нет"
+    иначе "есть"
 ```
 
 ```
-постусловие «g1 охрана слово в слово» … доказано сведением цели с телом функции: правило «разбор цели по условию»
-постусловие «g2 без охраны» … сетка 2 значения (примеры функции)
-постусловие «g4 охрана своими словами» … доказано сведением цели с телом функции: правило «разбор цели по условию»
-постусловие «g5 двойник» … доказано сведением цели с телом функции: правило «разбор случаев по внутреннему условию цели»
-постусловие «g6 вторая ветвь иначе» … доказано сведением цели с телом функции: правило «разбор цели по условию»
+постусловие «g1 охрана слово в слово» … доказано сведением цели с телом функции: правило «разбор цели по условию» …
+постусловие «g2 без охраны» … сетка 2 значения (примеры функции) …
+постусловие «g4 охрана своими словами» … доказано сведением цели с телом функции …
+постусловие «g5 двойник» … доказано … правило «разбор случаев по внутреннему условию цели» …
+постусловие «g6 ветвь иначе» … доказано сведением цели с телом функции …
 ```
 
-What follows from this run:
+With the word «сетка» (grid) the compiler names the answer «checked on tests
+only».
 
-- the guard can be the body's condition copied as it is (`g1`) or a narrower
-  condition that implies it (`g4`);
-- `если У то Ц иначе да` and `не (У) или (Ц)` are both proved (`g1`, `g5`);
-- a claim about the `иначе` branch is written with the negated condition, and
-  the inner `если` is nested the same way (`g6`);
-- without a guard (`g2`) the claim is not proved, even though it is true.
+- the condition can be copied from the body (`g1`) or be a narrower one (`g4`);
+- both spellings are proved: `если У то Ц иначе да` and `не (У) или (Ц)` (`g1`, `g5`);
+- a statement about the `иначе` (else) branch is written with the negated
+  condition (`g6`);
+- without a condition (`g2`) a true statement stays unproved.
 
-Deeper `иначе если` chains work the same way. On a body
-`если код равен 200 … иначе если код равен 404 … иначе если код равен 500 …`,
-claims about the second and third branches were proved both with the full path
-(`если не (код равен 200) то (если не (код равен 404) то …`) and with only the
-branch's own condition (`если код равен 500 то …`).
+## 2. Under a condition write equality to a value
 
-## 2. Under a guard, state equality to a value
+The kernel compares the result with the value the branch returns. It does not
+derive properties of that value: neither the length of a string nor the
+emptiness of a list. File `empty-at-zero.flang`:
 
-The prover matches the result against the value the branch returns. It does not
-derive properties of that value: the length of a string literal or whether a
-list is empty.
+```flang insert docs/examples/proofs/kernel/empty-at-zero.flang
+модуль «Равенство значению»
 
-```flang
-обеспечивает «g3 длина под охраной» если (код меньше 1) или (код больше 3) то ((длина результат) больше 0) иначе да
-```
-
-```
-постусловие «g3 длина под охраной» … сетка 2 значения (примеры функции)
-```
-
-The same for emptiness:
-
-```flang
 тотальная функция «Пустой при нуле»
   принимает корень: число, все: список числа
   возвращает список числа
@@ -130,31 +97,26 @@ The same for emptiness:
 ```
 
 ```
-постусловие «e1 предикат пусто» … сетка 1 значение (примеры функции)
-постусловие «e2 равенство пустому» … доказано сведением цели с телом функции: правило «разбор цели по условию»
-постусловие «e3 равенство без охраны» … сетка 1 значение (примеры функции)
+постусловие «e1 предикат пусто» … сетка 1 значение (примеры функции) …
+постусловие «e2 равенство пустому» … доказано сведением цели с телом функции …
+постусловие «e3 равенство без охраны» … сетка 1 значение (примеры функции) …
 ```
 
-The rule: a guard from the body (section 1) plus equality to what the branch
-returns. Equality alone (`e3`) is not enough. The value may be any term of that
-branch, not only a literal: `результат равен (весь минус сколько)` for a body
+Both parts are needed: the condition from the body and equality to what the
+branch returns. Equality alone (`e3`) is not enough. The value can be any
+expression of the branch: `результат равен (весь минус сколько)` with the body
 `весь минус сколько` is proved.
 
-## 3. Inequalities depend on the argument types
+## 3. Inequalities depend on the types
 
-### `число` contains NaN
+`число` is binary64, and NaN in it is unordered. So `а не больше (а плюс б)` is
+false when `а` is NaN. The compiler rejects such a postcondition with the error
+`FLANG_BOUND_ON_NAN`. The message names three fixes, and all three are proved.
+File `sum-bounds.flang`:
 
-`число` is an IEEE-754 double, and NaN is not ordered: `(0 делить на 0) не
-больше (0 делить на 0)` is `false`. So `а не больше (а плюс б)` is false when
-`а` is NaN, and the compiler rejects the whole file:
+```flang insert docs/examples/proofs/kernel/sum-bounds.flang
+модуль «Границы суммы»
 
-```
-FLANG_BOUND_ON_NAN в файле nan.flang, строка 6, столбец 3: постусловие «n1 а число» функции «Сумма чисел» ЛОЖНО, и контрпример назван: «а» объявлен типом «число», а «не число» живёт в этом типе …
-```
-
-The message lists three fixes, and all three are proved:
-
-```flang
 тотальная функция «Сумма двух»
   принимает а: неотрицательное, б: неотрицательное
   возвращает число
@@ -177,37 +139,24 @@ The message lists three fixes, and all three are proved:
 ```
 
 ```
-постусловие «m1 а не больше суммы» … доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению»
-постусловие «h1 при требовании» … доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению»
-постусловие «h2 с оговоркой» … доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению»
+постусловие «m1 а не больше суммы» … доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению» …
+постусловие «h1 при требовании» … доказано по объявленным типам аргументов …
+постусловие «h2 с оговоркой» … доказано по объявленным типам аргументов …
 ```
 
-The added value `б` needs a lower and an upper bound: `5 не больше (5 плюс
-(0 минус 1))` is `false`, and `−∞ плюс +∞` is NaN. `неотрицательное` gives both
-bounds. When the same value is added on both sides, the prover proves the
-inequality under a guard:
+The value being added needs both bounds, lower and upper. The type
+`неотрицательное` gives both.
 
-```flang
-обеспечивает «h3 общая прибавка» если (о не больше п) то ((общее плюс о) не больше результат) иначе да
-```
+`(а минус б) плюс б равен а` is wrong for binary64 above 2⁵³. To say «nothing
+was lost», write equality to the expression of the branch.
 
-for a body `общее плюс п` is proved.
+In a statement the sides of a comparison may be swapped: `результат не меньше
+а` and `а не больше результат` are proved alike. In a condition they may not.
+File `threshold.flang`:
 
-`(а минус б) плюс б равен а` is not a law for doubles:
-`((9007199254740994 минус 1) плюс 1) равен 9007199254740994` is `false`. To
-say "nothing is lost", write equality to a term of the branch:
-`результат равен (весь минус сколько)`.
+```flang insert docs/examples/proofs/kernel/threshold.flang
+модуль «Порог»
 
-### Which side of an inequality, in the claim and in the guard
-
-In the **claim** the side does not matter: `(длина результат) не меньше (длина х)`
-and `(длина х) не больше (длина результат)` are both proved, and so are
-`результат не меньше а` and `а не больше результат`.
-
-In the **guard** it matters. The guard must be written exactly as the condition
-in the body:
-
-```flang
 тотальная функция «Порог»
   принимает место: число
   возвращает число
@@ -219,17 +168,16 @@ in the body:
 ```
 
 ```
-постусловие «r1 охрана как в теле» … доказано сведением цели с телом функции: правило «разбор цели по условию»
-постусловие «r2 охрана зеркалом» … объявлено, не доказано
+постусловие «r1 охрана как в теле» … доказано сведением цели с телом функции …
+постусловие «r2 охрана зеркалом» … объявлено, не доказано …
 ```
 
-### Strict inequalities
+A strict inequality over the arguments is not proved. For a remainder write a
+non-strict bound. File `remainder-bound.flang`:
 
-A strict inequality with arguments left in it is not proved:
-`результат больше (а минус 1)` for `а плюс б` stays «объявлено, не доказано».
-For a remainder, write the non-strict bound:
+```flang insert docs/examples/proofs/kernel/remainder-bound.flang
+модуль «Граница остатка»
 
-```flang
 тотальная функция «Остаток бит целый»
   принимает ч: неотрицательное
   возвращает число
@@ -239,18 +187,19 @@ For a remainder, write the non-strict bound:
 ```
 
 ```
-постусловие «q2 остаток неотрицательного» … объявлено, не доказано
-постусловие «q3 остаток неотрицательного не больше» … доказано по объявленным типам аргументов: цель сведена правилом «ограниченность точным потолком по построению»
+постусловие «q2 остаток неотрицательного» … объявлено, не доказано …
+постусловие «q3 остаток неотрицательного не больше» … доказано по объявленным типам аргументов:
+цель сведена правилом «ограниченность точным потолком по построению» …
 ```
 
-With `ч: число` the same function is rejected with `FLANG_BOUND_ON_NAN`.
+## 4. A postcondition without arguments is computed
 
-## 4. A goal without free names is computed
+If a postcondition does not depend on the arguments, the kernel computes it.
+Any comparison fits, a strict one too. File `closed-goal.flang`:
 
-If nothing in the goal depends on arguments, the prover computes it, and any
-comparison works, strict ones too:
+```flang insert docs/examples/proofs/kernel/closed-goal.flang
+модуль «Замкнутая цель»
 
-```flang
 тотальная функция «Пять»
   возвращает число
   обеспечивает «z1 замкнутая строго» результат меньше 6
@@ -264,20 +213,22 @@ comparison works, strict ones too:
 ```
 
 ```
-постусловие «z1 замкнутая строго» … доказано вычислением замкнутой цели: свободных имён в ней не осталось, значит значение у неё одно, и вычисление отвечает про него целиком
-постусловие «z3 длина литерала» … доказано сведением цели с телом функции: правило «тождество после переписки допущением»
+постусловие «z1 замкнутая строго» … доказано вычислением замкнутой цели …
+постусловие «z3 длина литерала» … доказано сведением цели с телом функции …
 ```
 
-Every function that returns a constant or a list of constants can get its value,
-length and bounds as postconditions for free.
+For a function that returns a constant you can write down the value, the length
+and the bounds at no effort.
 
-## 5. Calls: the prover uses the callee's proved postconditions
+## 5. Calls: a proved postcondition of the called function is needed
 
-The body of a recursive function is not unfolded. If the body calls one, the
-prover knows about the result only what that function's **proved**
-postconditions say:
+The kernel does not put the body of a recursive function into the call site.
+About the result of a call it knows only what the proved postconditions of the
+called function say. File `copy-length.flang`:
 
-```flang
+```flang insert docs/examples/proofs/kernel/copy-length.flang
+модуль «Длина копии»
+
 тотальная функция «Копия без»
   принимает х: список число
   возвращает список число
@@ -311,27 +262,34 @@ postconditions say:
 ```
 
 ```
-постусловие «k1 длина копии» … доказано индукцией по «список»: база 1 случай, шаг при допущении на частях (1 случай)
-постусловие «k2 верх над голым звеном» … объявлено, не доказано
-постусловие «k3 верх над звеном с обещанием» … доказано сведением цели с телом функции: правило «цель есть допущение»
+постусловие «k1 длина копии» … доказано индукцией по «список» …
+постусловие «k2 верх над голым звеном» … объявлено, не доказано …
+постусловие «k3 верх над звеном с обещанием» … доказано сведением цели с телом функции:
+правило «цель есть допущение» …
 ```
 
-So when a claim is not proved, look at what the body calls and give the called
-function the postcondition the claim needs. A postcondition of the callee that
-is only checked on examples does not help: the compiler passes a callee's
-postcondition to the caller only if it is proved.
+«Копия без» has no postcondition, and the statement about its result (`k2`) is
+not proved. «Копия с» has one and it is proved, so `k3` passes. A postcondition
+checked on tests only does not help the calling function.
 
-A non-recursive callee without postconditions is not a problem: for
-`«Без обещания»` with the body `приписать 0 к х`, the caller's claim
-`(длина результат) равен ((длина х) плюс 1)` is proved.
+The kernel puts a non-recursive function without postconditions in by itself.
 
-### A theorem by a callee's property
+If the kernel did not apply the postcondition of the called function, refer to
+it with a one-line theorem. File `call-by-property.flang`:
 
-If the body is a call and the callee has the postcondition you need, a one-step
-theorem closes the claim. It works on a bare call and on a call bound with
-`пусть`:
+```flang insert docs/examples/proofs/kernel/call-by-property.flang
+модуль «Свойство вызванной»
 
-```flang
+тотальная функция «Копия»
+  принимает х: список число
+  возвращает список число
+  обеспечивает «копия той же длины» (длина результат) не больше (длина х)
+  разбор х
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то приписать голова к («Копия» от хвост)
+
 тотальная функция «Голый вызов»
   принимает х: список число
   возвращает список число
@@ -346,25 +304,21 @@ theorem closes the claim. It works on a bare call and on a call bound with
 ```
 
 ```
-постусловие «t1 голый вызов» … доказано: терм принят ядром, 1 шаг, правило «цель есть допущение», основания: постусловие «копия той же длины» функции «Копия»
+постусловие «t1 голый вызов» … доказано: терм принят ядром, 1 шаг, правило «цель есть допущение»,
+основания: постусловие «копия той же длины» функции «Копия» …
 ```
 
-A theorem that does not go through rejects the whole file: exit code 1 and no
-proof report at all.
+A theorem with a mistake rejects the whole file: exit code 1, no report. Add
+theorems one at a time.
 
-```
-FLANG_PROOF_STEP в файле g3.flang, строка 22, столбец 3: шаг 1, теорема «t1 голый вызов»: не выведено заключение из постусловия «копия той же длины» функции «Копия» …
-g3.flang: не проверено — ведомость не печатается у программы с замечаниями
-```
+## 6. A fold must be the whole body
 
-Add theorems one at a time.
+The kernel proves a statement about a `свёртка` (fold) by induction over the
+fold. File `fold-count.flang`:
 
-## 6. Folds: the fold must be the whole body
+```flang insert docs/examples/proofs/kernel/fold-count.flang
+модуль «Счёт свёрткой»
 
-The prover proves a claim about `свёртка` by induction over the fold, with the
-step written either inline or as a function:
-
-```flang
 тотальная функция «Счёт лямбдой»
   принимает х: список число
   возвращает число
@@ -373,34 +327,31 @@ step written either inline or as a function:
 ```
 
 ```
-постусловие «f7 счёт лямбдой» … доказано индукцией по СВЁРТКЕ тела: начало 1 случай, виток при допущении о накопителе «акк» (1 случай)
+постусловие «f7 счёт лямбдой» … доказано индукцией по СВЁРТКЕ тела: начало 1 случай,
+виток при допущении о накопителе «акк» (1 случай) …
 ```
 
-It does this only when the fold is the whole body and goes over an argument:
+«Виток» in the output is one step of the fold. This works only when the fold is
+the whole body and runs over an argument:
 
-| Body | Result |
+| Body | Answer |
 | --- | --- |
 | `свёртка х начиная с 0 как акк и эл → «Счёт шагом» от акк и эл` | proved |
-| `(свёртка х … ) плюс 0` | объявлено, не доказано |
-| `пусть н равно (свёртка х …)` then `н` | объявлено, не доказано |
-| `свёртка куча.свободные …` (a field of the argument) | объявлено, не доказано |
+| `(свёртка х … ) плюс 0` | not proved |
+| `пусть н равно (свёртка х …)`, then `н` | not proved |
+| `свёртка куча.свободные …` (a field of the argument) | not proved |
 
-The fix is in the program: make the fold the body of its own function that takes
-the list as an argument, and call that function.
+The fix is in the program: make the fold the body of a separate function that
+takes the list as an argument, and call it.
 
-When the step has branches and you want to say something about one of them,
-move the step into a function with the accumulator as an argument. Then the
-guard from section 1 works on the step.
+## 7. A type with variants: a condition by equality to a variant
 
-Not proved even in this form: `результат не меньше 0` for a sum over
-`список неотрицательное` (with an inline step or a step function).
+The kernel splits a `разбор` (match) body over an argument by a condition that
+compares the argument with a variant. File `variant-answer.flang`:
 
-## 7. Enums: guard by equality to a variant
+```flang insert docs/examples/proofs/kernel/variant-answer.flang
+модуль «Вариант ответа»
 
-A body that is a `разбор` over an enum argument is split by a guard that compares
-the argument to a variant:
-
-```flang
 тип «Ответ»
   вариант «Пока ничего»
   вариант «Текст» содержит текст: строка
@@ -417,106 +368,59 @@ the argument to a variant:
 ```
 
 ```
-постусловие «v2 равенство варианту» … доказано сведением цели с телом функции: правило «разбор цели по условию»
+постусловие «v2 равенство варианту» … доказано сведением цели с телом функции:
+правило «разбор цели по условию» …
 ```
 
-A `разбор` inside the postcondition itself does not parse; use this guard
-instead.
+A `разбор` inside the postcondition itself is not supported: write such a
+condition in its place.
 
-A variant **with fields** works too: give each field a value through an
-accessor function of the same argument. The probe
-`docs/examples/proof-probes/variant-with-fields.flang` writes one claim many
-ways:
+For a list both conditions fit: `если х равен пустой список то …` and
+`если (длина х) равен 0 то …`.
 
-```
-$ flang check docs/examples/proof-probes/variant-with-fields.flang --proof
-…
-утверждений 23: доказано 21 (из них индукцией 1) (из них без теоремы 20), сетка 2, объявлено, не доказано 0
-```
+## 8. A predicate call and a conjunction
 
-| Way of writing | Result |
-| --- | --- |
-| the argument compared to a variant without fields | proved |
-| the argument compared to a variant with fields, the field filled by an accessor (`«Вес груза» от «груз»`) or by a literal | proved |
-| the guard negated: `если не («груз» равен (вариант «Пусто»)) то …` | proved |
-| the result of a call compared to a variant: without fields, with fields, negated | proved |
-| a second claim under `иначе` instead of `да` | сетка for a variant with fields |
+A postcondition that is a predicate call is written two ways: on its own and
+with `равен да`. If one spelling was not proved, try the other.
 
-For a list, `разбор` with `пусто` and `голова и хвост` is split by
-`если х равен пустой список то …` and by `если (длина х) равен 0 то …`; both
-are proved.
+The kernel often proves a conjunction `Ц1 и притом Ц2` whole. If it did not,
+split it into separate `обеспечивает` lines. The report will show which part is
+the problem.
 
-If an enum has exactly one variant, its field is read in the postcondition with a
-dot: `результат равен ход.найдено` is proved.
+A conjunction in a condition must not be split: `если А и притом Б то В` is
+weaker than `если А то В`. A disjunction in a condition can be split: `если (А
+или Б) то В` is equivalent to the pair `если А то В` and `если Б то В`.
 
-## 8. Boolean goals: try both forms
+## What the report does not say
 
-A goal that is a call to a predicate can be written bare or with `равен да`.
-In the probes both forms were proved in most cases, but in
-`variant-with-fields.flang` the bare form «без полей цель голым признаком»
-stayed `сетка` while the same claim with `равен да` was proved. When one form is
-not proved, try the other.
-
-A claim that reads the result backwards, from the condition to the answer, is
-proved like any other: for the body `(ч больше 10) и притом (ч меньше 20)`, both
-`если результат то (ч больше 10) иначе да` and
-`если (ч больше 10) и притом (ч меньше 20) то (результат равен да) иначе да` are
-proved.
-
-A false claim gets the same «объявлено, не доказано» as a true one the prover
-cannot handle. Before rewriting a claim, check that it is true: write an example
-that would break it.
-
-## 9. Conjunctions
-
-A conjunction in the claim (`Ц1 и притом Ц2`) can be proved as a whole: in
-the probes `если ч равен 0 то ((результат равен 1) и притом (результат больше 0)) иначе да`
-was. When it is not proved, split it into separate
-`обеспечивает` lines: the prover handles each one separately, and the report
-shows which part is the problem.
-
-A conjunction in the **guard** cannot be split: `если А и притом Б то В` and
-`если А то В` are different claims, and the second is stronger. A disjunction
-in the guard can be split without changing the meaning: `если (А или Б) то В`
-is the same as two claims `если А то В` and `если Б то В`.
-
-## What the report does not tell you
-
-For a claim without a theorem that is not proved, the report always prints the
-same text, whatever the cause:
+For an unproved postcondition without a theorem the report writes the same text
+whatever the cause:
 
 ```
-объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата — на тех входах, которые придут
+объявлено, не доказано: ни теоремы, ни примеров. Его считает рантайм после каждого возврата …
 ```
 
-It does not say which rule was missing. A named refusal with the list of goal
-kinds the prover handles comes only for a theorem you wrote
-(see [The kernel refused](proof-refused.html)).
+It does not say which rule was missing. A false postcondition gets the same
+answer as a true one the kernel did not derive. Before rewriting a
+postcondition, write a test that would break it.
 
-Adding an example to a claim moves it from «объявлено, не доказано» to
-«сетка», not to «доказано».
-
-## Check that a proved claim is not empty
-
-A claim that holds for any body proves nothing. Replace the body with a stub
-of the same type (`0`, `""`, `нет`, an empty list) and run the report again:
-if the claim is still proved, it says nothing about the function. More:
-[What is proved and what is not](what-is-proved.html#a-proved-postcondition-may-say-nothing).
-
-## Large files and the step limit
-
-A file with many claims can run out of steps: the check stops with
-`FLANG_RECURSION_LIMIT` and prints no report. Raise the limit for one run with
-`--step-limit N` (Cyrillic `--предел-шагов`); the default is built into the
-binary.
+A file with many postconditions may run out of steps: the check stops with
+`FLANG_RECURSION_LIMIT`. The key `--step-limit N` raises the limit.
 
 ## The order of work
 
-1. Run `flang check <file> --proof` and save the last line of the report.
-2. For a branching body, add guards from the body (sections 1 and 2).
-3. Change the argument types to `неотрицательное` or add `требует` where an
-   inequality is involved (section 3).
-4. For what is left, look at the called functions and give them the
-   postconditions the claim needs (section 5).
-5. Run the report again and compare the `доказано` number with the saved line.
-   If it did not grow, undo the edit.
+1. Run `flang check file --proof` and note the last line of the report.
+2. For a body with branches add the conditions from the body (sections 1 and 2).
+3. Where there is an inequality, change the argument types to `неотрицательное`
+   or add a `требует` (section 3).
+4. For the rest give the called functions the postconditions they need
+   (section 5).
+5. Run the check again and compare the number proved. If it did not grow, undo
+   the change.
+
+## Next
+
+- [When it is not proved](proof-refused.html) — recipes with before and after
+  files.
+- [Theorems step by step](manual-proofs.html) — when rewriting did not help.
+- [How to read the report](how-proofs-work.html) — what each output line means.

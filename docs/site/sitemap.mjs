@@ -30,6 +30,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'index.html', имя: 'Что такое flang', из: 'docs/site/index.ru.md' },
       { адрес: 'install.html', имя: 'Установка', из: 'docs/site/install.ru.md' },
       { адрес: 'getting-started.html', имя: 'Первая программа', из: 'docs/site/getting-started.ru.md' },
+      { адрес: 'first-proof.html', имя: 'Первое доказательство', из: 'docs/site/first-proof.ru.md' },
       { адрес: 'playground.html', имя: 'Песочница', из: 'docs/site/playground.ru.md' },
       { адрес: 'editor.html', имя: 'Настройка редактора', из: 'docs/site/editor.ru.md' },
       { адрес: 'troubleshooting.html', имя: 'Если не работает', из: 'docs/site/troubleshooting.ru.md' },

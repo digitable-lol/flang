@@ -199,10 +199,9 @@ The function has no check of the postcondition: it is proved. `flang emit` check
 way `flang check` does and writes nothing when there is an error. The output directory holds the
 module, the run-time library, a command-line program and a `Makefile`.
 
-`flang` has fifteen commands: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `lint`, `facts`, `io`,
-`lock`, `package`, `new`, `run-script`, `repl` and `lsp` (the language server for editors). The
-target languages of `emit` are `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` and
-`csharp`.
+`flang` has fifteen commands, the editor language server among them: `check`, `test`, `run`, `emit`,
+`ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`, `new`, `run-script`, `repl` and `lsp`. It
+generates code for `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` and `csharp`.
 
 ## Documentation
 

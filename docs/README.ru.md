@@ -197,9 +197,10 @@ fl_status privet_udvoit(fl_ctx *ctx, fl_value n, fl_value *result,
 `flang check`, и при ошибке ничего не записывает. В каталоге вывода лежат модуль, библиотека времени
 выполнения, программа для вызова из командной строки и `Makefile`.
 
-У `flang` пятнадцать команд: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `lint`, `facts`, `io`,
-`lock`, `package`, `new`, `run-script`, `repl` и `lsp` (языковой сервер для редактора). Целевые
-языки команды `emit`: `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` и `csharp`.
+У `flang` пятнадцать команд, языковой сервер для редактора — одна из них: `check`, `test`, `run`,
+`emit`, `ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`,
+`new`, `run-script`, `repl` и `lsp`. Код генерируется для целевых языков `c`, `cpp`, `go`, `rust`,
+`java`, `js`, `ts`, `elixir`, `python` и `csharp`.
 
 ## Документация
 

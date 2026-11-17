@@ -9,7 +9,8 @@
 #   make fresh        генерация установленным компилятором сверяется с expected/ и с отказами
 #   make from-source  то же, но генератор берётся из исходника flang/self (до пересборки компилятора)
 #
-# expected/ — то, что генератор выдал на programs/*.flang. Правка генератора
+# expected/ — то, что генератор выдал на programs/*.flang; файлы C названы по
+# программе (ключ --path). Правка генератора
 # меняет expected/ тем же коммитом: `make from-source UPDATE=1`.
 #
 # Компилятор для riscv64 — riscv64-linux-gnu-gcc. Нет его — строка «skip», а с
@@ -60,12 +61,12 @@ link:
 	@d=$$(mktemp -d "$${TMPDIR:-/tmp}/bare-link.XXXXXX") || exit 2; trap 'rm -rf "$$d"' EXIT INT TERM; \
 	$(COMPILERS) \
 	for cc in $$ccs; do \
-	  $$cc $(BARE) -O2 -static -Iexpected/header drivers/caller.c expected/header/zagolovok_paketa.c \
+	  $$cc $(BARE) -O2 -static -Iexpected/header drivers/caller.c expected/header/header.c \
 	    -o "$$d/kernel" || { echo "не линкуется без libc: $$cc"; exit 1; }; \
 	  echo "link: $$cc слинковал чужую программу без libc"; \
 	done; \
 	if [ "$$(uname -sm)" = "Linux x86_64" ]; then \
-	  $(CC) $(BARE) -O2 -static -Iexpected/header drivers/caller.c expected/header/zagolovok_paketa.c \
+	  $(CC) $(BARE) -O2 -static -Iexpected/header drivers/caller.c expected/header/header.c \
 	    -o "$$d/kernel" || exit 1; \
 	  "$$d/kernel"; code=$$?; \
 	  [ "$$code" = 0 ] || { echo "чужая программа получила не те ответы: код $$code"; exit 1; }; \
@@ -74,7 +75,7 @@ link:
 
 forgery:
 	@d=$$(mktemp -d "$${TMPDIR:-/tmp}/bare-forgery.XXXXXX") || exit 2; trap 'rm -rf "$$d"' EXIT INT TERM; \
-	cp expected/header/*.h "$$d/" && cp expected/header/zagolovok_paketa.c "$$d/forged.c" || exit 2; \
+	cp expected/header/*.h "$$d/" && cp expected/header/header.c "$$d/forged.c" || exit 2; \
 	printf '%s\n' 'void *memcpy(void *to, const void *from, size_t size);' \
 	  'void forged(uint32_t *to, const uint32_t *from) { memcpy(to, from, 4096); }' >> "$$d/forged.c"; \
 	$(CC) $(BARE) -O0 -fno-builtin -c "$$d/forged.c" -o "$$d/forged.o" || exit 2; \
@@ -88,7 +89,7 @@ differential:
 	  || { cat "$$d/emit.log"; echo "обычная генерация C не прошла"; exit 1; }; \
 	$(MAKE) -s -C "$$d/ordinary" CFLAGS='-std=c99 -O2' > "$$d/make.log" 2>&1 \
 	  || { tail -20 "$$d/make.log"; echo "обычный C не собрался"; exit 1; }; \
-	$(CC) $(BARE) -O2 -c expected/words/slova_bez_libc.c -o "$$d/bare.o" || exit 1; \
+	$(CC) $(BARE) -O2 -c expected/words/words.c -o "$$d/bare.o" || exit 1; \
 	$(CC) -std=c99 -Wall -Wextra -Werror -O2 -Iexpected/words drivers/words.c "$$d/bare.o" -o "$$d/words" || exit 1; \
 	"$$d/words" "$$d/requests" "$$d/got" || exit 1; \
 	"$$d/ordinary/flang_cli" --json < "$$d/requests" | sed -E 's/,"message":.*$$/}/' > "$$d/want"; \
@@ -115,13 +116,15 @@ endef
 fresh:
 	@d=$$(mktemp -d "$${TMPDIR:-/tmp}/bare-fresh.XXXXXX") || exit 2; trap 'rm -rf "$$d"' EXIT INT TERM; \
 	mkdir -p "$$d/out"; \
-	"$(FLANG)" emit programs/wrap.flang --target c --freestanding --out "$$d/out/wrap" > "$$d/first.log" 2>&1; \
+	"$(FLANG)" emit programs/wrap.flang --target c --freestanding --path wrap --out "$$d/out/wrap" \
+	  > "$$d/first.log" 2>&1; \
 	if grep -q -e 'непонятный ключ' -e 'ещё не умеет' "$$d/first.log"; then \
 	  printf 'skip\tfresh: этот компилятор ключа --freestanding не знает; до пересборки — make from-source\n'; \
 	  exit 0; \
 	fi; \
 	for name in $(PROGRAMS); do \
-	  "$(FLANG)" emit "programs/$$name.flang" --target c --freestanding --out "$$d/out/$$name" > "$$d/emit.log" 2>&1 \
+	  "$(FLANG)" emit "programs/$$name.flang" --target c --freestanding --path "$$name" --out "$$d/out/$$name" \
+	    > "$$d/emit.log" 2>&1 \
 	    || { cat "$$d/emit.log"; echo "генерация $$name не прошла"; exit 1; }; \
 	done; \
 	for name in $(REFUSED); do \
@@ -144,7 +147,8 @@ from-source:
 	for name in $(PROGRAMS) $(REFUSED); do \
 	  mkdir -p "$$d/out/$$name"; \
 	  if [ -f "programs/$$name.flang" ]; then source="programs/$$name.flang"; else source="programs/refused/$$name.flang"; fi; \
-	  "$$d/pipe" request "$$source" | "$$d/generator/flang_cli" --json | "$$d/pipe" unpack "$$d/out/$$name" \
+	  "$$d/pipe" request "$$source" "$$name" | "$$d/generator/flang_cli" --json \
+	    | "$$d/pipe" unpack "$$d/out/$$name" \
 	    || { echo "генератор не ответил на $$source"; exit 1; }; \
 	done; \
 	if [ "$(UPDATE)" = 1 ]; then for name in header index; do \

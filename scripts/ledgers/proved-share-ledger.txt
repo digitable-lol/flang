@@ -2456,3 +2456,6 @@ b903357f2acf5be4cd56dbf039b595d6|1|1|0|0|0|flang/proof/probes/check-verdict/prog
 14c25f1bc6aa39509ec6c11f077055fc|2|0|0|2|0|flang/proof/probes/check-verdict/programs/unproved-postcondition.flang
 8a10f000580700c56a229b44de00a3ed|0|×|×|×|1|flang/proof/probes/typing-holes/programs/total-requirement-takes-head-of-empty-list.flang
 de3e74b7ec7915fc0a99569b7372ce33|0|×|×|×|1|flang/proof/probes/typing-holes/programs/total-word-division-by-requirement.flang
+24a265f9c9624e317dd93819efe675e9|2|×|×|×|0|flang/proof/probes/c-without-libc/programs/header.flang
+9ba8cf97681c423de2e9914a4ea558d1|3|×|×|×|1|flang/proof/probes/c-without-libc/programs/index.flang
+b575cdddeb9c9fbac3f15431d9e33176|0|×|×|×|1|flang/proof/probes/c-without-libc/programs/words.flang

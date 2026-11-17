@@ -1,10 +1,10 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Заворот». Файл: zavorot.c.
+ * Модуль flang: «Заворот». Файл: wrap.c.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#include "zavorot.h"
+#include "wrap.h"
 
 
 uint64_t zavorot_summa_s_zavorotom(uint64_t p0_a, uint64_t p1_b) {

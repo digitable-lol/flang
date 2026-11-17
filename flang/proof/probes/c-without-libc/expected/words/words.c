@@ -1,10 +1,10 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Слова без libc». Файл: slova_bez_libc.c.
+ * Модуль flang: «Слова без libc». Файл: words.c.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#include "slova_bez_libc.h"
+#include "words.h"
 
 static inline fl_fs_status slova_bez_libc_komanda_valid(const slova_bez_libc_komanda_t *v) {
   if (v->tag == slova_bez_libc_komanda_chitat) {

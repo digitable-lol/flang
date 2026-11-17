@@ -3,7 +3,7 @@
  * который сгенерировал flang. Точка входа своя (_start), выход — системный
  * вызов. Код 0 — все ответы сошлись, иначе номер первого несошедшегося.
  */
-#include "zagolovok_paketa.h"
+#include "header.h"
 
 static void leave(long code) {
 #if defined(__x86_64__)

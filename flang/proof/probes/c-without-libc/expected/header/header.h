@@ -1,13 +1,13 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Заголовок пакета». Файл: zagolovok_paketa.h.
+ * Модуль flang: «Заголовок пакета». Файл: header.h.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#ifndef zagolovok_paketa_h
-#define zagolovok_paketa_h
+#ifndef header_h
+#define header_h
 
-#include "fl_freestanding.h"
+#include "flang_freestanding.h"
 
 /* Запись flang «Заголовок». */
 typedef struct {

@@ -1,13 +1,13 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Слова без libc». Файл: slova_bez_libc.h.
+ * Модуль flang: «Слова без libc». Файл: words.h.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#ifndef slova_bez_libc_h
-#define slova_bez_libc_h
+#ifndef words_h
+#define words_h
 
-#include "fl_freestanding.h"
+#include "flang_freestanding.h"
 
 /* Сумма типов flang «Команда»: метка tag и поля варианта в as. */
 enum {

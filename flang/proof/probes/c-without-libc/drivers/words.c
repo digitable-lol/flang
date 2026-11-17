@@ -14,7 +14,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "slova_bez_libc.h"
+#include "words.h"
 
 #define CASES 1000
 

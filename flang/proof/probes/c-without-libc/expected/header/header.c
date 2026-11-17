@@ -1,10 +1,10 @@
 /*
  * Сгенерировано flang: C без libc (flang/self/c-without-libc.flang).
- * Модуль flang: «Заголовок пакета». Файл: zagolovok_paketa.c.
+ * Модуль flang: «Заголовок пакета». Файл: header.c.
  * Собирается с -ffreestanding -nostdlib: ни libc, ни потоков, ни выделения памяти.
  * Не редактировать руками — правьте исходник на flang и генерируйте заново.
  */
-#include "zagolovok_paketa.h"
+#include "header.h"
 
 
 uint32_t zagolovok_paketa_versiya(uint32_t p0_slovo) {

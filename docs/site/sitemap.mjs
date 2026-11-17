@@ -97,6 +97,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'emit-walkthrough.html', имя: 'Напечатать программу в C и JavaScript', из: 'docs/guide/emit-walkthrough.ru.md' },
       { адрес: 'typescript-target.html', имя: 'Цель TypeScript', из: 'docs/guide/typescript-target.ru.md' },
       { адрес: 'embedding.html', имя: 'Встроить в чужую программу', из: 'docs/site/embedding.ru.md' },
+      { адрес: 'c-without-libc.html', имя: 'Функция для ядра ОС: C без libc', из: 'docs/site/c-without-libc.ru.md' },
       { адрес: 'browser-app.html', имя: 'Приложение в браузере', из: 'docs/site/browser-app.ru.md' },
       { адрес: 'host-boundary.html', имя: 'Граница между flang и хостом', из: 'docs/site/host-boundary.ru.md' },
     ],

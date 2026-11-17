@@ -680,6 +680,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_INTERNAL` | the compiler itself failed | report it: this is a bug in the tool, not in your program |
 | `FLANG_SELF_REPL_UNSUPPORTED` | the shell does not accept this construct, `использует` for example | put the code in a file and run `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` got no value for a call | add the value to the facts |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit --freestanding`: a function cannot be translated to C without libc — it uses strings, lists, fractional numbers or recursion | rewrite the function over the words `u8`…`u64`, records and sum types; see [C without libc](c-without-libc.html) |
 
 ```text insert output: check --неткого
 $ flang check --неткого
@@ -743,6 +744,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit-c-freestanding.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |

@@ -196,11 +196,11 @@ progon() {
     cpp)    "$WORK/cpp/flang_cli" ;;
     go)     "$WORK/go/flang_cli" ;;
     rust)   "$WORK/rust/target/release/flang_cli" ;;
-    python) ( cd "$WORK/python" && python3 -B flang_cli.py evklid ) ;;
-    java)   ( cd "$WORK/java" && java -cp . FlangCli Evklid ) ;;
-    csharp) ( cd "$WORK/csharp" && dotnet bin/Debug/net8.0/flang.dll Evklid ) ;;
-    elixir) ( cd "$WORK/elixir" && elixir -pa _build -e 'Flang.Cli.main(["Evklid"])' ) ;;
-    js)     ( cd "$WORK/js" && node flang_cli.js ./evklid.js ) ;;
+    python) ( cd "$WORK/python" && python3 -B flang_cli.py euclid ) ;;
+    java)   ( cd "$WORK/java" && java -cp . FlangCli Euclid ) ;;
+    csharp) ( cd "$WORK/csharp" && dotnet bin/Debug/net8.0/flang.dll Euclid ) ;;
+    elixir) ( cd "$WORK/elixir" && elixir -pa _build -e 'Flang.Cli.main(["Euclid"])' ) ;;
+    js)     ( cd "$WORK/js" && node flang_cli.js ./euclid.js ) ;;
   esac < "$vhod" > "$vyhod" 2> "$oshibki"
 }
 

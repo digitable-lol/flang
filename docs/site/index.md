@@ -134,4 +134,5 @@ says so. The syntax may change before version 1.0. Details:
 | find a construct or a command | [Language constructs](language.html), [Commands](cli.html), [Error codes](diagnostics.html) |
 | see finished programs | [Library reference](stdlib.html), [Example catalogue](examples.html) |
 | get code in your own language | [Generating C and JavaScript](emit-walkthrough.html) |
+| build your own small language (a DSL) | [Your own language in 30 minutes](dsl.html) |
 | learn the limits | [What is proved and what is not](what-is-proved.html), [Known limitations](limits.html) |

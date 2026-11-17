@@ -2661,6 +2661,7 @@ The words of this section on all four surfaces, from the lexer's table:
 | a hexadecimal literal `0xFF` | a decimal number: `255` |
 | writing into a list by index (`x[i] = v`) | `map` builds a new list |
 | a dependent type (`list of length n`) | `ensures` about the length, and a theorem about it |
+| your own operator, a macro, your own notation inside a file | a function whose name is a phrase in guillemets; a type with variants and an interpreter function; for your own syntax, parsing a string with the module `«Parsing»`. Step by step: [Your own language in 30 minutes](dsl.html) |
 
 ## Next
 

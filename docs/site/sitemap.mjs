@@ -43,6 +43,7 @@ export const РАЗДЕЛЫ = [
       { адрес: 'surface-sugar.html', имя: 'Циклы, классы, интерфейсы', из: 'docs/guide/surface-sugar.ru.md' },
       { адрес: 'totality.html', имя: 'Тотальные функции', из: 'docs/guide/totality.ru.md' },
       { адрес: 'which-construct.html', имя: 'Какую конструкцию когда брать', из: 'docs/site/which-construct.ru.md' },
+      { адрес: 'dsl.html', имя: 'Свой язык за 30 минут', из: 'docs/site/dsl.ru.md' },
       { адрес: 'how-to-write-flang.html', имя: 'Как писать на flang', из: 'docs/guide/how-to-write-flang.ru.md' },
       { адрес: 'learning.html', имя: 'Что читать дальше', из: 'docs/site/learning.ru.md' },
     ],

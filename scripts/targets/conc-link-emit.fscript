@@ -7,8 +7,10 @@
   обеспечивает «веление зовёт печать компилятором» результат содержит "bootstrap/flang emit"
   пример «Печать идёт во временный каталог и оттуда читается»
     дано исходник равно "flang/concurrency/link.flang"
-    ожидается "cd ../.. && d=$(mktemp -d \"${TMPDIR:-/tmp}/flang-svyaz.XXXXXX\") && bootstrap/flang emit flang/concurrency/link.flang --target js --out \"$d\" >/dev/null 2>&1 && f=$(ls \"$d\" | grep -v '^flang_cli') && cat \"$d/$f\"; k=$?; rm -rf \"$d\"; exit $k"
-  соединить ["cd ../.. && d=$(mktemp -d \"${TMPDIR:-/tmp}/flang-svyaz.XXXXXX\") && bootstrap/flang emit ", исходник, " --target js --out \"$d\" >/dev/null 2>&1 && f=$(ls \"$d\" | grep -v '^flang_cli') && cat \"$d/$f\"; k=$?; rm -rf \"$d\"; exit $k"] по ""
+    ожидается "cd ../.. && d=$(mktemp -d \"${TMPDIR:-/tmp}/flang-svyaz.XXXXXX\") && bootstrap/flang emit flang/concurrency/link.flang --target js --out \"$d\" >/dev/null 2>&1 && cat \"$d/program.js\"; k=$?; rm -rf \"$d\"; exit $k"
+  соединить [
+    "cd ../.. && d=$(mktemp -d \"${TMPDIR:-/tmp}/flang-svyaz.XXXXXX\") && bootstrap/flang emit ", исходник,
+    " --target js --out \"$d\" >/dev/null 2>&1 && cat \"$d/program.js\"; k=$?; rm -rf \"$d\"; exit $k"] по ""
 
 тотальная функция «До метки»
   принимает текст: строка, метка: строка

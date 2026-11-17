@@ -1,53 +1,52 @@
 # Setting up your editor
 
-The language server is part of the compiler — there is nothing to install
-separately:
-
-```bash
-flang lsp --stdio
-```
+How do you get flang highlighting, completion and errors in your editor? The
+language server is part of the compiler and starts with `flang lsp --stdio`.
+There is nothing to install separately.
 
 | Editor | Highlighting | Server |
 | --- | --- | --- |
-| [VS Code](#vs-code) | yes | the extension in the language tree |
+| [VS Code](#vs-code) | yes | the extension from the flang repository |
 | [Vim 8/9](#vim-89) | yes | through `vim-lsp` |
 | [Neovim](#neovim) | yes | the built-in client |
 | [Emacs](#emacs) | no | through eglot |
 | any other | no | [`flang check` on a key](#without-the-server-a-check-on-a-key) |
 
 A program file ends in `.flang`, `.fp`, `.фп` or `.фланг`; the four extensions
-are equal, and the plugins pick up all four.
+are equal, and the plugins recognise each of them.
 
 ## What the server does
 
 | Does | Protocol method |
 | --- | --- |
-| Diagnostics — the same checks as `flang check`: parsing, linking, types, termination | `textDocument/publishDiagnostics` |
+| Errors — the same checks as `flang check`: syntax, imports, types, termination | `textDocument/publishDiagnostics` |
 | Completion: keywords, the functions and types of the module and of imported modules, record fields after a dot, variants after `случай` | `textDocument/completion` |
 | A signature on hover: what it accepts, what it returns, whether termination is proved | `textDocument/hover` |
 | Go to definition, into another module too | `textDocument/definition` |
 
 Completion is triggered by two characters: `«` and `.`. The document text is
-sent whole, not as increments. Positions are counted in UTF-16.
+sent whole, without increments. Positions are counted in UTF-16.
 
-Names for completion come from the last successful parse of the file: while a
-line is unfinished the server completes from the previous program, and if the
-file never parsed, from keywords alone. Fields after a dot are offered by the
+Names for completion come from the last version of the file without syntax
+errors. While a line is unfinished the server completes from that version. If
+there has been no such version yet, it offers keywords only. Fields after a dot are offered by the
 type of a parameter of the function the cursor is in; if the type is not
 inferred — the fields of every record in the program, each labelled with its
-record. Diagnostics always come from the current text.
+record. Errors are always
+shown for the current text.
 
 What the server does not do: rename, edits, formatting, find references,
-document symbols. It answers such a request with a refusal:
+document symbols. It answers such a request with an error ("method not
+supported"):
 
-```
+```json
 {"code":-32601,"message":"метод не поддержан: textDocument/rename"}
 ```
 
-A request before `initialize` gets the refusal `-32002`
-«сервер ещё не инициализирован».
+A request before `initialize` gets the error `-32002`
+«сервер ещё не инициализирован» ("the server is not initialised yet").
 
-A failure in an imported module is underlined neither in its buffer nor in the
+An error in an imported module is underlined neither in its buffer nor in the
 open one: it goes to the editor's log (`window/logMessage`).
 
 ## Check that the server answers
@@ -56,17 +55,19 @@ open one: it goes to the editor's log (`window/logMessage`).
 printf 'Content-Length: 75\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{}}}' | flang lsp --stdio
 ```
 
-It prints a frame and the answer, exit code 0:
+The answer is a header and a JSON message:
 
-```
+```text
 Content-Length: 311
 
 {"jsonrpc":"2.0","id":1,"result":{"capabilities":{"positionEncoding":"utf-16","textDocumentSync":{"openClose":true,"change":1,"save":{"includeText":false}},"completionProvider":{"triggerCharacters":["«","."]},"hoverProvider":true,"definitionProvider":true},"serverInfo":{"name":"flang-lsp","version":"0.1.0"}}}
 ```
 
+Exit code 0.
+
 ## VS Code
 
-The extension is in the language tree — `docs/editors/vscode/`. It is not in
+The extension is in the flang repository, in `docs/editors/vscode/`. It is not in
 the Marketplace: you build and install it locally.
 
 ```bash
@@ -87,12 +88,12 @@ It gives highlighting and starts the language server. There are three settings:
 An install does not provide a `flang-lsp` command. Set `flang.server.command`
 to `flang` (or its full path) and `flang.server.args` to `["lsp", "--stdio"]`.
 
-How to install from the tree without building is in
+How to install the extension without building is in
 `docs/editors/vscode/README.md`.
 
 ## Vim 8/9
 
-The plugin is in the `docs/editors/vim` subdirectory of the language tree. The
+The plugin is in the `docs/editors/vim` subdirectory of the flang repository. The
 native package mechanism does not take a subdirectory, so you link to it:
 
 ```bash
@@ -117,7 +118,7 @@ To check, open a program file and ask the editor.
 :set filetype?
 ```
 
-The answer `filetype=flang` means the plugin is picked up. The text is coloured
+The answer `filetype=flang` shows that the plugin is loaded. The text is coloured
 in five kinds: keyword, guillemet name, string, number, comment. Indentation
 expands to two spaces: it is significant in the language. `«` and `»` are a
 bracket pair.
@@ -165,10 +166,10 @@ The plugin assigns the file type and starts the server through the built-in
 `vim.lsp` by itself. Do not configure the server separately: a second client on
 the same buffer doubles the diagnostics.
 
-The server is `flang lsp` from the `flang` on `PATH`, version 0.7.25 or newer.
-The plugin does not take an older binary and says so once.
-`let g:flang_binary_lsp = 1` takes a binary of any version,
-`let g:flang_binary_lsp = 0` never takes it.
+The server is `flang lsp` from the `flang` program found on `PATH`. With an old
+`flang` that has no server yet, the plugin does not start the server and says
+so once. `let g:flang_binary_lsp = 1` starts `flang` of any version,
+`let g:flang_binary_lsp = 0` never starts it.
 
 To turn the server off, in `init.lua` before the plugin loads, one of:
 
@@ -219,14 +220,10 @@ Go to definition — `M-.`, signature — `M-x eldoc`, completion —
 
 ## Without the server: a check on a key
 
-The same failures come from the command:
-
-```bash
-flang check path/to/file.flang
-```
+The same errors come from the command `flang check path/to/file.flang`.
 
 In Vim and Neovim: `:setlocal makeprg=flang\ check\ %`, then `:make`. In VS
 Code — a task in `.vscode/tasks.json` with `"command": "flang check ${file}"`.
 Messages carry the code and the place — the same text the editor would show.
 
-Next: [Troubleshooting](troubleshooting.html).
+Next: [If it does not work](troubleshooting.html).

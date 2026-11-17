@@ -1094,6 +1094,9 @@ fd7ebc29409ae75ab82bd0b48345589e|1|0|0|1|0|flang/proof/probes/branch-condition-a
 c516038d4d659e5e8b1c5c45c4551f5a|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal.flang
 c3f8f76fb04c59f18e25a52133487f98|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-equal.flang
 17e31c2c96a2eaad4a92c212fb725ef6|0|0|0|0|1|flang/proof/probes/branch-condition-and-literal-order/programs/strict-literal-zero.flang
+004cdfb8d13e5af4334df8f2cbde2d04|2|2|0|0|0|flang/proof/probes/typing-holes/controls/exact-integer-from-computed-digit.flang
+deea5653e3e139ee4674151f7b9008dc|1|1|0|0|1|flang/proof/probes/typing-holes/controls/requirement-bypassed-by-function-value.flang
+b201fa43df208609981282def9c65014|2|2|0|0|0|flang/proof/probes/typing-holes/controls/written-step-cites-a-promise-at-a-wider-type.flang
 df782774fb84cf23cb9c3e9d3c23b891|1|×|×|×|0|flang/proof/probes/typing-holes/programs/assumption-bound-at-two-to-the-64.flang
 fc7490ed4b923e46a34b0eaabc4f1ffa|1|×|×|×|0|flang/proof/probes/typing-holes/programs/restricted-postcondition-false-inside-domain.flang
 e82c4cf72147caa8968060dd07f92844|1|×|×|×|0|flang/proof/probes/typing-holes/programs/restricted-postcondition-outside-domain.flang
@@ -1364,7 +1367,7 @@ ed9c9b6a5de7aca5154692ab88afd44c|1|1|0|0|0|flang/scripts/link-collision-guard.fs
 17fa49007181f60a256b3bde9a0ed530|44|44|0|0|0|flang/scripts/memory-guard.fscript
 2a69079431f766d92cfdab344330f844|7|7|0|0|0|flang/scripts/node-across-targets.fscript
 8dae7cb8de0ffc3c6a2e3149a07aa437|15|12|3|0|0|flang/scripts/proof-ledger.fscript
-f8187018d60f067f80ece2b5305e0991|21|21|0|0|0|flang/scripts/proven-guard.fscript
+966f4de3a31da191a55dad884c4fa4aa|20|20|0|0|0|flang/scripts/proven-guard.fscript
 41ff43f2cca335b1ac94a00de37d57f4|6|6|0|0|0|flang/scripts/scheduler-across-targets.fscript
 2886864b965d7a0ddedcc3a2c40826c1|2|2|0|0|0|flang/scripts/supervisor-across-targets.fscript
 20f7f7e9cd7aaf78ab7d05eb270ae99d|2|2|0|0|0|flang/scripts/target-words.fscript

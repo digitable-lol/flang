@@ -99,6 +99,10 @@ def «неБольше» : «Знач» → «Знач» → Bool
   | «кон» n, «минусНоль» => decide (n ≤ 0)
   | «кон» a, «кон» b => decide (a ≤ b)
 
+/-- Сравнение двух конечных — сравнение целых. Отдельной леммой: раскрывать `«неБольше»` на
+    термах с `«шаг»` упрощателем нельзя — ядро Lean 4.36 уходит в глубокую рекурсию. -/
+theorem «неБольше-кон» (a b : Int) : «неБольше» («кон» a) («кон» b) = decide (a ≤ b) := rfl
+
 /-- Е ≥ Г — та же запись зеркалом знака, а НЕ перестановкой сторон. -/
 def «неМеньше» (e g : «Знач») : Bool := «неБольше» g e
 
@@ -191,7 +195,7 @@ theorem «окр64-моно» (a b : Int) (h : a ≤ b) : «неБольше» (
       · rw [«выбор-нет» pa]; rfl
     · have pa : ¬ «предел» ≤ «окрЕд» (a.natAbs * «шаг») 1 := by omega
       rw [«выбор-нет» pa, «выбор-нет» pb]
-      simp only [«неБольше», decide_eq_true_eq]
+      rw [«неБольше-кон», decide_eq_true_eq]
       exact Int.ofNat_le.mpr (Nat.div_le_div_right hm)
   · by_cases hb : b < 0
     · have hm := «окр64-моноНат» (a := b.natAbs) (b := a.natAbs) (by omega)
@@ -205,7 +209,7 @@ theorem «окр64-моно» (a b : Int) (h : a ≤ b) : «неБольше» (
         · rw [«выбор-нет» pb]; rfl
       · have pb : ¬ «предел» ≤ «окрЕд» (b.natAbs * «шаг») 1 := by omega
         rw [«выбор-нет» pa, «выбор-нет» pb]
-        simp only [«неБольше», decide_eq_true_eq]
+        rw [«неБольше-кон», decide_eq_true_eq]
         have := Nat.div_le_div_right (c := «шаг») hm
         omega
     · obtain ⟨ka, hka⟩ := («окр64-знак» a).2 (by omega)

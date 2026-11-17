@@ -1,0 +1,73 @@
+name: Slow guards
+
+# Сторожа, которые проходят, но идут дольше двух минут: на каждый пуш их
+# ставить дорого, а не звать совсем — значит узнать о поломке через месяц
+# (issue 488). Здесь они идут раз в неделю, по работе на сторожа: красный
+# виден по имени, а длительность каждого — в списке работ.
+#
+# По расписанию GitHub запускает только файл из ветки по умолчанию. Чтобы
+# правка этого файла проверялась до слияния, он идёт и на запрос слияния,
+# который его трогает.
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - ".github/workflows/slow-guards.yml"
+  schedule:
+    - cron: "23 3 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slow-guards-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: ${{ matrix.guard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        guard: [closed-length, target-drift, tasks, docs, claims, proven]
+    env:
+      LC_ALL: C.UTF-8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Build flang
+        run: make -C bootstrap -j"$(nproc)"
+      - name: Run the guard
+        run: |
+          case "${{ matrix.guard }}" in
+            closed-length)
+              bootstrap/flang run-script closed-length:check
+              ;;
+            target-drift)
+              bootstrap/flang run-script target-drift:forgery
+              bootstrap/flang run-script target-drift:check
+              ;;
+            tasks)
+              bootstrap/flang run-script tasks:check
+              ;;
+            docs)
+              bootstrap/flang run-script docs:check
+              ;;
+            claims)
+              bootstrap/flang run-script claims:check
+              ;;
+            proven)
+              bootstrap/flang run-script proven:check
+              ;;
+            *)
+              echo "unknown guard: ${{ matrix.guard }}" >&2
+              exit 2
+              ;;
+          esac
+        env:
+          FLANG_TMP: ${{ runner.temp }}

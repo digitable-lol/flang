@@ -29,7 +29,8 @@ word-argument-at-printed-entry.flang	run-word-entry	1	аргумент «а» н
 word-argument-at-printed-entry.flang	emit-c-word-entry	0	аргумент «а» не соответствует типу u8
 weight-from-number-by-match.flang	check	1	объявлена как вес, а тело даёт число
 weight-from-number-by-match.flang	run-weight-from-number	1	FLANG_TYPE
-weight-from-number-by-match.flang	run-weight-first-branch	1	FLANG_TYPE
+weight-from-large-literal.flang	check	0	замечаний нет
+weight-from-large-literal.flang	run-weight-first-branch	0	-5
 run-requirement-outside.flang	check	0	замечаний нет
 run-requirement-outside.flang	run-requirement-outside	1	FLANG_PRECONDITION
 function-value-outside-refinement.flang	check	1	получен функция из целого в число

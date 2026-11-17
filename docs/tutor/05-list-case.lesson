@@ -5,8 +5,9 @@
 =имя-en=
 Taking a list apart: empty, or head and tail
 =текст-ru=
-Список устроен просто: он либо пуст, либо у него есть первый элемент — голова —
-и остаток — хвост. Других случаев нет, и «разбор» называет оба:
+Список либо пуст, либо у него есть первый элемент — голова — и остаток —
+хвост. Других случаев нет. «Разбор» — сопоставление с образцом (match) —
+называет оба:
 
     разбор числа
       случай пусто
@@ -14,13 +15,13 @@ Taking a list apart: empty, or head and tail
       случай голова и хвост
         то 1 плюс («Считать» от хвост)
 
-Так пишется рекурсия по списку: функция зовёт себя на хвосте, хвост короче
+Так пишется рекурсия по списку: функция вызывает себя на хвосте, хвост короче
 списка, и однажды останется пусто. Компилятор видит, что вызов идёт на части
-списка, и обещание «тотальная» принимает без лишних слов.
+списка, и завершение функции считает доказанным.
 
-Забыли один из двух случаев — компилятор откажет, а не промолчит.
+Пропущенный случай — ошибка проверки FLANG_MATCH_NOT_EXHAUSTIVE.
 
-ЗАДАНИЕ. Функция «Произведение» перемножает все числа списка. Впишите ⟨1⟩ —
+Задание. Функция «Произведение» перемножает все числа списка. Впишите ⟨1⟩ —
 ответ на пустом списке (единица, чтобы умножение ничего не портило) и ⟨2⟩ —
 ответ на голове и хвосте: голова умножить на произведение хвоста.
 =текст-en=
@@ -36,12 +37,12 @@ both:
 
 That is how recursion over a list is written: the function calls itself on the
 tail, the tail is shorter than the list, and one day only "пусто" (empty) is
-left. The compiler sees that the call goes to a part of the list and accepts
-the "тотальная" promise without further ado.
+left. The compiler sees that the call goes to a part of the list and takes
+termination of the function as proved.
 
-Forget one of the two cases — the compiler refuses instead of staying quiet.
+A missing case is the check error FLANG_MATCH_NOT_EXHAUSTIVE.
 
-YOUR TASK. «Произведение» (product) multiplies all numbers of a list. Fill in
+Your task. «Произведение» (product) multiplies all numbers of a list. Fill in
 ⟨1⟩ — the answer on the empty list (one, so that multiplication is not
 spoiled) and ⟨2⟩ — the answer on head and tail: the head times the product of
 the tail.
@@ -74,4 +75,4 @@ on head and tail: the head times the product of the tail
 =примеров=
 0
 =отчёт=
-=печать=
+=цель=

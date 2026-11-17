@@ -5,14 +5,14 @@
 =имя-en=
 Your own type with variants, and taking it apart
 =текст-ru=
-Пустого значения в языке нет. Там, где ответ бывает разного рода, заводится
-свой тип с вариантами:
+Ответ «не получилось» в flang не записывают пустым значением (null). Там, где
+ответ бывает разного рода, объявляют тип с вариантами (enum с данными):
 
     тип «Ответ»
       вариант Да
       вариант Нет содержит причина: строка
 
-Такое значение нельзя взять и прочитать — его разбирают, и разбор обязан
+Прочитать такое значение напрямую нельзя. Его разбирают, и разбор обязан
 назвать все варианты:
 
     разбор ответ
@@ -21,23 +21,24 @@ Your own type with variants, and taking it apart
       случай вариант Нет с причина как причина
         то причина
 
-Забыли вариант — компилятор откажет, а не промолчит. Отсюда и польза: случай,
-о котором не подумали, виден при проверке, а не у человека на руках.
+Пропущенный вариант — ошибка проверки. Случай, о котором не подумали, виден
+до запуска программы.
 
 Строки складываются так: соединить ["плохо: ", причина] по "".
 
-ЗАДАНИЕ. Тип «Итог» с вариантами Хорошо и Плохо уже в шаблоне. Впишите ⟨1⟩ —
+Задание. Тип «Итог» с вариантами Хорошо и Плохо уже в шаблоне. Впишите ⟨1⟩ —
 ответ на Хорошо: строка "всё хорошо"; ⟨2⟩ — ответ на Плохо: слово "плохо: " и
 следом причина, склеенные через соединить … по "".
 =текст-en=
-The language has no empty value. Where an answer comes in several kinds, you
-declare your own type with variants:
+An answer "it did not work" is not written as an empty value (null) in flang.
+Where an answer comes in several kinds, you declare a type with variants (an
+enum with data):
 
     тип «Ответ»
       вариант Да
       вариант Нет содержит причина: строка
 
-Such a value cannot simply be read — it is taken apart with "разбор", and the
+Such a value cannot be read directly. It is taken apart with "разбор", and the
 разбор must name every variant:
 
     разбор ответ
@@ -46,13 +47,12 @@ Such a value cannot simply be read — it is taken apart with "разбор", an
       случай вариант Нет с причина как причина
         то причина
 
-Miss a variant and the compiler refuses instead of staying quiet. That is the
-point: the case nobody thought about shows up at check time, not in the hands of
-a person using the program.
+A missing variant is a check error. The case nobody thought about shows up
+before the program runs.
 
 Strings are joined like this: соединить ["плохо: ", причина] по "".
 
-YOUR TASK. The type «Итог» with variants Хорошо and Плохо is already in the
+Your task. The type «Итог» with variants Хорошо and Плохо is already in the
 template. Fill in ⟨1⟩ — the answer on Хорошо: the string "всё хорошо"; ⟨2⟩ —
 the answer on Плохо: the word "плохо: " followed by the причина, joined with
 соединить … по "".
@@ -89,4 +89,4 @@ on Плохо: соединить ["плохо: ", причина] по ""
 =примеров=
 0
 =отчёт=
-=печать=
+=цель=

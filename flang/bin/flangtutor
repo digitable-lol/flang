@@ -151,21 +151,23 @@ rekta morfismo|正向态射|обратный морфизм|inverse morphism|inv
 intersection|komunaĵo|交集|моноид|monoid|monoido|幺半群|носитель|carrier|portanto|
 载体|операция|operation|operacio|运算|обратный элемент|inverse element|inversa elemento|逆元|монада|
 monad|monado|单子|возврат|return|redono|单位|соединение|flatten|platigo|
-压平|в монаде|in monad|en monado|在单子中|теорема|theorem|teoremo|定理|следует|follows|функтор|
-функтора|functor|funktoro|函子|бифунктор|bifunctor|bifunktoro|双函子|объекты|objects|
-objektoj|对象对|морфизмы|morphisms|morfismoj|态射对|утверждение|proposition|propozicio|命题|
-имеет|has|havas|具有|в данных|in data|en datumoj|在数据中|найти где|find where|
-trovi kie|查找其中|по морфизму|затем по морфизму|применить морфизм|затем применить морфизм|by morphism|then by morphism|apply morphism|then apply morphism|
-per morfismo|poste per morfismo|按态射|然后按态射|следовательно|получаем|therefore|sekve|因此|по закону|
-under law|laŭ leĝo|依定律|отображается в|отображаются в|maps to|map to|mapiĝas al|映射到|отображается в поле|
-maps to field|mapiĝas al kampo|映射到字段|отображается в морфизм|отображаются в морфизм|maps to morphism|map to morphism|mapiĝas al morfismo|映射到态射|требует|
-requires|обеспечивает|ensures|для всех|for all|таких что|such that|есть такой|there is|а именно|
-namely|statement|утверждаем|claim|индукция по|induction on|по свойству|by property|по примеру|by example|
-по предположению|by hypothesis|следовательно доказано|therefore proved|процесс|process|procezo|进程|обрабатывает|handles|
-traktas|处理|с запасом|with budget|kun buĝeto|带预算|с ящиком|with mailbox|kun leterkesto|带信箱|
-надзор|supervision|监督|стратегия|strategy|strategio|策略|порог отказов|failure threshold|sojlo de fiaskoj|
-失败阈值|прогон|run|rulo|运行|семя|seed|semo|种子|план|
-plan|plano|计划|примечание|note|noto|注|
+压平|в монаде|in monad|en monado|在单子中|теорема|theorem|teoremo|定理|следует|
+follows|история|хочу|чтобы|функтор|функтора|functor|funktoro|函子|бифунктор|
+bifunctor|bifunktoro|双函子|объекты|objects|objektoj|对象对|морфизмы|morphisms|morfismoj|
+态射对|утверждение|proposition|propozicio|命题|имеет|has|havas|具有|в данных|
+in data|en datumoj|在数据中|найти где|find where|trovi kie|查找其中|по морфизму|затем по морфизму|применить морфизм|
+затем применить морфизм|by morphism|then by morphism|apply morphism|then apply morphism|per morfismo|poste per morfismo|按态射|然后按态射|следовательно|
+получаем|therefore|sekve|因此|по закону|under law|laŭ leĝo|依定律|отображается в|отображаются в|
+maps to|map to|mapiĝas al|映射到|отображается в поле|maps to field|mapiĝas al kampo|映射到字段|отображается в морфизм|отображаются в морфизм|
+maps to morphism|map to morphism|mapiĝas al morfismo|映射到态射|требует|requires|обеспечивает|ensures|для всех|for all|
+таких что|such that|есть такой|there is|а именно|namely|statement|утверждаем|claim|индукция по|
+induction on|по свойству|by property|по примеру|by example|по предположению|by hypothesis|следовательно доказано|therefore proved|процесс|
+process|procezo|进程|обрабатывает|handles|traktas|处理|с запасом|with budget|точное целое|
+точного целого|точным целым|exact integer|preciza entjero|精确整数|точное дробное|точного дробного|точным дробным|exact fraction|preciza frakcio|
+精确分数|целая часть|integer part|entjera parto|整数部分|kun buĝeto|带预算|с ящиком|with mailbox|kun leterkesto|
+带信箱|надзор|supervision|监督|стратегия|strategy|strategio|策略|порог отказов|failure threshold|
+sojlo de fiaskoj|失败阈值|прогон|run|rulo|运行|семя|seed|semo|种子|
+план|plan|plano|计划|примечание|note|noto|注|
 '
 WORDS=$(printf '%s' "$LANGUAGE_WORDS" | tr -d '\n')
 
@@ -430,11 +432,11 @@ judge() {
     fi
   fi
 
-  target=$(section "$lesson" печать | head -1 | tr -d ' ')
+  target=$(section "$lesson" цель | head -1 | tr -d ' ')
   if [ -n "$target" ]; then
     rm -rf "$WORK/print"
     if ! LC_ALL=C.UTF-8 "$BINARY" emit "$WORK/lesson.flang" --target "$target" --out "$WORK/print" > "$WORK/emit.out" 2>&1; then
-      say "$(phrase "печать в «$target» не удалась:" "printing to «$target» failed:")"
+      say "$(phrase "генерация кода для «$target» не удалась:" "generating code for «$target» failed:")"
       sed "s|$WORK/lesson.flang|$(phrase 'ваш ответ' 'your answer')|g" "$WORK/emit.out"
       return 1
     fi

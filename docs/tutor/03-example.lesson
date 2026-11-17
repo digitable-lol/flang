@@ -1,13 +1,13 @@
 =номер=
 3
 =имя-ru=
-Пример — часть программы
+Пример: тест внутри функции
 =имя-en=
-An example is part of the program
+An example: a test inside the function
 =текст-ru=
-У функции бывает «пример»: он пишется внутри функции, перед телом, и
-прогоняется при каждой проверке, а не по отдельной просьбе. Это и есть тесты —
-только они лежат рядом с тем, что проверяют, и отстать от него не могут.
+У функции бывает «пример» — тест, записанный внутри функции, перед телом.
+Компилятор запускает примеры при каждой проверке. Тест лежит рядом с кодом,
+который проверяет, и устареть незаметно не может.
 
     тотальная функция «Втрое»
       принимает х: число
@@ -18,19 +18,19 @@ An example is part of the program
       х умножить на 3
 
 «Дано» называет вход, «ожидается» — ответ. Пример с неверным «ожидается»
-компилятор не пропустит, как не пропустил бы ошибку в типах.
+даёт ошибку проверки, как и ошибка в типах.
 
 Ветвление пишется словами «если», «то», «иначе» — оно уже стоит в шаблоне.
-Циклов в языке нет вовсе, и присваивания тоже нет: обе вещи мешали бы обещанию
-«функция заканчивает работу».
+«Если» — выражение: у него всегда есть обе ветки, и обе дают значение.
+Присваивания в языке нет: имя получает значение один раз.
 
-ЗАДАНИЕ. Впишите ⟨1⟩ — пример для функции «Наибольшее»: имя примера, «дано»
+Задание. Впишите ⟨1⟩ — пример для функции «Наибольшее»: имя примера, «дано»
 для а и для б, «ожидается» с верным ответом. Строки «дано» и «ожидается» стоят
 на два пробела глубже слова «пример». Без примера урок не засчитается.
 =текст-en=
-A function may carry an "пример" (example). It is written inside the function,
-before the body, and is run on every check, not on separate request. Examples
-are the tests — they just live next to what they test and cannot fall behind.
+A function may carry an "пример" (example) — a test written inside the
+function, before the body. The compiler runs the examples on every check. The
+test sits next to the code it tests and cannot go stale unnoticed.
 
     тотальная функция «Втрое»
       принимает х: число
@@ -41,14 +41,14 @@ are the tests — they just live next to what they test and cannot fall behind.
       х умножить на 3
 
 "Дано" (given) names an input, "ожидается" (expected) the answer. An example
-with a wrong "ожидается" is refused by the compiler, like a type error.
+with a wrong "ожидается" is a check error, like a type error.
 
 Branching is written with "если" (if), "то" (then), "иначе" (else) — it is
-already in the template. There are no loops in the language at all, and no
-assignment either: both would get in the way of the promise that a function
-finishes.
+already in the template. "Если" is an expression: it always has both branches,
+and both give a value. There is no assignment in the language: a name gets its
+value once.
 
-YOUR TASK. Fill in ⟨1⟩ — an example for «Наибольшее» (largest): the example
+Your task. Fill in ⟨1⟩ — an example for «Наибольшее» (largest): the example
 name, "дано" for а and for б, "ожидается" with the right answer. The "дано" and
 "ожидается" lines stand two spaces deeper than the word "пример". Without an
 example the lesson does not count.
@@ -81,4 +81,4 @@ an example: name, дано а, дано б, ожидается
 =примеров=
 1
 =отчёт=
-=печать=
+=цель=

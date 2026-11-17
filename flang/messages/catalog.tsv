@@ -12,6 +12,9 @@ check.module-files	без имени модуля: функций {functions}, �
 check.not-total	без доказанного завершения: {names}	termination not proved: {names}
 check.not-total-more	без доказанного завершения: {names} и ещё {more}	termination not proved: {names} and {more} more
 check.verified	{file}: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет	{file}: verified — parsing, types, termination, proof kernel and examples; no problems found
+check.counted	{file}: проверено — доказано {proved}, проверено только на тестах {tested}, не доказано {unproved} (постусловий и утверждений {claims}); замечаний нет	{file}: verified — proved {proved}, only tested {tested}, not proved {unproved} (postconditions and statements: {claims}); no problems found
+check.counted-unproved	{file}: проверено — доказано {proved}, проверено только на тестах {tested}, не доказано {unproved} (постусловий и утверждений {claims})	{file}: verified — proved {proved}, only tested {tested}, not proved {unproved} (postconditions and statements: {claims})
+check.unproved	не доказано: {unproved} — подробности: flang check {file} --proof	not proved: {unproved} — details: flang check {file} --proof
 check.partly	{file}: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли	{file}: verified only IN PART — parsing, types, termination, proof kernel and examples passed
 check.not-verified	{file}: не проверено — замечаний {count}	{file}: not verified — problems found: {count}
 check.fast	{file}: часть проверок НЕ ЗАПУСКАЛАСЬ — код возврата 4, а не 0	{file}: some checks DID NOT RUN — exit code 4, not 0
@@ -30,6 +33,29 @@ proof.verdict	{file}: {verdict} — утверждений {claims}: доказ�
 proof.no-checker	{file}: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет ({checker}; собрать: make -C flang/proof/checker либо назвать FLANG_CHECKER): все {proved} доказанных стоят на слове ядра	{file}: NOT INDEPENDENTLY VERIFIED — no checker ({checker}; build it with make -C flang/proof/checker or name one in FLANG_CHECKER): all {proved} proved claims rest on the kernel's word
 {checker}	путь к нему не найден	its path was not found
 proof.checker-replayed	{file}: независимо, сверщиком, проиграно {checked} из {proved} доказанных; на слове ядра {kernel} — код сверщика {code}	{file}: independently replayed by the checker: {checked} of {proved} proved claims; on the kernel's word: {kernel} — checker exit code {code}
+proof.summary	{file}: {word} — доказано {proved}, проверено только на тестах {tested}, не доказано {unproved}, ложно {false} (постусловий и утверждений {claims}); независимая проверка повторила {replayed} из {of} — код возврата {code}	{file}: {word} — proved {proved}, only tested {tested}, not proved {unproved}, false {false} (postconditions and statements: {claims}); the independent check replayed {replayed} of {of} — exit code {code}
+{word}	независимая проверка повторила не всё доказанное	the independent check did not replay every proved claim
+proof.independent-why	{file}: независимая проверка не повторила ни одного: {why}	{file}: the independent check replayed none: {why}
+{why}	программа checker не найдена	the checker program was not found
+{why}	программа checker не отработала	the checker program did not finish
+{why}	файл ввозит модули, а такие файлы независимая проверка пока не проверяет	the file imports modules, and the independent check does not check such files yet
+{why}	в этой сборке независимую проверку запустить нечем	this build has no way to run the independent check
+proof.independent-short	{file}: независимая проверка повторила {replayed} из {of} доказанных — под ключом --independent это код 3	{file}: the independent check replayed {replayed} of {of} proved claims — under --independent this is exit code 3
+{word}	проверено	verified
+{word}	доказано всё	everything is proved
+{word}	доказано не всё	not everything is proved
+{word}	доказывать нечего	there is nothing to prove
+{word}	есть ложное	something is false
+{word}	независимая проверка не подтвердила доказательства	the independent check did not confirm the proofs
+proof.summary-laws	{file}: законов проверено только на тестах {tested}, без доказательства {assumed}	{file}: laws only tested: {tested}, without a proof: {assumed}
+proof.summary-more	подробный отчёт: flang check {file} --proof --explain	the full report: flang check {file} --proof --explain
+report	модуль «{module}»: функций {functions}, завершение доказано у {total}	module «{module}»: functions {functions}, termination proved for {total}
+report	без имени модуля: функций {functions}, завершение доказано у {total}	no module name: functions {functions}, termination proved for {total}
+report	итог: постусловий и утверждений {claims} — доказано {proved}, проверено только на тестах {tested}, не доказано {unproved}	total: postconditions and statements {claims} — proved {proved}, only tested {tested}, not proved {unproved}
+report	итог: постусловий и утверждений {claims} — доказано {proved}, проверено только на тестах {tested}, не доказано {unproved}, ложно {false}	total: postconditions and statements {claims} — proved {proved}, only tested {tested}, not proved {unproved}, false {false}
+report	законов: проверено только на тестах {tested}, без доказательства {assumed}	laws: only tested {tested}, without a proof {assumed}
+report	модуль «{module}»: функций {functions}, завершение доказано у {total}, без доказательства завершения: {unproved}	module «{module}»: functions {functions}, termination proved for {total}, termination not proved: {unproved}
+report	без имени модуля: функций {functions}, завершение доказано у {total}, без доказательства завершения: {unproved}	no module name: functions {functions}, termination proved for {total}, termination not proved: {unproved}
 ledger	── ведомость доказательства модуля {module} ──	── proof ledger of module {module} ──
 ledger	слова ведомости, и они не взаимозаменяемы:	the words of the ledger, and they are not interchangeable:
 ledger	  «доказано» — утверждение обо ВСЕХ входах, выведенное из объявлений и структуры;	  «proved» — a claim about ALL inputs, derived from the declarations and the structure;

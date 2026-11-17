@@ -477,7 +477,7 @@ static const char FLANG_HELP_2[] =
 
 static const char HELP_CHECK[] =
     "flang check <файл.flang> [--proof [--json] [--strict] [--record <файл>]]\n"
-    "                          [--fast] [--step-limit N] [--depth-limit N]\n"
+    "                          [--fast] [--explain] [--step-limit N] [--depth-limit N]\n"
     "\n"
     "Разбор, типы, завершаемость, ядро доказательства. Замечания с кодом и местом,\n"
     "код возврата 1, если программа не прошла.\n"
@@ -523,6 +523,14 @@ static const char HELP_CHECK[] =
  * байт, а кириллица съедает по два байта на букву. Печатаются обе подряд.
  */
 static const char HELP_CHECK_2[] =
+    "  --independent      вместе с --proof: код 0, только если независимая\n"
+    "                     проверка повторила каждое доказанное; иначе код 3.\n"
+    "                     Кириллицей: --независимо\n"
+    "  --explain          подробный вид. У отказа доказательства — перечень\n"
+    "                     правил, которые пробовало ядро; у --proof — полный\n"
+    "                     отчёт вместо короткого; совпадения имён с файлами\n"
+    "                     каталога, которые программа не ввозит.\n"
+    "                     Кириллицей: --подробно\n"
     "  --memory-limit N   предел памяти прогона (умолчание — три четверти памяти\n"
     "                     машины); на пределе — код 5 с именем функции и числом\n"
     "                     шагов. Кириллицей: --предел-памяти\n"
@@ -6311,6 +6319,43 @@ static bool repl_ledger_answer(fl_value program, const char *entry, fl_value *ve
 }
 
 
+/*
+ * What the last kernel pass of `repl_check_sources` saw: the termination
+ * result, the obligations and the kernel answer. `flang check` counts proved
+ * and unproved claims from these three instead of running the kernel again.
+ * The values live in the arena of the current check and die with `repl_cycle`.
+ */
+static struct {
+  bool kept;
+  fl_value total;
+  fl_value svod;
+  fl_value answer;
+} check_kernel;
+
+/* Set while the short report is being printed: the independent check then
+   prints no line of its own, its answer goes into the last line. */
+static bool proof_brief = false;
+
+/*
+ * What the independent check answered for the last report: how many proved
+ * claims it replayed, and, when it replayed none of them for a reason other
+ * than the proofs themselves, that reason in plain words. `--independent`
+ * turns "not every proved claim was replayed" into exit code 3.
+ */
+static struct {
+  long replayed;
+  const char *why;
+} proof_replay;
+
+/* `--independent`: exit code 0 only when the independent check replayed every
+   proved claim; otherwise 3. */
+static bool proof_independent = false;
+
+/* `--explain`: the long view. Without it a refusal is printed without the
+   list of rules that were tried, and notes about files the program does not
+   import are not printed at all. */
+static bool check_explain = false;
+
 static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *bads, fl_value *program,
                                bool *has_program, repl_strings *proven, bool kernel, bool examples, bool categories,
                                const char *collision, fl_value *linked_out, fl_value *dropped_out,
@@ -6322,6 +6367,7 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
   fl_value diagnostics = fl_nothing();
   size_t index = 0;
   *has_program = false;
+  check_kernel.kept = false;
   /*
    * РАЗБОР ОДНОГО ВХОДНОГО ФАЙЛА ОТДАЁТСЯ НАРУЖУ, И ЭТО НЕ УДОБСТВО.
    *
@@ -6615,6 +6661,10 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
         bads_take(bads, kernel_bads.as.list.items[index]);
       }
     }
+    check_kernel.kept = true;
+    check_kernel.total = total;
+    check_kernel.svod = svod;
+    check_kernel.answer = verified;
     if (dropped_out != NULL) {
       fl_value dropped = fl_nothing();
       if (val_field(verdict, "снятые", &dropped)) {
@@ -10448,6 +10498,62 @@ static bool check_bads_name_files(const repl_bads *bads) {
   return true;
 }
 
+/*
+ * A refusal without `--explain` is at most CHECK_BRIEF_BYTES long.
+ *
+ * The compiler layer splits a long refusal itself: everything after the line
+ * that starts with CHECK_DETAILS is the list of rules the kernel tried, and
+ * it is printed only under `--explain`. A message with no such line and
+ * longer than the limit is cut at the end of a sentence, never inside a
+ * UTF-8 character. NULL means "print the message as it is".
+ */
+#define CHECK_BRIEF_BYTES 700
+static const char CHECK_DETAILS[] = "\nподробно: ";
+static const char CHECK_BRIEF_TAIL[] = " Полный текст: тот же вызов с ключом --explain.";
+
+static char *check_brief(const char *message) {
+  const char *details = strstr(message, CHECK_DETAILS);
+  size_t keep = details != NULL ? (size_t)(details - message) : strlen(message);
+  size_t cut = keep;
+  repl_buf out;
+  if (check_explain || (details == NULL && keep <= CHECK_BRIEF_BYTES)) {
+    return NULL;
+  }
+  if (keep > CHECK_BRIEF_BYTES) {
+    size_t at = 0;
+    cut = 0;
+    for (at = 0; at + 1 < CHECK_BRIEF_BYTES; at += 1) {
+      const bool stop = message[at] == '.' || message[at] == ';' || message[at] == ':';
+      if (stop && message[at + 1] == ' ') {
+        cut = at;
+      }
+    }
+    if (cut == 0) {
+      cut = CHECK_BRIEF_BYTES;
+      while (cut > 0 && ((unsigned char)message[cut] & 0xC0) == 0x80) {
+        cut -= 1;
+      }
+    }
+  }
+  buf_init(&out);
+  buf_add(&out, message, cut);
+  buf_put(&out, cut < keep ? "…" : "");
+  buf_put(&out, CHECK_BRIEF_TAIL);
+  buf_char(&out, '\0');
+  return out.data;
+}
+
+static void check_print_bad(const repl_bad *bad, const char *where, const char *name) {
+  char *brief = check_brief(bad->message);
+  const char *message = brief != NULL ? brief : bad->message;
+  if (where == NULL) {
+    repl_print_bad(bad->code, message, NULL, NULL, 0, 0);
+  } else {
+    repl_print_bad(bad->code, message, where, name, bad->line, bad->column);
+  }
+  free(brief);
+}
+
 static void check_print_bads(const repl_bads *bads, const char *file, size_t sources) {
   size_t index = 0;
   if (sources > 1 && bads->count > 0 && !check_bads_name_files(bads)) {
@@ -10459,11 +10565,11 @@ static void check_print_bads(const repl_bads *bads, const char *file, size_t sou
   for (index = 0; index < bads->count; index += 1) {
     const repl_bad *bad = &bads->items[index];
     if (!bad->has_at) {
-      repl_print_bad(bad->code, bad->message, NULL, NULL, 0, 0);
+      check_print_bad(bad, NULL, NULL);
     } else if (sources == 1) {
-      repl_print_bad(bad->code, bad->message, "проверка", file, bad->line, bad->column);
+      check_print_bad(bad, "проверка", file);
     } else {
-      repl_print_bad(bad->code, bad->message, "ввод", NULL, bad->line, bad->column);
+      check_print_bad(bad, "ввод", NULL);
     }
   }
 }
@@ -10573,6 +10679,73 @@ static void check_namesakes(const char *full, const repl_strings *paths, fl_valu
  * Разделение то же, что у CLI на Node: ошибка вызова и ошибка программы — не
  * одно и то же, и сценарий вправе их различать.
  */
+/*
+ * How many postconditions and statements of the checked file are proved, how
+ * many are only tested and how many are not proved. The numbers come from the
+ * compiler layer («Счёт доказанного проверкой», the same counting the proof
+ * report does), this file only prints them. A compiler built before that
+ * function appeared has no counts, and the caller keeps the old last line.
+ */
+typedef struct {
+  bool known;
+  long total;
+  long proved;
+  long tested;
+  long unproved;
+} check_tally;
+
+static bool check_tally_number(fl_value record, const char *name, long *out) {
+  fl_value field = fl_nothing();
+  if (!val_field(record, name, &field) || field.tag != FL_NUMBER) {
+    return false;
+  }
+  *out = (long)field.as.number;
+  return true;
+}
+
+static void check_tally_read(fl_value program, fl_value own, check_tally *tally) {
+  fl_value args[5];
+  fl_value counted = fl_nothing();
+  fl_status said = FL_OK;
+  tally->known = false;
+  if (!check_kernel.kept || !repl_has_function("Счёт доказанного проверкой")) {
+    return;
+  }
+  args[0] = program;
+  args[1] = own.tag == FL_NOTHING ? program : own;
+  args[2] = check_kernel.total;
+  args[3] = check_kernel.svod;
+  args[4] = check_kernel.answer;
+  said = repl_call("Счёт доказанного проверкой", args, 5, &counted);
+  tally->known = said == FL_OK && check_tally_number(counted, "всего", &tally->total) &&
+                 check_tally_number(counted, "доказано", &tally->proved) &&
+                 check_tally_number(counted, "на тестах", &tally->tested) &&
+                 check_tally_number(counted, "не доказано", &tally->unproved);
+}
+
+/* The last line of a full `flang check` that found no errors. «замечаний нет»
+   is said only when nothing is left unproved. */
+static void check_say_verified(const char *path, const check_tally *tally) {
+  if (!tally->known) {
+    msg_printf(stdout, "check.verified", "%s: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет\n",
+               path);
+    return;
+  }
+  if (tally->unproved == 0) {
+    msg_printf(stdout, "check.counted",
+               "%s: проверено — доказано %ld, проверено только на тестах %ld, не доказано %ld "
+               "(постусловий и утверждений %ld); замечаний нет\n",
+               path, tally->proved, tally->tested, tally->unproved, tally->total);
+    return;
+  }
+  msg_printf(stdout, "check.counted-unproved",
+             "%s: проверено — доказано %ld, проверено только на тестах %ld, не доказано %ld "
+             "(постусловий и утверждений %ld)\n",
+             path, tally->proved, tally->tested, tally->unproved, tally->total);
+  msg_printf(stdout, "check.unproved", "не доказано: %ld — подробности: flang check %s --proof\n", tally->unproved,
+             path);
+}
+
 static int check_file(const char *path, bool fast) {
   repl_bads bads;
   repl_strings paths;
@@ -10872,7 +11045,13 @@ static int check_file(const char *path, bool fast) {
       }
     }
   }
-  check_namesakes(full, &paths, own);
+  /* A name that also lives in a neighbour file is no news for a program that
+     does not import that file. Importing both is still refused by the link
+     step (FLANG_DUPLICATE_NAME, FLANG_IMPORT_AMBIGUOUS), so the note is kept
+     for the long view only. */
+  if (check_explain) {
+    check_namesakes(full, &paths, own);
+  }
   fflush(stderr);
   /*
    * ЧЕТВЁРТОЕ СЛОВО: «НЕ СМОТРЕЛИ НА ЭТОМ ПРОГОНЕ».
@@ -10949,8 +11128,9 @@ static int check_file(const char *path, bool fast) {
     msg_printf(stdout, "check.fast-unjudged",
                "%s: часть объявлений НЕ СУДИТСЯ ВОВСЕ, и часть проверок не запускалась — код возврата 2\n", path);
   } else if (ok && !unjudged) {
-    msg_printf(stdout, "check.verified", "%s: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет\n",
-               path);
+    check_tally tally;
+    check_tally_read(program, own, &tally);
+    check_say_verified(path, &tally);
   } else if (ok) {
     msg_printf(stdout, "check.partly", "%s: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли\n",
                path);
@@ -11151,6 +11331,48 @@ static void proof_say_verdict(const char *path, const proof_tally *t, int code, 
           "отвергнуто %ld, нарушено %ld; законов на сетке %ld, на веру %ld — код возврата %d\n",
           path, word, t->total, t->proved, t->conditional, t->grid, t->declared, t->refused,
           t->violated, t->laws_grid, t->laws_assumed, code);
+}
+
+/*
+ * The last line of the short report. Three numbers a reader needs: proved,
+ * only tested, not proved. «Не доказано» collects everything the kernel did
+ * not close: declared without a proof, refused, and proved only under an
+ * unproved premise. A false claim is named separately — it is an error.
+ */
+static const char *proof_brief_word(const proof_tally *t, int code, bool strict) {
+  if (code == 3 && proof_independent && proof_verdict(t, strict) == 0) {
+    return "независимая проверка повторила не всё доказанное";
+  }
+  if (t->checker == 1) {
+    return "независимая проверка не подтвердила доказательства";
+  }
+  if (code == 1) {
+    return "есть ложное";
+  }
+  if (code == 3) {
+    return t->total == 0 ? "доказывать нечего" : "доказано не всё";
+  }
+  return strict ? "доказано всё" : "проверено";
+}
+
+static void proof_say_brief_verdict(const char *path, const proof_tally *t, int code, bool strict) {
+  const long unproved = t->declared + t->refused + t->conditional;
+  msg_printf(stderr, "proof.summary",
+             "%s: %s — доказано %ld, проверено только на тестах %ld, не доказано %ld, ложно %ld "
+             "(постусловий и утверждений %ld); независимая проверка повторила %ld из %ld — код возврата %d\n",
+             path, proof_brief_word(t, code, strict), t->proved, t->grid, unproved, t->violated, t->total,
+             proof_replay.replayed, t->proved, code);
+  if (proof_replay.why != NULL) {
+    msg_printf(stderr, "proof.independent-why", "%s: независимая проверка не повторила ни одного: %s\n", path,
+               proof_replay.why);
+  }
+  if (t->laws_grid > 0 || t->laws_assumed > 0) {
+    msg_printf(stderr, "proof.summary-laws", "%s: законов проверено только на тестах %ld, без доказательства %ld\n",
+               path, t->laws_grid, t->laws_assumed);
+  }
+  if (code != 0) {
+    msg_printf(stderr, "proof.summary-more", "подробный отчёт: flang check %s --proof --explain\n", path);
+  }
 }
 
 /* ═══════════════════ flang check --proof: ведомость ══════════════════════ */
@@ -11395,6 +11617,8 @@ static int proof_say_independent(const char *path, const char *record, size_t by
   (void)record;
   (void)bytes;
   (void)imports;
+  proof_replay.replayed = 0;
+  proof_replay.why = "в этой сборке независимую проверку запустить нечем";
   fprintf(stderr,
           "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО этим модулем — в WebAssembly нет процессов, и сверщика отсюда не запустить: все %ld доказанных стоят на слове ядра, пока запись (--записать) не сверит сверщик, собранный отдельным модулем\n",
           path, proved);
@@ -11413,6 +11637,15 @@ static int proof_say_independent(const char *path, const char *record, size_t by
   int pipes[2];
   int fd = -1;
   pid_t child;
+  proof_replay.replayed = 0;
+  proof_replay.why = NULL;
+  if (checker == NULL || access(checker, X_OK) != 0) {
+    proof_replay.why = "программа checker не найдена";
+  }
+  if (proof_brief && proof_replay.why != NULL) {
+    free(checker);
+    return -1;
+  }
   if (checker == NULL || access(checker, X_OK) != 0) {
     msg_printf(stderr, "proof.no-checker",
             "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщика нет (%s"
@@ -11482,6 +11715,17 @@ static int proof_say_independent(const char *path, const char *record, size_t by
   }
   reason = strstr(answer.data, "\nНЕ СОШЛОСЬ: ");
   if (!WIFEXITED(status) || WEXITSTATUS(status) == 2 || WEXITSTATUS(status) == 127) {
+    proof_replay.why = "программа checker не отработала";
+  } else if (WEXITSTATUS(status) == 1 && imports) {
+    proof_replay.why = "файл ввозит модули, а такие файлы независимая проверка пока не проверяет";
+  } else if (WEXITSTATUS(status) != 1) {
+    proof_replay.replayed = checked;
+  }
+  if (proof_brief && WIFEXITED(status) && WEXITSTATUS(status) != 1) {
+    said = proof_replay.why == NULL ? WEXITSTATUS(status) : -1;
+  } else if (proof_brief && proof_replay.why != NULL) {
+    said = -1;
+  } else if (!WIFEXITED(status) || WEXITSTATUS(status) == 2 || WEXITSTATUS(status) == 127) {
     fprintf(stderr, "%s: НЕЗАВИСИМО НЕ ПРОВЕРЕНО — сверщик %s не отработал: все %ld доказанных стоят на слове ядра\n",
             path, checker, proved);
   } else if (WEXITSTATUS(status) == 1 && imports) {
@@ -11738,7 +11982,16 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
   } else if (val_field(result, "годно", &field) && field.tag == FL_FLAG && field.as.flag) {
     proof_tally tally;
     bool counted = false;
-    if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
+    int kernel_code = 0;
+    /* The short report is the default; the long one is printed under
+       `--explain` and under `--strict`, whose text build scripts read. A
+       compiler built before the short report appeared has no «коротко»
+       field, and then the long report is printed as before. */
+    const bool brief = !json && !strict && !check_explain && val_field(result, "коротко", &field) &&
+                       val_text(field, &utf8, &bytes) && bytes > 0;
+    if (brief) {
+      msg_print_lines(stdout, "report", utf8, bytes);
+    } else if (val_field(result, json ? "в JSON" : "словами", &field) && val_text(field, &utf8, &bytes)) {
       if (json) {
         fwrite(utf8, 1, bytes, stdout);
       } else {
@@ -11752,7 +12005,7 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
        доводу, по которому приговор уходит в поток ошибок: русские слова посреди
        JSON сломали бы разбор. Машине то же самое доступно полями
        `obligations[].proof.steps` и `discharge.rule`. */
-    if (!json && val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
+    if (!json && !brief && val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)) {
       proof_say_steps(utf8, bytes);
     }
     fflush(stdout);
@@ -11768,11 +12021,26 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
             stderr);
       code = 2;
     } else {
+      proof_brief = brief;
       tally.checker = val_field(result, "запись", &field) && val_text(field, &utf8, &bytes)
                           ? proof_say_independent(path, utf8, bytes, tally.proved, paths.count > 1)
                           : -1;
+      proof_brief = false;
       code = proof_verdict(&tally, strict);
-      proof_say_verdict(path, &tally, code, strict);
+      kernel_code = code;
+      if (proof_independent && code == 0 && proof_replay.replayed < tally.proved) {
+        code = 3;
+        if (!brief) {
+          msg_printf(stderr, "proof.independent-short",
+                     "%s: независимая проверка повторила %ld из %ld доказанных — под ключом --independent это код 3\n",
+                     path, proof_replay.replayed, tally.proved);
+        }
+      }
+      if (brief) {
+        proof_say_brief_verdict(path, &tally, code, strict);
+      } else {
+        proof_say_verdict(path, &tally, kernel_code, strict);
+      }
     }
     /* ЗАПИСЬ ДОКАЗАТЕЛЬСТВА кладётся ОТДЕЛЬНЫМ файлом, а не в поток вывода:
        ведомость читает человек, а запись читает сверщик, и смешать их в одной
@@ -16618,6 +16886,10 @@ static int check_command(int argc, char **argv) {
       strict = true;
     } else if (strcmp(argv[index], "--быстро") == 0 || strcmp(argv[index], "--fast") == 0) {
       fast = true;
+    } else if (strcmp(argv[index], "--подробно") == 0 || strcmp(argv[index], "--explain") == 0) {
+      check_explain = true;
+    } else if (strcmp(argv[index], "--независимо") == 0 || strcmp(argv[index], "--independent") == 0) {
+      proof_independent = true;
     } else if (strcmp(argv[index], "--записать") == 0 || strcmp(argv[index], "--record") == 0) {
       index += 1;
       if (index >= argc) {
@@ -16653,6 +16925,12 @@ static int check_command(int argc, char **argv) {
     fputs("flang check --быстро и --proof вместе не имеют смысла: отчёт о доказательствах — это "
           "ответ ядра, а «--быстро» ядро не зовёт. Отчёт без ядра был бы пустым, и его пустота "
           "читалась бы как «доказывать нечего»\n",
+          stderr);
+    return 2;
+  }
+  if (proof_independent && !proof) {
+    fputs("flang check --independent осмыслен только рядом с «--proof»: без отчёта о доказательствах независимой "
+          "проверке нечего повторять\n",
           stderr);
     return 2;
   }

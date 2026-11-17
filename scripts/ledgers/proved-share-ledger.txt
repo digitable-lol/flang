@@ -1644,7 +1644,7 @@ ce0f26e8f64ce11b7f2f8e559d0f090b|11|11|0|0|0|scripts/guards/guards-without-forge
 d29d464d969d58822bc10e6e696017ef|14|14|0|0|0|scripts/flangrc.fscript
 001c0ecd7217d8ae84b4133d3dca9085|4|4|0|0|0|scripts/guards/flangrc-guard.fscript
 6f7dedb574161de9cc3422f9b3033f5e|16|16|0|0|0|scripts/guards/hand-written-lists.fscript
-baa3170dc90958c56352eb9b3f49ab9b|62|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
+baa3170dc90958c56352eb9b3f49ab9b|64|49|10|3|0|scripts/guards/homebrew-formula-guard.fscript
 03f3f6607069aae79dee667bbe870c10|19|18|0|1|0|scripts/guards/input-boundary.fscript
 b00f9a812077e3b8497c15864acff995|11|7|3|0|0|scripts/guards/io-dictionary-copies-guard.fscript
 38cfa9e534117545dbc14c8afb46262b|2|0|2|0|0|scripts/guards/jargon-guard.fscript
@@ -2217,6 +2217,8 @@ c2a0fa1100b1c2fb01bff4fe8e6d1e5a|12|×|×|×|0|scripts/site/inserts.flang
 52acd497efd95f767352600049e427f7|7|×|×|×|0|scripts/site/inserts.fscript
 b71516e7916ff46436b5d912ed69b5da|5|×|×|×|0|scripts/site/library-api.flang
 6bcf580ac885b09d37e7223ffd7255b1|1|×|×|×|0|scripts/site/library-status.fscript
+ecc3e2548ac81fcbf21a8e043be4ddd1|2|×|×|×|0|scripts/site/releases.flang
+97e7dbe04c99b2a074d28026ff009d53|9|×|×|×|0|scripts/release/preflight.fscript
 // ⚑ 17 октября 2026, ветка a/nested-object-and-proof-moves (задачи 4735, 5908):
 // пять честных программ семьи сверщика body-moves и три подделки развёртки;
 // приговор снят двоичным 0.7.28 (`bootstrap/flang check --proof`), подделки

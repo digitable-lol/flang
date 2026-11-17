@@ -1295,6 +1295,7 @@ precondition
 predicate
 preemption
 prefix
+preflight
 prelude
 premise
 premises
@@ -1643,6 +1644,7 @@ splitting
 spoken
 spread
 square
+stability
 stack
 stage
 stages

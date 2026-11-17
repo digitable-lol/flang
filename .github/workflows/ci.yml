@@ -186,8 +186,8 @@ jobs:
   # 31 августа 2026 в дереве нашлось 31 место в 14 файлах, где записанное рукой
   # число разошлось с тем, что лежит рядом: `docs/tree-inventory.md` считала
   # `seed-parses-sources-guard.sh` в 83 строки при 195, оболочку — в 66 файлов
-  # при 71 тогдашних — сегодня их 42;
-  # СНЯТО 2026-11-10 файлов *.sh = 42 (shell twins: flang/concurrency/bench/limit.sh and node-death.sh removed, the plans limit.fscript and node-death.fscript give the same answers on a run)
+  # при 71 тогдашних — сегодня их 43;
+  # СНЯТО 2026-11-17 файлов *.sh = 43 (packaging/prebuilt/publish-tap.sh puts the formula of a published release into the tap)
   # `flang/PLAN.md` — пять вариантов «Поручение» при 22. Каждое из этих чисел
   # было ВЕРНО В ДЕНЬ ЗАПИСИ и солгало назавтра, и сторожа не было ни на одном.
   #

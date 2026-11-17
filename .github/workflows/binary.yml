@@ -2176,6 +2176,17 @@ jobs:
           fi
       - name: Check russian morphology
         run: bootstrap/flang run-script ru-morphology:probe
+      # Проверка рассуждений. Первый набор — план `Check` на подконтрольном
+      # русском: непрочитанная посылка, противоречивые посылки, противоречие
+      # между далёкими предложениями, ошибочная строка словаря, слова вывода,
+      # условные суждения. Второй — план `Argue` на тексте с разметкой: учебный
+      # текст, реферат с заложенными ошибками и отрицательные контроли —
+      # подложная цитата, смешанные кванторы, необъявленное понятие, шаг,
+      # который ядру слишком велик (ADR-0242).
+      - name: Check the argument check in controlled Russian
+        run: bootstrap/flang run-script argument-check:probe
+      - name: Check the reasoning check over a marked-up text
+        run: bootstrap/flang run-script argue:probe
       - name: Check run verdict
         run: bootstrap/flang io flang/proof/probes/run/run.fscript --plan Binary
       - name: Check environment and argument orders

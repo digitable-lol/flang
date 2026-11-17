@@ -2,29 +2,31 @@
 
 # flang
 
-flang is a pure functional language with strict static typing, written in words rather than
-symbols. A function carries its examples and its claims about the result next to its body. The
-compiler checks them before anything runs and prints the checked program into C, C++, Go, Rust,
-Java, JavaScript, TypeScript, Elixir, Python or C#. The compiler is written in flang. Every keyword
-has a Russian and an English spelling; the compiler answers in Russian on either.
+flang is a pure functional language with strict static typing. Its keywords are words (`function`,
+`accepts`, `returns`). A function has its tests and the conditions on its result written next to its
+body. The compiler checks them before anything runs and generates code from the checked program in
+C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python or C#. The compiler is written in
+flang. Every keyword has a Russian and an English spelling; the compiler's messages are in Russian.
 
-"Formally provable" means three things here. `total`: the compiler proves that the function
-terminates on every input, or refuses the file. `ensures`: the proof kernel proves the claim about
-the result for all inputs, or reports it as not proved, and `flang run` then refuses the program.
-`flang check --proof --record <file>` writes the proof out; a separate C program,
-[`checker.c`](flang/proof/checker/checker.c), replays it against the source and names the steps it
-takes on the kernel's word.
+What "formal proof" means here:
 
-The kernel does not search. It applies rules from a closed table —
-[`flang/proof/tables/inference-rules.tsv`](flang/proof/tables/inference-rules.tsv): one row per
-rule, and rows of kind `ban` for what is deliberately not derivable — and the report names the rule
-that carried each claim. What this does not mean:
+- `total` — the compiler proves that the function terminates on every input; if it cannot, the file
+  fails the check.
+- `ensures` — a postcondition, a condition on the result. The compiler proves it for all inputs or
+  reports that there is no proof; `flang run` does not run such a program.
+- `flang check --proof` shows the proof report. A separate C program,
+  [`checker.c`](flang/proof/checker/checker.c), re-checks the proofs and reports how many of them it
+  could not re-check.
+
+The compiler does not search for a proof. It applies inference rules from a fixed table,
+[`flang/proof/tables/inference-rules.tsv`](flang/proof/tables/inference-rules.tsv), and the report
+names the rule for each postcondition. The limits of the method:
 [What is proved and what is not](https://digitable-lol.github.io/flang/en/what-is-proved.html).
 
 ## Install
 
-Prebuilt builds ship with every release from 0.7.29 on: Linux x86_64 and aarch64 (static, any
-distribution), macOS arm64 and x86_64. The package is called **flang-package**; the command it
+Prebuilt builds ship with every release: Linux x86_64 and aarch64 (static, any distribution), macOS
+arm64 and x86_64. The package is called **flang-package**; the command it
 installs is `flang`.
 
 > **Name clash with LLVM Flang.** LLVM's Fortran compiler also installs a command named `flang`
@@ -40,7 +42,7 @@ curl -fsSL https://raw.githubusercontent.com/digitable-lol/flang/main/install.sh
 ```
 
 Picks the build for your system, checks it against the release's `SHA256SUMS` and installs it into
-`~/.local` without `sudo`. Pin a version with `FLANG_VERSION=0.7.29`, choose a place with
+`~/.local` without `sudo`. Pin a version with `FLANG_VERSION=<version>`, choose a place with
 `PREFIX=/opt/flang` (both are environment variables of `sh`).
 
 ### macOS and Linux: Homebrew
@@ -49,7 +51,7 @@ Picks the build for your system, checks it against the release's `SHA256SUMS` an
 brew install digitable-lol/tap/flang-package
 ```
 
-`brew install digitable-lol/tap/flang` keeps working: it is an alias of the same formula.
+`brew install digitable-lol/tap/flang` is an alias of the same formula.
 
 ### Any system with asdf
 
@@ -59,8 +61,8 @@ asdf install flang latest
 asdf set -u flang latest
 ```
 
-The plugin downloads the prebuilt build and checks its checksum. Releases before 0.7.29, or
-`ASDF_FLANG_FROM_SOURCE=1`, build from the C sources instead (needs `cc` and `make`).
+The plugin downloads the prebuilt build and checks its checksum. With `ASDF_FLANG_FROM_SOURCE=1` it
+builds `flang` from the C sources instead (needs `cc` and `make`).
 
 ### Debian, Ubuntu (deb) and Fedora, openSUSE (rpm)
 
@@ -84,21 +86,24 @@ to build it locally, fill it with the release's `SHA256SUMS` (`sh packaging/preb
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap -j4                  # about 6 minutes
+make -C bootstrap -j4                  # a few minutes
 make -C bootstrap install PREFIX=$HOME/.local
 ```
 
-Needs only a C99 compiler and `make`. This install has no `share/flang`, so outside the clone it finds
-neither the standard library nor the runtimes of the target languages; the prebuilt builds have both
-([where flang looks](docs/guide/installed-library.md)).
+Needs only a C99 compiler and `make`. Along with `flang`, the standard library and the run-time
+libraries of the target languages are installed into `share/flang`, so the install works outside the
+clone too ([where flang looks for them](docs/guide/installed-library.md)). The program that re-checks
+proofs independently is not installed this way; the prebuilt builds have it.
 
 ### Windows
 
-Use WSL and the Linux one-liner above. A native Windows build is in the works.
+Use WSL and the Linux one-liner above. There is no native Windows build yet.
 
 `flang --version` prints the version. More: [Installing](https://digitable-lol.github.io/flang/en/install.html).
 
 ## A first program
+
+File `hello.flang`:
 
 ```flang
 module «Hello»
@@ -113,44 +118,74 @@ total function «Twice»
   n plus n
 ```
 
-Saved as **hello.flang**:
-
+```bash
+flang check hello.flang
 ```
-$ flang check hello.flang
+
+```text
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
 hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
-$ flang run hello.flang --function Twice --args '{"n": 21}'
+```
+
+Exit code 0. The first line reads "module «Hello»: 1 function, 1 of them proved to terminate; 0
+types". The second lists the checks that passed — syntax, types, termination, proofs, tests — and
+ends with "no errors".
+
+```bash
+flang run hello.flang --function Twice --args '{"n": 21}'
+```
+
+```text
 доказано: утверждений 1
 42
-$ flang check hello.flang --proof 2>&1 | grep постусловие
-  постусловие «the doubled value is at least the original» функции «Twice» — доказано по объявленным типам аргументов: цель сведена правилом «порядок по построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
 ```
 
-`проверено` reads "checked" and `доказано` reads "proved". The `example` runs on every check.
-`--proof` reports what carries each claim: here the postcondition follows from the declared type
-`nat`, for all inputs. Replace it with a claim the kernel does not prove:
+The first line reads "proved: 1 postcondition". The second is the result. The test (`example`) runs
+on every check. The postcondition here follows from the declared type `nat` and is proved for all
+inputs.
+
+Replace the postcondition with one the compiler does not prove by itself. The whole file
+`hello.flang`:
 
 ```flang
+module «Hello»
+
+total function «Twice»
+  accepts n: nat
+  returns number
   ensures «the result is even» (result modulo 2) equals 0
+  example «twice two»
+    given n equals 2
+    expected 4
+  n plus n
 ```
 
-Saved as **even.flang**, the program passes `flang check` with code 0 and is refused by `flang run`:
+`flang check` accepts this file with code 0, and `flang run` does not run it:
 
+```bash
+flang run hello.flang --function Twice --args '{"n": 21}'
 ```
-$ flang run even.flang --function Twice --args '{"n": 21}' 2>&1 | head -n 1
+
+```text
 не доказано: утверждений 1: доказано 0, сетка 1, на веру 0 — запуск только по явному согласию: --на-веру
-$ flang run even.flang --function Twice --args '{"n": 21}' 2>/dev/null; echo $?
-3
+…
 ```
 
-The line reads "not proved: 1 claim — 0 proved, 1 counted on its examples only; runs only on
-explicit consent". The lines after it name the claim; `--trust` runs the program as it is.
+Exit code 3. The line reads "not proved: 1 postcondition — 0 proved, 1 tested only; runs only on
+explicit consent". The lines after it name the postcondition. The `--trust` flag runs the program
+without the proof. How to write the proof:
+[Your first proof](https://digitable-lol.github.io/flang/en/first-proof.html).
 
-## Printing into a target language
+## Code in a target language
 
+Put the first postcondition back into `hello.flang` and generate C:
+
+```bash
+flang emit hello.flang --target c --out out-c
+grep -A 6 '^fl_status hello_twice' out-c/hello.c
 ```
-$ flang emit hello.flang --target c --out out-c 2>/dev/null
-$ grep -A 6 '^fl_status hello_twice' out-c/hello.c
+
+```text
 fl_status hello_twice(fl_ctx *ctx, fl_value n, fl_value *result,
                       fl_error *error) {
   if (n.tag != FL_NUMBER || n.tag != FL_NUMBER)
@@ -160,20 +195,20 @@ fl_status hello_twice(fl_ctx *ctx, fl_value n, fl_value *result,
 }
 ```
 
-`flang emit` checks the program the way `flang check` does, writes nothing when the check fails,
-and reports on stderr. The output directory holds the module, the runtime of the target, a
-command-line driver and a `Makefile`. A binary installed by `make -C bootstrap install` takes the
-runtime from `--runtime flang/src/emit/c`.
+The function has no check of the postcondition: it is proved. `flang emit` checks the program the
+way `flang check` does and writes nothing when there is an error. The output directory holds the
+module, the run-time library, a command-line program and a `Makefile`.
 
-The binary answers to fifteen commands, the editor language server among them: `check`, `test`,
-`run`, `emit`, `ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`, `new`, `run-script`, `repl` and
-`lsp`. It prints into `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` and `csharp`.
+`flang` has fifteen commands: `check`, `test`, `run`, `emit`, `ast`, `tokens`, `lint`, `facts`, `io`,
+`lock`, `package`, `new`, `run-script`, `repl` and `lsp` (the language server for editors). The
+target languages of `emit` are `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `python` and
+`csharp`.
 
 ## Documentation
 
-- Start: [Your first program](https://digitable-lol.github.io/flang/en/getting-started.html), [Tutorial](https://digitable-lol.github.io/flang/en/tutorial.html), [Which construct to use when](https://digitable-lol.github.io/flang/en/which-construct.html)
+- Start: [Your first program](https://digitable-lol.github.io/flang/en/getting-started.html), [Your first proof](https://digitable-lol.github.io/flang/en/first-proof.html), [Tutorial](https://digitable-lol.github.io/flang/en/tutorial.html), [Which construct to use when](https://digitable-lol.github.io/flang/en/which-construct.html)
 - Language: [Map of the language constructs](https://digitable-lol.github.io/flang/en/language-map.html), [Language reference](https://digitable-lol.github.io/flang/en/language.html), [Standard library reference](https://digitable-lol.github.io/flang/en/stdlib.html), [`docs/flang/SPEC.md`](docs/flang/SPEC.md)
-- Tools: [Command reference](https://digitable-lol.github.io/flang/en/cli.html), [Diagnostics reference](https://digitable-lol.github.io/flang/en/diagnostics.html), [Releases](https://digitable-lol.github.io/flang/en/releases.html)
+- Tools: [Command reference](https://digitable-lol.github.io/flang/en/cli.html), [Error codes](https://digitable-lol.github.io/flang/en/diagnostics.html), [Releases](https://digitable-lol.github.io/flang/en/releases.html)
 - Proofs and programs: [Proofs: why and how](https://digitable-lol.github.io/flang/en/proofs.html), [`docs/examples/`](docs/examples)
 
 ## Contributing
@@ -181,26 +216,22 @@ The binary answers to fifteen commands, the editor language server among them: `
 Work happens in a clone; the only thing to build is the compiler.
 
 ```bash
-make -C bootstrap -j8                    # gives bootstrap/flang
-sh flang/test/обход.sh                   # the checks written in flang
-./bootstrap/flang test flang/stdlib/     # the library's examples
-git config core.hooksPath .githooks      # the pre-push hook: the cheap guards, before CI
+make -C bootstrap -j8                    # builds bootstrap/flang
+sh flang/test/обход.sh                   # the tests written in flang
+./bootstrap/flang test flang/stdlib/     # the standard library's tests
+git config core.hooksPath .githooks      # quick checks before git push
 ```
 
-The walk runs 211 checks written in flang and diffs the result against
-<!-- СНЯТО 2026-10-03 строк flang/test/ledger.txt = 211 -->
-`flang/test/ledger.txt`, one line per check. The hook runs the guards that finish in seconds and
-names what it did not run; the long ones are CI (`.github/workflows/binary.yml`). Work is tracked
-in [`docs/tasks/`](docs/tasks/README.md), one file per open task; a closed task leaves the tree and
-its number stays taken in `docs/tasks/used-numbers.tsv`. The rules of the tree that are not visible
-from the code are in [`AGENTS.md`](.ai/AGENTS.md); how to build, run the checks and send a change is
-[`CONTRIBUTING.md`](CONTRIBUTING.md). Decisions are recorded in [`docs/adr/`](docs/adr).
+Before `git push` the checks that finish in seconds are run; the long ones are run by CI
+(`.github/workflows/binary.yml`). Open tasks are in [`docs/tasks/`](docs/tasks/README.md), one file
+per task. How to build the compiler, run the checks and send a change is in
+[`CONTRIBUTING.md`](CONTRIBUTING.md). The rules of the repository that are not visible from the code
+are in [`AGENTS.md`](.ai/AGENTS.md). Decisions are recorded in [`docs/adr/`](docs/adr).
 
-Prose in this tree is held to the tree by runs, not by memory: a number written by hand carries a
-note saying how it was measured (`scripts/guards/prose-numbers-guard.fscript`), a path in a link must
-exist (`scripts/guards/link-guard.fscript`), and a word of internal jargon on a page for an outside
-reader is refused (`scripts/guards/jargon-guard.fscript`). This page is one of the pages those
-checks read.
+The documentation text is checked automatically. Numbers in the text are compared with the
+repository (`scripts/guards/prose-numbers-guard.fscript`). A path in a link must exist
+(`scripts/guards/link-guard.fscript`). The project's internal words are not allowed on pages for
+readers (`scripts/guards/jargon-guard.fscript`).
 
 ## Built with flang
 
@@ -209,9 +240,8 @@ Four programs outside this repository: [flang-tui](https://github.com/digitable-
 [flang-ribbon](https://github.com/digitable-lol/flang-ribbon) and
 [flang-env](https://github.com/digitable-lol/flang-env).
 
-On `0.x` the JSON shapes and the diagnostic codes are compatibility surfaces; the syntax is not
-frozen. What the prover reaches and where it stops is measured in
-[`docs/ROADMAP.md`](docs/ROADMAP.md).
+In `0.x` versions the JSON formats and the error codes stay compatible; the syntax may change. What
+the compiler proves by itself and where it stops is described in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## License
 

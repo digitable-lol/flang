@@ -41,7 +41,8 @@ compiler pointed at, and the error code (`FLANG_…`) leads to its row in the
 
 Keys:
 
-- Tab and Shift+Tab shift a line or the selected lines by two spaces;
+- Tab inserts two spaces, and with a selection shifts the selected lines; Shift+Tab removes
+  the indent;
 - Enter keeps the indent and adds one after a line that opens a block (`функция`,
   `пример`, `разбор`, `случай`);
 - `<<` becomes `«»` with the cursor inside, `>>` becomes `»`.

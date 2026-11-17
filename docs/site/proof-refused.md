@@ -194,8 +194,9 @@ The test passed; nothing is known about other inputs. A person sees the reason:
   rest. The first price is not negative by its type, the total of the rest by
   the same statement for the tail.
 
-This is induction over the list. Write it as a theorem with the same name as
-the postcondition. After, `total.flang`:
+This is induction over the list; the same example is explained in section 4 of
+the lesson [First proof](first-proof.html). Write it as a theorem with the
+same name as the postcondition. After, `total.flang`:
 
 ```flang insert docs/examples/proofs/total.flang
 модуль «Итог»

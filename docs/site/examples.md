@@ -16,7 +16,7 @@ The number is recounted by one command:
 | [`web/`](docs/examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
 | [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-19 файлов docs/examples/io/*.flang = 10 --> 10 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet, a progress bar on the terminal |
 | [`crypto/`](docs/examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
-| [`dsl/`](docs/examples/dsl) | 2 | free shipping and document access, from text to a typed rule |
+| [`dsl/`](docs/examples/dsl) | 14 | your own small language three ways: discount rules, a calculator, an order state machine, plus the files broken on purpose for the page [Your own language in 30 minutes](dsl.html); two languages of ready-made phrases: shipping and access |
 | [`first-proof/`](docs/examples/first-proof) | 5 | the five steps of the lesson [Your first proof](first-proof.html): a counterexample, a precondition, tested only, a theorem, a rejected theorem |
 | [`library-api/`](docs/examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |
 | [`db/`](docs/examples/db) | <!-- СНЯТО 2026-09-03 файлов docs/examples/db/*.flang = 6 --> 6 | talking to PostgreSQL (SCRAM included), to Redis, and reading an SQLite file |
@@ -58,60 +58,23 @@ refusal code rather than skipped in silence.
 
 ## Build a small DSL
 
-Start with a line someone can read and edit without knowing flang. Write down
-what each word means and which inputs should be rejected. In both examples
-the parser turns text into a value or an explicit error. A separate function
-uses the value to make a decision. The `.dsl` files contain the rules;
-the `.flang` files implement their grammar and behavior.
+The step-by-step recipe is on the page
+[Your own language in 30 minutes](dsl.html): a language of discount rules with a
+proved property, a calculator with its own syntax and errors that name a column,
+an order state machine that checks itself. The files of the recipe live in
+[`docs/examples/dsl/`](docs/examples/dsl).
 
-### Free shipping
-
-[`shipping.dsl`](docs/examples/dsl/shipping.dsl)
-
-```text
-Shipping is free when the order total is at least 50
-Otherwise shipping costs 7
-```
-
-The two lines set the free-shipping threshold and the price below it. An order of 50 ships for 0. An order of 49 ships for 7. Both amounts come from the rule. Try replacing 50 with `many` to see the error.
-[Implementation](docs/examples/dsl/shipping.flang)
-
-```sh
-bootstrap/flang run docs/examples/dsl/shipping.flang --function 'Разобрать доставку' \
-  --args '{"текст правила":"Shipping is free when the order total is at least 50\nOtherwise shipping costs 7"}'
-```
-
-The parser returns `{"вариант":"Правило","порог":50,"обычная цена":7}`.
-
-### Access to a document
-
-[`access.dsl`](docs/examples/dsl/access.dsl)
-
-```text
-Editors can publish documents
-```
-
-`Editors` and `Readers` name the supported roles. `publish documents` and `read documents` name the supported actions. This rule grants editors permission to publish. Reading requires its own rule.
-[Implementation](docs/examples/dsl/access.flang)
-
-```sh
-bootstrap/flang run docs/examples/dsl/access.flang --function 'Разобрать доступ' \
-  --args '{"текст правила":"Editors can publish documents"}'
-```
-
-The result contains `{"вариант":"Правило","право":{"роль":"editor","действие":"publish"}}`.
-
-Run both sets of examples from the repository root:
+The same directory holds two languages of ready-made phrases:
+[free shipping](docs/examples/dsl/shipping.flang) with the rule
+[`shipping.dsl`](docs/examples/dsl/shipping.dsl) and
+[access to a document](docs/examples/dsl/access.flang) with the rule
+[`access.dsl`](docs/examples/dsl/access.dsl). Their parser matches a line against
+the prepared phrases and returns a rule or an error.
 
 ```sh
 bootstrap/flang test docs/examples/dsl/shipping.flang
 bootstrap/flang test docs/examples/dsl/access.flang
 ```
-
-To extend a DSL, first add an example of the new sentence and one of a similar
-sentence you still want to reject. Update the parser and check the resulting
-value. Change the decision function when the new sentence adds a new kind of
-decision.
 
 A larger example is [parsing a Russian utterance against a concept graph](russian-syntax.html).
 There a line names a grammar concept, and the program finds it and checks agreement

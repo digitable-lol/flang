@@ -65,6 +65,7 @@ possible inputs, not only for your examples. In the compiler output it is called
 | read a file | `план` and the command «Прочитать файл» | 26 |
 | run an external program | `план` and the command «Запустить процесс» | 27 |
 | make an HTTP request | `план` and the command «Запросить» | 28 |
+| build your own small language (a DSL) | a type with variants and an interpreter function; for your own syntax, the module `«Parsing»` | 29 |
 
 ## The main rule: branch on the kind of a value with `разбор`
 
@@ -529,7 +530,8 @@ $ echo $?
 
 ## Examples
 
-There are 28 examples. Each is a file in `docs/examples/guide/`. The commands
+There are 29 examples. The first 28 are files in `docs/examples/guide/`, the
+last one is in `docs/examples/dsl/`. The commands
 run from the root of the repository and the compiler output is verbatim; an
 ellipsis marks the lines of the `--proof` report that are left out.
 
@@ -1938,6 +1940,25 @@ $ flang io docs/examples/guide/ask-network.flang --plan 'Спросить слу
 $ echo $?
 1
 ```
+
+### 29. I want my own small language (a DSL)
+
+What to write: a type with variants is the grammar of the language, functions whose names are phrases are its words, a function with `разбор` is the interpreter. A promise of the interpreter (`обеспечивает`) is proved once and holds for every program in your language. If the language has its own syntax and programs arrive as a string, the library module `«Parsing»` parses the text.
+
+File: `docs/examples/dsl/discount-rules.flang`
+
+```flang fragment insert docs/examples/dsl/discount-rules.flang «Осенняя акция»
+тотальная функция «Осенняя акция»
+  возвращает «Правило»
+  «лучшее из» от («при заказе от» от 5000 и («процентов» от 10)) и («рублей» от 300)
+```
+
+```text insert output: test docs/examples/dsl/discount-rules.flang
+$ flang test docs/examples/dsl/discount-rules.flang
+docs/examples/dsl/discount-rules.flang: примеров 3, прошло 3, не прошло 0
+```
+
+All three kinds of such languages step by step, with errors that name a column and with the traps, are on the page [Your own language in 30 minutes](dsl.html).
 
 ## Next
 

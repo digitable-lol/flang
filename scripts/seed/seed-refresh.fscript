@@ -238,7 +238,44 @@
   [(«Environment» от "temporary" и "FLANG_TMP"), («Run from» от "tree" и («Root») и "pwd" и ["-P"]),
     («Read from» от "fingerprint" и («Root») и («Fingerprint»)), («Read from» от "reprint" и («Root») и («Reprint»)),
     («Run» от "hasher" и "sh" и ["-c", "command -v sha256sum || command -v shasum"]),
-    («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"])]
+    («Run» от "cores" и "getconf" и ["_NPROCESSORS_ONLN"]),
+    («Run from» от "branch seed" и («Root») и "sh" и ["-c", («Branch seed command»)])]
+
+тотальная функция «Branch seed command»
+  возвращает строка
+  соединить ["base=$(git merge-base origin/dev HEAD 2>/dev/null) || exit 0; ",
+    "git diff --name-only \"$base\" -- bootstrap/"] по ""
+
+тотальная функция «Reseeded by the branch»
+  принимает answers: список «Answer»
+  возвращает список строки
+  «Seed copies among» от («Output of» от "branch seed" и answers)
+
+тотальная функция «Seed copies among»
+  принимает changed: строка
+  возвращает список строки
+  пример «A branch that copied the runtime into the seed has a trace»
+    дано changed равно "bootstrap/flang_cli.c\nbootstrap/Makefile\n"
+    ожидается ["bootstrap/flang_cli.c"]
+  пример «A branch that left the seed alone has no trace»
+    дано changed равно ""
+    ожидается пустой список
+  пусть seeds равно (отобразить («Runtime files») как name → «Seed path» от name)
+  отфильтровать seeds где path → «Is among» от («Lines» от changed) и path
+
+тотальная функция «Is among»
+  принимает lines: список строки, line: строка
+  возвращает признак
+  пример «A line among the lines is found»
+    дано lines равно ["a", "b"]
+    дано line равно "b"
+    ожидается да
+  не (пусто (отфильтровать lines где other → other равен line))
+
+тотальная функция «Fast path traced»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Runtime caught up» от answers) и притом (не (пусто («Reseeded by the branch» от answers)))
 
 тотальная функция «Hashing»
   принимает answers: список «Answer»
@@ -387,12 +424,13 @@
     "тронуты только копируемые файлы — быстрый пересев «семя:освежить» достаточен."]
 
 тотальная функция «Fast path misused»
-  принимает troubles: список строки
+  принимает troubles: список строки, copied: список строки
   возвращает список строки
   «Gathered words» от [
     ["БЫСТРЫЙ ПЕРЕСЕВ ПРИМЕНЁН ТАМ, ГДЕ НЕЛЬЗЯ.", "",
-    "Рантайм-часть семени догнала источник (как после «семя:освежить»),",
-    "но печатаемая часть разошлась с flang/self или пределами:"], troubles,
+    "Ветка переписала копируемые файлы семени (как «семя:освежить»):"],
+    (отобразить copied как path → соединить ["  • ", path] по ""),
+    ["", "а печатаемая часть разошлась с flang/self или пределами:"], troubles,
     ["", "compiler_flang.c печатается из flang/self/**, и быстрый путь его не",
     "трогает. Раз замыкание другое — печатаемая часть устарела, и семя",
     "собрано не из того, чем оно объявлено. Нужна полная перепечатка:", "  sh scripts/bootstrap-reprint.sh"]]
@@ -401,7 +439,7 @@
   принимает troubles: список строки
   возвращает список строки
   «Gathered words» от [["flang/self или пределы ушли вперёд семени — обычное отставание середины работы."], troubles,
-    ["", "Это НЕ беда: рантайм тоже отстаёт, семя честно старое. Догонится полной",
+    ["", "Это НЕ беда: копируемых файлов семени ветка не трогала, семя честно старое. Догонится полной",
     "перепечаткой перед выпуском (sh scripts/bootstrap-reprint.sh); быстрый пересев здесь",
     "не годится — он трогает только копируемые файлы, а разошлось замыкание."]]
 
@@ -410,7 +448,10 @@
   возвращает «Продолжение»
   «Chosen» от [(«When» от («Closure is fresh» от answers) и
       (вариант «Конец работы» с значение равным (соединить («Fast path holds») по "\n"))),
-    («When» от («Runtime caught up» от answers) и (вариант «Провал» с код равным "FLANG_SEED_FAST_PATH_MISUSED" и сообщение равным (соединить («Fast path misused» от («Closure troubles» от answers)) по "\n")))] и (вариант «Конец работы» с значение равным (соединить («Ordinary lag» от («Closure troubles» от answers)) по "\n"))
+    («When» от («Fast path traced» от answers) и (вариант «Провал» с код равным "FLANG_SEED_FAST_PATH_MISUSED" и
+        сообщение равным (соединить («Fast path misused» от («Closure troubles» от answers) и
+        («Reseeded by the branch» от answers)) по "\n")))] и (вариант «Конец работы» с
+        значение равным (соединить («Ordinary lag» от («Closure troubles» от answers)) по "\n"))
 
 тотальная функция «Opening lines»
   возвращает список строки

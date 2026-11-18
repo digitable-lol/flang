@@ -64,6 +64,34 @@ total function «Repeat symbol»
     then ""
     else join symbol with («Repeat symbol» of symbol and (count minus 1))
 
+total function «Digit value»
+  accepts symbol: string
+  returns number
+  example «Seven»
+    given symbol equals "7"
+    expected 7
+  match symbol
+    case "1"
+      then 1
+    case "2"
+      then 2
+    case "3"
+      then 3
+    case "4"
+      then 4
+    case "5"
+      then 5
+    case "6"
+      then 6
+    case "7"
+      then 7
+    case "8"
+      then 8
+    case "9"
+      then 9
+    case any
+      then 0
+
 total function «Decode»
   accepts text: string
   returns string
@@ -78,7 +106,7 @@ total function «Decode»
     expected ""
   let outcome equals fold (decompose text into characters) starting with (record «Unpacking» with «done» equals "" and «count» equals 0) as acc and symbol
       if "0123456789" contains symbol
-        then record «Unpacking» with «done» equals acc.«done» and «count» equals ((acc.«count» times 10) plus (to number symbol))
+        then record «Unpacking» with «done» equals acc.«done» and «count» equals ((acc.«count» times 10) plus («Digit value» of symbol))
         else record «Unpacking» with «done» equals (join acc.«done» with («Repeat symbol» of symbol and acc.«count»)) and «count» equals 0
   outcome.«done»
 

@@ -75,7 +75,9 @@ total function «Replace»
     given needle equals " "
     given replacement equals ""
     expected "абв"
-  «Join strings» of (split text by needle) and replacement
+  if needle equals ""
+    then text
+    else «Join strings» of (split text by needle) and replacement
 
 total function «Position of substring»
   accepts text: string, part: string
@@ -108,7 +110,10 @@ total function «Lowercase letter»
   let position equals «Position of substring» of "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and letter
   if position equals 0
     then letter
-    else substring "abcdefghijklmnopqrstuvwxyz" with position by position
+    else
+      if ((position modulo 1) equals 0) and also ((position is at least 1) and also (position is at most 26))
+        then substring "abcdefghijklmnopqrstuvwxyz" with position by position
+        else letter
 
 total function «To lower case»
   accepts text: string

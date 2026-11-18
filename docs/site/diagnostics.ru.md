@@ -671,6 +671,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_INTERNAL` | сломался сам компилятор | сообщить: это ошибка инструмента, а не вашей программы |
 | `FLANG_SELF_REPL_UNSUPPORTED` | оболочка не принимает эту конструкцию, например `использует` | положить код в файл и запустить `flang check` |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` не получил значения для вызова | добавить значение в факты |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `emit --freestanding`: функцию нельзя перевести в C без libc — в ней строки, списки, дробные числа или рекурсия | переписать функцию над словами `u8`…`u64`, записями и типами с вариантами; подробно — [C без libc](c-without-libc.html) |
 
 ```text insert output: check --неткого
 $ flang check --неткого
@@ -733,6 +734,7 @@ $ echo $?
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | пример «{example}» функции «{function}»: значение не совпало с ожидаемым: ожидалось {wanted}, получено {got} |
 | `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FREESTANDING_UNSUPPORTED` | `c-without-libc.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
 | `FLANG_FUNCTOR_SQUARE` | `functor.flang` | — |

@@ -124,13 +124,13 @@ JavaScript стало 55, строк 29 733; в трёх каталогах о
 
 Эта опись считает ОДИН язык. Остальные шестнадцать — оболочка, C, C++, Python,
 HTML, CSS, awk, Erlang, Java, C#, Elixir, Go, Rust, Lua, vimscript, Ruby —
-считает [`tree-inventory.md`](tree-inventory.md) (10 ноября 2026: 229 файлов вне flang,
-<!-- СНЯТО 2026-11-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 229 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten) -->
+считает [`tree-inventory.md`](tree-inventory.md) (10 ноября 2026: 244 файлов вне flang,
+<!-- СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 244 (the libc-free C generator flang/self/c-without-libc.flang and its probe) -->
 долг вне JavaScript — **46 файлов, 4 442 строки при потолке 63**: храповик
 зелён, запас 17 файлов, разбор прежней красноты — задачи 4838 и 7405). Там же названы 569 строк
 JavaScript, лежащих ВНУТРИ файлов `.html`: счёт по именам файлов их не видит, и
-23 922 строки этой описи — нижняя оценка.
-<!-- СНЯТО 2026-11-17 строк-в *.js,*.mjs = 23922 (the first proof page in the site menu) -->
+23 923 строки этой описи — нижняя оценка.
+<!-- СНЯТО 2026-11-17 строк-в *.js,*.mjs = 23923 (the libc-free C generator flang/self/c-without-libc.flang and its probe) -->
 (29 августа здесь стояло 25 527: за два дня прибавилось 2 313 строк. Ещё 64
 строки прибавились 2 сентября: `scripts/latin-collision-guard.mjs` сравнивает
 теперь ПРОСЬБЫ печати, а не объявленные имена, и довод к этому записан там же.)

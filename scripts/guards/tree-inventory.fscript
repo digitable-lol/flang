@@ -194,6 +194,9 @@
   пример «Сторож на оболочке доводов не имеет»
     дано путь равно "scripts/targets/target-collisions.sh"
     ожидается []
+  пример «Проба кода без libc»
+    дано путь равно "flang/proof/probes/c-without-libc/drivers/caller.c"
+    ожидается ["проба C без libc: сгенерированный C и чужая программа на C, которая его вызывает"]
   пусть раскрутка равно ["scripts/bootstrap-reprint.sh", "scripts/bootstrap-c.sh",
     "scripts/seed/new-binary-acceptance.sh", "scripts/seed/build-ledger-binary.sh"]
   пусть сверка равно ["scripts/seed/binary-origin.sh", "scripts/guards/overlong-string-guard.sh"]
@@ -207,9 +210,11 @@
   пусть хозяин равно "чужой хозяин: этим примером и показывают границу с чужим кодом"
   пусть установщик равно "чужая среда: установщик зовёт эти файлы до того, как flang в системе есть"
   пусть разметка равно "разметка и оформление: цели HTML у языка нет и не заявлено"
+  пусть безлибц равно "проба C без libc: сгенерированный C и чужая программа на C, которая его вызывает"
   «Applying» от [(«When» от (путь начинается с "flang/src/emit/") и рантайм),
     («When» от (путь начинается с "flang/concurrency/bin/") и узел),
     («When» от (путь начинается с "flang/test/oblast/") и проба),
+    («When» от (путь начинается с "flang/proof/probes/c-without-libc/") и безлибц),
     («When» от (путь равен "flang/concurrency/bench/sizes.c") и размеры),
     («When» от (путь равен "docs/examples/host-boundary/host.c") и хозяин),
     («When» от («Замеряемый материал» от путь) и "замеряемый материал: это то, с чем сравнивают, а не оснастка"),

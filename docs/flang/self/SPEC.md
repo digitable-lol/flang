@@ -12,8 +12,8 @@
 
 ## Состав каталога
 
-<!-- СНЯТО 2026-11-13 файлов flang/self/*.flang = 68 (print batch 13: flang/self/call-words.flang of the console call) --> 68 файлов `.flang`,
-<!-- СНЯТО 2026-11-14 строк-в flang/self/*.flang = 151152 (print batch 13 with typing holes 30-32: words inside lists and records) --> 151 152 строки
+<!-- СНЯТО 2026-11-17 файлов flang/self/*.flang = 69 (the libc-free C generator flang/self/c-without-libc.flang and its probe) --> 69 файлов `.flang`,
+<!-- СНЯТО 2026-11-17 строк-в flang/self/*.flang = 153412 (the libc-free C generator flang/self/c-without-libc.flang and its probe) --> 153 412 строк
 Имя модуля — первая строка файла; здесь оно повторено, чтобы читать
 `использует «…»` в других файлах без поиска.
 

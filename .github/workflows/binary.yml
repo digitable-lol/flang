@@ -432,9 +432,9 @@ jobs:
       # оболочке или на Python останавливает работу в тот же день.
       #
       # Замер на этом дереве: 17,7 с и 471 МБ, двоичному хватает `git` и `wc`.
-      # Предел шагов поднят с умолчания (10 млн): опись обходит 229 файлов и
+      # Предел шагов поднят с умолчания (10 млн): опись обходит 244 файла и
       # семнадцать языков, и в умолчание не укладывается.
-      # СНЯТО 2026-11-10 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 229 (task 0049: JavaScript tooling removed, the shell stand assembly rewritten)
+      # СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 244 (the libc-free C generator flang/self/c-without-libc.flang and its probe)
       #
       # СКОЛЬКО ИЗ ЭТИХ ПЯТИДЕСЯТИ МИЛЛИОНОВ УХОДИТ, замер 29 августа 2026.
       # Меряно перебором самого предела: при 10 500 000 опись умирает
@@ -703,10 +703,10 @@ jobs:
   #
   # Шаги «Run kernel examples» и «Run stdlib examples» выше зовут `flang test`
   # на двух
-  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 68
-  # файлов и 6752 примеров, объявленных внутри функций.
-  # СНЯТО 2026-11-13 файлов flang/self/*.flang = 68 (print batch 13: flang/self/call-words.flang of the console call)
-  # СНЯТО 2026-11-14 примеров-в flang/self/*.flang = 6752 (print batch 13 with typing holes 30-32: words inside lists and records)
+  # каталогах, и `flang/self/` среди них нет. Каталог при этом не пустой: 69
+  # файлов и 6800 примеров, объявленных внутри функций.
+  # СНЯТО 2026-11-17 файлов flang/self/*.flang = 69 (the libc-free C generator flang/self/c-without-libc.flang and its probe)
+  # СНЯТО 2026-11-17 примеров-в flang/self/*.flang = 6800 (the libc-free C generator flang/self/c-without-libc.flang and its probe)
   #
   # Единственная работа, которая до них добралась бы, — `korpus` ниже
   # (`flang test . --ledger` внутри `обход-примеров.sh`). Она закрыта условием
@@ -2199,6 +2199,19 @@ jobs:
       # сколько целей РЕАЛЬНО собрано и запущено, — число стоит в ИТОГЕ.
       - name: Check the exact integer adds beyond 2^53 in every print target
         run: cd flang/proof/probes/exact-integer-in-targets && ../../../../bootstrap/flang io run.fscript --timeout 180000
+        env:
+          LC_ALL: C.UTF-8
+
+      # C без libc (--freestanding): сгенерированный код собирается для x86_64 и
+      # riscv64 с -ffreestanding -nostdlib, и `nm -u` обязан быть пуст — иначе
+      # красно. Заодно: чужая программа без libc линкуется и запускается, а
+      # 1000 входов на функцию дают те же ответы, что обычный сгенерированный C.
+      # Пока собранный компилятор ключа не знает, шаг `fresh` печатает «skip».
+      - name: Check the C without libc pulls in no external symbol
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-riscv64-linux-gnu
+          make -C flang/proof/probes/c-without-libc check REQUIRE_RISCV=1
         env:
           LC_ALL: C.UTF-8
 

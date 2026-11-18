@@ -2372,3 +2372,6 @@ f4750d1e79073b75cc2da61c2447ba51|1|1|0|0|1|docs/examples/first-proof/step2/chang
 5468a68fa2b97ebee90c17fda61504c5|1|0|1|0|1|docs/examples/first-proof/step3/total.flang
 2f99676e891392ef905075df96009e46|1|1|0|0|1|docs/examples/first-proof/step4/total.flang
 7b0890c6dcb3313072956eb0789ce50d|1|×|×|×|0|docs/examples/first-proof/step5/total.flang
+24a265f9c9624e317dd93819efe675e9|2|×|×|×|0|flang/proof/probes/c-without-libc/programs/header.flang
+9ba8cf97681c423de2e9914a4ea558d1|3|×|×|×|1|flang/proof/probes/c-without-libc/programs/index.flang
+b575cdddeb9c9fbac3f15431d9e33176|0|×|×|×|1|flang/proof/probes/c-without-libc/programs/words.flang

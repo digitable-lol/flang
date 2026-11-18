@@ -229,13 +229,12 @@ same name as the postcondition. After, `total.flang`:
 ```
 
 ```bash
-flang check total.flang --proof; echo "код $?"
+flang check total.flang --proof
 ```
 
 ```
 постусловие «итог не отрицателен» функции «Итог» — доказано индукцией по
 «список»: база 1 случай, шаг при допущении на частях (1 случай) …
-код 0
 ```
 
 `по предположению` (by assumption) means «follows from what is already known»:
@@ -286,13 +285,12 @@ A quantity of goods is an integer and not negative. Say so with the type
 ```
 
 ```bash
-flang check remainder.flang --proof; echo "код $?"
+flang check remainder.flang --proof
 ```
 
 ```
 постусловие «остаток не отрицателен» функции «Остаток» — доказано по
 объявленным типам аргументов …
-код 0
 ```
 
 The exact types: `неотрицательное`, `целое`, `точное целое` (no upper bound),
@@ -368,7 +366,7 @@ property). After, `monotone.flang`:
 ```
 
 ```bash
-flang check monotone.flang --proof; echo "код $?"
+flang check monotone.flang --proof
 ```
 
 ```
@@ -376,7 +374,6 @@ flang check monotone.flang --proof; echo "код $?"
 аргументов: цель сведена правилом «линейная арифметика» …
 утверждение «дольше не дешевле» — доказано: терм принят ядром, 1 шаг …
 основания: постусловие «развёрнуто» функции «Тариф» …
-код 0
 ```
 
 The constants `«Один»` and `«Два»` are functions because `точное целое` does
@@ -470,13 +467,12 @@ A theorem is tied to its postcondition by name. After, `fine.flang`:
 ```
 
 ```bash
-flang check fine.flang --proof; echo "код $?"
+flang check fine.flang --proof
 ```
 
 ```
 постусловие «штраф неотрицателен» функции «Штраф» — доказано индукцией по
 «Светофор»: база 2 случая …
-код 0
 ```
 
 Codes that are fixed in the theorem itself:

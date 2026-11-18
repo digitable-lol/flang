@@ -268,7 +268,7 @@ Declare a structure, and its laws become statements about all values. File
 ```
 
 ```bash
-flang check maybe-monad.flang --proof; echo "код $?"
+flang check maybe-monad.flang --proof
 ```
 
 ```
@@ -276,7 +276,6 @@ flang check maybe-monad.flang --proof; echo "код $?"
 закон «Возможно — правая единица» — доказано индукцией по «Возможно» …
 закон «Возможно — ассоциативность связывания» — доказано индукцией по «Возможно» …
 законов утверждениями 3: доказано ядром 3, не доказано 0
-код 0
 ```
 
 All three monad laws are proved. For a `моноид` associativity and both

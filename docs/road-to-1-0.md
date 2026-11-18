@@ -112,7 +112,7 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 >
 > **Как проверяется.** `bootstrap/flang run-script lean-model:blocks` печатает число блоков вне модели.
 > Порог: 0. Сейчас 93, и рост выше 93 делает CI красным.
-> Команде нужны Lean версии из `flang/proof/lean/lean-toolchain` и `make -C flang/proof/checker second`.
+> Команде нужны Lean 4.34.0 (версия из `flang/proof/lean/lean-toolchain`) и `make -C flang/proof/checker second`.
 
 ### Подробности для разработчиков языка
 
@@ -437,7 +437,8 @@ HOME, повторяет сборку без сети и без исходник
 >
 > **Как проверяется.** `bootstrap/flang run-script translation:validate`, в CI — работа `translation-validation`.
 > Порог: на всех примерах каждая исполняемая эталоном функция доказана, «на свидетелях» — 0.
-> Команде нужен Lean версии из `flang/proof/lean/lean-toolchain`; с другой версией она отвечает «не собраны: validator».
+> Команде нужны Lean 4.34.0 (версия из `flang/proof/lean/lean-toolchain`) и собранные модули второй программы проверки:
+> `make -C flang/proof/checker second`. С другой версией Lean она отвечает «не собраны: validator».
 
 ### Подробности для разработчиков языка
 

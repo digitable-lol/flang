@@ -1,0 +1,6 @@
+program	surface	code	word
+nullary-call.flang	check	0	замечаний нет
+closed-expression.flang	check	0	замечаний нет
+wrong-expected.flang	check	1	ожидалось 11, получено 10
+free-variable.flang	check	1	значение аргумента «б» не вычислено: имя «а» не связано
+unfinished-call.flang	check	1	значение аргумента «а» не вычислено

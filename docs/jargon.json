@@ -283,12 +283,12 @@
   ],
   "поверхности": [
     {
-      "маска": "docs/site/tutorial.ru.md",
+      "маска": "docs/site/tour-*.ru.md",
       "вид": "посетителю учебная",
       "зачем": "учебная страница: кроме слов и шаблонов, каждый блок кода обязан быть помечен языком"
     },
     {
-      "маска": "docs/site/tutorial.md",
+      "маска": "docs/site/tour-*.md",
       "вид": "посетителю учебная английская",
       "зачем": "английская пара учебной страницы"
     },
@@ -369,8 +369,8 @@
     },
     {
       "маска": "docs/tutor/*.lesson",
-      "вид": "посетителю",
-      "зачем": "уроки проводника flangtutor: их читает человек, открывший язык впервые, и читает раньше всего остального"
+      "вид": "посетителю смешанная",
+      "зачем": "уроки проводника flangtutor: их читает человек, открывший язык впервые, и читает раньше всего остального; в одном файле урок по-русски и по-английски, поэтому английские имена понятий здесь не находка"
     },
     {
       "маска": "docs/tutor/*.md",
@@ -580,7 +580,7 @@
 
     "docs/guide/emit-walkthrough.ru.md": 19,
 
-    "docs/guide/how-to-write-flang.ru.md": 5,
+    "docs/guide/how-to-write-flang.ru.md": 1,
 
     "docs/guide/limits.md": 1,
 
@@ -600,9 +600,9 @@
 
     "docs/guide/single-source.ru.md": 1,
 
-    "docs/guide/surface-sugar.ru.md": 1,
+    "docs/guide/surface-sugar.ru.md": 0,
 
-    "docs/guide/totality.ru.md": 8,
+    "docs/guide/totality.ru.md": 2,
 
     "docs/guide/typescript-target.ru.md": 11,
 
@@ -724,10 +724,6 @@
 
     "docs/site/troubleshooting.ru.md": 4,
 
-    "docs/site/tutorial.md": 30,
-
-    "docs/site/tutorial.ru.md": 42,
-
     "docs/site/verdict-cache.ru.md": 0,
 
     "docs/site/wal.md": 1,
@@ -742,37 +738,37 @@
 
     "docs/site/what-the-kernel-accepts.ru.md": 1,
 
-    "docs/site/which-construct.md": 9,
+    "docs/site/which-construct.md": 8,
 
-    "docs/site/which-construct.ru.md": 40,
+    "docs/site/which-construct.ru.md": 16,
 
     "docs/surfaces.md": 32,
 
-    "docs/tutor/01-function.lesson": 3,
+    "docs/tutor/01-function.lesson": 0,
 
-    "docs/tutor/02-two-functions.lesson": 3,
+    "docs/tutor/02-two-functions.lesson": 0,
 
-    "docs/tutor/03-example.lesson": 3,
+    "docs/tutor/03-example.lesson": 0,
 
-    "docs/tutor/04-fold.lesson": 2,
+    "docs/tutor/04-fold.lesson": 0,
 
-    "docs/tutor/05-list-case.lesson": 2,
+    "docs/tutor/05-list-case.lesson": 0,
 
-    "docs/tutor/06-type.lesson": 2,
+    "docs/tutor/06-type.lesson": 0,
 
-    "docs/tutor/07-record.lesson": 2,
+    "docs/tutor/07-record.lesson": 0,
 
-    "docs/tutor/08-string.lesson": 2,
+    "docs/tutor/08-string.lesson": 0,
 
-    "docs/tutor/09-promise.lesson": 4,
+    "docs/tutor/09-promise.lesson": 1,
 
-    "docs/tutor/10-require.lesson": 7,
+    "docs/tutor/10-require.lesson": 0,
 
-    "docs/tutor/11-theorem.lesson": 2,
+    "docs/tutor/11-theorem.lesson": 0,
 
-    "docs/tutor/12-run-emit.lesson": 13,
+    "docs/tutor/12-run-emit.lesson": 0,
 
-    "docs/tutor/README.md": 29,
+    "docs/tutor/README.md": 2,
 
     "flang/src/emit/c/flang_repl.c": 39,
 

@@ -47,7 +47,7 @@ shows what came out:
     flang check файл.flang --proof
 
 Each postcondition gets one of three answers in the report. "Доказано"
-(proved) — true for any input. "Сетка N" (grid of N) — the report's name for
+(proved) — true for any input. `Сетка N` (grid of N) — the report's name for
 "checked on N tests only", there is no proof. "Объявлено, не доказано" (stated,
 not proved) — neither a proof nor tests; such a condition is checked on every
 call.

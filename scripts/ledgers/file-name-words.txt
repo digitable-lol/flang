@@ -271,6 +271,7 @@ checksum
 cherry
 child
 choice
+chosen
 chunks
 ci
 cident
@@ -415,6 +416,7 @@ declarations
 declared
 decoder
 decomposition
+decoy
 decrease
 decreasing
 default
@@ -1907,6 +1909,7 @@ until
 untouched
 unused
 unverifiable
+unverified
 unwatched
 unwritable
 unwritten

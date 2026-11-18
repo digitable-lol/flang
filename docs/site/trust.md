@@ -354,12 +354,12 @@ need them. The last three need Lean 4.
 
 | Number on the page | Command |
 | --- | --- |
-| about 11 thousand lines of kernel | `bootstrap/flang run-script trust:ceiling` |
-| 93 kinds of steps, a lemma for each | `bootstrap/flang run-script lean-rules:check` |
-| 833 corrupted records, 0 accepted | `bootstrap/flang run-script checker:check` |
-| 45 paths of 52 | `bootstrap/flang run-script lean-soundness:check` |
-| 33, 18 and 9 tasks of 60 | `bootstrap/flang run-script lean-parity:probe` |
-| 30 of 55 | `flang check --proof` on every file of the set `flang/proof/parity/programs` |
+| about 11 thousand lines of kernel | `flang run-script trust:ceiling` |
+| 93 kinds of steps, a lemma for each | `flang run-script lean-rules:check` |
+| 833 corrupted records, 0 accepted | `flang run-script checker:check` |
+| 45 paths of 52 | `flang run-script lean-soundness:check` |
+| 33, 18 and 9 tasks of 60 | `flang run-script lean-parity:probe` |
+| 30 of 55 | `flang check --proof` on every file of the set `parity/programs` in the proof directory |
 
 ## Next
 

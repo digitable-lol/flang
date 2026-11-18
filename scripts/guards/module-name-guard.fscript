@@ -166,7 +166,7 @@
 
 тотальная функция «Долг»
   возвращает список строки
-  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 88
+  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 93
   ["docs/editors/vim/checks/probe-error.flang",
    "docs/editors/vim/checks/probe-transition.flang",
    "docs/examples/behavior/discount.flang",
@@ -175,6 +175,11 @@
    "docs/examples/behavior/report-access-refactored.flang",
    "docs/examples/dsl/access.flang",
    "docs/examples/dsl/shipping.flang",
+   "docs/examples/first-proof/step1/change.flang",
+   "docs/examples/first-proof/step2/change.flang",
+   "docs/examples/first-proof/step3/total.flang",
+   "docs/examples/first-proof/step4/total.flang",
+   "docs/examples/first-proof/step5/total.flang",
    "docs/examples/io/progress-bar-on-screen.flang",
    "docs/examples/pythagoras/euclid-formula.flang",
    "docs/examples/pythagoras/hypotenuse-square.flang",

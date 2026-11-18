@@ -2401,6 +2401,10 @@ jobs:
             echo "::warning::двоичный из кеша не запускается — собираю заново"
             make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
           fi
+      # bad-octet судит девять целей; Elixir на образе работника нет, а
+      # пропуск цели сторож честно считает отказом (код 2).
+      - name: Install Elixir
+        run: sudo apt-get update && sudo apt-get install -y elixir
       - name: Guards nobody called
         run: >-
           bootstrap/flang io scripts/guards/guard-runner.fscript --plan Run --timeout 900000 --max-orders 1000 --

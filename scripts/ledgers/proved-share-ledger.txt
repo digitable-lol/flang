@@ -930,6 +930,7 @@ f03c14013d48e773dc5f4d5f3d563e8c|1|1|0|0|0|docs/examples/rosetta/primes-by-trial
 0f0b8492e84433798a6f080fcc72751d|9|6|3|0|0|docs/examples/service-on-processes/core.flang
 0f0b8492e84433798a6f080fcc72751d|9|6|3|0|0|docs/examples/service-on-processes/core.flang
 0f0b8492e84433798a6f080fcc72751d|9|6|3|0|0|docs/examples/service-on-processes/core.flang
+affbfd2fd4f96daf809844760c7d2042|1|1|0|0|0|docs/examples/tour/compare/delivery-cost.flang
 0ab68e16ab4ea83299f482cbd20a4d8e|3|1|1|1|1|docs/examples/tutorial.flang
 e83765edf4aae6d265a79c8db4bad9e7|17|7|7|3|0|docs/examples/wal/write-ahead-log.flang
 e83765edf4aae6d265a79c8db4bad9e7|17|7|7|3|0|docs/examples/wal/write-ahead-log.flang

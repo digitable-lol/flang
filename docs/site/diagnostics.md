@@ -828,7 +828,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_NOT_DISTRIBUTIVE` | `distributive.flang` | — |
 | `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |
 | `FLANG_NOT_MONOTONE` | `monotone.flang` | — |
-| `FLANG_NOT_TOTAL` | `totality.flang` | total function «{function}» calls an unknown function «{callee}»: termination cannot be proved · total function «{function}»: the recursive call «{callee}» does not decrease — argument {position} ({argument}) increases parameter «{parameter}». Pass a part of the argument: the tail of a list from the pattern «голова и хвост», a variant field from a pattern, a record field or an element of a collection |
+| `FLANG_NOT_TOTAL` | `totality.flang`, `types.flang` | total function «{function}» calls an unknown function «{callee}»: termination cannot be proved · total function «{function}»: the recursive call «{callee}» does not decrease — argument {position} ({argument}) increases parameter «{parameter}». Pass a part of the argument: the tail of a list from the pattern «голова и хвост», a variant field from a pattern, a record field or an element of a collection |
 | `FLANG_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |

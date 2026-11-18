@@ -818,7 +818,7 @@ $ echo $?
 | `FLANG_NOT_DISTRIBUTIVE` | `distributive.flang` | — |
 | `FLANG_NOT_IDEMPOTENT` | `idempotent.flang` | — |
 | `FLANG_NOT_MONOTONE` | `monotone.flang` | — |
-| `FLANG_NOT_TOTAL` | `totality.flang` | тотальная функция «{function}» вызывает неизвестную функцию «{callee}»: завершение доказать нельзя · тотальная функция «{function}»: рекурсивный вызов «{callee}» не убывает — аргумент {position} ({argument}) увеличивает параметр «{parameter}». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции |
+| `FLANG_NOT_TOTAL` | `totality.flang`, `types.flang` | тотальная функция «{function}» вызывает неизвестную функцию «{callee}»: завершение доказать нельзя · тотальная функция «{function}»: рекурсивный вызов «{callee}» не убывает — аргумент {position} ({argument}) увеличивает параметр «{parameter}». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции |
 | `FLANG_OFFLINE` | `flang_repl.c` | — |
 | `FLANG_ORDER_NOT_ANTISYMMETRIC` | `partialorder.flang` | — |
 | `FLANG_ORDER_NOT_REFLEXIVE` | `partialorder.flang` | — |

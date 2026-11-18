@@ -180,6 +180,7 @@
 | 0238 | [Класс проверяется по раскрытому тексту, а раскрытию доверяют, как компилятору C](0238-a-class-is-checked-by-its-expanded-text-and-the-expansion-is-trusted-like-the-c-compiler.md) | предложено | да |  |
 | 0240 | [Постусловие — часть вызова: его самовызов обязан убывать](0240-a-postcondition-is-part-of-the-call-and-its-self-call-needs-descent.md) | предложено | да |  |
 | 0242 | [Обещание совместимости: что замораживает 1.0 и как объявляется устаревание](0242-the-compatibility-promise-what-1-0-freezes-and-how-deprecation-is-announced.md) | предложено | нет |  |
+| 0244 | [Утверждение о функции, чьё завершение не доказано, доказано только при условии её завершения](0244-a-claim-over-a-function-not-known-to-terminate-is-proved-on-condition.md) | предложено | да |  |
 | 0246 | [Сверщик на C опровергает подделку контрпримером и отличает ноль от единицы](0246-the-c-checker-refutes-by-a-witness-and-tells-zero-from-one.md) | предложено | да |  |
 | 0247 | [Статья судится по разметке, а ядро судит шаг после подстановки предметов](0247-an-article-is-judged-from-its-markup-and-the-kernel-judges-the-grounded-step.md) | предложено | да |  |
 | 0248 | [Набор пользовательских историй судится по величинам: общий ответ или опровержение](0248-a-set-of-user-stories-is-judged-per-quantity-by-an-answer-or-a-refutation.md) | предложено | да |  |

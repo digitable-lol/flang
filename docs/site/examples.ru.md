@@ -1,11 +1,11 @@
 # Каталог примеров
 
-Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 361 --> 361 файлов в
+Все примеры-программы на flang лежат в одном каталоге — `docs/examples/`: <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 373 --> 373 файлов в
 двадцати семи наборах и одном полноразмерном проекте. Второго каталога с примерами
 в репозитории нет.
 
 Число пересчитывается одной командой:
-`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 361 --> 361.
+`git -c core.quotepath=false ls-files docs/examples | grep -c '\.flang$'` → <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 373 --> 373.
 
 ## Наборы
 
@@ -127,7 +127,7 @@ cd docs/examples/frameworks/vue-roman && node --input-type=module -e \
 ей нужны пакеты из сети. `node_modules/` и `dist/` в примеры не входят. Переиздать
 ядро — из корня дерева, например
 `bootstrap/flang emit docs/examples/frameworks/vue-roman/core/roman-numerals.flang --target js --out docs/examples/frameworks/vue-roman/printed`;
-файлы в `printed/` печатает компилятор, руками их не правят.
+файлы в `printed/` генерирует компилятор, руками их не правят.
 
 ## Куда идти дальше
 

@@ -13,7 +13,7 @@
 // пример целиком, для модуля, у которого ни один тест не умещается в строку.
 
 export const ЗАДАЧИ = [
-  { имя: 'Текст и разбор', name: 'Text and parsing', модули: ['strings.flang', 'strlists.flang', 'sets.flang', 'automaton.flang', 'samples.flang', 'cli.flang', 'utf8.flang', 'text-decoding.flang', 'unicode-normalization.flang', 'unicode-graphemes.flang', 'unicode-case.flang', 'unicode-tables.flang', 'code-page-data.flang', 'unicode-case-data.flang', 'unicode-grapheme-data.flang', 'unicode-normalization-data.flang'] },
+  { имя: 'Текст и разбор', name: 'Text and parsing', модули: ['strings.flang', 'strlists.flang', 'sets.flang', 'automaton.flang', 'parsing.flang', 'samples.flang', 'cli.flang', 'utf8.flang', 'text-decoding.flang', 'unicode-normalization.flang', 'unicode-graphemes.flang', 'unicode-case.flang', 'unicode-tables.flang', 'code-page-data.flang', 'unicode-case-data.flang', 'unicode-grapheme-data.flang', 'unicode-normalization-data.flang'] },
   { имя: 'Числа', name: 'Numbers', модули: ['numbers.flang', 'bignum.flang', 'rationals.flang', 'number-format.flang', 'stats.flang', 'logic.flang'] },
   { имя: 'Коллекции', name: 'Collections', модули: ['lists.flang', 'higher-order.flang', 'optional.flang', 'result.flang', 'dictionary.flang', 'hashmap.flang', 'tree.flang', 'numtree.flang'] },
   { имя: 'Время', name: 'Time', модули: ['datetime.flang'] },
@@ -257,6 +257,14 @@ export const ОПИСАНИЯ = {
     подсказка: 'необязательное значение',
     о: 'Optional: значение, которого может не быть, над любым типом.',
     about: 'Optional: a value that may be absent, over any type.',
+  },
+  'parsing.flang': {
+    пример: 'Разметить',
+    зачем: 'разбор текста своего маленького языка',
+    why: 'parsing the text of your own small language',
+    подсказка: 'свой язык',
+    о: 'Разбор текста своего языка: лексемы со строкой и столбцом, исход разбора с местом ошибки, комбинаторы, выражения.',
+    about: 'Parsing the text of your own language: tokens with line and column, a parse result with the place of the error, combinators, expressions.',
   },
   'postgres.flang': {
     зачем: 'протокол PostgreSQL 3.0: сообщения клиента и сервера',

@@ -1,0 +1,16 @@
+program	surface	code	word
+proved-postcondition.flang	check	0	доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
+proved-postcondition.flang	check --proof	0	постусловие «сумма не отрицательна» функции «Сумма» — доказано индукцией
+tested-postcondition.flang	check	0	доказано 0, проверено только на тестах 1, не доказано 0 (постусловий и утверждений 1); замечаний нет
+tested-postcondition.flang	check --proof	3	проверено только на тестах (примеров 3)
+unproved-postcondition.flang	check	0	не доказано: 2 — подробности: flang check
+unproved-postcondition.flang	check --proof	3	доказано не всё
+false-closed-statement.flang	check	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
+false-closed-statement.flang	check --proof	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
+true-closed-statement.flang	check	0	замечаний нет
+false-postcondition-no-parameters.flang	check	1	постусловие «длина списка» функции «Три» ложно: результат равен ["а", "б", "в"]
+induction-leaves-cases-open.flang	check	1	теорема «скидка не больше цены» о функции «Скидка» не доказана: индукция по типу «Правило» — не закрыты случаи:
+induction-leaves-cases-open.flang	check --explain	1	порядок по построению не проходит
+independent-check-replays-all.flang	check --proof --strict --independent	0	ДОКАЗАНО
+independent-check-replays-a-part.flang	check --proof --strict --independent	3	независимая проверка повторила 2 из 3 доказанных
+independent-check-replays-a-part.flang	check --proof --strict	0	ДОКАЗАНО

@@ -1,5 +1,35 @@
 module «Levenshtein distance»
 
+total function «First in the row»
+  accepts row: list of number
+  returns number
+  example «The first of two»
+    given row equals [3, 4]
+    expected 3
+  example «An empty row»
+    given row equals empty list
+    expected 0
+  match row
+    case empty
+      then 0
+    case head and tail
+      then head
+
+total function «Row without the first»
+  accepts row: list of number
+  returns list of number
+  example «Without the first of two»
+    given row equals [3, 4]
+    expected [4]
+  example «An empty row»
+    given row equals empty list
+    expected empty list
+  match row
+    case empty
+      then empty list
+    case head and tail
+      then tail
+
 object «Step»
   «row»: list of number
   «index»: number
@@ -80,11 +110,12 @@ total function «Onward along the row»
     case empty
       then empty list
     case head this and tail rest
-      let diagonal equals head previous
-      let above equals head (tail previous)
+      let diagonal equals «First in the row» of previous
+      let above equals «First in the row» of («Row without the first» of previous)
       let cost equals if letter equals this then 0 else 1
       let cell equals «Minimum of three» of (left plus 1) and (above plus 1) and (diagonal plus cost)
-      «Prepend» of cell and («Onward along the row» of cell and (tail previous) and rest and letter)
+      let «rest of the row» equals «Row without the first» of previous
+      «Prepend» of cell and («Onward along the row» of cell and «rest of the row» and rest and letter)
 
 total function «New row»
   accepts previous: list of number, letter: string, letters: list of string, index: number

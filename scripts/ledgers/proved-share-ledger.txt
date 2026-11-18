@@ -657,6 +657,8 @@
 // ⚑ 10 ноября 2026, вход партии печати 12: у flang/self/types.flang пересчитано только
 // «написано»: 467 → 475 (починки дыр типизации 17, 28 и 29: сведение ветвей и отказ
 // FLANG_NOT_A_NUMBER); md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
+// ⚑ 18 ноября 2026: у flang/self/types.flang пересчитано только «написано»: 476 → 478
+// (встроенные операции в тотальных функциях); md5 и числитель НЕ ТРОНУТЫ.
 // Задача 4722 завела семью `flang/proof/checker/tests/families/rewrite/`: законы склейки
 // строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
 // ведомости у проб нет — «×», как у соседних семей сверщика.
@@ -1434,7 +1436,7 @@ bec4ec8a9e5dde1fc9c49601eb775005|18|15|0|3|0|flang/self/tags.flang
 6c68e5bf49b6c4f3e184ef519b324d7a|3|0|2|1|0|flang/self/totality-refusals.flang
 5244f474a7f26171786a1690f79a98e9|320|257|16|42|0|flang/self/totality.flang
 5fffa3b0c7a035479c3b55c3731fb99a|1|0|1|0|0|flang/self/type-refusals.flang
-6f5995562eb91e54ecbcd9bde4c4853e|476|119|4|265|0|flang/self/types.flang
+6f5995562eb91e54ecbcd9bde4c4853e|478|119|4|265|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 adda40c78653bedc6e472c4bbc3f0eef|130|127|3|0|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -2382,3 +2384,5 @@ f4750d1e79073b75cc2da61c2447ba51|1|1|0|0|1|docs/examples/first-proof/step2/chang
 5468a68fa2b97ebee90c17fda61504c5|1|0|1|0|1|docs/examples/first-proof/step3/total.flang
 2f99676e891392ef905075df96009e46|1|1|0|0|1|docs/examples/first-proof/step4/total.flang
 7b0890c6dcb3313072956eb0789ce50d|1|×|×|×|0|docs/examples/first-proof/step5/total.flang
+8a10f000580700c56a229b44de00a3ed|0|×|×|×|1|flang/proof/probes/typing-holes/programs/total-requirement-takes-head-of-empty-list.flang
+de3e74b7ec7915fc0a99569b7372ce33|0|×|×|×|1|flang/proof/probes/typing-holes/programs/total-word-division-by-requirement.flang

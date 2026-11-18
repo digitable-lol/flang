@@ -561,9 +561,9 @@
   "долг": {
     "CONTRIBUTING.md": 5,
 
-    "README.md": 4,
+    "README.md": 3,
 
-    "docs/README.ru.md": 11,
+    "docs/README.ru.md": 3,
 
     "docs/ct/spec.md": 1,
 
@@ -589,7 +589,7 @@
 
     "docs/guide/limits.md": 1,
 
-    "docs/guide/limits.ru.md": 29,
+    "docs/guide/limits.ru.md": 7,
 
     "docs/guide/naming.md": 9,
 
@@ -643,7 +643,7 @@
 
     "docs/site/diagnostics.ru.md": 20,
 
-    "docs/site/editor.ru.md": 5,
+    "docs/site/editor.ru.md": 0,
 
     "docs/site/embedding.ru.md": 38,
 
@@ -655,19 +655,19 @@
 
     "docs/site/fspec.ru.md": 10,
 
-    "docs/site/getting-started.md": 10,
+    "docs/site/getting-started.md": 0,
 
-    "docs/site/getting-started.ru.md": 21,
+    "docs/site/getting-started.ru.md": 2,
 
-    "docs/site/host-boundary.md": 2,
+    "docs/site/host-boundary.md": 0,
 
-    "docs/site/host-boundary.ru.md": 57,
+    "docs/site/host-boundary.ru.md": 6,
 
     "docs/site/how-proofs-work.ru.md": 9,
 
-    "docs/site/index.ru.md": 7,
+    "docs/site/index.ru.md": 1,
 
-    "docs/site/install.ru.md": 7,
+    "docs/site/install.ru.md": 1,
 
     "docs/site/language-map.md": 1,
 
@@ -677,15 +677,15 @@
 
     "docs/site/language.ru.md": 69,
 
-    "docs/site/learning.ru.md": 4,
+    "docs/site/learning.ru.md": 0,
 
     "docs/site/manual-proofs.ru.md": 8,
 
     "docs/site/mathematics.ru.md": 63,
 
-    "docs/site/msi-driver.md": 52,
+    "docs/site/msi-driver.md": 7,
 
-    "docs/site/msi-driver.ru.md": 70,
+    "docs/site/msi-driver.ru.md": 10,
 
     "docs/site/operations.ru.md": 5,
 
@@ -727,7 +727,7 @@
 
     "docs/site/troubleshooting.md": 2,
 
-    "docs/site/troubleshooting.ru.md": 18,
+    "docs/site/troubleshooting.ru.md": 4,
 
     "docs/site/tutorial.md": 30,
 

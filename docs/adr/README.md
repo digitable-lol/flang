@@ -182,6 +182,7 @@
 | 0242 | [Обещание совместимости: что замораживает 1.0 и как объявляется устаревание](0242-the-compatibility-promise-what-1-0-freezes-and-how-deprecation-is-announced.md) | предложено | нет |  |
 | 0243 | [`flang check` без ключей называет число недоказанного, а ложное считает ошибкой](0243-a-plain-check-counts-what-is-not-proved.md) | предложено | частично |  |
 | 0244 | [Утверждение о функции, чьё завершение не доказано, доказано только при условии её завершения](0244-a-claim-over-a-function-not-known-to-terminate-is-proved-on-condition.md) | предложено | да |  |
+| 0245 | [Встроенная операция, которая может отказать, в тотальной функции — до 0.9.0 предупреждение](0245-a-builtin-that-may-fail-in-a-total-function-warns-until-0-9-0.md) | предложено | нет |  |
 | 0246 | [Сверщик на C опровергает подделку контрпримером и отличает ноль от единицы](0246-the-c-checker-refutes-by-a-witness-and-tells-zero-from-one.md) | предложено | да |  |
 | 0247 | [Статья судится по разметке, а ядро судит шаг после подстановки предметов](0247-an-article-is-judged-from-its-markup-and-the-kernel-judges-the-grounded-step.md) | предложено | да |  |
 | 0248 | [Набор пользовательских историй судится по величинам: общий ответ или опровержение](0248-a-set-of-user-stories-is-judged-per-quantity-by-an-answer-or-a-refutation.md) | предложено | да |  |

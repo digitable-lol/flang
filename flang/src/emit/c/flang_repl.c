@@ -3033,6 +3033,16 @@ static void bads_take(repl_bads *list, fl_value bad) {
             column.tag == FL_NUMBER ? (size_t)column.as.number : 0);
 }
 
+/*
+ * Встроенная форма, которая может отказать при работе, в теле тотальной функции
+ * без снятого условия — до 0.9.0 предупреждение, а не ошибка. «Проверить типы»
+ * отдаёт такие места отдельным полем «предупреждения». Под `check --proof
+ * --strict` они идут в беды наравне с прочими; иначе копятся здесь, `check`
+ * печатает их в stderr, и код возврата они не меняют.
+ */
+static bool repl_warnings_fatal = false;
+static repl_bads repl_warnings = {0};
+
 /** «Диагностика анализа» тотальности → «Беда»; предупреждения не едут. */
 static void bads_take_analysis(repl_bads *list, fl_value bad) {
   fl_value code = fl_nothing();
@@ -6415,6 +6425,12 @@ static bool repl_check_sources(fl_value sources, const char *entry, repl_bads *b
   if (val_field(typed, "диагностики", &diagnostics) && diagnostics.tag == FL_LIST) {
     for (index = 0; index < diagnostics.as.list.count; index += 1) {
       bads_take(bads, diagnostics.as.list.items[index]);
+    }
+  }
+  bads_free(&repl_warnings);
+  if (val_field(typed, "предупреждения", &diagnostics) && diagnostics.tag == FL_LIST) {
+    for (index = 0; index < diagnostics.as.list.count; index += 1) {
+      bads_take(repl_warnings_fatal ? bads : &repl_warnings, diagnostics.as.list.items[index]);
     }
   }
   if (repl_call("Проверить тотальность", program, 1, &total) != FL_OK) {
@@ -10897,6 +10913,12 @@ static int check_file(const char *path, bool fast) {
      этой строки замечания приезжали бы раньше того, к чему относятся. */
   fflush(stdout);
   check_print_bads(&bads, path, paths.count);
+  if (repl_warnings.count > 0) {
+    msg_printf(stderr, "check.builtin-warnings",
+               "предупреждений %lu: встроенная операция в тотальной функции может отказать при работе; код возврата они не меняют, с «--proof --strict» это ошибки\n",
+               (unsigned long)repl_warnings.count);
+    check_print_bads(&repl_warnings, path, paths.count);
+  }
   /*
    * ПРЕПЯТСТВИЕ — ШЕСТЫМ ШАГОМ, И ЭТО ТА ЖЕ ДЫРА, ЧТО БЫЛА С ЯДРОМ И ПРИМЕРАМИ.
    *
@@ -16934,6 +16956,7 @@ static int check_command(int argc, char **argv) {
           stderr);
     return 2;
   }
+  repl_warnings_fatal = strict;
   if (strict && !proof) {
     fputs("flang check --строго осмыслен только рядом с «--proof»: без отчёта о доказательствах судить не о чем\n",
           stderr);

@@ -112,7 +112,7 @@ Check the whole file:
 flang check docs/examples/dsl/discount-rules.flang --proof
 ```
 
-```
+```text
 …
   постусловие «скидка не больше цены» функции «Скидка» — доказано индукцией по «Правило»: база 3 случая, шаг при допущении на частях (2 случая) …
   постусловие «скидка не отрицательна» функции «Скидка» — доказано индукцией по «Правило»: база 3 случая, шаг при допущении на частях (2 случая) …
@@ -135,7 +135,7 @@ The whole file: [`discount-rules.flang`](docs/examples/dsl/discount-rules.flang)
 An external language has its own syntax, and a program in it arrives as a
 string: `"-(2 + 3) * 4"`. The string always takes the same road:
 
-```
+```text
 text → tokens → tree → value
 ```
 
@@ -254,7 +254,7 @@ of the grammar is a named function of its own:
   «Разобрать через разделитель» от (функция «Взять число») и (функция «Взять знак» с знак равным ",") и лексемы
 ```
 
-The full list with examples is in the [library reference](stdlib.html#parsing).
+The full list with examples is in the [library reference](lib/parsing.html).
 
 ## 4. A checked language: an order state machine
 
@@ -416,7 +416,7 @@ Allow cancellation after delivery and the statement «доставленный �
 flang check docs/examples/dsl/unproved/order-typed-cancel-after-delivery.flang --proof
 ```
 
-```
+```text
 …
   утверждение «доставленный заказ никуда не уходит» — объявлено, не доказано: ни теоремы, ни примеров. …
 …
@@ -591,11 +591,11 @@ above, and not as an expression in place.
 
 ## 7. Where next
 
-- [Library reference: Parsing](stdlib.html#parsing): every text-parsing function
+- [Library reference: Parsing](lib/parsing.html): every text-parsing function
   and its guarantees.
-- [JSON](stdlib.html#json) and [TOML](stdlib.html#toml): two large parsers in
+- [JSON](lib/json.html) and [TOML](lib/toml.html): two large parsers in
   the library, written as a pass over characters without recursion.
-- [CLI](stdlib.html#cli): a language of command-line flags given by a
+- [CLI](lib/cli.html): a language of command-line flags given by a
   declaration.
 - [Which construct to use when](which-construct.html): recipes for the functions
   an interpreter is made of.

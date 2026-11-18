@@ -243,8 +243,33 @@
 
 тотальная функция «Branch seed command»
   возвращает строка
-  соединить ["base=$(git merge-base origin/dev HEAD 2>/dev/null) || exit 0; ",
+  соединить ["dev=$(git for-each-ref --format='%(refname:short)' 'refs/remotes/*/dev' | head -1); ",
+    "[ -n \"$dev\" ] || { echo ", («No base mark»), "; exit 0; }; ",
+    "base=$(git merge-base \"$dev\" HEAD 2>/dev/null) || { echo ", («No base mark»), "; exit 0; }; ",
     "git diff --name-only \"$base\" -- bootstrap/"] по ""
+
+тотальная функция «No base mark»
+  возвращает строка
+  "no-dev-base"
+
+тотальная функция «Has no base»
+  принимает answers: список «Answer»
+  возвращает признак
+  «Is among» от («Lines» от («Output of» от "branch seed" и answers)) и («No base mark»)
+
+тотальная функция «Base missing»
+  принимает answers: список «Answer»
+  возвращает признак
+  («Runtime caught up» от answers) и притом («Has no base» от answers)
+
+тотальная функция «No base lines»
+  принимает troubles: список строки
+  возвращает список строки
+  «Gathered words» от [["нет базы dev — сделайте fetch.", "",
+    "Ни одна ветка refs/remotes/*/dev не найдена или не имеет общего предка с HEAD,",
+    "и проверить, переписывала ли ветка копируемые файлы семени, не с чем.",
+    "А печатаемая часть разошлась с flang/self или пределами:"], troubles,
+    ["", "git fetch <удалённый> dev — и повторите."]]
 
 тотальная функция «Reseeded by the branch»
   принимает answers: список «Answer»
@@ -448,6 +473,8 @@
   возвращает «Продолжение»
   «Chosen» от [(«When» от («Closure is fresh» от answers) и
       (вариант «Конец работы» с значение равным (соединить («Fast path holds») по "\n"))),
+    («When» от («Base missing» от answers) и (вариант «Провал» с код равным "FLANG_SEED_NO_DEV_BASE" и
+        сообщение равным (соединить («No base lines» от («Closure troubles» от answers)) по "\n"))),
     («When» от («Fast path traced» от answers) и (вариант «Провал» с код равным "FLANG_SEED_FAST_PATH_MISUSED" и
         сообщение равным (соединить («Fast path misused» от («Closure troubles» от answers) и
         («Reseeded by the branch» от answers)) по "\n")))] и (вариант «Конец работы» с

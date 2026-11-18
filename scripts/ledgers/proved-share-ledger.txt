@@ -1460,6 +1460,7 @@ efaae27f0f5763ab87ecf6a4395dba43|16|13|3|0|0|flang/stdlib/logic.flang
 80a158ae85073a46080ff9efaa506bbc|58|37|21|0|0|flang/stdlib/numbers.flang
 b015f115126dbc62704689a5a24193be|13|5|6|2|0|flang/stdlib/numtree.flang
 3bd360dedd399ea467c2ffa1ae139b14|22|12|7|3|0|flang/stdlib/optional.flang
+62634b9c8053f5942a05078d6ed54aef|43|43|0|0|0|flang/stdlib/parsing.flang
 d0ec89014403d4de6154229b27e44b24|159|86|65|8|0|flang/stdlib/postgres.flang
 648ef9fee8c96bff7d2c4e6245caddab|85|27|58|0|0|flang/stdlib/protobuf.flang
 5e5a08e3531cd7d96cf51ad46b502a35|16|16|0|0|2|flang/stdlib/rationals.flang

@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        guard: [closed-length, target-drift, tasks, docs, claims, proven]
+        guard: [closed-length, target-drift, tasks, docs, claims, proven, word-occupancy]
     env:
       LC_ALL: C.UTF-8
     steps:
@@ -63,6 +63,9 @@ jobs:
               ;;
             proven)
               bootstrap/flang run-script proven:check
+              ;;
+            word-occupancy)
+              bootstrap/flang run-script word:occupancy:check
               ;;
             *)
               echo "unknown guard: ${{ matrix.guard }}" >&2

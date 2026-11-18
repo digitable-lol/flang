@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 231 файл вне flang, долг вне JavaScript — 46 при потолке 63
-<!-- СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 231 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) -->
+# Опись дерева по языкам: 232 файла вне flang, долг вне JavaScript — 46 при потолке 63
+<!-- СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 232 (the tap script over dev with the library module pages) -->
 
 ⚠ **ХРАПОВИК ДОЛГА ЗЕЛЁН С 4 ОКТЯБРЯ 2026: долг 55 файлов при потолке 63, запас 8.** Прогон
 `bootstrap/flang run-script inventory:languages` **4 октября 2026** отвечает кодом 0: «ДОЛГ ВНЕ

@@ -1,0 +1,259 @@
+модуль «User story set check»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «Inquiry» из "../../scripts/inquiry.fscript"
+  использует «User story sets» из "story-set.flang"
+  использует «Lists» только «Соединить списки»
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  соединить ["звать: bootstrap/flang io flang/experimental/story-set-check.fscript --plan Check",
+    " -- <каталог с историями *.txt от корня дерева>; --plan Translate печатает программу, которую судит ядро"] по ""
+
+тотальная функция «Folder path»
+  принимает answers: список «Answer»
+  возвращает строка
+  пример «No argument names no folder»
+    дано answers равно пустой список
+    ожидается ""
+  разбор («Given of» от "arguments" и answers)
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Placed»
+  принимает path: строка
+  возвращает строка
+  пример «A path from the root of the tree is taken from the root»
+    дано path равно "docs/stories"
+    ожидается "../../docs/stories"
+  пример «A path from the root of the machine is taken as it is»
+    дано path равно "/tmp/stories"
+    ожидается "/tmp/stories"
+  если path начинается с "/" то path иначе (соединить [(«Root»), "/", path] по "")
+
+тотальная функция «Is a text»
+  принимает name: строка
+  возвращает признак
+  пример «A file of the txt kind is a story text»
+    дано name равно "discount-cap.txt"
+    ожидается да
+  пример «A file of another kind is not»
+    дано name равно "notes.md"
+    ожидается нет
+  пример «A name without a kind is not»
+    дано name равно "txt"
+    ожидается нет
+  пусть pieces равно (разделить name по ".")
+  ((длина pieces) больше 1) и притом ((«Last line» от pieces) равен "txt")
+
+тотальная функция «Text names»
+  принимает answers: список «Answer»
+  возвращает список строки
+  отфильтровать («Listed of» от "folder" и answers) где name → «Is a text» от name
+
+тотальная функция «Read name»
+  принимает name: строка
+  возвращает строка
+  пример «The answer about a text is named after it»
+    дано name равно "a.txt"
+    ожидается "text a.txt"
+  соединить ["text ", name] по ""
+
+тотальная функция «Stories of»
+  принимает answers: список «Answer»
+  возвращает список «Story told»
+  отобразить («Text names» от answers) как name → «Story of» от name и («Output of» от («Read name» от name) и
+    answers)
+
+тотальная функция «Check script»
+  возвращает строка
+  соединить ["box=$(mktemp -d -p \"${FLANG_TMP:-${TMPDIR:-/tmp}}\" story-set.XXXXXX)",
+    " && printf '%s' \"$1\" > \"$box/story.flang\"",
+    " && \"${FLANG_BIN:-$0/bootstrap/flang}\" check \"$box/story.flang\" --proof --strict 2>&1;",
+    " code=$?; rm -rf \"$box\"; exit $code"] по ""
+
+тотальная функция «Kernel question»
+  принимает name: строка, program: строка
+  возвращает «Question»
+  «Run» от name и "sh" и ["-c", («Check script»), («Root»), program]
+
+тотальная функция «Set questions»
+  принимает stories: список «Story told»
+  возвращает список «Question»
+  пусть asked равно [(«Kernel question» от "check the set" и («Set program» от stories))]
+  если пусто («Set program lines» от stories) то (пустой список) иначе asked
+
+тотальная функция «Kernel questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  «Set questions» от («Stories of» от answers)
+
+тотальная функция «Reading questions»
+  принимает answers: список «Answer»
+  возвращает список «Question»
+  пусть folder равно («Placed» от («Folder path» от answers))
+  отобразить («Text names» от answers) как name → «Read» от («Read name» от name) и (соединить [folder, "/",
+    name] по "")
+
+тотальная функция «Stage»
+  принимает stages: число, answers: список «Answer»
+  возвращает список «Question»
+  пример «The arguments are asked first»
+    дано stages равно 3
+    дано answers равно пустой список
+    ожидается [запись «Question» с «name» равным "arguments" и «order» равным (вариант «Прочитать доводы»)]
+  пример «Without a folder nothing is listed»
+    дано stages равно 2
+    дано answers равно пустой список
+    ожидается пустой список
+  пусть path равно («Folder path» от answers)
+  пусть listing равно [(«List» от "folder" и («Placed» от path))]
+  «Chosen» от [(«When» от (stages равен 3) и [(«Arguments» от "arguments")]),
+    («When» от ((stages равен 2) и притом (не (пусто path))) и listing),
+    («When» от (stages равен 1) и («Reading questions» от answers)),
+    («When» от (stages равен 0) и («Kernel questions» от answers))] и (пустой список)
+
+тотальная функция «Last line»
+  принимает report: список строки
+  возвращает строка
+  пример «The last line of a report»
+    дано report равно ["История: пол.", "ЗАПИСАНО: цель доказана"]
+    ожидается "ЗАПИСАНО: цель доказана"
+  свёртка report начиная с "" как kept и line → line
+
+тотальная функция «Set was judged»
+  принимает answers: список «Answer»
+  возвращает признак
+  не (пусто («Set program lines» от («Stories of» от answers)))
+
+тотальная функция «Set output»
+  принимает answers: список «Answer»
+  возвращает строка
+  «Output of» от "check the set" и answers
+
+тотальная функция «Set kernel line»
+  принимает answers: список «Answer»
+  возвращает строка
+  пусть claims равно («Claims of» от («Stories of» от answers))
+  пусть judged равно («Kernel line» от claims и («Set output» от answers))
+  если «Set was judged» от answers то judged иначе "[ядро не звали] набор не судится: прочитанных историй нет"
+
+тотальная функция «Set is proved»
+  принимает answers: список «Answer»
+  возвращает признак
+  пусть claims равно («Claims of» от («Stories of» от answers))
+  («Set was judged» от answers) и притом («Is proved» от claims и («Set output» от answers))
+
+тотальная функция «Report lines»
+  принимает answers: список «Answer»
+  возвращает список строки
+  пусть stories равно («Stories of» от answers)
+  пусть head равно (соединить ["набор историй: ", («Folder path» от answers), ", файлов ",
+    (к строке (длина stories))] по "")
+  пусть judged равно («Соединить списки» от («Judged lines» от stories) и [(«Set kernel line» от answers)])
+  пусть found равно («Соединить списки» от («Hole lines» от stories) и («Remark lines» от stories))
+  пусть opening равно (приписать head к («Соединить списки» от («Read lines» от stories) и («Unread lines» от
+    stories)))
+  «Соединить списки» от («Соединить списки» от opening и judged) и («Соединить списки» от found и [(«Total line» от
+    stories)])
+
+тотальная функция «Report»
+  принимает answers: список «Answer»
+  возвращает строка
+  соединить («Report lines» от answers) по "\n"
+
+тотальная функция «Is against»
+  принимает answers: список «Answer»
+  возвращает признак
+  пусть stories равно («Stories of» от answers)
+  пусть shown равно ((«Set output» от answers) содержит "FLANG_EXAMPLE: ")
+  пусть clashing равно ((«Set is proved» от answers) и притом ((«Clash count» от stories) больше 0))
+  clashing или shown
+
+тотальная функция «Judgment»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть stories равно («Stories of» от answers)
+  пусть report равно («Report» от answers)
+  пусть unread равно (вариант «Провал» с код равным "FLANG_STORY_SET_TEXT" и сообщение равным report)
+  пусть against равно (вариант «Провал» с код равным "FLANG_STORY_SET_CONTRADICTS" и сообщение равным report)
+  пусть blind равно (вариант «Не проверено» с код равным "FLANG_STORY_SET_CANNOT_LOOK" и сообщение равным report)
+  пусть holes равно (вариант «Провал» с код равным "FLANG_STORY_SET_HOLES" и сообщение равным report)
+  «Chosen» от [(«When» от (не (пусто («Unread lines» от stories))) и unread),
+    («When» от («Is against» от answers) и against),
+    («When» от (не («Set is proved» от answers)) и blind),
+    («When» от (не (пусто («Hole lines» от stories))) и holes)] и (вариант «Конец работы» с значение равным report)
+
+тотальная функция «Judgment given»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть path равно («Folder path» от answers)
+  пусть nocall равно (вариант «Не проверено» с код равным "FLANG_STORY_SET_CANNOT_LOOK" и сообщение равным («Usage»))
+  пусть nothing равно (вариант «Не проверено» с код равным "FLANG_STORY_SET_CANNOT_LOOK" и сообщение равным (соединить [
+    "в каталоге нет ни одной истории *.txt: ", path] по ""))
+  «Chosen» от [(«When» от (пусто path) и nocall),
+    («When» от (пусто («Text names» от answers)) и nothing)] и («Judgment» от answers)
+
+тотальная функция «Proceed with judging»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 0
+        то «Judgment given» от answers
+        иначе «Proceed with judging» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Begin judging»
+  возвращает «Inquiry»
+  «Begin with» от 4
+
+тотальная функция «Next judging question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with judging» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Check»
+  состояние «Inquiry»
+  начинает с «Begin judging»
+  обрабатывает «Next judging question»
+
+тотальная функция «Translation given»
+  принимает answers: список «Answer»
+  возвращает «Продолжение»
+  пусть stories равно («Stories of» от answers)
+  пусть nocall равно (вариант «Не проверено» с код равным "FLANG_STORY_SET_CANNOT_LOOK" и сообщение равным («Usage»))
+  пусть faults равно (соединить («Unread lines» от stories) по "\n")
+  пусть unread равно (вариант «Провал» с код равным "FLANG_STORY_SET_TEXT" и сообщение равным faults)
+  пусть nothing равно (пусто («Set program lines» от stories))
+  «Chosen» от [(«When» от (пусто («Folder path» от answers)) и nocall),
+    («When» от nothing и unread)] и (вариант «Конец работы» с значение равным («Set program» от stories))
+
+тотальная функция «Proceed with translating»
+  принимает queue: список «Question», stages: число, answers: список «Answer»
+  возвращает «Продолжение»
+  разбор queue
+    случай голова и хвост
+      то «Ask» от (голова) и (хвост) и stages и answers
+    случай пусто
+      то если stages не больше 1
+        то «Translation given» от answers
+        иначе «Proceed with translating» от («Stage» от (stages минус 1) и answers) и (stages минус 1) и answers
+
+тотальная функция «Next translating question»
+  принимает inquiry: «Inquiry», reply: «Отклик»
+  возвращает «Продолжение»
+  «Proceed with translating» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
+
+план «Translate»
+  состояние «Inquiry»
+  начинает с «Begin judging»
+  обрабатывает «Next translating question»

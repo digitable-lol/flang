@@ -182,6 +182,7 @@
 | 0242 | [Обещание совместимости: что замораживает 1.0 и как объявляется устаревание](0242-the-compatibility-promise-what-1-0-freezes-and-how-deprecation-is-announced.md) | предложено | нет |  |
 | 0246 | [Сверщик на C опровергает подделку контрпримером и отличает ноль от единицы](0246-the-c-checker-refutes-by-a-witness-and-tells-zero-from-one.md) | предложено | да |  |
 | 0247 | [Статья судится по разметке, а ядро судит шаг после подстановки предметов](0247-an-article-is-judged-from-its-markup-and-the-kernel-judges-the-grounded-step.md) | предложено | да |  |
+| 0248 | [Набор пользовательских историй судится по величинам: общий ответ или опровержение](0248-a-set-of-user-stories-is-judged-per-quantity-by-an-answer-or-a-refutation.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

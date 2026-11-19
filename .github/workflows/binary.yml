@@ -2141,6 +2141,10 @@ jobs:
         run: bootstrap/flang io flang/proof/probes/story/run.fscript --plan Binary --max-steps 40000000
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check a folder of user stories for clashes and holes
+        run: bootstrap/flang io flang/proof/probes/story-set/run.fscript --plan Binary --timeout 900000
+        env:
+          FLANG_TMP: ${{ runner.temp }}
       # РУССКАЯ МОРФОЛОГИЯ РАЗЛИЧАЕТ ФОРМЫ, А ГДЕ НЕ РАЗЛИЧАЕТ — ОТКАЗЫВАЕТ ВСЛУХ.
       #
       # `flang/experimental/ru-morphology.flang` читает одну словоформу и отдаёт запись

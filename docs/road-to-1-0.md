@@ -180,7 +180,7 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 <!-- СНЯТО 2026-11-17 строк flang/proof/checker/checker.c = 16421 (the counterexample search and the ring print that tells zero from one) --> 16 421 строк;
 её тесты на подделки запускает `bootstrap/flang run-script checker:check`. Файлы Lean —
 <!-- СНЯТО 2026-11-21 файлов flang/proof/lean/*.lean = 39 (Semantics/Prefix.lean: a claim closed by the rule of the known prefix) --> 39 файлов,
-<!-- СНЯТО 2026-11-21 строк-в flang/proof/lean/*.lean = 31659 (Semantics/Prefix.lean and its branch in ModelBlocks.lean) --> 31 659 строк.
+<!-- СНЯТО 2026-11-22 строк-в flang/proof/lean/*.lean = 31747 (the translation validator unfolds type aliases, reads the step mark and unifies function witnesses) --> 31 747 строк.
 
 **Теоремы и файлы.** Пути — от `flang/proof/`.
 

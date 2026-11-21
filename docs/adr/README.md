@@ -192,6 +192,7 @@
 | 0252 | [Шаг рассуждения судится по частям, и каждый ответ несёт своё подтверждение](0252-a-step-is-judged-in-parts-and-each-answer-carries-its-own-witness.md) | предложено | да |  |
 | 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
 | 0254 | [Сверщик на C проигрывает шаг индукции по списку, переписанный допущением](0254-the-c-checker-replays-a-list-induction-step-rewritten-by-the-hypothesis.md) | предложено | да |  |
+| 0255 | [Ни один естественный язык не главный: файл называет свой язык, словарь один, формулы в записи доказательства пишутся знаками](0255-no-natural-language-is-the-main-one-a-file-names-its-language-and-the-proof-record-uses-signs.md) | принято | нет |  |
 
 ## Команды старых решений, которых больше нет
 

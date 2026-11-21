@@ -36,7 +36,14 @@ Every step has a time limit; a file that does not fit is named with the step tha
 
 An answer is a value, or a refusal with its code. The reference checks the preconditions of
 the called function before the body and the postconditions after it, as the printed C does, so a
-refusal by `FLANG_PRECONDITION` or `FLANG_PROPERTY` is compared like a value. Numbers are compared
+refusal by `FLANG_PRECONDITION` or `FLANG_PROPERTY` is compared like a value. A refusal by
+`FLANG_MEASURE` is compared the same way. The reference checks a declared measure at every call the
+tree marks with it. A recursion proved by a constant step has no mark in the tree: the reference
+reads the ledger of `flang check --proof --json` (carrier `step`, the argument, the cycle, the
+number of guarded calls) and checks at every call into the cycle that the argument is below the
+parameter, right after that argument is computed. The ledger lists the functions of the validated
+file only, so a function linked from another module is evaluated without this check and a witness
+where its step does not change the number is reported as a disagreement. Numbers are compared
 by their shortest decimal form with the sign of zero kept, which is one string per binary64 value.
 A row where the reference ran out of fuel or the C program hit its recursion or memory limit is
 not compared and is counted apart.
@@ -56,7 +63,7 @@ Witnesses come from the declared types of the parameters:
 | list | the empty list and lists of one to three witnesses of the element type |
 | record, variant with fields | combinations of the witnesses of the fields; a recursive sum is unfolded twice |
 | type parameter | `число` is put in its place |
-| function | the functions of the module without captures that take as many parameters, of fitting kinds (number, flag, string, list) |
+| function | the functions the program takes as a value without captures (`функция «…»` somewhere in the linked tree) that take as many parameters, of fitting kinds (number, flag, string, list); no other function can reach a parameter of a checked program, and the printed apply function dispatches on exactly these |
 
 The examples of the function are added to the witnesses, and so are the boundaries: every number
 literal that a comparison in the body, a precondition or a postcondition holds against a value,

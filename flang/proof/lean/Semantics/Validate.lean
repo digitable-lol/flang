@@ -812,7 +812,9 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
   match Json.parse text with
   | .error m => pure (.error m)
   | .ok j =>
-    let P := «программаJson» j
+    let P := match Json.parse ptext with
+      | .ok pj => «программаСШагом» pj («программаJson» j)
+      | .error _ => «программаJson» j
     let decls := «объявленияТипов» j
     let fs := match ctext with
       | some t => «функцииC» («лексемы» t.toList []) []
@@ -833,7 +835,9 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
       ctext.isSome, apps.map (fun (_, a, ts) => (a, ts)), judged⟩
     let numeric := («массив» j "functions").flatMap (fun f =>
       «числовыеИмена» decls («строка?» f "name") («типJson» ((«поле?» f "returns").getD .null)))
-    let fns := («массив» j "functions").map (fun f => («строка?» f "name",
+    let taken := «взятыеФункции» j
+    let fns := ((«массив» j "functions").filter (fun f => taken.contains («строка?» f "name"))).map (fun f =>
+      («строка?» f "name",
       («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
       «типJson» ((«поле?» f "returns").getD .null)))
     pure (.ok ⟨P, fns, decls, cx, numeric, («массив» j "functions").toArray⟩)

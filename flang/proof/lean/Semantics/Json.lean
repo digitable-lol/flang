@@ -153,4 +153,91 @@ def «программаJson» (j : Json) : «Программа» := («мас�
 
 def «всеПримеры» (j : Json) : List «Пример» := («массив» j "functions").flatMap «примерыJson»
 
+def «дети» : «Выр» → List «Выр»
+  | .«двучлен» _ a b => [a, b]
+  | .«если» c t e => [c, t, e]
+  | .«пусть» _ v b => [v, b]
+  | .«вызов» _ args => args
+  | .«разбор» t cs => t :: cs.map (·.2)
+  | .«свёртка» l n _ _ s => [l, n, s]
+  | .«отобразить» l _ s => [l, s]
+  | .«отфильтровать» l _ s => [l, s]
+  | .«список» es => es
+  | .«запись» fs => fs.map (·.2)
+  | .«конструктор» _ fs => fs.map (·.2)
+  | .«поле» t _ => [t]
+  | .«форма» _ args => args
+  | .«ссылка» _ fs => fs.map (·.2)
+  | .«применить» f args => f :: args
+  | _ => []
+
+partial def «преобразовать» (h : «Выр» → «Выр») : «Выр» → «Выр»
+  | .«двучлен» op a b => h (.«двучлен» op («преобразовать» h a) («преобразовать» h b))
+  | .«если» c t e => h (.«если» («преобразовать» h c) («преобразовать» h t) («преобразовать» h e))
+  | .«пусть» x v b => h (.«пусть» x («преобразовать» h v) («преобразовать» h b))
+  | .«вызов» f args => h (.«вызов» f (args.map («преобразовать» h)))
+  | .«разбор» t cs => h (.«разбор» («преобразовать» h t) (cs.map (fun c => (c.1, «преобразовать» h c.2))))
+  | .«свёртка» l n a x s => h (.«свёртка» («преобразовать» h l) («преобразовать» h n) a x («преобразовать» h s))
+  | .«отобразить» l x s => h (.«отобразить» («преобразовать» h l) x («преобразовать» h s))
+  | .«отфильтровать» l x s => h (.«отфильтровать» («преобразовать» h l) x («преобразовать» h s))
+  | .«список» es => h (.«список» (es.map («преобразовать» h)))
+  | .«запись» fs => h (.«запись» (fs.map (fun p => (p.1, «преобразовать» h p.2))))
+  | .«конструктор» k fs => h (.«конструктор» k (fs.map (fun p => (p.1, «преобразовать» h p.2))))
+  | .«поле» t p => h (.«поле» («преобразовать» h t) p)
+  | .«форма» n args => h (.«форма» n (args.map («преобразовать» h)))
+  | .«ссылка» f fs => h (.«ссылка» f (fs.map (fun p => (p.1, «преобразовать» h p.2))))
+  | .«применить» f args => h (.«применить» («преобразовать» h f) (args.map («преобразовать» h)))
+  | e => h e
+
+def «спускШагом?» (cycle : List String) (k : Nat) : «Выр» → Bool
+  | .«вызов» f args => cycle.contains f && k < args.length
+  | _ => false
+
+partial def «местаШага» (cycle : List String) (k : Nat) (e : «Выр») : Nat :=
+  ((«дети» e).map («местаШага» cycle k)).foldl (· + ·) (if «спускШагом?» cycle k e then 1 else 0)
+
+def «сторожШага» (cycle : List String) (k : Nat) (param : String) (e : «Выр») : «Выр» :=
+  match e with
+  | .«вызов» f args =>
+    if «спускШагом?» cycle k e then
+      let slots := (args.zipIdx).map (fun (_, i) => "#довод" ++ toString i)
+      let bound := args.zip slots
+      let rest := (bound.drop (k + 1)).foldr (fun (a, x) body => .«пусть» x a body) (.«вызов» f (slots.map .«имя»))
+      let check := .«если» (.«двучлен» "lt" (.«имя» ("#довод" ++ toString k)) (.«имя» param)) rest «отказМеры»
+      (bound.take (k + 1)).foldr (fun (a, x) body => .«пусть» x a body) check
+    else e
+  | _ => e
+
+def «номерДовода» (s : String) : Option Nat :=
+  let digits := (s.toList.dropWhile (fun c => !c.isDigit)).takeWhile (·.isDigit)
+  if digits.isEmpty then none else some (digits.foldl (fun n c => n * 10 + (c.toNat - '0'.toNat)) 0)
+
+def «функцияСШагом» (ledger : Json) (g : «Функция») : «Функция» :=
+  match («массив» ledger "functions").find? (fun r => «строка?» r "name" = g.«имя» && «строка?» r "carrier" = "step") with
+  | none => g
+  | some r =>
+    let cycle := («массив» r "cycle").filterMap (fun c =>
+      match c with
+      | .str s => some s
+      | _ => none)
+    match «номерДовода» («строка?» r "argument") with
+    | some (k + 1) =>
+      match g.«параметры»[k]? with
+      | some param =>
+        if «местаШага» cycle k g.«тело» = (r.getObjValAs? Nat "guardSites").toOption.getD 0 then
+          { g with «тело» := «преобразовать» («сторожШага» cycle k param) g.«тело» }
+        else g
+      | none => g
+    | _ => g
+
+def «программаСШагом» (ledger : Json) (P : «Программа») : «Программа» := P.map («функцияСШагом» ledger)
+
+partial def «взятыеФункции» : Json → List String
+  | .obj m =>
+    let j := Json.obj m
+    let here := if «строка?» j "kind" = "fnref" && («пары» j "fields").isEmpty then [«строка?» j "name"] else []
+    here ++ m.toList.flatMap (fun p => «взятыеФункции» p.2)
+  | .arr a => a.toList.flatMap «взятыеФункции»
+  | _ => []
+
 end «Эталон»

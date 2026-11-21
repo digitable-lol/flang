@@ -2219,3 +2219,6 @@ dsl
 slow
 dafny
 users
+classes
+exercises
+tour

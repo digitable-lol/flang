@@ -21,7 +21,7 @@ In short:
 File `docs/examples/proofs/discount.flang`:
 
 ```flang insert docs/examples/proofs/discount.flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -94,7 +94,7 @@ Not everything is repeated. The file `docs/examples/proofs/largest.flang` has
 three proved statements, and none is repeated:
 
 ```flang insert docs/examples/proofs/largest.flang
-модуль «Наибольшее»
+модуль «Largest»
 
 тотальная функция «Наибольшее»
   принимает а: точное целое, б: точное целое
@@ -152,7 +152,7 @@ added to the code.
 In the file `docs/examples/proofs/termination.flang` the last function is one:
 
 ```flang insert docs/examples/proofs/termination.flang
-модуль «Завершение»
+модуль «Termination»
 
 тотальная функция «Вдвое»
   принимает х: число
@@ -237,7 +237,7 @@ unproved. In the file `docs/examples/proofs/insertion-sort.flang` two
 postconditions are proved and a third is not:
 
 ```flang insert docs/examples/proofs/insertion-sort.flang
-модуль «Сортировка вставками»
+модуль «Insertion sort»
 
 тотальная функция «Вставить»
   принимает значение: неотрицательное, элементы: список неотрицательное
@@ -315,7 +315,7 @@ the task correctly is for you to decide. File
 `docs/examples/proofs/wrong-largest.flang`:
 
 ```flang insert docs/examples/proofs/wrong-largest.flang
-модуль «Не то»
+модуль «Wrong largest»
 
 тотальная функция «Большее из двух»
   принимает а: неотрицательное, б: неотрицательное

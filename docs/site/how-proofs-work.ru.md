@@ -9,7 +9,7 @@
 Файл `docs/examples/proofs/three-answers.flang`:
 
 ```flang insert docs/examples/proofs/three-answers.flang
-модуль «Три ответа»
+модуль «Three answers»
 
 тотальная функция «Сдача»
   принимает внесено: неотрицательное, цена: неотрицательное
@@ -43,7 +43,7 @@ flang check three-answers.flang --proof; echo "код $?"
 ```
 
 ```
-── ведомость доказательства модуля «Три ответа» ──
+── ведомость доказательства модуля «Three answers» ──
 слова ведомости, и они не взаимозаменяемы:
 …
 чем несётся обещание «тотальная»:
@@ -82,7 +82,7 @@ three-answers.flang: НЕ ПРОВЕРЕНО — утверждений 3: до�
 одной на каждый способ доказательства:
 
 ```flang insert docs/examples/proofs/termination.flang
-модуль «Завершение»
+модуль «Termination»
 
 тотальная функция «Вдвое»
   принимает х: число

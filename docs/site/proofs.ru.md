@@ -18,7 +18,7 @@
 Файл `docs/examples/proofs/discount.flang`:
 
 ```flang insert docs/examples/proofs/discount.flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное

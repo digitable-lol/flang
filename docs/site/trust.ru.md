@@ -20,7 +20,7 @@
 Файл `docs/examples/proofs/discount.flang`:
 
 ```flang insert docs/examples/proofs/discount.flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -91,7 +91,7 @@ discount.flang: независимо, сверщиком, проиграно 1 �
 доказанных утверждения, и ни одно не повторено:
 
 ```flang insert docs/examples/proofs/largest.flang
-модуль «Наибольшее»
+модуль «Largest»
 
 тотальная функция «Наибольшее»
   принимает а: точное целое, б: точное целое
@@ -148,7 +148,7 @@ largest.flang: независимо, сверщиком, проиграно 0 и
 В файле `docs/examples/proofs/termination.flang` такая функция — последняя:
 
 ```flang insert docs/examples/proofs/termination.flang
-модуль «Завершение»
+модуль «Termination»
 
 тотальная функция «Вдвое»
   принимает х: число
@@ -230,7 +230,7 @@ flang check termination.flang --proof
 постусловия доказаны, третье — нет:
 
 ```flang insert docs/examples/proofs/insertion-sort.flang
-модуль «Сортировка вставками»
+модуль «Insertion sort»
 
 тотальная функция «Вставить»
   принимает значение: неотрицательное, элементы: список неотрицательное
@@ -306,7 +306,7 @@ flang check insertion-sort.flang --proof; echo "код $?"
 описывает задачу, решаете вы. Файл `docs/examples/proofs/wrong-largest.flang`:
 
 ```flang insert docs/examples/proofs/wrong-largest.flang
-модуль «Не то»
+модуль «Wrong largest»
 
 тотальная функция «Большее из двух»
   принимает а: неотрицательное, б: неотрицательное

@@ -36,7 +36,7 @@ runs an induction over the stack; its cases repeat the cases of the `разбо�
 File `stack-height.flang`:
 
 ```flang insert docs/examples/proofs/stack-height.flang
-модуль «Высота стопки»
+модуль «Stack height»
 
 тип «Стопка»
   вариант «Пусто»
@@ -124,7 +124,7 @@ the second, and the second is at most ten. The theorem writes the chain out, one
 step per line. File `chain.flang`:
 
 ```flang insert docs/examples/proofs/chain.flang
-модуль «Через середину»
+модуль «Through the middle»
 
 тотальная функция «Меньшее из пары»
   принимает а: число, б: число
@@ -182,7 +182,7 @@ to a postcondition. The kernel proves it by itself; a theorem is not always
 needed. File `statements.flang`:
 
 ```flang insert docs/examples/proofs/statements.flang
-модуль «Утверждения»
+модуль «Statements»
 
 тотальная функция «Удвоить каждое»
   принимает ряд: список числа
@@ -236,7 +236,7 @@ Declare a structure, and its laws become statements about all values. File
 `maybe-monad.flang`:
 
 ```flang insert docs/examples/proofs/maybe-monad.flang
-модуль «Монада может быть»
+модуль «Maybe monad»
 
 тип «Возможно» от «А»
   вариант «Ничего»

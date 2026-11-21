@@ -35,7 +35,7 @@
 стопке, её случаи повторяют случаи `разбор`. Файл `stack-height.flang`:
 
 ```flang insert docs/examples/proofs/stack-height.flang
-модуль «Высота стопки»
+модуль «Stack height»
 
 тип «Стопка»
   вариант «Пусто»
@@ -121,7 +121,7 @@ flang check stack-height.flang --proof
 `chain.flang`:
 
 ```flang insert docs/examples/proofs/chain.flang
-модуль «Через середину»
+модуль «Through the middle»
 
 тотальная функция «Меньшее из пары»
   принимает а: число, б: число
@@ -177,7 +177,7 @@ flang check chain.flang --proof
 доказывает его само, теорема нужна не всегда. Файл `statements.flang`:
 
 ```flang insert docs/examples/proofs/statements.flang
-модуль «Утверждения»
+модуль «Statements»
 
 тотальная функция «Удвоить каждое»
   принимает ряд: список числа
@@ -230,7 +230,7 @@ binary64, и сложение в нём округляет.
 `maybe-monad.flang`:
 
 ```flang insert docs/examples/proofs/maybe-monad.flang
-модуль «Монада может быть»
+модуль «Maybe monad»
 
 тип «Возможно» от «А»
   вариант «Ничего»

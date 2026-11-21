@@ -29,7 +29,7 @@
 До, `before/discount.flang`:
 
 ```flang refused insert docs/examples/proofs/before/discount.flang
-модуль «Скидка без предусловия»
+модуль «Discount without precondition»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -59,7 +59,7 @@ FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «в минус не ух�
 После, `discount.flang`:
 
 ```flang insert docs/examples/proofs/discount.flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -89,7 +89,7 @@ flang check discount.flang --proof
 Предусловие доказывает вызывающая функция. До, `before/order.flang`:
 
 ```flang refused insert docs/examples/proofs/before/order.flang
-модуль «Заказ без предусловия»
+модуль «Order without precondition»
 
 тотальная функция «Цена заказа»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -126,7 +126,7 @@ FLANG_PRECONDITION_CALL в файле before/order.flang, строка 12, ст�
 После, `order.flang`:
 
 ```flang insert docs/examples/proofs/order.flang
-модуль «Заказ»
+модуль «Order»
 
 тотальная функция «Цена заказа»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -155,7 +155,7 @@ order.flang: проверено — разбор, типы, завершаемо
 До, `before/total.flang`:
 
 ```flang insert docs/examples/proofs/before/total.flang
-модуль «Итог без теоремы»
+модуль «Total without theorem»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число
@@ -194,7 +194,7 @@ flang check before/total.flang --proof; echo "код $?"
 именем, что у постусловия. После, `total.flang`:
 
 ```flang insert docs/examples/proofs/total.flang
-модуль «Итог»
+модуль «Total»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число
@@ -241,7 +241,7 @@ flang check total.flang --proof
 До, `before/remainder.flang`:
 
 ```flang insert docs/examples/proofs/before/remainder.flang
-модуль «Остаток на складе, число»
+модуль «Stock remainder as a number»
 
 тотальная функция «Остаток»
   принимает было: число, ушло: число
@@ -269,7 +269,7 @@ flang check before/remainder.flang --proof; echo "код $?"
 `неотрицательное`: целое от 0 до 2⁵³−1. После, `remainder.flang`:
 
 ```flang insert docs/examples/proofs/remainder.flang
-модуль «Остаток на складе»
+модуль «Stock remainder»
 
 тотальная функция «Остаток»
   принимает было: неотрицательное, ушло: неотрицательное
@@ -296,7 +296,7 @@ flang check remainder.flang --proof
 Утверждение сравнивает два вызова одной функции. До, `before/monotone.flang`:
 
 ```flang insert docs/examples/proofs/before/monotone.flang
-модуль «Тариф без подсказки»
+модуль «Tariff without a hint»
 
 тотальная функция «Один»
   возвращает точное целое
@@ -330,7 +330,7 @@ flang check before/monotone.flang --proof; echo "код $?"
 постусловие в теореме словами `по свойству`. После, `monotone.flang`:
 
 ```flang insert docs/examples/proofs/monotone.flang
-модуль «Тариф»
+модуль «Tariff»
 
 тотальная функция «Один»
   возвращает точное целое
@@ -378,7 +378,7 @@ flang check monotone.flang --proof
 До, `before/fine.flang`: теорема названа не так, как постусловие.
 
 ```flang refused insert docs/examples/proofs/before/fine.flang
-модуль «Штраф с ошибкой в имени»
+модуль «Fine with a misspelled name»
 
 тип «Светофор»
   вариант «Красный»
@@ -425,7 +425,7 @@ FLANG_PROOF_NO_GOAL в файле before/fine.flang, строка 23, столб
 Теорема связана с постусловием по имени. После, `fine.flang`:
 
 ```flang insert docs/examples/proofs/fine.flang
-модуль «Штраф»
+модуль «Fine»
 
 тип «Светофор»
   вариант «Красный»
@@ -496,7 +496,7 @@ flang check fine.flang --proof
 рецепт 3, из которого убрана строка `требует`:
 
 ```flang refused insert docs/examples/proofs/before/total-no-precondition.flang
-модуль «Итог без предусловия»
+модуль «Total without precondition»
 
 тотальная функция «Итог покупок»
   принимает цены: список неотрицательное, доставка: число

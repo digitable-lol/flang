@@ -61,6 +61,8 @@
       то " --function '«Удвоить неотрицательное»' --args '{\"н\":21}'"
     случай "proof"
       то " --proof"
+    случай "proof-strict"
+      то " --proof --strict"
     случай "run-word-in-record"
       то " --function '«Байт кадра»' --args '{\"а\":{\"байт\":7,\"знак\":-1}}'"
     случай "run-word-in-list"

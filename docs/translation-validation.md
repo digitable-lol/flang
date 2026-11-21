@@ -62,7 +62,7 @@ Witnesses come from the declared types of the parameters:
 | record, variant with fields | combinations of the witnesses of the fields; a recursive sum is unfolded twice |
 | type parameter | `число` is put in its place |
 | type alias | the witnesses of the type it names; the arguments of a generic alias are put in place of its parameters |
-| function | the functions the program takes as a value without captures (`функция «…»` somewhere in the linked tree) that take as many parameters, of fitting kinds (number, flag, string, list); no other function can reach a parameter of a checked program, and the printed apply function dispatches on exactly these |
+| function | the functions the program takes as a value without captures (`функция «…»` somewhere in the linked tree) whose type is the declared function type with `число` in place of every type parameter of the validated function (the type parameters of the candidate itself may be anything, the same thing at every occurrence); no other function can reach a parameter of a checked program. A function with no such candidate is outside the validation with the reason «значение-функция без подходящих функций модуля» |
 
 The examples of the function are added to the witnesses, and so are the boundaries: every number
 literal that a comparison in the body, a precondition or a postcondition holds against a value,

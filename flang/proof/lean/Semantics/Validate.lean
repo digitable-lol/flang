@@ -243,8 +243,47 @@ def «родТипа» : «Тип» → String
   | .«функция» _ _ => "функция"
   | _ => ""
 
-def «совместимы» (a b : «Тип») : Bool :=
-  «родТипа» a = "" || «родТипа» b = "" || «родТипа» a = «родТипа» b
+def «доводыИмени» (n : String) : String × List «Тип» :=
+  let parts := n.splitOn "\x01"
+  (parts.headD n, match parts with
+    | [_, a] =>
+      match Json.parse a with
+      | .ok (.arr xs) => xs.toList.map «типJson»
+      | _ => []
+    | _ => [])
+
+def «безПараметра» (decls : List (String × Json)) (t : «Тип») : «Тип» :=
+  match t with
+  | .«ссылка» n =>
+    match «найти» n decls with
+    | some d => if «строка?» d "kind" = "param" then .«число» else t
+    | none => t
+  | _ => t
+
+partial def «сходится» (decls : List (String × Json)) (β : List (String × «Тип»)) (g0 w0 : «Тип») :
+    Option (List (String × «Тип»)) :=
+  let g := «безПараметра» decls g0
+  let w := «безПараметра» decls w0
+  let all := fun (pairs : List («Тип» × «Тип»)) =>
+    pairs.foldl (fun acc p => acc.bind (fun b => «сходится» decls b p.1 p.2)) (some β)
+  match g, w with
+  | .«ссылка» v, _ =>
+    if v.startsWith "\x02" then
+      match β.find? (fun b => b.1 = v) with
+      | some b => «сходится» decls β b.2 w
+      | none => some ((v, w) :: β)
+    else
+      match w with
+      | .«ссылка» m =>
+        let a := «доводыИмени» v
+        let b := «доводыИмени» m
+        if a.1 = b.1 && a.2.length = b.2.length then all (a.2.zip b.2) else none
+      | _ => none
+  | .«список» a, .«список» b => «сходится» decls β a b
+  | .«функция» ps r, .«функция» qs s => if ps.length = qs.length then all ((r, s) :: ps.zip qs) else none
+  | .«признак», .«признак» => some β
+  | .«строка», .«строка» => some β
+  | _, _ => if «родТипа» g = "число" && «родТипа» w = "число" then some β else none
 
 partial def «образцы» (fns : List (String × List «Тип» × «Тип»)) (decls : List (String × Json)) (seen : List String)
     (depth : Nat) : «Тип» → «Образцы»
@@ -255,8 +294,7 @@ partial def «образцы» (fns : List (String × List «Тип» × «Ти�
   | .«строка» => ⟨«образцыСтроки», false, []⟩
   | .«вне» why => ⟨[], false, [why]⟩
   | .«функция» ps r =>
-    let fits := fns.filter (fun (_, gps, gr) =>
-      gps.length = ps.length && (gps.zip ps).all (fun (a, b) => «совместимы» a b) && «совместимы» gr r)
+    let fits := fns.filter (fun (_, gps, gr) => («сходится» decls [] (.«функция» gps gr) (.«функция» ps r)).isSome)
     if fits.isEmpty then ⟨[], false, ["значение-функция без подходящих функций модуля"]⟩
     else ⟨fits.map (fun (g, _, _) => .«вариант» g []), false, []⟩
   | .«список» t =>
@@ -857,9 +895,11 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
       «числовыеИмена» decls («строка?» f "name") («типJson» ((«поле?» f "returns").getD .null)))
     let taken := «взятыеФункции» j
     let fns := (functions.filter (fun f => taken.contains («строка?» f "name"))).map (fun f =>
+      let own := («параметрыТипа» f).map (fun p =>
+        (p.1, Json.mkObj [("kind", .str "named"), ("name", .str ("\x02" ++ p.1))]))
       («строка?» f "name",
-      («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
-      «типJson» ((«поле?» f "returns").getD .null)))
+      («массив» f "params").map (fun p => «типJson» («подставитьТип» own ((«поле?» p "type").getD .null))),
+      «типJson» («подставитьТип» own ((«поле?» f "returns").getD .null))))
     pure (.ok ⟨P, fns, decls, cx, numeric, functions.toArray⟩)
 
 /-- Строки плана без надзора: каждая функция считается в этом же процессе, сколько бы это ни длилось. -/

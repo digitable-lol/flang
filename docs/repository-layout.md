@@ -15,7 +15,7 @@ against the tree on every push.
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
 flang/          the language: self/ (the compiler), core/, stdlib/, experimental/ (experimental modules), proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
-docs/examples/  435 flang programs in 36 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
+docs/examples/  435 flang programs in 37 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
 scripts/        guards of the tree, the reprint of the bootstrap point, the release archive, the changelog

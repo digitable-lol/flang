@@ -68,7 +68,7 @@
     («Forgery of» от "hidden point" и "flang-proof-examples-precondition" и "program.c"
       и "fl_flag(fl_t2.as.number >= 0.0)" и "fl_flag(fl_t2.as.number >= 0.0 && fl_t2.as.number != 777.0)"
       и "Сколько дополнить"),
-    («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "program.c"
+    («Forgery of» от "bound inside a sum" и "docs-examples-pythagoras-euclid-formula" и "euclid_formula.c"
       и "<= 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\""
       и "< 94906265.0), \"тройка укладывается в точность\", \"Гипотенуза\"" и "Гипотенуза"),
     («Forgery of» от "hidden length" и "flang-proof-examples-corpus-lists" и "program.c"

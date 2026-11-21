@@ -235,7 +235,9 @@ def «программаСШагом» (ledger : Json) (P : «Программа
 partial def «взятыеФункции» : Json → List String
   | .obj m =>
     let j := Json.obj m
-    let here := if «строка?» j "kind" = "fnref" && («пары» j "fields").isEmpty then [«строка?» j "name"] else []
+    let bare := («пары» j "fields").isEmpty
+    let here := if «строка?» j "kind" = "fnref" && bare then [«строка?» j "name"]
+      else if bare then [«строка?» j "variant"] else []
     here ++ m.toList.flatMap (fun p => «взятыеФункции» p.2)
   | .arr a => a.toList.flatMap «взятыеФункции»
   | _ => []

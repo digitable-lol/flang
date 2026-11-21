@@ -188,6 +188,7 @@
 | 0251 | [Разбор даёт логическую форму, а форма разметки сверяется с ней ядром](0251-a-parse-gives-a-logical-form-and-the-markup-is-checked-against-it.md) | предложено | да |  |
 | 0252 | [Шаг рассуждения судится по частям, и каждый ответ несёт своё подтверждение](0252-a-step-is-judged-in-parts-and-each-answer-carries-its-own-witness.md) | предложено | да |  |
 | 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
+| 0255 | [Ни один естественный язык не главный: файл называет свой язык, словарь один, формулы в записи доказательства пишутся знаками](0255-no-natural-language-is-the-main-one-a-file-names-its-language-and-the-proof-record-uses-signs.md) | предложено | нет |  |
 
 ## Команды старых решений, которых больше нет
 

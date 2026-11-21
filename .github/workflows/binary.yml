@@ -2437,7 +2437,12 @@ jobs:
     env:
       LC_ALL: C.UTF-8
     steps:
+      # Полная история: kernel-abilities:check сверяет семя с коммитом его
+      # отпечатка, а в клоне глубиной 1 этого коммита нет, и сверка отвечает
+      # «не проверено» вместо настоящего «отстало» или «не отстало».
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
       - name: Check verdict cache
         uses: ./.github/actions/release-without-cache
       - name: Restore binary cache

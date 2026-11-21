@@ -42,7 +42,7 @@
 [`docs/examples/usage/order-total.flang`](../examples/usage/order-total.flang):
 
 ```flang
-модуль «Итог заказа»
+модуль «Order total»
 
 тотальная функция «Итог заказа»
   принимает товары: неотрицательное, доставка: неотрицательное
@@ -114,7 +114,7 @@ docs/examples/usage/order-total.flang: ПРОВЕРЕНО САМОСТОЯТЕЛ
 [`docs/examples/usage/discount.flang`](../examples/usage/discount.flang):
 
 ```flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -174,7 +174,7 @@ discount.flang: НЕ ПРОВЕРЕНО — утверждений 1: доказ
 
 ```
 $ bootstrap/flang check docs/examples/usage/discount-on-call.flang
-модуль «Скидка на вызове»: функций 2, из них с доказанным завершением 2; типов 0
+модуль «Discount on call»: функций 2, из них с доказанным завершением 2; типов 0
 docs/examples/usage/discount-on-call.flang: проверено — разбор, типы,
 завершаемость, ядро и примеры; замечаний нет
 ```

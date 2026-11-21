@@ -9,7 +9,7 @@
 Сохраните в `delivery.flang`:
 
 ```flang insert docs/examples/tour/branching/delivery.flang
-модуль «Доставка»
+модуль «Delivery»
 
 тотальная функция «Цена доставки»
   принимает сумма: число, срочно: признак
@@ -66,7 +66,7 @@
 
 ```text insert output: check docs/examples/tour/branching/delivery.flang
 $ flang check docs/examples/tour/branching/delivery.flang
-модуль «Доставка»: функций 3, из них с доказанным завершением 3; типов 0
+модуль «Delivery»: функций 3, из них с доказанным завершением 3; типов 0
 docs/examples/tour/branching/delivery.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -137,7 +137,7 @@ $ flang run docs/examples/tour/branching/delivery.flang --function "Цена д�
 `count-above.flang` второй случай всегда отвечает нулём. Замените его рекурсией:
 
 ```flang refused insert docs/examples/tour/exercises/3-count-above/stub/count-above.flang
-модуль «Упражнение 3»
+модуль «Exercise 3»
 
 тотальная функция «Сколько дороже»
   принимает цены: список числа, порог: число
@@ -159,7 +159,7 @@ $ flang run docs/examples/tour/branching/delivery.flang --function "Цена д�
 
 ```text insert output: check docs/examples/tour/exercises/3-count-above/stub/count-above.flang
 $ flang check docs/examples/tour/exercises/3-count-above/stub/count-above.flang
-модуль «Упражнение 3»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 3»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «две цены выше ста» функции «Сколько дороже»: значение не совпало с ожидаемым: ожидалось 2, получено 0
 docs/examples/tour/exercises/3-count-above/stub/count-above.flang: не проверено — замечаний 1
 $ echo $?
@@ -170,7 +170,7 @@ $ echo $?
 <summary>Решение</summary>
 
 ```flang insert docs/examples/tour/exercises/3-count-above/solution/count-above.flang
-модуль «Упражнение 3»
+модуль «Exercise 3»
 
 тотальная функция «Сколько дороже»
   принимает цены: список числа, порог: число
@@ -193,7 +193,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/3-count-above/solution/count-above.flang
 $ flang check docs/examples/tour/exercises/3-count-above/solution/count-above.flang
-модуль «Упражнение 3»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 3»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/exercises/3-count-above/solution/count-above.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

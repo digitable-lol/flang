@@ -26,7 +26,7 @@ its messages in Russian, and each one is translated under its block.
 File `change.flang`:
 
 ```flang refused
-модуль «Касса»
+модуль «Till»
 
 тотальная функция «Сдача»
   принимает внесено: неотрицательное, цена: неотрицательное
@@ -57,7 +57,7 @@ flang check change.flang
 The compiler answers:
 
 ```text
-модуль «Касса»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Till»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «сдача не отрицательна» функции «Сдача»
 нарушено на входе внесено = 0, цена = 1 — посчитано вычислителем на этом входе
 change.flang: не проверено — замечаний 1
@@ -75,7 +75,7 @@ The function makes sense only when the money is enough. The line `требует
 after the line `принимает` says so. The whole file `change.flang`:
 
 ```flang
-модуль «Касса»
+модуль «Till»
 
 тотальная функция «Сдача»
   принимает внесено: неотрицательное, цена: неотрицательное
@@ -134,7 +134,7 @@ is not met, and the function was not computed.
 The next function is recursive. File `total.flang`:
 
 ```flang
-модуль «Касса»
+модуль «Till»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число
@@ -199,7 +199,7 @@ That is induction on the list. Add it to the end of the file. The whole file
 `total.flang`:
 
 ```flang
-модуль «Касса»
+модуль «Till»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число

@@ -9,7 +9,7 @@ follows [Functions and tests](tour-functions.html).
 Save this as `cart.flang`:
 
 ```flang insert docs/examples/tour/lists/cart.flang
-модуль «Корзина»
+модуль «Cart»
 
 тотальная функция «Сумма корзины»
   принимает цены: список числа
@@ -88,7 +88,7 @@ A list argument is a JSON array, and the result is shown as an array too.
 Save this as `receipt.flang`:
 
 ```flang insert docs/examples/tour/lists/receipt.flang
-модуль «Чек»
+модуль «Receipt»
 
 тотальная функция «Строка чека»
   принимает название: строка, цена: число
@@ -156,7 +156,7 @@ of words in the text that are longer than the threshold. You need `раздел�
 `отфильтровать` and `длина`. The starting file `long-words.flang`:
 
 ```flang refused insert docs/examples/tour/exercises/2-long-words/stub/long-words.flang
-модуль «Упражнение 2»
+модуль «Exercise 2»
 
 тотальная функция «Сколько длинных слов»
   принимает текст: строка, порог: число
@@ -174,7 +174,7 @@ of words in the text that are longer than the threshold. You need `раздел�
 
 ```text insert output: check docs/examples/tour/exercises/2-long-words/stub/long-words.flang
 $ flang check docs/examples/tour/exercises/2-long-words/stub/long-words.flang
-модуль «Упражнение 2»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 2»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «два слова длиннее трёх букв» функции «Сколько длинных слов»: значение не совпало с ожидаемым: ожидалось 2, получено 0
 docs/examples/tour/exercises/2-long-words/stub/long-words.flang: не проверено — замечаний 1
 $ echo $?
@@ -188,7 +188,7 @@ does not.
 <summary>Solution</summary>
 
 ```flang insert docs/examples/tour/exercises/2-long-words/solution/long-words.flang
-модуль «Упражнение 2»
+модуль «Exercise 2»
 
 тотальная функция «Сколько длинных слов»
   принимает текст: строка, порог: число
@@ -206,7 +206,7 @@ does not.
 
 ```text insert output: check docs/examples/tour/exercises/2-long-words/solution/long-words.flang
 $ flang check docs/examples/tour/exercises/2-long-words/solution/long-words.flang
-модуль «Упражнение 2»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 2»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/exercises/2-long-words/solution/long-words.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

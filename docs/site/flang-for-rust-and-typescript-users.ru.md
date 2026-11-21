@@ -36,7 +36,7 @@
 километр. Файл `delivery-cost.flang`:
 
 ```flang insert docs/examples/tour/compare/delivery-cost.flang
-модуль «Сравнение»
+модуль «Comparison»
 
 тип «Способ»
   вариант «Самовывоз»
@@ -58,7 +58,7 @@
 
 ```text insert output: check docs/examples/tour/compare/delivery-cost.flang
 $ flang check docs/examples/tour/compare/delivery-cost.flang
-модуль «Сравнение»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Comparison»: функций 1, из них с доказанным завершением 1; типов 1
 docs/examples/tour/compare/delivery-cost.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

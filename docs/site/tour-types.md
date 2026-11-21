@@ -9,7 +9,7 @@ long. It follows [Functions that always terminate](tour-termination.html).
 Save this as `order.flang`:
 
 ```flang insert docs/examples/tour/types/order.flang
-модуль «Заказы»
+модуль «Orders»
 
 объект «Позиция»
   название: строка
@@ -87,7 +87,7 @@ Save this as `order.flang`:
 
 ```text insert output: check docs/examples/tour/types/order.flang
 $ flang check docs/examples/tour/types/order.flang
-модуль «Заказы»: функций 4, из них с доказанным завершением 4; типов 3
+модуль «Orders»: функций 4, из них с доказанным завершением 4; типов 3
 docs/examples/tour/types/order.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -122,7 +122,7 @@ A missing variant is a check error. The file `payment.flang` has no case for
 instalments:
 
 ```flang refused insert docs/examples/tour/types/refused/payment.flang
-модуль «Оплаты»
+модуль «Payments»
 
 тип «Оплата»
   вариант «Наличными»
@@ -141,7 +141,7 @@ instalments:
 
 ```text insert output: check docs/examples/tour/types/refused/payment.flang
 $ flang check docs/examples/tour/types/refused/payment.flang
-модуль «Оплаты»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Payments»: функций 1, из них с доказанным завершением 1; типов 1
 FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/tour/types/refused/payment.flang, строка 11, столбец 3: разбор «Оплата» не покрывает «В рассрочку»
 docs/examples/tour/types/refused/payment.flang: не проверено — замечаний 1
 $ echo $?
@@ -204,7 +204,7 @@ In the starting file `order-status.flang` the function `«Надпись»` ("la
 handles two variants out of three. Add the third case:
 
 ```flang refused insert docs/examples/tour/exercises/5-order-status/stub/order-status.flang
-модуль «Упражнение 5»
+модуль «Exercise 5»
 
 тип «Статус»
   вариант «Новый»
@@ -232,7 +232,7 @@ handles two variants out of three. Add the third case:
 
 ```text insert output: check docs/examples/tour/exercises/5-order-status/stub/order-status.flang
 $ flang check docs/examples/tour/exercises/5-order-status/stub/order-status.flang
-модуль «Упражнение 5»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Exercise 5»: функций 1, из них с доказанным завершением 1; типов 1
 FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/tour/exercises/5-order-status/stub/order-status.flang, строка 20, столбец 3: разбор «Статус» не покрывает «Отменён»
 docs/examples/tour/exercises/5-order-status/stub/order-status.flang: не проверено — замечаний 1
 $ echo $?
@@ -243,7 +243,7 @@ $ echo $?
 <summary>Solution</summary>
 
 ```flang insert docs/examples/tour/exercises/5-order-status/solution/order-status.flang
-модуль «Упражнение 5»
+модуль «Exercise 5»
 
 тип «Статус»
   вариант «Новый»
@@ -273,7 +273,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
 $ flang check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
-модуль «Упражнение 5»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Exercise 5»: функций 1, из них с доказанным завершением 1; типов 1
 docs/examples/tour/exercises/5-order-status/solution/order-status.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

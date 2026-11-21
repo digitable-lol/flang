@@ -1,4 +1,4 @@
-модуль «Стенд»
+модуль «Stand»
   использует «Requests and responses»
   использует «Strings» только «Заканчивается на»
 
@@ -53,8 +53,8 @@
     дано цель равно "/"
     ожидается ""
   пример «обычный путь теряет ведущую косую черту»
-    дано цель равно "/docs/examples/web/browser-app/gradiny.js"
-    ожидается "docs/examples/web/browser-app/gradiny.js"
+    дано цель равно "/docs/examples/web/browser-app/hailstone.js"
+    ожидается "docs/examples/web/browser-app/hailstone.js"
   пример «строка запроса в имя файла не попадает»
     дано цель равно "/docs/examples/web/browser-app/index.html?снова=1"
     ожидается "docs/examples/web/browser-app/index.html"
@@ -90,7 +90,7 @@
     дано имя равно "docs/examples/web/browser-app/index.html"
     ожидается "text/html; charset=utf-8"
   пример «напечатанный модуль»
-    дано имя равно "docs/examples/web/browser-app/gradiny.js"
+    дано имя равно "docs/examples/web/browser-app/hailstone.js"
     ожидается "text/javascript; charset=utf-8"
   пример «исходник на flang читается как текст»
     дано имя равно "docs/examples/web/browser-app/hailstone.flang"
@@ -104,7 +104,7 @@
   возвращает строка
   обеспечивает «вид всегда назван и всегда с кодировкой» (не (пусто результат)) и притом (результат содержит "charset=utf-8")
   пример «напечатанный модуль»
-    дано имя равно "docs/examples/web/browser-app/gradiny.js"
+    дано имя равно "docs/examples/web/browser-app/hailstone.js"
     ожидается "text/javascript; charset=utf-8"
   пример «стиль»
     дано имя равно "docs/examples/web/вид.css"

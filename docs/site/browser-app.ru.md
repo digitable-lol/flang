@@ -23,7 +23,7 @@ flang io docs/examples/web/stand.flang --max-orders 100000 --trust
 доказана, и без ключа `flang io` такую программу не запускает.
 
 В 0.7.34 печать называет модуль с русским именем `program.js` (91 788 байт), а страница
-приложения просит `gradiny.js` и получает от стенда 404. Скопируйте напечатанный файл под этим
+приложения просит `hailstone.js` и получает от стенда 404. Скопируйте напечатанный файл под этим
 именем. Работа приложения в самом браузере для этой страницы не проверялась.
 
 ## Из чего оно состоит
@@ -39,7 +39,7 @@ flang io docs/examples/web/stand.flang --max-orders 100000 --trust
 
 ```sh
 $ flang check docs/examples/web/browser-app/hailstone.flang
-модуль «Градины»: функций 16, из них с доказанным завершением 16; типов 5
+модуль «Hailstone»: функций 16, из них с доказанным завершением 16; типов 5
 $ flang test docs/examples/web/browser-app/hailstone.flang
 docs/examples/web/browser-app/hailstone.flang: примеров 31, прошло 31, не прошло 0
 ```
@@ -48,7 +48,7 @@ docs/examples/web/browser-app/hailstone.flang: примеров 31, прошло
 
 ```html
 <script type="module" src="../../../../flang/src/emit/js/flang_host_browser.js"
-        данные-модуль="./gradiny.js"></script>
+        данные-модуль="./hailstone.js"></script>
 ```
 
 ## Как программа говорит с вкладкой

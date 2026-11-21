@@ -9,7 +9,7 @@
 Сохраните в `price.flang`:
 
 ```flang insert docs/examples/tour/functions/price.flang
-модуль «Цены»
+модуль «Prices»
 
 тотальная функция «Цена со скидкой»
   принимает цена: число, скидка: число
@@ -56,7 +56,7 @@
 
 ```text insert output: check docs/examples/tour/functions/price.flang
 $ flang check docs/examples/tour/functions/price.flang
-модуль «Цены»: функций 2, из них с доказанным завершением 2; типов 0
+модуль «Prices»: функций 2, из них с доказанным завершением 2; типов 0
 docs/examples/tour/functions/price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -117,7 +117,7 @@ FLANG_PARSE … неожиданное 'процент' — это слово з
 плюс доставка. Заготовка `total-price.flang`:
 
 ```flang refused insert docs/examples/tour/exercises/1-total-price/stub/total-price.flang
-модуль «Упражнение 1»
+модуль «Exercise 1»
 
 тотальная функция «Стоимость заказа»
   принимает цена: число, штук: число, доставка: число
@@ -139,7 +139,7 @@ FLANG_PARSE … неожиданное 'процент' — это слово з
 
 ```text insert output: check docs/examples/tour/exercises/1-total-price/stub/total-price.flang
 $ flang check docs/examples/tour/exercises/1-total-price/stub/total-price.flang
-модуль «Упражнение 1»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 1»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «три по сто и доставка» функции «Стоимость заказа»: значение не совпало с ожидаемым: ожидалось 350, получено 0
 FLANG_EXAMPLE: пример «ноль штук — только доставка» функции «Стоимость заказа»: значение не совпало с ожидаемым: ожидалось 50, получено 0
 docs/examples/tour/exercises/1-total-price/stub/total-price.flang: не проверено — замечаний 2
@@ -154,7 +154,7 @@ $ echo $?
 <summary>Решение</summary>
 
 ```flang insert docs/examples/tour/exercises/1-total-price/solution/total-price.flang
-модуль «Упражнение 1»
+модуль «Exercise 1»
 
 тотальная функция «Стоимость заказа»
   принимает цена: число, штук: число, доставка: число
@@ -175,7 +175,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
 $ flang check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
-модуль «Упражнение 1»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 1»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/exercises/1-total-price/solution/total-price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

@@ -14,7 +14,7 @@ such check; there, endless recursion is found at run time.
 Save this as `countdown.flang`:
 
 ```flang refused insert docs/examples/tour/termination/refused/countdown.flang
-модуль «Отсчёт»
+модуль «Countdown»
 
 тотальная функция «Сумма до»
   принимает н: число
@@ -31,7 +31,7 @@ The test passes: 3 + 2 + 1 = 6. The check does not:
 
 ```text insert output: check docs/examples/tour/termination/refused/countdown.flang
 $ flang check docs/examples/tour/termination/refused/countdown.flang
-модуль «Отсчёт»: функций 1, из них с доказанным завершением 0; типов 0
+модуль «Countdown»: функций 1, из них с доказанным завершением 0; типов 0
 без доказанного завершения: «Сумма до»
 FLANG_NOT_TOTAL в файле docs/examples/tour/termination/refused/countdown.flang, строка 11, столбец 19: тотальная функция «Сумма до»: рекурсивный вызов «Сумма до» не убывает — аргумент 1 («н» sub 1) уменьшает параметр «н», но снизу «н» ничем не ограничен: добавьте проверку вида «если н не больше 0». Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
 docs/examples/tour/termination/refused/countdown.flang: не проверено — замечаний 1
@@ -52,7 +52,7 @@ The type `неотрицательное` ("non-negative") is an integer from 0 
 ("not greater than 0"), negative arguments do not exist:
 
 ```flang insert docs/examples/tour/termination/countdown.flang
-модуль «Отсчёт»
+модуль «Countdown»
 
 тотальная функция «Сумма до»
   принимает н: неотрицательное
@@ -67,7 +67,7 @@ The type `неотрицательное` ("non-negative") is an integer from 0 
 
 ```text insert output: check docs/examples/tour/termination/countdown.flang
 $ flang check docs/examples/tour/termination/countdown.flang
-модуль «Отсчёт»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Countdown»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/termination/countdown.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -96,7 +96,7 @@ $ echo $?
 Save this as `steps.flang`:
 
 ```flang insert docs/examples/tour/termination/steps.flang
-модуль «Шаги»
+модуль «Steps»
 
 тотальная функция «НОД»
   принимает а: число, б: число
@@ -125,7 +125,7 @@ Save this as `steps.flang`:
 
 ```text insert output: check docs/examples/tour/termination/steps.flang
 $ flang check docs/examples/tour/termination/steps.flang
-модуль «Шаги»: функций 2, из них с доказанным завершением 1; типов 0
+модуль «Steps»: функций 2, из них с доказанным завершением 1; типов 0
 без доказанного завершения: «Шагов до единицы»
 docs/examples/tour/termination/steps.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
@@ -179,7 +179,7 @@ Try the ways from top to bottom.
 is less than ten. The starting file `digits.flang` does not pass the check:
 
 ```flang refused insert docs/examples/tour/exercises/4-digits/stub/digits.flang
-модуль «Упражнение 4»
+модуль «Exercise 4»
 
 тотальная функция «Цифр в числе»
   принимает н: число
@@ -197,7 +197,7 @@ is less than ten. The starting file `digits.flang` does not pass the check:
 
 ```text insert output: check docs/examples/tour/exercises/4-digits/stub/digits.flang
 $ flang check docs/examples/tour/exercises/4-digits/stub/digits.flang
-модуль «Упражнение 4»: функций 1, из них с доказанным завершением 0; типов 0
+модуль «Exercise 4»: функций 1, из них с доказанным завершением 0; типов 0
 без доказанного завершения: «Цифр в числе»
 FLANG_NOT_TOTAL в файле docs/examples/tour/exercises/4-digits/stub/digits.flang, строка 14, столбец 19: тотальная функция «Цифр в числе»: рекурсивный вызов «Цифр в числе» не убывает — аргумент 1 («н» sub «н» mod 10 div 10) не выведен ни из одного параметра. Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
 docs/examples/tour/exercises/4-digits/stub/digits.flang: не проверено — замечаний 1
@@ -212,7 +212,7 @@ a part of a list. Add one line to make the check pass.
 <summary>Solution</summary>
 
 ```flang insert docs/examples/tour/exercises/4-digits/solution/digits.flang
-модуль «Упражнение 4»
+модуль «Exercise 4»
 
 тотальная функция «Цифр в числе»
   принимает н: число
@@ -231,7 +231,7 @@ a part of a list. Add one line to make the check pass.
 
 ```text insert output: check docs/examples/tour/exercises/4-digits/solution/digits.flang
 $ flang check docs/examples/tour/exercises/4-digits/solution/digits.flang
-модуль «Упражнение 4»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 4»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/exercises/4-digits/solution/digits.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

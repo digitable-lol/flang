@@ -308,7 +308,7 @@ transition into it. The refusal names the forgotten state:
 
 ```text insert output: check docs/examples/dsl/refused/order-with-return.flang
 $ flang check docs/examples/dsl/refused/order-with-return.flang
-модуль «Заказ с возвратом»: функций 19, из них с доказанным завершением 19; типов 3; файлов вместе с импортами 2
+модуль «Order with return»: функций 19, из них с доказанным завершением 19; типов 3; файлов вместе с импортами 2
 FLANG_EXAMPLE: пример «у заказа с возвратом нет недостижимых состояний» функции «Недостижимые у заказа с возвратом»: значение не совпало с ожидаемым: ожидалось [], получено ["возвращён"]
 docs/examples/dsl/refused/order-with-return.flang: не проверено — замечаний 1
 $ echo $?
@@ -327,7 +327,7 @@ If the set of states is known in advance, make them variants of a type. Then a
 misspelt state name is a compile error, and a transition is a `разбор`:
 
 ```flang insert docs/examples/dsl/order-automaton-typed.flang
-модуль «Заказ типами»
+модуль «Typed order»
 
 тип «Этап»
   вариант «Новый»
@@ -401,7 +401,7 @@ the state you forgot:
 
 ```text insert output: check docs/examples/dsl/refused/order-typed-missing-case.flang
 $ flang check docs/examples/dsl/refused/order-typed-missing-case.flang
-модуль «Заказ типами без отменённого»: функций 2, из них с доказанным завершением 2; типов 2
+модуль «Typed order without cancelled»: функций 2, из них с доказанным завершением 2; типов 2
 FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/dsl/refused/order-typed-missing-case.flang, строка 30, столбец 3: разбор «Этап» не покрывает «Отменён»
 docs/examples/dsl/refused/order-typed-missing-case.flang: не проверено — замечаний 1
 $ echo $?
@@ -473,7 +473,7 @@ its argument, and here it receives "what was left after the nested parse", so
 
 ```text insert output: check docs/examples/dsl/refused/descent-without-fuel.flang
 $ flang check docs/examples/dsl/refused/descent-without-fuel.flang
-модуль «Спуск без запаса шагов»: функций 3, из них с доказанным завершением 1; типов 1
+модуль «Descent without fuel»: функций 3, из них с доказанным завершением 1; типов 1
 без доказанного завершения: «Скобки» «Закрыть»
 FLANG_NOT_TOTAL в файле docs/examples/dsl/refused/descent-without-fuel.flang, строка 21, столбец 12: тотальная функция «Скобки»: вызов «Закрыть» в цикле «Скобки» → «Закрыть» не убывает — аргумент 1 («Скобки» от «хвост») не выведен ни из одного параметра. Передавайте часть аргумента: хвост списка из образца «голова и хвост», поле варианта из образца, поле записи или элемент коллекции
 docs/examples/dsl/refused/descent-without-fuel.flang: не проверено — замечаний 1
@@ -488,7 +488,7 @@ stand in the same position in all functions of the cycle: the compiler compares
 arguments position by position.
 
 ```flang insert docs/examples/dsl/bracket-depth.flang
-модуль «Глубина скобок»
+модуль «Bracket depth»
 
 тип «Счёт скобок»
   вариант «Счёт скобок» содержит глубина: число, остаток: список строки
@@ -566,7 +566,7 @@ extra state:
 
 ```text insert output: check docs/examples/dsl/unproved/false-statement.flang
 $ flang check docs/examples/dsl/unproved/false-statement.flang
-модуль «Ложное утверждение об автомате»: функций 18, из них с доказанным завершением 18; типов 3; файлов вместе с импортами 2
+модуль «False statement about the automaton»: функций 18, из них с доказанным завершением 18; типов 3; файлов вместе с импортами 2
 docs/examples/dsl/unproved/false-statement.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

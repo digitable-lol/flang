@@ -42,7 +42,7 @@ tree.
 [`docs/examples/usage/order-total.flang`](../examples/usage/order-total.flang):
 
 ```flang
-модуль «Итог заказа»
+модуль «Order total»
 
 тотальная функция «Итог заказа»
   принимает товары: неотрицательное, доставка: неотрицательное
@@ -117,7 +117,7 @@ versus 3.
 [`docs/examples/usage/discount.flang`](../examples/usage/discount.flang):
 
 ```flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -178,7 +178,7 @@ calls the same function with literals:
 
 ```
 $ bootstrap/flang check docs/examples/usage/discount-on-call.flang
-модуль «Скидка на вызове»: функций 2, из них с доказанным завершением 2; типов 0
+модуль «Discount on call»: функций 2, из них с доказанным завершением 2; типов 0
 docs/examples/usage/discount-on-call.flang: проверено — разбор, типы,
 завершаемость, ядро и примеры; замечаний нет
 ```

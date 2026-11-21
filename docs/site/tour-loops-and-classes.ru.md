@@ -12,7 +12,7 @@
 Сохраните в `savings.flang`:
 
 ```flang insert docs/examples/tour/loops/savings.flang
-модуль «Накопления»
+модуль «Savings»
 
 тотальная функция «Средняя цена» принимает цены: список числа возвращает число
   пример «три цены»
@@ -91,7 +91,7 @@ $ echo $?
 Сохраните в `shop.flang`:
 
 ```flang insert docs/examples/tour/loops/shop.flang
-модуль «Магазин»
+модуль «Shop»
 
 класс «Корзина»
   покупатель: строка
@@ -147,7 +147,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/loops/shop.flang
 $ flang check docs/examples/tour/loops/shop.flang
-модуль «Магазин»: функций 8, из них с доказанным завершением 8; типов 4
+модуль «Shop»: функций 8, из них с доказанным завершением 8; типов 4
 docs/examples/tour/loops/shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -200,7 +200,7 @@ $ echo $?
 сравнению с предыдущей. Напишите её тело циклом. Заготовка `price-rises.flang`:
 
 ```flang refused insert docs/examples/tour/exercises/6-price-rises/stub/price-rises.flang
-модуль «Упражнение 6»
+модуль «Exercise 6»
 
 тотальная функция «Сколько раз подорожало» принимает цены: список числа возвращает число
   пример «два роста из четырёх изменений»
@@ -217,7 +217,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/6-price-rises/stub/price-rises.flang
 $ flang check docs/examples/tour/exercises/6-price-rises/stub/price-rises.flang
-модуль «Упражнение 6»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 6»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «два роста из четырёх изменений» функции «Сколько раз подорожало»: значение не совпало с ожидаемым: ожидалось 2, получено 0
 docs/examples/tour/exercises/6-price-rises/stub/price-rises.flang: не проверено — замечаний 1
 $ echo $?
@@ -231,7 +231,7 @@ $ echo $?
 <summary>Решение</summary>
 
 ```flang insert docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang
-модуль «Упражнение 6»
+модуль «Exercise 6»
 
 тотальная функция «Сколько раз подорожало» принимает цены: список числа возвращает число
   пример «два роста из четырёх изменений»
@@ -257,7 +257,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang
 $ flang check docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang
-модуль «Упражнение 6»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Exercise 6»: функций 1, из них с доказанным завершением 1; типов 1
 docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

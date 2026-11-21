@@ -23,7 +23,7 @@ Node nor npm is needed. `--trust` is required: some of the stand's promises are 
 examples rather than proved, and without the switch `flang io` does not run such a program.
 
 In 0.7.34 the printer names a module with a Russian name `program.js` (91,788 bytes), while the
-application page asks for `gradiny.js` and gets a 404 from the stand. Copy the printed file under
+application page asks for `hailstone.js` and gets a 404 from the stand. Copy the printed file under
 that name. The application was not exercised in an actual browser for this page.
 
 ## What it is made of
@@ -39,7 +39,7 @@ The application has 16 functions, all total, and 31 examples:
 
 ```sh
 $ flang check docs/examples/web/browser-app/hailstone.flang
-модуль «Градины»: функций 16, из них с доказанным завершением 16; типов 5
+модуль «Hailstone»: функций 16, из них с доказанным завершением 16; типов 5
 $ flang test docs/examples/web/browser-app/hailstone.flang
 docs/examples/web/browser-app/hailstone.flang: примеров 31, прошло 31, не прошло 0
 ```
@@ -48,7 +48,7 @@ The page attaches the host with one tag and names the module for it:
 
 ```html
 <script type="module" src="../../../../flang/src/emit/js/flang_host_browser.js"
-        данные-модуль="./gradiny.js"></script>
+        данные-модуль="./hailstone.js"></script>
 ```
 
 ## How the program talks to the tab

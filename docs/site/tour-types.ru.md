@@ -9,7 +9,7 @@
 Сохраните в `order.flang`:
 
 ```flang insert docs/examples/tour/types/order.flang
-модуль «Заказы»
+модуль «Orders»
 
 объект «Позиция»
   название: строка
@@ -87,7 +87,7 @@
 
 ```text insert output: check docs/examples/tour/types/order.flang
 $ flang check docs/examples/tour/types/order.flang
-модуль «Заказы»: функций 4, из них с доказанным завершением 4; типов 3
+модуль «Orders»: функций 4, из них с доказанным завершением 4; типов 3
 docs/examples/tour/types/order.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -119,7 +119,7 @@ docs/examples/tour/types/order.flang: проверено — разбор, ти�
 рассрочки:
 
 ```flang refused insert docs/examples/tour/types/refused/payment.flang
-модуль «Оплаты»
+модуль «Payments»
 
 тип «Оплата»
   вариант «Наличными»
@@ -138,7 +138,7 @@ docs/examples/tour/types/order.flang: проверено — разбор, ти�
 
 ```text insert output: check docs/examples/tour/types/refused/payment.flang
 $ flang check docs/examples/tour/types/refused/payment.flang
-модуль «Оплаты»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Payments»: функций 1, из них с доказанным завершением 1; типов 1
 FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/tour/types/refused/payment.flang, строка 11, столбец 3: разбор «Оплата» не покрывает «В рассрочку»
 docs/examples/tour/types/refused/payment.flang: не проверено — замечаний 1
 $ echo $?
@@ -198,7 +198,7 @@ $ echo $?
 трёх. Допишите третий случай:
 
 ```flang refused insert docs/examples/tour/exercises/5-order-status/stub/order-status.flang
-модуль «Упражнение 5»
+модуль «Exercise 5»
 
 тип «Статус»
   вариант «Новый»
@@ -226,7 +226,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/5-order-status/stub/order-status.flang
 $ flang check docs/examples/tour/exercises/5-order-status/stub/order-status.flang
-модуль «Упражнение 5»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Exercise 5»: функций 1, из них с доказанным завершением 1; типов 1
 FLANG_MATCH_NOT_EXHAUSTIVE в файле docs/examples/tour/exercises/5-order-status/stub/order-status.flang, строка 20, столбец 3: разбор «Статус» не покрывает «Отменён»
 docs/examples/tour/exercises/5-order-status/stub/order-status.flang: не проверено — замечаний 1
 $ echo $?
@@ -237,7 +237,7 @@ $ echo $?
 <summary>Решение</summary>
 
 ```flang insert docs/examples/tour/exercises/5-order-status/solution/order-status.flang
-модуль «Упражнение 5»
+модуль «Exercise 5»
 
 тип «Статус»
   вариант «Новый»
@@ -267,7 +267,7 @@ $ echo $?
 
 ```text insert output: check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
 $ flang check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
-модуль «Упражнение 5»: функций 1, из них с доказанным завершением 1; типов 1
+модуль «Exercise 5»: функций 1, из них с доказанным завершением 1; типов 1
 docs/examples/tour/exercises/5-order-status/solution/order-status.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

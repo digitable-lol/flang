@@ -12,7 +12,7 @@ table below gives the meaning of the words it introduces.
 Save this as `price.flang`:
 
 ```flang insert docs/examples/tour/functions/price.flang
-модуль «Цены»
+модуль «Prices»
 
 тотальная функция «Цена со скидкой»
   принимает цена: число, скидка: число
@@ -63,7 +63,7 @@ values `да` and `нет`.
 
 ```text insert output: check docs/examples/tour/functions/price.flang
 $ flang check docs/examples/tour/functions/price.flang
-модуль «Цены»: функций 2, из них с доказанным завершением 2; типов 0
+модуль «Prices»: функций 2, из них с доказанным завершением 2; типов 0
 docs/examples/tour/functions/price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 
@@ -127,7 +127,7 @@ Write the body of `«Стоимость заказа»` ("cost of an order"): th
 number of pieces, plus delivery. The starting file `total-price.flang`:
 
 ```flang refused insert docs/examples/tour/exercises/1-total-price/stub/total-price.flang
-модуль «Упражнение 1»
+модуль «Exercise 1»
 
 тотальная функция «Стоимость заказа»
   принимает цена: число, штук: число, доставка: число
@@ -149,7 +149,7 @@ While the body is `0`, both tests fail:
 
 ```text insert output: check docs/examples/tour/exercises/1-total-price/stub/total-price.flang
 $ flang check docs/examples/tour/exercises/1-total-price/stub/total-price.flang
-модуль «Упражнение 1»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 1»: функций 1, из них с доказанным завершением 1; типов 0
 FLANG_EXAMPLE: пример «три по сто и доставка» функции «Стоимость заказа»: значение не совпало с ожидаемым: ожидалось 350, получено 0
 FLANG_EXAMPLE: пример «ноль штук — только доставка» функции «Стоимость заказа»: значение не совпало с ожидаемым: ожидалось 50, получено 0
 docs/examples/tour/exercises/1-total-price/stub/total-price.flang: не проверено — замечаний 2
@@ -165,7 +165,7 @@ the value received («получено»). You are done when `flang check` answe
 <summary>Solution</summary>
 
 ```flang insert docs/examples/tour/exercises/1-total-price/solution/total-price.flang
-модуль «Упражнение 1»
+модуль «Exercise 1»
 
 тотальная функция «Стоимость заказа»
   принимает цена: число, штук: число, доставка: число
@@ -186,7 +186,7 @@ the value received («получено»). You are done when `flang check` answe
 
 ```text insert output: check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
 $ flang check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
-модуль «Упражнение 1»: функций 1, из них с доказанным завершением 1; типов 0
+модуль «Exercise 1»: функций 1, из них с доказанным завершением 1; типов 0
 docs/examples/tour/exercises/1-total-price/solution/total-price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
 ```
 

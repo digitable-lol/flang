@@ -16,6 +16,7 @@ The number is recounted by one command:
 | [`web/`](docs/examples/web) | 13 | HTTP: an orders service, the [URL shortener](shortener.html) and a marketplace API of three services — catalogue, cart, orders |
 | [`io/`](docs/examples/io) | <!-- СНЯТО 2026-09-19 файлов docs/examples/io/*.flang = 10 --> 10 | I/O orders: a binary file there and back, octets over the wire, a child process, an HTTPS request, a temporary directory, parsing a packet, a progress bar on the terminal |
 | [`crypto/`](docs/examples/crypto) | 8 | AES, ECDSA, X25519, X.509, a revocation list, a TLS hello — on real test vectors that lie next to them |
+| [`tour/`](docs/examples/tour) | 24 | the programs of the [language tour](tour-functions.html): twelve page examples and six exercises with a stub and a solution |
 | [`dsl/`](docs/examples/dsl) | 14 | your own small language three ways: discount rules, a calculator, an order state machine, plus the files broken on purpose for the page [Your own language in 30 minutes](dsl.html); two languages of ready-made phrases: shipping and access |
 | [`first-proof/`](docs/examples/first-proof) | 5 | the five steps of the lesson [Your first proof](first-proof.html): a counterexample, a precondition, tested only, a theorem, a rejected theorem |
 | [`library-api/`](docs/examples/library-api) | 7 | the domain half of a library REST service: lending, catalogue, fines. The only set that shows a **project layout** in full |

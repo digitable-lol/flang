@@ -166,7 +166,7 @@
 
 тотальная функция «Долг»
   возвращает список строки
-  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 93
+  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 105
   ["docs/editors/vim/checks/probe-error.flang",
    "docs/editors/vim/checks/probe-transition.flang",
    "docs/examples/behavior/discount.flang",
@@ -174,7 +174,19 @@
    "docs/examples/behavior/report-access-before.flang",
    "docs/examples/behavior/report-access-refactored.flang",
    "docs/examples/dsl/access.flang",
+   "docs/examples/dsl/bracket-depth.flang",
+   "docs/examples/dsl/calculator.flang",
+   "docs/examples/dsl/discount-rules.flang",
+   "docs/examples/dsl/order-automaton-typed.flang",
+   "docs/examples/dsl/order-automaton.flang",
+   "docs/examples/dsl/refused/descent-without-fuel.flang",
+   "docs/examples/dsl/refused/example-needs-literal.flang",
+   "docs/examples/dsl/refused/order-typed-missing-case.flang",
+   "docs/examples/dsl/refused/order-with-return.flang",
+   "docs/examples/dsl/refused/reserved-word.flang",
    "docs/examples/dsl/shipping.flang",
+   "docs/examples/dsl/unproved/false-statement.flang",
+   "docs/examples/dsl/unproved/order-typed-cancel-after-delivery.flang",
    "docs/examples/first-proof/step1/change.flang",
    "docs/examples/first-proof/step2/change.flang",
    "docs/examples/first-proof/step3/total.flang",

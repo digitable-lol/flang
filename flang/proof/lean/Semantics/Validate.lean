@@ -141,7 +141,27 @@ partial def «подставитьТип» (σ : List (String × Json)) (j : Jso
     | none => Json.mkObj (m.toList.map (fun p => (p.1, «подставитьТип» σ p.2)))
   | v => v
 
-/-- Описание именованного типа. Имя обобщённого типа несёт свои доводы после знака `\x01` (их кладёт
+partial def «безПсевдонимов» (aliases : List (String × Json)) (fuel : Nat) (j : Json) : Json :=
+  match j with
+  | .arr a => .arr (a.map («безПсевдонимов» aliases fuel))
+  | .obj m =>
+    let target := if «строка?» j "kind" = "named" then «найти» («строка?» j "name") aliases else none
+    match target, fuel with
+    | some t, n + 1 =>
+      let ps := («массив» t "typeParams").filterMap (fun x => match x with
+        | .str s => some s
+        | _ => none)
+      «безПсевдонимов» aliases n («подставитьТип» (ps.zip («массив» j "args")) ((«поле?» t "of").getD .null))
+    | _, _ => Json.mkObj (m.toList.map (fun p => (p.1, «безПсевдонимов» aliases fuel p.2)))
+  | v => v
+
+def «функцияБезПсевдонимов» (aliases : List (String × Json)) (f : Json) : Json :=
+  match f with
+  | .obj m => Json.mkObj (m.toList.map (fun p =>
+      if p.1 = "params" || p.1 = "returns" then (p.1, «безПсевдонимов» aliases 16 p.2) else p))
+  | v => v
+
+/-- Описание именованного типа.Имя обобщённого типа несёт свои доводы после знака `\x01` (их кладёт
 `«типJson»`): `«Возможно» от число` раскрывается с числом на месте параметра «А», а не оставляет его
 неописанным. -/
 def «раскрыть» (decls : List (String × Json)) (n : String) : «Тип» :=
@@ -815,7 +835,9 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
     let P := match Json.parse ptext with
       | .ok pj => «программаСШагом» pj («программаJson» j)
       | .error _ => «программаJson» j
-    let decls := «объявленияТипов» j
+    let aliases := («объявленияТипов» j).filter (fun d => «строка?» d.2 "kind" = "alias")
+    let decls := («объявленияТипов» j).map (fun d => (d.1, «безПсевдонимов» aliases 16 d.2))
+    let functions := («массив» j "functions").map («функцияБезПсевдонимов» aliases)
     let fs := match ctext with
       | some t => «функцииC» («лексемы» t.toList []) []
       | none => []
@@ -833,14 +855,14 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
     let apps := «применения» fs names
     let cx : «КонтекстC» := ⟨fs, names ++ apps.map (fun (c, a, _) => (c, a)), «текстыC» toks ++ «именаПолейC» toks, proved,
       ctext.isSome, apps.map (fun (_, a, ts) => (a, ts)), judged⟩
-    let numeric := («массив» j "functions").flatMap (fun f =>
+    let numeric := functions.flatMap (fun f =>
       «числовыеИмена» decls («строка?» f "name") («типJson» ((«поле?» f "returns").getD .null)))
     let taken := «взятыеФункции» j
-    let fns := ((«массив» j "functions").filter (fun f => taken.contains («строка?» f "name"))).map (fun f =>
+    let fns := (functions.filter (fun f => taken.contains («строка?» f "name"))).map (fun f =>
       («строка?» f "name",
       («массив» f "params").map (fun p => «типJson» ((«поле?» p "type").getD .null)),
       «типJson» ((«поле?» f "returns").getD .null)))
-    pure (.ok ⟨P, fns, decls, cx, numeric, («массив» j "functions").toArray⟩)
+    pure (.ok ⟨P, fns, decls, cx, numeric, functions.toArray⟩)
 
 /-- Строки плана без надзора: каждая функция считается в этом же процессе, сколько бы это ни длилось. -/
 def «планФайла» (path : String) (cpath proof : Option String) : IO (List String) := do

@@ -63,6 +63,7 @@ Witnesses come from the declared types of the parameters:
 | list | the empty list and lists of one to three witnesses of the element type |
 | record, variant with fields | combinations of the witnesses of the fields; a recursive sum is unfolded twice |
 | type parameter | `число` is put in its place |
+| type alias | the witnesses of the type it names; the arguments of a generic alias are put in place of its parameters |
 | function | the functions the program takes as a value without captures (`функция «…»` somewhere in the linked tree) that take as many parameters, of fitting kinds (number, flag, string, list); no other function can reach a parameter of a checked program, and the printed apply function dispatches on exactly these |
 
 The examples of the function are added to the witnesses, and so are the boundaries: every number

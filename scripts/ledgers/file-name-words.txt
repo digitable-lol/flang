@@ -2222,3 +2222,13 @@ users
 classes
 exercises
 tour
+abstract
+argue
+contradictory
+distant
+markers
+mixed
+plural
+quantifiers
+textbook
+unread

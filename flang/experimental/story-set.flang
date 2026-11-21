@@ -1,0 +1,853 @@
+модуль «User story sets»
+  использует «Rules» из "../../scripts/rules.fscript"
+  использует «User story sentences» из "../proof/probes/story/translator.flang"
+  использует «Lists» только «Соединить списки»
+
+объект «Story told»
+  «file»: строка
+  «text»: строка
+  «name»: строка
+  «role»: строка
+  «quantity»: строка
+  «goal»: строка
+  «bound»: число
+  «bounded»: признак
+  «from»: число
+  «shows»: признак
+  «input»: число
+  «answer»: число
+  «purpose»: строка
+  «faults»: список строки
+
+объект «Level»
+  «always»: признак
+  «from»: число
+
+объект «Range»
+  «capped»: признак
+  «cap»: число
+  «capper»: строка
+  «floored»: признак
+  «floor»: число
+  «floorer»: строка
+
+тотальная функция «Story of»
+  принимает file: строка, text: строка
+  возвращает «Story told»
+  (запись «Story told» с «file» равным file и «text» равным text и «name» равным («Name of» от text)
+      и «role» равным («Role of» от text) и «quantity» равным («Quantity of» от text)
+      и «goal» равным («Goal of» от text) и «bound» равным («Bound of» от text)
+      и «bounded» равным (не (пусто («Need of» от text))) и «from» равным («Need bound of» от text)
+      и «shows» равным («Shows a case» от text) и «input» равным («Input of» от text)
+      и «answer» равным («Answer of» от text) и «purpose» равным («Purpose of» от text)
+      и «faults» равным («Story faults» от text))
+
+тотальная функция «Told in a file of its name»
+  принимает text: строка
+  возвращает «Story told»
+  «Story of» от (соединить [(«Name of» от text), ".txt"] по "") и text
+
+тотальная функция «Set of»
+  принимает texts: список строки
+  возвращает список «Story told»
+  отобразить texts как text → «Told in a file of its name» от text
+
+тотальная функция «Is read»
+  принимает story: «Story told»
+  возвращает признак
+  пусто (story.«faults»)
+
+тотальная функция «Read ones»
+  принимает stories: список «Story told»
+  возвращает список «Story told»
+  отфильтровать stories где story → «Is read» от story
+
+тотальная функция «Kept once»
+  принимает seen: список строки, word: строка
+  возвращает список строки
+  пример «A new word is added at the end»
+    дано seen равно ["а"]
+    дано word равно "б"
+    ожидается ["а", "б"]
+  пример «A word seen before is not added again»
+    дано seen равно ["а", "б"]
+    дано word равно "а"
+    ожидается ["а", "б"]
+  если seen содержит word то seen иначе добавить word к seen
+
+тотальная функция «Each once»
+  принимает words: список строки
+  возвращает список строки
+  пример «Every word is kept at its first place»
+    дано words равно ["скидка", "комиссия", "скидка"]
+    ожидается ["скидка", "комиссия"]
+  свёртка words начиная с (пустой список) как seen и word → «Kept once» от seen и word
+
+тотальная функция «Times said»
+  принимает words: список строки, word: строка
+  возвращает число
+  пример «A word said twice is counted twice»
+    дано words равно ["пол", "потолок", "пол"]
+    дано word равно "пол"
+    ожидается 2
+  длина (отфильтровать words где said → said равен word)
+
+тотальная функция «Quantities told»
+  принимает stories: список «Story told»
+  возвращает список строки
+  «Each once» от (отобразить («Read ones» от stories) как story → story.«quantity»)
+
+тотальная функция «About»
+  принимает stories: список «Story told», quantity: строка
+  возвращает список «Story told»
+  отфильтровать («Read ones» от stories) где story → (story.«quantity») равен quantity
+
+тотальная функция «Everywhere»
+  возвращает «Level»
+  пример «The level of stories without a condition»
+    ожидается запись «Level» с «always» равным да и «from» равным 0
+  запись «Level» с «always» равным да и «from» равным 0
+
+тотальная функция «Level from»
+  принимает threshold: число
+  возвращает «Level»
+  пример «The level of a condition is named by its threshold»
+    дано threshold равно 10
+    ожидается запись «Level» с «always» равным нет и «from» равным 10
+  запись «Level» с «always» равным нет и «from» равным threshold
+
+тотальная функция «Placed in order»
+  принимает sorted: список числа, threshold: число
+  возвращает список числа
+  пример «A number goes before the first greater one»
+    дано sorted равно [3, 10]
+    дано threshold равно 5
+    ожидается [3, 5, 10]
+  пример «A number that is there already is not placed twice»
+    дано sorted равно [3, 10]
+    дано threshold равно 10
+    ожидается [3, 10]
+  пример «The greatest number goes last»
+    дано sorted равно [3, 10]
+    дано threshold равно 15
+    ожидается [3, 10, 15]
+  разбор sorted
+    случай пусто
+      то [threshold]
+    случай голова и хвост
+      то «Chosen» от [(«When» от (threshold меньше голова) и (приписать threshold к sorted)),
+        («When» от (threshold равен голова) и sorted)] и (приписать голова к («Placed in order» от хвост и
+        threshold))
+
+тотальная функция «Thresholds up»
+  принимает stories: список «Story told»
+  возвращает список числа
+  пусть bounded равно (отфильтровать stories где story → story.«bounded»)
+  пусть said равно (отобразить bounded как story → story.«from»)
+  свёртка said начиная с (пустой список) как sorted и threshold → «Placed in order» от sorted и threshold
+
+тотальная функция «Levels up»
+  принимает stories: список «Story told»
+  возвращает список «Level»
+  пусть raised равно (отобразить («Thresholds up» от stories) как threshold → «Level from» от threshold)
+  приписать («Everywhere») к raised
+
+тотальная функция «Levels of»
+  принимает stories: список «Story told»
+  возвращает список «Level»
+  свёртка («Levels up» от stories) начиная с (пустой список) как turned и level → приписать level к turned
+
+тотальная функция «Holds at»
+  принимает story: «Story told», level: «Level»
+  возвращает признак
+  пусть reached равно ((не (level.«always»)) и притом ((story.«from») не больше (level.«from»)))
+  (не (story.«bounded»)) или reached
+
+тотальная функция «Open range»
+  возвращает «Range»
+  пример «No want bounds nothing»
+    ожидается (запись «Range» с «capped» равным нет и «cap» равным 0 и «capper» равным ""
+        и «floored» равным нет и «floor» равным 0 и «floorer» равным "")
+  (запись «Range» с «capped» равным нет и «cap» равным 0 и «capper» равным ""
+      и «floored» равным нет и «floor» равным 0 и «floorer» равным "")
+
+тотальная функция «Capped by»
+  принимает range: «Range», story: «Story told»
+  возвращает «Range»
+  (запись «Range» с «capped» равным да и «cap» равным (story.«bound») и «capper» равным (story.«name»)
+      и «floored» равным (range.«floored») и «floor» равным (range.«floor»)
+      и «floorer» равным (range.«floorer»))
+
+тотальная функция «Floored by»
+  принимает range: «Range», story: «Story told»
+  возвращает «Range»
+  (запись «Range» с «capped» равным (range.«capped») и «cap» равным (range.«cap»)
+      и «capper» равным (range.«capper») и «floored» равным да и «floor» равным (story.«bound»)
+      и «floorer» равным (story.«name»))
+
+тотальная функция «Narrowed»
+  принимает range: «Range», story: «Story told»
+  возвращает «Range»
+  пусть tighter равно ((не (range.«capped»)) или ((story.«bound») меньше (range.«cap»)))
+  пусть higher равно ((не (range.«floored»)) или ((story.«bound») больше (range.«floor»)))
+  пусть caps равно (((story.«goal») равен "не больше") и притом tighter)
+  пусть floors равно (((story.«goal») равен "не меньше") и притом higher)
+  «Chosen» от [(«When» от caps и («Capped by» от range и story)),
+    («When» от floors и («Floored by» от range и story))] и range
+
+тотальная функция «Range over»
+  принимает stories: список «Story told»
+  возвращает «Range»
+  свёртка stories начиная с («Open range») как range и story → «Narrowed» от range и story
+
+тотальная функция «Range at»
+  принимает stories: список «Story told», level: «Level»
+  возвращает «Range»
+  «Range over» от (отфильтровать stories где story → «Holds at» от story и level)
+
+тотальная функция «Is empty»
+  принимает range: «Range»
+  возвращает признак
+  пример «A floor above the ceiling leaves no value»
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "а"
+        и «floored» равным да и «floor» равным 31 и «floorer» равным "б")
+    ожидается да
+  пример «A floor equal to the ceiling leaves one value»
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "а"
+        и «floored» равным да и «floor» равным 30 и «floorer» равным "б")
+    ожидается нет
+  пример «A ceiling alone leaves values»
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "а"
+        и «floored» равным нет и «floor» равным 40 и «floorer» равным "")
+    ожидается нет
+  ((range.«capped») и притом (range.«floored»)) и притом ((range.«floor») больше (range.«cap»))
+
+тотальная функция «Clashing levels»
+  принимает stories: список «Story told»
+  возвращает список «Level»
+  отфильтровать («Levels up» от stories) где level → «Is empty» от («Range at» от stories и level)
+
+тотальная функция «Pair of»
+  принимает range: «Range»
+  возвращает строка
+  пример «A clash is named by its two stories»
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "потолок"
+        и «floored» равным да и «floor» равным 40 и «floorer» равным "пол")
+    ожидается "потолок против пол"
+  соединить [(range.«capper»), " против ", (range.«floorer»)] по ""
+
+тотальная функция «Is new clash»
+  принимает seen: список «Level», level: «Level», stories: список «Story told»
+  возвращает признак
+  пусть pair равно («Pair of» от («Range at» от stories и level))
+  пусть pairs равно (отобразить seen как earlier → «Pair of» от («Range at» от stories и earlier))
+  не (pairs содержит pair)
+
+тотальная функция «Clash kept»
+  принимает seen: список «Level», level: «Level», stories: список «Story told»
+  возвращает список «Level»
+  если «Is new clash» от seen и level и stories то добавить level к seen иначе seen
+
+тотальная функция «Clashes of»
+  принимает stories: список «Story told»
+  возвращает список «Level»
+  пусть found равно («Clashing levels» от stories)
+  свёртка found начиная с (пустой список) как seen и level → «Clash kept» от seen и level и stories
+
+тотальная функция «Named»
+  принимает quantity: строка
+  возвращает строка
+  пример «A name of the program stands in angle quotes»
+    дано quantity равно "скидка"
+    ожидается "«скидка»"
+  соединить ["«", quantity, "»"] по ""
+
+тотальная функция «Under»
+  принимает word: строка, block: список строки
+  возвращает список строки
+  пример «A block goes under a branch word two spaces deeper»
+    дано word равно "то"
+    дано block равно ["если «в» не больше 3", "  то «в»", "  иначе 3"]
+    ожидается ["  то если «в» не больше 3", "    то «в»", "    иначе 3"]
+  пусть opening равно (соединить ["  ", word, " ", («First of» от block)] по "")
+  приписать opening к (отобразить («Rest of» от block) как line → соединить ["  ", line] по "")
+
+тотальная функция «Branching»
+  принимает condition: строка, kept: список строки, otherwise: список строки
+  возвращает список строки
+  пример «A condition with two answers is three lines»
+    дано condition равно "«в» не больше 3"
+    дано kept равно ["«в»"]
+    дано otherwise равно ["3"]
+    ожидается ["если «в» не больше 3", "  то «в»", "  иначе 3"]
+  пусть asked равно (соединить ["если ", condition] по "")
+  приписать asked к («Соединить списки» от («Under» от "то" и kept) и («Under» от "иначе" и otherwise))
+
+тотальная функция «Compared»
+  принимает quantity: строка, comparison: строка, bound: число
+  возвращает строка
+  пример «A comparison of the quantity with a bound»
+    дано quantity равно "скидка"
+    дано comparison равно "не больше"
+    дано bound равно 30
+    ожидается "«скидка» не больше 30"
+  соединить [(«Named» от quantity), " ", comparison, " ", (к строке bound)] по ""
+
+тотальная функция «Ceiling block»
+  принимает quantity: строка, range: «Range»
+  возвращает список строки
+  пусть asked равно («Compared» от quantity и "не больше" и (range.«cap»))
+  «Branching» от asked и [(«Named» от quantity)] и [(к строке (range.«cap»))]
+
+тотальная функция «Floor block»
+  принимает quantity: строка, range: «Range»
+  возвращает список строки
+  пусть asked равно («Compared» от quantity и "не меньше" и (range.«floor»))
+  «Branching» от asked и [(«Named» от quantity)] и [(к строке (range.«floor»))]
+
+тотальная функция «Both block»
+  принимает quantity: строка, range: «Range»
+  возвращает список строки
+  пусть asked равно («Compared» от quantity и "не меньше" и (range.«floor»))
+  «Branching» от asked и («Ceiling block» от quantity и range) и [(к строке (range.«floor»))]
+
+тотальная функция «Answer block»
+  принимает quantity: строка, range: «Range»
+  возвращает список строки
+  пример «A ceiling and a floor keep the value between them»
+    дано quantity равно "в"
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "а"
+        и «floored» равным да и «floor» равным 5 и «floorer» равным "б")
+    ожидается ["если «в» не меньше 5", "  то если «в» не больше 30", "    то «в»", "    иначе 30",
+      "  иначе 5"]
+  пример «No want leaves the value as it came»
+    дано quantity равно "в"
+    дано range равно (запись «Range» с «capped» равным нет и «cap» равным 0 и «capper» равным ""
+        и «floored» равным нет и «floor» равным 0 и «floorer» равным "")
+    ожидается ["«в»"]
+  пусть both равно ((range.«capped») и притом (range.«floored»))
+  «Chosen» от [(«When» от both и («Both block» от quantity и range)),
+    («When» от (range.«capped») и («Ceiling block» от quantity и range)),
+    («When» от (range.«floored») и («Floor block» от quantity и range))] и [(«Named» от quantity)]
+
+тотальная функция «Answer chain»
+  принимает quantity: строка, stories: список «Story told», above: список «Level», last: «Level»
+  возвращает список строки
+  разбор above
+    случай пусто
+      то «Answer block» от quantity и («Range at» от stories и last)
+    случай голова и хвост
+      то «Branching» от («Compared» от quantity и "не меньше" и (голова.«from»)) и («Answer block» от
+        quantity и («Range at» от stories и голова)) и («Answer chain» от quantity и stories и хвост и last)
+
+тотальная функция «Own level»
+  принимает story: «Story told»
+  возвращает «Level»
+  если story.«bounded» то «Level from» от (story.«from») иначе («Everywhere»)
+
+тотальная функция «Levels above»
+  принимает story: «Story told», stories: список «Story told»
+  возвращает список «Level»
+  пусть raised равно (отфильтровать («Levels of» от stories) где level → не (level.«always»))
+  отфильтровать raised где level → (не (story.«bounded»)) или ((level.«from») больше (story.«from»))
+
+тотальная функция «Indented»
+  принимает block: список строки
+  возвращает список строки
+  пример «Every line goes two spaces deeper»
+    дано block равно ["если «в» не больше 3", "  то «в»"]
+    ожидается ["  если «в» не больше 3", "    то «в»"]
+  отобразить block как line → соединить ["  ", line] по ""
+
+тотальная функция «Body in the set»
+  принимает story: «Story told», stories: список «Story told»
+  возвращает список строки
+  пусть above равно («Levels above» от story и stories)
+  «Indented» от («Answer chain» от (story.«quantity») и stories и above и («Own level» от story))
+
+тотальная функция «Need in the set»
+  принимает story: «Story told»
+  возвращает список строки
+  пусть said равно (соединить [(story.«quantity»), " не меньше ", (к строке (story.«from»))] по "")
+  пусть line равно (соединить ["  требует «при: ", said, "» ",
+    («Compared» от (story.«quantity») и "не меньше" и (story.«from»))] по "")
+  «Applying» от [(«When» от (story.«bounded») и line)]
+
+тотальная функция «Want said»
+  принимает story: «Story told»
+  возвращает строка
+  соединить [(story.«quantity»), " ", (story.«goal»), " ", (к строке (story.«bound»))] по ""
+
+тотальная функция «Goal in the set»
+  принимает story: «Story told»
+  возвращает строка
+  соединить ["  обеспечивает «хочу: ", («Want said» от story), "» результат ", (story.«goal»), " ",
+    (к строке (story.«bound»))] по ""
+
+тотальная функция «Case in the set»
+  принимает story: «Story told»
+  возвращает список строки
+  пусть input равно (к строке (story.«input»))
+  пусть answer равно (к строке (story.«answer»))
+  пусть title равно (соединить ["  пример «тогда вход ", input, " ответ ", answer, "»"] по "")
+  пусть taken равно (соединить ["    дано ", («Named» от (story.«quantity»)), " равно ", input] по "")
+  пусть wanted равно (соединить ["    ожидается ", answer] по "")
+  если story.«shows» то [title, taken, wanted] иначе (пустой список)
+
+тотальная функция «Function in the set»
+  принимает story: «Story told», stories: список «Story told»
+  возвращает список строки
+  пусть named равно (соединить ["тотальная функция «", (story.«name»), ": в наборе»"] по "")
+  пусть takes равно (соединить ["  принимает ", («Named» от (story.«quantity»)), ": число"] по "")
+  пусть head равно («Соединить списки» от ["", named, takes, "  возвращает число"] и («Need in the set» от story))
+  пусть goal равно (приписать («Goal in the set» от story) к («Case in the set» от story))
+  «Соединить списки» от («Соединить списки» от head и goal) и («Body in the set» от story и stories)
+
+тотальная функция «Clash function»
+  принимает quantity: строка, range: «Range»
+  возвращает список строки
+  пример «A clash becomes a function nobody can call»
+    дано quantity равно "скидка"
+    дано range равно (запись «Range» с «capped» равным да и «cap» равным 30 и «capper» равным "потолок"
+        и «floored» равным да и «floor» равным 40 и «floorer» равным "пол")
+    ожидается ["", "тотальная функция «скидка: потолок против пол»",
+      "  принимает «скидка»: неотрицательное", "  возвращает неотрицательное",
+      "  требует «потолок: скидка не больше 30» «скидка» не больше 30",
+      "  требует «пол: скидка не меньше 40» «скидка» не меньше 40",
+      "  обеспечивает «ни одно значение не годится обеим историям» результат меньше 40",
+      "  «скидка»"]
+  пусть named равно (соединить ["тотальная функция «", quantity, ": ", («Pair of» от range), "»"] по "")
+  пусть takes равно (соединить ["  принимает ", («Named» от quantity), ": неотрицательное"] по "")
+  пусть cap равно (соединить ["  требует «", (range.«capper»), ": ", quantity, " не больше ",
+    (к строке (range.«cap»)), "» ", («Compared» от quantity и "не больше" и (range.«cap»))] по "")
+  пусть floor равно (соединить ["  требует «", (range.«floorer»), ": ", quantity, " не меньше ",
+    (к строке (range.«floor»)), "» ", («Compared» от quantity и "не меньше" и (range.«floor»))] по "")
+  пусть goal равно (соединить ["  обеспечивает «ни одно значение не годится обеим историям» результат меньше ",
+    (к строке (range.«floor»))] по "")
+  ["", named, takes, "  возвращает неотрицательное", cap, floor, goal,
+    (соединить ["  ", («Named» от quantity)] по "")]
+
+тотальная функция «Joined»
+  принимает gathered: список строки, block: список строки
+  возвращает список строки
+  «Соединить списки» от gathered и block
+
+тотальная функция «Flat»
+  принимает blocks: список список строки
+  возвращает список строки
+  пример «Blocks are laid one after another»
+    дано blocks равно [["а", "б"], пустой список, ["в"]]
+    ожидается ["а", "б", "в"]
+  свёртка blocks начиная с (пустой список) как gathered и block → «Joined» от gathered и block
+
+тотальная функция «Functions about»
+  принимает about: список «Story told», quantity: строка
+  возвращает список строки
+  пусть clashes равно («Clashes of» от about)
+  пусть refuted равно (отобразить clashes как level → «Clash function» от quantity и («Range at» от about и level))
+  пусть kept равно (отобразить about как story → «Function in the set» от story и about)
+  «Flat» от (если пусто clashes то kept иначе refuted)
+
+тотальная функция «Claims about»
+  принимает about: список «Story told»
+  возвращает число
+  пусть clashes равно («Clashes of» от about)
+  если пусто clashes то (длина about) иначе (длина clashes)
+
+тотальная функция «Claims of»
+  принимает stories: список «Story told»
+  возвращает число
+  пусть counts равно (отобразить («Quantities told» от stories) как quantity → «Claims about» от («About» от
+    stories и quantity))
+  свёртка counts начиная с 0 как total и count → total плюс count
+
+тотальная функция «Repeated names»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть names равно (отобразить («Read ones» от stories) как story → story.«name»)
+  отфильтровать («Each once» от names) где name → («Times said» от names и name) больше 1
+
+тотальная функция «Set program lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть blocks равно (отобразить («Quantities told» от stories) как quantity → «Functions about» от («About» от
+    stories и quantity) и quantity)
+  пусть silent равно ((пусто («Read ones» от stories)) или (не (пусто («Repeated names» от stories))))
+  если silent то (пустой список) иначе (приписать "модуль «Story set»" к («Flat» от blocks))
+
+тотальная функция «Program lines of»
+  принимает texts: список строки
+  возвращает список строки
+  пример «No story gives no program»
+    дано texts равно пустой список
+    ожидается пустой список
+  пример «Stories that agree become functions with one answer for the whole set»
+    дано texts равно [
+      "Роль: м. Величина: в, ве. История: потолок. Как м. Хочу в не больше 30. Чтобы ж. Тогда при ве 40 ответ 30.",
+      "Роль: к. Величина: в, ве. История: малый пол. Как к. Хочу в не меньше 5. Чтобы —."]
+    ожидается ["модуль «Story set»", "", "тотальная функция «потолок: в наборе»", "  принимает «в»: число",
+      "  возвращает число", "  обеспечивает «хочу: в не больше 30» результат не больше 30",
+      "  пример «тогда вход 40 ответ 30»", "    дано «в» равно 40", "    ожидается 30",
+      "  если «в» не меньше 5", "    то если «в» не больше 30", "      то «в»", "      иначе 30", "    иначе 5",
+      "", "тотальная функция «малый пол: в наборе»", "  принимает «в»: число", "  возвращает число",
+      "  обеспечивает «хочу: в не меньше 5» результат не меньше 5",
+      "  если «в» не меньше 5", "    то если «в» не больше 30", "      то «в»", "      иначе 30", "    иначе 5"]
+  пример «Stories that clash become a function nobody can call»
+    дано texts равно [
+      "Роль: м. Величина: в, ве. История: потолок. Как м. Хочу в не больше 30. Чтобы ж. Тогда при ве 40 ответ 30.",
+      "Роль: к. Величина: в, ве. История: пол. Как к. Хочу в не меньше 40. Чтобы —. При в не меньше 10."]
+    ожидается ["модуль «Story set»", "", "тотальная функция «в: потолок против пол»",
+      "  принимает «в»: неотрицательное", "  возвращает неотрицательное",
+      "  требует «потолок: в не больше 30» «в» не больше 30", "  требует «пол: в не меньше 40» «в» не меньше 40",
+      "  обеспечивает «ни одно значение не годится обеим историям» результат меньше 40", "  «в»"]
+  пример «A condition of one story splits the answer of another»
+    дано texts равно [
+      "Роль: м. Величина: в, ве. История: потолок. Как м. Хочу в не больше 30. Чтобы ж.",
+      "Роль: к. Величина: в, ве. История: пол. Как к. Хочу в не меньше 20. Чтобы ж. При в не меньше 10."]
+    ожидается ["модуль «Story set»", "", "тотальная функция «потолок: в наборе»", "  принимает «в»: число",
+      "  возвращает число", "  обеспечивает «хочу: в не больше 30» результат не больше 30",
+      "  если «в» не меньше 10", "    то если «в» не меньше 20", "      то если «в» не больше 30",
+      "        то «в»", "        иначе 30", "      иначе 20", "    иначе если «в» не больше 30",
+      "      то «в»", "      иначе 30",
+      "", "тотальная функция «пол: в наборе»", "  принимает «в»: число", "  возвращает число",
+      "  требует «при: в не меньше 10» «в» не меньше 10",
+      "  обеспечивает «хочу: в не меньше 20» результат не меньше 20",
+      "  если «в» не меньше 20", "    то если «в» не больше 30", "      то «в»", "      иначе 30", "    иначе 20"]
+  «Set program lines» от («Set of» от texts)
+
+тотальная функция «Set program»
+  принимает stories: список «Story told»
+  возвращает строка
+  соединить [(соединить («Set program lines» от stories) по "\n"), "\n"] по ""
+
+тотальная функция «Where said»
+  принимает quantity: строка, level: «Level»
+  возвращает строка
+  пример «A clash of stories without conditions is everywhere»
+    дано quantity равно "скидка"
+    дано level равно запись «Level» с «always» равным да и «from» равным 0
+    ожидается "при любом значении"
+  пример «A clash under a condition is from its threshold up»
+    дано quantity равно "скидка"
+    дано level равно запись «Level» с «always» равным нет и «from» равным 10
+    ожидается "при «скидка» не меньше 10"
+  пусть raised равно (соединить ["при ", («Compared» от quantity и "не меньше" и (level.«from»))] по "")
+  если level.«always» то "при любом значении" иначе raised
+
+тотальная функция «Clash line»
+  принимает quantity: строка, about: список «Story told», level: «Level»
+  возвращает строка
+  пусть range равно («Range at» от about и level)
+  соединить ["[противоречие] ", («Named» от quantity), ": ", («Named» от (range.«capper»)),
+    " хочет не больше ", (к строке (range.«cap»)), ", ", («Named» от (range.«floorer»)),
+    " — не меньше ", (к строке (range.«floor»)), ", ", («Where said» от quantity и level),
+    ": общего ответа нет"] по ""
+
+тотальная функция «Agreement line»
+  принимает quantity: строка, about: список «Story told»
+  возвращает строка
+  соединить ["[желания совместны] ", («Named» от quantity), ": историй ", (к строке (длина about)),
+    ", есть ответ, годный каждой при её условии"] по ""
+
+тотальная функция «Judged about»
+  принимает about: список «Story told», quantity: строка
+  возвращает список строки
+  пусть clashes равно («Clashes of» от about)
+  пусть refuted равно (отобразить clashes как level → «Clash line» от quantity и about и level)
+  если пусто clashes то [(«Agreement line» от quantity и about)] иначе refuted
+
+тотальная функция «Judged lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  «Flat» от (отобразить («Quantities told» от stories) как quantity → «Judged about» от («About» от stories и
+    quantity) и quantity)
+
+тотальная функция «Clash count»
+  принимает stories: список «Story told»
+  возвращает число
+  длина (отфильтровать («Judged lines» от stories) где line → line начинается с "[противоречие]")
+
+тотальная функция «First of numbers»
+  принимает numbers: список числа
+  возвращает число
+  пример «The first number of a list»
+    дано numbers равно [3, 7]
+    ожидается 3
+  пример «An empty list gives zero»
+    дано numbers равно пустой список
+    ожидается 0
+  разбор numbers
+    случай пусто
+      то 0
+    случай голова и хвост
+      то голова
+
+тотальная функция «Uncovered below»
+  принимает about: список «Story told», quantity: строка
+  возвращает список строки
+  пусть lowest равно («First of numbers» от («Thresholds up» от about))
+  пусть everywhere равно (отфильтровать about где story → не (story.«bounded»))
+  пусть line равно (соединить ["[дыра] ", («Named» от quantity), ": при значении меньше ",
+    (к строке lowest), " ни одна история ничего не требует"] по "")
+  «Applying» от [(«When» от (пусто everywhere) и line)]
+
+тотальная функция «One sided»
+  принимает about: список «Story told», quantity: строка
+  возвращает список строки
+  пусть range равно («Range over» от about)
+  пусть nofloor равно (соединить ["[замечание] ", («Named» от quantity), ": потолок есть (история ",
+    («Named» от (range.«capper»)), "), а пола нет ни в одной истории"] по "")
+  пусть nocap равно (соединить ["[замечание] ", («Named» от quantity), ": пол есть (история ",
+    («Named» от (range.«floorer»)), "), а потолка нет ни в одной истории"] по "")
+  «Applying» от [(«When» от ((range.«capped») и притом (не (range.«floored»))) и nofloor),
+    («When» от ((range.«floored») и притом (не (range.«capped»))) и nocap)]
+
+тотальная функция «Covers»
+  принимает wide: «Story told», narrow: «Story told»
+  возвращает признак
+  пусть reached равно ((narrow.«bounded») и притом ((wide.«from») не больше (narrow.«from»)))
+  (не (wide.«bounded»)) или reached
+
+тотальная функция «As strict»
+  принимает strict: «Story told», loose: «Story told»
+  возвращает признак
+  пусть lower равно (((strict.«goal») равен "не больше") и притом ((strict.«bound») не больше (loose.«bound»)))
+  пусть higher равно (((strict.«goal») равен "не меньше") и притом ((strict.«bound») не меньше (loose.«bound»)))
+  ((strict.«goal») равен (loose.«goal»)) и притом (lower или higher)
+
+тотальная функция «Implies»
+  принимает strict: «Story told», loose: «Story told»
+  возвращает признак
+  пусть other равно (не ((strict.«file») равен (loose.«file»)))
+  пусть same равно ((strict.«quantity») равен (loose.«quantity»))
+  (other и притом same) и притом ((«Covers» от strict и loose) и притом («As strict» от strict и loose))
+
+тотальная функция «Adds nothing line»
+  принимает loose: «Story told», strict: «Story told»
+  возвращает строка
+  пусть repeats равно (соединить ["[замечание] история ", («Named» от (loose.«name»)), " повторяет историю ",
+    («Named» от (strict.«name»)), ": обе хотят ", («Want said» от strict)] по "")
+  пусть weaker равно (соединить ["[замечание] история ", («Named» от (loose.«name»)), " ничего не добавляет к ",
+    («Named» от (strict.«name»)), ": ", («Want said» от loose), " следует из ", («Want said» от strict)] по "")
+  если «Implies» от loose и strict то repeats иначе weaker
+
+тотальная функция «Adds nothing»
+  принимает loose: «Story told», stories: список «Story told»
+  возвращает список строки
+  пусть stricter равно (отфильтровать stories где strict → «Implies» от strict и loose)
+  отобразить stricter как strict → «Adds nothing line» от loose и strict
+
+тотальная функция «Redundant lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть read равно («Read ones» от stories)
+  «Flat» от (отобразить read как loose → «Adds nothing» от loose и read)
+
+тотальная функция «Story holes»
+  принимает story: «Story told»
+  возвращает список строки
+  пусть head равно (соединить ["[дыра] история ", («Named» от (story.«name»)), " (", (story.«file»), "): "] по "")
+  пусть nocase равно (соединить [head, "нет показанного случая «Тогда при … ответ …»"] по "")
+  пусть nowhy равно (соединить [head, "не сказано зачем — «Чтобы» стоит прочерком"] по "")
+  «Applying» от [(«When» от (не (story.«shows»)) и nocase),
+    («When» от ((story.«purpose») равен "—") и nowhy)]
+
+тотальная функция «Roles declared»
+  принимает stories: список «Story told»
+  возвращает список строки
+  «Each once» от («Flat» от (отобразить stories как story → «Said after» от (story.«text») и "роль"))
+
+тотальная функция «Idle roles»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть used равно (отобразить stories как story → story.«role»)
+  пусть idle равно (отфильтровать («Roles declared» от stories) где role → не (used содержит role))
+  отобразить idle как role → соединить ["[дыра] роль ", («Named» от role), " объявлена, а историй от неё нет"] по ""
+
+тотальная функция «Words declared»
+  принимает stories: список «Story told»
+  возвращает список строки
+  «Each once» от («Flat» от (отобразить stories как story → «Said after» от (story.«text») и "величина"))
+
+тотальная функция «Word name»
+  принимает declared: строка
+  возвращает строка
+  пример «The first form names the quantity»
+    дано declared равно "скидка, скидке"
+    ожидается "скидка"
+  («Quantity said» от declared).«one»
+
+тотальная функция «Idle words»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть used равно (отобразить stories как story → story.«quantity»)
+  пусть names равно («Each once» от (отобразить («Words declared» от stories) как word → «Word name» от word))
+  пусть idle равно (отфильтровать names где name → не (used содержит name))
+  отобразить idle как name → соединить ["[дыра] величина ", («Named» от name),
+    " объявлена, а ни одна история о ней ничего не хочет"] по ""
+
+тотальная функция «Split words»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть names равно (отобразить («Words declared» от stories) как word → «Word name» от word)
+  пусть torn равно (отфильтровать («Each once» от names) где name → («Times said» от names и name) больше 1)
+  отобразить torn как name → соединить ["[дыра] величина ", («Named» от name),
+    " объявлена по-разному: словарь набора расходится"] по ""
+
+тотальная функция «Hole lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть read равно («Read ones» от stories)
+  пусть own равно («Flat» от (отобразить read как story → «Story holes» от story))
+  пусть below равно («Flat» от (отобразить («Quantities told» от stories) как quantity → «Uncovered below» от
+    («About» от stories и quantity) и quantity))
+  пусть words равно («Соединить списки» от («Idle words» от stories) и («Split words» от stories))
+  «Flat» от [below, («Idle roles» от stories), words, own]
+
+тотальная функция «Remark lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть sided равно («Flat» от (отобразить («Quantities told» от stories) как quantity → «One sided» от
+    («About» от stories и quantity) и quantity))
+  «Соединить списки» от sided и («Redundant lines» от stories)
+
+тотальная функция «Unread line»
+  принимает story: «Story told»
+  возвращает строка
+  соединить ["[не прочитана] ", (story.«file»), ": ", (соединить (story.«faults») по "; ")] по ""
+
+тотальная функция «Unread lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть unread равно (отфильтровать stories где story → не («Is read» от story))
+  пусть twice равно (отобразить («Repeated names» от stories) как name → соединить ["[не прочитана] имя ",
+    («Named» от name), " носят несколько историй: набор не судится, пока имена не разведены"] по "")
+  «Соединить списки» от (отобразить unread как story → «Unread line» от story) и twice
+
+тотальная функция «Read line»
+  принимает story: «Story told»
+  возвращает строка
+  пример «A read story is said back in one line»
+    дано story равно (запись «Story told» с «file» равным "cap.txt" и «text» равным "" и «name» равным "потолок"
+        и «role» равным "кассир" и «quantity» равным "скидка" и «goal» равным "не больше" и «bound» равным 30
+        и «bounded» равным да и «from» равным 0 и «shows» равным нет и «input» равным 0 и «answer» равным 0
+        и «purpose» равным "—" и «faults» равным пустой список)
+    ожидается "[история] cap.txt «потолок»: как кассир хочу скидка не больше 30, при скидка не меньше 0"
+  пусть need равно (соединить [", при ", (story.«quantity»), " не меньше ", (к строке (story.«from»))] по "")
+  соединить ["[история] ", (story.«file»), " ", («Named» от (story.«name»)), ": как ", (story.«role»),
+    " хочу ", («Want said» от story), (если story.«bounded» то need иначе "")] по ""
+
+тотальная функция «Read lines»
+  принимает stories: список «Story told»
+  возвращает список строки
+  отобразить («Read ones» от stories) как story → «Read line» от story
+
+тотальная функция «Total line»
+  принимает stories: список «Story told»
+  возвращает строка
+  соединить ["итог: историй ", (к строке (длина stories)), ", не прочитано ",
+    (к строке (длина («Unread lines» от stories))), ", противоречий ", (к строке («Clash count» от stories)),
+    ", дыр ", (к строке (длина («Hole lines» от stories))), ", замечаний ",
+    (к строке (длина («Remark lines» от stories)))] по ""
+
+тотальная функция «Findings»
+  принимает stories: список «Story told»
+  возвращает список строки
+  пусть judged равно («Соединить списки» от («Judged lines» от stories) и («Unread lines» от stories))
+  пусть found равно («Соединить списки» от («Hole lines» от stories) и («Remark lines» от stories))
+  «Соединить списки» от («Соединить списки» от judged и found) и [(«Total line» от stories)]
+
+тотальная функция «Findings of»
+  принимает texts: список строки
+  возвращает список строки
+  пример «A ceiling under a floor is a clash, and it is said where it holds»
+    дано texts равно [
+      "Роль: м. Величина: в, ве. История: потолок. Как м. Хочу в не больше 30. Чтобы ж. Тогда при ве 40 ответ 30.",
+      "Роль: к. Величина: в, ве. История: пол. Как к. Хочу в не меньше 40. Чтобы —. При в не меньше 10."]
+    ожидается [
+      "[противоречие] «в»: «потолок» хочет не больше 30, «пол» — не меньше 40, при «в» не меньше 10: общего ответа нет",
+      "[дыра] история «пол» (пол.txt): нет показанного случая «Тогда при … ответ …»",
+      "[дыра] история «пол» (пол.txt): не сказано зачем — «Чтобы» стоит прочерком",
+      "итог: историй 2, не прочитано 0, противоречий 1, дыр 2, замечаний 0"]
+  пример «Stories that agree are counted, and their holes are still named»
+    дано texts равно [
+      "Роль: м. Величина: в, ве. История: потолок. Как м. Хочу в не больше 30. Чтобы ж. Тогда при ве 40 ответ 30.",
+      "Роль: к. Величина: в, ве. История: малый пол. Как к. Хочу в не меньше 5. Чтобы —."]
+    ожидается ["[желания совместны] «в»: историй 2, есть ответ, годный каждой при её условии",
+      "[дыра] история «малый пол» (малый пол.txt): нет показанного случая «Тогда при … ответ …»",
+      "[дыра] история «малый пол» (малый пол.txt): не сказано зачем — «Чтобы» стоит прочерком",
+      "итог: историй 2, не прочитано 0, противоречий 0, дыр 2, замечаний 0"]
+  пример «An idle role, an idle quantity, a split dictionary and a one sided bound are named»
+    дано texts равно [
+      "Роль: к. Величина: в, ве. История: пол. Как к. Хочу в не меньше 40. Чтобы —. При в не меньше 10.",
+      "Роль: к. Роль: з. Величина: в, вы. Величина: вес, весе. История: низ. Как к. Хочу в не меньше 20. Чтобы ж."]
+    ожидается ["[желания совместны] «в»: историй 2, есть ответ, годный каждой при её условии",
+      "[дыра] роль «з» объявлена, а историй от неё нет",
+      "[дыра] величина «вес» объявлена, а ни одна история о ней ничего не хочет",
+      "[дыра] величина «в» объявлена по-разному: словарь набора расходится",
+      "[дыра] история «пол» (пол.txt): нет показанного случая «Тогда при … ответ …»",
+      "[дыра] история «пол» (пол.txt): не сказано зачем — «Чтобы» стоит прочерком",
+      "[дыра] история «низ» (низ.txt): нет показанного случая «Тогда при … ответ …»",
+      "[замечание] «в»: пол есть (история «пол»), а потолка нет ни в одной истории",
+      "итог: историй 2, не прочитано 0, противоречий 0, дыр 6, замечаний 1"]
+  пример «Every story under a condition leaves the values below it to nobody, and a weaker want adds nothing»
+    дано texts равно [
+      "Роль: к. Величина: в, ве. История: пол. Как к. Хочу в не меньше 40. Чтобы ж. При в не меньше 10.",
+      "Роль: к. Величина: в, ве. История: низ. Как к. Хочу в не меньше 20. Чтобы ж. При в не меньше 15."]
+    ожидается ["[желания совместны] «в»: историй 2, есть ответ, годный каждой при её условии",
+      "[дыра] «в»: при значении меньше 10 ни одна история ничего не требует",
+      "[дыра] история «пол» (пол.txt): нет показанного случая «Тогда при … ответ …»",
+      "[дыра] история «низ» (низ.txt): нет показанного случая «Тогда при … ответ …»",
+      "[замечание] «в»: пол есть (история «пол»), а потолка нет ни в одной истории",
+      "[замечание] история «низ» ничего не добавляет к «пол»: в не меньше 20 следует из в не меньше 40",
+      "итог: историй 2, не прочитано 0, противоречий 0, дыр 3, замечаний 2"]
+  пример «A file that is no story is named with what it lacks»
+    дано texts равно ["Роль: к. Величина: в, ве. История: пол. Как к. Чтобы ж."]
+    ожидается [
+      "[не прочитана] пол.txt: у истории нет желания: впишите его строкой «Хочу <величина> не больше <число>»",
+      "[дыра] величина «в» объявлена, а ни одна история о ней ничего не хочет",
+      "итог: историй 1, не прочитано 1, противоречий 0, дыр 1, замечаний 0"]
+  «Findings» от («Set of» от texts)
+
+тотальная функция «Proved mark»
+  принимает claims: число
+  возвращает строка
+  пример «The kernel is expected to prove every claim of the set»
+    дано claims равно 2
+    ожидается "ДОКАЗАНО — утверждений 2: доказано 2,"
+  соединить ["ДОКАЗАНО — утверждений ", (к строке claims), ": доказано ", (к строке claims), ","] по ""
+
+тотальная функция «Is proved»
+  принимает claims: число, output: строка
+  возвращает признак
+  пример «A proof of every claim is a proof of the set»
+    дано claims равно 1
+    дано output равно "set.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0\n"
+    ожидается да
+  пример «A proof of some claims is not»
+    дано claims равно 2
+    дано output равно "set.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0\n"
+    ожидается нет
+  output содержит («Proved mark» от claims)
+
+тотальная функция «Kernel line»
+  принимает claims: число, output: строка
+  возвращает строка
+  пример «A proof of every claim is the word of the kernel»
+    дано claims равно 1
+    дано output равно "set.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0\n"
+    ожидается "[ядро подтвердило] ДОКАЗАНО — утверждений 1: доказано 1, условно 0"
+  пример «A shown case against the set is named by the kernel»
+    дано claims равно 1
+    дано output равно "FLANG_EXAMPLE: пример «вход 3»: получено 5\nещё"
+    ожидается "[ядро отвергло] показанный случай против желаний набора — FLANG_EXAMPLE: пример «вход 3»: получено 5"
+  пример «Any other answer is quoted»
+    дано claims равно 1
+    дано output равно "FLANG_PARSE"
+    ожидается "[ядро не судило] FLANG_PARSE"
+  пусть proved равно (соединить ["[ядро подтвердило] ", («After the mark» от output и "ДОКАЗАНО — ")] по "")
+  пусть against равно (соединить ["[ядро отвергло] показанный случай против желаний набора — ",
+    («After the mark» от output и "FLANG_EXAMPLE: ")] по "")
+  пусть short равно (если (длина output) больше 600 то (подстрока output с 1 по 600) иначе output)
+  «Chosen» от [(«When» от («Is proved» от claims и output) и proved),
+    («When» от (output содержит "FLANG_EXAMPLE: ") и against)] и (соединить ["[ядро не судило] ", short] по "")

@@ -2182,7 +2182,7 @@ jobs:
       # условные суждения. Второй — план `Argue` на тексте с разметкой: учебный
       # текст, реферат с заложенными ошибками и отрицательные контроли —
       # подложная цитата, смешанные кванторы, необъявленное понятие, шаг,
-      # который ядру слишком велик (ADR-0242).
+      # который ядру слишком велик (ADR-0247).
       - name: Check the argument check in controlled Russian
         run: bootstrap/flang run-script argument-check:probe
       - name: Check the reasoning check over a marked-up text

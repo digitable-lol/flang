@@ -898,7 +898,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_TYPE_PARAM` | `types.flang` | — |
 | `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_UNKNOWN` | `flang_cli.c` | — |
-| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `compiler.flang`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
 | `FLANG_UNKNOWN_PROPERTY` | `compiler.flang` | — |

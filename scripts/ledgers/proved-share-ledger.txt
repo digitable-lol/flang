@@ -654,6 +654,12 @@
 // (починки дыр типизации 12–24 и 26, отказы FLANG_INFINITY и FLANG_SCALE); md5 и
 // числитель НЕ ТРОНУТЫ. Новая строка scripts/guards/link-import-guard.fscript снята
 // scripts/ledgers/take-proof-ledger.fscript двоичным партии 11: доказано 8 из 8.
+// ⚑ 21 ноября 2026, вход партии пересборки (issue 488): у flang/self/bootstrap/compiler.flang,
+// flang/self/parser.flang, flang/self/proof.flang и flang/self/proofterm.flang пересчитано только
+// «написано»: 48 → 53, 815 → 817, 341 → 354 и 194 → 198 (счёт недоказанного в обычной проверке,
+// вычисляемые значения примеров, короткий отчёт и короткий отказ индукции); md5 и числитель НЕ
+// ТРОНУТЫ — их переснимет пересборка. Девять программ flang/proof/probes/check-verdict сняты
+// программой flang 0.7.40 через check --proof --json.
 // ⚑ 10 ноября 2026, вход партии печати 12: у flang/self/types.flang пересчитано только
 // «написано»: 467 → 475 (починки дыр типизации 17, 28 и 29: сведение ветвей и отказ
 // FLANG_NOT_A_NUMBER); md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
@@ -1378,7 +1384,7 @@ ed9c9b6a5de7aca5154692ab88afd44c|1|1|0|0|0|flang/scripts/link-collision-guard.fs
 c11ba770f0c6597164e5e6034a986a38|4|4|0|0|0|flang/scripts/tempdir-guard.fscript
 e1ed0b5724f4d71811890773fd6a6e22|1|0|1|0|0|flang/scripts/jargon-samples.flang
 75e5509c0a7221fce5fd27570780e56a|4|4|0|0|0|flang/scripts/generate-atom-table.fscript
-af296a5839d250342ca4c8cf67e66060|48|×|×|×|0|flang/self/bootstrap/compiler.flang
+af296a5839d250342ca4c8cf67e66060|53|×|×|×|0|flang/self/bootstrap/compiler.flang
 fb6ad03307c7a5f4850301c8984c4f10|1|×|×|×|0|flang/self/bootstrap/emit-from-source.flang
 ecd81513258fe500beadfeab45b681e5|153|84|32|37|0|flang/self/bounded.flang
 81def025878dbf7d4983ba958afcf0dd|98|48|22|28|0|flang/self/builtins.flang
@@ -1423,7 +1429,7 @@ e05b8321927db467166d0352b4145b18|32|32|0|0|0|flang/self/monoid.flang
 72a97dbf214a6c37b7de0e3b1e144702|3|0|2|0|0|flang/self/obligations-and-kernel-examples.flang
 301c10cee2d4e63f7fcdb86d634edb44|60|44|0|0|0|flang/self/obligations.flang
 3f8970a696cb0bc0b668c6e31668b8bf|43|11|0|30|0|flang/self/oracle.flang
-54cfb1a8e907051aafea33efa6ac337d|815|446|22|262|0|flang/self/parser.flang
+54cfb1a8e907051aafea33efa6ac337d|817|446|22|262|0|flang/self/parser.flang
 8ae178a9202568c0fd163ecb76ef4570|22|22|0|0|0|flang/self/partialorder.flang
 44e46f13781e1b72f0c290e0e13422c7|21|17|4|0|0|flang/self/processes.flang
 82baac47756df343c845cc40f740dfbe|100|82|2|10|0|flang/self/proof-initial.flang
@@ -2437,3 +2443,12 @@ e09e4f5c091c66b832da24406c08979c|4|4|0|0|0|flang/proof/probes/unverified-measure
 350602ecde4088470c4bb2a5f6b42e5b|3|3|0|0|0|flang/proof/probes/unverified-measure/programs/ordinary-function-through-identity.flang
 1762017d5c3ac0c3650343a3edbda1de|2|2|0|0|0|flang/proof/probes/unverified-measure/programs/ordinary-function-without-a-cycle.flang
 8be0f90290ab0ee98592814084d432e8|5|5|0|0|0|flang/proof/probes/unverified-measure/programs/self-call-through-identity.flang
+60b1f3a2f168f5434f8cb6345ebb6fd1|2|1|0|1|0|flang/proof/probes/check-verdict/programs/false-closed-statement.flang
+e73dbacf3cdc0895f4f8ae0fcd2ddd5f|1|0|0|1|0|flang/proof/probes/check-verdict/programs/false-postcondition-no-parameters.flang
+c7e44afbbc654a3678f9219734edca97|3|3|0|0|0|flang/proof/probes/check-verdict/programs/independent-check-replays-a-part.flang
+d8d8c0d2f64bef1a0bc4218e22647690|3|3|0|0|0|flang/proof/probes/check-verdict/programs/independent-check-replays-all.flang
+39bca4a5d92943005a935597458824f3|2|×|×|×|0|flang/proof/probes/check-verdict/programs/induction-leaves-cases-open.flang
+e119e44ab1e229ffc7b1b35454830cae|1|1|0|0|0|flang/proof/probes/check-verdict/programs/proved-postcondition.flang
+b84a0d9b2c597e85945650941c5bb1c9|1|0|1|0|0|flang/proof/probes/check-verdict/programs/tested-postcondition.flang
+b903357f2acf5be4cd56dbf039b595d6|1|1|0|0|0|flang/proof/probes/check-verdict/programs/true-closed-statement.flang
+14c25f1bc6aa39509ec6c11f077055fc|2|0|0|2|0|flang/proof/probes/check-verdict/programs/unproved-postcondition.flang

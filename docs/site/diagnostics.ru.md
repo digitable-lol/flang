@@ -888,7 +888,7 @@ $ echo $?
 | `FLANG_TYPE_PARAM` | `types.flang` | — |
 | `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_UNKNOWN` | `flang_cli.c` | — |
-| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | неизвестная функция «{name}» · неизвестный тип «{name}» · неизвестная запись «{name}» · неизвестный вариант «{name}» · неизвестный конструктор варианта «{name}» · не найдена функция «{name}» · запись не содержит поле «{field}» · имя «{name}» не связано · имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `compiler.flang`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | неизвестная функция «{name}» · неизвестный тип «{name}» · неизвестная запись «{name}» · неизвестный вариант «{name}» · неизвестный конструктор варианта «{name}» · не найдена функция «{name}» · запись не содержит поле «{field}» · имя «{name}» не связано · имя «{name}» не связано: имя вводят 'принимает', 'пусть' или образец 'случай'; а действия языка ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') пишутся МЕЖДУ значениями — «3.14 умножить на р», а не «умножить 3.14 на р» |
 | `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
 | `FLANG_UNKNOWN_PROPERTY` | `compiler.flang` | — |

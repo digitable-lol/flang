@@ -807,6 +807,7 @@ in
 including
 incomplete
 ind1
+independent
 index
 induction
 inequality
@@ -1220,6 +1221,7 @@ paired
 pairs
 paragraph
 parameter
+parameters
 parametric
 parentheses
 parenthesises
@@ -1453,6 +1455,7 @@ replaces
 replacing
 replay
 replayed
+replays
 reply
 report
 reporting
@@ -1871,6 +1874,7 @@ uncalled
 undeclared
 under
 undocumented
+unfinished
 unfold
 unfold1
 unfold2

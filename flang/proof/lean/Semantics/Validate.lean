@@ -832,9 +832,7 @@ def «разобратьФайл» (path : String) (cpath proof : Option String)
   match Json.parse text with
   | .error m => pure (.error m)
   | .ok j =>
-    let P := match Json.parse ptext with
-      | .ok pj => «программаСШагом» pj («программаJson» j)
-      | .error _ => «программаJson» j
+    let P := «программаJson» j
     let aliases := («объявленияТипов» j).filter (fun d => «строка?» d.2 "kind" = "alias")
     let decls := («объявленияТипов» j).map (fun d => (d.1, «безПсевдонимов» aliases 16 d.2))
     let functions := («массив» j "functions").map («функцияБезПсевдонимов» aliases)

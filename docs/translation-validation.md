@@ -38,12 +38,10 @@ An answer is a value, or a refusal with its code. The reference checks the preco
 the called function before the body and the postconditions after it, as the printed C does, so a
 refusal by `FLANG_PRECONDITION` or `FLANG_PROPERTY` is compared like a value. A refusal by
 `FLANG_MEASURE` is compared the same way. The reference checks a declared measure at every call the
-tree marks with it. A recursion proved by a constant step has no mark in the tree: the reference
-reads the ledger of `flang check --proof --json` (carrier `step`, the argument, the cycle, the
-number of guarded calls) and checks at every call into the cycle that the argument is below the
-parameter, right after that argument is computed. The ledger lists the functions of the validated
-file only, so a function linked from another module is evaluated without this check and a witness
-where its step does not change the number is reported as a disagreement. Numbers are compared
+tree marks with it (`descent`). A recursion proved by a constant step is marked on the argument
+that steps (`measure` with the name of the parameter): the reference checks that the argument is
+below that parameter right after the argument is computed and before the next one. The marks are
+in the linked tree, so functions of other modules are checked the same way. Numbers are compared
 by their shortest decimal form with the sign of zero kept, which is one string per binary64 value.
 A row where the reference ran out of fuel or the C program hit its recursion or memory limit is
 not compared and is counted apart.

@@ -29,7 +29,7 @@ empty string, the empty list.
 Before, `before/discount.flang`:
 
 ```flang refused insert docs/examples/proofs/before/discount.flang
-модуль «Скидка без предусловия»
+модуль «Discount without precondition»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -60,7 +60,7 @@ sense only when the discount is not above the price. Say so with a `требуе
 After, `discount.flang`:
 
 ```flang insert docs/examples/proofs/discount.flang
-модуль «Скидка»
+модуль «Discount»
 
 тотальная функция «Цена со скидкой»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -91,7 +91,7 @@ postcondition itself.
 The calling function proves the precondition. Before, `before/order.flang`:
 
 ```flang refused insert docs/examples/proofs/before/order.flang
-модуль «Заказ без предусловия»
+модуль «Order without precondition»
 
 тотальная функция «Цена заказа»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -129,7 +129,7 @@ the argument. An `если` (if) test before the call does not count as such a f
 After, `order.flang`:
 
 ```flang insert docs/examples/proofs/order.flang
-модуль «Заказ»
+модуль «Order»
 
 тотальная функция «Цена заказа»
   принимает цена: неотрицательное, скидка: неотрицательное
@@ -158,7 +158,7 @@ order.flang: проверено — разбор, типы, завершаемо
 Before, `before/total.flang`:
 
 ```flang insert docs/examples/proofs/before/total.flang
-модуль «Итог без теоремы»
+модуль «Total without theorem»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число
@@ -199,7 +199,7 @@ the lesson [First proof](first-proof.html). Write it as a theorem with the
 same name as the postcondition. After, `total.flang`:
 
 ```flang insert docs/examples/proofs/total.flang
-модуль «Итог»
+модуль «Total»
 
 тотальная функция «Итог»
   принимает цены: список неотрицательное, доставка: число
@@ -246,7 +246,7 @@ tail. The other kinds of theorems: [Theorems step by step](manual-proofs.html).
 Before, `before/remainder.flang`:
 
 ```flang insert docs/examples/proofs/before/remainder.flang
-модуль «Остаток на складе, число»
+модуль «Stock remainder as a number»
 
 тотальная функция «Остаток»
   принимает было: число, ушло: число
@@ -274,7 +274,7 @@ A quantity of goods is an integer and not negative. Say so with the type
 `неотрицательное`: an integer from 0 to 2⁵³−1. After, `remainder.flang`:
 
 ```flang insert docs/examples/proofs/remainder.flang
-модуль «Остаток на складе»
+модуль «Stock remainder»
 
 тотальная функция «Остаток»
   принимает было: неотрицательное, ушло: неотрицательное
@@ -302,7 +302,7 @@ The statement compares two calls of one function. Before,
 `before/monotone.flang`:
 
 ```flang insert docs/examples/proofs/before/monotone.flang
-модуль «Тариф без подсказки»
+модуль «Tariff without a hint»
 
 тотальная функция «Один»
   возвращает точное целое
@@ -337,7 +337,7 @@ refer to that postcondition in a theorem with the words `по свойству` 
 property). After, `monotone.flang`:
 
 ```flang insert docs/examples/proofs/monotone.flang
-модуль «Тариф»
+модуль «Tariff»
 
 тотальная функция «Один»
   возвращает точное целое
@@ -386,7 +386,7 @@ code. Before, `before/fine.flang`: the theorem is named differently from the
 postcondition.
 
 ```flang refused insert docs/examples/proofs/before/fine.flang
-модуль «Штраф с ошибкой в имени»
+модуль «Fine with a misspelled name»
 
 тип «Светофор»
   вариант «Красный»
@@ -433,7 +433,7 @@ FLANG_PROOF_NO_GOAL в файле before/fine.flang, строка 23, столб
 A theorem is tied to its postcondition by name. After, `fine.flang`:
 
 ```flang insert docs/examples/proofs/fine.flang
-модуль «Штраф»
+модуль «Fine»
 
 тип «Светофор»
   вариант «Красный»
@@ -504,7 +504,7 @@ The file `before/total-no-precondition.flang` is recipe 3 with the `требуе
 line removed:
 
 ```flang refused insert docs/examples/proofs/before/total-no-precondition.flang
-модуль «Итог без предусловия»
+модуль «Total without precondition»
 
 тотальная функция «Итог покупок»
   принимает цены: список неотрицательное, доставка: число

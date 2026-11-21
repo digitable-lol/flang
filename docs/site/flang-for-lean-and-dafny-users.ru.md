@@ -22,7 +22,7 @@ Dafny и когда какой инструмент брать.
 flang, файл `docs/examples/proofs/largest.flang`:
 
 ```flang insert docs/examples/proofs/largest.flang
-модуль «Наибольшее»
+модуль «Largest»
 
 тотальная функция «Наибольшее»
   принимает а: точное целое, б: точное целое
@@ -111,7 +111,7 @@ lemma LargestCommutes(a: nat, b: nat)
 `docs/examples/proofs/float-sum.flang` объявляет сложение чисел моноидом:
 
 ```flang insert docs/examples/proofs/float-sum.flang
-модуль «Сумма дробных»
+модуль «Float sum»
 
 тотальная функция «Сложить числа»
   принимает а: число, б: число
@@ -170,7 +170,7 @@ flang check float-sum.flang --proof
 `docs/examples/proofs/append-numbers.flang`:
 
 ```flang insert docs/examples/proofs/append-numbers.flang
-модуль «Склейка чисел»
+модуль «Append numbers»
 
 тотальная функция «Склеить»
   принимает первый: список числа, второй: список числа
@@ -198,7 +198,7 @@ flang check float-sum.flang --proof
 `docs/examples/proofs/reverse.flang`:
 
 ```flang insert docs/examples/proofs/reverse.flang
-модуль «Обращение списка»
+модуль «List reversal»
 
 тотальная функция «В конец»
   принимает элементы: список числа, последний: число
@@ -236,7 +236,7 @@ flang check float-sum.flang --proof
 `docs/examples/proofs/unsupported/append-any-type.flang`:
 
 ```flang refused insert docs/examples/proofs/unsupported/append-any-type.flang
-модуль «Склейка любого типа»
+модуль «Append of any type»
 
 тотальная функция «Склеить» от «А»
   принимает первый: список «А», второй: список «А»
@@ -265,7 +265,7 @@ flang ищет один аргумент, который уменьшается 
 `docs/examples/proofs/unsupported/ackermann.flang`:
 
 ```flang refused insert docs/examples/proofs/unsupported/ackermann.flang
-модуль «Аккерман»
+модуль «Ackermann»
 
 тотальная функция «Аккерман»
   принимает м: число, н: число

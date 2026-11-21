@@ -23,7 +23,7 @@ order of arguments does not matter.
 flang, file `docs/examples/proofs/largest.flang`:
 
 ```flang insert docs/examples/proofs/largest.flang
-модуль «Наибольшее»
+модуль «Largest»
 
 тотальная функция «Наибольшее»
   принимает а: точное целое, б: точное целое
@@ -114,7 +114,7 @@ the kernel will not prove over it what rounding breaks. The file
 `docs/examples/proofs/float-sum.flang` declares number addition a monoid:
 
 ```flang insert docs/examples/proofs/float-sum.flang
-модуль «Сумма дробных»
+модуль «Float sum»
 
 тотальная функция «Сложить числа»
   принимает а: число, б: число
@@ -174,7 +174,7 @@ over variants. It derives the associativity of list append by induction with no
 hints. File `docs/examples/proofs/append-numbers.flang`:
 
 ```flang insert docs/examples/proofs/append-numbers.flang
-модуль «Склейка чисел»
+модуль «Append numbers»
 
 тотальная функция «Склеить»
   принимает первый: список числа, второй: список числа
@@ -201,7 +201,7 @@ Reversing a list twice gives the original list. Lean proves it by induction
 with a helper lemma. flang does not. File `docs/examples/proofs/reverse.flang`:
 
 ```flang insert docs/examples/proofs/reverse.flang
-модуль «Обращение списка»
+модуль «List reversal»
 
 тотальная функция «В конец»
   принимает элементы: список числа, последний: число
@@ -239,7 +239,7 @@ written; a statement about it cannot. File
 `docs/examples/proofs/unsupported/append-any-type.flang`:
 
 ```flang refused insert docs/examples/proofs/unsupported/append-any-type.flang
-модуль «Склейка любого типа»
+модуль «Append of any type»
 
 тотальная функция «Склеить» от «А»
   принимает первый: список «А», второй: список «А»
@@ -268,7 +268,7 @@ arguments, while flang looks for one argument that gets smaller on every call.
 File `docs/examples/proofs/unsupported/ackermann.flang`:
 
 ```flang refused insert docs/examples/proofs/unsupported/ackermann.flang
-модуль «Аккерман»
+модуль «Ackermann»
 
 тотальная функция «Аккерман»
   принимает м: число, н: число

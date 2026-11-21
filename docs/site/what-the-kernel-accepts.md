@@ -34,7 +34,7 @@ body's condition. A statement about one branch needs a condition that names
 that branch. File `branch-condition.flang`:
 
 ```flang insert docs/examples/proofs/kernel/branch-condition.flang
-модуль «Условие ветви»
+модуль «Branch condition»
 
 тотальная функция «Имя кода»
   принимает код: число
@@ -79,7 +79,7 @@ derive properties of that value: neither the length of a string nor the
 emptiness of a list. File `empty-at-zero.flang`:
 
 ```flang insert docs/examples/proofs/kernel/empty-at-zero.flang
-модуль «Равенство значению»
+модуль «Equality to a value»
 
 тотальная функция «Пустой при нуле»
   принимает корень: число, все: список числа
@@ -115,7 +115,7 @@ false when `а` is NaN. The compiler rejects such a postcondition with the error
 File `sum-bounds.flang`:
 
 ```flang insert docs/examples/proofs/kernel/sum-bounds.flang
-модуль «Границы суммы»
+модуль «Sum bounds»
 
 тотальная функция «Сумма двух»
   принимает а: неотрицательное, б: неотрицательное
@@ -155,7 +155,7 @@ In a statement the sides of a comparison may be swapped: `результат н�
 File `threshold.flang`:
 
 ```flang insert docs/examples/proofs/kernel/threshold.flang
-модуль «Порог»
+модуль «Threshold»
 
 тотальная функция «Порог»
   принимает место: число
@@ -176,7 +176,7 @@ A strict inequality over the arguments is not proved. For a remainder write a
 non-strict bound. File `remainder-bound.flang`:
 
 ```flang insert docs/examples/proofs/kernel/remainder-bound.flang
-модуль «Граница остатка»
+модуль «Remainder bound»
 
 тотальная функция «Остаток бит целый»
   принимает ч: неотрицательное
@@ -198,7 +198,7 @@ If a postcondition does not depend on the arguments, the kernel computes it.
 Any comparison fits, a strict one too. File `closed-goal.flang`:
 
 ```flang insert docs/examples/proofs/kernel/closed-goal.flang
-модуль «Замкнутая цель»
+модуль «Closed goal»
 
 тотальная функция «Пять»
   возвращает число
@@ -227,7 +227,7 @@ About the result of a call it knows only what the proved postconditions of the
 called function say. File `copy-length.flang`:
 
 ```flang insert docs/examples/proofs/kernel/copy-length.flang
-модуль «Длина копии»
+модуль «Copy length»
 
 тотальная функция «Копия без»
   принимает х: список число
@@ -278,7 +278,7 @@ If the kernel did not apply the postcondition of the called function, refer to
 it with a one-line theorem. File `call-by-property.flang`:
 
 ```flang insert docs/examples/proofs/kernel/call-by-property.flang
-модуль «Свойство вызванной»
+модуль «Property of the called»
 
 тотальная функция «Копия»
   принимает х: список число
@@ -317,7 +317,7 @@ The kernel proves a statement about a `свёртка` (fold) by induction over 
 fold. File `fold-count.flang`:
 
 ```flang insert docs/examples/proofs/kernel/fold-count.flang
-модуль «Счёт свёрткой»
+модуль «Count by fold»
 
 тотальная функция «Счёт лямбдой»
   принимает х: список число
@@ -350,7 +350,7 @@ The kernel splits a `разбор` (match) body over an argument by a condition 
 compares the argument with a variant. File `variant-answer.flang`:
 
 ```flang insert docs/examples/proofs/kernel/variant-answer.flang
-модуль «Вариант ответа»
+модуль «Variant answer»
 
 тип «Ответ»
   вариант «Пока ничего»

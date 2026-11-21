@@ -33,7 +33,7 @@
 `branch-condition.flang`:
 
 ```flang insert docs/examples/proofs/kernel/branch-condition.flang
-модуль «Условие ветви»
+модуль «Branch condition»
 
 тотальная функция «Имя кода»
   принимает код: число
@@ -76,7 +76,7 @@
 `empty-at-zero.flang`:
 
 ```flang insert docs/examples/proofs/kernel/empty-at-zero.flang
-модуль «Равенство значению»
+модуль «Equality to a value»
 
 тотальная функция «Пустой при нуле»
   принимает корень: число, все: список числа
@@ -111,7 +111,7 @@
 доказываются. Файл `sum-bounds.flang`:
 
 ```flang insert docs/examples/proofs/kernel/sum-bounds.flang
-модуль «Границы суммы»
+модуль «Sum bounds»
 
 тотальная функция «Сумма двух»
   принимает а: неотрицательное, б: неотрицательное
@@ -151,7 +151,7 @@
 `threshold.flang`:
 
 ```flang insert docs/examples/proofs/kernel/threshold.flang
-модуль «Порог»
+модуль «Threshold»
 
 тотальная функция «Порог»
   принимает место: число
@@ -172,7 +172,7 @@
 нестрогую границу. Файл `remainder-bound.flang`:
 
 ```flang insert docs/examples/proofs/kernel/remainder-bound.flang
-модуль «Граница остатка»
+модуль «Remainder bound»
 
 тотальная функция «Остаток бит целый»
   принимает ч: неотрицательное
@@ -194,7 +194,7 @@
 сравнение, строгое тоже. Файл `closed-goal.flang`:
 
 ```flang insert docs/examples/proofs/kernel/closed-goal.flang
-модуль «Замкнутая цель»
+модуль «Closed goal»
 
 тотальная функция «Пять»
   возвращает число
@@ -223,7 +223,7 @@
 функции. Файл `copy-length.flang`:
 
 ```flang insert docs/examples/proofs/kernel/copy-length.flang
-модуль «Длина копии»
+модуль «Copy length»
 
 тотальная функция «Копия без»
   принимает х: список число
@@ -274,7 +274,7 @@
 теоремой в одну строку. Файл `call-by-property.flang`:
 
 ```flang insert docs/examples/proofs/kernel/call-by-property.flang
-модуль «Свойство вызванной»
+модуль «Property of the called»
 
 тотальная функция «Копия»
   принимает х: список число
@@ -313,7 +313,7 @@
 `fold-count.flang`:
 
 ```flang insert docs/examples/proofs/kernel/fold-count.flang
-модуль «Счёт свёрткой»
+модуль «Count by fold»
 
 тотальная функция «Счёт лямбдой»
   принимает х: список число
@@ -346,7 +346,7 @@
 аргумент с вариантом. Файл `variant-answer.flang`:
 
 ```flang insert docs/examples/proofs/kernel/variant-answer.flang
-модуль «Вариант ответа»
+модуль «Variant answer»
 
 тип «Ответ»
   вариант «Пока ничего»

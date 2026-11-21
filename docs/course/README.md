@@ -122,7 +122,7 @@ flang run-script docs:examples
 | ответы девяти целей | сборка и запуск девяти напечатанных программ настоящими тулчейнами этой машины: `cc`/`g++` 15.2.0, go 1.26.5, rustc 1.97.1, javac 26-internal, Elixir 1.20.3 на Erlang/OTP 29, node 26.7.0, Python 3.14.4, .NET 10.0.110 |
 | 82 задачи LeetCode, десятка самых коротких | `ls`, `wc -l`, счёт строк `пример` |
 | 66 файлов и 65 076 строк библиотеки <!-- СНЯТО 2026-11-14 файлов flang/stdlib/*.flang = 66 (the parsing module and the DSL recipe over dev) --><!-- СНЯТО 2026-11-15 строк-в flang/stdlib/*.flang = 65076 (the parsing module and the DSL recipe over dev) --> | `ls flang/stdlib/*.flang`, `cat … \| wc -l` |
-| 373 примера, 1032 файла доказательств <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 373 (the parsing module and the DSL recipe over dev) --><!-- СНЯТО 2026-11-18 файлов flang/proof/*.flang = 1032 (three probes of the exact ring and of the strict product route over dev) --> | `ls`, `find` |
+| 373 примера, 1051 файл доказательств <!-- СНЯТО 2026-11-16 файлов docs/examples/*.flang = 373 (the parsing module and the DSL recipe over dev) --><!-- СНЯТО 2026-11-18 файлов flang/proof/*.flang = 1051 (typing-holes probes split one function per file, over dev with the DSL recipe) --> | `ls`, `find` |
 | 2 из 20 и 10 из 20 — цена доказательств | ручной замер на двадцати функциях `docs/benchmarks/proof-cost/functions/`; `bootstrap/flang run-script proofs:count-20` |
 
 **Чего этим деревом не переснять, и это надо знать.**

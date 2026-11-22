@@ -140,6 +140,10 @@
       ["conclusions_that_fall", («Json strings» от (assumption.«falls»))]]))],
       ["glossary", («Glossary json» от markup)],
       ["readers", («Json object» от [["grammar_crosscheck", («Json string» от (article.«grammar»))],
+      ["theses", («Json list» от (отобразить (article.«rows») как row → «Json object» от
+      [["label", («Json string» от (элемент 1 в row))], ["answer", («Json string» от (элемент 2 в row))],
+      ["reason", («Json string» от (элемент 3 в row))], ["markup_form", («Json string» от (элемент 4 в row))],
+      ["grammar_form", («Json string» от (элемент 5 в row))]]))],
       ["sentences", («Json list» от (отобразить («Readings of» от markup и (article.«rows») и sentences)
       как reading → «Json object» от [["number", (к строке (reading.«number»))],
       ["read_by", («Json string» от (reading.«by»))], ["theses", («Json strings» от (reading.«labels»))],

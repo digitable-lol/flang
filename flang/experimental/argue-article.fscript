@@ -780,66 +780,20 @@
   """
   cd "$0" || exit 2
   root=$PWD
-  module="${FLANG_ARGUE_CROSSCHECK:-flang/experimental/argue/crosscheck.flang}"
   date +%s
-  [ -f "$module" ] || { echo absent; exit 0; }
-  case "$module" in /*) ;; *) module="$root/$module" ;; esac
+  plan="${FLANG_ARGUE_CROSSCHECK:-flang/experimental/argue-crosscheck.fscript}"
+  [ -f "$plan" ] || { echo absent; exit 0; }
+  case "$2" in /*) claims=$2 ;; *) claims="$root/$2" ;; esac
   d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
-  cp "$1" "$d/text.txt" && cp "$2" "$d/claims.txt" || { echo failed; echo "текст или разметка не прочитаны"; exit 0; }
-  sed "s|MODULE|$module|" > "$d/call.fscript" << 'CALL'
-  модуль «Argue crosscheck call»
-    использует «Argue crosscheck» из "MODULE"
-
-  тип «Call step»
-    вариант «Start»
-    вариант «Awaiting text»
-    вариант «Awaiting claims» содержит text: строка
-    вариант «Printed»
-
-  тотальная функция «Read»
-    принимает reply: «Отклик»
-    возвращает строка
-    разбор reply
-      случай вариант «Прочитано» с содержимое как text
-        то text
-      случай любое
-        то ""
-
-  тотальная функция «Printing»
-    принимает text: строка, claims: строка
-    возвращает «Продолжение»
-    (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "rows.tsv"
-        и содержимое равным (соединить (отобразить («Crosscheck rows» от text и claims)
-        как row → соединить row по "\t") по "\n")) и потом равным (вариант «Printed»))
-
-  тотальная функция «Begin»
-    возвращает «Call step»
-    вариант «Start»
-
-  тотальная функция «Onward»
-    принимает stage: «Call step», reply: «Отклик»
-    возвращает «Продолжение»
-    разбор stage
-      случай вариант «Start»
-        то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "text.txt")
-            и потом равным (вариант «Awaiting text»))
-      случай вариант «Awaiting text»
-        то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "claims.txt")
-            и потом равным (вариант «Awaiting claims» с text равным («Read» от reply)))
-      случай вариант «Awaiting claims» с text как text
-        то «Printing» от text и («Read» от reply)
-      случай вариант «Printed»
-        то вариант «Конец работы» с значение равным ""
-
-  план «Call»
-    состояние «Call step»
-    начинает с «Begin»
-    обрабатывает «Onward»
-  CALL
-  if "${FLANG_BIN:-$root/bootstrap/flang}" io "$d/call.fscript" --plan Call --max-steps 1000000000000 \\
-    --timeout 900000 > "$d/said" 2>&1 && [ -f "$d/rows.tsv" ]; then
+  export FLANG_BIN="${FLANG_BIN:-$root/bootstrap/flang}"
+  limit="${FLANG_ARGUE_CROSSCHECK_SECONDS:-900}"
+  guarded() {
+    if command -v timeout > /dev/null 2>&1; then timeout "$limit" "$@"; else "$@"; fi
+  }
+  if guarded "$FLANG_BIN" io "$plan" --plan Crosscheck --max-steps 1000000000000 --timeout 900000 \\
+    -- "$claims" "${FLANG_ARGUE_WORDS:-}" "$d/table.tsv" > "$d/said" 2>&1 && [ -f "$d/table.tsv" ]; then
     echo ok
-    cat "$d/rows.tsv"
+    sed 1d "$d/table.tsv"
   else
     echo failed
     tr '\\n' ' ' < "$d/said" | head -c 600
@@ -882,7 +836,7 @@
       начиная с («Flat» от (соединить rest по " ")) как found и row →
       если (элемент 1 в row) равен mode то (элемент 2 в row) иначе found)
       и «rows» равным (если mode равен "ok"
-      то (отфильтровать (отобразить rest как line → разделить line по "\t") где row → (длина row) равен 3)
+      то (отфильтровать (отобразить rest как line → «Crosscheck row» от line) где row → не (пусто row))
       иначе (пустой список))
       и «skipped» равным (article.«skipped») и «seconds» равным («Seconds between» от started и ended)
       и «tables» равным (article.«tables»))

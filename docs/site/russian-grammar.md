@@ -119,6 +119,41 @@ A parse has six fields; the lists go word by word:
 When there is no parse, the variant is `Не разобрано` with the fields `причина`
 (reason), `слово` (word), `место` (position) and `работа`.
 
+## A parse for building a logical form
+
+Whoever builds a logical form from a parse is better served by a record per
+word. `«Разборы для смысла»` gives it (sentence, dictionary, how many parses to
+list):
+
+```
+$ flang run flang/ct/russian/sentence.flang --function '«Разборы для смысла по пробному словарю»' --args '{"предложение":"Система не является проблемой."}'
+доказано: утверждений 9
+{"разборы":[{"слова":[{"слово":"система","лемма":"система","часть":"сущ","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}]},{"слово":"не","лемма":"не","часть":"не","тип":[]},{"слово":"является","лемма":"являться","часть":"связка","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}]},{"слово":"проблемой","лемма":"проблема","часть":"сущ","тип":[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]}],"связи":[{"левое":3,"правое":4},{"левое":1,"правое":3}],"роли":["дополнение в творительном","подлежащее"],"стыки":[{"откуда":3,"гнездо":3,"куда":4,"паз":1},{"откуда":1,"гнездо":1,"куда":3,"паз":1}]}],"всего":1,"причина":"","слово":""}
+```
+
+| Field | What it holds |
+| --- | --- |
+| `слова` | for every word: the word, the lemma, the part of speech and the type as a list of simple types |
+| `связи` | pairs of numbers of the words whose types cancelled: the left word and the right one |
+| `роли` | the role of every link, in the same order |
+| `стыки` | which simple type cancelled with which: `откуда` and `гнездо` are the left word and the number of the simple type inside its type, `куда` and `паз` are the right word and the number inside its type |
+
+The part of speech is refined here by lemma and by role: `квантор` quantifier
+(«каждый», «все»), `модальное` modal («может», «можно», «необходимо»),
+`связка` copula («является», «быть»), `бытийный` existence verb
+(«существует»), `местоимение` pronoun, `числительное` numeral, `имя` name,
+`родительный` a noun in the genitive attached to another noun, `сказ_прил` an
+adjective inside the predicate. A word that takes no part in the parse has an
+empty type; its part of speech is the word itself for «не», «то», «ни» and the
+role for the others.
+
+A pronoun gets the type of a noun phrase and does not break the parse: what it
+refers to is not for the grammar to decide. Nor does the grammar interpret a
+singular subject: «иерархия затрудняет» is about one hierarchy and about any.
+
+A unit of text without a predicate — a heading, a fragment, a table row — gets
+the reason `нет сказуемого`. That is how such a unit is told from a sentence.
+
 ## How to read a type
 
 | Written | Meaning |

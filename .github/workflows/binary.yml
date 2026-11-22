@@ -2631,7 +2631,7 @@ jobs:
   argue-article-probes:
     name: argue-article-probes
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       LC_ALL: C.UTF-8
       FLANG_TMP: ${{ runner.temp }}

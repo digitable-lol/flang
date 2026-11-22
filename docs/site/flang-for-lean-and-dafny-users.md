@@ -166,8 +166,8 @@ tactics. Lean proves all 60. flang:
 | Outcome | Tasks |
 | --- | ---: |
 | proves by itself | 33 |
-| proves after a rework: a theorem, another type, the property written as a postcondition | 18 |
-| does not prove | 9 |
+| proves after a rework: a theorem, another type, the property written as a postcondition | 19 |
+| does not prove | 8 |
 
 By itself flang takes integer arithmetic, bounds, list lengths, case analysis
 over variants. It derives the associativity of list append by induction with no

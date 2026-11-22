@@ -1086,7 +1086,7 @@
   пусть keys равно («Keys of» от («Normal formula» от formula))
   пусть names равно («Each once» от (свёртка keys начиная с (пустой список) как found и key →
       «Соединить списки» от found и ((«Difference» от key и "0").«names»)))
-  если ((длина keys) больше 3) или ((длина names) больше 3)
+  если ((длина keys) больше 4) или ((длина names) больше 3)
     то «Number verdict» от "large" и пустой список и пустой список и ""
     иначе («Number trial within» от title и instances и goal и positive)
 

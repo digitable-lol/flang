@@ -562,7 +562,8 @@
         и «clashes» равным пустой список и «outcomes» равным пустой список)
         и «dropped» равным (pruned.«dropped») и «grammar» равным "absent" и «rows» равным пустой список
         и «skipped» равным пустой список и «seconds» равным 0 и «tables» равным («Table words» от (source.«tables»)))
-        и (markup.«steps») и (markup.«entries»))
+        и (отфильтровать (markup.«steps») где step → не ((«Silent kinds») содержит (step.«kind»)))
+        и (markup.«entries»))
 
 тотальная функция «Progress order»
   принимает task: «Run», unit: строка

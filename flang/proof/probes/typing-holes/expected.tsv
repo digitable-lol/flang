@@ -104,3 +104,4 @@ written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, �
 postcondition-calls-its-own-function.flang	check	1	FLANG_NOT_TOTAL
 postcondition-calls-its-own-function-one-step-lower.flang	check	0	замечаний нет
 postconditions-call-each-other.flang	check	0	замечаний нет
+closed-existence-proved-by-computation.flang	proof	0	утверждений 3: доказано 3

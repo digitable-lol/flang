@@ -1,0 +1,1129 @@
+модуль «Argue numbers»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue solve» из "solve.flang"
+
+объект «Part»
+  «name»: строка
+  «top»: число
+  «bottom»: число
+
+объект «Reading»
+  «parts»: список «Part»
+  «name»: строка
+  «top»: число
+  «bottom»: число
+  «turn»: строка
+  «seen»: признак
+  «fault»: строка
+
+объект «Linear»
+  «names»: список строки
+  «coefs»: список числа
+  «free»: число
+  «turned»: признак
+  «fault»: строка
+
+тотальная функция «Copies»
+  принимает text: строка, count: число
+  возвращает список строки
+  пример «Three copies of a word»
+    дано text равно "а"
+    дано count равно 3
+    ожидается ["а", "а", "а"]
+  если count не больше 0 то пустой список иначе (приписать text к («Copies» от text и (count минус 1)))
+
+тотальная функция «Size»
+  принимает value: число
+  возвращает число
+  пример «The size of a number below zero»
+    дано value равно -3
+    ожидается 3
+  если value меньше 0 то (0 минус value) иначе value
+
+тотальная функция «Whole part»
+  принимает value: число, divider: число
+  возвращает число
+  пример «Seven divider two is three»
+    дано value равно 7
+    дано divider равно 2
+    ожидается 3
+  если divider равен 0 то 0 иначе ((value минус (value остаток от divider)) делить на divider)
+
+тотальная функция «Common divisor»
+  принимает left: число, right: число
+  возвращает число
+  пример «The greatest common divisor of two numbers»
+    дано left равно 100
+    дано right равно -112
+    ожидается 4
+  пример «Zero is divided divider everything»
+    дано left равно 0
+    дано right равно 7
+    ожидается 7
+  (элемент 1 в (свёртка («Copies» от "" и 50) начиная с [(«Size» от left), («Size» от right)] как pair и round →
+      если (элемент 2 в pair) равен 0 то pair
+      иначе [(элемент 2 в pair), ((элемент 1 в pair) остаток от (элемент 2 в pair))]))
+
+тотальная функция «Common multiple»
+  принимает left: число, right: число
+  возвращает число
+  пример «The least common multiple of two numbers»
+    дано left равно 4
+    дано right равно 6
+    ожидается 12
+  («Whole part» от ((«Size» от left) умножить на («Size» от right)) и («Common divisor» от left и right))
+
+тотальная функция «Number parts»
+  принимает token: строка
+  возвращает список числа
+  пример «A decimal number is a whole number over a power of ten»
+    дано token равно "0.05"
+    ожидается [5, 100]
+  пример «A whole number stands over one»
+    дано token равно "12"
+    ожидается [12, 1]
+  пусть pieces равно (разделить token по ".")
+  пусть tail равно (если (длина pieces) меньше 2 то "" иначе (элемент 2 в pieces))
+  [(к числу (соединить [(элемент 1 в pieces), tail] по "")),
+    (свёртка (разложить tail на символы) начиная с 1 как power и mark → power умножить на 10)]
+
+тотальная функция «Read with»
+  принимает held: «Reading», parts: список «Part», name: строка, top: число, bottom: число, turn: строка, fault: строка
+  возвращает «Reading»
+  (запись «Reading» с «parts» равным parts и «name» равным name и «top» равным top и «bottom» равным bottom
+      и «turn» равным turn и «seen» равным да
+      и «fault» равным (если пусто (held.«fault») то fault иначе (held.«fault»)))
+
+тотальная функция «Closed reading»
+  принимает held: «Reading», negative: признак
+  возвращает «Reading»
+  пусть parts равно (если held.«seen» то (добавить (запись «Part» с «name» равным (held.«name»)
+      и «top» равным (held.«top») и «bottom» равным (held.«bottom»)) к (held.«parts»)) иначе (held.«parts»))
+  (запись «Reading» с «parts» равным parts и «name» равным "" и «top» равным (если negative то -1 иначе 1)
+      и «bottom» равным 1 и «turn» равным "" и «seen» равным нет и «fault» равным (held.«fault»))
+
+тотальная функция «Number step»
+  принимает held: «Reading», token: строка
+  возвращает «Reading»
+  пусть pair равно («Number parts» от token)
+  пусть divides равно ((held.«turn») равен "/")
+  пусть top равно ((held.«top») умножить на (если divides то (элемент 2 в pair) иначе (элемент 1 в pair)))
+  пусть bottom равно ((held.«bottom») умножить на (если divides то (элемент 1 в pair) иначе (элемент 2 в pair)))
+  («Read with» от held и (held.«parts») и (held.«name») и top и bottom и ""
+      и (если bottom равен 0 то "деление на ноль" иначе ""))
+
+тотальная функция «Name step»
+  принимает held: «Reading», token: строка
+  возвращает «Reading»
+  пусть fault равно (если (held.«turn») равен "/" то "деление на величину не судится"
+      иначе (если пусто (held.«name») то "" иначе "две величины перемножены: такое сравнение не судится"))
+  «Read with» от held и (held.«parts») и token и (held.«top») и (held.«bottom») и "" и fault
+
+тотальная функция «Sign step»
+  принимает held: «Reading», token: строка
+  возвращает «Reading»
+  пусть turned равно (запись «Reading» с «parts» равным (held.«parts») и «name» равным (held.«name»)
+      и «top» равным (held.«top») и «bottom» равным (held.«bottom») и «turn» равным token и «seen» равным (held.«seen»)
+      и «fault» равным (held.«fault»))
+  пусть hundredth равно (запись «Reading» с «parts» равным (held.«parts») и «name» равным (held.«name»)
+      и «top» равным (held.«top») и «bottom» равным ((held.«bottom») умножить на 100) и «turn» равным ""
+      и «seen» равным (held.«seen») и «fault» равным (held.«fault»))
+  если ["+", "-"] содержит token
+    то «Closed reading» от held и (token равен "-")
+    иначе (если token равен "%" то hundredth иначе turned)
+
+тотальная функция «Term step»
+  принимает held: «Reading», token: строка
+  возвращает «Reading»
+  если ["+", "-", "*", "/", "%"] содержит token
+    то «Sign step» от held и token
+    иначе (если «Digit at» от token и 1 то («Number step» от held и token) иначе («Name step» от held и token))
+
+тотальная функция «Parts of»
+  принимает text: строка
+  возвращает «Reading»
+  пример «A sum of products is read part divider part»
+    дано text равно "1.5 * x - 12 %"
+    ожидается (запись «Reading» с «parts» равным [(запись «Part» с «name» равным "x" и «top» равным 15
+        и «bottom» равным 10), (запись «Part» с «name» равным "" и «top» равным -12 и «bottom» равным 100)]
+        и «name» равным "" и «top» равным 1 и «bottom» равным 1 и «turn» равным "" и «seen» равным нет
+        и «fault» равным "")
+  пусть opening равно (запись «Reading» с «parts» равным пустой список и «name» равным "" и «top» равным 1
+      и «bottom» равным 1 и «turn» равным "" и «seen» равным нет и «fault» равным "")
+  пусть read равно (свёртка («Pieces of» от text) начиная с opening как held и token → «Term step» от held и token)
+  пусть closed равно («Closed reading» от read и нет)
+  (запись «Reading» с «parts» равным (closed.«parts») и «name» равным "" и «top» равным 1 и «bottom» равным 1
+      и «turn» равным "" и «seen» равным нет
+      и «fault» равным (если (пусто (closed.«fault»)) и притом (пусто (closed.«parts»))
+      то "у сравнения пустая сторона" иначе (closed.«fault»)))
+
+тотальная функция «Total of»
+  принимает parts: список «Part», name: строка
+  возвращает список числа
+  пример «Parts of one name are added as fractions»
+    дано parts равно [(запись «Part» с «name» равным "x" и «top» равным 1 и «bottom» равным 2),
+      (запись «Part» с «name» равным "x" и «top» равным 1 и «bottom» равным 3)]
+    дано name равно "x"
+    ожидается [5, 6]
+  (свёртка (отфильтровать parts где part → (part.«name») равен name) начиная с [0, 1] как sum и part →
+      «Reduced pair»
+      от (((элемент 1 в sum) умножить на (part.«bottom»)) плюс ((part.«top») умножить на (элемент 2 в sum)))
+      и ((элемент 2 в sum) умножить на (part.«bottom»)))
+
+тотальная функция «Reduced pair»
+  принимает top: число, bottom: число
+  возвращает список числа
+  пример «A fraction in lowest terms with a positive bottom»
+    дано top равно 6
+    дано bottom равно -4
+    ожидается [-3, 2]
+  пусть divisor равно («Common divisor» от top и bottom)
+  пусть mark равно (если bottom меньше 0 то -1 иначе 1)
+  если divisor равен 0
+    то [0, 1]
+    иначе [(mark умножить на («Signed part» от top и divisor)), («Whole part» от («Size» от bottom) и divisor)]
+
+тотальная функция «Signed part»
+  принимает value: число, divider: число
+  возвращает число
+  пример «Division keeps the mark»
+    дано value равно -6
+    дано divider равно 2
+    ожидается -3
+  если value меньше 0 то (0 минус («Whole part» от (0 минус value) и divider)) иначе («Whole part» от value и divider)
+
+тотальная функция «Negative parts»
+  принимает parts: список «Part»
+  возвращает список «Part»
+  пример «Every part changes its mark»
+    дано parts равно [(запись «Part» с «name» равным "x" и «top» равным 1 и «bottom» равным 2)]
+    ожидается [(запись «Part» с «name» равным "x" и «top» равным -1 и «bottom» равным 2)]
+  (отобразить parts как part → запись «Part» с «name» равным (part.«name») и «top» равным (0 минус (part.«top»))
+      и «bottom» равным (part.«bottom»))
+
+тотальная функция «Difference»
+  принимает left: строка, right: строка
+  возвращает «Linear»
+  пример «Both sides are brought to whole numbers with a positive former number»
+    дано left равно "y"
+    дано right равно "1.12 * x"
+    ожидается (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [25, -28] и «free» равным 0
+        и «turned» равным нет и «fault» равным "")
+  пример «A difference of two numbers is its mark»
+    дано left равно "50"
+    дано right равно "57.2"
+    ожидается (запись «Linear» с «names» равным пустой список и «coefs» равным пустой список и «free» равным 1
+        и «turned» равным да и «fault» равным "")
+  пусть former равно («Parts of» от left)
+  пусть latter равно («Parts of» от right)
+  пусть parts равно («Joined parts» от (former.«parts») и («Negative parts» от (latter.«parts»)))
+  пусть names равно (отфильтровать («Each once» от (отобразить parts как part → part.«name»))
+      где name → (не (пусто name)) и притом (не ((элемент 1 в («Total of» от parts и name)) равен 0)))
+  пусть totals равно (отобразить (добавить "" к names) как name → «Total of» от parts и name)
+  пусть scale равно (свёртка totals начиная с 1 как found и pair → «Common multiple» от found и (элемент 2 в pair))
+  пусть whole равно (отобразить totals как pair →
+      (элемент 1 в pair) умножить на («Whole part» от scale и (элемент 2 в pair)))
+  пусть divisor равно (свёртка whole начиная с 0 как found и value → «Common divisor» от found и value)
+  пусть lead равно (свёртка whole начиная с 0 как found и value → если found равен 0 то value иначе found)
+  пусть mark равно (если lead меньше 0 то -1 иначе 1)
+  пусть small равно (отобразить whole как value → mark умножить на («Signed part» от value и divisor))
+  (запись «Linear» с «names» равным names и «coefs» равным («Numbers before last» от small)
+      и «free» равным («Last number» от small) и «turned» равным (lead меньше 0)
+      и «fault» равным (если пусто (former.«fault») то (latter.«fault») иначе (former.«fault»)))
+
+тотальная функция «Joined parts»
+  принимает left: список «Part», right: список «Part»
+  возвращает список «Part»
+  пример «One list of parts after another»
+    дано left равно пустой список
+    дано right равно пустой список
+    ожидается пустой список
+  «Соединить списки» от left и right
+
+тотальная функция «Last number»
+  принимает values: список числа
+  возвращает число
+  пример «Nothing is zero»
+    дано values равно пустой список
+    ожидается 0
+  свёртка values начиная с 0 как found и value → value
+
+тотальная функция «Numbers before last»
+  принимает values: список числа
+  возвращает список числа
+  пример «The last number is dropped»
+    дано values равно [1, 2, 3]
+    ожидается [1, 2]
+  разбор values
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то если пусто хвост то (пустой список) иначе (приписать голова к («Numbers before last» от хвост))
+
+тотальная функция «First number»
+  принимает values: список числа
+  возвращает число
+  пример «Nothing is zero»
+    дано values равно пустой список
+    ожидается 0
+  разбор values
+    случай пусто
+      то 0
+    случай голова и хвост
+      то голова
+
+тотальная функция «Numbers after first»
+  принимает values: список числа
+  возвращает список числа
+  пример «Nothing is left of nothing»
+    дано values равно пустой список
+    ожидается пустой список
+  разбор values
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Signed item»
+  принимает name: строка, coef: число
+  возвращает строка
+  пример «A number below zero keeps its sign in front»
+    дано name равно "x"
+    дано coef равно -28
+    ожидается "-28 * x"
+  пример «One is not written»
+    дано name равно "y"
+    дано coef равно 1
+    ожидается "+y"
+  пусть amount равно («Size» от coef)
+  пусть body равно (если пусто name то (к строке amount)
+      иначе (если amount равен 1 то name иначе (соединить [(к строке amount), " * ", name] по "")))
+  соединить [(если coef меньше 0 то "-" иначе "+"), body] по ""
+
+тотальная функция «Signed items»
+  принимает names: список строки, coefs: список числа
+  возвращает список строки
+  пример «Each name with its number»
+    дано names равно ["y", "x"]
+    дано coefs равно [25, -28]
+    ожидается ["+25 * y", "-28 * x"]
+  разбор names
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (приписать («Signed item» от голова и («First number» от coefs))
+          к («Signed items» от хвост и («Numbers after first» от coefs)))
+
+тотальная функция «Linear text»
+  принимает linear: «Linear»
+  возвращает строка
+  пример «A difference is written as a sum of products»
+    дано linear равно (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [25, -28] и «free» равным 3
+        и «turned» равным нет и «fault» равным "")
+    ожидается "25 * y - 28 * x + 3"
+  пусть items равно («Соединить списки» от («Signed items» от (linear.«names») и (linear.«coefs»))
+      и (если (linear.«free») равен 0 то пустой список иначе [(«Signed item» от "" и (linear.«free»))]))
+  (свёртка items начиная с "" как text и item →
+      если пусто text
+      то (если item начинается с "+" то (подстрока item с 2 по (длина item)) иначе item)
+      иначе (соединить [text, " ", (символ 1 в item), " ", (подстрока item с 2 по (длина item))] по ""))
+
+тотальная функция «Turned sign»
+  принимает mark: строка, turned: признак
+  возвращает строка
+  пример «A turned difference turns the comparison»
+    дано mark равно "<"
+    дано turned равно да
+    ожидается ">"
+  (свёртка [["<", ">"], [">", "<"], ["≤", "≥"], ["≥", "≤"]] начиная с mark как found и row →
+      если turned и притом ((элемент 1 в row) равен mark) то (элемент 2 в row) иначе found)
+
+тотальная функция «Sign holds»
+  принимает mark: строка, value: число
+  возвращает признак
+  пример «Zero is not below zero»
+    дано mark равно "<"
+    дано value равно 0
+    ожидается нет
+  пример «Zero is not above zero and not below it»
+    дано mark равно "≥"
+    дано value равно 0
+    ожидается да
+  пусть below равно (value меньше 0)
+  пусть level равно (value равен 0)
+  (свёртка [["<", (если below то "да" иначе "нет")], ["≤", (если below или level то "да" иначе "нет")],
+      ["=", (если level то "да" иначе "нет")], ["≠", (если level то "нет" иначе "да")],
+      [">", (если below или level то "нет" иначе "да")], ["≥", (если below то "нет" иначе "да")]]
+      начиная с нет как found и row → если (элемент 1 в row) равен mark то ((элемент 2 в row) равен "да") иначе found)
+
+тотальная функция «Place of»
+  принимает words: список строки, word: строка
+  возвращает число
+  пример «The place of a word in a list, from one»
+    дано words равно ["а", "б"]
+    дано word равно "б"
+    ожидается 2
+  (свёртка words начиная с 0 как place и other →
+      если (place больше 0) и притом ((элемент place в words) равен word) то place иначе (place плюс 1))
+
+тотальная функция «Sign formulas»
+  принимает key: строка
+  возвращает список «Formula»
+  пусть below равно (вариант «Atom» с name равным "<" и terms равным [key, "0"])
+  пусть level равно (вариант «Atom» с name равным "=" и terms равным [key, "0"])
+  [(вариант «And» с left равным below и right равным (вариант «Not» с inner равным level)),
+    (вариант «Or» с left равным below и right равным level), level, (вариант «Not» с inner равным level),
+    (вариант «And» с left равным (вариант «Not» с inner равным below)
+    и right равным (вариант «Not» с inner равным level)),
+    (вариант «Or» с left равным (вариант «Not» с inner равным below) и right равным level)]
+
+тотальная функция «Normal atom»
+  принимает name: строка, terms: список строки
+  возвращает «Formula»
+  пример «A comparison becomes a formula of two statements about one difference»
+    дано name равно ">"
+    дано terms равно ["y", "x"]
+    ожидается (вариант «And» с left равным (вариант «Not» с inner равным (вариант «Atom» с name равным "<"
+        и terms равным ["y - x", "0"])) и right равным (вариант «Not» с inner равным (вариант «Atom» с name равным "="
+        и terms равным ["y - x", "0"])))
+  пример «A comparison of two numbers is computed»
+    дано name равно ">"
+    дано terms равно ["57.2", "50"]
+    ожидается вариант «Truth» с holds равным да
+  пусть linear равно («Difference» от («First word» от terms) и («First word» от («Words after first» от terms)))
+  пусть mark равно («Turned sign» от name и (linear.«turned»))
+  пусть place равно («Place of» от («Comparison signs») и mark)
+  если не (пусто (linear.«fault»))
+    то вариант «Atom» с name равным name и terms равным terms
+    иначе (если пусто (linear.«names») то (вариант «Truth» с holds равным («Sign holds» от mark и (linear.«free»)))
+        иначе (элемент place в («Sign formulas» от («Linear text» от linear))))
+
+тотальная функция «Normal formula»
+  принимает formula: «Formula»
+  возвращает «Formula»
+  пример «Another statement stays»
+    дано formula равно вариант «Atom» с name равным "дождь" и terms равным пустой список
+    ожидается вариант «Atom» с name равным "дождь" и terms равным пустой список
+  разбор formula
+    случай вариант «Truth» с holds как value
+      то formula
+    случай вариант «Atom» с name как name и terms как terms
+      то если («Comparison signs») содержит name то («Normal atom» от name и terms) иначе formula
+    случай вариант «Not» с inner как inner
+      то вариант «Not» с inner равным («Normal formula» от inner)
+    случай вариант «And» с left как left и right как right
+      то вариант «And» с left равным («Normal formula» от left) и right равным («Normal formula» от right)
+    случай вариант «Or» с left как left и right как right
+      то вариант «Or» с left равным («Normal formula» от left) и right равным («Normal formula» от right)
+    случай вариант «Implies» с left как left и right как right
+      то вариант «Implies» с left равным («Normal formula» от left) и right равным («Normal formula» от right)
+
+тотальная функция «Comparisons of»
+  принимает formula: «Formula»
+  возвращает список (список строки)
+  пример «A formula without comparisons has none»
+    дано formula равно вариант «Atom» с name равным "дождь" и terms равным пустой список
+    ожидается пустой список
+  отфильтровать («Mentions of» от formula) где mention → («Comparison signs») содержит («First word» от mention)
+
+тотальная функция «Keys of»
+  принимает formula: «Formula»
+  возвращает список строки
+  пример «Each difference is named once»
+    дано formula равно (вариант «And» с left равным (вариант «Atom» с name равным "<" и terms равным ["y - x", "0"])
+        и right равным (вариант «Atom» с name равным "=" и terms равным ["y - x", "0"]))
+    ожидается ["y - x"]
+  («Each once» от (отобразить («Comparisons of» от formula)
+      как mention → «First word» от («Words after first» от mention)))
+
+тотальная функция «Looked up»
+  принимает names: список строки, values: список числа, name: строка
+  возвращает число
+  пример «The value that stands at the place of the name»
+    дано names равно ["x", "y"]
+    дано values равно [3, 4]
+    дано name равно "y"
+    ожидается 4
+  разбор names
+    случай пусто
+      то 0
+    случай голова и хвост
+      то (если голова равен name то («First number» от values)
+          иначе («Looked up» от хвост и («Numbers after first» от values) и name))
+
+тотальная функция «Value at»
+  принимает linear: «Linear», names: список строки, point: список числа, unit: число
+  возвращает число
+  пример «The difference is computed at a point, the free number in units»
+    дано linear равно (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [25, -28] и «free» равным 3
+        и «turned» равным нет и «fault» равным "")
+    дано names равно ["x", "y"]
+    дано point равно [1, 2]
+    дано unit равно 2
+    ожидается 28
+  ((«Sum at» от (linear.«names») и (linear.«coefs») и names и point) плюс ((linear.«free») умножить на unit))
+
+тотальная функция «Sum at»
+  принимает own: список строки, coefs: список числа, names: список строки, point: список числа
+  возвращает число
+  пример «Nothing sums to zero»
+    дано own равно пустой список
+    дано coefs равно пустой список
+    дано names равно ["x"]
+    дано point равно [1]
+    ожидается 0
+  разбор own
+    случай пусто
+      то 0
+    случай голова и хвост
+      то (((«First number» от coefs) умножить на («Looked up» от names и point и голова))
+          плюс («Sum at» от хвост и («Numbers after first» от coefs) и names и point))
+
+тотальная функция «Sign at»
+  принимает value: число
+  возвращает строка
+  пример «Zero is level»
+    дано value равно 0
+    ожидается "="
+  если value меньше 0 то "<" иначе (если value равен 0 то "=" иначе ">")
+
+тотальная функция «Inserted»
+  принимает sorted: список числа, value: число
+  возвращает список числа
+  пример «A number takes its place and is not repeated»
+    дано sorted равно [1, 3]
+    дано value равно 2
+    ожидается [1, 2, 3]
+  пример «A number that is there stays once»
+    дано sorted равно [1, 3]
+    дано value равно 3
+    ожидается [1, 3]
+  разбор sorted
+    случай пусто
+      то [value]
+    случай голова и хвост
+      то (если value больше голова то (приписать голова к («Inserted» от хвост и value))
+          иначе («Put first» от sorted и value и голова))
+
+тотальная функция «Put first»
+  принимает sorted: список числа, value: число, lowest: число
+  возвращает список числа
+  пример «A number equal to the lowest is not repeated»
+    дано sorted равно [1, 3]
+    дано value равно 1
+    дано lowest равно 1
+    ожидается [1, 3]
+  если value равен lowest то sorted иначе (приписать value к sorted)
+
+тотальная функция «Sorted numbers»
+  принимает values: список числа
+  возвращает список числа
+  пример «Numbers in rising order, each once»
+    дано values равно [3, 1, 3, 2]
+    ожидается [1, 2, 3]
+  свёртка values начиная с (пустой список) как sorted и value → «Inserted» от sorted и value
+
+тотальная функция «Counted to»
+  принимает count: число
+  возвращает список числа
+  пример «Numbers from one»
+    дано count равно 3
+    ожидается [1, 2, 3]
+  если count не больше 0 то пустой список иначе (добавить count к («Counted to» от (count минус 1)))
+
+тотальная функция «Unit of»
+  принимает pairs: список «Linear»
+  возвращает число
+  пример «Without differences the unit is one»
+    дано pairs равно пустой список
+    ожидается 1
+  (свёртка pairs начиная с 1 как unit и pair →
+      свёртка (pair.«coefs») начиная с unit как found и coef → «Common multiple» от found и coef)
+
+тотальная функция «Turning points»
+  принимает pairs: список «Linear», unit: число
+  возвращает список числа
+  пример «Where a difference of one quantity changes its sign, in units»
+    дано pairs равно [(запись «Linear» с «names» равным ["x"] и «coefs» равным [2] и «free» равным -3
+        и «turned» равным нет и «fault» равным "")]
+    дано unit равно 2
+    ожидается [0, 3]
+  («Sorted numbers» от (свёртка pairs начиная с [0] как found и pair →
+      «Joined numbers» от found и (отобразить (pair.«coefs») как coef →
+      (0 минус (pair.«free»)) умножить на («Signed part» от unit и coef))))
+
+тотальная функция «Joined numbers»
+  принимает left: список числа, right: список числа
+  возвращает список числа
+  пример «One list of numbers after another»
+    дано left равно [1]
+    дано right равно [2]
+    ожидается [1, 2]
+  «Соединить списки» от left и right
+
+тотальная функция «Gaps of»
+  принимает sorted: список числа, steps: список числа, scale: число
+  возвращает список числа
+  пример «Points between neighbours, as many as there are steps»
+    дано sorted равно [0, 3]
+    дано steps равно [1, 2]
+    дано scale равно 3
+    ожидается [3, 6]
+  разбор sorted
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если пусто хвост то (пустой список)
+          иначе («Joined numbers» от (отобразить steps как step →
+          (голова умножить на scale) плюс (step умножить на ((«First number» от хвост) минус голова)))
+          и («Gaps of» от хвост и steps и scale)))
+
+тотальная функция «Candidates»
+  принимает pairs: список «Linear», count: число, fine: признак
+  возвращает список числа
+  пример «Turning points, points between them and points outside, in units of the grid»
+    дано pairs равно [(запись «Linear» с «names» равным ["x"] и «coefs» равным [1] и «free» равным -3
+        и «turned» равным нет и «fault» равным "")]
+    дано count равно 1
+    дано fine равно да
+    ожидается [-2, 0, 3, 6, 8]
+  пусть unit равно («Unit of» от pairs)
+  пусть scale равно (count плюс 1)
+  пусть turning равно («Turning points» от pairs и unit)
+  пусть steps равно (если fine то («Counted to» от count) иначе [1])
+  пусть lowest равно ((«First number» от turning) умножить на scale)
+  пусть highest равно ((«Last number» от turning) умножить на scale)
+  пусть outside равно (свёртка steps начиная с (пустой список) как found и step →
+      «Joined numbers» от found и [(lowest минус (step умножить на (unit умножить на scale))),
+      (highest плюс (step умножить на (unit умножить на scale)))])
+  («Sorted numbers» от («Joined numbers» от (отобразить turning как value → value умножить на scale)
+      и («Joined numbers» от (если fine то («Gaps of» от turning и steps и scale) иначе пустой список) и outside)))
+
+тотальная функция «Points over»
+  принимает names: список строки, values: список числа, positive: список строки
+  возвращает список (список числа)
+  пример «Every quantity takes every value, a quantity that is never below zero only such values»
+    дано names равно ["x", "y"]
+    дано values равно [-1, 0]
+    дано positive равно ["y"]
+    ожидается [[-1, 0], [0, 0]]
+  (свёртка names начиная с [(пустой список)] как partial и name →
+      свёртка partial начиная с (пустой список) как grown и chosen →
+      «Joined points» от grown и (отобразить (отфильтровать values
+      где value → (не (positive содержит name)) или (value не меньше 0)) как value → добавить value к chosen))
+
+тотальная функция «Joined points»
+  принимает left: список (список числа), right: список (список числа)
+  возвращает список (список числа)
+  пример «One list of points after another»
+    дано left равно [[1]]
+    дано right равно [[2]]
+    ожидается [[1], [2]]
+  «Соединить списки» от left и right
+
+объект «Sign case»
+  «signs»: строка
+  «point»: список числа
+
+тотальная функция «Signs at»
+  принимает pairs: список «Linear», names: список строки, point: список числа, unit: число
+  возвращает строка
+  пример «The sign of every difference at a point»
+    дано pairs равно [(запись «Linear» с «names» равным ["x"] и «coefs» равным [1] и «free» равным -3
+        и «turned» равным нет и «fault» равным "")]
+    дано names равно ["x"]
+    дано point равно [6]
+    дано unit равно 2
+    ожидается "="
+  соединить (отобразить pairs как pair → «Sign at» от («Value at» от pair и names и point и unit)) по ""
+
+тотальная функция «Cases of»
+  принимает pairs: список «Linear», names: список строки, points: список (список числа), unit: число
+  возвращает список «Sign case»
+  пример «No points give no cases»
+    дано pairs равно пустой список
+    дано names равно пустой список
+    дано points равно пустой список
+    дано unit равно 1
+    ожидается пустой список
+  (свёртка points начиная с (пустой список) как found и point →
+      если пусто (отфильтровать found где known → (known.«signs») равен («Signs at» от pairs и names и point и unit))
+      то (добавить (запись «Sign case» с «signs» равным («Signs at» от pairs и names и point и unit)
+      и «point» равным point) к found) иначе found)
+
+тотальная функция «All signs»
+  принимает count: число
+  возвращает список строки
+  пример «Every difference is below zero, level with it or above»
+    дано count равно 1
+    ожидается ["<", "=", ">"]
+  (свёртка («Copies» от "" и count) начиная с [""] как made и round →
+      свёртка made начиная с (пустой список) как grown и signs →
+      «Соединить списки» от grown и (отобразить ["<", "=", ">"] как mark → соединить [signs, mark] по ""))
+
+объект «Number trial»
+  «status»: строка
+  «truths»: список строки
+  «falses»: список строки
+  «program»: строка
+
+тотальная функция «Vector literals»
+  принимает keys: список строки, marks: список строки
+  возвращает список «Formula»
+  пример «No differences give no literals»
+    дано keys равно пустой список
+    дано marks равно пустой список
+    ожидается пустой список
+  разбор keys
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (приписать (элемент («Place of» от ["<", "≤", "=", "≠", ">"] и («First word» от marks))
+          в («Sign formulas» от голова)) к («Vector literals» от хвост и («Words after first» от marks)))
+
+тотальная функция «Clause of»
+  принимает keys: список строки, signs: строка
+  возвращает «Formula»
+  пример «The signs named cannot stand together»
+    дано keys равно ["x"]
+    дано signs равно "="
+    ожидается (вариант «Not» с inner равным (вариант «Atom» с name равным "=" и terms равным ["x", "0"]))
+  вариант «Not» с inner равным («All of» от («Vector literals» от keys и (разложить signs на символы)))
+
+тотальная функция «Kernel name»
+  принимает name: строка, positive: список строки, part: строка
+  возвращает строка
+  пример «A quantity that may be below zero is the difference of two parts»
+    дано name равно "x"
+    дано positive равно пустой список
+    дано part равно "-"
+    ожидается "«x, часть ниже нуля»"
+  пример «A quantity that is never below zero is itself»
+    дано name равно "x"
+    дано positive равно ["x"]
+    дано part равно "+"
+    ожидается "«x»"
+  если positive содержит name
+    то соединить ["«", name, "»"] по ""
+    иначе (соединить ["«", name, (если part равен "+" то ", часть выше нуля»" иначе ", часть ниже нуля»")] по "")
+
+тотальная функция «Side items»
+  принимает names: список строки, coefs: список числа, positive: список строки, left: признак
+  возвращает список строки
+  пример «A positive number puts the quantity on the left, its part below zero on the right»
+    дано names равно ["x"]
+    дано coefs равно [2]
+    дано positive равно пустой список
+    дано left равно нет
+    ожидается ["«x, часть ниже нуля»", "«x, часть ниже нуля»"]
+  разбор names
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то («Соединить списки» от («Name items» от голова и («First number» от coefs) и positive и left)
+          и («Side items» от хвост и («Numbers after first» от coefs) и positive и left))
+
+тотальная функция «Name items»
+  принимает name: строка, coef: число, positive: список строки, left: признак
+  возвращает список строки
+  пусть above равно (если (coef больше 0) равен left то («Size» от coef) иначе 0)
+  пусть parted равно (не (positive содержит name))
+  пусть below равно (если ((coef меньше 0) равен left) и притом parted то («Size» от coef) иначе 0)
+  («Соединить списки» от («Copies» от («Kernel name» от name и positive и "+") и above)
+      и («Copies» от («Kernel name» от name и positive и "-") и below))
+
+тотальная функция «Side of»
+  принимает linear: «Linear», positive: список строки, left: признак
+  возвращает список строки
+  пример «The free number stands in units on its side»
+    дано linear равно (запись «Linear» с «names» равным ["x"] и «coefs» равным [1] и «free» равным -2
+        и «turned» равным нет и «fault» равным "")
+    дано positive равно ["x"]
+    дано left равно нет
+    ожидается ["«один»", "«один»"]
+  («Соединить списки» от («Side items» от (linear.«names») и (linear.«coefs») и positive и left)
+      и («Copies» от "«один»" и (если ((linear.«free») больше 0) равен left то («Size» от (linear.«free»)) иначе 0)))
+
+тотальная функция «Kernel literal»
+  принимает linear: «Linear», mark: строка, positive: список строки
+  возвращает строка
+  пример «A difference below zero is a comparison of two sums over whole numbers»
+    дано linear равно (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [1, -1] и «free» равным 0
+        и «turned» равным нет и «fault» равным "")
+    дано mark равно "<"
+    дано positive равно ["x", "y"]
+    ожидается "((«y») меньше («x»))"
+  пусть left равно («Side of» от linear и positive и да)
+  пусть right равно («Side of» от linear и positive и нет)
+  пусть padded равно ((пусто left) или (пусто right))
+  пусть word равно (если mark равен "<" то "меньше" иначе (если mark равен "=" то "равен" иначе "больше"))
+  (соединить ["((", (соединить (если padded то (добавить "«один»" к left) иначе left) по " плюс "), ") ", word, " (",
+      (соединить (если padded то (добавить "«один»" к right) иначе right) по " плюс "), "))"] по "")
+
+тотальная функция «Literal weight»
+  принимает linear: «Linear»
+  возвращает число
+  пример «How many summands the difference takes»
+    дано linear равно (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [25, -28] и «free» равным 3
+        и «turned» равным нет и «fault» равным "")
+    ожидается 56
+  (свёртка (linear.«coefs») начиная с («Size» от (linear.«free»)) как weight и coef → weight плюс («Size» от coef))
+
+тотальная функция «Kernel literals»
+  принимает pairs: список «Linear», marks: список строки, positive: список строки
+  возвращает список строки
+  пример «No differences give no literals»
+    дано pairs равно пустой список
+    дано marks равно пустой список
+    дано positive равно пустой список
+    ожидается пустой список
+  разбор pairs
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (приписать («Kernel literal» от голова и («First word» от marks) и positive)
+          к («Kernel literals» от хвост и («Words after first» от marks) и positive))
+
+тотальная функция «Declared names»
+  принимает names: список строки, positive: список строки
+  возвращает список строки
+  пример «The unit and every quantity, a quantity that may be below zero by its two parts»
+    дано names равно ["x", "y"]
+    дано positive равно ["y"]
+    ожидается (["«один»: точное целое", "«x, часть выше нуля»: точное целое", "«x, часть ниже нуля»: точное целое",
+        "«y»: точное целое"])
+  (свёртка names начиная с ["«один»: точное целое"] как made и name →
+      «Соединить списки» от made и (отобразить (если positive содержит name то ["+"] иначе ["+", "-"])
+      как part → соединить [(«Kernel name» от name и positive и part), ": точное целое"] по ""))
+
+тотальная функция «Vector lines»
+  принимает title: строка, pairs: список «Linear», signs: строка, names: список строки, positive: список строки
+  возвращает список строки
+  [(соединить ["утверждение «", title, "»"] по ""),
+    (соединить ["  для всех ", (соединить («Declared names» от names и positive) по " и ")] по ""),
+    (соединить ["  утверждаем (если (", (соединить (приписать "((«один» плюс «один») больше «один»)"
+    к («Kernel literals» от pairs и (разложить signs на символы) и positive)) по " и притом "),
+    ") то ((«один» плюс «один») не больше «один») иначе да)"] по ""), ""]
+
+тотальная функция «Closed side»
+  принимает own: список строки, coefs: список числа, names: список строки, point: список числа, left: признак
+  возвращает список строки
+  пример «A product above zero stands on the left, a product below zero on the right»
+    дано own равно ["y", "x"]
+    дано coefs равно [25, -28]
+    дано names равно ["x", "y"]
+    дано point равно [3, 4]
+    дано left равно нет
+    ожидается ["(28 умножить на 3)"]
+  разбор own
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то («Соединить списки»
+          от («Closed product» от («First number» от coefs) и («Looked up» от names и point и голова) и left)
+          и («Closed side» от хвост и («Numbers after first» от coefs) и names и point и left))
+
+тотальная функция «Closed product»
+  принимает coef: число, value: число, left: признак
+  возвращает список строки
+  пример «Zero stands on neither side»
+    дано coef равно 3
+    дано value равно 0
+    дано left равно да
+    ожидается пустой список
+  пусть product равно (coef умножить на value)
+  если ((product больше 0) и притом left) или ((product меньше 0) и притом (не left))
+    то [(соединить ["(", (к строке («Size» от coef)), " умножить на ", (к строке («Size» от value)), ")"] по "")]
+    иначе пустой список
+
+тотальная функция «Closed comparison»
+  принимает linear: «Linear», mark: строка, names: список строки, point: список числа, unit: число
+  возвращает строка
+  пример «The difference at a point is two sums of products of whole numbers»
+    дано linear равно (запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [25, -28] и «free» равным 0
+        и «turned» равным нет и «fault» равным "")
+    дано mark равно "<"
+    дано names равно ["x", "y"]
+    дано point равно [3, 4]
+    дано unit равно 1
+    ожидается "(((25 умножить на 4)) меньше ((28 умножить на 3)))"
+  пусть left равно («Соединить списки» от («Closed side» от (linear.«names») и (linear.«coefs») и names и point и да)
+      и («Closed product» от (linear.«free») и unit и да))
+  пусть right равно («Соединить списки» от («Closed side» от (linear.«names») и (linear.«coefs») и names и point и нет)
+      и («Closed product» от (linear.«free») и unit и нет))
+  (соединить ["((", (если пусто left то "0" иначе (соединить left по " плюс ")), ") ",
+      (если mark равен "<" то "меньше" иначе "равен"), " (",
+      (если пусто right то "0" иначе (соединить right по " плюс ")), "))"] по "")
+
+тотальная функция «Fixed comparisons»
+  принимает keys: список строки, names: список строки, point: список числа, unit: число
+  возвращает список (список строки)
+  пример «No differences fix nothing»
+    дано keys равно пустой список
+    дано names равно пустой список
+    дано point равно пустой список
+    дано unit равно 1
+    ожидается пустой список
+  (свёртка keys начиная с (пустой список) как made и key → «Соединить списки» от made
+      и (отобразить ["<", "="] как mark → [(«Atom text» от mark и [key, "0"]),
+      («Closed comparison» от («Difference» от key и "0") и mark и names и point и unit)]))
+
+тотальная функция «Value text»
+  принимает value: число, unit: число
+  возвращает строка
+  пример «A value of the grid in lowest terms»
+    дано value равно -3
+    дано unit равно 2
+    ожидается "-3/2"
+  пример «A whole value»
+    дано value равно 4
+    дано unit равно 2
+    ожидается "2"
+  пусть pair равно («Reduced pair» от value и unit)
+  если (элемент 2 в pair) равен 1
+    то к строке (элемент 1 в pair)
+    иначе (соединить [(к строке (элемент 1 в pair)), "/", (к строке (элемент 2 в pair))] по "")
+
+тотальная функция «Value lines»
+  принимает names: список строки, point: список числа, unit: число
+  возвращает список строки
+  пример «Each quantity with its value»
+    дано names равно ["x", "y"]
+    дано point равно [3, 4]
+    дано unit равно 2
+    ожидается ["x = 3/2", "y = 2"]
+  (отобразить names как name → соединить [name, " = ", («Value text» от («Looked up» от names и point и name) и unit)]
+      по "")
+
+тотальная функция «Fact text»
+  принимает name: строка, terms: список строки
+  возвращает строка
+  пример «Two numbers are compared over whole numbers»
+    дано name равно ">"
+    дано terms равно ["57.2", "50"]
+    ожидается "((286 умножить на 1) больше (50 умножить на 5))"
+  пусть former равно («Total of» от ((«Parts of» от («First word» от terms)).«parts») и "")
+  пусть latter равно («Total of» от ((«Parts of» от («First word» от («Words after first» от terms))).«parts») и "")
+  пусть left равно («Соединить списки» от («Closed product» от (элемент 1 в former) и (элемент 2 в latter) и да)
+      и («Closed product» от (0 минус (элемент 1 в latter)) и (элемент 2 в former) и да))
+  пусть right равно («Соединить списки» от («Closed product» от (элемент 1 в latter) и (элемент 2 в former) и да)
+      и («Closed product» от (0 минус (элемент 1 в former)) и (элемент 2 в latter) и да))
+  пусть word равно (свёртка [["<", "меньше"], ["≤", "не больше"], ["≠", "равен"], [">", "больше"], ["≥", "не меньше"]]
+      начиная с "равен" как found и row → если (элемент 1 в row) равен name то (элемент 2 в row) иначе found)
+  пусть plain равно (соединить ["(", (если пусто left то "0" иначе (соединить left по " плюс ")), " ", word, " ",
+      (если пусто right то "0" иначе (соединить right по " плюс ")), ")"] по "")
+  если name равен "≠" то (соединить ["(не ", plain, ")"] по "") иначе plain
+
+тотальная функция «Fact lines»
+  принимает title: строка, formula: «Formula»
+  возвращает список строки
+  пример «A comparison of two numbers is given to the kernel to compute»
+    дано title равно "шаг"
+    дано formula равно вариант «Atom» с name равным "<" и terms равным ["57.2", "50"]
+    ожидается (["утверждение «шаг, числа 57.2 < 50»",
+        "  утверждаем (не ((286 умножить на 1) меньше (50 умножить на 5)))", ""])
+  (свёртка (отфильтровать («Comparisons of» от formula) где mention → пусто ((«Difference»
+      от («First word» от («Words after first» от mention))
+      и («First word» от («Words after first» от («Words after first» от mention)))).«names»))
+      начиная с (пустой список) как lines и mention → «Соединить списки» от lines
+      и («Fact of» от title и («First word» от mention) и («Words after first» от mention)))
+
+тотальная функция «Fact of»
+  принимает title: строка, name: строка, terms: список строки
+  возвращает список строки
+  пусть holds равно («Is truth» от («Normal atom» от name и terms) и да)
+  [(соединить ["утверждение «", title, ", числа ", («Atom text» от name и terms), "»"] по ""),
+    (соединить ["  утверждаем ", (если holds то («Fact text» от name и terms)
+    иначе (соединить ["(не ", («Fact text» от name и terms), ")"] по ""))] по ""), ""]
+
+тотальная функция «Clauses of»
+  принимает keys: список строки, vectors: список строки
+  возвращает список «Formula»
+  пример «No signs give no clauses»
+    дано keys равно ["x"]
+    дано vectors равно пустой список
+    ожидается пустой список
+  отобразить vectors как signs → «Clause of» от keys и signs
+
+тотальная функция «Joined formulas»
+  принимает left: список «Formula», right: список «Formula»
+  возвращает список «Formula»
+  пример «One list of formulas after another»
+    дано left равно пустой список
+    дано right равно пустой список
+    ожидается пустой список
+  «Соединить списки» от left и right
+
+тотальная функция «Number verdict»
+  принимает status: строка, truths: список строки, falses: список строки, program: строка
+  возвращает «Number trial»
+  (запись «Number trial» с «status» равным status и «truths» равным truths и «falses» равным falses
+      и «program» равным program)
+
+объект «Number frame»
+  «keys»: список строки
+  «pairs»: список «Linear»
+  «names»: список строки
+  «positive»: список строки
+  «unit»: число
+  «cases»: список «Sign case»
+
+тотальная функция «Number proof»
+  принимает title: строка, formula: «Formula», frame: «Number frame», needed: список строки, lemmas: список «Formula»
+  возвращает строка
+  пусть heavy равно (не (пусто (отфильтровать (frame.«pairs») где pair → («Literal weight» от pair) больше 1500)))
+  пусть heading равно (если («Widest lemma» от lemmas) больше 4 то («Tree heading») иначе ["модуль «Reasoning»", ""])
+  пусть vectors равно (свёртка needed начиная с (пустой список) как lines и signs → «Соединить списки» от lines
+      и («Vector lines» от (соединить [title, ", знаки ", signs] по "") и (frame.«pairs») и signs и (frame.«names»)
+      и (frame.«positive»)))
+  если heavy или (не («Derivation fits» от lemmas))
+    то ""
+    иначе (соединить («Соединить списки» от («Соединить списки» от heading и («Fact lines» от title и formula))
+        и («Соединить списки» от vectors и («Derivation lines» от title и lemmas))) по "\n")
+
+тотальная функция «Signs in»
+  принимает keys: список строки, truths: список строки
+  возвращает строка
+  пример «The sign of every difference under an assignment»
+    дано keys равно ["x", "y"]
+    дано truths равно ["x = 0"]
+    ожидается "=>"
+  (соединить (отобразить keys как key → если truths содержит («Atom text» от "=" и [key, "0"]) то "="
+      иначе (если truths содержит («Atom text» от "<" и [key, "0"]) то "<" иначе ">")) по "")
+
+тотальная функция «Mention holds»
+  принимает mention: список строки, truths: список строки
+  возвращает признак
+  пример «A comparison holds when its normal formula holds»
+    дано mention равно [">", "y", "x"]
+    дано truths равно пустой список
+    ожидается да
+  («Holds» от («Normal formula» от (вариант «Atom» с name равным («First word» от mention)
+      и terms равным («Words after first» от mention))) и truths)
+
+тотальная функция «Number refutal»
+  принимает title: строка, formula: «Formula», frame: «Number frame», truths: список строки
+  возвращает «Number trial»
+  пусть skeleton равно («Normal formula» от formula)
+  пусть shown равно («Each once» от (отобразить (отфильтровать («Mentions of» от formula)
+      где mention → «Mention holds» от mention и truths)
+      как mention → «Atom text» от («First word» от mention) и («Words after first» от mention)))
+  разбор (отфильтровать (frame.«cases») где known → (known.«signs») равен («Signs in» от (frame.«keys») и truths))
+    случай пусто
+      то «Number verdict» от "large" и пустой список и пустой список и ""
+    случай голова и хвост
+      то («Number verdict» от "fails"
+          и («Соединить списки» от shown и («Value lines» от (frame.«names») и (голова.«point») и (frame.«unit»)))
+          и (отфильтровать («Atoms of» от formula) где atom → не (shown содержит atom))
+          и (соединить ["модуль «Reasoning»", "", (соединить ["утверждение «", title, "»"] по ""),
+          (соединить ["  утверждаем (не ", («Kernel text» от skeleton
+          и («Соединить списки» от («Fixed by» от («Atoms of» от skeleton) и truths)
+          и («Fixed comparisons» от (frame.«keys») и (frame.«names») и (голова.«point») и (frame.«unit»)))
+          и "plain"), ")"] по ""), ""] по "\n"))
+
+тотальная функция «Stretched»
+  принимает values: список числа, pairs: список «Linear»
+  возвращает список числа
+  пример «Values are also taken times every number of a difference of several quantities»
+    дано values равно [-1, 0, 1]
+    дано pairs равно [(запись «Linear» с «names» равным ["y", "x"] и «coefs» равным [2, -3] и «free» равным 0
+        и «turned» равным нет и «fault» равным "")]
+    ожидается [-3, -2, -1, 0, 1, 2, 3]
+  («Sorted numbers» от (свёртка (отфильтровать pairs где pair → (длина (pair.«names»)) больше 1)
+      начиная с values как found и pair → свёртка (pair.«coefs») начиная с found как grown и coef →
+      «Joined numbers» от grown и (отобразить values как value → value умножить на («Size» от coef))))
+
+тотальная функция «Grid of»
+  принимает pairs: список «Linear», count: число
+  возвращает список числа
+  пример «Without differences the grid is zero»
+    дано pairs равно пустой список
+    дано count равно 0
+    ожидается [0]
+  пусть fine равно («Stretched» от («Candidates» от pairs и count и да) и pairs)
+  пусть size равно (свёртка («Copies» от "" и count) начиная с 1 как found и round → found умножить на (длина fine))
+  если size больше 5000 то («Candidates» от pairs и count и нет) иначе fine
+
+тотальная функция «Frame of»
+  принимает formula: «Formula», positive: список строки
+  возвращает «Number frame»
+  пусть keys равно («Keys of» от («Normal formula» от formula))
+  пусть pairs равно (отобразить keys как key → «Difference» от key и "0")
+  пусть names равно («Each once» от (свёртка pairs начиная с (пустой список) как found и pair →
+      «Соединить списки» от found и (pair.«names»)))
+  пусть unit равно ((«Unit of» от pairs) умножить на ((длина names) плюс 1))
+  (запись «Number frame» с «keys» равным keys и «pairs» равным pairs и «names» равным names
+      и «positive» равным positive и «unit» равным unit
+      и «cases» равным («Cases of» от pairs и names
+      и («Points over» от names и («Grid of» от pairs и (длина names)) и positive) и unit))
+
+объект «Refining»
+  «needed»: список строки
+  «model»: список (список строки)
+  «closed»: признак
+
+тотальная функция «Refined»
+  принимает held: «Refining», barred: список строки, keys: список строки, premises: список «Formula», aim: «Formula»
+  возвращает «Refining»
+  пусть full равно (вариант «Implies»
+      с left равным («All of» от («Joined formulas» от («Clauses of» от keys и (held.«needed»)) и premises))
+      и right равным aim)
+  разбор (если held.«closed» то пустой список иначе («Models against» от full и («Atoms of» от full) и пустой список))
+    случай пусто
+      то запись «Refining» с «needed» равным (held.«needed») и «model» равным (held.«model») и «closed» равным да
+    случай голова и хвост
+      то (запись «Refining»
+          с «needed» равным (если barred содержит («Signs in» от keys и голова)
+          то (добавить («Signs in» от keys и голова) к (held.«needed»)) иначе (held.«needed»))
+          и «model» равным (если barred содержит («Signs in» от keys и голова) то пустой список иначе [голова])
+          и «closed» равным (не (barred содержит («Signs in» от keys и голова))))
+
+тотальная функция «Number trial of»
+  принимает title: строка, instances: список «Formula», goal: «Formula», positive: список строки
+  возвращает «Number trial»
+  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
+  пусть keys равно («Keys of» от («Normal formula» от formula))
+  пусть names равно («Each once» от (свёртка keys начиная с (пустой список) как found и key →
+      «Соединить списки» от found и ((«Difference» от key и "0").«names»)))
+  если ((длина keys) больше 3) или ((длина names) больше 3)
+    то «Number verdict» от "large" и пустой список и пустой список и ""
+    иначе («Number trial within» от title и instances и goal и positive)
+
+тотальная функция «Number trial within»
+  принимает title: строка, instances: список «Formula», goal: «Formula», positive: список строки
+  возвращает «Number trial»
+  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
+  пусть premises равно (отобразить instances как instance → «Normal formula» от instance)
+  пусть aim равно («Normal formula» от goal)
+  пусть frame равно («Frame of» от formula и positive)
+  пусть keys равно (frame.«keys»)
+  пусть barred равно (отфильтровать («All signs» от (длина keys))
+      где signs → пусто (отфильтровать (frame.«cases») где known → (known.«signs») равен signs))
+  пусть refined равно (свёртка (приписать "" к barred) начиная с (запись «Refining» с «needed» равным пустой список
+      и «model» равным пустой список и «closed» равным нет) как held и round →
+      «Refined» от held и barred и keys и premises и aim)
+  если не (refined.«closed»)
+    то «Number verdict» от "large" и пустой список и пустой список и ""
+    иначе («Number outcome» от title и formula и frame и refined
+        и (вариант «Implies» с left равным («All of» от premises) и right равным aim))
+
+тотальная функция «Number outcome»
+  принимает title: строка, formula: «Formula», frame: «Number frame», refined: «Refining», skeleton: «Formula»
+  возвращает «Number trial»
+  разбор (refined.«model»)
+    случай пусто
+      то («Number verdict» от "follows" и пустой список и пустой список
+          и («Number proof» от title и formula и frame и (refined.«needed»)
+          и ((«Skeleton derived» от (frame.«keys») и (refined.«needed») и skeleton).«lemmas»)))
+    случай голова и хвост
+      то «Number refutal» от title и formula и frame и голова
+
+тотальная функция «Skeleton derived»
+  принимает keys: список строки, needed: список строки, skeleton: «Formula»
+  возвращает «Derivation»
+  разбор skeleton
+    случай вариант «Implies» с left как left и right как right
+      то «Derived» от («Joined formulas» от («Clauses of» от keys и needed) и [left]) и right
+    случай любое
+      то «Derived» от («Clauses of» от keys и needed) и skeleton

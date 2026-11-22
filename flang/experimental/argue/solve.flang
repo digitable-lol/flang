@@ -1,0 +1,338 @@
+модуль «Argue solve»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue programs» из "programs.flang"
+
+тотальная функция «Is truth»
+  принимает formula: «Formula», wanted: признак
+  возвращает признак
+  пример «A statement is not a constant»
+    дано formula равно вариант «Atom» с name равным "а" и terms равным пустой список
+    дано wanted равно да
+    ожидается нет
+  пример «Falsehood is the constant that does not hold»
+    дано formula равно вариант «Truth» с holds равным нет
+    дано wanted равно нет
+    ожидается да
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то (holds и притом wanted) или ((не holds) и притом (не wanted))
+    случай любое
+      то нет
+
+тотальная функция «Negated»
+  принимает inner: «Formula»
+  возвращает «Formula»
+  пример «The negation of a constant is a constant»
+    дано inner равно вариант «Truth» с holds равным да
+    ожидается вариант «Truth» с holds равным нет
+  если «Is truth» от inner и да
+    то вариант «Truth» с holds равным нет
+    иначе (если «Is truth» от inner и нет то (вариант «Truth» с holds равным да)
+        иначе (вариант «Not» с inner равным inner))
+
+тотальная функция «Both»
+  принимает left: «Formula», right: «Formula»
+  возвращает «Formula»
+  пример «Truth adds nothing to a conjunction»
+    дано left равно вариант «Truth» с holds равным да
+    дано right равно вариант «Atom» с name равным "а" и terms равным пустой список
+    ожидается вариант «Atom» с name равным "а" и terms равным пустой список
+  пусть kept равно (если «Is truth» от left и да то right
+      иначе (если «Is truth» от right и да то left иначе (вариант «And» с left равным left и right равным right)))
+  если («Is truth» от left и нет) или («Is truth» от right и нет) то (вариант «Truth» с holds равным нет) иначе kept
+
+тотальная функция «Either»
+  принимает left: «Formula», right: «Formula»
+  возвращает «Formula»
+  пример «Falsehood adds nothing to a disjunction»
+    дано left равно вариант «Truth» с holds равным нет
+    дано right равно вариант «Atom» с name равным "а" и terms равным пустой список
+    ожидается вариант «Atom» с name равным "а" и terms равным пустой список
+  пусть kept равно (если «Is truth» от left и нет то right
+      иначе (если «Is truth» от right и нет то left иначе (вариант «Or» с left равным left и right равным right)))
+  если («Is truth» от left и да) или («Is truth» от right и да) то (вариант «Truth» с holds равным да) иначе kept
+
+тотальная функция «Given»
+  принимает left: «Formula», right: «Formula»
+  возвращает «Formula»
+  пример «A conditional with a true condition is its outcome»
+    дано left равно вариант «Truth» с holds равным да
+    дано right равно вариант «Atom» с name равным "а" и terms равным пустой список
+    ожидается вариант «Atom» с name равным "а" и terms равным пустой список
+  пример «A conditional with a false outcome denies its condition»
+    дано left равно вариант «Atom» с name равным "а" и terms равным пустой список
+    дано right равно вариант «Truth» с holds равным нет
+    ожидается вариант «Not» с inner равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+  пусть kept равно (если «Is truth» от left и да то right
+      иначе (если «Is truth» от right и нет то («Negated» от left)
+      иначе (вариант «Implies» с left равным left и right равным right)))
+  если («Is truth» от left и нет) или («Is truth» от right и да) то (вариант «Truth» с holds равным да) иначе kept
+
+тотальная функция «Fixed»
+  принимает formula: «Formula», atom: строка, holds: признак
+  возвращает «Formula»
+  пример «A statement takes its value and the constants are folded away»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    дано atom равно "а"
+    дано holds равно да
+    ожидается вариант «Atom» с name равным "б" и terms равным пустой список
+  разбор formula
+    случай вариант «Truth» с holds как value
+      то formula
+    случай вариант «Atom» с name как name и terms как terms
+      то если («Atom text» от name и terms) равен atom то (вариант «Truth» с holds равным holds) иначе formula
+    случай вариант «Not» с inner как inner
+      то «Negated» от («Fixed» от inner и atom и holds)
+    случай вариант «And» с left как left и right как right
+      то «Both» от («Fixed» от left и atom и holds) и («Fixed» от right и atom и holds)
+    случай вариант «Or» с left как left и right как right
+      то «Either» от («Fixed» от left и atom и holds) и («Fixed» от right и atom и holds)
+    случай вариант «Implies» с left как left и right как right
+      то «Given» от («Fixed» от left и atom и holds) и («Fixed» от right и atom и holds)
+
+тотальная функция «Folded»
+  принимает formula: «Formula»
+  возвращает «Formula»
+  пример «Constants inside a formula are folded away»
+    дано formula равно (вариант «And» с left равным (вариант «Truth» с holds равным да)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    ожидается вариант «Atom» с name равным "б" и terms равным пустой список
+  «Fixed» от formula и "" и да
+
+тотальная функция «Size of»
+  принимает formula: «Formula»
+  возвращает число
+  пример «Every statement and every connective counts»
+    дано formula равно (вариант «Not» с inner равным (вариант «Atom» с name равным "а" и terms равным пустой список))
+    ожидается 2
+  разбор formula
+    случай вариант «Truth» с holds как value
+      то 1
+    случай вариант «Atom» с name как name и terms как terms
+      то 1
+    случай вариант «Not» с inner как inner
+      то 1 плюс («Size of» от inner)
+    случай вариант «And» с left как left и right как right
+      то 1 плюс («Size of» от left) плюс («Size of» от right)
+    случай вариант «Or» с left как left и right как right
+      то 1 плюс («Size of» от left) плюс («Size of» от right)
+    случай вариант «Implies» с left как left и right как right
+      то 1 плюс («Size of» от left) плюс («Size of» от right)
+
+тотальная функция «Models against»
+  принимает formula: «Formula», atoms: список строки, truths: список строки
+  возвращает список (список строки)
+  пример «The found assignment that breaks the formula»
+    дано formula равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))
+    дано atoms равно ["а", "б"]
+    дано truths равно пустой список
+    ожидается [["а"]]
+  пример «A formula that always holds has none»
+    дано formula равно (вариант «Or» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Not» с inner равным (вариант «Atom» с name равным "а" и terms равным пустой список)))
+    дано atoms равно ["а"]
+    дано truths равно пустой список
+    ожидается пустой список
+  разбор atoms
+    случай пусто
+      то если «Is truth» от («Folded» от formula) и нет то [truths] иначе пустой список
+    случай голова и хвост
+      то («Model or» от formula и голова и хвост и truths
+          и (если «Is truth» от formula и да то пустой список
+          иначе («Models against» от («Fixed» от formula и голова и да) и хвост и (добавить голова к truths))))
+
+тотальная функция «Model or»
+  принимает formula: «Formula», atom: строка, rest: список строки, truths: список строки, found: список (список строки)
+  возвращает список (список строки)
+  если (не (пусто found)) или («Is truth» от formula и да)
+    то found
+    иначе («Models against» от («Fixed» от formula и atom и нет) и rest и truths)
+
+объект «Derivation»
+  «held»: список «Formula»
+  «left»: список строки
+  «lemmas»: список «Formula»
+
+тотальная функция «Touched by»
+  принимает held: список «Formula», atom: строка
+  возвращает список «Formula»
+  пример «Formulas that speak of the statement»
+    дано held равно [вариант «Atom» с name равным "а" и terms равным пустой список,
+      вариант «Atom» с name равным "б" и terms равным пустой список]
+    дано atom равно "б"
+    ожидается [вариант «Atom» с name равным "б" и terms равным пустой список]
+  отфильтровать held где formula → («Atoms of» от formula) содержит atom
+
+тотальная функция «Width at»
+  принимает held: список «Formula», atom: строка
+  возвращает число
+  пример «How many statements stand together with this one»
+    дано held равно [(вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))]
+    дано atom равно "б"
+    ожидается 2
+  длина («Atoms of» от («All of» от («Touched by» от held и atom)))
+
+тотальная функция «Narrowest»
+  принимает held: список «Formula», atoms: список строки
+  возвращает строка
+  пример «The statement with the fewest neighbours is dropped first»
+    дано held равно [(вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список)),
+        вариант «Atom» с name равным "в" и terms равным пустой список]
+    дано atoms равно ["а", "в"]
+    ожидается "в"
+  (свёртка atoms начиная с "" как best и atom →
+      если (пусто best) или ((«Width at» от held и atom) меньше («Width at» от held и best)) то atom иначе best)
+
+тотальная функция «Without statement»
+  принимает reached: «Derivation», atom: строка
+  возвращает «Derivation»
+  пример «What the formulas say without the dropped statement becomes a lemma»
+    дано reached равно (запись «Derivation»
+        с «held» равным [вариант «Atom» с name равным "а" и terms равным пустой список,
+        (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))]
+        и «left» равным ["а"] и «lemmas» равным пустой список)
+    дано atom равно "а"
+    ожидается (запись «Derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
+        и «left» равным пустой список
+        и «lemmas» равным [(вариант «Implies»
+        с left равным (вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список)))
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))])
+  пусть touched равно («Touched by» от (reached.«held») и atom)
+  пусть whole равно («All of» от touched)
+  пусть forgotten равно («Either» от («Fixed» от whole и atom и да) и («Fixed» от whole и atom и нет))
+  пусть kept равно (отфильтровать (reached.«held») где formula → не ((«Atoms of» от formula) содержит atom))
+  пусть trivial равно ((пусто touched) или («Is truth» от forgotten и да))
+  (запись «Derivation» с «held» равным (если trivial то kept иначе (добавить forgotten к kept))
+      и «left» равным (отфильтровать (reached.«left») где other → не (other равен atom))
+      и «lemmas» равным (если trivial то (reached.«lemmas»)
+      иначе (добавить (вариант «Implies» с left равным whole и right равным forgotten) к (reached.«lemmas»))))
+
+тотальная функция «Derived»
+  принимает premises: список «Formula», goal: «Formula»
+  возвращает «Derivation»
+  пример «A chain is cut statement by statement and the goal is drawn from what is left»
+    дано premises равно [вариант «Atom» с name равным "а" и terms равным пустой список,
+      (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+      и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))]
+    дано goal равно вариант «Atom» с name равным "б" и terms равным пустой список
+    ожидается (запись «Derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
+        и «left» равным пустой список
+        и «lemmas» равным [(вариант «Implies»
+        с left равным (вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список)))
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список)),
+        (вариант «Implies» с left равным (вариант «Atom» с name равным "б" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))])
+  пусть inner равно (отфильтровать («Atoms of» от («All of» от premises))
+      где atom → не ((«Atoms of» от goal) содержит atom))
+  пусть cut равно (свёртка inner начиная с (запись «Derivation» с «held» равным premises и «left» равным inner
+      и «lemmas» равным пустой список) как reached и round →
+      «Without statement» от reached и («Narrowest» от (reached.«held») и (reached.«left»)))
+  (запись «Derivation» с «held» равным (cut.«held») и «left» равным (cut.«left»)
+      и «lemmas» равным (добавить (вариант «Implies» с left равным («All of» от (cut.«held»)) и right равным goal)
+      к (cut.«lemmas»)))
+
+тотальная функция «Last lemma»
+  принимает derivation: «Derivation»
+  возвращает «Formula»
+  пример «Without lemmas nothing is claimed»
+    дано derivation равно (запись «Derivation» с «held» равным пустой список и «left» равным пустой список
+        и «lemmas» равным пустой список)
+    ожидается вариант «Truth» с holds равным да
+  (свёртка (derivation.«lemmas») начиная с (вариант «Truth» с holds равным да) как found и lemma → lemma)
+
+тотальная функция «Derivation holds»
+  принимает derivation: «Derivation»
+  возвращает признак
+  пример «A goal that the remaining formulas do not give does not hold»
+    дано derivation равно (запись «Derivation» с «held» равным пустой список и «left» равным пустой список
+        и «lemmas» равным [вариант «Atom» с name равным "б" и terms равным пустой список])
+    ожидается нет
+  пусть last равно («Last lemma» от derivation)
+  пусто («Models against» от last и («Atoms of» от last) и пустой список)
+
+тотальная функция «Widest lemma»
+  принимает lemmas: список «Formula»
+  возвращает число
+  пример «No lemmas are not wide»
+    дано lemmas равно пустой список
+    ожидается 0
+  (свёртка lemmas начиная с 0 как widest и lemma →
+      если (длина («Atoms of» от lemma)) больше widest то (длина («Atoms of» от lemma)) иначе widest)
+
+тотальная функция «Largest lemma»
+  принимает lemmas: список «Formula»
+  возвращает число
+  пример «No lemmas are not large»
+    дано lemmas равно пустой список
+    ожидается 0
+  (свёртка lemmas начиная с 0 как largest и lemma →
+      если («Size of» от lemma) больше largest то («Size of» от lemma) иначе largest)
+
+тотальная функция «Lemma lines»
+  принимает title: строка, lemma: «Formula»
+  возвращает список строки
+  пример «A narrow lemma goes to the kernel as it is»
+    дано title равно "шаг, часть 1"
+    дано lemma равно (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "а" и terms равным пустой список))
+    ожидается ["утверждение «шаг, часть 1»", "  для всех «а»: признак", "  утверждаем (если «а» то «а» иначе да)", ""]
+  пусть atoms равно («Atoms of» от lemma)
+  пусть order равно («Split atoms» от atoms и 4)
+  если (длина atoms) не больше 4
+    то «Statement lines» от title и atoms и («Kernel text» от lemma и пустой список и "plain") и "признак"
+    иначе («Tree lines» от order и (отфильтровать atoms где atom → не (order содержит atom)) и пустой список
+        и title и lemma)
+
+тотальная функция «Lemma limit»
+  возвращает число
+  пример «A lemma of up to six elementary statements is given to the kernel»
+    ожидается 6
+  6
+
+тотальная функция «Size limit»
+  возвращает число
+  пример «A lemma of more than four hundred signs is not written»
+    ожидается 400
+  400
+
+тотальная функция «Derivation fits»
+  принимает lemmas: список «Formula»
+  возвращает признак
+  пример «No lemmas fit»
+    дано lemmas равно пустой список
+    ожидается да
+  ((«Widest lemma» от lemmas) не больше («Lemma limit»)) и притом ((«Largest lemma» от lemmas) не больше («Size limit»))
+
+тотальная функция «Derivation lines»
+  принимает title: строка, lemmas: список «Formula»
+  возвращает список строки
+  пример «Lemmas are numbered behind the title»
+    дано title равно "шаг"
+    дано lemmas равно [(вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "а" и terms равным пустой список))]
+    ожидается ["утверждение «шаг, часть 1»", "  для всех «а»: признак", "  утверждаем (если «а» то «а» иначе да)", ""]
+  (свёртка lemmas начиная с (пустой список) как lines и lemma → «Соединить списки» от lines
+      и («Lemma lines» от (соединить [title, ", часть ", (к строке ((длина (отфильтровать lines
+      где line → пусто line)) плюс 1))] по "") и lemma))
+
+тотальная функция «Derivation program»
+  принимает title: строка, lemmas: список «Formula»
+  возвращает строка
+  пример «Without lemmas the module is empty»
+    дано title равно "шаг"
+    дано lemmas равно пустой список
+    ожидается "модуль «Reasoning»\n"
+  пусть heading равно (если («Widest lemma» от lemmas) больше 4 то («Tree heading») иначе ["модуль «Reasoning»", ""])
+  если «Derivation fits» от lemmas
+    то соединить («Соединить списки» от heading и («Derivation lines» от title и lemmas)) по "\n"
+    иначе ""

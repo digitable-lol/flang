@@ -102,6 +102,7 @@ script.russian-grammar:probe = bootstrap/flang io flang/proof/probes/russian-gra
 script.russian-meaning:probe = bootstrap/flang io flang/proof/probes/russian-meaning/run.fscript --plan Binary --timeout 900000
 script.russian-meaning:markup = bootstrap/flang io flang/ct/russian/meaning.fscript --plan Markup --max-steps 1000000000000 --timeout 900000 > /dev/null
 script.russian-dictionary:probe = bootstrap/flang io flang/proof/probes/russian-dictionary/run.fscript --plan Binary --timeout 900000
+script.russian-sentence:probe = bootstrap/flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary
 script.ru-syllogism:demo = bootstrap/flang io flang/experimental/ru-syllogism-demo.fscript --plan Demo --timeout 600000
 script.argument-check:demo = bootstrap/flang io flang/experimental/argument-check.fscript --plan Check --max-steps 1000000000000 --timeout 600000 -- flang/proof/probes/argument-check/programs/sample.txt
 script.argument-check:probe = bootstrap/flang io flang/proof/probes/argument-check/run.fscript --plan Binary --timeout 900000

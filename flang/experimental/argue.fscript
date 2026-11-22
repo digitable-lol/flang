@@ -256,7 +256,9 @@
       "; шагов: ", (к строке (длина verdicts)),
       ", следует: ", (к строке («Counted» от verdicts и outcomes и "follows")),
       ", не следует: ", (к строке («Counted» от verdicts и outcomes и "fails")),
-      ", ядро не решило: ", (к строке («Counted» от verdicts и outcomes и "undecided")), "\n"] по "")
+      ", ядро не решило: ", (к строке («Counted» от verdicts и outcomes и "undecided")),
+      ", без посылок: ", (к строке («Counted» от verdicts и outcomes и "none")),
+      ", посылки противоречат друг другу: ", (к строке («Counted» от verdicts и outcomes и "clash")), "\n"] по "")
 
 тотальная функция «Next judgment»
   принимает options: «Options», text: строка, judged: «Judged», waiting: список «Job»

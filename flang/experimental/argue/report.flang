@@ -305,21 +305,51 @@
     ожидается "Граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро."
   "Граница доверия: перевод текста в логическую форму не проверен; доказано только то, что доказало ядро."
 
+тотальная функция «Quote pieces»
+  принимает entries: список «Thesis»
+  возвращает список (список строки)
+  пример «A judgment is listed with the sentences of its quote»
+    дано entries равно [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь. Что делать?" и «quote line» равным 3 и «terms» равным пустой список)]
+    ожидается [["1", "Идёт дождь", "Что делать"]]
+  отобразить entries как entry → приписать (entry.«number») к («Sentences of text» от (entry.«quote»))
+
+тотальная функция «Piece touches»
+  принимает sentence: строка, row: список строки
+  возвращает признак
+  пример «A quote inside the sentence touches it»
+    дано sentence равно "Итак, идёт дождь"
+    дано row равно ["1", "идёт дождь"]
+    ожидается да
+  пример «A quote that runs over two sentences touches both»
+    дано sentence равно "Что делать"
+    дано row равно ["1", "Идёт дождь", "Что делать"]
+    ожидается да
+  пример «The label in front is not a piece of the quote»
+    дано sentence равно "Идёт дождь 1"
+    дано row равно ["1", "Светит солнце"]
+    ожидается нет
+  разбор row
+    случай пусто
+      то нет
+    случай голова и хвост
+      то не (пусто (отфильтровать хвост где piece → (sentence содержит piece) или (piece содержит sentence)))
+
 тотальная функция «Uncovered markers»
   принимает markup: «Markup», sentences: список строки
   возвращает список строки
-  пусть quotes равно (свёртка (markup.«steps») начиная с (пустой список) как found и step →
-      «Words joined» от found и (свёртка (приписать (step.«conclusion») к (step.«premises»))
-      начиная с (пустой список) как taken и label → «Words joined» от taken
-      и (отобразить («Theses by» от (markup.«entries») и label) как entry → entry.«quote»)))
+  пусть named равно (свёртка (markup.«steps») начиная с (пустой список) как found и step →
+      «Words joined» от found и (приписать (step.«conclusion») к (step.«premises»)))
+  пусть rows равно («Quote pieces» от (отфильтровать (markup.«entries») где entry → named содержит (entry.«number»)))
   (отфильтровать sentences где sentence → (не (пусто («Markers in» от sentence)))
-      и притом (пусто (отфильтровать quotes где quote → «Touches» от sentence и quote)))
+      и притом (пусто (отфильтровать rows где row → «Piece touches» от sentence и row)))
 
 тотальная функция «Covered sentences»
   принимает markup: «Markup», sentences: список строки
   возвращает список строки
-  (отфильтровать sentences где sentence → не (пусто (отфильтровать (markup.«entries»)
-      где entry → «Touches» от sentence и (entry.«quote»))))
+  пусть rows равно («Quote pieces» от (markup.«entries»))
+  (отфильтровать sentences где sentence → не (пусто (отфильтровать rows
+      где row → «Piece touches» от sentence и row)))
 
 тотальная функция «Finding blocks»
   принимает markup: «Markup», verdicts: список «Step verdict», clashes: список «Clash», outcomes: список «Kernel answer»
@@ -409,37 +439,76 @@
     то [(соединить ["## ", title] по ""), "", otherwise, ""]
     иначе («Соединить списки» от [(соединить ["## ", title] по ""), ""] и (добавить "" к lines))
 
-тотальная функция «Report of»
-  принимает path: строка, text: строка, judged: «Judged»
+тотальная функция «Step at»
+  принимает steps: список «Inference», place: число, otherwise: «Inference»
+  возвращает «Inference»
+  пример «A place past the end gives the step named instead»
+    дано steps равно пустой список
+    дано place равно 1
+    дано otherwise равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "дедукция")
+    ожидается (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "дедукция")
+  если (place больше 0) и притом (place не больше (длина steps)) то (элемент place в steps) иначе otherwise
+
+тотальная функция «Row of table»
+  принимает verdict: «Step verdict», outcomes: список «Kernel answer», rings: список (список строки), own: «Inference»
   возвращает строка
+  пусть step равно (verdict.«step»)
+  (соединить ["| ", («Step label» от step), " | ", («Kind words» от (step.«kind»)), " | ",
+      («Verdict words» от («Final status» от verdict и outcomes)),
+      (если пусто («Circle of» от rings и own) то "" иначе "; шаг входит в порочный круг"), " |"] по "")
+
+тотальная функция «Soft lines»
+  принимает judged: «Judged»
+  возвращает список строки
+  (отобразить (отфильтровать (judged.«verdicts») где verdict → не («Is deductive» от (verdict.«step»)))
+      как verdict → «Soft line» от (judged.«markup») и verdict и (judged.«outcomes»))
+
+тотальная функция «Step sections»
+  принимает text: строка, judged: «Judged»
+  возвращает список строки
   пусть markup равно (judged.«markup»)
   пусть verdicts равно (judged.«verdicts»)
-  пусть clashes равно (judged.«clashes»)
   пусть outcomes равно (judged.«outcomes»)
   пусть sentences равно («Sentences of text» от text)
   пусть circles равно («Circles of» от («Canonical steps» от markup))
-  пусть findings равно («Numbered blocks» от («Finding blocks» от markup и verdicts и clashes и outcomes))
-  пусть soft равно (отобразить (отфильтровать verdicts где verdict → не («Is deductive» от (verdict.«step»)))
-      как verdict → «Soft line» от markup и verdict и outcomes)
   пусть undecided равно (отобразить (отфильтровать verdicts
       где verdict → («Final status» от verdict и outcomes) равен "undecided")
       как verdict → соединить ["- ", («Step label» от (verdict.«step»)),
       ": шаг слишком крупный для ядра или ядро не приняло проверку; разбейте шаг на промежуточные выводы."] по "")
+  пусть canon равно («Canonical steps» от markup)
   пусть table равно («Соединить списки» от ["| Шаг | Род | Вердикт |", "| --- | --- | --- |"]
-      и (отобразить verdicts как verdict → «Table row» от markup и verdict и outcomes и circles))
+      и (свёртка verdicts начиная с (пустой список) как made и verdict → добавить («Row of table»
+      от verdict и outcomes и circles и («Step at» от canon и ((длина made) плюс 1) и (verdict.«step»))) к made))
   пусть uncovered равно (отобразить («Uncovered markers» от markup и sentences) как sentence →
       соединить ["- «", sentence, "» (маркер: ", (соединить («Markers in» от sentence) по ", "), ")"] по "")
-  (соединить («Соединить списки» от («Соединить списки» от («Соединить списки» от
-      [(соединить ["# Проверка рассуждения: ", path] по ""), ""]
-      и («Section» от "Сводка" и («Summary lines» от judged и text) и ""))
-      и («Соединить списки» от («Section» от "Находки" и («As one» от findings) и "Находок нет.")
-      и («Section» от "Не доказательство" и («As one» от soft)
-      и "Шагов с пометкой «обобщение», «корреляция» или «авторитет» в разметке нет.")))
-      и («Соединить списки» от («Соединить списки» от
+  («Соединить списки» от («Соединить списки» от
       («Section» от "Ядро не решило" и undecided и "Таких шагов нет.")
       и («Section» от "Все шаги" и (если пусто verdicts то пустой список иначе table) и "Шагов в разметке нет."))
-      и («Соединить списки» от («Section» от "Покрытие: маркеры вывода вне разметки" и uncovered
-      и "Все предложения с маркерами вывода размечены шагами.") и [(«Boundary»), ""]))) по "\n")
+      и («Section» от "Покрытие: маркеры вывода вне разметки" и uncovered
+      и "Все предложения с маркерами вывода размечены шагами."))
+
+тотальная функция «Judgment sections»
+  принимает text: строка, judged: «Judged»
+  возвращает список строки
+  пусть findings равно («Numbered blocks» от («Finding blocks» от (judged.«markup») и (judged.«verdicts»)
+      и (judged.«clashes») и (judged.«outcomes»)))
+  пусть soft равно («Soft lines» от judged)
+  («Соединить списки» от («Соединить списки» от («Section» от "Находки" и («As one» от findings)
+      и (если пусто soft то "Находок нет."
+      иначе "Находок этого рода нет. Шаги без доказательной силы — в разделе «Не доказательство»; они входят в счёт."))
+      и («Section» от "Не доказательство" и («As one» от soft)
+      и "Шагов с пометкой «обобщение», «корреляция» или «авторитет» в разметке нет."))
+      и («Step sections» от text и judged))
+
+тотальная функция «Report of»
+  принимает path: строка, text: строка, judged: «Judged»
+  возвращает строка
+  (соединить («Соединить списки» от («Соединить списки» от
+      [(соединить ["# Проверка рассуждения: ", path] по ""), ""]
+      и («Section» от "Сводка" и («Summary lines» от judged и text) и ""))
+      и («Соединить списки» от («Judgment sections» от text и judged) и [(«Boundary»), ""])) по "\n")
 
 тотальная функция «Finding count»
   принимает judged: «Judged»

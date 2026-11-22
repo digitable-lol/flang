@@ -2582,7 +2582,7 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
       - name: Check the logical forms built from parses on their probe sentences
-        # ADR-0251: each sentence is read by flang run on flang/ct/russian/meaning-parses.flang.
+        # ADR-0251: the probe plan reads each sentence with flang/ct/russian/meaning-text.flang.
         run: bootstrap/flang io flang/proof/probes/russian-meaning/run.fscript --plan Binary --timeout 900000
         env:
           LC_ALL: C.UTF-8

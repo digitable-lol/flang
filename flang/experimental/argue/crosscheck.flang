@@ -473,26 +473,32 @@
     то «Unread» от label и formula и (соединить read.причины по "; ")
     иначе («With the note alone» от («With reference» от («Settled readings» от label и formula и readings и cut)
       и taken.пометы) и model))
+  пусть drafted равно («Соединить списки» от read.формы и read.спутники)
+  пусть aside равно (не (пусто (отфильтровать read.спутники где form → «Same writing» от form и formula)))
   если не (пусто (model.«fault»))
     то «Unread» от label и formula и (соединить ["форма разметки не читается: ", (model.«fault»)] по "")
-    иначе (если origin начинается с "грамматика"
-      то «By the draft» от label и formula и read.формы и read.причины
+    иначе (если (origin начинается с "грамматика") или aside
+      то «By the draft» от label и formula и drafted и read.причины
       иначе settled)
 
 тотальная функция «Origins of»
   принимает claims: строка
   возвращает список строки
   пример «Each judgment gets the origin line that stands under it»
-    дано claims равно "[1] а\n    источник: грамматика, вариант 2\n[2] б\n    цитата: б\n"
+    дано claims равно "[1] а\n    происхождение: грамматика, вариант 2\n[2] б\n    цитата: б\n"
     ожидается ["грамматика, вариант 2", ""]
+  пример «The earlier word for the origin line is read too»
+    дано claims равно "[1] а\n    источник: модель\n"
+    ожидается ["модель"]
   (свёртка (разделить claims по "\n") начиная с (пустой список) как found и row → «With origin row» от found
     и («Flat» от row))
 
 тотальная функция «With origin row»
   принимает found: список строки, row: строка
   возвращает список строки
-  пусть names равно ((row начинается с "источник:") и притом (не (пусто found)))
-  пусть origin равно (если names то («Flat» от (подстрока row с 10 по (длина row))) иначе "")
+  пусть marked равно ((row начинается с "происхождение:") или (row начинается с "источник:"))
+  пусть names равно (marked и притом (не (пусто found)))
+  пусть origin равно (если names то («After the colon» от row) иначе "")
   если row начинается с "["
     то добавить "" к found
     иначе (если names то (добавить origin к («Without the last» от found)) иначе found)

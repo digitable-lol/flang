@@ -186,6 +186,7 @@
 | 0251 | [Разбор даёт логическую форму, а форма разметки сверяется с ней ядром](0251-a-parse-gives-a-logical-form-and-the-markup-is-checked-against-it.md) | предложено | да |  |
 | 0249 | [Признаки русского слова берутся из открытого словаря, который собирается у пользователя](0249-russian-word-features-come-from-an-open-dictionary-built-on-the-users-machine.md) | предложено | да |  |
 | 0250 | [Предложение научной прозы разбирается на карте кусков и отвечает всеми разборами](0250-a-sentence-of-scientific-prose-is-parsed-on-a-chart-and-answers-with-all-its-parses.md) | предложено | да |  |
+| 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

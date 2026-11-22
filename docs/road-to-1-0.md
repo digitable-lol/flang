@@ -173,14 +173,14 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 путей — `flang/proof/tables/lean-soundness-debt.tsv`.
 
 **Размеры.** Ядро решений — `flang/self/proof-kernel.flang`,
-<!-- СНЯТО 2026-11-12 строк flang/self/proof-kernel.flang = 10039 (input of print batch 12: minus zero, interval bounds, proof stage speed) --> 10 039 строк.
+<!-- СНЯТО 2026-11-22 строк flang/self/proof-kernel.flang = 10078 (an existence is not decided by computing it, typing hole 47) --> 10 078 строк.
 Закрытый список правил вывода — `flang/proof/tables/inference-rules.tsv`,
-<!-- СНЯТО 2026-11-08 строк flang/proof/tables/inference-rules.tsv = 169 (print batch 9b over dev ce6a2cb42: unfolding on constructors, size-change termination, fixed-width words, branch facts, records and remainder, lists) --> 169 строк
+<!-- СНЯТО 2026-11-22 строк flang/proof/tables/inference-rules.tsv = 170 (the ban on deciding an existence by computing it, typing hole 47) --> 170 строк
 с шапкой. Независимая программа проверки на C — `flang/proof/checker/checker.c`,
 <!-- СНЯТО 2026-11-17 строк flang/proof/checker/checker.c = 16421 (the counterexample search and the ring print that tells zero from one) --> 16 421 строк;
 её тесты на подделки запускает `bootstrap/flang run-script checker:check`. Файлы Lean —
 <!-- СНЯТО 2026-11-21 файлов flang/proof/lean/*.lean = 39 (Semantics/Prefix.lean: a claim closed by the rule of the known prefix) --> 39 файлов,
-<!-- СНЯТО 2026-11-21 строк-в flang/proof/lean/*.lean = 31659 (Semantics/Prefix.lean and its branch in ModelBlocks.lean) --> 31 659 строк.
+<!-- СНЯТО 2026-11-22 строк-в flang/proof/lean/*.lean = 31666 (Rules.lean names the ban on deciding an existence by computing it) --> 31 666 строк.
 
 **Теоремы и файлы.** Пути — от `flang/proof/`.
 
@@ -236,9 +236,12 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 
 > **Значит.** Каждая известная ошибка проверки типов записана в таблицу и закрыта тестом, который краснеет при её возврате.
 >
-> **Есть.** В таблице 46 строк: 45 закрыты, одна открыта. Генератор программ ищет новые раз в сутки.
+> **Есть.** В таблице 48 строк: 45 закрыты, одна открыта, две исправлены в исходнике и ждут пересборки компилятора.
+> Генератор программ ищет новые раз в сутки.
 >
 > **Нет.** Открыта строка 46: две функции, чьи постусловия вызывают друг друга, проходят проверку завершения.
+> Строка 47 ждёт пересборки: ложное утверждение «есть такой м, что м больше м» выходило доказанным, потому что его отдавали вычислителю, а он существование не проверяет.
+> Строка 48 ждёт пересборки: из двух утверждений с одним именем ложное получало отметку «доказано» от истинного.
 > Доказательства, что таблица полна, нет.
 >
 > **Как проверяется.** `bootstrap/flang run-script typing-holes:check`.

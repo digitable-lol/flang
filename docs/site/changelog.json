@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "01893da99ebf3fb515679b3f6b46dcd3771d68b0",
-  "головаКоротко": "01893da99",
-  "головаДата": "2026-11-10",
-  "шаговСтвола": 4471,
-  "всегоКоммитов": 9719,
+  "голова": "e72e3c31bf35002c4e78150d7bf121ccb3eea6ed",
+  "головаКоротко": "e72e3c31b",
+  "головаДата": "2026-11-22",
+  "шаговСтвола": 4963,
+  "всегоКоммитов": 10211,
   "измерители": [
     {
       "ключ": "js",
@@ -49,12 +49,12 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 140864,
-    "programm": 1274,
-    "totalnyh": 16901,
-    "obychnyh": 3670,
-    "teorem": 422,
-    "proverok": 3,
+    "bliznec": 142785,
+    "programm": 1397,
+    "totalnyh": 17627,
+    "obychnyh": 3770,
+    "teorem": 418,
+    "proverok": 0,
     "zametok": 0
   },
   "неизвестныеКорни": [
@@ -68,7 +68,7 @@
     },
     {
       "корень": "flang/experimental",
-      "путей": 8
+      "путей": 20
     },
     {
       "корень": "flang/services",
@@ -100,7 +100,18 @@
     }
   ],
   "дни": [
+    "2026-11-22",
+    "2026-11-21",
+    "2026-11-19",
+    "2026-11-18",
+    "2026-11-17",
+    "2026-11-16",
+    "2026-11-15",
+    "2026-11-14",
+    "2026-11-13",
+    "2026-11-11",
     "2026-11-10",
+    "2026-11-12",
     "2026-11-09",
     "2026-11-08",
     "2026-11-06",
@@ -41609,8 +41620,596 @@
   ],
   "прямые": [
     {
+      "дата": "2026-11-22",
+      "записи": [
+        {
+          "текст": "chore(release): sha256 of the 0.7.41 archive",
+          "коммит": "e72e3c31b"
+        },
+        {
+          "текст": "chore(release): version 0.7.41 and its release notes",
+          "коммит": "65adca58f"
+        },
+        {
+          "текст": "chore(seed): the seed carries the kernel fixes, holes 47 and 48 close",
+          "коммит": "6c28235f7"
+        },
+        {
+          "текст": "fix(tables): the existence ban is a row outside the decision records",
+          "коммит": "a43ce79a0"
+        },
+        {
+          "текст": "fix(kernel): refuse two statements under one name",
+          "коммит": "59f49fbe0"
+        },
+        {
+          "текст": "fix(kernel): an existence is not decided by computing it",
+          "коммит": "8710a8153"
+        }
+      ],
+      "скрыто": 4
+    },
+    {
+      "дата": "2026-11-21",
+      "записи": [
+        {
+          "текст": "perf(emit-c): the traced literal print is rechecked with one print",
+          "коммит": "04b7d626f"
+        },
+        {
+          "текст": "perf(emit-c): a list literal joins its element lines in pieces",
+          "коммит": "97ced1111"
+        },
+        {
+          "текст": "perf(emit-c): the key table lookup stops at the first match",
+          "коммит": "aa2070cc0"
+        },
+        {
+          "текст": "fix(translation): function witnesses match the declared function type",
+          "коммит": "228e4a6be"
+        },
+        {
+          "текст": "fix(translation): reference reads the step mark from the linked tree",
+          "коммит": "998f957b4"
+        },
+        {
+          "текст": "feat(translation): unfold type aliases in translation validation",
+          "коммит": "bd35313e0"
+        },
+        {
+          "текст": "fix(translation): function witnesses include functions named in examples",
+          "коммит": "da1f595e7"
+        },
+        {
+          "текст": "fix(translation): reference guards constant steps, typed fn witnesses",
+          "коммит": "f614d7772"
+        },
+        {
+          "текст": "feat(lean): the model reads a claim closed by the known prefix rule",
+          "коммит": "1d52baf1a"
+        }
+      ],
+      "скрыто": 26
+    },
+    {
+      "дата": "2026-11-19",
+      "записи": [
+        {
+          "текст": "feat(experimental): a folder of user stories is judged as one set",
+          "коммит": "51a7a1395"
+        }
+      ],
+      "скрыто": 0
+    },
+    {
+      "дата": "2026-11-18",
+      "записи": [
+        {
+          "текст": "docs(adr): the checker code ceiling rises with two refuted forgeries",
+          "коммит": "5db7e7847"
+        }
+      ],
+      "скрыто": 24
+    },
+    {
+      "дата": "2026-11-17",
+      "записи": [
+        {
+          "текст": "fix(reasoning): a read text without a conclusion is not called unread",
+          "коммит": "2cef430de"
+        },
+        {
+          "текст": "fix(argument-check): the report stops lying about premises and clashes",
+          "коммит": "013a5a58f"
+        },
+        {
+          "текст": "feat(argue): judge a marked-up text step by step with the kernel",
+          "коммит": "73b4b1057"
+        },
+        {
+          "текст": "docs(tutor): the twelve lessons follow 0.7.40 and plain wording",
+          "коммит": "aec5c6911"
+        },
+        {
+          "текст": "build(release): release:tap puts the formula of a release into the tap",
+          "коммит": "ae9fb947b"
+        },
+        {
+          "текст": "feat(site): the playground page is a workplace with named setups",
+          "коммит": "b01bcbe39"
+        },
+        {
+          "текст": "docs(proof): two violations fixed in 0.7.40 are closed",
+          "коммит": "1575392ff"
+        },
+        {
+          "текст": "feat(lean): linear arithmetic and the exact ring have soundness theorems",
+          "коммит": "c70174cbf"
+        },
+        {
+          "текст": "fix(lean): the model builds under Lean 4.36 as well",
+          "коммит": "b99124abd"
+        },
+        {
+          "текст": "build(checker): the Makefile takes the pinned Lean through elan",
+          "коммит": "77a77225e"
+        },
+        {
+          "текст": "refactor(checker): the Farkas replay folds one step over the moves",
+          "коммит": "457e9110b"
+        },
+        {
+          "текст": "fix(checker): the C checker refutes two forged branches by a witness",
+          "коммит": "828935347"
+        },
+        {
+          "текст": "fix(checker): zero and one are different polynomials in the ring rule",
+          "коммит": "4bcee81f3"
+        }
+      ],
+      "скрыто": 72
+    },
+    {
+      "дата": "2026-11-16",
+      "записи": [
+        {
+          "текст": "test(probes): a refusing typing-holes probe holds one refused function",
+          "коммит": "dc6d3009d"
+        },
+        {
+          "текст": "fix(probes): typing-holes emit probes build in a per-run temp directory",
+          "коммит": "9b8c86276"
+        },
+        {
+          "текст": "feat(stdlib): a text parsing module for small languages",
+          "коммит": "9ac625fd5"
+        },
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.40, releases page",
+          "коммит": "566b53c2f"
+        },
+        {
+          "текст": "chore(release): sha256 of the 0.7.40 archive",
+          "коммит": "f9b41686a"
+        },
+        {
+          "текст": "chore(release): version 0.7.40 and its release notes",
+          "коммит": "958453aef"
+        }
+      ],
+      "скрыто": 13
+    },
+    {
+      "дата": "2026-11-15",
+      "записи": [
+        {
+          "текст": "chore(seed): the seed carries the shell with the built-in evaluator",
+          "коммит": "3c0fbd1aa"
+        },
+        {
+          "текст": "feat(repl): evaluate expressions with the built-in evaluator",
+          "коммит": "0d0468329"
+        },
+        {
+          "текст": "fix(fixtures): the contract circles go through two functions",
+          "коммит": "6750edd86"
+        },
+        {
+          "текст": "fix(records): three corpus programs are refused by the self-call rule",
+          "коммит": "8e7148b6a"
+        },
+        {
+          "текст": "fix(holes): rows 30-32 and 45 are closed by the batch 13 seed",
+          "коммит": "2118b26c6"
+        },
+        {
+          "текст": "chore(seed): batch 13 seed printed by itself reaches a fixed point",
+          "коммит": "d8259e646"
+        }
+      ],
+      "скрыто": 5
+    },
+    {
+      "дата": "2026-11-14",
+      "записи": [
+        {
+          "текст": "chore(seed): print batch 13 seed from ac6b0c3dd",
+          "коммит": "9d71795f1"
+        },
+        {
+          "текст": "refactor(checker): the expanded-text reading fits the code ceiling",
+          "коммит": "b94055778"
+        },
+        {
+          "текст": "fix(run): the console call hands the tables to the word reading",
+          "коммит": "1993af2ae"
+        },
+        {
+          "текст": "refactor(stdlib): postconditions call their own function only on descent",
+          "коммит": "ecebdd165"
+        }
+      ],
+      "скрыто": 9
+    },
+    {
+      "дата": "2026-11-13",
+      "записи": [
+        {
+          "текст": "fix(entry): printed programs check words and exact fractions",
+          "коммит": "c20ce5635"
+        },
+        {
+          "текст": "fix(run): word arguments inside lists and records",
+          "коммит": "33f88d8b4"
+        },
+        {
+          "текст": "docs(adr): a postcondition's self-call needs descent, cycles stay open",
+          "коммит": "f527fb39d"
+        },
+        {
+          "текст": "chore(ledgers): the share and task ledgers follow print batch 13",
+          "коммит": "79d07f8ba"
+        },
+        {
+          "текст": "feat(record): a file with sugar is recorded by its expanded text",
+          "коммит": "6c21e4e50"
+        },
+        {
+          "текст": "fix(totality): a postcondition's self-call joins the termination graph",
+          "коммит": "dfa2bdbdb"
+        },
+        {
+          "текст": "chore(runtime): the C runtime drops the comment over the worker ticks",
+          "коммит": "b40d26041"
+        },
+        {
+          "текст": "fix(elixir): the printed run line reads piped stdin as bytes",
+          "коммит": "ba40d20fc"
+        },
+        {
+          "текст": "feat(translation): the reference plan runs under a per-witness budget",
+          "коммит": "76970b9cc"
+        },
+        {
+          "текст": "fix(reference): the reference follows the language on three points",
+          "коммит": "ea072fee4"
+        },
+        {
+          "текст": "feat(stdlib): six claims are split into halves the kernel can take",
+          "коммит": "e25ef244e"
+        },
+        {
+          "текст": "feat(stdlib): eight modules state facts on functions that had none",
+          "коммит": "53d9541a4"
+        },
+        {
+          "текст": "feat(stdlib): bignum states eleven facts the kernel proves",
+          "коммит": "8138e5abe"
+        },
+        {
+          "текст": "test(probes): the gap table next to lean is held by twenty probes",
+          "коммит": "1c2a0cc1d"
+        },
+        {
+          "текст": "feat(proof): the lean parity set grows to sixty tasks",
+          "коммит": "e89db7f0e"
+        },
+        {
+          "текст": "feat(stdlib): list facts over an exact length, proved by the kernel",
+          "коммит": "ffa25f7db"
+        },
+        {
+          "текст": "feat(lean): the model reads a closed goal and a goal that is a premise",
+          "коммит": "90ee60110"
+        },
+        {
+          "текст": "feat(lean): the reference evaluator reads forallIn as a fold",
+          "коммит": "c6c16ee3b"
+        },
+        {
+          "текст": "feat(lean): the model reads the word yes, so yes is true in it",
+          "коммит": "7f3bff447"
+        },
+        {
+          "текст": "refactor(checker): one body-declaration table, one bracket matcher",
+          "коммит": "3a501fb8d"
+        },
+        {
+          "текст": "fix(elixir): the runner reads stdin as bytes on OTP 26 and 27 too",
+          "коммит": "148b93ebd"
+        },
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.35, releases page",
+          "коммит": "ba7ca7722"
+        },
+        {
+          "текст": "chore(release): sha256 of the 0.7.35 archive",
+          "коммит": "1071d5406"
+        }
+      ],
+      "скрыто": 33
+    },
+    {
+      "дата": "2026-11-11",
+      "записи": [
+        {
+          "текст": "feat(run): a function is called from the console without JSON",
+          "коммит": "9ff97ebd5"
+        },
+        {
+          "текст": "fix(host): a failed mount of the tab archives is tried again",
+          "коммит": "989a96472"
+        },
+        {
+          "текст": "feat(host): the tab host shows pages, keeps files and runs programs",
+          "коммит": "f8cf06d52"
+        },
+        {
+          "текст": "feat(io): the dictionary gains the order to show a page as a tree",
+          "коммит": "a09c81df3"
+        },
+        {
+          "текст": "fix(emit-js): a function named Then is not exported as then",
+          "коммит": "2b7ce46f1"
+        },
+        {
+          "текст": "style(site): the playground scripts and the pages job carry no comments",
+          "коммит": "4d6032f28"
+        },
+        {
+          "текст": "feat(checker): both checkers run on the records of examples and library",
+          "коммит": "17a574653"
+        },
+        {
+          "текст": "chore(proof): holes 36 and 37 wait for print batch 12",
+          "коммит": "5b9d38635"
+        },
+        {
+          "текст": "fix(kernel): equality with zero is not a base of segment induction",
+          "коммит": "749b1b960"
+        },
+        {
+          "текст": "fix(types): a computed digit does not flow into an exact integer",
+          "коммит": "b60e23375"
+        },
+        {
+          "текст": "test(proof): probe a written step that calls past the parameter type",
+          "коммит": "e7e4a9e01"
+        },
+        {
+          "текст": "fix(kernel): a statement variable takes only a term of its own type",
+          "коммит": "324edf886"
+        },
+        {
+          "текст": "fix(kernel): a call in a promise text must meet the callee requirement",
+          "коммит": "7797318ac"
+        },
+        {
+          "текст": "test(probes): the shell expression and the doubled function name",
+          "коммит": "a5ccc87be"
+        },
+        {
+          "текст": "fix(types): a missing call argument names the function once",
+          "коммит": "fa0d9933d"
+        },
+        {
+          "текст": "fix(parser): the shell's expression wrapper needs no returns line",
+          "коммит": "09bb36d1e"
+        },
+        {
+          "текст": "fix(link): laws of imported modules reach the judged program",
+          "коммит": "b0697ab1e"
+        },
+        {
+          "текст": "fix(sets): a meet of a set with itself is refused",
+          "коммит": "6ed9e9151"
+        },
+        {
+          "текст": "fix(run): the run gate judges declared laws like check does",
+          "коммит": "1465ee630"
+        },
+        {
+          "текст": "fix(ledger): the totals name the laws that the kernel closed",
+          "коммит": "6b3a2d343"
+        },
+        {
+          "текст": "fix(laws): a declared property that was not judged is refused",
+          "коммит": "f1c8d2f65"
+        },
+        {
+          "текст": "fix(emit): the counterexample search is callable without the examples",
+          "коммит": "cad64919a"
+        },
+        {
+          "текст": "chore(proof): four kernel hole rows wait for print batch 12",
+          "коммит": "967d93ec6"
+        },
+        {
+          "текст": "fix(proof): two promises of one function under one name are refused",
+          "коммит": "dbc8e4c82"
+        },
+        {
+          "текст": "chore(proof): rule anchors and the checker ceiling follow batch 12",
+          "коммит": "3599db0d2"
+        },
+        {
+          "текст": "feat(lean): the census counts blocks in records the checker refuses",
+          "коммит": "d1b9ca970"
+        },
+        {
+          "текст": "feat(lean): the model reads a claim closed by example on a constant",
+          "коммит": "82216b903"
+        },
+        {
+          "текст": "feat(lean): the model reads a composition over structural recursion",
+          "коммит": "ade871c66"
+        },
+        {
+          "текст": "fix(lean): the census tells premises without moves from replayed ones",
+          "коммит": "2b1025310"
+        },
+        {
+          "текст": "feat(lean): the census names the move kinds of each block of moves",
+          "коммит": "27da2bf16"
+        },
+        {
+          "текст": "feat(lean): the model reads the table of contents of tables",
+          "коммит": "7ec4d6233"
+        },
+        {
+          "текст": "feat(lean): the model reads a removal whose block is a deduction",
+          "коммит": "9ecd431c3"
+        },
+        {
+          "текст": "feat(lean): the model reads composition totality blocks",
+          "коммит": "3adcd327d"
+        },
+        {
+          "текст": "feat(guards): the codes guard reads the released version",
+          "коммит": "40ebbe586"
+        },
+        {
+          "текст": "chore(numbers): the site counts follow the truth probe set",
+          "коммит": "4a90426b3"
+        },
+        {
+          "текст": "test(probes): the truth probe set passes the tree guards",
+          "коммит": "f0c49e8c7"
+        },
+        {
+          "текст": "fix(driver): help and exit codes of the binary say what it does",
+          "коммит": "347ee8d3f"
+        },
+        {
+          "текст": "style(checker): two comments leave checker.c for the decision record",
+          "коммит": "3d120e256"
+        },
+        {
+          "текст": "fix(probes): the non-negative field probe stops failing by chance",
+          "коммит": "c43ee3a30"
+        }
+      ],
+      "скрыто": 28
+    },
+    {
       "дата": "2026-11-10",
       "записи": [
+        {
+          "текст": "test(site): slow known blocks are skipped, a command waits 120 seconds",
+          "коммит": "7cc7cca16"
+        },
+        {
+          "текст": "feat(playground): the tab host runs check, test and run commands",
+          "коммит": "1b1c04e6b"
+        },
+        {
+          "текст": "fix(checker): the C checker refuses three records the Lean one refused",
+          "коммит": "358f27b3d"
+        },
+        {
+          "текст": "feat(proof): the answer VERIFIED of the Lean checker is a theorem",
+          "коммит": "bc4b11dcb"
+        },
+        {
+          "текст": "fix(checker): a list of the own type is not a recursive field",
+          "коммит": "7784fecf0"
+        },
+        {
+          "текст": "perf(printer): no list of all names per printed call or node",
+          "коммит": "49559a8d1"
+        },
+        {
+          "текст": "perf(kernel): a closed part reuses the once prepared program",
+          "коммит": "97cfb27c8"
+        },
+        {
+          "текст": "perf(runtime): the spread map keeps its workers under FLANG_TICKS_OUT",
+          "коммит": "54a0e6f35"
+        },
+        {
+          "текст": "fix(kernel): an interval bound that rounds at 2^53 is not exact",
+          "коммит": "92e8ada47"
+        },
+        {
+          "текст": "test(probes): eight open soundness holes of the 0.7.34 kernel",
+          "коммит": "ab320759e"
+        },
+        {
+          "текст": "fix(kernel): three rules stop reading minus zero as plus zero",
+          "коммит": "2125f5258"
+        },
+        {
+          "текст": "fix(checker): a product is never minus zero in the linear equality guard",
+          "коммит": "bb527a550"
+        },
+        {
+          "текст": "fix(types): arithmetic proved to give not-a-number is refused",
+          "коммит": "3f331c657"
+        },
+        {
+          "текст": "fix(types): branch join keeps the wider sum, record and function type",
+          "коммит": "f3b363263"
+        },
+        {
+          "текст": "fix(checker): the fields and unfold moves are sound, all moves proved",
+          "коммит": "2d7e8c7f9"
+        },
+        {
+          "текст": "test(holes): rows 31 and 32 hold for the Go, Java and Rust prints",
+          "коммит": "0d3ccf384"
+        },
+        {
+          "текст": "test(holes): row 32, an exact fraction off canon at the printed entry",
+          "коммит": "588db7598"
+        },
+        {
+          "текст": "test(holes): rows 30 and 31, a word inside an argument and at entry",
+          "коммит": "0a72ee74b"
+        },
+        {
+          "текст": "refactor(russian): the utterance analysis reads tags from the lexicon",
+          "коммит": "d43f1520a"
+        },
+        {
+          "текст": "feat(russian): the lexicon gains the instrumental and 35 word forms",
+          "коммит": "a15828c44"
+        },
+        {
+          "текст": "chore(bench): the two bench plans carry no claims outside the ledger",
+          "коммит": "798d24c58"
+        },
+        {
+          "текст": "chore(bench): the node stand is generated and built without Node",
+          "коммит": "69489f23d"
+        },
+        {
+          "текст": "chore(bench): drop two shell scripts their flang plans replace",
+          "коммит": "c6034ad67"
+        },
+        {
+          "текст": "chore(release): the tap serves flang-package 0.7.34, releases page",
+          "коммит": "e6c5b9d1f"
+        },
         {
           "текст": "chore(release): sha256 of the 0.7.34 archive",
           "коммит": "dc459d337"
@@ -41668,7 +42267,117 @@
           "коммит": "d679f8998"
         }
       ],
-      "скрыто": 15
+      "скрыто": 116
+    },
+    {
+      "дата": "2026-11-12",
+      "записи": [
+        {
+          "текст": "feat(lean): the first laws of the model interpretation of goals",
+          "коммит": "fda6dde25"
+        },
+        {
+          "текст": "feat(lean): read a base premise of a multi-argument function by path",
+          "коммит": "98515a39f"
+        },
+        {
+          "текст": "feat(lean): the model reads the identity of lengths on every path",
+          "коммит": "8ef8aba59"
+        },
+        {
+          "текст": "style(checker): new checker comments leave, the marks follow the rebase",
+          "коммит": "1cc134f5f"
+        },
+        {
+          "текст": "docs(codes): the two codes of 0.7.35 become stable",
+          "коммит": "573fd0020"
+        },
+        {
+          "текст": "chore(release): version 0.7.35",
+          "коммит": "8751b7b56"
+        },
+        {
+          "текст": "test(probes): the meet-same-side row takes the printed answer",
+          "коммит": "31f4f6157"
+        },
+        {
+          "текст": "test(probes): the run rows of two law programs take the printed answers",
+          "коммит": "81bf6b99c"
+        },
+        {
+          "текст": "chore(numbers): the site corpus and checker marks after the rebase",
+          "коммит": "f24c3719f"
+        },
+        {
+          "текст": "test(probes): share rows and the strict row take the printed answers",
+          "коммит": "244fbeba6"
+        },
+        {
+          "текст": "test(probes): typing holes and small bugs expect the printed answers",
+          "коммит": "d247f5c97"
+        },
+        {
+          "текст": "fix(proof): row 43 of the typing-holes table keeps its probe column",
+          "коммит": "2f1d12413"
+        },
+        {
+          "текст": "chore(seed): print batch 12 seed from 63eac79e4",
+          "коммит": "e129b23f3"
+        },
+        {
+          "текст": "fix(types): a written step is checked against the types",
+          "коммит": "8ecdcd23b"
+        },
+        {
+          "текст": "fix(link): category laws survive an import with an only list",
+          "коммит": "8fcc868c5"
+        },
+        {
+          "текст": "fix(self): the loop element helper stops colliding with Lists",
+          "коммит": "2be1ec44a"
+        },
+        {
+          "текст": "feat(lean): the model reads the goal split by condition on every path",
+          "коммит": "fcd3b71ab"
+        },
+        {
+          "текст": "fix(lean): one file imports every model theorem and prints its axioms",
+          "коммит": "21a706c8a"
+        },
+        {
+          "текст": "ci(lean): the Lean cross-check builds every file of the semantic model",
+          "коммит": "286825809"
+        },
+        {
+          "текст": "feat(lean): a sum of variants without fields is evaluated per variant",
+          "коммит": "7d19618fd"
+        },
+        {
+          "текст": "feat(lean): the model reads order by construction on lengths",
+          "коммит": "728023372"
+        },
+        {
+          "текст": "feat(lean): a base premise closed by example is evaluated on its value",
+          "коммит": "e18ee5002"
+        },
+        {
+          "текст": "feat(lean): the nonnegativity rule reads the condition of a branch",
+          "коммит": "c0a8263a4"
+        },
+        {
+          "текст": "feat(lean): the model reads two kernel rules by construction",
+          "коммит": "74f13d83d"
+        },
+        {
+          "текст": "feat(lean): the formula reader runs on fuel instead of partial defs",
+          "коммит": "2df9a5db6"
+        },
+        {
+          "текст": "fix(lean): the census declares the step limit its shortcut carries",
+          "коммит": "eedfe3035"
+        }
+      ],
+      "скрыто": 19
     },
     {
       "дата": "2026-11-09",

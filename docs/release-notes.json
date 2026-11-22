@@ -14,7 +14,8 @@
           "[проверка доказательств] Для этих девяти `checker` называет вход, на котором подделка неверна"
         ],
         "ломающие": [
-          "Утверждение с `есть такой` без названного значения больше не доказывается вычислением. Назовите значение: `есть такой м, а именно 2, что …`",
+          "Ложное утверждение с `есть такой` больше не проходит как доказанное; верное, например `есть такой м, что м больше 1`, доказывается, как раньше",
+          "Если ваше утверждение с `есть такой` перестало доказываться, назовите значение: `есть такой м, а именно 2, что м больше 1`",
           "Два утверждения с одним именем в программе дают FLANG_PROOF_AMBIGUOUS. Назовите их по-разному",
           "Модули примеров в `docs/examples` названы по-английски. Со старым именем в `использует` будет FLANG_IMPORT_NOT_FOUND",
           "Поменяйте имя в `использует`: «Скидка» → «Discount», «Формула Евклида» → «Euclid formula», «Градины» → «Hailstone»",
@@ -41,7 +42,7 @@
           "[сайт] Страница «Чему вы доверяете» (trust.html): на чём держится слово «доказано»",
           "[сайт] Страницы «flang для знающих Lean и Dafny» и «flang для знающих Rust и TypeScript»: когда что брать",
           "[сайт] Страница «Что осталось до 1.0» (roadmap.html): семь условий, у каждого — что уже есть и чего нет",
-          "[сайт] Страница «Известные ограничения» (limits.html) говорит, чего flang не гарантирует",
+          "[сайт] Страница «Известные ограничения» (limits.html) говорит, чего flang не обещает",
           "[сайт] У каждого модуля библиотеки своя страница",
           "[сайт] В описании языка появился раздел о словах `u8`…`u64`"
         ],
@@ -63,7 +64,8 @@
           "[proof checking] For these nine, `checker` names an input on which the forgery is false"
         ],
         "ломающие": [
-          "A statement with `есть такой` and no named value is no longer proved by computing it. Name the value: `есть такой м, а именно 2, что …`",
+          "A false statement with `есть такой` (there is) no longer passes as proved; a true one, such as `есть такой м, что м больше 1`, is proved as before",
+          "If your statement with `есть такой` stopped being proved, name the value: `есть такой м, а именно 2, что м больше 1`",
           "Two statements under one name in a program give FLANG_PROOF_AMBIGUOUS. Give them different names",
           "Example modules in `docs/examples` have English names. The old name in `использует` gives FLANG_IMPORT_NOT_FOUND",
           "Change the name in `использует`: «Скидка» → «Discount», «Формула Евклида» → «Euclid formula», «Градины» → «Hailstone»",

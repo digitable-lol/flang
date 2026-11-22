@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 26), `flang/experimental` (путей 8), `flang/services` (путей 3), `flang/sugar` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 26), `flang/experimental` (путей 20), `flang/services` (путей 3), `flang/sugar` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,25 +33,225 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `01893da99` от 10 ноября 2026. Шагов ствола 4471, из них вливаний 1220; коммитов в истории 9719.
+Дерево на коммите `e72e3c31b` от 22 ноября 2026. Шагов ствола 4963, из них вливаний 1220; коммитов в истории 10211.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 140864 | 0 | +7233 |
-| Программ на flang | 1274 | +2 | +650 |
-| Объявлений `тотальная функция` | 16901 | +67 | +4957 |
-| Объявлений `функция` | 3670 | 0 | +1173 |
-| Объявлений `теорема` | 422 | 0 | +134 |
-| Файлов проверок | 3 | 0 | 0 |
+| Эталон компилятора на flang | 142785 | 0 | +9154 |
+| Программ на flang | 1397 | +2 | +773 |
+| Объявлений `тотальная функция` | 17627 | +67 | +5683 |
+| Объявлений `функция` | 3770 | 0 | +1273 |
+| Объявлений `теорема` | 418 | 0 | +130 |
+| Файлов проверок | 0 | 0 | −3 |
 | Заметок базы знаний | 0 | 0 | −720 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
+
+## 22 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(release): sha256 of the 0.7.41 archive (`e72e3c31b`)
+- chore(release): version 0.7.41 and its release notes (`65adca58f`)
+- chore(seed): the seed carries the kernel fixes, holes 47 and 48 close (`6c28235f7`)
+- fix(tables): the existence ban is a row outside the decision records (`a43ce79a0`)
+- fix(kernel): refuse two statements under one name (`59f49fbe0`)
+- fix(kernel): an existence is not decided by computing it (`8710a8153`)
+
+Ещё 4 правки языка снаружи не меняют.
+
+## 21 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- perf(emit-c): the traced literal print is rechecked with one print (`04b7d626f`)
+- perf(emit-c): a list literal joins its element lines in pieces (`97ced1111`)
+- perf(emit-c): the key table lookup stops at the first match (`aa2070cc0`)
+- fix(translation): function witnesses match the declared function type (`228e4a6be`)
+- fix(translation): reference reads the step mark from the linked tree (`998f957b4`)
+- feat(translation): unfold type aliases in translation validation (`bd35313e0`)
+- fix(translation): function witnesses include functions named in examples (`da1f595e7`)
+- fix(translation): reference guards constant steps, typed fn witnesses (`f614d7772`)
+- feat(lean): the model reads a claim closed by the known prefix rule (`1d52baf1a`)
+
+Ещё 26 правок языка снаружи не меняют.
+
+## 19 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(experimental): a folder of user stories is judged as one set (`51a7a1395`)
+
+## 18 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- docs(adr): the checker code ceiling rises with two refuted forgeries (`5db7e7847`)
+
+Ещё 24 правки языка снаружи не меняют.
+
+## 17 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(reasoning): a read text without a conclusion is not called unread (`2cef430de`)
+- fix(argument-check): the report stops lying about premises and clashes (`013a5a58f`)
+- feat(argue): judge a marked-up text step by step with the kernel (`73b4b1057`)
+- docs(tutor): the twelve lessons follow 0.7.40 and plain wording (`aec5c6911`)
+- build(release): release:tap puts the formula of a release into the tap (`ae9fb947b`)
+- feat(site): the playground page is a workplace with named setups (`b01bcbe39`)
+- docs(proof): two violations fixed in 0.7.40 are closed (`1575392ff`)
+- feat(lean): linear arithmetic and the exact ring have soundness theorems (`c70174cbf`)
+- fix(lean): the model builds under Lean 4.36 as well (`b99124abd`)
+- build(checker): the Makefile takes the pinned Lean through elan (`77a77225e`)
+- refactor(checker): the Farkas replay folds one step over the moves (`457e9110b`)
+- fix(checker): the C checker refutes two forged branches by a witness (`828935347`)
+- fix(checker): zero and one are different polynomials in the ring rule (`4bcee81f3`)
+
+Ещё 72 правки языка снаружи не меняют.
+
+## 16 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- test(probes): a refusing typing-holes probe holds one refused function (`dc6d3009d`)
+- fix(probes): typing-holes emit probes build in a per-run temp directory (`9b8c86276`)
+- feat(stdlib): a text parsing module for small languages (`9ac625fd5`)
+- chore(release): the tap serves flang-package 0.7.40, releases page (`566b53c2f`)
+- chore(release): sha256 of the 0.7.40 archive (`f9b41686a`)
+- chore(release): version 0.7.40 and its release notes (`958453aef`)
+
+Ещё 13 правок языка снаружи не меняют.
+
+## 15 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(seed): the seed carries the shell with the built-in evaluator (`3c0fbd1aa`)
+- feat(repl): evaluate expressions with the built-in evaluator (`0d0468329`)
+- fix(fixtures): the contract circles go through two functions (`6750edd86`)
+- fix(records): three corpus programs are refused by the self-call rule (`8e7148b6a`)
+- fix(holes): rows 30-32 and 45 are closed by the batch 13 seed (`2118b26c6`)
+- chore(seed): batch 13 seed printed by itself reaches a fixed point (`d8259e646`)
+
+Ещё 5 правок языка снаружи не меняют.
+
+## 14 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- chore(seed): print batch 13 seed from ac6b0c3dd (`9d71795f1`)
+- refactor(checker): the expanded-text reading fits the code ceiling (`b94055778`)
+- fix(run): the console call hands the tables to the word reading (`1993af2ae`)
+- refactor(stdlib): postconditions call their own function only on descent (`ecebdd165`)
+
+Ещё 9 правок языка снаружи не меняют.
+
+## 13 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(entry): printed programs check words and exact fractions (`c20ce5635`)
+- fix(run): word arguments inside lists and records (`33f88d8b4`)
+- docs(adr): a postcondition's self-call needs descent, cycles stay open (`f527fb39d`)
+- chore(ledgers): the share and task ledgers follow print batch 13 (`79d07f8ba`)
+- feat(record): a file with sugar is recorded by its expanded text (`6c21e4e50`)
+- fix(totality): a postcondition's self-call joins the termination graph (`dfa2bdbdb`)
+- chore(runtime): the C runtime drops the comment over the worker ticks (`b40d26041`)
+- fix(elixir): the printed run line reads piped stdin as bytes (`ba40d20fc`)
+- feat(translation): the reference plan runs under a per-witness budget (`76970b9cc`)
+- fix(reference): the reference follows the language on three points (`ea072fee4`)
+- feat(stdlib): six claims are split into halves the kernel can take (`e25ef244e`)
+- feat(stdlib): eight modules state facts on functions that had none (`53d9541a4`)
+- feat(stdlib): bignum states eleven facts the kernel proves (`8138e5abe`)
+- test(probes): the gap table next to lean is held by twenty probes (`1c2a0cc1d`)
+- feat(proof): the lean parity set grows to sixty tasks (`e89db7f0e`)
+- feat(stdlib): list facts over an exact length, proved by the kernel (`ffa25f7db`)
+- feat(lean): the model reads a closed goal and a goal that is a premise (`90ee60110`)
+- feat(lean): the reference evaluator reads forallIn as a fold (`c6c16ee3b`)
+- feat(lean): the model reads the word yes, so yes is true in it (`7f3bff447`)
+- refactor(checker): one body-declaration table, one bracket matcher (`3a501fb8d`)
+- fix(elixir): the runner reads stdin as bytes on OTP 26 and 27 too (`148b93ebd`)
+- chore(release): the tap serves flang-package 0.7.35, releases page (`ba7ca7722`)
+- chore(release): sha256 of the 0.7.35 archive (`1071d5406`)
+
+Ещё 33 правки языка снаружи не меняют.
+
+## 11 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(run): a function is called from the console without JSON (`9ff97ebd5`)
+- fix(host): a failed mount of the tab archives is tried again (`989a96472`)
+- feat(host): the tab host shows pages, keeps files and runs programs (`f8cf06d52`)
+- feat(io): the dictionary gains the order to show a page as a tree (`a09c81df3`)
+- fix(emit-js): a function named Then is not exported as then (`2b7ce46f1`)
+- style(site): the playground scripts and the pages job carry no comments (`4d6032f28`)
+- feat(checker): both checkers run on the records of examples and library (`17a574653`)
+- chore(proof): holes 36 and 37 wait for print batch 12 (`5b9d38635`)
+- fix(kernel): equality with zero is not a base of segment induction (`749b1b960`)
+- fix(types): a computed digit does not flow into an exact integer (`b60e23375`)
+- test(proof): probe a written step that calls past the parameter type (`e7e4a9e01`)
+- fix(kernel): a statement variable takes only a term of its own type (`324edf886`)
+- fix(kernel): a call in a promise text must meet the callee requirement (`7797318ac`)
+- test(probes): the shell expression and the doubled function name (`a5ccc87be`)
+- fix(types): a missing call argument names the function once (`fa0d9933d`)
+- fix(parser): the shell's expression wrapper needs no returns line (`09bb36d1e`)
+- fix(link): laws of imported modules reach the judged program (`b0697ab1e`)
+- fix(sets): a meet of a set with itself is refused (`6ed9e9151`)
+- fix(run): the run gate judges declared laws like check does (`1465ee630`)
+- fix(ledger): the totals name the laws that the kernel closed (`6b3a2d343`)
+- fix(laws): a declared property that was not judged is refused (`f1c8d2f65`)
+- fix(emit): the counterexample search is callable without the examples (`cad64919a`)
+- chore(proof): four kernel hole rows wait for print batch 12 (`967d93ec6`)
+- fix(proof): two promises of one function under one name are refused (`dbc8e4c82`)
+- chore(proof): rule anchors and the checker ceiling follow batch 12 (`3599db0d2`)
+- feat(lean): the census counts blocks in records the checker refuses (`d1b9ca970`)
+- feat(lean): the model reads a claim closed by example on a constant (`82216b903`)
+- feat(lean): the model reads a composition over structural recursion (`ade871c66`)
+- fix(lean): the census tells premises without moves from replayed ones (`2b1025310`)
+- feat(lean): the census names the move kinds of each block of moves (`27da2bf16`)
+- feat(lean): the model reads the table of contents of tables (`7ec4d6233`)
+- feat(lean): the model reads a removal whose block is a deduction (`9ecd431c3`)
+- feat(lean): the model reads composition totality blocks (`3adcd327d`)
+- feat(guards): the codes guard reads the released version (`40ebbe586`)
+- chore(numbers): the site counts follow the truth probe set (`4a90426b3`)
+- test(probes): the truth probe set passes the tree guards (`f0c49e8c7`)
+- fix(driver): help and exit codes of the binary say what it does (`347ee8d3f`)
+- style(checker): two comments leave checker.c for the decision record (`3d120e256`)
+- fix(probes): the non-negative field probe stops failing by chance (`c43ee3a30`)
+
+Ещё 28 правок языка снаружи не меняют.
 
 ## 10 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- test(site): slow known blocks are skipped, a command waits 120 seconds (`7cc7cca16`)
+- feat(playground): the tab host runs check, test and run commands (`1b1c04e6b`)
+- fix(checker): the C checker refuses three records the Lean one refused (`358f27b3d`)
+- feat(proof): the answer VERIFIED of the Lean checker is a theorem (`bc4b11dcb`)
+- fix(checker): a list of the own type is not a recursive field (`7784fecf0`)
+- perf(printer): no list of all names per printed call or node (`49559a8d1`)
+- perf(kernel): a closed part reuses the once prepared program (`97cfb27c8`)
+- perf(runtime): the spread map keeps its workers under FLANG_TICKS_OUT (`54a0e6f35`)
+- fix(kernel): an interval bound that rounds at 2^53 is not exact (`92e8ada47`)
+- test(probes): eight open soundness holes of the 0.7.34 kernel (`ab320759e`)
+- fix(kernel): three rules stop reading minus zero as plus zero (`2125f5258`)
+- fix(checker): a product is never minus zero in the linear equality guard (`bb527a550`)
+- fix(types): arithmetic proved to give not-a-number is refused (`3f331c657`)
+- fix(types): branch join keeps the wider sum, record and function type (`f3b363263`)
+- fix(checker): the fields and unfold moves are sound, all moves proved (`2d7e8c7f9`)
+- test(holes): rows 31 and 32 hold for the Go, Java and Rust prints (`0d3ccf384`)
+- test(holes): row 32, an exact fraction off canon at the printed entry (`588db7598`)
+- test(holes): rows 30 and 31, a word inside an argument and at entry (`0a72ee74b`)
+- refactor(russian): the utterance analysis reads tags from the lexicon (`d43f1520a`)
+- feat(russian): the lexicon gains the instrumental and 35 word forms (`a15828c44`)
+- chore(bench): the two bench plans carry no claims outside the ledger (`798d24c58`)
+- chore(bench): the node stand is generated and built without Node (`69489f23d`)
+- chore(bench): drop two shell scripts their flang plans replace (`c6034ad67`)
+- chore(release): the tap serves flang-package 0.7.34, releases page (`e6c5b9d1f`)
 - chore(release): sha256 of the 0.7.34 archive (`dc459d337`)
 - chore(release): version 0.7.34 (`bce8b371a`)
 - test(holes): row 28, a generic call in a match branch widens the variant (`eb8860f44`)
@@ -67,7 +267,40 @@
 - chore(release): the tap serves flang-package 0.7.33, releases page (`d25cd9af3`)
 - chore(release): sha256 of the 0.7.33 archive (`d679f8998`)
 
-Ещё 15 правок языка снаружи не меняют.
+Ещё 116 правок языка снаружи не меняют.
+
+## 12 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(lean): the first laws of the model interpretation of goals (`fda6dde25`)
+- feat(lean): read a base premise of a multi-argument function by path (`98515a39f`)
+- feat(lean): the model reads the identity of lengths on every path (`8ef8aba59`)
+- style(checker): new checker comments leave, the marks follow the rebase (`1cc134f5f`)
+- docs(codes): the two codes of 0.7.35 become stable (`573fd0020`)
+- chore(release): version 0.7.35 (`8751b7b56`)
+- test(probes): the meet-same-side row takes the printed answer (`31f4f6157`)
+- test(probes): the run rows of two law programs take the printed answers (`81bf6b99c`)
+- chore(numbers): the site corpus and checker marks after the rebase (`f24c3719f`)
+- test(probes): share rows and the strict row take the printed answers (`244fbeba6`)
+- test(probes): typing holes and small bugs expect the printed answers (`d247f5c97`)
+- fix(proof): row 43 of the typing-holes table keeps its probe column (`2f1d12413`)
+- chore(seed): print batch 12 seed from 63eac79e4 (`e129b23f3`)
+- fix(types): a written step is checked against the types (`8ecdcd23b`)
+- fix(link): category laws survive an import with an only list (`8fcc868c5`)
+- fix(self): the loop element helper stops colliding with Lists (`2be1ec44a`)
+- feat(lean): the model reads the goal split by condition on every path (`fcd3b71ab`)
+- fix(lean): one file imports every model theorem and prints its axioms (`21a706c8a`)
+- ci(lean): the Lean cross-check builds every file of the semantic model (`286825809`)
+- feat(lean): a sum of variants without fields is evaluated per variant (`7d19618fd`)
+- feat(lean): the model reads order by construction on lengths (`728023372`)
+- feat(lean): a base premise closed by example is evaluated on its value (`e18ee5002`)
+- feat(lean): the nonnegativity rule reads the condition of a branch (`c0a8263a4`)
+- feat(lean): the model reads two kernel rules by construction (`74f13d83d`)
+- feat(lean): the formula reader runs on fuel instead of partial defs (`2df9a5db6`)
+- fix(lean): the census declares the step limit its shortcut carries (`eedfe3035`)
+
+Ещё 19 правок языка снаружи не меняют.
 
 ## 9 ноября 2026
 

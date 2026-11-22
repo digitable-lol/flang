@@ -1,7 +1,7 @@
 {
-  "decisionKernelLines": 10947,
-  "kernelFilesCode": 14294,
-  "seedSourcesCode": 96481,
+  "decisionKernelLines": 10986,
+  "kernelFilesCode": 14334,
+  "seedSourcesCode": 96581,
   "seedSourcesFiles": 78,
   "parsingCode": 8579,
   "evaluatorCode": 3909,
@@ -12,7 +12,7 @@
   "printedCCode": 1092901,
   "printedCFiles": 8,
   "checkerCode": 13357,
-  "inferenceRules": 168,
-  "totalSources": 126536,
+  "inferenceRules": 169,
+  "totalSources": 126636,
   "totalPrinted": 1092901
 }

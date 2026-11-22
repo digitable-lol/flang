@@ -24,6 +24,13 @@
   «unmatched»: список строки
   «jobs»: список «Job»
 
+объект «Asked»
+  «label»: строка
+  «quote»: строка
+  «before»: строка
+  «formula»: строка
+  «origin»: строка
+
 объект «Crosscheck»
   «label»: строка
   «status»: строка
@@ -402,19 +409,93 @@
     и «matched» равным («Соединить списки» от (check.«matched») и (отобразить notes как words →
     соединить [words, " (отсылка, предположительно)"] по "")) и «jobs» равным (check.«jobs»))
 
+тотальная функция «Is bare atom»
+  принимает formula: «Formula»
+  возвращает признак
+  пример «A statement without places is one bare atom»
+    дано formula равно (вариант «Atom» с name равным "дождь" и terms равным пустой список)
+    ожидается да
+  разбор formula
+    случай вариант «Atom» с name как name и terms как terms
+      то пусто terms
+    случай любое
+      то нет
+
+тотальная функция «With the note alone»
+  принимает check: «Crosscheck», model: «Quantified»
+  возвращает «Crosscheck»
+  пусть by_note равно (не (пусто (отфильтровать (check.«matched») где words → words содержит "(по пояснению)")))
+  пусть bare равно («Is bare atom» от (model.«body»))
+  пусть alone равно ((((check.«status») равен "confirmed") и притом by_note) и притом bare)
+  (запись «Crosscheck» с «label» равным (check.«label»)
+    и «status» равным (если alone то "note only" иначе (check.«status»)) и «model» равным (check.«model»)
+    и «grammar» равным (check.«grammar») и «reason» равным (check.«reason»)
+    и «matched» равным (check.«matched») и «jobs» равным (если alone то (пустой список) иначе (check.«jobs»)))
+
+тотальная функция «Same writing»
+  принимает left: строка, right: строка
+  возвращает признак
+  пример «Spacing does not matter»
+    дано left равно "кит( моби )"
+    дано right равно "кит(моби)"
+    ожидается да
+  («Form text» от («Form of» от left)) равен («Form text» от («Form of» от right))
+
+тотальная функция «By the draft»
+  принимает label: строка, formula: строка, forms: список строки, reasons: список строки
+  возвращает «Crosscheck»
+  пусть found равно (не (пусто (отфильтровать forms где form → «Same writing» от form и formula)))
+  (запись «Crosscheck» с «label» равным label и «status» равным (если found то "drafted" иначе "false origin")
+    и «model» равным formula и «grammar» равным forms
+    и «reason» равным (если found то "" иначе (соединить (приписать "такой формы у грамматики нет" к reasons) по "; "))
+    и «matched» равным пустой список и «jobs» равным пустой список)
+
 тотальная функция «Crosscheck of»
   принимает label: строка, quote: строка, before: строка, formula: строка, notions: список «Notion», rows: список строки
   возвращает «Crosscheck»
+  («Crosscheck with origin» от (запись «Asked» с «label» равным label и «quote» равным quote
+    и «before» равным before и «formula» равным formula и «origin» равным "") и notions и rows)
+
+тотальная функция «Crosscheck with origin»
+  принимает asked: «Asked», notions: список «Notion», rows: список строки
+  возвращает «Crosscheck»
+  пусть label равно (asked.«label»)
+  пусть quote равно (asked.«quote»)
+  пусть before равно (asked.«before»)
+  пусть formula равно (asked.«formula»)
+  пусть origin равно (asked.«origin»)
   пусть model равно («Form of» от formula)
   пусть taken равно («Формы в тексте» от («Bare quote» от quote) и («Bare quote» от before) и rows и («Предел форм»))
   пусть read равно taken.формы
   пусть readings равно (отобразить read.формы как form → «Reading of form» от label и rows и notions и model и form)
   пусть cut равно (read.различных больше (длина read.формы))
+  пусть settled равно (если пусто readings
+    то «Unread» от label и formula и (соединить read.причины по "; ")
+    иначе («With the note alone» от («With reference» от («Settled readings» от label и formula и readings и cut)
+      и taken.пометы) и model))
   если не (пусто (model.«fault»))
     то «Unread» от label и formula и (соединить ["форма разметки не читается: ", (model.«fault»)] по "")
-    иначе (если пусто readings
-      то «Unread» от label и formula и (соединить read.причины по "; ")
-      иначе «With reference» от («Settled readings» от label и formula и readings и cut) и taken.пометы)
+    иначе (если origin начинается с "грамматика"
+      то «By the draft» от label и formula и read.формы и read.причины
+      иначе settled)
+
+тотальная функция «Origins of»
+  принимает claims: строка
+  возвращает список строки
+  пример «Each judgment gets the origin line that stands under it»
+    дано claims равно "[1] а\n    источник: грамматика, вариант 2\n[2] б\n    цитата: б\n"
+    ожидается ["грамматика, вариант 2", ""]
+  (свёртка (разделить claims по "\n") начиная с (пустой список) как found и row → «With origin row» от found
+    и («Flat» от row))
+
+тотальная функция «With origin row»
+  принимает found: список строки, row: строка
+  возвращает список строки
+  пусть names равно ((row начинается с "источник:") и притом (не (пусто found)))
+  пусть origin равно (если names то («Flat» от (подстрока row с 10 по (длина row))) иначе "")
+  если row начинается с "["
+    то добавить "" к found
+    иначе (если names то (добавить origin к («Without the last» от found)) иначе found)
 
 тотальная функция «After the kernel»
   принимает check: «Crosscheck», outcomes: список «Kernel answer»
@@ -436,6 +517,8 @@
     ожидается "подтверждено грамматикой"
   (свёртка [["confirmed", "подтверждено грамматикой"], ["differs", "расходится"], ["unread", "грамматика не прочла"],
     ["presumed", "подтверждено с предположительной отсылкой"], ["unmatched", "понятия не сопоставлены"],
+    ["note only", "совпало только пояснение"], ["drafted", "взято из черновика грамматики"],
+    ["false origin", "помета происхождения неверна"],
     ["undecided", "ядро не решило"]] начиная с status как words и row → если (элемент 1 в row) равен status
     то (элемент 2 в row)
     иначе words)
@@ -460,9 +543,20 @@
 тотальная функция «Crosschecks of»
   принимает markup: «Markup», rows: список строки
   возвращает список «Crosscheck»
-  (свёртка (markup.«entries») начиная с (пустой список) как checks и entry → добавить («Crosscheck of»
-    от (entry.«number») и (entry.«quote») и («Quote before» от (markup.«entries») и (длина checks))
-    и (entry.«formula») и (markup.«notions») и rows) к checks)
+  «Crosschecks with origins» от markup и пустой список и rows
+
+тотальная функция «Origin at»
+  принимает origins: список строки, place: число
+  возвращает строка
+  если place больше (длина origins) то "" иначе (элемент place в origins)
+
+тотальная функция «Crosschecks with origins»
+  принимает markup: «Markup», origins: список строки, rows: список строки
+  возвращает список «Crosscheck»
+  (свёртка (markup.«entries») начиная с (пустой список) как checks и entry → добавить («Crosscheck with origin»
+    от (запись «Asked» с «label» равным (entry.«number») и «quote» равным (entry.«quote»)
+    и «before» равным («Quote before» от (markup.«entries») и (длина checks)) и «formula» равным (entry.«formula»)
+    и «origin» равным («Origin at» от origins и ((длина checks) плюс 1))) и (markup.«notions») и rows) к checks)
 
 тотальная функция «Quote before»
   принимает entries: список «Thesis», place: число

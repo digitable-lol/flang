@@ -1,0 +1,97 @@
+модуль «Argue article probes»
+
+использует «Таблица проб» из "../table.fscript"
+
+тотальная функция «Этот набор»
+  возвращает «Набор»
+  пример «The set is named, and a mismatch and blindness have different codes»
+    ожидается (запись «Набор» с «имя» равным "argue-article" и «код расхождения» равным "FLANG_PROBE_ARGUE_ARTICLE"
+        и «код слепоты» равным "FLANG_PROBE_ARGUE_ARTICLE_CANNOT_LOOK")
+  (запись «Набор» с «имя» равным "argue-article" и «код расхождения» равным "FLANG_PROBE_ARGUE_ARTICLE"
+      и «код слепоты» равным "FLANG_PROBE_ARGUE_ARTICLE_CANNOT_LOOK")
+
+тотальная функция «Свои ключи»
+  принимает имя: строка
+  возвращает строка
+  пример «A probe without keys of its own adds nothing»
+    дано имя равно "chain"
+    ожидается ""
+  пример «The machine report is asked for by its key»
+    дано имя равно "machine-report"
+    ожидается "set -- --claims \"$p/claims/machine-report.claims\" --json; "
+  (свёртка [["machine-report", "set -- --claims \"$p/claims/machine-report.claims\" --json; "],
+      ["by-command", (соединить ["stub='q=$(cat); case \"$q\" in *\"Текст для разметки:\"*) ;; *) exit 0;; esac; ",
+      "if [ \"$FLANG_ARGUE_PART\" = 2 ]; then case \"$q\" in *\"Это часть 2 из 2\"*\"понятие металл(x)\"*",
+      "\"[3] проводит(медь)\"*\"годится для сети\"*) ;; *) exit 0;; esac; fi; ",
+      "cat flang/proof/probes/argue-article/claims/by-command.part$FLANG_ARGUE_PART'; ",
+      "set -- --claims \"$o/made.claims\" --part-size 80 --markup-cmd \"$stub\"; "] по "")],
+      ["no-converter", "export FLANG_ARGUE_PDFTOTEXT=no-such-converter; "],
+      ["paper", "export FLANG_ARGUE_PDFTOTEXT=\"cat $p/programs/paper.pdf #\"; "],
+      ["grammar", "export FLANG_ARGUE_CROSSCHECK=\"$p/crosscheck-stub.flang\"; "],
+      ["skipped-step", "export FLANG_ARGUE_SKIP=step:19; "]] начиная с "" как found и row →
+      если (элемент 1 в row) равен имя то (элемент 2 в row) иначе found)
+
+тотальная функция «Команда»
+  принимает программа: строка
+  возвращает строка
+  пример «The article goes through the one command and the report is printed after it»
+    дано программа равно "chain.txt"
+    ожидается """
+      cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { \\
+        o=$(mktemp -d "${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX"); p=flang/proof/probes/argue-article; \\
+        set -- --claims "$p/claims/chain.claims";  \\
+        FLANG_BIN=$flang $flang io flang/experimental/argue-article.fscript --plan Guarded \\
+        --max-steps 1000000000000 --timeout 86400000 -- "$p/programs/chain.txt" \\
+        --out "$o/report" "$@" > /dev/null; c=$?; \\
+        [ -f "$o/report" ] && cat "$o/report"; [ -f "$o/report.txt" ] && echo "[text kept]"; \\
+        [ -f "$o/report.tables.txt" ] && cat "$o/report.tables.txt"; \\
+        [ -f "$o/made.claims" ] && cat "$o/made.claims"; \\
+        node -e 'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));console.log("[json read]")' \\
+        "$o/report" 2> /dev/null; rm -rf "$o"; (exit $c); } 2>&1; echo "[code=$?]"
+      """
+  пусть stem равно (подстрока программа с 1 по ((длина программа) минус 4))
+  пусть call равно (соединить ["\\\n  o=$(mktemp -d \"${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX\"); ",
+      "p=flang/proof/probes/argue-article; \\\n  set -- --claims \"$p/claims/", stem, ".claims\"; ",
+      («Свои ключи» от stem), " \\\n  ",
+      "FLANG_BIN=$flang $flang io flang/experimental/argue-article.fscript --plan Guarded \\\n  ",
+      "--max-steps 1000000000000 --timeout 86400000 -- \"$p/programs/", программа, "\" \\\n  ",
+      "--out \"$o/report\" \"$@\" > /dev/null; c=$?; \\\n  ",
+      "[ -f \"$o/report\" ] && cat \"$o/report\"; [ -f \"$o/report.txt\" ] && echo \"[text kept]\"; \\\n  ",
+      "[ -f \"$o/report.tables.txt\" ] && cat \"$o/report.tables.txt\"; \\\n  ",
+      "[ -f \"$o/made.claims\" ] && cat \"$o/made.claims\"; \\\n  ",
+      "node -e 'JSON.parse(require(\"fs\").readFileSync(process.argv[1],\"utf8\"));console.log(\"[json read]\")' ",
+      "\\\n  \"$o/report\" 2> /dev/null; rm -rf \"$o\"; (exit $c)"] по "")
+  соединить [(«От корня» от («С меткой» от call)), "\n"] по ""
+
+тотальная функция «Проба из строки»
+  принимает части: список строки
+  возвращает «Проба»
+  (запись «Проба» с «программа» равным («Поле» от части и 1)
+      и «приметы» равным («Приметы» от («Поле» от части и 1) и пустой список)
+      и «команда» равным («Команда» от («Поле» от части и 1)) и «код» равным («Поле» от части и 2)
+      и «слово» равным («Поле» от части и 3))
+
+тотальная функция «Пробы»
+  принимает текст: строка
+  возвращает список «Проба»
+  отобразить («Строки данных» от текст) как части → («Проба из строки» от части)
+
+тотальная функция «Начать»
+  возвращает «Ход»
+  пример «The plan starts from the start»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Дальше»
+  принимает ход: «Ход», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор ход
+    случай вариант «Ждём таблицу»
+      то «После таблицы» от («Этот набор») и («Пробы» от («Содержимое» от отклик))
+    случай любое
+      то «Шаг» от («Этот набор») и ход и отклик
+
+план «Binary»
+  состояние «Ход»
+  начинает с «Начать»
+  обрабатывает «Дальше»

@@ -2271,7 +2271,7 @@ jobs:
           LC_ALL: C.UTF-8
 
       - name: Check the russian sentence parser on its probe sentences
-        # ADR-0250: 108 sentences, parsed in one process by flang/ct/russian/sentence.flang.
+        # ADR-0250: 125 sentences, parsed in one process by flang/ct/russian/sentence.flang.
         run: bootstrap/flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary
         env:
           LC_ALL: C.UTF-8

@@ -1,6 +1,106 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.7.41": {
+      "ru": {
+        "заголовок": "Модуль «Parsing» для своего языка, проверка рассуждений командой `argue`, тур и песочница с раскладками.",
+        "исправления": [
+          "[доказательства] Ложное `есть такой м, что м больше м` больше не считается доказанным: раньше `flang check --proof` принимал его вычислением",
+          "[доказательства] То же исправлено под `и притом` и через вызов функции, в теле которой стоит `есть такой`",
+          "[доказательства] Два утверждения с одним именем дают FLANG_PROOF_AMBIGUOUS: раньше ложное получало вердикт истинного тёзки",
+          "[проверка перевода] Проверка кода на C по описанию языка раскрывает псевдонимы типов и не даёт ложных расхождений на примерах dsl",
+          "[проверка доказательств] Независимая проверка доказательств больше не принимает поддельное доказательство «0 = 1»",
+          "[проверка доказательств] `checker` отвергает ещё девять поддельных доказательств, которые раньше оставлял без ответа",
+          "[проверка доказательств] Для этих девяти `checker` называет вход, на котором подделка неверна"
+        ],
+        "ломающие": [
+          "Утверждение с `есть такой` без названного значения больше не доказывается вычислением. Назовите значение: `есть такой м, а именно 2, что …`",
+          "Два утверждения с одним именем в программе дают FLANG_PROOF_AMBIGUOUS. Назовите их по-разному",
+          "Модули примеров в `docs/examples` названы по-английски. Со старым именем в `использует` будет FLANG_IMPORT_NOT_FOUND",
+          "Поменяйте имя в `использует`: «Скидка» → «Discount», «Формула Евклида» → «Euclid formula», «Градины» → «Hailstone»",
+          "`flang emit` называет файл по имени модуля: `hailstone.js` вместо `gradiny.js`, `euclid_formula.c` вместо `program.c`. Поправьте пути в страницах и Makefile"
+        ],
+        "улучшения": [
+          "[stdlib] Модуль «Parsing» (`использует «Parsing»`) разбивает текст на лексемы и разбирает выражения с приоритетами знаков",
+          "[stdlib] Ошибка разбора в «Parsing» — значение с номером строки и столбца, а не падение программы",
+          "[stdlib] Пример: `flang run calculator.flang '«Показать счёт»' '2 + * 3'` пишет `строка 1, столбец 5: ожидалось: число, имя или скобка`",
+          "[сайт] Страница «Свой язык за 30 минут» (dsl.html): правила скидок, калькулятор и автомат заказа",
+          "[сайт] Там же: как доказать свойство маленького языка один раз для всех программ на нём",
+          "[argue] `flang run-script argue -- текст.txt` проверяет рассуждение: что следует из посылок, где противоречие или порочный круг",
+          "[argue] Свободный текст flang не читает: разметку `текст.claims` пишет человек или модель по `docs/examples/argue/claims-prompt.md`",
+          "[argue] Команда работает в клоне репозитория; пример `docs/examples/argue/service.txt` проверяется около 10 секунд",
+          "[истории] Папка пользовательских историй проверяется целиком: где желания противоречат друг другу и о каких значениях никто не сказал",
+          "[истории] Пример в клоне репозитория: `flang run-script story-set:demo`; описание — `docs/story-set-check.md`",
+          "[песочница] Плитки над редактором открывают раскладки: доказательства, тесты, генерация кода, рассуждение, формула, перевод с C",
+          "[песочница] Раскладку открывает ссылка, например `playground.html#setup=proof`",
+          "[песочница] Кнопка «Поделиться» кладёт текст программы в ссылку; на сервер он не уходит",
+          "[песочница] Текст проверяется сам через полсекунды после правки; место ошибки подчёркнуто",
+          "[сайт] Тур по языку из шести страниц с упражнениями заменил учебник; адрес tutorial.html ведёт в тур",
+          "[сайт] Урок «Первое доказательство» идёт сразу после первой программы",
+          "[сайт] Страница «Совместимость» (stability.html) — черновик того, что не изменится после 1.0, и как объявят устаревание",
+          "[сайт] Страница «Чему вы доверяете» (trust.html): на чём держится слово «доказано»",
+          "[сайт] Страницы «flang для знающих Lean и Dafny» и «flang для знающих Rust и TypeScript»: когда что брать",
+          "[сайт] Страница «Что осталось до 1.0» (roadmap.html): семь условий, у каждого — что уже есть и чего нет",
+          "[сайт] Страница «Известные ограничения» (limits.html) говорит, чего flang не гарантирует",
+          "[сайт] У каждого модуля библиотеки своя страница",
+          "[сайт] В описании языка появился раздел о словах `u8`…`u64`"
+        ],
+        "известные": [
+          "Две функции, чьи постусловия вызывают друг друга, проходят проверку завершения без ошибки",
+          "Функция с `убывает`, о которой `flang check --proof` пишет «спуск ядром не выведен», считается завершающейся без доказательства",
+          "Постусловия такой функции считаются доказанными; проверьте её завершение тестами"
+        ]
+      },
+      "en": {
+        "заголовок": "A «Parsing» module for your own language, reasoning checks with `argue`, a language tour and playground setups.",
+        "исправления": [
+          "[proofs] The false `есть такой м, что м больше м` no longer counts as proved: `flang check --proof` used to accept it by computing it",
+          "[proofs] The same is fixed under `и притом` and through a call of a function whose body holds `есть такой`",
+          "[proofs] Two statements under one name give FLANG_PROOF_AMBIGUOUS: the false one used to take the verdict of its true namesake",
+          "[translation check] The check of C code against the language description unfolds type aliases and gives no false mismatches on the dsl examples",
+          "[proof checking] The independent proof check no longer accepts a forged proof of «0 = 1»",
+          "[proof checking] `checker` refuses nine more forged proofs that it used to leave unanswered",
+          "[proof checking] For these nine, `checker` names an input on which the forgery is false"
+        ],
+        "ломающие": [
+          "A statement with `есть такой` and no named value is no longer proved by computing it. Name the value: `есть такой м, а именно 2, что …`",
+          "Two statements under one name in a program give FLANG_PROOF_AMBIGUOUS. Give them different names",
+          "Example modules in `docs/examples` have English names. The old name in `использует` gives FLANG_IMPORT_NOT_FOUND",
+          "Change the name in `использует`: «Скидка» → «Discount», «Формула Евклида» → «Euclid formula», «Градины» → «Hailstone»",
+          "`flang emit` names the file after the module: `hailstone.js`, not `gradiny.js`; `euclid_formula.c`, not `program.c`. Update paths in pages and Makefiles"
+        ],
+        "улучшения": [
+          "[stdlib] The «Parsing» module (`использует «Parsing»`) splits text into tokens and parses expressions with operator precedence",
+          "[stdlib] A parse error in «Parsing» is a value with a line and a column, not a crash",
+          "[stdlib] Example: `flang run calculator.flang '«Показать счёт»' '2 + * 3'` prints `строка 1, столбец 5: ожидалось: число, имя или скобка`",
+          "[site] The page «Build a language in 30 minutes» (dsl.html): discount rules, a calculator and an order state machine",
+          "[site] The same page shows how to prove a property of a small language once for every program in it",
+          "[argue] `flang run-script argue -- text.txt` checks reasoning: what follows from the premises, where a contradiction or a circle is",
+          "[argue] flang does not read free text: a person or a model writes `text.claims` by `docs/examples/argue/claims-prompt.md`",
+          "[argue] The command runs in a clone of the repository; the example `docs/examples/argue/service.txt` takes about 10 seconds",
+          "[stories] A folder of user stories is checked as a whole: where the wishes contradict each other and which values nobody spoke about",
+          "[stories] An example in a clone of the repository: `flang run-script story-set:demo`; described in `docs/story-set-check.md`",
+          "[playground] Tiles above the editor open setups: proofs, tests, code generation, reasoning, formula, translation from C",
+          "[playground] A link opens a setup, for example `playground.html#setup=proof`",
+          "[playground] The «Share» button puts the program text into the link; it is not sent to a server",
+          "[playground] The text is checked half a second after each edit; the place of an error is underlined",
+          "[site] A six-page language tour with exercises replaces the tutorial; tutorial.html leads to the tour",
+          "[site] The lesson «First proof» comes right after the first program",
+          "[site] The «Compatibility» page (stability.html) drafts what will not change after 1.0 and how deprecation is announced",
+          "[site] The «What you trust» page (trust.html): what the word «proved» rests on",
+          "[site] Pages «flang for Lean and Dafny users» and «flang for Rust and TypeScript users»: when to pick which",
+          "[site] The «What is left before 1.0» page (roadmap.html): seven conditions, each with what is done and what is not",
+          "[site] The «Known limitations» page (limits.html) says what flang does not guarantee",
+          "[site] Every library module has its own page",
+          "[site] The language reference has a section on the `u8`…`u64` words"
+        ],
+        "известные": [
+          "Two functions whose postconditions call each other pass the termination check without an error",
+          "A function with `убывает` for which `flang check --proof` prints «спуск ядром не выведен» is taken to terminate without proof",
+          "The postconditions of such a function count as proved; check its termination with tests"
+        ]
+      }
+    },
     "0.7.40": {
       "ru": {
         "заголовок": "`flang repl` вычисляет выражения в любой установке, функцию можно вызвать из консоли без JSON, постусловие, которое вызывает свою функцию, даёт ошибку.",

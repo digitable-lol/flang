@@ -2186,14 +2186,10 @@ jobs:
       # Проверка рассуждений. Первый набор — план `Check` на подконтрольном
       # русском: непрочитанная посылка, противоречивые посылки, противоречие
       # между далёкими предложениями, ошибочная строка словаря, слова вывода,
-      # условные суждения. Второй — план `Argue` на тексте с разметкой: учебный
-      # текст, реферат с заложенными ошибками и отрицательные контроли —
-      # подложная цитата, смешанные кванторы, необъявленное понятие, шаг,
-      # который ядру слишком велик (ADR-0247).
+      # условные суждения. Второй — план `Argue` на тексте с разметкой — идёт
+      # отдельной работой `argue-probes`: в этой работе ему не хватает времени.
       - name: Check the argument check in controlled Russian
         run: bootstrap/flang run-script argument-check:probe
-      - name: Check the reasoning check over a marked-up text
-        run: bootstrap/flang run-script argue:probe
       - name: Check run verdict
         run: bootstrap/flang io flang/proof/probes/run/run.fscript --plan Binary
       - name: Check environment and argument orders
@@ -2591,12 +2587,66 @@ jobs:
         env:
           LC_ALL: C.UTF-8
           FLANG_TMP: ${{ runner.temp }}
+
+  # Наборы проб проверки рассуждений в тексте с разметкой. Они идут отдельными
+  # работами, потому что каждая строка набора заново запускает свою программу:
+  # с числами и кванторами вперемешку набор `argue:probe` на машине разработки
+  # занимает 17 минут против прежних четырёх, и в работе `guards-selftest` с её
+  # потолком в 45 минут он уже не помещался. Замер на общей машине, 22 ноября
+  # 2026: `argue:probe` — 1009 с, сверка с грамматикой — 435 с.
+  argue-probes:
+    name: argue-probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      LC_ALL: C.UTF-8
+      FLANG_TMP: ${{ runner.temp }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: binary-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.binary-cache.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      # Учебный текст, реферат с заложенными ошибками, числа, кванторы
+      # вперемешку, роды шага и отрицательные контроли: подложная цитата,
+      # необъявленное понятие, шаг сверх предела (ADR-0247, ADR-0252).
+      - name: Check the reasoning check over a marked-up text
+        run: bootstrap/flang run-script argue:probe
+
+  argue-crosscheck-probes:
+    name: argue-crosscheck-probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LC_ALL: C.UTF-8
+      FLANG_TMP: ${{ runner.temp }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: binary-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.binary-cache.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       - name: Check the crosscheck of a markup against the grammar, forgeries included
         # ADR-0251: a form with swapped parts, a lost negation or another quantifier must come out as a difference.
         run: bootstrap/flang io flang/proof/probes/argue-crosscheck/run.fscript --plan Binary --timeout 900000
-        env:
-          LC_ALL: C.UTF-8
-          FLANG_TMP: ${{ runner.temp }}
 
   # ── БЛОКИ «прогон»: ВЕРНОЕ ОЖИДАНИЕ ОТЛИЧИМО ОТ ЛОЖНОГО (задача 1116) ─────
   #

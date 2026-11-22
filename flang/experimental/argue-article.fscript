@@ -633,7 +633,7 @@
     ожидается "проверка превысила предел времени или памяти и была остановлена"
   "проверка превысила предел времени или памяти и была остановлена"
 
-тотальная функция «Weighed step»
+тотальная функция «Step weighed in»
   принимает task: «Run», article: «Article», step: «Inference»
   возвращает «Article»
   если ((task.«guard»).«skip») содержит («Step unit» от step)
@@ -686,7 +686,7 @@
       то («Next weighing» от task и (свёртка («First theses» от lefts и 1) начиная с article как held и left →
           «Weighed pairs» от task и held и left) и steps и («Later theses» от lefts))
     случай голова и хвост
-      то «Next weighing» от task и («Weighed step» от task и article и голова) и хвост и lefts
+      то «Next weighing» от task и («Step weighed in» от task и article и голова) и хвост и lefts
 
 тотальная функция «After weighed»
   принимает task: «Run», article: «Article»

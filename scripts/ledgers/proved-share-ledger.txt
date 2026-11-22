@@ -2249,6 +2249,10 @@ bdbd25eab3957aaf7faaccb3dbc19db2|1|×|×|×|2|flang/proof/checker/tests/families
 194d9d9b1fe9894149ae221229f8b70c|3|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds.flang
 dcbb2e0f5c7fd33b00bc00ba6aae90ef|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/unsigned-bounds-wide.flang
 a2a36ce6a1d1eeebe0787c2f390f1e81|1|×|×|×|0|flang/proof/checker/tests/families/fixed-width-words/wide-ceiling-below-word-bound.flang
+6a43470e2244c463e90d9dafe114f76c|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/brackets/name.flang
+d4523162d244c95c9f402ed9c77dabc7|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/brackets/non-empty.flang
+91cd1b95621daea2decbf49c618116bc|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/brackets/string-literal.flang
+540a19d5fb07011c74b1250b93859c6b|4|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/corrupt/doubling.flang
 5f9a5f9c2be825c66f611c92556f7f56|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/corrupt/lie.flang
 e466b1d8879b172f69b0162094b39009|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/free.flang
 b093b8ecb37192b0cf717b929c3e1c9d|1|×|×|×|0|flang/proof/checker/tests/families/free-statement-induction/theorem.flang

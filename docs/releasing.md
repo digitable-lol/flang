@@ -50,11 +50,22 @@ git commit -am "chore(release): sha256 of the X archive"
 
 `release:archive` собирает `output/flang-X-c.tar.gz` той же командой, что и раннер. Архив
 повторим: один и тот же коммит даёт один и тот же sha256 на машине разработчика и на раннере.
+Повторимость держится на двух программах, и команда проверяет обе:
+
+- GNU tar с ключами `--sort=name --format=ustar --owner=0 --group=0 --numeric-owner --mtime=@0`;
+  bsdtar этих ключей не знает, и команда отказывает;
+- GNU gzip с ключами `-9n`. Apple gzip сжимает иначе и даёт другой sha256, поэтому команда
+  отказывает и на нём. Какой gzip сжал архив, команда пишет строкой `сжато: …`.
+
+Проверено на выпуске 0.7.41: машина разработчика на Linux (GNU tar 1.35, GNU gzip 1.14), раннер
+`ubuntu-latest` (GNU gzip 1.14) и раннер `macos-latest` (gnu-tar и gzip 1.15 из Homebrew) дали
+один sha256. Apple gzip 479 на том же коммите дал другой.
+
 `release:formula` вписывает этот sha256 в `packaging/homebrew/flang.rb`. Каталог
 `output/release-c` после сборки удаляют: в нём лежат копии файлов дерева, и проверка коротких
 команд перед пушем считает их вторыми объявлениями.
 
-Архив нужен GNU tar. На macOS: `brew install gnu-tar`.
+Архиву нужны GNU tar и GNU gzip. На macOS: `brew install gnu-tar gzip`.
 
 ## 3. Запрос слияния
 

@@ -226,28 +226,30 @@
       "«Кем прочитано». Доказано только то, что доказало ядро."] по "")
 
 тотальная функция «Is implied verdict»
-  принимает judged: «Judged», circles: список (список строки), verdict: «Step verdict»
+  принимает judged: «Judged», circles: список (список строки), rows: список (список строки), verdict: «Step verdict»
   возвращает признак
   пусть outcomes равно (judged.«outcomes»)
   (((«Final status» от verdict и outcomes) равен "fails") и притом («Is deductive» от (verdict.«step»))
       и притом (не (пусто (verdict.«bridge»)))
       и притом («Proven» от outcomes и («Step id» от (verdict.«step»)) и "bridge")
-      и притом (пусто («Circle of» от circles и («Canonical step» от (judged.«markup») и (verdict.«step»)))))
+      и притом (пусто («Circle of» от circles и («Canon step» от rows и (verdict.«step»)))))
 
 тотальная функция «Failure blocks»
   принимает judged: «Judged»
   возвращает список строки
-  пусть circles равно («Circles of» от («Canonical steps» от (judged.«markup»)))
+  пусть circles равно («Circles of» от («Canon steps» от (judged.«markup»)))
+  пусть rows равно («Canon rows» от (judged.«markup»))
   («Finding blocks» от (judged.«markup») и (отфильтровать (judged.«verdicts»)
-      где verdict → не («Is implied verdict» от judged и circles и verdict))
+      где verdict → не («Is implied verdict» от judged и circles и rows и verdict))
       и (judged.«clashes») и (judged.«outcomes»))
 
 тотальная функция «Counts of»
   принимает judged: «Judged», failures: число
   возвращает список число
-  пусть circles равно («Circles of» от («Canonical steps» от (judged.«markup»)))
+  пусть circles равно («Circles of» от («Canon steps» от (judged.«markup»)))
+  пусть rows равно («Canon rows» от (judged.«markup»))
   [failures,
-    (длина (отфильтровать (judged.«verdicts») где verdict → «Is implied verdict» от judged и circles и verdict)),
+    (длина (отфильтровать (judged.«verdicts») где verdict → «Is implied verdict» от judged и circles и rows и verdict)),
     (длина (отфильтровать (judged.«verdicts») где verdict → (не («Is deductive» от (verdict.«step»)))
     и притом (не ((«Final status» от verdict и (judged.«outcomes»)) равен "follows"))))]
 

@@ -119,7 +119,8 @@
   возвращает список «Arc»
   пусть markup равно (judged.«markup»)
   пусть outcomes равно (judged.«outcomes»)
-  (отобразить (judged.«verdicts») как verdict → «Arc of» от («Canonical step» от markup и (verdict.«step»))
+  пусть rows равно («Canon rows» от markup)
+  (отобразить (judged.«verdicts») как verdict → «Arc of» от («Canon step» от rows и (verdict.«step»))
       и («Final status» от verdict и outcomes)
       и (если (не (пусто (verdict.«bridge»)))
       и притом («Proven» от outcomes и («Step id» от (verdict.«step»)) и "bridge")

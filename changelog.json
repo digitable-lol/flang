@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.40",
-  "latest": "0.7.40",
+  "declared": "0.7.41",
+  "latest": "0.7.41",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -13,6 +13,158 @@
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.7.41",
+      "tag": "v0.7.41",
+      "date": "2026-11-22",
+      "human": "22 ноября 2026",
+      "commit": "e72e3c3",
+      "title": null,
+      "note": [],
+      "entries": [
+        {
+          "text": "chore(release): sha256 of the 0.7.41 archive",
+          "commit": "e72e3c3"
+        },
+        {
+          "text": "chore(release): version 0.7.41 and its release notes",
+          "commit": "65adca5"
+        },
+        {
+          "text": "chore(seed): the seed carries the kernel fixes, holes 47 and 48 close",
+          "commit": "6c28235"
+        },
+        {
+          "text": "perf(emit-c): the traced literal print is rechecked with one print",
+          "commit": "04b7d62"
+        },
+        {
+          "text": "perf(emit-c): a list literal joins its element lines in pieces",
+          "commit": "97ced11"
+        },
+        {
+          "text": "perf(emit-c): the key table lookup stops at the first match",
+          "commit": "aa2070c"
+        },
+        {
+          "text": "fix(tables): the existence ban is a row outside the decision records",
+          "commit": "a43ce79"
+        },
+        {
+          "text": "fix(kernel): refuse two statements under one name",
+          "commit": "59f49fb"
+        },
+        {
+          "text": "fix(kernel): an existence is not decided by computing it",
+          "commit": "8710a81"
+        },
+        {
+          "text": "fix(translation): function witnesses match the declared function type",
+          "commit": "228e4a6"
+        },
+        {
+          "text": "fix(translation): reference reads the step mark from the linked tree",
+          "commit": "998f957"
+        },
+        {
+          "text": "feat(translation): unfold type aliases in translation validation",
+          "commit": "bd35313"
+        },
+        {
+          "text": "fix(translation): function witnesses include functions named in examples",
+          "commit": "da1f595"
+        },
+        {
+          "text": "fix(translation): reference guards constant steps, typed fn witnesses",
+          "commit": "f614d77"
+        },
+        {
+          "text": "feat(lean): the model reads a claim closed by the known prefix rule",
+          "commit": "1d52baf"
+        },
+        {
+          "text": "feat(experimental): a folder of user stories is judged as one set",
+          "commit": "51a7a13"
+        },
+        {
+          "text": "fix(translation): the hypotenuse forgery reads the renamed C file",
+          "commit": "7a6c923"
+        },
+        {
+          "text": "fix(reasoning): a read text without a conclusion is not called unread",
+          "commit": "2cef430"
+        },
+        {
+          "text": "fix(argument-check): the report stops lying about premises and clashes",
+          "commit": "013a5a5"
+        },
+        {
+          "text": "feat(argue): judge a marked-up text step by step with the kernel",
+          "commit": "73b4b10"
+        },
+        {
+          "text": "docs(tutor): the twelve lessons follow 0.7.40 and plain wording",
+          "commit": "aec5c69"
+        },
+        {
+          "text": "test(probes): a refusing typing-holes probe holds one refused function",
+          "commit": "dc6d300"
+        },
+        {
+          "text": "fix(probes): typing-holes emit probes build in a per-run temp directory",
+          "commit": "9b8c862"
+        },
+        {
+          "text": "build(release): release:tap puts the formula of a release into the tap",
+          "commit": "ae9fb94"
+        },
+        {
+          "text": "feat(stdlib): a text parsing module for small languages",
+          "commit": "9ac625f"
+        },
+        {
+          "text": "feat(site): the playground page is a workplace with named setups",
+          "commit": "b01bcbe"
+        },
+        {
+          "text": "docs(adr): the checker code ceiling rises with two refuted forgeries",
+          "commit": "5db7e78"
+        },
+        {
+          "text": "docs(proof): two violations fixed in 0.7.40 are closed",
+          "commit": "1575392"
+        },
+        {
+          "text": "feat(lean): linear arithmetic and the exact ring have soundness theorems",
+          "commit": "c70174c"
+        },
+        {
+          "text": "fix(lean): the model builds under Lean 4.36 as well",
+          "commit": "b99124a"
+        },
+        {
+          "text": "build(checker): the Makefile takes the pinned Lean through elan",
+          "commit": "77a7722"
+        },
+        {
+          "text": "refactor(checker): the Farkas replay folds one step over the moves",
+          "commit": "457e911"
+        },
+        {
+          "text": "fix(checker): the C checker refutes two forged branches by a witness",
+          "commit": "8289353"
+        },
+        {
+          "text": "fix(checker): zero and one are different polynomials in the ring rule",
+          "commit": "4bcee81"
+        },
+        {
+          "text": "chore(release): the tap serves flang-package 0.7.40, releases page",
+          "commit": "566b53c"
+        }
+      ],
+      "hidden": 138
+    },
     {
       "version": "0.7.40",
       "tag": "v0.7.40",

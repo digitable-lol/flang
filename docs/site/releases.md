@@ -6,6 +6,61 @@ An entry has four lists: **Soundness fixes**, **Breaking changes**, **Improvemen
 
 The entries below are about the language, not about the work on it. What has landed on the trunk since the last release is shown by the [merge journal](../changelog.html) (in Russian); every commit subject is in the [commit journal](../journal.html).
 
+## 0.7.41 — 22 November 2026
+
+**A «Parsing» module for your own language, reasoning checks with `argue`, a language tour and playground setups.**
+
+### Soundness fixes
+
+- [proofs] The false `есть такой м, что м больше м` no longer counts as proved: `flang check --proof` used to accept it by computing it
+- [proofs] The same is fixed under `и притом` and through a call of a function whose body holds `есть такой`
+- [proofs] Two statements under one name give FLANG_PROOF_AMBIGUOUS: the false one used to take the verdict of its true namesake
+- [translation check] The check of C code against the language description unfolds type aliases and gives no false mismatches on the dsl examples
+- [proof checking] The independent proof check no longer accepts a forged proof of «0 = 1»
+- [proof checking] `checker` refuses nine more forged proofs that it used to leave unanswered
+- [proof checking] For these nine, `checker` names an input on which the forgery is false
+
+### Breaking changes
+
+- A false statement with `есть такой` (there is) no longer passes as proved; a true one, such as `есть такой м, что м больше 1`, is proved as before
+- If your statement with `есть такой` stopped being proved, name the value: `есть такой м, а именно 2, что м больше 1`
+- Two statements under one name in a program give FLANG_PROOF_AMBIGUOUS. Give them different names
+- Example modules in `docs/examples` have English names. The old name in `использует` gives FLANG_IMPORT_NOT_FOUND
+- Change the name in `использует`: «Скидка» → «Discount», «Формула Евклида» → «Euclid formula», «Градины» → «Hailstone»
+- `flang emit` names the file after the module: `hailstone.js`, not `gradiny.js`; `euclid_formula.c`, not `program.c`. Update paths in pages and Makefiles
+
+### Improvements
+
+- [stdlib] The «Parsing» module (`использует «Parsing»`) splits text into tokens and parses expressions with operator precedence
+- [stdlib] A parse error in «Parsing» is a value with a line and a column, not a crash
+- [stdlib] Example: `flang run calculator.flang '«Показать счёт»' '2 + * 3'` prints `строка 1, столбец 5: ожидалось: число, имя или скобка`
+- [site] The page «Build a language in 30 minutes» (dsl.html): discount rules, a calculator and an order state machine
+- [site] The same page shows how to prove a property of a small language once for every program in it
+- [argue] `flang run-script argue -- text.txt` checks reasoning: what follows from the premises, where a contradiction or a circle is
+- [argue] flang does not read free text: a person or a model writes `text.claims` by `docs/examples/argue/claims-prompt.md`
+- [argue] The command runs in a clone of the repository; the example `docs/examples/argue/service.txt` takes about 10 seconds
+- [stories] A folder of user stories is checked as a whole: where the wishes contradict each other and which values nobody spoke about
+- [stories] An example in a clone of the repository: `flang run-script story-set:demo`; described in `docs/story-set-check.md`
+- [playground] Tiles above the editor open setups: proofs, tests, code generation, reasoning, formula, translation from C
+- [playground] A link opens a setup, for example `playground.html#setup=proof`
+- [playground] The «Share» button puts the program text into the link; it is not sent to a server
+- [playground] The text is checked half a second after each edit; the place of an error is underlined
+- [site] A six-page language tour with exercises replaces the tutorial; tutorial.html leads to the tour
+- [site] The lesson «First proof» comes right after the first program
+- [site] The «Compatibility» page (stability.html) drafts what will not change after 1.0 and how deprecation is announced
+- [site] The «What you trust» page (trust.html): what the word «proved» rests on
+- [site] Pages «flang for Lean and Dafny users» and «flang for Rust and TypeScript users»: when to pick which
+- [site] The «What is left before 1.0» page (roadmap.html): seven conditions, each with what is done and what is not
+- [site] The «Known limitations» page (limits.html) says what flang does not guarantee
+- [site] Every library module has its own page
+- [site] The language reference has a section on the `u8`…`u64` words
+
+### Known issues
+
+- Two functions whose postconditions call each other pass the termination check without an error
+- A function with `убывает` for which `flang check --proof` prints «спуск ядром не выведен» is taken to terminate without proof
+- The postconditions of such a function count as proved; check its termination with tests
+
 ## 0.7.40 — 16 November 2026
 
 **`flang repl` evaluates expressions on every install, a function can be called from the console without JSON, and a postcondition that calls its own function is an error.**

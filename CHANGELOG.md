@@ -11,6 +11,46 @@
 готовая запись журнала. Правки, от которых язык снаружи не меняется, —
 планы, спецификации, тесты, скрипты, — сосчитаны, но не перечислены.
 
+## 0.7.41 — 22 ноября 2026
+
+- chore(release): sha256 of the 0.7.41 archive (`e72e3c3`)
+- chore(release): version 0.7.41 and its release notes (`65adca5`)
+- chore(seed): the seed carries the kernel fixes, holes 47 and 48 close (`6c28235`)
+- perf(emit-c): the traced literal print is rechecked with one print (`04b7d62`)
+- perf(emit-c): a list literal joins its element lines in pieces (`97ced11`)
+- perf(emit-c): the key table lookup stops at the first match (`aa2070c`)
+- fix(tables): the existence ban is a row outside the decision records (`a43ce79`)
+- fix(kernel): refuse two statements under one name (`59f49fb`)
+- fix(kernel): an existence is not decided by computing it (`8710a81`)
+- fix(translation): function witnesses match the declared function type (`228e4a6`)
+- fix(translation): reference reads the step mark from the linked tree (`998f957`)
+- feat(translation): unfold type aliases in translation validation (`bd35313`)
+- fix(translation): function witnesses include functions named in examples (`da1f595`)
+- fix(translation): reference guards constant steps, typed fn witnesses (`f614d77`)
+- feat(lean): the model reads a claim closed by the known prefix rule (`1d52baf`)
+- feat(experimental): a folder of user stories is judged as one set (`51a7a13`)
+- fix(translation): the hypotenuse forgery reads the renamed C file (`7a6c923`)
+- fix(reasoning): a read text without a conclusion is not called unread (`2cef430`)
+- fix(argument-check): the report stops lying about premises and clashes (`013a5a5`)
+- feat(argue): judge a marked-up text step by step with the kernel (`73b4b10`)
+- docs(tutor): the twelve lessons follow 0.7.40 and plain wording (`aec5c69`)
+- test(probes): a refusing typing-holes probe holds one refused function (`dc6d300`)
+- fix(probes): typing-holes emit probes build in a per-run temp directory (`9b8c862`)
+- build(release): release:tap puts the formula of a release into the tap (`ae9fb94`)
+- feat(stdlib): a text parsing module for small languages (`9ac625f`)
+- feat(site): the playground page is a workplace with named setups (`b01bcbe`)
+- docs(adr): the checker code ceiling rises with two refuted forgeries (`5db7e78`)
+- docs(proof): two violations fixed in 0.7.40 are closed (`1575392`)
+- feat(lean): linear arithmetic and the exact ring have soundness theorems (`c70174c`)
+- fix(lean): the model builds under Lean 4.36 as well (`b99124a`)
+- build(checker): the Makefile takes the pinned Lean through elan (`77a7722`)
+- refactor(checker): the Farkas replay folds one step over the moves (`457e911`)
+- fix(checker): the C checker refutes two forged branches by a witness (`8289353`)
+- fix(checker): zero and one are different polynomials in the ring rule (`4bcee81`)
+- chore(release): the tap serves flang-package 0.7.40, releases page (`566b53c`)
+
+Ещё 138 правок языка снаружи не меняют.
+
 ## 0.7.40 — 16 ноября 2026
 
 **repl считает выражения в любой установке; функцию можно вызвать из консоли без JSON; постусловие, зовущее свою функцию без убывания, отвергается**

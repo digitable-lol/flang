@@ -128,9 +128,12 @@ jobs:
       # ни `--mtime`, и архив вышел бы с другими байтами и другим sha256, чем
       # тот, что сверяет brew. Формула это оговаривает словами; проверка сама
       # ищет `gtar`, но найти его она может, только если он поставлен.
-      - name: Install GNU tar
+      # GNU gzip — по той же причине: `gzip -9n` у Apple (Apple gzip 479)
+      # сжимает иначе, и 0.7.41 дал на macOS 4ce714b3…, а на ubuntu 7cb25187….
+      # `release:archive` отказывает, если найденный gzip не GNU.
+      - name: Install GNU tar and GNU gzip
         if: runner.os == 'macOS'
-        run: brew install gnu-tar
+        run: brew install gnu-tar gzip
 
       # Прежде здесь стоял прогон на JavaScript (flang/test/install-path.test.mjs,
       # 894 строки). Он был снят: к тому дню он звал flang/bin/flang.mjs, которого
@@ -316,7 +319,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
-      - run: brew install gnu-tar
+      - run: brew install gnu-tar gzip
 
       # ПОСЛЕДНЕЕ ИМЯ В СПИСКЕ — `runtime`, каталог рантаймов девяти целей.
       # Прежде здесь стояло `share`, и такого каталога скрипт выпуска не клал

@@ -117,9 +117,9 @@ runs:
           hash="$(shasum -a 256 "$arhiv" | cut -d' ' -f1)"
         fi
         echo "sha256 архива: $hash"
-        # Чем сжимали — называется вслух: `gzip -9n` у GNU и у Apple это РАЗНЫЕ
-        # программы, и повторимость архива держится на том, какая из них тут.
-        gzip --version 2>&1 | head -1
+        # Чем сжимали — называет сам `release:archive` строкой «сжато: …».
+        # `gzip -9n` у GNU и у Apple — РАЗНЫЕ программы с разными байтами на
+        # выходе, поэтому команда берёт только GNU gzip и отказывает иначе.
 
         echo "ARHIV=$arhiv" >> "$GITHUB_ENV"
         echo "arhiv=$arhiv" >> "$GITHUB_OUTPUT"

@@ -8,7 +8,7 @@
   «top»: число
   «bottom»: число
 
-объект «Reading»
+объект «Sums»
   «parts»: список «Part»
   «name»: строка
   «top»: число
@@ -89,23 +89,23 @@
     (свёртка (разложить tail на символы) начиная с 1 как power и mark → power умножить на 10)]
 
 тотальная функция «Read with»
-  принимает held: «Reading», parts: список «Part», name: строка, top: число, bottom: число, turn: строка, fault: строка
-  возвращает «Reading»
-  (запись «Reading» с «parts» равным parts и «name» равным name и «top» равным top и «bottom» равным bottom
+  принимает held: «Sums», parts: список «Part», name: строка, top: число, bottom: число, turn: строка, fault: строка
+  возвращает «Sums»
+  (запись «Sums» с «parts» равным parts и «name» равным name и «top» равным top и «bottom» равным bottom
       и «turn» равным turn и «seen» равным да
       и «fault» равным (если пусто (held.«fault») то fault иначе (held.«fault»)))
 
 тотальная функция «Closed reading»
-  принимает held: «Reading», negative: признак
-  возвращает «Reading»
+  принимает held: «Sums», negative: признак
+  возвращает «Sums»
   пусть parts равно (если held.«seen» то (добавить (запись «Part» с «name» равным (held.«name»)
       и «top» равным (held.«top») и «bottom» равным (held.«bottom»)) к (held.«parts»)) иначе (held.«parts»))
-  (запись «Reading» с «parts» равным parts и «name» равным "" и «top» равным (если negative то -1 иначе 1)
+  (запись «Sums» с «parts» равным parts и «name» равным "" и «top» равным (если negative то -1 иначе 1)
       и «bottom» равным 1 и «turn» равным "" и «seen» равным нет и «fault» равным (held.«fault»))
 
 тотальная функция «Number step»
-  принимает held: «Reading», token: строка
-  возвращает «Reading»
+  принимает held: «Sums», token: строка
+  возвращает «Sums»
   пусть pair равно («Number parts» от token)
   пусть divides равно ((held.«turn») равен "/")
   пусть top равно ((held.«top») умножить на (если divides то (элемент 2 в pair) иначе (элемент 1 в pair)))
@@ -114,19 +114,19 @@
       и (если bottom равен 0 то "деление на ноль" иначе ""))
 
 тотальная функция «Name step»
-  принимает held: «Reading», token: строка
-  возвращает «Reading»
+  принимает held: «Sums», token: строка
+  возвращает «Sums»
   пусть fault равно (если (held.«turn») равен "/" то "деление на величину не судится"
       иначе (если пусто (held.«name») то "" иначе "две величины перемножены: такое сравнение не судится"))
   «Read with» от held и (held.«parts») и token и (held.«top») и (held.«bottom») и "" и fault
 
 тотальная функция «Sign step»
-  принимает held: «Reading», token: строка
-  возвращает «Reading»
-  пусть turned равно (запись «Reading» с «parts» равным (held.«parts») и «name» равным (held.«name»)
+  принимает held: «Sums», token: строка
+  возвращает «Sums»
+  пусть turned равно (запись «Sums» с «parts» равным (held.«parts») и «name» равным (held.«name»)
       и «top» равным (held.«top») и «bottom» равным (held.«bottom») и «turn» равным token и «seen» равным (held.«seen»)
       и «fault» равным (held.«fault»))
-  пусть hundredth равно (запись «Reading» с «parts» равным (held.«parts») и «name» равным (held.«name»)
+  пусть hundredth равно (запись «Sums» с «parts» равным (held.«parts») и «name» равным (held.«name»)
       и «top» равным (held.«top») и «bottom» равным ((held.«bottom») умножить на 100) и «turn» равным ""
       и «seen» равным (held.«seen») и «fault» равным (held.«fault»))
   если ["+", "-"] содержит token
@@ -134,26 +134,26 @@
     иначе (если token равен "%" то hundredth иначе turned)
 
 тотальная функция «Term step»
-  принимает held: «Reading», token: строка
-  возвращает «Reading»
+  принимает held: «Sums», token: строка
+  возвращает «Sums»
   если ["+", "-", "*", "/", "%"] содержит token
     то «Sign step» от held и token
     иначе (если «Digit at» от token и 1 то («Number step» от held и token) иначе («Name step» от held и token))
 
-тотальная функция «Parts of»
+тотальная функция «Sum parts of»
   принимает text: строка
-  возвращает «Reading»
+  возвращает «Sums»
   пример «A sum of products is read part divider part»
     дано text равно "1.5 * x - 12 %"
-    ожидается (запись «Reading» с «parts» равным [(запись «Part» с «name» равным "x" и «top» равным 15
+    ожидается (запись «Sums» с «parts» равным [(запись «Part» с «name» равным "x" и «top» равным 15
         и «bottom» равным 10), (запись «Part» с «name» равным "" и «top» равным -12 и «bottom» равным 100)]
         и «name» равным "" и «top» равным 1 и «bottom» равным 1 и «turn» равным "" и «seen» равным нет
         и «fault» равным "")
-  пусть opening равно (запись «Reading» с «parts» равным пустой список и «name» равным "" и «top» равным 1
+  пусть opening равно (запись «Sums» с «parts» равным пустой список и «name» равным "" и «top» равным 1
       и «bottom» равным 1 и «turn» равным "" и «seen» равным нет и «fault» равным "")
   пусть read равно (свёртка («Pieces of» от text) начиная с opening как held и token → «Term step» от held и token)
   пусть closed равно («Closed reading» от read и нет)
-  (запись «Reading» с «parts» равным (closed.«parts») и «name» равным "" и «top» равным 1 и «bottom» равным 1
+  (запись «Sums» с «parts» равным (closed.«parts») и «name» равным "" и «top» равным 1 и «bottom» равным 1
       и «turn» равным "" и «seen» равным нет
       и «fault» равным (если (пусто (closed.«fault»)) и притом (пусто (closed.«parts»))
       то "у сравнения пустая сторона" иначе (closed.«fault»)))
@@ -215,8 +215,8 @@
     дано right равно "57.2"
     ожидается (запись «Linear» с «names» равным пустой список и «coefs» равным пустой список и «free» равным 1
         и «turned» равным да и «fault» равным "")
-  пусть former равно («Parts of» от left)
-  пусть latter равно («Parts of» от right)
+  пусть former равно («Sum parts of» от left)
+  пусть latter равно («Sum parts of» от right)
   пусть parts равно («Joined parts» от (former.«parts») и («Negative parts» от (latter.«parts»)))
   пусть names равно (отфильтровать («Each once» от (отобразить parts как part → part.«name»))
       где name → (не (пусто name)) и притом (не ((элемент 1 в («Total of» от parts и name)) равен 0)))
@@ -357,7 +357,7 @@
       [">", (если below или level то "нет" иначе "да")], ["≥", (если below то "нет" иначе "да")]]
       начиная с нет как found и row → если (элемент 1 в row) равен mark то ((элемент 2 в row) равен "да") иначе found)
 
-тотальная функция «Place of»
+тотальная функция «Key place of»
   принимает words: список строки, word: строка
   возвращает число
   пример «The place of a word in a list, from one»
@@ -393,7 +393,7 @@
     ожидается вариант «Truth» с holds равным да
   пусть linear равно («Difference» от («First word» от terms) и («First word» от («Words after first» от terms)))
   пусть mark равно («Turned sign» от name и (linear.«turned»))
-  пусть place равно («Place of» от («Comparison signs») и mark)
+  пусть place равно («Key place of» от («Comparison signs») и mark)
   если не (пусто (linear.«fault»))
     то вариант «Atom» с name равным name и terms равным terms
     иначе (если пусто (linear.«names») то (вариант «Truth» с holds равным («Sign holds» от mark и (linear.«free»)))
@@ -437,7 +437,7 @@
   («Each once» от (отобразить («Comparisons of» от formula)
       как mention → «First word» от («Words after first» от mention)))
 
-тотальная функция «Looked up»
+тотальная функция «Named value»
   принимает names: список строки, values: список числа, name: строка
   возвращает число
   пример «The value that stands at the place of the name»
@@ -450,7 +450,7 @@
       то 0
     случай голова и хвост
       то (если голова равен name то («First number» от values)
-          иначе («Looked up» от хвост и («Numbers after first» от values) и name))
+          иначе («Named value» от хвост и («Numbers after first» от values) и name))
 
 тотальная функция «Value at»
   принимает linear: «Linear», names: список строки, point: список числа, unit: число
@@ -477,7 +477,7 @@
     случай пусто
       то 0
     случай голова и хвост
-      то (((«First number» от coefs) умножить на («Looked up» от names и point и голова))
+      то (((«First number» от coefs) умножить на («Named value» от names и point и голова))
           плюс («Sum at» от хвост и («Numbers after first» от coefs) и names и point))
 
 тотальная функция «Sign at»
@@ -679,10 +679,10 @@
     случай пусто
       то пустой список
     случай голова и хвост
-      то (приписать (элемент («Place of» от ["<", "≤", "=", "≠", ">"] и («First word» от marks))
+      то (приписать (элемент («Key place of» от ["<", "≤", "=", "≠", ">"] и («First word» от marks))
           в («Sign formulas» от голова)) к («Vector literals» от хвост и («Words after first» от marks)))
 
-тотальная функция «Clause of»
+тотальная функция «Sign clause of»
   принимает keys: список строки, signs: строка
   возвращает «Formula»
   пример «The signs named cannot stand together»
@@ -821,7 +821,7 @@
       то пустой список
     случай голова и хвост
       то («Соединить списки»
-          от («Closed product» от («First number» от coefs) и («Looked up» от names и point и голова) и left)
+          от («Closed product» от («First number» от coefs) и («Named value» от names и point и голова) и left)
           и («Closed side» от хвост и («Numbers after first» от coefs) и names и point и left))
 
 тотальная функция «Closed product»
@@ -893,7 +893,7 @@
     дано point равно [3, 4]
     дано unit равно 2
     ожидается ["x = 3/2", "y = 2"]
-  (отобразить names как name → соединить [name, " = ", («Value text» от («Looked up» от names и point и name) и unit)]
+  (отобразить names как name → соединить [name, " = ", («Value text» от («Named value» от names и point и name) и unit)]
       по "")
 
 тотальная функция «Fact text»
@@ -903,8 +903,8 @@
     дано name равно ">"
     дано terms равно ["57.2", "50"]
     ожидается "((286 умножить на 1) больше (50 умножить на 5))"
-  пусть former равно («Total of» от ((«Parts of» от («First word» от terms)).«parts») и "")
-  пусть latter равно («Total of» от ((«Parts of» от («First word» от («Words after first» от terms))).«parts») и "")
+  пусть former равно («Total of» от ((«Sum parts of» от («First word» от terms)).«parts») и "")
+  пусть latter равно («Total of» от ((«Sum parts of» от («First word» от («Words after first» от terms))).«parts») и "")
   пусть left равно («Соединить списки» от («Closed product» от (элемент 1 в former) и (элемент 2 в latter) и да)
       и («Closed product» от (0 минус (элемент 1 в latter)) и (элемент 2 в former) и да))
   пусть right равно («Соединить списки» от («Closed product» от (элемент 1 в latter) и (элемент 2 в former) и да)
@@ -937,14 +937,14 @@
     (соединить ["  утверждаем ", (если holds то («Fact text» от name и terms)
     иначе (соединить ["(не ", («Fact text» от name и terms), ")"] по ""))] по ""), ""]
 
-тотальная функция «Clauses of»
+тотальная функция «Sign clauses of»
   принимает keys: список строки, vectors: список строки
   возвращает список «Formula»
   пример «No signs give no clauses»
     дано keys равно ["x"]
     дано vectors равно пустой список
     ожидается пустой список
-  отобразить vectors как signs → «Clause of» от keys и signs
+  отобразить vectors как signs → «Sign clause of» от keys и signs
 
 тотальная функция «Joined formulas»
   принимает left: список «Formula», right: список «Formula»
@@ -1063,11 +1063,11 @@
   «model»: список (список строки)
   «closed»: признак
 
-тотальная функция «Refined»
+тотальная функция «Refined signs»
   принимает held: «Refining», barred: список строки, keys: список строки, premises: список «Formula», aim: «Formula»
   возвращает «Refining»
   пусть full равно (вариант «Implies»
-      с left равным («All of» от («Joined formulas» от («Clauses of» от keys и (held.«needed»)) и premises))
+      с left равным («All of» от («Joined formulas» от («Sign clauses of» от keys и (held.«needed»)) и premises))
       и right равным aim)
   разбор (если held.«closed» то пустой список иначе («Models against» от full и («Atoms of» от full) и пустой список))
     случай пусто
@@ -1102,7 +1102,7 @@
       где signs → пусто (отфильтровать (frame.«cases») где known → (known.«signs») равен signs))
   пусть refined равно (свёртка (приписать "" к barred) начиная с (запись «Refining» с «needed» равным пустой список
       и «model» равным пустой список и «closed» равным нет) как held и round →
-      «Refined» от held и barred и keys и premises и aim)
+      «Refined signs» от held и barred и keys и premises и aim)
   если не (refined.«closed»)
     то «Number verdict» от "large" и пустой список и пустой список и ""
     иначе («Number outcome» от title и formula и frame и refined
@@ -1121,9 +1121,9 @@
 
 тотальная функция «Skeleton derived»
   принимает keys: список строки, needed: список строки, skeleton: «Formula»
-  возвращает «Derivation»
+  возвращает «Split derivation»
   разбор skeleton
     случай вариант «Implies» с left как left и right как right
-      то «Derived» от («Joined formulas» от («Clauses of» от keys и needed) и [left]) и right
+      то «Derived» от («Joined formulas» от («Sign clauses of» от keys и needed) и [left]) и right
     случай любое
-      то «Derived» от («Clauses of» от keys и needed) и skeleton
+      то «Derived» от («Sign clauses of» от keys и needed) и skeleton

@@ -151,7 +151,7 @@
     то found
     иначе («Models against» от («Fixed» от formula и atom и нет) и rest и truths)
 
-объект «Derivation»
+объект «Split derivation»
   «held»: список «Formula»
   «left»: список строки
   «lemmas»: список «Formula»
@@ -189,16 +189,16 @@
       если (пусто best) или ((«Width at» от held и atom) меньше («Width at» от held и best)) то atom иначе best)
 
 тотальная функция «Without statement»
-  принимает reached: «Derivation», atom: строка
-  возвращает «Derivation»
+  принимает reached: «Split derivation», atom: строка
+  возвращает «Split derivation»
   пример «What the formulas say without the dropped statement becomes a lemma»
-    дано reached равно (запись «Derivation»
+    дано reached равно (запись «Split derivation»
         с «held» равным [вариант «Atom» с name равным "а" и terms равным пустой список,
         (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
         и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))]
         и «left» равным ["а"] и «lemmas» равным пустой список)
     дано atom равно "а"
-    ожидается (запись «Derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
+    ожидается (запись «Split derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
         и «left» равным пустой список
         и «lemmas» равным [(вариант «Implies»
         с left равным (вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
@@ -210,20 +210,20 @@
   пусть forgotten равно («Either» от («Fixed» от whole и atom и да) и («Fixed» от whole и atom и нет))
   пусть kept равно (отфильтровать (reached.«held») где formula → не ((«Atoms of» от formula) содержит atom))
   пусть trivial равно ((пусто touched) или («Is truth» от forgotten и да))
-  (запись «Derivation» с «held» равным (если trivial то kept иначе (добавить forgotten к kept))
+  (запись «Split derivation» с «held» равным (если trivial то kept иначе (добавить forgotten к kept))
       и «left» равным (отфильтровать (reached.«left») где other → не (other равен atom))
       и «lemmas» равным (если trivial то (reached.«lemmas»)
       иначе (добавить (вариант «Implies» с left равным whole и right равным forgotten) к (reached.«lemmas»))))
 
 тотальная функция «Derived»
   принимает premises: список «Formula», goal: «Formula»
-  возвращает «Derivation»
+  возвращает «Split derivation»
   пример «A chain is cut statement by statement and the goal is drawn from what is left»
     дано premises равно [вариант «Atom» с name равным "а" и terms равным пустой список,
       (вариант «Implies» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
       и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))]
     дано goal равно вариант «Atom» с name равным "б" и terms равным пустой список
-    ожидается (запись «Derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
+    ожидается (запись «Split derivation» с «held» равным [вариант «Atom» с name равным "б" и terms равным пустой список]
         и «left» равным пустой список
         и «lemmas» равным [(вариант «Implies»
         с left равным (вариант «And» с left равным (вариант «Atom» с name равным "а" и terms равным пустой список)
@@ -234,27 +234,27 @@
         и right равным (вариант «Atom» с name равным "б" и terms равным пустой список))])
   пусть inner равно (отфильтровать («Atoms of» от («All of» от premises))
       где atom → не ((«Atoms of» от goal) содержит atom))
-  пусть cut равно (свёртка inner начиная с (запись «Derivation» с «held» равным premises и «left» равным inner
+  пусть cut равно (свёртка inner начиная с (запись «Split derivation» с «held» равным premises и «left» равным inner
       и «lemmas» равным пустой список) как reached и round →
       «Without statement» от reached и («Narrowest» от (reached.«held») и (reached.«left»)))
-  (запись «Derivation» с «held» равным (cut.«held») и «left» равным (cut.«left»)
+  (запись «Split derivation» с «held» равным (cut.«held») и «left» равным (cut.«left»)
       и «lemmas» равным (добавить (вариант «Implies» с left равным («All of» от (cut.«held»)) и right равным goal)
       к (cut.«lemmas»)))
 
 тотальная функция «Last lemma»
-  принимает derivation: «Derivation»
+  принимает derivation: «Split derivation»
   возвращает «Formula»
   пример «Without lemmas nothing is claimed»
-    дано derivation равно (запись «Derivation» с «held» равным пустой список и «left» равным пустой список
+    дано derivation равно (запись «Split derivation» с «held» равным пустой список и «left» равным пустой список
         и «lemmas» равным пустой список)
     ожидается вариант «Truth» с holds равным да
   (свёртка (derivation.«lemmas») начиная с (вариант «Truth» с holds равным да) как found и lemma → lemma)
 
 тотальная функция «Derivation holds»
-  принимает derivation: «Derivation»
+  принимает derivation: «Split derivation»
   возвращает признак
   пример «A goal that the remaining formulas do not give does not hold»
-    дано derivation равно (запись «Derivation» с «held» равным пустой список и «left» равным пустой список
+    дано derivation равно (запись «Split derivation» с «held» равным пустой список и «left» равным пустой список
         и «lemmas» равным [вариант «Atom» с name равным "б" и terms равным пустой список])
     ожидается нет
   пусть last равно («Last lemma» от derivation)

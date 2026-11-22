@@ -158,7 +158,7 @@
   «left»: список строки
   «sign»: строка
 
-тотальная функция «Gathered»
+тотальная функция «Gathered run»
   принимает made: список строки, pending: список строки, before: список строки, mark: строка
   возвращает «Gather»
   запись «Gather» с «out» равным made и «run» равным pending и «left» равным before и «sign» равным mark
@@ -185,10 +185,10 @@
   пусть flushed равно («Flushed gather» от held)
   пусть chained равно (если пусто (held.«sign») то (held.«out») иначе (добавить "и" к flushed))
   если («Comparison signs») содержит token
-    то «Gathered» от chained и пустой список и (held.«run») и token
+    то «Gathered run» от chained и пустой список и (held.«run») и token
     иначе (если ["не", "и", "или", "то", "если", ",", "(", ")"] содержит token
-        то («Gathered» от (добавить token к flushed) и пустой список и пустой список и "")
-        иначе («Gathered» от (held.«out») и (добавить token к (held.«run»)) и (held.«left») и (held.«sign»)))
+        то («Gathered run» от (добавить token к flushed) и пустой список и пустой список и "")
+        иначе («Gathered run» от (held.«out») и (добавить token к (held.«run»)) и (held.«left») и (held.«sign»)))
 
 тотальная функция «Formula tokens»
   принимает text: строка
@@ -203,7 +203,7 @@
   пусть words равно («Word signs» от («Pieces of» от (свёртка ["(", ")", ","]
       начиная с («Spaced signs» от («Decimal commas» от text)) как flat и mark →
       «Replaced in» от flat и mark и (соединить [" ", mark, " "] по ""))))
-  («Flushed gather» от (свёртка words начиная с («Gathered» от пустой список и пустой список и пустой список и "")
+  («Flushed gather» от (свёртка words начиная с («Gathered run» от пустой список и пустой список и пустой список и "")
       как held и token → «Gather step» от held и token))
 
 тотальная функция «Priority»

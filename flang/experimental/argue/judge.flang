@@ -277,7 +277,7 @@
     ожидается ["любит/2"]
   пусть sides равно («Numbered words» от mention)
   пусть named равно (свёртка sides начиная с (пустой список) как found и side →
-      «Words joined» от found и (отобразить ((«Parts of» от side).«parts») как part → part.«name»))
+      «Words joined» от found и (отобразить ((«Sum parts of» от side).«parts») как part → part.«name»))
   если («Comparison signs») содержит (элемент 1 в mention)
     то (отобразить (отфильтровать («Each once» от named) где name → не (пусто name))
         как name → соединить [name, "/q"] по "")

@@ -28,6 +28,7 @@
       ["no-converter", "export FLANG_ARGUE_PDFTOTEXT=no-such-converter; "],
       ["paper", "export FLANG_ARGUE_PDFTOTEXT=\"cat $p/programs/paper.pdf #\"; "],
       ["grammar", "export FLANG_ARGUE_CROSSCHECK=flang/proof/probes/argue-article/crosscheck-stub.fscript; "],
+      ["kinds", "export FLANG_ARGUE_CROSSCHECK=flang/experimental/argue-crosscheck.fscript; "],
       ["skipped-step", "export FLANG_ARGUE_SKIP=step:19; "]] начиная с "" как found и row →
       если (элемент 1 в row) равен имя то (элемент 2 в row) иначе found)
 
@@ -39,7 +40,7 @@
     ожидается """
       cd ../../../.. && root=$PWD && flang=${FLANG_BIN:-$root/bootstrap/flang} && { \\
         o=$(mktemp -d "${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX"); p=flang/proof/probes/argue-article; \\
-        set -- --claims "$p/claims/chain.claims";  \\
+        export FLANG_ARGUE_CROSSCHECK=none; set -- --claims "$p/claims/chain.claims";  \\
         FLANG_BIN=$flang $flang io flang/experimental/argue-article.fscript --plan Guarded \\
         --max-steps 1000000000000 --timeout 86400000 -- "$p/programs/chain.txt" \\
         --out "$o/report" "$@" > /dev/null; c=$?; \\
@@ -51,7 +52,8 @@
       """
   пусть stem равно (подстрока программа с 1 по ((длина программа) минус 4))
   пусть call равно (соединить ["\\\n  o=$(mktemp -d \"${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX\"); ",
-      "p=flang/proof/probes/argue-article; \\\n  set -- --claims \"$p/claims/", stem, ".claims\"; ",
+      "p=flang/proof/probes/argue-article; \\\n  export FLANG_ARGUE_CROSSCHECK=none; ",
+      "set -- --claims \"$p/claims/", stem, ".claims\"; ",
       («Свои ключи» от stem), " \\\n  ",
       "FLANG_BIN=$flang $flang io flang/experimental/argue-article.fscript --plan Guarded \\\n  ",
       "--max-steps 1000000000000 --timeout 86400000 -- \"$p/programs/", программа, "\" \\\n  ",

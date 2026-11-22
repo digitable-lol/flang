@@ -1,0 +1,1133 @@
+модуль «Argue article plan»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "argue/logic.flang"
+  использует «Argue claims» из "argue/claims.flang"
+  использует «Argue judge» из "argue/judge.flang"
+  использует «Argue report» из "argue/report.flang"
+  использует «Argue map» из "argue/map.flang"
+  использует «Argue article» из "argue/article.flang"
+  использует «Argue json» из "argue/json.flang"
+  использует «Argue parts» из "argue/parts.flang"
+
+объект «Call»
+  «source»: строка
+  «claims»: строка
+  «out»: строка
+  «json»: признак
+  «command»: строка
+  «part»: строка
+  «jobs»: строка
+  «pending»: строка
+  «fault»: строка
+
+объект «Guard»
+  «progress»: строка
+  «skip»: список строки
+  «started»: строка
+
+объект «Source»
+  «mode»: строка
+  «text»: строка
+  «claims»: строка
+  «command»: строка
+  «path»: строка
+  «tables»: строка
+  «guard»: «Guard»
+
+объект «Run»
+  «call»: «Call»
+  «guard»: «Guard»
+  «parts»: число
+
+тип «Article step»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting source» содержит call: «Call», guard: «Guard»
+  вариант «Marking» содержит call: «Call», source: «Source», waiting: список строки, done: список строки
+  вариант «Saving» содержит call: «Call», source: «Source», claims: строка, parts: число
+  вариант «Weighing» содержит task: «Run», article: «Article», steps: список «Inference», lefts: список «Thesis»
+  вариант «Weighed» содержит task: «Run», article: «Article»
+  вариант «Judging» содержит task: «Run», article: «Article», waiting: список «Job»
+  вариант «Crosschecking» содержит task: «Run», article: «Article»
+  вариант «Written» содержит words: строка
+  вариант «Said» содержит words: строка
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «The plan names how it is called»
+    ожидается """
+      звать: flang run-script argue:article -- <статья: pdf, docx или текст> [--markup-cmd "<команда>"]
+          [--claims <разметка>] [--out <отчёт>] [--json] [--part-size <знаков>] [--jobs <число>]
+      """
+  """
+  звать: flang run-script argue:article -- <статья: pdf, docx или текст> [--markup-cmd "<команда>"]
+      [--claims <разметка>] [--out <отчёт>] [--json] [--part-size <знаков>] [--jobs <число>]
+  """
+
+тотальная функция «Valued keys»
+  возвращает список строки
+  пример «Keys that take a value»
+    ожидается ["--claims", "--out", "--markup-cmd", "--part-size", "--jobs"]
+  ["--claims", "--out", "--markup-cmd", "--part-size", "--jobs"]
+
+тотальная функция «Without extension»
+  принимает path: строка
+  возвращает строка
+  пример «The extension of the file is dropped»
+    дано path равно "docs/статья.pdf"
+    ожидается "docs/статья"
+  пример «A name without an extension is kept whole»
+    дано path равно "docs.v2/статья"
+    ожидается "docs.v2/статья"
+  пусть pieces равно (разделить path по ".")
+  пусть last равно (свёртка pieces начиная с "" как found и piece → piece)
+  если ((длина pieces) меньше 2) или (last содержит "/") или ((длина last) больше 5)
+    то path
+    иначе (подстрока path с 1 по ((длина path) минус ((длина last) плюс 1)))
+
+тотальная функция «With value»
+  принимает held: «Call», key: строка, word: строка
+  возвращает «Call»
+  (запись «Call» с «source» равным (если key равен "" то word иначе (held.«source»))
+      и «claims» равным (если key равен "--claims" то word иначе (held.«claims»))
+      и «out» равным (если key равен "--out" то word иначе (held.«out»))
+      и «json» равным ((held.«json») или (key равен "--json"))
+      и «command» равным (если key равен "--markup-cmd" то word иначе (held.«command»))
+      и «part» равным (если key равен "--part-size" то word иначе (held.«part»))
+      и «jobs» равным (если key равен "--jobs" то word иначе (held.«jobs»))
+      и «pending» равным (если («Valued keys») содержит word то word иначе "")
+      и «fault» равным (held.«fault»))
+
+тотальная функция «With fault»
+  принимает held: «Call», fault: строка
+  возвращает «Call»
+  (запись «Call» с «source» равным (held.«source») и «claims» равным (held.«claims») и «out» равным (held.«out»)
+      и «json» равным (held.«json») и «command» равным (held.«command») и «part» равным (held.«part»)
+      и «jobs» равным (held.«jobs») и «pending» равным (held.«pending»)
+      и «fault» равным (если пусто (held.«fault») то fault иначе (held.«fault»)))
+
+тотальная функция «Bare word»
+  принимает held: «Call», word: строка
+  возвращает «Call»
+  пусть keyed равно (word начинается с "--")
+  пусть known равно ((«Valued keys») содержит word) или (word равен "--json")
+  пусть strange равно (если known то "" иначе (соединить ["ключ «", word, "» не понят"] по ""))
+  пусть extra равно (если пусто (held.«source») то ""
+      иначе (соединить ["лишний довод «", word, "»: статья уже названа"] по ""))
+  пусть fault равно (если keyed то strange иначе extra)
+  пусть key равно (если keyed то (если word равен "--json" то word иначе "-") иначе "")
+  если пусто fault то («With value» от held и key и word) иначе («With fault» от held и fault)
+
+тотальная функция «With word»
+  принимает held: «Call», word: строка
+  возвращает «Call»
+  если пусто (held.«pending») то («Bare word» от held и word) иначе («With value» от held и (held.«pending») и word)
+
+тотальная функция «Is a count»
+  принимает word: строка
+  возвращает признак
+  пример «A whole positive number is a count»
+    дано word равно "12000"
+    ожидается да
+  пример «A word is not»
+    дано word равно "много"
+    ожидается нет
+  разбор (к числу или беда word)
+    случай вариант «Разобрано» с значение как number
+      то (number больше 0) и притом ((к строке number) равен word)
+    случай любое
+      то нет
+
+тотальная функция «Count of»
+  принимает word: строка, otherwise: число
+  возвращает число
+  пример «A number that was not named is the usual one»
+    дано word равно ""
+    дано otherwise равно 8
+    ожидается 8
+  разбор (к числу или беда word)
+    случай вариант «Разобрано» с значение как number
+      то (если number больше 0 то number иначе otherwise)
+    случай любое
+      то otherwise
+
+тотальная функция «Guard keys»
+  возвращает список строки
+  пример «Keys the wrapping script passes to the plan»
+    ожидается ["--progress", "--skip", "--started"]
+  ["--progress", "--skip", "--started"]
+
+тотальная функция «Value after»
+  принимает words: список строки, key: строка
+  возвращает строка
+  пример «The word that follows the key»
+    дано words равно ["a.txt", "--skip", "step:7,pair:2"]
+    дано key равно "--skip"
+    ожидается "step:7,pair:2"
+  пример «A key that was not named has no value»
+    дано words равно ["a.txt"]
+    дано key равно "--skip"
+    ожидается ""
+  элемент 2 в (свёртка words начиная с ["", ""] как held и word →
+      [word, (если (элемент 1 в held) равен key то word иначе (элемент 2 в held))])
+
+тотальная функция «Guard of»
+  принимает words: список строки
+  возвращает «Guard»
+  пример «Without the wrapping script nothing is guarded»
+    дано words равно ["a.txt"]
+    ожидается (запись «Guard» с «progress» равным "" и «skip» равным пустой список и «started» равным "")
+  (запись «Guard» с «progress» равным («Value after» от words и "--progress")
+      и «skip» равным (отфильтровать (разделить («Value after» от words и "--skip") по ",")
+      где unit → не (пусто unit))
+      и «started» равным («Value after» от words и "--started"))
+
+тотальная функция «Own words»
+  принимает words: список строки
+  возвращает список строки
+  пример «Keys of the wrapping script and their values are not the user's»
+    дано words равно ["a.txt", "--skip", "step:7", "--json"]
+    ожидается ["a.txt", "--json"]
+  элемент 2 в (свёртка words начиная с [[""], (пустой список)] как held и word →
+      [[word], (если ((«Guard keys») содержит word) или ((«Guard keys») содержит (элемент 1 в (элемент 1 в held)))
+      то (элемент 2 в held) иначе (добавить word к (элемент 2 в held)))])
+
+тотальная функция «Call of»
+  принимает words: список строки
+  возвращает «Call»
+  пример «The markup and the report stand next to the article unless named»
+    дано words равно ["docs/статья.pdf"]
+    ожидается (запись «Call» с «source» равным "docs/статья.pdf" и «claims» равным "docs/статья.claims"
+        и «out» равным "docs/статья.argue.md" и «json» равным нет и «command» равным "" и «part» равным ""
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "")
+  пример «The machine report has its own name»
+    дано words равно ["a.txt", "--json", "--part-size", "9000"]
+    ожидается (запись «Call» с «source» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.json" и «json» равным да и «command» равным "" и «part» равным "9000"
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "")
+  пример «Without an article there is nothing to check»
+    дано words равно пустой список
+    ожидается (запись «Call» с «source» равным "" и «claims» равным ".claims"
+        и «out» равным ".argue.md" и «json» равным нет и «command» равным "" и «part» равным ""
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "не назван файл статьи")
+  пример «A size that is not a number is a fault»
+    дано words равно ["a.txt", "--part-size", "много"]
+    ожидается (запись «Call» с «source» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «json» равным нет и «command» равным "" и «part» равным "много"
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "после ключа «--part-size» нужно число: «много»")
+  пусть read равно (свёртка words начиная с (запись «Call» с «source» равным "" и «claims» равным ""
+      и «out» равным "" и «json» равным нет и «command» равным "" и «part» равным "" и «jobs» равным ""
+      и «pending» равным "" и «fault» равным "") как held и word → «With word» от held и word)
+  пусть stem равно («Without extension» от (read.«source»))
+  пусть fault равно (свёртка [[(если пусто (read.«source») то "да" иначе "нет"), "не назван файл статьи"],
+      [(если пусто (read.«pending») то "нет" иначе "да"), (соединить ["после ключа «", (read.«pending»),
+      "» не названо значение"] по "")],
+      [(если (пусто (read.«part»)) или («Is a count» от (read.«part»)) то "нет" иначе "да"),
+      (соединить ["после ключа «--part-size» нужно число: «", (read.«part»), "»"] по "")],
+      [(если (пусто (read.«jobs»)) или («Is a count» от (read.«jobs»)) то "нет" иначе "да"),
+      (соединить ["после ключа «--jobs» нужно число: «", (read.«jobs»), "»"] по "")]]
+      начиная с (read.«fault») как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
+  (запись «Call» с «source» равным (read.«source»)
+      и «claims» равным (если пусто (read.«claims») то (соединить [stem, ".claims"] по "") иначе (read.«claims»))
+      и «out» равным (если пусто (read.«out»)
+      то (соединить [stem, (если read.«json» то ".argue.json" иначе ".argue.md")] по "") иначе (read.«out»))
+      и «json» равным (read.«json») и «command» равным (read.«command») и «part» равным (read.«part»)
+      и «jobs» равным (read.«jobs») и «pending» равным "" и «fault» равным fault)
+
+тотальная функция «Path from root»
+  принимает path: строка
+  возвращает строка
+  пример «A path is taken from the root of the tree»
+    дано path равно "a.txt"
+    ожидается "../../a.txt"
+  пример «An absolute path is taken as it is»
+    дано path равно "/tmp/a.txt"
+    ожидается "/tmp/a.txt"
+  если path начинается с "/" то path иначе (соединить [(«Root»), "/", path] по "")
+
+тотальная функция «Refusal»
+  принимает code: строка, words: строка
+  возвращает «Продолжение»
+  пример «A refusal carries its code and its words»
+    дано code равно "FLANG_ARGUE_USAGE"
+    дано words равно "не назван файл статьи"
+    ожидается вариант «Провал» с код равным "FLANG_ARGUE_USAGE" и сообщение равным "не назван файл статьи"
+  вариант «Провал» с код равным code и сообщение равным words
+
+тотальная функция «Cut»
+  возвращает строка
+  пример «The line that parts the pieces of what the source script prints»
+    ожидается "\n@@flang-argue-cut@@\n"
+  "\n@@flang-argue-cut@@\n"
+
+тотальная функция «Source script»
+  возвращает строка
+  """
+  cd "$0" || exit 2
+  [ -f "$1" ] || { echo "файл статьи не найден: $1" >&2; exit 4; }
+  need() {
+    command -v "${1%% *}" > /dev/null 2>&1 && return 0
+    echo "$2" >&2
+    exit 3
+  }
+  call() {
+    tool=$1
+    shift
+    sh -c "$tool"' "$@"' tool "$@"
+  }
+  where='в Debian и Ubuntu — sudo apt install'
+  kind=$(printf '%s' "${1##*.}" | tr 'A-Z' 'a-z')
+  text=$1
+  tables="${2%.txt}.tables.txt"
+  found=''
+  case "$kind" in
+    pdf)
+      tool="${FLANG_ARGUE_PDFTOTEXT:-pdftotext}"
+      need "$tool" "для PDF нужна программа pdftotext, она не найдена. Поставьте пакет poppler-utils:
+  $where poppler-utils, в macOS — brew install poppler. Либо переведите статью в текст сами и назовите текст."
+      text=$2
+      call "$tool" -enc UTF-8 "$1" - | tr '\\f' '\\n' > "$text"
+      call "$tool" -layout -enc UTF-8 "$1" - 2> /dev/null | awk '
+        function flush() {
+          if (rows >= 2) { count++; printf "== таблица %d, страница %d ==\\n%s\\n", count, page, held }
+          held = ""; rows = 0
+        }
+        BEGIN { page = 1 }
+        {
+          turns = gsub(/\\f/, "")
+          line = $0; sub(/^ +/, "", line); sub(/ +$/, "", line)
+          if (split(line, cells, /  +/) >= 3 && line ~ /[0-9]/) { held = held $0 "\\n"; rows++ } else flush()
+          page += turns
+        }
+        END { flush() }' > "$tables"
+      found=layout ;;
+    docx|odt|rtf|html|htm|epub|fb2)
+      tool="${FLANG_ARGUE_PANDOC:-pandoc}"
+      need "$tool" "для файлов Word, ODT, RTF, HTML и EPUB нужна программа pandoc, она не найдена. Поставьте её:
+  $where pandoc, в macOS — brew install pandoc. Либо переведите статью в текст сами и назовите текст."
+      text=$2
+      filter=$(mktemp "${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX")
+      printf '%s\\n' 'local n = 0' 'function Table(el)' '  n = n + 1' \\
+        '  local f = io.open(os.getenv("FLANG_ARGUE_TABLES"), "a")' \\
+        '  f:write("== таблица " .. n .. " ==\\n" .. pandoc.write(pandoc.Pandoc({el}), "plain") .. "\\n")' \\
+        '  f:close()' '  return {}' 'end' > "$filter"
+      : > "$tables"
+      FLANG_ARGUE_TABLES="$tables" call "$tool" "$1" -t plain --wrap=none --lua-filter "$filter" -o "$text" \\
+        2> /dev/null || { : > "$tables"; call "$tool" "$1" -t plain --wrap=none -o "$text" || exit 5; }
+      rm -f "$filter"
+      found=structure ;;
+  esac
+  count=0
+  [ -n "$found" ] && count=$(grep -c '^== таблица' "$tables")
+  [ "$count" = 0 ] && [ -n "$found" ] && rm -f "$tables"
+  command="${4:-$FLANG_ARGUE_MARKUP_CMD}"
+  mode=none
+  [ -f "$3" ] && mode=file
+  [ -n "$command" ] && [ "$mode" = none ] && mode=command
+  [ -n "$4" ] && mode=command
+  [ "$mode" = command ] && [ -f "$3" ] && cp "$3" "$3.bak"
+  cut='@@flang-argue-cut@@'
+  printf '%s\\n%s\\n' "$mode" "$cut"
+  cat "$text"
+  printf '\\n%s\\n' "$cut"
+  [ "$mode" = file ] && cat "$3"
+  printf '\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s %s %s' "$cut" "$command" "$cut" "$text" "$cut" "$count" "$found" "$tables"
+  """
+
+тотальная функция «Table words»
+  принимает tables: строка
+  возвращает строка
+  пример «Tables taken out of a document by its structure»
+    дано tables равно "2 structure a.argue.tables.txt"
+    ожидается "найдено 2, сохранены в файл a.argue.tables.txt. В текст для разметки таблицы не входят"
+  пример «A plain text has no tables to save»
+    дано tables равно "0  a.tables.txt"
+    ожидается ""
+  пусть fields равно (разделить tables по " ")
+  пусть count равно («Count of» от (свёртка («Taken» от fields и 1) начиная с "" как found и word → word) и 0)
+  пусть path равно (свёртка fields начиная с "" как found и word → word)
+  если count равен 0
+    то ""
+    иначе (соединить ["найдено ", (к строке count), ", сохранены в файл ", path,
+        (если fields содержит "layout"
+        то (соединить [". Таблицы PDF ищутся по расположению ",
+        "колонок: поиск может пропустить таблицу или принять за неё колонки текста"] по "")
+        иначе ". В текст для разметки таблицы не входят")] по "")
+
+тотальная функция «Source order»
+  принимает call: «Call»
+  возвращает «Поручение»
+  (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", («Source script»), («Root»), (call.«source»),
+      (соединить [(«Without extension» от (call.«out»)), ".txt"] по ""), (call.«claims»), (call.«command»)])
+
+тотальная функция «Source of»
+  принимает output: строка, guard: «Guard»
+  возвращает «Source»
+  пример «Something else is not a source»
+    дано output равно "шум"
+    дано guard равно (запись «Guard» с «progress» равным "" и «skip» равным пустой список и «started» равным "")
+    ожидается (запись «Source» с «mode» равным "" и «text» равным "" и «claims» равным ""
+        и «command» равным "" и «path» равным "" и «tables» равным ""
+        и «guard» равным (запись «Guard» с «progress» равным "" и «skip» равным пустой список и «started» равным ""))
+  пусть pieces равно (разделить output по («Cut»))
+  если (длина pieces) равен 6
+    то (запись «Source» с «mode» равным (элемент 1 в pieces) и «text» равным (элемент 2 в pieces)
+        и «claims» равным (элемент 3 в pieces) и «command» равным (элемент 4 в pieces)
+        и «path» равным (элемент 5 в pieces) и «tables» равным («Flat» от (элемент 6 в pieces)) и «guard» равным guard)
+    иначе (запись «Source» с «mode» равным "" и «text» равным "" и «claims» равным "" и «command» равным ""
+        и «path» равным "" и «tables» равным "" и «guard» равным guard)
+
+тотальная функция «No markup words»
+  принимает call: «Call»
+  возвращает строка
+  (соединить ["разметки нет: ", (call.«claims»), "\nСделайте одно из двух:\n",
+      "  1. Назовите команду разметки ключом --markup-cmd \"<команда>\" или переменной среды ",
+      "FLANG_ARGUE_MARKUP_CMD.\n     Команда получает на вход инструкцию вместе с текстом статьи и печатает ",
+      "разметку.\n     Примеры команд — в docs/site/argue.ru.md.\n",
+      "  2. Положите готовую разметку рядом со статьёй под именем ", (call.«claims»),
+      ".\n     Как её написать — docs/examples/argue/claims-prompt.md."] по "")
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «Without an article the plan says how to call it»
+    дано reply равно вариант «Пока ничего»
+    ожидается (вариант «Провал» с код равным "FLANG_ARGUE_USAGE" и сообщение равным """
+        звать: flang run-script argue:article -- <статья: pdf, docx или текст> [--markup-cmd "<команда>"]
+            [--claims <разметка>] [--out <отчёт>] [--json] [--part-size <знаков>] [--jobs <число>]
+        """)
+  разбор reply
+    случай вариант «Доводы» с доводы как said
+      то «Reading of source» от («Call of» от («Own words» от said)) и («Guard of» от said)
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_USAGE" и («Usage»)
+
+тотальная функция «Reading of source»
+  принимает call: «Call», guard: «Guard»
+  возвращает «Продолжение»
+  если пусто (call.«fault»)
+    то (вариант «Сделать» с поручение равным («Source order» от call)
+        и потом равным (вариант «Awaiting source» с call равным call и guard равным guard))
+    иначе («Refusal» от "FLANG_ARGUE_USAGE" и (соединить [(call.«fault»), "\n", («Usage»)] по ""))
+
+тотальная функция «After source»
+  принимает call: «Call», guard: «Guard», reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A missing converter is named with what to install»
+    дано call равно (запись «Call» с «source» равным "a.pdf" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «json» равным нет и «command» равным "" и «part» равным ""
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "")
+    дано guard равно (запись «Guard» с «progress» равным "" и «skip» равным пустой список и «started» равным "")
+    дано reply равно вариант «Процесс завершён» с код равным 3 и вывод равным "" и ошибки равным "нужна pdftotext\n"
+    ожидается вариант «Провал» с код равным "FLANG_ARGUE_NEEDS_TOOL" и сообщение равным "нужна pdftotext\n"
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то «Read source» от call и guard и code и out и cried
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["статья не прочитана: ", (call.«source»)] по "")
+
+тотальная функция «Read source»
+  принимает call: «Call», guard: «Guard», code: число, out: строка, cried: строка
+  возвращает «Продолжение»
+  пусть words равно (если пусто cried то (соединить ["статья не прочитана: ", (call.«source»)] по "") иначе cried)
+  если code равен 0
+    то «Taken source» от call и («Source of» от out и guard)
+    иначе («Refusal» от (если code равен 3 то "FLANG_ARGUE_NEEDS_TOOL" иначе "FLANG_ARGUE_CANNOT_LOOK") и words)
+
+тотальная функция «Taken source»
+  принимает call: «Call», source: «Source»
+  возвращает «Продолжение»
+  если пусто («Flat» от (source.«text»))
+    то («Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["в файле нет текста: ", (call.«source»),
+        ". Если это скан, сначала распознайте его, например программой ocrmypdf"] по ""))
+    иначе («Marked source» от call и source)
+
+тотальная функция «Marked source»
+  принимает call: «Call», source: «Source»
+  возвращает «Продолжение»
+  пусть parts равно («Parts of» от (source.«text») и («Count of» от (call.«part») и 12000))
+  если (source.«mode») равен "file"
+    то «Judged article» от call и source и (source.«claims») и 0
+    иначе (если (source.«mode») равен "command" то («Next part» от call и source и parts и пустой список)
+        иначе («Refusal» от "FLANG_ARGUE_NEEDS_MARKUP" и («No markup words» от call)))
+
+тотальная функция «Markup script»
+  возвращает строка
+  """
+  cd "$0" || exit 2
+  p="${FLANG_ARGUE_PROMPT:-docs/examples/argue/claims-prompt.md}"
+  [ -f "$p" ] || { echo "нет инструкции разметки: $p" >&2; exit 4; }
+  d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
+  {
+    sed '/^Текст для разметки:/,$d' "$p"
+    [ -n "$3" ] && printf '%s\\n\\n' "$3"
+    printf 'Текст для разметки:\\n\\n```\\n%s\\n```\\n' "$2"
+  } > "$d/prompt.txt"
+  printf '%s\\n' "$2" > "$d/text.txt"
+  export FLANG_ARGUE_PROMPT_FILE="$d/prompt.txt" FLANG_ARGUE_TEXT_FILE="$d/text.txt"
+  export FLANG_ARGUE_PART="$4" FLANG_ARGUE_PARTS="$5"
+  sh -c "$1" < "$d/prompt.txt"
+  c=$?
+  rm -rf "$d"
+  exit $c
+  """
+
+тотальная функция «Next part»
+  принимает call: «Call», source: «Source», waiting: список строки, done: список строки
+  возвращает «Продолжение»
+  пусть all равно ((длина waiting) плюс (длина done))
+  пусть merged равно («Merged markup» от done)
+  разбор waiting
+    случай пусто
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл»
+          с путь равным («Path from root» от (call.«claims»)) и содержимое равным merged)
+          и потом равным (вариант «Saving» с call равным call и source равным source и claims равным merged
+          и parts равным (длина done)))
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+          и аргументы равным ["-c", («Markup script»), («Root»), (source.«command»), голова,
+          («Part note» от done и ((длина done) плюс 1) и all), (к строке ((длина done) плюс 1)), (к строке all)])
+          и потом равным (вариант «Marking» с call равным call и source равным source и waiting равным waiting
+          и done равным done))
+
+тотальная функция «Silence words»
+  принимает failed: строка, code: число, cried: строка
+  возвращает строка
+  пример «A command that printed nothing is named so»
+    дано failed равно "команда разметки не сработала на части 1: true"
+    дано code равно 0
+    дано cried равно ""
+    ожидается "команда разметки не сработала на части 1: true\nкоманда ничего не напечатала"
+  соединить [failed, "\n", (если code равен 0 то "команда ничего не напечатала" иначе cried)] по ""
+
+тотальная функция «Marked part»
+  принимает call: «Call», source: «Source», waiting: список строки, done: список строки, said: список строки
+  возвращает «Продолжение»
+  пусть code равно («Count of» от (элемент 1 в said) и 0)
+  пусть out равно (элемент 2 в said)
+  если (code равен 0) и притом (не (пусто («Flat» от out)))
+    то («Next part» от call и source и («Lines after» от waiting и 1) и (добавить («Clean markup» от out) к done))
+    иначе («Refusal» от "FLANG_ARGUE_MARKUP_CMD"
+        и («Silence words» от (элемент 4 в said) и code и (элемент 3 в said)))
+
+тотальная функция «After marking»
+  принимает call: «Call», source: «Source», waiting: список строки, done: список строки, reply: «Отклик»
+  возвращает «Продолжение»
+  пусть number равно (к строке ((длина done) плюс 1))
+  пусть failed равно (соединить ["команда разметки не сработала на части ", number, ": ", (source.«command»)] по "")
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то «Marked part» от call и source и waiting и done и [(к строке code), out, cried, failed]
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_MARKUP_CMD" и failed
+
+тотальная функция «After saving»
+  принимает call: «Call», source: «Source», claims: строка, parts: число, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как cried
+      то «Refusal» от "FLANG_ARGUE_CANNOT_WRITE" и (соединить ["разметка не записана: ", cried] по "")
+    случай любое
+      то «Judged article» от call и source и claims и parts
+
+тотальная функция «Fault words»
+  принимает path: строка, faults: список строки
+  возвращает строка
+  пример «Every fault stands on its own line behind the name of the markup»
+    дано path равно "a.claims"
+    дано faults равно ["строка 1 разметки: раз", "строка 2 разметки: два"]
+    ожидается "a.claims: строка 1 разметки: раз\na.claims: строка 2 разметки: два"
+  соединить (отобразить faults как fault → соединить [path, ": ", fault] по "") по "\n"
+
+тотальная функция «Judged article»
+  принимает call: «Call», source: «Source», claims: строка, parts: число
+  возвращает «Продолжение»
+  пусть pruned равно («Without forged quotes» от («Read markup» от claims) и (source.«text»))
+  пусть markup равно (pruned.«markup»)
+  пусть faults равно («Markup faults» от markup)
+  если не (пусто faults)
+    то «Refusal» от "FLANG_ARGUE_MARKUP" и («Fault words» от (call.«claims») и faults)
+    иначе («Next weighing» от (запись «Run» с «call» равным call и «guard» равным (source.«guard»)
+        и «parts» равным parts)
+        и (запись «Article» с «path» равным (call.«source») и «text» равным (source.«text»)
+        и «judged» равным (запись «Judged» с «markup» равным markup и «verdicts» равным пустой список
+        и «clashes» равным пустой список и «outcomes» равным пустой список)
+        и «dropped» равным (pruned.«dropped») и «grammar» равным "absent" и «rows» равным пустой список
+        и «skipped» равным пустой список и «seconds» равным 0 и «tables» равным («Table words» от (source.«tables»)))
+        и (markup.«steps») и (markup.«entries»))
+
+тотальная функция «Progress order»
+  принимает task: «Run», unit: строка
+  возвращает «Поручение»
+  (вариант «Записать файл»
+      с путь равным (если пусто ((task.«guard»).«progress») то "/dev/null" иначе ((task.«guard»).«progress»))
+      и содержимое равным unit)
+
+тотальная функция «Step unit»
+  принимает step: «Inference»
+  возвращает строка
+  пример «A step is named by its line in the markup»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "дедукция")
+    ожидается "step:7"
+  соединить ["step:", (к строке (step.«line»))] по ""
+
+тотальная функция «Pair unit»
+  принимает left: «Thesis»
+  возвращает строка
+  соединить ["pair:", (к строке (left.«line»))] по ""
+
+тотальная функция «Next weighing»
+  принимает task: «Run», article: «Article», steps: список «Inference», lefts: список «Thesis»
+  возвращает «Продолжение»
+  пусть unit равно (свёртка («First theses» от lefts и 1) начиная с "done" как found и left → «Pair unit» от left)
+  (вариант «Сделать» с поручение равным («Progress order» от task
+      и (свёртка («First steps» от steps и 1) начиная с unit как found и step → «Step unit» от step))
+      и потом равным (если (пусто steps) и притом (пусто lefts)
+      то (вариант «Weighed» с task равным task и article равным article)
+      иначе (вариант «Weighing» с task равным task и article равным article и steps равным steps
+      и lefts равным lefts)))
+
+тотальная функция «First steps»
+  принимает steps: список «Inference», count: число
+  возвращает список «Inference»
+  разбор steps
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то (пустой список) иначе [голова])
+
+тотальная функция «First theses»
+  принимает entries: список «Thesis», count: число
+  возвращает список «Thesis»
+  разбор entries
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то (пустой список) иначе [голова])
+
+тотальная функция «Grown article»
+  принимает article: «Article», verdicts: список «Step verdict», clashes: список «Clash», skipped: список строки
+  возвращает «Article»
+  пусть judged равно (article.«judged»)
+  (запись «Article» с «path» равным (article.«path») и «text» равным (article.«text»)
+      и «judged» равным (запись «Judged» с «markup» равным (judged.«markup»)
+      и «verdicts» равным («Соединить списки» от (judged.«verdicts») и verdicts)
+      и «clashes» равным («Соединить списки» от (judged.«clashes») и clashes)
+      и «outcomes» равным (judged.«outcomes»))
+      и «dropped» равным (article.«dropped») и «grammar» равным (article.«grammar») и «rows» равным (article.«rows»)
+      и «skipped» равным («Соединить списки» от (article.«skipped») и skipped)
+      и «seconds» равным (article.«seconds») и «tables» равным (article.«tables»))
+
+тотальная функция «Over the limit»
+  возвращает строка
+  пример «Why a place was left unchecked»
+    ожидается "проверка превысила предел времени или памяти и была остановлена"
+  "проверка превысила предел времени или памяти и была остановлена"
+
+тотальная функция «Weighed step»
+  принимает task: «Run», article: «Article», step: «Inference»
+  возвращает «Article»
+  если ((task.«guard»).«skip») содержит («Step unit» от step)
+    то («Grown article» от article и [(«Plain verdict» от step и "skipped" и нет и пустой список)]
+        и пустой список и [(соединить ["шаг ", («Step label» от step), " (строка ", (к строке (step.«line»)),
+        " разметки): ", («Over the limit»)] по "")])
+    иначе («Grown article» от article и [(«Step verdict of» от ((article.«judged»).«markup») и step)]
+        и пустой список и пустой список)
+
+тотальная функция «Clashes with»
+  принимает markup: «Markup», left: «Thesis»
+  возвращает список «Clash»
+  (свёртка (отфильтровать (markup.«entries») где right → ((right.«line») больше (left.«line»))
+      и притом («Share a notion» от left и right)) начиная с (пустой список) как grown и right →
+      «Соединить списки» от grown и («Pair clash» от left и right))
+
+тотальная функция «Weighed pairs»
+  принимает task: «Run», article: «Article», left: «Thesis»
+  возвращает «Article»
+  если ((task.«guard»).«skip») содержит («Pair unit» от left)
+    то («Grown article» от article и пустой список и пустой список
+        и [(соединить ["поиск противоречий суждения [", (left.«number»), "] с суждениями после него: ",
+        («Over the limit»)] по "")])
+    иначе («Grown article» от article и пустой список
+        и («Clashes with» от ((article.«judged»).«markup») и left) и пустой список)
+
+тотальная функция «Later steps»
+  принимает steps: список «Inference»
+  возвращает список «Inference»
+  разбор steps
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Later theses»
+  принимает entries: список «Thesis»
+  возвращает список «Thesis»
+  разбор entries
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «After weighing»
+  принимает task: «Run», article: «Article», steps: список «Inference», lefts: список «Thesis»
+  возвращает «Продолжение»
+  разбор steps
+    случай пусто
+      то («Next weighing» от task и (свёртка («First theses» от lefts и 1) начиная с article как held и left →
+          «Weighed pairs» от task и held и left) и steps и («Later theses» от lefts))
+    случай голова и хвост
+      то «Next weighing» от task и («Weighed step» от task и article и голова) и хвост и lefts
+
+тотальная функция «After weighed»
+  принимает task: «Run», article: «Article»
+  возвращает «Продолжение»
+  пусть judged равно (article.«judged»)
+  «Next judgment» от task и article и («Jobs of» от (judged.«verdicts») и (judged.«clashes»))
+
+тотальная функция «Kernel script»
+  возвращает строка
+  """
+  d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
+  bin="${FLANG_BIN:-$0/bootstrap/flang}"
+  limit="${FLANG_ARGUE_KERNEL_SECONDS:-600}"
+  i=0
+  for program in "$@"; do
+    i=$((i + 1))
+    mkdir "$d/$i"
+    printf '%s' "$program" > "$d/$i/step.flang"
+    (
+      if command -v timeout > /dev/null 2>&1; then
+        timeout "$limit" "$bin" check "$d/$i/step.flang" --proof --strict > "$d/$i/out" 2>&1
+      else
+        "$bin" check "$d/$i/step.flang" --proof --strict > "$d/$i/out" 2>&1
+      fi
+      echo $? > "$d/$i/code"
+    ) &
+  done
+  wait
+  j=0
+  while [ "$j" -lt "$i" ]; do
+    j=$((j + 1))
+    printf '%s\\t%s\\n' "$(cat "$d/$j/code")" "$(tr '\\n' ' ' < "$d/$j/out")"
+  done
+  rm -rf "$d"
+  """
+
+тотальная функция «Lines after»
+  принимает jobs: список строки, count: число
+  возвращает список строки
+  пример «What stays behind the first two»
+    дано jobs равно ["x", "y", "z"]
+    дано count равно 2
+    ожидается ["z"]
+  разбор jobs
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то jobs иначе («Lines after» от хвост и (count минус 1)))
+
+тотальная функция «First jobs»
+  принимает jobs: список «Job», count: число
+  возвращает список «Job»
+  разбор jobs
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то (пустой список)
+          иначе (приписать голова к («First jobs» от хвост и (count минус 1))))
+
+тотальная функция «Later jobs»
+  принимает jobs: список «Job», count: число
+  возвращает список «Job»
+  разбор jobs
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то jobs иначе («Later jobs» от хвост и (count минус 1)))
+
+тотальная функция «Words of the end»
+  принимает task: «Run», article: «Article»
+  возвращает строка
+  пусть call равно (task.«call»)
+  пусть judged равно (article.«judged»)
+  пусть verdicts равно (judged.«verdicts»)
+  пусть outcomes равно (judged.«outcomes»)
+  (соединить ["отчёт записан: ", (call.«out»), "; ",
+      («Count words» от («Counts of» от judged и (длина («Failure blocks» от judged)))),
+      "; шагов: ", (к строке (длина verdicts)),
+      ", следует: ", (к строке («Counted» от verdicts и outcomes и "follows")),
+      ", не следует: ", (к строке («Counted» от verdicts и outcomes и "fails")),
+      ", без посылок: ", (к строке («Counted» от verdicts и outcomes и "none")),
+      ", посылки противоречат друг другу: ", (к строке («Counted» от verdicts и outcomes и "clash")),
+      ", ядро не решило: ", (к строке («Counted» от verdicts и outcomes и "undecided")),
+      "; выброшено записей разметки: ", (к строке (длина (article.«dropped»))),
+      "; не досчитано: ", (к строке (длина (article.«skipped»))),
+      (если (task.«parts») больше 0 то (соединить ["; разметка сделана командой, частей: ", (к строке (task.«parts»)),
+      ", записана: ", (call.«claims»)] по "") иначе ""), "\n"] по "")
+
+тотальная функция «Crosscheck script»
+  возвращает строка
+  """
+  cd "$0" || exit 2
+  root=$PWD
+  module="${FLANG_ARGUE_CROSSCHECK:-flang/experimental/argue/crosscheck.flang}"
+  date +%s
+  [ -f "$module" ] || { echo absent; exit 0; }
+  case "$module" in /*) ;; *) module="$root/$module" ;; esac
+  d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" argue.XXXXXX)
+  cp "$1" "$d/text.txt" && cp "$2" "$d/claims.txt" || { echo failed; echo "текст или разметка не прочитаны"; exit 0; }
+  sed "s|MODULE|$module|" > "$d/call.fscript" << 'CALL'
+  модуль «Argue crosscheck call»
+    использует «Argue crosscheck» из "MODULE"
+
+  тип «Call step»
+    вариант «Start»
+    вариант «Awaiting text»
+    вариант «Awaiting claims» содержит text: строка
+    вариант «Printed»
+
+  тотальная функция «Read»
+    принимает reply: «Отклик»
+    возвращает строка
+    разбор reply
+      случай вариант «Прочитано» с содержимое как text
+        то text
+      случай любое
+        то ""
+
+  тотальная функция «Printing»
+    принимает text: строка, claims: строка
+    возвращает «Продолжение»
+    (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "rows.tsv"
+        и содержимое равным (соединить (отобразить («Crosscheck rows» от text и claims)
+        как row → соединить row по "\t") по "\n")) и потом равным (вариант «Printed»))
+
+  тотальная функция «Begin»
+    возвращает «Call step»
+    вариант «Start»
+
+  тотальная функция «Onward»
+    принимает stage: «Call step», reply: «Отклик»
+    возвращает «Продолжение»
+    разбор stage
+      случай вариант «Start»
+        то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "text.txt")
+            и потом равным (вариант «Awaiting text»))
+      случай вариант «Awaiting text»
+        то (вариант «Сделать» с поручение равным (вариант «Прочитать файл» с путь равным "claims.txt")
+            и потом равным (вариант «Awaiting claims» с text равным («Read» от reply)))
+      случай вариант «Awaiting claims» с text как text
+        то «Printing» от text и («Read» от reply)
+      случай вариант «Printed»
+        то вариант «Конец работы» с значение равным ""
+
+  план «Call»
+    состояние «Call step»
+    начинает с «Begin»
+    обрабатывает «Onward»
+  CALL
+  if "${FLANG_BIN:-$root/bootstrap/flang}" io "$d/call.fscript" --plan Call --max-steps 1000000000000 \\
+    --timeout 900000 > "$d/said" 2>&1 && [ -f "$d/rows.tsv" ]; then
+    echo ok
+    cat "$d/rows.tsv"
+  else
+    echo failed
+    tr '\\n' ' ' < "$d/said" | head -c 600
+  fi
+  rm -rf "$d"
+  """
+
+тотальная функция «Crosscheck order»
+  принимает call: «Call», path: строка
+  возвращает «Поручение»
+  (вариант «Запустить процесс» с программа равным "sh"
+      и аргументы равным ["-c", («Crosscheck script»), («Root»), path, (call.«claims»)])
+
+тотальная функция «Seconds between»
+  принимает started: строка, ended: строка
+  возвращает число
+  пример «From the start of the task to the end of the checks»
+    дано started равно "100"
+    дано ended равно "161"
+    ожидается 61
+  пример «A task that was not timed»
+    дано started равно ""
+    дано ended равно "161"
+    ожидается 0
+  пусть early равно («Count of» от started и 0)
+  пусть late равно («Count of» от («Flat» от ended) и 0)
+  если (early больше 0) и притом (late больше early) то (late минус early) иначе 0
+
+тотальная функция «With crosscheck»
+  принимает article: «Article», output: строка, started: строка
+  возвращает «Article»
+  пусть lines равно (разделить output по "\n")
+  пусть ended равно (свёртка («Taken» от lines и 1) начиная с "" как found и line → line)
+  пусть mode равно (свёртка («Taken» от («Lines after» от lines и 1) и 1) начиная с "absent" как found и line →
+      «Flat» от line)
+  пусть rest равно («Lines after» от lines и 2)
+  (запись «Article» с «path» равным (article.«path») и «text» равным (article.«text»)
+      и «judged» равным (article.«judged») и «dropped» равным (article.«dropped»)
+      и «grammar» равным (свёртка [["ok", "ok"], ["absent", "absent"]]
+      начиная с («Flat» от (соединить rest по " ")) как found и row →
+      если (элемент 1 в row) равен mode то (элемент 2 в row) иначе found)
+      и «rows» равным (если mode равен "ok"
+      то (отфильтровать (отобразить rest как line → разделить line по "\t") где row → (длина row) равен 3)
+      иначе (пустой список))
+      и «skipped» равным (article.«skipped») и «seconds» равным («Seconds between» от started и ended)
+      и «tables» равным (article.«tables»))
+
+тотальная функция «Next judgment»
+  принимает task: «Run», article: «Article», waiting: список «Job»
+  возвращает «Продолжение»
+  пусть call равно (task.«call»)
+  пусть batch равно («First jobs» от waiting и («Count of» от (call.«jobs») и 8))
+  если пусто waiting
+    то (вариант «Сделать» с поручение равным («Crosscheck order» от call и («Text path» от call))
+        и потом равным (вариант «Crosschecking» с task равным task и article равным article))
+    иначе (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+        и аргументы равным («Соединить списки» от ["-c", («Kernel script»), («Root»)]
+        и (отобразить batch как job → job.«program»)))
+        и потом равным (вариант «Judging» с task равным task и article равным article и waiting равным waiting))
+
+тотальная функция «Text path»
+  принимает call: «Call»
+  возвращает строка
+  пример «A plain text is read where it lies»
+    дано call равно (запись «Call» с «source» равным "a.txt" и «claims» равным "a.claims"
+        и «out» равным "a.argue.md" и «json» равным нет и «command» равным "" и «part» равным ""
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "")
+    ожидается "a.txt"
+  пример «The text taken out of a PDF lies next to the report»
+    дано call равно (запись «Call» с «source» равным "a.PDF" и «claims» равным "a.claims"
+        и «out» равным "b/a.argue.md" и «json» равным нет и «command» равным "" и «part» равным ""
+        и «jobs» равным "" и «pending» равным "" и «fault» равным "")
+    ожидается "b/a.argue.txt"
+  пусть kind равно («In small letters» от (свёртка (разделить (call.«source») по ".") начиная с "" как found и piece →
+      piece))
+  если ["pdf", "docx", "odt", "rtf", "html", "htm", "epub", "fb2"] содержит kind
+    то (соединить [(«Without extension» от (call.«out»)), ".txt"] по "")
+    иначе (call.«source»)
+
+тотальная функция «Proved line»
+  принимает line: строка
+  возвращает признак
+  пример «The code is zero and the kernel says proved»
+    дано line равно "0\ta.flang: ДОКАЗАНО — утверждений 1: доказано 1, условно 0, сетка 0 "
+    ожидается да
+  пример «A refused program is not proved»
+    дано line равно "1\ta.flang: НЕ УДАЛОСЬ ДОКАЗАТЬ — утверждений 1: доказано 0"
+    ожидается нет
+  (line начинается с "0\t") и притом («Kernel proved» от line)
+
+тотальная функция «With outcomes»
+  принимает article: «Article», batch: список «Job», lines: список строки
+  возвращает «Article»
+  пусть judged равно (article.«judged»)
+  пусть outcomes равно (свёртка batch начиная с (judged.«outcomes») как held и job →
+      добавить (запись «Kernel answer» с «id» равным (job.«id») и «role» равным (job.«role»)
+      и «proven» равным (не (пусто (отфильтровать («Taken» от («Lines after» от lines
+      и ((длина held) минус (длина (judged.«outcomes»)))) и 1) где line → «Proved line» от line)))) к held)
+  (запись «Article» с «path» равным (article.«path») и «text» равным (article.«text»)
+      и «judged» равным (запись «Judged» с «markup» равным (judged.«markup»)
+      и «verdicts» равным (judged.«verdicts») и «clashes» равным (judged.«clashes») и «outcomes» равным outcomes)
+      и «dropped» равным (article.«dropped») и «grammar» равным (article.«grammar») и «rows» равным (article.«rows»)
+      и «skipped» равным (article.«skipped») и «seconds» равным (article.«seconds»)
+      и «tables» равным (article.«tables»))
+
+тотальная функция «After kernel»
+  принимает task: «Run», article: «Article», waiting: список «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть size равно («Count of» от ((task.«call»).«jobs») и 8)
+  пусть batch равно («First jobs» от waiting и size)
+  пусть rest равно («Later jobs» от waiting и size)
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то «Next judgment» от task и («With outcomes» от article и batch и (разделить out по "\n")) и rest
+    случай любое
+      то «Next judgment» от task и («With outcomes» от article и batch и пустой список) и rest
+
+тотальная функция «Checked article»
+  принимает task: «Run», article: «Article», reply: «Отклик»
+  возвращает «Article»
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то «With crosscheck» от article и out и ((task.«guard»).«started»)
+    случай любое
+      то «With crosscheck» от article и "\nfailed\nпрограмма сверки не запустилась" и ""
+
+тотальная функция «After crosscheck»
+  принимает task: «Run», article: «Article», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть call равно (task.«call»)
+  пусть checked равно («Checked article» от task и article и reply)
+  (вариант «Сделать» с поручение равным (вариант «Записать файл»
+      с путь равным («Path from root» от (call.«out»))
+      и содержимое равным (если call.«json» то («Json report of» от checked) иначе («Article report of» от checked)))
+      и потом равным (вариант «Written» с words равным («Words of the end» от task и checked)))
+
+тотальная функция «After writing»
+  принимает words: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как cried
+      то «Refusal» от "FLANG_ARGUE_CANNOT_WRITE" и (соединить ["отчёт не записан: ", cried] по "")
+    случай любое
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "/dev/stderr"
+          и содержимое равным words) и потом равным (вариант «Said» с words равным words))
+
+тотальная функция «Begin»
+  возвращает «Article step»
+  пример «The plan starts from the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Onward»
+  принимает stage: «Article step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то «After arguments» от reply
+    случай вариант «Awaiting source» с call как call и guard как guard
+      то «After source» от call и guard и reply
+    случай вариант «Marking» с call как call и source как source и waiting как waiting и done как done
+      то «After marking» от call и source и waiting и done и reply
+    случай вариант «Saving» с call как call и source как source и claims как claims и parts как parts
+      то «After saving» от call и source и claims и parts и reply
+    случай вариант «Weighing» с task как task и article как article и steps как steps и lefts как lefts
+      то «After weighing» от task и article и steps и lefts
+    случай вариант «Weighed» с task как task и article как article
+      то «After weighed» от task и article
+    случай вариант «Judging» с task как task и article как article и waiting как waiting
+      то «After kernel» от task и article и waiting и reply
+    случай вариант «Crosschecking» с task как task и article как article
+      то «After crosscheck» от task и article и reply
+    случай вариант «Written» с words как words
+      то «After writing» от words и reply
+    случай вариант «Said» с words как words
+      то вариант «Конец работы» с значение равным words
+
+план «Article»
+  состояние «Article step»
+  начинает с «Begin»
+  обрабатывает «Onward»
+
+тип «Guard step»
+  вариант «Guard start»
+  вариант «Guard arguments»
+  вариант «Guard running»
+  вариант «Guard said» содержит code: число
+
+тотальная функция «Guard script»
+  возвращает строка
+  """
+  [ "$1" = "--" ] && shift
+  cd "$0" || exit 2
+  bin=${FLANG_BIN:-bootstrap/flang}
+  limit=${FLANG_ARGUE_UNIT_SECONDS:-300}
+  memory=${FLANG_ARGUE_MEMORY:-16G}
+  retries=${FLANG_ARGUE_RETRIES:-40}
+  dir=$(mktemp -d "${FLANG_TMP:-${TMPDIR:-/tmp}}/argue.XXXXXX") || exit 2
+  trap 'rm -rf "$dir"' EXIT
+  trap 'kill "$pid" 2> /dev/null; rm -rf "$dir"; exit 130' INT TERM
+  started=$(date +%s)
+  skip=${FLANG_ARGUE_SKIP:-}
+  tries=0
+  while :; do
+    : > "$dir/progress"
+    "$bin" io flang/experimental/argue-article.fscript --plan Article --max-steps 1000000000000 \\
+      --timeout 86400000 --memory-limit "$memory" -- "$@" \\
+      --progress "$dir/progress" --skip "$skip" --started "$started" > /dev/null 2> "$dir/said" &
+    pid=$!
+    seen=
+    quiet=0
+    stalled=
+    while kill -0 "$pid" 2> /dev/null; do
+      sleep 1
+      unit=$(cat "$dir/progress" 2> /dev/null)
+      if [ "$unit" = "$seen" ]; then quiet=$((quiet + 1)); else seen=$unit; quiet=0; fi
+      case "$unit" in
+        step:*|pair:*)
+          if [ "$quiet" -gt "$limit" ]; then stalled=$unit; kill "$pid" 2> /dev/null; fi ;;
+      esac
+    done
+    wait "$pid"
+    code=$?
+    unit=$(cat "$dir/progress" 2> /dev/null)
+    case "$unit" in
+      step:*|pair:*)
+        if [ "$code" -ne 0 ] && [ "$tries" -lt "$retries" ]; then
+          tries=$((tries + 1))
+          skip="$skip,$unit"
+          echo "не досчитано: $unit — проверка остановлена на пределе, прогон повторяется без этого места" >&2
+          continue
+        fi ;;
+    esac
+    grep -v '^{"error":"' "$dir/said" >&2
+    sed -n 's/^{"error":"\\(.*\\)","diagnostics":\\[{"code":"\\([A-Z_]*\\)".*$/\\1 [\\2]/p' "$dir/said" \\
+      | awk '{ gsub(/\\\\n/, "\\n"); gsub(/\\\\"/, "\\""); print }' >&2
+    echo "время: $(($(date +%s) - started)) с" >&2
+    exit "$code"
+  done
+  """
+
+тотальная функция «Guard begin»
+  возвращает «Guard step»
+  пример «The guarded run starts from the start»
+    ожидается вариант «Guard start»
+  вариант «Guard start»
+
+тотальная функция «Guard order»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Доводы» с доводы как said
+      то (вариант «Сделать» с поручение равным (вариант «Запустить процесс» с программа равным "sh"
+          и аргументы равным («Соединить списки» от ["-c", («Guard script»), («Root»)] и said))
+          и потом равным (вариант «Guard running»))
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_USAGE" и («Usage»)
+
+тотальная функция «Guard report»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  пример «A run that could not start is a failure»
+    дано reply равно вариант «Пока ничего»
+    ожидается вариант «Провал» с код равным "FLANG_ARGUE_FAILED" и сообщение равным "проверка не запустилась"
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "/dev/stderr"
+          и содержимое равным cried) и потом равным (вариант «Guard said» с code равным code))
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_FAILED" и "проверка не запустилась"
+
+тотальная функция «Guard onward»
+  принимает stage: «Guard step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Guard start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Guard arguments»)
+    случай вариант «Guard arguments»
+      то «Guard order» от reply
+    случай вариант «Guard running»
+      то «Guard report» от reply
+    случай вариант «Guard said» с code как code
+      то (если code равен 0 то (вариант «Конец работы» с значение равным "")
+          иначе («Refusal» от "FLANG_ARGUE_FAILED" и "проверка не завершена: причина названа выше"))
+
+план «Guarded»
+  состояние «Guard step»
+  начинает с «Guard begin»
+  обрабатывает «Guard onward»

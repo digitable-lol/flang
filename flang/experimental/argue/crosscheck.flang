@@ -3,7 +3,8 @@
   использует «Argue logic» из "logic.flang"
   использует «Argue claims» из "claims.flang"
   использует «Argue judge» из "judge.flang"
-  использует «Russian meaning parses» из "../../ct/russian/meaning-parses.flang"
+  использует «Russian meaning» из "../../ct/russian/meaning.flang"
+  использует «Russian meaning text» из "../../ct/russian/meaning-text.flang"
 
 примечание "Сверка разметки с грамматикой. Форму суждения в .claims пишет человек или языковая модель,
 и она может не соответствовать цитате. Здесь цитату читает сама грамматика, и её форма сравнивается
@@ -35,8 +36,8 @@
 тотальная функция «Placeholders»
   возвращает список строки
   пример «Things that stand for the places of a notion»
-    ожидается ["Икс", "Игрек", "Зет"]
-  ["Икс", "Игрек", "Зет"]
+    ожидается ["икс", "игрек", "зет"]
+  ["икс", "игрек", "зет"]
 
 тотальная функция «First of»
   принимает words: список строки, count: число
@@ -53,27 +54,29 @@
   принимает rows: список строки, word: строка
   возвращает строка
   пример «A short adjective goes to its dictionary form»
-    дано rows равно ["надёжен|надёжный|кр_прил|м ед"]
+    дано rows равно ["надежен=надёжный,кр_прил,*,м,ед"]
     дано word равно "надёжен"
     ожидается "надёжный"
   пример «An unknown word stays»
     дано rows равно пустой список
     дано word равно "тори"
     ожидается "тори"
-  разбор («Строки формы» от rows и word)
+  пусть key равно (соединить [(«Replaced in» от word и "ё" и "е"), "="] по "")
+  разбор (отфильтровать rows где row → row начинается с key)
     случай пусто
       то word
     случай голова и хвост
-      то элемент 2 в голова
+      то элемент 1 в (разделить (элемент 2 в (разделить голова по "=")) по ",")
 
 тотальная функция «Lemma name»
   принимает rows: список строки, name: строка
   возвращает строка
-  пример «Every part of a compound name goes to its dictionary form»
-    дано rows равно ["копией|копия|сущ|тв ж ед", "с|с|предлог|тв"]
-    дано name равно "с_копией"
-    ожидается "с_копия"
-  соединить (отобразить (разделить name по "_") как part → «Lemma of word» от rows и part) по "_"
+  пример «A name is compared in small letters, by dictionary forms, without the mark of the genitive»
+    дано rows равно ["достижимости=достижимость,сущ,род,ж,ед"]
+    дано name равно "Матрица_достижимости"
+    ожидается "матрица_достижимость"
+  пусть parts равно (отфильтровать (разделить («In small letters» от name) по "_") где part → не (part равен "род"))
+  соединить (отобразить parts как part → «Lemma of word» от rows и part) по "_"
 
 тотальная функция «Capital letter»
   принимает sign: строка
@@ -114,40 +117,39 @@
 тотальная функция «Plain body»
   принимает forms: список строки
   возвращает список «Formula»
-  пример «Two readings of a note define nothing»
-    дано forms равно ["а", "б"]
+  пример «A note without a reading defines nothing»
+    дано forms равно пустой список
     ожидается пустой список
   пусть read равно (отобразить forms как form → «Form of» от form)
   пусть plain равно (отфильтровать read где form → (пусто (form.«quantifier»)) и притом (пусто (form.«fault»)))
-  если (длина forms) равен 1
-    то (отобразить plain как form → form.«body»)
-    иначе пустой список
+  разбор plain
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [(голова.«body»)]
 
 тотальная функция «By note»
   принимает rows: список строки, notion: «Notion»
   возвращает список «Definition»
   пусть forms равно (если пусто (notion.«note»)
     то пустой список
-    иначе («Формы предложения» от («Note sentence» от (notion.«note»)) и rows).формы)
+    иначе («Формы предложения» от («Note sentence» от (notion.«note»)) и rows и («Предел форм»)).формы)
   (отобразить («Plain body» от forms) как body → запись «Definition» с «name» равным (notion.«name»)
     и «body» равным body и «how» равным "по пояснению")
 
 тотальная функция «By lemma»
   принимает rows: список строки, notion: «Notion», known: список строки
   возвращает список «Definition»
-  пример «A notion named by a word form is the notion named by its dictionary form»
-    дано rows равно ["надёжен|надёжный|кр_прил|м ед"]
-    дано notion равно (запись «Notion» с «name» равным "надёжен" и «arity» равным 1 и «note» равным ""
-      и «line» равным 1)
-    дано known равно ["надёжный"]
-    ожидается [(запись «Definition» с «name» равным "надёжен"
-      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
-  пусть lemma равно («Lemma name» от («Соединить списки» от («Строки словаря») и rows) и (notion.«name»))
-  если known содержит lemma
-    то [(запись «Definition» с «name» равным (notion.«name»)
-      и «body» равным (вариант «Atom» с name равным lemma
-      и terms равным («First of» от («Placeholders») и (notion.«arity»))) и «how» равным "по лемме")]
-    иначе пустой список
+  пусть every равно («Соединить списки» от rows и («Соединить списки» от («Пробные слова») и («Пробный словарь»)))
+  пусть lemma равно («Lemma name» от every и (notion.«name»))
+  пусть alike равно (отфильтровать known где name → («Lemma name» от every и name) равен lemma)
+  разбор alike
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то [(запись «Definition» с «name» равным (notion.«name»)
+        и «body» равным (вариант «Atom» с name равным голова
+        и terms равным («First of» от («Placeholders») и (notion.«arity»))) и «how» равным "по лемме")]
 
 тотальная функция «Definition of»
   принимает rows: список строки, notion: «Notion», known: список строки
@@ -179,7 +181,7 @@
   возвращает список (список строки)
   пример «Each place gets its term»
     дано terms равно ["Моби", "Ахав"]
-    ожидается [["Икс", "Моби"], ["Игрек", "Ахав"]]
+    ожидается [["икс", "Моби"], ["игрек", "Ахав"]]
   (свёртка terms начиная с (пустой список) как pairs и term → если (длина pairs) меньше 3
     то (добавить [(элемент ((длина pairs) плюс 1) в («Placeholders»)), term] к pairs)
     иначе pairs)
@@ -199,7 +201,7 @@
   пример «A defined notion is replaced by its definition about the same thing»
     дано formula равно (вариант «Not» с inner равным (вариант «Atom» с name равным "надёжен" и terms равным ["x"]))
     дано definitions равно [(запись «Definition» с «name» равным "надёжен"
-      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
+      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["икс"]) и «how» равным "по лемме")]
     ожидается (вариант «Not» с inner равным (вариант «Atom» с name равным "надёжный" и terms равным ["x"]))
   разбор formula
     случай вариант «Truth» с holds как holds
@@ -223,9 +225,9 @@
   возвращает список строки
   пример «A match says what was taken for what and how»
     дано definitions равно [(запись «Definition» с «name» равным "надёжен"
-      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
+      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["икс"]) и «how» равным "по лемме")]
     ожидается ["надёжен = надёжный(x) (по лемме)"]
-  пусть places равно [["Икс", "x"], ["Игрек", "y"], ["Зет", "z"]]
+  пусть places равно [["икс", "x"], ["игрек", "y"], ["зет", "z"]]
   (отобразить definitions как definition → соединить [(definition.«name»), " = ",
     («Formula text» от («Substituted» от (definition.«body») и places)), " (", (definition.«how»), ")"] по "")
 
@@ -267,23 +269,43 @@
     то «Соединить списки» от forth и home
     иначе (если kind равен "other" то failed иначе пустой список)
 
+тотальная функция «Things alike»
+  принимает rows: список строки, own: список строки, known: список строки
+  возвращает список (список строки)
+  пусть every равно («Соединить списки» от rows и («Соединить списки» от («Пробные слова») и («Пробный словарь»)))
+  (свёртка (отфильтровать own где thing → не (known содержит thing)) начиная с (пустой список) как pairs и thing →
+    свёртка known начиная с pairs как grown и name → если («Lemma name» от every и name) равен («Lemma name» от every
+    и thing)
+    то (добавить [thing, name] к grown)
+    иначе grown)
+
+тотальная функция «Things matched»
+  принимает pairs: список (список строки)
+  возвращает список строки
+  пример «A matched thing says what was taken for what»
+    дано pairs равно [["Архив", "архив"]]
+    ожидается ["Архив = архив (по лемме)"]
+  отобразить pairs как pair → соединить [(элемент 1 в pair), " = ", (элемент 2 в pair), " (по лемме)"] по ""
+
 тотальная функция «Reading of form»
   принимает label: строка, rows: список строки, notions: список «Notion», model: «Quantified», grammar: строка
   возвращает «Reading»
   пусть read равно («Form of» от grammar)
   пусть definitions равно («Definitions for» от rows и notions и (model.«body») и (read.«body»))
+  пусть things равно («Things alike» от rows и («Constants of» от model) и («Constants of» от read))
   пусть unfolded равно (запись «Quantified» с «quantifier» равным (model.«quantifier»)
-    и «variables» равным (model.«variables») и «body» равным («Unfolded» от (model.«body») и definitions)
-    и «fault» равным "")
+    и «variables» равным (model.«variables»)
+    и «body» равным («Substituted» от («Unfolded» от (model.«body») и definitions) и things) и «fault» равным "")
   пусть there равно («One way» от (соединить [label, ": из формы разметки следует форма грамматики"] по "")
     и unfolded и read)
   пусть back равно («One way» от (соединить [label, ": из формы грамматики следует форма разметки"] по "")
     и read и unfolded)
   пусть kind равно («Kind of pair» от there и back)
-  пусть own равно («Names in» от (unfolded.«body»))
+  пусть own равно («Соединить списки» от («Names in» от (unfolded.«body»)) и («Constants of» от unfolded))
+  пусть theirs равно («Соединить списки» от («Names in» от (read.«body»)) и («Constants of» от read))
   (запись «Reading» с «form» равным grammar и «kind» равным kind
-    и «matched» равным («Matched words» от definitions)
-    и «unmatched» равным (отфильтровать («Names in» от (read.«body»)) где name → не (own содержит name))
+    и «matched» равным («Соединить списки» от («Matched words» от definitions) и («Things matched» от things))
+    и «unmatched» равным (отфильтровать theirs где name → не (own содержит name))
     и «jobs» равным («Jobs of pair» от label и kind и there и back))
 
 тотальная функция «Bare quote»
@@ -305,24 +327,63 @@
   возвращает строка
   пусть missing равно («Each once» от (свёртка readings начиная с (пустой список) как found и reading →
     «Соединить списки» от found и (reading.«unmatched»)))
-  если пусто missing
-    то "понятия те же, логическая форма другая"
-    иначе соединить ["понятия не сопоставлены: ", (соединить missing по ", ")] по ""
+  пусть plain равно (отфильтровать readings где reading → пусто (reading.«unmatched»))
+  если пусто plain
+    то соединить ["имена не сопоставлены: ", (соединить missing по ", ")] по ""
+    иначе "форма другая"
+
+тотальная функция «Place of the same»
+  принимает readings: список «Reading»
+  возвращает число
+  пусть count равно (свёртка readings начиная с [0, 0] как pair и reading → [((элемент 1 в pair) плюс 1),
+    (если ((элемент 2 в pair) равен 0) и притом ((reading.«kind») равен "same")
+      то ((элемент 1 в pair) плюс 1)
+      иначе (элемент 2 в pair))])
+  элемент 2 в count
+
+тотальная функция «Status without the same»
+  принимает cut: признак, all_other: признак
+  возвращает строка
+  если cut
+    то "unread"
+    иначе (если all_other то "differs" иначе "undecided")
+
+тотальная функция «Status of readings»
+  принимает has_same: признак, cut: признак, all_other: признак
+  возвращает строка
+  пример «One equivalent form is enough»
+    дано has_same равно да
+    дано cut равно да
+    дано all_other равно нет
+    ожидается "confirmed"
+  пример «A difference needs every form to differ»
+    дано has_same равно нет
+    дано cut равно нет
+    дано all_other равно да
+    ожидается "differs"
+  если has_same то "confirmed" иначе («Status without the same» от cut и all_other)
 
 тотальная функция «Settled readings»
-  принимает label: строка, model: строка, readings: список «Reading»
+  принимает label: строка, model: строка, readings: список «Reading», cut: признак
   возвращает «Crosscheck»
   пусть same равно (отфильтровать readings где reading → (reading.«kind») равен "same")
   пусть other равно (отфильтровать readings где reading → (reading.«kind») равен "other")
   пусть forms равно (отобразить readings как reading → reading.«form»)
   пусть lead равно (если пусто same то (если пусто other то readings иначе other) иначе same)
-  пусть status равно (если пусто same то (если (длина other) равен (длина readings) то "differs" иначе "undecided")
-    иначе "confirmed")
-  пусть reason равно (если status равен "differs" то («Reason of difference» от readings)
-    иначе (если status равен "undecided" то "формы велики для ядра" иначе ""))
+  пусть all_other равно ((длина other) равен (длина readings))
+  пусть plain равно (отфильтровать readings где reading → пусто (reading.«unmatched»))
+  пусть early равно («Status of readings» от (не (пусто same)) и cut и all_other)
+  пусть status равно (если (early равен "differs") и притом (пусто plain) то "unmatched" иначе early)
+  пусть which равно (соединить ["форма ", (к строке («Place of the same» от readings)), " из ",
+    (к строке (длина readings))] по "")
+  пусть reason равно (свёртка [["confirmed", which], ["differs", «Reason of difference» от readings],
+    ["unmatched", «Reason of difference» от readings],
+    ["unread", "слишком много чтений, среди первых равносильной нет"], ["undecided", "формы велики для ядра"]]
+    начиная с "" как found и row → если (элемент 1 в row) равен status то (элемент 2 в row) иначе found)
   (запись «Crosscheck» с «label» равным label и «status» равным status и «model» равным model
     и «grammar» равным (если status равен "confirmed" то [((голова lead).«form»)] иначе forms)
-    и «reason» равным reason и «matched» равным ((голова lead).«matched») и «jobs» равным ((голова lead).«jobs»))
+    и «reason» равным reason и «matched» равным ((голова lead).«matched»)
+    и «jobs» равным (если status равен "unread" то (пустой список) иначе ((голова lead).«jobs»)))
 
 тотальная функция «Unread»
   принимает label: строка, model: строка, reason: строка
@@ -331,17 +392,29 @@
     и «grammar» равным пустой список и «reason» равным reason и «matched» равным пустой список
     и «jobs» равным пустой список)
 
+тотальная функция «With reference»
+  принимает check: «Crosscheck», notes: список строки
+  возвращает «Crosscheck»
+  пусть presumed равно (((check.«status») равен "confirmed") и притом (не (пусто notes)))
+  (запись «Crosscheck» с «label» равным (check.«label»)
+    и «status» равным (если presumed то "presumed" иначе (check.«status»)) и «model» равным (check.«model»)
+    и «grammar» равным (check.«grammar») и «reason» равным (check.«reason»)
+    и «matched» равным («Соединить списки» от (check.«matched») и (отобразить notes как words →
+    соединить [words, " (отсылка, предположительно)"] по "")) и «jobs» равным (check.«jobs»))
+
 тотальная функция «Crosscheck of»
-  принимает label: строка, quote: строка, formula: строка, notions: список «Notion», rows: список строки
+  принимает label: строка, quote: строка, before: строка, formula: строка, notions: список «Notion», rows: список строки
   возвращает «Crosscheck»
   пусть model равно («Form of» от formula)
-  пусть read равно («Формы предложения» от («Bare quote» от quote) и rows)
+  пусть taken равно («Формы в тексте» от («Bare quote» от quote) и («Bare quote» от before) и rows и («Предел форм»))
+  пусть read равно taken.формы
   пусть readings равно (отобразить read.формы как form → «Reading of form» от label и rows и notions и model и form)
+  пусть cut равно (read.различных больше (длина read.формы))
   если не (пусто (model.«fault»))
     то «Unread» от label и formula и (соединить ["форма разметки не читается: ", (model.«fault»)] по "")
     иначе (если пусто readings
       то «Unread» от label и formula и (соединить read.причины по "; ")
-      иначе «Settled readings» от label и formula и readings)
+      иначе «With reference» от («Settled readings» от label и formula и readings и cut) и taken.пометы)
 
 тотальная функция «After the kernel»
   принимает check: «Crosscheck», outcomes: список «Kernel answer»
@@ -362,6 +435,7 @@
     дано status равно "confirmed"
     ожидается "подтверждено грамматикой"
   (свёртка [["confirmed", "подтверждено грамматикой"], ["differs", "расходится"], ["unread", "грамматика не прочла"],
+    ["presumed", "подтверждено с предположительной отсылкой"], ["unmatched", "понятия не сопоставлены"],
     ["undecided", "ядро не решило"]] начиная с status как words и row → если (элемент 1 в row) равен status
     то (элемент 2 в row)
     иначе words)
@@ -386,8 +460,14 @@
 тотальная функция «Crosschecks of»
   принимает markup: «Markup», rows: список строки
   возвращает список «Crosscheck»
-  (отобразить (markup.«entries») как entry → «Crosscheck of» от (entry.«number») и (entry.«quote»)
-    и (entry.«formula») и (markup.«notions») и rows)
+  (свёртка (markup.«entries») начиная с (пустой список) как checks и entry → добавить («Crosscheck of»
+    от (entry.«number») и (entry.«quote») и («Quote before» от (markup.«entries») и (длина checks))
+    и (entry.«formula») и (markup.«notions») и rows) к checks)
+
+тотальная функция «Quote before»
+  принимает entries: список «Thesis», place: число
+  возвращает строка
+  если place меньше 1 то "" иначе ((элемент place в entries).«quote»)
 
 тотальная функция «Crosscheck jobs»
   принимает checks: список «Crosscheck»

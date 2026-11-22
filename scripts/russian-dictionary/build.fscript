@@ -1,0 +1,536 @@
+модуль «Russian dictionary build»
+  использует «Lists» только «Соединить списки»
+
+примечание "План собирает данные русского словаря для flang/ct/russian/dictionary из выгрузки
+словаря OpenCorpora. Доводы: каталог словаря и, если выгрузка уже скачана, её файл. Выгрузка
+распространяется по лицензии CC BY-SA 3.0, поэтому собранные данные — производное произведение
+под той же лицензией. В дерево они не входят: их собирают у себя и держат вне дерева."
+
+примечание "Выгрузка приходит сжатой bzip2; файл с именем на .xml читается как есть — так собран
+образец для проб. Выгрузка читается как данные. Её разбирают две программы на awk, записанные
+ниже текстом: первая читает леммы и сводит формы к основе и парадигме окончаний, вторая
+раскладывает строки по файлам кусков. Ничего из выгрузки не исполняется, и её текст не становится
+именем файла: куски названы номерами букв."
+
+тип «Шаг сборки»
+  вариант «Начало»
+  вариант «Ждём доводы»
+  вариант «Ждём сборку»
+  вариант «Сказано» содержит слова: строка
+
+тотальная функция «Корень»
+  возвращает строка
+  пример «корень дерева от каталога плана»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Как звать»
+  возвращает строка
+  пример «строка вызова»
+    ожидается "вызов: flang io scripts/russian-dictionary/build.fscript --timeout 1800000 -- <каталог> [<выгрузка>]"
+  "вызов: flang io scripts/russian-dictionary/build.fscript --timeout 1800000 -- <каталог> [<выгрузка>]"
+
+тотальная функция «Адрес выгрузки»
+  возвращает строка
+  (соединить ["http://web.archive.org/web/20240423122538id_/",
+    "https://www.opencorpora.org/files/export/dict/dict.opcorpora.xml.bz2"] по "")
+
+тотальная функция «Программа разбора»
+  возвращает строка
+  """
+  # Reads the OpenCorpora XML dictionary as data and prints records for the flang
+  # dictionary files. Nothing from the input is executed or used as a path:
+  # shard names are numbers computed from letters of the Russian alphabet.
+  #
+  # Pass 1 (pass=1): prints "H <id> <lemma>" and "L <to> <from>" lines.
+  # Pass 2 (pass=2): reads those lines from the file named by `heads`, then prints
+  #   "S <shard> <key> <tab><value>"  a line of a shard file; the shard is named by three letter numbers
+  #   "P <line>"           a line of paradigms.txt
+  #   "T <line>"           a line of tags.txt
+  #   "E <ending>"         an ending that some paradigm has, a line of endings.txt
+  #   "N <name> <number>"  a count for the build report
+
+  function clean(word) {
+    word = tolower(word)
+    gsub(/ё/, "е", word)
+    return word
+  }
+
+  function letter_number(letter) {
+    return letter == "" ? 0 : index(ALPHABET, letter)
+  }
+
+  function shard_of(key) {
+    return letter_number(substr(key, 1, 1)) "-" letter_number(substr(key, 2, 1)) "-" letter_number(substr(key, 3, 1))
+  }
+
+  # A line goes to the shard named by the first three letters of its key. A stem of
+  # two letters is the start of words from many shards, so it waits until the end
+  # and is then copied into every shard that shares its two letters. The shards of
+  # its own forms are marked as used, so that each form finds its stem.
+  function put(key, value,    shard) {
+    if (length(key) == 2 && substr(key, 1, 1) != "=") {
+      SHORT[++shorts] = key " \\t" value
+      return
+    }
+    shard = shard_of(substr(key, 1, 1) == "=" ? substr(key, 2) : key)
+    USED[shard] = 1
+    print "S " shard " " key " \\t" value
+  }
+
+  function set_names() {
+    PART["NOUN"] = "существительное"; PART["ADJF"] = "прилагательное"; PART["ADJS"] = "прилагательное"
+    PART["COMP"] = "прилагательное"; PART["VERB"] = "глагол"; PART["INFN"] = "глагол"
+    PART["PRTF"] = "причастие"; PART["PRTS"] = "причастие"; PART["GRND"] = "деепричастие"
+    PART["NUMR"] = "числительное"; PART["ADVB"] = "наречие"; PART["NPRO"] = "местоимение"
+    PART["PRED"] = "предикатив"; PART["PREP"] = "предлог"; PART["CONJ"] = "союз"
+    PART["PRCL"] = "частица"; PART["INTJ"] = "междометие"
+    MARK["ADJS"] = "кратк"; MARK["PRTS"] = "кратк"; MARK["COMP"] = "сравн"; MARK["INFN"] = "инф"
+    CASE["nomn"] = "им"; CASE["gent"] = "род"; CASE["gen1"] = "род"; CASE["gen2"] = "род"
+    CASE["datv"] = "дат"; CASE["accs"] = "вин"; CASE["acc2"] = "вин"; CASE["ablt"] = "тв"
+    CASE["loct"] = "предл"; CASE["loc1"] = "предл"; CASE["loc2"] = "предл"; CASE["voct"] = "зв"
+    MARK["gen2"] = "род2"; MARK["acc2"] = "вин2"; MARK["loc2"] = "местн"
+    GENDER["masc"] = "м"; GENDER["femn"] = "ж"; GENDER["neut"] = "с"
+    NUMBER["sing"] = "ед"; NUMBER["plur"] = "мн"
+    PERSON["1per"] = "1"; PERSON["2per"] = "2"; PERSON["3per"] = "3"
+    TENSE["pres"] = "наст"; TENSE["past"] = "прош"; TENSE["futr"] = "буд"
+    MARK["anim"] = "одуш"; MARK["inan"] = "неодуш"; MARK["perf"] = "сов"; MARK["impf"] = "несов"
+    MARK["tran"] = "перех"; MARK["intr"] = "неперех"; MARK["actv"] = "действ"; MARK["pssv"] = "страд"
+    MARK["impr"] = "повел"; MARK["Impe"] = "безл"; MARK["Name"] = "имя"; MARK["Surn"] = "фамилия"
+    MARK["Patr"] = "отчество"; MARK["Geox"] = "место"; MARK["Orgn"] = "организация"; MARK["Abbr"] = "сокр"
+    MARK["Poss"] = "притяж"; MARK["Qual"] = "кач"; MARK["Supr"] = "превосх"; MARK["Apro"] = "мест"
+    MARK["Anum"] = "порядк"; MARK["ms-f"] = "общ"; MARK["Sgtm"] = "толькоед"; MARK["Pltm"] = "толькомн"
+    MARK["Fixd"] = "неизм"; MARK["Coll"] = "собир"; MARK["Infr"] = "разг"; MARK["Slng"] = "жарг"
+    MARK["Arch"] = "устар"; MARK["Erro"] = "ошибка"; MARK["Dist"] = "искаж"; MARK["Coun"] = "счётн"
+    MARK["Subx"] = "субст"; MARK["Prnt"] = "вводн"; MARK["Ques"] = "вопр"; MARK["Dmns"] = "указ"
+    MARK["Anph"] = "анаф"; MARK["Af-p"] = "послепредл"; MARK["Init"] = "инициал"
+    SKIP["indc"] = 1; SKIP["incl"] = 1; SKIP["excl"] = 1; SKIP["GNdr"] = 1; SKIP["Cmp2"] = 1
+    RARE["Arch"] = 1; RARE["Infr"] = 1; RARE["Slng"] = 1; RARE["Erro"] = 1; RARE["Dist"] = 1; RARE["Name"] = 1
+    RARE["Surn"] = 1; RARE["Patr"] = 1; RARE["Geox"] = 1; RARE["Orgn"] = 1; RARE["Abbr"] = 1; RARE["Init"] = 1
+  }
+
+  # "NOUN,anim,masc,sing,nomn" -> "существительное им м ед * * одуш"
+  # The export has no word frequencies. A reading that the export itself marks as
+  # archaic, colloquial, slang, a misspelling, a variant form, a proper name or an
+  # abbreviation gets one more mark, so that the reader can put it last.
+  function features(raw,    names, count, at, name, part, kase, gender, number, person, tense, marks, rare) {
+    if (raw in FEATURES) return FEATURES[raw]
+    part = "*"; kase = "*"; gender = "*"; number = "*"; person = "*"; tense = "*"; marks = ""; rare = 0
+    count = split(raw, names, ",")
+    for (at = 1; at <= count; at++) {
+      name = names[at]
+      if ((name in RARE) || substr(name, 1, 2) == "V-") rare = 1
+      if (name in PART) part = PART[name]
+      if (name in CASE) kase = CASE[name]
+      if (name in GENDER) gender = GENDER[name]
+      if (name in NUMBER) number = NUMBER[name]
+      if (name in PERSON) person = PERSON[name]
+      if (name in TENSE) tense = TENSE[name]
+      if (name in MARK) marks = marks "," MARK[name]
+      else if (substr(name, 1, 2) == "V-") { if (index(marks, ",вариант") == 0) marks = marks ",вариант" }
+      else if (!(name in PART) && !(name in CASE) && !(name in GENDER) && !(name in NUMBER) && \\
+               !(name in PERSON) && !(name in TENSE) && !(name in SKIP) && name ~ /^[A-Za-z0-9-]+$/)
+        marks = marks "," name
+    }
+    if (rare) marks = marks ",редк"
+    if (marks == "") marks = ",*"
+    FEATURES[raw] = part " " kase " " gender " " number " " person " " tense " " substr(marks, 2)
+    return FEATURES[raw]
+  }
+
+  function tag_number(raw,    text) {
+    text = features(raw)
+    if (!(text in TAG)) {
+      tags++
+      TAG[text] = tags
+      print "T " tags "\\t" text
+    }
+    return TAG[text]
+  }
+
+  function names_of(piece,    parts, count, at, cut, out) {
+    out = ""
+    count = split(piece, parts, "<g v=\\"")
+    for (at = 2; at <= count; at++) {
+      cut = index(parts[at], "\\"")
+      if (cut > 1) out = out "," substr(parts[at], 1, cut - 1)
+    }
+    return out
+  }
+
+  function root_of(id,    hops) {
+    for (hops = 0; hops < 8 && (id in FROM); hops++) id = FROM[id]
+    return id
+  }
+
+  function common_prefix(first, second,    limit, at) {
+    limit = length(first) < length(second) ? length(first) : length(second)
+    for (at = 1; at <= limit; at++)
+      if (substr(first, at, 1) != substr(second, at, 1)) break
+    return substr(first, 1, at - 1)
+  }
+
+  BEGIN {
+    ALPHABET = "абвгдежзийклмнопрстуфхцчшщъыьэюя"
+    set_names()
+    tags = 0; paradigms = 0
+    if (pass == 2) {
+      while ((getline line < heads) > 0) {
+        split(line, field, " ")
+        if (field[1] == "H") HEAD[field[2]] = field[3]
+        else if (field[1] == "L") FROM[field[2]] = field[3]
+      }
+      close(heads)
+    }
+  }
+
+  pass == 1 && /<lemma id="/ {
+    if (match($0, /<lemma id="[0-9]+"/) == 0) next
+    id = substr($0, RSTART + 11, RLENGTH - 12)
+    at = index($0, "<l t=\\"")
+    if (at == 0) next
+    rest = substr($0, at + 6)
+    word = clean(substr(rest, 1, index(rest, "\\"") - 1))
+    if (word ~ /^[а-я][а-я-]*$/) print "H " id " " word
+    next
+  }
+
+  pass == 1 && /<link id="/ {
+    if (match($0, /from="[0-9]+"/) == 0) next
+    from = substr($0, RSTART + 6, RLENGTH - 7)
+    if (match($0, /to="[0-9]+"/) == 0) next
+    to = substr($0, RSTART + 4, RLENGTH - 5)
+    if (match($0, /type="[0-9]+"/) == 0) next
+    type = substr($0, RSTART + 6, RLENGTH - 7)
+    if (type ~ /^(1|2|3|4|5|6|26)$/) print "L " to " " from
+    next
+  }
+
+  pass == 2 && /<lemma id="/ {
+    if (match($0, /<lemma id="[0-9]+"/) == 0) next
+    id = substr($0, RSTART + 11, RLENGTH - 12)
+    count = split($0, piece, "<f t=\\"")
+    common = names_of(piece[1])
+    if (common == "") next
+    common = substr(common, 2)
+    kept = 0
+    stem = ""
+    for (at = 2; at <= count; at++) {
+      cut = index(piece[at], "\\"")
+      word = clean(substr(piece[at], 1, cut - 1))
+      own = names_of(piece[at])
+      if (word !~ /^[а-я][а-я-]*$/) { skipped++; continue }
+      if (index(own, ",Cmp2") > 0) { comparatives++; continue }
+      kept++
+      WORD[kept] = word
+      NUMBERED[kept] = tag_number(common own)
+      stem = kept == 1 ? word : common_prefix(stem, word)
+    }
+    if (kept == 0) next
+    lemmas++
+    forms += kept
+    root = root_of(id)
+    lemma = (root in HEAD) ? HEAD[root] : WORD[1]
+    if (length(stem) < 2) {
+      for (at = 1; at <= kept; at++) {
+        key = "=" WORD[at]
+        put(key, NUMBERED[at] "=" lemma)
+      }
+      whole += kept
+      next
+    }
+    if (length(stem) == 2)
+      for (at = 1; at <= kept; at++) USED[shard_of(WORD[at])] = 1
+    delete SEEN
+    order = 0
+    for (at = 1; at <= kept; at++) {
+      ending = substr(WORD[at], length(stem) + 1)
+      if (!(ending in ENDING)) { ENDING[ending] = 1; if (ending != "") print "E " ending }
+      if (!(ending in SEEN)) { order++; ORDER[order] = ending; SEEN[ending] = NUMBERED[at] }
+      else if (index("," SEEN[ending] ",", "," NUMBERED[at] ",") == 0) SEEN[ending] = SEEN[ending] "," NUMBERED[at]
+    }
+    shape = ";"
+    for (at = 1; at <= order; at++) shape = shape ORDER[at] ":" SEEN[ORDER[at]] ";"
+    if (!(shape in PARADIGM)) {
+      paradigms++
+      PARADIGM[shape] = paradigms
+      print "P " paradigms "\\t" shape
+    }
+    if (lemma == stem ORDER[1]) said = ""
+    else if (substr(lemma, 1, length(stem)) == stem) said = "+" substr(lemma, length(stem) + 1)
+    else said = "=" lemma
+    put(stem, PARADIGM[shape] said)
+    next
+  }
+
+  END {
+    if (pass == 2) {
+      for (at = 1; at <= shorts; at++) {
+        stem = substr(SHORT[at], 1, 2)
+        own = shard_of(stem)
+        USED[own] = 1
+        SHARES[stem] = 1
+      }
+      for (shard in USED) {
+        split(shard, number, "-")
+        BY_TWO[number[1] "-" number[2]] = BY_TWO[number[1] "-" number[2]] " " shard
+      }
+      for (at = 1; at <= shorts; at++) {
+        stem = substr(SHORT[at], 1, 2)
+        split(shard_of(stem), number, "-")
+        count = split(substr(BY_TWO[number[1] "-" number[2]], 2), list, " ")
+        for (item = 1; item <= count; item++) print "S " list[item] " " SHORT[at]
+      }
+      print "N lemmas " lemmas
+      print "N forms " forms
+      print "N paradigms " paradigms
+      print "N tags " tags
+      print "N whole-forms " whole
+      print "N skipped-forms " (skipped + 0)
+      print "N comparatives-with-prefix " (comparatives + 0)
+    }
+  }
+  """
+
+тотальная функция «Программа раскладки»
+  возвращает строка
+  """
+  # Turns the sorted records of the first program into the dictionary files under `out`.
+  # A shard name is accepted only as three numbers, so no input text becomes a path.
+  #
+  # A shard file holds 33 sections divided by a bar. A line lives in the
+  # section numbered by the fourth letter of its key (0 when the key is shorter or
+  # the fourth sign is not a letter), so a word is searched in two small sections
+  # instead of the whole file. Every section starts with an empty line.
+
+  function section_of(key,    word) {
+    word = substr(key, 1, 1) == "=" ? substr(key, 2) : key
+    return length(word) < 4 ? 0 : index(ALPHABET, substr(word, 4, 1))
+  }
+
+  function flush_key() {
+    if (key != "" && length(key) + length(values) > 1500) long_lines++
+    else if (key != "") section[section_of(key)] = section[section_of(key)] key "\\t" substr(values, 2) "\\n"
+    key = ""; values = ""
+  }
+
+  function flush_shard(    at) {
+    flush_key()
+    if (file == "") return
+    for (at = 0; at <= 32; at++) {
+      printf "%s\\n%s", (at == 0 ? "" : "|"), section[at] > file
+      section[at] = ""
+    }
+    close(file)
+    file = ""
+  }
+
+  BEGIN { ALPHABET = "абвгдежзийклмнопрстуфхцчшщъыьэюя" }
+
+  $1 == "S" {
+    if ($2 !~ /^[0-9]+-[0-9]+-[0-9]+$/) next
+    tab = index($0, "\\t")
+    head = substr($0, 1, tab - 1)
+    split(head, part, " ")
+    if (part[2] != shard) {
+      flush_shard()
+      shard = part[2]
+      file = out "/shards/" shard ".txt"
+      shards++
+    }
+    if (part[3] != key) { flush_key(); key = part[3] }
+    values = values " " substr($0, tab + 1)
+    next
+  }
+
+  # "P <number><tab><text>": the line with that number in paradigms.txt; the same for tags.
+  $1 == "P" || $1 == "T" {
+    tab = index($0, "\\t")
+    number = substr($0, 3, tab - 3)
+    if (number !~ /^[0-9]+$/) next
+    number += 0
+    if ($1 == "P") { paradigm[number] = substr($0, tab + 1); if (number > paradigms) paradigms = number }
+    else { tag[number] = substr($0, tab + 1); if (number > tags) tags = number }
+    next
+  }
+
+  $1 == "E" { if ($2 ~ /^[а-я-]+$/) ending[++endings] = $2; next }
+  $1 == "N" { note[++notes] = substr($0, 3); next }
+
+  END {
+    flush_shard()
+    file = out "/paradigms.txt"
+    for (at = 1; at <= paradigms; at++) print paradigm[at] > file
+    close(file)
+    file = out "/tags.txt"
+    for (at = 1; at <= tags; at++) print tag[at] > file
+    close(file)
+    file = out "/endings.txt"
+    printf "\\n" > file
+    for (at = 1; at <= endings; at++) print ending[at] > file
+    close(file)
+    file = out "/build.txt"
+    for (at = 1; at <= notes; at++) print note[at] > file
+    print "endings " endings > file
+    print "shards " shards > file
+    print "dropped-long-lines " (long_lines + 0) > file
+    close(file)
+  }
+  """
+
+тотальная функция «Сценарий сборки»
+  возвращает строка
+  """
+  set -eu
+  URL=${RUSSIAN_DICTIONARY_URL:-$2}
+  compile=$3
+  assemble=$4
+  SHA256=f27150955c5f0978ece14348096f7d1380fc3564b08fdf99f129ede586309b6c
+
+  say() { printf '%s\n' "$*" >&2; }
+  fail() { say "russian-dictionary: $*"; exit 1; }
+
+  cd "$1" || fail "нет корня дерева: $1"
+  out=$5
+  archive=${6:-}
+
+  for tool in bzip2 sort; do
+    command -v "$tool" >/dev/null 2>&1 || fail "нужна программа $tool"
+  done
+  awk=awk
+  command -v gawk >/dev/null 2>&1 && awk=gawk
+  LC_ALL=C.UTF-8
+  export LC_ALL
+  "$awk" 'BEGIN { exit !(length("я") == 1 && tolower("Я") == "я") }' ||
+    fail "awk не читает UTF-8 в локали C.UTF-8: нужен GNU awk (gawk)"
+
+  unpack() {
+    case $1 in
+      *.xml) cat "$1" ;;
+      *) bzip2 -dc "$1" ;;
+    esac
+  }
+
+  mkdir -p "$out"
+  out=$(cd "$out" && pwd)
+  work=$out/.work
+  rm -rf "$work"
+  mkdir -p "$work"
+
+  if [ -z "$archive" ]; then
+    command -v curl >/dev/null 2>&1 || fail "нужна программа curl либо готовый файл вторым доводом"
+    command -v sha256sum >/dev/null 2>&1 || fail "нужна программа sha256sum"
+    archive=$work/dict.opcorpora.xml.bz2
+    say "скачиваю словарь OpenCorpora: $URL"
+    curl -fsSL --max-time 900 -o "$archive" "$URL" || fail "словарь не скачан"
+    if [ -z "${RUSSIAN_DICTIONARY_URL:-}" ]; then
+      got=$(sha256sum "$archive" | cut -d' ' -f1)
+      [ "$got" = "$SHA256" ] || fail "скачан не тот файл: sha256 $got, ждали $SHA256"
+    fi
+  fi
+  [ -f "$archive" ] || fail "нет файла $archive"
+
+  say "читаю леммы и связи"
+  unpack "$archive" | "$awk" -v pass=1 "$compile" > "$work/heads.txt"
+  say "собираю парадигмы"
+  unpack "$archive" | "$awk" -v pass=2 -v heads="$work/heads.txt" "$compile" > "$work/records.txt"
+  say "раскладываю по кускам"
+  grep '^S ' "$work/records.txt" | LC_ALL=C sort -s -t' ' -k2,2 -k3,3 > "$work/sorted.txt"
+  grep -v '^S ' "$work/records.txt" >> "$work/sorted.txt" || true
+  rm -rf "$out/shards"
+  mkdir -p "$out/shards"
+  "$awk" -v out="$out" "$assemble" "$work/sorted.txt"
+
+  pattern='s/.*<dictionary version="\([0-9.]*\)" revision="\([0-9]*\)".*/версия \1, ревизия \2/p'
+  revision=$(unpack "$archive" | head -c 400 | sed -n "$pattern")
+  cat > "$out/LICENSE.txt" <<NOTE
+  Эти данные построены из морфологического словаря OpenCorpora (opencorpora.org),
+  ${revision:-ревизия не прочитана}. Словарь распространяется по лицензии Creative Commons
+  Attribution-ShareAlike 3.0 (CC BY-SA 3.0, creativecommons.org/licenses/by-sa/3.0).
+  Данные — производное произведение и распространяются по той же лицензии: при передаче
+  назовите OpenCorpora и сохраните эту лицензию.
+  Что изменено: формы сведены к основам и парадигмам окончаний, пометы переведены в короткие
+  русские слова, ё записана как е; построено планом scripts/russian-dictionary/build.fscript.
+  NOTE
+
+  rm -rf "$work"
+  say "словарь собран: $out"
+  sed 's/^/  /' "$out/build.txt" >&2
+  """
+
+тотальная функция «Отказ»
+  принимает код: строка, слова: строка
+  возвращает «Продолжение»
+  пример «отказ несёт код и слова»
+    дано код равно "FLANG_RUSSIAN_DICTIONARY_USAGE"
+    дано слова равно "не назван каталог словаря"
+    ожидается (вариант «Провал» с код равным "FLANG_RUSSIAN_DICTIONARY_USAGE"
+      и сообщение равным "не назван каталог словаря")
+  вариант «Провал» с код равным код и сообщение равным слова
+
+тотальная функция «Заказ сборки»
+  принимает доводы: список строки
+  возвращает «Поручение»
+  (вариант «Запустить процесс» с программа равным "sh"
+    и аргументы равным («Соединить списки» от ["-c", («Сценарий сборки»), "build", («Корень»),
+      («Адрес выгрузки»), («Программа разбора»), («Программа раскладки»)] и доводы))
+
+тотальная функция «После доводов»
+  принимает отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «без доводов план называет, как его звать»
+    дано отклик равно вариант «Доводы» с доводы равным пустой список
+    ожидается (вариант «Провал» с код равным "FLANG_RUSSIAN_DICTIONARY_USAGE" и сообщение равным
+      "вызов: flang io scripts/russian-dictionary/build.fscript --timeout 1800000 -- <каталог> [<выгрузка>]")
+  разбор отклик
+    случай вариант «Доводы» с доводы как доводы
+      то (если ((длина доводы) равен 1) или ((длина доводы) равен 2)
+        то (вариант «Сделать» с поручение равным («Заказ сборки» от доводы) и потом равным (вариант «Ждём сборку»))
+        иначе «Отказ» от "FLANG_RUSSIAN_DICTIONARY_USAGE" и («Как звать»))
+    случай любое
+      то «Отказ» от "FLANG_RUSSIAN_DICTIONARY_USAGE" и («Как звать»)
+
+тотальная функция «После сборки»
+  принимает отклик: «Отклик»
+  возвращает «Продолжение»
+  пример «сценарий не запустился — отказ»
+    дано отклик равно вариант «Пока ничего»
+    ожидается (вариант «Провал» с код равным "FLANG_RUSSIAN_DICTIONARY_BUILD"
+      и сообщение равным "сборка словаря не запустилась")
+  пример «сценарий сдался — отказ с его словами»
+    дано отклик равно вариант «Процесс завершён» с код равным 1 и вывод равным "" и ошибки равным "нет awk\n"
+    ожидается вариант «Провал» с код равным "FLANG_RUSSIAN_DICTIONARY_BUILD" и сообщение равным "нет awk\n"
+  разбор отклик
+    случай вариант «Процесс завершён» с код как код и вывод как вывод и ошибки как сказано
+      то (если код равен 0
+        то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "/dev/stderr"
+          и содержимое равным сказано) и потом равным (вариант «Сказано» с слова равным сказано))
+        иначе «Отказ» от "FLANG_RUSSIAN_DICTIONARY_BUILD" и сказано)
+    случай вариант «Сбой» с код как код и сообщение как беда
+      то «Отказ» от "FLANG_RUSSIAN_DICTIONARY_BUILD" и беда
+    случай любое
+      то «Отказ» от "FLANG_RUSSIAN_DICTIONARY_BUILD" и "сборка словаря не запустилась"
+
+тотальная функция «Начать»
+  возвращает «Шаг сборки»
+  пример «план начинается с начала»
+    ожидается вариант «Начало»
+  вариант «Начало»
+
+тотальная функция «Дальше»
+  принимает шаг: «Шаг сборки», отклик: «Отклик»
+  возвращает «Продолжение»
+  разбор шаг
+    случай вариант «Начало»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Ждём доводы»)
+    случай вариант «Ждём доводы»
+      то «После доводов» от отклик
+    случай вариант «Ждём сборку»
+      то «После сборки» от отклик
+    случай вариант «Сказано» с слова как слова
+      то вариант «Конец работы» с значение равным слова
+
+план «Build»
+  состояние «Шаг сборки»
+  начинает с «Начать»
+  обрабатывает «Дальше»

@@ -1,0 +1,674 @@
+модуль «Argue map»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+  использует «Argue report» из "report.flang"
+
+объект «Arc»
+  «conclusion»: строка
+  «premises»: список строки
+  «kind»: строка
+  «status»: строка
+  «bridge»: строка
+
+объект «Pruned»
+  «markup»: «Markup»
+  «dropped»: список строки
+
+объект «Outline row»
+  «indent»: строка
+  «label»: строка
+  «again»: признак
+
+объект «Walk»
+  «stack»: список «Outline row»
+  «rows»: список «Outline row»
+  «opened»: список строки
+
+объект «Assumption»
+  «kind»: строка
+  «label»: строка
+  «words»: строка
+  «falls»: список строки
+
+тотальная функция «Bracketed»
+  принимает labels: список строки
+  возвращает строка
+  пример «Labels stand in square brackets behind commas»
+    дано labels равно ["1", "2а"]
+    ожидается "[1], [2а]"
+  соединить (отобразить labels как label → соединить ["[", label, "]"] по "") по ", "
+
+тотальная функция «Short»
+  принимает text: строка, limit: число
+  возвращает строка
+  пример «A long text is cut and the cut is shown»
+    дано text равно "Идёт дождь"
+    дано limit равно 4
+    ожидается "Идёт…"
+  пример «A short text stays whole»
+    дано text равно "Идёт дождь"
+    дано limit равно 40
+    ожидается "Идёт дождь"
+  если (длина text) не больше limit то text иначе (соединить [(подстрока text с 1 по limit), "…"] по "")
+
+тотальная функция «Thesis words»
+  принимает markup: «Markup», label: строка
+  возвращает строка
+  пример «A judgment nobody wrote has no words»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано label равно "7"
+    ожидается ""
+  (свёртка («Theses by» от (markup.«entries») и label) начиная с "" как found и entry →
+      если пусто found то («Flat» от (entry.«quote»)) иначе found)
+
+тотальная функция «Dropped step words»
+  принимает step: «Inference», lost: список строки
+  возвращает строка
+  пример «A step that lost a judgment names it»
+    дано step равно (запись «Inference» с «line» равным 9 и «conclusion» равным "3" и «premises» равным ["1", "2"]
+        и «kind» равным "дедукция")
+    дано lost равно ["2"]
+    ожидается "шаг [3] из [1], [2] (строка 9 разметки): опирается на выброшенное суждение [2]"
+  (соединить ["шаг ", («Step label» от step), " (строка ", (к строке (step.«line»)),
+      " разметки): опирается на выброшенное суждение ",
+      («Bracketed» от (отфильтровать (приписать (step.«conclusion») к (step.«premises»))
+      где label → lost содержит label))] по "")
+
+тотальная функция «Without forged quotes»
+  принимает markup: «Markup», text: строка
+  возвращает «Pruned»
+  пример «A judgment whose quote is not in the text is dropped and named»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Шёл дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    дано text равно "Идёт дождь."
+    ожидается (запись «Pruned» с «markup» равным (запись «Markup»
+        с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+        и «dropped» равным ["суждение [1] (строка 3 разметки): цитаты нет в тексте дословно: «Шёл дождь»"])
+  пусть flat равно («Flat» от text)
+  пусть forged равно (отфильтровать (markup.«entries») где entry →
+      (не (пусто (entry.«quote»))) и притом (не (flat содержит («Flat» от (entry.«quote»)))))
+  пусть lost равно (отобразить forged как entry → entry.«number»)
+  пусть cut равно (отфильтровать (markup.«steps») где step →
+      не (пусто (отфильтровать (приписать (step.«conclusion») к (step.«premises»)) где label → lost содержит label)))
+  (запись «Pruned» с «markup» равным (запись «Markup» с «notions» равным (markup.«notions»)
+      и «names» равным (markup.«names»)
+      и «entries» равным (отфильтровать (markup.«entries») где entry → не (lost содержит (entry.«number»)))
+      и «steps» равным (отфильтровать (markup.«steps») где step → не (cut содержит step))
+      и «faults» равным (markup.«faults») и «open» равным (markup.«open»))
+      и «dropped» равным («Соединить списки» от (отобразить forged как entry →
+      соединить ["суждение [", (entry.«number»), "] (строка ", (к строке (entry.«quote line»)),
+      " разметки): цитаты нет в тексте дословно: «", (entry.«quote»), "»"] по "")
+      и (отобразить cut как step → «Dropped step words» от step и lost)))
+
+тотальная функция «Arc of»
+  принимает step: «Inference», status: строка, bridge: строка
+  возвращает «Arc»
+  (запись «Arc» с «conclusion» равным (step.«conclusion») и «premises» равным (step.«premises»)
+      и «kind» равным (step.«kind») и «status» равным status и «bridge» равным bridge)
+
+тотальная функция «Arcs of»
+  принимает judged: «Judged»
+  возвращает список «Arc»
+  пусть markup равно (judged.«markup»)
+  пусть outcomes равно (judged.«outcomes»)
+  (отобразить (judged.«verdicts») как verdict → «Arc of» от («Canonical step» от markup и (verdict.«step»))
+      и («Final status» от verdict и outcomes)
+      и (если (не (пусто (verdict.«bridge»)))
+      и притом («Proven» от outcomes и («Step id» от (verdict.«step»)) и "bridge")
+      то (verdict.«bridge») иначе ""))
+
+тотальная функция «Step of arc»
+  принимает arc: «Arc»
+  возвращает «Inference»
+  (запись «Inference» с «line» равным 0 и «conclusion» равным (arc.«conclusion»)
+      и «premises» равным (arc.«premises») и «kind» равным (arc.«kind»))
+
+тотальная функция «Steps of arcs»
+  принимает arcs: список «Arc»
+  возвращает список «Inference»
+  отобразить arcs как arc → «Step of arc» от arc
+
+тотальная функция «Conclusions of»
+  принимает arcs: список «Arc»
+  возвращает список строки
+  пример «Every conclusion once, in the order of the steps»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "3" и «premises» равным ["4"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается ["3", "5"]
+  «Each once» от (отобразить arcs как arc → arc.«conclusion»)
+
+тотальная функция «Premises of»
+  принимает arcs: список «Arc», label: строка
+  возвращает список строки
+  пример «Everything the steps to one conclusion name, without the conclusion itself»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "3" и «premises» равным ["2", "3", "4"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    дано label равно "3"
+    ожидается ["1", "2", "4"]
+  (отфильтровать («Each once» от (свёртка arcs начиная с (пустой список) как found и arc →
+      если (arc.«conclusion») равен label то («Соединить списки» от found и (arc.«premises»))
+      иначе found)) где other → не (other равен label))
+
+тотальная функция «Reversed»
+  принимает words: список строки
+  возвращает список строки
+  пример «The last word comes first»
+    дано words равно ["а", "б", "в"]
+    ожидается ["в", "б", "а"]
+  свёртка words начиная с (пустой список) как turned и word → приписать word к turned
+
+тотальная функция «Is under»
+  принимает arcs: список «Arc», roots: список строки, label: строка
+  возвращает признак
+  пусть steps равно («Steps of arcs» от arcs)
+  ((roots содержит label) или (не (пусто (отфильтровать roots
+      где root → («Grounds of» от steps и root) содержит label))))
+
+тотальная функция «Roots of»
+  принимает arcs: список «Arc»
+  возвращает список строки
+  пример «A conclusion nothing else rests on is a root»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+    ожидается ["5"]
+  пример «A circle alone is entered from its last conclusion»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["6"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "6" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается ["6"]
+  пример «A circle next to a chain is not lost»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["6"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "6" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "3" и «premises» равным ["1"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается ["3", "6"]
+  пример «No steps give no roots»
+    дано arcs равно пустой список
+    ожидается пустой список
+  пусть conclusions равно («Conclusions of» от arcs)
+  пусть used равно (свёртка conclusions начиная с (пустой список) как found и label →
+      «Соединить списки» от found и («Premises of» от arcs и label))
+  пусть free равно (отфильтровать conclusions где label → не (used содержит label))
+  (свёртка («Reversed» от conclusions) начиная с free как roots и label →
+      если «Is under» от arcs и roots и label то roots иначе (добавить label к roots))
+
+тотальная функция «Support of»
+  принимает arcs: список «Arc», label: строка
+  возвращает список «Arc»
+  пример «Every step a conclusion rests on, its own step among them»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "9" и «premises» равным ["8"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    дано label равно "5"
+    ожидается [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+  пусть under равно (приписать label к («Grounds of» от («Steps of arcs» от arcs) и label))
+  отфильтровать arcs где arc → under содержит (arc.«conclusion»)
+
+тотальная функция «Is weak»
+  принимает status: строка
+  возвращает признак
+  пример «A step that does not follow is weak»
+    дано status равно "fails"
+    ожидается да
+  пример «A step the kernel proved is not»
+    дано status равно "follows"
+    ожидается нет
+  ["fails", "none", "clash"] содержит status
+
+тотальная функция «Weak rows»
+  принимает arcs: список «Arc»
+  возвращает список (список строки)
+  пример «A conclusion is listed with the weak steps it rests on»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "7" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается [["5", "[5] из [3]"], ["7", "[5] из [3]"]]
+  (отфильтровать (отобразить («Conclusions of» от arcs) как label → [label, (соединить
+      (отобразить (отфильтровать («Support of» от arcs и label) где arc → «Is weak» от (arc.«status»))
+      как arc → «Step label» от («Step of arc» от arc)) по "; ")]) где row → не (пусто (элемент 2 в row)))
+
+тотальная функция «Looked up»
+  принимает rows: список (список строки), key: строка
+  возвращает строка
+  пример «The second field of the row that starts with the key»
+    дано rows равно [["5", "пять"], ["7", "семь"]]
+    дано key равно "7"
+    ожидается "семь"
+  пример «No such row gives nothing»
+    дано rows равно пустой список
+    дано key равно "7"
+    ожидается ""
+  (свёртка rows начиная с "" как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен key) то (элемент 2 в row) иначе found)
+
+тотальная функция «Main root»
+  принимает arcs: список «Arc»
+  возвращает строка
+  пример «The conclusion with the longest way to it is the main one»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "9" и «premises» равным ["8"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается "5"
+  пример «No steps give no main conclusion»
+    дано arcs равно пустой список
+    ожидается ""
+  (свёртка («Roots of» от arcs) начиная с "" как best и root →
+      если (пусто best) или ((длина («Support of» от arcs и root)) не меньше (длина («Support of» от arcs и best)))
+      то root иначе best)
+
+тотальная функция «Implied arcs»
+  принимает arcs: список «Arc»
+  возвращает список «Arc»
+  пример «A strict step that lacks one premise the kernel has confirmed»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "если а, то б"),
+        (запись «Arc» с «conclusion» равным "7" и «premises» равным ["5"] и «kind» равным "корреляция"
+        и «status» равным "fails" и «bridge» равным "если б, то в"),
+        (запись «Arc» с «conclusion» равным "9" и «premises» равным ["7"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+    ожидается [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "если а, то б")]
+  пусть circles равно («Circles of» от («Steps of arcs» от arcs))
+  (отфильтровать arcs где arc → ((arc.«status») равен "fails") и притом (не (пусто (arc.«bridge»)))
+      и притом («Is deductive» от («Step of arc» от arc))
+      и притом (пусто («Circle of» от circles и («Step of arc» от arc))))
+
+тотальная функция «Grown falls»
+  принимает arcs: список «Arc», labels: список строки, reached: список строки
+  возвращает список строки
+  (свёртка arcs начиная с reached как grown и arc →
+      если (не (grown содержит (arc.«conclusion»)))
+      и притом (не (пусто (отфильтровать (arc.«premises»)
+      где label → (labels содержит label) или (grown содержит label))))
+      то (добавить (arc.«conclusion») к grown) иначе grown)
+
+тотальная функция «Falls with»
+  принимает arcs: список «Arc», labels: список строки
+  возвращает список строки
+  пример «Every conclusion that rests on the judgment, directly or through other steps»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "9" и «premises» равным ["8"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    дано labels равно ["1"]
+    ожидается ["3", "5"]
+  (свёртка arcs начиная с (пустой список) как reached и round → «Grown falls» от arcs и labels и reached)
+
+тотальная функция «Walked»
+  принимает arcs: список «Arc», walk: «Walk», top: «Outline row», rest: список «Outline row»
+  возвращает «Walk»
+  пусть concluded равно ((«Conclusions of» от arcs) содержит (top.«label»))
+  пусть again равно ((walk.«opened») содержит (top.«label»))
+  пусть children равно (если again то (пустой список) иначе («Premises of» от arcs и (top.«label»)))
+  (запись «Walk» с «stack» равным («Соединить списки» от (отобразить children как label →
+      запись «Outline row» с «indent» равным (соединить [(top.«indent»), "  "] по "") и «label» равным label
+      и «again» равным нет) и rest)
+      и «rows» равным (добавить (запись «Outline row» с «indent» равным (top.«indent»)
+      и «label» равным (top.«label») и «again» равным again) к (walk.«rows»))
+      и «opened» равным (если concluded и притом (не again) то (добавить (top.«label») к (walk.«opened»))
+      иначе (walk.«opened»)))
+
+тотальная функция «Walk step»
+  принимает arcs: список «Arc», walk: «Walk»
+  возвращает «Walk»
+  разбор (walk.«stack»)
+    случай пусто
+      то walk
+    случай голова и хвост
+      то «Walked» от arcs и walk и голова и хвост
+
+тотальная функция «Outline of»
+  принимает arcs: список «Arc»
+  возвращает список «Outline row»
+  пример «From the conclusion down to what it is drawn from»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "3" и «premises» равным ["1", "2"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+    ожидается [(запись «Outline row» с «indent» равным "" и «label» равным "5" и «again» равным нет),
+        (запись «Outline row» с «indent» равным "  " и «label» равным "3" и «again» равным нет),
+        (запись «Outline row» с «indent» равным "    " и «label» равным "1" и «again» равным нет),
+        (запись «Outline row» с «indent» равным "    " и «label» равным "2" и «again» равным нет)]
+  пример «A circle is entered once and then only named»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["6"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "6" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается [(запись «Outline row» с «indent» равным "" и «label» равным "6" и «again» равным нет),
+        (запись «Outline row» с «indent» равным "  " и «label» равным "5" и «again» равным нет),
+        (запись «Outline row» с «indent» равным "    " и «label» равным "6" и «again» равным да)]
+  пусть roots равно («Roots of» от arcs)
+  пусть fuel равно (свёртка arcs начиная с roots как found и arc →
+      «Соединить списки» от found и (arc.«premises»))
+  ((свёртка fuel начиная с (запись «Walk» с «stack» равным (отобразить roots как root →
+      запись «Outline row» с «indent» равным "" и «label» равным root и «again» равным нет)
+      и «rows» равным (пустой список) и «opened» равным (пустой список)) как walk и round →
+      «Walk step» от arcs и walk).«rows»)
+
+тотальная функция «Arc words»
+  принимает arc: «Arc»
+  возвращает строка
+  пример «The kind of the step and what the kernel said»
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")
+    ожидается "дедукция из [3]: не следует (пример против подтверждён ядром)"
+  пример «A conclusion drawn from nothing»
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным пустой список и «kind» равным "дедукция"
+        и «status» равным "none" и «bridge» равным "")
+    ожидается "подано как вывод, посылок нет"
+  если пусто (arc.«premises»)
+    то "подано как вывод, посылок нет"
+    иначе (соединить [(«Kind words» от (arc.«kind»)), " из ", («Bracketed» от (arc.«premises»)),
+        ": ", («Verdict words» от (arc.«status»))] по "")
+
+тотальная функция «Outline line»
+  принимает markup: «Markup», arcs: список «Arc», weak: список (список строки), row: «Outline row»
+  возвращает строка
+  пример «A premise nobody derived is marked as taken for granted»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+    дано weak равно [["5", "[5] из [3]"]]
+    дано row равно (запись «Outline row» с «indent» равным "  " и «label» равным "3" и «again» равным нет)
+    ожидается "  - [3] «» — принято без вывода"
+  пример «A conclusion carries its verdict and the weak steps under it»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано arcs равно [(запись «Arc» с «conclusion» равным "7" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    дано weak равно [["7", "[5] из [3]"]]
+    дано row равно (запись «Outline row» с «indent» равным "" и «label» равным "7" и «again» равным нет)
+    ожидается "- [7] «» — дедукция из [5]: следует (доказано ядром). **Ниже есть шаг, который не следует: [5] из [3].**"
+  пусть own равно (отфильтровать arcs где arc → (arc.«conclusion») равен (row.«label»))
+  пусть below равно («Looked up» от weak и (row.«label»))
+  пусть mine равно (соединить (отобразить (отфильтровать own где arc → «Is weak» от (arc.«status»))
+      как arc → «Step label» от («Step of arc» от arc)) по "; ")
+  пусть shaky равно (если (не (пусто (row.«indent»))) или (below равен mine) то "" иначе below)
+  пусть verdict равно (соединить [(соединить (отобразить own как arc → «Arc words» от arc) по "; "), ".",
+      (если пусто shaky то "" иначе (соединить [" **Ниже есть шаг, который не следует: ", shaky, ".**"] по ""))]
+      по "")
+  пусть tail равно (если пусто own то "принято без вывода"
+      иначе (если row.«again» то "разобрано выше" иначе verdict))
+  (соединить [(row.«indent»), "- [", (row.«label»), "] «",
+      («Short» от («Thesis words» от markup и (row.«label»)) и 160),
+      "» — ", tail] по "")
+
+тотальная функция «Node rows»
+  принимает arcs: список «Arc»
+  возвращает список (список строки)
+  пример «Every judgment of the steps gets a short name»
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")]
+    ожидается [["5", "n1"], ["3", "n2"]]
+  (свёртка («Each once» от (свёртка arcs начиная с (пустой список) как found и arc →
+      «Соединить списки» от found и (приписать (arc.«conclusion») к (arc.«premises»))))
+      начиная с (пустой список) как made и label →
+      добавить [label, (соединить ["n", (к строке ((длина made) плюс 1))] по "")] к made)
+
+тотальная функция «Diagram words»
+  принимает text: строка
+  возвращает строка
+  пример «Signs the diagram would read as its own are replaced»
+    дано text равно "Он сказал \"да\" #1"
+    ожидается "Он сказал 'да' №1"
+  (свёртка [["\"", "'"], ["#", "№"], ["`", "'"]] начиная с text как held и row →
+      «Replaced in» от held и (элемент 1 в row) и (элемент 2 в row))
+
+тотальная функция «Edge lines»
+  принимает nodes: список (список строки), arc: «Arc»
+  возвращает список строки
+  пример «A proved step is a solid arrow from the premise to the conclusion»
+    дано nodes равно [["5", "n1"], ["3", "n2"]]
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")
+    ожидается ["  n2 --> n1"]
+  пример «A step that does not follow is a dotted arrow with the verdict»
+    дано nodes равно [["5", "n1"], ["3", "n2"]]
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")
+    ожидается ["  n2 -. не следует .-> n1"]
+  пусть mark равно (свёртка [["follows", " --> "], ["fails", " -. не следует .-> "],
+      ["clash", " -. посылки противоречат .-> "]] начиная с " -. не решено .-> " как found и row →
+      если (элемент 1 в row) равен (arc.«status») то (элемент 2 в row) иначе found)
+  (отобразить (arc.«premises») как label → соединить ["  ", («Looked up» от nodes и label), mark,
+      («Looked up» от nodes и (arc.«conclusion»))] по "")
+
+тотальная функция «Class line»
+  принимает nodes: список (список строки), labels: список строки, name: строка
+  возвращает список строки
+  пример «The named judgments get the class»
+    дано nodes равно [["5", "n1"], ["3", "n2"]]
+    дано labels равно ["3"]
+    дано name равно "assumed"
+    ожидается ["  class n2 assumed"]
+  пример «Nobody to mark leaves no line»
+    дано nodes равно [["5", "n1"], ["3", "n2"]]
+    дано labels равно пустой список
+    дано name равно "assumed"
+    ожидается пустой список
+  если пусто labels
+    то пустой список
+    иначе [(соединить ["  class ", (соединить (отобразить labels как label → «Looked up» от nodes и label) по ","),
+        " ", name] по "")]
+
+тотальная функция «Diagram lines»
+  принимает markup: «Markup», arcs: список «Arc», weak: список (список строки)
+  возвращает список строки
+  пусть nodes равно («Node rows» от arcs)
+  пусть conclusions равно («Conclusions of» от arcs)
+  пусть leaves равно (отфильтровать (отобразить nodes как row → элемент 1 в row)
+      где label → не (conclusions содержит label))
+  («Соединить списки» от («Соединить списки» от («Соединить списки» от ["```mermaid", "flowchart BT"]
+      и (отобразить nodes как row → соединить ["  ", (элемент 2 в row), "[\"[", (элемент 1 в row), "] ",
+      («Diagram words» от («Short» от («Thesis words» от markup и (элемент 1 в row)) и 60)), "\"]"] по ""))
+      и (свёртка arcs начиная с (пустой список) как lines и arc →
+      «Соединить списки» от lines и («Edge lines» от nodes и arc)))
+      и («Соединить списки» от («Соединить списки» от
+      ["  classDef weak stroke:#c0392b,stroke-width:2px,stroke-dasharray:6 3",
+      "  classDef assumed stroke:#7f8c8d,stroke-dasharray:2 2"]
+      и («Соединить списки» от («Class line» от nodes и (отобразить weak как row → элемент 1 в row) и "weak")
+      и («Class line» от nodes и leaves и "assumed"))) и ["```"]))
+
+тотальная функция «Map lines»
+  принимает markup: «Markup», arcs: список «Arc»
+  возвращает список строки
+  пусть weak равно («Weak rows» от arcs)
+  если пусто arcs
+    то пустой список
+    иначе («Соединить списки» от («Соединить списки» от
+        ["От итоговых выводов к тому, на чём они стоят. Отступ вправо — посылка суждения над ним.", ""]
+        и (отобразить («Outline of» от arcs) как row → «Outline line» от markup и arcs и weak и row))
+        и («Соединить списки» от ["", (соединить ["Та же карта диаграммой: стрелка идёт от посылки к выводу, ",
+        "пунктирная — шаг не доказан; красная рамка — вывод держится на шаге, который не следует; ",
+        "серая — суждение принято без вывода."] по ""), ""] и («Diagram lines» от markup и arcs и weak)))
+
+тотальная функция «Bridge words»
+  принимает arc: «Arc»
+  возвращает строка
+  пример «A bridge the kernel accepted is named by its form»
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "если а, то б")
+    ожидается "`если а, то б` (с ней шаг следует — доказано ядром)"
+  пример «Without it the bridge is named by the labels»
+    дано arc равно (запись «Arc» с «conclusion» равным "5" и «premises» равным ["3", "4"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным "")
+    ожидается "«если верно [3] и [4], то верно [5]»"
+  пусть grounds равно (соединить (отобразить (arc.«premises») как label →
+      соединить ["[", label, "]"] по "") по " и ")
+  если пусто (arc.«bridge»)
+    то (соединить ["«если верно ", grounds, ", то верно [", (arc.«conclusion»), "]»"] по "")
+    иначе (соединить ["`", (arc.«bridge»), "` (с ней шаг следует — доказано ядром)"] по "")
+
+тотальная функция «Assumptions of»
+  принимает markup: «Markup», arcs: список «Arc»
+  возвращает список «Assumption»
+  пример «A premise nobody derived and the bridge of a step that does not follow»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано arcs равно [(запись «Arc» с «conclusion» равным "5" и «premises» равным ["3"] и «kind» равным "дедукция"
+        и «status» равным "fails" и «bridge» равным ""),
+        (запись «Arc» с «conclusion» равным "7" и «premises» равным ["5"] и «kind» равным "дедукция"
+        и «status» равным "follows" и «bridge» равным "")]
+    ожидается [(запись «Assumption» с «kind» равным "stated" и «label» равным "3" и «words» равным ""
+        и «falls» равным ["5", "7"]),
+        (запись «Assumption» с «kind» равным "hidden" и «label» равным "[5] из [3]"
+        и «words» равным "«если верно [3], то верно [5]»" и «falls» равным ["5", "7"])]
+  пусть conclusions равно («Conclusions of» от arcs)
+  пусть leaves равно (отфильтровать («Each once» от (свёртка arcs начиная с (пустой список) как found и arc →
+      «Соединить списки» от found и (arc.«premises»))) где label → не (conclusions содержит label))
+  («Соединить списки» от («Соединить списки» от
+      (отобразить leaves как label → запись «Assumption» с «kind» равным "stated" и «label» равным label
+      и «words» равным («Thesis words» от markup и label) и «falls» равным («Falls with» от arcs и [label]))
+      и (отобразить (отфильтровать arcs где arc → (arc.«status») равен "none") как arc →
+      запись «Assumption» с «kind» равным "bare" и «label» равным (arc.«conclusion»)
+      и «words» равным («Thesis words» от markup и (arc.«conclusion»))
+      и «falls» равным («Falls with» от arcs и [(arc.«conclusion»)])))
+      и (отобразить (отфильтровать arcs где arc → (arc.«status») равен "fails") как arc →
+      запись «Assumption» с «kind» равным "hidden" и «label» равным («Step label» от («Step of arc» от arc))
+      и «words» равным («Bridge words» от arc)
+      и «falls» равным («Each once» от (приписать (arc.«conclusion»)
+      к («Falls with» от arcs и [(arc.«conclusion»)])))))
+
+тотальная функция «Main assumptions»
+  принимает assumptions: список «Assumption», main: строка
+  возвращает список «Assumption»
+  пример «No assumptions give no main one»
+    дано assumptions равно пустой список
+    дано main равно "5"
+    ожидается пустой список
+  пример «Under the main conclusion the unsaid premise goes before the said one»
+    дано assumptions равно [(запись «Assumption» с «kind» равным "stated" и «label» равным "3" и «words» равным ""
+        и «falls» равным ["5"]),
+        (запись «Assumption» с «kind» равным "stated" и «label» равным "8" и «words» равным ""
+        и «falls» равным ["9", "10"]),
+        (запись «Assumption» с «kind» равным "hidden" и «label» равным "[5] из [3]" и «words» равным ""
+        и «falls» равным ["5"])]
+    дано main равно "5"
+    ожидается [(запись «Assumption» с «kind» равным "hidden" и «label» равным "[5] из [3]" и «words» равным ""
+        и «falls» равным ["5"])]
+  пусть under равно (отфильтровать assumptions где assumption → (assumption.«falls») содержит main)
+  пусть ordered равно («Соединить списки» от (отфильтровать under где assumption → (assumption.«kind») равен "hidden")
+      и (отфильтровать under где assumption → не ((assumption.«kind») равен "hidden")))
+  (свёртка (если пусто under то assumptions иначе ordered) начиная с (пустой список) как best и assumption →
+      если (пусто best) или (не (пусто (отфильтровать best
+      где held → (длина (assumption.«falls»)) больше (длина (held.«falls»)))))
+      то [assumption] иначе best)
+
+тотальная функция «Falls words»
+  принимает falls: список строки
+  возвращает строка
+  пример «The conclusions that fall with the assumption»
+    дано falls равно ["5", "7"]
+    ожидается "Если это неверно, без опоры остаются выводы: [5], [7]."
+  пример «An assumption nothing rests on»
+    дано falls равно пустой список
+    ожидается "Другие выводы статьи на это не опираются."
+  если пусто falls
+    то "Другие выводы статьи на это не опираются."
+    иначе (соединить ["Если это неверно, без опоры остаются выводы: ", («Bracketed» от falls), "."] по "")
+
+тотальная функция «Assumption words»
+  принимает assumption: «Assumption»
+  возвращает строка
+  пример «A stated premise»
+    дано assumption равно (запись «Assumption» с «kind» равным "stated" и «label» равным "3"
+        и «words» равным "Идёт дождь" и «falls» равным ["5"])
+    ожидается "[3] «Идёт дождь» — сказано в тексте, но ниоткуда не выведено"
+  пример «A hidden premise»
+    дано assumption равно (запись «Assumption» с «kind» равным "hidden" и «label» равным "[5] из [3]"
+        и «words» равным "«если верно [3], то верно [5]»" и «falls» равным ["5"])
+    ожидается "скрытая посылка шага [5] из [3]: «если верно [3], то верно [5]» — в тексте её нет"
+  (свёртка [["stated", (соединить ["[", (assumption.«label»), "] «", («Short» от (assumption.«words») и 200),
+      "» — сказано в тексте, но ниоткуда не выведено"] по "")],
+      ["bare", (соединить ["[", (assumption.«label»), "] «", («Short» от (assumption.«words») и 200),
+      "» — подано как вывод, но посылок у него нет"] по "")]]
+      начиная с (соединить ["скрытая посылка шага ", (assumption.«label»), ": ", (assumption.«words»),
+      " — в тексте её нет"] по "") как found и row →
+      если (элемент 1 в row) равен (assumption.«kind») то (элемент 2 в row) иначе found)
+
+тотальная функция «Assumption line»
+  принимает assumption: «Assumption»
+  возвращает строка
+  соединить ["- ", («Assumption words» от assumption), ". ", («Falls words» от (assumption.«falls»))] по ""
+
+тотальная функция «Assumption lines»
+  принимает assumptions: список «Assumption»
+  возвращает список строки
+  пусть unsaid равно (отфильтровать assumptions где assumption → (assumption.«kind») равен "hidden")
+  пусть said равно (отфильтровать assumptions где assumption → не ((assumption.«kind») равен "hidden"))
+  («Соединить списки» от (если пусто unsaid то (пустой список)
+      иначе («Соединить списки» от ["**Не сказано в тексте, но без этого вывод не следует**", ""]
+      и (добавить "" к (отобразить unsaid как assumption → «Assumption line» от assumption))))
+      и (если пусто said то (пустой список)
+      иначе («Соединить списки» от ["**Сказано в тексте без вывода**", ""]
+      и (отобразить said как assumption → «Assumption line» от assumption))))
+
+тотальная функция «Brief lines»
+  принимает markup: «Markup», arcs: список «Arc», dropped: список строки
+  возвращает список строки
+  пример «A markup without steps has no main conclusion»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано arcs равно пустой список
+    дано dropped равно пустой список
+    ожидается ["- Главный вывод: назвать нельзя — в разметке нет ни одного шага рассуждения."]
+  пусть main равно («Main root» от arcs)
+  пусть support равно («Support of» от arcs и main)
+  пусть others равно (отфильтровать («Roots of» от arcs) где root → не (root равен main))
+  пусть chief равно («Main assumptions» от («Assumptions of» от markup и arcs) и main)
+  если пусто arcs
+    то ["- Главный вывод: назвать нельзя — в разметке нет ни одного шага рассуждения."]
+    иначе («Соединить списки» от («Соединить списки» от
+        [(соединить ["- Главный вывод: [", main, "] «", («Short» от («Thesis words» от markup и main) и 200), "»."]
+        по ""),
+        (соединить ["- Шагов до него: ", (к строке (длина support)), "; из них следуют: ",
+        (к строке (длина (отфильтровать support где arc → (arc.«status») равен "follows"))),
+        ", не следуют: ", (к строке (длина (отфильтровать support где arc → «Is weak» от (arc.«status»)))),
+        " (из них строгих шагов, которым не хватает одной посылки: ",
+        (к строке (длина («Implied arcs» от support))), "), ядро не решило: ",
+        (к строке (длина (отфильтровать support где arc → (arc.«status») равен "undecided"))), "."] по "")]
+        и (отобразить chief как assumption → соединить ["- Главное допущение: ",
+        («Assumption words» от assumption), ". ", («Falls words» от (assumption.«falls»))] по ""))
+        и («Соединить списки» от (если пусто others то (пустой список)
+        иначе [(соединить ["- Другие итоговые выводы: ", («Bracketed» от others), "."] по "")])
+        и (если пусто dropped то (пустой список)
+        иначе [(соединить ["- Выброшено записей разметки с цитатой, которой нет в тексте: ",
+        (к строке (длина dropped)), "."] по "")])))

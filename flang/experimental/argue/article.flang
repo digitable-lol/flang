@@ -1,0 +1,321 @@
+модуль «Argue article»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+  использует «Argue report» из "report.flang"
+  использует «Argue map» из "map.flang"
+  использует «Argue trim» из "trim.flang"
+
+объект «Reading»
+  «number»: число
+  «sentence»: строка
+  «by»: строка
+  «labels»: список строки
+
+объект «Article»
+  «path»: строка
+  «text»: строка
+  «judged»: «Judged»
+  «dropped»: список строки
+  «grammar»: строка
+  «rows»: список (список строки)
+  «skipped»: список строки
+  «seconds»: число
+  «tables»: строка
+
+тотальная функция «Cell»
+  принимает text: строка
+  возвращает строка
+  пример «A bar would break the table and is replaced»
+    дано text равно "а | б"
+    ожидается "а / б"
+  «Replaced in» от text и "|" и "/"
+
+тотальная функция «Notion shape»
+  принимает notion: «Notion»
+  возвращает строка
+  пример «A property shows its one place»
+    дано notion равно (запись «Notion» с «name» равным "кит" и «arity» равным 1 и «note» равным "" и «line» равным 1)
+    ожидается "`кит(·)`"
+  пример «A statement has no places»
+    дано notion равно (запись «Notion» с «name» равным "дождь" и «arity» равным 0 и «note» равным ""
+        и «line» равным 1)
+    ожидается "`дождь`"
+  (свёртка [["1", "(·)"], ["2", "(·, ·)"], ["3", "(·, ·, ·)"]]
+      начиная с (соединить ["`", (notion.«name»), (если (notion.«arity») равен 0 то "" иначе "(…)"), "`"] по "")
+      как found и row → если (к строке (notion.«arity»)) равен (элемент 1 в row)
+      то (соединить ["`", (notion.«name»), (элемент 2 в row), "`"] по "") иначе found)
+
+тотальная функция «Notion uses»
+  принимает markup: «Markup»
+  возвращает список (список строки)
+  пример «No judgments use no notions»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    ожидается пустой список
+  пример «A judgment is listed with the notions of its form»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2
+        и «formula» равным "если дождь, то мокро"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    ожидается [["1", "дождь", "мокро"]]
+  (отобразить (markup.«entries») как entry → приписать (entry.«number»)
+      к («Each once» от (свёртка («Mentions of» от ((«Form of» от (entry.«formula»)).«body»))
+      начиная с (пустой список) как found и mention → «Соединить списки» от found и («Taken» от mention и 1))))
+
+тотальная функция «Names the notion»
+  принимает row: список строки, name: строка
+  возвращает признак
+  пример «The label in front is not a notion»
+    дано row равно ["мокро", "дождь"]
+    дано name равно "мокро"
+    ожидается нет
+  разбор row
+    случай пусто
+      то нет
+    случай голова и хвост
+      то хвост содержит name
+
+тотальная функция «Labels with»
+  принимает used: список (список строки), name: строка
+  возвращает список строки
+  пример «The judgments whose form names the notion»
+    дано used равно [["1", "дождь", "мокро"], ["2", "мокро"]]
+    дано name равно "мокро"
+    ожидается ["1", "2"]
+  (свёртка (отфильтровать used где row → «Names the notion» от row и name) начиная с (пустой список)
+      как found и row → «Соединить списки» от found и («Taken» от row и 1))
+
+тотальная функция «Term lines»
+  принимает markup: «Markup»
+  возвращает список строки
+  пусть rows равно («Term rows» от markup)
+  пусть shifted равно (отобразить («Shifts of» от markup) как shift → «Word key» от (shift.«word»))
+  (отобразить («Each once» от (отобразить rows как row → элемент 1 в row)) как key →
+      соединить ["- «", (свёртка rows начиная с "" как found и row →
+      если (пусто found) и притом ((элемент 1 в row) равен key) то (элемент 5 в row) иначе found), "»: ",
+      (соединить (отобразить (отфильтровать rows где row → (элемент 1 в row) равен key)
+      как row → «Shift row words» от row) по ", "), ".",
+      (если shifted содержит key то " **Смысл слова сменился.**" иначе "")] по "")
+
+тотальная функция «Glossary lines»
+  принимает markup: «Markup»
+  возвращает список строки
+  пример «A markup without notions has no glossary»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    ожидается пустой список
+  пусть used равно («Notion uses» от markup)
+  пусть terms равно («Term lines» от markup)
+  если пусто (markup.«notions»)
+    то пустой список
+    иначе («Соединить списки» от («Соединить списки» от
+        ["| Понятие | Что значит | В каких суждениях |", "| --- | --- | --- |"]
+        и (отобразить (markup.«notions») как notion → соединить ["| ", («Notion shape» от notion), " | ",
+        («Cell» от (notion.«note»)), " | ", («Bracketed» от («Labels with» от used и (notion.«name»))), " |"] по ""))
+        и («Соединить списки» от (если пусто (markup.«names») то (пустой список)
+        иначе ["", (соединить ["Названные предметы: ", (соединить (markup.«names») по ", "), "."] по "")])
+        и (если пусто terms то ["", "Слов с оговорённым смыслом в разметке нет."]
+        иначе («Соединить списки» от ["", "Слова, смысл которых разметка оговаривает:", ""] и terms))))
+
+тотальная функция «Reader of»
+  принимает quoted: признак, mine: список строки
+  возвращает строка
+  пример «A quoted sentence the grammar agrees on is read by both»
+    дано quoted равно да
+    дано mine равно ["confirmed"]
+    ожидается "both"
+  пример «A quoted sentence the grammar reads otherwise»
+    дано quoted равно да
+    дано mine равно ["differs"]
+    ожидается "differs"
+  пример «A sentence nobody quoted and the grammar did not read»
+    дано quoted равно нет
+    дано mine равно пустой список
+    ожидается "nobody"
+  пусть alone равно (если mine содержит "grammar" то "grammar" иначе "nobody")
+  пусть marked равно (если mine содержит "differs" то "differs" иначе "model")
+  если quoted то (если mine содержит "confirmed" то "both" иначе marked) иначе alone
+
+тотальная функция «Reading of»
+  принимает pieces: список (список строки), rows: список (список строки), number: число, sentence: строка
+  возвращает «Reading»
+  пусть key равно (к строке number)
+  пусть labels равно (свёртка (отфильтровать pieces где row → «Piece touches» от sentence и row)
+      начиная с (пустой список) как found и row → «Соединить списки» от found и («Taken» от row и 1))
+  пусть mine равно (отобразить (отфильтровать rows где row → (элемент 1 в row) равен key) как row → элемент 2 в row)
+  (запись «Reading» с «number» равным number и «sentence» равным sentence
+      и «by» равным («Reader of» от (не (пусто labels)) и mine)
+      и «labels» равным labels)
+
+тотальная функция «Readings of»
+  принимает markup: «Markup», rows: список (список строки), sentences: список строки
+  возвращает список «Reading»
+  пример «A sentence the markup quotes is read by the model, another one by nobody»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    дано rows равно пустой список
+    дано sentences равно ["Идёт дождь", "Светит солнце"]
+    ожидается [(запись «Reading» с «number» равным 1 и «sentence» равным "Идёт дождь" и «by» равным "model"
+        и «labels» равным ["1"]),
+        (запись «Reading» с «number» равным 2 и «sentence» равным "Светит солнце" и «by» равным "nobody"
+        и «labels» равным пустой список)]
+  пример «The grammar confirms the first and reads the second alone»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    дано rows равно [["1", "confirmed", "1"], ["2", "grammar", ""]]
+    дано sentences равно ["Идёт дождь", "Светит солнце"]
+    ожидается [(запись «Reading» с «number» равным 1 и «sentence» равным "Идёт дождь" и «by» равным "both"
+        и «labels» равным ["1"]),
+        (запись «Reading» с «number» равным 2 и «sentence» равным "Светит солнце" и «by» равным "grammar"
+        и «labels» равным пустой список)]
+  пусть pieces равно («Quote pieces» от (markup.«entries»))
+  (свёртка sentences начиная с (пустой список) как made и sentence →
+      добавить («Reading of» от pieces и rows и ((длина made) плюс 1) и sentence) к made)
+
+тотальная функция «Reader words»
+  принимает reader: строка
+  возвращает строка
+  пример «Who read the sentence, in words»
+    дано reader равно "both"
+    ожидается "моделью, подтверждено грамматикой"
+  (свёртка [["grammar", "грамматикой flang"], ["both", "моделью, подтверждено грамматикой"],
+      ["model", "только моделью"], ["differs", "моделью; грамматика прочла иначе"]]
+      начиная с "никем" как found и row →
+      если (элемент 1 в row) равен reader то (элемент 2 в row) иначе found)
+
+тотальная функция «Grammar words»
+  принимает grammar: строка
+  возвращает строка
+  пример «The crosscheck that ran»
+    дано grammar равно "ok"
+    ожидается "Сверка грамматикой подключена: предложения разобраны грамматикой flang и сверены с разметкой."
+  (свёртка [["absent", (соединить ["Сверка грамматикой не подключена: ни одно суждение не подтверждено ",
+      "разбором flang, смысл каждого размеченного предложения записан только в разметке."] по "")],
+      ["ok", "Сверка грамматикой подключена: предложения разобраны грамматикой flang и сверены с разметкой."]]
+      начиная с (соединить ["Сверка грамматикой не выполнена: ", grammar] по "") как found и row →
+      если (элемент 1 в row) равен grammar то (элемент 2 в row) иначе found)
+
+тотальная функция «Reader lines»
+  принимает readings: список «Reading», grammar: строка
+  возвращает список строки
+  пусть count равно (отобразить ["grammar", "both", "model", "nobody", "differs"] как reader →
+      к строке (длина (отфильтровать readings где reading → (reading.«by») равен reader)))
+  («Соединить списки» от [(«Grammar words» от grammar), "",
+      (соединить ["Предложений: ", (к строке (длина readings)), ". Прочитано грамматикой flang: ",
+      (элемент 1 в count), "; моделью с подтверждением грамматикой: ", (элемент 2 в count), "; только моделью: ",
+      (элемент 3 в count), "; моделью, а грамматика прочла иначе: ", (элемент 5 в count), "; никем: ",
+      (элемент 4 в count), "."] по ""), "",
+      "| № | Кем прочитано | Суждения | Предложение |", "| --- | --- | --- | --- |"]
+      и (отобразить readings как reading → соединить ["| ", (к строке (reading.«number»)), " | ",
+      («Reader words» от (reading.«by»)), " | ", («Bracketed» от (reading.«labels»)), " | ",
+      («Cell» от («Short» от (reading.«sentence») и 100)), " |"] по ""))
+
+тотальная функция «Article boundary»
+  возвращает строка
+  (соединить ["Границы: правдивость посылок не проверяется; разметка может передать смысл ",
+      "предложения неверно; проверены только размеченные шаги, а непокрытые предложения названы в разделе ",
+      "«Кем прочитано». Доказано только то, что доказало ядро."] по "")
+
+тотальная функция «Is implied verdict»
+  принимает judged: «Judged», circles: список (список строки), verdict: «Step verdict»
+  возвращает признак
+  пусть outcomes равно (judged.«outcomes»)
+  (((«Final status» от verdict и outcomes) равен "fails") и притом («Is deductive» от (verdict.«step»))
+      и притом (не (пусто (verdict.«bridge»)))
+      и притом («Proven» от outcomes и («Step id» от (verdict.«step»)) и "bridge")
+      и притом (пусто («Circle of» от circles и («Canonical step» от (judged.«markup») и (verdict.«step»)))))
+
+тотальная функция «Failure blocks»
+  принимает judged: «Judged»
+  возвращает список строки
+  пусть circles равно («Circles of» от («Canonical steps» от (judged.«markup»)))
+  («Finding blocks» от (judged.«markup») и (отфильтровать (judged.«verdicts»)
+      где verdict → не («Is implied verdict» от judged и circles и verdict))
+      и (judged.«clashes») и (judged.«outcomes»))
+
+тотальная функция «Counts of»
+  принимает judged: «Judged», failures: число
+  возвращает список число
+  пусть circles равно («Circles of» от («Canonical steps» от (judged.«markup»)))
+  [failures,
+    (длина (отфильтровать (judged.«verdicts») где verdict → «Is implied verdict» от judged и circles и verdict)),
+    (длина (отфильтровать (judged.«verdicts») где verdict → (не («Is deductive» от (verdict.«step»)))
+    и притом (не ((«Final status» от verdict и (judged.«outcomes»)) равен "follows"))))]
+
+тотальная функция «Count words»
+  принимает counts: список число
+  возвращает строка
+  пример «Three kinds of what the check has found»
+    дано counts равно [2, 3, 1]
+    ожидается "провалов рассуждения: 2; подразумеваемых посылок: 3; шагов без доказательной силы: 1"
+  (соединить ["провалов рассуждения: ", (к строке (элемент 1 в counts)), "; подразумеваемых посылок: ",
+      (к строке (элемент 2 в counts)), "; шагов без доказательной силы: ", (к строке (элемент 3 в counts))] по "")
+
+тотальная функция «Run lines»
+  принимает article: «Article», failures: число
+  возвращает список строки
+  («Соединить списки» от («Соединить списки» от
+      [(соединить ["- Найдено: ", («Count words» от («Counts of» от (article.«judged») и failures)), "."] по "")]
+      и (если пусто (article.«skipped») то (пустой список)
+      иначе [(соединить ["- Не досчитано: ", (к строке (длина (article.«skipped»))),
+      " — проверка этих мест превысила предел; они перечислены в разделе «Не досчитано»."] по "")]))
+      и («Соединить списки» от (если пусто (article.«tables») то (пустой список)
+      иначе [(соединить ["- Таблицы статьи: ", (article.«tables»), "."] по "")])
+      и (если (article.«seconds») больше 0
+      то [(соединить ["- Время проверки шагов: ", (к строке (article.«seconds»)),
+      " с, без составления этого отчёта."] по "")]
+      иначе (пустой список))))
+
+тотальная функция «File line»
+  принимает trimmed: «Trimmed»
+  возвращает строка
+  (соединить ["- Предложений в файле: ", (к строке ((длина (trimmed.«main»)) плюс (длина (trimmed.«cut»)))),
+      "; из них текст статьи: ", (к строке (длина (trimmed.«main»))),
+      ". Остальное названо в разделе «Вне текста статьи». Счёт ниже идёт по тексту статьи."] по "")
+
+тотальная функция «Article report of»
+  принимает article: «Article»
+  возвращает строка
+  пусть judged равно (article.«judged»)
+  пусть markup равно (judged.«markup»)
+  пусть trimmed равно («Trimmed of» от (article.«text»))
+  пусть text равно («Main text» от trimmed)
+  пусть arcs равно («Arcs of» от judged)
+  пусть readings равно («Readings of» от markup и (article.«rows») и (trimmed.«main»))
+  пусть failures равно («Failure blocks» от judged)
+  (соединить («Соединить списки» от («Соединить списки» от («Соединить списки» от («Соединить списки» от
+      [(соединить ["# Проверка рассуждения: ", (article.«path»)] по ""), ""]
+      и («Section» от "Коротко" и («Соединить списки» от («Brief lines» от markup и arcs и (article.«dropped»))
+      и («Run lines» от article и (длина failures))) и ""))
+      и («Соединить списки» от («Section» от "Сводка"
+      и (приписать («File line» от trimmed) к («Summary lines» от judged и text)) и "")
+      и («Section» от "Карта рассуждения" и («Map lines» от markup и arcs)
+      и "В разметке нет шагов рассуждения: карту строить не из чего.")))
+      и («Соединить списки» от («Соединить списки» от
+      («Section» от "Провалы рассуждения" и («As one» от («Numbered blocks» от failures))
+      и "Провалов не найдено.")
+      и («Section» от "Допущения автора" и («Assumption lines» от («Assumptions of» от markup и arcs))
+      и "Допущений не найдено: в разметке нет шагов рассуждения."))
+      и («Соединить списки» от («Section» от "Не доказательство" и («As one» от («Soft lines» от judged))
+      и "Шагов с пометкой «обобщение», «корреляция» или «авторитет» в разметке нет.")
+      и («Step sections» от text и judged))))
+      и («Соединить списки» от («Соединить списки» от («Соединить списки» от
+      («Section» от "Словарь понятий" и («Glossary lines» от markup) и "В разметке не объявлено ни одного понятия.")
+      и («Section» от "Кем прочитано" и («Reader lines» от readings и (article.«grammar»)) и ""))
+      и («Соединить списки» от («Section» от "Вне текста статьи" и («Cut lines» от trimmed)
+      и "Весь файл принят за текст статьи.")
+      и («Section» от "Не досчитано" и (отобразить (article.«skipped») как words → соединить ["- ", words] по "")
+      и "Все шаги и все пары суждений проверены до конца.")))
+      и («Соединить списки» от («Section» от "Выброшено из разметки"
+      и (отобразить (article.«dropped») как words → соединить ["- ", words] по "")
+      и "Ничего не выброшено: каждая цитата разметки стоит в тексте дословно.")
+      и [(«Article boundary»), ""]))) по "\n")

@@ -1,0 +1,152 @@
+модуль «Argue json»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+  использует «Argue report» из "report.flang"
+  использует «Argue map» из "map.flang"
+  использует «Argue article» из "article.flang"
+  использует «Argue trim» из "trim.flang"
+
+тотальная функция «Json string»
+  принимает text: строка
+  возвращает строка
+  пример «Quotes, backslashes and line ends are escaped»
+    дано text равно "он \"сказал\"\nда\\нет"
+    ожидается "\"он \\\"сказал\\\"\\nда\\\\нет\""
+  (соединить ["\"", (свёртка [["\\", "\\\\"], ["\"", "\\\""], ["\n", "\\n"], ["\r", "\\r"], ["\t", "\\t"]]
+      начиная с text как held и row → «Replaced in» от held и (элемент 1 в row) и (элемент 2 в row)), "\""] по "")
+
+тотальная функция «Json list»
+  принимает items: список строки
+  возвращает строка
+  пример «Items stand in brackets behind commas»
+    дано items равно ["1", "\"а\""]
+    ожидается "[1, \"а\"]"
+  соединить ["[", (соединить items по ", "), "]"] по ""
+
+тотальная функция «Json strings»
+  принимает words: список строки
+  возвращает строка
+  пример «A list of words»
+    дано words равно ["а", "б"]
+    ожидается "[\"а\", \"б\"]"
+  «Json list» от (отобразить words как word → «Json string» от word)
+
+тотальная функция «Json object»
+  принимает rows: список (список строки)
+  возвращает строка
+  пример «A key and its written value in every row»
+    дано rows равно [["steps", "3"], ["text", "\"а\""]]
+    ожидается "{\"steps\": 3, \"text\": \"а\"}"
+  (соединить ["{", (соединить (отобразить rows как row →
+      соединить [(«Json string» от (элемент 1 в row)), ": ", (элемент 2 в row)] по "") по ", "), "}"] по "")
+
+тотальная функция «Json flag»
+  принимает flag: признак
+  возвращает строка
+  пример «A flag is written as a word»
+    дано flag равно да
+    ожидается "true"
+  если flag то "true" иначе "false"
+
+тотальная функция «Summary json»
+  принимает article: «Article», arcs: список «Arc», chief: список «Assumption», trimmed: «Trimmed»
+  возвращает строка
+  пусть judged равно (article.«judged»)
+  пусть markup равно (judged.«markup»)
+  пусть verdicts равно (judged.«verdicts»)
+  пусть outcomes равно (judged.«outcomes»)
+  пусть sentences равно (trimmed.«main»)
+  пусть counts равно («Counts of» от judged и (длина («Failure blocks» от judged)))
+  пусть main равно («Main root» от arcs)
+  пусть support равно («Support of» от arcs и main)
+  («Json object» от [["file_sentences", (к строке ((длина sentences) плюс (длина (trimmed.«cut»))))],
+      ["sentences", (к строке (длина sentences))],
+      ["covered_sentences", (к строке (длина («Covered sentences» от markup и sentences)))],
+      ["theses", (к строке (длина (markup.«entries»)))], ["steps", (к строке (длина verdicts))],
+      ["follows", (к строке («Counted» от verdicts и outcomes и "follows"))],
+      ["fails", (к строке («Counted» от verdicts и outcomes и "fails"))],
+      ["premises_clash", (к строке («Counted» от verdicts и outcomes и "clash"))],
+      ["no_premises", (к строке («Counted» от verdicts и outcomes и "none"))],
+      ["undecided", (к строке («Counted» от verdicts и outcomes и "undecided"))],
+      ["failures", (к строке (элемент 1 в counts))], ["implied_premises", (к строке (элемент 2 в counts))],
+      ["steps_without_force", (к строке (элемент 3 в counts))],
+      ["skipped", (к строке (длина (article.«skipped»)))], ["seconds", (к строке (article.«seconds»))],
+      ["dropped", (к строке (длина (article.«dropped»)))],
+      ["main_conclusion", («Json string» от main)],
+      ["main_conclusion_words", («Json string» от («Thesis words» от markup и main))],
+      ["steps_to_main", (к строке (длина support))],
+      ["weak_steps_to_main", (к строке (длина (отфильтровать support где arc → «Is weak» от (arc.«status»))))],
+      ["main_assumption", («Json strings» от (отобразить chief как assumption → «Assumption words» от assumption))]])
+
+тотальная функция «Step json»
+  принимает arc: «Arc», weak: список (список строки), circles: список (список строки)
+  возвращает строка
+  («Json object» от [["conclusion", («Json string» от (arc.«conclusion»))],
+      ["premises", («Json strings» от (arc.«premises»))], ["kind", («Json string» от (arc.«kind»))],
+      ["verdict", («Json string» от (arc.«status»))], ["missing_premise", («Json string» от (arc.«bridge»))],
+      ["in_circle", («Json flag» от (не (пусто («Circle of» от circles и («Step of arc» от arc)))))],
+      ["rests_on_weak_steps", («Json string» от («Looked up» от weak и (arc.«conclusion»)))]])
+
+тотальная функция «Glossary json»
+  принимает markup: «Markup»
+  возвращает строка
+  пусть used равно («Notion uses» от markup)
+  пусть rows равно («Term rows» от markup)
+  пусть shifted равно (отобразить («Shifts of» от markup) как shift → «Word key» от (shift.«word»))
+  («Json object» от [["notions", («Json list» от (отобразить (markup.«notions») как notion →
+      «Json object» от [["name", («Json string» от (notion.«name»))], ["places", (к строке (notion.«arity»))],
+      ["meaning", («Json string» от (notion.«note»))],
+      ["theses", («Json strings» от («Labels with» от used и (notion.«name»)))]]))],
+      ["names", («Json strings» от (markup.«names»))],
+      ["terms", («Json list» от (отобразить rows как row → «Json object» от
+      [["word", («Json string» от (элемент 5 в row))], ["meaning", («Json string» от (элемент 2 в row))],
+      ["thesis", («Json string» от (элемент 3 в row))],
+      ["defines", («Json flag» от ((элемент 4 в row) равен "да"))],
+      ["meaning_changed", («Json flag» от (shifted содержит (элемент 1 в row)))]]))]])
+
+тотальная функция «Json report of»
+  принимает article: «Article»
+  возвращает строка
+  пусть judged равно (article.«judged»)
+  пусть markup равно (judged.«markup»)
+  пусть text равно (article.«text»)
+  пусть arcs равно («Arcs of» от judged)
+  пусть weak равно («Weak rows» от arcs)
+  пусть circles равно («Circles of» от («Canonical steps» от markup))
+  пусть assumptions равно («Assumptions of» от markup и arcs)
+  пусть trimmed равно («Trimmed of» от text)
+  пусть sentences равно (trimmed.«main»)
+  пусть implied равно (отобразить («Implied arcs» от arcs) как arc → «Step label» от («Step of arc» от arc))
+  (соединить [(«Json object» от [["format", "\"flang-argue-report\""], ["version", "1"],
+      ["text", («Json string» от (article.«path»))],
+      ["summary", («Summary json» от article и arcs и («Main assumptions» от assumptions и («Main root» от arcs))
+      и trimmed)],
+      ["theses", («Json list» от (отобразить (markup.«entries») как entry → «Json object» от
+      [["label", («Json string» от (entry.«number»))], ["form", («Json string» от (entry.«formula»))],
+      ["quote", («Json string» от (entry.«quote»))], ["markup_line", (к строке (entry.«line»))]]))],
+      ["steps", («Json list» от (отобразить arcs как arc → «Step json» от arc и weak и circles))],
+      ["failures", («Json strings» от («Failure blocks» от judged))],
+      ["implied_premise_steps", («Json strings» от implied)],
+      ["map", («Json object» от [["main_conclusion", («Json string» от («Main root» от arcs))],
+      ["final_conclusions", («Json strings» от («Roots of» от arcs))],
+      ["outline", («Json list» от (отобразить («Outline of» от arcs) как row → «Json object» от
+      [["depth", (к строке ((длина (row.«indent»)) делить на 2))], ["label", («Json string» от (row.«label»))],
+      ["shown_above", («Json flag» от (row.«again»))]]))]])],
+      ["assumptions", («Json list» от (отобразить assumptions как assumption → «Json object» от
+      [["kind", («Json string» от (assumption.«kind»))], ["label", («Json string» от (assumption.«label»))],
+      ["words", («Json string» от (assumption.«words»))],
+      ["conclusions_that_fall", («Json strings» от (assumption.«falls»))]]))],
+      ["glossary", («Glossary json» от markup)],
+      ["readers", («Json object» от [["grammar_crosscheck", («Json string» от (article.«grammar»))],
+      ["sentences", («Json list» от (отобразить («Readings of» от markup и (article.«rows») и sentences)
+      как reading → «Json object» от [["number", (к строке (reading.«number»))],
+      ["read_by", («Json string» от (reading.«by»))], ["theses", («Json strings» от (reading.«labels»))],
+      ["sentence", («Json string» от (reading.«sentence»))]]))]])],
+      ["dropped", («Json strings» от (article.«dropped»))],
+      ["skipped", («Json strings» от (article.«skipped»))], ["tables", («Json string» от (article.«tables»))],
+      ["outside_article_text", («Json list» от (отобразить (trimmed.«cut») как row → «Json object» от
+      [["kind", («Json string» от (элемент 1 в row))], ["sentence", («Json string» от (элемент 2 в row))]]))],
+      ["uncovered_markers", («Json strings» от («Uncovered markers» от markup и sentences))],
+      ["boundary", («Json string» от («Article boundary»))]]), "\n"] по "")

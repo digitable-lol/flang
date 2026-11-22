@@ -1,0 +1,161 @@
+модуль «Argue trim»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+
+объект «Trimmed»
+  «main»: список строки
+  «cut»: список (список строки)
+
+тотальная функция «Is references heading»
+  принимает line: строка
+  возвращает признак
+  пример «The heading of the list of sources»
+    дано line равно "  Список литературы:"
+    ожидается да
+  пример «A sentence about literature is not a heading»
+    дано line равно "Литература по теме обширна."
+    ожидается нет
+  (["литература", "список литературы", "библиографический список", "библиография", "список источников",
+      "список использованной литературы", "список использованных источников", "примечания", "references"]
+      содержит («Without dots» от («Replaced in» от («In small letters» от («Flat» от line)) и ":" и "")))
+
+тотальная функция «Kind by counts»
+  принимает own: число, latin: число, signs: число, words: число
+  возвращает строка
+  пример «Mostly Latin letters are another language»
+    дано own равно 0
+    дано latin равно 33
+    дано signs равно 34
+    дано words равно 7
+    ожидается "foreign"
+  пример «Few letters among the signs are a row of a table»
+    дано own равно 0
+    дано latin равно 0
+    дано signs равно 14
+    дано words равно 6
+    ожидается "scrap"
+  пусть torn равно ((words меньше 3) или (((own плюс latin) умножить на 2) меньше signs))
+  если (latin больше own) и притом (latin не меньше 10) то "foreign" иначе (если torn то "scrap" иначе "main")
+
+тотальная функция «Kind of sentence»
+  принимает sentence: строка
+  возвращает строка
+  пример «A sentence of the article»
+    дано sentence равно "Медь проводит ток, значит, провод не нагревается"
+    ожидается "main"
+  пример «A sentence in another language»
+    дано sentence равно "The paper considers the problem of trust"
+    ожидается "foreign"
+  пример «A row of a table»
+    дано sentence равно "12,5 14,1 18 % 21 %"
+    ожидается "scrap"
+  пример «A heading or a torn piece»
+    дано sentence равно "Введение"
+    ожидается "scrap"
+  пусть codes равно (отобразить (разложить sentence на символы) как sign → код символа sign)
+  («Kind by counts» от (длина (отфильтровать codes где code → (code больше 1024) и притом (code меньше 1106)))
+      и (длина (отфильтровать codes где code → ((code больше 64) и притом (code меньше 91))
+      или ((code больше 96) и притом (code меньше 123))))
+      и (длина (отфильтровать codes где code → не (code равен 32)))
+      и (длина («Pieces of» от sentence)))
+
+тотальная функция «Heading place»
+  принимает lines: список строки
+  возвращает число
+  пример «The last heading of the sources in the second half of the text»
+    дано lines равно ["Идёт дождь.", "Дует ветер.", "Литература", "1. Иванов И. И. Дождь."]
+    ожидается 3
+  пример «A text without such a heading»
+    дано lines равно ["Идёт дождь.", "Дует ветер."]
+    ожидается 0
+  пусть found равно (свёртка lines начиная с [0, 0] как held и line →
+      [((элемент 1 в held) плюс 1), (если «Is references heading» от line то ((элемент 1 в held) плюс 1)
+      иначе (элемент 2 в held))])
+  если ((элемент 2 в found) умножить на 2) больше (длина lines) то (элемент 2 в found) иначе 0
+
+тотальная функция «Lines before»
+  принимает lines: список строки, place: число
+  возвращает список строки
+  пример «What stands in front of the heading»
+    дано lines равно ["а", "б", "в"]
+    дано place равно 3
+    ожидается ["а", "б"]
+  пример «No heading keeps everything»
+    дано lines равно ["а", "б", "в"]
+    дано place равно 0
+    ожидается ["а", "б", "в"]
+  если place равен 0
+    то lines
+    иначе (свёртка lines начиная с (пустой список) как kept и line →
+        если ((длина kept) плюс 1) меньше place то (добавить line к kept) иначе kept)
+
+тотальная функция «Lines from»
+  принимает lines: список строки, place: число
+  возвращает список строки
+  пример «The heading and what stands behind it»
+    дано lines равно ["а", "б", "в"]
+    дано place равно 2
+    ожидается ["б", "в"]
+  разбор lines
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если place не больше 1 то lines иначе («Lines from» от хвост и (place минус 1)))
+
+тотальная функция «Trimmed of»
+  принимает text: строка
+  возвращает «Trimmed»
+  пример «The sources, another language and torn pieces are set aside»
+    дано text равно "Идёт сильный дождь.\nThe rain is heavy today indeed.\n12 14 18.\nЛитература\nИванов. Дождь."
+    ожидается (запись «Trimmed» с «main» равным ["Идёт сильный дождь"]
+        и «cut» равным [["foreign", "The rain is heavy today indeed"], ["scrap", "12 14 18"],
+        ["sources", "Литература Иванов"], ["sources", "Дождь"]])
+  пусть lines равно (разделить text по "\n")
+  пусть place равно («Heading place» от lines)
+  пусть body равно («Sentences of text» от (соединить («Lines before» от lines и place) по "\n"))
+  пусть kinds равно (отобразить body как sentence → [(«Kind of sentence» от sentence), sentence])
+  (запись «Trimmed» с «main» равным (отобразить (отфильтровать kinds где row → (элемент 1 в row) равен "main")
+      как row → элемент 2 в row)
+      и «cut» равным («Соединить списки» от (отфильтровать kinds где row → не ((элемент 1 в row) равен "main"))
+      и (отобразить («Sentences of text» от (если place равен 0 то ""
+      иначе (соединить («Lines from» от lines и place) по "\n")))
+      как sentence → ["sources", sentence])))
+
+тотальная функция «Main text»
+  принимает trimmed: «Trimmed»
+  возвращает строка
+  пример «The sentences of the article stand one after another again»
+    дано trimmed равно (запись «Trimmed» с «main» равным ["Идёт дождь", "Дует ветер"] и «cut» равным пустой список)
+    ожидается "Идёт дождь. Дует ветер."
+  если пусто (trimmed.«main») то "" иначе (соединить [(соединить (trimmed.«main») по ". "), "."] по "")
+
+тотальная функция «Cut count»
+  принимает trimmed: «Trimmed», kind: строка
+  возвращает число
+  длина (отфильтровать (trimmed.«cut») где row → (элемент 1 в row) равен kind)
+
+тотальная функция «Cut lines»
+  принимает trimmed: «Trimmed»
+  возвращает список строки
+  пример «Nothing set aside is said so»
+    дано trimmed равно (запись «Trimmed» с «main» равным ["Идёт дождь"] и «cut» равным пустой список)
+    ожидается пустой список
+  пусть words равно [["sources", "список литературы и то, что после него"], ["foreign", "текст на другом языке"],
+      ["scrap", "заголовки, строки таблиц и обрывки"]]
+  если пусто (trimmed.«cut»)
+    то пустой список
+    иначе («Соединить списки» от («Соединить списки» от
+        [(соединить ["Эти части файла не считаются текстом статьи: в счёт предложений и в покрытие они не входят. ",
+        "Цитаты разметки по-прежнему сверяются со всем файлом."] по ""), ""]
+        и (отобразить words как row → соединить ["- ", (элемент 2 в row), ": ",
+        (к строке («Cut count» от trimmed и (элемент 1 в row)))] по ""))
+        и («Соединить списки» от ["", "<details><summary>Что отложено, кроме списка литературы</summary>", ""]
+        и (добавить "</details>" к (добавить "" к (отобразить (отфильтровать (trimmed.«cut»)
+        где row → не ((элемент 1 в row) равен "sources")) как row → соединить ["- ",
+        («Looked kind» от words и (элемент 1 в row)), ": «", (элемент 2 в row), "»"] по "")))))
+
+тотальная функция «Looked kind»
+  принимает words: список (список строки), kind: строка
+  возвращает строка
+  (свёртка words начиная с kind как found и row → если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)

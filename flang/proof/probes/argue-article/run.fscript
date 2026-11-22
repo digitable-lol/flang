@@ -27,7 +27,7 @@
       "set -- --claims \"$o/made.claims\" --part-size 80 --markup-cmd \"$stub\"; "] по "")],
       ["no-converter", "export FLANG_ARGUE_PDFTOTEXT=no-such-converter; "],
       ["paper", "export FLANG_ARGUE_PDFTOTEXT=\"cat $p/programs/paper.pdf #\"; "],
-      ["grammar", "export FLANG_ARGUE_CROSSCHECK=\"$p/crosscheck-stub.flang\"; "],
+      ["grammar", "export FLANG_ARGUE_CROSSCHECK=\"$p/crosscheck-stub.fscript\"; "],
       ["skipped-step", "export FLANG_ARGUE_SKIP=step:19; "]] начиная с "" как found и row →
       если (элемент 1 в row) равен имя то (элемент 2 в row) иначе found)
 

@@ -27,8 +27,9 @@ Russian too. The examples below are shown as they are.
 | Коротко (in short) | the main conclusion, how many steps lead to it and how many of them do not follow, the main assumption |
 | Карта рассуждения (the map) | every step "premises → conclusion" as a list and as a diagram; conclusions with a failing step under them are marked |
 | Провалы рассуждения (failures) | contradictions, vicious circles, shifted terms, conclusions without premises, steps that do not follow |
-| Допущения автора (assumptions) | what a conclusion needs but the text does not say, and what is said without being derived; each with the conclusions that rest on it |
-| Не доказательство (not a proof) | steps marked as a generalisation, a correlation or an appeal to authority |
+| Допущения автора (assumptions) | what a conclusion needs but the text does not say, and what is said without being derived; each with the conclusions that rest on it. Steps marked «допущение» go here too |
+| Не доказательство (not a proof) | steps the markup itself calls less than a strict inference: a generalisation, a correlation, an appeal to authority, a step from significance, a step from a sample, a plausible step |
+| Ядро не решило (not decided) | the steps the kernel did not check, each with its reason |
 | Все шаги (all steps) | the table of steps with the kernel's verdict |
 | Словарь понятий (glossary) | the notions of the article and the words whose meaning shifted |
 | Кем прочитано (who read it) | for every sentence: who wrote down its meaning |
@@ -57,7 +58,7 @@ flang run-script argue:article -- docs/examples/argue/service.txt --out report.m
 
 ```
 отчёт записан: report.md; провалов рассуждения: 1; подразумеваемых посылок: 0; шагов без доказательной силы: 2; шагов: 3, следует: 1, не следует: 2, без посылок: 0, посылки противоречат друг другу: 0, ядро не решило: 0; выброшено записей разметки: 0; не досчитано: 0
-время: 15 с
+время: 48 с
 ```
 
 The line says: one failure, no implied premises, two steps without the force
@@ -216,7 +217,39 @@ The failures hold what one premise does not mend: a contradiction, a circle, a
 shifted term, a conclusion without premises. Whether the missing premise is
 obvious is for the reader to decide: flang does not know.
 
-**Who read it.** Every sentence of the article carries one of the marks:
+A step marked «допущение» goes to the assumptions too. The markup uses this
+kind for a conclusion that rests on a general rule the text does not state:
+"the grass is wet, so it rained". If the kernel proved such a step, there is
+no unstated rule, and the step is not listed among the assumptions.
+
+**Not a proof.** These are the steps the markup itself calls less than a
+strict inference. For each the report says why a step of that kind does not
+prove its conclusion and which premises it usually lacks. For a step marked
+«выборка» (a sample):
+
+```
+- **Что не так:** шаг помечен в разметке как «выборка»: то, что верно для обследованных, верно для остальных, только если выборка на них похожа.
+- **Что нужно шагу этого рода:** посылки, что выборка представляет всех: как она набрана и чем остальные на неё похожи.
+```
+
+**Who read it.** The section says who wrote down the meaning of every
+sentence. If a judgment has the line `источник:` (origin) in the markup, the
+mark is taken from it:
+
+| Mark | What it means |
+| --- | --- |
+| грамматикой | the flang grammar wrote the judgment and it was left as it is |
+| грамматикой, вариант 2 | the grammar gave several readings and the second was chosen |
+| моделью | the judgment was written or rewritten by whoever edited the markup |
+
+The section opens with a count of the judgments by origin:
+
+```
+Источник суждений: грамматика — 1; грамматика, другой вариант — 1; модель — 1; не назван — 18.
+```
+
+A judgment without the line `источник:` gets its mark from the comparison
+with the grammar. The sentence then carries one of the marks:
 
 | Mark | What it means |
 | --- | --- |
@@ -227,6 +260,8 @@ obvious is for the reader to decide: flang does not know.
 | никем | the markup does not have the sentence |
 
 The word "model" here means whoever wrote the markup, a program or a human.
+When a judgment has both the line `источник:` and an answer of the
+comparison, the mark carries both: «моделью; грамматика подтвердила».
 
 The crosscheck against the grammar is done by a separate part of flang. When
 your clone has it, the section opens with a count over the judgments: how many
@@ -246,7 +281,7 @@ The report's words about the kernel:
 | --- | --- |
 | следует (доказано ядром) | the kernel accepted a proof of the step for all cases |
 | не следует (пример против подтверждён ядром) | the kernel computed the premises and the conclusion on a found case: the premises hold, the conclusion fails |
-| ядро не решило | the step is larger than the kernel takes on, or the kernel did not accept the check |
+| ядро не решило | the step is past one of the limits of the check, or the kernel did not accept the check; the section «Ядро не решило» names the reason |
 
 ## The report for programs
 
@@ -266,12 +301,15 @@ The top-level fields: `summary`, `theses`, `steps`, `failures`,
 ```
 
 The verdicts of a step: `follows`, `fails`, `clash` (the premises contradict
-each other), `none` (no premises), `undecided`.
+each other), `none` (no premises), `undecided`. A judgment in `theses` has the
+field `origin`, its line `источник:`; a sentence in `readers.sentences` has
+the field `origins`.
 
 ## Time and limits
 
-The small example above is checked in about fifteen seconds. A real article
-takes longer: on twelve scientific articles of 7 to 25 thousand characters the
+The small example above takes under a minute: the steps are checked in about
+fifteen seconds, and the comparison with the grammar takes half a minute more.
+A real article takes longer: on twelve scientific articles of 7 to 25 thousand characters the
 check of a finished markup took from 35 seconds to a little over four minutes,
 usually about a minute and a quarter. The report on such an article takes 30
 to 120 KB.
@@ -306,51 +344,101 @@ eight by default.
 | `понятие старше(x, y): пояснение` | a relation between two things |
 | `понятие дождь: пояснение` | a whole statement |
 | `имя Сократ, Моби` | the things the text names |
+| `величина спрос, запас: пояснение` | numbers that are compared |
+| `неотрицательная величина доля: пояснение` | a number that is never below zero |
 | `[N] форма` | a numbered judgment |
 | `цитата: слова текста` | where the judgment comes from; required |
+| a second line `цитата:` | the judgment is put together from two places of the text; each quote is compared with the text |
+| `сила: как правило` | the judgment is said with a reservation; a firm conclusion does not follow from such a premise |
+| `источник: грамматика` | who wrote the judgment: `грамматика`, `грамматика, вариант 2` or `модель` |
+| `вариант: другая форма` | another reading of the same quote; does not change the check |
+| `почему: несколько слов` | why this form was chosen; does not change the check |
 | `термин: слово = смысл` | the sense a word has in this quote |
 | `определение: слово = смысл` | the same for the sentence where the author defines the word |
 | `вывод [N] из [M], [K]` | a step of the reasoning |
 | `вывод [N] из [M]: корреляция` | a step with its kind |
+| `не суждение: слова текста` | a sentence with a word of inference that states nothing; it is not judged |
 | `# текст` | a comment |
 
 A logical form is written in words: `не` (not), `и` (and), `или` (or),
 `если …, то …` (if … then …), brackets, `все x:` (for all x) and `есть x:`
 (there is x). Examples: `все x: если кит(x), то не рыба(x)`,
 `есть x: кит(x) и белый(x)`, `если дождь, то мокро`, `старше(Анна, Борис)`.
+Quantifiers stand in front of the form, and the kind of quantifier may change
+once: `все x: есть y: если студент(x), то наставник(x, y)`.
 
-The kind of a step is `обобщение` (generalisation), `корреляция`
-(correlation), `авторитет` (authority) or `определение` (definition). A step
+Numbers and declared quantities are compared with the signs `<`, `<=`, `=`,
+`!=`, `>`, `>=` or with the words `меньше`, `не больше`, `равно`, `не равно`,
+`больше`, `не меньше`: `спрос < запас`, `доля >= 50 %`,
+`выручка_2021 = 1,12 * выручка_2020`. Quantities can be added, subtracted,
+and multiplied or divided by a number.
+
+The form `причина: если курит, то болеет` says that one thing causes the
+other. As a premise it works as a plain condition. As a conclusion it follows
+only from a judgment about the same cause: a cause is not derived from two
+features that occur together.
+
+The kind of a step is written after the colon in the line `вывод`. A step
 without a kind is claimed to be a strict inference.
+
+| Kind | What the step is |
+| --- | --- |
+| `обобщение` | from examples to all cases |
+| `корреляция` | from two features that occur together to a cause |
+| `авторитет` | from somebody's opinion to the claim itself |
+| `определение` | an inference by the definition of a word; judged as a strict one |
+| `значимость` | from statistical significance to an effect |
+| `выборка` | from those examined to everybody |
+| `правдоподобие` | the conclusion or a premise is said with a reservation: "probably", "as a rule" |
+| `допущение` | the conclusion rests on a general rule the text does not state |
+| `объяснение` | the author explains why something happened and does not prove it; it is not judged |
 
 ## What the kernel judges and what it does not
 
 It judges:
 
 - forms without quantifiers over statements and over named things;
-- forms with quantifiers of one kind in front: `все x, y: …` or `есть x: …`;
+- forms with quantifiers in front: of one kind (`все x, y: …`, `есть x: …`)
+  and with one change of kind (`все x: есть y: …`, `есть y: все x: …`);
 - notions of one place, of two and of more;
-- a step that, after the things are substituted, has up to seven elementary
-  statements. Up to four the kernel proves by itself; from five to seven it
-  checks a case analysis that flang writes down.
+- comparisons of numbers and declared quantities with addition, subtraction,
+  and multiplication and division by a number;
+- a large step: flang cuts its proof into parts of two or three elementary
+  statements, and the kernel checks every part.
 
 It does not judge:
 
-- a form where `все` and `есть` are mixed ("every student has a tutor"): a
-  markup with such a form is refused;
-- a step with more than seven elementary statements: no proof is handed to the
-  kernel, and the report says «ядро не решило». A counterexample is searched
-  for while there are at most ten statements;
-- equality, numbers and arithmetic inside a form;
+- a step that, after the things are substituted, has more than 40 elementary
+  statements;
+- a step where the substitution gives more than 600 combinations of things;
+- a step with comparisons that has more than three quantities or more than
+  four different comparisons;
+- a form where the kind of quantifier changes more than once, and a comparison
+  where one quantity is multiplied by another: a markup with them is refused,
+  and the message names the line;
 - the truth of the premises: only the link between premises and conclusion is
   checked;
 - a contradiction between three or more judgments when no two of them
   contradict each other and they are not the premises of one step.
 
+A step past one of the first three limits gets the answer «ядро не решило»,
+and the section «Ядро не решило» names the reason:
+
+```
+- [20] из [17], [18], [19]: предел: доказательство шага на 3 простых высказываний не делится на части, посильные ядру.
+```
+
+A step has three answers, and each is backed by something. «Следует»: the
+kernel accepted every part of the proof. «Не следует»: a case was found on
+which the kernel computed the premises true and the conclusion false. «Ядро
+не решило»: there is neither. The proof and the counterexample are searched
+for apart, so a failed search never turns into «следует» or «не следует».
+
 flang expands a quantifier itself: it puts every thing named in the step in
-place of the variable. The kernel receives a formula without quantifiers. For
-the forms of the "judges" list this substitution is enough: the answer «не
-следует» means there is a real counterexample.
+place of the variable. The kernel receives a formula without quantifiers. In
+a form with a change of quantifier kind the named things are sometimes not
+enough for a proof nor for a counterexample; the answer is then «ядро не
+решило».
 
 ## What the check does not promise
 

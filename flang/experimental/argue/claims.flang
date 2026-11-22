@@ -259,6 +259,44 @@
       и «terms» равным (добавить [word, notion, (к строке spot), (если defines то "да" иначе "нет")]
       к (entry.«terms»)))
 
+тотальная функция «With note»
+  принимает entry: «Thesis», text: строка, spot: число
+  возвращает «Thesis»
+  пример «Another reading of the quote is kept with the judgment and does not change its form»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+    дано text равно "вариант: идёт(дождь)"
+    дано spot равно 4
+    ожидается (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3
+        и «terms» равным [["вариант", "идёт(дождь)", "4", "помета"]])
+  (запись «Thesis» с «number» равным (entry.«number») и «line» равным (entry.«line»)
+      и «formula» равным (entry.«formula») и «quote» равным (entry.«quote») и «quote line» равным (entry.«quote line»)
+      и «terms» равным (добавить [(«Before the colon» от text), («After the colon» от text), (к строке spot), "помета"]
+      к (entry.«terms»)))
+
+тотальная функция «Notes of»
+  принимает entry: «Thesis», word: строка
+  возвращает список строки
+  пример «Other readings of a judgment, in the order they are written»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3
+        и «terms» равным [["вариант", "идёт(дождь)", "4", "помета"], ["происхождение", "грамматика", "5", "помета"]])
+    дано word равно "вариант"
+    ожидается ["идёт(дождь)"]
+  (отобразить (отфильтровать (entry.«terms») где term → ((элемент 4 в term) равен "помета")
+      и притом ((элемент 1 в term) равен word)) как term → элемент 2 в term)
+
+тотальная функция «Own terms»
+  принимает entry: «Thesis»
+  возвращает список (список строки)
+  пример «Notes are not terms»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3
+        и «terms» равным [["вариант", "идёт(дождь)", "4", "помета"]])
+    ожидается пустой список
+  отфильтровать (entry.«terms») где term → не ((элемент 4 в term) равен "помета")
+
 тотальная функция «Markup with»
   принимает held: «Markup», entries: список «Thesis», faults: список строки, open: список «Thesis»
   возвращает «Markup»
@@ -299,7 +337,7 @@
   пусть kind равно (свёртка [["понятие ", "notion"], ["имя ", "name"], ["[", "entry"], ["цитата:", "quote"],
       ["термин:", "term"], ["определение:", "definition"], ["вывод ", "step"], ["вывод[", "step"],
       ["величина ", "quantity"], ["неотрицательная величина ", "positive"], ["сила:", "strength"],
-      ["не суждение:", "aside"]]
+      ["не суждение:", "aside"], ["вариант:", "note"], ["происхождение:", "note"], ["почему:", "note"]]
       начиная с "unknown" как found и row →
       если (found равен "unknown") и притом (text начинается с (элемент 1 в row)) то (элемент 2 в row) иначе found)
   если (пусто text) или (text начинается с "#") то "blank" иначе kind
@@ -383,7 +421,7 @@
   пусть lost равно («Markup with» от held и (held.«entries») и (добавить («Line fault» от (line.«at»)
       и (соединить ["строка не понята: «", text,
       "». Ждали «понятие …», «имя …», «величина …», «[N] формула», «цитата: …», «сила: …», «термин: …»,",
-      " «определение: …» или «вывод [N] из [M]»"]
+      " «определение: …», «вариант: …», «происхождение: …», «почему: …» или «вывод [N] из [M]»"]
       по "")) к (held.«faults»)) и пустой список)
   пусть label равно (соединить ["не суждение, строка ", (к строке (line.«at»))] по "")
   пусть aside равно (запись «Markup» с «notions» равным (held.«notions») и «names» равным (held.«names»)
@@ -437,10 +475,11 @@
   принимает entry: «Thesis», kind: строка, line: «Line»
   возвращает «Thesis»
   пусть text равно («Flat» от (line.«text»))
+  пусть termed равно (если kind равен "note" то («With note» от entry и text и (line.«at»))
+      иначе («With term» от entry и text и (line.«at») и (kind равен "definition")))
   если kind равен "quote"
     то «With quote» от entry и («After the colon» от text) и (line.«at»)
-    иначе (если kind равен "strength" то («With strength» от entry и text)
-        иначе («With term» от entry и text и (line.«at») и (kind равен "definition")))
+    иначе (если kind равен "strength" то («With strength» от entry и text) иначе termed)
 
 тотальная функция «Line step»
   принимает held: «Markup», line: «Line»
@@ -448,7 +487,8 @@
   пусть kind равно («Line kind» от («Flat» от (line.«text»)))
   если kind равен "blank"
     то held
-    иначе (если ["quote", "term", "definition", "strength"] содержит kind то («Inner step» от held и kind и line)
+    иначе (если ["quote", "term", "definition", "strength", "note"] содержит kind
+        то («Inner step» от held и kind и line)
         иначе («Outer step» от («Closed markup» от held) и kind и line))
 
 тотальная функция «Read markup»
@@ -554,7 +594,7 @@
         и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным [["снег", "осадки", "4", "нет"]])
     ожидается ["строка 4 разметки: слова «снег» нет в цитате суждения [1]"]
   пусть quote равно («In small letters» от («Flat» от (entry.«quote»)))
-  (свёртка (entry.«terms») начиная с (пустой список) как faults и term →
+  (свёртка («Own terms» от entry) начиная с (пустой список) как faults и term →
       «Соединить списки» от faults и («One term faults» от term и quote и (entry.«number»)))
 
 тотальная функция «One term faults»
@@ -752,7 +792,7 @@
         и «open» равным пустой список)
     ожидается пустой список
   (свёртка (markup.«entries») начиная с (пустой список) как rows и entry →
-      «Соединить списки» от rows и (отобразить (entry.«terms») как term →
+      «Соединить списки» от rows и (отобразить («Own terms» от entry) как term →
       [(«Word key» от (элемент 1 в term)), (элемент 2 в term), (entry.«number»), (элемент 4 в term),
       (элемент 1 в term)]))
 

@@ -184,6 +184,7 @@
 | 0247 | [Статья судится по разметке, а ядро судит шаг после подстановки предметов](0247-an-article-is-judged-from-its-markup-and-the-kernel-judges-the-grounded-step.md) | предложено | да |  |
 | 0248 | [Набор пользовательских историй судится по величинам: общий ответ или опровержение](0248-a-set-of-user-stories-is-judged-per-quantity-by-an-answer-or-a-refutation.md) | предложено | да |  |
 | 0251 | [Разбор даёт логическую форму, а форма разметки сверяется с ней ядром](0251-a-parse-gives-a-logical-form-and-the-markup-is-checked-against-it.md) | предложено | да |  |
+| 0249 | [Признаки русского слова берутся из открытого словаря, который собирается у пользователя](0249-russian-word-features-come-from-an-open-dictionary-built-on-the-users-machine.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

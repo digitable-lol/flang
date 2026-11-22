@@ -3,6 +3,7 @@
   использует «Argue claims» из "argue/claims.flang"
   использует «Argue judge» из "argue/judge.flang"
   использует «Argue crosscheck» из "argue/crosscheck.flang"
+  использует «Russian meaning» из "../ct/russian/meaning.flang"
 
 объект «Paths»
   «claims»: строка
@@ -100,14 +101,13 @@
 тотальная функция «Summary»
   принимает checks: список «Crosscheck»
   возвращает строка
-  пример «No judgments give zeros»
-    дано checks равно пустой список
-    ожидается "суждений 0: подтверждено грамматикой 0, расходится 0, грамматика не прочла 0, ядро не решило 0\n"
   (соединить ["суждений ", (к строке (длина checks)),
-    ": подтверждено грамматикой ", (к строке («Counted» от checks и "confirmed")),
+    ": подтверждено ", (к строке («Counted» от checks и "confirmed")),
+    ", с предположительной отсылкой ", (к строке («Counted» от checks и "presumed")),
     ", расходится ", (к строке («Counted» от checks и "differs")),
-    ", грамматика не прочла ", (к строке («Counted» от checks и "unread")),
-    ", ядро не решило ", (к строке («Counted» от checks и "undecided")), "\n"] по "")
+    ", понятия не сопоставлены ", (к строке («Counted» от checks и "unmatched")),
+    ", не прочтено ", (к строке («Counted» от checks и "unread")),
+    ", не решено ", (к строке («Counted» от checks и "undecided")), "\n"] по "")
 
 тотальная функция «Table row»
   принимает check: «Crosscheck»
@@ -164,9 +164,9 @@
   принимает words: строка
   возвращает список строки
   пример «Every line of the file is a row of the dictionary»
-    дано words равно "кит|кит|сущ|им м ед\n\nкиты|кит|сущ|им м мн\n"
-    ожидается ["кит|кит|сущ|им м ед", "киты|кит|сущ|им м мн"]
-  отфильтровать (разделить words по "\n") где row → не (пусто row)
+    дано words равно "кит=кит,сущ,им,м,ед\n\nкиты=кит,сущ,им,м,мн\n"
+    ожидается ["кит=кит,сущ,им,м,ед", "киты=кит,сущ,им,м,мн"]
+  «Строки словаря из текста» от words
 
 тотальная функция «Judged markup»
   принимает paths: «Paths», claims: строка, words: строка

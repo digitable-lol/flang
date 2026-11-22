@@ -116,7 +116,7 @@ largest.flang: независимо, сверщиком, проиграно 0 и
 
 Nothing is wrong with the program: `checker` cannot yet repeat every kernel
 rule. On the set of 60 tasks used to compare flang with Lean, the kernel proved
-55 statements, and `checker` repeated 30 of them.
+56 statements, and `checker` repeated 30 of them.
 
 What to do with this number:
 
@@ -299,8 +299,8 @@ That sorting keeps the length of the list, the kernel derived by itself. That
 the result is ordered is true, but the kernel did not derive it. Lean proves
 both facts.
 
-On the same set of 60 tasks flang proves 33 by itself. Another 18 are proved
-after the programmer rewrites the postcondition or adds a theorem. Nine are not
+On the same set of 60 tasks flang proves 33 by itself. Another 19 are proved
+after the programmer rewrites the postcondition or adds a theorem. Eight are not
 proved at all. Lean 4 proves all 60. A detailed comparison:
 [flang for Lean and Dafny users](flang-for-lean-and-dafny-users.html).
 
@@ -358,8 +358,8 @@ need them. The last three need Lean 4.
 | 93 kinds of steps, a lemma for each | `flang run-script lean-rules:check` |
 | 833 corrupted records, 0 accepted | `flang run-script checker:check` |
 | 45 paths of 52 | `flang run-script lean-soundness:check` |
-| 33, 18 and 9 tasks of 60 | `flang run-script lean-parity:probe` |
-| 30 of 55 | `flang check --proof` on every file of the set `parity/programs` in the proof directory |
+| 33, 19 and 8 tasks of 60 | `flang run-script lean-parity:probe` |
+| 30 of 56 | `flang check --proof` on every file of the set `parity/programs` in the proof directory |
 
 ## Next
 

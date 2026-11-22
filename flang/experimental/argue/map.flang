@@ -92,9 +92,22 @@
         и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
         и «open» равным пустой список)
         и «dropped» равным ["суждение [1] (строка 3 разметки): цитаты нет в тексте дословно: «Шёл дождь»"])
+  пример «A judgment with two quotes stays when each of them stands in the text»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь … и сильный" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    дано text равно "Идёт дождь. Он давний и сильный."
+    ожидается (запись «Pruned» с «markup» равным (запись «Markup»
+        с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь … и сильный" и «quote line» равным 3 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+        и «dropped» равным пустой список)
   пусть flat равно («Flat» от text)
   пусть forged равно (отфильтровать (markup.«entries») где entry →
-      (не (пусто (entry.«quote»))) и притом (не (flat содержит («Flat» от (entry.«quote»)))))
+      (не (пусто (entry.«quote»))) и притом (не (пусто (отфильтровать
+      (разделить («Flat» от (entry.«quote»)) по " … ") где piece → не (flat содержит piece)))))
   пусть lost равно (отобразить forged как entry → entry.«number»)
   пусть cut равно (отфильтровать (markup.«steps») где step →
       не (пусто (отфильтровать (приписать (step.«conclusion») к (step.«premises»)) где label → lost содержит label)))
@@ -119,8 +132,8 @@
   возвращает список «Arc»
   пусть markup равно (judged.«markup»)
   пусть outcomes равно (judged.«outcomes»)
-  пусть rows равно («Canon rows» от markup)
-  (отобразить (judged.«verdicts») как verdict → «Arc of» от («Canon step» от rows и (verdict.«step»))
+  пусть rows равно («Label table» от markup)
+  (отобразить (judged.«verdicts») как verdict → «Arc of» от («Tabled step» от rows и (verdict.«step»))
       и («Final status» от verdict и outcomes)
       и (если (не (пусто (verdict.«bridge»)))
       и притом («Proven» от outcomes и («Step id» от (verdict.«step»)) и "bridge")
@@ -392,7 +405,7 @@
     ожидается "подано как вывод, посылок нет"
   если пусто (arc.«premises»)
     то "подано как вывод, посылок нет"
-    иначе (соединить [(«Kind words» от (arc.«kind»)), " из ", («Bracketed» от (arc.«premises»)),
+    иначе (соединить [(«Kind title» от (arc.«kind»)), " из ", («Bracketed» от (arc.«premises»)),
         ": ", («Verdict words» от (arc.«status»))] по "")
 
 тотальная функция «Outline line»
@@ -519,6 +532,26 @@
         "пунктирная — шаг не доказан; красная рамка — вывод держится на шаге, который не следует; ",
         "серая — суждение принято без вывода."] по ""), ""] и («Diagram lines» от markup и arcs и weak)))
 
+тотальная функция «Is assumed step»
+  принимает status: строка, step: «Inference»
+  возвращает признак
+  пример «A step marked as resting on a rule the text does not state»
+    дано status равно "undecided"
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "допущение")
+    ожидается да
+  пример «The same step proved by the kernel rests on nothing unsaid»
+    дано status равно "follows"
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "допущение")
+    ожидается нет
+  пример «A step of another kind is not one»
+    дано status равно "fails"
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "обобщение")
+    ожидается нет
+  ((step.«kind») равен "допущение") и притом (не (["follows", "none"] содержит status))
+
 тотальная функция «Bridge words»
   принимает arc: «Arc»
   возвращает строка
@@ -561,7 +594,8 @@
       запись «Assumption» с «kind» равным "bare" и «label» равным (arc.«conclusion»)
       и «words» равным («Thesis words» от markup и (arc.«conclusion»))
       и «falls» равным («Falls with» от arcs и [(arc.«conclusion»)])))
-      и (отобразить (отфильтровать arcs где arc → (arc.«status») равен "fails") как arc →
+      и (отобразить (отфильтровать arcs где arc → ((arc.«status») равен "fails")
+      или («Is assumed step» от (arc.«status») и («Step of arc» от arc))) как arc →
       запись «Assumption» с «kind» равным "hidden" и «label» равным («Step label» от («Step of arc» от arc))
       и «words» равным («Bridge words» от arc)
       и «falls» равным («Each once» от (приписать (arc.«conclusion»)

@@ -114,7 +114,7 @@
   пусть text равно (article.«text»)
   пусть arcs равно («Arcs of» от judged)
   пусть weak равно («Weak rows» от arcs)
-  пусть circles равно («Circles of» от («Canon steps» от markup))
+  пусть circles равно («Circles of» от («Canonical steps» от markup))
   пусть assumptions равно («Assumptions of» от markup и arcs)
   пусть trimmed равно («Trimmed of» от text)
   пусть sentences равно (trimmed.«main»)
@@ -125,7 +125,8 @@
       и trimmed)],
       ["theses", («Json list» от (отобразить (markup.«entries») как entry → «Json object» от
       [["label", («Json string» от (entry.«number»))], ["form", («Json string» от (entry.«formula»))],
-      ["quote", («Json string» от (entry.«quote»))], ["markup_line", (к строке (entry.«line»))]]))],
+      ["quote", («Json string» от (entry.«quote»))], ["markup_line", (к строке (entry.«line»))],
+      ["origin", («Json string» от («Origin of» от entry))]]))],
       ["steps", («Json list» от (отобразить arcs как arc → «Step json» от arc и weak и circles))],
       ["failures", («Json strings» от («Failure blocks» от judged))],
       ["implied_premise_steps", («Json strings» от implied)],
@@ -146,7 +147,8 @@
       ["grammar_form", («Json string» от (элемент 5 в row))]]))],
       ["sentences", («Json list» от (отобразить («Readings of» от markup и (article.«rows») и sentences)
       как reading → «Json object» от [["number", (к строке (reading.«number»))],
-      ["read_by", («Json string» от (reading.«by»))], ["theses", («Json strings» от (reading.«labels»))],
+      ["read_by", («Json string» от (reading.«by»))], ["origins", («Json strings» от (reading.«origins»))],
+      ["theses", («Json strings» от (reading.«labels»))],
       ["sentence", («Json string» от (reading.«sentence»))]]))]])],
       ["dropped", («Json strings» от (article.«dropped»))],
       ["skipped", («Json strings» от (article.«skipped»))], ["tables", («Json string» от (article.«tables»))],

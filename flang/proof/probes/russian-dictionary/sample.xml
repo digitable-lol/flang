@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<dictionary version="0.92" revision="0">
+<lemmata>
+    <lemma id="1" rev="1"><l t="сталь"><g v="NOUN"/><g v="inan"/><g v="femn"/></l><f t="сталь"><g v="sing"/><g v="nomn"/></f><f t="стали"><g v="sing"/><g v="gent"/></f><f t="стали"><g v="sing"/><g v="datv"/></f><f t="сталь"><g v="sing"/><g v="accs"/></f><f t="сталью"><g v="sing"/><g v="ablt"/></f><f t="стали"><g v="sing"/><g v="loct"/></f><f t="стали"><g v="plur"/><g v="nomn"/></f><f t="сталей"><g v="plur"/><g v="gent"/></f><f t="сталям"><g v="plur"/><g v="datv"/></f><f t="стали"><g v="plur"/><g v="accs"/></f><f t="сталями"><g v="plur"/><g v="ablt"/></f><f t="сталях"><g v="plur"/><g v="loct"/></f></lemma>
+    <lemma id="2" rev="2"><l t="стать"><g v="INFN"/><g v="perf"/><g v="intr"/></l><f t="стать"></f></lemma>
+    <lemma id="3" rev="3"><l t="стал"><g v="VERB"/><g v="perf"/><g v="intr"/></l><f t="стал"><g v="masc"/><g v="sing"/><g v="past"/><g v="indc"/></f><f t="стала"><g v="femn"/><g v="sing"/><g v="past"/><g v="indc"/></f><f t="стало"><g v="neut"/><g v="sing"/><g v="past"/><g v="indc"/></f><f t="стали"><g v="plur"/><g v="past"/><g v="indc"/></f><f t="стану"><g v="sing"/><g v="1per"/><g v="futr"/><g v="indc"/></f><f t="станет"><g v="sing"/><g v="3per"/><g v="futr"/><g v="indc"/></f><f t="станут"><g v="plur"/><g v="3per"/><g v="futr"/><g v="indc"/></f></lemma>
+    <lemma id="4" rev="4"><l t="семья"><g v="NOUN"/><g v="inan"/><g v="femn"/></l><f t="семья"><g v="sing"/><g v="nomn"/></f><f t="семьи"><g v="sing"/><g v="gent"/></f><f t="семье"><g v="sing"/><g v="datv"/></f><f t="семью"><g v="sing"/><g v="accs"/></f><f t="семьёй"><g v="sing"/><g v="ablt"/></f><f t="семье"><g v="sing"/><g v="loct"/></f><f t="семьи"><g v="plur"/><g v="nomn"/></f><f t="семей"><g v="plur"/><g v="gent"/></f><f t="семьям"><g v="plur"/><g v="datv"/></f><f t="семьи"><g v="plur"/><g v="accs"/></f><f t="семьями"><g v="plur"/><g v="ablt"/></f><f t="семьях"><g v="plur"/><g v="loct"/></f></lemma>
+    <lemma id="5" rev="5"><l t="семь"><g v="NUMR"/></l><f t="семь"><g v="nomn"/></f><f t="семи"><g v="gent"/></f><f t="семи"><g v="datv"/></f><f t="семь"><g v="accs"/></f><f t="семью"><g v="ablt"/></f><f t="семи"><g v="loct"/></f></lemma>
+    <lemma id="6" rev="6"><l t="мой"><g v="ADJF"/><g v="Apro"/></l><f t="мой"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="моего"><g v="masc"/><g v="sing"/><g v="gent"/></f><f t="моему"><g v="masc"/><g v="sing"/><g v="datv"/></f><f t="мой"><g v="inan"/><g v="masc"/><g v="sing"/><g v="accs"/></f><f t="моим"><g v="masc"/><g v="sing"/><g v="ablt"/></f><f t="моём"><g v="masc"/><g v="sing"/><g v="loct"/></f><f t="моя"><g v="femn"/><g v="sing"/><g v="nomn"/></f><f t="мою"><g v="femn"/><g v="sing"/><g v="accs"/></f><f t="мои"><g v="plur"/><g v="nomn"/></f></lemma>
+    <lemma id="7" rev="7"><l t="мыть"><g v="INFN"/><g v="impf"/><g v="tran"/></l><f t="мыть"></f></lemma>
+    <lemma id="8" rev="8"><l t="мою"><g v="VERB"/><g v="impf"/><g v="tran"/></l><f t="мою"><g v="sing"/><g v="1per"/><g v="pres"/><g v="indc"/></f><f t="моет"><g v="sing"/><g v="3per"/><g v="pres"/><g v="indc"/></f><f t="мыл"><g v="masc"/><g v="sing"/><g v="past"/><g v="indc"/></f><f t="мой"><g v="sing"/><g v="impr"/><g v="excl"/></f><f t="мойте"><g v="plur"/><g v="impr"/><g v="excl"/></f></lemma>
+    <lemma id="9" rev="9"><l t="красивый"><g v="ADJF"/><g v="Qual"/></l><f t="красивый"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="красивая"><g v="femn"/><g v="sing"/><g v="nomn"/></f></lemma>
+    <lemma id="10" rev="10"><l t="красивее"><g v="COMP"/><g v="Qual"/></l><f t="красивее"></f><f t="покрасивее"><g v="Cmp2"/></f></lemma>
+    <lemma id="11" rev="11"><l t="в"><g v="PREP"/></l><f t="в"></f></lemma>
+    <lemma id="12" rev="12"><l t="кредитный"><g v="ADJF"/></l><f t="кредитный"><g v="masc"/><g v="sing"/><g v="nomn"/></f><f t="кредитной"><g v="femn"/><g v="sing"/><g v="gent"/></f></lemma>
+    <lemma id="13" rev="13"><l t="рама"><g v="NOUN"/><g v="inan"/><g v="femn"/></l><f t="рама"><g v="sing"/><g v="nomn"/></f><f t="раму"><g v="sing"/><g v="accs"/></f></lemma>
+    <lemma id="14" rev="14"><l t="рам"><g v="NOUN"/><g v="inan"/><g v="masc"/><g v="Geox"/></l><f t="рам"><g v="sing"/><g v="nomn"/></f><f t="раму"><g v="sing"/><g v="datv"/></f></lemma>
+    <lemma id="15" rev="15"><l t="быть"><g v="INFN"/><g v="impf"/><g v="intr"/></l><f t="быть"></f></lemma>
+    <lemma id="16" rev="16"><l t="был"><g v="VERB"/><g v="impf"/><g v="intr"/></l><f t="был"><g v="masc"/><g v="sing"/><g v="past"/><g v="indc"/></f><f t="были"><g v="plur"/><g v="past"/><g v="indc"/></f></lemma>
+</lemmata>
+<link_types>
+<type id="2">ADJF-COMP</type>
+<type id="3">INFN-VERB</type>
+</link_types>
+<links>
+    <link id="1" from="2" to="3" type="3"/>
+    <link id="2" from="7" to="8" type="3"/>
+    <link id="3" from="9" to="10" type="2"/>
+    <link id="4" from="15" to="16" type="3"/>
+</links>
+</dictionary>

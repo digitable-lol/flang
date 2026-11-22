@@ -1,0 +1,369 @@
+модуль «Argue crosscheck»
+  использует «Lists» только «Соединить списки»
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+  использует «Russian meaning parses» из "../../ct/russian/meaning-parses.flang"
+
+примечание "Сверка разметки с грамматикой. Форму суждения в .claims пишет человек или языковая модель,
+и она может не соответствовать цитате. Здесь цитату читает сама грамматика, и её форма сравнивается
+с формой разметки: равносильность в обе стороны проверяет ядро, строки не сравниваются.
+Ответов три: подтверждено грамматикой, расходится, грамматика не прочла. Четвёртый, редкий —
+ядро не решило: формы велики для проверки."
+
+объект «Definition»
+  «name»: строка
+  «body»: «Formula»
+  «how»: строка
+
+объект «Reading»
+  «form»: строка
+  «kind»: строка
+  «matched»: список строки
+  «unmatched»: список строки
+  «jobs»: список «Job»
+
+объект «Crosscheck»
+  «label»: строка
+  «status»: строка
+  «model»: строка
+  «grammar»: список строки
+  «reason»: строка
+  «matched»: список строки
+  «jobs»: список «Job»
+
+тотальная функция «Placeholders»
+  возвращает список строки
+  пример «Things that stand for the places of a notion»
+    ожидается ["Икс", "Игрек", "Зет"]
+  ["Икс", "Игрек", "Зет"]
+
+тотальная функция «First of»
+  принимает words: список строки, count: число
+  возвращает список строки
+  пример «The first two of three»
+    дано words равно ["а", "б", "в"]
+    дано count равно 2
+    ожидается ["а", "б"]
+  (свёртка words начиная с (пустой список) как kept и word → если (длина kept) меньше count
+    то (добавить word к kept)
+    иначе kept)
+
+тотальная функция «Lemma of word»
+  принимает rows: список строки, word: строка
+  возвращает строка
+  пример «A short adjective goes to its dictionary form»
+    дано rows равно ["надёжен|надёжный|кр_прил|м ед"]
+    дано word равно "надёжен"
+    ожидается "надёжный"
+  пример «An unknown word stays»
+    дано rows равно пустой список
+    дано word равно "тори"
+    ожидается "тори"
+  разбор («Строки формы» от rows и word)
+    случай пусто
+      то word
+    случай голова и хвост
+      то элемент 2 в голова
+
+тотальная функция «Lemma name»
+  принимает rows: список строки, name: строка
+  возвращает строка
+  пример «Every part of a compound name goes to its dictionary form»
+    дано rows равно ["копией|копия|сущ|тв ж ед", "с|с|предлог|тв"]
+    дано name равно "с_копией"
+    ожидается "с_копия"
+  соединить (отобразить (разделить name по "_") как part → «Lemma of word» от rows и part) по "_"
+
+тотальная функция «Note sentence»
+  принимает remark: строка
+  возвращает строка
+  пример «The variables of a note become named things»
+    дано remark равно "x старше y"
+    ожидается "Икс старше Игрек"
+  пусть swaps равно [["x", "Икс"], ["y", "Игрек"], ["z", "Зет"]]
+  (соединить (отобразить (разделить remark по " ") как word → свёртка swaps начиная с word как kept и swap →
+    если (элемент 1 в swap) равен word то (элемент 2 в swap) иначе kept) по " ")
+
+тотальная функция «Plain body»
+  принимает forms: список строки
+  возвращает список «Formula»
+  пример «Two readings of a note define nothing»
+    дано forms равно ["а", "б"]
+    ожидается пустой список
+  пусть read равно (отобразить forms как form → «Form of» от form)
+  пусть plain равно (отфильтровать read где form → (пусто (form.«quantifier»)) и притом (пусто (form.«fault»)))
+  если (длина forms) равен 1
+    то (отобразить plain как form → form.«body»)
+    иначе пустой список
+
+тотальная функция «By note»
+  принимает rows: список строки, notion: «Notion»
+  возвращает список «Definition»
+  пусть forms равно (если пусто (notion.«note»)
+    то пустой список
+    иначе («Формы предложения» от («Note sentence» от (notion.«note»)) и rows).формы)
+  (отобразить («Plain body» от forms) как body → запись «Definition» с «name» равным (notion.«name»)
+    и «body» равным body и «how» равным "по пояснению")
+
+тотальная функция «By lemma»
+  принимает rows: список строки, notion: «Notion», known: список строки
+  возвращает список «Definition»
+  пример «A notion named by a word form is the notion named by its dictionary form»
+    дано rows равно ["надёжен|надёжный|кр_прил|м ед"]
+    дано notion равно (запись «Notion» с «name» равным "надёжен" и «arity» равным 1 и «note» равным ""
+      и «line» равным 1)
+    дано known равно ["надёжный"]
+    ожидается [(запись «Definition» с «name» равным "надёжен"
+      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
+  пусть lemma равно («Lemma name» от («Соединить списки» от («Строки словаря») и rows) и (notion.«name»))
+  если known содержит lemma
+    то [(запись «Definition» с «name» равным (notion.«name»)
+      и «body» равным (вариант «Atom» с name равным lemma
+      и terms равным («First of» от («Placeholders») и (notion.«arity»))) и «how» равным "по лемме")]
+    иначе пустой список
+
+тотальная функция «Definition of»
+  принимает rows: список строки, notion: «Notion», known: список строки
+  возвращает список «Definition»
+  пусть lemma равно («By lemma» от rows и notion и known)
+  если known содержит (notion.«name»)
+    то пустой список
+    иначе (если пусто lemma то («By note» от rows и notion) иначе lemma)
+
+тотальная функция «Names in»
+  принимает formula: «Formula»
+  возвращает список строки
+  пример «Every notion of a formula once»
+    дано formula равно (вариант «And» с left равным (вариант «Atom» с name равным "кит" и terms равным ["x"])
+      и right равным (вариант «Atom» с name равным "кит" и terms равным ["y"]))
+    ожидается ["кит"]
+  «Each once» от (отобразить («Mentions of» от formula) как mention → элемент 1 в mention)
+
+тотальная функция «Definitions for»
+  принимает rows: список строки, notions: список «Notion», model: «Formula», grammar: «Formula»
+  возвращает список «Definition»
+  пусть used равно («Names in» от model)
+  пусть known равно («Names in» от grammar)
+  (свёртка (отфильтровать notions где notion → used содержит (notion.«name»)) начиная с (пустой список)
+    как found и notion → «Соединить списки» от found и («Definition of» от rows и notion и known))
+
+тотальная функция «Paired»
+  принимает terms: список строки
+  возвращает список (список строки)
+  пример «Each place gets its term»
+    дано terms равно ["Моби", "Ахав"]
+    ожидается [["Икс", "Моби"], ["Игрек", "Ахав"]]
+  (свёртка terms начиная с (пустой список) как pairs и term → если (длина pairs) меньше 3
+    то (добавить [(элемент ((длина pairs) плюс 1) в («Placeholders»)), term] к pairs)
+    иначе pairs)
+
+тотальная функция «Unfolded atom»
+  принимает name: строка, terms: список строки, definitions: список «Definition»
+  возвращает «Formula»
+  разбор (отфильтровать definitions где definition → (definition.«name») равен name)
+    случай пусто
+      то вариант «Atom» с name равным name и terms равным terms
+    случай голова и хвост
+      то «Substituted» от (голова.«body») и («Paired» от terms)
+
+тотальная функция «Unfolded»
+  принимает formula: «Formula», definitions: список «Definition»
+  возвращает «Formula»
+  пример «A defined notion is replaced by its definition about the same thing»
+    дано formula равно (вариант «Not» с inner равным (вариант «Atom» с name равным "надёжен" и terms равным ["x"]))
+    дано definitions равно [(запись «Definition» с «name» равным "надёжен"
+      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
+    ожидается (вариант «Not» с inner равным (вариант «Atom» с name равным "надёжный" и terms равным ["x"]))
+  разбор formula
+    случай вариант «Truth» с holds как holds
+      то formula
+    случай вариант «Atom» с name как name и terms как terms
+      то «Unfolded atom» от name и terms и definitions
+    случай вариант «Not» с inner как inner
+      то вариант «Not» с inner равным («Unfolded» от inner и definitions)
+    случай вариант «And» с left как left и right как right
+      то (вариант «And» с left равным («Unfolded» от left и definitions)
+        и right равным («Unfolded» от right и definitions))
+    случай вариант «Or» с left как left и right как right
+      то (вариант «Or» с left равным («Unfolded» от left и definitions)
+        и right равным («Unfolded» от right и definitions))
+    случай вариант «Implies» с left как left и right как right
+      то (вариант «Implies» с left равным («Unfolded» от left и definitions)
+        и right равным («Unfolded» от right и definitions))
+
+тотальная функция «Matched words»
+  принимает definitions: список «Definition»
+  возвращает список строки
+  пример «A match says what was taken for what and how»
+    дано definitions равно [(запись «Definition» с «name» равным "надёжен"
+      и «body» равным (вариант «Atom» с name равным "надёжный" и terms равным ["Икс"]) и «how» равным "по лемме")]
+    ожидается ["надёжен = надёжный(x) (по лемме)"]
+  пусть places равно [["Икс", "x"], ["Игрек", "y"], ["Зет", "z"]]
+  (отобразить definitions как definition → соединить [(definition.«name»), " = ",
+    («Formula text» от («Substituted» от (definition.«body») и places)), " (", (definition.«how»), ")"] по "")
+
+тотальная функция «Thesis with»
+  принимает number: строка, form: «Quantified»
+  возвращает «Thesis»
+  (запись «Thesis» с «number» равным number и «line» равным 1 и «formula» равным («Form text» от form)
+    и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
+
+тотальная функция «One way»
+  принимает title: строка, premise: «Quantified», conclusion: «Quantified»
+  возвращает «Trial»
+  пусть stated равно [(«Thesis with» от "1" и premise)]
+  пусть universe равно («Universe of» от stated и [(«Thesis with» от "2" и conclusion)])
+  «Trial of» от title и («Instances of» от stated и universe) и («Conclusion instance» от conclusion и universe)
+
+тотальная функция «Kind of pair»
+  принимает there: «Trial», back: «Trial»
+  возвращает строка
+  пусть statuses равно [(there.«status»), (back.«status»)]
+  если statuses содержит "fails"
+    то "other"
+    иначе (если statuses содержит "large" то "large" иначе "same")
+
+тотальная функция «Job of trial»
+  принимает id: строка, trial: «Trial»
+  возвращает список «Job»
+  если пусто (trial.«program»)
+    то пустой список
+    иначе [(запись «Job» с «id» равным id и «role» равным (trial.«status») и «program» равным (trial.«program»))]
+
+тотальная функция «Jobs of pair»
+  принимает label: строка, kind: строка, there: «Trial», back: «Trial»
+  возвращает список «Job»
+  пусть forth равно («Job of trial» от (соединить [label, " из разметки в грамматику"] по "") и there)
+  пусть home равно («Job of trial» от (соединить [label, " из грамматики в разметку"] по "") и back)
+  пусть failed равно (если (there.«status») равен "fails" то forth иначе home)
+  если kind равен "same"
+    то «Соединить списки» от forth и home
+    иначе (если kind равен "other" то failed иначе пустой список)
+
+тотальная функция «Reading of form»
+  принимает label: строка, rows: список строки, notions: список «Notion», model: «Quantified», grammar: строка
+  возвращает «Reading»
+  пусть read равно («Form of» от grammar)
+  пусть definitions равно («Definitions for» от rows и notions и (model.«body») и (read.«body»))
+  пусть unfolded равно (запись «Quantified» с «quantifier» равным (model.«quantifier»)
+    и «variables» равным (model.«variables») и «body» равным («Unfolded» от (model.«body») и definitions)
+    и «fault» равным "")
+  пусть there равно («One way» от (соединить [label, ": из формы разметки следует форма грамматики"] по "")
+    и unfolded и read)
+  пусть back равно («One way» от (соединить [label, ": из формы грамматики следует форма разметки"] по "")
+    и read и unfolded)
+  пусть kind равно («Kind of pair» от there и back)
+  пусть own равно («Names in» от (unfolded.«body»))
+  (запись «Reading» с «form» равным grammar и «kind» равным kind
+    и «matched» равным («Matched words» от definitions)
+    и «unmatched» равным (отфильтровать («Names in» от (read.«body»)) где name → не (own содержит name))
+    и «jobs» равным («Jobs of pair» от label и kind и there и back))
+
+тотальная функция «Bare quote»
+  принимает quote: строка
+  возвращает строка
+  пример «A word of inference before the judgment is not a part of it»
+    дано quote равно "Следовательно, «Архив» надёжен"
+    ожидается "«Архив» надёжен"
+  пример «A quote of two judgments is left whole»
+    дано quote равно "Сократ смертен, так как Сократ — человек"
+    ожидается "Сократ смертен, так как Сократ — человек"
+  пусть parts равно («Части предложения» от quote)
+  если (длина parts) равен 1
+    то (элемент 1 в parts).цитата
+    иначе quote
+
+тотальная функция «Reason of difference»
+  принимает readings: список «Reading»
+  возвращает строка
+  пусть missing равно («Each once» от (свёртка readings начиная с (пустой список) как found и reading →
+    «Соединить списки» от found и (reading.«unmatched»)))
+  если пусто missing
+    то "понятия те же, логическая форма другая"
+    иначе соединить ["понятия не сопоставлены: ", (соединить missing по ", ")] по ""
+
+тотальная функция «Settled readings»
+  принимает label: строка, model: строка, readings: список «Reading»
+  возвращает «Crosscheck»
+  пусть same равно (отфильтровать readings где reading → (reading.«kind») равен "same")
+  пусть other равно (отфильтровать readings где reading → (reading.«kind») равен "other")
+  пусть forms равно (отобразить readings как reading → reading.«form»)
+  пусть lead равно (если пусто same то (если пусто other то readings иначе other) иначе same)
+  пусть status равно (если пусто same то (если (длина other) равен (длина readings) то "differs" иначе "undecided")
+    иначе "confirmed")
+  пусть reason равно (если status равен "differs" то («Reason of difference» от readings)
+    иначе (если status равен "undecided" то "формы велики для ядра" иначе ""))
+  (запись «Crosscheck» с «label» равным label и «status» равным status и «model» равным model
+    и «grammar» равным (если status равен "confirmed" то [((голова lead).«form»)] иначе forms)
+    и «reason» равным reason и «matched» равным ((голова lead).«matched») и «jobs» равным ((голова lead).«jobs»))
+
+тотальная функция «Unread»
+  принимает label: строка, model: строка, reason: строка
+  возвращает «Crosscheck»
+  (запись «Crosscheck» с «label» равным label и «status» равным "unread" и «model» равным model
+    и «grammar» равным пустой список и «reason» равным reason и «matched» равным пустой список
+    и «jobs» равным пустой список)
+
+тотальная функция «Crosscheck of»
+  принимает label: строка, quote: строка, formula: строка, notions: список «Notion», rows: список строки
+  возвращает «Crosscheck»
+  пусть model равно («Form of» от formula)
+  пусть read равно («Формы предложения» от («Bare quote» от quote) и rows)
+  пусть readings равно (отобразить read.формы как form → «Reading of form» от label и rows и notions и model и form)
+  если не (пусто (model.«fault»))
+    то «Unread» от label и formula и (соединить ["форма разметки не читается: ", (model.«fault»)] по "")
+    иначе (если пусто readings
+      то «Unread» от label и formula и (соединить read.причины по "; ")
+      иначе «Settled readings» от label и formula и readings)
+
+тотальная функция «After the kernel»
+  принимает check: «Crosscheck», outcomes: список «Kernel answer»
+  возвращает «Crosscheck»
+  пусть proven равно (отфильтровать (check.«jobs») где job → «Proven» от outcomes и (job.«id») и (job.«role»))
+  пусть decided равно ((check.«status») равен "unread") или ((длина proven) равен (длина (check.«jobs»)))
+  если decided и притом (не ((check.«status») равен "undecided"))
+    то check
+    иначе (запись «Crosscheck» с «label» равным (check.«label») и «status» равным "undecided"
+      и «model» равным (check.«model») и «grammar» равным (check.«grammar»)
+      и «reason» равным "ядро не подтвердило сравнение форм" и «matched» равным (check.«matched»)
+      и «jobs» равным (check.«jobs»))
+
+тотальная функция «Status words»
+  принимает status: строка
+  возвращает строка
+  пример «The three answers and the rare fourth»
+    дано status равно "confirmed"
+    ожидается "подтверждено грамматикой"
+  (свёртка [["confirmed", "подтверждено грамматикой"], ["differs", "расходится"], ["unread", "грамматика не прочла"],
+    ["undecided", "ядро не решило"]] начиная с status как words и row → если (элемент 1 в row) равен status
+    то (элемент 2 в row)
+    иначе words)
+
+тотальная функция «Crosscheck words»
+  принимает check: «Crosscheck»
+  возвращает строка
+  пример «A difference shows both forms»
+    дано check равно (запись «Crosscheck» с «label» равным "2" и «status» равным "differs"
+      и «model» равным "не кит(Моби)" и «grammar» равным ["кит(Моби)"]
+      и «reason» равным "форма другая" и «matched» равным пустой список
+      и «jobs» равным пустой список)
+    ожидается "[2] расходится: форма другая; разметка: `не кит(Моби)`; грамматика: `кит(Моби)`"
+  пусть reason равно (если пусто (check.«reason») то "" иначе (соединить [": ", (check.«reason»)] по ""))
+  пусть forms равно (если пусто (check.«grammar») то ""
+    иначе (соединить ["; разметка: `", (check.«model»), "`; грамматика: `",
+    (соединить (check.«grammar») по "` | `"), "`"] по ""))
+  пусть matched равно (если пусто (check.«matched») то ""
+    иначе (соединить ["; сопоставлено: ", (соединить (check.«matched») по ", ")] по ""))
+  соединить ["[", (check.«label»), "] ", («Status words» от (check.«status»)), reason, forms, matched] по ""
+
+тотальная функция «Crosschecks of»
+  принимает markup: «Markup», rows: список строки
+  возвращает список «Crosscheck»
+  (отобразить (markup.«entries») как entry → «Crosscheck of» от (entry.«number») и (entry.«quote»)
+    и (entry.«formula») и (markup.«notions») и rows)
+
+тотальная функция «Crosscheck jobs»
+  принимает checks: список «Crosscheck»
+  возвращает список «Job»
+  свёртка checks начиная с (пустой список) как jobs и check → «Соединить списки» от jobs и (check.«jobs»)

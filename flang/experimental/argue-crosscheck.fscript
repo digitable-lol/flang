@@ -1,0 +1,239 @@
+модуль «Argue crosscheck plan»
+  использует «Lists» только «Соединить списки»
+  использует «Argue claims» из "argue/claims.flang"
+  использует «Argue judge» из "argue/judge.flang"
+  использует «Argue crosscheck» из "argue/crosscheck.flang"
+
+объект «Paths»
+  «claims»: строка
+  «words»: строка
+  «out»: строка
+
+объект «Work»
+  «paths»: «Paths»
+  «checks»: список «Crosscheck»
+  «outcomes»: список «Kernel answer»
+
+тип «Crosscheck step»
+  вариант «Start»
+  вариант «Awaiting arguments»
+  вариант «Awaiting claims» содержит paths: «Paths»
+  вариант «Awaiting words» содержит paths: «Paths», claims: строка
+  вариант «Judging» содержит work: «Work», waiting: список «Job»
+  вариант «Written» содержит words: строка
+  вариант «Said» содержит words: строка
+
+тотальная функция «Root»
+  возвращает строка
+  пример «The root of the tree seen from this plan»
+    ожидается "../.."
+  "../.."
+
+тотальная функция «Usage»
+  возвращает строка
+  пример «The plan names how it is called»
+    ожидается "звать: flang run-script argue:crosscheck -- <разметка> [<строки словаря> [<таблица>]]"
+  "звать: flang run-script argue:crosscheck -- <разметка> [<строки словаря> [<таблица>]]"
+
+тотальная функция «Path from root»
+  принимает path: строка
+  возвращает строка
+  пример «A path inside the tree is taken from the root»
+    дано path равно "a.claims"
+    ожидается "../../a.claims"
+  пример «A full path is taken as it is»
+    дано path равно "/x/a.claims"
+    ожидается "/x/a.claims"
+  если path начинается с "/" то path иначе (соединить [(«Root»), "/", path] по "")
+
+тотальная функция «Refusal»
+  принимает code: строка, words: строка
+  возвращает «Продолжение»
+  вариант «Провал» с код равным code и сообщение равным words
+
+тотальная функция «Argument at»
+  принимает said: список строки, place: число
+  возвращает строка
+  пример «An argument that was not given is empty»
+    дано said равно ["a.claims"]
+    дано place равно 2
+    ожидается ""
+  если place больше (длина said) то "" иначе (элемент place в said)
+
+тотальная функция «After arguments»
+  принимает reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Доводы» с доводы как said
+      то (если пусто said
+        то «Refusal» от "FLANG_ARGUE_USAGE" и («Usage»)
+        иначе (вариант «Сделать» с поручение равным (вариант «Прочитать файл»
+          с путь равным («Path from root» от («Argument at» от said и 1)))
+          и потом равным (вариант «Awaiting claims» с paths равным (запись «Paths»
+          с «claims» равным («Argument at» от said и 1) и «words» равным («Argument at» от said и 2)
+          и «out» равным («Argument at» от said и 3)))))
+    случай любое
+      то «Refusal» от "FLANG_ARGUE_USAGE" и («Usage»)
+
+тотальная функция «Check script»
+  возвращает строка
+  """
+  d=$(mktemp -d -p "${FLANG_TMP:-${TMPDIR:-/tmp}}" crosscheck.XXXXXX)
+  printf '%s' "$1" > "$d/step.flang"
+  "${FLANG_BIN:-$0/bootstrap/flang}" check "$d/step.flang" --proof --strict 2>&1
+  c=$?
+  rm -rf "$d"
+  exit $c
+  """
+
+тотальная функция «Kernel order»
+  принимает job: «Job»
+  возвращает «Поручение»
+  (вариант «Запустить процесс» с программа равным "sh"
+    и аргументы равным ["-c", («Check script»), («Root»), (job.«program»)])
+
+тотальная функция «Counted»
+  принимает checks: список «Crosscheck», status: строка
+  возвращает число
+  длина (отфильтровать checks где check → (check.«status») равен status)
+
+тотальная функция «Summary»
+  принимает checks: список «Crosscheck»
+  возвращает строка
+  пример «No judgments give zeros»
+    дано checks равно пустой список
+    ожидается "суждений 0: подтверждено грамматикой 0, расходится 0, грамматика не прочла 0, ядро не решило 0\n"
+  (соединить ["суждений ", (к строке (длина checks)),
+    ": подтверждено грамматикой ", (к строке («Counted» от checks и "confirmed")),
+    ", расходится ", (к строке («Counted» от checks и "differs")),
+    ", грамматика не прочла ", (к строке («Counted» от checks и "unread")),
+    ", ядро не решило ", (к строке («Counted» от checks и "undecided")), "\n"] по "")
+
+тотальная функция «Table row»
+  принимает check: «Crosscheck»
+  возвращает строка
+  (соединить [(check.«label»), («Status words» от (check.«status»)), (check.«reason»), (check.«model»),
+    (соединить (check.«grammar») по " | "), (соединить (check.«matched») по ", ")] по "\t")
+
+тотальная функция «Table»
+  принимает checks: список «Crosscheck»
+  возвращает строка
+  пусть head равно "суждение\tответ\tпричина\tформа разметки\tформа грамматики\tсопоставлено"
+  соединить («Соединить списки» от [head] и («Соединить списки» от (отобразить checks как check →
+    «Table row» от check) и [""])) по "\n"
+
+тотальная функция «Next judgment»
+  принимает paths: «Paths», checks: список «Crosscheck», outcomes: список «Kernel answer», waiting: список «Job»
+  возвращает «Продолжение»
+  пусть settled равно (отобразить checks как check → «After the kernel» от check и outcomes)
+  пусть place равно (если пусто (paths.«out») то "/dev/stdout" иначе («Path from root» от (paths.«out»)))
+  разбор waiting
+    случай пусто
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным place
+        и содержимое равным («Table» от settled)) и потом равным (вариант «Written»
+        с words равным («Summary» от settled)))
+    случай голова и хвост
+      то (вариант «Сделать» с поручение равным («Kernel order» от голова)
+        и потом равным (вариант «Judging» с work равным (запись «Work» с «paths» равным paths
+        и «checks» равным checks и «outcomes» равным outcomes) и waiting равным waiting))
+
+тотальная функция «Reply proves»
+  принимает reply: «Отклик»
+  возвращает признак
+  разбор reply
+    случай вариант «Процесс завершён» с код как code и вывод как out и ошибки как cried
+      то (code равен 0) и притом («Kernel proved» от out)
+    случай любое
+      то нет
+
+тотальная функция «After kernel»
+  принимает work: «Work», waiting: список «Job», reply: «Отклик»
+  возвращает «Продолжение»
+  пусть paths равно (work.«paths»)
+  пусть checks равно (work.«checks»)
+  пусть outcomes равно (work.«outcomes»)
+  пусть proven равно («Reply proves» от reply)
+  разбор waiting
+    случай пусто
+      то «Next judgment» от paths и checks и outcomes и пустой список
+    случай голова и хвост
+      то («Next judgment» от paths и checks и (добавить (запись «Kernel answer» с «id» равным (голова.«id»)
+        и «role» равным (голова.«role») и «proven» равным proven) к outcomes) и хвост)
+
+тотальная функция «Rows of»
+  принимает words: строка
+  возвращает список строки
+  пример «Every line of the file is a row of the dictionary»
+    дано words равно "кит|кит|сущ|им м ед\n\nкиты|кит|сущ|им м мн\n"
+    ожидается ["кит|кит|сущ|им м ед", "киты|кит|сущ|им м мн"]
+  отфильтровать (разделить words по "\n") где row → не (пусто row)
+
+тотальная функция «Judged markup»
+  принимает paths: «Paths», claims: строка, words: строка
+  возвращает «Продолжение»
+  пусть markup равно («Read markup» от claims)
+  пусть checks равно («Crosschecks of» от markup и («Rows of» от words))
+  «Next judgment» от paths и checks и пустой список и («Crosscheck jobs» от checks)
+
+тотальная функция «After claims»
+  принимает paths: «Paths», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как claims
+      то (если пусто (paths.«words»)
+        то «Judged markup» от paths и claims и ""
+        иначе (вариант «Сделать» с поручение равным (вариант «Прочитать файл»
+          с путь равным («Path from root» от (paths.«words»)))
+          и потом равным (вариант «Awaiting words» с paths равным paths и claims равным claims)))
+    случай любое
+      то («Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["разметка не прочитана: ", (paths.«claims»)] по ""))
+
+тотальная функция «After words»
+  принимает paths: «Paths», claims: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Прочитано» с содержимое как words
+      то «Judged markup» от paths и claims и words
+    случай любое
+      то («Refusal» от "FLANG_ARGUE_CANNOT_LOOK" и (соединить ["строки словаря не прочитаны: ",
+        (paths.«words»)] по ""))
+
+тотальная функция «After writing»
+  принимает words: строка, reply: «Отклик»
+  возвращает «Продолжение»
+  разбор reply
+    случай вариант «Сбой» с код как code и сообщение как cried
+      то «Refusal» от "FLANG_ARGUE_CANNOT_WRITE" и (соединить ["таблица сверки не записана: ", cried] по "")
+    случай любое
+      то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным "/dev/stderr"
+        и содержимое равным words) и потом равным (вариант «Said» с words равным words))
+
+тотальная функция «Begin»
+  возвращает «Crosscheck step»
+  пример «The plan starts from the start»
+    ожидается вариант «Start»
+  вариант «Start»
+
+тотальная функция «Onward»
+  принимает stage: «Crosscheck step», reply: «Отклик»
+  возвращает «Продолжение»
+  разбор stage
+    случай вариант «Start»
+      то вариант «Сделать» с поручение равным (вариант «Прочитать доводы») и потом равным (вариант «Awaiting arguments»)
+    случай вариант «Awaiting arguments»
+      то «After arguments» от reply
+    случай вариант «Awaiting claims» с paths как paths
+      то «After claims» от paths и reply
+    случай вариант «Awaiting words» с paths как paths и claims как claims
+      то «After words» от paths и claims и reply
+    случай вариант «Judging» с work как work и waiting как waiting
+      то «After kernel» от work и waiting и reply
+    случай вариант «Written» с words как words
+      то «After writing» от words и reply
+    случай вариант «Said» с words как words
+      то вариант «Конец работы» с значение равным words
+
+план «Crosscheck»
+  состояние «Crosscheck step»
+  начинает с «Begin»
+  обрабатывает «Onward»

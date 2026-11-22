@@ -83,7 +83,7 @@ $ flang run flang/ct/russian/meaning-parses.flang --function «Прочитат�
 План читает текст и пишет к нему разметку: суждения, цитаты и шаги вывода.
 
 ```
-$ flang run-script russian-meaning:markup -- docs/examples/russian-meaning/whale.txt whale.claims
+$ flang run-script russian-meaning:markup -- flang/proof/probes/russian-meaning/whale.txt whale.claims
 ```
 
 Текст примера:
@@ -118,7 +118,7 @@ $ flang run-script russian-meaning:markup -- docs/examples/russian-meaning/whale
 Такую разметку принимает проверка рассуждений:
 
 ```
-$ flang run-script argue -- docs/examples/russian-meaning/whale.txt --claims whale.claims --out whale.md
+$ flang run-script argue -- flang/proof/probes/russian-meaning/whale.txt --claims whale.claims --out whale.md
 отчёт записан: whale.md; находок: 2; шагов: 3, следует: 1, не следует: 2, ядро не решило: 0
 ```
 
@@ -133,7 +133,7 @@ $ flang run-script argue -- docs/examples/russian-meaning/whale.txt --claims wha
 
 ```
 $ flang run-script argue:crosscheck -- flang/proof/probes/argue-crosscheck/claims/forgeries.claims "" table.tsv
-суждений 10: подтверждено грамматикой 4, расходится 5, грамматика не прочла 1, ядро не решило 0
+суждений 11: подтверждено грамматикой 5, расходится 5, грамматика не прочла 1, ядро не решило 0
 ```
 
 Второй довод — файл с добавочными строками словаря, здесь он пуст. Третий — файл
@@ -155,6 +155,10 @@ $ flang run-script argue:crosscheck -- flang/proof/probes/argue-crosscheck/claim
 | Сократ не рыба | `рыба(Сократ)` | `не рыба(Сократ)` |
 | Некоторые киты белые | `все x: если кит(x), то белый(x)` | `есть x: кит(x) и белый(x)` |
 | Если идёт дождь, то дорога мокрая | `если мокрая_дорога, то идёт_дождь` | `если дождь, то мокрый(дорога)` |
+
+Формы не обязаны совпадать по записи. Цитата «Ни один кит не рыба» с формой
+`все x: если рыба(x), то не кит(x)` подтверждена: грамматика даёт
+`все x: если кит(x), то не рыба(x)`, и ядро доказывает, что формы равносильны.
 
 Понятия разметки и грамматики могут называться по-разному. Сверка сопоставляет их
 двумя способами и пишет в таблице, что сопоставление сделано:

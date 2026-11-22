@@ -2263,6 +2263,13 @@ jobs:
         env:
           LC_ALL: C.UTF-8
 
+      - name: Check the russian dictionary on its probe word forms
+        # ADR-0249: each word form is answered by flang run on flang/ct/russian/dictionary/features.flang,
+        # and one short text by the plan words.fscript over the sample data next to the probes.
+        run: bootstrap/flang io flang/proof/probes/russian-dictionary/run.fscript --plan Binary --timeout 900000
+        env:
+          LC_ALL: C.UTF-8
+
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 

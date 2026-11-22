@@ -2232,3 +2232,5 @@ plural
 quantifiers
 textbook
 unread
+paradigms
+tags

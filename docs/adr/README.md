@@ -189,6 +189,7 @@
 | 0251 | [Разбор даёт логическую форму, а форма разметки сверяется с ней ядром](0251-a-parse-gives-a-logical-form-and-the-markup-is-checked-against-it.md) | предложено | да |  |
 | 0252 | [Шаг рассуждения судится по частям, и каждый ответ несёт своё подтверждение](0252-a-step-is-judged-in-parts-and-each-answer-carries-its-own-witness.md) | предложено | да |  |
 | 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
+| 0250 | [Сверщик на C проигрывает шаг индукции по списку, переписанный допущением](0250-the-c-checker-replays-a-list-induction-step-rewritten-by-the-hypothesis.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

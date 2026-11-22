@@ -178,7 +178,7 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 Закрытый список правил вывода — `flang/proof/tables/inference-rules.tsv`,
 <!-- СНЯТО 2026-11-22 строк flang/proof/tables/inference-rules.tsv = 170 (the ban on deciding an existence by computing it, typing hole 47) --> 170 строк
 с шапкой. Независимая программа проверки на C — `flang/proof/checker/checker.c`,
-<!-- СНЯТО 2026-11-17 строк flang/proof/checker/checker.c = 16421 (the counterexample search and the ring print that tells zero from one) --> 16 421 строк;
+<!-- СНЯТО 2026-11-22 строк flang/proof/checker/checker.c = 16435 (ADR-0250: the list induction step rewritten by the hypothesis and the witness search over lists) --> 16 435 строк;
 её тесты на подделки запускает `bootstrap/flang run-script checker:check`. Файлы Lean —
 <!-- СНЯТО 2026-11-21 файлов flang/proof/lean/*.lean = 39 (Semantics/Prefix.lean: a claim closed by the rule of the known prefix) --> 39 файлов,
 <!-- СНЯТО 2026-11-22 строк-в flang/proof/lean/*.lean = 31754 (the translation validator unfolds type aliases, reads the step mark and unifies function witnesses) --> 31 754 строк.

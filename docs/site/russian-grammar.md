@@ -94,14 +94,25 @@ mistake, but not always.
 ```
 $ flang run flang/ct/russian/sentence.flang --function '«Разборы»' --args '{"предложение":"Система не является проблемой."}'
 доказано: утверждений 9
-{"вариант":"Разобрано","разборы":[{"слова":["система","не","является","проблемой"],"типы":["n[им ж ед 3]","частица перед","n[им ж ед 3]ʳ · s[ед 3] · n[тв ж ед 3]ˡ","n[тв ж ед 3]"],"связи":[{"главное":3,"зависимое":4,"роль":"дополнение в творительном"},{"главное":3,"зависимое":1,"роль":"подлежащее"},{"главное":3,"зависимое":2,"роль":"частица перед"}]}],"всего":1,"работа":4}
+{"вариант":"Разобрано","разборы":[{"слова":["система","не","является","проблемой"],"леммы":["система","не","являться","проблема"],"части":["сущ","частица перед","глагол","сущ"],"типы":["n[им ж ед 3]","частица перед","n[им ж ед 3]ʳ · s[ед 3] · n[тв ж ед 3]ˡ","n[тв ж ед 3]"],"строй":[[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}],[],[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}],[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]],"связи":[{"главное":3,"зависимое":4,"роль":"дополнение в творительном"},{"главное":3,"зависимое":1,"роль":"подлежащее"},{"главное":3,"зависимое":2,"роль":"частица перед"}]}],"всего":1,"работа":4}
 ```
 
 | Field | What it holds |
 | --- | --- |
-| `разборы` | the list of parses; each has the words, the type of every word and the links by word number, counted from one |
+| `разборы` | the list of parses; the fields of a parse are below |
 | `всего` | how many parses the sentence really has |
 | `работа` | how many pairs of pieces of the sentence were compared |
+
+A parse has six fields; the lists go word by word:
+
+| Field of a parse | What it holds |
+| --- | --- |
+| `слова` | the words of the sentence in lower case |
+| `леммы` | the dictionary form of every word |
+| `части` | the part of speech; for a word that takes no part in the parse, its role |
+| `типы` | the type of the word as a string, as in `«Разобрать подробно»` |
+| `строй` | the same type as a list of simple types: kind, case, gender, number, person and adjoint (1 right, −1 left, 0 the letter itself) |
+| `связи` | the head word, the dependent word and the role; words are named by number, counted from one |
 
 `«Разборы»` gives at most eight parses, while `всего` counts all of them.
 `«Разборы по словарю»` gives more: the number of parses is its third argument.
@@ -151,8 +162,8 @@ phrase, `подлежащее при связке` subject of a verbless predica
 ## What is read
 
 For every row of the table there are sentences that must parse and sentences
-with a mistake that must not. They all lie in
-`flang/proof/probes/russian-sentence/expected.tsv`.
+with a mistake that must not. They are all written in the table
+`expected.tsv` of the probe set `russian-sentence`.
 
 | Construction | Example |
 | --- | --- |
@@ -209,6 +220,17 @@ examples on this page and of the probes. Your own dictionary goes to
 An asterisk or a missing tail means "not set". A form with several readings has
 several strings.
 
+A dictionary can also be given as a table: one line per reading, ten fields
+separated by spaces — form, lemma, part of speech as a full word, case,
+gender, number, person, tense, marks separated by commas, source. It is read
+by `«Разборы по таблице признаков»` and `«Разобрать по таблице признаков»`:
+
+```
+$ flang run flang/ct/russian/sentence.flang --function '«Разобрать по таблице признаков»' --args '{"предложение":"Мама спит.","таблица":"мама мама существительное им ж ед * * одуш словарь\nспит спать глагол * * ед 3 наст несов,неперех словарь"}'
+доказано: утверждений 9
+"разборов 1: мама: n[им ж ед 3]; спит: n[им ж ед 3]ʳ · s[ед 3]; связи: спит→мама подлежащее"
+```
+
 The closed classes — prepositions with their cases, conjunctions, particles,
 parenthetical words, conclusion words, fixed phrases — are written in
 `lexicon.flang` and are not taken from the dictionary. A number, a word in
@@ -248,11 +270,10 @@ On the twelve articles two sentences out of 1338 hit the limit.
   `flang/ct/russian/category.flang`. The `--proof` report on that file: 7
   claims, 0 proved, 7 on the grid; exit code 3.
 - **Checked by probes** of simple sentences: 75 sentences, 39 grammatical and
-  36 not. Run:
-  `flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary`.
-- **Checked by probes** of scientific prose: 108 sentences on 46 rows of
+  36 not. Run: `flang run-script russian-grammar:probe`.
+- **Checked by probes** of scientific prose: 108 sentences on 46 kinds of
   constructions, 71 must parse and 37 must not. Run:
-  `flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary`.
+  `flang run-script russian-sentence:probe`.
 - **Measured on twelve scientific articles**, 1338 units of text: a line of an
   article or a part of it up to a full stop. 574 are parsed whole, which is
   43 %. The earlier `«Разобрать»` parsed none of the same units. Another 356

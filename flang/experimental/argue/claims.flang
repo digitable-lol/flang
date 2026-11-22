@@ -1,6 +1,7 @@
 модуль «Argue claims»
   использует «Lists» только «Соединить списки»
   использует «Argue logic» из "logic.flang"
+  использует «Argue numbers» из "numbers.flang"
 
 объект «Line»
   «at»: число
@@ -157,9 +158,17 @@
 
 тотальная функция «Step kinds»
   возвращает список строки
-  пример «Five kinds of a step»
-    ожидается ["дедукция", "обобщение", "корреляция", "авторитет", "определение"]
-  ["дедукция", "обобщение", "корреляция", "авторитет", "определение"]
+  пример «Kinds of a step: a deduction, kinds that are not a proof, and links that are not a step»
+    ожидается (["дедукция", "обобщение", "корреляция", "авторитет", "определение", "значимость", "выборка",
+        "правдоподобие", "допущение", "объяснение", "не суждение"])
+  ["дедукция", "обобщение", "корреляция", "авторитет", "определение", "значимость", "выборка", "правдоподобие",
+    "допущение", "объяснение", "не суждение"]
+
+тотальная функция «Silent kinds»
+  возвращает список строки
+  пример «Links of these kinds are kept in the markup and are not judged»
+    ожидается ["объяснение", "не суждение"]
+  ["объяснение", "не суждение"]
 
 тотальная функция «Tail of step»
   принимает text: строка
@@ -218,8 +227,17 @@
     дано spot равно 3
     ожидается (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
         и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+  пример «A second quote is kept behind the first»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+    дано quote равно "и сильный"
+    дано spot равно 4
+    ожидается (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь … и сильный" и «quote line» равным 3 и «terms» равным пустой список)
+  пусть joined равно (если пусто (entry.«quote») то quote иначе (соединить [(entry.«quote»), " … ", quote] по ""))
   (запись «Thesis» с «number» равным (entry.«number») и «line» равным (entry.«line»)
-      и «formula» равным (entry.«formula») и «quote» равным quote и «quote line» равным spot
+      и «formula» равным (entry.«formula») и «quote» равным joined
+      и «quote line» равным (если пусто (entry.«quote») то spot иначе (entry.«quote line»))
       и «terms» равным (entry.«terms»))
 
 тотальная функция «With term»
@@ -275,8 +293,13 @@
   пример «Another line is not understood»
     дано text равно "посылка: дождь"
     ожидается "unknown"
+  пример «A quantity and a word of weak force are lines of their own»
+    дано text равно "неотрицательная величина доля: доля сторонников"
+    ожидается "positive"
   пусть kind равно (свёртка [["понятие ", "notion"], ["имя ", "name"], ["[", "entry"], ["цитата:", "quote"],
-      ["термин:", "term"], ["определение:", "definition"], ["вывод ", "step"], ["вывод[", "step"]]
+      ["термин:", "term"], ["определение:", "definition"], ["вывод ", "step"], ["вывод[", "step"],
+      ["величина ", "quantity"], ["неотрицательная величина ", "positive"], ["сила:", "strength"],
+      ["не суждение:", "aside"]]
       начиная с "unknown" как found и row →
       если (found равен "unknown") и притом (text начинается с (элемент 1 в row)) то (элемент 2 в row) иначе found)
   если (пусто text) или (text начинается с "#") то "blank" иначе kind
@@ -299,6 +322,57 @@
   (отфильтровать (отобразить (разделить («Without prefix» от text и "имя") по ",") как piece → «Flat» от piece)
       где piece → не (пусто piece))
 
+тотальная функция «Quantities of»
+  принимает text: строка, spot: число
+  возвращает список «Notion»
+  пример «A quantity is kept as a notion with a number of places below zero»
+    дано text равно "величина спрос, предложение: штук в месяц"
+    дано spot равно 3
+    ожидается ([(запись «Notion» с «name» равным "спрос" и «arity» равным -1 и «note» равным "штук в месяц"
+        и «line» равным 3), (запись «Notion» с «name» равным "предложение" и «arity» равным -1
+        и «note» равным "штук в месяц" и «line» равным 3)])
+  пример «A quantity that is never below zero»
+    дано text равно "неотрицательная величина доля"
+    дано spot равно 4
+    ожидается [(запись «Notion» с «name» равным "доля" и «arity» равным -2 и «note» равным "" и «line» равным 4)]
+  пусть positive равно (text начинается с "неотрицательная")
+  пусть front равно («Before the colon» от («Without prefix»
+      от (если positive то («Without prefix» от text и "неотрицательная") иначе text) и "величина"))
+  (отобразить (отфильтровать (отобразить (разделить front по ",") как piece → «Flat» от piece)
+      где piece → не (пусто piece)) как name → запись «Notion» с «name» равным name
+      и «arity» равным (если positive то -2 иначе -1) и «note» равным («After the colon» от text) и «line» равным spot)
+
+тотальная функция «Positive quantities»
+  принимает markup: «Markup»
+  возвращает список строки
+  пример «Nothing is declared in an empty markup»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    ожидается пустой список
+  (отобразить (отфильтровать (markup.«notions») где notion → (notion.«arity») равен -2) как notion → notion.«name»)
+
+тотальная функция «With strength»
+  принимает entry: «Thesis», text: строка
+  возвращает «Thesis»
+  пример «A word of weak force is written in front of the form»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Вероятно, идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+    дано text равно "сила: вероятно"
+    ожидается (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "вероятно: дождь"
+        и «quote» равным "Вероятно, идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+  пример «A firm judgment stays as it is»
+    дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+    дано text равно "сила: твёрдо"
+    ожидается (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список)
+  пусть word равно («In small letters» от («After the colon» от text))
+  (запись «Thesis» с «number» равным (entry.«number») и «line» равным (entry.«line»)
+      и «formula» равным (если ["твёрдо", "твердо", ""] содержит word то (entry.«formula»)
+      иначе (соединить [word, ": ", («Firm text» от (entry.«formula»))] по ""))
+      и «quote» равным (entry.«quote») и «quote line» равным (entry.«quote line») и «terms» равным (entry.«terms»))
+
 тотальная функция «Outer rest»
   принимает held: «Markup», kind: строка, line: «Line»
   возвращает «Markup»
@@ -308,11 +382,23 @@
       к (held.«steps»)) и «faults» равным (held.«faults») и «open» равным пустой список)
   пусть lost равно («Markup with» от held и (held.«entries») и (добавить («Line fault» от (line.«at»)
       и (соединить ["строка не понята: «", text,
-      "». Ждали «понятие …», «имя …», «[N] формула», «цитата: …», «термин: …», «определение: …» или «вывод [N] из [M]»"]
+      "». Ждали «понятие …», «имя …», «величина …», «[N] формула», «цитата: …», «сила: …», «термин: …»,",
+      " «определение: …» или «вывод [N] из [M]»"]
       по "")) к (held.«faults»)) и пустой список)
+  пусть label равно (соединить ["не суждение, строка ", (к строке (line.«at»))] по "")
+  пусть aside равно (запись «Markup» с «notions» равным (held.«notions») и «names» равным (held.«names»)
+      и «entries» равным (добавить (запись «Thesis» с «number» равным label и «line» равным (line.«at»)
+      и «formula» равным "истина" и «quote» равным («After the colon» от text) и «quote line» равным (line.«at»)
+      и «terms» равным пустой список) к (held.«entries»))
+      и «steps» равным (добавить (запись «Inference» с «line» равным (line.«at») и «conclusion» равным label
+      и «premises» равным пустой список и «kind» равным "не суждение") к (held.«steps»))
+      и «faults» равным (held.«faults») и «open» равным пустой список)
   если kind равен "entry"
     то «Markup with» от held и (held.«entries») и (held.«faults») и [(«Thesis of» от text и (line.«at»))]
-    иначе (если kind равен "step" то stepped иначе lost)
+    иначе (свёртка [stepped, aside] начиная с lost как found и made →
+        если (длина (made.«steps»)) больше (длина (held.«steps»))
+        и притом ((kind равен "aside") равен ((длина (made.«entries»)) больше (длина (held.«entries»))))
+        и притом (["step", "aside"] содержит kind) то made иначе found)
 
 тотальная функция «Outer step»
   принимает held: «Markup», kind: строка, line: «Line»
@@ -325,24 +411,36 @@
       и «names» равным («Соединить списки» от (held.«names») и («Names of» от text))
       и «entries» равным (held.«entries») и «steps» равным (held.«steps») и «faults» равным (held.«faults»)
       и «open» равным пустой список)
-  если kind равен "notion"
-    то noted
-    иначе (если kind равен "name" то named иначе («Outer rest» от held и kind и line))
+  пусть measured равно (запись «Markup» с «notions» равным («Соединить списки» от (held.«notions»)
+      и («Quantities of» от text и (line.«at»)))
+      и «names» равным (held.«names») и «entries» равным (held.«entries») и «steps» равным (held.«steps»)
+      и «faults» равным (held.«faults») и «open» равным пустой список)
+  пусть other равно (если kind равен "name" то named иначе («Outer rest» от held и kind и line))
+  если ["quantity", "positive"] содержит kind
+    то measured
+    иначе (если kind равен "notion" то noted иначе other)
 
 тотальная функция «Inner step»
   принимает held: «Markup», kind: строка, line: «Line»
   возвращает «Markup»
   пусть text равно («Flat» от (line.«text»))
   пусть lost равно («Markup with» от held и (held.«entries») и (добавить («Line fault» от (line.«at»)
-      и "строка «цитата:», «термин:» или «определение:» стоит до первого суждения «[N] …»")
+      и "строка «цитата:», «сила:», «термин:» или «определение:» стоит до первого суждения «[N] …»")
       к (held.«faults»)) и (held.«open»))
   разбор (held.«open»)
     случай пусто
       то lost
     случай голова и хвост
-      то («Markup with» от held и (held.«entries») и (held.«faults») и [(если kind равен "quote"
-          то («With quote» от голова и («After the colon» от text) и (line.«at»))
-          иначе («With term» от голова и text и (line.«at») и (kind равен "definition")))])
+      то («Markup with» от held и (held.«entries») и (held.«faults») и [(«Inner entry» от голова и kind и line)])
+
+тотальная функция «Inner entry»
+  принимает entry: «Thesis», kind: строка, line: «Line»
+  возвращает «Thesis»
+  пусть text равно («Flat» от (line.«text»))
+  если kind равен "quote"
+    то «With quote» от entry и («After the colon» от text) и (line.«at»)
+    иначе (если kind равен "strength" то («With strength» от entry и text)
+        иначе («With term» от entry и text и (line.«at») и (kind равен "definition")))
 
 тотальная функция «Line step»
   принимает held: «Markup», line: «Line»
@@ -350,7 +448,7 @@
   пусть kind равно («Line kind» от («Flat» от (line.«text»)))
   если kind равен "blank"
     то held
-    иначе (если ["quote", "term", "definition"] содержит kind то («Inner step» от held и kind и line)
+    иначе (если ["quote", "term", "definition", "strength"] содержит kind то («Inner step» от held и kind и line)
         иначе («Outer step» от («Closed markup» от held) и kind и line))
 
 тотальная функция «Read markup»
@@ -397,15 +495,53 @@
     дано variables равно ["x"]
     дано mention равно ["кит", "x"]
     ожидается ["понятие «кит» не объявлено: впишите строку «понятие кит(…)»"]
+  пример «A quantity that is not declared is named»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано variables равно пустой список
+    дано mention равно ["<", "спрос", "2 * запас"]
+    ожидается (["величина «спрос» не объявлена: впишите строку «величина спрос»",
+        "величина «запас» не объявлена: впишите строку «величина запас»"])
+  если («Comparison signs») содержит (элемент 1 в mention)
+    то «Comparison faults» от markup и («Numbered words» от mention)
+    иначе («Notion faults» от markup и variables и mention)
+
+тотальная функция «Comparison faults»
+  принимает markup: «Markup», terms: список строки
+  возвращает список строки
+  пример «Two quantities multiplied are refused»
+    дано markup равно (запись «Markup» с «notions» равным [(запись «Notion» с «name» равным "a" и «arity» равным -1
+        и «note» равным "" и «line» равным 1)] и «names» равным пустой список
+        и «entries» равным пустой список и «steps» равным пустой список и «faults» равным пустой список
+        и «open» равным пустой список)
+    дано terms равно ["a * a", "1"]
+    ожидается ["сравнение «a * a» и «1»: две величины перемножены: такое сравнение не судится"]
+  пусть former равно («First word» от terms)
+  пусть latter равно («First word» от («Words after first» от terms))
+  пусть linear равно («Difference» от former и latter)
+  пусть declared равно (отобразить (отфильтровать (markup.«notions») где notion → (notion.«arity») меньше 0)
+      как notion → notion.«name»)
+  пусть named равно («Each once» от (отобразить («Соединить списки» от ((«Parts of» от former).«parts»)
+      и ((«Parts of» от latter).«parts»)) как part → part.«name»))
+  если пусто (linear.«fault»)
+    то (отобразить (отфильтровать named где name → (не (пусто name)) и притом (не (declared содержит name)))
+        как name → соединить ["величина «", name, "» не объявлена: впишите строку «величина ", name, "»"] по "")
+    иначе [(соединить ["сравнение «", former, "» и «", latter, "»: ", (linear.«fault»)] по "")]
+
+тотальная функция «Notion faults»
+  принимает markup: «Markup», variables: список строки, mention: список строки
+  возвращает список строки
   пусть name равно (элемент 1 в mention)
   пусть terms равно («Numbered words» от mention)
   пусть known равно (отфильтровать (markup.«notions») где notion → (notion.«name») равен name)
   пусть places равно (отфильтровать known где notion → (notion.«arity») равен (длина terms))
   пусть strangers равно (отфильтровать terms где term →
       не ((variables содержит term) или ((markup.«names») содержит term)))
-  пусть unknown равно (если пусто known
+  пусть misplaced равно ((пусто places) и притом (не (пусто known)))
+  пусть unknown равно (если (пусто known) и притом (не (name равен "истина"))
       то [(соединить ["понятие «", name, "» не объявлено: впишите строку «понятие ", name, "(…)»"] по "")]
-      иначе (если пусто places то [(соединить ["у понятия «", name, "» здесь мест: ", (к строке (длина terms)),
+      иначе (если misplaced то [(соединить ["у понятия «", name, "» здесь мест: ", (к строке (длина terms)),
       ", а объявлено иначе"] по "")] иначе пустой список))
   («Соединить списки» от unknown и (отобразить strangers как term → соединить ["имя «", term,
       "» не объявлено: впишите строку «имя ", term, "» либо свяжите переменную словами «все ", term, ":»"] по ""))
@@ -440,7 +576,7 @@
 тотальная функция «Thesis faults»
   принимает markup: «Markup», entry: «Thesis»
   возвращает список строки
-  пусть form равно («Form of» от (entry.«formula»))
+  пусть form равно («Form of» от («Firm text» от (entry.«formula»)))
   пусть spoken равно (если пусто (form.«fault») то пустой список иначе [(«Line fault» от (entry.«line»)
       и (соединить ["суждение [", (entry.«number»), "]: ", (form.«fault»)] по ""))])
   пусть quoted равно (если пусто (entry.«quote») то [(«Line fault» от (entry.«line»)
@@ -505,8 +641,9 @@
     дано text равно "Идёт\nдождь."
     ожидается ["строка 3 разметки: цитата суждения [1] не стоит в тексте дословно: «Шёл дождь»"]
   пусть flat равно («Flat» от text)
-  (отобразить (отфильтровать (markup.«entries») где entry →
-      (не (пусто (entry.«quote»))) и притом (не (flat содержит («Flat» от (entry.«quote»)))))
+  (отобразить (отфильтровать (markup.«entries») где entry → (не (пусто (entry.«quote»)))
+      и притом (не (пусто (отфильтровать (разделить («Flat» от (entry.«quote»)) по " … ")
+      где piece → не (flat содержит piece)))))
       как entry → «Line fault» от (entry.«quote line») и (соединить ["цитата суждения [", (entry.«number»),
       "] не стоит в тексте дословно: «", (entry.«quote»), "»"] по ""))
 

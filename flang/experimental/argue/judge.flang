@@ -2,6 +2,8 @@
   использует «Lists» только «Соединить списки»
   использует «Argue logic» из "logic.flang"
   использует «Argue programs» из "programs.flang"
+  использует «Argue solve» из "solve.flang"
+  использует «Argue numbers» из "numbers.flang"
   использует «Argue claims» из "claims.flang"
 
 объект «Job»
@@ -29,12 +31,6 @@
   «left»: строка
   «right»: строка
   «jobs»: список «Job»
-
-тотальная функция «Search limit»
-  возвращает число
-  пример «Up to ten elementary statements are tried in every combination»
-    ожидается 10
-  10
 
 тотальная функция «Kernel limit»
   возвращает число
@@ -131,17 +127,110 @@
     то instances
     иначе (отфильтровать instances где instance → «Shares an atom» от instance и reached)
 
-тотальная функция «Proof program»
-  принимает title: строка, formula: «Formula»
+тотальная функция «Atom limit»
+  возвращает число
+  пример «A step of more than forty elementary statements is not searched»
+    ожидается 40
+  40
+
+тотальная функция «Wide program»
+  принимает title: строка, core: «Formula», lemmas: список «Formula»
   возвращает строка
-  пример «A small formula goes to the kernel as it is»
-    дано title равно "шаг"
-    дано formula равно вариант «Truth» с holds равным да
-    ожидается "модуль «Reasoning»\n\nутверждение «шаг»\n  утверждаем да\n"
-  пусть count равно (длина («Atoms of» от formula))
-  если count не больше 4
-    то «Plain program» от title и formula
-    иначе (если count не больше («Kernel limit») то («Tree program» от title и formula и 4) иначе "")
+  пусть parted равно («Derivation program» от title и lemmas)
+  если (пусто parted) и притом ((длина («Atoms of» от core)) не больше («Kernel limit»))
+    то «Tree program» от title и core и 4
+    иначе parted
+
+тотальная функция «Made trial»
+  принимает status: строка, atoms: число, truths: список строки, falses: список строки, program: строка
+  возвращает «Trial»
+  (запись «Trial» с «status» равным status и «atoms» равным atoms и «truths» равным truths и «falses» равным falses
+      и «program» равным program)
+
+тотальная функция «Proved trial»
+  принимает title: строка, instances: список «Formula», goal: «Formula»
+  возвращает «Trial»
+  пусть relevant равно («Relevant» от instances и goal)
+  пусть core равно (вариант «Implies» с left равным («All of» от relevant) и right равным goal)
+  пусть count равно (длина («Atoms of» от core))
+  пусть program равно (если count не больше 4 то («Plain program» от title и core)
+      иначе («Wide program» от title и core и ((«Derived» от relevant и goal).«lemmas»)))
+  «Made trial» от (если пусто program то "large" иначе "follows") и count и пустой список и пустой список и program
+
+тотальная функция «Refuted trial»
+  принимает title: строка, formula: «Formula»
+  возвращает «Trial»
+  пусть atoms равно («Atoms of» от formula)
+  разбор («Models against» от formula и atoms и пустой список)
+    случай пусто
+      то «Made trial» от "large" и (длина atoms) и пустой список и пустой список и ""
+    случай голова и хвост
+      то («Made trial» от "fails" и (длина atoms) и голова
+          и (отфильтровать atoms где atom → не (голова содержит atom))
+          и («Closed program» от title и formula и голова))
+
+тотальная функция «Search limit»
+  возвращает число
+  пример «Premises that do not touch the goal are only tried for one way to hold together, up to this size»
+    ожидается 300
+  300
+
+тотальная функция «Joined trial»
+  принимает title: строка, formula: «Formula», core: список строки, rest: список (список строки)
+  возвращает «Trial»
+  пусть atoms равно («Atoms of» от formula)
+  разбор rest
+    случай пусто
+      то «Made trial» от "large" и (длина atoms) и пустой список и пустой список и ""
+    случай голова и хвост
+      то («Made trial» от "fails" и (длина atoms) и («Words joined» от core и голова)
+          и (отфильтровать atoms где atom → не ((«Words joined» от core и голова) содержит atom))
+          и («Closed program» от title и formula и («Words joined» от core и голова)))
+
+тотальная функция «Plain trial»
+  принимает title: строка, instances: список «Formula», goal: «Formula»
+  возвращает «Trial»
+  пусть relevant равно («Relevant» от instances и goal)
+  пусть core равно (вариант «Implies» с left равным («All of» от relevant) и right равным goal)
+  пусть aside равно (вариант «Not» с inner равным («All of» от (отфильтровать instances
+      где instance → не (relevant содержит instance))))
+  пусть count равно (длина («Atoms of» от core))
+  пусть limit равно (если пусто («Atoms of» от goal) то («Search limit») иначе («Atom limit»))
+  если (count больше limit) или ((длина («Atoms of» от aside)) больше («Search limit»))
+    то «Made trial» от "large" и count и пустой список и пустой список и ""
+    иначе («Searched trial» от title и instances и goal
+        и [(«Models against» от core и («Atoms of» от core) и пустой список),
+        («Models against» от aside и («Atoms of» от aside) и пустой список)])
+
+тотальная функция «Searched trial»
+  принимает title: строка, instances: список «Formula», goal: «Formula», models: список (список (список строки))
+  возвращает «Trial»
+  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
+  пусть core равно (элемент 1 в models)
+  пусть rest равно (элемент 2 в models)
+  разбор core
+    случай пусто
+      то (если (длина («Atoms of» от formula)) больше («Atom limit»)
+          и притом (пусто («Atoms of» от goal))
+          то («Made trial» от "large" и (длина («Atoms of» от formula)) и пустой список и пустой список и "")
+          иначе («Proved trial» от title и instances и goal))
+    случай голова и хвост
+      то «Joined trial» от title и formula и голова и rest
+
+тотальная функция «Trial with»
+  принимает title: строка, instances: список «Formula», goal: «Formula», positive: список строки
+  возвращает «Trial»
+  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
+  если пусто («Comparisons of» от formula)
+    то «Plain trial» от title и instances и goal
+    иначе («Counted trial» от (длина («Atoms of» от formula))
+        и («Number trial of» от title и instances и goal и positive))
+
+тотальная функция «Counted trial»
+  принимает atoms: число, counted: «Number trial»
+  возвращает «Trial»
+  («Made trial» от (если ((counted.«status») равен "follows") и притом (пусто (counted.«program»)) то "large"
+      иначе (counted.«status»)) и atoms и (counted.«truths») и (counted.«falses») и (counted.«program»))
 
 тотальная функция «Trial of»
   принимает title: строка, instances: список «Formula», goal: «Formula»
@@ -161,27 +250,7 @@
     ожидается (запись «Trial» с «status» равным "fails" и «atoms» равным 2 и «truths» равным ["а"]
         и «falses» равным ["б"]
         и «program» равным "модуль «Reasoning»\n\nутверждение «шаг»\n  утверждаем (не (если да то нет иначе да))\n")
-  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
-  пусть atoms равно («Atoms of» от formula)
-  если (длина atoms) больше («Search limit»)
-    то (запись «Trial» с «status» равным "large" и «atoms» равным (длина atoms) и «truths» равным пустой список
-        и «falses» равным пустой список и «program» равным "")
-    иначе «Searched trial» от title и instances и goal и («Model against» от formula)
-
-тотальная функция «Searched trial»
-  принимает title: строка, instances: список «Formula», goal: «Formula», search: «Search»
-  возвращает «Trial»
-  пусть formula равно (вариант «Implies» с left равным («All of» от instances) и right равным goal)
-  пусть atoms равно («Atoms of» от formula)
-  пусть core равно (вариант «Implies» с left равным («All of» от («Relevant» от instances и goal))
-      и right равным goal)
-  если search.«found»
-    то (запись «Trial» с «status» равным "fails" и «atoms» равным (длина atoms) и «truths» равным (search.«truths»)
-        и «falses» равным (отфильтровать atoms где atom → не ((search.«truths») содержит atom))
-        и «program» равным («Closed program» от title и formula и (search.«truths»)))
-    иначе (запись «Trial» с «status» равным "follows" и «atoms» равным (длина («Atoms of» от core))
-        и «truths» равным пустой список и «falses» равным пустой список
-        и «program» равным («Proof program» от title и core))
+  «Trial with» от title и instances и goal и пустой список
 
 тотальная функция «Signatures of»
   принимает entries: список «Thesis»
@@ -191,9 +260,28 @@
         и «formula» равным "все x: если кит(x), то любит(x, Мария)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)]
     ожидается ["кит/1", "любит/2"]
+  пример «A comparison is known by its quantities»
+    дано entries равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
+        и «formula» равным "спрос < 2 * запас" и «quote» равным "" и «quote line» равным 0
+        и «terms» равным пустой список)]
+    ожидается ["спрос/q", "запас/q"]
   («Each once» от (свёртка entries начиная с (пустой список) как found и entry →
-      «Соединить списки» от found и (отобразить («Mentions of» от ((«Form of» от (entry.«formula»)).«body»))
-      как mention → соединить [(элемент 1 в mention), "/", (к строке ((длина mention) минус 1))] по "")))
+      «Words joined» от found и (свёртка («Mentions of» от ((«Form of» от (entry.«formula»)).«body»))
+      начиная с (пустой список) как made и mention → «Words joined» от made и («Mention signatures» от mention))))
+
+тотальная функция «Mention signatures»
+  принимает mention: список строки
+  возвращает список строки
+  пример «A notion is named with the number of its places»
+    дано mention равно ["любит", "x", "Мария"]
+    ожидается ["любит/2"]
+  пусть sides равно («Numbered words» от mention)
+  пусть named равно (свёртка sides начиная с (пустой список) как found и side →
+      «Words joined» от found и (отобразить ((«Parts of» от side).«parts») как part → part.«name»))
+  если («Comparison signs») содержит (элемент 1 в mention)
+    то (отобразить (отфильтровать («Each once» от named) где name → не (пусто name))
+        как name → соединить [name, "/q"] по "")
+    иначе [(соединить [(элемент 1 в mention), "/", (к строке ((длина mention) минус 1))] по "")]
 
 тотальная функция «Bridge text»
   принимает source: строка, target: строка
@@ -243,8 +331,8 @@
     дано conclusion равно (запись «Thesis» с «number» равным "2" и «line» равным 2
         и «formula» равным "зверь(Моби)" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
     ожидается ["все x: если кит(x), то зверь(x)", "все x: если зверь(x), то кит(x)"]
-  пусть sources равно («Signatures of» от premises)
-  пусть targets равно («Signatures of» от [conclusion])
+  пусть sources равно (отфильтровать («Signatures of» от premises) где signature → не (signature содержит "/q"))
+  пусть targets равно (отфильтровать («Signatures of» от [conclusion]) где signature → не (signature содержит "/q"))
   пусть said равно («Form text» от («Form of» от (conclusion.«formula»)))
   пусть forward равно (свёртка sources начиная с (пустой список) как made и source →
       «Words joined» от made и (отобразить targets как target → «Bridge text» от source и target))
@@ -301,8 +389,10 @@
   пусть every равно («Соединить списки» от instances
       и («Premise instances» от («Form of» от text) и universe и "мост"))
   пусть together равно («All of» от every)
-  ((не ((«Model against» от (вариант «Implies» с left равным together и right равным goal)).«found»))
-      и притом ((«Model against» от (вариант «Not» с inner равным together)).«found»))
+  пусть drawn равно (вариант «Implies» с left равным together и right равным goal)
+  пусть denied равно (вариант «Not» с inner равным together)
+  ((пусто («Models against» от drawn и («Atoms of» от drawn) и пустой список))
+      и притом (не (пусто («Models against» от denied и («Atoms of» от denied) и пустой список))))
 
 тотальная функция «Chosen bridge»
   принимает premises: список «Thesis», conclusion: «Thesis», universe: список строки
@@ -321,8 +411,12 @@
   пусть whole равно («Whole bridge» от premises и conclusion)
   пусть plain равно (пусто (отфильтровать (добавить conclusion к premises) где entry →
       не («Is one statement» от ((«Form of» от (entry.«formula»)).«body»))))
-  пусть candidates равно (если plain то («Words joined» от whole и («Bridges of» от premises и conclusion))
-      иначе («Words joined» от («Bridges of» от premises и conclusion) и whole))
+  пусть firm равно (отфильтровать (отобразить (отфильтровать premises
+      где entry → не (пусто («Strength of» от (entry.«formula»)))) как entry → «Firm text» от (entry.«formula»))
+      где text → пусто («Inner kind» от ((«Form of» от text).«quantifier»)))
+  пусть candidates равно («Words joined» от firm
+      и (если plain то («Words joined» от whole и («Bridges of» от premises и conclusion))
+      иначе («Words joined» от («Bridges of» от premises и conclusion) и whole)))
   разбор (отфильтровать candidates где text → «Bridge fits» от text и instances и goal и universe)
     случай пусто
       то ""
@@ -334,8 +428,7 @@
   возвращает строка
   пусть every равно («Соединить списки» от instances
       и («Premise instances» от («Form of» от text) и universe и "мост"))
-  («Proof program» от title и (вариант «Implies» с left равным («All of» от («Relevant» от every и goal))
-      и right равным goal))
+  ((«Proved trial» от title и every и goal).«program»)
 
 тотальная функция «Step id»
   принимает step: «Inference»
@@ -388,32 +481,329 @@
       и «bridge» равным (если пусто program то "" иначе bridge) и «jobs» равным («Соединить списки» от proof и extra))
 
 тотальная функция «Goal verdict»
-  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», repeats: признак
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», repeats: признак, sure: список строки
   возвращает «Step verdict»
+  пусть positive равно sure
   пусть universe равно («Universe of» от premises и [conclusion])
   пусть instances равно («Instances of» от premises и universe)
   пусть goal равно («Conclusion instance» от («Form of» от (conclusion.«formula»)) и universe)
-  пусть trial равно («Trial of» от («Step title» от step) и instances и goal)
+  пусть trial равно («Trial with» от («Step title» от step) и instances и goal и positive)
   пусть proof равно (если пусто (trial.«program») то пустой список иначе [(запись «Job»
       с «id» равным («Step id» от step) и «role» равным (trial.«status») и «program» равным (trial.«program»))])
   если (trial.«status») равен "fails"
     то «Failed verdict» от step и premises и conclusion и trial и proof
-    иначе «Plain verdict» от step и (trial.«status») и repeats и proof
+    иначе (если (trial.«status») равен "large" то («Limit verdict» от step и («Limit note» от (trial.«atoms»)))
+        иначе («Plain verdict» от step и (trial.«status») и repeats и proof))
+
+тотальная функция «Is mixed»
+  принимает entries: список «Thesis»
+  возвращает признак
+  пример «A judgment with two kinds of quantifiers makes the step mixed»
+    дано entries равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
+        и «formula» равным "все x: есть y: любит(x, y)" и «quote» равным "" и «quote line» равным 0
+        и «terms» равным пустой список)]
+    ожидается да
+  (не (пусто (отфильтровать entries
+      где entry → не (пусто («Inner kind» от ((«Form of» от (entry.«formula»)).«quantifier»))))))
+
+тотальная функция «Base things»
+  принимает premises: список «Thesis», conclusions: список «Thesis»
+  возвращает список строки
+  пример «Named things, a thing of an outer existence and an arbitrary thing of an outer generality»
+    дано premises равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
+        и «formula» равным "есть x: все y: любит(y, x)" и «quote» равным "" и «quote line» равным 0
+        и «terms» равным пустой список)]
+    дано conclusions равно [(запись «Thesis» с «number» равным "2" и «line» равным 2
+        и «formula» равным "все y: есть x: любит(y, x)" и «quote» равным "" и «quote line» равным 0
+        и «terms» равным пустой список)]
+    ожидается ["x_из_1", "y_любой"]
+  пусть named равно (свёртка («Соединить списки» от premises и conclusions) начиная с (пустой список)
+      как found и entry → «Соединить списки» от found и («Constants of» от («Form of» от (entry.«formula»))))
+  пусть witnesses равно (свёртка premises начиная с (пустой список) как found и entry →
+      «Соединить списки» от found и («Outer things» от («Form of» от (entry.«formula»)) и "есть"
+      и (соединить ["из_", (entry.«number»)] по "")))
+  пусть arbitrary равно (свёртка conclusions начиная с (пустой список) как found и entry →
+      «Соединить списки» от found и («Outer things» от («Form of» от (entry.«formula»)) и "все" и "любой"))
+  пусть every равно («Each once» от («Words joined» от named и («Words joined» от witnesses и arbitrary)))
+  если пусто every то ["нечто"] иначе every
+
+тотальная функция «Outer things»
+  принимает form: «Quantified», kind: строка, tag: строка
+  возвращает список строки
+  пример «The outer variables of the kind get things of their own»
+    дано form равно (запись «Quantified» с «quantifier» равным "есть/все/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    дано kind равно "есть"
+    дано tag равно "из_1"
+    ожидается ["x_из_1"]
+  если («Outer kind» от (form.«quantifier»)) равен kind
+    то (отобразить («Named after» от («Outer variables» от form) и tag) как pair → элемент 2 в pair)
+    иначе пустой список
+
+тотальная функция «Fresh bindings»
+  принимает form: «Quantified», tag: строка, binding: список (список строки)
+  возвращает список (список строки)
+  пример «An inner variable gets a thing that depends on the outer values»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    дано tag равно "из_1"
+    дано binding равно [["x", "Пётр"]]
+    ожидается [["x", "Пётр"], ["y", "y_из_1(Пётр)"]]
+  («Соединить списки» от binding и (отобразить («Inner variables» от form) как variable → [variable,
+      (соединить [variable, "_", tag, "(", (соединить (отобразить binding как pair → элемент 2 в pair) по ", "), ")"]
+      по "")]))
+
+тотальная функция «Fresh things»
+  принимает entries: список «Thesis», quantifier: строка, base: список строки, premise: признак
+  возвращает список строки
+  пример «No judgments bring nothing»
+    дано entries равно пустой список
+    дано quantifier равно "все"
+    дано base равно ["а"]
+    дано premise равно да
+    ожидается пустой список
+  (свёртка (отфильтровать entries где entry → («Depends» от («Form of» от (entry.«formula»)) и quantifier))
+      начиная с (пустой список) как found и entry →
+      свёртка («Bindings over» от («Outer variables» от («Form of» от (entry.«formula»))) и base) начиная с found
+      как grown и binding → «Words joined» от grown и (отобразить («Pairs past» от («Fresh bindings»
+      от («Form of» от (entry.«formula»)) и («Tag of» от entry и premise) и binding) и (длина binding))
+      как pair → элемент 2 в pair))
+
+тотальная функция «Pairs past»
+  принимает pairs: список (список строки), count: число
+  возвращает список (список строки)
+  пример «Pairs behind the first one»
+    дано pairs равно [["x", "а"], ["y", "б"]]
+    дано count равно 1
+    ожидается [["y", "б"]]
+  разбор pairs
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то pairs иначе («Pairs past» от хвост и (count минус 1)))
+
+тотальная функция «Depends»
+  принимает form: «Quantified», quantifier: строка
+  возвращает признак
+  пример «An existence inside a generality depends on it»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    дано quantifier равно "все"
+    ожидается да
+  ((не (пусто («Inner kind» от (form.«quantifier»)))) и притом ((«Outer kind» от (form.«quantifier»)) равен quantifier))
+
+тотальная функция «Tag of»
+  принимает entry: «Thesis», premise: признак
+  возвращает строка
+  пример «A premise is known by its label»
+    дано entry равно (запись «Thesis» с «number» равным "3" и «line» равным 1 и «formula» равным "дождь"
+        и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
+    дано premise равно да
+    ожидается "из_3"
+  если premise то (соединить ["из_", (entry.«number»)] по "") иначе "любой"
+
+тотальная функция «Mixed instances»
+  принимает form: «Quantified», base: список строки, full: список строки, tag: строка
+  возвращает список «Formula»
+  пример «A generality over an existence is said of every base thing with a thing of its own»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
+    дано base равно ["а"]
+    дано full равно ["а", "y_из_1(а)"]
+    дано tag равно "из_1"
+    ожидается [вариант «Atom» с name равным "любит" и terms равным ["а", "y_из_1(а)"]]
+  пусть witnessed равно (отобразить («Bindings over» от («Inner variables» от form) и full) как binding →
+      «Substituted» от (form.«body») и («Соединить списки» от («Named after» от («Outer variables» от form) и tag)
+      и binding))
+  пусть skolemised равно (отобразить («Bindings over» от («Outer variables» от form) и base) как binding →
+      «Substituted» от (form.«body») и («Fresh bindings» от form и tag и binding))
+  если пусто («Inner kind» от (form.«quantifier»))
+    то «Premise instances» от form и full и tag
+    иначе (если («Outer kind» от (form.«quantifier»)) равен "есть" то witnessed иначе skolemised)
+
+тотальная функция «Mixed goal»
+  принимает form: «Quantified», base: список строки, full: список строки
+  возвращает «Formula»
+  пример «An existence over a generality holds when some base thing fits with a thing chosen against it»
+    дано form равно (запись «Quantified» с «quantifier» равным "есть/все/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["y", "x"]) и «fault» равным "")
+    дано base равно ["а"]
+    дано full равно ["а", "y_любой(а)"]
+    ожидается вариант «Atom» с name равным "любит" и terms равным ["y_любой(а)", "а"]
+  пусть arbitrary равно («Any of» от (отобразить («Bindings over» от («Inner variables» от form) и full) как binding →
+      «Substituted» от (form.«body») и («Соединить списки» от («Named after» от («Outer variables» от form) и "любой")
+      и binding)))
+  пусть chosen равно («Any of» от (отобразить («Bindings over» от («Outer variables» от form) и base) как binding →
+      «Substituted» от (form.«body») и («Fresh bindings» от form и "любой" и binding)))
+  если пусто («Inner kind» от (form.«quantifier»))
+    то «Conclusion instance» от form и full
+    иначе (если («Outer kind» от (form.«quantifier»)) равен "все" то arbitrary иначе chosen)
+
+тотальная функция «Gathered by»
+  принимает kind: строка, formulas: список «Formula»
+  возвращает «Formula»
+  пример «Existence gathers by disjunction»
+    дано kind равно "есть"
+    дано formulas равно пустой список
+    ожидается вариант «Truth» с holds равным нет
+  если kind равен "есть" то («Any of» от formulas) иначе («All of» от formulas)
+
+тотальная функция «Expanded»
+  принимает form: «Quantified», domain: список строки
+  возвращает «Formula»
+  пример «Over a finite set of things a generality is a conjunction and an existence a disjunction»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
+    дано domain равно ["а", "б"]
+    ожидается (вариант «And» с left равным (вариант «Or»
+        с left равным (вариант «Atom» с name равным "любит" и terms равным ["а", "а"])
+        и right равным (вариант «Atom» с name равным "любит" и terms равным ["а", "б"]))
+        и right равным (вариант «Or» с left равным (вариант «Atom» с name равным "любит" и terms равным ["б", "а"])
+        и right равным (вариант «Atom» с name равным "любит" и terms равным ["б", "б"])))
+  пусть inner равно (если пусто («Inner kind» от (form.«quantifier»)) то («Outer kind» от (form.«quantifier»))
+      иначе («Inner kind» от (form.«quantifier»)))
+  («Gathered by» от («Outer kind» от (form.«quantifier»))
+      и (отобразить («Bindings over» от («Outer variables» от form) и domain) как outer →
+      «Gathered by» от inner и (отобразить («Bindings over» от («Inner variables» от form) и domain) как binding →
+      «Substituted» от (form.«body») и («Соединить списки» от outer и binding))))
+
+тотальная функция «Model trial»
+  принимает title: строка, premises: список «Thesis», conclusion: «Thesis», domain: список строки
+  возвращает «Trial»
+  пусть formula равно (вариант «Implies»
+      с left равным («All of» от (отобразить premises
+      как entry → «Expanded» от («Form of» от (entry.«formula»)) и domain))
+      и right равным («Expanded» от («Form of» от (conclusion.«formula»)) и domain))
+  если ((длина («Atoms of» от formula)) больше 24) или (не (пусто («Comparisons of» от formula)))
+    то «Made trial» от "large" и (длина («Atoms of» от formula)) и пустой список и пустой список и ""
+    иначе («Refuted trial» от (соединить [title, " на предметах: ", (соединить domain по ", ")] по "") и formula)
+
+тотальная функция «Mixed trial»
+  принимает title: строка, premises: список «Thesis», conclusions: список «Thesis», positive: список строки
+  возвращает «Trial»
+  пусть base равно («Base things» от premises и conclusions)
+  пусть full равно («Each once» от («Words joined» от base и («Words joined»
+      от («Fresh things» от premises и "все" и base и да) и («Fresh things» от conclusions и "есть" и base и нет))))
+  пусть instances равно (свёртка premises начиная с (пустой список) как made и entry → «Соединить списки» от made
+      и («Mixed instances» от («Form of» от (entry.«formula»)) и base и full и («Tag of» от entry и да)))
+  пусть proof равно («Trial with» от title и instances и (свёртка conclusions
+      начиная с (вариант «Truth» с holds равным нет) как found и entry →
+      «Mixed goal» от («Form of» от (entry.«formula»)) и base и full) и positive)
+  разбор conclusions
+    случай пусто
+      то proof
+    случай голова и хвост
+      то (если (proof.«status») равен "follows" то proof
+          иначе («Countered trial» от title и premises и голова и base и full))
+
+тотальная функция «Countered trial»
+  принимает title: строка, premises: список «Thesis», conclusion: «Thesis», base: список строки, full: список строки
+  возвращает «Trial»
+  пусть small равно («Model trial» от title и premises и conclusion и base)
+  если (small.«status») равен "fails" то small иначе («Model trial» от title и premises и conclusion и full)
+
+тотальная функция «Mixed step»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», repeats: признак, sure: список строки
+  возвращает «Step verdict»
+  пусть positive равно sure
+  пусть together равно («Mixed trial» от (соединить ["посылки шага ", («Step title» от step), " вместе"] по "")
+      и premises и пустой список и positive)
+  пусть trial равно («Mixed trial» от («Step title» от step) и premises и [conclusion] и positive)
+  пусть clashing равно (((together.«status») равен "follows") и притом (не (пусто (together.«program»))))
+  пусть chosen равно (если clashing то together иначе trial)
+  пусть status равно (если clashing то "clash" иначе (trial.«status»))
+  (запись «Step verdict» с «step» равным step и «status» равным status и «repeats» равным repeats
+      и «truths» равным (если status равен "large"
+      то ["предел: ни доказательства, ни примера против на малом числе предметов не найдено"]
+      иначе (chosen.«truths»)) и «falses» равным (chosen.«falses») и «bridge» равным ""
+      и «jobs» равным (если пусто (chosen.«program») то пустой список иначе [(запись «Job»
+      с «id» равным («Step id» от step) и «role» равным status и «program» равным (chosen.«program»))]))
 
 тотальная функция «Judged step»
-  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», positive: список строки
   возвращает «Step verdict»
   пусть universe равно («Universe of» от premises и [conclusion])
-  пусть together равно («Trial of» от (соединить ["посылки шага ", («Step title» от step), " вместе"] по "")
-      и («Instances of» от premises и universe) и (вариант «Truth» с holds равным нет))
+  пусть together равно («Trial with» от (соединить ["посылки шага ", («Step title» от step), " вместе"] по "")
+      и («Instances of» от premises и universe) и (вариант «Truth» с holds равным нет) и positive)
   пусть repeats равно (((step.«premises») содержит (step.«conclusion»))
       или (не (пусто (отфильтровать premises где premise → «Same form» от premise и conclusion))))
   пусть clash равно (если пусто (together.«program») то пустой список иначе [(запись «Job»
       с «id» равным («Step id» от step) и «role» равным "clash" и «program» равным (together.«program»))])
   если (together.«status») равен "follows"
     то «Plain verdict» от step и "clash" и repeats и clash
-    иначе (если (together.«status») равен "large" то («Plain verdict» от step и "large" и repeats и пустой список)
-        иначе («Goal verdict» от step и premises и conclusion и repeats))
+    иначе (если (together.«status») равен "large" то («Limit verdict» от step и («Limit note» от (together.«atoms»)))
+        иначе («Goal verdict» от step и premises и conclusion и repeats и positive))
+
+тотальная функция «Limit note»
+  принимает atoms: число
+  возвращает строка
+  пример «A step above the limit says its size and the limit»
+    дано atoms равно 57
+    ожидается "предел: в шаге 57 простых высказываний, судится не больше 40"
+  пример «A step within the limit that the kernel was not given»
+    дано atoms равно 12
+    ожидается "предел: доказательство шага на 12 простых высказываний не делится на части, посильные ядру"
+  если atoms больше («Atom limit»)
+    то (соединить ["предел: в шаге ", (к строке atoms), " простых высказываний, судится не больше ",
+        (к строке («Atom limit»))] по "")
+    иначе (соединить ["предел: доказательство шага на ", (к строке atoms),
+        " простых высказываний не делится на части, посильные ядру"] по "")
+
+тотальная функция «Limit verdict»
+  принимает step: «Inference», remark: строка
+  возвращает «Step verdict»
+  пример «A step that was not judged carries the reason in place of an example»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "дедукция")
+    дано remark равно "предел"
+    ожидается (запись «Step verdict» с «step» равным (запись «Inference» с «line» равным 7 и «conclusion» равным "3"
+        и «premises» равным ["1"] и «kind» равным "дедукция") и «status» равным "large" и «repeats» равным нет
+        и «truths» равным ["предел"] и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+  (запись «Step verdict» с «step» равным step и «status» равным "large" и «repeats» равным нет
+      и «truths» равным [remark] и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+
+тотальная функция «Ground limit»
+  возвращает число
+  пример «A step that would be said of more than six hundred combinations of things is not grounded»
+    ожидается 600
+  600
+
+тотальная функция «Ground weight»
+  принимает entries: список «Thesis», things: число
+  возвращает число
+  пример «Every variable multiplies the weight of its judgment by the number of things»
+    дано entries равно [(запись «Thesis» с «number» равным "1" и «line» равным 1
+        и «formula» равным "все x, y: любит(x, y)" и «quote» равным "" и «quote line» равным 0
+        и «terms» равным пустой список)]
+    дано things равно 3
+    ожидается 9
+  (свёртка entries начиная с 0 как weight и entry → weight
+      плюс (свёртка ((«Form of» от (entry.«formula»)).«variables») начиная с 1
+      как found и variable → found умножить на things))
+
+тотальная функция «Ground note»
+  принимает weight: число
+  возвращает строка
+  пример «The number of combinations and the limit are named»
+    дано weight равно 4096
+    ожидается "предел: подстановка предметов даёт 4096 сочетаний, судится не больше 600"
+  (соединить ["предел: подстановка предметов даёт ", (к строке weight), " сочетаний, судится не больше ",
+      (к строке («Ground limit»))] по "")
+
+тотальная функция «Kind of verdict»
+  принимает step: «Inference», conclusion: «Thesis»
+  возвращает «Inference»
+  пример «A deduction of a weakened judgment is a plausible step, not a proof»
+    дано step равно (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "дедукция")
+    дано conclusion равно (запись «Thesis» с «number» равным "3" и «line» равным 5
+        и «formula» равным "вероятно: дождь" и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
+    ожидается (запись «Inference» с «line» равным 7 и «conclusion» равным "3" и «premises» равным ["1"]
+        и «kind» равным "правдоподобие")
+  пусть weak равно (((step.«kind») равен "дедукция")
+      и притом (не (["", "причина"] содержит («Strength of» от (conclusion.«formula»)))))
+  (запись «Inference» с «line» равным (step.«line») и «conclusion» равным (step.«conclusion»)
+      и «premises» равным (step.«premises») и «kind» равным (если weak то "правдоподобие" иначе (step.«kind»)))
 
 тотальная функция «Step verdict of»
   принимает markup: «Markup», step: «Inference»
@@ -425,12 +815,27 @@
       то «Plain verdict» от step и "none" и нет и пустой список
     случай голова и хвост
       то (если пусто premises то («Plain verdict» от step и "none" и нет и пустой список)
-          иначе («Judged step» от step и premises и голова))
+          иначе («Weighed step» от («Kind of verdict» от step и голова) и premises и голова
+          и («Positive quantities» от markup)))
+
+тотальная функция «Weighed step»
+  принимает step: «Inference», premises: список «Thesis», conclusion: «Thesis», positive: список строки
+  возвращает «Step verdict»
+  пусть every равно (приписать conclusion к premises)
+  пусть things равно (если «Is mixed» от every
+      то ((длина («Base things» от premises и [conclusion])) умножить на 2)
+      иначе (длина («Universe of» от premises и [conclusion])))
+  пусть weight равно («Ground weight» от every и things)
+  если weight больше («Ground limit»)
+    то «Limit verdict» от step и («Ground note» от weight)
+    иначе (если «Is mixed» от every то («Mixed step» от step и premises и conclusion и нет и positive)
+        иначе («Judged step» от step и premises и conclusion и positive))
 
 тотальная функция «Verdicts of»
   принимает markup: «Markup»
   возвращает список «Step verdict»
-  отобразить (markup.«steps») как step → «Step verdict of» от markup и step
+  (отобразить (отфильтровать (markup.«steps») где step → не ((«Silent kinds») содержит (step.«kind»)))
+      как step → «Step verdict of» от markup и step)
 
 тотальная функция «Share a notion»
   принимает left: «Thesis», right: «Thesis»
@@ -454,9 +859,24 @@
         и «formula» равным "все x: если кит(x), то зверь(x)" и «quote» равным "" и «quote line» равным 0
         и «terms» равным пустой список)
     ожидается пустой список
+  «Pair clash with» от left и right и пустой список
+
+тотальная функция «Pair trial»
+  принимает title: строка, left: «Thesis», right: «Thesis», positive: список строки
+  возвращает «Trial»
+  если «Is mixed» от [left, right]
+    то «Mixed trial» от title и [left, right] и пустой список и positive
+    иначе («Trial with» от title и («Instances of» от [left, right] и («Universe of» от [left, right] и пустой список))
+        и (вариант «Truth» с holds равным нет) и positive)
+
+тотальная функция «Pair clash with»
+  принимает left: «Thesis», right: «Thesis», positive: список строки
+  возвращает список «Clash»
   пусть universe равно («Universe of» от [left, right] и пустой список)
-  пусть trial равно («Trial of» от (соединить ["суждения ", (left.«number»), " и ", (right.«number»), " вместе"] по "")
-      и («Instances of» от [left, right] и universe) и (вариант «Truth» с holds равным нет))
+  пусть title равно (соединить ["суждения ", (left.«number»), " и ", (right.«number»), " вместе"] по "")
+  пусть heavy равно ((«Ground weight» от [left, right] и ((длина universe) умножить на 2)) больше («Ground limit»))
+  пусть trial равно (если heavy то («Made trial» от "large" и 0 и пустой список и пустой список и "")
+      иначе («Pair trial» от title и left и right и positive))
   если ((trial.«status») равен "follows") и притом (не (пусто (trial.«program»)))
     то [(запись «Clash» с «left» равным (left.«number») и «right» равным (right.«number»)
         и «jobs» равным [(запись «Job» с «id» равным (соединить ["пара ", (left.«number»), " и ", (right.«number»)]
@@ -466,10 +886,11 @@
 тотальная функция «Clashes of»
   принимает markup: «Markup»
   возвращает список «Clash»
-  (свёртка (markup.«entries») начиная с (пустой список) как found и left →
+  (свёртка (отфильтровать (markup.«entries») где entry → не ((entry.«formula») равен "истина"))
+      начиная с (пустой список) как found и left →
       свёртка (отфильтровать (markup.«entries») где right → ((right.«line») больше (left.«line»))
       и притом («Share a notion» от left и right)) начиная с found как grown и right →
-      «Соединить списки» от grown и («Pair clash» от left и right))
+      «Соединить списки» от grown и («Pair clash with» от left и right и («Positive quantities» от markup)))
 
 тотальная функция «Jobs of»
   принимает verdicts: список «Step verdict», clashes: список «Clash»
@@ -504,3 +925,75 @@
     дано output равно "a.flang: НЕ УДАЛОСЬ ДОКАЗАТЬ — ОБЪЯВЛЕНО, НЕ ДОКАЗАНО — утверждений 1: доказано 0"
     ожидается нет
   output содержит ": ДОКАЗАНО — утверждений"
+
+тотальная функция «Kind title»
+  принимает kind: строка
+  возвращает строка
+  пример «A step from significance to an effect»
+    дано kind равно "значимость"
+    ожидается "вывод об эффекте из статистической значимости"
+  пример «A kind without words of its own is named as it is»
+    дано kind равно "дедукция"
+    ожидается "дедукция"
+  (свёртка [["обобщение", "обобщение из примеров"], ["корреляция", "причинное заключение из корреляции"],
+      ["авторитет", "ссылка на авторитет"], ["определение", "вывод по определению"],
+      ["значимость", "вывод об эффекте из статистической значимости"],
+      ["выборка", "перенос с выборки на всех"], ["правдоподобие", "правдоподобный вывод"],
+      ["допущение", "вывод с неназванной общей посылкой"], ["объяснение", "объяснение, не вывод"]]
+      начиная с kind как found и row → если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
+
+тотальная функция «Kind reason»
+  принимает kind: строка
+  возвращает строка
+  пример «Why a step from a sample is not a proof»
+    дано kind равно "выборка"
+    ожидается "то, что верно для обследованных, верно для остальных, только если выборка на них похожа"
+  (свёртка [["корреляция", "из того, что два признака встречаются вместе, не следует, что один вызывает другой"],
+      ["обобщение", "из сведений о части случаев не следует утверждение обо всех случаях"],
+      ["авторитет", "чьё-то мнение или оценка — не доказательство самого утверждения"],
+      ["значимость", (соединить ["малое p говорит только, что такое различие редко выходит случайно; ",
+      "оно не говорит, что эффект велик, что он вызван названной причиной и что проверка была одна"] по "")],
+      ["выборка", "то, что верно для обследованных, верно для остальных, только если выборка на них похожа"],
+      ["правдоподобие", "вывод или посылка сказаны с оговоркой («вероятно», «как правило»): это довод"],
+      ["допущение", "вывод держится на общем правиле, которого в тексте нет"]]
+      начиная с "шаг не помечен как дедукция" как found и row →
+      если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
+
+тотальная функция «Kind gap»
+  принимает kind: строка
+  возвращает строка
+  пример «What a step from a sample lacks»
+    дано kind равно "выборка"
+    ожидается "посылки, что выборка представляет всех: как она набрана и чем остальные на неё похожи"
+  пример «A kind without a usual gap names none»
+    дано kind равно "дедукция"
+    ожидается ""
+  (свёртка [["значимость", "посылок о размере эффекта, о числе проверенных гипотез и о том, что группы сравнимы"],
+      ["выборка", "посылки, что выборка представляет всех: как она набрана и чем остальные на неё похожи"],
+      ["корреляция", "посылок, которые исключают обратную связь, общую причину и совпадение"],
+      ["обобщение", "посылки, что неразобранные случаи устроены так же, как разобранные"],
+      ["авторитет", "доводов самого источника: на чём его мнение основано"],
+      ["правдоподобие", "твёрдой посылки на месте посылки с оговоркой"]]
+      начиная с "" как found и row → если (элемент 1 в row) равен kind то (элемент 2 в row) иначе found)
+
+тотальная функция «Repeats premise»
+  принимает verdict: «Step verdict»
+  возвращает признак
+  пример «A step whose conclusion stands among its premises proves nothing new»
+    дано verdict равно (запись «Step verdict» с «step» равным (запись «Inference» с «line» равным 7
+        и «conclusion» равным "3" и «premises» равным ["3"] и «kind» равным "дедукция")
+        и «status» равным "follows" и «repeats» равным да и «truths» равным пустой список
+        и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+    ожидается да
+  verdict.«repeats»
+
+тотальная функция «Limit words»
+  принимает verdict: «Step verdict»
+  возвращает строка
+  пример «A step within the limits has nothing to say»
+    дано verdict равно (запись «Step verdict» с «step» равным (запись «Inference» с «line» равным 7
+        и «conclusion» равным "3" и «premises» равным ["1"] и «kind» равным "дедукция")
+        и «status» равным "follows" и «repeats» равным нет и «truths» равным пустой список
+        и «falses» равным пустой список и «bridge» равным "" и «jobs» равным пустой список)
+    ожидается ""
+  если (verdict.«status») равен "large" то (соединить (verdict.«truths») по "; ") иначе ""

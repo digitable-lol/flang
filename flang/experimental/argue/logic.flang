@@ -44,14 +44,167 @@
     ожидается ["все", "x"]
   отфильтровать (разделить text по " ") где piece → не (пусто piece)
 
+тотальная функция «Comparison signs»
+  возвращает список строки
+  пример «Six signs of comparison»
+    ожидается ["<", "≤", "=", "≠", ">", "≥"]
+  ["<", "≤", "=", "≠", ">", "≥"]
+
+тотальная функция «Is digit»
+  принимает sign: строка
+  возвращает признак
+  пример «A letter is not a digit»
+    дано sign равно "x"
+    ожидается нет
+  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] содержит sign
+
+тотальная функция «Digit at»
+  принимает text: строка, spot: число
+  возвращает признак
+  пример «An empty text has no digit»
+    дано text равно ""
+    дано spot равно 1
+    ожидается нет
+  если ((длина text) меньше 1) или (spot меньше 1) то нет иначе («Is digit» от (символ spot в text))
+
+тотальная функция «Decimal commas»
+  принимает text: строка
+  возвращает строка
+  пример «A comma between two digits is a decimal mark, another comma stays»
+    дано text равно "p < 0,05 и кит(x, y)"
+    ожидается "p < 0.05 и кит(x, y)"
+  разбор (разделить text по ",")
+    случай пусто
+      то text
+    случай голова и хвост
+      то (свёртка хвост начиная с голова как made и piece → соединить [made,
+          (если («Digit at» от made и (длина made)) и притом («Digit at» от piece и 1) то "." иначе ","),
+          piece] по "")
+
+тотальная функция «Spaced signs»
+  принимает text: строка
+  возвращает строка
+  пример «Signs of comparison and of arithmetic stand apart»
+    дано text равно "a<=2*b"
+    ожидается "a ≤ 2 * b"
+  (свёртка [["<=", "≤"], [">=", "≥"], ["!=", "≠"], ["−", " - "], ["×", "*"], ["·", "*"], ["≤", " ≤ "], ["≥", " ≥ "],
+      ["≠", " ≠ "], ["<", " < "], [">", " > "], ["=", " = "], ["+", " + "], ["*", " * "], ["%", " % "]]
+      начиная с text как flat и row → «Replaced in» от flat и (элемент 1 в row) и (элемент 2 в row))
+
+тотальная функция «First word»
+  принимает words: список строки
+  возвращает строка
+  пример «Nothing stands first in an empty list»
+    дано words равно пустой список
+    ожидается ""
+  разбор words
+    случай пусто
+      то ""
+    случай голова и хвост
+      то голова
+
+тотальная функция «Words after first»
+  принимает words: список строки
+  возвращает список строки
+  пример «Nothing is left of nothing»
+    дано words равно пустой список
+    ожидается пустой список
+  разбор words
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то хвост
+
+тотальная функция «Sign joined»
+  принимает word: строка, rest: список строки
+  возвращает список строки
+  пример «A word of comparison becomes its sign»
+    дано word равно "больше"
+    дано rest равно ["b"]
+    ожидается [">", "b"]
+  пример «A notion named by such a word stays a notion»
+    дано word равно "больше"
+    дано rest равно ["(", "x", ")"]
+    ожидается ["больше", "(", "x", ")"]
+  пример «Negation before a sign turns it over»
+    дано word равно "не"
+    дано rest равно [">", "b"]
+    ожидается ["≤", "b"]
+  пусть follower равно («First word» от rest)
+  пусть sign равно (свёртка [["больше", ">"], ["меньше", "<"], ["равно", "="], ["равен", "="], ["равна", "="],
+      ["равны", "="]] начиная с "" как found и row →
+      если ((элемент 1 в row) равен word) и притом (не (follower равен "(")) то (элемент 2 в row) иначе found)
+  пусть turned равно (свёртка [[">", "≤"], ["<", "≥"], ["=", "≠"]] начиная с "" как found и row →
+      если ((элемент 1 в row) равен follower) и притом (word равен "не") то (элемент 2 в row) иначе found)
+  если не (пусто turned)
+    то приписать turned к («Words after first» от rest)
+    иначе (приписать (если пусто sign то word иначе sign) к rest)
+
+тотальная функция «Word signs»
+  принимает tokens: список строки
+  возвращает список строки
+  пример «Words of comparison are read from the end, so that a negation meets its sign»
+    дано tokens равно ["a", "не", "больше", "b", "и", "меньше", "(", "x", ")"]
+    ожидается ["a", "≤", "b", "и", "меньше", "(", "x", ")"]
+  разбор tokens
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то «Sign joined» от голова и («Word signs» от хвост)
+
+объект «Gather»
+  «out»: список строки
+  «run»: список строки
+  «left»: список строки
+  «sign»: строка
+
+тотальная функция «Gathered»
+  принимает made: список строки, pending: список строки, before: список строки, mark: строка
+  возвращает «Gather»
+  запись «Gather» с «out» равным made и «run» равным pending и «left» равным before и «sign» равным mark
+
+тотальная функция «Flushed gather»
+  принимает held: «Gather»
+  возвращает список строки
+  пример «Words without a sign stay as they are»
+    дано held равно (запись «Gather» с «out» равным ["и"] и «run» равным ["кит"] и «left» равным пустой список
+        и «sign» равным "")
+    ожидается ["и", "кит"]
+  пример «Two sides of a sign become one statement with two terms»
+    дано held равно (запись «Gather» с «out» равным пустой список и «run» равным ["2", "*", "b"] и «left» равным ["a"]
+        и «sign» равным "<")
+    ожидается ["<", "(", "a", ",", "2 * b", ")"]
+  если пусто (held.«sign»)
+    то «Соединить списки» от (held.«out») и (held.«run»)
+    иначе («Соединить списки» от (held.«out») и [(held.«sign»), "(", (соединить (held.«left») по " "), ",",
+        (соединить (held.«run») по " "), ")"])
+
+тотальная функция «Gather step»
+  принимает held: «Gather», token: строка
+  возвращает «Gather»
+  пусть flushed равно («Flushed gather» от held)
+  пусть chained равно (если пусто (held.«sign») то (held.«out») иначе (добавить "и" к flushed))
+  если («Comparison signs») содержит token
+    то «Gathered» от chained и пустой список и (held.«run») и token
+    иначе (если ["не", "и", "или", "то", "если", ",", "(", ")"] содержит token
+        то («Gathered» от (добавить token к flushed) и пустой список и пустой список и "")
+        иначе («Gathered» от (held.«out») и (добавить token к (held.«run»)) и (held.«left») и (held.«sign»)))
+
 тотальная функция «Formula tokens»
   принимает text: строка
   возвращает список строки
   пример «Brackets and commas are tokens of their own»
     дано text равно "если кит(x), то любит(x,y)"
     ожидается ["если", "кит", "(", "x", ")", ",", "то", "любит", "(", "x", ",", "y", ")"]
-  «Pieces of» от (свёртка ["(", ")", ","] начиная с text как flat и mark →
-      «Replaced in» от flat и mark и (соединить [" ", mark, " "] по ""))
+  пример «A comparison is one statement of two terms»
+    дано text равно "если доля > 0,5 и дождь, то a не меньше 2 * b"
+    ожидается (["если", ">", "(", "доля", ",", "0.5", ")", "и", "дождь", ",", "то", "≥", "(", "a", ",", "2 * b",
+        ")"])
+  пусть words равно («Word signs» от («Pieces of» от (свёртка ["(", ")", ","]
+      начиная с («Spaced signs» от («Decimal commas» от text)) как flat и mark →
+      «Replaced in» от flat и mark и (соединить [" ", mark, " "] по ""))))
+  («Flushed gather» от (свёртка words начиная с («Gathered» от пустой список и пустой список и пустой список и "")
+      как held и token → «Gather step» от held и token))
 
 тотальная функция «Priority»
   принимает operator: строка
@@ -320,21 +473,150 @@
     ожидается ["всех", "x", "y"]
   отфильтровать («Pieces of» от («Replaced in» от piece и "," и " ")) где word → не (word равен "для")
 
+тотальная функция «Strength words»
+  возвращает список строки
+  пример «Words that weaken a judgment»
+    ожидается (["вероятно", "возможно", "может быть", "по-видимому", "предположительно", "как правило", "обычно",
+        "часто", "зачастую", "в большинстве случаев", "чаще всего", "иногда", "редко"])
+  ["вероятно", "возможно", "может быть", "по-видимому", "предположительно", "как правило", "обычно",
+    "часто", "зачастую", "в большинстве случаев", "чаще всего", "иногда", "редко"]
+
+тотальная функция «Strength of»
+  принимает text: строка
+  возвращает строка
+  пример «A word of weak force before the first colon»
+    дано text равно "как правило: все x: если птица(x), то летает(x)"
+    ожидается "как правило"
+  пример «A firm judgment has no such word»
+    дано text равно "все x: кит(x)"
+    ожидается ""
+  пример «The word of a cause is such a word too»
+    дано text равно "причина: если курит, то болеет"
+    ожидается "причина"
+  пусть pieces равно (разделить text по ":")
+  пусть word равно (соединить («Pieces of» от («First word» от pieces)) по " ")
+  если ((длина pieces) больше 1) и притом ((приписать "причина" к («Strength words»)) содержит word) то word иначе ""
+
+тотальная функция «Firm text»
+  принимает text: строка
+  возвращает строка
+  пример «The judgment without its word of weak force»
+    дано text равно "вероятно: кит(Моби)"
+    ожидается "кит(Моби)"
+  пример «A firm judgment stays»
+    дано text равно "кит(Моби)"
+    ожидается "кит(Моби)"
+  если пусто («Strength of» от text)
+    то text
+    иначе (соединить («Pieces of» от (соединить («Words after first» от (разделить text по ":")) по ":")) по " ")
+
+тотальная функция «Outer kind»
+  принимает quantifier: строка
+  возвращает строка
+  пример «The first of two kinds»
+    дано quantifier равно "все/есть/1"
+    ожидается "все"
+  пример «One kind is itself»
+    дано quantifier равно "есть"
+    ожидается "есть"
+  «First word» от (разделить quantifier по "/")
+
+тотальная функция «Inner kind»
+  принимает quantifier: строка
+  возвращает строка
+  пример «The second of two kinds»
+    дано quantifier равно "все/есть/1"
+    ожидается "есть"
+  пример «One kind has no second»
+    дано quantifier равно "есть"
+    ожидается ""
+  «First word» от («Words after first» от (разделить quantifier по "/"))
+
+тотальная функция «Outer count»
+  принимает form: «Quantified»
+  возвращает число
+  пример «Variables of the first kind are counted»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    ожидается 1
+  пусть parts равно (разделить (form.«quantifier») по "/")
+  если (длина parts) меньше 3 то (длина (form.«variables»)) иначе (к числу (элемент 3 в parts))
+
+тотальная функция «First words»
+  принимает words: список строки, count: число
+  возвращает список строки
+  пример «The first one of two»
+    дано words равно ["x", "y"]
+    дано count равно 1
+    ожидается ["x"]
+  разбор words
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то (пустой список)
+          иначе (приписать голова к («First words» от хвост и (count минус 1))))
+
+тотальная функция «Words past»
+  принимает words: список строки, count: число
+  возвращает список строки
+  пример «What stands behind the first one»
+    дано words равно ["x", "y"]
+    дано count равно 1
+    ожидается ["y"]
+  разбор words
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count не больше 0 то words иначе («Words past» от хвост и (count минус 1)))
+
+тотальная функция «Outer variables»
+  принимает form: «Quantified»
+  возвращает список строки
+  пример «Variables of the first kind»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    ожидается ["x"]
+  «First words» от (form.«variables») и («Outer count» от form)
+
+тотальная функция «Inner variables»
+  принимает form: «Quantified»
+  возвращает список строки
+  пример «Variables of the second kind»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    ожидается ["y"]
+  «Words past» от (form.«variables») и («Outer count» от form)
+
+тотальная функция «Joined kind»
+  принимает form: «Quantified», kind: строка
+  возвращает строка
+  пример «A second kind is written behind the first with the count of its variables»
+    дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
+        и «body» равным (вариант «Truth» с holds равным да) и «fault» равным "")
+    дано kind равно "есть"
+    ожидается "все/есть/1"
+  пусть held равно (form.«quantifier»)
+  пусть last равно (если пусто («Inner kind» от held) то held иначе («Inner kind» от held))
+  если (пусто held) или (last равен kind) или (пусто kind) или (не (пусто («Inner kind» от held)))
+    то (если пусто held то kind иначе held)
+    иначе (соединить [held, "/", kind, "/", (к строке (длина (form.«variables»)))] по "")
+
 тотальная функция «With prefix»
   принимает form: «Quantified», piece: строка
   возвращает «Quantified»
   пусть words равно («Prefix words» от piece)
   пусть kind равно (если пусто words то "" иначе («Quantifier kind» от (элемент 1 в words)))
-  пусть mixed равно ((не (пусто (form.«quantifier»))) и притом (не ((form.«quantifier») равен kind)))
+  пусть held равно (form.«quantifier»)
+  пусть third равно ((не (пусто («Inner kind» от held))) и притом (не ((«Inner kind» от held) равен kind)))
   пусть fault равно (свёртка [
       [(если пусто kind то "да" иначе "нет"), (соединить ["перед двоеточием ждали «все x:» или «есть x:», а стоит «",
       piece, "»"] по "")],
       [(если (длина words) меньше 2 то "да" иначе "нет"), "после «все» или «есть» не названа переменная"],
-      [(если mixed то "да" иначе "нет"),
-      "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида"]]
+      [(если third то "да" иначе "нет"),
+      "«все» и «есть» сменяются больше одного раза: такая форма не судится, оставьте одну смену"]]
       начиная с (form.«fault») как found и row →
       если (пусто found) и притом ((элемент 1 в row) равен "да") то (элемент 2 в row) иначе found)
-  (запись «Quantified» с «quantifier» равным kind
+  (запись «Quantified» с «quantifier» равным («Joined kind» от form и kind)
       и «variables» равным («Соединить списки» от (form.«variables») и (отфильтровать («Numbered words» от words)
       где word → не ((form.«variables») содержит word)))
       и «body» равным (form.«body») и «fault» равным fault)
@@ -354,6 +636,34 @@
 тотальная функция «Form of»
   принимает text: строка
   возвращает «Quantified»
+  пример «A weakened judgment is one statement that keeps its word of weak force»
+    дано text равно "как правило:  все x: если птица(x), то летает(x)"
+    ожидается (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
+        и «body» равным (вариант «Atom» с name равным "как правило: все x: если птица(x), то летает(x)"
+        и terms равным пустой список) и «fault» равным "")
+  пример «A judgment about a cause says its conditional and, besides, that this is a cause»
+    дано text равно "причина: если курит, то болеет"
+    ожидается (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
+        и «body» равным (вариант «And» с left равным (вариант «Atom» с name равным "причина: если курит, то болеет"
+        и terms равным пустой список) и right равным (вариант «Implies»
+        с left равным (вариант «Atom» с name равным "курит" и terms равным пустой список)
+        и right равным (вариант «Atom» с name равным "болеет" и terms равным пустой список))) и «fault» равным "")
+  пусть strength равно («Strength of» от text)
+  пусть firm равно («Plain form of» от («Firm text» от text))
+  пусть marked равно (вариант «Atom» с name равным (соединить [strength, ": ", («Form text» от firm)] по "")
+      и terms равным пустой список)
+  пусть causal равно (запись «Quantified» с «quantifier» равным (firm.«quantifier»)
+      и «variables» равным (firm.«variables»)
+      и «body» равным (вариант «And» с left равным marked и right равным (firm.«body»)) и «fault» равным (firm.«fault»))
+  если пусто strength
+    то firm
+    иначе (если strength равен "причина" то causal
+        иначе (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
+        и «body» равным marked и «fault» равным (firm.«fault»)))
+
+тотальная функция «Plain form of»
+  принимает text: строка
+  возвращает «Quantified»
   пример «A general statement with one variable»
     дано text равно "все x: если кит(x), то зверь(x)"
     ожидается (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
@@ -363,11 +673,15 @@
     дано text равно "кит(Моби)"
     ожидается (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
         и «body» равным (вариант «Atom» с name равным "кит" и terms равным ["Моби"]) и «fault» равным "")
-  пример «Mixed quantifiers are refused»
+  пример «Two kinds of quantifiers are kept in their order»
     дано text равно "все x: есть y: любит(x, y)"
-    ожидается (запись «Quantified» с «quantifier» равным "есть" и «variables» равным ["x", "y"]
+    ожидается (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
+  пример «A third change of kind is refused»
+    дано text равно "все x: есть y: все z: любит(x, y)"
+    ожидается (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y", "z"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"])
-        и «fault» равным "«все» и «есть» в одной формуле вперемешку не судятся: оставьте кванторы одного вида")
+        и «fault» равным "«все» и «есть» сменяются больше одного раза: такая форма не судится, оставьте одну смену")
   пусть pieces равно (разделить text по ":")
   пусть parsed равно («Parsed formula» от (элемент (длина pieces) в pieces))
   пусть body равно (если пусто (parsed.«out») то (вариант «Truth» с holds равным да)
@@ -399,7 +713,13 @@
     дано name равно "дождь"
     дано terms равно пустой список
     ожидается "дождь"
-  если пусто terms то name иначе (соединить [name, "(", (соединить terms по ", "), ")"] по "")
+  пример «A comparison is written with its sign in the middle»
+    дано name равно "≤"
+    дано terms равно ["a", "2 * b"]
+    ожидается "a ≤ 2 * b"
+  если ((«Comparison signs») содержит name) и притом ((длина terms) равен 2)
+    то соединить [(элемент 1 в terms), " ", name, " ", (элемент 2 в terms)] по ""
+    иначе (если пусто terms то name иначе (соединить [name, "(", (соединить terms по ", "), ")"] по ""))
 
 тотальная функция «Formula text»
   принимает formula: «Formula»
@@ -450,10 +770,18 @@
     дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x", "y"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
     ожидается "все x, y: любит(x, y)"
+  пример «Two kinds stand one behind the other»
+    дано form равно (запись «Quantified» с «quantifier» равным "все/есть/1" и «variables» равным ["x", "y"]
+        и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "y"]) и «fault» равным "")
+    ожидается "все x: есть y: любит(x, y)"
+  пусть outer равно (соединить [(«Outer kind» от (form.«quantifier»)), " ",
+      (соединить («Outer variables» от form) по ", "), ": "] по "")
+  пусть inner равно (если пусто («Inner kind» от (form.«quantifier»)) то ""
+      иначе (соединить [(«Inner kind» от (form.«quantifier»)), " ",
+      (соединить («Inner variables» от form) по ", "), ": "] по ""))
   если пусто (form.«quantifier»)
     то «Formula text» от (form.«body»)
-    иначе (соединить [(form.«quantifier»), " ", (соединить (form.«variables») по ", "), ": ",
-        («Formula text» от (form.«body»))] по "")
+    иначе (соединить [outer, inner, («Formula text» от (form.«body»))] по "")
 
 тотальная функция «Mentions of»
   принимает formula: «Formula»
@@ -501,7 +829,12 @@
     дано form равно (запись «Quantified» с «quantifier» равным "все" и «variables» равным ["x"]
         и «body» равным (вариант «Atom» с name равным "любит" и terms равным ["x", "Мария"]) и «fault» равным "")
     ожидается ["Мария"]
-  («Each once» от (отфильтровать (свёртка («Mentions of» от (form.«body»)) начиная с (пустой список)
+  пример «The sides of a comparison are not things»
+    дано form равно (запись «Quantified» с «quantifier» равным "" и «variables» равным пустой список
+        и «body» равным (вариант «Atom» с name равным "<" и terms равным ["a", "b"]) и «fault» равным "")
+    ожидается пустой список
+  («Each once» от (отфильтровать (свёртка (отфильтровать («Mentions of» от (form.«body»))
+      где mention → не ((«Comparison signs») содержит («First word» от mention))) начиная с (пустой список)
       как gathered и mention → «Соединить списки» от gathered и («Numbered words» от mention))
       где term → не ((form.«variables») содержит term)))
 

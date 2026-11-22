@@ -209,8 +209,21 @@ theorem «ход-соседи-состоятелен» (I : «Толковани
 theorem «отказ-оборван» (p : «Прогон») (t : String) : (p.«отказ» t).«оборван» = true := rfl
 theorem «беда-оборвана» (p : «Прогон») (t : String) : (p.«беда» t).«оборван» = true := rfl
 
+/-- Стороны равенства допущения равны при текущих значениях имён: по слову `равно` —
+    `«равно-здесь»`, по слову `равен` — `«равен-здесь»`. -/
+theorem «равенство-допущения-здесь» (I : «Толкование») (d : String)
+    (he : («равенствоДопущения» d).«есть» = true) (ht : I.«истинно» d) :
+    I.«здесь» («равенствоДопущения» d).«лево» («равенствоДопущения» d).«право» := by
+  unfold «равенствоДопущения» at he ⊢
+  by_cases h : ((«разрез» d "равно").«есть» && «кореньСравнения» d) = true
+  · simp only [h, ↓reduceIte]
+    simp only [Bool.and_eq_true] at h
+    exact I.«равно-здесь» d h.1 h.2 ht
+  · simp only [h] at he ⊢
+    exact I.«равен-здесь» d he ht
+
 /-- **Ход «замена» состоятелен.** Допущение-равенство верно при текущих значениях имён
-    (`«равно-здесь»`); вне связывателя подстановка равного сохраняет цель
+    (`«равенство-допущения-здесь»`); вне связывателя подстановка равного сохраняет цель
     (`«подстановка-равенства»`). Под связывателем ход не берётся. -/
 theorem «ход-замена-состоятелен» (I : «Толкование») (p : «Прогон») (l : String) (o : «Обст»)
     (hw : «слово» l 3 = "замена") (hok : («ходШага» p l o).«оборван» = false)
@@ -222,19 +235,19 @@ theorem «ход-замена-состоятелен» (I : «Толковани
   unfold «ходЗамены» at hq
   dsimp only at hq
   generalize hn : «номерПосле» l "по дано " = n at hq
-  generalize hr : «разрез» (p.«дано».getD (n - 1) "") "равно" = r at hq
-  by_cases hb : (n = 0 || n > p.«дано».length || !r.«есть» || !«кореньСравнения» (p.«дано».getD (n - 1) "")) = true
+  generalize hr : «равенствоДопущения» (p.«дано».getD (n - 1) "") = r at hq
+  by_cases hb : (n = 0 || n > p.«дано».length || !r.«есть») = true
   · simp only [hb, ↓reduceIte] at hq; subst hq; simp [«беда-оборвана»] at hok
   simp only [hb, Bool.false_eq_true, ↓reduceIte] at hq
   simp only [Bool.or_eq_true, decide_eq_true_eq, Bool.not_eq_true', not_or, Bool.not_eq_false] at hb
-  obtain ⟨⟨⟨hn0, hnl⟩, hre⟩, hroot⟩ := hb
+  obtain ⟨⟨hn0, hnl⟩, hre⟩ := hb
   have hlt : n - 1 < p.«дано».length := by omega
   have hmem : p.«дано».getD (n - 1) "" ∈ p.«дано» := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hlt]
     exact List.getElem_mem _
   have hlr : (∀ d ∈ p.«дано», I.«истинно» d) → I.«здесь» r.«лево» r.«право» := by
     intro hd
-    have h := I.«равно-здесь» _ (by rw [hr]; exact hre) hroot (hd _ hmem)
+    have h := «равенство-допущения-здесь» I _ (by rw [hr]; exact hre) (hd _ hmem)
     rwa [hr] at h
   have key : ∀ a b, ((∀ d ∈ p.«дано», I.«истинно» d) → I.«здесь» a b) →
       q = p.«одна» («т» («вместо» p.«первая» a b)) → «подСвязывателем» p.«первая» = false →

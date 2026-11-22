@@ -13,7 +13,7 @@
 ## Состав каталога
 
 <!-- СНЯТО 2026-11-13 файлов flang/self/*.flang = 68 (print batch 13: flang/self/call-words.flang of the console call) --> 68 файлов `.flang`,
-<!-- СНЯТО 2026-11-14 строк-в flang/self/*.flang = 151152 (print batch 13 with typing holes 30-32: words inside lists and records) --> 151 152 строки
+<!-- СНЯТО 2026-11-18 строк-в flang/self/*.flang = 151924 (the plain check counts unproved claims and an example takes a closed expression) --> 151 924 строки
 Имя модуля — первая строка файла; здесь оно повторено, чтобы читать
 `использует «…»` в других файлах без поиска.
 

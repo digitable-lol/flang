@@ -126,7 +126,7 @@
   принимает paths: «Paths», checks: список «Crosscheck», outcomes: список «Kernel answer», waiting: список «Job»
   возвращает «Продолжение»
   пусть settled равно (отобразить checks как check → «After the kernel» от check и outcomes)
-  пусть place равно (если пусто (paths.«out») то "/dev/stdout" иначе («Path from root» от (paths.«out»)))
+  пусть place равно (если пусто (paths.«out») то "/dev/stderr" иначе («Path from root» от (paths.«out»)))
   разбор waiting
     случай пусто
       то (вариант «Сделать» с поручение равным (вариант «Записать файл» с путь равным place

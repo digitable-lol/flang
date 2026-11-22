@@ -2572,6 +2572,18 @@ jobs:
           check bootstrap/flang io flang/proof/probes/written-steps/run.fscript --plan Binary --timeout 900000
         env:
           FLANG_TMP: ${{ runner.temp }}
+      - name: Check the logical forms built from parses on their probe sentences
+        # ADR-0251: each sentence is read by flang run on flang/ct/russian/meaning-parses.flang.
+        run: bootstrap/flang io flang/proof/probes/russian-meaning/run.fscript --plan Binary --timeout 900000
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}
+      - name: Check the crosscheck of a markup against the grammar, forgeries included
+        # ADR-0251: a form with swapped parts, a lost negation or another quantifier must come out as a difference.
+        run: bootstrap/flang io flang/proof/probes/argue-crosscheck/run.fscript --plan Binary --timeout 900000
+        env:
+          LC_ALL: C.UTF-8
+          FLANG_TMP: ${{ runner.temp }}
 
   # ── БЛОКИ «прогон»: ВЕРНОЕ ОЖИДАНИЕ ОТЛИЧИМО ОТ ЛОЖНОГО (задача 1116) ─────
   #

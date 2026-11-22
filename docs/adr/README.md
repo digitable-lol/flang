@@ -183,6 +183,7 @@
 | 0246 | [Сверщик на C опровергает подделку контрпримером и отличает ноль от единицы](0246-the-c-checker-refutes-by-a-witness-and-tells-zero-from-one.md) | предложено | да |  |
 | 0247 | [Статья судится по разметке, а ядро судит шаг после подстановки предметов](0247-an-article-is-judged-from-its-markup-and-the-kernel-judges-the-grounded-step.md) | предложено | да |  |
 | 0248 | [Набор пользовательских историй судится по величинам: общий ответ или опровержение](0248-a-set-of-user-stories-is-judged-per-quantity-by-an-answer-or-a-refutation.md) | предложено | да |  |
+| 0250 | [Сверщик на C проигрывает шаг индукции по списку, переписанный допущением](0250-the-c-checker-replays-a-list-induction-step-rewritten-by-the-hypothesis.md) | предложено | да |  |
 | 0251 | [Разбор даёт логическую форму, а форма разметки сверяется с ней ядром](0251-a-parse-gives-a-logical-form-and-the-markup-is-checked-against-it.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет

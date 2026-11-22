@@ -6,6 +6,12 @@ records	flang/proof/checker/tests/families/statement/corrupt/optional-empty-case
 records	flang/proof/checker/tests/families/if-body/corrupt/option-flag-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
 records	flang/proof/checker/tests/families/case-split-facts/corrupt/linked-facts-lies.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
 records	flang/proof/checker/tests/families/fmath/difference-of-lengths.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/records/goal-split-by-condition/p6-measure-swapped.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/coverage/o9-step-two.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/coverage/o9-fold-start-one.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/coverage/o9-foreign-list.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/free-statement-induction/corrupt/doubling.record	1	3	второй отстаёт: контрпример к месту, записанному доказанным, не ищет — подделка идёт на слово, а не в отказ
+records	flang/proof/checker/tests/families/free-statement-induction/rewrite.record	0	1	второй отстаёт: перед перепиской допущением не приводит «( пустой список )» к «пустой список» и честную запись отвергает; сверщик на C шаг проигрывает
 examples	docs/examples/frameworks/react-ts-pure/scripts/markup-without-logic.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово
 examples	docs/examples/genetic/evolution.flang	3	1	приёмка модели уже: шаг Р8 «разбор цели по условию» с веткой, где условие сокращает вложенное «если», не принят; ядро и сверщик на C его принимают
 examples	docs/examples/guide/lookup-table.flang	0	3	второй отстаёт: место «доказано» без блока по телу функции не проигрывает, оно идёт на слово

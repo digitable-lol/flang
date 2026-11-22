@@ -2623,6 +2623,36 @@ jobs:
         env:
           FLANG_TMP: ${{ runner.temp }}
 
+  # Одна команда от статьи до отчёта (ADR-0253): карта рассуждения, допущения,
+  # выброшенная цитата, разметка командой по частям, отчёт в JSON, пропущенный
+  # шаг. Программы перевода и языковая модель в пробах подставные: на машине
+  # сборки их может не быть. Набор идёт своей работой по той же причине, что
+  # и `argue:probe`: каждая строка заново запускает команду.
+  argue-article-probes:
+    name: argue-article-probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LC_ALL: C.UTF-8
+      FLANG_TMP: ${{ runner.temp }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Check verdict cache
+        uses: ./.github/actions/release-without-cache
+      - name: Restore binary cache
+        id: binary-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            bootstrap/flang
+            bootstrap/libcompiler_flang.a
+          key: flang-bootstrap-${{ runner.os }}-${{ hashFiles('bootstrap/*.c', 'bootstrap/*.h', 'bootstrap/Makefile') }}-${{ env.FLANG_CFLAGS }}
+      - name: Build bootstrap
+        if: steps.binary-cache.outputs.cache-hit != 'true'
+        run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
+      - name: Check the one command from an article to its report
+        run: bootstrap/flang run-script argue:article:probe
+
   argue-crosscheck-probes:
     name: argue-crosscheck-probes
     runs-on: ubuntu-latest

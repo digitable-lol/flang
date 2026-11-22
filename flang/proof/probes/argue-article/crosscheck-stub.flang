@@ -1,0 +1,12 @@
+модуль «Argue crosscheck»
+
+тотальная функция «Crosscheck rows»
+  принимает text: строка, claims: строка
+  возвращает список (список строки)
+  пример «The stand-in answers only when both the text and the markup have arrived»
+    дано text равно "Идёт дождь."
+    дано claims равно "[1] дождь"
+    ожидается пустой список
+  если (text содержит "Провод лежит на столе") и притом (claims содержит "[1] все x: если металл(x), то проводит(x)")
+    то [["1", "confirmed", "1"], ["2", "differs", "2"], ["7", "grammar", ""]]
+    иначе пустой список

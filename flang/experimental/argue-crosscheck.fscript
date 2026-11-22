@@ -104,6 +104,9 @@
   (соединить ["суждений ", (к строке (длина checks)),
     ": подтверждено ", (к строке («Counted» от checks и "confirmed")),
     ", с предположительной отсылкой ", (к строке («Counted» от checks и "presumed")),
+    ", из черновика ", (к строке («Counted» от checks и "drafted")),
+    ", неверная помета ", (к строке («Counted» от checks и "false origin")),
+    ", только пояснение ", (к строке («Counted» от checks и "note only")),
     ", расходится ", (к строке («Counted» от checks и "differs")),
     ", понятия не сопоставлены ", (к строке («Counted» от checks и "unmatched")),
     ", не прочтено ", (к строке («Counted» от checks и "unread")),
@@ -172,7 +175,7 @@
   принимает paths: «Paths», claims: строка, words: строка
   возвращает «Продолжение»
   пусть markup равно («Read markup» от claims)
-  пусть checks равно («Crosschecks of» от markup и («Rows of» от words))
+  пусть checks равно («Crosschecks with origins» от markup и («Origins of» от claims) и («Rows of» от words))
   «Next judgment» от paths и checks и пустой список и («Crosscheck jobs» от checks)
 
 тотальная функция «After claims»

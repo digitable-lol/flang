@@ -83,7 +83,7 @@ $ flang run flang/ct/russian/meaning-parses.flang --function «Прочитат�
 План читает текст и пишет к нему разметку: суждения, цитаты и шаги вывода.
 
 ```
-$ flang run-script russian-meaning:markup -- flang/proof/probes/russian-meaning/whale.txt whale.claims
+$ flang run-script russian-meaning:markup -- flang/proof/probes/russian-meaning/sample.txt sample.claims
 ```
 
 Текст примера:
@@ -118,8 +118,8 @@ $ flang run-script russian-meaning:markup -- flang/proof/probes/russian-meaning/
 Такую разметку принимает проверка рассуждений:
 
 ```
-$ flang run-script argue -- flang/proof/probes/russian-meaning/whale.txt --claims whale.claims --out whale.md
-отчёт записан: whale.md; находок: 2; шагов: 3, следует: 1, не следует: 2, ядро не решило: 0
+$ flang run-script argue -- flang/proof/probes/russian-meaning/sample.txt --claims sample.claims --out sample.md
+отчёт записан: sample.md; находок: 2; шагов: 3, следует: 1, не следует: 2, ядро не решило: 0
 ```
 
 Шаг `[8] из [5], [6], [7]` не следует: из того, что все рыбы плавают, а Моби не

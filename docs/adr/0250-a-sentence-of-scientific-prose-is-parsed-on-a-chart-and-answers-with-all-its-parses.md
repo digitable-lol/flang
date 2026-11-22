@@ -92,7 +92,7 @@
 ## 5. Как проверить
 
 ```
-cd flang/proof/probes/russian-sentence && ../../../../bootstrap/flang io run.fscript --plan Binary
+bootstrap/flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary
 bootstrap/flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary --timeout 900000
 ```
 

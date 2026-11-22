@@ -251,8 +251,8 @@ On the twelve articles two sentences out of 1338 hit the limit.
   36 not. Run:
   `flang io flang/proof/probes/russian-grammar/run.fscript --plan Binary`.
 - **Checked by probes** of scientific prose: 108 sentences on 46 rows of
-  constructions, 71 must parse and 37 must not. Run from the directory
-  `flang/proof/probes/russian-sentence`: `flang io run.fscript --plan Binary`.
+  constructions, 71 must parse and 37 must not. Run:
+  `flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary`.
 - **Measured on twelve scientific articles**, 1338 units of text: a line of an
   article or a part of it up to a full stop. 574 are parsed whole, which is
   43 %. The earlier `«Разобрать»` parsed none of the same units. Another 356

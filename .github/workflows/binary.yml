@@ -2270,6 +2270,12 @@ jobs:
         env:
           LC_ALL: C.UTF-8
 
+      - name: Check the russian sentence parser on its probe sentences
+        # ADR-0250: 108 sentences, parsed in one process by flang/ct/russian/sentence.flang.
+        run: bootstrap/flang io flang/proof/probes/russian-sentence/run.fscript --plan Binary
+        env:
+          LC_ALL: C.UTF-8
+
       - name: Check the exact integer type is in the compiler
         run: bootstrap/flang io flang/proof/probes/exact-integer/run.fscript --plan Binary
 

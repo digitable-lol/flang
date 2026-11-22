@@ -281,7 +281,7 @@
   пример «Other readings of a judgment, in the order they are written»
     дано entry равно (запись «Thesis» с «number» равным "1" и «line» равным 2 и «formula» равным "дождь"
         и «quote» равным "Идёт дождь" и «quote line» равным 3
-        и «terms» равным [["вариант", "идёт(дождь)", "4", "помета"], ["происхождение", "грамматика", "5", "помета"]])
+        и «terms» равным [["вариант", "идёт(дождь)", "4", "помета"], ["источник", "грамматика", "5", "помета"]])
     дано word равно "вариант"
     ожидается ["идёт(дождь)"]
   (отобразить (отфильтровать (entry.«terms») где term → ((элемент 4 в term) равен "помета")
@@ -337,7 +337,8 @@
   пусть kind равно (свёртка [["понятие ", "notion"], ["имя ", "name"], ["[", "entry"], ["цитата:", "quote"],
       ["термин:", "term"], ["определение:", "definition"], ["вывод ", "step"], ["вывод[", "step"],
       ["величина ", "quantity"], ["неотрицательная величина ", "positive"], ["сила:", "strength"],
-      ["не суждение:", "aside"], ["вариант:", "note"], ["происхождение:", "note"], ["почему:", "note"]]
+      ["не суждение:", "aside"], ["вариант:", "note"], ["источник:", "note"], ["происхождение:", "note"],
+      ["почему:", "note"]]
       начиная с "unknown" как found и row →
       если (found равен "unknown") и притом (text начинается с (элемент 1 в row)) то (элемент 2 в row) иначе found)
   если (пусто text) или (text начинается с "#") то "blank" иначе kind
@@ -421,7 +422,7 @@
   пусть lost равно («Markup with» от held и (held.«entries») и (добавить («Line fault» от (line.«at»)
       и (соединить ["строка не понята: «", text,
       "». Ждали «понятие …», «имя …», «величина …», «[N] формула», «цитата: …», «сила: …», «термин: …»,",
-      " «определение: …», «вариант: …», «происхождение: …», «почему: …» или «вывод [N] из [M]»"]
+      " «определение: …», «вариант: …», «источник: …», «почему: …» или «вывод [N] из [M]»"]
       по "")) к (held.«faults»)) и пустой список)
   пусть label равно (соединить ["не суждение, строка ", (к строке (line.«at»))] по "")
   пусть aside равно (запись «Markup» с «notions» равным (held.«notions») и «names» равным (held.«names»)
@@ -693,10 +694,41 @@
   пример «A text is cut after full stops, question and exclamation marks»
     дано text равно "Идёт дождь. Что делать? Ждать!\nИтак, ждём."
     ожидается ["Идёт дождь", "Что делать", "Ждать", "Итак, ждём"]
+  пример «A full stop after an initial or a usual shortening does not end the sentence»
+    дано text равно "Роман Д. Дефо вышел в 1719 г. в Лондоне. Его читают."
+    ожидается ["Роман Д. Дефо вышел в 1719 г. в Лондоне", "Его читают"]
   пусть dotted равно (свёртка ["!", "?", "…"] начиная с («Flat» от text) как flat и mark →
       «Replaced in» от flat и mark и ".")
-  (отфильтровать (отобразить (разделить (соединить [dotted, " "] по "") по ". ") как piece →
-      «Without dots» от («Flat» от piece)) где piece → не (пусто piece))
+  пусть joined равно (свёртка (разделить (соединить [dotted, " "] по "") по ". ") начиная с (пустой список)
+      как made и piece → если «Ends short» от («Last piece» от made)
+      то (добавить (соединить [(«Last piece» от made), ". ", piece] по "") к («Without the last» от made))
+      иначе (добавить piece к made))
+  (отфильтровать (отобразить joined как piece → «Without dots» от («Flat» от piece)) где piece → не (пусто piece))
+
+тотальная функция «Last piece»
+  принимает pieces: список строки
+  возвращает строка
+  пример «Nothing stands last in an empty list»
+    дано pieces равно пустой список
+    ожидается ""
+  свёртка pieces начиная с "" как found и piece → piece
+
+тотальная функция «Ends short»
+  принимает piece: строка
+  возвращает признак
+  пример «An initial is not the end of a sentence»
+    дано piece равно "Роман Д"
+    ожидается да
+  пример «A usual shortening is not the end of a sentence»
+    дано piece равно "показано на (рис"
+    ожидается да
+  пример «A word is»
+    дано piece равно "Идёт дождь"
+    ожидается нет
+  пусть word равно («In small letters» от («Last piece» от («Pieces of»
+      от («Replaced in» от («Replaced in» от piece и "(" и " ") и "«" и " "))))
+  (((длина word) равен 1) или (["гг", "см", "рис", "табл", "им", "проф", "акад", "тыс", "млн", "млрд", "руб", "стр",
+      "ст", "вв", "ср", "напр", "т.е", "т.д", "т.п"] содержит word))
 
 тотальная функция «Without dots»
   принимает piece: строка
@@ -882,6 +914,41 @@
       то (entry.«number») иначе found)
   если пусто earliest то label иначе earliest
 
+тотальная функция «Label table»
+  принимает markup: «Markup»
+  возвращает список (список строки)
+  пример «Each label with the label of the first judgment of the same form; every form is read once»
+    дано markup равно (запись «Markup» с «notions» равным пустой список и «names» равным пустой список
+        и «entries» равным [(запись «Thesis» с «number» равным "5" и «line» равным 2 и «formula» равным "дождь"
+        и «quote» равным "Идёт дождь" и «quote line» равным 3 и «terms» равным пустой список),
+        (запись «Thesis» с «number» равным "7" и «line» равным 4 и «formula» равным " дождь " и «quote» равным "льёт"
+        и «quote line» равным 5 и «terms» равным пустой список)]
+        и «steps» равным пустой список и «faults» равным пустой список и «open» равным пустой список)
+    ожидается [["5", "5", "дождь"], ["7", "5", "дождь"]]
+  (свёртка (отобразить (markup.«entries») как entry → [(entry.«number»),
+      («Form text» от («Form of» от (entry.«formula»)))]) начиная с (пустой список) как rows и pair →
+      добавить [(элемент 1 в pair), (свёртка rows начиная с (элемент 1 в pair) как found и row →
+      если (found равен (элемент 1 в pair)) и притом ((элемент 3 в row) равен (элемент 2 в pair))
+      то (элемент 2 в row) иначе found), (элемент 2 в pair)] к rows)
+
+тотальная функция «Tabled label»
+  принимает table: список (список строки), label: строка
+  возвращает строка
+  пример «A label nobody carries stays»
+    дано table равно пустой список
+    дано label равно "7"
+    ожидается "7"
+  (свёртка table начиная с label как found и row →
+      если (found равен label) и притом ((элемент 1 в row) равен label) то (элемент 2 в row) иначе found)
+
+тотальная функция «Tabled step»
+  принимает table: список (список строки), step: «Inference»
+  возвращает «Inference»
+  (запись «Inference» с «line» равным (step.«line»)
+      и «conclusion» равным («Tabled label» от table и (step.«conclusion»))
+      и «premises» равным (отобразить (step.«premises») как label → «Tabled label» от table и label)
+      и «kind» равным (step.«kind»))
+
 тотальная функция «Canonical step»
   принимает markup: «Markup», step: «Inference»
   возвращает «Inference»
@@ -893,4 +960,5 @@
 тотальная функция «Canonical steps»
   принимает markup: «Markup»
   возвращает список «Inference»
-  отобразить (markup.«steps») как step → «Canonical step» от markup и step
+  пусть table равно («Label table» от markup)
+  отобразить (markup.«steps») как step → «Tabled step» от table и step

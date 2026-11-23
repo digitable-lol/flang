@@ -305,9 +305,12 @@
     count: function (n, max) { return n + ' of ' + max + ' characters'; },
     tooLong: function (max) { return 'The playground takes up to ' + max + ' characters.'; },
     refused: 'The text was not checked',
-    state: { read: 'read', partly: 'partly read', unread: 'not read', error: 'not read' },
-    coverage: function (c) { return 'Read: ' + c.прочитано + ' of ' + c.всего + ' sentences' + (c.частично ? ', partly: ' + c.частично : '') + '; not read: ' + (c.нет + c.сбой) + '.'; },
-    findings: function (n) { return 'Findings: ' + n; }, noFindings: 'No findings in what was read', nothingRead: 'The grammar read nothing in this text',
+    state: { parsed: 'parsed', nominal: 'nominal sentence, not a judgment', unparsed: 'not parsed', long: 'too long for the playground', error: 'not parsed' },
+    grammarWhy: function (g) { return g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
+    parses: function (n) { return n === 1 ? 'one parse' : n + ' parses'; }, roles: 'roles: ',
+    noForm: 'no logical form: ',
+    coverage: function (c) { return 'The grammar parsed ' + (c.разобрано + c.назывных) + ' of ' + c.всего + ' sentences' + (c.назывных ? ' (nominal: ' + c.назывных + ')' : '') + (c.длинных ? '; too long: ' + c.длинных : '') + '. A logical form, which the kernel judges, was built for ' + (c.прочитано + c.частично) + '.'; },
+    findings: function (n) { return 'Findings: ' + n; }, noFindings: 'No findings in what was read', nothingRead: 'No sentence got a logical form',
     steps: function (a) { return 'Steps of reasoning: ' + a.шагов + '; follows: ' + a.следует + ', does not follow: ' + a.неСледует + ', not decided: ' + a.неРешено + '.'; },
     cut: function (n) { return ' The kernel was not asked ' + n + ' more questions: the playground limit.'; },
     sentences: 'Sentences', form: 'logical form', why: 'why', report: 'Report', draft: 'Draft markup: what the grammar wrote',
@@ -322,9 +325,12 @@
     count: function (n, max) { return n + ' из ' + max + ' знаков'; },
     tooLong: function (max) { return 'Песочница берёт до ' + max + ' знаков.'; },
     refused: 'Текст не проверен',
-    state: { read: 'прочитано', partly: 'прочитано частично', unread: 'не прочитано', error: 'не прочитано' },
-    coverage: function (c) { return 'Прочитано предложений: ' + c.прочитано + ' из ' + c.всего + (c.частично ? ', частично: ' + c.частично : '') + '; не прочитано: ' + (c.нет + c.сбой) + '.'; },
-    findings: function (n) { return 'Находок: ' + n; }, noFindings: 'В прочитанном находок нет', nothingRead: 'Грамматика не прочла в тексте ни одного предложения',
+    state: { parsed: 'разобрано', nominal: 'назывное предложение, не суждение', unparsed: 'не разобрано', long: 'слишком длинное для песочницы', error: 'не разобрано' },
+    grammarWhy: function (g) { return g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
+    parses: function (n) { return 'разборов: ' + n; }, roles: 'роли: ',
+    noForm: 'логическая форма не построена: ',
+    coverage: function (c) { return 'Грамматика разобрала предложений: ' + (c.разобрано + c.назывных) + ' из ' + c.всего + (c.назывных ? ' (назывных: ' + c.назывных + ')' : '') + (c.длинных ? '; слишком длинных: ' + c.длинных : '') + '. Логическая форма, которую судит ядро, построена у ' + (c.прочитано + c.частично) + '.'; },
+    findings: function (n) { return 'Находок: ' + n; }, noFindings: 'В прочитанном находок нет', nothingRead: 'Ни у одного предложения нет логической формы',
     steps: function (a) { return 'Шагов рассуждения: ' + a.шагов + '; следует: ' + a.следует + ', не следует: ' + a.неСледует + ', ядро не решило: ' + a.неРешено + '.'; },
     cut: function (n) { return ' Ещё ' + n + ' вопросов ядру не задано: предел песочницы.'; },
     sentences: 'Предложения', form: 'логическая форма', why: 'почему', report: 'Отчёт', draft: 'Черновик разметки: что записала грамматика',
@@ -806,10 +812,14 @@
     if (!a) { v.lead = String(answer.отказ || answer.вывод || '').replace(/^FLANG_PLAYGROUND /, ''); return v; }
     var c = a.покрытие;
     v.rows = (a.предложения || []).map(function (p, j) {
-      return { n: j + 1, text: p.текст, state: p.состояние, label: P.state[p.состояние] || p.состояние, forms: p.формы || [], reasons: p.причины || [], kinds: p.виды || [] };
+      var g = p.грамматика || { состояние: 'error', разборов: 0, причина: '', слово: '', роли: [] };
+      var notes = g.состояние === 'parsed' ? [P.parses(g.разборов) + ((g.роли || []).length ? '; ' + P.roles + g.роли.join(', ') : '')]
+        : g.состояние === 'unparsed' || g.состояние === 'error' ? [P.grammarWhy(g)] : [];
+      return { n: j + 1, text: p.текст, state: g.состояние, label: P.state[g.состояние] || g.состояние, notes: notes,
+        form: p.состояние, forms: p.формы || [], reasons: p.состояние === 'read' ? [] : p.причины || [], kinds: p.виды || [] };
     });
     v.coverage = P.coverage(c);
-    v.numbers = { sentences: c.всего, read: c.прочитано, partly: c.частично, unread: c.нет, error: c.сбой, findings: a.находок, steps: a.шагов, jobs: a.заданий, asked: a.решено };
+    v.numbers = { sentences: c.всего, parsed: c.разобрано + c.назывных, nominal: c.назывных, read: c.прочитано, partly: c.частично, unread: c.нет, error: c.сбой, findings: a.находок, steps: a.шагов, jobs: a.заданий, asked: a.решено };
     var read = c.прочитано + c.частично;
     v.state = (a.ошибкиРазметки || []).length ? 'error' : a.находок > 0 ? 'violated' : read === 0 ? 'unproved' : 'proved';
     v.title = v.state === 'error' ? P.refused : a.находок > 0 ? P.findings(a.находок) : read === 0 ? P.nothingRead : P.noFindings;
@@ -1950,14 +1960,16 @@
       var li = el('li', 'pg-prose-sentence pg-prose-' + r.state);
       li.setAttribute('data-state', r.state);
       var head = el('p', 'pg-prose-line');
-      var tone = { read: 'proved', partly: 'examples', unread: 'unproved', error: 'error' }[r.state] || 'unknown';
+      var tone = { parsed: 'proved', nominal: 'examples', unparsed: 'unproved', long: 'unknown', error: 'error' }[r.state] || 'unknown';
       head.appendChild(el('span', 'pg-mark pg-' + tone, r.label));
       head.appendChild(document.createTextNode(' ' + r.text));
       li.appendChild(head);
+      (r.notes || []).forEach(function (note) { li.appendChild(el('p', 'pg-prose-why', note)); });
       r.forms.forEach(function (f) { var fp = el('p', 'pg-prose-form'); fp.appendChild(el('code', null, f)); li.appendChild(fp); });
       r.reasons.forEach(function (why, j) {
         var wp = el('p', 'pg-prose-why'), kind = r.kinds[j] || P.why;
-        if (why.indexOf(kind) < 0) wp.appendChild(el('strong', null, kind + ': '));
+        wp.appendChild(el('strong', null, P.noForm));
+        if (why.indexOf(kind) < 0) wp.appendChild(document.createTextNode(kind + ': '));
         wp.appendChild(document.createTextNode(why));
         li.appendChild(wp);
       });

@@ -1,10 +1,13 @@
 program	surface	code	word
 proved-postcondition.flang	check	0	доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 proved-postcondition.flang	check --proof	0	постусловие «сумма не отрицательна» функции «Сумма» — доказано индукцией
+proved-postcondition.flang	check --strict	0	не доказано 0 (постусловий и утверждений 1); замечаний нет
 tested-postcondition.flang	check	0	доказано 0, проверено только на тестах 1, не доказано 0 (постусловий и утверждений 1); замечаний нет
 tested-postcondition.flang	check --proof	3	проверено только на тестах (примеров 3)
+tested-postcondition.flang	check --strict	3	проверено только на тестах 1, не доказано 0
 unproved-postcondition.flang	check	0	не доказано: 2 — подробности: flang check
 unproved-postcondition.flang	check --proof	3	доказано не всё
+unproved-postcondition.flang	check --strict	3	не доказано: 2 — подробности: flang check
 false-closed-statement.flang	check	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
 false-closed-statement.flang	check --proof	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
 true-closed-statement.flang	check	0	замечаний нет

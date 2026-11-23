@@ -103,7 +103,7 @@ Every flag also has a Cyrillic spelling, given in brackets.
 | --- | --- |
 | `--proof` | prints the proof report: for each function, what proves its termination; for each postcondition, whether it is proved, checked only on examples, or not proved. A postcondition with neither a proof nor examples gives exit code `3` |
 | `--json` | with `--proof`: the same report as JSON |
-| `--strict` (`--строго`) | with `--proof`: exit code `0` only when every guarantee is proved. For CI. See below |
+| `--strict` (`--строго`) | with `--proof`: exit code `0` only when every guarantee is proved. For CI. See below. Without `--proof`: exit code `3` when something is not proved or only tested and nothing is false; plain `check` gives `0` there. Not allowed together with `--fast` |
 | `--record <file>` (`--записать`) | with `--proof`: write the proof itself to a file, so that the independent checker `flang/proof/checker/checker.c` can re-check it |
 | `--fast` (`--быстро`) | only names, types, exhaustiveness of pattern matching and termination. The prover and the unit tests do not run, the output says so, and the exit code is `4`. Not allowed together with `--proof` |
 | `--step-limit N` (`--предел-шагов`) | raise the step limit for this run. Needed for `--proof --json` on very large files. `check` has no `--max-steps`: that is a bad call, exit `2` |
@@ -115,7 +115,7 @@ Every flag also has a Cyrillic spelling, given in brackets.
 | `0` | no remarks |
 | `1` | the program did not pass the check; this includes a counterexample found for a postcondition (`FLANG_EXAMPLE`) |
 | `2` | the program has processes, supervision or runs: the binary checks them only in part and names what it did not check. Also a bad call |
-| `3` | with `--proof`: a guarantee is not proved — checked only on examples (`сетка N`), declared without a proof, or proved under an unproved premise; with `--strict`, also a file with no guarantees at all |
+| `3` | with `--strict` and no `--proof`: something is not proved, nothing is false. With `--proof`: a guarantee is not proved — checked only on examples (`сетка N`), declared without a proof, or proved under an unproved premise; with `--strict`, also a file with no guarantees at all |
 | `4` | with `--fast`: some checks did not run |
 | `5` | the run stopped at the memory limit |
 

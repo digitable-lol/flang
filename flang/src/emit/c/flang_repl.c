@@ -526,6 +526,8 @@ static const char HELP_CHECK_2[] =
     "  --independent      вместе с --proof: код 0, только если независимая\n"
     "                     проверка повторила каждое доказанное; иначе код 3.\n"
     "                     Кириллицей: --независимо\n"
+    "  --strict без --proof: код 3, если недоказанное есть, а\n"
+    "                     ложного нет (без ключа код 0)\n"
     "  --explain          подробный вид. У отказа доказательства — перечень\n"
     "                     правил, которые пробовало ядро; у --proof — полный\n"
     "                     отчёт вместо короткого; совпадения имён с файлами\n"
@@ -10777,7 +10779,7 @@ static void check_say_verified(const char *path, const check_tally *tally) {
              path);
 }
 
-static int check_file(const char *path, bool fast) {
+static int check_file(const char *path, bool fast, bool strict) {
   repl_bads bads;
   repl_strings paths;
   repl_strings texts;
@@ -10798,6 +10800,9 @@ static int check_file(const char *path, bool fast) {
   bool has_program = false;
   bool ok = false;
   bool unjudged = false;
+  /* `check --strict` answers 3 when something is left without a proof (not proved or only
+     tested) and nothing is false; plain `check` answers 0 there (ADR-0243). */
+  bool short_of_proof = false;
 
   base = getcwd(buffer, sizeof(buffer)) == NULL ? repl_say(".") : repl_say(buffer);
   full = repl_resolve(base, path);
@@ -11168,6 +11173,7 @@ static int check_file(const char *path, bool fast) {
     check_tally tally;
     check_tally_read(program, own, &tally);
     check_say_verified(path, &tally);
+    short_of_proof = strict && tally.known && tally.unproved + tally.tested > 0;
   } else if (ok) {
     msg_printf(stdout, "check.partly", "%s: проверено НЕ ДО КОНЦА — разбор, типы, завершаемость, ядро и примеры прошли\n",
                path);
@@ -11183,7 +11189,7 @@ static int check_file(const char *path, bool fast) {
   strings_free(&proven);
   free(text);
   free(full);
-  return ok ? (unjudged ? 2 : (fast ? 4 : 0)) : 1;
+  return ok ? (unjudged ? 2 : (fast ? 4 : (short_of_proof ? 3 : 0))) : 1;
 }
 
 /* ═════════ приговор ведомости доезжает до кода выхода (задача 9621) ═══════ */
@@ -17005,13 +17011,14 @@ static int check_command(int argc, char **argv) {
           stderr);
     return 2;
   }
-  repl_warnings_fatal = strict;
-  if (strict && !proof) {
-    fputs("flang check --строго осмыслен только рядом с «--proof»: без отчёта о доказательствах судить не о чем\n",
+  repl_warnings_fatal = strict && proof;
+  if (strict && fast) {
+    fputs("flang check --строго и --быстро вместе не имеют смысла: быстрая проверка не спрашивает ядро, "
+          "и сказать, доказано ли всё, нечем\n",
           stderr);
     return 2;
   }
-  return proof ? proof_file(path, json, record, strict) : check_file(path, fast);
+  return proof ? proof_file(path, json, record, strict) : check_file(path, fast, strict);
 }
 
 /* ═══════════════════════════════ flang ast ═══════════════════════════════ */

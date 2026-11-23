@@ -325,7 +325,11 @@ jobs:
         run: |
           command -v gawk >/dev/null || sudo apt-get install -y gawk
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:dictionary
-          test -s docs/site/out/playground/dictionary/LICENSE.txt
+
+      # The license note of the published dictionary must name the export it
+      # was built from: version and revision, as in its XML header.
+      - name: The dictionary license names its source revision
+        run: grep -F 'версия 0.92, ревизия 417258' docs/site/out/playground/dictionary/LICENSE.txt
 
       - name: Probe the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe

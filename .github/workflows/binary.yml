@@ -2634,7 +2634,6 @@ jobs:
     timeout-minutes: 45
     env:
       LC_ALL: C.UTF-8
-      FLANG_TMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check verdict cache
@@ -2652,6 +2651,8 @@ jobs:
         run: make -C bootstrap -j"$(nproc)" CFLAGS="$FLANG_CFLAGS"
       - name: Check the one command from an article to its report
         run: bootstrap/flang run-script argue:article:probe
+        env:
+          FLANG_TMP: ${{ runner.temp }}
 
   argue-crosscheck-probes:
     name: argue-crosscheck-probes

@@ -1,0 +1,276 @@
+модуль «Argue page»
+  использует «Lists» только «Соединить списки»
+  использует «Russian meaning parses» из "../../ct/russian/meaning-parses.flang"
+  использует «Argue logic» из "logic.flang"
+  использует «Argue claims» из "claims.flang"
+  использует «Argue judge» из "judge.flang"
+  использует «Argue report» из "report.flang"
+
+примечание "Проверка рассуждения в свободном тексте без файлов и процессов: строка на входе, запись на выходе.
+Её печатает в JavaScript сборка песочницы. Порядок такой: «Reading for page» читает текст грамматикой и
+пишет черновик разметки; «Judgment for page» по черновику даёт задания ядру; страница отдаёт каждое
+задание ядру и собирает доказанные; «Report for page» пишет отчёт. Языковая модель здесь не участвует:
+что грамматика не прочла, то остаётся непрочитанным, и у каждого такого предложения названа причина."
+
+примечание "Со смысловым разбором модуль связан функциями «Draft reading», «Part of judgment»,
+«Rows the grammar lacks» и «Reading for page». Когда разбор сменится, правятся только они.
+Строки словаря добавляются только для слов, которых грамматика не знает сама: свои слова грамматики
+(кванторы, связки, союзы) сохраняют свои чтения, иначе словарь добавляет им чтения, с которыми
+предложение не сводится."
+
+объект «Page part»
+  «number»: число
+  «quote»: строка
+  «forms»: список строки
+  «reasons»: список строки
+
+объект «Page sentence»
+  «number»: число
+  «text»: строка
+  «status»: строка
+  «forms»: список строки
+  «reasons»: список строки
+  «kinds»: список строки
+
+объект «Page reading»
+  «claims»: строка
+  «sentences»: список «Page sentence»
+
+объект «Page judgment»
+  «faults»: список строки
+  «jobs»: список «Job»
+
+объект «Page report»
+  «text»: строка
+  «findings»: число
+  «steps»: число
+  «follows»: число
+  «fails»: число
+  «undecided»: число
+
+объект «Page walk»
+  «done»: список «Page sentence»
+  «rest»: список «Page part»
+
+тотальная функция «Reason kinds»
+  возвращает список (список строки)
+  пример «A short name for every reason the grammar gives»
+    ожидается [["неизвестное слово", "неизвестное слово"], ["много чтений", "много чтений"], ["отсылка", "отсылка"],
+      ["несколько чтений", "несколько чтений"], ["число:", "число"]]
+  [["неизвестное слово", "неизвестное слово"], ["много чтений", "много чтений"], ["отсылка", "отсылка"],
+    ["несколько чтений", "несколько чтений"], ["число:", "число"]]
+
+тотальная функция «Reason kind»
+  принимает reason: строка
+  возвращает строка
+  пример «An unknown word is named as such»
+    дано reason равно "неизвестное слово «хвалят»"
+    ожидается "неизвестное слово"
+  пример «Too many readings of the words»
+    дано reason равно "неизвестная конструкция: слишком много чтений слов"
+    ожидается "много чтений"
+  пример «A pronoun that points elsewhere»
+    дано reason равно "отсылка: «тот»"
+    ожидается "отсылка"
+  пример «Several forms and no choice between them»
+    дано reason равно "несколько чтений, выбор не сделан"
+    ожидается "несколько чтений"
+  пример «Anything else is a construction the grammar does not know»
+    дано reason равно "неизвестная конструкция: типы слов не сводятся к s"
+    ожидается "конструкция не разобрана"
+  пусть found равно (отфильтровать («Reason kinds») где pair → reason содержит (элемент 1 в pair))
+  разбор found
+    случай пусто
+      то "конструкция не разобрана"
+    случай голова и хвост
+      то элемент 2 в голова
+
+тотальная функция «Part reasons»
+  принимает part: «Page part»
+  возвращает список строки
+  пример «A part with several forms says that no choice was made»
+    дано part равно (запись «Page part» с «number» равным 1 и «quote» равным "a" и «forms» равным ["p", "q"]
+      и «reasons» равным пустой список)
+    ожидается ["несколько чтений, выбор не сделан"]
+  пусть count равно (длина (part.«forms»))
+  если count равен 1
+    то пустой список
+    иначе (если count больше 1 то ["несколько чтений, выбор не сделан"] иначе (part.«reasons»))
+
+тотальная функция «Part forms»
+  принимает part: «Page part»
+  возвращает список строки
+  пример «A part with one form gives it with its number»
+    дано part равно (запись «Page part» с «number» равным 3 и «quote» равным "a" и «forms» равным ["p(x)"]
+      и «reasons» равным пустой список)
+    ожидается ["[3] p(x)"]
+  если (длина (part.«forms»)) равен 1
+    то [(соединить ["[", (к строке (part.«number»)), "] ", (элемент 1 в (part.«forms»))] по "")]
+    иначе пустой список
+
+тотальная функция «Status of parts»
+  принимает parts: список «Page part»
+  возвращает строка
+  пример «No parts at all — the sentence is not read»
+    дано parts равно пустой список
+    ожидается "unread"
+  пусть read равно (длина (отфильтровать parts где part → (длина (part.«forms»)) равен 1))
+  если read равен 0
+    то "unread"
+    иначе (если read равен (длина parts) то "read" иначе "partly")
+
+тотальная функция «Sentence of parts»
+  принимает number: число, text: строка, parts: список «Page part»
+  возвращает «Page sentence»
+  пусть reasons равно (свёртка parts начиная с пустой список как found и part →
+    «Соединить списки» от found и («Part reasons» от part))
+  пусть shown равно (если пусто parts то ["грамматика не выделила в предложении ни одного суждения"] иначе reasons)
+  (запись «Page sentence» с «number» равным number и «text» равным text и «status» равным («Status of parts» от parts)
+    и «forms» равным (свёртка parts начиная с пустой список как found и part →
+    «Соединить списки» от found и («Part forms» от part))
+    и «reasons» равным shown
+    и «kinds» равным (отобразить shown как reason → «Reason kind» от reason))
+
+тотальная функция «Parts in front»
+  принимает sentence: строка, parts: список «Page part»
+  возвращает список «Page part»
+  пример «Parts are taken while their quotes stand in the sentence»
+    дано sentence равно "Идёт дождь, значит, мокро"
+    дано parts равно [(запись «Page part» с «number» равным 1 и «quote» равным "Идёт дождь"
+      и «forms» равным ["дождь"] и «reasons» равным пустой список), (запись «Page part» с «number» равным 2
+      и «quote» равным "Светит солнце" и «forms» равным пустой список и «reasons» равным пустой список)]
+    ожидается [(запись «Page part» с «number» равным 1 и «quote» равным "Идёт дождь"
+      и «forms» равным ["дождь"] и «reasons» равным пустой список)]
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если «Touches» от sentence и (голова.«quote»)
+        то приписать голова к («Parts in front» от sentence и хвост)
+        иначе пустой список)
+
+тотальная функция «After parts»
+  принимает parts: список «Page part», count: число
+  возвращает список «Page part»
+  разбор parts
+    случай пусто
+      то пустой список
+    случай голова и хвост
+      то (если count больше 0 то «After parts» от хвост и (count минус 1) иначе parts)
+
+тотальная функция «Folded sentence»
+  принимает walk: «Page walk», sentence: строка
+  возвращает «Page walk»
+  пусть parts равно («Parts in front» от sentence и (walk.«rest»))
+  пусть number равно ((длина (walk.«done»)) плюс 1)
+  (запись «Page walk» с «done» равным (добавить («Sentence of parts» от number и sentence и parts) к (walk.«done»))
+    и «rest» равным («After parts» от (walk.«rest») и (длина parts)))
+
+тотальная функция «Sentences for page»
+  принимает text: строка
+  возвращает список строки
+  пример «The page counts sentences the same way the report does»
+    дано text равно "Идёт дождь. Значит, мокро!"
+    ожидается ["Идёт дождь", "Значит, мокро"]
+  «Sentences of text» от text
+
+тотальная функция «Own forms»
+  возвращает список строки
+  отобразить («Строки словаря») как row → элемент 1 в (разделить row по "|")
+
+тотальная функция «Rows the grammar lacks»
+  принимает extra: список строки
+  возвращает список строки
+  пример «A word of the grammar keeps its own readings, a new word gets the dictionary ones»
+    дано extra равно ["все|весь|местоимение|", "дышат|дышать|глагол|мн 3", "хвалят|хвалить|перех|мн 3"]
+    ожидается ["хвалят|хвалить|перех|мн 3"]
+  пусть own равно («Own forms»)
+  отфильтровать extra где row → не (own содержит (элемент 1 в (разделить row по "|")))
+
+тотальная функция «Draft reading»
+  принимает text: строка, extra: список строки
+  возвращает «Прочтение текста»
+  «Прочтение текста со словарём» от text и («Rows the grammar lacks» от extra)
+
+тотальная функция «Part of judgment»
+  принимает judgment: «Суждение текста»
+  возвращает «Page part»
+  (запись «Page part» с «number» равным judgment.номер и «quote» равным judgment.цитата
+    и «forms» равным judgment.формы и «reasons» равным judgment.причины)
+
+тотальная функция «Sentences of parts»
+  принимает text: строка, parts: список «Page part»
+  возвращает список «Page sentence»
+  пример «A read part gives a read sentence, a sentence without parts says why»
+    дано text равно "Все киты дышат. Ура."
+    дано parts равно [(запись «Page part» с «number» равным 1 и «quote» равным "Все киты дышат"
+      и «forms» равным ["все x: если кит(x), то дышать(x)"] и «reasons» равным пустой список)]
+    ожидается [(запись «Page sentence» с «number» равным 1 и «text» равным "Все киты дышат" и «status» равным "read"
+      и «forms» равным ["[1] все x: если кит(x), то дышать(x)"] и «reasons» равным пустой список
+      и «kinds» равным пустой список), (запись «Page sentence» с «number» равным 2 и «text» равным "Ура"
+      и «status» равным "unread" и «forms» равным пустой список
+      и «reasons» равным ["грамматика не выделила в предложении ни одного суждения"]
+      и «kinds» равным ["конструкция не разобрана"])]
+  пусть start равно (запись «Page walk» с «done» равным пустой список и «rest» равным parts)
+  пусть walk равно (свёртка («Sentences for page» от text) начиная с start как found и sentence →
+    «Folded sentence» от found и sentence)
+  walk.«done»
+
+тотальная функция «Reading for page»
+  принимает text: строка, extra: список строки
+  возвращает «Page reading»
+  пусть reading равно («Draft reading» от text и extra)
+  пусть parts равно (отобразить reading.суждения как judgment → «Part of judgment» от judgment)
+  (запись «Page reading» с «claims» равным («Разметка прочтения» от reading)
+    и «sentences» равным («Sentences of parts» от text и parts))
+
+тотальная функция «Judgment for page»
+  принимает text: строка, claims: строка
+  возвращает «Page judgment»
+  пример «A draft without steps and pairs gives the kernel nothing to do»
+    дано text равно "Идёт дождь."
+    дано claims равно "понятие дождь: идёт дождь\n\n[1] дождь\n    цитата: Идёт дождь"
+    ожидается (запись «Page judgment» с «faults» равным пустой список и «jobs» равным пустой список)
+  пусть markup равно («Read markup» от claims)
+  пусть faults равно («Соединить списки» от («Markup faults» от markup) и («Quote faults» от markup и text))
+  если пусто faults
+    то (запись «Page judgment» с «faults» равным пустой список
+      и «jobs» равным («Jobs of» от («Verdicts of» от markup) и («Clashes of» от markup)))
+    иначе (запись «Page judgment» с «faults» равным faults и «jobs» равным пустой список)
+
+тотальная функция «Answer of»
+  принимает line: строка
+  возвращает «Kernel answer»
+  пример «A proven job comes as its role, a tab and its id»
+    дано line равно "follows\tшаг 3"
+    ожидается (запись «Kernel answer» с «id» равным "шаг 3" и «role» равным "follows" и «proven» равным да)
+  пусть role равно (элемент 1 в (разделить line по "\t"))
+  (запись «Kernel answer» с «id» равным (подстрока line с ((длина role) плюс 2) по (длина line))
+    и «role» равным role и «proven» равным да)
+
+тотальная функция «Proven by kernel»
+  принимает code: число, output: строка
+  возвращает признак
+  пример «The kernel proved the step and said so»
+    дано code равно 0
+    дано output равно "/step.flang: ДОКАЗАНО — утверждений 1: доказано 1"
+    ожидается да
+  пример «A refusal of the kernel is not a proof»
+    дано code равно 3
+    дано output равно "/step.flang: ДОКАЗАНО — утверждений 1: доказано 1"
+    ожидается нет
+  (code равен 0) и притом («Kernel proved» от output)
+
+тотальная функция «Report for page»
+  принимает text: строка, claims: строка, proven: список строки
+  возвращает «Page report»
+  пусть markup равно («Read markup» от claims)
+  пусть verdicts равно («Verdicts of» от markup)
+  пусть outcomes равно (отобразить proven как line → «Answer of» от line)
+  пусть judged равно (запись «Judged» с «markup» равным markup и «verdicts» равным verdicts
+    и «clashes» равным («Clashes of» от markup) и «outcomes» равным outcomes)
+  (запись «Page report» с «text» равным («Report of» от "свой текст" и text и judged)
+    и «findings» равным («Finding count» от judged) и «steps» равным (длина verdicts)
+    и «follows» равным («Counted» от verdicts и outcomes и "follows")
+    и «fails» равным («Counted» от verdicts и outcomes и "fails")
+    и «undecided» равным («Counted» от verdicts и outcomes и "undecided"))

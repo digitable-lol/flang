@@ -23,7 +23,7 @@ button too.
 | Code generation | the same program in C, Go, Rust and seven more languages | `#setup=emit` |
 | Reasoning in Russian | whether the conclusion follows from the premises | `#setup=reasoning` |
 | Formula | a formula with ∀ and ∃, its flang translation and the check | `#setup=formula` |
-| Your own text | what flang read in a text and where the reasoning has gaps | `#setup=prose` |
+| Your own text | what flang read in a text and where the reasoning goes wrong | `#setup=prose` |
 | C → flang | a C function translated and the result checked | `#setup=c` |
 
 Append a setup address to the page address and send it as a link. The "Share" button

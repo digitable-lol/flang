@@ -96,10 +96,13 @@ does not follow from its premises, and two sentences that contradict each other.
 
 The answer has three parts:
 
-- the sentences, each marked "read" or "not read"; a read one shows its logical form, an
-  unread one shows the reason: an unknown word, too many readings (the words combine into
-  a sentence in too many ways), a reference (a pronoun points to another sentence), or a
-  construction the grammar does not know;
+- the sentences with the grammar's mark: "parsed" (with the number of parses), "nominal
+  sentence, not a judgment", "not parsed" with the reason and the word where the parse
+  stopped, or "too long for the playground" (more than 30 words). Under the mark is the
+  logical form of the sentence if one was built, or the reason why not: an unknown word,
+  too many readings (the words combine into a sentence in too many ways), a reference (a
+  pronoun points to another sentence), or a construction the grammar does not know. The
+  kernel judges only sentences with a logical form;
 - the report: findings (does not follow, contradiction, circular reasoning, a term that
   changes its meaning, a conclusion without premises) and the kernel's verdict on every
   step;

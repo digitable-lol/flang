@@ -23,6 +23,7 @@ button too.
 | Code generation | the same program in C, Go, Rust and seven more languages | `#setup=emit` |
 | Reasoning in Russian | whether the conclusion follows from the premises | `#setup=reasoning` |
 | Formula | a formula with ∀ and ∃, its flang translation and the check | `#setup=formula` |
+| Your own text | what flang read in a text and where the reasoning has gaps | `#setup=prose` |
 | C → flang | a C function translated and the result checked | `#setup=c` |
 
 Append a setup address to the page address and send it as a link. The "Share" button
@@ -85,6 +86,35 @@ files are copied into the result as they are, so only their names are listed.
 **Translation** (the "C → flang" setup). A C function becomes a flang program, and the
 proof kernel checks it right away. `int` overflow and division by zero turn into
 conditions that have to be proved.
+
+**Reasoning** (the "Your own text" setup). Paste a paragraph or a short article in
+Russian here, up to 6000 characters and 40 sentences. The "Check the reasoning" button
+reads the text with the flang grammar and dictionary, writes the logical form of every
+sentence it read, and gives every step of the reasoning to the proof kernel. The
+"Example" button puts a short text with two mistakes into the editor: a conclusion that
+does not follow from its premises, and two sentences that contradict each other.
+
+The answer has three parts:
+
+- the sentences, each marked "read" or "not read"; a read one shows its logical form, an
+  unread one shows the reason: an unknown word, too many readings (the words combine into
+  a sentence in too many ways), a reference (a pronoun points to another sentence), or a
+  construction the grammar does not know;
+- the report: findings (does not follow, contradiction, circular reasoning, a term that
+  changes its meaning, a conclusion without premises) and the kernel's verdict on every
+  step;
+- the draft markup: the same judgments in the format the `argue` command reads.
+
+The playground calls no language model. What the grammar did not read stays unread, so
+on free text usually only some of the sentences are read. A whole article, with markup
+written by a language model, is checked by the command `flang run-script argue` in a
+clone of the repository; the page [Check the reasoning in a text](argue.html) explains
+how the check works.
+
+Word features come from the OpenCorpora dictionary. Its data sits on the site next to
+the playground and is distributed under CC BY-SA 3.0; the flang code is under its own
+license. The playground downloads only the dictionary files that the words of the text
+need. The text itself is not sent anywhere.
 
 The "Terminal" tab of every setup holds the compiler output as the command prints it in
 a terminal.

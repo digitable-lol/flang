@@ -16,12 +16,12 @@
 | `starter` | стартовая программа: ключ из таблицы `STARTERS`; либо `text` — свой текст |
 | `lang` | язык редактора слева, если это не flang (сейчас только `c`) |
 | `views` | вкладки справа; первая открыта сразу |
-| `enter` | что делает главная кнопка и Ctrl+Enter: `run`, `check`, `test`, `emit`, `translate` |
+| `enter` | что делает главная кнопка и Ctrl+Enter: `run`, `check`, `test`, `emit`, `translate`, `argue` |
 | `buttons` | какие кнопки видны, главная первой |
 | `call` | показать поля «функция» и «аргументы» |
 | `labels` | своё название вкладки в этом сетапе |
 
-Сейчас сетапов семь: `first`, `proof`, `tests`, `emit`, `reasoning`, `formula`, `c`.
+Сейчас сетапов восемь: `first`, `proof`, `tests`, `emit`, `reasoning`, `formula`, `prose`, `c`.
 
 ## Адрес
 
@@ -35,7 +35,7 @@
 
 | поле | значение |
 |---|---|
-| `setup` | сетап: `first`, `proof`, `tests`, `emit`, `reasoning`, `formula`, `c` |
+| `setup` | сетап: `first`, `proof`, `tests`, `emit`, `reasoning`, `formula`, `prose`, `c` |
 | `code` | текст программы: UTF-8 → DEFLATE без заголовка (`deflate-raw`) → base64url без `=` |
 | `text` | текст программы: UTF-8 → base64url без `=`; его пишет страница, когда в браузере нет `CompressionStream` |
 | `example` | вместо текста — стартовая программа по имени: `hello`, `proof`, `monad`, `loop`, `class`, `emit-c` |
@@ -100,7 +100,7 @@
 
 | рецепт | что проверяет |
 |---|---|
-| `playground:page` | чистую часть `playground.js` на настоящих ответах компилятора |
+| `playground:page` | чистую часть `playground.js` на настоящих ответах компилятора и проверку своего текста |
 | `playground:starters` | каждую стартовую программу через три кнопки: «Проверить», «Тесты», «Запустить» |
 | `playground:site` | каждый блок-программу страниц сайта и тройки «программа, команда, вывод» |
 | `playground:probe` | обвязку: рассуждение, формулу, генерацию кода, перевод с C |
@@ -117,6 +117,12 @@
 `использует «Lists»`; модуль, названный по-русски; каждый сетап — по своей ссылке и через
 свою главную кнопку; ссылки прежнего формата. Проверка краснеет на исключении, пустом
 заголовке и заголовке, который остался словом ожидания («проверяю…»).
+
+Свой текст (`prose`) проверяется там же: пример сетапа обязан прочитаться весь, кроме
+одного предложения, и дать находки «Вывод не следует» и «Противоречие»; у каждого
+непрочитанного предложения должна быть причина, у прочитанного — логическая форма.
+Пустой текст, текст длиннее 6000 знаков и текст больше чем из 40 предложений получают
+отказ, а не исключение.
 
 Чего эта проверка не видит: вёрстку, клавиши редактора и хранилище браузера. Их
 проверяют руками в браузере.
@@ -147,6 +153,9 @@
 | переводчик рассуждений | `playground/reasoning.js` | `bootstrap/flang emit --target js` |
 | переводчик формул | `playground/formula.js` | `flang/foreign/formula/browser.fscript`, `bootstrap/flang emit --target js` |
 | переводчик C | `playground/c.js` | `flang/foreign/c/browser.fscript`, `bootstrap/flang emit --target js` |
+| чтение своего текста | `playground/argue-page.js` | `flang/experimental/argue/page.flang`, `bootstrap/flang emit --target js` |
+| поиск слов в словаре | `playground/dictionary-words.js` | `flang/ct/russian/dictionary/words.fscript`, `bootstrap/flang emit --target js` |
+| словарь OpenCorpora | `playground/dictionary/` | `scripts/russian-dictionary/build.fscript` (рецепт `playground:dictionary`) |
 | библиотека | `playground/library.tar` | `flang/stdlib/*.flang` и `flang/core/*.flang` |
 | обвязка WASI | `playground/flang_host_browser.js` | `flang/src/emit/js/flang_host_browser.js` |
 | страница песочницы | `playground.js` | `docs/site/playground.js` |
@@ -157,6 +166,22 @@ playground:build`); в дереве их нет. Обвязка WASI держи�
 вкладки: исходник пользователя, библиотеку (её песочница скачивает, только если в
 тексте есть `использует`) и временный каталог `/tmp`. Компилятор работает в отдельном
 потоке (Web Worker), страница при этом не замирает.
+
+Свой текст обвязка проверяет действием `статья` за четыре шага. План `Words` из
+`flang/ct/russian/dictionary/words.fscript` исполняется как есть: он просит файлы
+словаря по одному, обвязка скачивает их из `playground/dictionary/` и отдаёт ему; файла
+нет — план отвечает своими словами и догадкой по окончанию. Затем `readingForPage` из
+`argue-page.js` читает текст грамматикой и пишет черновик разметки; если грамматика
+падает на предложении, такие предложения ищутся по одному и помечаются «внутренняя
+ошибка разбора», остальные читаются вместе. `judgmentForPage` даёт задания ядру, и
+каждое задание проверяет `flang.wasm` командой `check --proof --strict`. Наконец
+`reportForPage` пишет отчёт. Пределы — в `ПРЕДЕЛЫ_ТЕКСТА`: 6000 знаков, 40 предложений,
+200 заданий ядру и 90 секунд на все задания; что не успело, отчёт называет «ядро не
+решило». Ход работы поток присылает странице сообщениями `{ номер, ход }`.
+
+Данные словаря — производное произведение словаря OpenCorpora под лицензией
+CC BY-SA 3.0. В дерево они не входят: их строит сборка сайта, и рядом с ними лежит
+`LICENSE.txt` с источником и лицензией. Сборка кэширует их по хешу плана сборки.
 
 Текст на C разбирает обвязка: она строит то же дерево, что печатает
 `clang -Xclang -ast-dump`, только для подмножества, которое знает переводчик. Проба
@@ -177,6 +202,7 @@ node flang/src/emit/js/flang_host_browser.js docs/site/out/playground "$(cat т�
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --json "$(cat текст.txt)"
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --на go "$(cat программа.flang)"
 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --из c "$(cat функция.c)"
+node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --статья --json --файл статья.txt
 ```
 
 Код возврата у неё тот же, что у проверки: 0 — следует или доказано, 1 — не следует,

@@ -191,7 +191,7 @@ flang check --proof --строго monoid.flang
   «Е не больше Е» не теорема, почему `0 × ∞` даёт не число, почему переставлять
   через скобки нельзя. Эти доводы не украшение: на них стоят посылки правил.
 - **Независимая проверяющая программа** — `flang/proof/checker/checker.c`,
-  16435 строк. <!-- СНЯТО 2026-11-22 строк flang/proof/checker/checker.c = 16435 (ADR-0254: the list induction step rewritten by the hypothesis and the witness search over lists) -->
+  16454 строк. <!-- СНЯТО 2026-11-23 строк flang/proof/checker/checker.c = 16454 (ADR-0254: an empty list in brackets is read outside strings and names) -->
   Она переигрывает записи и о новом виде значения не знает ничего.
 
 **И встречное число, которое меняет разговор о втором варианте.** Тип `целое`

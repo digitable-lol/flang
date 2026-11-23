@@ -1,0 +1,59 @@
+модуль «Argue page grammar»
+  использует «Russian sentence» из "../../ct/russian/sentence.flang"
+
+примечание "Пометка предложения для песочницы от грамматики: «Grammar for page» разбирает предложение по
+таблице признаков словаря (её пишет план Words) и говорит, разобрано ли оно, назывное ли оно и какие у
+него роли. Модуль отдельный от page.flang: имена разбора грамматики и meaning-parses совпадают, и
+вместе их ввезти нельзя."
+
+объект «Page grammar»
+  «status»: строка
+  «parses»: число
+  «reason»: строка
+  «word»: строка
+  «roles»: список строки
+
+тотальная функция «Grammar word limit»
+  возвращает число
+  пример «Longer sentences are not given to the grammar in the playground»
+    ожидается 30
+  30
+
+тотальная функция «Shown roles»
+  возвращает список строки
+  пример «Roles of a parse the page names»
+    ожидается ["содержание", "косвенная речь", "источник", "сравнение", "пояснение"]
+  ["содержание", "косвенная речь", "источник", "сравнение", "пояснение"]
+
+тотальная функция «Roles of parses»
+  принимает roles: список строки
+  возвращает список строки
+  пример «Only the roles the page names, each once»
+    дано roles равно ["подлежащее", "источник", "источник", "содержание"]
+    ожидается ["источник", "содержание"]
+  (свёртка roles начиная с пустой список как found и role → если («Shown roles» содержит role)
+    и притом (не (found содержит role)) то добавить role к found иначе found)
+
+тотальная функция «Grammar of reading»
+  принимает reading: «Чтения предложения»
+  возвращает «Page grammar»
+  пусть roles равно (если пусто reading.разборы то пустой список
+    иначе «Roles of parses» от (элемент 1 в reading.разборы).роли)
+  пусть status равно (если пусто reading.разборы то "unparsed" иначе (если reading.вид равен "назывное"
+    то "nominal" иначе "parsed"))
+  (запись «Page grammar» с «status» равным status и «parses» равным reading.всего
+    и «reason» равным reading.причина и «word» равным reading.слово и «roles» равным roles)
+
+тотальная функция «Grammar for page»
+  принимает sentence: строка, table: строка
+  возвращает «Page grammar»
+  пример «A sentence longer than the limit is not given to the grammar»
+    дано sentence равно "а а а а а а а а а а а а а а а а а а а а а а а а а а а а а а а"
+    дано table равно ""
+    ожидается (запись «Page grammar» с «status» равным "long" и «parses» равным 0 и «reason» равным ""
+      и «word» равным "" и «roles» равным пустой список)
+  пусть words равно (длина (отфильтровать (разделить sentence по " ") где word → не (пусто word)))
+  если words больше («Grammar word limit»)
+    то (запись «Page grammar» с «status» равным "long" и «parses» равным 0 и «reason» равным ""
+      и «word» равным "" и «roles» равным пустой список)
+    иначе «Grammar of reading» от («Чтения из ответа» от («Разборы по таблице признаков» от sentence и table и 4))

@@ -369,6 +369,23 @@ jobs:
           fi
           grep -F 'исключение' "$RUNNER_TEMP/page.out"
 
+      # Negative control of the own text setup: an example without the
+      # sentence that contradicts the conclusion must turn the check red.
+      - name: The page check sees an example that lost its contradiction
+        run: |
+          forged="$RUNNER_TEMP/playground-prose-forged.js"
+          sed "s/'Некоторые киты не дышат.',/'Киты плавают.',/" docs/site/playground.js > "$forged"
+          if cmp -s docs/site/playground.js "$forged"; then
+            echo "the forgery changed nothing: the example sentence is gone from playground.js" >&2
+            exit 1
+          fi
+          if LC_ALL=C.UTF-8 node flang/src/emit/js/flang_host_browser.js docs/site/out/playground --страница "$forged" > "$RUNNER_TEMP/prose.out" 2>&1; then
+            echo "THE CHECK KEPT SILENT: an example without its contradiction passed" >&2
+            tail -20 "$RUNNER_TEMP/prose.out" >&2
+            exit 1
+          fi
+          grep -F 'нет находки «Противоречие»' "$RUNNER_TEMP/prose.out"
+
       - name: Everything the site shows works in the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:site
 

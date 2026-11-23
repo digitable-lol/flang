@@ -916,6 +916,14 @@ body {
 .content .pg-mark.pg-examples { color: var(--pg-warn); background: var(--pg-warn-bg); }
 .content .pg-mark.pg-violated, .content .pg-mark.pg-failed, .content .pg-mark.pg-error { color: var(--bad); background: var(--bad-bg); }
 .content .pg-mark.pg-unknown, .content .pg-mark.pg-unproved, .content .pg-mark.pg-conditional { color: var(--muted); }
+.content .pg-prose-tools { display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: center; margin-bottom: .6rem; }
+.content .pg-prose-count.pg-error { color: var(--bad); }
+.content .pg-prose-sentences { padding-left: 1.6rem; }
+.content .pg-prose-sentence { margin-bottom: .7rem; }
+.content .pg-prose-line, .content .pg-prose-form, .content .pg-prose-why { margin: .15rem 0; }
+.content .pg-prose-why { color: var(--muted); font-size: .92em; }
+.content .pg-prose-report blockquote { margin: .4rem 0; }
+.content .pg-prose-table { overflow-x: auto; }
 .content .pg-svg { display: block; max-width: none; font-family: var(--sans); font-size: 13px; }
 .content .pg-svg .pg-node rect { fill: var(--code-bg); stroke: var(--quote-bar); stroke-width: 1.2; }
 .content .pg-svg .pg-node text { fill: var(--ink); }

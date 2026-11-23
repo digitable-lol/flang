@@ -1950,13 +1950,14 @@
       var li = el('li', 'pg-prose-sentence pg-prose-' + r.state);
       li.setAttribute('data-state', r.state);
       var head = el('p', 'pg-prose-line');
-      head.appendChild(el('span', 'pg-prose-badge', r.label));
+      var tone = { read: 'proved', partly: 'examples', unread: 'unproved', error: 'error' }[r.state] || 'unknown';
+      head.appendChild(el('span', 'pg-mark pg-' + tone, r.label));
       head.appendChild(document.createTextNode(' ' + r.text));
       li.appendChild(head);
       r.forms.forEach(function (f) { var fp = el('p', 'pg-prose-form'); fp.appendChild(el('code', null, f)); li.appendChild(fp); });
       r.reasons.forEach(function (why, j) {
-        var wp = el('p', 'pg-prose-why');
-        wp.appendChild(el('strong', null, (r.kinds[j] || P.why) + ': '));
+        var wp = el('p', 'pg-prose-why'), kind = r.kinds[j] || P.why;
+        if (why.indexOf(kind) < 0) wp.appendChild(el('strong', null, kind + ': '));
         wp.appendChild(document.createTextNode(why));
         li.appendChild(wp);
       });

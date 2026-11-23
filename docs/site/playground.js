@@ -97,6 +97,11 @@
 
      Новый сетап — новая строка этой таблицы: плитка, адрес, проверка страницы
      и черновик появляются сами. */
+  /* Пример для сетапа «Свой текст»: короткий текст с тремя дырами. Пробы
+     (`playground:page`) сверяют, что из него прочитано и что найдено. */
+  var PROSE_EXAMPLE = ['Все киты — млекопитающие. Все млекопитающие дышат. Следовательно, все киты дышат.',
+    'Дельфин — млекопитающее. Следовательно, дельфин — кит.', 'Некоторые киты не дышат.',
+    'Об этом писали ещё в прошлом веке.', ''].join('\n');
   var SETUPS = [
     { key: 'first', starter: 'hello', views: ['run', 'result', 'terminal'], enter: 'run', buttons: ['run', 'check'], call: true,
       name: { ru: 'Первая программа', en: 'First program' },
@@ -131,6 +136,10 @@
       name: { ru: 'Формула', en: 'Formula' },
       note: { ru: '∀ и ∃ → проверка', en: '∀ and ∃ → check' },
       text: '∀ x ∈ ℤ, ∀ y ∈ ℤ, x + y = y + x\n' },
+    { key: 'prose', views: ['argue', 'terminal'], enter: 'argue', buttons: ['argue'],
+      name: { ru: 'Свой текст', en: 'Your own text' },
+      note: { ru: 'что прочитано, где дыры', en: 'what is read, where the gaps are' },
+      text: PROSE_EXAMPLE },
     { key: 'c', lang: 'c', views: ['foreign'], enter: 'translate', buttons: ['translate'],
       name: { ru: 'C → flang', en: 'C → flang' },
       note: { ru: 'перевод и проверка', en: 'translate and check' },
@@ -286,6 +295,42 @@
     libUnknown: function (name, similar) { return 'Модуля «' + name + '» в библиотеке нет. Модули библиотеки названы по-английски' + (similar.length ? '; похожие: ' + similar.map(function (x) { return '«' + x + '»'; }).join(', ') : '') + '.'; },
     libList: 'все модули', setups: 'Сетапы', menu: 'Разделы'
   } };
+  WORDS.en.tabs.argue = 'Reasoning';
+  WORDS.ru.tabs.argue = 'Рассуждение';
+  WORDS.en.prose = {
+    go: 'Check the reasoning', checking: 'reading the text…', example: 'Example', exampleTitle: 'Put the example text into the editor',
+    lead: 'Paste a paragraph or a short article in Russian. flang reads it with its own grammar and dictionary, writes the logical form of every sentence it can read, and gives every step of the reasoning to the proof kernel. No language model is called: a sentence the grammar cannot read stays unread, and the reason is shown.',
+    more: 'How the check works', moreCommand: 'A long article, with markup written by a language model, is checked by the command flang run-script argue:article in a clone of the repository.',
+    source: 'Word features: the OpenCorpora dictionary, CC BY-SA 3.0. The dictionary data on this site is under that license; the flang code is under its own (BSD-2-Clause).',
+    count: function (n, max) { return n + ' of ' + max + ' characters'; },
+    tooLong: function (max) { return 'The playground takes up to ' + max + ' characters.'; },
+    refused: 'The text was not checked',
+    state: { read: 'read', partly: 'partly read', unread: 'not read', error: 'not read' },
+    coverage: function (c) { return 'Read: ' + c.прочитано + ' of ' + c.всего + ' sentences' + (c.частично ? ', partly: ' + c.частично : '') + '; not read: ' + (c.нет + c.сбой) + '.'; },
+    findings: function (n) { return 'Findings: ' + n; }, noFindings: 'No findings in what was read', nothingRead: 'The grammar read nothing in this text',
+    steps: function (a) { return 'Steps of reasoning: ' + a.шагов + '; follows: ' + a.следует + ', does not follow: ' + a.неСледует + ', not decided: ' + a.неРешено + '.'; },
+    cut: function (n) { return ' The kernel was not asked ' + n + ' more questions: the playground limit.'; },
+    sentences: 'Sentences', form: 'logical form', why: 'why', report: 'Report', draft: 'Draft markup: what the grammar wrote',
+    progress: { словарь: 'the dictionary…', разбор: 'reading the sentences…', ядро: function (k, n) { return 'kernel: step ' + k + ' of ' + n; } },
+    dictionary: function (d) { return d.файлов ? 'dictionary files read: ' + d.файлов : 'the dictionary did not load: only built-in words and ending guesses'; }
+  };
+  WORDS.ru.prose = {
+    go: 'Проверить рассуждение', checking: 'читаю текст…', example: 'Пример', exampleTitle: 'Поставить в редактор текст-пример',
+    lead: 'Вставьте абзац или короткую статью на русском. flang читает её своей грамматикой и словарём, пишет логическую форму каждого предложения, которое смог прочитать, и отдаёт каждый шаг рассуждения ядру доказательств. Языковую модель песочница не вызывает: предложение, которое грамматика не прочла, остаётся непрочитанным, и рядом сказано почему.',
+    more: 'Как устроена проверка', moreCommand: 'Длинную статью с разметкой от языковой модели проверяет команда flang run-script argue:article в клоне репозитория.',
+    source: 'Признаки слов: словарь OpenCorpora, CC BY-SA 3.0. Данные словаря на этом сайте — под этой лицензией, код flang — под своей (BSD-2-Clause).',
+    count: function (n, max) { return n + ' из ' + max + ' знаков'; },
+    tooLong: function (max) { return 'Песочница берёт до ' + max + ' знаков.'; },
+    refused: 'Текст не проверен',
+    state: { read: 'прочитано', partly: 'прочитано частично', unread: 'не прочитано', error: 'не прочитано' },
+    coverage: function (c) { return 'Прочитано предложений: ' + c.прочитано + ' из ' + c.всего + (c.частично ? ', частично: ' + c.частично : '') + '; не прочитано: ' + (c.нет + c.сбой) + '.'; },
+    findings: function (n) { return 'Находок: ' + n; }, noFindings: 'В прочитанном находок нет', nothingRead: 'Грамматика не прочла в тексте ни одного предложения',
+    steps: function (a) { return 'Шагов рассуждения: ' + a.шагов + '; следует: ' + a.следует + ', не следует: ' + a.неСледует + ', ядро не решило: ' + a.неРешено + '.'; },
+    cut: function (n) { return ' Ещё ' + n + ' вопросов ядру не задано: предел песочницы.'; },
+    sentences: 'Предложения', form: 'логическая форма', why: 'почему', report: 'Отчёт', draft: 'Черновик разметки: что записала грамматика',
+    progress: { словарь: 'словарь…', разбор: 'разбираю предложения…', ядро: function (k, n) { return 'ядро: шаг ' + k + ' из ' + n; } },
+    dictionary: function (d) { return d.файлов ? 'прочитано файлов словаря: ' + d.файлов : 'словарь не загрузился: отвечают встроенные слова и догадка по окончанию'; }
+  };
   var T = WORDS.ru;
   function useWords(lang) { T = WORDS[lang] || WORDS.ru; return T; }
 
@@ -715,11 +760,71 @@
   }
   function usesLibrary(text) { return /^\s*(?:использует|uses)\s/mu.test(String(text || '')); }
 
+  /* ── Свой текст ─────────────────────────────────────────────────────────
+     Ответ потока на действие «статья» → что показать: итог, покрытие,
+     предложения с пометкой и блоки отчёта. Отчёт приходит текстом Markdown;
+     `mdBlocks` раскладывает его на заголовки, цитаты, списки, таблицы и абзацы. */
+  var PROSE_LIMIT = 6000;
+  function mdBlocks(md) {
+    var out = [], last = null;
+    String(md || '').split('\n').forEach(function (line) {
+      var m;
+      if (!line.trim()) { last = null; return; }
+      if ((m = /^(#{1,3}) (.*)$/.exec(line))) { out.push({ kind: 'h' + m[1].length, text: m[2] }); last = null; return; }
+      if ((m = /^> ?(.*)$/.exec(line))) {
+        if (!last || last.kind !== 'quote') { last = { kind: 'quote', lines: [] }; out.push(last); }
+        if (m[1].trim()) last.lines.push(m[1]);
+        return;
+      }
+      if (/^\|/.test(line)) {
+        if (/^\|[\s|:-]+\|$/.test(line)) return;
+        if (!last || last.kind !== 'table') { last = { kind: 'table', rows: [] }; out.push(last); }
+        last.rows.push(line.replace(/^\|\s*|\s*\|$/g, '').split(/\s*\|\s*/));
+        return;
+      }
+      if ((m = /^- (.*)$/.exec(line))) {
+        if (!last || last.kind !== 'list') { last = { kind: 'list', items: [] }; out.push(last); }
+        last.items.push(m[1]);
+        return;
+      }
+      if ((m = /^\s+(\S.*)$/.exec(line)) && last && last.kind === 'list') { last.items[last.items.length - 1] += ' ' + m[1]; return; }
+      if (last && last.kind === 'p') { last.text += ' ' + line.trim(); return; }
+      last = { kind: 'p', text: line.trim() }; out.push(last);
+    });
+    return out;
+  }
+  function argueView(answer) {
+    var P = T.prose;
+    var v = { state: 'error', title: P.refused, lead: '', coverage: '', rows: [], blocks: [], draft: '', dictionary: '', numbers: null, marks: null };
+    if (!answer) return v;
+    if (answer.остановлено) {
+      v.title = answer.остановлено === 'время' ? T.timeoutTitle : T.failed;
+      v.lead = answer.остановлено === 'время' ? T.timeoutLead(TIME_LIMIT_MS / 1000) : T.workerDown;
+      return v;
+    }
+    var a = answer.разбор && answer.разбор.статья;
+    if (!a) { v.lead = String(answer.отказ || answer.вывод || '').replace(/^FLANG_PLAYGROUND /, ''); return v; }
+    var c = a.покрытие;
+    v.rows = (a.предложения || []).map(function (p, j) {
+      return { n: j + 1, text: p.текст, state: p.состояние, label: P.state[p.состояние] || p.состояние, forms: p.формы || [], reasons: p.причины || [], kinds: p.виды || [] };
+    });
+    v.coverage = P.coverage(c);
+    v.numbers = { sentences: c.всего, read: c.прочитано, partly: c.частично, unread: c.нет, error: c.сбой, findings: a.находок, steps: a.шагов, jobs: a.заданий, asked: a.решено };
+    var read = c.прочитано + c.частично;
+    v.state = (a.ошибкиРазметки || []).length ? 'error' : a.находок > 0 ? 'violated' : read === 0 ? 'unproved' : 'proved';
+    v.title = v.state === 'error' ? P.refused : a.находок > 0 ? P.findings(a.находок) : read === 0 ? P.nothingRead : P.noFindings;
+    v.lead = P.steps(a) + (a.заданий > a.решено ? P.cut(a.заданий - a.решено) : '');
+    v.blocks = mdBlocks(a.отчёт).filter(function (b) { return b.kind !== 'h1'; });
+    v.draft = a.разметка || '';
+    v.dictionary = P.dictionary(a.словарь || {});
+    return v;
+  }
+
   var PAGE = {
     starters: STARTERS, setups: SETUPS, setupOf: setupOf, setupText: setupText, starterOf: starterOf, words: WORDS, useWords: useWords,
     addressFields: addressFields, guessKind: guessKind, planOf: planOf, present: present, summarize: summarize, proofRows: proofRows,
     testRows: testRows, problemsOf: problemsOf, callOf: callOf, wordAt: wordAt, libraryHint: libraryHint, usesLibrary: usesLibrary,
-    firstFunction: firstFunction
+    firstFunction: firstFunction, argueView: argueView, mdBlocks: mdBlocks, proseExample: PROSE_EXAMPLE
   };
   if (typeof globalThis !== 'undefined') { globalThis.флангЗаготовки = STARTERS; globalThis.флангСтраница = PAGE; }
   if (typeof document === 'undefined') return;
@@ -1127,7 +1232,7 @@
 
   var bar = el('div', 'playground-bar');
   var actionBox = el('div', 'pg-actions');
-  var ACTIONS = { run: T.runGo, check: T.check, test: T.testGo, emit: T.emitGo, translate: T.translateGo };
+  var ACTIONS = { run: T.runGo, check: T.check, test: T.testGo, emit: T.emitGo, translate: T.translateGo, argue: T.prose.go };
   var actionButtons = {};
   Object.keys(ACTIONS).forEach(function (k) {
     var bt = el('button', 'pg-action playground-' + k, ACTIONS[k]); bt.type = 'button'; bt.setAttribute('data-action', k);
@@ -1287,7 +1392,7 @@
   var editors = el('div', 'pg-editors');
   editors.appendChild(main.root);
 
-  var VIEWS = ['run', 'result', 'tests', 'emit', 'foreign', 'formula', 'picture', 'terminal'];
+  var VIEWS = ['run', 'result', 'tests', 'emit', 'foreign', 'argue', 'formula', 'picture', 'terminal'];
   var tabs = el('div', 'pg-tabs'); tabs.setAttribute('role', 'tablist');
   var panels = {};
   var tabButtons = {};
@@ -1386,7 +1491,7 @@
   }
   function liveSoon() {
     clearTimeout(liveTimer);
-    if (current.enter === 'translate') return;
+    if (current.enter === 'translate' || current.enter === 'argue') return;
     liveTimer = setTimeout(function () {
       var text = input.value;
       hintLine.textContent = '';
@@ -1417,7 +1522,7 @@
   function goToLine(line, column) { main.goTo(line, column); }
 
   /* ── поток с компилятором ───────────────────────────────────────────────── */
-  var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null;
+  var worker = null, counter = 0, waiting = {}, loadedOnce = false, warmed = null, onStep = null;
   /* Размер несжатого компилятора: сервер отдаёт его сжатым и длины не называет,
      поэтому доля считается от этого числа и не доходит до ста, пока файл не
      пришёл целиком. */
@@ -1434,6 +1539,7 @@
     if (worker) return worker;
     worker = new Worker(ROOT + 'playground/flang_host_browser.js', { type: 'module' });
     worker.addEventListener('message', function (ev) {
+      if (ev.data && ev.data.ход) { if (onStep) onStep(ev.data.ход); return; }
       if (ev.data && ev.data.прогресс) {
         var pr = ev.data.прогресс;
         if (pr.файл === 'flang.wasm' && !loadedOnce) {
@@ -1776,6 +1882,141 @@
       root.removeAttribute('data-emit-code');
     };
     emitState.fresh = function () { if (emitState.text !== input.value) { emitState.cache = {}; emitState.text = input.value; } };
+  })();
+
+  /* ── свой текст: что прочитано и где дыры ───────────────────────────────
+     Текст в главном редакторе; справа — итог, покрытие, предложения с
+     пометкой, отчёт ядра и черновик разметки. Поток присылает ход работы
+     сообщениями `{ ход }`: словарь, разбор, шаг ядра k из n. */
+  var argueState = { reset: function () {}, check: function () { return Promise.resolve(null); } };
+  (function buildArgue() {
+    var P = T.prose, p = panels.argue;
+    var tools = el('div', 'pg-prose-tools');
+    var exampleButton = el('button', 'pg-tool', P.example); exampleButton.type = 'button'; exampleButton.title = P.exampleTitle;
+    exampleButton.addEventListener('click', function () { setText(PROSE_EXAMPLE); saveDraft(); updateCount(); });
+    var count = el('span', 'pg-hint pg-prose-count');
+    var more = el('a', null, P.more); more.href = ROOT + (EN ? 'en/' : '') + 'argue.html';
+    tools.appendChild(exampleButton); tools.appendChild(count); tools.appendChild(more);
+    var out = el('div', 'pg-prose-out');
+    p.appendChild(tools);
+    p.appendChild(el('p', 'pg-hint', P.lead));
+    p.appendChild(out);
+    var foot = el('div', 'pg-prose-foot');
+    foot.appendChild(el('p', 'pg-hint', P.moreCommand));
+    foot.appendChild(el('p', 'pg-hint', P.source));
+    p.appendChild(foot);
+    function updateCount() {
+      var n = input.value.length;
+      count.textContent = P.count(n, PROSE_LIMIT);
+      count.classList.toggle('pg-error', n > PROSE_LIMIT);
+    }
+    input.addEventListener('input', function () { if (current.enter === 'argue') updateCount(); });
+    function inline(text) {
+      var box = el('span'), re = /(\*\*([^*]+)\*\*|`([^`]+)`)/g, at = 0, m;
+      text = String(text);
+      while ((m = re.exec(text))) {
+        if (m.index > at) box.appendChild(document.createTextNode(text.slice(at, m.index)));
+        box.appendChild(m[2] !== undefined ? el('strong', null, m[2]) : el('code', null, m[3]));
+        at = m.index + m[0].length;
+      }
+      if (at < text.length) box.appendChild(document.createTextNode(text.slice(at)));
+      return box;
+    }
+    function blockNode(b) {
+      if (b.kind === 'h2' || b.kind === 'h3') { var h = el(b.kind === 'h2' ? 'h4' : 'h5', 'pg-prose-h'); h.appendChild(inline(b.text)); return h; }
+      if (b.kind === 'quote') {
+        var q = el('blockquote', 'pg-prose-quote');
+        b.lines.forEach(function (line) { var pq = el('p'); pq.appendChild(inline(line)); q.appendChild(pq); });
+        return q;
+      }
+      if (b.kind === 'list') {
+        var ul = el('ul', 'pg-prose-list');
+        b.items.forEach(function (it) { var li = el('li'); li.appendChild(inline(it)); ul.appendChild(li); });
+        return ul;
+      }
+      if (b.kind === 'table') {
+        var wrap = el('div', 'pg-prose-table'), table = el('table');
+        b.rows.forEach(function (row, j) {
+          var tr = el('tr');
+          row.forEach(function (cell) { var td = el(j === 0 ? 'th' : 'td'); td.appendChild(inline(cell)); tr.appendChild(td); });
+          table.appendChild(tr);
+        });
+        wrap.appendChild(table);
+        return wrap;
+      }
+      var para = el('p'); para.appendChild(inline(b.text)); return para;
+    }
+    function sentenceNode(r) {
+      var li = el('li', 'pg-prose-sentence pg-prose-' + r.state);
+      li.setAttribute('data-state', r.state);
+      var head = el('p', 'pg-prose-line');
+      head.appendChild(el('span', 'pg-prose-badge', r.label));
+      head.appendChild(document.createTextNode(' ' + r.text));
+      li.appendChild(head);
+      r.forms.forEach(function (f) { var fp = el('p', 'pg-prose-form'); fp.appendChild(el('code', null, f)); li.appendChild(fp); });
+      r.reasons.forEach(function (why, j) {
+        var wp = el('p', 'pg-prose-why');
+        wp.appendChild(el('strong', null, (r.kinds[j] || P.why) + ': '));
+        wp.appendChild(document.createTextNode(why));
+        li.appendChild(wp);
+      });
+      return li;
+    }
+    function render(v) {
+      out.textContent = '';
+      var card = el('div', 'pg-verdict pg-' + v.state);
+      card.appendChild(el('p', 'pg-verdict-title', v.title));
+      if (v.lead) card.appendChild(el('p', 'pg-verdict-lead', v.lead));
+      if (v.coverage) card.appendChild(el('p', 'pg-verdict-lead', v.coverage));
+      out.appendChild(card);
+      if (v.rows.length) {
+        out.appendChild(el('h4', 'pg-prose-h', P.sentences));
+        var ol = el('ol', 'pg-prose-sentences');
+        v.rows.forEach(function (r) { ol.appendChild(sentenceNode(r)); });
+        out.appendChild(ol);
+      }
+      if (v.blocks.length) {
+        var rep = el('section', 'pg-prose-report');
+        rep.appendChild(el('h4', 'pg-prose-h', P.report));
+        v.blocks.forEach(function (b) { rep.appendChild(blockNode(b)); });
+        out.appendChild(rep);
+      }
+      if (v.draft) {
+        var d = el('details', 'pg-details');
+        d.appendChild(el('summary', null, P.draft));
+        d.appendChild(el('pre', 'playground-output', v.draft));
+        out.appendChild(d);
+      }
+      if (v.dictionary) out.appendChild(el('p', 'pg-hint', v.dictionary));
+    }
+    function check(quiet) {
+      var text = input.value;
+      updateCount();
+      if (!text.trim()) return Promise.resolve(null);
+      var job = begin(P.checking, quiet);
+      out.textContent = '';
+      var progress = el('p', 'pg-hint pg-prose-progress', P.checking);
+      out.appendChild(progress);
+      root.removeAttribute('data-prose-verdict');
+      onStep = function (h) {
+        if (job.n !== seq) return;
+        var words = h.что === 'ядро' ? P.progress.ядро(h.сделано + 1, h.всего) : P.progress[h.что] || P.checking;
+        progress.textContent = words; status.textContent = words;
+      };
+      return guard(job, ask(text, { действие: 'статья' }).then(function (answer) {
+        onStep = null;
+        if (!alive(job)) return answer;
+        var v = argueView(answer);
+        render(v);
+        renderTerminal(answer.вывод || '');
+        root.setAttribute('data-prose-verdict', v.state);
+        if (v.numbers) root.setAttribute('data-prose-read', v.numbers.read + '/' + v.numbers.sentences);
+        settle(job, v, 'argue');
+        return answer;
+      }));
+    }
+    argueState.check = check;
+    argueState.reset = function () { out.textContent = ''; root.removeAttribute('data-prose-verdict'); updateCount(); };
   })();
 
   /* ── перевод: C → flang ─────────────────────────────────────────────────── */
@@ -2378,6 +2619,7 @@
     if (word === 'test') return doTest(quiet);
     if (word === 'emit') { emitState.fresh(); return emitState.refresh(quiet); }
     if (word === 'translate') return foreignState.translate(quiet);
+    if (word === 'argue') return argueState.check(quiet);
     return Promise.resolve(null);
   }
   tabShown.emit = function () { if (emitState.text === null) doAction('emit', true); };
@@ -2432,7 +2674,7 @@
     panels.formula.textContent = ''; panels.formula.appendChild(el('p', 'pg-hint', T.noFormula));
     panels.picture.textContent = ''; panels.picture.appendChild(el('p', 'pg-hint', T.noPicture));
     renderTerminal('');
-    emitState.reset(); foreignState.reset();
+    emitState.reset(); foreignState.reset(); argueState.reset();
     if (given.target) emitState.target = given.target;
     else if (starter && starter.emit && !draft && !hasText) emitState.target = starter.emit;
     status.textContent = ''; hintLine.textContent = '';
@@ -2440,7 +2682,7 @@
     showTab(s.views[0]);
     store.set(LAST, s.key);
     /* Компилятор уже загружен — результат показан сразу, без нажатия. */
-    if (warmed && !given.hold && text.trim()) {
+    if (warmed && !given.hold && text.trim() && s.enter !== 'argue') {
       if (s.lang !== 'c' && usesLibrary(text)) libraryNote(text);
       else doAction(s.enter, true);
     }

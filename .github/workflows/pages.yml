@@ -56,7 +56,9 @@ on:
       - 'flang/proof/probes/syllogism/sentences/*.flang'
       - 'flang/proof/probes/syllogism/fallacies/**'
       - 'flang/experimental/ru-morphology.flang'
-      - 'flang/ct/russian/pregroup.flang'
+      - 'flang/ct/russian/**'
+      - 'flang/experimental/argue/**'
+      - 'scripts/russian-dictionary/**'
       - 'scripts/site/reasoning-check-probe.fscript'
       - 'flang/foreign/formula/**'
       - 'flang/foreign/c/**'
@@ -304,6 +306,26 @@ jobs:
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:translator
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:formula
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:c
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:argue
+
+      # The "own text" setup reads word features from the OpenCorpora
+      # dictionary. Its data is CC BY-SA 3.0 and stays out of the tree: the
+      # build downloads the export (checked by sha256) and lays the data out
+      # next to the playground with its LICENSE.txt. The data depends only on
+      # the build plan, so it is cached by the hash of that plan.
+      - name: Restore the dictionary
+        id: dictionary
+        uses: actions/cache@v4
+        with:
+          path: docs/site/out/playground/dictionary
+          key: playground-dictionary-${{ hashFiles('scripts/russian-dictionary/build.fscript') }}
+
+      - name: Build the dictionary
+        if: steps.dictionary.outputs.cache-hit != 'true'
+        run: |
+          command -v gawk >/dev/null || sudo apt-get install -y gawk
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:dictionary
+          test -s docs/site/out/playground/dictionary/LICENSE.txt
 
       - name: Probe the playground
         run: LC_ALL=C.UTF-8 bootstrap/flang run-script playground:probe

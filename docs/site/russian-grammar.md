@@ -98,7 +98,7 @@ mistake, but not always.
 ```
 $ flang run flang/ct/russian/sentence.flang --function '«Разборы»' --args '{"предложение":"Система не является проблемой."}'
 доказано: утверждений 9
-{"вариант":"Разобрано","разборы":[{"слова":["система","не","является","проблемой"],"леммы":["система","не","являться","проблема"],"части":["сущ","частица перед","глагол","сущ"],"типы":["n[им ж ед 3]","частица перед","n[им ж ед 3]ʳ · s[ед 3] · n[тв ж ед 3]ˡ","n[тв ж ед 3]"],"строй":[[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}],[],[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}],[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]],"связи":[{"главное":3,"зависимое":4,"роль":"дополнение в творительном"},{"главное":3,"зависимое":1,"роль":"подлежащее"},{"главное":3,"зависимое":2,"роль":"частица перед"}]}],"сверх":{"цены":[3],"пометы":[["","","отрицание",""]]},"всего":1,"работа":4}
+{"вариант":"Разобрано","разборы":[{"слова":["система","не","является","проблемой"],"леммы":["система","не","являться","проблема"],"части":["сущ","частица перед","глагол","сущ"],"типы":["n[им ж ед 3]","частица перед","n[им ж ед 3]ʳ · s[ед 3] · n[тв ж ед 3]ˡ","n[тв ж ед 3]"],"строй":[[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}],[],[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}],[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]],"связи":[{"главное":3,"зависимое":4,"роль":"дополнение в творительном"},{"главное":3,"зависимое":1,"роль":"подлежащее"},{"главное":3,"зависимое":2,"роль":"частица перед"}]}],"сверх":{"цены":[3],"пометы":[["","","отрицание",""]],"вид":"предложение"},"всего":1,"работа":4}
 ```
 
 | Field | What it holds |
@@ -106,7 +106,7 @@ $ flang run flang/ct/russian/sentence.flang --function '«Разборы»' --ar
 | `разборы` | the list of parses; the fields of a parse are below |
 | `всего` | how many parses the sentence really has |
 | `работа` | how many pairs of pieces of the sentence were compared |
-| `сверх` | per parse: `цены`, the cost the parses are ordered by, and `пометы`, the marks of the words — `отрицание` negation, `заглавное` capitalised, `имя` name |
+| `сверх` | per parse: `цены`, the cost the parses are ordered by, and `пометы`, the marks of the words — `отрицание` negation, `заглавное` capitalised, `имя` name, `сравнение` comparison; `вид` — `предложение` sentence or `назывное` nominative sentence |
 
 A parse has six fields; the lists go word by word:
 
@@ -135,7 +135,7 @@ list):
 ```
 $ flang run flang/ct/russian/sentence.flang --function '«Разборы для смысла по пробному словарю»' --args '{"предложение":"Система не является проблемой."}'
 доказано: утверждений 9
-{"разборы":[{"слова":[{"слово":"система","лемма":"система","часть":"сущ","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}]},{"слово":"не","лемма":"не","часть":"не","тип":[]},{"слово":"является","лемма":"являться","часть":"связка","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}]},{"слово":"проблемой","лемма":"проблема","часть":"сущ","тип":[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]}],"связи":[{"левое":3,"правое":4},{"левое":1,"правое":3}],"роли":["дополнение в творительном","подлежащее"],"стыки":[{"откуда":3,"гнездо":3,"куда":4,"паз":1},{"откуда":1,"гнездо":1,"куда":3,"паз":1}],"пометы":["","","отрицание",""],"приставные":[{"главное":3,"зависимое":2,"роль":"частица перед"}],"цена":3}],"всего":1,"причина":"","слово":""}
+{"разборы":[{"слова":[{"слово":"система","лемма":"система","часть":"сущ","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":0}]},{"слово":"не","лемма":"не","часть":"не","тип":[]},{"слово":"является","лемма":"являться","часть":"связка","тип":[{"вид":"n","падеж":"им","род":"ж","число":"ед","лицо":"3","сопряжение":1},{"вид":"s","падеж":"*","род":"*","число":"ед","лицо":"3","сопряжение":0},{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":-1}]},{"слово":"проблемой","лемма":"проблема","часть":"сущ","тип":[{"вид":"n","падеж":"тв","род":"ж","число":"ед","лицо":"3","сопряжение":0}]}],"связи":[{"левое":3,"правое":4},{"левое":1,"правое":3}],"роли":["дополнение в творительном","подлежащее"],"стыки":[{"откуда":3,"гнездо":3,"куда":4,"паз":1},{"откуда":1,"гнездо":1,"куда":3,"паз":1}],"пометы":["","","отрицание",""],"приставные":[{"главное":3,"зависимое":2,"роль":"частица перед"}],"цена":3}],"всего":1,"причина":"","слово":"","вид":"предложение"}
 ```
 
 | Field | What it holds |
@@ -147,6 +147,9 @@ $ flang run flang/ct/russian/sentence.flang --function '«Разборы для 
 | `пометы` | per word: `отрицание` — «не» stands before the word, `заглавное` — a capitalised word that is not the first one, `имя` — the dictionary marks the word as a proper name |
 | `приставные` | links of words without a type: particles, insertions, parenthetical words — head, dependent and role |
 | `цена` | the cost of the parse; parses go from cheap to expensive |
+
+The record itself also has the field `вид`: `предложение`, `назывное`, or empty
+when there is no parse.
 
 The part of speech is refined here by lemma and by role: `квантор` quantifier
 («каждый», «все»), `модальное` modal («может», «можно», «необходимо»),
@@ -202,7 +205,17 @@ prepositional attribute, `приложение` apposition, `количеств�
 `изъяснительное` complement clause, `придаточное` adverbial clause,
 `придаточное определительное` relative clause, `деепричастный оборот` gerund
 phrase, `подлежащее при связке` subject of a verbless predicate, `вводное`,
-`вывод`.
+`вывод`, `пояснение` explanation after a colon, `сравнение` comparison,
+`содержание` content of a complement clause, `косвенная речь` reported speech,
+`источник` source.
+
+Three roles serve whoever builds the meaning from a parse. `содержание` links
+the conjunction «что» to the verb of its clause: everything under it is said
+or thought, not asserted by the author. `косвенная речь` links a verb of
+speech or thought («показал», «считает», «отмечает») to such a clause; whose
+words they are is told by the subject of that verb. `источник` marks «как
+показывает автор», «по мнению автора», «согласно данным»: whom the sentence
+refers to.
 
 ## What is read
 
@@ -236,6 +249,18 @@ with a mistake that must not. They are all written in the table
 | infinitive with a verb and with «можно», «необходимо» | Эту задачу можно решать. |
 | comparison | Автор рассматривает систему как узел. Система важнее задачи. |
 | fixed phrases | Автор рассматривает систему в качестве узла. |
+| explanation after a colon, in any case | Автор выделяет три задачи: систему, узел и сеть. Задача решена: система работает. |
+| comparison with «чем», «более … чем» | Система работает лучше, чем узел. Система более сложна, чем узел. |
+| reported speech and a source | Автор показывает, что система работает. По мнению автора, система работает. |
+| nominative and elliptical sentences | Введение. Первый узел работает быстро, второй — медленно. |
+| apposition between commas, a repeated conjunction | Автор, брат мамы, читает книгу. Автор рассматривает и систему, и узел, и сеть. |
+| a hyphen left inside a word by line breaking | Автор рассматривает сис-тему. |
+
+The full inventory of construction kinds taken from a reference book of Russian
+syntax — with the article, volume and page, examples and the grammar's answer —
+is on the page
+[«Какие конструкции русского предложения читает грамматика»](https://github.com/digitable-lol/flang/blob/dev/docs/russian-syntax-coverage.md)
+(in Russian): 89 of 94 kinds are read.
 
 ## Where word features come from
 
@@ -301,12 +326,23 @@ $ printf '%s\n' '{"fn":"Разобрать подробно","args":[{"s":"Ма�
 ```
 
 The built program reads requests one per line. On twelve scientific articles
-it answered a sentence in 0.07 seconds at the median and in at most 0.24
-seconds; most of that time is the start of the process.
+it answered a sentence in 0.17 seconds at the median and in at most 1.9
+seconds, counting the start of the process.
+
+For a page in a browser the same program is printed in JavaScript:
+
+```
+$ flang emit flang/ct/russian/sentence.flang --target js --out build/russian-js
+```
+
+The parsing functions are pure and print without changes. Called inside the
+process, the JavaScript version answered the same sentences in 0.02 seconds at
+the median; 29 sentences of 1338 took more than a second, six took more than
+two, all of them 33 to 58 words long.
 
 A parse does not hang. It counts how many pairs of pieces of the sentence it
 has compared and stops at 40,000 pairs with the reason `превышен предел работы`.
-On the twelve articles five sentences out of 1338 hit the limit.
+On the twelve articles 11 sentences out of 1338 hit the limit.
 
 ## What is checked and what is not
 
@@ -321,32 +357,33 @@ On the twelve articles five sentences out of 1338 hit the limit.
   claims, 0 proved, 7 on the grid; exit code 3.
 - **Checked by probes** of simple sentences: 75 sentences, 39 grammatical and
   36 not. Run: `flang run-script russian-grammar:probe`.
-- **Checked by probes** of scientific prose: 125 sentences on 56 kinds of
-  constructions, 85 must parse and 40 must not. Run:
+- **Checked by probes** of scientific prose: 201 sentences on 113 kinds of
+  constructions, 154 must parse and 47 must not. Run:
   `flang run-script russian-sentence:probe`.
 - **Measured on twelve scientific articles**, 1338 units of text: a line of an
-  article or a part of it up to a full stop. 594 are parsed whole, which is
-  44 %. The earlier `«Разобрать»` parsed none of the same units. Another 351
-  units are headings, table rows and reference lists without a predicate, and
-  221 units contain a word the dictionary does not know. Among the units with
-  a predicate and known words, 78 % are parsed.
-- **There are many parses.** Of the 594 parsed sentences 93 have one parse.
-  In another 289 the first parse is strictly preferred to the second, in 212
-  the first parses cost the same. What differs most often: the place of a
-  prepositional group or an adverb, the word a genitive belongs to, subject
-  versus object for a form that is the same in the nominative and the
-  accusative, modifier versus predicate, the members of a coordination.
-- **Checked by nothing:** that the parse a person would give is among those
-  returned, and that the reason given is the one a person would give. The
+  article or a part of it up to a full stop; word features come from the
+  OpenCorpora dictionary. 645 units with a predicate are parsed whole. Another
+  285 are headings and captions parsed as nominative sentences; 69 are not
+  parsed and have no predicate: table rows, formulas, reference lists. 131
+  units contain a word the dictionary does not know. The earlier `«Разобрать»`
+  parsed none of the same units.
+- **There are many parses.** Of the 645 parsed sentences with a predicate 83
+  have one parse, in another 381 the first parse is strictly preferred to the
+  second, in 181 the first parses cost the same. What differs most often: the
+  place of a prepositional group or an adverb, the word a genitive belongs to,
+  subject versus object for a form that is the same in the nominative and the
+  accusative, modifier versus predicate, the members of a coordination. On 30
+  sentences labelled by hand the first parse is right in 19.
+- **Checked by nothing:** that the reason given is the one a person would
+  give. The
   texts of the articles are not in the repository, so the measurement on the
   articles cannot be repeated with a command from the repository.
 
 What the grammar does not read yet:
 
-- questions and commands;
-- the paired conjunctions «не только …, но и», «либо …, либо» in full;
-- an explanation after a colon when it stands in another case than the word it
-  explains («три задачи: систему, узел и сеть»);
+- questions with a question word («Почему система работает?») and commands;
+- an infinitive sentence («Решить задачу.») and a part of a sentence cut off by
+  a full stop («И задачу.»);
 - an adjective or a participle in place of a noun («учащиеся», «следующее»),
   except after a preposition and after a pronominal word;
 - a dative with a verb that is not in the list, when the form also reads as

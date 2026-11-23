@@ -441,7 +441,7 @@
   mkdir -p "$out/shards"
   "$awk" -v out="$out" "$assemble" "$work/sorted.txt"
 
-  pattern='s/.*<dictionary version="\([0-9.]*\)" revision="\([0-9]*\)".*/версия \1, ревизия \2/p'
+  pattern='s/.*<dictionary version="\\([0-9.]*\\)" revision="\\([0-9]*\\)".*/версия \\1, ревизия \\2/p'
   revision=$(unpack "$archive" | head -c 400 | sed -n "$pattern")
   cat > "$out/LICENSE.txt" <<NOTE
   Эти данные построены из морфологического словаря OpenCorpora (opencorpora.org),

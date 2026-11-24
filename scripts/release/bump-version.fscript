@@ -1278,4 +1278,4 @@
 
 тотальная функция «Объявление короткой команды version»
   возвращает строка
-  "bootstrap/flang io -- — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; bootstrap/flang run-script version 0.7.13"
+  "bootstrap/flang io --на-веру -- — поднять версию одной командой: число из источника scripts/release/emit-package.flang разносится в .flangrc, flang_repl.c, .TH страницы man и три числа формулы Homebrew; bootstrap/flang run-script version 0.7.13"

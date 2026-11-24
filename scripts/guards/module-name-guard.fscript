@@ -166,12 +166,13 @@
 
 тотальная функция «Долг»
   возвращает список строки
-  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 65
+  обеспечивает «долг назван поимённо, а не числом» (длина результат) равен 66
   ["flang/core/evaluate.flang",
    "flang/core/json.flang",
    "flang/core/lexer.flang",
    "flang/core/parser.flang",
    "flang/self/bootstrap/corpus.flang",
+   "flang/self/c-without-libc.flang",
    "flang/self/bounded.flang",
    "flang/self/builtins.flang",
    "flang/self/carriers.flang",

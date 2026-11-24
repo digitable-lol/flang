@@ -1,5 +1,5 @@
-# Опись дерева по языкам: 232 файла вне flang, долг вне JavaScript — 46 при потолке 63
-<!-- СНЯТО 2026-11-17 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 232 (the tap script over dev with the library module pages) -->
+# Опись дерева по языкам: 247 файла вне flang, долг вне JavaScript — 46 при потолке 63
+<!-- СНЯТО 2026-11-24 файлов *.sh,*.c,*.h,*.py,*.html,*.css,*.awk,*.erl,*.js,*.mjs,*.java,*.cs,*.ex,*.go,*.rs,*.lua,*.vim,*.rb,*.cpp,*.cc,*.hpp,*.hh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 247 (print batch 15) -->
 
 ⚠ **ХРАПОВИК ДОЛГА ЗЕЛЁН С 4 ОКТЯБРЯ 2026: долг 55 файлов при потолке 63, запас 8.** Прогон
 `bootstrap/flang run-script inventory:languages` **4 октября 2026** отвечает кодом 0: «ДОЛГ ВНЕ
@@ -90,7 +90,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 | CSS | 2 | 976 | 0 | 0 <!-- СНЯТО 2026-10-24 файлов *.css = 2 (site playground: KaTeX vendored under docs/site/vendor/katex (katex.min.js, katex.min.css), the text kind rule text-kind.flang, the shell .text command in flang_repl.c and its seed copy) --><!-- СНЯТО 2026-11-23 строк-в *.css = 976 (the playground reads a pasted text) --> |
 | awk | 1 | 76 | 1 | 76 <!-- СНЯТО 2026-08-31 файлов *.awk = 1 --><!-- СНЯТО 2026-10-11 строк-в *.awk = 76 --> |
 | Erlang | 1 | 69 | 0 | 0 <!-- СНЯТО 2026-08-31 файлов *.erl = 1 --><!-- СНЯТО 2026-08-31 строк-в *.erl = 69 --> |
-| JavaScript | 43 | 26 981 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-11-17 файлов *.js,*.mjs = 43 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) --><!-- СНЯТО 2026-11-23 строк-в *.js,*.mjs = 26981 (the playground reads a pasted text) --> ||
+| JavaScript | 43 | 26 982 | считает [`javascript-inventory.md`](javascript-inventory.md) <!-- СНЯТО 2026-11-17 файлов *.js,*.mjs = 43 (library module pages: docs/site/library-pages.mjs and library-catalog.mjs printed by the site build) --><!-- СНЯТО 2026-11-24 строк-в *.js,*.mjs = 26982 (print batch 15) --> ||
 | Java | 8 | 4 882 | 1 | 66 <!-- СНЯТО 2026-10-04 файлов *.java = 8 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/Driver.java — судья, который считает десятичную запись точного целого на самой цели) --><!-- СНЯТО 2026-11-14 строк-в *.java = 4882 (typing holes 31 and 32: entry words and exact fractions in the printed runtimes) --><!-- СНЯТО 2026-10-04 долг файлов/строк Java = 1/69 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/Driver.java — судья, который считает десятичную запись точного целого на самой цели, оснастка на чужом языке, а не рантайм цели; долга в Java до него не было, снято 2026-10-04) --> |
 | C# | 8 | 5 394 | 1 | 74 <!-- СНЯТО 2026-10-04 файлов *.cs = 8 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/Driver.cs — судья, который считает десятичную запись точного целого на самой цели) --><!-- СНЯТО 2026-11-14 строк-в *.cs = 5394 (typing holes 31 and 32: entry words and exact fractions in the printed runtimes) --><!-- СНЯТО 2026-10-04 долг файлов/строк C# = 1/77 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/Driver.cs — судья, который считает десятичную запись точного целого на самой цели, оснастка на чужом языке, а не рантайм цели; долга в C# до него не было, снято 2026-10-04) --> |
 | Elixir | 4 | 5 319 | 0 | 0 <!-- СНЯТО 2026-10-04 файлов *.ex = 4 (мера сужена с *.ex,*.exs до *.ex: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.exs опись языком Elixir не считает — правило «Язык пути» знает только *.ex; само число то же) --><!-- СНЯТО 2026-11-14 строк-в *.ex = 5319 (typing holes 31 and 32: entry words and exact fractions in the printed runtimes) --> |
@@ -153,10 +153,10 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 двумя днями раньше — за два дня прибавилось 856 строк, и опись этого не
 заметила, потому что число было набрано рукой и сторожа над ним не было.)
 
-Больше миллиона строк C — это не долг и даже не почти долг: 1 118 936 из
+Больше миллиона строк C — это не долг и даже не почти долг: 1 142 647 из
 них — `bootstrap/compiler_flang.c`, то есть сам компилятор, напечатанный из
 flang в C.
-<!-- СНЯТО 2026-11-22 строк bootstrap/compiler_flang.c = 1118936 (print batch 14 printed the seed) -->
+<!-- СНЯТО 2026-11-24 строк bootstrap/compiler_flang.c = 1142647 (print batch 15) -->
 Ровно этот файл и есть доказательство того, что язык себя обслуживает.
 
 ## Не долг: двенадцать доводов, у каждого свой счёт
@@ -168,8 +168,8 @@ flang в C.
 
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
-| напечатано самим компилятором | `bootstrap/**` — восемь файлов на C, вывод печати | 8 | 1 406 775 <!-- СНЯТО 2026-10-14 файлов bootstrap/*.c,bootstrap/*.h = 8 (print batch six: bootstrap/tls_client.c and bootstrap/tls_client.h printed by the reprint) --><!-- СНЯТО 2026-11-22 строк-в bootstrap/*.c,bootstrap/*.h = 1406775 (print batch 14 printed the seed with the two kernel fixes and the faster C printer) --> |
-| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 66 855 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-11-15 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 66855 (the shell drops the cc path; print batch 13: the console call in the host, page orders in the Python dictionary, entry words and exact fractions in the runtimes) --> |
+| напечатано самим компилятором | `bootstrap/**` — восемь файлов на C, вывод печати | 8 | 1 435 257 <!-- СНЯТО 2026-10-14 файлов bootstrap/*.c,bootstrap/*.h = 8 (print batch six: bootstrap/tls_client.c and bootstrap/tls_client.h printed by the reprint) --><!-- СНЯТО 2026-11-24 строк-в bootstrap/*.c,bootstrap/*.h = 1435257 (print batch 15) --> |
+| рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 67 212 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-11-24 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 67212 (print batch 15) --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/concurrency/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/test/oblast/*.c` и `flang/concurrency/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |
 | чужая среда: редактор | `docs/editors/vim/**` — vim и neovim грузят только vimscript и Lua | 11 | 645 <!-- СНЯТО 2026-08-31 файлов docs/editors/vim/*.vim,docs/editors/vim/*.lua = 11 --><!-- СНЯТО 2026-10-21 строк-в docs/editors/vim/*.vim,docs/editors/vim/*.lua = 645 (this branch: the installs ship the spec template, chunked http bodies, nested run arguments, the Vim plugin takes flang lsp) --> |

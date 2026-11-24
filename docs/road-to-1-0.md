@@ -339,7 +339,7 @@ SHA-256. Номер версии формата — первая строка ш
 ([ADR-0214](adr/0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md)).
 Профили в `.flangrc` выбирают модули библиотеки
 ([ADR-0054](adr/0054-a-profile-in-the-settings-file-selects-library-modules.md)).
-Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-16 файлов flang/stdlib/*.flang = 66 (the parsing module) --> 66 файлов, <!-- СНЯТО 2026-11-16 строк-в flang/stdlib/*.flang = 65076 (the parsing module) --> 65 076 строк.
+Библиотека `flang/stdlib` — <!-- СНЯТО 2026-11-16 файлов flang/stdlib/*.flang = 66 (the parsing module) --> 66 файлов, <!-- СНЯТО 2026-11-24 строк-в flang/stdlib/*.flang = 65074 (print batch 15) --> 65 074 строк.
 
 `link-import:check` собирает программу с импортом по ссылке на чистом HOME. Первая сборка
 скачивает модуль и его соседа и пишет замок. Вторая, без сети и без исходников, даёт тот

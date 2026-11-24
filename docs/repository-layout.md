@@ -52,7 +52,7 @@ Two of the example sets are full-size projects —
 nothing but flang between the request bytes and the response bytes, and
 [`docs/examples/library-api`](examples/library-api/README.md), the domain half of a library
 service; the 420 more programs in the other sets are single files, the LeetCode set among them:
-82 solutions carrying 908 examples.
+82 solutions carrying 1010 examples.
 <!-- СНЯТО 2026-09-08 файлов docs/examples/leetcode/*.flang = 82 -->
 <!-- СНЯТО 2026-11-10 примеров-в docs/examples/leetcode/*.flang = 1010 -->
 
@@ -60,8 +60,8 @@ service; the 420 more programs in the other sets are single files, the LeetCode 
 `make` alone gives a working `flang`. That binary prints the compiler's sources again, and the
 result is compared with what is committed: `sh scripts/bootstrap-reprint.sh --check`. The inputs of the
 last print are recorded in `scripts/seed-fingerprint`, one hashed line each — 82 lines in the
-input half; with the second half, the seed body, the file is 101 lines.
-<!-- СНЯТО 2026-11-15 строк scripts/seed-fingerprint = 101 (print batch 13: flang/self/call-words.flang joins the inputs) -->
+input half; with the second half, the seed body, the file is 102 lines.
+<!-- СНЯТО 2026-11-24 строк scripts/seed-fingerprint = 102 (print batch 15) -->
 The seed lags the sources: `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000` lists which files and functions
 are newer than the seed, and a reprint (`sh scripts/bootstrap-reprint.sh`, hours on one core) is how edits
 to `flang/self/` reach the binary. **An edit to the sources is not in the binary until that

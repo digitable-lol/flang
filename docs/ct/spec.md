@@ -947,7 +947,7 @@ FLANG_MONOID_ASSOC  моноид «Вычитание»: операция не �
 `docs/examples/io/link-report.flang`.
 
 ### Словарь поручений — 28 действий, и набор закрыт
-<!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6780 = 28 -->
+<!-- СНЯТО 2026-11-24 список flang/self/parser.flang:6791 = 28 (print batch 15: the list moved with the batch) -->
 
 Три суммы вводит сам язык, как сумму `«Действие»` для конкурентности и по той же
 причине: поручение — это КОНТРАКТ между языком и хозяином, а не выбор автора
@@ -1024,7 +1024,7 @@ FLANG_MONOID_ASSOC  моноид «Вычитание»: операция не �
 ```
 
 **Поручений 28, откликов 23, продолжений 4, и все три набора закрыты** — это
-<!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6780 = 28 --><!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6803 = 23 --><!-- СНЯТО 2026-11-11 список flang/self/parser.flang:6816 = 4 -->
+<!-- СНЯТО 2026-11-24 список flang/self/parser.flang:6791 = 28 (print batch 15: the list moved with the batch) --><!-- СНЯТО 2026-11-24 список flang/self/parser.flang:6814 = 23 (print batch 15: the list moved with the batch) --><!-- СНЯТО 2026-11-24 список flang/self/parser.flang:6827 = 4 (print batch 15: the list moved with the batch) -->
 утверждение, а не текущее
 состояние. Полнота здесь дороже, чем кажется: на каждое поручение обязан
 ОТВЕТИТЬ КАЖДЫЙ хозяин, включая напечатанного в C. Растёт набор правкой

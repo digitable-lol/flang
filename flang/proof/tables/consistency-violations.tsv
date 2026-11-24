@@ -13,4 +13,4 @@ kernel-proves-a-pattern-name-shadowing-a-parameter	closed
 unfold-ignores-call-arguments	closed
 link-binds-a-call-to-a-namesake-of-another-module	closed
 kernel-unfolds-a-field-twice-under-the-callee-names	closed
-declared-measure-on-faith-proves-a-false-claim	open
+declared-measure-on-faith-proves-a-false-claim	closed

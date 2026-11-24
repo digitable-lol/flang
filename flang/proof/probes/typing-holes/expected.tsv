@@ -29,8 +29,8 @@ word-argument-at-printed-entry.flang	run-word-entry	1	аргумент «а» н
 word-argument-at-printed-entry.flang	emit-c-word-entry	0	аргумент «а» не соответствует типу u8
 weight-from-number-by-match.flang	check	1	объявлена как вес, а тело даёт число
 weight-from-number-by-match.flang	run-weight-from-number	1	FLANG_TYPE
-weight-from-large-literal.flang	check	0	замечаний нет
-weight-from-large-literal.flang	run-weight-first-branch	0	-5
+weight-from-large-literal.flang	check	1	функция «Вес из большого литерала» объявлена как вес, а тело даёт число
+weight-from-large-literal.flang	run-weight-first-branch	1	функция «Вес из большого литерала» объявлена как вес, а тело даёт число
 run-requirement-outside.flang	check	0	замечаний нет
 run-requirement-outside.flang	run-requirement-outside	1	FLANG_PRECONDITION
 function-value-outside-refinement.flang	check	1	получен функция из целого в число
@@ -104,43 +104,43 @@ written-step-cites-a-promise-at-a-wider-type.flang	run-written-step-at-wider-typ
 written-step-cites-a-promise-at-its-own-type.flang	proof	0	доказано 3, условно 0
 postcondition-calls-its-own-function.flang	check	1	FLANG_NOT_TOTAL
 postcondition-calls-its-own-function-one-step-lower.flang	check	0	замечаний нет
-postconditions-call-each-other.flang	check	0	замечаний нет
+postconditions-call-each-other.flang	check	1	тотальная функция «Туда по кругу»: вызов «Обратно по кругу» в цикле
 closed-existence-proved-by-computation.flang	proof	3	утверждений 3: доказано 0
 two-statements-under-one-name.flang	check	1	FLANG_PROOF_AMBIGUOUS
 total-substring-outside-string.flang	check	0	замечаний нет
-total-substring-outside-string.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-substring-outside-string.flang	proof-strict	1	функция «Хвост после двоеточия» объявлена тотальной, а встроенная операция «подстрока» может отказать
 total-element-outside-list.flang	check	0	замечаний нет
-total-element-outside-list.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-element-outside-list.flang	proof-strict	1	функция «Элемент по номеру» объявлена тотальной, а встроенная операция «элемент» может отказать
 total-character-outside-string.flang	check	0	замечаний нет
-total-character-outside-string.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-character-outside-string.flang	proof-strict	1	функция «Символ по номеру» объявлена тотальной, а встроенная операция «символ» может отказать
 total-split-by-empty-separator.flang	check	0	замечаний нет
-total-split-by-empty-separator.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-split-by-empty-separator.flang	proof-strict	1	функция «Части строки» объявлена тотальной, а встроенная операция «разделить» может отказать
 total-code-of-empty-string.flang	check	0	замечаний нет
-total-code-of-empty-string.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-code-of-empty-string.flang	proof-strict	1	функция «Код первого символа» объявлена тотальной, а встроенная операция «код символа» может отказать
 total-character-by-wrong-code.flang	check	0	замечаний нет
-total-character-by-wrong-code.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-character-by-wrong-code.flang	proof-strict	1	функция «Символ по числу» объявлена тотальной, а встроенная операция «символ по коду» может отказать
 total-head-of-empty-list.flang	check	0	замечаний нет
-total-head-of-empty-list.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-head-of-empty-list.flang	proof-strict	1	функция «Первое число» объявлена тотальной, а встроенная операция «голова» может отказать
 total-tail-of-empty-list.flang	check	0	замечаний нет
-total-tail-of-empty-list.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-tail-of-empty-list.flang	proof-strict	1	функция «Числа без первого» объявлена тотальной, а встроенная операция «хвост» может отказать
 total-head-under-a-check.flang	check	0	замечаний нет
 total-word-division-by-zero.flang	check	0	замечаний нет
-total-word-division-by-zero.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-division-by-zero.flang	proof-strict	1	функция «Частное слов» объявлена тотальной, а встроенная операция «делить на» может отказать
 total-word-remainder-by-zero.flang	check	0	замечаний нет
-total-word-remainder-by-zero.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-remainder-by-zero.flang	proof-strict	1	функция «Остаток слов» объявлена тотальной, а встроенная операция «остаток от» может отказать
 total-word-division-under-a-check.flang	check	0	замечаний нет
 total-word-division-by-requirement.flang	check	0	замечаний нет
 total-number-from-text.flang	check	0	замечаний нет
-total-number-from-text.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-number-from-text.flang	proof-strict	1	функция «Число из строки» объявлена тотальной, а встроенная операция «к числу» может отказать
 total-word-to-number-above-exact.flang	check	0	замечаний нет
-total-word-to-number-above-exact.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-to-number-above-exact.flang	proof-strict	1	функция «Число из слова» объявлена тотальной, а встроенная операция «к числу» может отказать
 total-word-conversion-out-of-range.flang	check	0	замечаний нет
-total-word-conversion-out-of-range.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-conversion-out-of-range.flang	proof-strict	1	функция «Байт из числа» объявлена тотальной, а встроенная операция «перевод в слово» может отказать
 total-word-conversion-inside-range.flang	check	0	замечаний нет
 total-word-narrowing-out-of-range.flang	check	0	замечаний нет
-total-word-narrowing-out-of-range.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-narrowing-out-of-range.flang	proof-strict	1	функция «Байт из слова» объявлена тотальной, а встроенная операция «перевод в слово» может отказать
 total-word-shift-beyond-width.flang	check	0	замечаний нет
-total-word-shift-beyond-width.flang	proof-strict	3	ПРОВЕРЕНО ВПУСТУЮ
+total-word-shift-beyond-width.flang	proof-strict	1	функция «Сдвиг байта» объявлена тотальной, а встроенная операция «сдвиг» может отказать
 total-word-sum-overflow.flang	check	0	замечаний нет
 total-exact-remainder-by-zero.flang	check	0	замечаний нет
 total-requirement-takes-head-of-empty-list.flang	check	0	замечаний нет

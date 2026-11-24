@@ -1,5 +1,5 @@
 program	judge	code	word
-00-tselyj.flang	check	0	flang/test/fixtures/plany/00-tselyj.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+00-tselyj.flang	check	0	проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 01-dvazhdy.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/01-dvazhdy.flang, строка 25, столбец 1: план «Работа» объявлен дважды
 02-slovar-zanyat.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/02-slovar-zanyat.flang, строка 23, столбец 1: план «Работа» не собран: в программе нет сумм «Отклик» — это словарь ввода-вывода, и его имена заняты собственными объявлениями
 03-sostoyanie-neizvestno.flang	check	1	FLANG_PLAN в файле flang/test/fixtures/plany/03-sostoyanie-neizvestno.flang, строка 20, столбец 1: состояние плана «Работа» — неизвестный тип «Хода»

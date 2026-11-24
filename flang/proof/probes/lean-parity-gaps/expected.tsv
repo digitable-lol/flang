@@ -10,7 +10,7 @@ linear-arithmetic-false.flang	proof	3	утверждений 1: доказано
 rewrite-by-proved-equalities.flang	proof	0	правило «переписка доказанными равенствами»
 rewrite-by-callee-postcondition.flang	proof	0	утверждений 2: доказано 2
 declared-measure-descends.flang	proof	0	сторожей в рантайме: 0 мест
-declared-measure-through-a-call.flang	proof	0	спуск ядром не выведен
+declared-measure-through-a-call.flang	proof	3	спуск ядром не выведен
 ring-square-of-sum.flang	proof	0	правило «кольцо точного целого»
 ring-over-the-bounded-integer.flang	proof	3	утверждений 1: доказано 0
 bare-list-variable.flang	proof	3	утверждений 2: доказано 1

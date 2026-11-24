@@ -11,7 +11,7 @@ result-with-failure-variant.flang	check	0	замечаний нет
 failure-variant-imported.flang	check	0	замечаний нет
 story-discount-cap.flang	proof	0	постусловие «хочу: скидка не больше 30» функции «потолок скидки» — доказано
 story-undeclared-role.flang	check	1	запись «Роль» не имеет поля «завсклад»
-namesake-first.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang
-namesake-second.flang	check	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-first.flang
+namesake-first.flang	check --explain	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-second.flang
+namesake-second.flang	check --explain	0	замечание: «Имя пары» объявлено здесь, строка 3, и в соседнем модуле namesake-first.flang
 seed-range-from-to.flang	check	2	проверено НЕ ДО КОНЦА
 seed-range-of-to.flang	check	2	проверено НЕ ДО КОНЦА

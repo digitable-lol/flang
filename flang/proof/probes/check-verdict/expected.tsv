@@ -11,7 +11,7 @@ unproved-postcondition.flang	check --strict	3	не доказано: 2 — по�
 false-closed-statement.flang	check	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
 false-closed-statement.flang	check --proof	1	утверждение «два равно трём» ложно: вычислено 2, ожидалось 3
 true-closed-statement.flang	check	0	замечаний нет
-false-postcondition-no-parameters.flang	check	1	постусловие «длина списка» функции «Три» ложно: результат равен ["а", "б", "в"]
+false-postcondition-no-parameters.flang	check	1	постусловие «длина списка» функции «Три» ложно: результат равен ["а","б","в"]
 induction-leaves-cases-open.flang	check	1	теорема «скидка не больше цены» о функции «Скидка» не доказана: индукция по типу «Правило» — не закрыты случаи:
 induction-leaves-cases-open.flang	check --explain	1	порядок по построению не проходит
 independent-check-replays-all.flang	check --proof --strict --independent	0	ДОКАЗАНО

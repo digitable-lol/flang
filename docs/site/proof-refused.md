@@ -75,7 +75,7 @@ After, `discount.flang`:
 ```
 
 ```bash
-flang check discount.flang --proof
+flang check discount.flang --proof --explain
 ```
 
 ```
@@ -229,7 +229,7 @@ same name as the postcondition. After, `total.flang`:
 ```
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 ```
@@ -285,7 +285,7 @@ A quantity of goods is an integer and not negative. Say so with the type
 ```
 
 ```bash
-flang check remainder.flang --proof
+flang check remainder.flang --proof --explain
 ```
 
 ```
@@ -366,7 +366,7 @@ property). After, `monotone.flang`:
 ```
 
 ```bash
-flang check monotone.flang --proof
+flang check monotone.flang --proof --explain
 ```
 
 ```
@@ -467,7 +467,7 @@ A theorem is tied to its postcondition by name. After, `fine.flang`:
 ```
 
 ```bash
-flang check fine.flang --proof
+flang check fine.flang --proof --explain
 ```
 
 ```

@@ -29,7 +29,7 @@ flang check sum.flang
 
 ```text
 модуль «Example»: функций 1, из них с доказанным завершением 1; типов 0
-sum.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+sum.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 ```
 
 Exit code 0. The compiler writes its messages in Russian. The first line reads

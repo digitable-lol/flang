@@ -157,7 +157,7 @@ The next function is recursive. File `total.flang`:
 a non-empty one gives the first price plus the total of the rest.
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 The compiler answers:
@@ -241,7 +241,7 @@ How to read the theorem:
   statement for the tail.
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 ```text

@@ -138,7 +138,7 @@ FLANG_PRECONDITION: не выполнено требование «денег х
 непустой — первую цену плюс итог остальных.
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 Ответ компилятора:
@@ -213,7 +213,7 @@ flang check total.flang --proof
   известно предусловие, во втором — утверждение для хвоста.
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 ```text

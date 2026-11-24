@@ -74,7 +74,7 @@ FLANG_EXAMPLE: FLANG_PROPERTY: постусловие «в минус не ух�
 ```
 
 ```bash
-flang check discount.flang --proof
+flang check discount.flang --proof --explain
 ```
 
 ```
@@ -224,7 +224,7 @@ flang check before/total.flang --proof; echo "код $?"
 ```
 
 ```bash
-flang check total.flang --proof
+flang check total.flang --proof --explain
 ```
 
 ```
@@ -280,7 +280,7 @@ flang check before/remainder.flang --proof; echo "код $?"
 ```
 
 ```bash
-flang check remainder.flang --proof
+flang check remainder.flang --proof --explain
 ```
 
 ```
@@ -359,7 +359,7 @@ flang check before/monotone.flang --proof; echo "код $?"
 ```
 
 ```bash
-flang check monotone.flang --proof
+flang check monotone.flang --proof --explain
 ```
 
 ```
@@ -459,7 +459,7 @@ FLANG_PROOF_NO_GOAL в файле before/fine.flang, строка 23, столб
 ```
 
 ```bash
-flang check fine.flang --proof
+flang check fine.flang --proof --explain
 ```
 
 ```

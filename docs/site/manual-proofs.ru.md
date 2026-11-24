@@ -84,7 +84,7 @@
 ```
 
 ```bash
-flang check stack-height.flang --proof
+flang check stack-height.flang --proof --explain
 ```
 
 ```
@@ -147,7 +147,7 @@ flang check stack-height.flang --proof
 ```
 
 ```bash
-flang check chain.flang --proof
+flang check chain.flang --proof --explain
 ```
 
 ```
@@ -207,7 +207,7 @@ flang check chain.flang --proof
 ```
 
 ```bash
-flang check statements.flang --proof
+flang check statements.flang --proof --explain
 ```
 
 ```
@@ -262,7 +262,7 @@ binary64, и сложение в нём округляет.
 ```
 
 ```bash
-flang check maybe-monad.flang --proof
+flang check maybe-monad.flang --proof --explain
 ```
 
 ```

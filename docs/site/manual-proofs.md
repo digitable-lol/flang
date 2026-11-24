@@ -85,7 +85,7 @@ File `stack-height.flang`:
 ```
 
 ```bash
-flang check stack-height.flang --proof
+flang check stack-height.flang --proof --explain
 ```
 
 ```
@@ -150,7 +150,7 @@ step per line. File `chain.flang`:
 ```
 
 ```bash
-flang check chain.flang --proof
+flang check chain.flang --proof --explain
 ```
 
 ```
@@ -212,7 +212,7 @@ needed. File `statements.flang`:
 ```
 
 ```bash
-flang check statements.flang --proof
+flang check statements.flang --proof --explain
 ```
 
 ```
@@ -268,7 +268,7 @@ Declare a structure, and its laws become statements about all values. File
 ```
 
 ```bash
-flang check maybe-monad.flang --proof
+flang check maybe-monad.flang --proof --explain
 ```
 
 ```

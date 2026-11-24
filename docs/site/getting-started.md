@@ -43,7 +43,7 @@ flang check hello.flang
 
 ```text
 модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
-hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+hello.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 ```
 
 Exit code 0. The compiler writes its messages in Russian with either keyword

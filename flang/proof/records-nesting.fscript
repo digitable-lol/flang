@@ -30,7 +30,7 @@
 
 тотальная функция «Allowed to be refused»
   возвращает список строки
-  пример «Programs the check refuses: 2 since 0.7.24, 21 since 0.7.31, 1 by the self-call rule»
+  пример «Programs the check refuses: 2 since 0.7.24, 21 since 0.7.31, 1 by the self-call rule, 4 since batch 15»
     ожидается ["order",
       "forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
       "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
@@ -40,7 +40,8 @@
       "poddelka-razbor-sluchaev", "poddelka-razbor-spiska", "poddelka-razbor-vnutrennim",
       "poddelka-razdvoenie-diz", "poddelka-raznost-bez-poryadka", "poddelka-razv2-sebya",
       "poddelka-razv3-raznost", "poddelka-strict-order", "poddelka-svyortka-nad-pustym",
-      "negative-zero-zero-times-a"]
+      "negative-zero-zero-times-a", "forgery-unfold-of-a-whole-comparison", "poddelka-nachalo-po-postroeniyu",
+      "krug-tuda-i-obratno", "poddelka-krug-pri-rabote"]
   ["order",
     "forgery-hypothesis-outside-the-statement", "forgery-hypothesis-outside-the-postcondition",
     "forgery-unfold-inside-a-list", "forgery-unfold-without-arguments",
@@ -50,7 +51,8 @@
     "poddelka-razbor-sluchaev", "poddelka-razbor-spiska", "poddelka-razbor-vnutrennim",
     "poddelka-razdvoenie-diz", "poddelka-raznost-bez-poryadka", "poddelka-razv2-sebya",
     "poddelka-razv3-raznost", "poddelka-strict-order", "poddelka-svyortka-nad-pustym",
-    "negative-zero-zero-times-a"]
+    "negative-zero-zero-times-a", "forgery-unfold-of-a-whole-comparison", "poddelka-nachalo-po-postroeniyu",
+    "krug-tuda-i-obratno", "poddelka-krug-pri-rabote"]
 
 тотальная функция «Print command»
   возвращает строка

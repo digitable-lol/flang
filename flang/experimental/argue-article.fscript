@@ -791,7 +791,7 @@
   guarded() {
     if command -v timeout > /dev/null 2>&1; then timeout "$limit" "$@"; else "$@"; fi
   }
-  if guarded "$FLANG_BIN" io "$plan" --plan Crosscheck --max-steps 1000000000000 --timeout 900000 \\
+  if guarded "$FLANG_BIN" io "$plan" --на-веру --plan Crosscheck --max-steps 1000000000000 --timeout 900000 \\
     -- "$claims" "${FLANG_ARGUE_WORDS:-}" "$d/table.tsv" > "$d/said" 2>&1 && [ -f "$d/table.tsv" ]; then
     echo ok
     sed 1d "$d/table.tsv"

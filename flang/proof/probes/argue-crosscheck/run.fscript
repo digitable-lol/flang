@@ -16,7 +16,7 @@
   принимает разметка: строка
   возвращает строка
   пусть вызов равно (соединить ["\\\n  o=$(mktemp \"${FLANG_TMP:-${TMPDIR:-/tmp}}/crosscheck.XXXXXX\"); ",
-    "$flang io flang/experimental/argue-crosscheck.fscript --plan Crosscheck --max-steps 1000000000000 ",
+    "$flang io flang/experimental/argue-crosscheck.fscript --на-веру --plan Crosscheck --max-steps 1000000000000 ",
     "--timeout 600000 -- \\\n  \"flang/proof/probes/argue-crosscheck/claims/", разметка, "\" \"\" \"$o\" ",
     "> /dev/null; c=$?; \\\n  tr '\\t' '|' < \"$o\"; rm -f \"$o\"; (exit $c)"] по "")
   «От корня» от («С меткой» от вызов)

@@ -79,7 +79,7 @@ class FlangPackage < Formula
         если а больше б то а иначе б
     FLANG
     proved = shell_output("#{bin}/flang check larger.flang --proof 2>&1")
-    refute_match "сверщика нет", proved
-    assert_match "независимо, сверщиком", proved
+    refute_match "программа checker не найдена", proved
+    assert_match "независимая проверка повторила 1 из 1", proved
   end
 end

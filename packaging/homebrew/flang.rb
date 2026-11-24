@@ -94,8 +94,8 @@ class Flang < Formula
           если а больше б то а иначе б
       FLANG
       доказано = shell_output("#{bin}/flang check большее.flang --proof 2>&1")
-      refute_match "сверщика нет", доказано
-      assert_match "независимо, сверщиком", доказано
+      refute_match "программа checker не найдена", доказано
+      assert_match "независимая проверка повторила 1 из 1", доказано
     end
 
     (testpath/"кривая.flang").write(<<~FLANG)

@@ -117,9 +117,7 @@ postconditions. Replace the third line above with `uses «Lists» only «Сум�
 ```text insert output: check docs/examples/reference/en/report-only.flang
 $ flang check docs/examples/reference/en/report-only.flang
 модуль «Report»: функций 11, из них с доказанным завершением 11; типов 0; файлов вместе с импортами 2
-замечание: «Total» объявлено здесь, строка 5, и в соседнем модуле monoids.flang, строка 21: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Total» объявлено здесь, строка 5, и в соседнем модуле report.flang, строка 5: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-docs/examples/reference/en/report-only.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/reference/en/report-only.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 `неизвестная функция` means "unknown function". The line numbers point into
@@ -675,7 +673,9 @@ total function «Byte as a number»
 ```text insert output: check docs/examples/reference/en/machine-words.flang
 $ flang check docs/examples/reference/en/machine-words.flang
 модуль «Machine words»: функций 7, из них с доказанным завершением 7; типов 0
-docs/examples/reference/en/machine-words.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+предупреждений 1: встроенная операция в тотальной функции может отказать при работе; код возврата они не меняют, с «--proof --strict» это ошибки
+FLANG_NOT_TOTAL в файле docs/examples/reference/en/machine-words.flang, строка 28, столбец 3: функция «Total packet length» объявлена тотальной, а встроенная операция «перевод в слово» может отказать при работе: число может не поместиться в слово; добавьте «требует» с условием на аргументы или проверку перед вызовом; пока это предупреждение, станет ошибкой в 0.9.0
+docs/examples/reference/en/machine-words.flang: проверено — доказано 1, проверено только на тестах 1, не доказано 0 (постусловий и утверждений 2); замечаний нет
 ```
 
 The line that starts with «модуль» counts the functions: there are seven, and
@@ -785,7 +785,9 @@ total function «Packets in the buffer or zero»
 ```text insert output: check docs/examples/reference/en/word-division.flang
 $ flang check docs/examples/reference/en/word-division.flang
 модуль «Word division»: функций 2, из них с доказанным завершением 2; типов 0
-docs/examples/reference/en/word-division.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+предупреждений 1: встроенная операция в тотальной функции может отказать при работе; код возврата они не меняют, с «--proof --strict» это ошибки
+FLANG_NOT_TOTAL в файле docs/examples/reference/en/word-division.flang, строка 10, столбец 10: функция «Packets in the buffer» объявлена тотальной, а встроенная операция «делить на» может отказать при работе: делитель может оказаться нулём; добавьте «требует» с условием на аргументы или проверку перед вызовом; пока это предупреждение, станет ошибкой в 0.9.0
+docs/examples/reference/en/word-division.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 The check passes with no warnings, and `flang check --proof` returns 0 as well.
@@ -2256,9 +2258,7 @@ $ flang check docs/examples/reference/en/monoids.flang
 модуль «Monoids»: функций 6, из них с доказанным завершением 6; типов 0
 моноид «Exact sum»: сочетательность и единица доказаны ядром — свёртка операцией «Add exact» считается кусками на всех потоках
 моноид «Number sum»: сочетательность и единица ядром НЕ доказаны — свёртка операцией «Add numbers» идёт по порядку на одном потоке
-замечание: «Total» объявлено здесь, строка 21, и в соседнем модуле report-only.flang, строка 5: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Total» объявлено здесь, строка 21, и в соседнем модуле report.flang, строка 5: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-docs/examples/reference/en/monoids.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/reference/en/monoids.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 When the laws are proved, a fold whose body is exactly a call of the operation on
@@ -2289,14 +2289,7 @@ $ flang check flang/ct/order-shipment.flang
 категория «Отгрузки»: сетка 5 значений на 3 объектах, троек стрелок 7, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 изоморфизм «Отгрузка и накладная»: сетка 2 значений, нарушений 0 — ПОСЧИТАНО НА СЕТКЕ, не доказано
 модуль «Order shipment»: функций 6, из них с доказанным завершением 6; типов 3
-замечание: «Заказ» объявлено здесь, строка 3, и в соседнем модуле euler-orders.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Заказ» объявлено здесь, строка 3, и в соседнем модуле kleisli-outcome.flang, строка 5: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Отгрузка» объявлено здесь, строка 6, и в соседнем модуле kleisli-outcome.flang, строка 13: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Заказ» объявлено здесь, строка 3, и в соседнем модуле set-coproduct.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Заказы равны» объявлено здесь, строка 27, и в соседнем модуле set-coproduct.flang, строка 76: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Заказ» объявлено здесь, строка 3, и в соседнем модуле set-pullback.flang, строка 3: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-замечание: «Заказы равны» объявлено здесь, строка 27, и в соседнем модуле set-pullback.flang, строка 115: программа, которая ввезёт оба модуля, получит FLANG_DUPLICATE_NAME
-flang/ct/order-shipment.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+flang/ct/order-shipment.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 It reads: 5 values on 3 objects, 7 triples of arrows, 0 violations — counted on

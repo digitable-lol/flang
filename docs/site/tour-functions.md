@@ -64,7 +64,7 @@ values `да` and `нет`.
 ```text insert output: check docs/examples/tour/functions/price.flang
 $ flang check docs/examples/tour/functions/price.flang
 модуль «Prices»: функций 2, из них с доказанным завершением 2; типов 0
-docs/examples/tour/functions/price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/functions/price.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 The first line counts declarations: two functions, and the compiler proved that
@@ -187,7 +187,7 @@ the value received («получено»). You are done when `flang check` answe
 ```text insert output: check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
 $ flang check docs/examples/tour/exercises/1-total-price/solution/total-price.flang
 модуль «Exercise 1»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/tour/exercises/1-total-price/solution/total-price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/1-total-price/solution/total-price.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

@@ -438,10 +438,8 @@ $ echo $?
 
 ```text insert output: check docs/examples/dsl/refused/example-needs-literal.flang
 $ flang check docs/examples/dsl/refused/example-needs-literal.flang
-FLANG_PARSE в файле docs/examples/dsl/refused/example-needs-literal.flang, строка 15, столбец 23: не разобрана конструкция: ожидалось литеральное значение — примеры не вычисляются: годятся число, строка, 'да', 'нет', 'ничто', список из них, слово 'u32 5', 'запись «Имя» с «поле» равным …' и 'вариант «Имя» с поле равным …'; одному имени в ёлочках нужно слово 'вариант' или 'запись' впереди
-docs/examples/dsl/refused/example-needs-literal.flang: не проверено — замечаний 1
-$ echo $?
-1
+модуль «Example without a literal»: функций 2, из них с доказанным завершением 2; типов 1
+docs/examples/dsl/refused/example-needs-literal.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 Напишите функцию-обёртку без параметров и повесьте пример на неё. Так сделано в
@@ -549,7 +547,10 @@ $ echo $?
 ```text insert output: check docs/examples/dsl/unproved/false-statement.flang
 $ flang check docs/examples/dsl/unproved/false-statement.flang
 модуль «False statement about the automaton»: функций 18, из них с доказанным завершением 18; типов 3; файлов вместе с импортами 2
-docs/examples/dsl/unproved/false-statement.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+FLANG_EXAMPLE: FLANG_PROPERTY: утверждение «у автомата с лишним состоянием нет недостижимых состояний» ложно: вычислено ["возвращён"], ожидалось []
+docs/examples/dsl/unproved/false-statement.flang: не проверено — замечаний 1
+$ echo $?
+1
 ```
 
 С ключом `--proof` ответ другой — «объявлено, не доказано» и код 3. Правило

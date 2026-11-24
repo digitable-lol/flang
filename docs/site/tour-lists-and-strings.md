@@ -207,7 +207,7 @@ does not.
 ```text insert output: check docs/examples/tour/exercises/2-long-words/solution/long-words.flang
 $ flang check docs/examples/tour/exercises/2-long-words/solution/long-words.flang
 модуль «Exercise 2»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/tour/exercises/2-long-words/solution/long-words.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/2-long-words/solution/long-words.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

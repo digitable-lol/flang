@@ -68,14 +68,15 @@ The type `неотрицательное` ("non-negative") is an integer from 0 
 ```text insert output: check docs/examples/tour/termination/countdown.flang
 $ flang check docs/examples/tour/termination/countdown.flang
 модуль «Countdown»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/tour/termination/countdown.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/termination/countdown.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 The proof report says what proved termination:
 
 ```text insert output: check docs/examples/tour/termination/countdown.flang --proof 2>&1 | grep "Сумма до"
 $ flang check docs/examples/tour/termination/countdown.flang --proof 2>&1 | grep "Сумма до"
-  «Сумма до»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 1; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
+$ echo $?
+1
 ```
 
 The argument decreases by one and is bounded by its type from below and from
@@ -127,7 +128,7 @@ Save this as `steps.flang`:
 $ flang check docs/examples/tour/termination/steps.flang
 модуль «Steps»: функций 2, из них с доказанным завершением 1; типов 0
 без доказанного завершения: «Шагов до единицы»
-docs/examples/tour/termination/steps.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/termination/steps.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 The file shows two more ways.
@@ -138,7 +139,8 @@ The line `убывает` names an expression that must decrease on every call:
 
 ```text insert output: check docs/examples/tour/termination/steps.flang --proof 2>&1 | grep "НОД"
 $ flang check docs/examples/tour/termination/steps.flang --proof 2>&1 | grep "НОД"
-  «НОД»               доказано объявленной мерой: убывает «б»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
+$ echo $?
+1
 ```
 
 The second half of the line means that the decrease is not proved; it is
@@ -147,10 +149,13 @@ check fires, and an error comes instead of endless recursion:
 
 ```text insert output: run docs/examples/tour/termination/steps.flang --function НОД --args '{"а": 1.5, "б": 0.4}'
 $ flang run docs/examples/tour/termination/steps.flang --function НОД --args '{"а": 1.5, "б": 0.4}'
-доказано: утверждений 0
-FLANG_MEASURE: тотальная функция «НОД»: мера на вызове «НОД» — «б» — перестала быть целой. Целость — это то, чем мера вообще что-то доказывает: строго убывающая цепочка целых неотрицательных чисел не длиннее своего первого члена, а дробная не обрывается вовсе (0.618, 0.382, 0.236 … больше нуля всегда). Отказ здесь честнее зацикливания
+не доказано: утверждений 0: доказано 0, сетка 0, на веру 0; законов на сетке 0, на веру 1 — запуск только по явному согласию: --trust
+недоказанное — поимённо, словами отчёта о доказательствах:
+  1. завершение «НОД» — на веру: спуск объявленной меры ядром не выведен, завершение функции не доказано; сторож считает меру при работе
+«на веру» закрывается так: за утверждением не стоит ни одной пробы: посчитать его хоть примерами, доказать — теоремой
+отчёт о доказательствах целиком, с правилами и у доказанных тоже: flang check /home/b/projects/flang-r16-batch15/docs/examples/tour/termination/steps.flang --proof
 $ echo $?
-1
+3
 ```
 
 **A function without the word `тотальная`.** Nobody knows whether
@@ -232,7 +237,7 @@ a part of a list. Add one line to make the check pass.
 ```text insert output: check docs/examples/tour/exercises/4-digits/solution/digits.flang
 $ flang check docs/examples/tour/exercises/4-digits/solution/digits.flang
 модуль «Exercise 4»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/tour/exercises/4-digits/solution/digits.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/4-digits/solution/digits.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

@@ -88,7 +88,7 @@
 ```text insert output: check docs/examples/tour/types/order.flang
 $ flang check docs/examples/tour/types/order.flang
 модуль «Orders»: функций 4, из них с доказанным завершением 4; типов 3
-docs/examples/tour/types/order.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/types/order.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 ## Запись
@@ -268,7 +268,7 @@ $ echo $?
 ```text insert output: check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
 $ flang check docs/examples/tour/exercises/5-order-status/solution/order-status.flang
 модуль «Exercise 5»: функций 1, из них с доказанным завершением 1; типов 1
-docs/examples/tour/exercises/5-order-status/solution/order-status.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/5-order-status/solution/order-status.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

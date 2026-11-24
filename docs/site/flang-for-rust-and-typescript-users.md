@@ -60,7 +60,7 @@ kilometre. The file `delivery-cost.flang`:
 ```text insert output: check docs/examples/tour/compare/delivery-cost.flang
 $ flang check docs/examples/tour/compare/delivery-cost.flang
 модуль «Comparison»: функций 1, из них с доказанным завершением 1; типов 1
-docs/examples/tour/compare/delivery-cost.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/compare/delivery-cost.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 ```
 
 The same in Rust:
@@ -119,7 +119,7 @@ The compiler proved the postcondition on its own:
 
 ```text insert output: check docs/examples/tour/compare/delivery-cost.flang --proof 2>&1 | grep "постусловие"
 $ flang check docs/examples/tour/compare/delivery-cost.flang --proof 2>&1 | grep "постусловие"
-  постусловие «стоимость не отрицательна» функции «Стоимость доставки» — доказано индукцией по «Способ»: база 2 случая, шаг при допущении на частях (0 случаев), правила сведения: неотрицательность по построению — утверждение обо ВСЕХ входах типа «Способ», а не о написанных
+постусловие «стоимость не отрицательна» функции «Стоимость доставки» — доказано индукцией
 ```
 
 «доказано индукцией по „Способ“» means that both variants of the type were

@@ -68,7 +68,7 @@ Save this as `delivery.flang`:
 ```text insert output: check docs/examples/tour/branching/delivery.flang
 $ flang check docs/examples/tour/branching/delivery.flang
 модуль «Delivery»: функций 3, из них с доказанным завершением 3; типов 0
-docs/examples/tour/branching/delivery.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/branching/delivery.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 ## `если` returns a value
@@ -199,7 +199,7 @@ $ echo $?
 ```text insert output: check docs/examples/tour/exercises/3-count-above/solution/count-above.flang
 $ flang check docs/examples/tour/exercises/3-count-above/solution/count-above.flang
 модуль «Exercise 3»: функций 1, из них с доказанным завершением 1; типов 0
-docs/examples/tour/exercises/3-count-above/solution/count-above.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/3-count-above/solution/count-above.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

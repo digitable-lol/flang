@@ -72,8 +72,13 @@ docs/examples/tour/loops/savings.flang: примеров 4, прошло 4, не
 
 ```text insert output: run docs/examples/tour/loops/savings.flang --function "Месяцев копить" --args '{"цель": 100000, "взнос": 7500}'
 $ flang run docs/examples/tour/loops/savings.flang --function "Месяцев копить" --args '{"цель": 100000, "взнос": 7500}'
-доказано: утверждений 0
-14
+не доказано: утверждений 0: доказано 0, сетка 0, на веру 0; законов на сетке 0, на веру 1 — запуск только по явному согласию: --trust
+недоказанное — поимённо, словами отчёта о доказательствах:
+  1. завершение «Копилка» — на веру: спуск объявленной меры ядром не выведен, завершение функции не доказано; сторож считает меру при работе
+«на веру» закрывается так: за утверждением не стоит ни одной пробы: посчитать его хоть примерами, доказать — теоремой
+отчёт о доказательствах целиком, с правилами и у доказанных тоже: flang check /home/b/projects/flang-r16-batch15/docs/examples/tour/loops/savings.flang --proof
+$ echo $?
+3
 ```
 
 With a zero contribution the remainder does not decrease. The run-time check
@@ -81,10 +86,13 @@ notices that and stops the program; there is no endless loop:
 
 ```text insert output: run docs/examples/tour/loops/savings.flang --function "Месяцев копить" --args '{"цель": 1000, "взнос": 0}'
 $ flang run docs/examples/tour/loops/savings.flang --function "Месяцев копить" --args '{"цель": 1000, "взнос": 0}'
-доказано: утверждений 0
-FLANG_MEASURE: тотальная функция «Копилка»: мера на вызове «Копилка» — «осталось» — не убыла. Завершение доказано тем, что она строго убывает; равенство цепочку не обрывает, а значит этот вызов может не кончиться никогда
+не доказано: утверждений 0: доказано 0, сетка 0, на веру 0; законов на сетке 0, на веру 1 — запуск только по явному согласию: --trust
+недоказанное — поимённо, словами отчёта о доказательствах:
+  1. завершение «Копилка» — на веру: спуск объявленной меры ядром не выведен, завершение функции не доказано; сторож считает меру при работе
+«на веру» закрывается так: за утверждением не стоит ни одной пробы: посчитать его хоть примерами, доказать — теоремой
+отчёт о доказательствах целиком, с правилами и у доказанных тоже: flang check /home/b/projects/flang-r16-batch15/docs/examples/tour/loops/savings.flang --proof
 $ echo $?
-1
+3
 ```
 
 ## A class and an interface
@@ -149,7 +157,7 @@ Save this as `shop.flang`:
 ```text insert output: check docs/examples/tour/loops/shop.flang
 $ flang check docs/examples/tour/loops/shop.flang
 модуль «Shop»: функций 8, из них с доказанным завершением 8; типов 4
-docs/examples/tour/loops/shop.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/loops/shop.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 ```
 
 The first output line counts what the file was rewritten into: eight functions
@@ -260,7 +268,7 @@ the previous price.
 ```text insert output: check docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang
 $ flang check docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang
 модуль «Exercise 6»: функций 1, из них с доказанным завершением 1; типов 1
-docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+docs/examples/tour/exercises/6-price-rises/solution/price-rises.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 </details>

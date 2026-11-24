@@ -92,7 +92,9 @@ total function «Packets in the buffer or zero»
 ```text insert output: check docs/examples/reference/en/word-division.flang
 $ flang check docs/examples/reference/en/word-division.flang
 модуль «Word division»: функций 2, из них с доказанным завершением 2; типов 0
-docs/examples/reference/en/word-division.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+предупреждений 1: встроенная операция в тотальной функции может отказать при работе; код возврата они не меняют, с «--proof --strict» это ошибки
+FLANG_NOT_TOTAL в файле docs/examples/reference/en/word-division.flang, строка 10, столбец 10: функция «Packets in the buffer» объявлена тотальной, а встроенная операция «делить на» может отказать при работе: делитель может оказаться нулём; добавьте «требует» с условием на аргументы или проверку перед вызовом; пока это предупреждение, станет ошибкой в 0.9.0
+docs/examples/reference/en/word-division.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 The check passed with no warnings. A run of the first function with a divisor

@@ -91,7 +91,9 @@ $ flang run-script translation:validate -- --path docs/examples/reference/ru/mac
 ```text insert output: check docs/examples/reference/ru/word-division.flang
 $ flang check docs/examples/reference/ru/word-division.flang
 модуль «Word division»: функций 2, из них с доказанным завершением 2; типов 0
-docs/examples/reference/ru/word-division.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+предупреждений 1: встроенная операция в тотальной функции может отказать при работе; код возврата они не меняют, с «--proof --strict» это ошибки
+FLANG_NOT_TOTAL в файле docs/examples/reference/ru/word-division.flang, строка 10, столбец 9: функция «Пакетов в буфере» объявлена тотальной, а встроенная операция «делить на» может отказать при работе: делитель может оказаться нулём; добавьте «требует» с условием на аргументы или проверку перед вызовом; пока это предупреждение, станет ошибкой в 0.9.0
+docs/examples/reference/ru/word-division.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
 Проверка прошла, предупреждений нет. Запуск первой функции с делителем 0:

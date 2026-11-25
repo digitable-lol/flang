@@ -1,6 +1,84 @@
 {
   "формат": 1,
   "выпуски": {
+    "0.8.0": {
+      "ru": {
+        "заголовок": "Короткий отчёт `flang check`, честный счёт недоказанного завершения, C без libc и разбор русского текста в песочнице.",
+        "исправления": [
+          "[доказательства] Утверждение о функции, чьё завершение не доказано, больше не считается доказанным: раньше `flang check --proof --strict` принимал ложное `(«Е» от а и н) больше («Е» от а и н)` с кодом 0",
+          "[доказательства] То же для функции из другого модуля и для обычных функций, которые вызывают друг друга по кругу",
+          "[завершение] Две тотальные функции, чьи постусловия вызывают друг друга без убывания аргумента, отвергаются с FLANG_NOT_TOTAL",
+          "[типы] Функция с `возвращает вес` и телом `если а больше 3 то 1e300 иначе -5` отвергается с FLANG_TYPE: раньше она проходила проверку и возвращала -5",
+          "[проверка доказательств] Независимая проверка на C больше не принимает две поддельные записи доказательства: скобки пустого списка снимаются только вне строк и вне имён в «ёлочках»",
+          "[проверка доказательств] Шаг индукции по списку, закрытый подстановкой предположения, записывается в запись доказательства, и обе независимые проверки его повторяют",
+          "[песочница] Команды с `--proof --explain` в песочнице показывают подробный отчёт, а не короткий",
+          "[выпуск] Архив исходников даёт один и тот же sha256 и в каталоге с битом setgid"
+        ],
+        "ломающие": [
+          "`flang check` выводит короткий отчёт: последняя строка называет, сколько постусловий и утверждений доказано, проверено только на тестах и не доказано. Подробный отчёт — с ключом `--explain`",
+          "`flang check --proof` тоже выводит короткий отчёт; прежний полный текст — `flang check --proof --explain`. Вывод `--json` не изменился",
+          "Ложное утверждение без переменных теперь ошибка: на `утверждаем («Два») равен 3` команда `flang check` пишет `вычислено 2, ожидалось 3` и отвечает кодом 1. Раньше был код 0",
+          "Если ядро не вывело, что значение после `убывает` уменьшается, завершение функции не доказано: `flang check --proof` отвечает кодом 3, а постусловия и утверждения, которые на неё опираются, — «не доказано: доказательство опирается на недоказанное»",
+          "`flang run` и `flang io` не запускают программу с такой функцией без ключа `--trust` (по-русски `--на-веру`): ответ — код 3 и имя функции, чьё завершение не доказано",
+          "`flang check --strict` без `--proof` раньше отвергался с кодом 2. Теперь он отвечает кодом 3, если что-то не доказано или проверено только на тестах, и кодом 0, если всё доказано",
+          "Встроенная операция, которая может отказать при работе, внутри тотальной функции даёт предупреждение FLANG_NOT_TOTAL: `подстрока` за концом строки, голова пустого списка, деление слова на ноль и другие",
+          "Предупреждение не меняет код возврата `flang check`; под `--proof --strict` это ошибка. В 0.9.0 оно станет ошибкой всегда",
+          "Чтобы убрать предупреждение, добавьте условие на аргументы, например `требует «слово не пусто» (длина слово) больше 0`, или проверку перед вызовом: `если (длина слово) больше 0 то подстрока слово с 1 по 1 иначе \"\"`"
+        ],
+        "улучшения": [
+          "[C] `flang emit header.flang --target c --freestanding --out kernel` генерирует C без libc: код собирается `gcc -ffreestanding -nostdlib` и не вызывает ни одной внешней функции",
+          "[C] С `--freestanding` поддержаны слова `u8`…`u64`, признаки, целые числа, записи и суммы типов из них; строки, списки, дроби и рекурсию генератор отвергает с FLANG_FREESTANDING_UNSUPPORTED и называет функцию",
+          "[сайт] Страница «C без libc» (c-without-libc.html): разбор заголовка пакета из `u32`, сборка без libc и вызов из своего кода на C",
+          "[песочница] Вкладка «Свой текст» (`playground.html#setup=prose`) читает абзац или короткую статью на русском, до 6000 знаков и 40 предложений",
+          "[песочница] Для каждого предложения она показывает, прочитано ли оно, и его логическую форму или причину, по которой его не прочитать; каждый шаг рассуждения проверяет ядро доказательств",
+          "[песочница] Отчёт называет выводы, которые не следуют из посылок, и предложения, которые противоречат друг другу. Всё считается в браузере, без языковой модели",
+          "[check] Ключ `--independent` (по-русски `--независимо`): с `--proof` код 0, только если независимая проверка повторила каждое доказанное, иначе код 3",
+          "[примеры] Значение в `пример` может быть выражением без переменных, например `дано н равно («Три»)`",
+          "[доказательства] Отказ индукции с незакрытыми случаями — одна короткая строка: теорема, функция, тип и открытые случаи. Причины по каждому случаю — с `--explain`"
+        ],
+        "известные": [
+          "Без `--proof` строка `flang check` о завершении считает завершающейся и функцию, чью меру ядро не вывело. Точный счёт — в `flang check --proof`"
+        ]
+      },
+      "en": {
+        "заголовок": "A short `flang check` report, an honest count of unproved termination, C without libc and Russian text analysis in the playground.",
+        "исправления": [
+          "[proofs] A claim about a function whose termination is not proved no longer counts as proved: `flang check --proof --strict` used to accept the false `(«Е» от а и н) больше («Е» от а и н)` with code 0",
+          "[proofs] The same holds for a function from another module and for ordinary functions that call each other in a circle",
+          "[termination] Two total functions whose postconditions call each other without a decreasing argument are refused with FLANG_NOT_TOTAL",
+          "[types] A function with `возвращает вес` (returns a weight) and the body `если а больше 3 то 1e300 иначе -5` is refused with FLANG_TYPE: it used to pass the check and return -5",
+          "[proof checking] The independent check in C no longer accepts two forged proof records: the brackets of an empty list are dropped only outside strings and outside names in «guillemets»",
+          "[proof checking] An induction step over a list closed by substituting the hypothesis is written to the proof record, and both independent checks replay it",
+          "[playground] Commands with `--proof --explain` in the playground show the detailed report, not the short one",
+          "[release] The source archive has the same sha256 in a directory with the setgid bit"
+        ],
+        "ломающие": [
+          "`flang check` prints a short report: its last line counts the postconditions and statements that are proved, only tested and not proved. The detailed report comes with `--explain`",
+          "`flang check --proof` prints the short report too; the old full text is `flang check --proof --explain`. The `--json` output is unchanged",
+          "A false statement without variables is now an error: on `утверждаем («Два») равен 3` the command `flang check` prints `вычислено 2, ожидалось 3` (computed 2, expected 3) and exits with code 1. It used to exit with 0",
+          "If the kernel did not derive that the value after `убывает` (decreases) goes down, the function's termination is not proved: `flang check --proof` exits with code 3, and the postconditions and statements that rely on it are reported as not proved because the proof rests on something unproved",
+          "`flang run` and `flang io` do not run a program with such a function without `--trust` (in Russian `--на-веру`): they exit with code 3 and name the function whose termination is not proved",
+          "`flang check --strict` without `--proof` used to be refused with code 2. Now it exits with 3 if something is not proved or only tested, and with 0 if everything is proved",
+          "A builtin that can fail at run time inside a total function gives the warning FLANG_NOT_TOTAL: `подстрока` (substring) past the end of the string, the head of an empty list, dividing a word by zero and others",
+          "The warning does not change the exit code of `flang check`; under `--proof --strict` it is an error. In 0.9.0 it will always be an error",
+          "To remove the warning, add a condition on the arguments, such as `требует «слово не пусто» (длина слово) больше 0`, or a check before the call: `если (длина слово) больше 0 то подстрока слово с 1 по 1 иначе \"\"`"
+        ],
+        "улучшения": [
+          "[C] `flang emit header.flang --target c --freestanding --out kernel` prints C without libc: the code builds with `gcc -ffreestanding -nostdlib` and calls no outside function",
+          "[C] With `--freestanding` the words `u8`…`u64`, flags, whole numbers, and records and sum types of them are supported; the generator refuses strings, lists, fractions and recursion with FLANG_FREESTANDING_UNSUPPORTED and names the function",
+          "[site] The page «C without libc» (c-without-libc.html): parsing a packet header from a `u32`, building without libc and calling it from your own C code",
+          "[playground] The «Your own text» tab (`playground.html#setup=prose`) reads a paragraph or a short article in Russian, up to 6000 characters and 40 sentences",
+          "[playground] For each sentence it shows whether it was read, and its logical form or the reason it could not be read; the proof kernel checks every step of the reasoning",
+          "[playground] The report names conclusions that do not follow from the premises and sentences that contradict each other. Everything runs in the browser, with no language model",
+          "[check] The `--independent` flag (in Russian `--независимо`): with `--proof` the code is 0 only if the independent check replayed every proved claim, otherwise 3",
+          "[examples] A value in `пример` (example) can be an expression without variables, such as `дано н равно («Три»)`",
+          "[proofs] A refused induction with open cases is one short line: the theorem, the function, the type and the open cases. The reasons for each case come with `--explain`"
+        ],
+        "известные": [
+          "Without `--proof`, the termination line of `flang check` counts a function whose measure the kernel did not derive as terminating. The exact count is in `flang check --proof`"
+        ]
+      }
+    },
     "0.7.41": {
       "ru": {
         "заголовок": "Модуль «Parsing» для своего языка, проверка рассуждений командой `argue`, тур и песочница с раскладками.",

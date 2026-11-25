@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "голова": "e72e3c31bf35002c4e78150d7bf121ccb3eea6ed",
-  "головаКоротко": "e72e3c31b",
-  "головаДата": "2026-11-22",
-  "шаговСтвола": 4963,
-  "всегоКоммитов": 10211,
+  "голова": "f5d0e8b34854641bf647a39c8b7afd0ab852b208",
+  "головаКоротко": "f5d0e8b34",
+  "головаДата": "2026-11-25",
+  "шаговСтвола": 5142,
+  "всегоКоммитов": 10390,
   "измерители": [
     {
       "ключ": "js",
@@ -49,11 +49,11 @@
   ],
   "сейчас": {
     "js": 0,
-    "bliznec": 142785,
-    "programm": 1397,
-    "totalnyh": 17627,
-    "obychnyh": 3770,
-    "teorem": 418,
+    "bliznec": 146484,
+    "programm": 1487,
+    "totalnyh": 19032,
+    "obychnyh": 3868,
+    "teorem": 419,
     "proverok": 0,
     "zametok": 0
   },
@@ -63,12 +63,12 @@
       "путей": 56
     },
     {
-      "корень": "flang/translation",
-      "путей": 26
+      "корень": "flang/experimental",
+      "путей": 32
     },
     {
-      "корень": "flang/experimental",
-      "путей": 20
+      "корень": "flang/translation",
+      "путей": 26
     },
     {
       "корень": "flang/services",
@@ -100,12 +100,15 @@
     }
   ],
   "дни": [
+    "2026-11-25",
+    "2026-11-24",
     "2026-11-22",
-    "2026-11-21",
-    "2026-11-19",
-    "2026-11-18",
+    "2026-11-23",
     "2026-11-17",
     "2026-11-16",
+    "2026-11-18",
+    "2026-11-21",
+    "2026-11-19",
     "2026-11-15",
     "2026-11-14",
     "2026-11-13",
@@ -41620,8 +41623,316 @@
   ],
   "прямые": [
     {
+      "дата": "2026-11-25",
+      "записи": [
+        {
+          "текст": "docs(codes): the code of 0.8.0 becomes stable",
+          "коммит": "a7719b8bd"
+        },
+        {
+          "текст": "chore(release): sha256 of the 0.8.0 archive",
+          "коммит": "04cf8d1f1"
+        },
+        {
+          "текст": "chore(release): version 0.8.0 and its release notes",
+          "коммит": "5e1cc1768"
+        },
+        {
+          "текст": "fix(playground): the playground passes --explain to the checker",
+          "коммит": "95e267ba2"
+        }
+      ],
+      "скрыто": 2
+    },
+    {
+      "дата": "2026-11-24",
+      "записи": [
+        {
+          "текст": "fix(guards): the single refusal forgery forgets the whole list",
+          "коммит": "cd5f07e73"
+        },
+        {
+          "текст": "fix(guards): forgeries, refusals and codes follow the cycle rule",
+          "коммит": "3fb236b79"
+        },
+        {
+          "текст": "test(probes): two probe sets ask the detailed proof report",
+          "коммит": "a5c0368b0"
+        },
+        {
+          "текст": "fix(russian): plans over the Russian modules are called with consent",
+          "коммит": "677f4cfd7"
+        },
+        {
+          "текст": "fix(guards): three guards read the answers of the rebuilt binary",
+          "коммит": "35275bc34"
+        },
+        {
+          "текст": "fix(packaging): install probes read the short proof report",
+          "коммит": "374986bd4"
+        },
+        {
+          "текст": "chore(numbers): the count marks follow print batch 15",
+          "коммит": "6eebf26d7"
+        },
+        {
+          "текст": "refactor(stdlib): two claims that closed a call cycle are dropped",
+          "коммит": "8366aba60"
+        },
+        {
+          "текст": "test(probes): the expectations follow the rebuilt binary",
+          "коммит": "16db86179"
+        },
+        {
+          "текст": "test(measure): the probes hold the answers of the rebuilt binary",
+          "коммит": "15bbf3e5f"
+        },
+        {
+          "текст": "chore(seed): the seed carries print batch 15",
+          "коммит": "bda313d0f"
+        },
+        {
+          "текст": "refactor(lsp): the server node readers leave their call cycles",
+          "коммит": "c8d153dc8"
+        },
+        {
+          "текст": "refactor(monad-expand): drop claims that call around their own cycle",
+          "коммит": "025946ea4"
+        },
+        {
+          "текст": "refactor(setoid-oracle): the scalar true claim compares the scalar",
+          "коммит": "ccfb38d48"
+        },
+        {
+          "текст": "refactor(functor-oracle): the scalar true claim compares the scalar",
+          "коммит": "05a049b79"
+        },
+        {
+          "текст": "refactor(interpret): the variant and record claims are stated once",
+          "коммит": "d5241e5b5"
+        },
+        {
+          "текст": "refactor(factcheck): the literal claim is stated once, by the reader",
+          "коммит": "e40f4dfab"
+        },
+        {
+          "текст": "refactor(emit-java): the label lookup claim reads the labels directly",
+          "коммит": "913a9454f"
+        },
+        {
+          "текст": "refactor(emit-elixir): node reader claims leave their call cycle",
+          "коммит": "9d5a70f08"
+        },
+        {
+          "текст": "refactor(builtins): scalar equality claims leave their call cycle",
+          "коммит": "73fb7fbdc"
+        },
+        {
+          "текст": "feat(playground): own text forms come from the meaning of the new parses",
+          "коммит": "47fb27e23"
+        }
+      ],
+      "скрыто": 14
+    },
+    {
       "дата": "2026-11-22",
       "записи": [
+        {
+          "текст": "fix(checker): the doubling forgery names its own source file",
+          "коммит": "473e40aa3"
+        },
+        {
+          "текст": "chore(numbers): the marks follow the new probes and the longer sources",
+          "коммит": "e9b4b2926"
+        },
+        {
+          "текст": "fix(lean): the rewrite move of the second checker takes both equalities",
+          "коммит": "47a90d934"
+        },
+        {
+          "текст": "fix(checker): the C checker replays a list step rewritten by hypothesis",
+          "коммит": "a2e70946f"
+        },
+        {
+          "текст": "feat(record): a list step rewritten by the hypothesis has moves",
+          "коммит": "420674d74"
+        },
+        {
+          "текст": "refactor(distributed): infinity postconditions stop calling their cycle",
+          "коммит": "9b5f44578"
+        },
+        {
+          "текст": "refactor(defunc): reader postconditions stop calling their cycle",
+          "коммит": "b67e2e582"
+        },
+        {
+          "текст": "refactor(monad-expand): reader postconditions stop calling their cycle",
+          "коммит": "7238e387f"
+        },
+        {
+          "текст": "refactor(parser): reader postconditions stop calling their cycle",
+          "коммит": "66454e2cc"
+        },
+        {
+          "текст": "refactor(emit-python): postconditions stop calling their own cycle",
+          "коммит": "887dbf03d"
+        },
+        {
+          "текст": "refactor(emit-java): list and field postconditions leave their cycle",
+          "коммит": "6510cbb49"
+        },
+        {
+          "текст": "refactor(emit-csharp): reader postconditions stop calling their cycle",
+          "коммит": "0d04c6697"
+        },
+        {
+          "текст": "refactor(factcheck): reader postconditions stop calling their cycle",
+          "коммит": "90a8b99b9"
+        },
+        {
+          "текст": "fix(russian): the draft markup writes the origin line as the prompt does",
+          "коммит": "dcde413dd"
+        },
+        {
+          "текст": "feat(argue): the crosscheck reads the origin line of the markup format",
+          "коммит": "196c4995d"
+        },
+        {
+          "текст": "feat(russian): a governed object is a place of the notion",
+          "коммит": "38ca0f024"
+        },
+        {
+          "текст": "feat(russian): the grammar writes a draft markup with short stable names",
+          "коммит": "d9e48f42b"
+        },
+        {
+          "текст": "feat(russian): the logical form is built from the parses of the grammar",
+          "коммит": "bc6f88394"
+        },
+        {
+          "текст": "test(argue): the article probes call the real crosscheck in one probe",
+          "коммит": "a47fbb06d"
+        },
+        {
+          "текст": "perf(probes): rows with one command are judged from one run of it",
+          "коммит": "f68f402c7"
+        },
+        {
+          "текст": "feat(argue): the article report names the kinds, limits and origins",
+          "коммит": "414dc7080"
+        },
+        {
+          "текст": "fix(argue): the stub crosscheck plan is named by its whole path",
+          "коммит": "f89f2b9bf"
+        },
+        {
+          "текст": "test(argue): the reference list is counted with initials kept whole",
+          "коммит": "c9cf56f4a"
+        },
+        {
+          "текст": "feat(argue): the report shows what the grammar crosscheck answered",
+          "коммит": "1763c3900"
+        },
+        {
+          "текст": "test(argue): the one command is probed on twelve short articles",
+          "коммит": "f67d69f25"
+        },
+        {
+          "текст": "fix(parity): nat-double is false at minus zero and is proved by hand",
+          "коммит": "0faf44992"
+        },
+        {
+          "текст": "fix(argue): draft lines read in any order, sentences keep initials",
+          "коммит": "06b01199c"
+        },
+        {
+          "текст": "feat(argue): a judgment keeps other readings and where it came from",
+          "коммит": "4735f0a45"
+        },
+        {
+          "текст": "feat(argue): steps are judged in parts, with numbers and quantifiers",
+          "коммит": "221d81518"
+        },
+        {
+          "текст": "feat(russian): parses come in order of preference, more is read",
+          "коммит": "fc252d9e5"
+        },
+        {
+          "текст": "feat(russian): a parse is given in the record the meaning line reads",
+          "коммит": "00bd31bcf"
+        },
+        {
+          "текст": "feat(russian): a parse carries lemmas, parts and structured types",
+          "коммит": "dd5cd3360"
+        },
+        {
+          "текст": "test(russian): the sentence probes run one per step and in CI",
+          "коммит": "1b78e8a67"
+        },
+        {
+          "текст": "fix(russian): leftover glued tokens attach to the last word",
+          "коммит": "bc8951e7a"
+        },
+        {
+          "текст": "feat(russian): more constructions are read, fewer false parses",
+          "коммит": "7c4590e9e"
+        },
+        {
+          "текст": "test(russian): 88 sentence probes, parsed and refused, per construction",
+          "коммит": "57855b583"
+        },
+        {
+          "текст": "feat(russian): a sentence of scientific prose gets all its parses",
+          "коммит": "54023a171"
+        },
+        {
+          "текст": "feat(russian): a sentence is cut into words, glued particles and marks",
+          "коммит": "8e84dc153"
+        },
+        {
+          "текст": "test(russian): probes of the dictionary on forms and on a sample",
+          "коммит": "85f1bbf3c"
+        },
+        {
+          "текст": "feat(russian): a plan writes the table of word features of a text",
+          "коммит": "a8a45cba7"
+        },
+        {
+          "текст": "feat(russian): a word form is answered with all its readings",
+          "коммит": "9956d94a4"
+        },
+        {
+          "текст": "chore(release): the tap and the pages follow 0.7.41",
+          "коммит": "7ccc03fe8"
+        },
+        {
+          "текст": "fix(russian): the negation of an existence verb gets its form",
+          "коммит": "85f2f26f1"
+        },
+        {
+          "текст": "fix(argue): the note of a notion is read as a sentence",
+          "коммит": "6d2b9ae9a"
+        },
+        {
+          "текст": "chore(numbers): the count marks follow the meaning modules",
+          "коммит": "071b325d8"
+        },
+        {
+          "текст": "feat(russian): a noun in the genitive after a noun adds a feature",
+          "коммит": "5d189712c"
+        },
+        {
+          "текст": "feat(russian): a text gets its markup from the grammar by one command",
+          "коммит": "bbaa6608f"
+        },
+        {
+          "текст": "feat(argue): the form of the markup is checked against the grammar",
+          "коммит": "ada5db8c1"
+        },
+        {
+          "текст": "feat(russian): a pregroup parse gives a logical form",
+          "коммит": "536f5d925"
+        },
         {
           "текст": "chore(release): sha256 of the 0.7.41 archive",
           "коммит": "e72e3c31b"
@@ -41647,73 +41958,85 @@
           "коммит": "8710a8153"
         }
       ],
-      "скрыто": 4
+      "скрыто": 46
     },
     {
-      "дата": "2026-11-21",
+      "дата": "2026-11-23",
       "записи": [
         {
-          "текст": "perf(emit-c): the traced literal print is rechecked with one print",
-          "коммит": "04b7d626f"
+          "текст": "chore(tables): the Lean checker lags on the false lemma forgery",
+          "коммит": "60a2c4fa1"
         },
         {
-          "текст": "perf(emit-c): a list literal joins its element lines in pieces",
-          "коммит": "97ced1111"
+          "текст": "feat(check): check --strict answers 3 when something is not proved",
+          "коммит": "b9a7b6023"
         },
         {
-          "текст": "perf(emit-c): the key table lookup stops at the first match",
-          "коммит": "aa2070cc0"
+          "текст": "fix(checker): empty list brackets are dropped outside strings only",
+          "коммит": "b98de2b8d"
         },
         {
-          "текст": "fix(translation): function witnesses match the declared function type",
-          "коммит": "228e4a6be"
+          "текст": "feat(playground): every sentence of an own text gets the grammar's mark",
+          "коммит": "c8fc11940"
         },
         {
-          "текст": "fix(translation): reference reads the step mark from the linked tree",
-          "коммит": "998f957b4"
+          "текст": "feat(playground): the own text setup reads Russian prose and finds gaps",
+          "коммит": "beb0ebafe"
         },
         {
-          "текст": "feat(translation): unfold type aliases in translation validation",
-          "коммит": "bd35313e0"
-        },
-        {
-          "текст": "fix(translation): function witnesses include functions named in examples",
-          "коммит": "da1f595e7"
-        },
-        {
-          "текст": "fix(translation): reference guards constant steps, typed fn witnesses",
-          "коммит": "f614d7772"
-        },
-        {
-          "текст": "feat(lean): the model reads a claim closed by the known prefix rule",
-          "коммит": "1d52baf1a"
+          "текст": "feat(russian): the grammar reads the kinds named by the reference",
+          "коммит": "2f9073990"
         }
       ],
-      "скрыто": 26
-    },
-    {
-      "дата": "2026-11-19",
-      "записи": [
-        {
-          "текст": "feat(experimental): a folder of user stories is judged as one set",
-          "коммит": "51a7a1395"
-        }
-      ],
-      "скрыто": 0
-    },
-    {
-      "дата": "2026-11-18",
-      "записи": [
-        {
-          "текст": "docs(adr): the checker code ceiling rises with two refuted forgeries",
-          "коммит": "5db7e7847"
-        }
-      ],
-      "скрыто": 24
+      "скрыто": 15
     },
     {
       "дата": "2026-11-17",
       "записи": [
+        {
+          "текст": "fix(emit-c): libc-free C files are named by --path, in English words",
+          "коммит": "05b9595fc"
+        },
+        {
+          "текст": "refactor(emit-c): the libc-free generator lives in c-without-libc.flang",
+          "коммит": "f25b4c81c"
+        },
+        {
+          "текст": "test(emit-c): a probe goes red when the libc-free C needs any symbol",
+          "коммит": "01a2a82b0"
+        },
+        {
+          "текст": "feat(cli): flang emit --target c --freestanding selects the libc-free C",
+          "коммит": "6a1e99484"
+        },
+        {
+          "текст": "feat(emit-c): a libc-free C generator covers words and records",
+          "коммит": "169d65887"
+        },
+        {
+          "текст": "fix(types): a total function holds no builtin that can fail at run time",
+          "коммит": "d8dcd77f9"
+        },
+        {
+          "текст": "fix(types): a literal above the exact range joins by the number rule",
+          "коммит": "810d60d02"
+        },
+        {
+          "текст": "fix(kernel): an uncovered induction is refused in one short line",
+          "коммит": "fdf6bd294"
+        },
+        {
+          "текст": "feat(check)!: the shell counts unproved claims and shortens refusals",
+          "коммит": "71c716dfc"
+        },
+        {
+          "текст": "test(probes): claims over a function not known to terminate",
+          "коммит": "03f401a64"
+        },
+        {
+          "текст": "fix(kernel): a claim over a non-terminating callee is conditional",
+          "коммит": "a41797a8b"
+        },
         {
           "текст": "fix(reasoning): a read text without a conclusion is not called unread",
           "коммит": "2cef430de"
@@ -41767,7 +42090,7 @@
           "коммит": "4bcee81f3"
         }
       ],
-      "скрыто": 72
+      "скрыто": 75
     },
     {
       "дата": "2026-11-16",
@@ -41797,7 +42120,97 @@
           "коммит": "958453aef"
         }
       ],
-      "скрыто": 13
+      "скрыто": 14
+    },
+    {
+      "дата": "2026-11-18",
+      "записи": [
+        {
+          "текст": "fix(types): a failing builtin in a total function warns until 0.9.0",
+          "коммит": "5c73c0011"
+        },
+        {
+          "текст": "feat(check)!: a false closed claim fails, unproved claims are counted",
+          "коммит": "3924809d9"
+        },
+        {
+          "текст": "feat(example): an example takes a closed expression as a value",
+          "коммит": "0f4a27464"
+        },
+        {
+          "текст": "docs(adr): a claim over a non-terminating callee is proved on condition",
+          "коммит": "d39c0b467"
+        },
+        {
+          "текст": "docs(adr): the checker code ceiling rises with two refuted forgeries",
+          "коммит": "5db7e7847"
+        }
+      ],
+      "скрыто": 27
+    },
+    {
+      "дата": "2026-11-21",
+      "записи": [
+        {
+          "текст": "refactor(emit-c): a list is not a record becomes a free statement",
+          "коммит": "b53db6439"
+        },
+        {
+          "текст": "fix(totality): every postcondition call joins the termination graph",
+          "коммит": "2739cc165"
+        },
+        {
+          "текст": "fix(kernel): an imported measure taken on trust is counted",
+          "коммит": "8c5402cbd"
+        },
+        {
+          "текст": "perf(emit-c): the traced literal print is rechecked with one print",
+          "коммит": "04b7d626f"
+        },
+        {
+          "текст": "perf(emit-c): a list literal joins its element lines in pieces",
+          "коммит": "97ced1111"
+        },
+        {
+          "текст": "perf(emit-c): the key table lookup stops at the first match",
+          "коммит": "aa2070cc0"
+        },
+        {
+          "текст": "fix(translation): function witnesses match the declared function type",
+          "коммит": "228e4a6be"
+        },
+        {
+          "текст": "fix(translation): reference reads the step mark from the linked tree",
+          "коммит": "998f957b4"
+        },
+        {
+          "текст": "feat(translation): unfold type aliases in translation validation",
+          "коммит": "bd35313e0"
+        },
+        {
+          "текст": "fix(translation): function witnesses include functions named in examples",
+          "коммит": "da1f595e7"
+        },
+        {
+          "текст": "fix(translation): reference guards constant steps, typed fn witnesses",
+          "коммит": "f614d7772"
+        },
+        {
+          "текст": "feat(lean): the model reads a claim closed by the known prefix rule",
+          "коммит": "1d52baf1a"
+        }
+      ],
+      "скрыто": 27
+    },
+    {
+      "дата": "2026-11-19",
+      "записи": [
+        {
+          "текст": "feat(experimental): a folder of user stories is judged as one set",
+          "коммит": "51a7a1395"
+        }
+      ],
+      "скрыто": 0
     },
     {
       "дата": "2026-11-15",

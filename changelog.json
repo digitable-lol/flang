@@ -2,8 +2,8 @@
   "version": 1,
   "package": "@digitable-lol/flang",
   "repository": "https://github.com/digitable-lol/flang",
-  "declared": "0.7.41",
-  "latest": "0.7.41",
+  "declared": "0.8.0",
+  "latest": "0.8.0",
   "unclassified": [
     "flang/experimental",
     "flang/foreign",
@@ -13,6 +13,410 @@
     "install.sh"
   ],
   "releases": [
+    {
+      "version": "0.8.0",
+      "tag": "v0.8.0",
+      "date": "2026-11-25",
+      "human": "25 ноября 2026",
+      "commit": "f5d0e8b",
+      "title": null,
+      "note": [],
+      "entries": [
+        {
+          "text": "docs(codes): the code of 0.8.0 becomes stable",
+          "commit": "a7719b8"
+        },
+        {
+          "text": "chore(release): sha256 of the 0.8.0 archive",
+          "commit": "04cf8d1"
+        },
+        {
+          "text": "chore(release): version 0.8.0 and its release notes",
+          "commit": "5e1cc17"
+        },
+        {
+          "text": "fix(playground): the playground passes --explain to the checker",
+          "commit": "95e267b"
+        },
+        {
+          "text": "fix(guards): the single refusal forgery forgets the whole list",
+          "commit": "cd5f07e"
+        },
+        {
+          "text": "fix(guards): forgeries, refusals and codes follow the cycle rule",
+          "commit": "3fb236b"
+        },
+        {
+          "text": "test(probes): two probe sets ask the detailed proof report",
+          "commit": "a5c0368"
+        },
+        {
+          "text": "fix(russian): plans over the Russian modules are called with consent",
+          "commit": "677f4cf"
+        },
+        {
+          "text": "fix(guards): three guards read the answers of the rebuilt binary",
+          "commit": "35275bc"
+        },
+        {
+          "text": "fix(packaging): install probes read the short proof report",
+          "commit": "374986b"
+        },
+        {
+          "text": "chore(numbers): the count marks follow print batch 15",
+          "commit": "6eebf26"
+        },
+        {
+          "text": "fix(checker): the doubling forgery names its own source file",
+          "commit": "473e40a"
+        },
+        {
+          "text": "refactor(stdlib): two claims that closed a call cycle are dropped",
+          "commit": "8366aba"
+        },
+        {
+          "text": "test(probes): the expectations follow the rebuilt binary",
+          "commit": "16db861"
+        },
+        {
+          "text": "test(measure): the probes hold the answers of the rebuilt binary",
+          "commit": "15bbf3e"
+        },
+        {
+          "text": "chore(seed): the seed carries print batch 15",
+          "commit": "bda313d"
+        },
+        {
+          "text": "refactor(lsp): the server node readers leave their call cycles",
+          "commit": "c8d153d"
+        },
+        {
+          "text": "refactor(monad-expand): drop claims that call around their own cycle",
+          "commit": "025946e"
+        },
+        {
+          "text": "refactor(setoid-oracle): the scalar true claim compares the scalar",
+          "commit": "ccfb38d"
+        },
+        {
+          "text": "refactor(functor-oracle): the scalar true claim compares the scalar",
+          "commit": "05a049b"
+        },
+        {
+          "text": "refactor(interpret): the variant and record claims are stated once",
+          "commit": "d5241e5"
+        },
+        {
+          "text": "refactor(factcheck): the literal claim is stated once, by the reader",
+          "commit": "e40f4df"
+        },
+        {
+          "text": "refactor(emit-java): the label lookup claim reads the labels directly",
+          "commit": "913a945"
+        },
+        {
+          "text": "refactor(emit-elixir): node reader claims leave their call cycle",
+          "commit": "9d5a70f"
+        },
+        {
+          "text": "refactor(builtins): scalar equality claims leave their call cycle",
+          "commit": "73fb7fb"
+        },
+        {
+          "text": "chore(tables): the Lean checker lags on the false lemma forgery",
+          "commit": "60a2c4f"
+        },
+        {
+          "text": "feat(check): check --strict answers 3 when something is not proved",
+          "commit": "b9a7b60"
+        },
+        {
+          "text": "fix(checker): empty list brackets are dropped outside strings only",
+          "commit": "b98de2b"
+        },
+        {
+          "text": "fix(emit-c): libc-free C files are named by --path, in English words",
+          "commit": "05b9595"
+        },
+        {
+          "text": "refactor(emit-c): the libc-free generator lives in c-without-libc.flang",
+          "commit": "f25b4c8"
+        },
+        {
+          "text": "test(emit-c): a probe goes red when the libc-free C needs any symbol",
+          "commit": "01a2a82"
+        },
+        {
+          "text": "feat(cli): flang emit --target c --freestanding selects the libc-free C",
+          "commit": "6a1e994"
+        },
+        {
+          "text": "feat(emit-c): a libc-free C generator covers words and records",
+          "commit": "169d658"
+        },
+        {
+          "text": "fix(types): a failing builtin in a total function warns until 0.9.0",
+          "commit": "5c73c00"
+        },
+        {
+          "text": "fix(types): a total function holds no builtin that can fail at run time",
+          "commit": "d8dcd77"
+        },
+        {
+          "text": "fix(types): a literal above the exact range joins by the number rule",
+          "commit": "810d60d"
+        },
+        {
+          "text": "chore(numbers): the marks follow the new probes and the longer sources",
+          "commit": "e9b4b29"
+        },
+        {
+          "text": "feat(check)!: a false closed claim fails, unproved claims are counted",
+          "commit": "3924809"
+        },
+        {
+          "text": "feat(example): an example takes a closed expression as a value",
+          "commit": "0f4a274"
+        },
+        {
+          "text": "fix(kernel): an uncovered induction is refused in one short line",
+          "commit": "fdf6bd2"
+        },
+        {
+          "text": "feat(check)!: the shell counts unproved claims and shortens refusals",
+          "commit": "71c716d"
+        },
+        {
+          "text": "fix(lean): the rewrite move of the second checker takes both equalities",
+          "commit": "47a90d9"
+        },
+        {
+          "text": "fix(checker): the C checker replays a list step rewritten by hypothesis",
+          "commit": "a2e7094"
+        },
+        {
+          "text": "feat(record): a list step rewritten by the hypothesis has moves",
+          "commit": "420674d"
+        },
+        {
+          "text": "refactor(distributed): infinity postconditions stop calling their cycle",
+          "commit": "9b5f445"
+        },
+        {
+          "text": "refactor(defunc): reader postconditions stop calling their cycle",
+          "commit": "b67e2e5"
+        },
+        {
+          "text": "refactor(monad-expand): reader postconditions stop calling their cycle",
+          "commit": "7238e38"
+        },
+        {
+          "text": "refactor(parser): reader postconditions stop calling their cycle",
+          "commit": "66454e2"
+        },
+        {
+          "text": "refactor(emit-python): postconditions stop calling their own cycle",
+          "commit": "887dbf0"
+        },
+        {
+          "text": "refactor(emit-java): list and field postconditions leave their cycle",
+          "commit": "6510cbb"
+        },
+        {
+          "text": "refactor(emit-csharp): reader postconditions stop calling their cycle",
+          "commit": "0d04c66"
+        },
+        {
+          "text": "refactor(factcheck): reader postconditions stop calling their cycle",
+          "commit": "90a8b99"
+        },
+        {
+          "text": "refactor(emit-c): a list is not a record becomes a free statement",
+          "commit": "b53db64"
+        },
+        {
+          "text": "fix(totality): every postcondition call joins the termination graph",
+          "commit": "2739cc1"
+        },
+        {
+          "text": "fix(kernel): an imported measure taken on trust is counted",
+          "commit": "8c5402c"
+        },
+        {
+          "text": "docs(adr): a claim over a non-terminating callee is proved on condition",
+          "commit": "d39c0b4"
+        },
+        {
+          "text": "test(probes): claims over a function not known to terminate",
+          "commit": "03f401a"
+        },
+        {
+          "text": "fix(kernel): a claim over a non-terminating callee is conditional",
+          "commit": "a41797a"
+        },
+        {
+          "text": "feat(playground): own text forms come from the meaning of the new parses",
+          "commit": "47fb27e"
+        },
+        {
+          "text": "feat(playground): every sentence of an own text gets the grammar's mark",
+          "commit": "c8fc119"
+        },
+        {
+          "text": "feat(playground): the own text setup reads Russian prose and finds gaps",
+          "commit": "beb0eba"
+        },
+        {
+          "text": "feat(russian): the grammar reads the kinds named by the reference",
+          "commit": "2f90739"
+        },
+        {
+          "text": "fix(russian): the draft markup writes the origin line as the prompt does",
+          "commit": "dcde413"
+        },
+        {
+          "text": "feat(argue): the crosscheck reads the origin line of the markup format",
+          "commit": "196c499"
+        },
+        {
+          "text": "feat(russian): a governed object is a place of the notion",
+          "commit": "38ca0f0"
+        },
+        {
+          "text": "feat(russian): the grammar writes a draft markup with short stable names",
+          "commit": "d9e48f4"
+        },
+        {
+          "text": "feat(russian): the logical form is built from the parses of the grammar",
+          "commit": "bc6f883"
+        },
+        {
+          "text": "test(argue): the article probes call the real crosscheck in one probe",
+          "commit": "a47fbb0"
+        },
+        {
+          "text": "perf(probes): rows with one command are judged from one run of it",
+          "commit": "f68f402"
+        },
+        {
+          "text": "feat(argue): the article report names the kinds, limits and origins",
+          "commit": "414dc70"
+        },
+        {
+          "text": "fix(argue): the stub crosscheck plan is named by its whole path",
+          "commit": "f89f2b9"
+        },
+        {
+          "text": "test(argue): the reference list is counted with initials kept whole",
+          "commit": "c9cf56f"
+        },
+        {
+          "text": "feat(argue): the report shows what the grammar crosscheck answered",
+          "commit": "1763c39"
+        },
+        {
+          "text": "test(argue): the one command is probed on twelve short articles",
+          "commit": "f67d69f"
+        },
+        {
+          "text": "fix(parity): nat-double is false at minus zero and is proved by hand",
+          "commit": "0faf449"
+        },
+        {
+          "text": "fix(argue): draft lines read in any order, sentences keep initials",
+          "commit": "06b0119"
+        },
+        {
+          "text": "feat(argue): a judgment keeps other readings and where it came from",
+          "commit": "4735f0a"
+        },
+        {
+          "text": "feat(argue): steps are judged in parts, with numbers and quantifiers",
+          "commit": "221d815"
+        },
+        {
+          "text": "feat(russian): parses come in order of preference, more is read",
+          "commit": "fc252d9"
+        },
+        {
+          "text": "feat(russian): a parse is given in the record the meaning line reads",
+          "commit": "00bd31b"
+        },
+        {
+          "text": "feat(russian): a parse carries lemmas, parts and structured types",
+          "commit": "dd5cd33"
+        },
+        {
+          "text": "test(russian): the sentence probes run one per step and in CI",
+          "commit": "1b78e8a"
+        },
+        {
+          "text": "fix(russian): leftover glued tokens attach to the last word",
+          "commit": "bc8951e"
+        },
+        {
+          "text": "feat(russian): more constructions are read, fewer false parses",
+          "commit": "7c4590e"
+        },
+        {
+          "text": "test(russian): 88 sentence probes, parsed and refused, per construction",
+          "commit": "57855b5"
+        },
+        {
+          "text": "feat(russian): a sentence of scientific prose gets all its parses",
+          "commit": "54023a1"
+        },
+        {
+          "text": "feat(russian): a sentence is cut into words, glued particles and marks",
+          "commit": "8e84dc1"
+        },
+        {
+          "text": "test(russian): probes of the dictionary on forms and on a sample",
+          "commit": "85f1bbf"
+        },
+        {
+          "text": "feat(russian): a plan writes the table of word features of a text",
+          "commit": "a8a45cb"
+        },
+        {
+          "text": "feat(russian): a word form is answered with all its readings",
+          "commit": "9956d94"
+        },
+        {
+          "text": "chore(release): the tap and the pages follow 0.7.41",
+          "commit": "7ccc03f"
+        },
+        {
+          "text": "fix(russian): the negation of an existence verb gets its form",
+          "commit": "85f2f26"
+        },
+        {
+          "text": "fix(argue): the note of a notion is read as a sentence",
+          "commit": "6d2b9ae"
+        },
+        {
+          "text": "chore(numbers): the count marks follow the meaning modules",
+          "commit": "071b325"
+        },
+        {
+          "text": "feat(russian): a noun in the genitive after a noun adds a feature",
+          "commit": "5d18971"
+        },
+        {
+          "text": "feat(russian): a text gets its markup from the grammar by one command",
+          "commit": "bbaa660"
+        },
+        {
+          "text": "feat(argue): the form of the markup is checked against the grammar",
+          "commit": "ada5db8"
+        },
+        {
+          "text": "feat(russian): a pregroup parse gives a logical form",
+          "commit": "536f5d9"
+        }
+      ],
+      "hidden": 81
+    },
     {
       "version": "0.7.41",
       "tag": "v0.7.41",

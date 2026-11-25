@@ -12,7 +12,7 @@
 
 Под вливанием перечислены заголовки его коммитов — но не все. Правка, от которой язык снаружи не меняется (план, спецификация, проверка, скрипт), сосчитана и не названа: правило то же самое, что у журнала коммитов, и взято из него же, а не написано заново. Числа рядом с вливанием считаются по ВСЕМУ дереву и никакой правки не теряют.
 
-Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/translation` (путей 26), `flang/experimental` (путей 20), `flang/services` (путей 3), `flang/sugar` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
+Правило видимости не знает корней: `flang/foreign` (путей 56), `flang/experimental` (путей 32), `flang/translation` (путей 26), `flang/services` (путей 3), `flang/sugar` (путей 3), `.flangrc` (путей 1), `"docs` (путей 1), `flang/messages` (путей 1), `flangtutor` (путей 1), `install.sh` (путей 1). Коммит, у которого все пути таковы, здесь спрятан. Это каталоги проекта, увезённого из репозитория: в истории они есть, в дереве их нет.
 
 ## Чем считано
 
@@ -33,25 +33,113 @@
 
 ## Где дерево сейчас
 
-Дерево на коммите `e72e3c31b` от 22 ноября 2026. Шагов ствола 4963, из них вливаний 1220; коммитов в истории 10211.
+Дерево на коммите `f5d0e8b34` от 25 ноября 2026. Шагов ствола 5142, из них вливаний 1220; коммитов в истории 10390.
 
 | Число | Сейчас | За последнее вливание | За десять последних |
 |---|---:|---:|---:|
 | Компилятор на JavaScript | 0 | 0 | 0 |
-| Эталон компилятора на flang | 142785 | 0 | +9154 |
-| Программ на flang | 1397 | +2 | +773 |
-| Объявлений `тотальная функция` | 17627 | +67 | +5683 |
-| Объявлений `функция` | 3770 | 0 | +1273 |
-| Объявлений `теорема` | 418 | 0 | +130 |
+| Эталон компилятора на flang | 146484 | 0 | +12853 |
+| Программ на flang | 1487 | +2 | +863 |
+| Объявлений `тотальная функция` | 19032 | +67 | +7088 |
+| Объявлений `функция` | 3868 | 0 | +1371 |
+| Объявлений `теорема` | 419 | 0 | +131 |
 | Файлов проверок | 0 | 0 | −3 |
 | Заметок базы знаний | 0 | 0 | −720 |
 
 «За десять последних» считается от дерева на десятом снизу вливании этого списка до сегодняшнего — то есть ровно то, что видно ниже в первых десяти записях.
 
+## 25 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- docs(codes): the code of 0.8.0 becomes stable (`a7719b8bd`)
+- chore(release): sha256 of the 0.8.0 archive (`04cf8d1f1`)
+- chore(release): version 0.8.0 and its release notes (`5e1cc1768`)
+- fix(playground): the playground passes --explain to the checker (`95e267ba2`)
+
+Ещё 2 правки языка снаружи не меняют.
+
+## 24 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(guards): the single refusal forgery forgets the whole list (`cd5f07e73`)
+- fix(guards): forgeries, refusals and codes follow the cycle rule (`3fb236b79`)
+- test(probes): two probe sets ask the detailed proof report (`a5c0368b0`)
+- fix(russian): plans over the Russian modules are called with consent (`677f4cfd7`)
+- fix(guards): three guards read the answers of the rebuilt binary (`35275bc34`)
+- fix(packaging): install probes read the short proof report (`374986bd4`)
+- chore(numbers): the count marks follow print batch 15 (`6eebf26d7`)
+- refactor(stdlib): two claims that closed a call cycle are dropped (`8366aba60`)
+- test(probes): the expectations follow the rebuilt binary (`16db86179`)
+- test(measure): the probes hold the answers of the rebuilt binary (`15bbf3e5f`)
+- chore(seed): the seed carries print batch 15 (`bda313d0f`)
+- refactor(lsp): the server node readers leave their call cycles (`c8d153dc8`)
+- refactor(monad-expand): drop claims that call around their own cycle (`025946ea4`)
+- refactor(setoid-oracle): the scalar true claim compares the scalar (`ccfb38d48`)
+- refactor(functor-oracle): the scalar true claim compares the scalar (`05a049b79`)
+- refactor(interpret): the variant and record claims are stated once (`d5241e5b5`)
+- refactor(factcheck): the literal claim is stated once, by the reader (`e40f4dfab`)
+- refactor(emit-java): the label lookup claim reads the labels directly (`913a9454f`)
+- refactor(emit-elixir): node reader claims leave their call cycle (`9d5a70f08`)
+- refactor(builtins): scalar equality claims leave their call cycle (`73fb7fbdc`)
+- feat(playground): own text forms come from the meaning of the new parses (`47fb27e23`)
+
+Ещё 14 правок языка снаружи не меняют.
+
 ## 22 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- fix(checker): the doubling forgery names its own source file (`473e40aa3`)
+- chore(numbers): the marks follow the new probes and the longer sources (`e9b4b2926`)
+- fix(lean): the rewrite move of the second checker takes both equalities (`47a90d934`)
+- fix(checker): the C checker replays a list step rewritten by hypothesis (`a2e70946f`)
+- feat(record): a list step rewritten by the hypothesis has moves (`420674d74`)
+- refactor(distributed): infinity postconditions stop calling their cycle (`9b5f44578`)
+- refactor(defunc): reader postconditions stop calling their cycle (`b67e2e582`)
+- refactor(monad-expand): reader postconditions stop calling their cycle (`7238e387f`)
+- refactor(parser): reader postconditions stop calling their cycle (`66454e2cc`)
+- refactor(emit-python): postconditions stop calling their own cycle (`887dbf03d`)
+- refactor(emit-java): list and field postconditions leave their cycle (`6510cbb49`)
+- refactor(emit-csharp): reader postconditions stop calling their cycle (`0d04c6697`)
+- refactor(factcheck): reader postconditions stop calling their cycle (`90a8b99b9`)
+- fix(russian): the draft markup writes the origin line as the prompt does (`dcde413dd`)
+- feat(argue): the crosscheck reads the origin line of the markup format (`196c4995d`)
+- feat(russian): a governed object is a place of the notion (`38ca0f024`)
+- feat(russian): the grammar writes a draft markup with short stable names (`d9e48f42b`)
+- feat(russian): the logical form is built from the parses of the grammar (`bc6f88394`)
+- test(argue): the article probes call the real crosscheck in one probe (`a47fbb06d`)
+- perf(probes): rows with one command are judged from one run of it (`f68f402c7`)
+- feat(argue): the article report names the kinds, limits and origins (`414dc7080`)
+- fix(argue): the stub crosscheck plan is named by its whole path (`f89f2b9bf`)
+- test(argue): the reference list is counted with initials kept whole (`c9cf56f4a`)
+- feat(argue): the report shows what the grammar crosscheck answered (`1763c3900`)
+- test(argue): the one command is probed on twelve short articles (`f67d69f25`)
+- fix(parity): nat-double is false at minus zero and is proved by hand (`0faf44992`)
+- fix(argue): draft lines read in any order, sentences keep initials (`06b01199c`)
+- feat(argue): a judgment keeps other readings and where it came from (`4735f0a45`)
+- feat(argue): steps are judged in parts, with numbers and quantifiers (`221d81518`)
+- feat(russian): parses come in order of preference, more is read (`fc252d9e5`)
+- feat(russian): a parse is given in the record the meaning line reads (`00bd31bcf`)
+- feat(russian): a parse carries lemmas, parts and structured types (`dd5cd3360`)
+- test(russian): the sentence probes run one per step and in CI (`1b78e8a67`)
+- fix(russian): leftover glued tokens attach to the last word (`bc8951e7a`)
+- feat(russian): more constructions are read, fewer false parses (`7c4590e9e`)
+- test(russian): 88 sentence probes, parsed and refused, per construction (`57855b583`)
+- feat(russian): a sentence of scientific prose gets all its parses (`54023a171`)
+- feat(russian): a sentence is cut into words, glued particles and marks (`8e84dc153`)
+- test(russian): probes of the dictionary on forms and on a sample (`85f1bbf3c`)
+- feat(russian): a plan writes the table of word features of a text (`a8a45cba7`)
+- feat(russian): a word form is answered with all its readings (`9956d94a4`)
+- chore(release): the tap and the pages follow 0.7.41 (`7ccc03fe8`)
+- fix(russian): the negation of an existence verb gets its form (`85f2f26f1`)
+- fix(argue): the note of a notion is read as a sentence (`6d2b9ae9a`)
+- chore(numbers): the count marks follow the meaning modules (`071b325d8`)
+- feat(russian): a noun in the genitive after a noun adds a feature (`5d189712c`)
+- feat(russian): a text gets its markup from the grammar by one command (`bbaa6608f`)
+- feat(argue): the form of the markup is checked against the grammar (`ada5db8c1`)
+- feat(russian): a pregroup parse gives a logical form (`536f5d925`)
 - chore(release): sha256 of the 0.7.41 archive (`e72e3c31b`)
 - chore(release): version 0.7.41 and its release notes (`65adca58f`)
 - chore(seed): the seed carries the kernel fixes, holes 47 and 48 close (`6c28235f7`)
@@ -59,42 +147,36 @@
 - fix(kernel): refuse two statements under one name (`59f49fbe0`)
 - fix(kernel): an existence is not decided by computing it (`8710a8153`)
 
-Ещё 4 правки языка снаружи не меняют.
+Ещё 46 правок языка снаружи не меняют.
 
-## 21 ноября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- perf(emit-c): the traced literal print is rechecked with one print (`04b7d626f`)
-- perf(emit-c): a list literal joins its element lines in pieces (`97ced1111`)
-- perf(emit-c): the key table lookup stops at the first match (`aa2070cc0`)
-- fix(translation): function witnesses match the declared function type (`228e4a6be`)
-- fix(translation): reference reads the step mark from the linked tree (`998f957b4`)
-- feat(translation): unfold type aliases in translation validation (`bd35313e0`)
-- fix(translation): function witnesses include functions named in examples (`da1f595e7`)
-- fix(translation): reference guards constant steps, typed fn witnesses (`f614d7772`)
-- feat(lean): the model reads a claim closed by the known prefix rule (`1d52baf1a`)
-
-Ещё 26 правок языка снаружи не меняют.
-
-## 19 ноября 2026
+## 23 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
-- feat(experimental): a folder of user stories is judged as one set (`51a7a1395`)
+- chore(tables): the Lean checker lags on the false lemma forgery (`60a2c4fa1`)
+- feat(check): check --strict answers 3 when something is not proved (`b9a7b6023`)
+- fix(checker): empty list brackets are dropped outside strings only (`b98de2b8d`)
+- feat(playground): every sentence of an own text gets the grammar's mark (`c8fc11940`)
+- feat(playground): the own text setup reads Russian prose and finds gaps (`beb0ebafe`)
+- feat(russian): the grammar reads the kinds named by the reference (`2f9073990`)
 
-## 18 ноября 2026
-
-Приехало прямо в ствол, мимо ветки:
-
-- docs(adr): the checker code ceiling rises with two refuted forgeries (`5db7e7847`)
-
-Ещё 24 правки языка снаружи не меняют.
+Ещё 15 правок языка снаружи не меняют.
 
 ## 17 ноября 2026
 
 Приехало прямо в ствол, мимо ветки:
 
+- fix(emit-c): libc-free C files are named by --path, in English words (`05b9595fc`)
+- refactor(emit-c): the libc-free generator lives in c-without-libc.flang (`f25b4c81c`)
+- test(emit-c): a probe goes red when the libc-free C needs any symbol (`01a2a82b0`)
+- feat(cli): flang emit --target c --freestanding selects the libc-free C (`6a1e99484`)
+- feat(emit-c): a libc-free C generator covers words and records (`169d65887`)
+- fix(types): a total function holds no builtin that can fail at run time (`d8dcd77f9`)
+- fix(types): a literal above the exact range joins by the number rule (`810d60d02`)
+- fix(kernel): an uncovered induction is refused in one short line (`fdf6bd294`)
+- feat(check)!: the shell counts unproved claims and shortens refusals (`71c716dfc`)
+- test(probes): claims over a function not known to terminate (`03f401a64`)
+- fix(kernel): a claim over a non-terminating callee is conditional (`a41797a8b`)
 - fix(reasoning): a read text without a conclusion is not called unread (`2cef430de`)
 - fix(argument-check): the report stops lying about premises and clashes (`013a5a58f`)
 - feat(argue): judge a marked-up text step by step with the kernel (`73b4b1057`)
@@ -109,7 +191,7 @@
 - fix(checker): the C checker refutes two forged branches by a witness (`828935347`)
 - fix(checker): zero and one are different polynomials in the ring rule (`4bcee81f3`)
 
-Ещё 72 правки языка снаружи не меняют.
+Ещё 75 правок языка снаружи не меняют.
 
 ## 16 ноября 2026
 
@@ -122,7 +204,44 @@
 - chore(release): sha256 of the 0.7.40 archive (`f9b41686a`)
 - chore(release): version 0.7.40 and its release notes (`958453aef`)
 
-Ещё 13 правок языка снаружи не меняют.
+Ещё 14 правок языка снаружи не меняют.
+
+## 18 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- fix(types): a failing builtin in a total function warns until 0.9.0 (`5c73c0011`)
+- feat(check)!: a false closed claim fails, unproved claims are counted (`3924809d9`)
+- feat(example): an example takes a closed expression as a value (`0f4a27464`)
+- docs(adr): a claim over a non-terminating callee is proved on condition (`d39c0b467`)
+- docs(adr): the checker code ceiling rises with two refuted forgeries (`5db7e7847`)
+
+Ещё 27 правок языка снаружи не меняют.
+
+## 21 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- refactor(emit-c): a list is not a record becomes a free statement (`b53db6439`)
+- fix(totality): every postcondition call joins the termination graph (`2739cc165`)
+- fix(kernel): an imported measure taken on trust is counted (`8c5402cbd`)
+- perf(emit-c): the traced literal print is rechecked with one print (`04b7d626f`)
+- perf(emit-c): a list literal joins its element lines in pieces (`97ced1111`)
+- perf(emit-c): the key table lookup stops at the first match (`aa2070cc0`)
+- fix(translation): function witnesses match the declared function type (`228e4a6be`)
+- fix(translation): reference reads the step mark from the linked tree (`998f957b4`)
+- feat(translation): unfold type aliases in translation validation (`bd35313e0`)
+- fix(translation): function witnesses include functions named in examples (`da1f595e7`)
+- fix(translation): reference guards constant steps, typed fn witnesses (`f614d7772`)
+- feat(lean): the model reads a claim closed by the known prefix rule (`1d52baf1a`)
+
+Ещё 27 правок языка снаружи не меняют.
+
+## 19 ноября 2026
+
+Приехало прямо в ствол, мимо ветки:
+
+- feat(experimental): a folder of user stories is judged as one set (`51a7a1395`)
 
 ## 15 ноября 2026
 

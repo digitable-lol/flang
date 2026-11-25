@@ -436,7 +436,7 @@
     ожидается "cat -- 'docs/a.flang'"
   пример «a run of the binary, both streams in the order it wrote them»
     дано key равно "run check a.flang"
-    ожидается "bootstrap/flang check a.flang 2>&1"
+    ожидается «Run line» от "check a.flang"
   пример «the lines that name a code»
     дано key равно "code lines"
     ожидается "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
@@ -447,6 +447,16 @@
   свёртка («Shell rules» от rest) начиная с "" как found и pair
     если (found равен "") и притом (key начинается с (голова pair)) то элемент 2 в pair иначе found
 
+тотальная функция «Run line»
+  принимает arguments: строка
+  возвращает строка
+  пример «the root of the tree is cut from what the binary printed, the code is kept»
+    дано arguments равно "check a.flang"
+    ожидается соединить ["o=$(bootstrap/flang check a.flang 2>&1; printf x%s $?); c=${o##*x}; ",
+      "printf %s \"${o%x*}\" | sed \"s#$(pwd -P)/##g\"; exit \"$c\""] по ""
+  соединить ["o=$(bootstrap/flang ", arguments, " 2>&1; printf x%s $?); c=${o##*x}; ",
+    "printf %s \"${o%x*}\" | sed \"s#$(pwd -P)/##g\"; exit \"$c\""] по ""
+
 тотальная функция «Shell rules»
   принимает rest: строка
   возвращает список список строки
@@ -454,11 +464,11 @@
   пример «each key to its line»
     дано rest равно "a"
     ожидается [["file ", "cat -- 'a'"],
-      ["run ", "bootstrap/flang a 2>&1"],
+      ["run ", («Run line» от "a")],
       ["code lines", "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"],
       ["library list", "git ls-files -- ':(glob)flang/stdlib/*.flang'"]]
   [["file ", (соединить ["cat -- '", rest, "'"] по "")],
-   ["run ", (соединить ["bootstrap/flang ", rest, " 2>&1"] по "")],
+   ["run ", («Run line» от rest)],
    ["code lines", (соединить ["git grep -a -n -E ", («Code pattern»)] по "")],
    ["library list", "git ls-files -- ':(glob)flang/stdlib/*.flang'"]]
 

@@ -58,7 +58,7 @@
   пример «anything else is a line of the shell from the root of the tree»
     дано key равно "run --version"
     ожидается (вариант «Запустить процесс» с программа равным "sh"
-      и аргументы равным ["-c", "cd ../.. && bootstrap/flang --version 2>&1"])
+      и аргументы равным ["-c", соединить ["cd ../.. && ", («Run line» от "--version")] по ""])
   пусть path равно («After» от key и "file ")
   пусть placed равно (если path начинается с "/" то path иначе соединить ["../../", path] по "")
   пусть shell равно (соединить ["cd ../.. && ", («Shell line» от key)] по "")

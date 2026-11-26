@@ -1,0 +1,44 @@
+proof record 2
+sourceFile flang/proof/checker/tests/families/surfaces/english-postconditions.flang
+lineCount 27
+charCount 788
+fingerprint 192568506 674614340
+kernel 2
+claimCount 3
+fingerprint256 495ae9c90c16b2498d07e88c3147f9e74f30ddca3250ef55aae5f5d702ecba30
+totalityCount 2
+assertion «a multiple of three is called Fizz» ofFunction «Word for number» line 6
+  kindIs postcondition
+  verdict proved
+  theoremOf noIs
+  ruleIs «goal-split-by-condition»
+  via declarationOf noIs
+theEnd claimOf
+
+assertion «the rest is called by its digits» ofFunction «Word for number» line 7
+  kindIs postcondition
+  verdict proved
+  theoremOf noIs
+  ruleIs «goal-split-by-condition»
+  via declarationOf noIs
+theEnd claimOf
+
+assertion «two words make two items» ofFunction «Pair of words» line 21
+  kindIs postcondition
+  verdict proved
+  theoremOf noIs
+  ruleIs «identity-after-rewriting-by-assumption»
+  via declarationOf noIs
+theEnd claimOf
+
+totality «Word for number» line 3
+  kindIs composition
+  calls primitive «opMod»
+  calls primitive «if»
+  selfCallOf noIs
+  theEnd totalityOf
+totality «Pair of words» line 18
+  kindIs composition
+  selfCallOf noIs
+  theEnd totalityOf
+theEnd recordOf

@@ -1987,6 +1987,13 @@ jobs:
           fi
       - name: The proof record format is versioned and journaled
         run: bootstrap/flang run-script record-format:check
+      - name: Record version 2 keys are one table in the printer and the checker
+        run: |
+          bootstrap/flang run-script record-v2:check
+          if ! bootstrap/flang run-script record-v2:forgery; then
+            echo "проба таблицы записи второй версии промолчала на порче — проверять ею нечего" >&2
+            exit 1
+          fi
       - name: Diagnostic codes guard goes red on forgery
         run: |
           if ! bootstrap/flang io scripts/guards/diagnostic-codes-guard.fscript --plan Подлог --timeout 600000; then

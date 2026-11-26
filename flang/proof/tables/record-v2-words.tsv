@@ -1,0 +1,235 @@
+kind	v1	v2
+word	строка	line
+word	строк	lineCount
+word	строки	lineOf
+word	конец	theEnd
+word	вид	kindIs
+word	нет	noIs
+word	да	yesIs
+word	ход	move
+word	доказано	proved
+word	вердикт	verdict
+word	вердикта	verdictOf
+word	по	via
+word	вывод	inference
+word	утверждение	assertion
+word	утверждения	claimOf
+word	утверждений	claimCount
+word	функции	ofFunction
+word	правило	ruleIs
+word	теорема	theoremIs
+word	теоремы	theoremOf
+word	цель	goal
+word	тотальность	totality
+word	тотальности	totalityOf
+word	тотальностей	totalityCount
+word	тотальна	isTotal
+word	самовызов	selfCall
+word	самовызова	selfCallOf
+word	зовёт	calls
+word	шаг	proofStep
+word	шагов	stepCount
+word	примитив	primitive
+word	объявление	declaration
+word	объявлению	declarationOf
+word	из	outOf
+word	закрыта	closedBy
+word	исходник	sourceFile
+word	запись	recordIs
+word	записи	recordOf
+word	доказательства	ofProof
+word	знаков	charCount
+word	отпечаток	fingerprint
+word	отпечаток256	fingerprint256
+word	ядро	kernel
+word	посылка	premise
+word	вариант	variantIs
+word	варианты	variants
+word	варианта	variantOf
+word	для	for
+word	всех	all
+word	развернуть	unfold
+word	закрывающий	closing
+word	закрыть	close
+word	дано	givenIs
+word	следовательно	hence
+word	сведение	reducedBy
+word	тождеством	byIdentity
+word	тип	typeIs
+word	носитель	carrierIs
+word	случай	caseIs
+word	принцип	principle
+word	база	basis
+word	переписать	rewrite
+word	сам	itself
+word	предположению	hypothesisOf
+word	предположение	hypothesis
+word	примеру	exampleOf
+word	пример	exampleIs
+word	выбор	choice
+word	формой	byForm
+word	законом	byLaw
+word	закон	lawIs
+word	закону	lawOf
+word	законов	lawCount
+word	законы	lawsOf
+word	индукция	inductionIs
+word	встроенный	builtin
+word	сумма	sum
+word	свойству	propertyOf
+word	свойство	propertyIs
+word	истиной	byTruth
+word	обязательство	obligation
+word	вход	entry
+word	на	atPlace
+word	зовущем	caller
+word	деление	division
+word	допущение	assumption
+word	дно	floor
+word	потолок	ceiling
+word	вычислить	compute
+word	поручение	order
+word	соседи	neighbours
+word	таких	such
+word	что	that
+word	постусловию	postconditionOf
+word	таблица	table
+word	таблиц	tableCount
+word	открыта	openedBy
+word	звеньев	linkCount
+word	снятие	discharge
+word	снятия	dischargeOf
+word	столбец	column
+word	может	may
+word	быть	be
+word	связка	connective
+word	промежуточный	intermediate
+word	подстановка	substitution
+word	подстановки	substitutionOf
+word	категорная	categorical
+word	категорной	categoricalOf
+word	категории	categoryOf
+word	факт	fact
+word	требованием	byRequirement
+word	множитель	factor
+word	разрешено	allowed
+word	доказать	prove
+word	отрицание	negation
+word	противоречие	contradiction
+word	свидетель	witness
+word	после	afterThat
+word	отвергнуто	refuted
+word	подставить	substitute
+word	пусть	letIs
+word	левая	left
+word	правая	right
+word	место	place
+word	приставка	prefix
+word	вперёд	forward
+word	назад	backward
+word	ассоциативность	associativity
+word	гипотеза	conjecture
+word	нейтральный	neutral
+word	ноль	zero
+word	вызов	call
+word	функториальность	functoriality
+word	естественность	naturality
+word	и	alongWith
+word	убывает	decreasesIs
+word	аргумент	argument
+word	виток	turn
+word	от	ofArg
+word	план	planIs
+word	плана	planOf
+word	поля	fields
+word	поле	fieldIs
+word	замена	replacement
+word	прогон	runIs
+word	часть	part
+word	единица	unit
+word	при	under
+word	условии	condition
+word	псевдоним	aliasIs
+word	длина	lengthIs
+word	произведение	product
+word	положительно	positive
+word	мера	measure
+word	не	notIs
+word	меньше	less
+word	сетка	grid
+word	минус	minusSign
+word	плюс	plusSign
+word	раскрытие	expansion
+word	раскрытия	expansionOf
+rule	неотрицательность по построению	nonnegative-by-construction
+rule	ограниченность точным потолком по построению	bounded-by-exact-ceiling-by-construction
+rule	тождество после переписки допущением	identity-after-rewriting-by-assumption
+rule	порядок по построению	order-by-construction
+rule	строгий порядок по построению	strict-order-by-construction
+rule	порядок соседних по построению	neighbour-order-by-construction
+rule	вхождение по построению	membership-by-construction
+rule	цель есть допущение	goal-is-assumption
+rule	несовместимые допущения	incompatible-assumptions
+rule	вычисление замкнутой цели	evaluation-of-closed-goal
+rule	разбор цели по условию	goal-split-by-condition
+rule	цель-выбор с истинной ветвью	choice-goal-with-true-branch
+rule	разбор случаев по дизъюнкции в допущении	cases-by-disjunction-in-assumption
+rule	разбор случаев по внутреннему условию цели	cases-by-inner-condition-of-goal
+rule	равенство, решённое счётом замкнутых частей	equality-by-evaluating-closed-parts
+rule	начало по построению	prefix-by-construction
+rule	все элементы по построению	all-elements-by-construction
+rule	переписка доказанными равенствами	rewriting-by-proved-equalities
+rule	кольцо точного целого	exact-integer-ring
+rule	равенство записей по полям	record-equality-by-fields
+rule	запись из своих полей	record-from-its-fields
+rule	равенство себе на точном типе	self-equality-on-exact-type
+rule	переписка цели выписанными шагами	goal-rewriting-by-written-steps
+rule	линейная арифметика	linear-arithmetic
+family	Разв	Unfold
+family	ГипО	HypOrder
+family	ГипД	HypFloor
+family	Выч	Eval
+family	Тожд	Ident
+family	Инд	Induct
+family	Кол	Ring
+family	Лин	Linear
+family	Пред	Natural
+family	Цел	Integer
+family	Кон	Conj
+family	Вкл	Incl
+family	Отр	Neg
+family	Или	Disj
+family	Мер	Measure
+family	СС	Neighbour
+family	Сл	Words
+family	Св	Witness
+family	Пр	Contra
+family	Зв	Link
+family	Н	Nonneg
+family	П	Bound
+family	О	Order
+family	С	Strict
+family	Д	Floor
+family	Р	Branch
+family	Т	Assumed
+family	В	Member
+family	Э	AllElems
+family	Ч	Prefix
+family	М	Rewrite
+family	К	Chained
+family	И	Inst
+primitive	плюс	opAdd
+primitive	минус	opSub
+primitive	умножить	opMul
+primitive	делить	opDiv
+primitive	остаток	opMod
+primitive	длина	length
+primitive	соединить	join
+primitive	подстрока	substring
+primitive	содержит	contains
+primitive	начинается	startsWith
+primitive	если	if
+primitive	разбор	match
+primitive	свёртка	fold
+primitive	отобразить	map
+primitive	отфильтровать	filter

@@ -105,6 +105,7 @@ Every flag also has a Cyrillic spelling, given in brackets.
 | `--json` | with `--proof`: the same report as JSON |
 | `--strict` (`--строго`) | with `--proof`: exit code `0` only when every guarantee is proved. For CI. See below. Without `--proof`: exit code `3` when something is not proved or only tested and nothing is false; plain `check` gives `0` there. Not allowed together with `--fast` |
 | `--record <file>` (`--записать`) | with `--proof`: write the proof itself to a file, so that the independent checker `flang/proof/checker/checker.c` can re-check it |
+| `--record-version 2` | with `--record`: write version 2 of the record — keys instead of Russian frame words, formulas in signs ([The proof record](record-format.html)); without the key, version 1. Since 0.9.0 |
 | `--fast` (`--быстро`) | only names, types, exhaustiveness of pattern matching and termination. The prover and the unit tests do not run, the output says so, and the exit code is `4`. Not allowed together with `--proof` |
 | `--step-limit N` (`--предел-шагов`) | raise the step limit for this run. Needed for `--proof --json` on very large files. `check` has no `--max-steps`: that is a bad call, exit `2` |
 | `--depth-limit N` (`--предел-глубины`) | raise the call-depth limit for this run. Not the same as `--max-depth` of `emit`, which is written into the generated program |

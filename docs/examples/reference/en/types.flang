@@ -5,7 +5,7 @@ object «Line»
   price is number
   discount may be number
 
-тип «Invoice» это list «Line»
+type «Invoice» это list «Line»
 
 type «Answer»
   variant Ok contains value: number

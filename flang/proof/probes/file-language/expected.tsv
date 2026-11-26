@@ -1,0 +1,8 @@
+program	surface	code	word
+mixed-else.flang	check	1	слово «else» пишут на английском, а файл написан на русском
+freed-name.flang	check	0	замечаний нет
+marked-english.flang	check	0	замечаний нет
+unknown-mark.flang	check	1	называет язык, которого нет
+tie.flang	check	1	ключевых слов двух языков в нём поровну
+record-v2.flang	check --proof --record /dev/stdout --record-version 2	0	assertion «сумма пары неотрицательна» ofFunction «Сумма пары» line 6
+record-v2.flang	check --proof --record /dev/stdout	0	утверждение «сумма пары неотрицательна» функции «Сумма пары» строка 6

@@ -13,7 +13,7 @@ covers four things.
 
 | What | What is promised |
 | --- | --- |
-| Syntax | A file that passes `flang check` in 1.0 passes it in every 1.x. Keywords keep their meaning. New constructs do not change how old programs are read. |
+| Syntax | A file that passes `flang check` in 1.0 passes it in every 1.x. Keywords keep their meaning. New constructs do not change how old programs are read. The promise is given to a file written in one complete writing language (Russian; English once it has every word of the table); Esperanto and Chinese are experimental. |
 | `FLANG_*` error codes | A code does not disappear and does not change its meaning. New codes are added. |
 | Proof record format | A record made by `flang check --proof` in 1.0 is accepted by the `checker` program of every 1.x. |
 | Command line | Commands, flags and exit codes stay. In `--json` output fields do not disappear and do not change type; new fields are added. |

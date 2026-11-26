@@ -58,7 +58,9 @@ error code; every code is explained in the [Diagnostics reference](diagnostics.h
 
 Every keyword has an English and a Russian spelling (there are four spellings in
 all, called surfaces). They are the same keyword, not a translation: both parse
-to the same tree, and one file may use either. There are {{словарь.понятий}}
+to the same tree. A file uses one of them: the line `// surface: en` at the top
+names it, or, without that line, the language with most keywords in the file
+wins, and a word of another language in the file is just a name. There are {{словарь.понятий}}
 concepts; the full list with all four spellings is the
 [Glossary](../glossary.html), and how the spellings work is
 [Four writing surfaces](../surfaces.html) — both in Russian.
@@ -865,7 +867,7 @@ object «Line»
   price is number
   discount may be number
 
-тип «Invoice» это list «Line»
+type «Invoice» это list «Line»
 
 type «Answer»
   variant Ok contains value: number

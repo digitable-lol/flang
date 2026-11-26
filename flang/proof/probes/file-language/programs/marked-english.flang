@@ -1,0 +1,10 @@
+// surface: en
+module «Marked English»
+
+total function «Next»
+  accepts пусть: number
+  returns number
+  example «two gives three»
+    given пусть equals 2
+    expected 3
+  пусть plus 1

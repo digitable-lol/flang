@@ -232,7 +232,20 @@ def «голосаПоверхностей» : List (String × List String) :=
    ("eo", ["totala funkcio ", "funkcio ", "akceptas ", "redonas ", "ekzemplo ", "donite ", "atendata "]),
    ("zh", ["完全 ", "函数 ", "接受 ", "返回 ", "示例 ", "给定 ", "期望 "])]
 
+/-- ADR-0255: язык, названный пометкой `// surface: xx` среди пустых строк и
+комментариев до первой строки программы, сильнее голосования; `ru` и неизвестный
+код — перевода нет. Тот же порядок, что у `язык_исходника` в checker.c. -/
+def «языкПометки» («строки» : List String) : Option (Option String) := Id.run do
+  for l in «строки» do
+    let c := String.ofList (l.toList.filter (fun ch => ch ≠ ' ' && ch ≠ '\t' && ch ≠ '\r'))
+    if c.startsWith "//surface:" then
+      let code := String.ofList (c.toList.drop "//surface:".length)
+      return some (if ["en", "eo", "zh"].contains code then some code else none)
+    if c ≠ "" && !c.startsWith "//" then return none
+  return none
+
 def «языкИсходника» («строки» : List String) : Option String := Id.run do
+  if let some r := «языкПометки» «строки» then return r
   let ls := «строки».map (fun l => «обрезатьКрая» («безПримечания» l))
   let n : List Nat := «голосаПоверхностей».map (fun (_, ws) => (ls.filter (fun x => ws.any (x.startsWith ·))).length)
   let mut «лучший» : Nat := 0

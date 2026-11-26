@@ -147,6 +147,16 @@ public final class Value {
   /** Поля записи или варианта в порядке объявления; у остальных null. */
   public final Field[] fields;
   public final long bits;
+  /**
+   * Величина «точного целого со знаком»; у остальных видов null.
+   *
+   * Это слово без ширины: тег тот же TAG_WORD, имя типа в str, а вместо
+   * битов — BigInteger без верхней границы.
+   */
+  public final java.math.BigInteger big;
+
+  /** Имя типа слова без ширины. */
+  public static final String SIGNED = "точное целое со знаком";
 
   private Value(int tag, double num, boolean bit, String str, Value[] items, Field[] fields) {
     this(tag, num, bit, str, items, items == null ? 0 : items.length, null, fields);
@@ -164,6 +174,7 @@ public final class Value {
     this.grow = grow;
     this.fields = fields;
     this.bits = 0L;
+    this.big = null;
   }
 
   private Value(String name, long bits) {
@@ -176,6 +187,30 @@ public final class Value {
     this.grow = null;
     this.fields = null;
     this.bits = bits;
+    this.big = null;
+  }
+
+  private Value(java.math.BigInteger whole) {
+    this.tag = TAG_WORD;
+    this.num = 0.0;
+    this.bit = false;
+    this.str = SIGNED;
+    this.items = null;
+    this.count = 0;
+    this.grow = null;
+    this.fields = null;
+    this.bits = 0L;
+    this.big = whole;
+  }
+
+  /** Точное целое со знаком. */
+  public static Value signed(java.math.BigInteger whole) {
+    return new Value(whole);
+  }
+
+  /** Слово без ширины — «точное целое со знаком»? */
+  public static boolean isSigned(Value value) {
+    return value.tag == TAG_WORD && value.big != null;
   }
 
   public static int wordWidth(String name) {
@@ -191,6 +226,9 @@ public final class Value {
   }
 
   public static java.math.BigInteger wordInt(Value value) {
+    if (value.big != null) {
+      return value.big;
+    }
     int width = wordWidth(value.str);
     java.math.BigInteger unsigned = new java.math.BigInteger(Long.toUnsignedString(value.bits));
     boolean negative = value.str.charAt(0) == 'i' && ((value.bits >>> (width - 1)) & 1L) != 0L;
@@ -489,6 +527,9 @@ public final class Value {
 
   public static boolean wordEqual(Value left, Value right) {
     if (left.tag == TAG_WORD && right.tag == TAG_WORD) {
+      if (left.big != null || right.big != null) {
+        return left.str.equals(right.str) && wordInt(left).equals(wordInt(right));
+      }
       return left.str.equals(right.str) && left.bits == right.bits;
     }
     Value word = left.tag == TAG_WORD ? left : right;

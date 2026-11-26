@@ -231,6 +231,9 @@ defmodule Flang.Rt do
   @code_property "FLANG_PROPERTY"
   @code_overflow "FLANG_OVERFLOW"
   @word_ceiling 9_007_199_254_740_991
+  # Слово без ширины: точное целое со знаком. Держится тем же видом :word, что
+  # и u8 … i64, а значение — само целое BEAM без маски.
+  @signed_name "точное целое со знаком"
 
   defguardp is_word(value) when is_tuple(value) and elem(value, 0) == :word
 
@@ -1774,6 +1777,7 @@ defmodule Flang.Rt do
 
   defp take_exponent(codes), do: codes == []
 
+  def word(@signed_name, whole), do: {:word, @signed_name, whole}
   def word(name, bits), do: {:word, name, Bitwise.band(bits, Bitwise.bsl(1, word_width(name)) - 1)}
 
   defp word_width(name), do: String.to_integer(binary_part(name, 1, byte_size(name) - 1))
@@ -1784,6 +1788,8 @@ defmodule Flang.Rt do
   end
 
   def word_int({:word, _, bits}), do: bits
+
+  defp word_fits(_whole, @signed_name), do: true
 
   defp word_fits(whole, "i" <> _ = name) do
     half = Bitwise.bsl(1, word_width(name) - 1)
@@ -1856,6 +1862,13 @@ defmodule Flang.Rt do
     word(name, whole)
   end
 
+  # Целое со знаком делится вниз, как // и % у Python: остаток со знаком
+  # делителя. Слова с шириной делятся с отбрасыванием дробной части — ниже.
+  defp word_divide(op, {:word, @signed_name, a}, {:word, _, b}) do
+    if b == 0, do: raise(fail(@code_property, @signed_name <> ": «" <> op <> "» на ноль не определено"))
+    word(@signed_name, if(op == "mod", do: Integer.mod(a, b), else: Integer.floor_div(a, b)))
+  end
+
   defp word_divide(op, left, right) do
     a = word_int(left)
     b = word_int(right)
@@ -1873,6 +1886,11 @@ defmodule Flang.Rt do
   defp word_step("mul", left, right), do: word_checked("mul", left, right, word_int(left) * word_int(right))
   defp word_step("div", left, right), do: word_divide("div", left, right)
   defp word_step("mod", left, right), do: word_divide("mod", left, right)
+  # Перенос по кругу, двойное произведение и побитовые над словом без ширины
+  # смысла не имеют; проверка типов их не пропускает, а здесь — чистый отказ.
+  defp word_step(op, {:word, @signed_name, _}, _) when op not in ["add", "sub", "mul", "div", "mod"],
+    do: signed_refusal(op)
+
   defp word_step("addWrap", {:word, name, a}, {:word, _, b}), do: word(name, a + b)
   defp word_step("subWrap", {:word, name, a}, {:word, _, b}), do: word(name, a - b)
   defp word_step("mulWrap", {:word, name, a}, {:word, _, b}), do: word(name, a * b)
@@ -1880,6 +1898,10 @@ defmodule Flang.Rt do
   defp word_step("bitAnd", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.band(a, b))
   defp word_step("bitOr", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.bor(a, b))
   defp word_step("bitXor", {:word, name, a}, {:word, _, b}), do: word(name, Bitwise.bxor(a, b))
+
+  defp signed_refusal(op) do
+    raise fail(@code_type, "над " <> @signed_name <> " «" <> op <> "» не определено")
+  end
 
   defp word_arith(op, left, right) do
     {a, b} = word_pair(left, right)
@@ -1902,6 +1924,8 @@ defmodule Flang.Rt do
 
   defp word_count_int(whole) when abs(whole) <= @word_ceiling, do: whole * 1.0
   defp word_count_int(_), do: @word_ceiling * 1.0
+
+  defp word_shift_count(op, {:word, @signed_name, _}, _right), do: signed_refusal(op)
 
   defp word_shift_count(op, {:word, name, _}, right) do
     count = word_count(right)
@@ -1973,6 +1997,7 @@ defmodule Flang.Rt do
   def rotate_left(left, right), do: word_shift("rotateLeft", left, right)
   def rotate_right(left, right), do: word_shift("rotateRight", left, right)
 
+  def b_bit_not({:word, @signed_name, _}), do: signed_refusal("bitNot")
   def b_bit_not({:word, name, bits}), do: word(name, Bitwise.bnot(bits))
 
   def b_bit_not(value) do
@@ -1987,6 +2012,7 @@ defmodule Flang.Rt do
   def b_i16(value), do: word_convert("i16", value)
   def b_i32(value), do: word_convert("i32", value)
   def b_i64(value), do: word_convert("i64", value)
+  def b_signed(value), do: word_convert(@signed_name, value)
 
   @doc "«к числу»."
   def b_to_number({:word, _, _} = source), do: word_to_number(source)

@@ -118,7 +118,7 @@ def encode_value(value):
     if tag == rt.TAG_STRING:
         return {"s": value.data}
     if tag == rt.TAG_WORD:
-        return {"w": value.name, "v": str(rt.word_int(value))}
+        return {"w": value.name, "v": rt.word_text(value)}
     if tag == rt.TAG_LIST:
         # Через list_items, а не через .data: список, выданный «добавить»,
         # делит массив с другими, и его содержимое это data[:end].

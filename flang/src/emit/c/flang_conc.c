@@ -247,8 +247,21 @@ static fl_status fl_conc_clone(fl_ctx *ctx, fl_value value, fl_value *out,
   case FL_NOTHING:
   case FL_NUMBER:
   case FL_FLAG:
+    *out = value;
+    break;
   case FL_WORD:
     *out = value;
+    if (value.as.word.width == 0u && value.as.word.bits > 0u) {
+      /* Разряды точного целого со знаком живут в арене — копируются. */
+      const size_t size = (size_t)value.as.word.bits * sizeof(double);
+      double *digits = (double *)fl_arena_alloc(ctx->arena, size);
+      if (digits == NULL) {
+        fl_leave(ctx);
+        return fl_conc_memory(ctx, error);
+      }
+      memcpy(digits, value.as.word.digits, size);
+      out->as.word.digits = digits;
+    }
     break;
   case FL_STRING: {
     char *text = (char *)fl_arena_alloc(ctx->arena, value.as.string.bytes + 1);

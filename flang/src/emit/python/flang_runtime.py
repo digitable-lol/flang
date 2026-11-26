@@ -348,7 +348,7 @@ def describe(value):
     if tag == TAG_FLAG:
         return "да" if value.data else "нет"
     if tag == TAG_WORD:
-        return str(word_int(value))
+        return word_text(value)
     return number_text(value.data)
 
 
@@ -1102,6 +1102,23 @@ def concat(ctx, left, right):
 EXACT_CEILING = 9007199254740991
 
 
+# «Точное целое со знаком» — слово без ширины. Живёт в том же виде TAG_WORD,
+# что и u8 … i64, и ходит теми же путями рантайма: так его видит и проверка
+# типов. Отличие одно — в data лежит само значение, родное int Python без
+# потолка, а не биты по модулю 2^ширина. Ширины у него нет, поэтому
+# word_width для него не зовётся никогда: каждая дорожка слов спрашивает
+# is_signed раньше.
+SIGNED_NAME = "точное целое со знаком"
+
+
+def is_signed(value):
+    return value.tag == TAG_WORD and value.name == SIGNED_NAME
+
+
+def signed(whole):
+    return Value(TAG_WORD, whole, SIGNED_NAME)
+
+
 def word(name, bits):
     return Value(TAG_WORD, bits & ((1 << word_width(name)) - 1), name)
 
@@ -1111,13 +1128,47 @@ def word_width(name):
 
 
 def word_int(value):
+    if value.name == SIGNED_NAME:
+        return value.data
     width = word_width(value.name)
     if value.name[0] == "i" and value.data >> (width - 1):
         return value.data - (1 << width)
     return value.data
 
 
+# Десятичная запись и разбор кусками по 18 цифр, а не str()/int(): с Python
+# 3.11 оба отказывают на числах длиннее 4300 цифр (sys.set_int_max_str_digits),
+# а у целого со знаком потолка нет. Менять общий для процесса предел из
+# рантайма нельзя — он чужой.
+DECIMAL_CHUNK = 10**18
+
+
+def decimal_text(whole):
+    sign = "-" if whole < 0 else ""
+    rest = -whole if whole < 0 else whole
+    parts = []
+    while rest >= DECIMAL_CHUNK:
+        rest, low = divmod(rest, DECIMAL_CHUNK)
+        parts.append(f"{low:018d}")
+    parts.append(str(rest))
+    return sign + "".join(reversed(parts))
+
+
+def _decimal_parse(body):
+    whole = 0
+    for at in range(0, len(body), 18):
+        chunk = body[at : at + 18]
+        whole = whole * 10 ** len(chunk) + int(chunk)
+    return whole
+
+
+def word_text(value):
+    return decimal_text(word_int(value))
+
+
 def _word_fits(number, name):
+    if name == SIGNED_NAME:
+        return True
     width = word_width(name)
     if name[0] == "i":
         return -(1 << (width - 1)) <= number < (1 << (width - 1))
@@ -1125,6 +1176,8 @@ def _word_fits(number, name):
 
 
 def _word_of_int(name, number):
+    if name == SIGNED_NAME:
+        return signed(number)
     return word(name, number % (1 << word_width(name)))
 
 
@@ -1143,7 +1196,7 @@ def _word_from_digits(form, name, value):
     body = digits[1:] if digits.startswith("-") else digits
     if body == "" or any(symbol not in "0123456789" for symbol in body):
         raise fail(CODE_BUILTIN_ARGS, f"«{form}»: строка {describe(value)} — не десятичное целое")
-    whole = -int(body) if digits.startswith("-") else int(body)
+    whole = -_decimal_parse(body) if digits.startswith("-") else _decimal_parse(body)
     if not _word_fits(whole, name):
         raise fail(CODE_OVERFLOW, f"{digits} не помещается в {name}")
     return _word_of_int(name, whole)
@@ -1158,11 +1211,28 @@ def _word_convert(name, value):
         raise fail(CODE_BUILTIN_ARGS, f"«{name}»: переводится число или слово, получено {type_name(value)}")
     whole = word_int(value)
     if not _word_fits(whole, name):
-        raise fail(CODE_OVERFLOW, f"{whole} не помещается в {name}")
+        raise fail(CODE_OVERFLOW, f"{decimal_text(whole)} не помещается в {name}")
     return _word_of_int(name, whole)
 
 
+def _signed_side(value):
+    """Сторона двучлена с целым со знаком: целое как есть, число переводится.
+
+    Слово другой ширины, строка, список — смешение. Образец текста всегда
+    целое со знаком, с какой бы стороны оно ни стояло: у вычислителя проверка
+    «это целое» идёт раньше проверки «это слово».
+    """
+    if is_signed(value):
+        return value
+    if value.tag == TAG_NUMBER:
+        return _word_from_number(SIGNED_NAME, value.data)
+    raise fail(CODE_TYPE, f"{SIGNED_NAME} и {type_name(value)} не смешиваются")
+
+
 def _word_pair(left, right):
+    if is_signed(left) or is_signed(right):
+        a = _signed_side(left)
+        return a, _signed_side(right)
     pattern = left if left.tag == TAG_WORD else right
     other = right if left.tag == TAG_WORD else left
     if other.tag == TAG_NUMBER:
@@ -1198,6 +1268,31 @@ def _word_halves(left, right):
     return record({"старшая": word(left.name, product >> width), "младшая": word(left.name, product)})
 
 
+def _signed_divide(op, left, right):
+    # Целое со знаком делится вниз, как // и % Python: остаток со знаком
+    # делителя. Слова делятся с отсечением (_word_divide) — у них своё.
+    if right.data == 0:
+        raise fail(CODE_PROPERTY, f"{SIGNED_NAME}: «{op}» на ноль не определено")
+    if op == "div":
+        return signed(left.data // right.data)
+    return signed(left.data % right.data)
+
+
+SIGNED_STEPS = {
+    "add": lambda left, right: signed(left.data + right.data),
+    "sub": lambda left, right: signed(left.data - right.data),
+    "mul": lambda left, right: signed(left.data * right.data),
+    "div": lambda left, right: _signed_divide("div", left, right),
+    "mod": lambda left, right: _signed_divide("mod", left, right),
+}
+
+
+def _signed_refused(op):
+    # Перенос, двойное произведение, биты и сдвиги проверка типов отвергает
+    # для целого со знаком; сюда доходит только мимо неё. Текст — вычислителя.
+    return fail(CODE_TYPE, f"над {SIGNED_NAME} «{op}» не определено")
+
+
 WORD_STEPS = {
     "add": lambda left, right: _word_checked("add", left, right, word_int(left) + word_int(right)),
     "sub": lambda left, right: _word_checked("sub", left, right, word_int(left) - word_int(right)),
@@ -1216,6 +1311,10 @@ WORD_STEPS = {
 
 def _word_arith(op, left, right):
     a, b = _word_pair(left, right)
+    if is_signed(a):
+        if op not in SIGNED_STEPS:
+            raise _signed_refused(op)
+        return SIGNED_STEPS[op](a, b)
     return WORD_STEPS[op](a, b)
 
 
@@ -1237,6 +1336,9 @@ def _word_shift_count(op, left, right):
 
 
 def _word_shift(op, left, right):
+    if is_signed(left) or is_signed(right):
+        _word_pair(left, right)
+        raise _signed_refused(op)
     step = _word_shift_count(op, left, right)
     width = word_width(left.name)
     bits = left.data
@@ -1262,7 +1364,8 @@ def _word_equal(left, right):
 def _word_to_number(value):
     whole = word_int(value)
     if abs(whole) > EXACT_CEILING:
-        raise fail(CODE_OVERFLOW, f"{whole} за потолком точных чисел {EXACT_CEILING}")
+        shown = decimal_text(whole)
+        raise fail(CODE_OVERFLOW, f"{shown} за потолком точных чисел {EXACT_CEILING}")
     return Value(TAG_NUMBER, float(whole))
 
 
@@ -1311,6 +1414,8 @@ def rotate_right(ctx, left, right):
 
 
 def b_bit_not(ctx, value):
+    if is_signed(value):
+        raise _signed_refused("bitNot")
     if value.tag != TAG_WORD:
         raise fail(CODE_BUILTIN_ARGS, f"«bitNot»: аргумент должен быть словом, получено {type_name(value)}")
     return word(value.name, ~value.data)
@@ -1346,6 +1451,10 @@ def b_i32(ctx, value):
 
 def b_i64(ctx, value):
     return _word_convert("i64", value)
+
+
+def b_signed(ctx, value):
+    return _word_convert(SIGNED_NAME, value)
 
 
 def _expect_string(name, value, role):
@@ -1683,7 +1792,7 @@ def b_to_string(ctx, value):
     if tag == TAG_NOTHING:
         return Value(TAG_STRING, "ничто")
     if tag == TAG_WORD:
-        return Value(TAG_STRING, str(word_int(value)))
+        return Value(TAG_STRING, word_text(value))
     raise fail(
         CODE_BUILTIN_ARGS,
         f"«к строке»: ожидается скаляр, получено {type_name(value)}",

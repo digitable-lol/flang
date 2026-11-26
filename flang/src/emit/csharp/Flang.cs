@@ -920,10 +920,16 @@ public static class Flang
     }
 
     /// <summary>Равенство значений как выражение языка.</summary>
-    public static Value Eq(Value left, Value right) => Value.Flag(Value.Equal(left, right));
+    public static Value Eq(Value left, Value right) =>
+        Value.IsSigned(left) || Value.IsSigned(right)
+            ? SignedCompare("eq", left, right)
+            : Value.Flag(Value.Equal(left, right));
 
     /// <summary>Неравенство значений как выражение языка.</summary>
-    public static Value Neq(Value left, Value right) => Value.Flag(!Value.Equal(left, right));
+    public static Value Neq(Value left, Value right) =>
+        Value.IsSigned(left) || Value.IsSigned(right)
+            ? SignedCompare("neq", left, right)
+            : Value.Flag(!Value.Equal(left, right));
 
     /* ───────────────────────── проверки аргументов ───────────────────────── */
 
@@ -1041,6 +1047,10 @@ public static class Flang
 
     private static bool WordFits(System.Numerics.BigInteger whole, string name)
     {
+        if (name == Value.SignedName)
+        {
+            return true;
+        }
         int width = Value.WordWidth(name);
         if (name[0] == 'i')
         {
@@ -1097,6 +1107,10 @@ public static class Flang
 
     private static Value WordConvert(string name, Value value)
     {
+        if (name == Value.SignedName)
+        {
+            return SignedConvert(value);
+        }
         switch (value.Tag)
         {
             case Value.TagNumber:
@@ -1118,6 +1132,10 @@ public static class Flang
 
     private static Value[] WordPair(Value left, Value right)
     {
+        if (Value.IsSigned(left) || Value.IsSigned(right))
+        {
+            return [SignedSide(left), SignedSide(right)];
+        }
         bool first = left.Tag == Value.TagWord;
         Value pattern = first ? left : right;
         Value other = first ? right : left;
@@ -1174,6 +1192,10 @@ public static class Flang
         Value[] pair = WordPair(left, right);
         Value a = pair[0];
         Value b = pair[1];
+        if (Value.IsSigned(a))
+        {
+            return SignedArith(op, a.Big, b.Big);
+        }
         return op switch
         {
             "add" => WordChecked(op, a, b, Value.WordInt(a) + Value.WordInt(b)),
@@ -1193,6 +1215,10 @@ public static class Flang
 
     private static int WordShiftCount(string op, Value left, Value right)
     {
+        if (Value.IsSigned(left))
+        {
+            throw SignedUndefined(op);
+        }
         if (left.Tag != Value.TagWord)
         {
             throw Fail(
@@ -1286,6 +1312,10 @@ public static class Flang
                 FlangError.CodeBuiltinArgs,
                 "«bitNot»: аргумент должен быть словом, получено " + Value.TypeName(value));
         }
+        if (Value.IsSigned(value))
+        {
+            throw SignedUndefined("bitNot");
+        }
         return Value.Word(value.Str, ~value.Bits);
     }
 
@@ -1304,6 +1334,113 @@ public static class Flang
     public static Value BI32(Ctx ctx, Value value) => WordConvert("i32", value);
 
     public static Value BI64(Ctx ctx, Value value) => WordConvert("i64", value);
+
+    public static Value BSigned(Ctx ctx, Value value) => WordConvert(Value.SignedName, value);
+
+    /* ───────────────────── точное целое со знаком ───────────────────── */
+    // Слово без ширины: тот же вид значения (TagWord), что у u8 … i64, и те же
+    // пути — WordPair, WordArith, WordConvert, — но значение держит
+    // BigInteger и не переполняется. Деление и остаток идут ВНИЗ, как // и % в
+    // Python: остаток берёт знак делителя. Тексты отказов — дословно
+    // интерпретатора («Счёт целых со знаком», «Целое из числа», «Целое из текста»).
+
+    private static Value SignedFromNumber(double number)
+    {
+        if (double.IsNaN(number) || double.IsInfinity(number) || number != Math.Floor(number))
+        {
+            throw Fail(CodeOverflow, Value.NumberText(number) + " не целое и в " + Value.SignedName + " не переводится");
+        }
+        return Value.Signed(new System.Numerics.BigInteger(number));
+    }
+
+    private static Value SignedFromDigits(Value value)
+    {
+        string digits = value.Str;
+        string body = digits.StartsWith('-') ? digits.Substring(1) : digits;
+        bool decimalDigits = body.Length > 0;
+        foreach (char symbol in body)
+        {
+            decimalDigits = decimalDigits && symbol >= '0' && symbol <= '9';
+        }
+        if (!decimalDigits)
+        {
+            throw Fail(
+                FlangError.CodeBuiltinArgs,
+                "«" + Value.SignedName + "»: строка " + Value.Describe(value) + " — не десятичное целое");
+        }
+        return Value.Signed(System.Numerics.BigInteger.Parse(digits, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture));
+    }
+
+    private static Value SignedConvert(Value value)
+    {
+        switch (value.Tag)
+        {
+            case Value.TagNumber:
+                return SignedFromNumber(value.Num);
+            case Value.TagString:
+                return SignedFromDigits(value);
+            case Value.TagWord:
+                return Value.IsSigned(value) ? value : Value.Signed(Value.WordInt(value));
+            default:
+                throw Fail(
+                    FlangError.CodeBuiltinArgs,
+                    "«" + Value.SignedName + "»: переводится число или слово, получено " + Value.TypeName(value));
+        }
+    }
+
+    /// <summary>Сторона двучлена с точным целым: целое как есть, число переводится.</summary>
+    private static Value SignedSide(Value value)
+    {
+        if (Value.IsSigned(value))
+        {
+            return value;
+        }
+        if (value.Tag == Value.TagNumber)
+        {
+            return SignedFromNumber(value.Num);
+        }
+        throw Fail(FlangError.CodeType, Value.SignedName + " и " + Value.TypeName(value) + " не смешиваются");
+    }
+
+    private static FlangError SignedUndefined(string op) =>
+        Fail(FlangError.CodeType, "над " + Value.SignedName + " «" + op + "» не определено");
+
+    private static Value SignedArith(string op, System.Numerics.BigInteger a, System.Numerics.BigInteger b)
+    {
+        switch (op)
+        {
+            case "add":
+                return Value.Signed(a + b);
+            case "sub":
+                return Value.Signed(a - b);
+            case "mul":
+                return Value.Signed(a * b);
+            case "div":
+            case "mod":
+                if (b.IsZero)
+                {
+                    throw Fail(FlangError.CodeProperty, Value.SignedName + ": «" + op + "» на ноль не определено");
+                }
+                /* BigInteger.DivRem режет к нулю; поправка уводит частное вниз,
+                   когда остаток ненулевой и знаком расходится с делителем. */
+                var quotient = System.Numerics.BigInteger.DivRem(a, b, out System.Numerics.BigInteger remainder);
+                if (!remainder.IsZero && remainder.Sign != b.Sign)
+                {
+                    quotient -= 1;
+                    remainder += b;
+                }
+                return Value.Signed(op == "div" ? quotient : remainder);
+            default:
+                throw SignedUndefined(op);
+        }
+    }
+
+    private static Value SignedCompare(string op, Value left, Value right)
+    {
+        Value[] pair = WordPair(left, right);
+        int order = pair[0].Big.CompareTo(pair[1].Big);
+        return Value.Flag(op == "eq" ? order == 0 : order != 0);
+    }
 
 
     /// <summary>«длина»: строка в кодовых точках, список в элементах.</summary>

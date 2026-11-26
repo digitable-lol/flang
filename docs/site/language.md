@@ -193,7 +193,7 @@ The words of this section on all four surfaces, from the lexer's table:
 <!-- insert keywords Документ и модульность -->
 | Russian | English | Esperanto | Chinese |
 | --- | --- | --- | --- |
-| `модуль` | `module` | — | `模块` |
+| `модуль` | `module` | `module` | `模块` |
 | `экспортирует` | `exports` | `eksportas` | `导出` |
 | `использует` | `uses` | `uzas` | `使用` |
 | `категория` | `category` | `kategorio` | `类别` |

@@ -665,6 +665,9 @@
 // FLANG_NOT_A_NUMBER); md5 и числитель НЕ ТРОНУТЫ — их переснимет перепечатка семени.
 // ⚑ 18 ноября 2026: у flang/self/types.flang пересчитано только «написано»: 476 → 478
 // (встроенные операции в тотальных функциях); md5 и числитель НЕ ТРОНУТЫ.
+// ⚑ 26 ноября 2026: у flang/self/emit-js.flang, interpret.flang и types.flang пересчитано только
+// «написано»: 178 → 179, 302 → 304, 478 → 479 (точное целое со знаком, ADR-0258); md5 и числитель
+// НЕ ТРОНУТЫ — их переснимет перепечатка семени.
 // Задача 4722 завела семью `flang/proof/checker/tests/families/rewrite/`: законы склейки
 // строк формой и переписка по доказанному утверждению (Переп1). Записи рукотворные,
 // ведомости у проб нет — «×», как у соседних семей сверщика.
@@ -1404,7 +1407,7 @@ b3aa0e726daa909b22c19ebe34f7236b|20|10|0|10|0|flang/self/distributive.flang
 c058d08fa503fae03363e85557e5a13c|144|102|3|39|0|flang/self/emit-elixir.flang
 6a4307fbc1c0b8c1c0716a6f423cc7a6|197|90|11|96|0|flang/self/emit-go.flang
 a91d22a65a3680d5874ab84bbc6f0387|214|133|12|69|0|flang/self/emit-java.flang
-11b00c4702d193e5e229c5a974bc2df6|178|168|2|8|0|flang/self/emit-js.flang
+11b00c4702d193e5e229c5a974bc2df6|179|168|2|8|0|flang/self/emit-js.flang
 60db17ff1c4f50ad73b6c0d6c5661188|18|18|0|0|0|flang/self/emit-layout.flang
 f13484b53a5c82fb325806ab879986a2|645|584|24|39|0|flang/self/emit-python.flang
 0f2633f6d8439a0a416d0c763af0f204|114|74|1|39|0|flang/self/emit-rust.flang
@@ -1416,7 +1419,7 @@ f13484b53a5c82fb325806ab879986a2|645|584|24|39|0|flang/self/emit-python.flang
 d39f606f4980dfa7989225a85be0b390|21|21|0|0|0|flang/self/grid.flang
 042c876d151d463ce21a76f5888680f3|85|66|1|18|0|flang/self/hotswap.flang
 9ad6e89ff271ec1a939fb92656a5e5de|18|11|0|7|0|flang/self/idempotent.flang
-7f19b333e81cd7100ccbe635c3081035|302|187|34|81|0|flang/self/interpret.flang
+7f19b333e81cd7100ccbe635c3081035|304|187|34|81|0|flang/self/interpret.flang
 0996ef264a0ec14b8d13b2ef027fd49b|19|11|0|8|0|flang/self/io.flang
 cba775911cef60214f2c3e48b4b9bcd2|24|10|10|4|0|flang/self/iso.flang
 3e34a5d7400f8400bb9b161eec246f2d|43|10|28|5|0|flang/self/law-oracle.flang
@@ -1448,7 +1451,7 @@ f69ea100fd1ae6208cd3234e634b8f33|42|42|0|0|0|flang/self/sets.flang
 712e5a5c5953044d28bf18434a6ad128|3|0|2|1|0|flang/self/totality-refusals.flang
 1a96c9b2191b5dde896fd1ab7661bf95|320|233|19|68|0|flang/self/totality.flang
 8509cc8c9dfe76c9cb6a3785f09d02ed|1|0|1|0|0|flang/self/type-refusals.flang
-50ad000f4a556bcf161cf7f6ea3bef73|478|164|7|307|0|flang/self/types.flang
+50ad000f4a556bcf161cf7f6ea3bef73|479|164|7|307|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang
 adda40c78653bedc6e472c4bbc3f0eef|130|127|3|0|0|flang/stdlib/automaton.flang
 857c7e556ac510297560d9e1b71ab8f8|103|55|26|22|0|flang/stdlib/base64.flang
@@ -1976,7 +1979,7 @@ c058d08fa503fae03363e85557e5a13c|142|102|3|39|0|flang/self/emit-elixir.flang
 6a4307fbc1c0b8c1c0716a6f423cc7a6|194|90|11|96|0|flang/self/emit-go.flang
 a91d22a65a3680d5874ab84bbc6f0387|205|133|12|69|0|flang/self/emit-java.flang
 60db17ff1c4f50ad73b6c0d6c5661188|17|18|0|0|0|flang/self/emit-layout.flang
-7f19b333e81cd7100ccbe635c3081035|302|187|34|81|0|flang/self/interpret.flang
+7f19b333e81cd7100ccbe635c3081035|304|187|34|81|0|flang/self/interpret.flang
 506667c0ec1bdf3d22ae3dc0bec56907|784|344|19|454|0|flang/self/parser.flang
 d650937c288c8f10a7814a086e577581|97|75|5|20|0|flang/self/proof-initial.flang
 4fb3d44f4b68c78b3ae91ed5c36fea59|65|108|5|21|0|flang/self/proof-kernel.flang

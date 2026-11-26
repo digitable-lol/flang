@@ -1427,7 +1427,7 @@
   пусть used равно («Unique» от («Flat» от (отобразить (приписать test к body) как b → «Names in» от b)))
   пусть free равно (отфильтровать used где n → («Live» от env и n) и притом (не (carried содержит n)))
   пусть params равно («Соединить» от carried и free)
-  пусть step равно («Joined» от [ctx.«function», " while ", к строке line])
+  пусть step равно («Joined» от [ctx.«function», " loop ", к строке line])
   пусть inner равно (отобразить params как n → «Binding of» от n и («Name text» от n) и («Kind in» от env и n) и "")
   пусть stepctx равно (запись «Context» с «function» равным (ctx.«function») и «signatures» равным
     (ctx.«signatures») и «nonempty» равным пустой список и «bounded» равным пустой список и «inside» равным "loop" и
@@ -1454,7 +1454,7 @@
   пусть helpers равно (если lone то [helper] иначе [declared, helper])
   пусть call равно («Joined» от ["(", «Name text» от step, " от ", соединить (отобразить params как n →
     «Flang in» от env и n) по " и ", ")"])
-  пусть whole равно («Joined» от ["«while ", к строке line, "»"])
+  пусть whole равно («Joined» от ["«loop ", к строке line, "»"])
   пусть picks равно (отобразить carried как c → «Joined» от [ctx.«pad», "пусть «", c, " ", к строке line,
     "» равно (", whole, ".«", c, "»)"])
   пусть lines равно (если lone то «Joined» от [ctx.«pad», "пусть «", opening, " ", к строке line, "» равно ", call]

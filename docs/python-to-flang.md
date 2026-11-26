@@ -253,16 +253,16 @@ def is_palindrome(x: int) -> bool:
 gives the loop
 
 ```flang
-тотальная функция «is_palindrome while 8»
+тотальная функция «is_palindrome loop 8»
   принимает «rev»: число, «x»: число
-  возвращает «is_palindrome while 8 state»
+  возвращает «is_palindrome loop 8 state»
   убывает «x»
   если «x» больше «rev»
     то
       пусть «rev 9» равно («rev» умножить на 10) плюс («Python remainder» от «x» и 10)
       пусть «x 10» равно «Python floor division» от «x» и 10
-      «is_palindrome while 8» от «rev 9» и «x 10»
-    иначе запись «is_palindrome while 8 state» с «rev» равным «rev» и «x» равным «x»
+      «is_palindrome loop 8» от «rev 9» и «x 10»
+    иначе запись «is_palindrome loop 8 state» с «rev» равным «rev» и «x» равным «x»
 ```
 
 The kernel derives the decrease of a measure only in one form (a parameter of type

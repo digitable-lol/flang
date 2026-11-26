@@ -1346,11 +1346,11 @@ P	блок тотальности: «вид» и зов переставлены
 P	блок тотальности: зовомая названа не на строке своего объявления	flang/proof/checker/tests/families/all-elements/call-with-a-listed-list.flang	flang/proof/checker/tests/families/all-elements/call-with-a-listed-list.record	-	s/зовёт «Только положительные» строка 3 тотальна/зовёт «Только положительные» строка 4 тотальна/	-	-	1	объявлена не на строке	-	-
 P	блок снятия: ходы записаны, а «ход цель» убран	flang/proof/checker/tests/families/precondition-discharge/three-feeds.flang	flang/proof/checker/tests/families/precondition-discharge/three-feeds.record	-	57d	-	-	1	стоит до «ход цель»	-	-
 say	── запись второй версии (ADR-0255): 5 честных на четырёх языках → 0 или 3, 3 подделки → 1 ──	-	-	-	-	-	-	-	-	-	-
-C	честная вторая версия corpus-natural.record	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-v2/corpus-natural.record	-	-	-	-	0	-	-	-
-C	честная вторая версия english-postconditions.record	flang/proof/checker/tests/families/surfaces/english-postconditions.flang	flang/proof/checker/tests/families/record-v2/english-postconditions.record	-	-	-	-	3	-	-	-
-C	честная вторая версия chinese-factorial.record	flang/proof/checker/tests/families/surfaces/chinese-factorial.flang	flang/proof/checker/tests/families/record-v2/chinese-factorial.record	-	-	-	-	0	-	-	-
-C	честная вторая версия esperanto-factorial.record	flang/proof/checker/tests/families/surfaces/esperanto-factorial.flang	flang/proof/checker/tests/families/record-v2/esperanto-factorial.record	-	-	-	-	0	-	-	-
-C	честная вторая версия traffic-light.record	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/families/record-v2/traffic-light.record	-	-	-	-	0	-	-	-
-P	подделка второй версии: число строк в шапке	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-v2/corrupt/line-count.record	-	-	-	-	1	-	-	-
-P	подделка второй версии: знак формулы ≥ заменён на ≤	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-v2/corrupt/sign.record	-	-	-	-	1	-	-	-
-P	подделка второй версии: ключ рамки, которого нет в таблице	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/families/record-v2/corrupt/unknown-key.record	-	-	-	-	1	-	-	-
+C	честная вторая версия corpus-natural.record	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-version-2/corpus-natural.record	-	-	-	-	0	-	-	-
+C	честная вторая версия english-postconditions.record	flang/proof/checker/tests/families/surfaces/english-postconditions.flang	flang/proof/checker/tests/families/record-version-2/english-postconditions.record	-	-	-	-	3	-	-	-
+C	честная вторая версия chinese-factorial.record	flang/proof/checker/tests/families/surfaces/chinese-factorial.flang	flang/proof/checker/tests/families/record-version-2/chinese-factorial.record	-	-	-	-	0	-	-	-
+C	честная вторая версия esperanto-factorial.record	flang/proof/checker/tests/families/surfaces/esperanto-factorial.flang	flang/proof/checker/tests/families/record-version-2/esperanto-factorial.record	-	-	-	-	0	-	-	-
+C	честная вторая версия traffic-light.record	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/families/record-version-2/traffic-light.record	-	-	-	-	0	-	-	-
+P	подделка второй версии: число строк в шапке	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-version-2/corrupt/line-count.record	-	-	-	-	1	-	-	-
+P	подделка второй версии: знак формулы ≥ заменён на ≤	flang/proof/examples/corpus-natural.flang	flang/proof/checker/tests/families/record-version-2/corrupt/sign.record	-	-	-	-	1	-	-	-
+P	подделка второй версии: ключ рамки, которого нет в таблице	flang/proof/examples/traffic-light.flang	flang/proof/checker/tests/families/record-version-2/corrupt/unknown-key.record	-	-	-	-	1	-	-	-

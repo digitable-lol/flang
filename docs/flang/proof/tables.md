@@ -1,6 +1,6 @@
 # Таблицы доказательного слоя: `flang/proof/tables/`
 
-Десять таблиц <!-- СНЯТО 2026-11-12 файлов flang/proof/tables/*.tsv = 10 (the disagreements of the two checkers) -->, у каждой первая строка — заголовок, разделитель — табуляция,
+Одиннадцать таблиц <!-- СНЯТО 2026-11-26 файлов flang/proof/tables/*.tsv = 11 (ADR-0255: the keys of record version 2) -->, у каждой первая строка — заголовок, разделитель — табуляция,
 комментариев нет. Их читают программы; прозу о строках держат страницы `docs/`.
 
 ## `inference-rules.tsv` — правила вывода
@@ -147,6 +147,19 @@ ADR-0193): каждый путь приёмки второго сверщика 
 
 Читает `scripts/guards/record-format-guard.fscript` (ярлыки `record-format:check`,
 `record-format:forgery`). Сам формат — [формат записи](record-format.md).
+
+## `record-version-2-words.tsv` — ключи записи второй версии
+
+| колонка | что в ней |
+|---|---|
+| `kind` | `word` — слово рамки записи; `rule` — название правила ядра в поле `правило`/`сведение`; `family` — семья короткого имени правила (`Разв` в `Разв2`); `primitive` — имя встроенного действия после `примитив` |
+| `v1` | как это пишется в записи первой версии |
+| `v2` | ключ второй версии; на каждый вид таблица взаимно однозначна |
+
+Копии таблицы стоят в печати записи (`flang/src/emit/c/flang_repl.c`) и в проверяющей
+программе (`flang/proof/checker/checker.c`); обе с таблицей сличает
+`flang/proof/record-version-2-guard.fscript` (ярлыки `record-v2:check`, `record-v2:forgery`).
+Формат второй версии — `docs/flang/proof/record-format.md`, раздел «Версия 2».
 
 ## `typing-holes.tsv` — дыры типизации
 

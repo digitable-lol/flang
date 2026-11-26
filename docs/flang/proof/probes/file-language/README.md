@@ -15,8 +15,8 @@ FLANG_BIN=<новый двоичный> bootstrap/flang run-script file-language
 | программа | что проверяется | код |
 |---|---|---:|
 | `mixed-else.flang` | русский файл со словом `else` — отказ `FLANG_FILE_LANGUAGE` с подсказкой «На русском это «иначе»» | 1 |
-| `freed-name.flang` | в русском файле параметр назван `result` — это имя | 0 |
+| `free-name.flang` | в русском файле параметр назван `result` — это имя | 0 |
 | `marked-english.flang` | пометка `// surface: en`: русское `пусть` — имя | 0 |
 | `unknown-mark.flang` | пометка называет язык, которого нет | 1 |
 | `tie.flang` | ключевых слов двух языков поровну, пометки нет | 1 |
-| `record-v2.flang` | `--record-version 2` печатает вторую версию, без ключа — первую | 0 |
+| `record-version-2.flang` | `--record-version 2` печатает вторую версию, без ключа — первую | 0 |

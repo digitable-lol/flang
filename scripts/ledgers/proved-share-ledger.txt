@@ -1088,6 +1088,7 @@ bd86e5b4cf90f30f13d03daba1bfee3f|8|×|×|×|7|flang/proof/map/refusal-order.flan
 1b5b8939e842e525184b8408664ce6e7|7|1|4|2|0|flang/proof/map/substantive.flang
 1dac20b72245fc2680df72c8481f8ff7|5|3|2|0|1|flang/proof/map/types.flang
 55542d98506dabe4a15448e0e861d770|1|×|×|×|0|flang/proof/midpoint-verdicts.flang
+31c6d7a00470b243341d9465baceecfe|1|1|0|0|0|flang/proof/probes/file-language/programs/record-version-2.flang
 c24e3a74d21704429b8ec237e2504883|9|9|0|0|0|flang/proof/probes/function-values/run.fscript
 7a2aef421a2513c7e1fb98006e314184|1|1|0|0|0|flang/proof/probes/import-helper-binding/programs/step-second.flang
 26333c891deb6f08d1c5952cb671832b|1|1|0|0|0|flang/proof/probes/parse-and-import/programs/parse-error-imported.flang
@@ -1420,7 +1421,7 @@ d39f606f4980dfa7989225a85be0b390|21|21|0|0|0|flang/self/grid.flang
 0996ef264a0ec14b8d13b2ef027fd49b|19|11|0|8|0|flang/self/io.flang
 cba775911cef60214f2c3e48b4b9bcd2|24|10|10|4|0|flang/self/iso.flang
 3e34a5d7400f8400bb9b161eec246f2d|43|10|28|5|0|flang/self/law-oracle.flang
-fd35315ab46789dcb0ba3fedbe25bbf2|108|103|5|0|0|flang/self/lexer.flang
+458cd8569643839167f548be6c37a107|111|106|5|0|0|flang/self/lexer.flang
 43745ced6afc8ffbb2f6d824efea3c62|7|5|1|1|0|flang/self/link.flang
 67da63c2d264f4f42803aca9e914ee8b|223|96|13|115|0|flang/self/lsp.flang
 8593106357840e388b1e625809c7f6ac|28|17|4|7|0|flang/self/mcp.flang

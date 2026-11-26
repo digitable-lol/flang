@@ -230,9 +230,9 @@
     дано cell равно "totality.flang:4559 «Шаг спуска объявленной меры»"
     ожидается ["4559", "Шаг спуска объявленной меры"]
   пусть rest равно («Anchor rest» от cell)
-  пусть number равно («Leading digits» от rest)
-  пусть named равно («Cell» от 1 и (разделить («After» от (соединить [number, " «"] по "") и rest) по "»"))
-  если (пусто number) или (пусто named) то (пустой список) иначе [number, named]
+  пусть «number» равно («Leading digits» от rest)
+  пусть named равно («Cell» от 1 и (разделить («After» от (соединить [«number», " «"] по "") и rest) по "»"))
+  если (пусто «number») или (пусто named) то (пустой список) иначе [«number», named]
 
 тотальная функция «Anchor trouble»
   принимает row: список строки, lines: список строки

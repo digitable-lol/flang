@@ -301,18 +301,18 @@
   свёртка lines начиная с "" как last и line → если («Word» от 1 и line) равен "утверждений" то line иначе last
 
 тотальная функция «Proved»
-  принимает total: строка
+  принимает «total»: строка
   возвращает строка
   пример «The number of proved claims»
-    дано total равно "  утверждений 4: доказано 3, сетка 0, объявлено, не доказано 1"
+    дано «total» равно "  утверждений 4: доказано 3, сетка 0, объявлено, не доказано 1"
     ожидается "3"
   пример «A total of another shape»
-    дано total равно "утверждений нет"
+    дано «total» равно "утверждений нет"
     ожидается ""
-  если (((«Word» от 1 и total) равен "утверждений") и притом ((«Word» от 3 и
-      total) равен "доказано")) и притом ((«Word» от 2 и total) равен (соединить [(«Leading digits» от («Word» от 2 и
-      total)), ":"] по ""))
-    то «Leading digits» от («Word» от 4 и total)
+  если (((«Word» от 1 и «total») равен "утверждений") и притом ((«Word» от 3 и
+      «total») равен "доказано")) и притом ((«Word» от 2 и «total») равен
+      (соединить [(«Leading digits» от («Word» от 2 и «total»)), ":"] по ""))
+    то «Leading digits» от («Word» от 4 и «total»)
     иначе ""
 
 тотальная функция «Rules judged»
@@ -341,12 +341,12 @@
   принимает answers: список «Answer»
   возвращает «Sign»
   пусть heading равно («Heading» от "ПРИМЕТА 4 — правила ядра работают (прогон, а не таблица имён)")
-  пусть total равно («Last matching» от («Raw lines» от («Output of» от "kernel rules" и answers)))
+  пусть «total» равно («Last matching» от («Raw lines» от («Output of» от "kernel rules" и answers)))
   если (длина («Gate troubles» от "kernel rules" и answers)) больше 0
     то «Refused by gate» от heading и («Gate troubles» от "kernel rules" и answers)
     иначе «Rules judged» от («Соединить списки» от heading и [
-      (соединить ["    ", (если пусто total то "(итога нет)" иначе total)] по ""),
-      "    было: утверждений 4: доказано 0, сетка 0, объявлено, не доказано 4"]) и («Proved» от total)
+      (соединить ["    ", (если пусто «total» то "(итога нет)" иначе «total»)] по ""),
+      "    было: утверждений 4: доказано 0, сетка 0, объявлено, не доказано 4"]) и («Proved» от «total»)
 
 тотальная функция «Types judged»
   принимает lines: список строки, said: список строки

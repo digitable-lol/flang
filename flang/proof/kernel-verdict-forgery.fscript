@@ -103,35 +103,35 @@
   [(соединить ["утверждение «ложь 2390 неотрицательна» функции «Ложь 2390» строка ", line] по ""), "  вид postcondition", "  вердикт нет вердикта", "  теоремы нет", "конец утверждения", ""]
 
 тотальная функция «Rewritten line»
-  принимает rewrite: «Rewrite», line: строка, head: «Head», sum: строка, said: строка, made: строка
+  принимает rewrite: «Rewrite», line: строка, «head»: «Head», sum: строка, said: строка, made: строка
   возвращает «Rewrite»
   пример «The count of statements grows by one»
     дано rewrite равно запись «Rewrite» с «lines» равным пустой список и «placed» равным нет
     дано line равно "утверждений 3"
-    дано head равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
+    дано «head» равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
     дано sum равно "ff"
     дано said равно "9"
     дано made равно "8"
     ожидается запись «Rewrite» с «lines» равным ["утверждений 4"] и «placed» равным нет
   пусть keep равно (запись «Rewrite» с «lines» равным (добавить line к (rewrite.«lines»)) и «placed» равным (rewrite.«placed»))
-  пусть swap равно («Swapped line» от rewrite и line и head и sum)
+  пусть swap равно («Swapped line» от rewrite и line и «head» и sum)
   «Chosen» от [(«When» от (не (swap равен line)) и (запись «Rewrite» с «lines» равным (добавить swap к (rewrite.«lines»)) и «placed» равным (rewrite.«placed»))),
     («When» от ((line начинается с "тотальность «") и притом (не (rewrite.«placed»))) и (запись «Rewrite» с «lines» равным (добавить line к («Соединить списки» от (rewrite.«lines») и («Statement block» от said))) и «placed» равным да)),
     («When» от (line равен "конец записи") и (запись «Rewrite» с «lines» равным («Соединить списки» от (rewrite.«lines») и («Соединить списки» от (если rewrite.«placed» то (пустой список) иначе («Statement block» от said)) и [(соединить ["тотальность «Ложь 2390» строка ", made] по ""), "  вид composition", "  зовёт примитив «плюс»", "  самовызова нет", "  конец тотальности", line])) и «placed» равным да))] и keep
 
 тотальная функция «Swapped line»
-  принимает rewrite: «Rewrite», line: строка, head: «Head», sum: строка
+  принимает rewrite: «Rewrite», line: строка, «head»: «Head», sum: строка
   возвращает строка
   пример «The fingerprint line takes the new sum»
     дано rewrite равно запись «Rewrite» с «lines» равным пустой список и «placed» равным нет
     дано line равно "отпечаток256 aa"
-    дано head равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
+    дано «head» равно запись «Head» с «lines» равным 1 и «signs» равным 0 и «first» равным 7 и «second» равным 7
     дано sum равно "ff"
     ожидается "отпечаток256 ff"
-  «Chosen» от [(«When» от (line начинается с "строк ") и (соединить ["строк ", (к строке (head.«lines»))] по "")),
-    («When» от (line начинается с "знаков ") и (соединить ["знаков ", (к строке (head.«signs»))] по "")),
+  «Chosen» от [(«When» от (line начинается с "строк ") и (соединить ["строк ", (к строке («head».«lines»))] по "")),
+    («When» от (line начинается с "знаков ") и (соединить ["знаков ", (к строке («head».«signs»))] по "")),
     («When» от (line начинается с "отпечаток256 ") и (соединить ["отпечаток256 ", sum] по "")),
-    («When» от (line начинается с "отпечаток ") и (соединить ["отпечаток ", (к строке (head.«first»)), " ", (к строке (head.«second»))] по "")),
+    («When» от (line начинается с "отпечаток ") и (соединить ["отпечаток ", (к строке («head».«first»)), " ", (к строке («head».«second»))] по "")),
     («When» от (line начинается с "утверждений ") и (соединить ["утверждений ", (к строке ((«Count» от («After» от "утверждений " и line)) плюс 1))] по "")),
     («When» от (line начинается с "тотальностей ") и (соединить ["тотальностей ", (к строке ((«Count» от («After» от "тотальностей " и line)) плюс 1))] по ""))] и line
 
@@ -143,12 +143,12 @@
     дано forged равно "  обеспечивает «ложь 2390»\nтотальная функция «Ложь 2390»\n"
     дано sum равно "ff"
     ожидается "утверждений 1\nтотальностей 1\nутверждение «ложь 2390 неотрицательна» функции «Ложь 2390» строка 1\n  вид postcondition\n  вердикт нет вердикта\n  теоремы нет\nконец утверждения\n\nтотальность «Ложь 2390» строка 2\n  вид composition\n  зовёт примитив «плюс»\n  самовызова нет\n  конец тотальности\nконец записи\n"
-  пусть head равно («Head of» от forged)
+  пусть «head» равно («Head of» от forged)
   пусть said равно («Line of» от forged и "  обеспечивает «ложь 2390")
   пусть made равно («Line of» от forged и "тотальная функция «Ложь 2390»")
   пусть lines равно (разделить written по "\n")
   пусть kept равно (если «Ends with» от written и "\n" то (отфильтровать («Numbered» от lines) где entry → не ((«Cell» от 1 и entry) равен (к строке (длина lines)))) иначе («Numbered» от lines))
-  соединить (отобразить ((свёртка kept начиная с (запись «Rewrite» с «lines» равным пустой список и «placed» равным нет) как rewrite и entry → «Rewritten line» от rewrite и («Cell» от 2 и entry) и head и sum и said и made).«lines») как line → соединить [line, "\n"] по "") по ""
+  соединить (отобразить ((свёртка kept начиная с (запись «Rewrite» с «lines» равным пустой список и «placed» равным нет) как rewrite и entry → «Rewritten line» от rewrite и («Cell» от 2 и entry) и «head» и sum и said и made).«lines») как line → соединить [line, "\n"] по "") по ""
 
 тотальная функция «Numbered»
   принимает items: список строки

@@ -518,13 +518,13 @@
       «Line step» от held и line))
 
 тотальная функция «Theses by»
-  принимает entries: список «Thesis», number: строка
+  принимает entries: список «Thesis», «number»: строка
   возвращает список «Thesis»
   пример «No entry carries a label nobody gave»
     дано entries равно пустой список
-    дано number равно "1"
+    дано «number» равно "1"
     ожидается пустой список
-  отфильтровать entries где entry → (entry.«number») равен number
+  отфильтровать entries где entry → (entry.«number») равен «number»
 
 тотальная функция «Mention fault»
   принимает markup: «Markup», variables: список строки, mention: список строки
@@ -599,17 +599,17 @@
       «Соединить списки» от faults и («One term faults» от term и quote и (entry.«number»)))
 
 тотальная функция «One term faults»
-  принимает term: список строки, quote: строка, number: строка
+  принимает term: список строки, quote: строка, «number»: строка
   возвращает список строки
   пример «A term without a notion is named»
     дано term равно ["дождь", "", "4", "нет"]
     дано quote равно "идёт дождь"
-    дано number равно "1"
+    дано «number» равно "1"
     ожидается ["строка 4 разметки: после слова ждали «= понятие»"]
   пусть spot равно (к числу (элемент 3 в term))
   пусть missing равно (если quote содержит («In small letters» от (элемент 1 в term)) то пустой список
       иначе [(«Line fault» от spot и (соединить ["слова «", (элемент 1 в term), "» нет в цитате суждения [",
-      number, "]"] по ""))])
+      «number», "]"] по ""))])
   если пусто (элемент 2 в term)
     то [(«Line fault» от spot и "после слова ждали «= понятие»")]
     иначе missing

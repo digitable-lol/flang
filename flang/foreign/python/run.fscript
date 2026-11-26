@@ -187,12 +187,12 @@
 функция «Answers module»
   принимает program: строка, file: строка, translation: «Translation», calls: список «Call row»
   возвращает строка
-  пусть head равно («Joined» от ["модуль «", program, " answers»\n  использует «", program, " from Python» из \"",
+  пусть «head» равно («Joined» от ["модуль «", program, " answers»\n  использует «", program, " from Python» из \"",
     file, "\""])
   пусть places равно («Positions» от (длина calls))
   пусть bodies равно (отобразить places как place → «Answer text» от place и (элемент place в calls) и
     (translation.«signatures»))
-  «Joined» от [соединить (приписать head к bodies) по "\n\n", "\n"]
+  «Joined» от [соединить (приписать «head» к bodies) по "\n\n", "\n"]
 
 тотальная функция «Inputs text»
   принимает calls: список «Call row»
@@ -468,7 +468,7 @@
     отобразить («Disagreements» от own и python и flang) как d → «Joined» от [program, ": расхождение ", d],
     отобразить missed как m → «Joined» от [program, ": подделка не поймана сверкой: ", m], checks])
   пусть agreed равно ((длина own) минус (длина («Disagreements» от own и python и flang)))
-  пусть head равно («Joined» от ["  ", program, ": функций ", к строке (длина verdicts), ", тотальных ",
+  пусть «head» равно («Joined» от ["  ", program, ": функций ", к строке (длина verdicts), ", тотальных ",
     к строке totals,
     "; flang check код ", к строке checkcode, "; входов ", к строке (длина own), ", сошлось с Python ", к строке agreed,
     "; подделок поймано ", к строке ((длина forged) минус (длина missed)), " из ", к строке (длина forged)])
@@ -476,7 +476,7 @@
   пусть findings равно (отобразить found как f → «Joined» от ["    «", f, "»: ядро нашло вход с делителем ноль, ",
     "и Python на таком входе из inputs.tsv тоже падает: ZeroDivisionError"])
   пусть shown равно («Соединить» от (отобразить verdicts как v → «Verdict line text» от v) и findings)
-  (запись «Program report» с «lines» равным (приписать head к shown) и
+  (запись «Program report» с «lines» равным (приписать «head» к shown) и
     «failures» равным failures и «inputs» равным (длина own) и «agreed» равным agreed и «forged» равным (длина forged) и
     «caught» равным ((длина forged) минус (длина missed)) и «total» равным totals и «partial» равным
       ((длина verdicts) минус totals) и
@@ -551,17 +551,17 @@
   пусть caught равно («Sum of» от (отобразить reports как r → r.«caught»))
   пусть totals равно («Sum of» от (отобразить reports как r → r.«total»))
   пусть partials равно («Sum of» от (отобразить reports как r → r.«partial»))
-  пусть head равно («Joined» от ["ПЕРЕВОД Python → flang: программ корпуса ", к строке (длина («Corpus»)),
+  пусть «head» равно («Joined» от ["ПЕРЕВОД Python → flang: программ корпуса ", к строке (длина («Corpus»)),
     ", переведено и прошло flang check ",
     к строке checked])
-  пусть tail равно [«Joined» от ["ИТОГ: программ ", к строке (длина («Corpus»)), ", переведено ", к строке checked,
+  пусть «tail» равно [«Joined» от ["ИТОГ: программ ", к строке (длина («Corpus»)), ", переведено ", к строке checked,
     "; сверка с Python: входов ", к строке inputs, ", сошлось ", к строке agreed, "; функций тотальных ",
       к строке totals,
     ", без «тотальная» ", к строке partials, "; подделок переводчика поймано ", к строке caught, " из ",
       к строке forged,
     "; отказов по ожиданию ", к строке ((длина («Refused corpus»)) минус (длина refusalfailures)), " из ",
     к строке (длина («Refused corpus»))]]
-  пусть lines равно («Flat» от [[head], «Flat» от (отобразить reports как r → r.«lines»), refusals, [""], tail])
+  пусть lines равно («Flat» от [[«head»], «Flat» от (отобразить reports как r → r.«lines»), refusals, [""], «tail»])
   пусть few равно (если checked меньше 15 то ["переведено меньше 15 программ"] иначе пустой список)
   пусть all равно («Соединить» от failures и few)
   пусть text равно (соединить lines по "\n")

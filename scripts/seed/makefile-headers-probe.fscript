@@ -247,21 +247,21 @@
   «Rebuilt objects» от («Output of» от («Make question» от copy и asked) и answers)
 
 тотальная функция «Is rule head»
-  принимает line: строка, head: строка
+  принимает line: строка, «head»: строка
   возвращает признак
-  пусть odd равно ((head содержит " ") или (head содержит "=")) или ((head содержит "$") или (пусто head))
+  пусть odd равно ((«head» содержит " ") или («head» содержит "=")) или ((«head» содержит "$") или (пусто «head»))
   пусть aside равно ((line начинается с "\t") или (line начинается с "#")) или (line начинается с ".")
   (line содержит ":") и притом (не (odd или aside))
 
 тотальная функция «Target of line»
   принимает kept: список строки, line: строка
   возвращает список строки
-  пусть head равно (элемент 1 в (разделить line по ":"))
-  если не («Is rule head» от line и head)
+  пусть «head» равно (элемент 1 в (разделить line по ":"))
+  если не («Is rule head» от line и «head»)
     то kept
-    иначе если ["all", "clean", "install", "uninstall"] содержит head
+    иначе если ["all", "clean", "install", "uninstall"] содержит «head»
       то kept
-      иначе «Added once» от kept и head
+      иначе «Added once» от kept и «head»
 
 тотальная функция «Targets»
   принимает makefile: строка
@@ -353,8 +353,8 @@
   принимает copy: «Variant», answers: список «Answer»
   возвращает «Question»
   пусть place равно («Place of» от (copy.«name») и answers)
-  пусть head равно ["-c", («Setup script»), («Directory» от answers), place, (copy.«makefile»)]
-  пусть arguments равно («Соединить списки» от head и («Objects to fake» от copy и answers))
+  пусть «head» равно ["-c", («Setup script»), («Directory» от answers), place, (copy.«makefile»)]
+  пусть arguments равно («Соединить списки» от «head» и («Objects to fake» от copy и answers))
   «Run» от (соединить ["setup ", (copy.«name»)] по "") и "sh" и arguments
 
 тотальная функция «Make run»
@@ -505,17 +505,17 @@
 тотальная функция «Check refusal»
   принимает troubles: список строки, answers: список «Answer»
   возвращает «Продолжение»
-  пусть head равно (соединить ["Makefile в ", («Directory» от answers), " не знает включённых файлов:"] по "")
-  пусть message равно (соединить («Gathered words» от [[head], troubles, [""], («Advice»)]) по "\n")
+  пусть «head» равно (соединить ["Makefile в ", («Directory» от answers), " не знает включённых файлов:"] по "")
+  пусть message равно (соединить («Gathered words» от [[«head»], troubles, [""], («Advice»)]) по "\n")
   вариант «Провал» с код равным "FLANG_MAKEFILE_HEADERS_MISSING" и сообщение равным message
 
 тотальная функция «Check approval»
   принимает answers: список «Answer»
   возвращает «Продолжение»
-  пусть head равно (соединить ["Makefile в ", («Directory» от answers), " знает каждый включённый файл; ",
+  пусть «head» равно (соединить ["Makefile в ", («Directory» от answers), " знает каждый включённый файл; ",
     "make -n -W пересобирает ровно тех, кто его включает:"] по "")
   пусть shown равно (отобразить («Asked of» от answers) как asked → «Map line» от asked и answers)
-  вариант «Конец работы» с значение равным (соединить (приписать head к shown) по "\n")
+  вариант «Конец работы» с значение равным (соединить (приписать «head» к shown) по "\n")
 
 тотальная функция «Check verdict»
   принимает answers: список «Answer»

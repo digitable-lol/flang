@@ -948,10 +948,10 @@
   пусть held равно (соединить ["; на сетке нарушений нет (", survived, " входов)"] по "")
   пусть broken равно (соединить ["; контрпример ", counter, "; flang run на нём: ",
     («Result word» от 6 и judgement)] по "")
-  пусть tail равно (если пусто counter то held иначе broken)
-  пусть head равно (соединить ["  «", («Result word» от 1 и judgement), "» [", («Result word» от 3 и judgement),
+  пусть «tail» равно (если пусто counter то held иначе broken)
+  пусть «head» равно (соединить ["  «", («Result word» от 1 и judgement), "» [", («Result word» от 3 и judgement),
     "] — "] по "")
-  соединить [head, («Result word» от 4 и judgement), tail] по ""
+  соединить [«head», («Result word» от 4 и judgement), «tail»] по ""
 
 тотальная функция «Spec line»
   принимает judgement: «Claim result»
@@ -967,9 +967,9 @@
   пусть asked равно (соединить ["ВОПРОС ЧЕЛОВЕКУ: ядро не доказало, на сетке держится на ", survived, " входах"] по "")
   пусть status равно («Chosen» от [(«When» от proved и "доказано ядром"),
     («When» от (не (пусто counter)) и dropped)] и asked)
-  пусть head равно (соединить ["  обеспечивает «", («Result word» от 1 и judgement), "» ",
+  пусть «head» равно (соединить ["  обеспечивает «", («Result word» от 1 и judgement), "» ",
     («Result word» от 2 и judgement)] по "")
-  соединить [head, "    [ВЫВЕДЕНО из перевода: ", («Result word» от 3 и judgement), "; ", status, "]"] по ""
+  соединить [«head», "    [ВЫВЕДЕНО из перевода: ", («Result word» от 3 и judgement), "; ", status, "]"] по ""
 
 тотальная функция «Class counts»
   принимает classes: список строки
@@ -998,11 +998,11 @@
     дано answered равно да
     ожидается "  подделка drop-branch: разошлось на 1 входах — ПОЙМАНА"
   пусть wrong равно (длина (отфильтровать classes где class → «Wrong class» от class))
-  пусть head равно (соединить ["  подделка ", mode, ": "] по "")
-  пусть nothing равно (соединить [head, "подделывать нечего"] по "")
-  пусть silent равно (соединить [head, "напечатанная подделка не ответила — опыт не состоялся"] по "")
-  пусть caught равно (соединить [head, "разошлось на ", (к строке wrong), " входах — ПОЙМАНА"] по "")
-  пусть missed равно (соединить [head, "расхождений нет — НЕ ПОЙМАНА"] по "")
+  пусть «head» равно (соединить ["  подделка ", mode, ": "] по "")
+  пусть nothing равно (соединить [«head», "подделывать нечего"] по "")
+  пусть silent равно (соединить [«head», "напечатанная подделка не ответила — опыт не состоялся"] по "")
+  пусть caught равно (соединить [«head», "разошлось на ", (к строке wrong), " входах — ПОЙМАНА"] по "")
+  пусть missed равно (соединить [«head», "расхождений нет — НЕ ПОЙМАНА"] по "")
   «Chosen» от [(«When» от (не applicable) и nothing), («When» от (не answered) и silent),
     («When» от (wrong больше 0) и caught)] и missed
 
@@ -1298,10 +1298,10 @@
     («Joined lists» от [] и (отобразить judged как each → each.«failures»))])
   пусть counts равно [(к строке (длина sources)), ", определений функций ", (к строке (длина functions)),
     ", переведено ", (к строке (длина prepared)), ", вне подмножества ", (к строке (длина refused))]
-  пусть head равно [(соединить ["ПЕРЕВОД C → flang: файлов ", (соединить counts по "")] по "")]
+  пусть «head» равно [(соединить ["ПЕРЕВОД C → flang: файлов ", (соединить counts по "")] по "")]
   пусть refusals равно («Joined lists» от [] и (отобразить refused как translated → «Refusal lines» от translated))
   пусть body равно («Joined lists» от [] и (отобразить judged как each → each.«lines»))
-  пусть lines равно («Joined lists» от head и [refusals, body, [""],
+  пусть lines равно («Joined lists» от «head» и [refusals, body, [""],
     («Total lines» от judged и expectations и spec и awaited)])
   пусть made равно (запись «Report» с «failures» равным failures и «lines» равным lines)
   если пусто files то (запись «Report» с «failures» равным ["нет файлов"] и «lines» равным []) иначе made
@@ -1602,16 +1602,17 @@
   пусть refused равно (отфильтровать functions где translated → не (пусто (translated.«refusals»)))
   пусть kinds равно (отобразить refused как translated → «Refusal kind» от («Cell» от 1 и (translated.«refusals»)))
   пусть broken равно (длина (отфильтровать files где path → «Clang failed» от path и answers))
-  пусть total равно (длина functions)
-  пусть permille равно (если total больше 0 то («Whole part» от ((длина accepted) умножить на 1000) и total) иначе 0)
-  пусть head равно (соединить ["ПЕРЕПИСЬ C ДЕРЕВА: файлов ", (к строке (длина files)), ", clang нашёл ошибки в ",
+  пусть «total» равно (длина functions)
+  пусть permille равно (если «total» больше 0 то («Whole part» от ((длина accepted) умножить на 1000) и «total»)
+    иначе 0)
+  пусть «head» равно (соединить ["ПЕРЕПИСЬ C ДЕРЕВА: файлов ", (к строке (длина files)), ", clang нашёл ошибки в ",
     (к строке broken), " (заголовки, которых нет рядом)"] по "")
-  пусть shares равно [(к строке total), ", в подмножестве ", (к строке (длина accepted)), " (",
+  пусть shares равно [(к строке «total»), ", в подмножестве ", (к строке (длина accepted)), " (",
     (к строке (permille делить на 10)), " %), перевод прошёл flang check у ", (к строке (длина checked))]
   пусть second равно (соединить ["  определений функций ", (соединить shares по "")] по "")
   пусть names равно (отобразить accepted как translated → «Census line» от translated и answers)
   пусть reasons равно (отобразить («Distinct» от kinds) как kind → «Kind count» от kind и kinds)
-  пусть lines равно («Joined lists» от [head, second] и [names, ["причины отказа (функция считается по первой):"],
+  пусть lines равно («Joined lists» от [«head», second] и [names, ["причины отказа (функция считается по первой):"],
     reasons])
   пусть fallen равно (((длина accepted) меньше («Census floor»)) или (не ((длина checked) равен (длина accepted))))
   пусть failure равно (соединить ["в подмножестве меньше ", (к строке («Census floor»)),

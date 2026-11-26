@@ -653,13 +653,13 @@
     (соединить ["../../", file] по "")]
 
 тотальная функция «Files order»
-  принимает patterns: строка, tail: строка
+  принимает patterns: строка, «tail»: строка
   возвращает «Поручение»
   пример «the files of the patterns are asked from git»
     дано patterns равно "*.sh"
-    дано tail равно " | wc -l"
+    дано «tail» равно " | wc -l"
     ожидается вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", "cd ../.. && printf '%s' \"$1\" | tr ',' '\\0' | xargs -0 -I{} git -c core.quotepath=false ls-files -- '{}' | LC_ALL=C sort -u | wc -l", "sh", "*.sh"]
-  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", (соединить ["cd ../.. && printf '%s' \"$1\" | tr ',' '\\0' | xargs -0 -I{} git -c core.quotepath=false ls-files -- '{}' | LC_ALL=C sort -u", tail] по ""), "sh", patterns]
+  вариант «Запустить процесс» с программа равным "sh" и аргументы равным ["-c", (соединить ["cd ../.. && printf '%s' \"$1\" | tr ',' '\\0' | xargs -0 -I{} git -c core.quotepath=false ls-files -- '{}' | LC_ALL=C sort -u", «tail»] по ""), "sh", patterns]
 
 тотальная функция «Measure tail»
   принимает instrument: строка
@@ -723,15 +723,15 @@
   запись «Tally» с «root» равным (tally.«root») и «forged» равным (tally.«forged») и «total» равным (tally.«total») и «quotes» равным (tally.«quotes») и «agreed» равным ((tally.«agreed») плюс 1) и «parted» равным (tally.«parted») и «broken» равным (tally.«broken») и «findings» равным (tally.«findings»)
 
 тотальная функция «Is date»
-  принимает date: строка
+  принимает «date»: строка
   возвращает признак
   пример «a proper date»
-    дано date равно "2026-09-17"
+    дано «date» равно "2026-09-17"
     ожидается да
   пример «a short month»
-    дано date равно "2026-9-17"
+    дано «date» равно "2026-9-17"
     ожидается нет
-  ((длина date) равен 10) и притом («Made of» от date и "0123456789-") и притом ((символ 5 в date) равен "-") и притом ((символ 8 в date) равен "-") и притом ((«Count of» от date и "-") равен 2)
+  ((длина «date») равен 10) и притом («Made of» от «date» и "0123456789-") и притом ((символ 5 в «date») равен "-") и притом ((символ 8 в «date») равен "-") и притом ((«Count of» от «date» и "-") равен 2)
 
 тотальная функция «Joined» от «Kind»
   принимает front: список «Kind», back: список «Kind»

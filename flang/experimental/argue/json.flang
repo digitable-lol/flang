@@ -43,12 +43,12 @@
       соединить [(«Json string» от (элемент 1 в row)), ": ", (элемент 2 в row)] по "") по ", "), "}"] по "")
 
 тотальная функция «Json flag»
-  принимает flag: признак
+  принимает «flag»: признак
   возвращает строка
   пример «A flag is written as a word»
-    дано flag равно да
+    дано «flag» равно да
     ожидается "true"
-  если flag то "true" иначе "false"
+  если «flag» то "true" иначе "false"
 
 тотальная функция «Summary json»
   принимает article: «Article», arcs: список «Arc», chief: список «Assumption», trimmed: «Trimmed»

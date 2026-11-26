@@ -599,13 +599,13 @@
     дано line равно 4
     ожидается запись «Value» с «texts» равным ["0", "0", "?"] и «marks» равным [нет, нет] и «duties» равным [
       ] и «refusals» равным ["строка 4: операция «++» вне подмножества"]
-  пусть number равно («As number» от operand)
+  пусть «number» равно («As number» от operand)
   пусть truth равно («As truth» от operand)
   пусть blank равно («Plain value» от "" и "" и "" и нет)
-  пусть negated равно (соединить ["(0 минус ", («Pure» от number), ")"] по "")
-  пусть subtracted равно (соединить ["(0 минус ", («Body» от number), ")"] по "")
-  пусть c равно (соединить ["-", («C text» от number)] по "")
-  пусть ranged равно («Соединить списки» от (number.«duties») и («Range duties» от negated и c и line))
+  пусть negated равно (соединить ["(0 минус ", («Pure» от «number»), ")"] по "")
+  пусть subtracted равно (соединить ["(0 минус ", («Body» от «number»), ")"] по "")
+  пусть c равно (соединить ["-", («C text» от «number»)] по "")
+  пусть ranged равно («Соединить списки» от («number».«duties») и («Range duties» от negated и c и line))
   пусть literal равно [(соединить ["-", («Body» от operand)] по ""), (соединить ["-", («Pure» от operand)] по ""), c]
   пусть inverted равно [(соединить ["(не ", («Body» от truth), ")"] по ""), (соединить ["(не ", («Pure» от truth),
     ")"] по "")]
@@ -615,9 +615,9 @@
       то если («Literal» от operand)
         то запись «Value» с «texts» равным literal и «marks» равным [нет,
           да] и «duties» равным пустой список и «refusals» равным (operand.«refusals»)
-        иначе «Joined values» от number и blank и subtracted и negated и c и нет и ranged
+        иначе «Joined values» от «number» и blank и subtracted и negated и c и нет и ranged
     случай "+"
-      то number
+      то «number»
     случай "!"
       то «Joined values» от truth и blank и («Cell» от 1 и inverted) и («Cell» от 2 и inverted) и (соединить ["!",
         («C text» от truth)] по "") и да и (truth.«duties»)
@@ -1068,13 +1068,13 @@
   пусть place равно (соединить ["строка ", (к строке («Line» от declaration)), ": переменная «", name, "»"] по "")
   пусть untyped равно («Refused flow» от (соединить [place, " не типа int"] по ""))
   пусть hidden равно («Refused flow» от (соединить [place, " заслоняет переменную того же имени"] по ""))
-  пусть head равно (если stored то [(соединить [indent, "пусть ", fresh, " равно ", («Body» от initial)] по "")]
+  пусть «head» равно (если stored то [(соединить [indent, "пусть ", fresh, " равно ", («Body» от initial)] по "")]
     иначе пустой список)
   пусть inner равно (если stored то («Under path» от turns и (initial.«duties»)) иначе пустой список)
   пусть duties равно («Соединить списки» от inner и (later.«duties»))
   пусть refusals равно («Соединить списки» от (если stored то (initial.«refusals»)
     иначе пустой список) и (later.«refusals»))
-  пусть lines равно («Соединить списки» от head и (later.«lines»))
+  пусть lines равно («Соединить списки» от «head» и (later.«lines»))
   пусть made равно («Flow of» от lines и duties и refusals и (later.«helpers») и (later.«leaves»))
   «Chosen» от [(«When» от (не typed) и untyped), («When» от (не (пусто visible)) и hidden)] и made
 
@@ -1112,9 +1112,9 @@
   пусть thenflow равно («Statements» от thenlist и scope и (добавить yesturn к turns) и inner)
   пусть elselist равно («Соединить списки» от otherwise и others)
   пусть elseflow равно («Statements» от elselist и scope и (добавить noturn к turns) и inner)
-  пусть head равно [(соединить [indent, "если ", («Body» от test)] по ""), (соединить [indent, "  то"] по "")]
+  пусть «head» равно [(соединить [indent, "если ", («Body» от test)] по ""), (соединить [indent, "  то"] по "")]
   пусть middle равно (приписать (соединить [indent, "  иначе"] по "") к (elseflow.«lines»))
-  пусть lines равно («Соединить списки» от head и («Соединить списки» от (thenflow.«lines») и middle))
+  пусть lines равно («Соединить списки» от «head» и («Соединить списки» от (thenflow.«lines») и middle))
   пусть branches равно («Соединить списки» от (thenflow.«duties») и (elseflow.«duties»))
   пусть duties равно («Соединить списки» от («Under path» от turns и (test.«duties»)) и branches)
   пусть inside равно («Соединить списки» от (thenflow.«refusals») и (elseflow.«refusals»))
@@ -1311,13 +1311,13 @@
       "  требует «x — значение int, не выше INT_MAX» «x» не больше 2147483647", "  «x»"]
   пусть naturals равно («Natural» от (translated.«parameters») и claims)
   пусть parameters равно («Parameter text» от (translated.«parameters») и (translated.«types») и naturals и plain)
-  пусть head равно [(соединить ["тотальная функция «", (translated.«name»), "»"] по ""),
+  пусть «head» равно [(соединить ["тотальная функция «", (translated.«name»), "»"] по ""),
     (соединить ["  принимает ", parameters] по ""), (если (translated.«returns») равен "bool" то "  возвращает признак"
     иначе "  возвращает число")]
   пусть required равно («Claim lines» от "требует" и («Of role» от "requires" и claims))
   пусть promised равно («Claim lines» от "обеспечивает" и («Of role» от "ensures" и claims))
   пусть body равно ((translated.«flow»).«lines»)
-  «Joined lists» от head и [header, required, promised, body]
+  «Joined lists» от «head» и [header, required, promised, body]
 
 тотальная функция «Module text»
   принимает title: строка, parts: список список строки
@@ -1673,8 +1673,8 @@
   пример «Each constant with the numbers right before and after it, inside int»
     дано numbers равно ["100", "2147483647"]
     ожидается ["99", "100", "101", "2147483646", "2147483647"]
-  пусть near равно («Joined lists» от [] и (отобразить numbers как number → «Near number» от number))
-  отфильтровать near где number → «In int» от number
+  пусть near равно («Joined lists» от [] и (отобразить numbers как «number» → «Near number» от «number»))
+  отфильтровать near где «number» → «In int» от «number»
 
 
 тотальная функция «Distinct»
@@ -1730,7 +1730,7 @@
   пусть wide равно («Distinct» от («Соединить списки» от («Base values») и near))
   пусть narrow равно («Distinct» от («Соединить списки» от («Few values») и near))
   пусть parameters равно («Flat names» от (translated.«parameters») и (translated.«types»))
-  пусть size равно (свёртка parameters начиная с 1 как total и parameter → total умножить на (длина wide))
+  пусть size равно (свёртка parameters начиная с 1 как «total» и parameter → «total» умножить на (длина wide))
   пусть chosen равно (если size больше 4000 то narrow иначе wide)
   пусть values равно (если looping то (отфильтровать chosen где word → «Small» от word) иначе chosen)
   свёртка parameters начиная с [пустой список] как rows и parameter → «Product» от rows и values
@@ -1766,7 +1766,7 @@
         "    if (p == 0) { printf(\"ok %d\\n\", call(f, a)); fflush(stdout); _exit(0); }", "    int s = 0;",
         "    waitpid(p, &s, 0);", "    if (!(WIFEXITED(s) && WEXITSTATUS(s) == 0)) printf(\"ub\\n\");",
         "    fflush(stdout);", "  }", "  return 0;", "}"]
-  пусть head равно ["#define _POSIX_C_SOURCE 200809L", "#include <stdio.h>", "#include <string.h>",
+  пусть «head» равно ["#define _POSIX_C_SOURCE 200809L", "#include <stdio.h>", "#include <string.h>",
     "#include <unistd.h>", "#include <sys/wait.h>", (соединить ["#include \"", source, "\""] по ""),
     "static int call(const char *f, const long *a) {"]
   пусть calls равно (отобразить probes как probe → «Call line» от probe)
@@ -1774,10 +1774,10 @@
   пусть more равно "      &a[4], &a[5], &a[6], &a[7]) == 9) {"
   пусть child равно "    if (p == 0) { printf(\"ok %d\\n\", call(f, a)); fflush(stdout); _exit(0); }"
   пусть trapped равно "    if (!(WIFEXITED(s) && WEXITSTATUS(s) == 0)) printf(\"ub\\n\");"
-  пусть tail равно ["  return 0;", "}", "int main(void) {", "  char f[256];", "  long a[8];", scan, more,
+  пусть «tail» равно ["  return 0;", "}", "int main(void) {", "  char f[256];", "  long a[8];", scan, more,
     "    fflush(stdout);", "    pid_t p = fork();", child, "    int s = 0;", "    waitpid(p, &s, 0);", trapped,
     "    fflush(stdout);", "  }", "  return 0;", "}"]
-  «Joined lists» от head и [calls, tail]
+  «Joined lists» от «head» и [calls, «tail»]
 
 
 тотальная функция «Padded»
@@ -1856,11 +1856,11 @@
   пример «A refusal»
     дано line равно "{\"ok\":false,\"code\":\"FLANG_TYPE\",\"message\":\"x\"}"
     ожидается "отказ"
-  пусть number равно («Between» от "{\"n\":\"" и "\"" и line)
+  пусть «number» равно («Between» от "{\"n\":\"" и "\"" и line)
   пусть rules равно [(«When» от (не (line содержит "\"ok\":true")) и "отказ"),
     («When» от (line содержит "\"value\":true") и "да"), («When» от (line содержит "\"value\":false") и "нет"),
-    («When» от (number равен "-0") и "0")]
-  «Chosen» от rules и number
+    («When» от («number» равен "-0") и "0")]
+  «Chosen» от rules и «number»
 
 
 объект «Chunking»
@@ -2087,14 +2087,14 @@
   приписать («Numbered duty» от ((длина made) плюс 1) и duty) к made
 
 тотальная функция «Numbered duty»
-  принимает number: число, duty: «Duty»
+  принимает «number»: число, duty: «Duty»
   возвращает «Claim»
   пример «A duty becomes a claim with its number»
-    дано number равно 2
+    дано «number» равно 2
     дано duty равно запись «Duty» с «words» равным ["строка 3: d", "нет"] и «line» равным 3
     ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["обязательство 2 · строка 3: d", "нет",
       "обязательство C"]
-  пусть name равно (соединить ["обязательство ", (к строке number), " · ", («Duty name» от duty)] по "")
+  пусть name равно (соединить ["обязательство ", (к строке «number»), " · ", («Duty name» от duty)] по "")
   запись «Claim» с «role» равным "ensures" и «words» равным [name, («Duty claim» от duty), "обязательство C"]
 
 тотальная функция «Text of lines»
@@ -2261,15 +2261,15 @@
   добавить («Named candidate» от ((длина named) плюс 1) и said) к named
 
 тотальная функция «Named candidate»
-  принимает number: число, said: «Claim»
+  принимает «number»: число, said: «Claim»
   возвращает «Claim»
   пример «A candidate gets its number»
-    дано number равно 2
+    дано «number» равно 2
     дано said равно запись «Claim» с «role» равным "ensures" и «words» равным ["", "результат не меньше 0",
       "знак результата"]
     ожидается запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 2", "результат не меньше 0",
       "знак результата"]
-  запись «Claim» с «role» равным "ensures" и «words» равным [(соединить ["выведено ", (к строке number)] по ""),
+  запись «Claim» с «role» равным "ensures" и «words» равным [(соединить ["выведено ", (к строке «number»)] по ""),
     («Claim text» от said), («Claim origin» от said)]
 
 
@@ -2319,21 +2319,21 @@
 
 
 тотальная функция «Near number»
-  принимает number: строка
+  принимает «number»: строка
   возвращает список строки
   пример «A constant with its neighbours»
-    дано number равно "100"
+    дано «number» равно "100"
     ожидается ["99", "100", "101"]
-  [(к строке ((к числу number) минус 1)), number, (к строке ((к числу number) плюс 1))]
+  [(к строке ((к числу «number») минус 1)), «number», (к строке ((к числу «number») плюс 1))]
 
 
 тотальная функция «In int»
-  принимает number: строка
+  принимает «number»: строка
   возвращает признак
   пример «Above INT_MAX»
-    дано number равно "2147483648"
+    дано «number» равно "2147483648"
     ожидается нет
-  ((к числу number) не меньше -2147483648) и притом ((к числу number) не больше 2147483647)
+  ((к числу «number») не меньше -2147483648) и притом ((к числу «number») не больше 2147483647)
 
 
 тотальная функция «Seen once»
@@ -2900,10 +2900,10 @@
   пусть fresh равно («Fresh name» от name и scope)
   пусть bound равно («Bound» от "int" и name и fresh и («Pure» от value))
   пусть later равно («Statements» от others и (приписать bound к scope) и turns и indent)
-  пусть head равно (соединить [indent, "пусть ", fresh, " равно ", («Body» от value)] по "")
+  пусть «head» равно (соединить [indent, "пусть ", fresh, " равно ", («Body» от value)] по "")
   пусть duties равно («Соединить списки» от («Under path» от turns и (value.«duties»)) и (later.«duties»))
   пусть refusals равно («Соединить списки» от (value.«refusals») и (later.«refusals»))
-  пусть lines равно (приписать head к (later.«lines»))
+  пусть lines равно (приписать «head» к (later.«lines»))
   пусть made равно («Flow of» от lines и duties и refusals и (later.«helpers») и (later.«leaves»))
   пусть stranger равно («Refused flow» от (соединить [place, ": цель не локальная переменная int"] по ""))
   если local то made иначе stranger
@@ -3463,18 +3463,18 @@
     (соединить ["  возвращает ", returned] по ""), (соединить ["  убывает ", measure] по "")]
 
 тотальная функция «Value helper»
-  принимает prefix: строка, name: строка, head: список строки, test: строка, lines: список строки
+  принимает prefix: строка, name: строка, «head»: список строки, test: строка, lines: список строки
   возвращает список строки
   пример «A helper gives the value of one variable when the loop ends»
     дано prefix равно "f loop 3"
     дано name равно "sum"
-    дано head равно ["h"]
+    дано «head» равно ["h"]
     дано test равно "(«i» меньше «n»)"
     дано lines равно ["      («@NEXT@» от «i»)"]
     ожидается ["h", "  если («i» меньше «n»)", "    то", "      («f loop 3 sum» от «i»)", "    иначе", "      «sum»"]
   пусть helper равно (соединить [prefix, " ", name] по "")
   пусть body равно (отобразить lines как line → «Replaced» от line и helper)
-  «Joined lists» от head и [[(соединить ["  если ", test] по ""), "    то"], body,
+  «Joined lists» от «head» и [[(соединить ["  если ", test] по ""), "    то"], body,
     ["    иначе", (соединить ["      «", name, "»"] по "")]]
 
 тотальная функция «Next check»
@@ -3489,10 +3489,10 @@
     («Last duty claim» от (leaf.«turns») и («Replaced» от (leaf.«value») и helper)), ")"] по ""
 
 тотальная функция «Duty helper»
-  принимает head: список строки, test: строка, duty: «Duty», following: строка, guarded: признак
+  принимает «head»: список строки, test: строка, duty: «Duty», following: строка, guarded: признак
   возвращает список строки
   пример «A duty inside the body holds on every turn»
-    дано head равно ["h"]
+    дано «head» равно ["h"]
     дано test равно "(«i» меньше «n»)"
     дано duty равно запись «Duty» с «words» равным ["d", "(«s» плюс «i») не больше 2147483647"] и «line» равным 4
     дано following равно "(«h» от «i»)"
@@ -3502,7 +3502,7 @@
   пусть promise равно («Duty claim» от duty)
   пусть inside равно (соединить ["  если ", test, " то ((", promise, ") и притом (", following, ")) иначе да"] по "")
   пусть always равно (соединить ["  (", promise, ") и притом (если ", test, " то (", following, ") иначе да)"] по "")
-  добавить (если guarded то inside иначе always) к head
+  добавить (если guarded то inside иначе always) к «head»
 
 объект «Turned duty»
   «guarded»: признак
@@ -3552,8 +3552,8 @@
     ожидается ["тотальная функция «f loop 3 duty 1»", "  принимает «i»: число", "  возвращает признак", "  убывает «i»",
       "  (да) и притом (если («i» больше 0) то (да) иначе да)"]
   пусть helper равно (соединить [prefix, " duty ", (к строке (numbered.«at»))] по "")
-  пусть head равно («Helper head» от helper и taking и "признак" и measure)
-  «Duty helper» от head и test и (numbered.«duty») и («Next check» от leaves и helper) и (numbered.«guarded»)
+  пусть «head» равно («Helper head» от helper и taking и "признак" и measure)
+  «Duty helper» от «head» и test и (numbered.«duty») и («Next check» от leaves и helper) и (numbered.«guarded»)
 
 тотальная функция «Loop duty claim»
   принимает prefix: строка, arguments: список строки, numbered: «Loop duty», line: число
@@ -3929,8 +3929,8 @@
     дано plain равно да
     ожидается "«r»: «struct rect»"
   пусть natural равно ((не plain) и притом («Holds» от parameter и naturals))
-  пусть number равно («Chosen» от [(«When» от plain и "число"), («When» от natural и "нат")] и "целое")
-  пусть typed равно (если kind начинается с "struct " то («Parameter type» от kind) иначе number)
+  пусть «number» равно («Chosen» от [(«When» от plain и "число"), («When» от natural и "нат")] и "целое")
+  пусть typed равно (если kind начинается с "struct " то («Parameter type» от kind) иначе «number»)
   соединить ["«", parameter, "»: ", typed] по ""
 
 тотальная функция «Field ranges»
@@ -4061,7 +4061,7 @@
       ] и «types» равным ["int"] и «returns» равным "int"
     ожидается да
   пусть heads равно (отобразить (translated.«support») как block → «Cell» от 1 и block)
-  не (пусто (отфильтровать heads где head → head содержит " loop "))
+  не (пусто (отфильтровать heads где «head» → «head» содержит " loop "))
 
 тотальная функция «Small»
   принимает word: строка

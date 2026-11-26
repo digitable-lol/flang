@@ -128,8 +128,8 @@
 тотальная функция «Outcome»
   принимает tally: «Tally»
   возвращает «Продолжение»
-  пусть total равно (соединить ["user programs: kernel proved ", (к строке (tally.«proved»)), ", checker verified ", (к строке (tally.«verified»))] по "")
-  пусть text равно (соединить (добавить total к (tally.«lines»)) по "\n")
+  пусть «total» равно (соединить ["user programs: kernel proved ", (к строке (tally.«proved»)), ", checker verified ", (к строке (tally.«verified»))] по "")
+  пусть text равно (соединить (добавить «total» к (tally.«lines»)) по "\n")
   разбор (tally.«complaints»)
     случай пусто
       то вариант «Конец работы» с значение равным text

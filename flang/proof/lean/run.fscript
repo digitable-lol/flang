@@ -296,10 +296,10 @@
   пусть calls равно [(«Write» от "calls script" и («In work» от "calls.sh" и answers) и («Calls script»)),
     («Run» от "calls" и "sh" и [(«In work» от "calls.sh" и answers), («In work» от "calls" и answers),
       («In work» от "calls.txt" и answers)]), («Read» от "calls text" и («In work» от "calls.txt" и answers))]
-  пусть tail равно («Соединить списки» от build и («Соединить списки» от probes и calls))
+  пусть «tail» равно («Соединить списки» от build и («Соединить списки» от probes и calls))
   если не («Built» от answers)
     то пустой список
-    иначе «Соединить списки» от axioms и («Соединить списки» от («Trap files» от answers) и tail)
+    иначе «Соединить списки» от axioms и («Соединить списки» от («Trap files» от answers) и «tail»)
 
 тотальная функция «Visit of»
   принимает chunk: строка
@@ -742,10 +742,10 @@
   пусть words равно (отобразить (разделить found по ",") как word → «Without blanks» от word)
   пусть named равно (отфильтровать words где word → не (пусто word))
   пусть extra равно (отфильтровать named где word → не («Has» от word и («Standard axioms»)))
-  пусть head равно "аксиомы теорем ядра и модели — "
+  пусть «head» равно "аксиомы теорем ядра и модели — "
   пусть spare равно (соединить (отобразить extra как word → соединить [word, " "] по "") по "")
-  пусть excess равно [(соединить [head, "лишние: ", spare] по "")]
-  пусть plain равно [(соединить [head, "[", found, "], сверх трёх стандартных ни одной"] по "")]
+  пусть excess равно [(соединить [«head», "лишние: ", spare] по "")]
+  пусть plain равно [(соединить [«head», "[", found, "], сверх трёх стандартных ни одной"] по "")]
   пусть unread равно (приписать "аксиомы — вывод Lean не разобран:" к («Said lines» от "axioms" и answers))
   пусть blind равно (запись «Section» с «lines» равным unread и «bad» равным да и «fatal» равным нет)
   пусть loud равно (запись «Section» с «lines» равным excess и «bad» равным да и «fatal» равным нет)
@@ -762,8 +762,8 @@
   пусть taken равно (отфильтровать pieces где piece → («Exit code of» от (соединить ["trap ", («Cell» от 1 и piece)] по "") и answers) равен 0)
   пусть refused равно ((длина pieces) минус (длина taken))
   пусть failed равно (отобразить taken как chunk → соединить ["  ЛОВУШКА НЕ СРАБОТАЛА: Lean ПРИНЯЛ искажение из trap-", («Cell» от 1 и chunk), ".lean"] по "")
-  пусть total равно (соединить ["ловушка — искажений ", (к строке (длина pieces)), ", Lean отверг ", (к строке refused)] по "")
-  запись «Section» с «lines» равным (добавить total к failed) и «bad» равным (((длина taken) больше 0) или (пусто pieces)) и «fatal» равным нет
+  пусть «total» равно (соединить ["ловушка — искажений ", (к строке (длина pieces)), ", Lean отверг ", (к строке refused)] по "")
+  запись «Section» с «lines» равным (добавить «total» к failed) и «bad» равным (((длина taken) больше 0) или (пусто pieces)) и «fatal» равным нет
 
 тотальная функция «Lemma names»
   принимает text: строка
@@ -943,7 +943,7 @@
   пусть visits равно («Visits» от («Output of» от "calls text" и answers))
   пусть refused равно («Refused set» от answers)
   пусть tally равно (свёртка («Lean rows» от answers) начиная с (запись «Tally» с «blocks» равным 0 и «both» равным 0 и «both refused» равным 0 и «refused» равным 0 и «unread» равным 0 и «outside accepted» равным 0 и «outside refused» равным 0 и «outside rules» равным пустой список и «disagreements» равным пустой список) как tally и row → «Tallied» от tally и row и refused и visits)
-  пусть head равно [(соединить ["сверка вердиктов — пар «исходник + запись» с блоком вывода ",
+  пусть «head» равно [(соединить ["сверка вердиктов — пар «исходник + запись» с блоком вывода ",
       (к строке (длина («Pairs» от visits))), ", блоков, которые сверщик проигрывает, ",
       (к строке (tally.«blocks»))] по ""),
     (соединить ["  сверщик принял, Lean принял (цель следует по теореме): ", (к строке (tally.«both»)),
@@ -954,7 +954,7 @@
     (соединить ["  вне модели Lean (первый непринятый шаг — «внеМодели» в Acceptance.lean): сверщик принял ",
       (к строке (tally.«outside accepted»)), ", отверг ", (к строке (tally.«outside refused»))] по "")]
   пусть rules равно (если пусто (tally.«outside rules») то (пустой список) иначе [(соединить ["    правила: ", («Sorted rules» от («Output of» от "sorted rules" и answers))] по "")])
-  запись «Section» с «lines» равным («Соединить списки» от head и («Соединить списки» от rules и (добавить (соединить ["  расхождений: ", (к строке (длина (tally.«disagreements»)))] по "") к (tally.«disagreements»)))) и «bad» равным (не (пусто (tally.«disagreements»))) и «fatal» равным нет
+  запись «Section» с «lines» равным («Соединить списки» от «head» и («Соединить списки» от rules и (добавить (соединить ["  расхождений: ", (к строке (длина (tally.«disagreements»)))] по "") к (tally.«disagreements»)))) и «bad» равным (не (пусто (tally.«disagreements»))) и «fatal» равным нет
 
 тотальная функция «Named back»
   принимает entry: список строки, answers: список «Answer»

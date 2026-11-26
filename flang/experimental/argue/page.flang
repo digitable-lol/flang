@@ -122,12 +122,12 @@
     иначе (если read равен (длина parts) то "read" иначе "partly")
 
 тотальная функция «Sentence of parts»
-  принимает number: число, text: строка, parts: список «Page part»
+  принимает «number»: число, text: строка, parts: список «Page part»
   возвращает «Page sentence»
   пусть reasons равно (свёртка parts начиная с пустой список как found и part →
     «Соединить списки» от found и («Part reasons» от part))
   пусть shown равно (если пусто parts то ["грамматика не выделила в предложении ни одного суждения"] иначе reasons)
-  (запись «Page sentence» с «number» равным number и «text» равным text и «status» равным («Status of parts» от parts)
+  (запись «Page sentence» с «number» равным «number» и «text» равным text и «status» равным («Status of parts» от parts)
     и «forms» равным (свёртка parts начиная с пустой список как found и part →
     «Соединить списки» от found и («Part forms» от part))
     и «reasons» равным shown
@@ -164,8 +164,8 @@
   принимает walk: «Page walk», sentence: строка
   возвращает «Page walk»
   пусть parts равно («Parts in front» от sentence и (walk.«rest»))
-  пусть number равно ((длина (walk.«done»)) плюс 1)
-  (запись «Page walk» с «done» равным (добавить («Sentence of parts» от number и sentence и parts) к (walk.«done»))
+  пусть «number» равно ((длина (walk.«done»)) плюс 1)
+  (запись «Page walk» с «done» равным (добавить («Sentence of parts» от «number» и sentence и parts) к (walk.«done»))
     и «rest» равным («After parts» от (walk.«rest») и (длина parts)))
 
 тотальная функция «Sentences for page»

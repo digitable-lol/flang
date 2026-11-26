@@ -1090,12 +1090,13 @@
   пусть piece равно («Size bytes» от («Size inner» от listed))
   пусть glue равно («Size bytes» от («Argument size» от sizes и 2))
   пусть each равно («Add» от («Amount poly» от piece) и («Amount poly» от glue))
-  пусть total равно («Multiply» от («Amount poly» от count) и each)
+  пусть «total» равно («Multiply» от («Amount poly» от count) и each)
   пусть need равно («Join all» от [(«Needed» от count и "«соединить»: длина списка не выведена"),
     («Needed» от piece и "«соединить»: длина строки не выведена"),
     («Needed» от glue и "«соединить»: длина строки не выведена")])
-  пусть facts равно («Join all» от [(«Charged» от («Add» от («Amount poly» от count) и total)), («Allocated» от total)])
-  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным total))]
+  пусть facts равно («Join all» от [(«Charged» от («Add» от («Amount poly» от count) и «total»)),
+    («Allocated» от «total»)])
+  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным «total»))]
 
 тотальная функция «Concat facts»
   принимает left: «Size», right: «Size»
@@ -1109,11 +1110,11 @@
         запись «Term» с coef равным 1 и vars равным []])]
   пусть former равно («Size bytes» от left)
   пусть latter равно («Size bytes» от right)
-  пусть total равно («Add» от («Amount poly» от former) и («Amount poly» от latter))
+  пусть «total» равно («Add» от («Amount poly» от former) и («Amount poly» от latter))
   пусть need равно («Join all» от [(«Needed» от former и "склейка: длина строки не выведена"),
     («Needed» от latter и "склейка: длина строки не выведена")])
-  пусть facts равно («Join all» от [(«Charged» от total), («Allocated» от total)])
-  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным total))]
+  пусть facts равно («Join all» от [(«Charged» от «total»), («Allocated» от «total»)])
+  «Join all» от [need, («With size» от facts и (вариант «Text size» с bytes равным «total»))]
 
 тотальная функция «Builtin extra»
   принимает name: строка, sizes: список «Size»
@@ -2115,9 +2116,9 @@
   пусть need равно («Needed» от counted и "свёртка: длина списка не выведена")
   пусть rest равно («Leftover» от bound и names и "свёртка: рост накопителя не выведен")
   пусть inside равно («Inside» от body и "рекурсивный вызов внутри свёртки")
-  пусть total равно («Sum of» от [(«Steps» от 4), over, start, («Without calls» от each), («Charged» от count), need,
+  пусть «total» равно («Sum of» от [(«Steps» от 4), over, start, («Without calls» от each), («Charged» от count), need,
     rest, inside])
-  «With size» от total и final
+  «With size» от «total» и final
 
 тотальная функция «Without calls»
   принимает facts: список «Fact»
@@ -2145,9 +2146,9 @@
   пусть each равно («Scaled» от («Then» от («Steps» от 1) и body) и count)
   пусть need равно («Needed» от counted и "обход: длина списка не выведена")
   пусть inside равно («Inside» от body и "рекурсивный вызов внутри обхода")
-  пусть total равно («Sum of» от [(«Steps» от 3), over, («Without calls» от each), («Charged» от count),
+  пусть «total» равно («Sum of» от [(«Steps» от 3), over, («Without calls» от each), («Charged» от count),
     («Allocated» от («Scale» от count и 32)), need, inside])
-  «With size» от total и («Listed» от counted и element)
+  «With size» от «total» и («Listed» от counted и element)
 
 тотальная функция «Fold known»
   принимает names: список строки, start: «Size», over: «Size»
@@ -3050,10 +3051,10 @@
   пусть final равно («With count» от part1 и promised)
   пусть bound равно («Bind names» от grown и names и («Size polys» от final))
   пусть kept равно (отфильтровать bound где fact → не («Is recursion fact» от fact))
-  пусть total равно («Sum of» от [(«Scaled» от kept и count), («Metered» от "ticks" и count),
+  пусть «total» равно («Sum of» от [(«Scaled» от kept и count), («Metered» от "ticks" и count),
     («Metered» от "invocations" и count),
     («Leftover» от bound и names и "рекурсия: рост результата не выведен"), («Guess list» от descent.guess)])
-  если «Is bounded» от descent.count то «With size» от total и final иначе «Stuck» от descent.reason
+  если «Is bounded» от descent.count то «With size» от «total» и final иначе «Stuck» от descent.reason
 
 тотальная функция «Guess list»
   принимает guess: строка
@@ -3518,15 +3519,15 @@
   вариант «Walk» с step равным step и over равным over и keep равным keep
 
 тотальная функция «Promised by»
-  принимает length: признак, operator: строка, facts: список «Fact»
+  принимает «length»: признак, operator: строка, facts: список «Fact»
   возвращает «Amount»
   пример «Not a promise about the length of the result»
-    дано length равно нет
+    дано «length» равно нет
     дано operator равно "eq"
     дано facts равно []
     ожидается вариант «Unbounded»
   пусть compared равно (["eq", "lte", "lt"] содержит operator)
-  если length и притом compared то «Size value» от («Size in» от facts) иначе вариант «Unbounded»
+  если «length» и притом compared то «Size value» от («Size in» от facts) иначе вариант «Unbounded»
 
 тотальная функция «Larger growth»
   принимает top: список «Term», amount: «Amount», var: строка

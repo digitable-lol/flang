@@ -176,15 +176,15 @@
   соединить [label, (к строке count)] по ""
 
 тотальная функция «Count line»
-  принимает head: строка, counts: список число, labels: список строки
+  принимает «head»: строка, counts: список число, labels: список строки
   возвращает строка
   пример «A heading count and three labelled counts»
-    дано head равно "дал вердикт 3: "
+    дано «head» равно "дал вердикт 3: "
     дано counts равно [1, 2, 0]
     дано labels равно ["А ", ", Б ", ", В "]
     ожидается "дал вердикт 3: А 1, Б 2, В 0"
   пусть pairs равно (отобразить [1, 2, 3] как i → «Labelled» от («Cell» от i и labels) и («At» от i и counts))
-  соединить (приписать head к pairs) по ""
+  соединить (приписать «head» к pairs) по ""
 
 тотальная функция «Report lines»
   принимает t: «Tally»
@@ -442,8 +442,8 @@
   пусть named равно («Named lines» от mode и ledger)
   пусть found равно (t.«disagreements»)
   пусть stale равно («Stale lines» от named и found)
-  пусть tail равно (приписать («Ledger line» от named и found) к stale)
-  пусть said равно («Соединить списки» от («Headed» от mode и («Report lines» от t)) и tail)
+  пусть «tail» равно (приписать («Ledger line» от named и found) к stale)
+  пусть said равно («Соединить списки» от («Headed» от mode и («Report lines» от t)) и «tail»)
   пусть open равно («Соединить списки» от («Absent from» от found и named) и stale)
   «Judged» от mode и said и open и («At» от 7 и (t.«counts»)) и (t.«forged»)
 

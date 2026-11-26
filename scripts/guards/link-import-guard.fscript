@@ -103,13 +103,13 @@
   соединить [(walk.«root»), "/", file] по ""
 
 тотальная функция «Cache file»
-  принимает name: строка, tail: строка
+  принимает name: строка, «tail»: строка
   возвращает строка
   пример «The cache lives under the empty home»
     дано name равно "ab"
-    дано tail равно ".flang"
+    дано «tail» равно ".flang"
     ожидается "home/.cache/flang/links/ab.flang"
-  соединить ["home/.cache/flang/links/", name, tail] по ""
+  соединить ["home/.cache/flang/links/", name, «tail»] по ""
 
 тотальная функция «Poison acts»
   принимает forged: признак
@@ -219,7 +219,7 @@
   принимает walk: «Walk»
   возвращает список «Act»
   пусть discount равно («Link of» от walk и "lib/discount.flang")
-  пусть head равно [вариант «Make dirs»,
+  пусть «head» равно [вариант «Make dirs»,
    вариант «Put» с file равным "lib/discount.flang" и text равным («Discount»),
    вариант «Put» с file равным "lib/util.flang" и text равным («Util»),
    вариант «Put» с file равным "lib/broken.flang" и text равным («Broken»),
@@ -229,7 +229,7 @@
    вариант «Keep lock» с dir равным "shop1",
    вариант «Pin in lock»,
    вариант «Remove» с file равным "lib/discount.flang"]
-  «Joined» от («Joined» от head и («Digest acts» от discount)) и fetch
+  «Joined» от («Joined» от «head» и («Digest acts» от discount)) и fetch
 
 тотальная функция «Offline acts»
   принимает walk: «Walk»
@@ -264,8 +264,8 @@
   пусть poison равно (приписать (вариант «Put» с file равным "shop3/shop.flang"
     и text равным («Shop» от («Link of» от walk и "lib/discount.flang"))) к («Poison acts» от (walk.«forged»)))
   пусть cache равно (добавить («Run act» от "shop3" и да и "FLANG_LINK_CHANGED") к poison)
-  пусть head равно («Joined» от («Joined» от («First acts» от walk) и («Offline acts» от walk)) и cache)
-  «Joined» от head и (добавить (вариант «Clean») к («Refusal acts» от walk))
+  пусть «head» равно («Joined» от («Joined» от («First acts» от walk) и («Offline acts» от walk)) и cache)
+  «Joined» от «head» и (добавить (вариант «Clean») к («Refusal acts» от walk))
 
 тотальная функция «Joined» от «А»
   принимает left: список «А», right: список «А»
@@ -377,14 +377,14 @@
     дано offline равно да
     ожидается ["-i", "HOME=/t/home", "PATH=/usr/bin:/bin", "LC_ALL=C.UTF-8", "FLANG_OFFLINE=1",
       "b", "check", "/t/shop1/shop.flang"]
-  пусть head равно ["-i", (соединить ["HOME=", («Path in» от walk и "home")] по ""),
+  пусть «head» равно ["-i", (соединить ["HOME=", («Path in» от walk и "home")] по ""),
     "PATH=/usr/bin:/bin", "LC_ALL=C.UTF-8"]
-  пусть tail равно [(walk.«binary»), "check", («Path in» от walk и (соединить [dir, "/shop.flang"] по ""))]
+  пусть «tail» равно [(walk.«binary»), "check", («Path in» от walk и (соединить [dir, "/shop.flang"] по ""))]
   разбор offline
     случай да
-      то «Joined» от (добавить "FLANG_OFFLINE=1" к head) и tail
+      то «Joined» от (добавить "FLANG_OFFLINE=1" к «head») и «tail»
     случай нет
-      то «Joined» от head и tail
+      то «Joined» от «head» и «tail»
 
 тотальная функция «Dirs»
   принимает walk: «Walk»
@@ -947,13 +947,13 @@
       то [соединить ["процесс ответил кодом ", (к строке code), ": ", errors] по ""]
 
 тотальная функция «Cache path»
-  принимает walk: «Walk», slot: число, tail: строка
+  принимает walk: «Walk», slot: число, «tail»: строка
   возвращает строка
   пример «The body of the first pin in the cache»
     дано walk равно (запись «Walk» с «forged» равным нет и «binary» равным "b" и «root» равным "/t"
       и «lock» равным "" и «pins» равным ["ab", "", ""] и «now» равным (вариант «Nothing»)
       и «rest» равным пустой список и «troubles» равным пустой список и «done» равным 0)
     дано slot равно 1
-    дано tail равно ".flang"
+    дано «tail» равно ".flang"
     ожидается "/t/home/.cache/flang/links/ab.flang"
-  «Path in» от walk и («Cache file» от («Pin» от (walk.«pins») и slot) и tail)
+  «Path in» от walk и («Cache file» от («Pin» от (walk.«pins») и slot) и «tail»)

@@ -22,7 +22,7 @@
 
 тип «Step»
   вариант «Gathering» содержит mode: строка
-  вариант «Probing» содержит total: число
+  вариант «Probing» содержит «total»: число
   вариант «Forging»
 
 тотальная функция «Lines»
@@ -401,48 +401,48 @@
   свёртка (probe.«said») начиная с named как kept и said → добавить said к kept
 
 тотальная функция «Counted»
-  принимает total: число, tail: строка
+  принимает «total»: число, «tail»: строка
   возвращает строка
   пример «the count of the asked modules»
-    дано total равно 2
-    дано tail равно "все проходят flang check"
+    дано «total» равно 2
+    дано «tail» равно "все проходят flang check"
     ожидается "модулей библиотеки проверено 2 из 2, все проходят flang check"
-  соединить ["модулей библиотеки проверено ", (к строке total), " из ", (к строке total), ", ", tail] по ""
+  соединить ["модулей библиотеки проверено ", (к строке «total»), " из ", (к строке «total»), ", ", «tail»] по ""
 
 тотальная функция «Check verdict»
-  принимает total: число, output: строка
+  принимает «total»: число, output: строка
   возвращает «Продолжение»
   пример «every asked module passes»
-    дано total равно 1
+    дано «total» равно 1
     дано output равно "aes.flang\t0\n"
     ожидается (вариант «Конец работы» с
       значение равным "модулей библиотеки проверено 1 из 1, все проходят flang check")
   пример «a refused module fails the guard»
-    дано total равно 1
+    дано «total» равно 1
     дано output равно "tls.flang\t1\n    FLANG_UNKNOWN_NAME\n"
     ожидается (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным """
     НЕ ПРОХОДИТ CHECK: flang/stdlib/tls.flang — код 1
         FLANG_UNKNOWN_NAME
     модулей библиотеки проверено 1 из 1, не проходят 1""")
   пример «a module that did not answer is not passed»
-    дано total равно 2
+    дано «total» равно 2
     дано output равно "aes.flang\t0\n"
     ожидается (вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и
       сообщение равным "ответили 1 модулей из 2 — прогон оборван")
   пусть probes равно («Probes of» от output)
   пусть refused равно (длина («Refused» от probes))
-  пусть summary равно («Counted» от total и (соединить ["не проходят ", (к строке refused)] по ""))
+  пусть summary равно («Counted» от «total» и (соединить ["не проходят ", (к строке refused)] по ""))
   разбор («First holding» от [
-    (запись «Rule» с «name» равным "short" и «holds» равным (не ((длина probes) равен total))),
+    (запись «Rule» с «name» равным "short" и «holds» равным (не ((длина probes) равен «total»))),
     (запись «Rule» с «name» равным "refused" и «holds» равным (refused больше 0))] и "clean")
     случай "short"
       то вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным (соединить ["ответили ",
-        (к строке (длина probes)), " модулей из ", (к строке total), " — прогон оборван"] по "")
+        (к строке (длина probes)), " модулей из ", (к строке «total»), " — прогон оборван"] по "")
     случай "refused"
       то вариант «Провал» с код равным "FLANG_STDLIB_CHECK" и сообщение равным (соединить (добавить summary к
         («Trouble lines» от probes)) по "\n")
     случай любое
-      то вариант «Конец работы» с значение равным («Counted» от total и "все проходят flang check")
+      то вариант «Конец работы» с значение равным («Counted» от «total» и "все проходят flang check")
 
 тотальная функция «Probe order»
   принимает wanted: список строки
@@ -474,7 +474,7 @@
         " — проверять нечего"] по "")
     случай голова и хвост
       то (вариант «Сделать» с поручение равным («Probe order» от wanted) и
-        потом равным (вариант «Probing» с total равным (длина wanted)))
+        потом равным (вариант «Probing» с «total» равным (длина wanted)))
 
 тотальная функция «Forge script»
   возвращает строка
@@ -593,11 +593,11 @@
       то «Shell failure» от reply
 
 тотальная функция «After probe reply»
-  принимает total: число, reply: «Отклик»
+  принимает «total»: число, reply: «Отклик»
   возвращает «Продолжение»
   разбор reply
     случай вариант «Процесс завершён» с код как code и вывод как output и ошибки как errors
-      то «Check verdict» от total и output
+      то «Check verdict» от «total» и output
     случай любое
       то «Shell failure» от reply
 
@@ -618,8 +618,8 @@
   разбор step
     случай вариант «Gathering» с mode как mode
       то «After gather reply» от mode и reply
-    случай вариант «Probing» с total как total
-      то «After probe reply» от total и reply
+    случай вариант «Probing» с «total» как «total»
+      то «After probe reply» от «total» и reply
     случай вариант «Forging»
       то «After forge reply» от reply
 

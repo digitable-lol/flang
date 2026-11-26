@@ -36,9 +36,9 @@
   соединить [(«Escape»), "["] по ""
 
 тотальная функция «Sequence»
-  принимает tail: строка
+  принимает «tail»: строка
   возвращает строка
-  соединить [(«Sequence start»), tail] по ""
+  соединить [(«Sequence start»), «tail»] по ""
 
 тотальная функция «Is asking for the fingerprint»
   принимает answers: список «Answer»

@@ -213,9 +213,9 @@
   запись «Job» с «root» равным (job.«root») и «file» равным (job.«file») и «binary» равным (job.«binary») и «out» равным (job.«out») и «memory» равным (job.«memory») и «peak» равным (job.«peak») и «steps» равным (job.«steps») и «depth» равным (job.«depth») и «said» равным («Joined» от (job.«said») и lines)
 
 тотальная функция «Test order»
-  принимает flag: строка, path: строка
+  принимает «flag»: строка, path: строка
   возвращает «Поручение»
-  вариант «Запустить процесс» с программа равным "test" и аргументы равным [flag, path]
+  вариант «Запустить процесс» с программа равным "test" и аргументы равным [«flag», path]
 
 тотальная функция «Passed»
   принимает reply: «Отклик»

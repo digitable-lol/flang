@@ -363,10 +363,10 @@
     дано rows равно [запись «Row» с «name» равным "Н6" и «lemma» равным да и «accepted» равным да и «debt» равным нет,
       запись «Row» с «name» равным "Выч" и «lemma» равным да и «accepted» равным нет и «debt» равным да]
     ожидается "приёмов 2, с леммой 2, в приёмке 1, вне приёмки 1, в долге 1"
-  пусть total равно (длина rows)
-  соединить ["приёмов ", (к строке total),
-    ", с леммой ", (к строке (total минус (длина («Without lemma» от rows)))),
-    ", в приёмке ", (к строке (total минус (длина («Outside» от rows)))),
+  пусть «total» равно (длина rows)
+  соединить ["приёмов ", (к строке «total»),
+    ", с леммой ", (к строке («total» минус (длина («Without lemma» от rows)))),
+    ", в приёмке ", (к строке («total» минус (длина («Outside» от rows)))),
     ", вне приёмки ", (к строке (длина («Outside» от rows))),
     ", в долге ", (к строке (длина («Owed» от rows)))] по ""
 
@@ -437,8 +437,8 @@
   пример «Without the first move there is no region»
     дано checker равно "static char *тело_без_пуст(c"
     ожидается ""
-  пусть tail равно («After first» от checker и («Half start»))
-  если (пусто tail) то "" иначе («Before» от (соединить («Half start») с tail) и («Half end»))
+  пусть «tail» равно («After first» от checker и («Half start»))
+  если (пусто «tail») то "" иначе («Before» от (соединить («Half start») с «tail») и («Half end»))
 
 тотальная функция «Half moves»
   принимает checker: строка
@@ -556,11 +556,11 @@
   пусть rules равно («Kernel rules» от («Cell» от 1 и inputs))
   пусть kernel равно (отобразить rules как r → «Kernel line» от r и table и theorems)
   пусть outside равно (соединить ["вне приёмки: ", («Comma list» от («Outside» от rows))] по "")
-  пусть tail равно ["", («Numbers line» от rows), outside, "",
+  пусть «tail» равно ["", («Numbers line» от rows), outside, "",
     («Kernel head»)]
   пусть body равно (приписать («Census head») к (отобразить rows как row → «Row line» от row))
   пусть half равно (приписать "" к («Half lines» от inputs))
-  «Соединить списки» от body и («Соединить списки» от tail и («Соединить списки» от kernel и half))
+  «Соединить списки» от body и («Соединить списки» от «tail» и («Соединить списки» от kernel и half))
 
 тотальная функция «Broken»
   принимает rows: список «Row», accepted: список строки
@@ -579,14 +579,14 @@
   «Соединить списки» от a и b
 
 тотальная функция «Named»
-  принимает head: строка, names: список строки, tail: строка
+  принимает «head»: строка, names: список строки, «tail»: строка
   возвращает список строки
   пример «Each name is wrapped in the same words»
-    дано head равно "приём «"
+    дано «head» равно "приём «"
     дано names равно ["О9", "Н6"]
-    дано tail равно "» без теоремы"
+    дано «tail» равно "» без теоремы"
     ожидается ["приём «О9» без теоремы", "приём «Н6» без теоремы"]
-  отобразить names как name → соединить [head, name, tail] по ""
+  отобразить names как name → соединить [«head», name, «tail»] по ""
 
 тотальная функция «Drift»
   принимает rows: список «Row», accepted: список строки, debt: список строки
@@ -626,8 +626,8 @@
   пусть drift равно («Drift» от rows и accepted и («Debt names» от («Cell» от 5 и inputs)))
   пусть bare равно («Rowless kernel rules» от inputs)
   пусть rowless равно («Named» от "правило ядра «" и bare и "» без строки в ведомости правил вывода")
-  пусть tail равно («Соединить списки» от paid и («Соединить списки» от drift и rowless))
-  пусть rest равно («Соединить списки» от unpaid и («Соединить списки» от lemmaless и tail))
+  пусть «tail» равно («Соединить списки» от paid и («Соединить списки» от drift и rowless))
+  пусть rest равно («Соединить списки» от unpaid и («Соединить списки» от lemmaless и «tail»))
   пусть late равно («Соединить списки» от («Half troubles» от inputs) и («Registry troubles» от inputs))
   «Соединить списки» от («Broken» от rows и accepted) и («Соединить списки» от rest и late)
 
@@ -671,8 +671,8 @@
     ожидается ["a\nstatic char *правило_т1( strcmp(имя, \"Ъ1\") x", "", "", "", "", ""]
   пусть rest равно («After first» от («Cell» от 1 и inputs) и («Region start»))
   пусть before равно («Before» от («Cell» от 1 и inputs) и («Region start»))
-  пусть head равно (соединить («Region start») с " strcmp(имя, \"Ъ1\") ")
-  «Replaced» от inputs и 1 и (соединить [before, head, rest] по "")
+  пусть «head» равно (соединить («Region start») с " strcmp(имя, \"Ъ1\") ")
+  «Replaced» от inputs и 1 и (соединить [before, «head», rest] по "")
 
 тотальная функция «Forged debt»
   принимает inputs: список строки
@@ -700,8 +700,8 @@
       "", "", "", "", "", ""]
   пусть rest равно («After first» от («Cell» от 1 и inputs) и («Half start»))
   пусть before равно («Before» от («Cell» от 1 и inputs) и («Half start»))
-  пусть head равно (соединить («Half start») с "\nstatic int ъ_ход(void) {\n}\nstatic int зеркало_отношения(")
-  «Replaced» от inputs и 1 и (соединить [before, head, rest] по "")
+  пусть «head» равно (соединить («Half start») с "\nstatic int ъ_ход(void) {\n}\nstatic int зеркало_отношения(")
+  «Replaced» от inputs и 1 и (соединить [before, «head», rest] по "")
 
 тотальная функция «Forged half theorem»
   принимает inputs: список строки
@@ -731,20 +731,20 @@
   «Replaced» от inputs и 8 и (соединить parts по "theorem «набор_снят»")
 
 тотальная функция «Probe lines»
-  принимает number: строка, what: строка, troubles: список строки
+  принимает «number»: строка, what: строка, troubles: список строки
   возвращает список строки
   пример «A forgery the guard caught»
-    дано number равно "1"
+    дано «number» равно "1"
     дано what равно "Н5 убран из приёмки"
     дано troubles равно ["x"]
     ожидается ["СОШЛОСЬ  подлог 1 (Н5 убран из приёмки) — красных 1", "         КРАСНО  x"]
   пример «A forgery the guard missed»
-    дано number равно "2"
+    дано «number» равно "2"
     дано what равно "лишний приём"
     дано troubles равно пустой список
     ожидается ["ПРОВАЛ   подлог 2 (лишний приём) — сторож остался зелёным"]
-  пусть missed равно (соединить ["ПРОВАЛ   подлог ", number, " (", what, ") — сторож остался зелёным"] по "")
-  пусть caught равно (соединить ["СОШЛОСЬ  подлог ", number, " (", what, ") — красных ",
+  пусть missed равно (соединить ["ПРОВАЛ   подлог ", «number», " (", what, ") — сторож остался зелёным"] по "")
+  пусть caught равно (соединить ["СОШЛОСЬ  подлог ", «number», " (", what, ") — красных ",
     (к строке (длина troubles))] по "")
   приписать (если пусто troubles то missed иначе caught) к («Named» от "         КРАСНО  " и troubles и "")
 

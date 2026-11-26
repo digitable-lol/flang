@@ -471,7 +471,7 @@
   пример «The postconditions of the tree are summed»
     дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 3 и «unjudged» равным 0)]
     ожидается 3
-  свёртка rows начиная с 0 как total и row → total плюс (row.«written»)
+  свёртка rows начиная с 0 как «total» и row → «total» плюс (row.«written»)
 
 тотальная функция «Tree unjudged»
   принимает rows: список «Row»
@@ -479,7 +479,7 @@
   пример «The preconditions and the laws of the tree are summed»
     дано rows равно [(запись «Row» с «path» равным "a.flang" и «written» равным 0 и «unjudged» равным 2)]
     ожидается 2
-  свёртка rows начиная с 0 как total и row → total плюс (row.«unjudged»)
+  свёртка rows начиная с 0 как «total» и row → «total» плюс (row.«unjudged»)
 
 тотальная функция «Summed field»
   принимает which: число, lines: список строки
@@ -488,7 +488,7 @@
     дано which равно 3
     дано lines равно ["aa|1|7|0|0|0|a.flang", "bb|1|×|×|×|0|b.flang"]
     ожидается 7
-  свёртка lines начиная с 0 как total и line → total плюс («Measured number» от («Field» от which и line))
+  свёртка lines начиная с 0 как «total» и line → «total» плюс («Measured number» от («Field» от which и line))
 
 тотальная функция «Judged»
   принимает lines: список строки

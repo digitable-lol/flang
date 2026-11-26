@@ -22,15 +22,15 @@
    запись «Kind» с «word» равным "shown" и «green» равным да и «trouble» равным "план подлога не показал свои стороны"]
 
 тотальная функция «Job of»
-  принимает item: строка
+  принимает «item»: строка
   возвращает «Job»
   пример «the first word is the kind and the rest is the command»
-    дано item равно "probe bootstrap/flang run-script temporal:forgery"
+    дано «item» равно "probe bootstrap/flang run-script temporal:forgery"
     ожидается запись «Job» с «kind» равным "probe" и «command» равным "bootstrap/flang run-script temporal:forgery"
   пример «an empty item has neither»
-    дано item равно ""
+    дано «item» равно ""
     ожидается запись «Job» с «kind» равным "" и «command» равным ""
-  разбор (отфильтровать (разделить item по " ") где word → (длина word) больше 0)
+  разбор (отфильтровать (разделить «item» по " ") где word → (длина word) больше 0)
     случай пусто
       то запись «Job» с «kind» равным "" и «command» равным ""
     случай голова и хвост
@@ -47,8 +47,8 @@
   пример «no arguments name no runs»
     дано arguments равно пустой список
     ожидается пустой список
-  (отобразить (отфильтровать (разделить (соединить arguments по " ") по " , ") где item → (длина item) больше 0)
-    как item → («Job of» от item))
+  (отобразить (отфильтровать (разделить (соединить arguments по " ") по " , ") где «item» → (длина «item») больше 0)
+    как «item» → («Job of» от «item»))
 
 тотальная функция «Shell line»
   принимает command: строка

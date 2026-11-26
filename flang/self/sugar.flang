@@ -281,13 +281,13 @@
     иначе запись «Sugar cut» с «found» равным нет и «before» равным textPart и «after» равным ""
 
 тотальная функция «Plain line»
-  принимает textPart: строка, number: число
+  принимает textPart: строка, «number»: число
   возвращает «Source line»
   пример «A line of the source keeps its number»
     дано textPart равно "  а"
-    дано number равно 3
+    дано «number» равно 3
     ожидается запись «Source line» с «text» равным "  а" и «line» равным 3 и «shift» равным 0 и «raw» равным нет
-  запись «Source line» с «text» равным textPart и «line» равным number и «shift» равным 0 и «raw» равным нет
+  запись «Source line» с «text» равным textPart и «line» равным «number» и «shift» равным 0 и «raw» равным нет
 
 тотальная функция «Made line»
   принимает origin: «Source line», textPart: строка
@@ -1547,8 +1547,8 @@
   пусть counted равно свёртка lines начиная с [0, 0] как acc и line → «Count text line» от acc и line
   пусть final равно элемент 2 в counted
   пусть numbered равно свёртка lines начиная с [] как acc и line → добавить (длина acc) к acc
-  пусть kept равно отфильтровать numbered где number → (number плюс 1) меньше final
-  отобразить kept как number → элемент (number плюс 1) в lines
+  пусть kept равно отфильтровать numbered где «number» → («number» плюс 1) меньше final
+  отобразить kept как «number» → элемент («number» плюс 1) в lines
 
 тотальная функция «Fold expansion»
   принимает loop: «Loop», place: «Placing», rewriting: «Rewriting»
@@ -1826,8 +1826,8 @@
   пусть words равно «Words» от textPart
   пусть pairs равно «Joined» от [""] и words
   пусть numbered равно свёртка words начиная с [] как acc и word → добавить (длина acc) к acc
-  пусть bound равно отфильтровать numbered где number → «Binds name» от pairs и words и names и number
-  отобразить bound как number → элемент (number плюс 1) в words
+  пусть bound равно отфильтровать numbered где «number» → «Binds name» от pairs и words и names и «number»
+  отобразить bound как «number» → элемент («number» плюс 1) в words
 
 тотальная функция «Starts declaration»
   принимает lines: список «Source line», word: строка
@@ -1888,8 +1888,8 @@
     дано entries равно ["а", "б"]
     ожидается ["а"]
   пусть numbered равно свёртка entries начиная с [] как acc и entry → добавить (длина acc) к acc
-  (отобразить (отфильтровать numbered где number → (number плюс 1) меньше (длина entries)) как number → элемент
-      (number плюс 1) в entries)
+  (отобразить (отфильтровать numbered где «number» → («number» плюс 1) меньше (длина entries)) как «number» → элемент
+      («number» плюс 1) в entries)
 
 тотальная функция «Item lines»
   принимает items: список «Item»
@@ -1946,16 +1946,16 @@
   если acc.«mode» равен 0 то «Plain piece step» от acc и sign иначе «Closed piece step» от acc и sign
 
 тотальная функция «Binds name»
-  принимает before: список строки, words: список строки, names: список строки, number: число
+  принимает before: список строки, words: список строки, names: список строки, «number»: число
   возвращает признак
   пример «The word after a let»
     дано before равно ["", "пусть", "остаток"]
     дано words равно ["пусть", "остаток"]
     дано names равно ["остаток"]
-    дано number равно 1
+    дано «number» равно 1
     ожидается да
-  пусть binder равно ["пусть", "как", "дано"] содержит (элемент (number плюс 1) в before)
-  binder и притом (names содержит (элемент (number плюс 1) в words))
+  пусть binder равно ["пусть", "как", "дано"] содержит (элемент («number» плюс 1) в before)
+  binder и притом (names содержит (элемент («number» плюс 1) в words))
 
 тотальная функция «No method»
   возвращает «Method»
@@ -2283,7 +2283,7 @@
   пусть origin равно если пусто becomes то model.«head» иначе (голова becomes).«first»
   пусть entries равно отобразить fields как fieldName → «Record entry» от fieldName и fields и becomes
   пусть numbered равно свёртка entries начиная с [] как acc и entry → добавить (длина acc) к acc
-  пусть texts равно отобразить numbered как number → «Record text» от model.«name» и entries и number
+  пусть texts равно отобразить numbered как «number» → «Record text» от model.«name» и entries и «number»
   «Made lines» от origin и texts
 
 тотальная функция «Record entry»
@@ -2301,16 +2301,16 @@
   соединить [fieldName, " равным ", value] по ""
 
 тотальная функция «Record text»
-  принимает name: строка, entries: список строки, number: число
+  принимает name: строка, entries: список строки, «number»: число
   возвращает строка
   пример «The last of two entries closes the record»
     дано name равно "«Счёт»"
     дано entries равно ["а равным 1", "б равным 2"]
-    дано number равно 1
+    дано «number» равно 1
     ожидается "    б равным 2)"
-  пусть front равно если number равен 0 то соединить ["  (запись ", name, " с "] по "" иначе "    "
-  пусть back равно если (number плюс 1) равен (длина entries) то ")" иначе " и"
-  соединить [front, элемент (number плюс 1) в entries, back] по ""
+  пусть front равно если «number» равен 0 то соединить ["  (запись ", name, " с "] по "" иначе "    "
+  пусть back равно если («number» плюс 1) равен (длина entries) то ")" иначе " и"
+  соединить [front, элемент («number» плюс 1) в entries, back] по ""
 
 тотальная функция «Parameter names»
   принимает taking: строка

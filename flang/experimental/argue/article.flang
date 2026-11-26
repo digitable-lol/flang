@@ -302,14 +302,14 @@
   если quoted то (если mine содержит "confirmed" то "both" иначе marked) иначе "nobody"
 
 тотальная функция «Reading of»
-  принимает markup: «Markup», rows: список (список строки), number: число, sentence: строка
+  принимает markup: «Markup», rows: список (список строки), «number»: число, sentence: строка
   возвращает «Reading»
   пусть pieces равно («Quote pieces» от (markup.«entries»))
   пусть labels равно (свёртка (отфильтровать pieces где row → «Piece touches» от sentence и row)
       начиная с (пустой список) как found и row → «Соединить списки» от found и («Taken» от row и 1))
   пусть mine равно (отобразить (отфильтровать rows где row → labels содержит (элемент 1 в row))
       как row → элемент 2 в row)
-  (запись «Reading» с «number» равным number и «sentence» равным sentence
+  (запись «Reading» с «number» равным «number» и «sentence» равным sentence
       и «by» равным («Reader of» от (не (пусто labels)) и mine)
       и «labels» равным labels
       и «origins» равным («Each once» от (отфильтровать (отобразить (отфильтровать (markup.«entries»)

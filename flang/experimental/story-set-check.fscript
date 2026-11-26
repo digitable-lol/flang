@@ -155,11 +155,11 @@
   принимает answers: список «Answer»
   возвращает список строки
   пусть stories равно («Stories of» от answers)
-  пусть head равно (соединить ["набор историй: ", («Folder path» от answers), ", файлов ",
+  пусть «head» равно (соединить ["набор историй: ", («Folder path» от answers), ", файлов ",
     (к строке (длина stories))] по "")
   пусть judged равно («Соединить списки» от («Judged lines» от stories) и [(«Set kernel line» от answers)])
   пусть found равно («Соединить списки» от («Hole lines» от stories) и («Remark lines» от stories))
-  пусть opening равно (приписать head к («Соединить списки» от («Read lines» от stories) и («Unread lines» от
+  пусть opening равно (приписать «head» к («Соединить списки» от («Read lines» от stories) и («Unread lines» от
     stories)))
   «Соединить списки» от («Соединить списки» от opening и judged) и («Соединить списки» от found и [(«Total line» от
     stories)])

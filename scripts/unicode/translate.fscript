@@ -131,17 +131,17 @@
     иначе соединить [head_part, replacement, tail_part] по ""
 
 тотальная функция «Translate line»
-  принимает row_text: строка, number: число, spots: список «Spot», target: «Surface»
+  принимает row_text: строка, «number»: число, spots: список «Spot», target: «Surface»
   возвращает строка
   пример «Two keywords on one line»
     дано row_text равно "  если н то 0"
-    дано number равно 4
+    дано «number» равно 4
     дано spots равно [(запись «Spot» с «row» равным 4 и «column» равным 3 и «concept» равным "if" и «until» равным 8),
         (запись «Spot» с «row» равным 4 и «column» равным 10 и «concept» равным "then" и «until» равным 13)]
     дано target равно (запись «Surface» с «name» равным "en" и «words» равным
         "|if@en:if|then@en:then|else@eo:alie|if@zh:如果|total@en:total|function@en:function|")
     ожидается "  if н then 0"
-  пусть mine равно отфильтровать spots где spot → spot.«row» равен number
+  пусть mine равно отфильтровать spots где spot → spot.«row» равен «number»
   (свёртка (свёртка mine начиная с пустой список как reversed и spot → приписать spot к reversed) начиная с row_text как
       done и spot → «Replace spot» от done и spot и target)
 

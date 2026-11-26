@@ -481,8 +481,8 @@
   пусть journal равно («Output of» от "journal" и answers)
   пусть stages равно («Stages» от («Marks» от journal))
   пусть ticks равно («Output of» от "ticks" и answers)
-  пусть head равно [(соединить ["Журнал: ", («Journal path» от answers)] по ""), ""]
-  пусть body равно («Соединить списки» от head и («Stage table» от stages))
+  пусть «head» равно [(соединить ["Журнал: ", («Journal path» от answers)] по ""), ""]
+  пусть body равно («Соединить списки» от «head» и («Stage table» от stages))
   пусть notes равно (приписать "" к («Stage notes» от stages))
   пусть charges равно (если пусто ticks то пустой список иначе («Charge table» от ticks))
   соединить («Соединить списки» от body и («Соединить списки» от notes и charges)) по "\n"

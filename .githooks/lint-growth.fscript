@@ -701,13 +701,13 @@
       то «Process trouble» от "git" и отклик
 
 тотальная функция «Joined»
-  принимает head: список строки, tail: список строки
+  принимает «head»: список строки, «tail»: список строки
   возвращает список строки
   пример «the second list follows the first»
-    дано head равно ["a"]
-    дано tail равно ["b", "c"]
+    дано «head» равно ["a"]
+    дано «tail» равно ["b", "c"]
     ожидается ["a", "b", "c"]
-  свёртка tail начиная с head как gathered и line → добавить line к gathered
+  свёртка «tail» начиная с «head» как gathered и line → добавить line к gathered
 
 тотальная функция «After fresh»
   принимает rev: строка, hunks: список «Hunk», rest: список строки, notes: список строки, отклик: «Отклик»

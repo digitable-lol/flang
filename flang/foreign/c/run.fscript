@@ -186,7 +186,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     ожидается "f"
   (one.«translated»).«name»
@@ -219,7 +219,7 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано claims равно []
     ожидается [запись «Claim» с «role» равным "ensures" и «words» равным ["выведено 1", "результат не меньше 0",
       "знак результата"]]
@@ -234,14 +234,14 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано rows равно []
     ожидается запись «Prepared» с «file» равным "s" и «claims» равным [
       ] и «translated» равным (запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [[]] и «shapes» равным [] и «checked» равным [
         запись «Claim» с «role» равным "ensures" и «words» равным [
       "выведено 1", "результат не меньше 0", "знак результата"]])
@@ -401,7 +401,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["T-", "f", ".flang"] и «lines» равным [
       "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"],
@@ -481,7 +481,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     ожидается [["тотальная функция «f»", "  принимает ", "  возвращает число", "  0"], [
       "тотальная функция «f admissible»", "  принимает ", "  возвращает признак", "  да"]]
@@ -551,7 +551,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано answers равно []
     ожидается запись «Batch» с «names» равным ["kernel T f", "kernel D f"] и «orders» равным [
@@ -630,7 +630,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано answers равно []
     ожидается запись «Batch» с «names» равным ["c f", "honest f"] и «orders» равным [
@@ -707,7 +707,7 @@
       "x"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       "x"] и «inputs» равным [["1"]] и «shapes» равным [] и «checked» равным [])
     дано answers равно []
     ожидается [запись «Outcome» с «arguments» равным [
@@ -778,7 +778,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано answers равно []
     ожидается запись «Batch» с «names» равным [] и «orders» равным []
@@ -793,7 +793,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано outcomes равно []
     дано answers равно []
@@ -811,7 +811,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано outcomes равно []
     дано nb равно запись «Numbered» с «at» равным 1 и «it» равным (запись «Claim» с «role» равным "" и «words» равным [
@@ -1112,7 +1112,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано wish равно []
     ожидается ["", "── f (s.c, строка 1) — ожидание: не записано",
@@ -1131,7 +1131,7 @@
       ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
-        ]) и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
+        ] и «returns» равным "int") и «probe» равным (запись «Probe» с «name» равным "f" и «parameters» равным [
       ] и «inputs» равным [] и «shapes» равным [] и «checked» равным [])
     дано answers равно []
     дано expectations равно []
@@ -1314,7 +1314,8 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        "нет"] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        "нет"] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
+        ] и «returns» равным "int"
     ожидается ["  отказ «f»: нет"]
   отобразить («Distinct» от (translated.«refusals»)) как reason → соединить ["  отказ «", (translated.«name»), "»: ",
     reason] по ""
@@ -1550,7 +1551,7 @@
     дано accepted равно [запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []]
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"]
     ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["census-", "0", ".flang"] и «lines» равным [
       "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"]]
   пусть made равно (свёртка accepted начиная с (пустой список) как made и each → «Census file added» от made и each)
@@ -1564,7 +1565,7 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным ["  0"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     ожидается [запись «File» с «name» равным "write T f" и «pieces» равным ["census-", "0", ".flang"] и «lines» равным [
       "модуль «Перевод f»", "", "тотальная функция «f»", "  принимает ", "  возвращает число", "  0"]]
   пусть name равно (соединить ["write T ", (translated.«name»)] по "")
@@ -1636,7 +1637,7 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано answers равно []
     ожидается нет
   («Exit code of» от (соединить ["check ", (translated.«name»)] по "") и answers) равен 0
@@ -1648,7 +1649,7 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+        ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано answers равно []
     ожидается "  в подмножестве: f — flang check: код 127"
   пусть code равно («Exit code of» от (соединить ["check ", (translated.«name»)] по "") и answers)
@@ -1817,7 +1818,7 @@
       "n"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       "строка 4: цикл без выводимой меры: условие не сравнивает счётчик «count»"] и «support» равным [
-      ] и «defined» равным да и «calls» равным [] и «types» равным []
+      ] и «defined» равным да и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано expectations равно [["digits", "refused", "цикл без выводимой меры"]]
     ожидается []
   пример «A refusal nobody expected»
@@ -1825,7 +1826,7 @@
       "n"] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
       "строка 2: оператор «DoStmt» вне подмножества"] и «defined» равным да и «support» равным [
-      ] и «calls» равным [] и «types» равным []
+      ] и «calls» равным [] и «types» равным [] и «returns» равным "int"
     дано expectations равно []
     ожидается ["f: отказ переводчика «строка 2: оператор «DoStmt» вне подмножества», а в corpus/expected.tsv его нет"]
   пусть name равно (translated.«name»)

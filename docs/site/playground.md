@@ -24,6 +24,7 @@ button too.
 | Reasoning in Russian | whether the conclusion follows from the premises | `#setup=reasoning` |
 | Formula | a formula with ∀ and ∃, its flang translation and the check | `#setup=formula` |
 | Your own text | what flang read in a text and where the reasoning goes wrong | `#setup=prose` |
+| Your own language (DSL) | discount rules, a calculator and an order automaton from the page [Your own language in 30 minutes](dsl.html) | `#setup=dsl` |
 | C → flang | a C function translated and the result checked | `#setup=c` |
 | Python → flang | a Python function translated and the result checked | `#setup=python` |
 
@@ -84,39 +85,64 @@ files are copied into the result as they are, so only their names are listed.
 `Имя:`), premises, and a conclusion after the word «Следовательно». The answer is
 "follows" or "does not follow" with a counterexample.
 
-**Translation** (the "C → flang" setup). A C function becomes a flang program, and the
-proof kernel checks it right away. `int` overflow and division by zero turn into
-conditions that have to be proved.
+**Your own language** (the "Your own language (DSL)" setup). Three small languages from
+the page [Your own language in 30 minutes](dsl.html): discount rules, an expression
+calculator and an order automaton. The discount rules open first; the calculator and the
+order automaton are in the list of examples. "Check" shows what is proved about the rules,
+"Run" computes a discount, "Tests" runs the examples.
 
-**Reasoning** (the "Your own text" setup). Paste a paragraph or a short article in
-Russian here, up to 6000 characters and 40 sentences. The "Check the reasoning" button
-reads the text with the flang grammar and dictionary, writes the logical form of every
-sentence it read, and gives every step of the reasoning to the proof kernel. The
-"Example" button puts a short text with two mistakes into the editor: a conclusion that
-does not follow from its premises, and two sentences that contradict each other.
+**Translation** (the "C → flang" setup). A C function becomes a flang program, and flang
+checks it right away. `int` overflow and division by zero turn into conditions that have
+to be proved. The translator understands `int`, `struct` of `int` fields, `bool` as the
+result of a function (with `#include <stdbool.h>`; `true` becomes `да`, `false` becomes
+`нет`), `if`/`else`, `while`, `for` and `return`. `#include` lines for `stdbool.h`,
+`stdint.h`, `limits.h` and `stddef.h` are skipped; other headers, pointers, arrays and
+fractions are not taken, and the message says what to write instead. When flang cannot
+prove by itself that a loop ends, the answer says so: the function is translated, and what is
+proved is proved on the condition that the loop ends.
 
-The answer has three parts:
+Both directions. flang writes its own programs out in 10 languages by itself, that is
+the "Code generation" setup. Translating the other way, from another language into flang,
+so far exists for C and Python.
 
-- the sentences with the grammar's mark: "parsed" (with the number of parses), "nominal
-  sentence, not a judgment", "not parsed" with the reason and the word where the parse
-  stopped, or "too long for the playground" (more than 30 words). Under the mark is the
-  logical form of the sentence if one was built, or the reason why not: an unknown word,
-  too many readings (the words combine into a sentence in too many ways), a reference (a
-  pronoun points to another sentence), or a construction the grammar does not know. The
-  kernel judges only sentences with a logical form;
-- the report: findings (does not follow, contradiction, circular reasoning, a term that
-  changes its meaning, a conclusion without premises) and the kernel's verdict on every
-  step;
-- the draft markup: the same judgments in the format the `argue` command reads.
+**Reasoning** (the "Your own text" setup). Paste your own text in Russian here: a
+paragraph from an article, an argument from a discussion, a few sentences with
+"следовательно" (therefore), up to 6000 characters and 40 sentences. The "Check the
+reasoning" button reads every sentence and checks two things: does each conclusion follow
+from what was said before it, and do any two statements contradict each other. The
+"Example" button puts a short text with two such mistakes into the editor.
 
-The playground calls no language model. What the grammar did not read stays unread, so
-on free text usually only some of the sentences are read. A whole article, with markup
-written by a language model, is checked by the command `flang run-script argue` in a
-clone of the repository; the page [Check the reasoning in a text](argue.html) explains
-how the check works.
+Every sentence in the answer gets a coloured mark:
 
-Word features come from the OpenCorpora dictionary. Its data sits on the site next to
-the playground and is distributed under CC BY-SA 3.0; the flang code is under its own
+- green "understood": the sentence is understood and takes part in the check;
+- yellow "states nothing": the sentence is understood but claims nothing, for example
+  "Тёплое летнее утро." (a warm summer morning);
+- grey "not understood": the playground could not read the sentence, and the reason is
+  next to it;
+- grey "too long": the sentence has more than 30 words and should be split.
+
+Under the mark you see how the playground wrote down the meaning of the sentence, or why
+it did not take part in the check: an unknown word, too many ways to read the sentence, a
+word like "он" or "это" (he, this) that points to another sentence, or a construction the
+grammar does not know. If a sentence is not understood, write it more simply: one
+statement per sentence, plain word order, full nouns instead of "he" and "this", no
+asides like "as is well known". A sentence that is not understood does not break the
+check: the rest of the text is checked without it.
+
+The frame of the answer is green when no mistakes are found in what was understood, red
+when mistakes are found, and grey when not a single sentence was understood. Below, under
+"What is found", the mistakes themselves are listed: a conclusion that does not follow, a
+contradiction, circular reasoning, a word that changes its meaning on the way, a
+conclusion without premises.
+
+No neural network is involved: the text is read with a dictionary and the rules of
+Russian grammar. That is why on ordinary text usually only some of the sentences are
+understood. A long article is checked on your own computer by the command
+`flang run-script argue` in a copy of the repository; the page
+[Check the reasoning in a text](argue.html) explains how the check works.
+
+The dictionary of Russian words is OpenCorpora. Its data sits on the site next to the
+playground and is distributed under CC BY-SA 3.0; the flang code is under its own
 license. The playground downloads only the dictionary files that the words of the text
 need. The text itself is not sent anywhere.
 
@@ -356,6 +382,29 @@ A formula with quantifiers in Unicode: multiplication of integers commutes.
 
 ```text playground Formula with ∀ — multiplication commutes
 ∀ x ∈ ℤ, ∀ y ∈ ℤ, x * y = y * x
+```
+
+A C function with `bool`: does a number read the same from left to right and from right
+to left. `bool` becomes a flang truth value, `false` becomes `нет`. The translation writes
+down the conditions: a divisor is not zero, multiplication and addition stay within
+`int`. About the `while` loop the answer says plainly that flang did not prove by itself
+that it ends, so what is proved is proved on the condition that the loop ends; some of
+the `int` bounds stay unproved.
+
+```c playground A palindrome in C — bool and a loop
+#include <stdbool.h>
+
+bool isPalindrome(int x) {
+    if (x < 0 || (x % 10 == 0 && x != 0)) {
+        return false;
+    }
+    int reversed = 0;
+    while (x > reversed) {
+        reversed = reversed * 10 + x % 10;
+        x /= 10;
+    }
+    return x == reversed || x == reversed / 10;
+}
 ```
 
 A C function translated to flang. `clamp` is proved in full. For `midpoint` the kernel

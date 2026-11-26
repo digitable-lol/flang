@@ -72,7 +72,179 @@
       'функция «После вклада»', '  возвращает число', '  пример «десять и тридцать»', '    ожидается 40',
       '  пусть счёт равно запись «Счёт» с «владелец» равным "Анна" и «остаток» равным 10',
       '  («Счёт: Положить» от счёт и 30).остаток', ''].join('\n') },
-    { key: 'emitC', slug: 'emit-c', emit: 'c', fn: 'Удвоить', args: '{"н": 21}', text: null }
+    { key: 'emitC', slug: 'emit-c', emit: 'c', fn: 'Удвоить', args: '{"н": 21}', text: null },
+    /* Три языка со страницы «Свой язык за 30 минут» (dsl.ru.md). `source` —
+       файл примера в дереве: `playground:starters` сверяет текст с ним знак в
+       знак, чтобы стартер не разошёлся со страницей. */
+    { key: 'dslDiscount', slug: 'dsl-discount', source: 'docs/examples/dsl/discount-rules.flang', fn: 'Скидка осенней акции', args: '{"цена": 6000}', text: [
+      'модуль «Discount rules»', '', 'тип «Правило»', '  вариант «Без скидки»',
+      '  вариант «Процент» содержит доля: неотрицательное', '  вариант «Рубли» содержит сумма: неотрицательное',
+      '  вариант «При сумме от» содержит порог: неотрицательное, вложенное: «Правило»',
+      '  вариант «Лучшее из» содержит первое: «Правило», второе: «Правило»', '', 'тотальная функция «процентов»',
+      '  принимает доля: неотрицательное', '  возвращает «Правило»', '  вариант «Процент» с доля равным доля', '',
+      'тотальная функция «рублей»', '  принимает сумма: неотрицательное', '  возвращает «Правило»',
+      '  вариант «Рубли» с сумма равным сумма', '', 'тотальная функция «при заказе от»',
+      '  принимает порог: неотрицательное, вложенное: «Правило»', '  возвращает «Правило»',
+      '  вариант «При сумме от» с порог равным порог и вложенное равным вложенное', '',
+      'тотальная функция «лучшее из»', '  принимает первое: «Правило», второе: «Правило»', '  возвращает «Правило»',
+      '  вариант «Лучшее из» с первое равным первое и второе равным второе', '', 'тотальная функция «Осенняя акция»',
+      '  возвращает «Правило»',
+      '  «лучшее из» от («при заказе от» от 5000 и («процентов» от 10)) и («рублей» от 300)', '',
+      'тотальная функция «Скидка»', '  принимает скидка: «Правило», цена: неотрицательное', '  возвращает число',
+      '  обеспечивает «скидка не больше цены» результат не больше цена',
+      '  обеспечивает «скидка не отрицательна» результат не меньше 0', '  разбор скидка',
+      '    случай вариант «Без скидки»', '      то 0', '    случай вариант «Процент» с доля как доля',
+      '      то «В пределах цены» от ((цена умножить на доля) делить на 100) и цена',
+      '    случай вариант «Рубли» с сумма как сумма', '      то если сумма больше цена то цена иначе сумма',
+      '    случай вариант «При сумме от» с порог как порог и вложенное как вложенное',
+      '      то если цена меньше порог то 0 иначе «Скидка» от вложенное и цена',
+      '    случай вариант «Лучшее из» с первое как первое и второе как второе',
+      '      то «Больше» от («Скидка» от первое и цена) и («Скидка» от второе и цена)', '',
+      'тотальная функция «Больше»', '  принимает а: число, б: число', '  возвращает число',
+      '  если а больше б то а иначе б', '', 'тотальная функция «Скидка осенней акции»',
+      '  принимает цена: неотрицательное', '  возвращает число', '  пример «десять процентов с шести тысяч»',
+      '    дано цена равно 6000', '    ожидается 600', '  пример «ниже порога работают рубли»',
+      '    дано цена равно 1000', '    ожидается 300', '  пример «скидка не больше цены»', '    дано цена равно 100',
+      '    ожидается 100', '  «Скидка» от «Осенняя акция» и цена', '', 'теорема «скидка не больше цены»',
+      '  дано скидка: «Правило»', '  дано цена: неотрицательное', '  утверждаем результат не больше цена',
+      '  индукция по скидка', '    случай вариант «При сумме от» с порог как порог и вложенное как вложенное',
+      '      то по предположению', '    случай вариант «Лучшее из» с первое как первое и второе как второе',
+      '      то по предположению', '  следовательно доказано', '', 'тотальная функция «В пределах цены»',
+      '  принимает сумма: число, цена: неотрицательное', '  возвращает число',
+      '  обеспечивает «срезано по цене» результат не больше цена',
+      '  обеспечивает «срезанное не отрицательно» результат не меньше 0',
+      '  если сумма не меньше 0 то (если сумма не больше цена то сумма иначе цена) иначе 0', '',
+      'теорема «скидка не отрицательна»', '  дано скидка: «Правило»', '  дано цена: неотрицательное',
+      '  утверждаем результат не меньше 0', '  индукция по скидка', '    случай вариант «Процент» с доля как доля',
+      '      то по свойству «срезанное не отрицательно»',
+      '    случай вариант «При сумме от» с порог как порог и вложенное как вложенное', '      то по предположению',
+      '    случай вариант «Лучшее из» с первое как первое и второе как второе', '      то по предположению',
+      '  следовательно доказано', ''].join('\n') },
+    { key: 'dslCalculator', slug: 'dsl-calculator', source: 'docs/examples/dsl/calculator.flang', fn: 'Показать счёт', args: '{"текст": "(1 + 2) * 3"}', text: [
+      'модуль «Calculator»', '  использует «Parsing»', '', 'тип «Итог счёта»',
+      '  вариант «Посчитано» содержит величина: число',
+      '  вариант «Не посчитано» содержит ошибка: «Ошибка в тексте»', '', 'тотальная функция «Правила арифметики»',
+      '  возвращает «Правила выражений»',
+      '  вариант «Правила выражений» с приставки равным ["-"] и действия равным [',
+      '    (вариант «Действие выражения» с знак равным "+" и сила равным 1 и правая равным нет),',
+      '    (вариант «Действие выражения» с знак равным "-" и сила равным 1 и правая равным нет),',
+      '    (вариант «Действие выражения» с знак равным "*" и сила равным 2 и правая равным нет),',
+      '    (вариант «Действие выражения» с знак равным "/" и сила равным 2 и правая равным нет)]', '',
+      'тотальная функция «Значение листа»', '  принимает лексема: «Лексема»', '  возвращает «Итог счёта»',
+      '  разбор лексема.вид', '    случай вариант «Лексема числа» с величина как величина',
+      '      то вариант «Посчитано» с величина равным величина', '    случай любое',
+      '      то вариант «Не посчитано» с ошибка равным («Ошибка на лексеме» от лексема и "число")', '',
+      'тотальная функция «Применить знак»', '  принимает место: «Лексема», а: число, б: число',
+      '  возвращает «Итог счёта»', '  разбор («Знак лексемы» от место)', '    случай "+"',
+      '      то вариант «Посчитано» с величина равным (а плюс б)', '    случай "-"',
+      '      то вариант «Посчитано» с величина равным (а минус б)', '    случай "*"',
+      '      то вариант «Посчитано» с величина равным (а умножить на б)', '    случай любое',
+      '      то если б равен 0',
+      '        то вариант «Не посчитано» с ошибка равным («Ошибка на лексеме» от место и "делитель не ноль")',
+      '        иначе вариант «Посчитано» с величина равным (а делить на б)', '',
+      'тотальная функция «Свести два итога»',
+      '  принимает место: «Лексема», левое: «Итог счёта», правое: «Итог счёта»', '  возвращает «Итог счёта»',
+      '  разбор левое', '    случай вариант «Посчитано» с величина как а', '      то разбор правое',
+      '        случай вариант «Посчитано» с величина как б', '          то «Применить знак» от место и а и б',
+      '        случай любое', '          то правое', '    случай любое', '      то левое', '',
+      'тотальная функция «Вычислить дерево»', '  принимает дерево: «Дерево выражения»', '  возвращает «Итог счёта»',
+      '  разбор дерево', '    случай вариант «Лист выражения» с лексема как лексема',
+      '      то «Значение листа» от лексема',
+      '    случай вариант «Узел приставки» с знак как знак и место как место и довод как довод',
+      '      то «Свести два итога» от место и (вариант «Посчитано» с величина равным 0) и («Вычислить дерево» от довод)',
+      '    случай вариант «Узел действия» с знак как знак и место как место и левое как левое и правое как правое',
+      '      то «Свести два итога» от место и («Вычислить дерево» от левое) и («Вычислить дерево» от правое)', '',
+      'тотальная функция «Посчитать»', '  принимает текст: строка', '  возвращает «Итог счёта»',
+      '  пример «приоритеты»', '    дано текст равно "2 + 3 * 4"',
+      '    ожидается вариант «Посчитано» с величина равным 14', '  пример «скобки и унарный минус»',
+      '    дано текст равно "-(2 + 3) * 4 - 10 / 5"', '    ожидается вариант «Посчитано» с величина равным -22',
+      '  пример «левая ассоциативность»', '    дано текст равно "100 - 10 - 1"',
+      '    ожидается вариант «Посчитано» с величина равным 89', '  пример «деление на ноль названо столбцом»',
+      '    дано текст равно "7 / (3 - 3)"',
+      '    ожидается (вариант «Не посчитано» с ошибка равным (вариант «Ошибка в тексте» с строка равным 1 и',
+      '      столбец равным 3 и ожидалось равным "делитель не ноль" и встречено равным "знак /"))',
+      '  пример «чужой символ»', '    дано текст равно "2 + x"',
+      '    ожидается (вариант «Не посчитано» с ошибка равным (вариант «Ошибка в тексте» с строка равным 1 и',
+      '      столбец равным 5 и ожидалось равным "число" и встречено равным "имя x"))', '  пример «лишняя скобка»',
+      '    дано текст равно "1 + 2)"',
+      '    ожидается (вариант «Не посчитано» с ошибка равным (вариант «Ошибка в тексте» с строка равным 1 и',
+      '      столбец равным 6 и ожидалось равным "конец текста" и встречено равным "знак )"))',
+      '  пример «оборвано»', '    дано текст равно "1 +"',
+      '    ожидается (вариант «Не посчитано» с ошибка равным (вариант «Ошибка в тексте» с строка равным 1 и',
+      '      столбец равным 4 и ожидалось равным "число, имя или скобка" и встречено равным "конец текста"))',
+      '  разбор («Выражение из текста» от «Правила арифметики» и текст)',
+      '    случай вариант «Разобрано» с значение как дерево и остаток как остаток',
+      '      то «Вычислить дерево» от дерево', '    случай вариант «Не разобрано» с ошибка как ошибка',
+      '      то вариант «Не посчитано» с ошибка равным ошибка', '', 'тотальная функция «Показать счёт»',
+      '  принимает текст: строка', '  возвращает строка', '  пример «ответ»', '    дано текст равно "(1 + 2) * 3"',
+      '    ожидается "9"', '  пример «ошибка показана под своим местом»', '    дано текст равно "2 + * 3"',
+      '    ожидается "строка 1, столбец 5: ожидалось: число, имя или скобка; встречено: знак *\\n2 + * 3\\n    ^"',
+      '  разбор («Посчитать» от текст)', '    случай вариант «Посчитано» с величина как величина',
+      '      то к строке величина', '    случай вариант «Не посчитано» с ошибка как ошибка',
+      '      то «Напечатать ошибку в тексте» от текст и ошибка', ''].join('\n') },
+    { key: 'dslOrder', slug: 'dsl-order', source: 'docs/examples/dsl/order-automaton.flang', fn: 'Заказ до вручения', args: '{}', text: [
+      'модуль «Order automaton»', '', 'объект «Переход»', '  откуда: строка', '  событие: строка', '  куда: строка',
+      '', 'объект «Автомат»', '  начало: строка', '  состояния: список строки', '  события: список строки',
+      '  переходы: список «Переход»', '', 'тип «Исход шага»', '  вариант «Перешли» содержит текущее: строка',
+      '  вариант «Нет перехода» содержит текущее: строка, событие: строка', '', 'тотальная функция «из»',
+      '  принимает откуда: строка, событие: строка, куда: строка', '  возвращает «Переход»',
+      '  запись «Переход» с откуда равным откуда и событие равным событие и куда равным куда', '',
+      'тотальная функция «Заказ»', '  возвращает «Автомат»',
+      '  пусть состояния равно ["новый", "оплачен", "отгружен", "доставлен", "отменён"]',
+      '  пусть события равно ["оплата", "отгрузка", "вручение", "отмена"]',
+      '  запись «Автомат» с начало равным "новый" и состояния равным состояния и события равным события и переходы равным [',
+      '    («из» от "новый" и "оплата" и "оплачен"),', '    («из» от "новый" и "отмена" и "отменён"),',
+      '    («из» от "оплачен" и "отгрузка" и "отгружен"),', '    («из» от "оплачен" и "отмена" и "отменён"),',
+      '    («из» от "отгружен" и "вручение" и "доставлен")]', '', 'тотальная функция «Подходит»',
+      '  принимает переход: «Переход», текущее: строка, событие: строка', '  возвращает признак',
+      '  (переход.откуда равен текущее) и притом (переход.событие равен событие)', '', 'тотальная функция «Шаг»',
+      '  принимает автомат: «Автомат», текущее: строка, событие: строка', '  возвращает «Исход шага»',
+      '  разбор (отфильтровать автомат.переходы где переход → «Подходит» от переход и текущее и событие)',
+      '    случай пусто', '      то вариант «Нет перехода» с текущее равным текущее и событие равным событие',
+      '    случай голова и хвост', '      то вариант «Перешли» с текущее равным голова.куда', '',
+      'тотальная функция «Дальше»', '  принимает автомат: «Автомат», исход: «Исход шага», событие: строка',
+      '  возвращает «Исход шага»', '  разбор исход', '    случай вариант «Перешли» с текущее как текущее',
+      '      то «Шаг» от автомат и текущее и событие', '    случай любое', '      то исход', '',
+      'тотальная функция «Прогон»', '  принимает автомат: «Автомат», события: список строки',
+      '  возвращает «Исход шага»', '  пусть старт равно вариант «Перешли» с текущее равным автомат.начало',
+      '  свёртка события начиная с старт как исход и событие → «Дальше» от автомат и исход и событие', '',
+      'тотальная функция «Добавить достигнутое»', '  принимает набор: список строки, переход: «Переход»',
+      '  возвращает список строки',
+      '  если (набор содержит переход.откуда) и притом (не (набор содержит переход.куда))',
+      '    то добавить переход.куда к набор', '    иначе набор', '', 'тотальная функция «Расширить»',
+      '  принимает автомат: «Автомат», достигнутые: список строки', '  возвращает список строки',
+      '  свёртка автомат.переходы начиная с достигнутые как набор и переход → «Добавить достигнутое» от набор и переход',
+      '', 'тотальная функция «Достижимые»', '  принимает автомат: «Автомат»', '  возвращает список строки',
+      '  свёртка автомат.состояния начиная с [автомат.начало] как набор и круг → «Расширить» от автомат и набор', '',
+      'тотальная функция «Недостижимые»', '  принимает автомат: «Автомат»', '  возвращает список строки',
+      '  обеспечивает «недостижимых не больше, чем состояний» (длина результат) не больше (длина автомат.состояния)',
+      '  пусть достигнутые равно «Достижимые» от автомат',
+      '  отфильтровать автомат.состояния где текущее → не (достигнутые содержит текущее)', '',
+      'тотальная функция «Имена известны»', '  принимает автомат: «Автомат», переход: «Переход»',
+      '  возвращает признак',
+      '  ((автомат.состояния содержит переход.откуда) и притом (автомат.состояния содержит переход.куда) и притом',
+      '    (автомат.события содержит переход.событие))', '', 'тотальная функция «Чужие имена»',
+      '  принимает автомат: «Автомат»', '  возвращает список «Переход»',
+      '  отфильтровать автомат.переходы где переход → не («Имена известны» от автомат и переход)', '',
+      'тотальная функция «Сколько таких же»', '  принимает автомат: «Автомат», переход: «Переход»',
+      '  возвращает число',
+      '  длина (отфильтровать автомат.переходы где другой → «Подходит» от другой и переход.откуда и переход.событие)',
+      '', 'тотальная функция «Двойные»', '  принимает автомат: «Автомат»', '  возвращает список «Переход»',
+      '  отфильтровать автомат.переходы где переход → («Сколько таких же» от автомат и переход) больше 1', '',
+      'тотальная функция «Недостижимые у заказа»', '  возвращает список строки',
+      '  пример «у заказа нет недостижимых состояний»', '    ожидается []', '  «Недостижимые» от «Заказ»', '',
+      'тотальная функция «Заказ до вручения»', '  возвращает «Исход шага»',
+      '  пример «оплаченный и отгруженный заказ вручается»',
+      '    ожидается вариант «Перешли» с текущее равным "доставлен"',
+      '  «Прогон» от «Заказ» и ["оплата", "отгрузка", "вручение"]', '', 'тотальная функция «Оплата после отмены»',
+      '  возвращает «Исход шага»', '  пример «отменённый заказ оплатить нельзя»',
+      '    ожидается вариант «Нет перехода» с текущее равным "отменён" и событие равным "оплата"',
+      '  «Прогон» от «Заказ» и ["отмена", "оплата"]', '', 'утверждение «у заказа нет недостижимых состояний»',
+      '  утверждаем («Недостижимые» от «Заказ») равен пустой список', '',
+      'утверждение «у заказа нет переходов с чужими именами»',
+      '  утверждаем («Чужие имена» от «Заказ») равен пустой список', '',
+      'утверждение «у заказа нет двух переходов по одному событию»',
+      '  утверждаем («Двойные» от «Заказ») равен пустой список', ''].join('\n') }
   ];
   STARTERS[5].text = STARTERS[0].text;
   function starterOf(word) {
@@ -140,6 +312,10 @@
       name: { ru: 'Свой текст', en: 'Your own text' },
       note: { ru: 'что прочитано, где ошибки', en: 'what is read, where it goes wrong' },
       text: PROSE_EXAMPLE },
+    { key: 'dsl', starter: 'dslDiscount', views: ['result', 'run', 'tests', 'terminal'], enter: 'check', buttons: ['check', 'run', 'test'], call: true,
+      labels: { result: { ru: 'Доказательства', en: 'Proofs' } },
+      name: { ru: 'Свой язык (DSL)', en: 'Your own language (DSL)' },
+      note: { ru: 'скидки, калькулятор, автомат заказа', en: 'discounts, a calculator, an order automaton' } },
     { key: 'c', lang: 'c', views: ['foreign'], enter: 'translate', buttons: ['translate'],
       name: { ru: 'C → flang', en: 'C → flang' },
       note: { ru: 'перевод и проверка', en: 'translate and check' },
@@ -165,7 +341,8 @@
     noFunction: 'There is no function in the text to run.', badArgs: 'The arguments are not a JSON object, for example {"н": 21}.',
     needProgram: 'This button works with a flang program: the first line is «модуль …».',
     workerDown: 'The compiler did not load. Check the connection and reload the page; without WebAssembly the playground does not work.',
-    starterNames: { hello: 'First program', proof: 'Proof by induction', monad: 'Monad: three laws proved', loop: 'Loop with kept values', klass: 'Class and interface', emitC: 'Code generation: C' },
+    starterNames: { hello: 'First program', proof: 'Proof by induction', monad: 'Monad: three laws proved', loop: 'Loop with kept values', klass: 'Class and interface', emitC: 'Code generation: C',
+      dslDiscount: 'Your own language: discount rules', dslCalculator: 'Your own language: a calculator', dslOrder: 'Your own language: an order automaton' },
     linkCopied: 'link copied: the text is in the address, nothing is sent to a server', ms: 'ms',
     tabs: { run: 'Result', result: 'Check', tests: 'Tests', formula: 'Formulas', emit: 'Code', foreign: 'Translation', picture: 'Pictures', terminal: 'Terminal' },
     loading: function (pct) { return 'downloading the compiler: ' + pct + ' %'; }, ready: 'compiler loaded', preparing: 'preparing the compiler…',
@@ -174,7 +351,10 @@
     emitting: 'generating…', emitFailed: 'No code generated', emitRefusedLead: '«flang emit» generates code only for a program that passes the check.', runtimeNote: 'Runtime library files are copied as they are and are not shown here: ',
     emitFrom: { 'формула': 'The formula was first translated to flang; the code is generated from that program.', 'рассуждение': 'The reasoning was first turned into a flang program; the code is generated from it.' },
     emitStale: 'The text has changed.', print: 'Generate', emitGo: 'Generate', emitDone: 'Code generated',
-    foreignLead: 'Write a function in C. A translator turns it into a flang program, and the kernel checks the result right away.',
+    foreignLead: 'Write a function in C. A translator turns it into a flang program, and flang checks the result right away.',
+    foreignWhy: 'Two directions: flang writes its own programs out in 10 languages, that is the «Code generation» tile. Translating the other way, from another language into flang, exists so far for C and Python.',
+    boolNote: 'The function returns bool, so in flang it returns «признак»: true becomes «да», false becomes «нет».',
+    loopsUnproved: function (loops) { return 'Not proved that the loop ends (line ' + loops.map(function (l) { return l.строка; }).join(', ') + '). The translator wrote down what should shrink on every turn (' + loops.map(function (l) { return l.мера; }).join('; ') + '), but flang did not check that it really does. This is not an error in the code: what is proved below is proved on the condition that the loop ends.'; },
     translateGo: 'Translate and check', translating: 'translating…', soon: 'soon', soonNote: 'The Python translator is not in this build yet.',
     readFailed: 'The text was not read', notTranslated: 'Not translated', fnProved: 'Translated and proved', fnUnproved: 'Translated, not everything is proved',
     fnFailed: 'Translated, the check failed', fnRefuted: 'Translated: a counterexample is found',
@@ -182,7 +362,7 @@
     refuted: function (c) { return 'refuted: ' + inputs(c.входы); }, boundsClean: 'not proved; no violation at the bounds of int, but that is not a proof',
     intNote: 'The result is declared «число»: in flang a sum of «целое» values is «число», so the translator writes «возвращает число» and states the bounds of int as postconditions.',
     noFunctions: 'There are no function definitions in the text.', inFlang: 'In flang',
-    cSubset: 'The C subset: int and struct of int fields, if/else, while, for, return, + − * / % and comparisons. Overflow and division by zero become conditions the kernel has to prove.',
+    cSubset: 'What the translator understands: int, struct of int fields, bool as the result of a function (with #include <stdbool.h>), true and false, if/else, while, for, return, + − * / %, comparisons, && and ||. There are no pointers, arrays, strings, fractions or library functions; #include of stdbool.h, stdint.h, limits.h and stddef.h is skipped. An int overflow and a division by zero become conditions that have to be proved.',
     foreignLabel: 'source in C', fallacy: 'Fallacy: ', card: 'fallacy card', hints: 'Possible fallacies (check them yourself): ', boundary: 'What the form does not decide: ', unparsedSentence: 'Not read: sentence ',
     editor: 'flang source, reasoning or formula',
     press: function (word) { return 'Press «' + word + '» or Ctrl+Enter.'; },
@@ -245,7 +425,8 @@
     noFunction: 'В тексте нет функции, которую можно запустить.', badArgs: 'Аргументы — не объект JSON; пример: {"н": 21}.',
     needProgram: 'Эта кнопка работает с программой на flang: первая строка — «модуль …».',
     workerDown: 'Компилятор не загрузился. Проверьте связь и обновите страницу; без WebAssembly песочница не работает.',
-    starterNames: { hello: 'Первая программа', proof: 'Доказательство индукцией', monad: 'Монада: три закона доказаны', loop: 'Цикл с хранимыми значениями', klass: 'Класс и интерфейс', emitC: 'Генерация кода на C' },
+    starterNames: { hello: 'Первая программа', proof: 'Доказательство индукцией', monad: 'Монада: три закона доказаны', loop: 'Цикл с хранимыми значениями', klass: 'Класс и интерфейс', emitC: 'Генерация кода на C',
+      dslDiscount: 'Свой язык: правила скидок', dslCalculator: 'Свой язык: калькулятор', dslOrder: 'Свой язык: автомат заказа' },
     linkCopied: 'ссылка скопирована: текст в адресе, на сервер не уходит ничего', ms: 'мс',
     tabs: { run: 'Результат', result: 'Проверка', tests: 'Тесты', formula: 'Формулы', emit: 'Код', foreign: 'Перевод', picture: 'Рисунки', terminal: 'Терминал' },
     loading: function (pct) { return 'загружаю компилятор: ' + pct + ' %'; }, ready: 'компилятор загружен', preparing: 'готовлю компилятор…',
@@ -254,7 +435,10 @@
     emitting: 'генерирую…', emitFailed: 'Код не сгенерирован', emitRefusedLead: '«flang emit» генерирует код только для программы, которая проходит проверку.', runtimeNote: 'Файлы библиотеки времени выполнения копируются как есть и здесь не показаны: ',
     emitFrom: { 'формула': 'Формулу сначала перевели на flang; код сгенерирован из этой программы.', 'рассуждение': 'Рассуждение сначала превратили в программу на flang; код сгенерирован из неё.' },
     emitStale: 'Текст изменился.', print: 'Сгенерировать', emitGo: 'Сгенерировать', emitDone: 'Код сгенерирован',
-    foreignLead: 'Напишите функцию на C. Переводчик сделает из неё программу на flang, и ядро сразу её проверит.',
+    foreignLead: 'Напишите функцию на C. Переводчик сделает из неё программу на flang, и flang сразу её проверит.',
+    foreignWhy: 'Перевод в обе стороны: свои программы flang сам переводит на 10 языков — это плитка «Генерация кода». А обратный перевод, с чужого языка во flang, пока есть для C и Python.',
+    boolNote: 'Функция возвращает bool, поэтому во flang она возвращает признак: true становится «да», false — «нет».',
+    loopsUnproved: function (loops) { return 'Не доказано, что цикл заканчивается (строка ' + loops.map(function (l) { return l.строка; }).join(', ') + '). Переводчик записал, что должно уменьшаться на каждом витке (' + loops.map(function (l) { return l.мера; }).join('; ') + '), но flang не проверил, что оно и правда уменьшается. Это не ошибка в коде: что доказано ниже, доказано при условии, что цикл закончился.'; },
     translateGo: 'Перевести и проверить', translating: 'перевожу…', soon: 'скоро', soonNote: 'Переводчика с Python в этой сборке ещё нет.',
     readFailed: 'Текст не прочитан', notTranslated: 'Не переведена', fnProved: 'Переведена и доказана', fnUnproved: 'Переведена, доказано не всё',
     fnFailed: 'Переведена, проверка не прошла', fnRefuted: 'Переведена: найден контрпример',
@@ -262,7 +446,7 @@
     refuted: function (c) { return 'опровергнуто: ' + inputs(c.входы); }, boundsClean: 'не доказано; на границах int нарушений нет, но это не доказательство',
     intNote: 'Результат объявлен числом: в flang сумма целых — число, поэтому переводчик пишет «возвращает число», а границы int записывает постусловиями.',
     noFunctions: 'В тексте нет определений функций.', inFlang: 'На flang',
-    cSubset: 'Подмножество C: int и struct из полей int, if/else, while, for, return, + − * / % и сравнения. Переполнение и деление на ноль становятся условиями, которые ядро должно доказать.',
+    cSubset: 'Что понимает переводчик: int, struct из полей int, bool как результат функции (с #include <stdbool.h>), true и false, if/else, while, for, return, + − * / %, сравнения, && и ||. Указателей, массивов, строк, дробных чисел и библиотечных функций нет; строки #include для stdbool.h, stdint.h, limits.h и stddef.h пропускаются. Переполнение int и деление на ноль становятся условиями, которые надо доказать.',
     foreignLabel: 'исходник на C', fallacy: 'Ошибка: ', card: 'карточка ошибки', hints: 'Возможные ошибки (проверьте сами): ', boundary: 'Чего форма не решает: ', unparsedSentence: 'Не прочитано предложение ',
     editor: 'исходник на flang, рассуждение или формула',
     press: function (word) { return 'Нажмите «' + word + '» или Ctrl+Enter.'; },
@@ -319,43 +503,63 @@
   WORDS.ru.tabs.argue = 'Рассуждение';
   WORDS.en.prose = {
     go: 'Check the reasoning', checking: 'reading the text…', example: 'Example', exampleTitle: 'Put the example text into the editor',
-    lead: 'Paste a paragraph or a short article in Russian. flang reads it with its own grammar and dictionary, writes the logical form of every sentence it can read, and gives every step of the reasoning to the proof kernel. No language model is called: a sentence the grammar cannot read stays unread, and the reason is shown.',
-    more: 'How the check works', moreCommand: 'A long article, with markup written by a language model, is checked by the command flang run-script argue:article in a clone of the repository.',
-    source: 'Word features: the OpenCorpora dictionary, CC BY-SA 3.0. The dictionary data on this site is under that license; the flang code is under its own (BSD-2-Clause).',
+    lead: 'Paste a text in Russian here: a paragraph from an article, an argument from a discussion, a few sentences with «therefore». The playground reads every sentence and checks two things: does each conclusion really follow from what was said before it, and do any two statements contradict each other. No neural network is involved: the text is read with a dictionary and the rules of Russian grammar, so some sentences may stay not understood, and the page says why.',
+    exampleNote: 'The example hides two mistakes: the dolphin is called a whale only because it is a mammal, and the sentence «Некоторые киты не дышат» (some whales do not breathe) contradicts the conclusion that all whales breathe. Press «Check the reasoning» to see them found.',
+    legendTitle: 'What the colours mean',
+    legend: [
+      ['proved', 'understood', 'the sentence is understood and takes part in the check.'],
+      ['examples', 'states nothing', 'the sentence is understood, but it claims nothing («A warm summer morning.»), so there is nothing to check in it.'],
+      ['unproved', 'not understood', 'the playground could not read the sentence; the rest of the text is checked without it.'],
+      ['unknown', 'too long', 'the sentence is longer than the playground takes; split it into two or three short ones.']
+    ],
+    cardNote: 'The frame of the answer: green, no mistakes found in what was understood; red, mistakes are found and listed under «What is found»; grey, not a single sentence was understood.',
+    unreadHelp: 'If a sentence is not understood, write it more simply: one statement per sentence, plain word order («All whales are mammals.»), full nouns instead of «it», «this» and abbreviations, and no asides like «as is well known». A sentence that stays not understood does not break the check: the rest of the text is checked without it.',
+    more: 'How the check works', moreCommand: 'A long article is checked on your own computer, in a copy of the flang repository, by the command flang run-script argue:article.',
+    source: 'The dictionary of Russian words is OpenCorpora, under CC BY-SA 3.0; the dictionary data on this site is under that license. The flang code is under its own license (BSD-2-Clause).',
     count: function (n, max) { return n + ' of ' + max + ' characters'; },
     tooLong: function (max) { return 'The playground takes up to ' + max + ' characters.'; },
     refused: 'The text was not checked',
-    state: { parsed: 'parsed', nominal: 'nominal sentence, not a judgment', unparsed: 'not parsed', long: 'too long for the playground', error: 'not parsed' },
-    grammarWhy: function (g) { return g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
-    parses: function (n) { return n === 1 ? 'one parse' : n + ' parses'; }, roles: 'roles: ',
-    noForm: 'no logical form: ',
-    coverage: function (c) { return 'The grammar parsed ' + (c.разобрано + c.назывных) + ' of ' + c.всего + ' sentences' + (c.назывных ? ' (nominal: ' + c.назывных + ')' : '') + (c.длинных ? '; too long: ' + c.длинных : '') + '. A logical form, which the kernel judges, was built for ' + (c.прочитано + c.частично) + '.'; },
-    findings: function (n) { return 'Findings: ' + n; }, noFindings: 'No findings in what was read', nothingRead: 'No sentence got a logical form',
-    steps: function (a) { return 'Steps of reasoning: ' + a.шагов + '; follows: ' + a.следует + ', does not follow: ' + a.неСледует + ', not decided: ' + a.неРешено + '.'; },
-    cut: function (n) { return ' The kernel was not asked ' + n + ' more questions: the playground limit.'; },
-    sentences: 'Sentences', form: 'logical form', why: 'why', report: 'Report', draft: 'Draft markup: what the grammar wrote',
-    progress: { словарь: 'the dictionary…', разбор: 'reading the sentences…', ядро: function (k, n) { return 'kernel: step ' + k + ' of ' + n; } },
-    dictionary: function (d) { return d.файлов ? 'dictionary files read: ' + d.файлов : 'the dictionary did not load: only built-in words and ending guesses'; }
+    state: { parsed: 'understood', nominal: 'states nothing', unparsed: 'not understood', long: 'too long', error: 'not understood' },
+    grammarWhy: function (g) { return 'why: ' + g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
+    parses: function (n) { return n === 1 ? 'read one way' : 'can be read ' + n + ' ways'; }, roles: 'parts of the sentence: ',
+    noForm: 'not part of the check: ',
+    coverage: function (c) { return 'Sentences understood: ' + (c.разобрано + c.назывных) + ' of ' + c.всего + (c.назывных ? ' (of them state nothing: ' + c.назывных + ')' : '') + (c.длинных ? '; too long: ' + c.длинных : '') + '. Sentences that take part in the check: ' + (c.прочитано + c.частично) + '.'; },
+    findings: function (n) { return 'Mistakes found: ' + n; }, noFindings: 'No mistakes found in the sentences that were understood', nothingRead: 'Not a single sentence was understood',
+    steps: function (a) { return 'Steps of reasoning checked: ' + a.шагов + '. The conclusion follows: ' + a.следует + '; does not follow: ' + a.неСледует + '; could not be decided: ' + a.неРешено + '.'; },
+    cut: function (n) { return ' ' + n + ' more steps were not checked: the playground checks a limited number at a time.'; },
+    sentences: 'The sentences, in order', form: 'how the meaning is written down', why: 'why', report: 'What is found', draft: 'For the curious: how the playground wrote down every sentence',
+    progress: { словарь: 'loading the dictionary…', разбор: 'reading the sentences…', ядро: function (k, n) { return 'checking step ' + k + ' of ' + n; } },
+    dictionary: function (d) { return d.файлов ? 'dictionary files read: ' + d.файлов : 'the dictionary did not load: only the built-in words and guesses by word endings are used'; }
   };
   WORDS.ru.prose = {
     go: 'Проверить рассуждение', checking: 'читаю текст…', example: 'Пример', exampleTitle: 'Поставить в редактор текст-пример',
-    lead: 'Вставьте абзац или короткую статью на русском. flang читает её своей грамматикой и словарём, пишет логическую форму каждого предложения, которое смог прочитать, и отдаёт каждый шаг рассуждения ядру доказательств. Языковую модель песочница не вызывает: предложение, которое грамматика не прочла, остаётся непрочитанным, и рядом сказано почему.',
-    more: 'Как устроена проверка', moreCommand: 'Длинную статью с разметкой от языковой модели проверяет команда flang run-script argue:article в клоне репозитория.',
-    source: 'Признаки слов: словарь OpenCorpora, CC BY-SA 3.0. Данные словаря на этом сайте — под этой лицензией, код flang — под своей (BSD-2-Clause).',
+    lead: 'Вставьте сюда текст на русском: абзац из статьи, аргумент из спора, несколько фраз со словом «следовательно». Песочница прочтёт каждое предложение и проверит две вещи: вытекает ли вывод из того, что сказано до него, и не спорят ли утверждения друг с другом. Нейросети здесь нет: текст читают словарь и правила русской грамматики, поэтому часть предложений может остаться непонятой, и рядом будет сказано почему.',
+    exampleNote: 'В примере спрятаны две ошибки: дельфина назвали китом только потому, что он млекопитающее, а предложение «Некоторые киты не дышат» спорит с выводом «все киты дышат». Нажмите «Проверить рассуждение» и посмотрите, как они найдутся.',
+    legendTitle: 'Что значат цвета',
+    legend: [
+      ['proved', 'понято', 'предложение понято и участвует в проверке.'],
+      ['examples', 'ничего не утверждает', 'предложение понято, но в нём нет утверждения («Тёплое летнее утро.»), проверять нечего.'],
+      ['unproved', 'не понято', 'песочница не смогла прочесть предложение; остальной текст проверен без него.'],
+      ['unknown', 'слишком длинное', 'предложение длиннее, чем берёт песочница; разбейте его на два-три коротких.']
+    ],
+    cardNote: 'Рамка ответа: зелёная — в понятом ошибок не найдено; красная — ошибки найдены, они перечислены ниже в разделе «Что найдено»; серая — не понято ни одно предложение.',
+    unreadHelp: 'Если предложение не понято, напишите его проще: одно утверждение в предложении, прямой порядок слов («Все киты — млекопитающие.»), полные слова вместо «он», «это» и сокращений, без оговорок вроде «как известно». Непонятое предложение проверку не ломает: остальной текст проверен без него.',
+    more: 'Как устроена проверка', moreCommand: 'Длинную статью проверяют на своём компьютере, в копии репозитория flang, командой flang run-script argue:article.',
+    source: 'Словарь русских слов — OpenCorpora, лицензия CC BY-SA 3.0; данные словаря на этом сайте — под этой лицензией. Код flang — под своей лицензией (BSD-2-Clause).',
     count: function (n, max) { return n + ' из ' + max + ' знаков'; },
     tooLong: function (max) { return 'Песочница берёт до ' + max + ' знаков.'; },
     refused: 'Текст не проверен',
-    state: { parsed: 'разобрано', nominal: 'назывное предложение, не суждение', unparsed: 'не разобрано', long: 'слишком длинное для песочницы', error: 'не разобрано' },
-    grammarWhy: function (g) { return g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
-    parses: function (n) { return 'разборов: ' + n; }, roles: 'роли: ',
-    noForm: 'логическая форма не построена: ',
-    coverage: function (c) { return 'Грамматика разобрала предложений: ' + (c.разобрано + c.назывных) + ' из ' + c.всего + (c.назывных ? ' (назывных: ' + c.назывных + ')' : '') + (c.длинных ? '; слишком длинных: ' + c.длинных : '') + '. Логическая форма, которую судит ядро, построена у ' + (c.прочитано + c.частично) + '.'; },
-    findings: function (n) { return 'Находок: ' + n; }, noFindings: 'В прочитанном находок нет', nothingRead: 'Ни у одного предложения нет логической формы',
-    steps: function (a) { return 'Шагов рассуждения: ' + a.шагов + '; следует: ' + a.следует + ', не следует: ' + a.неСледует + ', ядро не решило: ' + a.неРешено + '.'; },
-    cut: function (n) { return ' Ещё ' + n + ' вопросов ядру не задано: предел песочницы.'; },
-    sentences: 'Предложения', form: 'логическая форма', why: 'почему', report: 'Отчёт', draft: 'Черновик разметки: что записала грамматика',
-    progress: { словарь: 'словарь…', разбор: 'разбираю предложения…', ядро: function (k, n) { return 'ядро: шаг ' + k + ' из ' + n; } },
-    dictionary: function (d) { return d.файлов ? 'прочитано файлов словаря: ' + d.файлов : 'словарь не загрузился: отвечают встроенные слова и догадка по окончанию'; }
+    state: { parsed: 'понято', nominal: 'ничего не утверждает', unparsed: 'не понято', long: 'слишком длинное', error: 'не понято' },
+    grammarWhy: function (g) { return 'почему: ' + g.причина + (g.слово ? ': «' + g.слово + '»' : ''); },
+    parses: function (n) { return n === 1 ? 'прочтение одно' : 'можно прочесть ' + n + ' способами'; }, roles: 'части предложения: ',
+    noForm: 'в проверку не вошло: ',
+    coverage: function (c) { return 'Понято предложений: ' + (c.разобрано + c.назывных) + ' из ' + c.всего + (c.назывных ? ' (из них ничего не утверждают: ' + c.назывных + ')' : '') + (c.длинных ? '; слишком длинных: ' + c.длинных : '') + '. В проверку вошли предложений: ' + (c.прочитано + c.частично) + '.'; },
+    findings: function (n) { return 'Найдено ошибок: ' + n; }, noFindings: 'В понятых предложениях ошибок не найдено', nothingRead: 'Не понято ни одно предложение',
+    steps: function (a) { return 'Проверено шагов рассуждения: ' + a.шагов + '. Вывод следует: ' + a.следует + '; не следует: ' + a.неСледует + '; решить не удалось: ' + a.неРешено + '.'; },
+    cut: function (n) { return ' Ещё ' + n + ' шагов не проверено: за один раз песочница проверяет ограниченное число шагов.'; },
+    sentences: 'Предложения по порядку', form: 'как записан смысл', why: 'почему', report: 'Что найдено', draft: 'Для любопытных: как песочница записала каждое предложение',
+    progress: { словарь: 'загружаю словарь…', разбор: 'читаю предложения…', ядро: function (k, n) { return 'проверяю шаг ' + k + ' из ' + n; } },
+    dictionary: function (d) { return d.файлов ? 'прочитано файлов словаря: ' + d.файлов : 'словарь не загрузился: работают встроенные слова и догадка по окончанию'; }
   };
   var T = WORDS.ru;
   function useWords(lang) { T = WORDS[lang] || WORDS.ru; return T; }
@@ -385,7 +589,7 @@
     }
     return 'flang';
   }
-  var STARTER_SETUP = { hello: 'first', proof: 'proof', monad: 'proof', loop: 'first', klass: 'first', emitC: 'emit' };
+  var STARTER_SETUP = { hello: 'first', proof: 'proof', monad: 'proof', loop: 'first', klass: 'first', emitC: 'emit', dslDiscount: 'dsl', dslCalculator: 'dsl', dslOrder: 'dsl' };
   var TODO_SETUP = { check: 'proof', test: 'tests', run: 'first', emit: 'emit' };
   /* Что открыть по адресу. Поля прежних ссылок (`code`, `text`, `example`,
      `do`, `fn`, `args`, `target`, флаг `run`) читаются как раньше; `setup`
@@ -1932,6 +2136,20 @@
     var out = el('div', 'pg-prose-out');
     p.appendChild(tools);
     p.appendChild(el('p', 'pg-hint', P.lead));
+    p.appendChild(el('p', 'pg-hint', P.exampleNote));
+    var legend = el('details', 'pg-details pg-prose-legend'); legend.open = true;
+    legend.appendChild(el('summary', null, P.legendTitle));
+    var legendList = el('ul', 'pg-prose-list');
+    P.legend.forEach(function (row) {
+      var li = el('li');
+      li.appendChild(el('span', 'pg-mark pg-' + row[0], row[1]));
+      li.appendChild(document.createTextNode(' — ' + row[2]));
+      legendList.appendChild(li);
+    });
+    legend.appendChild(legendList);
+    legend.appendChild(el('p', 'pg-hint', P.cardNote));
+    legend.appendChild(el('p', 'pg-hint', P.unreadHelp));
+    p.appendChild(legend);
     p.appendChild(out);
     var foot = el('div', 'pg-prose-foot');
     foot.appendChild(el('p', 'pg-hint', P.moreCommand));
@@ -2009,6 +2227,7 @@
         var ol = el('ol', 'pg-prose-sentences');
         v.rows.forEach(function (r) { ol.appendChild(sentenceNode(r)); });
         out.appendChild(ol);
+        if (v.rows.some(function (r) { return r.state !== 'parsed' && r.state !== 'nominal' || r.reasons.length > 0; })) out.appendChild(el('p', 'pg-hint', P.unreadHelp));
       }
       if (v.blocks.length) {
         var rep = el('section', 'pg-prose-report');
@@ -2082,7 +2301,7 @@
       lead.textContent = foreignWord('foreignLead'); ed.input.setAttribute('aria-label', foreignWord('foreignLabel'));
     }
     var lead = el('p', 'pg-hint', T.foreignLead);
-    p.appendChild(picker); p.appendChild(lead); p.appendChild(note); p.appendChild(out);
+    p.appendChild(picker); p.appendChild(lead); p.appendChild(el('p', 'pg-hint', T.foreignWhy)); p.appendChild(note); p.appendChild(out);
     choose('c');
     function translate(quiet) {
       var text = ed.input.value;
@@ -2136,6 +2355,7 @@
           c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'violated' ? T.fnRefuted : st === 'unproved' ? T.fnUnproved : T.fnFailed));
           if (st === 'violated') refuted.forEach(function (c) { c2.appendChild(el('p', 'pg-verdict-lead', foreignWord('refutedLead')(c))); });
           else if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
+          if ((f.безЗавершения || []).length) c2.appendChild(el('p', 'pg-verdict-lead', T.loopsUnproved(f.безЗавершения)));
           if (st === 'error') s.problems.forEach(function (pr) { c2.appendChild(problemNode({ line: null, column: null, text: pr.text, code: pr.code })); });
           box.appendChild(c2);
           var claims = ((f.разбор && f.разбор.ведомость && f.разбор.ведомость.claims) || []);
@@ -2155,6 +2375,7 @@
           box.appendChild(el('p', 'pg-formula-name', T.inFlang));
           box.appendChild(codeBlock(f.исходник, 'flang'));
           box.appendChild(el('p', 'pg-hint', foreignWord('intNote')));
+          if (foreignState.lang === 'c' && /^  возвращает признак$/m.test(f.исходник.split('\n\n')[1] || '')) box.appendChild(el('p', 'pg-hint', T.boolNote));
           var open = el('button', 'pg-tool', T.toEditor); open.type = 'button';
           open.addEventListener('click', function () { openSetup('proof', { text: f.исходник, fn: '', args: '' }); input.focus(); });
           box.appendChild(open);

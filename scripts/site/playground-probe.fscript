@@ -257,11 +257,44 @@
   пример «long is outside the subset and is named with its line»
     ожидается (запись «Probe case» с «name» равным "c refusal" и «text file» равным ""
       и «text» равным "int f(long x) { return x; }" и «code» равным 1
-      и «present» равным ["FLANG_FOREIGN_READ строка 1: «long» здесь не читается"]
+      и «present» равным ["FLANG_FOREIGN_READ строка 1: тип «long» не поддержан"]
       и «absent» равным ["модуль «Перевод"])
   (запись «Probe case» с «name» равным "c refusal" и «text file» равным ""
     и «text» равным "int f(long x) { return x; }" и «code» равным 1
-    и «present» равным ["FLANG_FOREIGN_READ строка 1: «long» здесь не читается"]
+    и «present» равным ["FLANG_FOREIGN_READ строка 1: тип «long» не поддержан"]
+    и «absent» равным ["модуль «Перевод"])
+
+тотальная функция «Palindrome in C»
+  возвращает строка
+  соединить ["#include <stdbool.h>", "", "bool isPalindrome(int x) {",
+    "    if (x < 0 || (x % 10 == 0 && x != 0)) {", "        return false;", "    }", "    int reversed = 0;",
+    "    while (x > reversed) {", "        reversed = reversed * 10 + x % 10;", "        x /= 10;", "    }",
+    "    return x == reversed || x == reversed / 10;", "}", ""] по "\n"
+
+тотальная функция «C bool»
+  возвращает «Probe case»
+  пример «bool from stdbool.h is a truth of flang, and the loop is translated with its measure»
+    ожидается (запись «Probe case» с «name» равным "c bool"
+      и «text file» равным "" и «text» равным («Palindrome in C») и «code» равным 3
+      и «present» равным ["модуль «Перевод isPalindrome»", "  возвращает признак",
+        "  убывает («x» минус «reversed»)", "      нет"]
+      и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND", "не переведена"])
+  (запись «Probe case» с «name» равным "c bool"
+    и «text file» равным "" и «text» равным («Palindrome in C») и «code» равным 3
+    и «present» равным ["модуль «Перевод isPalindrome»", "  возвращает признак",
+      "  убывает («x» минус «reversed»)", "      нет"]
+    и «absent» равным ["FLANG_FOREIGN_READ", "FLANG_PLAYGROUND", "не переведена"])
+
+тотальная функция «C include»
+  возвращает «Probe case»
+  пример «A header the subset does not use is named, with what to do»
+    ожидается (запись «Probe case» с «name» равным "c include" и «text file» равным ""
+      и «text» равным "#include <stdio.h>\nint f(int x) { return x; }" и «code» равным 1
+      и «present» равным ["FLANG_FOREIGN_READ строка 1: заголовок <stdio.h> не поддержан"]
+      и «absent» равным ["модуль «Перевод"])
+  (запись «Probe case» с «name» равным "c include" и «text file» равным ""
+    и «text» равным "#include <stdio.h>\nint f(int x) { return x; }" и «code» равным 1
+    и «present» равным ["FLANG_FOREIGN_READ строка 1: заголовок <stdio.h> не поддержан"]
     и «absent» равным ["модуль «Перевод"])
 
 тотальная функция «Through cat from C»
@@ -375,14 +408,16 @@
 тотальная функция «All cases»
   возвращает список «Probe case»
   пусть checks равно («Соединить списки» от («Cases») и («Print cases»))
-  пусть foreign равно («Соединить списки» от [(«C translation»), («C refusal»)] и («Clang cases»))
+  пусть translations равно [(«C translation»), («C refusal»), («C bool»), («C include»)]
+  пусть foreign равно («Соединить списки» от translations и («Clang cases»))
   «Соединить списки» от checks и («Соединить списки» от foreign и («Python cases»))
 
 тотальная функция «Questions»
   возвращает список «Question»
   пусть checks равно (отобразить («Cases») как probe → «Question of» от probe)
   пусть prints равно (отобразить («Print cases») как probe → «Question of print» от probe)
-  пусть translations равно (отобразить [(«C translation»), («C refusal»)] как probe → «Question of C» от probe)
+  пусть translations равно (отобразить [(«C translation»), («C refusal»), («C bool»), («C include»)] как probe
+    → «Question of C» от probe)
   пусть readings равно (отобразить («Clang cases») как probe → «Question of clang» от probe)
   пусть pythons равно (отобразить («Python cases») как probe → «Question of Python» от probe)
   «Соединить списки» от («Соединить списки» от checks и prints) и («Соединить списки» от translations и
@@ -553,7 +588,14 @@
       c translation: в выводе нет «нарушено «обязательство 1 · строка 3: (lo + hi) не выше INT_MAX»»
       c translation: в выводе нет «ПРОВЕРЕНО — утверждений в записи нет»
       c refusal: ждали код 1, вышел 127
-      c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: «long» здесь не читается»
+      c refusal: в выводе нет «FLANG_FOREIGN_READ строка 1: тип «long» не поддержан»
+      c bool: ждали код 3, вышел 127
+      c bool: в выводе нет «модуль «Перевод isPalindrome»»
+      c bool: в выводе нет «  возвращает признак»
+      c bool: в выводе нет «  убывает («x» минус «reversed»)»
+      c bool: в выводе нет «      нет»
+      c include: ждали код 1, вышел 127
+      c include: в выводе нет «FLANG_FOREIGN_READ строка 1: заголовок <stdio.h> не поддержан»
       clang stats: ждали код 0, вышел 127
       clang stats: в выводе нет «разбор совпал с clang»
       clang ranges: ждали код 0, вышел 127

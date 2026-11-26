@@ -18,7 +18,8 @@
     дано translated равно запись «Function» с «name» равным "f" и «line» равным 1 и «parameters» равным [
       "x"] и «flow» равным (запись «Flow» с «lines» равным ["  «x»"] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-      ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным ["int"]
+      ] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
+      "int"] и «returns» равным "int"
     ожидается запись «C function for page» с «name» равным "f" и «line» равным 1 и «unit» равным """
       модуль «Перевод f»
 
@@ -33,7 +34,8 @@
     дано translated равно запись «Function» с «name» равным "g" и «line» равным 3 и «parameters» равным [
       ] и «flow» равным (запись «Flow» с «lines» равным [] и «duties» равным [] и «refusals» равным [
       ] и «helpers» равным [] и «leaves» равным []) и «literals» равным [] и «refusals» равным [
-      "цикл без меры"] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным []
+      "цикл без меры"] и «defined» равным да и «support» равным [] и «calls» равным [] и «types» равным [
+      ] и «returns» равным "int"
     ожидается (запись «C function for page» с «name» равным "g" и «line» равным 3 и «unit» равным ""
       и «refusals» равным ["цикл без меры"])
   пусть refusals равно (translated.«refusals»)

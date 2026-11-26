@@ -1182,7 +1182,8 @@ export const ЦЕЛИ_ПЕЧАТИ = Object.freeze([
 ])
 
 /* Разбор C для песочницы: подмножество, которое понимает переводчик
-   flang/foreign/c (int, struct из int, if/else, циклы, return), печатается
+   flang/foreign/c (int, struct из int, bool как результат функции, if/else,
+   циклы, return), печатается
    деревом в записи `clang -Xclang -ast-dump`, уже отрезанной так, как режет
    её план Demo. Переводчик читает именно эту запись; судит перевод ядро. */
 export function дампC(исходник) {
@@ -1192,6 +1193,11 @@ export function дампC(исходник) {
     e.строка = line
     throw e
   }
+  /* Заголовки, которые подмножеству не мешают: в них типы и константы, а не
+     ввод-вывод. Строка #include с ними пропускается молча; <stdbool.h> ещё и
+     заводит слова bool, true и false. */
+  const HARMLESS = new Set(["stdbool.h", "stdint.h", "limits.h", "stddef.h"])
+  let stdbool = false
   /* ── лексер ── */
   const toks = []
   {
@@ -1215,7 +1221,10 @@ export function дампC(исходник) {
       }
       if (c === "#" && toks.every((t) => t.line !== line)) {
         const rest = text.slice(i, text.indexOf("\n", i) < 0 ? text.length : text.indexOf("\n", i))
-        if (!/^#\s*include\s*[<"][^>"]+[>"]\s*$/u.test(rest)) fail(line, "директивы препроцессора, кроме #include, здесь не читаются")
+        const header = /^#\s*include\s*[<"]([^>"]+)[>"]\s*(\/\/.*)?$/u.exec(rest)
+        if (header === null) fail(line, /^#\s*include/u.test(rest) ? "строку #include не разобрать: ждали #include <имя.h>" : "команды препроцессора (#define, #if и другие) переводчик не понимает: подставьте значения прямо в код")
+        if (!HARMLESS.has(header[1])) fail(line, `заголовок <${header[1]}> не поддержан: переводчик берёт только вычисления над int, без ввода-вывода и библиотечных функций. Уберите эту строку; без сообщения пропускаются только <stdbool.h>, <stdint.h>, <limits.h> и <stddef.h>`)
+        if (header[1] === "stdbool.h") stdbool = true
         while (i < text.length && text[i] !== "\n") adv(1)
         continue
       }
@@ -1223,12 +1232,12 @@ export function дампC(исходник) {
       let m
       if ((m = /^[A-Za-z_][A-Za-z_0-9]*/u.exec(text.slice(i, i + 64)))) { toks.push({ k: "id", v: m[0], ...at }); adv(m[0].length); continue }
       if ((m = /^[0-9][A-Za-z0-9_.]*/u.exec(text.slice(i, i + 64)))) {
-        if (!/^(0|[1-9][0-9]*)$/u.test(m[0])) fail(line, `число «${m[0]}» не разобрать: читаются только десятичные целые без суффиксов`)
-        if (Number(m[0]) > 2147483647) fail(line, `число ${m[0]} больше INT_MAX`)
+        if (!/^(0|[1-9][0-9]*)$/u.test(m[0])) fail(line, `число «${m[0]}» не поддержано: переводчик понимает только десятичные целые без суффиксов, например 31, а не 0x1F или 31u`)
+        if (Number(m[0]) > 2147483647) fail(line, `число ${m[0]} не помещается в int: наибольшее значение int — 2147483647`)
         toks.push({ k: "num", v: m[0], ...at }); adv(m[0].length); continue
       }
       const op = ops.find((o) => text.startsWith(o, i)) ?? (/[-+*/%<>=!~&|^?:;,.(){}\[\]]/u.test(c) ? c : null)
-      if (op === null) fail(line, `знак «${c}» не разобрать`)
+      if (op === null) fail(line, `знак «${c}» в C-коде не поддержан`)
       toks.push({ k: "op", v: op, ...at }); adv(op.length)
     }
     toks.push({ k: "end", v: "", line, col })
@@ -1243,7 +1252,26 @@ export function дампC(исходник) {
     if (t.v !== v || t.k === "num") fail(t.line, t.k === "end" ? `текст кончился, а ждали «${v}»` : `ждали «${v}», а стоит «${t.v}»`)
     return t
   }
-  const UNSUPPORTED = new Set(["char", "short", "long", "unsigned", "signed", "float", "double", "void", "_Bool", "bool", "const", "static", "extern", "volatile", "typedef", "enum", "union", "goto", "switch", "case", "default", "sizeof", "inline", "register", "auto"])
+  const UNSUPPORTED = new Set(["char", "short", "long", "unsigned", "signed", "float", "double", "void", "const", "static", "extern", "volatile", "typedef", "enum", "union", "goto", "switch", "case", "default", "sizeof", "inline", "register", "auto"])
+  /* Что сказать о слове C, которого в подмножестве нет: что не поддержано и
+     чем его заменить. */
+  const unsupported = (word) => {
+    if (["char", "short", "long", "unsigned", "signed"].includes(word)) return `тип «${word}» не поддержан: переводчик понимает целые int, struct из полей int и bool как результат функции. Замените «${word}» на int`
+    if (word === "float" || word === "double") return `дробные числа («${word}») не поддержаны: переводчик работает только с целыми int`
+    if (word === "void") return "функции без результата (void) не поддержаны: функция должна возвращать int или bool"
+    if (["const", "static", "extern", "volatile", "inline", "register", "auto"].includes(word)) return `слово «${word}» не поддержано: уберите его, на вычисление оно не влияет`
+    if (word === "typedef") return "typedef не поддержан: пишите тип прямо, int или struct имя"
+    if (word === "enum" || word === "union") return `«${word}» не поддержан: замените его на int или struct из полей int`
+    if (["switch", "case", "default"].includes(word)) return "switch не поддержан: перепишите выбор через if и else if"
+    if (word === "goto") return "goto не поддержан: перепишите переход через if, while или for"
+    if (word === "sizeof") return "sizeof не поддержан: в подмножестве нет типов, размер которых стоило бы спрашивать"
+    return `«${word}» не поддержан`
+  }
+  /* bool пишется так, как его печатает clang: результат функции типа 'bool',
+     значение int превращается в него приведением <IntegralToBoolean>. */
+  const isBoolWord = (t) => t.k === "id" && (t.v === "_Bool" || (t.v === "bool" && stdbool))
+  const boolOnlyResult = "bool поддержан только как результат функции: параметр, переменную или поле объявите как int со значениями 0 и 1"
+  let currentResult = "int"
   const ident = () => {
     const t = next()
     if (t.k !== "id") fail(t.line, t.k === "end" ? "текст кончился, а ждали имя" : `ждали имя, а стоит «${t.v}»`)
@@ -1263,13 +1291,15 @@ export function дампC(исходник) {
       const n = ident()
       return { name: `struct ${n.v}`, begin: t, tag: n }
     }
-    if (t.k === "id" && UNSUPPORTED.has(t.v)) fail(t.line, `«${t.v}» здесь не читается: переводчик знает только int и struct из полей int`)
+    if (isBoolWord(t)) { next(); return { name: "bool", begin: t } }
+    if (t.k === "id" && t.v === "bool") fail(t.line, "слово bool объявлено в <stdbool.h>: добавьте в начало строку #include <stdbool.h> или пишите _Bool")
+    if (t.k === "id" && UNSUPPORTED.has(t.v)) fail(t.line, unsupported(t.v))
     return null
   }
   const node = (kind, begin, end, rest, kids = [], extra = {}) => ({ kind, begin, end, rest, kids, addr: addr(), ...extra })
   const rvalue = (e) => (e.lvalue ? node("ImplicitCastExpr", e.begin, e.end, `'${e.type}' <LValueToRValue>`, [e], { type: e.type, lvalue: false }) : e)
   const intOnly = (e, t) => {
-    if (e.type !== "int") fail(t.line, `значение типа «${e.type}» здесь не годится: ждали int`)
+    if (e.type !== "int") fail(t.line, e.type === "bool" ? "результат функции типа bool можно только вернуть через return; чтобы считать с ним, объявите функцию с результатом int" : `значение типа «${e.type}» здесь не годится: ждали int`)
     return e
   }
   /* ── выражения ── */
@@ -1284,7 +1314,15 @@ export function дампC(исходник) {
       return node("ParenExpr", t, close, `'${inner.type}'${inner.lvalue ? " lvalue" : ""}`, [inner], { type: inner.type, lvalue: inner.lvalue })
     }
     if (t.k === "id") {
-      if (UNSUPPORTED.has(t.v) || t.v === "int" || t.v === "struct") fail(t.line, `«${t.v}» здесь не читается`)
+      if ((t.v === "true" || t.v === "false") && stdbool && !scope?.find(t.v)) {
+        next()
+        return node("IntegerLiteral", t, t, `'int' ${t.v === "true" ? 1 : 0}`, [], { type: "int" })
+      }
+      if (t.v === "true" || t.v === "false") {
+        if (!scope?.find(t.v)) fail(t.line, `слово ${t.v} объявлено в <stdbool.h>: добавьте в начало строку #include <stdbool.h> или пишите ${t.v === "true" ? 1 : 0}`)
+      }
+      if (UNSUPPORTED.has(t.v)) fail(t.line, unsupported(t.v))
+      if (t.v === "int" || t.v === "struct" || isBoolWord(t)) fail(t.line, `объявление типа «${t.v}» внутри выражения не поддержано: объявите переменную отдельной строкой`)
       next()
       const local = scope?.find(t.v)
       if (local) return node("DeclRefExpr", t, t, `'${local.type}' lvalue ${local.param ? "ParmVar" : "Var"} ${local.addr} '${t.v}' '${local.type}'`, [], { type: local.type, lvalue: true })
@@ -1310,6 +1348,7 @@ export function дампC(исходник) {
           }
         }
         const close = expect(")")
+        if (e.fn.result === "bool") fail(t.line, `вызов «${e.fn.name}»: вызывать функцию с результатом bool пока нельзя. Объявите её с результатом int (return 1 или return 0)`)
         if (args.length !== e.fn.params.length) fail(t.line, `функция «${e.fn.name}» ждёт доводов ${e.fn.params.length}, а дано ${args.length}`)
         args.forEach((a, n) => { if (a.type !== e.fn.params[n]) fail(t.line, `довод ${n + 1} функции «${e.fn.name}» — ${a.type}, а ждали ${e.fn.params[n]}`) })
         const callee = node("ImplicitCastExpr", e.begin, e.end, `'${e.fn.type.replace(" (", " (*)(")}' <FunctionToPointerDecay>`, [e], { type: "" })
@@ -1326,7 +1365,7 @@ export function дампC(исходник) {
         e = node("MemberExpr", e.begin, member, `'int'${e.lvalue ? " lvalue" : ""} .${member.v} ${field.addr}`, [e], { type: "int", lvalue: e.lvalue })
         continue
       }
-      if (is("->") || is("[")) fail(t.line, `«${t.v}» здесь не читается: указателей и массивов в подмножестве нет`)
+      if (is("->") || is("[")) fail(t.line, `«${t.v}» не поддержан: указателей и массивов в подмножестве нет, передавайте int или struct целиком`)
       if (is("++") || is("--")) {
         if (!e.lvalue) fail(t.line, `«${t.v}» применим только к переменной`)
         next()
@@ -1349,7 +1388,7 @@ export function дампC(исходник) {
       if (!e.lvalue) fail(t.line, `«${t.v}» применим только к переменной`)
       return node("UnaryOperator", t, e.end, `'int' prefix '${t.v}'`, [intOnly(e, t)], { type: "int" })
     }
-    if (t.k === "op" && (t.v === "&" || t.v === "*")) fail(t.line, `«${t.v}» здесь не читается: указателей в подмножестве нет`)
+    if (t.k === "op" && (t.v === "&" || t.v === "*")) fail(t.line, `«${t.v}» не поддержан: указателей в подмножестве нет, передавайте int или struct целиком`)
     return postfix()
   }
   const LEVELS = [["||"], ["&&"], ["|"], ["^"], ["&"], ["==", "!="], ["<", ">", "<=", ">="], ["<<", ">>"], ["+", "-"], ["*", "/", "%"]]
@@ -1389,7 +1428,7 @@ export function дампC(исходник) {
   }
   const expression = () => {
     const e = assignment()
-    if (is(",")) fail(peek().line, "оператор «,» здесь не читается")
+    if (is(",")) fail(peek().line, "оператор «,» не поддержан: разбейте выражение на отдельные строки")
     return e
   }
   /* ── операторы ── */
@@ -1399,7 +1438,8 @@ export function дампC(исходник) {
   }
   const declaration = (spec) => {
     /* «int a = 1, b;» — спецификатор уже прочитан */
-    if (spec.name !== "int") fail(spec.begin.line, "локальные переменные читаются только типа int")
+    if (spec.name === "bool") fail(spec.begin.line, boolOnlyResult)
+    if (spec.name !== "int") fail(spec.begin.line, "локальные переменные поддержаны только типа int")
     const decls = []
     for (;;) {
       const name = ident()
@@ -1425,8 +1465,9 @@ export function дампC(исходник) {
       switch (t.v) {
         case "return": {
           next()
-          if (is(";")) fail(t.line, "return без значения: функция обязана вернуть int")
-          const e = intOnly(rvalue(expression()), t)
+          if (is(";")) fail(t.line, `return без значения: функция обязана вернуть ${currentResult}`)
+          const value = intOnly(rvalue(expression()), t)
+          const e = currentResult === "bool" ? node("ImplicitCastExpr", value.begin, value.end, "'bool' <IntegralToBoolean>", [value], { type: "bool" }) : value
           expect(";")
           return node("ReturnStmt", t, e.end, "", [e])
         }
@@ -1485,7 +1526,7 @@ export function дампC(исходник) {
         default: {
           const spec = typeAt()
           if (spec) return declaration(spec)
-          if (UNSUPPORTED.has(t.v)) fail(t.line, `«${t.v}» здесь не читается`)
+          if (UNSUPPORTED.has(t.v)) fail(t.line, unsupported(t.v))
         }
       }
     }
@@ -1516,7 +1557,8 @@ export function дампC(исходник) {
       const fields = []
       while (!is("}")) {
         const ft = typeAt()
-        if (!ft || ft.name !== "int") fail(peek().line, "поля struct читаются только типа int")
+        if (ft && ft.name === "bool") fail(ft.begin.line, boolOnlyResult)
+        if (!ft || ft.name !== "int") fail(peek().line, "поля struct поддержаны только типа int")
         for (;;) {
           const name = ident()
           fields.push({ name: name.v, addr: addr(), begin: ft.begin, nameTok: name })
@@ -1533,8 +1575,9 @@ export function дампC(исходник) {
       continue
     }
     const ret = typeAt()
-    if (!ret) fail(t.line, t.k === "id" ? `«${t.v}» здесь не ждали: на верхнем уровне читаются struct и функции, возвращающие int` : `«${t.v}» здесь не ждали`)
-    if (ret.name !== "int") fail(t.line, "функции читаются только с результатом int")
+    if (!ret) fail(t.line, `здесь ждали функцию или struct, а стоит «${t.v}»: на верхнем уровне переводчик понимает struct из полей int и функции с результатом int или bool`)
+    if (ret.name !== "int" && ret.name !== "bool") fail(t.line, "функция должна возвращать int или bool: struct как результат не поддержан")
+    currentResult = ret.name
     const name = ident()
     expect("(")
     const params = []
@@ -1543,7 +1586,8 @@ export function дампC(исходник) {
     else if (!is(")")) {
       for (;;) {
         const pt = typeAt()
-        if (!pt) fail(peek().line, `тип параметра «${peek().v}» не читается: только int и struct`)
+        if (!pt) fail(peek().line, `тип параметра «${peek().v}» не поддержан: параметры бывают int или struct из полей int`)
+        if (pt.name === "bool") fail(pt.begin.line, boolOnlyResult)
         if (pt.name !== "int" && !records.has(pt.name)) fail(pt.begin.line, `«${pt.name}» не объявлен выше`)
         const pn = ident()
         params.push({ type: pt.name, begin: pt.begin, nameTok: pn, addr: addr() })
@@ -1552,9 +1596,9 @@ export function дампC(исходник) {
       }
     }
     const closeParen = expect(")")
-    const type = `int (${params.length ? params.map((x) => x.type).join(", ") : voidOnly ? "void" : ""})`
+    const type = `${ret.name} (${params.length ? params.map((x) => x.type).join(", ") : voidOnly ? "void" : ""})`
     const known = functions.get(name.v)
-    const fn = known ?? { name: name.v, type, params: params.map((x) => x.type), addr: addr() }
+    const fn = known ?? { name: name.v, type, result: ret.name, params: params.map((x) => x.type), addr: addr() }
     if (known && known.type !== type) fail(name.line, `«${name.v}» объявлена выше с другими параметрами`)
     functions.set(name.v, fn)
     const kids = params.map((x) => ({ kind: "ParmVarDecl", begin: x.begin, end: x.nameTok, rest: null, kids: [], addr: x.addr, nameTok: x.nameTok, after: `${x.nameTok.v} '${x.type}'` }))
@@ -1587,7 +1631,7 @@ export function дампC(исходник) {
     return `<${b}, ${loc(n.end)}>`
   }
   const out = []
-  const WHOLE = /'int \((int|struct [A-Za-z_0-9]+)(, (int|struct [A-Za-z_0-9]+))*\)'/u
+  const WHOLE = /'(int|bool) \((int|struct [A-Za-z_0-9]+)(, (int|struct [A-Za-z_0-9]+))*\)'/u
   const print = (n, prefix, last, depth, whole) => {
     const lead = prefix + (last ? "`-" : "|-")
     if (n === null) {
@@ -1876,7 +1920,17 @@ export function песочница({ достать, модульРассужд�
       }
       const итог = await проверитьFlang(ф.unit)
       const контрпримеры = итог.код === 1 ? изОтветаЯдра(итог.вывод) : []
-      функции.push({ имя: ф.name, строка: ф.line, отказы: [], исходник: ф.unit, код: контрпримеры.length ? 1 : итог.код, итог: контрпримеры.length ? "опровергнуто" : итог.итог, сверщик: итог.сверщик, разбор: итог.разбор, контрпримеры })
+      /* Цикл C становится функцией с мерой «убывает», которую пишет переводчик.
+         Если ядро не вывело, что мера падает на каждом витке, ведомость check
+         так и говорит («спуск ядром не выведен»): тогда завершение цикла не
+         доказано, и страница называет это словами. Один цикл — одна строка C. */
+      const безЗавершения = []
+      for (const функция of итог.разбор?.ведомость?.functions ?? []) {
+        const цикл = / loop (\d+)( |$)/u.exec(функция.name ?? "")
+        if (цикл === null || !/не выведен/u.test(функция.says ?? "")) continue
+        if (!безЗавершения.some((ц) => ц.строка === Number(цикл[1]))) безЗавершения.push({ строка: Number(цикл[1]), мера: функция.measure ?? "" })
+      }
+      функции.push({ имя: ф.name, строка: ф.line, отказы: [], исходник: ф.unit, код: контрпримеры.length ? 1 : итог.код, итог: контрпримеры.length ? "опровергнуто" : итог.итог, сверщик: итог.сверщик, разбор: итог.разбор, контрпримеры, безЗавершения })
       строки.push(`── ${ф.name} ──`, ф.unit.replace(/\n$/u, ""), итог.вывод)
       for (const к of контрпримеры) {
         строки.push(`контрпример: ${Object.entries(к.входы).map(([имяВхода, значение]) => `«${имяВхода}» = ${значение}`).join(", ")} — нарушено «${к.обещание}»`)
@@ -2516,10 +2570,13 @@ async function запуститьИзКоманднойСтроки() {
       const тесты = await п.команда(з.text, "test", {})
       const запуск = await п.команда(з.text, "run", { функция: з.fn ?? "", доводы: з.args ?? "" })
       const печать = з.emit ? await п.напечатать(з.text, з.emit) : { код: 0 }
+      /* Стартер, списанный с файла примера, обязан совпадать с ним знак в знак. */
+      const файл = з.source ? await readFile(з.source, "utf8").catch(() => null) : null
+      const сверено = !з.source || файл === з.text
       const коды = [проверка.код, тесты.код, запуск.код]
-      всего += коды.length
-      прошло += коды.filter((код) => код === 0).length - (печать.код === 0 ? 0 : 1)
-      process.stdout.write(`заготовка ${з.slug ?? з.key}: check --proof ${проверка.код}, test ${тесты.код}, run ${запуск.код}, emit ${з.emit ? печать.код : "—"}\n`)
+      всего += коды.length + (з.source ? 1 : 0)
+      прошло += коды.filter((код) => код === 0).length - (печать.код === 0 ? 0 : 1) + (з.source && сверено ? 1 : 0)
+      process.stdout.write(`заготовка ${з.slug ?? з.key}: check --proof ${проверка.код}, test ${тесты.код}, run ${запуск.код}, emit ${з.emit ? печать.код : "—"}${з.source ? `, ${з.source} ${сверено ? "совпадает" : файл === null ? "не прочитан" : "РАЗОШЁЛСЯ с текстом стартера"}` : ""}\n`)
       for (const ответ of [проверка, тесты, запуск, печать]) if (ответ.код !== 0) process.stdout.write(`${ответ.вывод}\n`)
     }
     process.stdout.write(`заготовок ${заготовки.length}: кнопок прошло ${прошло} из ${всего}\n`)

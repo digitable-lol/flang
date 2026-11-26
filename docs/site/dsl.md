@@ -11,6 +11,10 @@ purpose, and those are called out. The examples use the Russian keywords, the
 same ones the standard library is written in; each keyword has an English
 spelling listed in the [glossary](../glossary.html).
 
+All three languages can be tried without installing anything: the playground has the
+tile [«Your own language (DSL)»](playground.html#setup=dsl) with the discount rules, the
+calculator and the order automaton.
+
 ## 1. Three kinds of DSL and how to choose
 
 | Kind | Who writes programs in it | What you write | Section |

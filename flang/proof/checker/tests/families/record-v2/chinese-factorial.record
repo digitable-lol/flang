@@ -1,0 +1,21 @@
+proof record 2
+sourceFile flang/proof/checker/tests/families/surfaces/chinese-factorial.flang
+lineCount 67
+charCount 924
+fingerprint 875693135 37793738
+kernel 2
+claimCount 0
+fingerprint256 ab050f9ac69c7a69b06c94849e447bb1b8fa433680f45628c34b88bc23fdf135
+totalityCount 2
+totality «前置» line 3
+  kindIs composition
+  calls primitive «fold»
+  selfCallOf noIs
+  theEnd totalityOf
+totality «乘积» line 12
+  kindIs composition
+  calls primitive «opMul»
+  calls primitive «fold»
+  selfCallOf noIs
+  theEnd totalityOf
+theEnd recordOf

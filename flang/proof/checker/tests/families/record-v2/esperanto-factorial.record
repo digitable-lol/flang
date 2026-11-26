@@ -1,0 +1,21 @@
+proof record 2
+sourceFile flang/proof/checker/tests/families/surfaces/esperanto-factorial.flang
+lineCount 67
+charCount 1833
+fingerprint 116682299 361387939
+kernel 2
+claimCount 0
+fingerprint256 5e43588cc7f5313feb13cf3ba373992e294c2c644811d01b4b41ecff15f0e87d
+totalityCount 2
+totality «Antaŭmeti» line 3
+  kindIs composition
+  calls primitive «fold»
+  selfCallOf noIs
+  theEnd totalityOf
+totality «Produto» line 12
+  kindIs composition
+  calls primitive «opMul»
+  calls primitive «fold»
+  selfCallOf noIs
+  theEnd totalityOf
+theEnd recordOf

@@ -16076,12 +16076,315 @@ static Сверка сверить(const char *исходник, const char *з�
    «доказано»), 1 — НЕ СОШЛОСЬ, 2 — кривой вызов. Ключ, обменивающий 3 на 0,
    об этом не молчит: иначе код 0 под ним читался бы как приёмка. */
 
+/* ── ЗАПИСЬ ВЕРСИИ 2 (ADR-0255) ──────────────────────────────────────────────
+   Вторая версия записи — та же первая, где слова рамки, названия правил ядра,
+   короткие имена правил и имена примитивов заменены ключами, не зависящими от
+   языка, а формулы в уголках ⟨…⟩ написаны знаками (= ≤ + ∧ ∀ …) и ключами
+   понятий (result, if, length …). Ключи лежат таблицей
+   flang/proof/tables/record-v2-words.tsv; ниже её копия, и проба
+   flang/proof/record-v2-guard.fscript сверяет копию с таблицей.
+
+   Сверщик ничего нового в записи не судит: вторую версию он переводит обратно
+   в первую и сверяет её как обычно. Рамка переводится один в один (таблица
+   взаимно однозначна). Формула — нет: знак «=» не говорит, «равен» стоял или
+   «равным». Слово берётся на языке исходника, а по-русски форма выбирается так,
+   как её ждёт чтение сверщика (те же правила, что у перевода исходника выше).
+   Ошибка перевода не делает подделку честной: переведённая запись сверяется
+   с исходником целиком, и всё, что разошлось, — «НЕ СОШЛОСЬ». */
+typedef struct { const char *вид, *первая, *вторая; } Слово_записи2;
+static const Слово_записи2 СЛОВА_ЗАПИСИ2[] = {
+  { "word", "строка", "line" }, { "word", "строк", "lineCount" }, { "word", "строки", "lineOf" },
+  { "word", "конец", "theEnd" }, { "word", "вид", "kindIs" }, { "word", "нет", "noIs" },
+  { "word", "да", "yesIs" }, { "word", "ход", "move" }, { "word", "доказано", "proved" },
+  { "word", "вердикт", "verdict" }, { "word", "вердикта", "verdictOf" }, { "word", "по", "via" },
+  { "word", "вывод", "inference" }, { "word", "утверждение", "assertion" },
+  { "word", "утверждения", "claimOf" }, { "word", "утверждений", "claimCount" },
+  { "word", "функции", "ofFunction" }, { "word", "правило", "ruleIs" },
+  { "word", "теорема", "theoremIs" }, { "word", "теоремы", "theoremOf" },
+  { "word", "цель", "goal" }, { "word", "тотальность", "totality" },
+  { "word", "тотальности", "totalityOf" }, { "word", "тотальностей", "totalityCount" },
+  { "word", "тотальна", "isTotal" }, { "word", "самовызов", "selfCall" },
+  { "word", "самовызова", "selfCallOf" }, { "word", "зовёт", "calls" },
+  { "word", "шаг", "proofStep" }, { "word", "шагов", "stepCount" },
+  { "word", "примитив", "primitive" }, { "word", "объявление", "declaration" },
+  { "word", "объявлению", "declarationOf" }, { "word", "из", "outOf" },
+  { "word", "закрыта", "closedBy" }, { "word", "исходник", "sourceFile" },
+  { "word", "запись", "recordIs" }, { "word", "записи", "recordOf" },
+  { "word", "доказательства", "ofProof" }, { "word", "знаков", "charCount" },
+  { "word", "отпечаток", "fingerprint" }, { "word", "отпечаток256", "fingerprint256" },
+  { "word", "ядро", "kernel" }, { "word", "посылка", "premise" },
+  { "word", "вариант", "variantIs" }, { "word", "варианты", "variants" },
+  { "word", "варианта", "variantOf" }, { "word", "для", "for" }, { "word", "всех", "all" },
+  { "word", "развернуть", "unfold" }, { "word", "закрывающий", "closing" },
+  { "word", "закрыть", "close" }, { "word", "дано", "givenIs" },
+  { "word", "следовательно", "hence" }, { "word", "сведение", "reducedBy" },
+  { "word", "тождеством", "byIdentity" }, { "word", "тип", "typeIs" },
+  { "word", "носитель", "carrierIs" }, { "word", "случай", "caseIs" },
+  { "word", "принцип", "principle" }, { "word", "база", "basis" },
+  { "word", "переписать", "rewrite" }, { "word", "сам", "itself" },
+  { "word", "предположению", "hypothesisOf" }, { "word", "предположение", "hypothesis" },
+  { "word", "примеру", "exampleOf" }, { "word", "пример", "exampleIs" },
+  { "word", "выбор", "choice" }, { "word", "формой", "byForm" }, { "word", "законом", "byLaw" },
+  { "word", "закон", "lawIs" }, { "word", "закону", "lawOf" }, { "word", "законов", "lawCount" },
+  { "word", "законы", "lawsOf" }, { "word", "индукция", "inductionIs" },
+  { "word", "встроенный", "builtin" }, { "word", "сумма", "sum" },
+  { "word", "свойству", "propertyOf" }, { "word", "свойство", "propertyIs" },
+  { "word", "истиной", "byTruth" }, { "word", "обязательство", "obligation" },
+  { "word", "вход", "entry" }, { "word", "на", "atPlace" }, { "word", "зовущем", "caller" },
+  { "word", "деление", "division" }, { "word", "допущение", "assumption" },
+  { "word", "дно", "floor" }, { "word", "потолок", "ceiling" }, { "word", "вычислить", "compute" },
+  { "word", "поручение", "order" }, { "word", "соседи", "neighbours" },
+  { "word", "таких", "such" }, { "word", "что", "that" },
+  { "word", "постусловию", "postconditionOf" }, { "word", "таблица", "table" },
+  { "word", "таблиц", "tableCount" }, { "word", "открыта", "openedBy" },
+  { "word", "звеньев", "linkCount" }, { "word", "снятие", "discharge" },
+  { "word", "снятия", "dischargeOf" }, { "word", "столбец", "column" }, { "word", "может", "may" },
+  { "word", "быть", "be" }, { "word", "связка", "connective" },
+  { "word", "промежуточный", "intermediate" }, { "word", "подстановка", "substitution" },
+  { "word", "подстановки", "substitutionOf" }, { "word", "категорная", "categorical" },
+  { "word", "категорной", "categoricalOf" }, { "word", "категории", "categoryOf" },
+  { "word", "факт", "fact" }, { "word", "требованием", "byRequirement" },
+  { "word", "множитель", "factor" }, { "word", "разрешено", "allowed" },
+  { "word", "доказать", "prove" }, { "word", "отрицание", "negation" },
+  { "word", "противоречие", "contradiction" }, { "word", "свидетель", "witness" },
+  { "word", "после", "afterThat" }, { "word", "отвергнуто", "refuted" },
+  { "word", "подставить", "substitute" }, { "word", "пусть", "letIs" },
+  { "word", "левая", "left" }, { "word", "правая", "right" }, { "word", "место", "place" },
+  { "word", "приставка", "prefix" }, { "word", "вперёд", "forward" },
+  { "word", "назад", "backward" }, { "word", "ассоциативность", "associativity" },
+  { "word", "гипотеза", "conjecture" }, { "word", "нейтральный", "neutral" },
+  { "word", "ноль", "zero" }, { "word", "вызов", "call" },
+  { "word", "функториальность", "functoriality" }, { "word", "естественность", "naturality" },
+  { "word", "и", "alongWith" }, { "word", "убывает", "decreasesIs" },
+  { "word", "аргумент", "argument" }, { "word", "виток", "turn" }, { "word", "от", "ofArg" },
+  { "word", "план", "planIs" }, { "word", "плана", "planOf" }, { "word", "поля", "fields" },
+  { "word", "поле", "fieldIs" }, { "word", "замена", "replacement" },
+  { "word", "прогон", "runIs" }, { "word", "часть", "part" }, { "word", "единица", "unit" },
+  { "word", "при", "under" }, { "word", "условии", "condition" },
+  { "word", "псевдоним", "aliasIs" }, { "word", "длина", "lengthIs" },
+  { "word", "произведение", "product" }, { "word", "положительно", "positive" },
+  { "word", "мера", "measure" }, { "word", "не", "notIs" }, { "word", "меньше", "less" },
+  { "word", "сетка", "grid" }, { "word", "минус", "minusSign" }, { "word", "плюс", "plusSign" },
+  { "word", "раскрытие", "expansion" }, { "word", "раскрытия", "expansionOf" },
+  { "rule", "неотрицательность по построению", "nonnegative-by-construction" },
+  { "rule", "ограниченность точным потолком по построению", "bounded-by-exact-ceiling-by-construction" },
+  { "rule", "тождество после переписки допущением", "identity-after-rewriting-by-assumption" },
+  { "rule", "порядок по построению", "order-by-construction" },
+  { "rule", "строгий порядок по построению", "strict-order-by-construction" },
+  { "rule", "порядок соседних по построению", "neighbour-order-by-construction" },
+  { "rule", "вхождение по построению", "membership-by-construction" },
+  { "rule", "цель есть допущение", "goal-is-assumption" },
+  { "rule", "несовместимые допущения", "incompatible-assumptions" },
+  { "rule", "вычисление замкнутой цели", "evaluation-of-closed-goal" },
+  { "rule", "разбор цели по условию", "goal-split-by-condition" },
+  { "rule", "цель-выбор с истинной ветвью", "choice-goal-with-true-branch" },
+  { "rule", "разбор случаев по дизъюнкции в допущении", "cases-by-disjunction-in-assumption" },
+  { "rule", "разбор случаев по внутреннему условию цели", "cases-by-inner-condition-of-goal" },
+  { "rule", "равенство, решённое счётом замкнутых частей", "equality-by-evaluating-closed-parts" },
+  { "rule", "начало по построению", "prefix-by-construction" },
+  { "rule", "все элементы по построению", "all-elements-by-construction" },
+  { "rule", "переписка доказанными равенствами", "rewriting-by-proved-equalities" },
+  { "rule", "кольцо точного целого", "exact-integer-ring" },
+  { "rule", "равенство записей по полям", "record-equality-by-fields" },
+  { "rule", "запись из своих полей", "record-from-its-fields" },
+  { "rule", "равенство себе на точном типе", "self-equality-on-exact-type" },
+  { "rule", "переписка цели выписанными шагами", "goal-rewriting-by-written-steps" },
+  { "rule", "линейная арифметика", "linear-arithmetic" }, { "family", "Разв", "Unfold" },
+  { "family", "ГипО", "HypOrder" }, { "family", "ГипД", "HypFloor" }, { "family", "Выч", "Eval" },
+  { "family", "Тожд", "Ident" }, { "family", "Инд", "Induct" }, { "family", "Кол", "Ring" },
+  { "family", "Лин", "Linear" }, { "family", "Пред", "Natural" }, { "family", "Цел", "Integer" },
+  { "family", "Кон", "Conj" }, { "family", "Вкл", "Incl" }, { "family", "Отр", "Neg" },
+  { "family", "Или", "Disj" }, { "family", "Мер", "Measure" }, { "family", "СС", "Neighbour" },
+  { "family", "Сл", "Words" }, { "family", "Св", "Witness" }, { "family", "Пр", "Contra" },
+  { "family", "Зв", "Link" }, { "family", "Н", "Nonneg" }, { "family", "П", "Bound" },
+  { "family", "О", "Order" }, { "family", "С", "Strict" }, { "family", "Д", "Floor" },
+  { "family", "Р", "Branch" }, { "family", "Т", "Assumed" }, { "family", "В", "Member" },
+  { "family", "Э", "AllElems" }, { "family", "Ч", "Prefix" }, { "family", "М", "Rewrite" },
+  { "family", "К", "Chained" }, { "family", "И", "Inst" }, { "primitive", "плюс", "opAdd" },
+  { "primitive", "минус", "opSub" }, { "primitive", "умножить", "opMul" },
+  { "primitive", "делить", "opDiv" }, { "primitive", "остаток", "opMod" },
+  { "primitive", "длина", "length" }, { "primitive", "соединить", "join" },
+  { "primitive", "подстрока", "substring" }, { "primitive", "содержит", "contains" },
+  { "primitive", "начинается", "startsWith" }, { "primitive", "если", "if" },
+  { "primitive", "разбор", "match" }, { "primitive", "свёртка", "fold" },
+  { "primitive", "отобразить", "map" }, { "primitive", "отфильтровать", "filter" },
+};
+static const char *ЗНАКИ_ЗАПИСИ2[][2] = {
+  { "cmpEq", "=" }, { "cmpNeq", "≠" }, { "cmpLt", "<" }, { "cmpLte", "≤" }, { "cmpGt", ">" },
+  { "cmpGte", "≥" }, { "opAdd", "+" }, { "opSub", "−" }, { "opMul", "·" }, { "opDiv", "/" },
+  { "andAlso", "∧" }, { "or", "∨" }, { "not", "¬" }, { "litTrue", "⊤" }, { "litFalse", "⊥" },
+  { "forall", "∀" }, { "exists", "∃" }, { "tExact", "ℕ" }
+};
+static const char *ключ_записи2(const char *вид, const char *вторая) {
+  int i;
+  for (i = 0; i < (int)(sizeof СЛОВА_ЗАПИСИ2 / sizeof *СЛОВА_ЗАПИСИ2); i++)
+    if (strcmp(СЛОВА_ЗАПИСИ2[i].вид, вид) == 0 && strcmp(СЛОВА_ЗАПИСИ2[i].вторая, вторая) == 0)
+      return СЛОВА_ЗАПИСИ2[i].первая;
+  return NULL;
+}
+/* Короткое имя правила: семья и номер («Unfold2» → «Разв2»). Семья ищется самая
+   длинная, хвост — цифры и, может быть, один знак «↑» или «✗». */
+static char *правило_из_второй(const char *w) {
+  int i; size_t лучшая = 0; const char *семья = NULL;
+  for (i = 0; i < (int)(sizeof СЛОВА_ЗАПИСИ2 / sizeof *СЛОВА_ЗАПИСИ2); i++) {
+    const char *к = СЛОВА_ЗАПИСИ2[i].вторая; size_t д = strlen(к); const char *х;
+    if (strcmp(СЛОВА_ЗАПИСИ2[i].вид, "family") != 0 || д <= лучшая || strncmp(w, к, д) != 0) continue;
+    х = w + д;
+    while (*х >= '0' && *х <= '9') х++;
+    if (*х && strcmp(х, "↑") != 0 && strcmp(х, "✗") != 0) continue;
+    лучшая = д; семья = СЛОВА_ЗАПИСИ2[i].первая;
+  }
+  return семья ? fmt("%s%s", семья, w + лучшая) : NULL;
+}
+static const char *понятие_ключа2(const char *w) {
+  size_t i;
+  for (i = 0; i < sizeof ЗНАКИ_ЗАПИСИ2 / sizeof *ЗНАКИ_ЗАПИСИ2; i++)
+    if (strcmp(ЗНАКИ_ЗАПИСИ2[i][1], w) == 0) return ЗНАКИ_ЗАПИСИ2[i][0];
+  for (i = 0; i < sizeof ПОВЕРХНОСТИ / sizeof *ПОВЕРХНОСТИ; i++)
+    if (strcmp(ПОВЕРХНОСТИ[i].понятие, w) == 0) return ПОВЕРХНОСТИ[i].понятие;
+  return NULL;
+}
+static const char *слово_понятия2(const char *понятие, const char *язык) {
+  size_t i;
+  if (язык) {
+    for (i = 0; i < sizeof ПОВЕРХНОСТИ / sizeof *ПОВЕРХНОСТИ; i++)
+      if (strcmp(ПОВЕРХНОСТИ[i].понятие, понятие) == 0 && strcmp(ПОВЕРХНОСТИ[i].язык, язык) == 0)
+        return ПОВЕРХНОСТИ[i].форма;
+    for (i = 0; i < sizeof ПОВЕРХНОСТИ / sizeof *ПОВЕРХНОСТИ; i++)
+      if (strcmp(ПОВЕРХНОСТИ[i].понятие, понятие) == 0 && strcmp(ПОВЕРХНОСТИ[i].язык, "en") == 0)
+        return ПОВЕРХНОСТИ[i].форма;
+  }
+  for (i = 0; i < sizeof ПОВЕРХНОСТИ / sizeof *ПОВЕРХНОСТИ; i++)
+    if (strcmp(ПОВЕРХНОСТИ[i].понятие, понятие) == 0) return ПОВЕРХНОСТИ[i].по_русски;
+  return NULL;
+}
+static int граница_записи2(const char *p) {
+  return !*p || *p == ' ' || *p == '\t' || strchr("()[],:\"", *p) || начинается(p, "«") ||
+         начинается(p, "⟨") || начинается(p, "⟩");
+}
+/* Конец вложенных уголков, открытых в `p`: указатель на закрывающий «⟩» или конец. */
+static const char *конец_уголков2(const char *p) {
+  int глубина = 0;
+  while (*p) {
+    if (начинается(p, "⟨")) { глубина++; p += strlen("⟨"); continue; }
+    if (начинается(p, "⟩")) { if (--глубина == 0) return p; p += strlen("⟩"); continue; }
+    p++;
+  }
+  return p;
+}
+static const char *конец_литерала2(const char *p) {
+  p++;
+  while (*p && *p != '"') { if (*p == '\\' && p[1]) p++; p++; }
+  return *p ? p + 1 : p;
+}
+static char *формула_из_второй(const char *t, const char *язык) {
+  Сп r = ПУСТО; const char *p = t, *первое = NULL, *пред2 = "", *пред1 = "", *прежнее = "";
+  int равенств = 0, построение = 0, добавление = 0;
+  while (*p) {
+    const char *q = p;
+    if (начинается(p, "«")) {
+      const char *e = strstr(p, "»"); q = e ? e + strlen("»") : p + strlen(p);
+      добавить(&r, копия(p, (size_t)(q - p))); пред2 = пред1; пред1 = "«»"; прежнее = ""; p = q;
+      if (!первое) первое = "«»";
+      continue;
+    }
+    if (*p == '"') {
+      q = конец_литерала2(p); добавить(&r, копия(p, (size_t)(q - p))); пред2 = пред1; пред1 = "\"";
+      прежнее = ""; p = q; if (!первое) первое = "\""; continue;
+    }
+    if (начинается(p, "⟨")) {
+      const char *e = конец_уголков2(p);
+      добавить(&r, fmt("⟨%s⟩", формула_из_второй(копия(p + strlen("⟨"), (size_t)(e - p) - strlen("⟨")), язык)));
+      p = *e ? e + strlen("⟩") : e; прежнее = ""; continue;
+    }
+    if (граница_записи2(p)) {
+      if (*p != ' ' && *p != '\t') прежнее = "";
+      добавить(&r, копия(p, 1)); p++; continue;
+    }
+    while (!граница_записи2(q)) q++;
+    { char *w = копия(p, (size_t)(q - p)); const char *понятие = понятие_ключа2(w), *слово = w;
+      if (понятие) {
+        const char *своё = слово_понятия2(понятие, язык);
+        слово = своё ? своё : w;
+        if (!язык) {
+          if (strcmp(понятие, "cmpEq") == 0) {
+            if (первое && (strcmp(первое, "дано") == 0 || strcmp(первое, "пусть") == 0) && !равенств) слово = "равно";
+            else if (построение && (strcmp(пред2, "с") == 0 || strcmp(пред2, "и") == 0)) слово = "равным";
+            else слово = "равен";
+            равенств++;
+          }
+          if (strcmp(понятие, "to") == 0 && добавление) слово = "к";
+          if (strcmp(прежнее, "list") == 0 || strcmp(прежнее, "listOf") == 0 || strcmp(прежнее, "of") == 0) {
+            if (strcmp(понятие, "tNumber") == 0) слово = "числа";
+            if (strcmp(понятие, "tString") == 0) слово = "строки";
+            if (strcmp(понятие, "tFlag") == 0) слово = "признака";
+          }
+          if (strcmp(понятие, "record") == 0 || strcmp(понятие, "variant") == 0) построение = 1;
+          if (strcmp(понятие, "add") == 0 || strcmp(понятие, "prepend") == 0) добавление = 1;
+        }
+        прежнее = понятие;
+      } else прежнее = "";
+      if (!первое) первое = слово;
+      добавить(&r, (char *)слово); пред2 = пред1; пред1 = слово; p = q; }
+  }
+  return соединить(r, "");
+}
+static char *строка_из_второй(const char *l, const char *язык) {
+  Сп r = ПУСТО; const char *p = l, *пред = "";
+  if (strcmp(l, "proof record 2") == 0) return (char *)"запись доказательства 1";
+  while (*p) {
+    const char *q = p;
+    if (начинается(p, "«")) {
+      const char *e = strstr(p, "»"); char *внутри, *стало = NULL;
+      q = e ? e + strlen("»") : p + strlen(p);
+      внутри = копия(p + strlen("«"), (size_t)((e ? e : q) - p) - strlen("«"));
+      if (strcmp(пред, "ruleIs") == 0 || strcmp(пред, "reducedBy") == 0) стало = (char *)ключ_записи2("rule", внутри);
+      else if (strcmp(пред, "primitive") == 0) стало = (char *)ключ_записи2("primitive", внутри);
+      else if (strcmp(пред, "lawOf") == 0 || strcmp(пред, "lawIs") == 0) стало = правило_из_второй(внутри);
+      добавить(&r, e ? fmt("«%s»", стало ? стало : внутри) : копия(p, (size_t)(q - p)));
+      пред = ""; p = q; continue;
+    }
+    if (*p == '"') { q = конец_литерала2(p); добавить(&r, копия(p, (size_t)(q - p))); пред = ""; p = q; continue; }
+    if (начинается(p, "⟨")) {
+      const char *e = конец_уголков2(p);
+      добавить(&r, fmt("⟨%s⟩", формула_из_второй(копия(p + strlen("⟨"), (size_t)(e - p) - strlen("⟨")), язык)));
+      p = *e ? e + strlen("⟩") : e; пред = ""; continue;
+    }
+    if (*p == ' ' || *p == '\t') { добавить(&r, копия(p, 1)); p++; continue; }
+    if (граница_записи2(p)) { добавить(&r, копия(p, 1)); пред = ""; p++; continue; }
+    while (!граница_записи2(q)) q++;
+    { char *w = копия(p, (size_t)(q - p)); const char *было = ключ_записи2("word", w); char *правило = NULL;
+      if (!было) правило = правило_из_второй(w);
+      добавить(&r, было ? (char *)было : правило ? правило : w); пред = w; p = q; }
+  }
+  return соединить(r, "");
+}
+/* Запись второй версии — в первую; запись первой версии отдаётся как есть.
+   Блок раскрытия (строки «| …») — текст исходника, он не переводится. */
+static char *запись_первой_версии(const char *запись, const char *исходник) {
+  Сп строки, r = ПУСТО; const char *язык; int i, сырое = 0;
+  if (!начинается(запись, "proof record 2\n")) return (char *)запись;
+  язык = язык_исходника(разделить(исходник, "\n"));
+  строки = разделить(запись, "\n");
+  for (i = 0; i < строки.n; i++) {
+    char *l = строки.e[i];
+    if (сырое) {
+      if (strcmp(l, "theEnd expansionOf") == 0) { сырое = 0; добавить(&r, (char *)"конец раскрытия"); }
+      else добавить(&r, l);
+      continue;
+    }
+    if (начинается(l, "expansion lineCount ")) сырое = 1;
+    добавить(&r, строка_из_второй(l, язык));
+  }
+  return соединить(r, "\n");
+}
+
 static int добавить_пару(Сп *набор_исх, Сп *набор_зап, const char *путь_исх, const char *путь_зап) {
   char *исх = прочитать_файл(путь_исх), *зап;
   if (!исх) { fprintf(stderr, "исходник зависимости не прочитан: %s\n", путь_исх); return 2; }
   зап = прочитать_файл(путь_зап);
   if (!зап) { fprintf(stderr, "запись зависимости не прочитана: %s\n", путь_зап); return 2; }
-  добавить(набор_исх, исх); добавить(набор_зап, зап);
+  добавить(набор_исх, исх); добавить(набор_зап, запись_первой_версии(зап, исх));
   return 0;
 }
 
@@ -16095,11 +16398,11 @@ static int добавить_каталог(Сп *набор_исх, Сп *наб
     путь_зап = fmt("%s/%s", кат, e->d_name);
     зап = прочитать_файл(путь_зап);
     if (!зап) { fprintf(stderr, "запись набора не прочитана: %s\n", путь_зап); closedir(dir); return 2; }
-    путь_исх = хвост_после(часть(разделить(зап, "\n"), 2), "исходник ");
+    путь_исх = хвост_после(часть(разделить(зап, "\n"), 2), начинается(зап, "proof record 2\n") ? "sourceFile " : "исходник ");
     if (!*путь_исх) { fprintf(stderr, "у записи набора нет поля «исходник»: %s\n", путь_зап); closedir(dir); return 2; }
     исх = прочитать_файл(путь_исх);
     if (!исх) { fprintf(stderr, "исходник записи набора не прочитан: %s (из %s)\n", путь_исх, путь_зап); closedir(dir); return 2; }
-    добавить(набор_исх, исх); добавить(набор_зап, зап);
+    добавить(набор_исх, исх); добавить(набор_зап, запись_первой_версии(зап, исх));
   }
   closedir(dir);
   return 0;
@@ -16451,6 +16754,7 @@ int main(int argc, char **argv) {
   if (!исходник) { fprintf(stderr, "исходник не прочитан: %s\n", доводы[0]); return 2; }
   запись = прочитать_файл(доводы[1]);
   if (!запись) { fprintf(stderr, "запись не прочитана: %s\n", доводы[1]); return 2; }
+  запись = запись_первой_версии(запись, исходник);
   s = сверить(исходник, запись, доводы[0], ждём, набор_исх, набор_зап);
   if (поимённо) for (i = 0; i < s.по_утверждениям.n; i++) printf("%s\n", s.по_утверждениям.e[i]);
   if (s.беды.n) { printf("НЕ СОШЛОСЬ: %s\n", соединить(s.беды, "; ")); return 1; }

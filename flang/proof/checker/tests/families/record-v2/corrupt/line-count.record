@@ -1,0 +1,29 @@
+proof record 2
+sourceFile flang/proof/examples/corpus-natural.flang
+lineCount 112
+charCount 291
+fingerprint 687532112 466580279
+kernel 2
+claimCount 1
+fingerprint256 cda6f3cc0df00a2212003fd3fef15cface586179f4b55fdf6ccb584f159e7998
+totalityCount 1
+assertion «сумма пары неотрицательна» ofFunction «Сумма пары» line 6
+  kindIs postcondition
+  verdict proved
+  theoremOf noIs
+  ruleIs «nonnegative-by-construction»
+  via declarationOf yesIs
+    inference goal ⟨result ≥ 0⟩
+    inference 1 Nonneg3 ⟨первое ≥ 0⟩ line 4
+    inference 2 Nonneg3 ⟨второе ≥ 0⟩ line 4
+    inference 3 Nonneg5 ⟨( первое + второе ) ≥ 0⟩ outOf 1 2
+    inference 4 Unfold2 ⟨result ≥ 0⟩ outOf 3 line 11
+    inference theEnd
+theEnd claimOf
+
+totality «Сумма пары» line 3
+  kindIs composition
+  calls primitive «opAdd»
+  selfCallOf noIs
+  theEnd totalityOf
+theEnd recordOf

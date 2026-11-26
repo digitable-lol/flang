@@ -1,0 +1,49 @@
+proof record 2
+sourceFile flang/proof/examples/traffic-light.flang
+lineCount 40
+charCount 992
+fingerprint 232426541 310680752
+kernel 2
+claimCount 1
+fingerprint256 b34b67b8cfc804dcc5888b20d54ad209929eac77f56001bf1efe94851baf09c1
+totalityCount 1
+assertion «штраф неотрицателен» ofFunction «Штраф» line 11
+  kindIs postcondition
+  for all «свет» line 11
+  verdict proved
+  theoremIs «штраф неотрицателен» line 29
+  givenIs «свет» line 30
+  goal line 31
+  inductionIs via «свет» line 32
+  caseIs line 33 stepCount 1
+    proofStep 1 line 34 closing via exampleOf «на красный дороже всего» exampleIs line 12
+  caseIs line 35 stepCount 1
+    proofStep 1 line 36 closing via exampleOf «на жёлтый дешевле» exampleIs line 15
+  caseIs line 37 stepCount 1
+    proofStep 1 line 38 closing via exampleOf «на зелёный не штрафуют» exampleIs line 18
+  hence proved yesIs
+  principle typeIs «Светофор» via «свет» carrierIs algebra basis 3 proofStep 0
+  declaration sum «Светофор» line 3 variants «Красный» 0 «Жёлтый» 0 «Зелёный» 0
+  premise «Красный» kindIs base variantIs «Красный» verdict proved closedBy term stepCount 1 ruleIs «»
+    move goal
+    move 1 unfold ⟨«Штраф» of (variant «Красный»)⟩ line 23 ⟨500⟩
+    move 2 lawIs «литерал неотрицателен»
+    move theEnd
+  premise «Жёлтый» kindIs base variantIs «Жёлтый» verdict proved closedBy term stepCount 1 ruleIs «»
+    move goal
+    move 1 unfold ⟨«Штраф» of (variant «Жёлтый»)⟩ line 25 ⟨100⟩
+    move 2 lawIs «литерал неотрицателен»
+    move theEnd
+  premise «Зелёный» kindIs base variantIs «Зелёный» verdict proved closedBy term stepCount 1 ruleIs «»
+    move goal
+    move 1 unfold ⟨«Штраф» of (variant «Зелёный»)⟩ line 27 ⟨0⟩
+    move 2 lawIs «литерал неотрицателен»
+    move theEnd
+theEnd claimOf
+
+totality «Штраф» line 8
+  kindIs composition
+  calls primitive «match»
+  selfCallOf noIs
+  theEnd totalityOf
+theEnd recordOf

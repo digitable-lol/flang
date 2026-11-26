@@ -333,9 +333,9 @@ flang/proof/probes/syllogism/sentences/reasoning-check.flang прямо пере
   пусть plural равно (((shape.«pattern») равен "all") или ((shape.«pattern») равен "some"))
   пусть subjkind равно (если (shape.«pattern») равен "one" то "имя" иначе "понятие")
   пусть predkind равно (если (parted.«dashed») то "понятие" иначе "свойство")
-  пусть head равно («Placed» от nth и (parted.«subject») и subjkind и plural и (shape.«opens»))
+  пусть «head» равно («Placed» от nth и (parted.«subject») и subjkind и plural и (shape.«opens»))
   пусть said равно («Placed» от nth и (parted.«predicate») и predkind и plural и нет)
-  отфильтровать [head, said] где place → не (пусто (place.«form»))
+  отфильтровать [«head», said] где place → не (пусто (place.«form»))
 
 тотальная функция «Places added»
   принимает got: список «Place», phrase: «Phrase»

@@ -620,8 +620,8 @@
   пример «Repeats go»
     дано sorted равно [1, 1, 2, 3, 3]
     ожидается [1, 2, 3]
-  (свёртка sorted начиная с пустой список как kept и number → (если (не (пусто kept)) и притом ((элемент (длина kept) в
-      kept) равен number) то kept иначе добавить number к kept))
+  (свёртка sorted начиная с пустой список как kept и «number» → (если (не (пусто kept)) и притом
+      ((элемент (длина kept) в kept) равен «number») то kept иначе добавить «number» к kept))
 
 тотальная функция «Span edges»
   принимает spans: список «Span»
@@ -1070,7 +1070,7 @@
   пример «Wrapped by twelve»
     дано numbers равно [1, 2]
     ожидается "    1, 2"
-  (соединить (отобразить («Grouped» от (отобразить numbers как number → к строке number) и 12) как group → соединить
+  (соединить (отобразить («Grouped» от (отобразить numbers как «number» → к строке «number») и 12) как group → соединить
       ["    ", (соединить group по ", ")] по "") по ",\n")
 
 тотальная функция «Code page function»

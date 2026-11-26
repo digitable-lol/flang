@@ -566,14 +566,14 @@
   соединить (отобразить rows как row → соединить ["[", (к строке (row.«number»)), "]"] по "") по ", "
 
 тотальная функция «Refusal»
-  принимает number: число, reason: строка
+  принимает «number»: число, reason: строка
   возвращает «Argument»
   пример «A conclusion that is not judged keeps its reason and no program»
-    дано number равно 4
+    дано «number» равно 4
     дано reason равно "посылка [2] не прочитана: вывод не судится"
     ожидается (запись «Argument» с «number» равным 4 и «kind» равным "refused" и «text» равным ""
         и «program» равным "" и «reason» равным "посылка [2] не прочитана: вывод не судится")
-  (запись «Argument» с «number» равным number и «kind» равным "refused" и «text» равным "" и «program» равным ""
+  (запись «Argument» с «number» равным «number» и «kind» равным "refused" и «text» равным "" и «program» равным ""
       и «reason» равным reason)
 
 тотальная функция «First reason»

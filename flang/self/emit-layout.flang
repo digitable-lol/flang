@@ -1704,9 +1704,9 @@
   соединить ["\"", text, "\""] по ""
 
 тотальная функция «C sliced step»
-  принимает acc: «C split», word: «C item», room: число, tail: строка
+  принимает acc: «C split», word: «C item», room: число, «tail»: строка
   возвращает «C split»
-  пусть extra равно (если (word.«last») то (длина tail) иначе 0)
+  пусть extra равно (если (word.«last») то (длина «tail») иначе 0)
   пусть need равно ((длина (acc.«cur»)) плюс (длина (word.«text»))) плюс (2 плюс extra)
   пусть breaks равно (не (пусто (acc.«cur»))) и притом (need больше (acc.«limit»))
   пусть pieces равно (добавить («C quoted» от (acc.«cur»)) к (acc.«pieces»))
@@ -1716,18 +1716,18 @@
     иначе запись «C split» с «pieces» равным (acc.«pieces») и «cur» равным longer и «limit» равным (acc.«limit»)
 
 тотальная функция «C sliced string»
-  принимает literal: строка, room: число, rest: число, tail: строка
+  принимает literal: строка, room: число, rest: число, «tail»: строка
   возвращает список строки
   пример «A long literal breaks after a space»
     дано literal равно "\"aaa bbb ccc\""
     дано room равно 10
     дано rest равно 10
-    дано tail равно ");"
+    дано «tail» равно ");"
     ожидается ["\"aaa bbb \"", "\"ccc\""]
   пусть body равно («Piece» от literal и 2 и ((длина literal) минус 1))
   пусть words равно («C flagged» от («C words of» от body))
   пусть start равно (запись «C split» с «pieces» равным пустой список и «cur» равным "" и «limit» равным room)
-  пусть sliced равно (свёртка words начиная с start как acc и word → «C sliced step» от acc и word и rest и tail)
+  пусть sliced равно (свёртка words начиная с start как acc и word → «C sliced step» от acc и word и rest и «tail»)
   добавить («C quoted» от (sliced.«cur»)) к (sliced.«pieces»)
 
 тотальная функция «C is literal»
@@ -1764,9 +1764,9 @@
   «C pack break» от acc и (соединить [(acc.«cur»), («C gap» от acc), piece] по "")
 
 тотальная функция «C pack step»
-  принимает acc: «C pack», entry: «C item», tail: строка
+  принимает acc: «C pack», entry: «C item», «tail»: строка
   возвращает «C pack»
-  пусть suffix равно (если (entry.«last») то tail иначе ",")
+  пусть suffix равно (если (entry.«last») то «tail» иначе ",")
   пусть bare равно (entry.«text»)
   пусть size равно ((длина bare) плюс (длина suffix))
   пусть over равно (не (acc.«fresh»)) и притом (((длина (acc.«cur»)) плюс (1 плюс size)) больше («C width»))
@@ -1809,18 +1809,18 @@
   «First of» от («Reversed» от items)
 
 тотальная функция «C pack»
-  принимает head: строка, args: список строки, tail: строка, col: число
+  принимает «head»: строка, args: список строки, «tail»: строка, col: число
   возвращает список строки
   пример «Arguments fill the line and continue under the parenthesis»
-    дано head равно "fl_status long_function_name_for_test("
+    дано «head» равно "fl_status long_function_name_for_test("
     дано args равно ["fl_ctx *ctx", "fl_value first", "fl_value second", "fl_value *result"]
-    дано tail равно ") {"
+    дано «tail» равно ") {"
     дано col равно 38
     ожидается ["fl_status long_function_name_for_test(fl_ctx *ctx, fl_value first,",
       "                                      fl_value second, fl_value *result) {"]
-  пусть start равно («C pack made» от (пустой список) и head и да и col)
-  пусть packed равно (свёртка («C flagged» от args) начиная с start как a и e → «C pack step» от a и e и tail)
-  пусть closed равно (если пусто args то (соединить head с tail) иначе (packed.«cur»))
+  пусть start равно («C pack made» от (пустой список) и «head» и да и col)
+  пусть packed равно (свёртка («C flagged» от args) начиная с start как a и e → «C pack step» от a и e и «tail»)
+  пусть closed равно (если пусто args то (соединить «head» с «tail») иначе (packed.«cur»))
   добавить closed к (packed.«done»)
 
 тотальная функция «C indent»
@@ -1923,9 +1923,9 @@
     дано line равно "  /* виток цикла — тоже шаг */"
     ожидается нет
   пусть text равно («Without leading spaces» от line)
-  пусть heads равно (отфильтровать ["/* постусловие «", "/* требует «"] где head → text начинается с head)
-  пусть head равно («First of» от heads)
-  пусть name равно («Piece» от text и ((длина head) плюс 1) и ((длина text) минус 4))
+  пусть heads равно (отфильтровать ["/* постусловие «", "/* требует «"] где «head» → text начинается с «head»)
+  пусть «head» равно («First of» от heads)
+  пусть name равно («Piece» от text и ((длина «head») плюс 1) и ((длина text) минус 4))
   пусть closes равно («Ends with any» от text и ["» */"]) и притом (не (name содержит "»"))
   (не (пусто heads)) и притом closes
 
@@ -2030,22 +2030,22 @@
   если allowed то («C first list» от fitting) иначе пустой список
 
 тотальная функция «C call forms»
-  принимает lead: строка, call: строка, tail: строка, indent: число
+  принимает lead: строка, call: строка, «tail»: строка, indent: число
   возвращает список строки
   пример «Arguments continue under the parenthesis»
     дано lead равно "  return "
     дано call равно "fl_fail(ctx, error, FL_CODE_TYPE, \"функция «%s» принимает %lu аргум., получено %lu\")"
-    дано tail равно ";"
+    дано «tail» равно ";"
     дано indent равно 2
     ожидается ["  return fl_fail(ctx, error, FL_CODE_TYPE,",
       "                 \"функция «%s» принимает %lu аргум., получено %lu\");"]
   пусть scan равно («C scan of» от call)
-  пусть head равно (соединить lead с («Piece» от call и 1 и («C open of» от scan)))
+  пусть «head» равно (соединить lead с («Piece» от call и 1 и («C open of» от scan)))
   пусть args равно («C args» от call)
-  пусть ends равно (соединить ")" с tail)
+  пусть ends равно (соединить ")" с «tail»)
   пусть below равно (indent плюс 4)
-  пусть aligned равно («C pack» от head и args и ends и ((длина lead) плюс («C open of» от scan)))
-  пусть under равно (приписать head к («C pack» от («C spaces» от below) и args и ends и below))
+  пусть aligned равно («C pack» от «head» и args и ends и ((длина lead) плюс («C open of» от scan)))
+  пусть under равно (приписать «head» к («C pack» от («C spaces» от below) и args и ends и below))
   пусть whole равно ((«C open of» от scan) больше 0) и притом ((«C close of» от scan) равен (длина call))
   «C first fitting» от whole и [aligned, under]
 
@@ -2082,15 +2082,15 @@
     ожидается ["fl_status rule_list_slovo(fl_ctx *ctx, fl_value trebovanie, fl_value *result,",
       "                          fl_error *error) {"]
   пусть scan равно («C scan of» от line)
-  пусть head равно («Piece» от line и 1 и («C open of» от scan))
-  пусть parts равно (разделить head по "fl_status ")
+  пусть «head» равно («Piece» от line и 1 и («C open of» от scan))
+  пусть parts равно (разделить «head» по "fl_status ")
   пусть front равно («First of» от parts)
   пусть name равно («C last of» от parts)
   пусть plain равно («C name only» от («Piece» от name и 1 и ((длина name) минус 1)))
   пусть kinds равно (["", "static ", "const ", "static const "] содержит front) и притом ((длина parts) равен 2)
   пусть ends равно («Piece» от line и («C close of» от scan) и (длина line))
   пусть args равно («C args» от line)
-  пусть aligned равно («C pack» от head и args и ends и (длина head))
+  пусть aligned равно («C pack» от «head» и args и ends и (длина «head»))
   пусть alone равно (приписать (соединить front с "fl_status") к («C pack» от name и args и ends и (длина name)))
   пусть shorter равно (((длина alone) плюс 1) меньше (длина aligned)) и притом («C fits» от alone)
   пусть closes равно («C signature ends» от line и («C close of» от scan))
@@ -2107,14 +2107,14 @@
       "                                          {.string = {\"короче \", 13, 7}}};"]
   пусть parts равно (разделить line по " = {FL_STRING, ")
   пусть front равно («First of» от parts)
-  пусть head равно (соединить front с " = {")
+  пусть «head» равно (соединить front с " = {")
   пусть body равно («C last of» от parts)
   пусть name равно («Piece» от front и 23 и (длина front))
   пусть kind равно (line начинается с "static const fl_value ") и притом ((длина parts) равен 2)
   пусть value равно (body начинается с "{.string = {") и притом («Ends with any» от body и ["}}};"])
-  пусть beside равно [(соединить head с "FL_STRING,"), (соединить («C spaces» от (длина head)) с body)]
-  пусть under равно [head, (соединить "    FL_STRING, " с body)]
-  пусть apart равно [head, "    FL_STRING,", (соединить "    " с body)]
+  пусть beside равно [(соединить «head» с "FL_STRING,"), (соединить («C spaces» от (длина «head»)) с body)]
+  пусть under равно [«head», (соединить "    FL_STRING, " с body)]
+  пусть apart равно [«head», "    FL_STRING,", (соединить "    " с body)]
   «C first fitting» от (kind и притом value и притом («C name only» от name)) и [beside, under, apart]
 
 тотальная функция «C assignment shape»

@@ -331,7 +331,7 @@
   пример «A sum»
     дано numbers равно [1, 2, 3]
     ожидается 6
-  свёртка numbers начиная с 0 как total и each → total плюс each
+  свёртка numbers начиная с 0 как «total» и each → «total» плюс each
 
 тотальная функция «Map line»
   принимает mask: строка, rows: список «Row», proved: число
@@ -450,9 +450,9 @@
     дано chunk равно "/r/a.record\t1\t1\nНЕ СОШЛОСЬ\n"
     ожидается запись «Judgement» с «record» равным "/r/a.record" и «code» равным 1 и «printed code» равным 1 и «said» равным "НЕ СОШЛОСЬ\n" и «text» равным ""
   пусть halves равно (разделить chunk по "\n\u001e text\n")
-  пусть head равно (разделить («Cell» от 1 и halves) по "\n")
-  пусть cells равно (разделить («Cell» от 1 и head) по "\t")
-  запись «Judgement» с «record» равным («Cell» от 1 и cells) и «code» равным («Count» от («Cell» от 2 и cells)) и «printed code» равным («Count» от («Cell» от 3 и cells)) и «said» равным (соединить («Without first» от head) по "\n") и «text» равным (соединить («Without first» от halves) по "\n\u001e text\n")
+  пусть «head» равно (разделить («Cell» от 1 и halves) по "\n")
+  пусть cells равно (разделить («Cell» от 1 и «head») по "\t")
+  запись «Judgement» с «record» равным («Cell» от 1 и cells) и «code» равным («Count» от («Cell» от 2 и cells)) и «printed code» равным («Count» от («Cell» от 3 и cells)) и «said» равным (соединить («Without first» от «head») по "\n") и «text» равным (соединить («Without first» от halves) по "\n\u001e text\n")
 
 тотальная функция «Ledger sum»
   принимает path: строка, ledger: строка
@@ -463,8 +463,8 @@
     ожидается "22"
   пусть parts равно (разделить (соединить ["\n", ledger, "\n"] по "") по (соединить ["\t", path, "\n"] по ""))
   пусть before равно («Cell» от 1 и parts)
-  пусть tail равно (если (длина before) больше 80 то (подстрока before с ((длина before) минус 79) по (длина before)) иначе before)
-  пусть lines равно (разделить tail по "\n")
+  пусть «tail» равно (если (длина before) больше 80 то (подстрока before с ((длина before) минус 79) по (длина before)) иначе before)
+  пусть lines равно (разделить «tail» по "\n")
   если (длина parts) меньше 2 то "" иначе («Cell» от (длина lines) и lines)
 
 тотальная функция «Under root»

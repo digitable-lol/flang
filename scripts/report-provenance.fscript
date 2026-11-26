@@ -38,7 +38,7 @@
   пример «Octets of a kept Cyrillic prefix»
     дано kept равно "де"
     ожидается 4
-  свёртка (разложить kept на символы) начиная с 0 как total и sign → total плюс («Octets» от sign)
+  свёртка (разложить kept на символы) начиная с 0 как «total» и sign → «total» плюс («Octets» от sign)
 
 тотальная функция «Octets»
   принимает sign: строка

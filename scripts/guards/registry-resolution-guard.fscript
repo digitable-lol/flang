@@ -114,8 +114,8 @@
     дано items равно [1, 2]
     дано count равно 0
     ожидается пустой список
-  пусть tail равно («Dropped» от («Backwards» от items) и ((длина items) минус count))
-  «Backwards» от tail
+  пусть «tail» равно («Dropped» от («Backwards» от items) и ((длина items) минус count))
+  «Backwards» от «tail»
 
 тотальная функция «First of»
   принимает texts: список строки
@@ -493,7 +493,7 @@
   пример «Сумма трёх»
     дано numbers равно [1, 2, 3]
     ожидается 6
-  свёртка numbers начиная с 0 как total и each → total плюс each
+  свёртка numbers начиная с 0 как «total» и each → «total» плюс each
 
 тотальная функция «Numbers»
   принимает ledger: строка, probes: список «Case»

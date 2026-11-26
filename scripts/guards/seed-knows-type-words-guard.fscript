@@ -557,11 +557,11 @@
     дано found равно ""
     ожидается (запись «Reading» с «path» равным "./a.flang" и «block» равным "function" и «noted» равным нет и
         «words» равным 0 и «seen» равным "|" и «strange» равным пустой список)
-  пусть tail равно («After first» от found и ":")
-  если tail равен ""
+  пусть «tail» равно («After first» от found и ":")
+  если «tail» равен ""
     то reading
-    иначе «Content step» от («Fresh» от reading и («First piece» от found и ":")) и marks и («First piece» от tail и
-        ":") и («After first» от tail и ":")
+    иначе «Content step» от («Fresh» от reading и («First piece» от found и ":")) и marks и («First piece» от «tail» и
+        ":") и («After first» от «tail» и ":")
 
 тотальная функция «Shown path»
   принимает path: строка

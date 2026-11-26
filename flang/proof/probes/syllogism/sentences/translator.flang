@@ -917,12 +917,12 @@
   запись «Given» с «conditional» равным да и «cause» равным (запись «Literal» с «who» равным who и «what» равным cause и «holds» равным да) и «effect» равным (запись «Literal» с «who» равным who и «what» равным effect и «holds» равным holds)
 
 тотальная функция «Witness of»
-  принимает number: число
+  принимает «number»: число
   возвращает строка
   пример «A particular premise names its own individual»
-    дано number равно 2
+    дано «number» равно 2
     ожидается "предмет посылки 2"
-  соединить ["предмет посылки ", (к строке number)] по ""
+  соединить ["предмет посылки ", (к строке «number»)] по ""
 
 тотальная функция «Conclusion of»
   принимает sentences: список «Sentence»

@@ -161,7 +161,8 @@
     дано line равно "тотальная функция «Ф два»"
     дано heads равно ["функция «Ф»", "тотальная функция «Ф»"]
     ожидается нет
-  не (пусто (отфильтровать heads где head → (line равен head) или (line начинается с (соединить [head, " "] по ""))))
+  не (пусто (отфильтровать heads где «head» → (line равен «head») или
+    (line начинается с (соединить [«head», " "] по ""))))
 
 тотальная функция «Function heads»
   принимает name: строка
@@ -305,8 +306,8 @@
       и «returns» равным "признак" и «requires» равным (пустой список) и «ensures» равным 1
       и «given» равным (пустой список)
       и «block» равным "функция «Ф»\n  принимает а: признак\n  возвращает признак\n  обеспечивает «к» да\n  а")
-  пусть head равно («First line» от (соединить block по "\n"))
-  пусть exact равно не (пусто (отфильтровать («Function heads» от name) где h → head равен h))
+  пусть «head» равно («First line» от (соединить block по "\n"))
+  пусть exact равно не (пусто (отфильтровать («Function heads» от name) где h → «head» равен h))
   (запись «Shape» с «found» равным (не (пусто block)) и «generic» равным ((не (пусто block)) и притом (не exact))
     и «name» равным («Without guillemets» от name)
     и «parameters» равным («Parameters» от («After» от "  принимает " и («Beginning with» от "  принимает " и block)))
@@ -341,14 +342,14 @@
       и «fields» равным (пустой список))]
   пусть block равно («Block named» от blocks и [(соединить ["тип ", written] по ""),
     (соединить ["объект ", written] по "")])
-  пусть head равно («First line» от (соединить block по "\n"))
+  пусть «head» равно («First line» от (соединить block по "\n"))
   пусть inner равно (отфильтровать block где line → line начинается с "  ")
   «Chosen» от [
-    («When» от (head равен (соединить ["тип ", written] по "")) и (запись «Declaration» с «kind» равным "variant"
+    («When» от («head» равен (соединить ["тип ", written] по "")) и (запись «Declaration» с «kind» равным "variant"
       и «name» равным written
       и «cases» равным (отобразить (отфильтровать inner где line → line начинается с "  вариант ")
         как line → «Case of» от line))),
-    («When» от (head равен (соединить ["объект ", written] по "")) и (запись «Declaration» с «kind» равным "record"
+    («When» от («head» равен (соединить ["объект ", written] по "")) и (запись «Declaration» с «kind» равным "record"
       и «name» равным written
       и «cases» равным [запись «Case» с «name» равным "" и «fields» равным («Parameters» от
         (соединить (отобразить inner как line → «After» от "  " и line) по ", "))]))] и (запись «Declaration» с
@@ -479,11 +480,11 @@
   пусть pairs равно (свёртка (alternative.«fields») начиная с (пустой список) как made
     и member → добавить (соединить [(member.«name»), " равным ",
     («Wrapped if needed» от (элемент ((длина made) плюс 1) в values))] по "") к made)
-  пусть head равно (если (declaration.«kind») равен "record" то (соединить ["запись ",
+  пусть «head» равно (если (declaration.«kind») равен "record" то (соединить ["запись ",
     (declaration.«name»)] по "") иначе (соединить ["вариант ", (alternative.«name»)] по ""))
   если пусто pairs
-    то head
-    иначе соединить [head, " с ", (соединить pairs по " и ")] по ""
+    то «head»
+    иначе соединить [«head», " с ", (соединить pairs по " и ")] по ""
 
 тотальная функция «Built»
   принимает declaration: «Declaration», fields: список список «Domain», cap: число
@@ -507,8 +508,8 @@
     (отобразить numbered как domain → domain.«values»)) и cap)
     и «complete» равным ((не ((declaration.«kind») равен "")) и притом (пусто (отфильтровать numbered где domain
     → не (domain.«complete»)))) и «cut» равным ((не (пусто (отфильтровать numbered
-    где domain → domain.«cut»))) или ((свёртка numbered начиная с 0 как total
-    и domain → total плюс (длина (domain.«values»))) больше cap)))
+    где domain → domain.«cut»))) или ((свёртка numbered начиная с 0 как «total»
+    и domain → «total» плюс (длина (domain.«values»))) больше cap)))
 
 тотальная функция «Leaf domain»
   принимает blocks: список список строки, written: строка, cap: число
@@ -642,15 +643,15 @@
     и domain → добавить (запись «Parameter» с «name» равным ((элемент
       ((длина made) плюс 1) в (shape.«parameters»)).«name») и «type» равным (если пусто (domain.«values») то
       ((элемент ((длина made) плюс 1) в (shape.«parameters»)).«type») иначе "")) к made)
-  пусть empty равно (отфильтровать labelled где x → не (пусто (x.«type»)))
-  пусть missing равно (свёртка empty начиная с (запись «Parameter» с «name» равным ""
+  пусть «empty» равно (отфильтровать labelled где x → не (пусто (x.«type»)))
+  пусть missing равно (свёртка «empty» начиная с (запись «Parameter» с «name» равным ""
     и «type» равным "") как earliest и one →
     если пусто (earliest.«name») то one иначе earliest)
   пусть problem равно («Chosen» от [(«When» от (не (shape.«found»)) и (соединить ["функции ",
     («In guillemets» от (shape.«name»)), " в файле нет"] по "")),
     («When» от (shape.«generic») и (соединить [(«In guillemets» от (shape.«name»)),
       " — обобщённая функция: таблица по параметру типа не строится"] по "")),
-    («When» от (не (пусто empty)) и (соединить ["вход «", («Without guillemets» от (missing.«name»)),
+    («When» от (не (пусто «empty»)) и (соединить ["вход «", («Without guillemets» от (missing.«name»)),
       "» нечем заполнить: тип ", (missing.«type»), " объявлен не в этом файле, а примеров с ним нет"] по "")),
     («When» от (size больше limit) и (соединить ["строк было бы ", (к строке size), " при пределе ",
       (к строке limit), "; поднимите предел ключом --limit"] по ""))] и "")
@@ -1061,12 +1062,12 @@
       "\""] по "")
 
 тотальная функция «Json flag»
-  принимает flag: признак
+  принимает «flag»: признак
   возвращает строка
   пример «Truth»
-    дано flag равно да
+    дано «flag» равно да
     ожидается "true"
-  если flag то "true" иначе "false"
+  если «flag» то "true" иначе "false"
 
 тотальная функция «Comma list»
   принимает items: список строки

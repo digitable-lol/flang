@@ -2181,31 +2181,31 @@
     случай любое то f.«reason»
 
 тотальная функция «Totality placed»
-  принимает text: строка, total: признак
+  принимает text: строка, «total»: признак
   возвращает строка
   пример «A total function says so»
     дано text равно "@TOTAL@функция «f»"
-    дано total равно да
+    дано «total» равно да
     ожидается "тотальная функция «f»"
-  соединить (разделить text по "@TOTAL@") по (если total то "тотальная " иначе "")
+  соединить (разделить text по "@TOTAL@") по (если «total» то "тотальная " иначе "")
 
 функция «Function text»
   принимает f: «Function made», functions: список «Function made», unproved: список строки
   возвращает строка
-  пусть total равно не (unproved содержит (f.«name»))
+  пусть «total» равно не (unproved содержит (f.«name»))
   пусть reason равно («Final reason» от f и functions и unproved)
-  пусть remark равно (если total
+  пусть remark равно (если «total»
     то (если f.«recursive» то «Joined» от ["примечание ", «String literal» от (соединить "Завершение: " с reason),
       "\n"] иначе "")
     иначе «Joined» от ["примечание ", «String literal» от (соединить "Без «тотальная»: " с reason), "\n"])
   пусть parts равно (приписать (соединить remark с (f.«text»)) к (f.«helpers»))
-  «Totality placed» от (соединить parts по "\n\n") и total
+  «Totality placed» от (соединить parts по "\n\n") и «total»
 
 функция «Verdict line of»
   принимает f: «Function made», functions: список «Function made», unproved: список строки
   возвращает «Verdict line»
-  пусть total равно не (unproved содержит (f.«name»))
-  (запись «Verdict line» с «name» равным (f.«name») и «total» равным total и
+  пусть «total» равно не (unproved содержит (f.«name»))
+  (запись «Verdict line» с «name» равным (f.«name») и «total» равным «total» и
     «reason» равным («Final reason» от f и functions и unproved) и «line» равным (f.«line»))
 
 функция «Needed helpers»
@@ -2249,10 +2249,10 @@
   пусть needs равно («Needed helpers» от («Flat» от (отобразить part как f → f.«needs»)))
   пусть helpers равно (отобразить needs как n → соединить («Helper lines» от n) по "\n")
   пусть texts равно (отобразить part как f → «Function text» от f и whole и pend)
-  пусть head равно («Joined» от ["модуль «", name, " from Python»\n\nпримечание ",
+  пусть «head» равно («Joined» от ["модуль «", name, " from Python»\n\nпримечание ",
     «String literal» от («Joined» от [said, " Переводчик не доверенный: этот текст судит flang check, ",
     "а с самим Python его сравнивает сверка ответов на наборе входов."])])
-  «Joined» от [соединить (приписать head к («Соединить» от helpers и texts)) по "\n\n", "\n"]
+  «Joined» от [соединить (приписать «head» к («Соединить» от helpers и texts)) по "\n\n", "\n"]
 
 объект «Function unit»
   «name»: строка

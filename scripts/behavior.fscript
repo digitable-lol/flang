@@ -49,17 +49,17 @@
   (свёртка arguments начиная с (запись «Parameter» с «name» равным "" и «type» равным "") как found и word →
     «Chosen» от [(«When» от ((found.«name») равен "taking") и (запись «Parameter» с «name» равным "done"
       и «type» равным word)),
-      («When» от (((found.«name») равен "") и притом (не (пусто (отфильтровать names где flag → flag равен word))))
+      («When» от (((found.«name») равен "") и притом (не (пусто (отфильтровать names где «flag» → «flag» равен word))))
         и (запись «Parameter» с «name» равным "taking" и «type» равным ""))] и found).«type»
 
 тотальная функция «Has flag»
-  принимает arguments: список строки, flag: строка
+  принимает arguments: список строки, «flag»: строка
   возвращает признак
   пример «The flag is there»
     дано arguments равно ["отчёт.flang", "--json"]
-    дано flag равно "--json"
+    дано «flag» равно "--json"
     ожидается да
-  не (пусто (отфильтровать arguments где word → word равен flag))
+  не (пусто (отфильтровать arguments где word → word равен «flag»))
 
 тотальная функция «Positionals»
   принимает arguments: список строки
@@ -71,7 +71,7 @@
     и word →
     «Chosen» от [(«When» от ((kept.«name») равен "skip") и (запись «Parameter» с «name» равным ""
       и «type» равным (kept.«type»))),
-      («When» от (не (пусто (отфильтровать («Valued flags») где flag → flag равен word))) и
+      («When» от (не (пусто (отфильтровать («Valued flags») где «flag» → «flag» равен word))) и
         (запись «Parameter» с «name» равным "skip" и «type» равным (kept.«type»))),
       («When» от (word начинается с "--") и kept)]
       и (запись «Parameter» с «name» равным "" и «type» равным (соединить [(kept.«type»), word, "\n"] по ""))).«type»)
@@ -425,8 +425,8 @@
   пример «A function block is named after the function»
     дано block равно ["функция «Ф»", "  1"]
     ожидается запись «Named block» с «name» равным "Ф" и «lines» равным ["функция «Ф»", "  1"]
-  пусть head равно («First line» от (соединить block по "\n"))
-  запись «Named block» с «name» равным («Function name of» от head) и «lines» равным block
+  пусть «head» равно («First line» от (соединить block по "\n"))
+  запись «Named block» с «name» равным («Function name of» от «head») и «lines» равным block
 
 тотальная функция «Rule changed»
   принимает was: список «Named block», entry: «Named block», blocks: список список строки
@@ -595,7 +595,7 @@
       и (к строке (длина made))) к made))
 
 тотальная функция «Review job»
-  принимает answers: список «Answer», root: строка, place: «Rule place», number: строка
+  принимает answers: список «Answer», root: строка, place: «Rule place», «number»: строка
   возвращает «Job»
   пример «A review job compares the base with the branch»
     дано answers равно [запись «Answer» с «name» равным "mode" и «reply» равным (вариант
@@ -606,7 +606,7 @@
       «Процесс завершён» с код равным 0 и вывод равным "а.flang\n" и ошибки равным "")]
     дано root равно "/srv/дерево"
     дано place равно запись «Rule place» с «path» равным "а.flang" и «name» равным "Ф"
-    дано number равно "0"
+    дано «number» равно "0"
     ожидается запись «Job» с «path» равным "а.flang" и «versions» равным [(запись «Version» с «key» равным "r0-old"
       и «label» равным "а.flang @ gh/dev" и «source» равным "" и «shape» равным (запись «Shape» с «found» равным нет
       и «generic» равным нет и «name» равным "Ф" и «parameters» равным (пустой список) и «returns» равным ""
@@ -626,9 +626,9 @@
   пусть name равно (place.«name»)
   пусть limit равно («Default limit»)
   запись «Job» с «path» равным (place.«path») и «versions» равным [
-    («Version made» от (соединить ["r", number, "-old"] по "") и (соединить [(place.«path»), " @ ",
+    («Version made» от (соединить ["r", «number», "-old"] по "") и (соединить [(place.«path»), " @ ",
       («Review base» от answers)] по "") и older и name и newer и name и path и limit),
-    («Version made» от (соединить ["r", number, "-new"] по "") и (place.«path») и newer и name и older и name и path
+    («Version made» от (соединить ["r", «number», "-new"] по "") и (place.«path») и newer и name и older и name и path
       и limit)]
 
 тип «Kind»

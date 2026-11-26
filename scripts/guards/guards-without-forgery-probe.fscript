@@ -341,13 +341,13 @@
   соединить («Front pieces» от (разделить name по ":")) по ":"
 
 тотальная функция «Pair name»
-  принимает name: строка, tail: строка
+  принимает name: строка, «tail»: строка
   возвращает строка
   пример «The pair of a guard stands at its prefix»
     дано name равно "codes:check"
-    дано tail равно "forgery"
+    дано «tail» равно "forgery"
     ожидается "codes:forgery"
-  соединить [(«Prefix of» от name), ":", tail] по ""
+  соединить [(«Prefix of» от name), ":", «tail»] по ""
 
 тотальная функция «Or corrupt»
   принимает name: строка, marks: строка
@@ -607,8 +607,8 @@
   принимает stands: список «Post»
   возвращает список строки
   пусть told равно (отобразить («Built only» от stands) как stand → («Built line» от stand))
-  пусть head равно ["", "ПРОБА ПОСТРОЕНА, НО НИКТО ЕЁ НЕ ЗОВЁТ — она не срабатывает никогда:", ""]
-  если (длина told) равен 0 то (пустой список) иначе («Joined» от head и told)
+  пусть «head» равно ["", "ПРОБА ПОСТРОЕНА, НО НИКТО ЕЁ НЕ ЗОВЁТ — она не срабатывает никогда:", ""]
+  если (длина told) равен 0 то (пустой список) иначе («Joined» от «head» и told)
 
 тотальная функция «Debt lines»
   принимает stands: список «Post», entries: список «Entry»
@@ -625,8 +625,8 @@
 тотальная функция «Census»
   принимает stands: список «Post», entries: список «Entry»
   возвращает строка
-  пусть head равно («Joined» от («Head lines» от stands) и («Called lines» от stands))
-  пусть middle равно («Joined» от head и («Built lines» от stands))
+  пусть «head» равно («Joined» от («Head lines» от stands) и («Called lines» от stands))
+  пусть middle равно («Joined» от «head» и («Built lines» от stands))
   пусть body равно («Joined» от middle и («Debt lines» от stands и entries))
   соединить («Joined» от body и («Tail lines»)) по "\n"
 

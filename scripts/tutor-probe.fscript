@@ -25,9 +25,9 @@
   символ по коду 27
 
 тотальная функция «Sequence»
-  принимает tail: строка
+  принимает «tail»: строка
   возвращает строка
-  соединить [(«Escape»), "[", tail] по ""
+  соединить [(«Escape»), "[", «tail»] по ""
 
 тотальная функция «Tree»
   принимает answers: список «Answer»
@@ -89,14 +89,14 @@
   длина («Lessons» от answers)
 
 тотальная функция «Numeral»
-  принимает number: число
+  принимает «number»: число
   возвращает строка
-  к строке number
+  к строке «number»
 
 тотальная функция «Lesson question»
-  принимает number: число
+  принимает «number»: число
   возвращает строка
-  соединить ["lesson ", («Numeral» от number)] по ""
+  соединить ["lesson ", («Numeral» от «number»)] по ""
 
 тотальная функция «Without the last»
   принимает lines: список строки
@@ -179,27 +179,27 @@
   соединить (отобразить lines как line → соединить [line, "\n"] по "") по ""
 
 тотальная функция «Answer to»
-  принимает number: число, answers: список «Answer»
+  принимает «number»: число, answers: список «Answer»
   возвращает строка
-  «As text» от («Section» от "впиши" и («Output of» от («Lesson question» от number) и answers))
+  «As text» от («Section» от "впиши" и («Output of» от («Lesson question» от «number») и answers))
 
 тотальная функция «Neighbour»
-  принимает number: число, total: число
+  принимает «number»: число, «total»: число
   возвращает число
   пример «The next lesson»
-    дано number равно 3
-    дано total равно 12
+    дано «number» равно 3
+    дано «total» равно 12
     ожидается 4
   пример «The last lesson takes the first»
-    дано number равно 12
-    дано total равно 12
+    дано «number» равно 12
+    дано «total» равно 12
     ожидается 1
-  если number не меньше total то 1 иначе number плюс 1
+  если «number» не меньше «total» то 1 иначе «number» плюс 1
 
 тотальная функция «Answer file»
-  принимает number: число, answers: список «Answer»
+  принимает «number»: число, answers: список «Answer»
   возвращает строка
-  «Inside» от (соединить ["answer-", («Numeral» от number)] по "") и answers
+  «Inside» от (соединить ["answer-", («Numeral» от «number»)] по "") и answers
 
 тотальная функция «Ending»
   принимает lines: список строки, count: число
@@ -338,14 +338,14 @@
   «Run» от name и "sh" и ["-c", (соединить ["{ sleep 1.5; cat \"$1\"; sleep 0.5; } | env -u NO_COLOR LC_ALL=C.UTF-8 TERM=xterm-256color FLANG=\"$0\" FLANG_TUTOR_STATE=нет FLANG_TMP=\"$3\" ", settings, " timeout -k 2 60 script -qec \"sh \\\"$2\\\" --только 1\" /dev/null"] по ""), («Binary» от answers), («Answer file» от 1 и answers), («Tutor» от answers), («Temporary» от answers)]
 
 тотальная функция «Own question»
-  принимает number: число
+  принимает «number»: число
   возвращает строка
-  соединить ["own ", («Numeral» от number)] по ""
+  соединить ["own ", («Numeral» от «number»)] по ""
 
 тотальная функция «Foreign question»
-  принимает number: число
+  принимает «number»: число
   возвращает строка
-  соединить ["foreign ", («Numeral» от number)] по ""
+  соединить ["foreign ", («Numeral» от «number»)] по ""
 
 тотальная функция «Setup»
   возвращает список «Question»
@@ -490,33 +490,34 @@
 тотальная функция «Whole complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  пусть total равно («Numeral» от («Total» от answers))
+  пусть «total» равно («Numeral» от («Total» от answers))
   «Chosen» от [
     («When» от (не («Passed» от "whole" и answers)) и (приписать (соединить ["целиком: код ",
     («Code» от "whole" и answers),
     ", ждали 0 — проводник не дошёл до конца"] по "") к («Tail» от "whole" и 12 и answers))),
-    («When» от (не («Said» от "whole" и (соединить ["все ", total, " уроков пройдены"] по "") и answers)) и [
-      (соединить ["целиком: код 0, а слов «все ", total, " уроков пройдены» в выводе нет"] по "")])] и (пустой список)
+    («When» от (не («Said» от "whole" и (соединить ["все ", «total», " уроков пройдены"] по "") и answers)) и [
+      (соединить ["целиком: код 0, а слов «все ", «total», " уроков пройдены» в выводе нет"] по "")])] и (пустой список)
 
 тотальная функция «Own complaints»
   принимает lesson: «Lesson», answers: список «Answer»
   возвращает список строки
-  пусть number равно («Numeral» от (lesson.«number»))
+  пусть «number» равно («Numeral» от (lesson.«number»))
   пусть name равно («Own question» от (lesson.«number»))
   «Chosen» от [
-    («When» от (не («Passed» от name и answers)) и (приписать (соединить ["урок ", number,
+    («When» от (не («Passed» от name и answers)) и (приписать (соединить ["урок ", «number»,
     ": свой верный ответ дал код ", («Code» от name и answers), ", ждали 0"] по "") к («Tail» от name и 8 и answers))),
-    («When» от (не («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)) и [
-      (соединить ["урок ", number, ": код 0, а «урок ", number, " пройден» не напечатано"] по "")])] и (пустой список)
+    («When» от (не («Said» от name и (соединить ["урок ", «number», " пройден"] по "") и answers)) и [
+      (соединить ["урок ", «number», ": код 0, а «урок ", «number»,
+        " пройден» не напечатано"] по "")])] и (пустой список)
 
 тотальная функция «Foreign complaints»
   принимает lesson: «Lesson», answers: список «Answer»
   возвращает список строки
-  пусть number равно («Numeral» от (lesson.«number»))
+  пусть «number» равно («Numeral» от (lesson.«number»))
   пусть name равно («Foreign question» от (lesson.«number»))
-  если («Passed» от name и answers) или («Said» от name и (соединить ["урок ", number, " пройден"] по "") и answers)
+  если («Passed» от name и answers) или («Said» от name и (соединить ["урок ", «number», " пройден"] по "") и answers)
     то [
-      (соединить ["урок ", number, ": ПРИНЯЛ ответ урока ",
+      (соединить ["урок ", «number», ": ПРИНЯЛ ответ урока ",
       («Numeral» от («Neighbour» от (lesson.«number») и («Total» от answers))),
       " — судит не компилятор, а вежливость"] по "")]
     иначе пустой список
@@ -561,14 +562,14 @@
 тотальная функция «Place complaints»
   принимает answers: список «Answer»
   возвращает список строки
-  пусть total равно («Numeral» от («Total» от answers))
+  пусть «total» равно («Numeral» от («Total» от answers))
   «Chosen» от [
     («When» от (не («Place is kept» от answers)) и [
     (соединить ["место: после первого урока в ", («Inside» от "place" и answers), " не записана единица"] по "")]),
     («When» от ((не («Passed» от "place rest" и answers)) или (не («Said» от "place rest" и (соединить ["урок 2 из ",
-        total] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ",
+        «total»] по "") и answers))) и (приписать (соединить ["место: продолжение пошло не со второго урока (код ",
         («Code» от "place rest" и answers), ")"] по "") к («Tail» от "place rest" и 8 и answers))),
-    («When» от («Said» от "place rest" и (соединить ["урок 1 из ", total] по "") и answers) и [
+    («When» от («Said» от "place rest" и (соединить ["урок 1 из ", «total»] по "") и answers) и [
       "место: продолжение начало с первого урока заново"])] и (пустой список)
 
 тотальная функция «Language complaints»
@@ -616,7 +617,7 @@
 тотальная функция «Report»
   принимает answers: список «Answer»
   возвращает список список строки
-  пусть total равно («Numeral» от («Total» от answers))
+  пусть «total» равно («Numeral» от («Total» от answers))
   пусть whole равно («Whole complaints» от answers)
   пусть single равно («Lesson complaints» от answers)
   пусть session равно («Session complaints» от answers)
@@ -624,10 +625,10 @@
   пусть place равно («Place complaints» от answers)
   пусть language равно («Language complaints» от answers)
   [whole,
-   («Praise» от (пусто whole) и (соединить ["  зелен  целиком: ", total,
+   («Praise» от (пусто whole) и (соединить ["  зелен  целиком: ", «total»,
      " уроков подряд верными ответами, код 0"] по "")),
    single,
-   («Praise» от ((пусто whole) и притом (пусто single)) и (соединить ["  зелен  поодиночке: каждый из ", total,
+   («Praise» от ((пусто whole) и притом (пусто single)) и (соединить ["  зелен  поодиночке: каждый из ", «total»,
      " уроков проходится своим ответом и отвергает чужой"] по "")),
    session,
    («Praise» от (пусто session) и "  зелен  сеанс: ввод владельца — на каждую строку своя реакция, урок пройден"),

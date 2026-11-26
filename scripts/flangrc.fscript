@@ -73,13 +73,13 @@
   свёртка sources начиная с "" как chosen и source → (если chosen равен "" то source иначе chosen)
 
 тотальная функция «Joined»
-  принимает head: список строки, tail: список строки
+  принимает «head»: список строки, «tail»: список строки
   возвращает список строки
   пример «the second list follows the first»
-    дано head равно ["a"]
-    дано tail равно ["b", "c"]
+    дано «head» равно ["a"]
+    дано «tail» равно ["b", "c"]
     ожидается ["a", "b", "c"]
-  свёртка tail начиная с head как gathered и line → (добавить line к gathered)
+  свёртка «tail» начиная с «head» как gathered и line → (добавить line к gathered)
 
 тотальная функция «By key»
   принимает pairs: список «Пара», key: строка
@@ -149,15 +149,15 @@
   ["max-line-length", "max-conditional-depth"]
 
 тотальная функция «Is whole and positive»
-  принимает number: число
+  принимает «number»: число
   возвращает признак
   пример «one hundred»
-    дано number равно 100
+    дано «number» равно 100
     ожидается да
   пример «a half»
-    дано number равно 0.5
+    дано «number» равно 0.5
     ожидается нет
-  (number больше 0) и притом ((number остаток от 1) равен 0)
+  («number» больше 0) и притом ((«number» остаток от 1) равен 0)
 
 тотальная функция «Is limit»
   принимает value: строка
@@ -178,8 +178,8 @@
     дано value равно "wide"
     ожидается нет
   разбор (к числу или беда value)
-    случай вариант «Разобрано» с значение как number
-      то («Is whole and positive» от number) и притом ((к строке number) равен value)
+    случай вариант «Разобрано» с значение как «number»
+      то («Is whole and positive» от «number») и притом ((к строке «number») равен value)
     случай вариант «Не разобрано» с код как код и сообщение как сообщение
       то нет
 

@@ -399,9 +399,9 @@
   возвращает список строки
   пусть named равно (соединить ["тотальная функция «", (story.«name»), ": в наборе»"] по "")
   пусть takes равно (соединить ["  принимает ", («Named» от (story.«quantity»)), ": число"] по "")
-  пусть head равно («Соединить списки» от ["", named, takes, "  возвращает число"] и («Need in the set» от story))
+  пусть «head» равно («Соединить списки» от ["", named, takes, "  возвращает число"] и («Need in the set» от story))
   пусть goal равно (приписать («Goal in the set» от story) к («Case in the set» от story))
-  «Соединить списки» от («Соединить списки» от head и goal) и («Body in the set» от story и stories)
+  «Соединить списки» от («Соединить списки» от «head» и goal) и («Body in the set» от story и stories)
 
 тотальная функция «Clash function»
   принимает quantity: строка, range: «Range»
@@ -459,7 +459,7 @@
   возвращает число
   пусть counts равно (отобразить («Quantities told» от stories) как quantity → «Claims about» от («About» от
     stories и quantity))
-  свёртка counts начиная с 0 как total и count → total плюс count
+  свёртка counts начиная с 0 как «total» и count → «total» плюс count
 
 тотальная функция «Repeated names»
   принимает stories: список «Story told»
@@ -646,9 +646,9 @@
 тотальная функция «Story holes»
   принимает story: «Story told»
   возвращает список строки
-  пусть head равно (соединить ["[дыра] история ", («Named» от (story.«name»)), " (", (story.«file»), "): "] по "")
-  пусть nocase равно (соединить [head, "нет показанного случая «Тогда при … ответ …»"] по "")
-  пусть nowhy равно (соединить [head, "не сказано зачем — «Чтобы» стоит прочерком"] по "")
+  пусть «head» равно (соединить ["[дыра] история ", («Named» от (story.«name»)), " (", (story.«file»), "): "] по "")
+  пусть nocase равно (соединить [«head», "нет показанного случая «Тогда при … ответ …»"] по "")
+  пусть nowhy равно (соединить [«head», "не сказано зачем — «Чтобы» стоит прочерком"] по "")
   «Applying» от [(«When» от (не (story.«shows»)) и nocase),
     («When» от ((story.«purpose») равен "—") и nowhy)]
 

@@ -287,13 +287,13 @@
   пусть spoken равно (если («First of» от opener) равен "не" то («First of» от («Without the first» от opener)) иначе
       («First of» от opener))
   пусть plural равно ((pattern равен "all") или (pattern равен "some"))
-  пусть head равно («Slot» от subject и (если pattern равен "one" то "имя" иначе "понятие") и plural
+  пусть «head» равно («Slot» от subject и (если pattern равен "one" то "имя" иначе "понятие") и plural
       и ((pattern равен "one") и притом (не marked)))
   пусть loose равно (если pattern равен "none" то "?" иначе "")
   пусть said равно («Slot» от spoken и (если dashed то "понятие" иначе (соединить ["свойство",
       loose] по "")) и plural и нет)
   пусть also равно («Slot» от (если dashed то "" иначе spoken) и (соединить ["понятие", loose] по "") и plural и нет)
-  отфильтровать [head, said, also] где slot → не (пусто (slot.«form»))
+  отфильтровать [«head», said, also] где slot → не (пусто (slot.«form»))
 
 тотальная функция «Settled readings of»
   принимает slot: «Slot»
@@ -1396,7 +1396,7 @@
     дано token равно "говоришь"
     дано tails равно ["ешь", "ишь"]
     ожидается да
-  свёртка tails начиная с нет как found и tail → found или («Ends with» от token и tail)
+  свёртка tails начиная с нет как found и «tail» → found или («Ends with» от token и «tail»)
 
 тотальная функция «Verb types by ending»
   принимает token: строка
@@ -1558,12 +1558,12 @@
     дано who равно "ты"
     ожидается нет
   пусть core равно («Core words» от («Clause words» от (line.«text»)))
-  пусть head равно («Form at» от core и 1)
+  пусть «head» равно («Form at» от core и 1)
   пусть said равно («Form at» от core и 2)
   пусть judged равно (свёртка core начиная с нет как found и token → found или («Evaluation word» от token))
   пусть spoken равно (свёртка («Without the first» от core) начиная с нет как found
-      и token → found или («Forms a sentence» от head и token))
-  ((«Lowered» от head) равен («Lowered» от who)) и притом ((не judged) и притом ((«Is a dash» от said) или spoken))
+      и token → found или («Forms a sentence» от «head» и token))
+  ((«Lowered» от «head») равен («Lowered» от who)) и притом ((не judged) и притом ((«Is a dash» от said) или spoken))
 
 тотальная функция «Ad hominem hints»
   принимает lines: список «Claim line»

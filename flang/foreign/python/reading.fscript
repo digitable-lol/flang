@@ -1213,27 +1213,27 @@
   принимает line: «Line», rest: список «Line», indent: число
   возвращает «Block read»
   пусть tokens равно (line.«tokens»)
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть word равно («First text» от tokens)
   если (line.«indent») не равен indent
     то («Block read of» от [(«Refusal» от "FLANG_PYTHON_INDENT" и
-      "отступ строки не совпадает с отступом блока" и number)] и rest)
+      "отступ строки не совпадает с отступом блока" и «number»)] и rest)
     иначе если («First kind» от tokens) равен "keyword"
       то «Keyword statement» от line и rest и word
-      иначе «Block read of» от [«Simple statement» от tokens и number] и rest
+      иначе «Block read of» от [«Simple statement» от tokens и «number»] и rest
 
 функция «Keyword statement»
   принимает line: «Line», rest: список «Line», word: строка
   возвращает «Block read»
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть tokens равно («After first» от (line.«tokens»))
   разбор word
-    случай "return" то «Block read of» от [«Return statement» от tokens и number] и rest
+    случай "return" то «Block read of» от [«Return statement» от tokens и «number»] и rest
     случай "if" то «If statement» от line и rest
     случай "for" то «For statement» от line и rest
     случай "while" то «While statement» от line и rest
-    случай "pass" то «Block read of» от [«Tree of» от "pass" и пустой список и number и пустой список] и rest
-    случай любое то «Block read of» от [«Keyword refusal» от word и number] и rest
+    случай "pass" то «Block read of» от [«Tree of» от "pass" и пустой список и «number» и пустой список] и rest
+    случай любое то «Block read of» от [«Keyword refusal» от word и «number»] и rest
 
 тотальная функция «Keyword refusal»
   принимает word: строка, line: число
@@ -1351,37 +1351,37 @@
 функция «For statement»
   принимает line: «Line», rest: список «Line»
   возвращает «Block read»
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
   пусть lead равно (cut.«before»)
   пусть name равно («First word» от lead)
   пусть named равно ((«First kind» от lead) равен "name") и притом ((«First text» от
     («After first» от lead)) равен "in")
-  пусть source равно («Whole expression» от («After first» от («After first» от lead)) и number)
+  пусть source равно («Whole expression» от («After first» от («After first» от lead)) и «number»)
   пусть body равно («Body of» от line и (cut.«later») и rest)
-  пусть node равно («Tree of» от "for" и [name] и number и [source, элемент 1 в (body.«nodes»)])
+  пусть node равно («Tree of» от "for" и [name] и «number» и [source, элемент 1 в (body.«nodes»)])
   пусть tuple равно "после for стоит одно имя и in: разбор кортежей (for i, x in …) вне подмножества"
   пусть trailing равно («Next word» от line и (body.«rest»)) равен "else"
   пусть problems равно («Flat» от [(«Problem» от (не
-    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у for нет двоеточия" и number),
-    («Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и tuple и number),
-    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "for … else вне подмножества" и number),
+    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у for нет двоеточия" и «number»),
+    («Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и tuple и «number»),
+    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "for … else вне подмножества" и «number»),
       «First refused» от («Kids of» от node)])
   «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
 
 функция «While statement»
   принимает line: «Line», rest: список «Line»
   возвращает «Block read»
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
-  пусть test равно («Whole expression» от (cut.«before») и number)
+  пусть test равно («Whole expression» от (cut.«before») и «number»)
   пусть body равно («Body of» от line и (cut.«later») и rest)
-  пусть node равно («Tree of» от "while" и пустой список и number и [test, элемент 1 в (body.«nodes»)])
+  пусть node равно («Tree of» от "while" и пустой список и «number» и [test, элемент 1 в (body.«nodes»)])
   пусть trailing равно («Next word» от line и (body.«rest»)) равен "else"
   пусть problems равно («Flat» от [(«Problem» от (не
-    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у while нет двоеточия" и number),
-    («Problem» от (пусто (cut.«before»)) и "FLANG_PYTHON_SYNTAX" и "у while нет условия" и number),
-    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "while … else вне подмножества" и number),
+    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у while нет двоеточия" и «number»),
+    («Problem» от (пусто (cut.«before»)) и "FLANG_PYTHON_SYNTAX" и "у while нет условия" и «number»),
+    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "while … else вне подмножества" и «number»),
       «First refused» от («Kids of» от node)])
   «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
 
@@ -1633,7 +1633,7 @@
 функция «Definition»
   принимает line: «Line», rest: список «Line»
   возвращает «Block read»
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть tokens равно («After first» от (line.«tokens»))
   пусть name равно («First word» от tokens)
   пусть opened равно («First text» от («After first» от tokens)) равен "("
@@ -1641,19 +1641,19 @@
   пусть later равно («After sign» от tokens и ")")
   пусть arrow равно («First text» от later) равен "->"
   пусть cut равно («Split at colon» от (если arrow то «After first» от later иначе later))
-  пусть params равно (отобразить («Comma pieces» от inside) как piece → «Parameter» от piece и number)
-  пусть outcome равно (если arrow то «Type of» от (cut.«before») и number иначе «Leaf» от "type" и "int" и number)
+  пусть params равно (отобразить («Comma pieces» от inside) как piece → «Parameter» от piece и «number»)
+  пусть outcome равно (если arrow то «Type of» от (cut.«before») и «number» иначе «Leaf» от "type" и "int" и «number»)
   пусть body равно («Body of» от line и (cut.«later») и rest)
-  пусть node равно («Tree of» от "def" и [name] и number и [«Tree of» от "params" и пустой список и number и params,
+  пусть node равно («Tree of» от "def" и [name] и «number» и [«Tree of» от "params" и пустой список и «number» и params,
     outcome,
     элемент 1 в (body.«nodes»)])
   пусть stray равно («Joined» от ["после скобок функции «", name, "» ждали двоеточие или -> тип"])
   пусть problems равно («Flat» от [(«Problem» от
-    (не opened) и "FLANG_PYTHON_SYNTAX" и "после def стоит имя и скобка" и number),
-    («Problem» от ((не arrow) и притом (не (пусто (cut.«before»)))) и "FLANG_PYTHON_SYNTAX" и stray и number),
+    (не opened) и "FLANG_PYTHON_SYNTAX" и "после def стоит имя и скобка" и «number»),
+    («Problem» от ((не arrow) и притом (не (пусто (cut.«before»)))) и "FLANG_PYTHON_SYNTAX" и stray и «number»),
     («Problem» от (пусто params) и "FLANG_PYTHON_CONSTRUCT" и
       («Joined» от ["функция без параметров вне подмножества: это постоянная, а не функция; ",
-        "напишите её значение там, где оно нужно"]) и number),
+        "напишите её значение там, где оно нужно"]) и «number»),
     «First refused» от params, «First refused» от [outcome, элемент 1 в (body.«nodes»)]])
   «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
 
@@ -1661,12 +1661,12 @@
   принимает line: «Line», rest: список «Line»
   возвращает «Block read»
   пусть word равно («First text» от (line.«tokens»))
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть lone равно ((«First kind» от (line.«tokens»)) равен "string") и притом (пусто («After first» от
     (line.«tokens»)))
   пусть kept равно (если lone то пустой список иначе [«Top refusal» от line])
   если (line.«indent») не равен 0
-    то «Block read of» от [«Refusal» от "FLANG_PYTHON_INDENT" и "строка верхнего уровня с отступом" и number] и rest
+    то «Block read of» от [«Refusal» от "FLANG_PYTHON_INDENT" и "строка верхнего уровня с отступом" и «number»] и rest
     иначе разбор word
       случай "def" то «Definition» от line и rest
       случай "if" то «Main block» от line и rest
@@ -1705,7 +1705,7 @@
   принимает line: «Line»
   возвращает «Node»
   пусть tokens равно (line.«tokens»)
-  пусть number равно (line.«number»)
+  пусть «number» равно (line.«number»)
   пусть word равно («First text» от tokens)
   пусть shared равно («Joined» от ["имя «", «First word» от tokens,
     "» на верхнем уровне — это состояние модуля; функции подмножества получают всё через параметры"])
@@ -1713,10 +1713,10 @@
     («Option of» от (word равен "@") и "decorator"), («Option of» от ((«Assignment sign» от tokens) не равен "") и
       "shared")] и "other")
   разбор what
-    случай "keyword" то «Keyword refusal» от word и number
-    случай "decorator" то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "декораторы вне подмножества" и number
-    случай "shared" то «Refusal» от "FLANG_PYTHON_GLOBAL" и shared и number
-    случай любое то «Expression statement» от tokens и number
+    случай "keyword" то «Keyword refusal» от word и «number»
+    случай "decorator" то «Refusal» от "FLANG_PYTHON_CONSTRUCT" и "декораторы вне подмножества" и «number»
+    случай "shared" то «Refusal» от "FLANG_PYTHON_GLOBAL" и shared и «number»
+    случай любое то «Expression statement» от tokens и «number»
 
 функция «Top statements»
   принимает lines: список «Line», made: список «Node»

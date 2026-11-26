@@ -239,9 +239,9 @@
     («Formula text» от («Substituted» от (definition.«body») и places)), " (", (definition.«how»), ")"] по "")
 
 тотальная функция «Thesis with»
-  принимает number: строка, form: «Quantified»
+  принимает «number»: строка, form: «Quantified»
   возвращает «Thesis»
-  (запись «Thesis» с «number» равным number и «line» равным 1 и «formula» равным («Form text» от form)
+  (запись «Thesis» с «number» равным «number» и «line» равным 1 и «formula» равным («Form text» от form)
     и «quote» равным "" и «quote line» равным 0 и «terms» равным пустой список)
 
 тотальная функция «One way»

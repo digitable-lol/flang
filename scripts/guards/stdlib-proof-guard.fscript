@@ -611,8 +611,8 @@
   принимает level: «Level», piece: строка, pattern: строка
   возвращает «Level»
   пусть depth равно ((level.«depth») плюс («Brackets of» от piece))
-  пусть length равно ((level.«length») плюс (длина piece))
-  запись «Level» с «depth» равным depth и «length» равным (length плюс (длина pattern)) и «first» равным (если ((level.«first») меньше 0) и притом (depth равен 0) то length иначе (level.«first»))
+  пусть «length» равно ((level.«length») плюс (длина piece))
+  запись «Level» с «depth» равным depth и «length» равным («length» плюс (длина pattern)) и «first» равным (если ((level.«first») меньше 0) и притом (depth равен 0) то «length» иначе (level.«first»))
 
 тотальная функция «First level»
   принимает text: строка, pattern: строка

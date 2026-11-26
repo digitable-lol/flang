@@ -43,13 +43,18 @@ matrix	trace	total
 division	floor_div	total	
 division	remainder	total	
 division	ratio	total	
+digits	digits	total	
+no_annotations	twice	total	
+max_of_two	max_of_two	total	
+palindrome_number	is_palindrome	total	
+sum_loop	sum_to	total	
 counter_class	-	refused	FLANG_PYTHON_CLASS
 global_total	-	refused	FLANG_PYTHON_GLOBAL
 safe_divide	-	refused	FLANG_PYTHON_EXCEPTION
 greet	-	refused	FLANG_PYTHON_IO
-digits_while	-	refused	FLANG_PYTHON_LOOP
+while_without_measure	-	refused	FLANG_PYTHON_LOOP
 collect	-	refused	FLANG_PYTHON_MUTATION
-untyped	-	refused	FLANG_PYTHON_TYPE
+unknown_type	-	refused	FLANG_PYTHON_TYPE
 first_negative	-	refused	FLANG_PYTHON_LOOP
 maybe_none	-	refused	FLANG_PYTHON_RETURN
 uses_math	-	refused	FLANG_PYTHON_IMPORT

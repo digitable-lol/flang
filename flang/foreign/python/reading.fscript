@@ -1231,6 +1231,7 @@
     случай "return" то «Block read of» от [«Return statement» от tokens и number] и rest
     случай "if" то «If statement» от line и rest
     случай "for" то «For statement» от line и rest
+    случай "while" то «While statement» от line и rest
     случай "pass" то «Block read of» от [«Tree of» от "pass" и пустой список и number и пустой список] и rest
     случай любое то «Block read of» от [«Keyword refusal» от word и number] и rest
 
@@ -1239,10 +1240,10 @@
   возвращает «Node»
   разбор word
     случай "while" то («Refusal» от "FLANG_PYTHON_LOOP" и
-      («Joined» от ["цикл while вне подмножества: у него нет меры, которую видно из кода; ",
-        "пишите for по списку или по range, либо рекурсию"]) и line)
+      "цикл while на верхнем уровне вне подмножества: циклы пишутся внутри функции" и line)
     случай "break" то («Refusal» от "FLANG_PYTHON_LOOP" и
-      "break вне подмножества: цикл for проходит список целиком" и line)
+      («Joined» от ["break вне подмножества: цикл for проходит список целиком, а while идёт, пока верно условие; ",
+        "впишите выход в условие while"]) и line)
     случай "continue" то («Refusal» от "FLANG_PYTHON_LOOP" и
       "continue вне подмножества: напишите условие через if" и line)
     случай "class" то («Refusal» от "FLANG_PYTHON_CLASS" и
@@ -1365,6 +1366,22 @@
     (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у for нет двоеточия" и number),
     («Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и tuple и number),
     («Problem» от trailing и "FLANG_PYTHON_LOOP" и "for … else вне подмножества" и number),
+      «First refused» от («Kids of» от node)])
+  «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
+
+функция «While statement»
+  принимает line: «Line», rest: список «Line»
+  возвращает «Block read»
+  пусть number равно (line.«number»)
+  пусть cut равно («Split at colon» от («After first» от (line.«tokens»)))
+  пусть test равно («Whole expression» от (cut.«before») и number)
+  пусть body равно («Body of» от line и (cut.«later») и rest)
+  пусть node равно («Tree of» от "while" и пустой список и number и [test, элемент 1 в (body.«nodes»)])
+  пусть trailing равно («Next word» от line и (body.«rest»)) равен "else"
+  пусть problems равно («Flat» от [(«Problem» от (не
+    (cut.«found»)) и "FLANG_PYTHON_SYNTAX" и "у while нет двоеточия" и number),
+    («Problem» от (пусто (cut.«before»)) и "FLANG_PYTHON_SYNTAX" и "у while нет условия" и number),
+    («Problem» от trailing и "FLANG_PYTHON_LOOP" и "while … else вне подмножества" и number),
       «First refused» от («Kids of» от node)])
   «Block read of» от [(если пусто problems то node иначе элемент 1 в problems)] и (body.«rest»)
 
@@ -1599,12 +1616,14 @@
   пусть named равно («First kind» от tokens) равен "name"
   пусть typed равно («First text» от («After first» от tokens)) равен ":"
   пусть defaulted равно не (пусто («After sign» от tokens и "="))
-  пусть kind равно («Type of» от («After first» от («After first» от tokens)) и line)
+  пусть bare равно пусто («After first» от tokens)
+  пусть kind равно (если bare то «Leaf» от "type" и "int" и line иначе
+    «Type of» от («After first» от («After first» от tokens)) и line)
   пусть problems равно («Flat» от [(«Problem» от (не named) и "FLANG_PYTHON_CONSTRUCT" и
     "параметр вида *args, **kwargs или / вне подмножества" и line),
     («Problem» от defaulted и "FLANG_PYTHON_CONSTRUCT" и "значение параметра по умолчанию вне подмножества" и line),
-    («Problem» от (не typed) и "FLANG_PYTHON_TYPE" и («Joined» от ["у параметра «", name,
-      "» нет аннотации типа: перевод пишет тип каждого параметра, а угадывать его переводчик не берётся"]) и line)])
+    («Problem» от ((не typed) и притом (не bare)) и "FLANG_PYTHON_SYNTAX" и («Joined» от ["после параметра «", name,
+      "» ждали двоеточие и тип или запятую"]) и line)])
   если не (пусто problems)
     то элемент 1 в problems
     иначе если «Refused» от kind
@@ -1621,18 +1640,17 @@
   пусть inside равно («Before sign» от («After first» от («After first» от tokens)) и ")")
   пусть later равно («After sign» от tokens и ")")
   пусть arrow равно («First text» от later) равен "->"
-  пусть cut равно («Split at colon» от («After first» от later))
+  пусть cut равно («Split at colon» от (если arrow то «After first» от later иначе later))
   пусть params равно (отобразить («Comma pieces» от inside) как piece → «Parameter» от piece и number)
-  пусть outcome равно («Type of» от (cut.«before») и number)
+  пусть outcome равно (если arrow то «Type of» от (cut.«before») и number иначе «Leaf» от "type" и "int" и number)
   пусть body равно («Body of» от line и (cut.«later») и rest)
   пусть node равно («Tree of» от "def" и [name] и number и [«Tree of» от "params" и пустой список и number и params,
     outcome,
     элемент 1 в (body.«nodes»)])
-  пусть untyped равно («Joined» от ["у функции «", name,
-    "» нет аннотации результата (-> тип): перевод пишет тип результата, а угадывать его переводчик не берётся"])
+  пусть stray равно («Joined» от ["после скобок функции «", name, "» ждали двоеточие или -> тип"])
   пусть problems равно («Flat» от [(«Problem» от
     (не opened) и "FLANG_PYTHON_SYNTAX" и "после def стоит имя и скобка" и number),
-    («Problem» от (не arrow) и "FLANG_PYTHON_TYPE" и untyped и number),
+    («Problem» от ((не arrow) и притом (не (пусто (cut.«before»)))) и "FLANG_PYTHON_SYNTAX" и stray и number),
     («Problem» от (пусто params) и "FLANG_PYTHON_CONSTRUCT" и
       («Joined» от ["функция без параметров вне подмножества: это постоянная, а не функция; ",
         "напишите её значение там, где оно нужно"]) и number),

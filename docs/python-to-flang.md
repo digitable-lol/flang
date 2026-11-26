@@ -26,7 +26,7 @@ the translator. It needs `python3` on the machine. Temporary files go under `FLA
 One program, from the command line:
 
 ```
-bootstrap/flang run flang/foreign/python/browser.fscript --function "«Translate for page»" \
+bootstrap/flang run flang/foreign/python/browser.fscript --function "«Translate program»" \
   --args '{"source": "def square(x: int) -> int:\n    return x * x\n", "name": "square"}'
 ```
 
@@ -42,9 +42,11 @@ For the playground the translator is printed to JavaScript:
 bootstrap/flang run-script playground:python
 ```
 
-puts `docs/site/out/playground/python.js` next to `formula.js`. The page calls
-`translateForPage(source, name)` and hands `unit` to the compiler as
-`flang check /playground.flang` — exactly as it does with a formula.
+puts `docs/site/out/playground/python.js` next to `c.js`. The "Python → flang" setup of
+the playground calls `translateForPage(source)`: it answers with one module for every
+function — the function itself, copies of the functions it calls and the helper functions
+it needs — under the same contract as the C translator. The page hands every module to the
+compiler as `flang check /playground.flang --proof` and shows the verdict function by function.
 
 ## Three examples
 
@@ -138,7 +140,7 @@ the fold together in a record.
 
 | Python | flang |
 |---|---|
-| `def f(a: int, b: list[int]) -> bool:` | `функция «f»` with the same parameters; the types are required |
+| `def f(a: int, b: list[int]) -> bool:` | `функция «f»` with the same parameters; a parameter or a result without a type is `int` |
 | `int`, `float` | `число` |
 | `bool`, `True`, `False` | `признак`, `да`, `нет` |
 | `str` | `строка` |
@@ -146,6 +148,7 @@ the fold together in a record.
 | `return`, `if` / `elif` / `else`, `a if c else b` | the value of the branch, `если … то … иначе` |
 | `x = …`, `x += …`, `a, b = b, a + b`, `xs: list[int] = []` | `пусть` with a new name |
 | `for x in xs`, `for i in range(…)`, `for c in text` | a fold and a function for one turn |
+| `while c:` | a recursive function with a declared measure (below) |
 | `[f(x) for x in xs if c]` | `отобразить` and `отфильтровать` |
 | recursion | a recursive call; its end is judged (below) |
 | `+ - * / // % **`, comparisons, `and or not`, `in` | flang operations and small helper functions |
@@ -167,9 +170,9 @@ guess that might be wrong.
 | `try`, `raise`, `assert` | `FLANG_PYTHON_EXCEPTION` | flang has no catching: a refusal stops the whole computation |
 | `print`, `input`, `open`, `with` | `FLANG_PYTHON_IO` | input and output are not a pure function |
 | `import` | `FLANG_PYTHON_IMPORT` | one program is translated, without modules |
-| `while`, `break`, `continue`, `return` inside a loop | `FLANG_PYTHON_LOOP` | a `while` has no measure visible in the code; a fold cannot be left early |
+| a `while` without a measure the translator sees, `break`, `continue`, `return` inside a loop | `FLANG_PYTHON_LOOP` | the end of such a loop is not visible in the code; a loop is left only through its condition |
 | `xs.append(…)`, `xs[i] = …`, `del` | `FLANG_PYTHON_MUTATION` | a list is not changed in place; build a new one: `xs = xs + [v]` |
-| a parameter or a result without a type, a type outside the table | `FLANG_PYTHON_TYPE` | the translation writes every type and does not guess it |
+| a type outside the table | `FLANG_PYTHON_TYPE` | the translation writes every type and does not guess it |
 | a function that may end without `return` | `FLANG_PYTHON_RETURN` | Python would return `None`, a function of the subset always has a value |
 | tuples, dictionaries, `None`, `lambda`, methods, keyword arguments | `FLANG_PYTHON_CONSTRUCT` | outside the subset |
 | a name not defined in the function | `FLANG_PYTHON_NAME` | global names are outside the subset |
@@ -194,8 +197,9 @@ is refused with `FLANG_PYTHON_MUTATION строка 4: метод «append» м�
   beyond that are outside what the comparison checks.
 * **Division.** `//` rounds down and `%` takes the sign of the divisor, as in Python: the
   translation calls `«Python floor division»` and `«Python remainder»`, because the
-  remainder of flang takes the sign of the dividend. Division by zero stops the
-  computation with a refusal, where Python raises `ZeroDivisionError`.
+  remainder of flang takes the sign of the dividend. Division by zero is a condition the
+  kernel has to check (below); where the translator cannot state it, the computation stops
+  with a refusal, as Python raises `ZeroDivisionError`.
 * **Minus zero.** In flang `-0` is not equal to `0`. A product of two values that may
   have different signs gets `плюс 0` at the end, which turns `-0` into `0`, so an
   equality after it means what it means in Python.
@@ -223,6 +227,67 @@ calls such a function is not `тотальная` either, and its note says whic
 cause. Binary search over `low` and `high`, Collatz steps and the countdown above are
 all in the corpus and all get `функция` with a note.
 
+## A `while` loop
+
+A `while` becomes a function of its own that calls itself while the condition holds. It
+takes every variable the loop changes and every variable it only reads, and returns the
+changed ones. The translator writes a measure — a number that gets smaller on every turn —
+when it sees one of two forms:
+
+* **a counter**: a variable changes by a constant step towards a bound, `i += 1` under
+  `i < n` (the measure is `n - i`), `i -= 2` under `i >= 0`;
+* **division**: a variable is divided by a constant not less than 2, `x //= 10` (the
+  measure is `x`).
+
+```python
+def is_palindrome(x: int) -> bool:
+    if x < 0 or (x % 10 == 0 and x != 0):
+        return False
+    rev = 0
+    while x > rev:
+        rev = rev * 10 + x % 10
+        x //= 10
+    return x == rev or x == rev // 10
+```
+
+gives the loop
+
+```flang
+тотальная функция «is_palindrome while 8»
+  принимает «rev»: число, «x»: число
+  возвращает «is_palindrome while 8 state»
+  убывает «x»
+  если «x» больше «rev»
+    то
+      пусть «rev 9» равно («rev» умножить на 10) плюс («Python remainder» от «x» и 10)
+      пусть «x 10» равно «Python floor division» от «x» и 10
+      «is_palindrome while 8» от «rev 9» и «x 10»
+    иначе запись «is_palindrome while 8 state» с «rev» равным «rev» и «x» равным «x»
+```
+
+The kernel derives the decrease of a measure only in one form (a parameter of type
+`неотрицательное` that gets smaller by a constant), so the measure of a loop is taken on
+trust: `flang check --proof` answers with code 3, and the generated code checks the measure
+on every turn and stops with `FLANG_MEASURE` if it does not decrease. A loop of neither form
+is refused with `FLANG_PYTHON_LOOP` and a hint how to rewrite it.
+
+## Division by zero
+
+A division `a // b`, `a % b` or `a / b` whose divisor is not a nonzero number written in the
+code becomes an obligation of the function, as in the [C translator](guide/c-into-flang.md):
+
+```flang
+  обеспечивает «обязательство 1 · строка 2: делитель в a // b не ноль» если («b») больше 0 то да иначе ((«b») меньше 0)
+```
+
+The kernel looks for an input that breaks it and finds `a = 0, b = 0`. A division under an
+`if`, `and`, `or` or `… if … else …` gets the condition of its branch in front:
+`если не («b» равен 0) то (…) иначе да`. The translator states the obligation when the divisor
+and the conditions use only parameters the function has not changed and the division is not
+inside a loop; elsewhere the helper function stops with a refusal on zero, as Python raises
+`ZeroDivisionError`. The plan `foreign-python:demo` accepts a broken obligation only when
+Python itself raises `ZeroDivisionError` on an input of `corpus/inputs.tsv` for that function.
+
 ## How the translator is checked
 
 The plan `foreign-python:demo` does four things for every program of the corpus:
@@ -240,10 +305,14 @@ The plan `foreign-python:demo` does four things for every program of the corpus:
 It also translates the ten programs of `corpus/refused` and requires each refusal code
 from `corpus/expected.tsv`.
 
-Last run: 20 programs of the corpus, all 20 translated and passed `flang check`; 131 calls, the
-answers agreed with Python on all 131; 41 functions are `тотальная`, 4 are not (binary
-search and its caller, Collatz steps, the countdown) and each says why; 52 lying
-translations, all 52 caught; 10 refused programs, all 10 with the expected code. The
-run takes about five minutes.
+Last run: 25 programs of the corpus, all 25 translated and passed `flang check` (in
+`division` the kernel found a zero divisor for all three functions, and Python raises
+`ZeroDivisionError` on those inputs too); 153 calls, the answers agreed with Python on all
+153; 46 functions are `тотальная`, 4 are not (binary search and its caller, Collatz steps,
+the countdown) and each says why; 61 lying translations, all 61 caught; 10 refused
+programs, all 10 with the expected code. The answers of a translation are taken with
+`flang run --trust`, because the end of a loop by a declared measure is not derived by the
+kernel; the measure guard and the obligations are still computed while it runs. The run
+takes about six minutes.
 
 Related: [C code in flang](guide/c-into-flang.md) · [flang on foreign code](guide/foreign-code.md)

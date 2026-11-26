@@ -39,22 +39,24 @@
 
 тотальная функция «Corpus»
   возвращает список строки
-  пример «Twenty programs of the corpus»
+  пример «The programs of the corpus»
     ожидается ["square", "sign", "gcd", "factorial", "fibonacci", "average", "maximum", "comprehensions", "reverse",
       "insertion_sort", "quicksort", "binary_search", "collatz", "countdown", "strings", "primes", "power", "grades",
         "matrix",
-      "division"]
+      "division", "digits", "no_annotations", "max_of_two", "palindrome_number", "sum_loop"]
   ["square", "sign", "gcd", "factorial", "fibonacci", "average", "maximum", "comprehensions", "reverse",
     "insertion_sort",
-    "quicksort", "binary_search", "collatz", "countdown", "strings", "primes", "power", "grades", "matrix", "division"]
+    "quicksort", "binary_search", "collatz", "countdown", "strings", "primes", "power", "grades", "matrix", "division",
+    "digits", "no_annotations", "max_of_two", "palindrome_number", "sum_loop"]
 
 тотальная функция «Refused corpus»
   возвращает список строки
   пример «Ten programs outside the subset»
-    ожидается ["counter_class", "global_total", "safe_divide", "greet", "digits_while", "collect", "untyped",
-      "first_negative",
+    ожидается ["counter_class", "global_total", "safe_divide", "greet", "while_without_measure", "collect",
+      "unknown_type", "first_negative",
       "maybe_none", "uses_math"]
-  ["counter_class", "global_total", "safe_divide", "greet", "digits_while", "collect", "untyped", "first_negative",
+  ["counter_class", "global_total", "safe_divide", "greet", "while_without_measure", "collect", "unknown_type",
+    "first_negative",
     "maybe_none",
     "uses_math"]
 
@@ -244,10 +246,12 @@
   пусть calls равно («Calls» от answers)
   «Joined batches» от (отобразить («Corpus») как program → «Program files» от answers и calls и program)
 
+примечание "Ответы перевода снимаются с --trust: завершение цикла по объявленной мере ядро не выводит (код 3),"
+примечание "а сторож меры и обязательства функции считаются при работе и с этим ключом."
 тотальная функция «Answers script»
   возвращает строка
   «Joined» от ["k=1; while [ \"$k\" -le \"$1\" ]; do ", "v=$(\"$0\" run \"$2\" --function \"«Answer $k»\" ",
-    "--max-steps 5000000 ",
+    "--max-steps 5000000 --trust ",
     "--max-depth 3000 2>/dev/null); c=$?; printf '%s\\t%s\\t%s\\n' \"$k\" \"$c\" \"$v\"; k=$((k+1)); done"]
 
 функция «Program runs»
@@ -451,9 +455,15 @@
   пусть totals равно (длина (отфильтровать verdicts где v → v.«total»))
   пусть checks равно («Flat» от (отобразить verdicts как v → «Verdict check» от v и program и expectations))
   пусть refused равно (honest.«code») не равен ""
+  пусть asked равно (соединить "check " с program)
+  пусть said равно (соединить [«Output of» от asked и answers, «Errors of» от asked и answers] по "\n")
+  пусть broken равно («Division findings» от said)
+  пусть raising равно (отфильтровать broken где f → «Python raises on» от own и python и f)
+  пусть excused равно ((checkcode равен 1) и притом (не (пусто broken))) и притом ((длина raising) равен (длина broken))
   пусть failures равно («Flat» от [(если refused то [«Joined» от [program, ": перевод отказал: ", honest.«code», " ",
     honest.«message»]] иначе
-    пустой список), (если (checkcode не равен 0) и притом (не refused) то [«Joined» от [program, ": flang check код ",
+    пустой список), (если ((checkcode не равен 0) и притом (не excused)) и притом (не refused) то [«Joined» от [program,
+    ": flang check код ",
     к строке checkcode, " — ", «Errors of» от (соединить "check " с program) и answers]] иначе пустой список),
     отобразить («Disagreements» от own и python и flang) как d → «Joined» от [program, ": расхождение ", d],
     отобразить missed как m → «Joined» от [program, ": подделка не поймана сверкой: ", m], checks])
@@ -462,11 +472,51 @@
     к строке totals,
     "; flang check код ", к строке checkcode, "; входов ", к строке (длина own), ", сошлось с Python ", к строке agreed,
     "; подделок поймано ", к строке ((длина forged) минус (длина missed)), " из ", к строке (длина forged)])
-  (запись «Program report» с «lines» равным (приписать head к (отобразить verdicts как v → «Verdict line text» от v)) и
+  пусть found равно (если excused то broken иначе пустой список)
+  пусть findings равно (отобразить found как f → «Joined» от ["    «", f, "»: ядро нашло вход с делителем ноль, ",
+    "и Python на таком входе из inputs.tsv тоже падает: ZeroDivisionError"])
+  пусть shown равно («Соединить» от (отобразить verdicts как v → «Verdict line text» от v) и findings)
+  (запись «Program report» с «lines» равным (приписать head к shown) и
     «failures» равным failures и «inputs» равным (длина own) и «agreed» равным agreed и «forged» равным (длина forged) и
     «caught» равным ((длина forged) минус (длина missed)) и «total» равным totals и «partial» равным
       ((длина verdicts) минус totals) и
-    «checked» равным ((checkcode равен 0) и притом (не refused)))
+    «checked» равным (((checkcode равен 0) или excused) и притом (не refused)))
+
+функция «Division findings»
+  принимает text: строка
+  возвращает список строки
+  пример «A broken division obligation names its function»
+    дано text равно "FLANG_EXAMPLE: «делитель в a // b не ноль» функции «floor_div» нарушено на входе b = 0\nx: итог"
+    ожидается ["floor_div"]
+  пример «Any other remark leaves nothing excused»
+    дано text равно "FLANG_TYPE: не тот\nFLANG_EXAMPLE: «делитель в a // b не ноль» функции «f» нарушено на входе b = 0"
+    ожидается ["?"]
+  пусть coded равно (отфильтровать (разделить text по "\n") где l → l содержит "FLANG_")
+  пусть division равно (отфильтровать coded где l → (l содержит "делитель в") и притом (l содержит "нарушено на входе"))
+  если (длина coded) равен (длина division)
+    то «Unique» от (отобразить division как l → «Function named in» от l)
+    иначе ["?"]
+
+функция «Function named in»
+  принимает line: строка
+  возвращает строка
+  пусть pieces равно (разделить line по "функции «")
+  пусть named равно (если (длина pieces) больше 1 то элемент 2 в pieces иначе "")
+  пусть cut равно (разделить named по "»")
+  если пусто cut то "" иначе элемент 1 в cut
+
+функция «Python raises on»
+  принимает calls: список «Call row», python: строка, name: строка
+  возвращает признак
+  пусть rows равно («Rows» от python)
+  пусть hits равно (отфильтровать («Positions» от (длина calls)) где place → «Raises at» от calls и rows и place и name)
+  не (пусто hits)
+
+функция «Raises at»
+  принимает calls: список «Call row», rows: список список строки, place: число, name: строка
+  возвращает признак
+  (((элемент place в calls).«function») равен name) и притом ((«Python answer» от rows и place) начинается с
+    "error ZeroDivisionError")
 
 функция «Refusal judged»
   принимает answers: список «Answer», expectations: список «Expected row», program: строка

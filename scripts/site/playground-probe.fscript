@@ -293,6 +293,57 @@
     иначе («Run» от (probe.«name») и "sh"
       и ["-c", («Through cat from C»), («Root»), («Host»), («Playground directory»), (probe.«text file»)])
 
+тотальная функция «Python case»
+  принимает file: строка, code: число, present: список строки
+  возвращает «Probe case»
+  пример «A corpus program goes to the playground as it is»
+    дано file равно "max_of_two"
+    дано code равно 0
+    дано present равно ["── max_of_two ──"]
+    ожидается (запись «Probe case» с «name» равным "python max_of_two"
+      и «text file» равным "flang/foreign/python/corpus/max_of_two.py" и «text» равным "" и «code» равным 0
+      и «present» равным ["── max_of_two ──"] и «absent» равным ["FLANG_PYTHON", "FLANG_PLAYGROUND", "не переведена"])
+  (запись «Probe case» с «name» равным (соединить ["python ", file] по "")
+    и «text file» равным (соединить ["flang/foreign/python/corpus/", file, ".py"] по "") и «text» равным ""
+    и «code» равным code и «present» равным present
+    и «absent» равным ["FLANG_PYTHON", "FLANG_PLAYGROUND", "не переведена"])
+
+примечание "Три примера вкладки «Python → flang» — те же файлы корпуса, что сверяет с Python план foreign-python:demo."
+примечание "Песочница обязана перевести каждый и судить перевод ядром: max_of_two доказан целиком, у двух циклов"
+примечание "завершение принято на веру (код 3). Деление на параметр даёт обязательство, и ядро находит контрпример."
+тотальная функция «Python cases»
+  возвращает список «Probe case»
+  пусть division равно (запись «Probe case» с «name» равным "python division" и «text file» равным ""
+    и «text» равным "def floor_div(a: int, b: int) -> int:\n    return a // b\n" и «code» равным 1
+    и «present» равным ["контрпример: «a» = 0, «b» = 0 — нарушено",
+      "«обязательство 1 · строка 2: делитель в a // b не ноль»"]
+    и «absent» равным ["FLANG_PYTHON", "FLANG_PLAYGROUND"])
+  пусть refusal равно (запись «Probe case» с «name» равным "python refusal" и «text file» равным ""
+    и «text» равным "import math\n\ndef f(x: int) -> int:\n    return x\n" и «code» равным 1
+    и «present» равным ["── FLANG_PYTHON_IMPORT: не переведена ──",
+      "строка 1: import вне подмножества: переводится одна программа без модулей"]
+    и «absent» равным ["модуль «"])
+  [«Python case» от "max_of_two" и 0 и ["── max_of_two ──", "тотальная функция «max_of_two»",
+      "на веру 0 — код возврата 0"],
+    «Python case» от "palindrome_number" и 3 и ["── is_palindrome ──", "убывает «x»", "на веру 1 — код возврата 3"],
+    «Python case» от "sum_loop" и 3 и ["── sum_to ──", "тотальная функция «sum_to»", "на веру 1 — код возврата 3"],
+    division, refusal]
+
+тотальная функция «Through cat from Python»
+  возвращает строка
+  пример «The Python text goes to the host after the key that names the language»
+    ожидается "cd \"$0\" && exec node \"$1\" \"$2\" --из python \"$(cat \"$3\")\""
+  "cd \"$0\" && exec node \"$1\" \"$2\" --из python \"$(cat \"$3\")\""
+
+тотальная функция «Question of Python»
+  принимает probe: «Probe case»
+  возвращает «Question»
+  если пусто (probe.«text file»)
+    то («Run from» от (probe.«name») и («Root») и "node"
+      и [(«Host»), («Playground directory»), "--из", "python", (probe.«text»)])
+    иначе («Run» от (probe.«name») и "sh"
+      и ["-c", («Through cat from Python»), («Root»), («Host»), («Playground directory»), (probe.«text file»)])
+
 тотальная функция «Clang case»
   принимает file: строка
   возвращает «Probe case»
@@ -325,7 +376,7 @@
   возвращает список «Probe case»
   пусть checks равно («Соединить списки» от («Cases») и («Print cases»))
   пусть foreign равно («Соединить списки» от [(«C translation»), («C refusal»)] и («Clang cases»))
-  «Соединить списки» от checks и foreign
+  «Соединить списки» от checks и («Соединить списки» от foreign и («Python cases»))
 
 тотальная функция «Questions»
   возвращает список «Question»
@@ -333,7 +384,9 @@
   пусть prints равно (отобразить («Print cases») как probe → «Question of print» от probe)
   пусть translations равно (отобразить [(«C translation»), («C refusal»)] как probe → «Question of C» от probe)
   пусть readings равно (отобразить («Clang cases») как probe → «Question of clang» от probe)
-  «Соединить списки» от («Соединить списки» от checks и prints) и («Соединить списки» от translations и readings)
+  пусть pythons равно (отобразить («Python cases») как probe → «Question of Python» от probe)
+  «Соединить списки» от («Соединить списки» от checks и prints) и («Соединить списки» от translations и
+    («Соединить списки» от readings и pythons))
 
 тотальная функция «Question of»
   принимает probe: «Probe case»
@@ -518,7 +571,25 @@
       clang calls: ждали код 0, вышел 127
       clang calls: в выводе нет «разбор совпал с clang»
       clang spans: ждали код 0, вышел 127
-      clang spans: в выводе нет «разбор совпал с clang»"""
+      clang spans: в выводе нет «разбор совпал с clang»
+      python max_of_two: ждали код 0, вышел 127
+      python max_of_two: в выводе нет «── max_of_two ──»
+      python max_of_two: в выводе нет «тотальная функция «max_of_two»»
+      python max_of_two: в выводе нет «на веру 0 — код возврата 0»
+      python palindrome_number: ждали код 3, вышел 127
+      python palindrome_number: в выводе нет «── is_palindrome ──»
+      python palindrome_number: в выводе нет «убывает «x»»
+      python palindrome_number: в выводе нет «на веру 1 — код возврата 3»
+      python sum_loop: ждали код 3, вышел 127
+      python sum_loop: в выводе нет «── sum_to ──»
+      python sum_loop: в выводе нет «тотальная функция «sum_to»»
+      python sum_loop: в выводе нет «на веру 1 — код возврата 3»
+      python division: ждали код 1, вышел 127
+      python division: в выводе нет «контрпример: «a» = 0, «b» = 0 — нарушено»
+      python division: в выводе нет ««обязательство 1 · строка 2: делитель в a // b не ноль»»
+      python refusal: ждали код 1, вышел 127
+      python refusal: в выводе нет «── FLANG_PYTHON_IMPORT: не переведена ──»
+      python refusal: в выводе нет «строка 1: import вне подмножества: переводится одна программа без модулей»"""
   «Proceed with probing» от (inquiry.«queue») и (inquiry.«stages») и («Heard» от inquiry и reply)
 
 план «Probe»

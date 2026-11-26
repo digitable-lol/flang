@@ -10,6 +10,12 @@
   «unit»: строка
   «verdicts»: список строки
 
+объект «Python function for page»
+  «name»: строка
+  «line»: число
+  «unit»: строка
+  «refusals»: список строки
+
 тотальная функция «Page verdict»
   принимает verdict: «Verdict line»
   возвращает строка
@@ -25,7 +31,7 @@
   пусть reason равно (если (verdict.«reason») равен "" то "" иначе соединить " — " с (verdict.«reason»))
   соединить [«Name text» от (verdict.«name»), ": ", word, reason] по ""
 
-функция «Translate for page»
+функция «Translate program»
   принимает source: строка, name: строка
   возвращает «Page translation»
   пусть called равно (если name равен "" то "program" иначе name)
@@ -33,3 +39,36 @@
   (запись «Page translation» с «code» равным (made.«code») и «why» равным (made.«message») и «unit» равным
     (made.«unit») и
     «verdicts» равным (отобразить (made.«verdicts») как v → «Page verdict» от v))
+
+функция «Line of message»
+  принимает message: строка
+  возвращает число
+  пример «The line a refusal names»
+    дано message равно "строка 5: цикл без меры"
+    ожидается 5
+  пример «A message without a line»
+    дано message равно "в программе нет ни одной функции def"
+    ожидается 0
+  пусть parts равно (разделить message по ":")
+  пусть head равно (если пусто parts то "" иначе элемент 1 в parts)
+  пусть words равно (разделить head по " ")
+  пусть named равно ((длина words) равен 2) и притом ((элемент 1 в words) равен "строка")
+  пусть digits равно (если named то элемент 2 в words иначе "")
+  пусть plain равно (не (пусто (разложить digits на символы))) и притом (свёртка (разложить digits на символы) начиная с
+    да как ok и c → ok и притом ("0123456789" содержит c))
+  если plain то к числу digits иначе 0
+
+функция «Translate for page»
+  принимает source: строка
+  возвращает список «Python function for page»
+  пример «A program outside the subset gives one refusal with its line»
+    дано source равно "import math\n\ndef f(x: int) -> int:\n    return x\n"
+    ожидается [(запись «Python function for page» с «name» равным "FLANG_PYTHON_IMPORT" и «line» равным 1
+      и «unit» равным "" и «refusals» равным [
+        "строка 1: import вне подмножества: переводится одна программа без модулей"])]
+  пусть made равно («Translate» от source и "playground" и "honest")
+  если (made.«code») не равен ""
+    то [(запись «Python function for page» с «name» равным (made.«code»)
+      и «line» равным («Line of message» от (made.«message»)) и «unit» равным "" и «refusals» равным [made.«message»])]
+    иначе отобразить («Function units» от source) как u → (запись «Python function for page» с «name» равным
+      (u.«name») и «line» равным (u.«line») и «unit» равным (u.«unit») и «refusals» равным пустой список)

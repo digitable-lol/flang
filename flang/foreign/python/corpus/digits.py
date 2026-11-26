@@ -1,4 +1,4 @@
-"""A while loop has no measure visible in the code: refused."""
+"""A while loop that divides its number by 10: the measure is the number itself."""
 
 
 def digits(n: int) -> int:

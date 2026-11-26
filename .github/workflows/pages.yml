@@ -62,6 +62,7 @@ on:
       - 'scripts/site/reasoning-check-probe.fscript'
       - 'flang/foreign/formula/**'
       - 'flang/foreign/c/**'
+      - 'flang/foreign/python/**'
       - 'scripts/site/playground-probe.fscript'
       - 'scripts/site/playground-site.fscript'
       - 'scripts/site/playground-site-known.txt'
@@ -306,6 +307,7 @@ jobs:
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:translator
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:formula
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:c
+          LC_ALL=C.UTF-8 bootstrap/flang run-script playground:python
           LC_ALL=C.UTF-8 bootstrap/flang run-script playground:argue
 
       # The "own text" setup reads word features from the OpenCorpora

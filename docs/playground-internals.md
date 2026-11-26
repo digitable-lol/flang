@@ -154,6 +154,7 @@
 | переводчик рассуждений | `playground/reasoning.js` | `bootstrap/flang emit --target js` |
 | переводчик формул | `playground/formula.js` | `flang/foreign/formula/browser.fscript`, `bootstrap/flang emit --target js` |
 | переводчик C | `playground/c.js` | `flang/foreign/c/browser.fscript`, `bootstrap/flang emit --target js` |
+| переводчик Python | `playground/python.js` | `flang/foreign/python/browser.fscript`, `bootstrap/flang emit --target js` |
 | чтение своего текста | `playground/argue-page.js` | `flang/experimental/argue/page.flang`, `bootstrap/flang emit --target js` |
 | пометка грамматики | `playground/argue-grammar.js` | `flang/experimental/argue/page-grammar.flang`, `bootstrap/flang emit --target js` |
 | поиск слов в словаре | `playground/dictionary-words.js` | `flang/ct/russian/dictionary/words.fscript`, `bootstrap/flang emit --target js` |

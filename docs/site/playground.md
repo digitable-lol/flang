@@ -25,6 +25,7 @@ button too.
 | Formula | a formula with ∀ and ∃, its flang translation and the check | `#setup=formula` |
 | Your own text | what flang read in a text and where the reasoning goes wrong | `#setup=prose` |
 | C → flang | a C function translated and the result checked | `#setup=c` |
+| Python → flang | a Python function translated and the result checked | `#setup=python` |
 
 Append a setup address to the page address and send it as a link. The "Share" button
 also puts the editor text into the link — after the `#` sign, which a browser does not
@@ -376,6 +377,41 @@ int midpoint(int lo, int hi)
 {
     return (lo + hi) / 2;
 }
+```
+
+Python functions translated to flang. Whole numbers in Python have no upper limit, so the
+translation adds no limits. The larger of two numbers is proved in full:
+
+```python playground Python — the larger of two numbers
+def max_of_two(a: int, b: int) -> int:
+    if a > b:
+        return a
+    return b
+```
+
+A palindrome number: the `while` loop ends because `x` gets smaller with every `x //= 10`.
+The kernel does not derive this itself, so the end of the loop stays without a proof and is
+checked while the program runs; the page says "not everything is proved".
+
+```python playground Python — a palindrome number
+def is_palindrome(x: int) -> bool:
+    if x < 0 or (x % 10 == 0 and x != 0):
+        return False
+    rev = 0
+    while x > rev:
+        rev = rev * 10 + x % 10
+        x //= 10
+    return x == rev or x == rev // 10
+```
+
+The sum from 1 to n by a `for` loop over `range`. Its end is also checked while it runs:
+
+```python playground Python — the sum from 1 to n
+def sum_to(n: int) -> int:
+    total = 0
+    for i in range(1, n + 1):
+        total += i
+    return total
 ```
 
 ```text playground Affirming the consequent — does not follow

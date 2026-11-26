@@ -143,7 +143,11 @@
     { key: 'c', lang: 'c', views: ['foreign'], enter: 'translate', buttons: ['translate'],
       name: { ru: 'C → flang', en: 'C → flang' },
       note: { ru: 'перевод и проверка', en: 'translate and check' },
-      text: ['int max(int a, int b) {', '  if (a > b) return a;', '  return b;', '}', ''].join('\n') }
+      text: ['int max(int a, int b) {', '  if (a > b) return a;', '  return b;', '}', ''].join('\n') },
+    { key: 'python', lang: 'python', views: ['foreign'], enter: 'translate', buttons: ['translate'],
+      name: { ru: 'Python → flang', en: 'Python → flang' },
+      note: { ru: 'перевод и проверка', en: 'translate and check' },
+      text: ['def max_of_two(a: int, b: int) -> int:', '    if a > b:', '        return a', '    return b', ''].join('\n') }
   ];
   function setupOf(key) { return SETUPS.filter(function (s) { return s.key === key; })[0] || null; }
   function setupText(s) { return s.starter ? starterOf(s.starter).text : s.text; }
@@ -221,7 +225,15 @@
     draftSaved: 'draft saved in this browser', draftOff: 'the draft is not saved: browser storage is unavailable', draftReset: 'the draft is reset to the starter program',
     libSlow: 'With a library the check takes about 10 s — press «Check».',
     libUnknown: function (name, similar) { return 'There is no module «' + name + '» in the library. Library modules have English names' + (similar.length ? '; similar ones: ' + similar.map(function (x) { return '«' + x + '»'; }).join(', ') : '') + '.'; },
-    libList: 'all modules', setups: 'Setups', menu: 'Sections'
+    libList: 'all modules', setups: 'Setups', menu: 'Sections',
+    python: {
+      note: 'The translator reads a part of Python: functions with whole numbers (int) and True or False (bool), if, elif and else, while, for over range(…) or over a list, return, assignments = += -= *= //= %=, the signs + − * // %, comparisons (a chain too: a < b < c), and, or, not, and calls of your own functions. A parameter without a type is read as int. Division by zero becomes a condition the kernel has to check.',
+      foreignLead: 'Write a function in Python. A translator turns it into a flang program, and the kernel checks the result right away.',
+      foreignLabel: 'source in Python',
+      intNote: 'Whole numbers in Python have no upper limit, so the translation adds no limits either. flang counts them exactly up to 9 007 199 254 740 991; beyond that the result is not exact.',
+      refutedLead: function (c) { return 'The condition «' + c.обещание + '» is broken on ' + inputs(c.входы) + '. flang computed this.'; },
+      boundsClean: 'not proved; the kernel found no input that breaks it, but that is not a proof'
+    }
   }, ru: {
     example: 'Пример', check: 'Проверить', share: 'Поделиться', reset: 'Сбросить', checking: 'проверяю…',
     runGo: 'Запустить', testGo: 'Тесты', running: 'считаю…', fnLabel: 'функция', argsLabel: 'аргументы, JSON', fnHint: 'имя без ёлочек',
@@ -293,7 +305,15 @@
     draftSaved: 'черновик сохранён в этом браузере', draftOff: 'черновик не сохраняется: хранилище браузера недоступно', draftReset: 'черновик сброшен к стартовой программе',
     libSlow: 'С библиотекой проверка занимает около 10 с — нажмите «Проверить».',
     libUnknown: function (name, similar) { return 'Модуля «' + name + '» в библиотеке нет. Модули библиотеки названы по-английски' + (similar.length ? '; похожие: ' + similar.map(function (x) { return '«' + x + '»'; }).join(', ') : '') + '.'; },
-    libList: 'все модули', setups: 'Сетапы', menu: 'Разделы'
+    libList: 'все модули', setups: 'Сетапы', menu: 'Разделы',
+    python: {
+      note: 'Переводчик понимает часть Python: функции с целыми числами (int) и значениями True и False (bool), if, elif и else, while, for по range(…) или по списку, return, присваивания = += -= *= //= %=, знаки + − * // %, сравнения (и цепочкой: a < b < c), and, or, not и вызовы своих функций. Параметр без типа читается как int. Деление на ноль становится условием, которое должно проверить ядро.',
+      foreignLead: 'Напишите функцию на Python. Переводчик сделает из неё программу на flang, и ядро сразу её проверит.',
+      foreignLabel: 'исходник на Python',
+      intNote: 'Целые числа в Python не ограничены сверху, поэтому перевод не добавляет никаких границ. flang считает такие числа точно до 9 007 199 254 740 991; дальше результат неточен.',
+      refutedLead: function (c) { return 'Условие «' + c.обещание + '» нарушено на входе ' + inputs(c.входы) + '. Это посчитал flang.'; },
+      boundsClean: 'не доказано; ядро не нашло входа, на котором условие нарушено, но это не доказательство'
+    }
   } };
   WORDS.en.tabs.argue = 'Reasoning';
   WORDS.ru.tabs.argue = 'Рассуждение';
@@ -1205,8 +1225,10 @@
      обвязке). Неготовый показан кнопкой с подписью «скоро». */
   var FOREIGN = [
     { lang: 'c', name: 'C', ready: true, note: function () { return T.cSubset; } },
-    { lang: 'python', name: 'Python', ready: false, note: function () { return T.soonNote; } }
+    { lang: 'python', name: 'Python', ready: true, note: function () { return T.python.note; } }
   ];
+  /* Слово вкладки перевода для выбранного языка: у Python свои, у C — общие. */
+  function foreignWord(key) { return (foreignState.lang === 'python' && T.python[key]) || T[key]; }
   var examples = [];
   STARTERS.forEach(function (st) {
     examples.push({ name: T.starterNames[st.key], text: st.text, lang: 'flang', starter: st.slug || st.key, fn: st.fn || '', args: st.args || '', emit: st.emit || '' });
@@ -1466,7 +1488,7 @@
   var autoFor = null;
   function own(field) { return field.getAttribute('data-auto') !== field.value; }
   function kept(field) { return own(field) ? field.value.trim() : ''; }
-  function editorOf(s) { return s.lang === 'c' ? foreignState.editor : main; }
+  function editorOf(s) { return s.lang ? foreignState.editor : main; }
   function saveDraft() {
     var saved = store.set(DRAFT + current.key, JSON.stringify({ text: editorOf(current).input.value, fn: kept(fnInput), args: kept(argsInput) }));
     draftNote.textContent = saved ? T.draftSaved : T.draftOff;
@@ -2057,8 +2079,10 @@
       foreignState.lang = lang; ed.lang = lang; ed.repaint();
       Object.keys(buttons).forEach(function (k) { buttons[k].setAttribute('aria-pressed', k === lang ? 'true' : 'false'); });
       note.textContent = f.note();
+      lead.textContent = foreignWord('foreignLead'); ed.input.setAttribute('aria-label', foreignWord('foreignLabel'));
     }
-    p.appendChild(picker); p.appendChild(el('p', 'pg-hint', T.foreignLead)); p.appendChild(note); p.appendChild(out);
+    var lead = el('p', 'pg-hint', T.foreignLead);
+    p.appendChild(picker); p.appendChild(lead); p.appendChild(note); p.appendChild(out);
     choose('c');
     function translate(quiet) {
       var text = ed.input.value;
@@ -2110,7 +2134,7 @@
           else if (st === 'unproved' && verdict === 'proved') verdict = 'unproved';
           var c2 = el('div', 'pg-verdict pg-' + st);
           c2.appendChild(el('p', 'pg-verdict-title', st === 'proved' ? T.fnProved : st === 'violated' ? T.fnRefuted : st === 'unproved' ? T.fnUnproved : T.fnFailed));
-          if (st === 'violated') refuted.forEach(function (c) { c2.appendChild(el('p', 'pg-verdict-lead', T.refutedLead(c))); });
+          if (st === 'violated') refuted.forEach(function (c) { c2.appendChild(el('p', 'pg-verdict-lead', foreignWord('refutedLead')(c))); });
           else if (st !== 'proved' && s.lead) c2.appendChild(el('p', 'pg-verdict-lead', s.lead));
           if (st === 'error') s.problems.forEach(function (pr) { c2.appendChild(problemNode({ line: null, column: null, text: pr.text, code: pr.code })); });
           box.appendChild(c2);
@@ -2120,7 +2144,7 @@
             var hit = refuted.filter(function (r) { return r.обещание === c.name; })[0];
             if (hit) return { state: 'violated', text: who + ' — ' + T.refuted(hit) };
             var cs = claimState(c);
-            if (cs === 'unproved' && /^обязательство /.test(c.name)) return { state: 'unproved', text: who + ' — ' + T.boundsClean };
+            if (cs === 'unproved' && /^обязательство /.test(c.name)) return { state: 'unproved', text: who + ' — ' + foreignWord('boundsClean') };
             return { state: cs, text: who + ' — ' + claimWords(c) };
           }) : s.items;
           if (fnItems.length) {
@@ -2130,7 +2154,7 @@
           }
           box.appendChild(el('p', 'pg-formula-name', T.inFlang));
           box.appendChild(codeBlock(f.исходник, 'flang'));
-          box.appendChild(el('p', 'pg-hint', T.intNote));
+          box.appendChild(el('p', 'pg-hint', foreignWord('intNote')));
           var open = el('button', 'pg-tool', T.toEditor); open.type = 'button';
           open.addEventListener('click', function () { openSetup('proof', { text: f.исходник, fn: '', args: '' }); input.focus(); });
           box.appendChild(open);
@@ -2662,7 +2686,8 @@
       tabButtons[k].hidden = s.views.indexOf(k) < 0;
       tabButtons[k].textContent = s.labels && s.labels[k] ? s.labels[k][LANG] : T.tabs[k];
     });
-    main.root.hidden = s.lang === 'c'; foreignState.editor.root.hidden = s.lang !== 'c';
+    main.root.hidden = !!s.lang; foreignState.editor.root.hidden = !s.lang;
+    if (s.lang) foreignState.choose(s.lang);
     var hasText = given.text !== null && given.text !== undefined;
     var draft = hasText ? null : readDraft(s.key);
     var starter = s.starter ? starterOf(s.starter) : null;
@@ -2678,7 +2703,7 @@
       if (!fn) { fnInput.value = starter.fn || ''; fnInput.setAttribute('data-auto', fnInput.value); }
       if (!args) { argsInput.value = starter.args || ''; argsInput.setAttribute('data-auto', argsInput.value); }
     }
-    if (s.lang === 'c') foreignState.editor.set(text); else setText(text);
+    if (s.lang) foreignState.editor.set(text); else setText(text);
     draftNote.textContent = draft ? T.draftSaved : '';
     root.setAttribute('data-draft', draft ? 'saved' : 'none');
     ['run', 'result', 'tests'].forEach(function (k) {
@@ -2696,7 +2721,7 @@
     store.set(LAST, s.key);
     /* Компилятор уже загружен — результат показан сразу, без нажатия. */
     if (warmed && !given.hold && text.trim() && s.enter !== 'argue') {
-      if (s.lang !== 'c' && usesLibrary(text)) libraryNote(text);
+      if (!s.lang && usesLibrary(text)) libraryNote(text);
       else doAction(s.enter, true);
     }
     return s;
@@ -2707,8 +2732,8 @@
     if (!ex) return;
     root.setAttribute('data-example-lang', ex.lang);
     var kind = guessKind(ex.text);
-    var away = current.lang === 'c' || current.key === 'reasoning' || current.key === 'formula';
-    var key = ex.lang === 'c' ? 'c' : ex.emit ? 'emit' : kind === 'рассуждение' ? 'reasoning' : kind === 'формула' ? 'formula'
+    var away = !!current.lang || current.key === 'reasoning' || current.key === 'formula';
+    var key = ex.lang !== 'flang' ? ex.lang : ex.emit ? 'emit' : kind === 'рассуждение' ? 'reasoning' : kind === 'формула' ? 'formula'
       : away ? (ex.starter ? STARTER_SETUP[starterOf(ex.starter).key] : 'proof') : current.key;
     openSetup(key, { text: ex.text, fn: ex.fn || '', args: ex.args || '', target: ex.emit || '' });
     saveDraft();
@@ -2772,7 +2797,7 @@
     setTimeLimit: function (ms) { TIME_LIMIT_MS = ms; },
     print: function (target) { emitState.target = target; return doAction('emit', false); },
     translate: function (text, lang) {
-      if (current.lang !== 'c') openSetup('c', { hold: true, text: text });
+      if (!current.lang) openSetup(lang || 'c', { hold: true, text: text });
       else if (text !== undefined) foreignState.editor.set(text);
       if (lang) foreignState.choose(lang);
       return foreignState.translate(false);

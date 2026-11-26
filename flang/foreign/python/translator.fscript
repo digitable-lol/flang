@@ -27,6 +27,7 @@
   «outcome»: строка
   «pad»: строка
   «line»: число
+  «path»: список строки
 
 объект «Site»
   «line»: число
@@ -325,7 +326,7 @@
   (запись «Context» с «function» равным (ctx.«function») и «signatures» равным (ctx.«signatures») и
     «nonempty» равным nonempty и
     «bounded» равным bounded и «inside» равным (ctx.«inside») и «outcome» равным (ctx.«outcome») и «pad» равным pad и
-    «line» равным (ctx.«line»))
+    «line» равным (ctx.«line») и «path» равным (ctx.«path»))
 
 тотальная функция «Context inside»
   принимает ctx: «Context», inside: строка
@@ -334,7 +335,7 @@
     (ctx.«nonempty») и
     «bounded» равным (ctx.«bounded») и «inside» равным inside и «outcome» равным (ctx.«outcome») и «pad» равным
       (ctx.«pad») и
-    «line» равным (ctx.«line»))
+    «line» равным (ctx.«line») и «path» равным (ctx.«path»))
 
 функция «Expr»
   принимает node: «Node», env: список «Binding», ctx: «Context»
@@ -442,8 +443,10 @@
   принимает node: «Node», env: список «Binding», ctx: «Context», line: число
   возвращает «Piece»
   пусть test равно («Truth» от («Expr» от («Kid of» от node и 1) и env и ctx))
-  пусть taken равно («Expr» от («Kid of» от node и 2) и env и ctx)
-  пусть other равно («Expr» от («Kid of» от node и 3) и env и ctx)
+  пусть thenctx равно («Guarded» от ctx и («Kid of» от node и 1) и test и env и да)
+  пусть taken равно («Expr» от («Kid of» от node и 2) и env и thenctx)
+  пусть other равно («Expr» от («Kid of» от node и 3) и env и («Guarded» от ctx и («Kid of» от node и 1) и test и env и
+    нет))
   пусть kind равно («Common kind» от (taken.«kind») и (other.«kind»))
   пусть text равно («Joined» от ["если ", test.«text», " то ", taken.«text», " иначе ", other.«text»])
   пусть made равно («Composite» от [test, taken, other] и text и kind)
@@ -486,11 +489,111 @@
   принимает op: строка, left: «Node», right: «Node», env: список «Binding», ctx: «Context», line: число
   возвращает «Piece»
   пусть l равно («Expr» от left и env и ctx)
-  пусть r равно («Expr» от right и env и ctx)
+  пусть later равно («Right side context» от op и ctx и left и l и env)
+  пусть r равно («Expr» от right и env и later)
   пусть bad равно («Faults» от [l, r])
+  пусть dividing равно (["//", "%", "/"] содержит op) и притом (не («Nonzero literal» от right))
+  пусть site равно (запись «Division site» с «op» равным op и «left» равным left и «right» равным right и
+    «dividend» равным l и «divisor» равным r)
+  пусть made равно («Operator made» от op и l и r и left и right и line)
   если не (пусто bad)
     то элемент 1 в bad
-    иначе «Operator made» от op и l и r и left и right и line
+    иначе «With duty» от made и dividing и site и env и ctx и line
+
+функция «Right side context»
+  принимает op: строка, ctx: «Context», left: «Node», l: «Piece», env: список «Binding»
+  возвращает «Context»
+  разбор op
+    случай "and" то «Guarded» от ctx и left и l и env и да
+    случай "or" то «Guarded» от ctx и left и l и env и нет
+    случай любое то ctx
+
+объект «Division site»
+  «op»: строка
+  «left»: «Node»
+  «right»: «Node»
+  «dividend»: «Piece»
+  «divisor»: «Piece»
+
+функция «With duty»
+  принимает made: «Piece», dividing: признак, site: «Division site», env: список «Binding», ctx: «Context», line: число
+  возвращает «Piece»
+  пусть outside равно ((ctx.«inside») равен "") и притом (не ((ctx.«path») содержит "?"))
+  пусть plain равно («Param only» от (site.«right») и env) и притом outside
+  пусть d равно («Bare» от (site.«divisor»))
+  пусть nonzero равно («Joined» от ["если (", d, ") больше 0 то да иначе ((", d, ") меньше 0)"])
+  пусть joined равно (соединить (ctx.«path») по " и притом ")
+  пусть guarded равно (если пусто (ctx.«path») то nonzero иначе «Joined» от ["если ", joined, " то (", nonzero,
+    ") иначе да"])
+  пусть label равно («Joined» от ["строка ", к строке line, ": делитель в ", «Python text» от (site.«left»), " ",
+    site.«op», " ", «Python text» от (site.«right»), " не ноль"])
+  если («Bad» от made) или (не (dividing и притом plain))
+    то made
+    иначе «Needing» от («Unchecked division» от made и site и line) и («Joined» от ["@DUTY@", label, "\t", guarded])
+
+функция «Unchecked division»
+  принимает made: «Piece», site: «Division site», line: число
+  возвращает «Piece»
+  пусть helper равно («Unchecked helper» от (site.«op»))
+  «Shaped» от («Helper call» от helper и [site.«dividend», site.«divisor»] и (made.«kind») и line) и (made.«shape»)
+
+тотальная функция «Unchecked helper»
+  принимает op: строка
+  возвращает строка
+  пример «Floor division without the zero check»
+    дано op равно "//"
+    ожидается "Python floor division by nonzero"
+  разбор op
+    случай "//" то "Python floor division by nonzero"
+    случай "%" то "Python remainder by nonzero"
+    случай любое то "Python division by nonzero"
+
+функция «Guarded»
+  принимает ctx: «Context», test: «Node», cond: «Piece», env: список «Binding», holds: признак
+  возвращает «Context»
+  пусть text равно («Bare» от cond)
+  пусть guard равно (если («Param only» от test и env) и притом (не («Bad» от cond))
+    то (если holds то «Joined» от ["(", text, ")"] иначе «Joined» от ["не (", text, ")"]) иначе "?")
+  (запись «Context» с «function» равным (ctx.«function») и «signatures» равным (ctx.«signatures») и
+    «nonempty» равным (ctx.«nonempty») и «bounded» равным (ctx.«bounded») и «inside» равным (ctx.«inside») и
+    «outcome» равным (ctx.«outcome») и «pad» равным (ctx.«pad») и «line» равным (ctx.«line») и
+    «path» равным (добавить guard к (ctx.«path»)))
+
+функция «Param only»
+  принимает node: «Node», env: список «Binding»
+  возвращает признак
+  пусть names равно («Names in» от node)
+  пусть kept равно (отфильтровать names где n → «Untouched param» от env и n)
+  (длина kept) равен (длина names)
+
+функция «Untouched param»
+  принимает env: список «Binding», name: строка
+  возвращает признак
+  пусть found равно («Lookup» от env и name)
+  пусть b равно (если пусто found то «Gone binding» от name и "нет" иначе элемент 1 в found)
+  пусть same равно ((b.«flang») равен («Name text» от name)) и притом ((b.«gone») равен "")
+  ((b.«shape») равен (соединить "param " с name)) и притом same
+
+функция «Python text»
+  принимает node: «Node»
+  возвращает строка
+  пусть kids равно (отобразить («Kids of» от node) как k → «Python operand» от k)
+  разбор («Kind of» от node)
+    случай "name" то «Word of» от node и 1
+    случай "number" то «Word of» от node и 1
+    случай "truth" то (если («Word of» от node и 1) равен "true" то "True" иначе "False")
+    случай "binary" то соединить kids по («Joined» от [" ", «Word of» от node и 1, " "])
+    случай "unary" то («Joined» от [«Word of» от node и 1, (если («Word of» от node и 1) равен "not" то " " иначе ""),
+      соединить kids по ""])
+    случай "call" то «Joined» от [«Word of» от node и 1, "(", соединить (отобразить («Kids of» от node) как k →
+      «Python text» от k) по ", ", ")"]
+    случай любое то "…"
+
+функция «Python operand»
+  принимает node: «Node»
+  возвращает строка
+  пусть text равно («Python text» от node)
+  если («Kind of» от node) равен "binary" то «Joined» от ["(", text, ")"] иначе text
 
 функция «Operator made»
   принимает op: строка, l: «Piece», r: «Piece», left: «Node», right: «Node», line: число
@@ -971,6 +1074,7 @@
       («Assigned names» от («Kids of» от («Kid of» от stmt и 3))))
     случай "for" то (приписать («Leaf» от "name" и («Word of» от stmt и 1) и («Line of» от stmt)) к
       («Assigned names» от («Kids of» от («Kid of» от stmt и 2))))
+    случай "while" то «Assigned names» от («Kids of» от («Kid of» от stmt и 2))
     случай любое то пустой список
 
 функция «Names in»
@@ -1094,6 +1198,7 @@
     случай "assign" то «Assign made» от stmt и rest и env и ctx и ending
     случай "if" то «If made» от stmt и rest и env и ctx и ending
     случай "for" то «For made» от stmt и rest и env и ctx и ending
+    случай "while" то «While made» от stmt и rest и env и ctx и ending
     случай "refused" то «Fault of node» от stmt
     случай любое то «Fault» от "FLANG_PYTHON_CONSTRUCT" и "оператор вне подмножества" и («Line of» от stmt)
 
@@ -1105,10 +1210,14 @@
   пусть built равно («Joined» от ["запись ", «Name text» от (ending.«state»), " с ", соединить fields по " и "])
   пусть said равно («Joined» от ["функция «", ctx.«function», "» может дойти до конца без return: Python вернёт None, ",
     "а у функции подмножества значение есть на каждом пути"])
+  пусть again равно («Joined» от [ctx.«pad», «Name text» от (ending.«state»), " от ",
+    соединить (отобразить values как v → v.«text») по " и "])
   пусть what равно («Chosen» от [(«Option of» от ((ending.«mode») равен "function") и "function"),
+    («Option of» от ((ending.«mode») равен "while") и "while"),
     («Option of» от ((длина values) равен 1) и "single")] и "record")
   разбор what
     случай "function" то «Fault» от "FLANG_PYTHON_RETURN" и said и (ending.«line»)
+    случай "while" то «Collected» от values и again и "" и "" и нет
     случай "single" то «Retexted» от (элемент 1 в values) и (соединить (ctx.«pad») с ((элемент 1 в values).«text»))
     случай любое то «Collected» от values и (соединить (ctx.«pad») с built) и "" и "" и нет
 
@@ -1219,10 +1328,12 @@
   пусть cond равно («Truth» от («Expr» от test и env и ctx))
   пусть checks равно («Emptiness» от test и env)
   пусть deeper равно (соединить (ctx.«pad») с "    ")
-  пусть yesctx равно («Context with» от ctx и («Соединить» от (ctx.«nonempty») и («Nonempty after» от checks и да)) и
+  пусть yesbase равно («Context with» от ctx и («Соединить» от (ctx.«nonempty») и («Nonempty after» от checks и да)) и
     («Соединить» от (ctx.«bounded») и («Lower bounds» от test и env и да)) и deeper)
-  пусть noctx равно («Context with» от ctx и («Соединить» от (ctx.«nonempty») и («Nonempty after» от checks и нет)) и
+  пусть nobase равно («Context with» от ctx и («Соединить» от (ctx.«nonempty») и («Nonempty after» от checks и нет)) и
     («Соединить» от (ctx.«bounded») и («Lower bounds» от test и env и нет)) и deeper)
+  пусть yesctx равно («Guarded» от yesbase и test и cond и env и да)
+  пусть noctx равно («Guarded» от nobase и test и cond и env и нет)
   пусть taken равно («Block» от («Соединить» от («Kids of» от («Kid of» от stmt и 2)) и rest) и env и yesctx и ending)
   пусть other равно («Block» от («Соединить» от («Kids of» от («Kid of» от stmt и 3)) и rest) и env и noctx и ending)
   пусть pad равно (ctx.«pad»)
@@ -1304,6 +1415,166 @@
     случай "idle" то «Block» от rest и gone и ctx и ending
     случай любое то «Loop made» от frame и source и env и ctx и ending
 
+функция «While made»
+  принимает stmt: «Node», rest: список «Node», env: список «Binding», ctx: «Context», ending: «Ending»
+  возвращает «Piece»
+  пусть line равно («Line of» от stmt)
+  пусть test равно («Kid of» от stmt и 1)
+  пусть body равно («Kids of» от («Kid of» от stmt и 2))
+  пусть assigned равно («Unique» от (отобразить («Assigned names» от body) как n → «Word of» от n и 1))
+  пусть carried равно (отфильтровать assigned где n → «Live» от env и n)
+  пусть locals равно (отфильтровать assigned где n → не (carried содержит n))
+  пусть used равно («Unique» от («Flat» от (отобразить (приписать test к body) как b → «Names in» от b)))
+  пусть free равно (отфильтровать used где n → («Live» от env и n) и притом (не (carried содержит n)))
+  пусть params равно («Соединить» от carried и free)
+  пусть step равно («Joined» от [ctx.«function», " while ", к строке line])
+  пусть inner равно (отобразить params как n → «Binding of» от n и («Name text» от n) и («Kind in» от env и n) и "")
+  пусть stepctx равно (запись «Context» с «function» равным (ctx.«function») и «signatures» равным
+    (ctx.«signatures») и «nonempty» равным пустой список и «bounded» равным пустой список и «inside» равным "loop" и
+    «outcome» равным (ctx.«outcome») и «pad» равным "      " и «line» равным line и «path» равным пустой список)
+  пусть stepending равно (запись «Ending» с «mode» равным "while" и «carried» равным params и «state» равным step и
+    «line» равным line)
+  пусть stepbody равно («Block» от body и inner и stepctx и stepending)
+  пусть cond равно («Truth» от («Expr» от test и inner и stepctx))
+  пусть measure равно («While measure» от test и body и carried и inner и stepctx)
+  пусть lone равно (длина carried) равен 1
+  пусть opening равно (если пусто carried то "" иначе элемент 1 в carried)
+  пусть statename равно (соединить step с " state")
+  пусть statetype равно (если lone то «Flang type» от («Kind in» от env и opening) иначе «Name text» от statename)
+  пусть fields равно (отобразить carried как c → «Joined» от [«Name text» от c, " равным ", «Name text» от c])
+  пусть stay равно (если lone то «Name text» от opening иначе «Joined» от ["запись ", «Name text» от statename, " с ",
+    соединить fields по " и "])
+  пусть typed равно (отобразить params как n → «Typed param» от n и env)
+  пусть declared равно («Joined» от ["объект ", «Name text» от statename, "\n", соединить (отобразить carried как c →
+    «Joined» от ["  ", «Typed param» от c и env]) по "\n"])
+  пусть helper равно («Joined» от ["@TOTAL@функция ", «Name text» от step, "\n  принимает ", соединить typed по ", ",
+    "\n  возвращает ", statetype, "\n  убывает ", measure, "\n  если ", «Bare» от cond, "\n",
+    «Branch text» от "то" и "  " и (stepbody.«text»), "\n", «Branch text» от "иначе" и "  " и (соединить "      " с
+      stay)])
+  пусть helpers равно (если lone то [helper] иначе [declared, helper])
+  пусть call равно («Joined» от ["(", «Name text» от step, " от ", соединить (отобразить params как n →
+    «Flang in» от env и n) по " и ", ")"])
+  пусть whole равно («Joined» от ["«while ", к строке line, "»"])
+  пусть picks равно (отобразить carried как c → «Joined» от [ctx.«pad», "пусть «", c, " ", к строке line,
+    "» равно (", whole, ".«", c, "»)"])
+  пусть lines равно (если lone то «Joined» от [ctx.«pad», "пусть «", opening, " ", к строке line, "» равно ", call]
+    иначе «Joined» от [ctx.«pad», "пусть ", whole, " равно ", call, "\n", соединить picks по "\n"])
+  пусть later равно («After while env» от carried и locals и env и line)
+  пусть following равно («Block» от rest и later и ctx и ending)
+  пусть what равно («Chosen» от [(«Option of» от («Bad» от cond) и "bad"), («Option of» от
+    («Returns inside» от body) и "return"), («Option of» от (пусто carried) и "idle"),
+    («Option of» от (measure равен "") и "measure")] и "loop")
+  разбор what
+    случай "bad" то cond
+    случай "return" то «Fault» от "FLANG_PYTHON_LOOP" и («Joined» от ["return внутри цикла вне подмножества: ",
+      "у цикла один выход — когда условие while перестало быть верным; ",
+      "соберите ответ в переменную и верните его после цикла"]) и line
+    случай "idle" то «Fault» от "FLANG_PYTHON_LOOP" и («Joined» от ["цикл while не меняет ни одной переменной, ",
+      "заданной до него: такой цикл либо не начнётся, либо не кончится"]) и line
+    случай "measure" то «Fault» от "FLANG_PYTHON_LOOP" и («While without measure») и line
+    случай любое то «With helpers» от («Collected» от [cond, stepbody, following] и (соединить lines с
+      (соединить "\n" с (following.«text»))) и "" и "" и нет) и helpers
+
+функция «Typed param»
+  принимает name: строка, env: список «Binding»
+  возвращает строка
+  «Joined» от [«Name text» от name, ": ", «Flang type» от («Kind in» от env и name)]
+
+тотальная функция «While without measure»
+  возвращает строка
+  «Joined» от ["не видно, почему цикл while кончится. Переводчик понимает два вида: счётчик идёт к границе ",
+    "постоянным шагом (i += 1 при условии i < n, i -= 1 при условии i > 0) или число делится нацело ",
+    "на постоянное не меньше 2 (x //= 10). Другой цикл перепишите так или через for i in range(…)"]
+
+функция «After while env»
+  принимает carried: список строки, locals: список строки, env: список «Binding», line: число
+  возвращает список «Binding»
+  пусть kept равно (свёртка carried начиная с env как e и c → приписать («Binding of» от c и («Joined» от ["«", c,
+    " ", к строке line, "»"]) и («Kind in» от env и c) и "") к e)
+  свёртка locals начиная с kept как e и n → приписать («Gone binding» от n и («Joined» от ["имя «", n,
+    "» задано только внутри цикла на строке ", к строке line, ", а читается после него"])) к e
+
+функция «While measure»
+  принимает test: «Node», body: список «Node», carried: список строки, env: список «Binding», ctx: «Context»
+  возвращает строка
+  пусть found равно (отфильтровать (отобразить carried как c → «Measure of» от test и body и c и carried и env и ctx)
+    где m → m не равен "")
+  если пусто found то "" иначе элемент 1 в found
+
+функция «Measure of»
+  принимает test: «Node», body: список «Node», name: строка, kept: список строки, env: список «Binding», ctx: «Context»
+  возвращает строка
+  пусть own равно (отфильтровать body где stmt → ((«Kind of» от stmt) равен "assign") и притом
+    ((«Words of» от stmt) равен [name]))
+  пусть every равно (отфильтровать («Assigned names» от body) где n → («Word of» от n и 1) равен name)
+  пусть single равно ((длина own) равен 1) и притом ((длина every) равен 1)
+  пусть value равно (если single то «Kid of» от («Kid of» от (элемент 1 в own) и 1) и 1 иначе test)
+  пусть shift равно (если single то «Step of» от value и name иначе "")
+  разбор shift
+    случай "split" то «Name text» от name
+    случай "up" то «Counter measure» от test и name и да и kept и env и ctx
+    случай "down" то «Counter measure» от test и name и нет и kept и env и ctx
+    случай любое то ""
+
+функция «Step of»
+  принимает value: «Node», name: строка
+  возвращает строка
+  пусть op равно («Word of» от value и 1)
+  пусть left равно («Kid of» от value и 1)
+  пусть right равно («Kid of» от value и 2)
+  пусть mine равно ((«Kind of» от value) равен "binary") и притом (((«Kind of» от left) равен "name") и притом
+    ((«Word of» от left и 1) равен name))
+  пусть digits равно ((«Kind of» от right) равен "number") и притом («Whole literal» от right)
+  пусть size равно (если digits то к числу («Word of» от right и 1) иначе 0)
+  пусть what равно («Chosen» от [(«Option of» от (не (mine и притом digits)) и "none"),
+    («Option of» от ((op равен "+") и притом (size больше 0)) и "up"),
+    («Option of» от ((op равен "-") и притом (size больше 0)) и "down"),
+    («Option of» от ((op равен "//") и притом (size не меньше 2)) и "split")] и "none")
+  если what равен "none" то "" иначе what
+
+функция «Counter measure»
+  принимает test: «Node», name: строка, up: признак, carried: список строки, env: список «Binding», ctx: «Context»
+  возвращает строка
+  пусть op равно («Word of» от test и 1)
+  пусть left равно («Kid of» от test и 1)
+  пусть right равно («Kid of» от test и 2)
+  пусть binary равно («Kind of» от test) равен "binary"
+  пусть onleft равно binary и притом (((«Kind of» от left) равен "name") и притом ((«Word of» от left и 1) равен name))
+  пусть onright равно binary и притом (((«Kind of» от right) равен "name") и притом ((«Word of» от right и 1) равен
+    name))
+  пусть what равно («Chosen» от [(«Option of» от (binary и притом (op равен "and")) и "and"),
+    («Option of» от onleft и "left"), («Option of» от onright и "right")] и "none")
+  разбор what
+    случай "and" то («First of two» от («Counter measure» от left и name и up и carried и env и ctx) и
+      («Counter measure» от right и name и up и carried и env и ctx))
+    случай "left" то «Bound distance» от op и right и name и up и carried и env и ctx
+    случай "right" то «Bound distance» от («Flipped» от op) и left и name и up и carried и env и ctx
+    случай любое то ""
+
+тотальная функция «First of two»
+  принимает opening: строка, second: строка
+  возвращает строка
+  если opening равен "" то second иначе opening
+
+функция «Bound distance»
+  принимает op: строка, lim: «Node», v: строка, up: признак, moved: список строки, env: список «Binding», ctx: «Context»
+  возвращает строка
+  пусть still равно пусто (отфильтровать («Names in» от lim) где n → moved содержит n)
+  пусть made равно («Expr» от lim и env и ctx)
+  пусть fine равно still и притом ((не («Bad» от made)) и притом («Numeric» от (made.«kind»)))
+  пусть own равно «Name text» от v
+  пусть edge равно (made.«text»)
+  пусть what равно («Chosen» от [(«Option of» от (не fine) и "none"),
+    («Option of» от (up и притом (op равен "<")) и "below"), («Option of» от (up и притом (op равен "<=")) и "upto"),
+    («Option of» от ((не up) и притом (op равен ">")) и "above"),
+    («Option of» от ((не up) и притом (op равен ">=")) и "downto")] и "none")
+  разбор what
+    случай "below" то «Joined» от ["(", edge, " минус ", own, ")"]
+    случай "upto" то «Joined» от ["((", edge, " минус ", own, ") плюс 1)"]
+    случай "above" то «Joined» от ["(", own, " минус ", edge, ")"]
+    случай "downto" то «Joined» от ["((", own, " минус ", edge, ") плюс 1)"]
+    случай любое то ""
+
 функция «Returns inside»
   принимает nodes: список «Node»
   возвращает признак
@@ -1346,7 +1617,7 @@
   пусть stepctx равно (запись «Context» с «function» равным (ctx.«function») и «signatures» равным (ctx.«signatures») и
     «nonempty» равным пустой список и «bounded» равным пустой список и «inside» равным "loop" и «outcome» равным
       (ctx.«outcome») и
-    «pad» равным "  " и «line» равным line)
+    «pad» равным "  " и «line» равным line и «path» равным пустой список)
   пусть stepending равно (запись «Ending» с «mode» равным "loop" и «carried» равным carried и «state» равным
     (frame.«state») и
     «line» равным line)
@@ -1447,6 +1718,9 @@
     случай "Python substring" то «Substring lines»
     случай "Python concatenation" то «Concatenation lines»
     случай "Python sorted" то «Sorted lines»
+    случай "Python remainder by nonzero" то «Remainder by nonzero lines»
+    случай "Python floor division by nonzero" то «Floor division by nonzero lines»
+    случай "Python division by nonzero" то «Division by nonzero lines»
     случай любое то пустой список
 
 тотальная функция «Helper needs»
@@ -1457,6 +1731,7 @@
     ожидается ["Python remainder"]
   разбор name
     случай "Python floor division" то ["Python remainder"]
+    случай "Python floor division by nonzero" то ["Python remainder by nonzero"]
     случай "Python smallest" то ["Python min"]
     случай "Python largest" то ["Python max"]
     случай "Python slice" то ["Python bound"]
@@ -1466,12 +1741,14 @@
 тотальная функция «Helper order»
   возвращает список строки
   пример «Every helper has its place»
-    ожидается ["Python remainder", "Python floor division", "Python division", "Python power", "Python abs",
+    ожидается ["Python remainder", "Python floor division", "Python division", "Python remainder by nonzero",
+      "Python floor division by nonzero", "Python division by nonzero", "Python power", "Python abs",
       "Python min",
       "Python max", "Python smallest", "Python largest", "Python sum", "Python range", "Python item",
         "Python character",
       "Python bound", "Python slice", "Python substring", "Python concatenation", "Python sorted"]
-  ["Python remainder", "Python floor division", "Python division", "Python power", "Python abs", "Python min",
+  ["Python remainder", "Python floor division", "Python division", "Python remainder by nonzero",
+    "Python floor division by nonzero", "Python division by nonzero", "Python power", "Python abs", "Python min",
     "Python max",
     "Python smallest", "Python largest", "Python sum", "Python range", "Python item", "Python character",
       "Python bound",
@@ -1501,6 +1778,26 @@
       "      пусть «r» равно ((«a» остаток от «b») плюс 0)",
     "      если ((«r» меньше 0) и притом («b» больше 0)) или ((«r» больше 0) и притом («b» меньше 0))",
     "        то «r» плюс «b»", "        иначе «r»"]
+
+тотальная функция «Remainder by nonzero lines»
+  возвращает список строки
+  ["примечание \"a % b при b не ноль: делитель проверяет обязательство функции, которая делит\"",
+    "тотальная функция «Python remainder by nonzero»", "  принимает «a»: число, «b»: число", "  возвращает число",
+    "  пусть «r» равно ((«a» остаток от «b») плюс 0)",
+    "  если ((«r» меньше 0) и притом («b» больше 0)) или ((«r» больше 0) и притом («b» меньше 0))",
+    "    то «r» плюс «b»", "    иначе «r»"]
+
+тотальная функция «Floor division by nonzero lines»
+  возвращает список строки
+  ["примечание \"a // b при b не ноль: делитель проверяет обязательство функции, которая делит\"",
+    "тотальная функция «Python floor division by nonzero»", "  принимает «a»: число, «b»: число", "  возвращает число",
+    "  ((«a» минус («Python remainder by nonzero» от «a» и «b»)) делить на «b») плюс 0"]
+
+тотальная функция «Division by nonzero lines»
+  возвращает список строки
+  ["примечание \"a / b при b не ноль: делитель проверяет обязательство функции, которая делит\"",
+    "тотальная функция «Python division by nonzero»", "  принимает «a»: число, «b»: число", "  возвращает число",
+    "  («a» делить на «b») плюс 0"]
 
 тотальная функция «Division lines»
   возвращает список строки
@@ -1650,7 +1947,7 @@
   пусть ctx равно (запись «Context» с «function» равным name и «signatures» равным signatures и
     «nonempty» равным пустой список и
     «bounded» равным пустой список и «inside» равным "" и «outcome» равным (sig.«outcome») и «pad» равным "  " и
-      «line» равным line)
+      «line» равным line и «path» равным пустой список)
   пусть ending равно (запись «Ending» с «mode» равным "function" и «carried» равным пустой список и «state» равным "" и
     «line» равным line)
   пусть body равно («Block» от («Kids of» от («Kid of» от def и 3)) и env и ctx и ending)
@@ -1659,13 +1956,29 @@
     «Flang type» от («Kind in» от env и p)])
   пусть measure равно (если (verdict.«measure») равен "" то "" иначе «Joined» от ["  убывает ", verdict.«measure»,
     "\n"])
+  пусть duties равно («Duty lines» от (body.«needs»))
   пусть text равно («Joined» от ["@TOTAL@функция ", «Name text» от name, "\n  принимает ", соединить params по ", ",
-    "\n  возвращает ", «Flang type» от (sig.«outcome»), "\n", measure, body.«text»])
+    "\n  возвращает ", «Flang type» от (sig.«outcome»), "\n", duties, measure, body.«text»])
   (запись «Function made» с «name» равным name и «text» равным text и «helpers» равным (body.«helpers») и
     «needs» равным (body.«needs») и
     «calls» равным («Unique» от (body.«calls»)) и «own» равным (verdict.«own») и «measure» равным (verdict.«measure») и
     «reason» равным (verdict.«reason») и «recursive» равным (не (пусто (body.«sites»))) и «line» равным line и
     «code» равным (body.«code») и «message» равным (body.«message»))
+
+функция «Duty lines»
+  принимает needs: список строки
+  возвращает строка
+  пусть duties равно («Unique» от (отфильтровать needs где n → n начинается с "@DUTY@"))
+  пусть numbered равно (отобразить («Positions» от (длина duties)) как k → «Duty line» от k и (элемент k в duties))
+  соединить numbered по ""
+
+функция «Duty line»
+  принимает k: число, duty: строка
+  возвращает строка
+  пусть parts равно (разделить (подстрока duty с 7 по (длина duty)) по "\t")
+  пусть label равно (если пусто parts то "" иначе элемент 1 в parts)
+  пусть formula равно (если (длина parts) больше 1 то элемент 2 в parts иначе "да")
+  «Joined» от ["  обеспечивает «обязательство ", к строке k, " · ", label, "» ", formula, "\n"]
 
 функция «Param env»
   принимает params: список строки, kinds: список строки
@@ -1923,18 +2236,48 @@
   принимает functions: список «Function made», signatures: список «Signature», name: строка, forged: признак
   возвращает «Translation»
   пусть unproved равно («Unproved» от functions)
-  пусть needs равно («Needed helpers» от («Flat» от (отобразить functions как f → f.«needs»)))
-  пусть helpers равно (отобразить needs как n → соединить («Helper lines» от n) по "\n")
-  пусть texts равно (отобразить functions как f → «Function text» от f и functions и unproved)
-  пусть head равно («Joined» от ["модуль «", name, " from Python»\n\nпримечание ",
-    «String literal» от («Joined» от ["Перевод программы ",
-    name, ".py с подмножества Python. Переводчик не доверенный: этот текст судит flang check, ",
-    "а с самим Python его сравнивает сверка ответов на наборе входов."])])
-  пусть unit равно («Joined» от [соединить (приписать head к («Соединить» от helpers и texts)) по "\n\n", "\n"])
+  пусть said равно («Joined» от ["Перевод программы ", name, ".py с подмножества Python."])
+  пусть unit равно («Module text» от functions и functions и unproved и name и said)
   (запись «Translation» с «unit» равным unit и «code» равным "" и «message» равным "" и
     «verdicts» равным (отобразить functions как f → «Verdict line of» от f и functions и unproved) и
       «signatures» равным signatures и
     «forged» равным forged)
+
+функция «Module text»
+  принимает part: список «Function made», whole: список «Function made», pend: список строки, name: строка, said: строка
+  возвращает строка
+  пусть needs равно («Needed helpers» от («Flat» от (отобразить part как f → f.«needs»)))
+  пусть helpers равно (отобразить needs как n → соединить («Helper lines» от n) по "\n")
+  пусть texts равно (отобразить part как f → «Function text» от f и whole и pend)
+  пусть head равно («Joined» от ["модуль «", name, " from Python»\n\nпримечание ",
+    «String literal» от («Joined» от [said, " Переводчик не доверенный: этот текст судит flang check, ",
+    "а с самим Python его сравнивает сверка ответов на наборе входов."])])
+  «Joined» от [соединить (приписать head к («Соединить» от helpers и texts)) по "\n\n", "\n"]
+
+объект «Function unit»
+  «name»: строка
+  «line»: число
+  «unit»: строка
+
+функция «Function units»
+  принимает source: строка
+  возвращает список «Function unit»
+  пусть unit равно («Read module» от source)
+  пусть defs равно (если «Refused» от unit то пустой список иначе «Kids of» от unit)
+  пусть signatures равно (отобразить defs как d → «Signature of» от d)
+  пусть functions равно (отобразить defs как d → «Translate function» от d и signatures)
+  пусть unproved равно («Unproved» от functions)
+  отобразить functions как f → «Function unit of» от f и functions и unproved
+
+функция «Function unit of»
+  принимает f: «Function made», functions: список «Function made», unproved: список строки
+  возвращает «Function unit»
+  пусть reach равно («Reach» от functions и (f.«name»))
+  пусть members равно (отфильтровать functions где g → ((g.«name») равен (f.«name»)) или (reach содержит (g.«name»)))
+  пусть said равно («Joined» от ["Перевод функции ", f.«name», " с подмножества Python",
+    (если пусто reach то "." иначе ", с копиями функций, которые она зовёт.")])
+  (запись «Function unit» с «name» равным (f.«name») и «line» равным (f.«line») и
+    «unit» равным («Module text» от members и functions и unproved и (f.«name») и said))
 
 объект «Forge»
   «node»: «Node»
@@ -2018,7 +2361,8 @@
   пусть node равно («Whole expression» от tokens и 1)
   пусть ctx равно (запись «Context» с «function» равным "" и «signatures» равным пустой список и
     «nonempty» равным пустой список и
-    «bounded» равным пустой список и «inside» равным "" и «outcome» равным "" и «pad» равным "" и «line» равным 1)
+    «bounded» равным пустой список и «inside» равным "" и «outcome» равным "" и «pad» равным "" и «line» равным 1 и
+    «path» равным пустой список)
   пусть listed равно ((«Kind of» от node) равен "list") и притом («Only literals» от node)
   если listed
     то отобразить («Kids of» от node) как kid → «Expr» от kid и пустой список и ctx

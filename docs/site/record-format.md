@@ -156,13 +156,12 @@ a journal entry).
 ## Version 2
 
 Since 0.9.0 `flang check --proof --record file --record-version 2` writes the same
-record as version 2 (ADR-0255). The content is the same; the words change:
+record as version 2. The content is the same; the words change:
 
 - the first line is `proof record 2`;
 - the frame words («утверждение», «вердикт», «строка», «доказано» …), the names
-  of kernel rules, the short names of rules (`Разв2` → `Unfold2`) and the names of
-  primitives are written as keys that belong to no natural language; the table of
-  keys is `flang/proof/tables/record-v2-words.tsv`;
+  of inference rules, the short names of rules (`Разв2` → `Unfold2`) and the names
+  of built-in operations are written as keys that belong to no natural language;
 - a formula in angle brackets `⟨…⟩` is written in signs (`=` `≠` `<` `≤` `>` `≥`
   `+` `−` `·` `/` `∧` `∨` `¬` `⊤` `⊥` `∀` `∃` `ℕ`) and concept keys (`result`,
   `if`, `length` …) — the same for a Russian, an English and a Chinese program.
@@ -172,13 +171,12 @@ record as version 2 (ADR-0255). The content is the same; the words change:
 The `checker` program reads both versions: it translates version 2 back into
 version 1 and checks it as usual. Russian forms are chosen by position (`равно`
 after `дано`, `равным` when a record is built, the genitive of a type after
-`список` and `от`); where the author wrote another
-form of the same word, the version 2 record does not match the source while
-version 1 does: of the 250 checker probe programs that print a record, two (the
-author wrote `равно` where `равен` is expected); the other 248 get the same
-verdict for both versions. The record is bound to
-the program the same way as version 1: line and character counts and
-fingerprints of the source text.
+`список` and `от`). Where the author wrote another form of the same word, version
+2 does not match the program while version 1 does: of the 250 programs `checker`
+is tested on, two (the author wrote `равно` where `равен` is expected); the other
+248 get the same answer for both versions. The record is bound to the program the
+same way as version 1: line and character counts and fingerprints of the source
+text.
 
 ## Fingerprints of version 1
 

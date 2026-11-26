@@ -143,3 +143,12 @@ flang/src/emit/c/flang_repl.c:2439:  if (!repl_call_quiet && getenv("FLANG_VITKI
 `flang/self/factcheck.flang`, `flang/src/emit/c/flang_repl.c` — таблица и двоичный.
 `scripts/**`, `flang/scripts/**`, `.github/workflows/**` — коды сторожей.
 `scripts/guards/translit-file-names-guard.fscript` — сторож.
+
+## Сделано в 0.9.0 (ADR-0255)
+
+Шесть кодов таблицы переименованы без синонимов (владелец, 25 ноября 2026: «новые имена
+шести кодов без старых имён»): `FLANG_PRINT_REFUSED`, `FLANG_PRINT_DIAGNOSTICS`,
+`FLANG_EMPTY_ORDER`, `FLANG_TICKS` (переменная среды рантайма), `FLANG_FACTCHECK_NO_ANSWER`
+и снятый `FLANG_VERDICT_CACHE`. Шаг 1 воспроизведения отвечает пусто. Коды служебных программ
+(шаг 3) и сторож транслита кодов не сделаны — задача остаётся свободной на эту часть.
+

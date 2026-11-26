@@ -176,12 +176,12 @@ flang, — страница сайта «Что осталось до 1.0» (`do
 **Размеры.** Ядро решений — `flang/self/proof-kernel.flang`,
 <!-- СНЯТО 2026-11-22 строк flang/self/proof-kernel.flang = 10078 (an existence is not decided by computing it, typing hole 47) --> 10 078 строк.
 Закрытый список правил вывода — `flang/proof/tables/inference-rules.tsv`,
-<!-- СНЯТО 2026-11-22 строк flang/proof/tables/inference-rules.tsv = 170 (the ban on deciding an existence by computing it, typing hole 47) --> 170 строк
+<!-- СНЯТО 2026-11-26 строк flang/proof/tables/inference-rules.tsv = 171 (counter measure descent, ADR-0257) --> 171 строка
 с шапкой. Независимая программа проверки на C — `flang/proof/checker/checker.c`,
 <!-- СНЯТО 2026-11-23 строк flang/proof/checker/checker.c = 16454 (ADR-0254: an empty list in brackets is read outside strings and names) --> 16 454 строк;
 её тесты на подделки запускает `bootstrap/flang run-script checker:check`. Файлы Lean —
 <!-- СНЯТО 2026-11-21 файлов flang/proof/lean/*.lean = 39 (Semantics/Prefix.lean: a claim closed by the rule of the known prefix) --> 39 файлов,
-<!-- СНЯТО 2026-11-22 строк-в flang/proof/lean/*.lean = 31754 (the translation validator unfolds type aliases, reads the step mark and unifies function witnesses) --> 31 754 строк.
+<!-- СНЯТО 2026-11-26 строк-в flang/proof/lean/*.lean = 31800 (counter measure descent, ADR-0257) --> 31 800 строк.
 
 **Теоремы и файлы.** Пути — от `flang/proof/`.
 

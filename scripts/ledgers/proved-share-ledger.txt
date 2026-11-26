@@ -1446,7 +1446,7 @@ fad103860713ad9568df667ff5f87ceb|13|3|6|4|0|flang/self/sets-oracle.flang
 f69ea100fd1ae6208cd3234e634b8f33|42|42|0|0|0|flang/self/sets.flang
 9451d6a367775237987c79204ec133d2|18|13|1|4|0|flang/self/tags.flang
 712e5a5c5953044d28bf18434a6ad128|3|0|2|1|0|flang/self/totality-refusals.flang
-1a96c9b2191b5dde896fd1ab7661bf95|320|233|19|68|0|flang/self/totality.flang
+1a96c9b2191b5dde896fd1ab7661bf95|328|233|19|68|8|flang/self/totality.flang
 8509cc8c9dfe76c9cb6a3785f09d02ed|1|0|1|0|0|flang/self/type-refusals.flang
 50ad000f4a556bcf161cf7f6ea3bef73|478|164|7|307|0|flang/self/types.flang
 a6ed04b3a3ba2adffb5023069e58fc58|218|129|81|8|0|flang/stdlib/aes.flang

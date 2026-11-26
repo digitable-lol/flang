@@ -1,0 +1,50 @@
+модуль «is_palindrome from Python»
+
+примечание "Перевод программы is_palindrome.py с подмножества Python, текст переводчика без правки"
+
+примечание "a % b: остаток со знаком делителя, как у Python (у flang остаток со знаком делимого)"
+тотальная функция «Python remainder»
+  принимает «a»: число, «b»: число
+  возвращает число
+  если «b» равен 0
+    то к числу "ZeroDivisionError: integer division or modulo by zero"
+    иначе
+      пусть «r» равно ((«a» остаток от «b») плюс 0)
+      если ((«r» меньше 0) и притом («b» больше 0)) или ((«r» больше 0) и притом («b» меньше 0))
+        то «r» плюс «b»
+        иначе «r»
+
+примечание "a // b: деление с округлением вниз, как у Python; на ноль — отказ, как ZeroDivisionError"
+тотальная функция «Python floor division»
+  принимает «a»: число, «b»: число
+  возвращает число
+  если «b» равен 0
+    то к числу "ZeroDivisionError: integer division or modulo by zero"
+    иначе ((«a» минус («Python remainder» от «a» и «b»)) делить на «b») плюс 0
+
+тотальная функция «is_palindrome»
+  принимает «x»: число
+  возвращает признак
+  если («x» меньше 0) или (((«Python remainder» от «x» и 10) равен 0) и притом («x» не равен 0))
+    то нет
+    иначе
+      пусть «rev» равно 0
+      пусть «loop 5» равно («is_palindrome loop 5» от «rev» и «x»)
+      пусть «rev 5» равно («loop 5».«rev»)
+      пусть «x 5» равно («loop 5».«x»)
+      («x 5» равен «rev 5») или («x 5» равен («Python floor division» от «rev 5» и 10))
+
+объект «is_palindrome loop 5 state»
+  «rev»: число
+  «x»: число
+
+тотальная функция «is_palindrome loop 5»
+  принимает «rev»: число, «x»: число
+  возвращает «is_palindrome loop 5 state»
+  убывает «x»
+  если «x» больше «rev»
+    то
+      пусть «rev 6» равно («rev» умножить на 10) плюс («Python remainder» от «x» и 10)
+      пусть «x 7» равно «Python floor division» от «x» и 10
+      «is_palindrome loop 5» от «rev 6» и «x 7»
+    иначе запись «is_palindrome loop 5 state» с «rev» равным «rev» и «x» равным «x»

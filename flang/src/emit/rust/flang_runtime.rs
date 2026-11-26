@@ -276,7 +276,33 @@ pub enum Value {
     Record(Rc<Vec<Field>>),
     /// вариант — конструктор суммы типов
     Variant(Rc<VariantData>),
-    Word(&'static str, u64),
+    /// слово: имя типа и тело — биты слова фиксированной ширины либо точное
+    /// целое со знаком (у него имя «точное целое со знаком», ширины нет)
+    Word(&'static str, WordBits),
+}
+
+/// Тело слова. Точное целое со знаком живёт в том же виде значения, что и
+/// слова фиксированной ширины: проверка типов считает его «словом без
+/// ширины», и напечатанная программа доходит до него теми же путями. Вид
+/// значения один и тот же ещё и затем, чтобы образцы `Value::Word(_, _)` вне
+/// рантайма (узел на Rust) не потеряли полноту разбора.
+#[derive(Debug, Clone)]
+pub enum WordBits {
+    /// биты слова фиксированной ширины, лишние старшие — нули
+    Fixed(u64),
+    /// точное целое со знаком
+    Signed(Rc<SignedInt>),
+}
+
+/// Точное целое со знаком: знак и модуль разрядами основания 2²² — теми же,
+/// что у «точного целого» (младший разряд первым, старших нулей нет). У нуля
+/// знака нет: минус ноль — просто ноль.
+#[derive(Debug)]
+pub struct SignedInt {
+    /// меньше ли нуля
+    pub negative: bool,
+    /// модуль разрядами основания 2²²
+    pub digits: Vec<f64>,
 }
 
 /// «ничто».
@@ -1467,7 +1493,9 @@ fn word_name(name: &str) -> &'static str {
 }
 
 fn word_width(name: &str) -> u32 {
-    name[1..].parse().unwrap_or(64)
+    name.get(1..)
+        .and_then(|width| width.parse().ok())
+        .unwrap_or(64)
 }
 
 fn word_mask(width: u32) -> u64 {
@@ -1479,7 +1507,8 @@ fn word_mask(width: u32) -> u64 {
 }
 
 pub fn word(name: &str, bits: u64) -> Value {
-    Value::Word(word_name(name), bits & word_mask(word_width(name)))
+    let bits = bits & word_mask(word_width(name));
+    Value::Word(word_name(name), WordBits::Fixed(bits))
 }
 
 fn is_word(value: &Value) -> bool {
@@ -1488,7 +1517,7 @@ fn is_word(value: &Value) -> bool {
 
 fn word_parts(value: &Value) -> (&'static str, u64) {
     match value {
-        Value::Word(name, bits) => (name, *bits),
+        Value::Word(name, WordBits::Fixed(bits)) => (name, *bits),
         _ => ("u64", 0),
     }
 }
@@ -1508,6 +1537,9 @@ fn word_magnitude(value: &Value) -> u64 {
 }
 
 fn word_text(value: &Value) -> String {
+    if let Some((negative, digits)) = signed_parts(value) {
+        return signed_text(negative, &digits);
+    }
     if word_negative(value) {
         format!("-{}", word_magnitude(value))
     } else {
@@ -1563,9 +1595,13 @@ fn word_from_digits(name: &str, value: &Value, digits: &str) -> Result<Value, Er
 }
 
 fn word_convert(name: &str, value: &Value) -> Result<Value, Error> {
+    if name == SIGNED_NAME {
+        return signed_convert(value);
+    }
     match value {
         Value::Number(number) => word_from_number(name, *number),
         Value::Text(digits) => word_from_digits(name, value, digits),
+        Value::Word(_, WordBits::Signed(signed)) => signed_into_word(name, signed),
         Value::Word(_, _) => {
             if !word_fits(word_magnitude(value), word_negative(value), name) {
                 return Err(fail(CODE_OVERFLOW, format!("{} не помещается в {}", word_text(value), name)));
@@ -1645,6 +1681,9 @@ fn word_halves(left: &Value, right: &Value) -> Value {
 }
 
 fn word_arith(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    if is_signed(left) || is_signed(right) {
+        return signed_arith(op, left, right);
+    }
     let (left, right) = word_pair(left, right)?;
     let (name, a) = word_parts(&left);
     let b = word_parts(&right).1;
@@ -1669,6 +1708,10 @@ fn word_arith(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
 }
 
 fn word_ordered(left: &Value, right: &Value) -> Result<std::cmp::Ordering, Error> {
+    if is_signed(left) || is_signed(right) {
+        let (a, b) = (signed_side(left)?, signed_side(right)?);
+        return Ok(signed_cmp(&a, &b));
+    }
     let (left, right) = word_pair(left, right)?;
     let signed = |value: &Value| {
         let magnitude = word_magnitude(value) as i128;
@@ -1713,6 +1756,9 @@ fn word_shift_count(op: &str, left: &Value, right: &Value) -> Result<u32, Error>
 }
 
 fn word_shift(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    if is_signed(left) || is_signed(right) {
+        return Err(signed_undefined(op));
+    }
     let step = word_shift_count(op, left, right)?;
     let (name, bits) = word_parts(left);
     let width = word_width(name);
@@ -1740,8 +1786,13 @@ fn word_number(value: &Value) -> f64 {
 }
 
 fn word_equal(left: &Value, right: &Value) -> bool {
+    if is_signed(left) || is_signed(right) {
+        return signed_equal(left, right);
+    }
     match (left, right) {
-        (Value::Word(a, x), Value::Word(b, y)) => a == b && x == y,
+        (Value::Word(a, WordBits::Fixed(x)), Value::Word(b, WordBits::Fixed(y))) => {
+            a == b && x == y
+        }
         (Value::Number(number), Value::Word(_, _)) => {
             word_magnitude(right) <= WORD_EXACT_CEILING && word_number(right) == *number
         }
@@ -1753,6 +1804,9 @@ fn word_equal(left: &Value, right: &Value) -> bool {
 }
 
 fn word_to_number(value: &Value) -> Result<Value, Error> {
+    if let Some((negative, digits)) = signed_parts(value) {
+        return signed_to_number(negative, &digits);
+    }
     if word_magnitude(value) > WORD_EXACT_CEILING {
         return Err(fail(
             CODE_OVERFLOW,
@@ -1808,7 +1862,8 @@ pub fn rotate_right(_ctx: &Ctx, left: Value, right: Value) -> Result<Value, Erro
 
 pub fn b_bit_not(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     match value {
-        Value::Word(name, bits) => Ok(word(name, !bits)),
+        Value::Word(_, WordBits::Signed(_)) => Err(signed_undefined("bitNot")),
+        Value::Word(name, WordBits::Fixed(bits)) => Ok(word(name, !bits)),
         other => Err(fail(
             CODE_BUILTIN_ARGS,
             format!("«bitNot»: аргумент должен быть словом, получено {}", type_name(&other)),
@@ -1846,6 +1901,335 @@ pub fn b_i32(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
 
 pub fn b_i64(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
     word_convert("i64", &value)
+}
+
+// ───────────────────────── точное целое со знаком ─────────────────────────
+//
+// Целое без верхней границы, как `int` у Python. Длинных целых у Rust нет ни в
+// языке, ни в стандартной библиотеке, а крейт брать нельзя (ADR-0012), поэтому
+// модуль считается разрядами «точного целого» (основание 2²², функции `nat_*`
+// выше), а знак хранится рядом. Деление и остаток — вниз (floor), как `//` и
+// `%` у Python: остаток имеет знак делителя.
+
+/// Имя типа — всюду одно: в описаниях, текстах о смешении, проверке входа.
+pub const SIGNED_NAME: &str = "точное целое со знаком";
+
+/// Разряды потолка точных чисел 2⁵³ − 1.
+const SIGNED_EXACT_CEILING: [f64; 3] = [4194303.0, 4194303.0, 511.0];
+
+/// Знак и модуль одного целого.
+type SignedParts = (bool, Vec<f64>);
+
+/// Точное целое со знаком из знака и разрядов: старшие нули срезаются, у нуля
+/// знака нет.
+fn signed_value(negative: bool, digits: Vec<f64>) -> Value {
+    let digits = exact_trim(digits);
+    let negative = negative && !digits.is_empty();
+    Value::Word(
+        SIGNED_NAME,
+        WordBits::Signed(Rc::new(SignedInt { negative, digits })),
+    )
+}
+
+fn is_signed(value: &Value) -> bool {
+    matches!(value, Value::Word(_, WordBits::Signed(_)))
+}
+
+fn signed_parts(value: &Value) -> Option<SignedParts> {
+    match value {
+        Value::Word(_, WordBits::Signed(signed)) => Some((signed.negative, signed.digits.clone())),
+        _ => None,
+    }
+}
+
+/// Отказ «над точное целое со знаком «op» не определено»: сдвиги, биты,
+/// перенос по кругу и двойное произведение проверка типов не пускает, а
+/// рантайм отвечает на них чистым отказом.
+fn signed_undefined(op: &str) -> Error {
+    fail(
+        CODE_TYPE,
+        format!("над {} «{}» не определено", SIGNED_NAME, op),
+    )
+}
+
+/// Модуль слова фиксированной ширины разрядами.
+fn nat_from_u64(mut magnitude: u64) -> Vec<f64> {
+    let mut digits = Vec::new();
+    while magnitude > 0 {
+        digits.push((magnitude % 4_194_304) as f64);
+        magnitude /= 4_194_304;
+    }
+    digits
+}
+
+/// Разряды целого неотрицательного double любой величины. Деление на степень
+/// двойки и остаток от неё в double точны, поэтому разряды точны тоже.
+fn nat_from_whole(mut magnitude: f64) -> Vec<f64> {
+    let mut digits = Vec::new();
+    while magnitude > 0.0 {
+        let low = magnitude % EXACT_BASE;
+        digits.push(low);
+        magnitude = (magnitude - low) / EXACT_BASE;
+    }
+    digits
+}
+
+/// Деление разрядов на малое число (не больше 2³⁰): частное и остаток.
+/// Столбец `остаток · 2²² + разряд` меньше 2⁵², и double считает его точно.
+fn nat_divmod_small(digits: &[f64], divisor: f64) -> (Vec<f64>, f64) {
+    let mut quotient = vec![0.0; digits.len()];
+    let mut rest = 0.0;
+    for place in (0..digits.len()).rev() {
+        let column = rest * EXACT_BASE + digits[place];
+        rest = column % divisor;
+        quotient[place] = (column - rest) / divisor;
+    }
+    (exact_trim(quotient), rest)
+}
+
+/// Десятичная запись модуля: кусками по шесть цифр.
+fn nat_decimal(digits: &[f64]) -> String {
+    let mut pieces: Vec<f64> = Vec::new();
+    let mut rest = exact_trim(digits.to_vec());
+    while !rest.is_empty() {
+        let (quotient, piece) = nat_divmod_small(&rest, 1_000_000.0);
+        pieces.push(piece);
+        rest = quotient;
+    }
+    match pieces.split_last() {
+        None => "0".to_string(),
+        Some((top, lower)) => {
+            let mut out = format!("{top:.0}");
+            for piece in lower.iter().rev() {
+                out.push_str(&format!("{piece:06.0}"));
+            }
+            out
+        }
+    }
+}
+
+/// Десятичная запись: «-» у отрицательных, «0» у нуля.
+fn signed_text(negative: bool, digits: &[f64]) -> String {
+    format!("{}{}", if negative { "-" } else { "" }, nat_decimal(digits))
+}
+
+/// Целое из числа: точное значение конечного целого double любой величины.
+fn signed_from_number(number: f64) -> Result<SignedParts, Error> {
+    if !number.is_finite() || number != number.floor() {
+        return Err(fail(
+            CODE_OVERFLOW,
+            format!(
+                "{} не целое и в {} не переводится",
+                number_text(number),
+                SIGNED_NAME
+            ),
+        ));
+    }
+    let digits = nat_from_whole(number.abs());
+    Ok((number < 0.0 && !digits.is_empty(), digits))
+}
+
+/// Целое из строки десятичных цифр с необязательным «-» впереди.
+fn signed_from_digits(value: &Value, written: &str) -> Result<SignedParts, Error> {
+    let negative = written.starts_with('-');
+    let body = written.strip_prefix('-').unwrap_or(written);
+    if body.is_empty() || !body.bytes().all(|symbol| symbol.is_ascii_digit()) {
+        return Err(fail(
+            CODE_BUILTIN_ARGS,
+            format!(
+                "«{}»: строка {} — не десятичное целое",
+                SIGNED_NAME,
+                describe(value)
+            ),
+        ));
+    }
+    /* Кусками по шесть цифр: разряд · 10⁶ меньше 2⁴², столбцы точны. */
+    let mut digits: Vec<f64> = Vec::new();
+    let bytes = body.as_bytes();
+    let head = bytes.len() % 6;
+    let mut from = 0;
+    while from < bytes.len() {
+        let till = if from == 0 && head > 0 {
+            head
+        } else {
+            from + 6
+        };
+        let piece = bytes[from..till]
+            .iter()
+            .fold(0.0, |total, symbol| total * 10.0 + f64::from(symbol - b'0'));
+        let scale = 10f64.powi((till - from) as i32);
+        digits = nat_add(&nat_mul_small(&digits, scale), &exact_small_digits(piece));
+        from = till;
+    }
+    let digits = exact_trim(digits);
+    Ok((negative && !digits.is_empty(), digits))
+}
+
+/// Перевод формы «точное целое со знаком».
+fn signed_convert(value: &Value) -> Result<Value, Error> {
+    let (negative, digits) = match value {
+        Value::Number(number) => signed_from_number(*number)?,
+        Value::Text(written) => signed_from_digits(value, written)?,
+        Value::Word(_, WordBits::Signed(_)) => return Ok(value.clone()),
+        Value::Word(_, WordBits::Fixed(_)) => {
+            (word_negative(value), nat_from_u64(word_magnitude(value)))
+        }
+        other => {
+            return Err(fail(
+                CODE_BUILTIN_ARGS,
+                format!(
+                    "«{}»: переводится число или слово, получено {}",
+                    SIGNED_NAME,
+                    type_name(other)
+                ),
+            ))
+        }
+    };
+    Ok(signed_value(negative, digits))
+}
+
+/// Целое со знаком в слово фиксированной ширины: значение сохраняется, а не
+/// помещается — отказ тем же текстом, что у прочих слов.
+fn signed_into_word(name: &str, signed: &SignedInt) -> Result<Value, Error> {
+    let refusal = || {
+        fail(
+            CODE_OVERFLOW,
+            format!(
+                "{} не помещается в {}",
+                signed_text(signed.negative, &signed.digits),
+                name
+            ),
+        )
+    };
+    if signed.digits.len() > 3 {
+        return Err(refusal());
+    }
+    let wide = signed
+        .digits
+        .iter()
+        .rev()
+        .fold(0u128, |total, digit| total * 4_194_304 + *digit as u128);
+    if wide > u128::from(u64::MAX) || !word_fits(wide as u64, signed.negative, name) {
+        return Err(refusal());
+    }
+    Ok(word_from_magnitude(name, wide as u64, signed.negative))
+}
+
+/// Сторона двучлена: целое как есть, число переводится, прочее не смешивается.
+fn signed_side(value: &Value) -> Result<SignedParts, Error> {
+    match value {
+        Value::Word(_, WordBits::Signed(signed)) => Ok((signed.negative, signed.digits.clone())),
+        Value::Number(number) => signed_from_number(*number),
+        other => Err(fail(
+            CODE_TYPE,
+            format!("{} и {} не смешиваются", SIGNED_NAME, type_name(other)),
+        )),
+    }
+}
+
+fn signed_cmp(left: &SignedParts, right: &SignedParts) -> std::cmp::Ordering {
+    let (a_negative, a) = left;
+    let (b_negative, b) = right;
+    match (a_negative, b_negative) {
+        (false, true) => std::cmp::Ordering::Greater,
+        (true, false) => std::cmp::Ordering::Less,
+        (false, false) => nat_cmp(a, b),
+        (true, true) => nat_cmp(b, a),
+    }
+}
+
+/// Сумма со знаками: равные знаки складывают модули, разные — вычитают
+/// меньший из большего, и знак берётся у большего.
+fn signed_sum(a_negative: bool, a: &[f64], b_negative: bool, b: &[f64]) -> Value {
+    if a_negative == b_negative {
+        return signed_value(a_negative, nat_add(a, b));
+    }
+    if nat_cmp(a, b) == std::cmp::Ordering::Less {
+        signed_value(b_negative, nat_sub(b, a))
+    } else {
+        signed_value(a_negative, nat_sub(a, b))
+    }
+}
+
+/// Частное и остаток вниз: при разных знаках и ненулевом остатке частное
+/// уходит на единицу дальше от нуля, а остаток становится «делитель − остаток»
+/// со знаком делителя.
+fn signed_divide(op: &str, left: &SignedParts, right: &SignedParts) -> Result<Value, Error> {
+    let (a_negative, a) = left;
+    let (b_negative, b) = right;
+    if b.is_empty() {
+        return Err(fail(
+            CODE_PROPERTY,
+            format!("{}: «{}» на ноль не определено", SIGNED_NAME, op),
+        ));
+    }
+    let (quotient, rest) = nat_divmod(a, b);
+    let down = a_negative != b_negative && !rest.is_empty();
+    if op == "div" {
+        let quotient = if down {
+            nat_add(&quotient, &[1.0])
+        } else {
+            quotient
+        };
+        return Ok(signed_value(a_negative != b_negative, quotient));
+    }
+    let rest = if down { nat_sub(b, &rest) } else { rest };
+    Ok(signed_value(*b_negative, rest))
+}
+
+/// Двучлен, хотя бы одна сторона которого — точное целое со знаком.
+fn signed_arith(op: &str, left: &Value, right: &Value) -> Result<Value, Error> {
+    let a = signed_side(left)?;
+    let b = signed_side(right)?;
+    match op {
+        "add" => Ok(signed_sum(a.0, &a.1, b.0, &b.1)),
+        "sub" => Ok(signed_sum(a.0, &a.1, !b.0, &b.1)),
+        "mul" => Ok(signed_value(a.0 != b.0, nat_mul(&a.1, &b.1))),
+        "div" | "mod" => signed_divide(op, &a, &b),
+        _ => Err(signed_undefined(op)),
+    }
+}
+
+/// Равенство: с целым со знаком — по значению, с числом — если число целое и
+/// равно ему (как у слов), со всем прочим — ложь.
+fn signed_equal(left: &Value, right: &Value) -> bool {
+    match (signed_parts(left), signed_parts(right)) {
+        (Some(a), Some(b)) => signed_cmp(&a, &b) == std::cmp::Ordering::Equal,
+        (Some(a), None) | (None, Some(a)) => {
+            let other = if is_signed(left) { right } else { left };
+            match other {
+                Value::Number(number) => match signed_from_number(*number) {
+                    Ok(b) => signed_cmp(&a, &b) == std::cmp::Ordering::Equal,
+                    Err(_) => false,
+                },
+                _ => false,
+            }
+        }
+        (None, None) => false,
+    }
+}
+
+/// «к числу»: до потолка точных чисел включительно — число, выше — отказ.
+fn signed_to_number(negative: bool, digits: &[f64]) -> Result<Value, Error> {
+    if nat_cmp(digits, &SIGNED_EXACT_CEILING) == std::cmp::Ordering::Greater {
+        return Err(fail(
+            CODE_OVERFLOW,
+            format!(
+                "{} за потолком точных чисел 9007199254740991",
+                signed_text(negative, digits)
+            ),
+        ));
+    }
+    let magnitude = digits
+        .iter()
+        .rev()
+        .fold(0.0, |total, digit| total * EXACT_BASE + digit);
+    Ok(number(if negative { -magnitude } else { magnitude }))
+}
+
+/// Форма «точное целое со знаком».
+pub fn b_signed(_ctx: &Ctx, value: Value) -> Result<Value, Error> {
+    signed_convert(&value)
 }
 
 

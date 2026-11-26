@@ -154,6 +154,16 @@ public sealed class Value
 
     public readonly ulong Bits;
 
+    /// <summary>
+    /// Значение точного целого со знаком; осмысленно только у слова с именем
+    /// SignedName. Ширины у этого слова нет, поэтому биты не годятся: держим
+    /// System.Numerics.BigInteger, как Python держит int.
+    /// </summary>
+    public readonly BigInteger Big;
+
+    /// <summary>Имя типа точного целого со знаком — «слова без ширины».</summary>
+    public const string SignedName = "точное целое со знаком";
+
     private static readonly Value[] NoItems = [];
     private static readonly Field[] NoFields = [];
 
@@ -182,6 +192,18 @@ public sealed class Value
         Bits = bits;
     }
 
+    private Value(BigInteger whole)
+        : this(TagWord, 0.0, false, SignedName, NoItems, 0, null, NoFields)
+    {
+        Big = whole;
+    }
+
+    /// <summary>Точное целое со знаком: слово без ширины, без верхней границы.</summary>
+    public static Value Signed(BigInteger whole) => new(whole);
+
+    /// <summary>Есть ли у значения вид точного целого со знаком.</summary>
+    public static bool IsSigned(Value value) => value.Tag == TagWord && value.Str == SignedName;
+
     public static int WordWidth(string name) => int.Parse(name.AsSpan(1), CultureInfo.InvariantCulture);
 
     public static ulong WordMask(int width) => width >= 64 ? ulong.MaxValue : (1UL << width) - 1UL;
@@ -190,6 +212,10 @@ public sealed class Value
 
     public static BigInteger WordInt(Value value)
     {
+        if (value.Str == SignedName)
+        {
+            return value.Big;
+        }
         int width = WordWidth(value.Str);
         var unsigned = new BigInteger(value.Bits);
         bool negative = value.Str[0] == 'i' && ((value.Bits >> (width - 1)) & 1UL) != 0UL;
@@ -198,6 +224,14 @@ public sealed class Value
 
     public static bool WordEqual(Value left, Value right)
     {
+        /* Точное целое со знаком равно только точному целому со знаком того же
+           значения («Целые равны знач» интерпретатора). Сравнение с числом на
+           уровне выражения идёт через Flang.Eq и переводит число; здесь —
+           структурное равенство, и число целому не равно. */
+        if (IsSigned(left) || IsSigned(right))
+        {
+            return IsSigned(left) && IsSigned(right) && left.Big == right.Big;
+        }
         if (left.Tag == TagWord && right.Tag == TagWord)
         {
             return left.Str == right.Str && left.Bits == right.Bits;

@@ -159,6 +159,9 @@ type Value struct {
 	// нельзя — только копией.
 	Grow *Grow
 	Bits uint64
+	// Big — значение слова «точное целое со знаком» (у него нет ширины, и Bits
+	// ему не годится); у слов с шириной nil.
+	Big *big.Int
 }
 
 // Plan — объявление «план» напечатанной программы: имя плана и исходные имена
@@ -1066,7 +1069,109 @@ func Word(name string, bits uint64) Value {
 	return Value{Tag: TagWord, Str: name, Bits: bits & wordMask(wordWidth(name))}
 }
 
+// signedName — имя типа «точное целое со знаком»: слово без ширины, целое со
+// знаком без потолка (как int у Python). Держится в math/big.
+const signedName = "точное целое со знаком"
+
+// Signed — значение «точного целого со знаком». Аргумент не копируется: big.Int
+// здесь не меняют на месте, всякая операция строит новое.
+func Signed(value *big.Int) Value {
+	return Value{Tag: TagWord, Str: signedName, Big: value}
+}
+
+func wordIsSigned(value Value) bool { return value.Tag == TagWord && value.Str == signedName }
+
+// wordBig — значение любого слова как целое без потолка.
+func wordBig(value Value) *big.Int {
+	if wordIsSigned(value) {
+		if value.Big == nil {
+			return new(big.Int)
+		}
+		return value.Big
+	}
+	out := new(big.Int).SetUint64(wordMagnitude(value))
+	if wordNegative(value) {
+		out.Neg(out)
+	}
+	return out
+}
+
+// wordFromBig — целое без потолка в слово с шириной; не помещается — отказ
+// тем же текстом, что у слова.
+func wordFromBig(name string, value *big.Int) (Value, error) {
+	magnitude := new(big.Int).Abs(value)
+	negative := value.Sign() < 0
+	if !magnitude.IsUint64() || !wordFits(magnitude.Uint64(), negative, name) {
+		return Nothing(), Fail(CodeOverflow, "%s не помещается в %s", value.String(), name)
+	}
+	return wordFromMagnitude(name, magnitude.Uint64(), negative), nil
+}
+
+// signedFromNumber — число в «точное целое со знаком»: годится всякое конечное
+// целое, какой угодно величины (1e20 — это 100000000000000000000 ровно).
+func signedFromNumber(number float64) (Value, error) {
+	if math.IsNaN(number) || math.IsInf(number, 0) || number != math.Floor(number) {
+		return Nothing(), Fail(CodeOverflow, "%s не целое и в %s не переводится", NumberText(number), signedName)
+	}
+	whole, _ := new(big.Float).SetFloat64(number).Int(nil)
+	return Signed(whole), nil
+}
+
+func signedFromDigits(value Value) (Value, error) {
+	body := strings.TrimPrefix(value.Str, "-")
+	if body == "" || strings.Trim(body, "0123456789") != "" {
+		return Nothing(), Fail(CodeBuiltinArgs, "«%s»: строка %s — не десятичное целое", signedName, Describe(value))
+	}
+	whole, _ := new(big.Int).SetString(value.Str, 10)
+	return Signed(whole), nil
+}
+
+func signedConvert(value Value) (Value, error) {
+	switch value.Tag {
+	case TagNumber:
+		return signedFromNumber(value.Num)
+	case TagString:
+		return signedFromDigits(value)
+	case TagWord:
+		return Signed(wordBig(value)), nil
+	}
+	return Nothing(), Fail(CodeBuiltinArgs, "«%s»: переводится число или слово, получено %s", signedName, TypeName(value))
+}
+
+// signedArith — действия «точного целого со знаком»: сложение, вычитание и
+// умножение точны и не переполняются; «div» и «mod» округляют вниз, как // и %
+// у Python, — остаток берёт знак делителя. У слов с шириной деление своё
+// (с отбрасыванием дробной части), его это не касается.
+func signedArith(op string, left, right Value) (Value, error) {
+	a, b := wordBig(left), wordBig(right)
+	switch op {
+	case "add":
+		return Signed(new(big.Int).Add(a, b)), nil
+	case "sub":
+		return Signed(new(big.Int).Sub(a, b)), nil
+	case "mul":
+		return Signed(new(big.Int).Mul(a, b)), nil
+	case "div", "mod":
+		if b.Sign() == 0 {
+			return Nothing(), Fail(CodeProperty, "%s: «%s» на ноль не определено", signedName, op)
+		}
+		quotient, remainder := new(big.Int).QuoRem(a, b, new(big.Int))
+		if remainder.Sign() != 0 && remainder.Sign() != b.Sign() {
+			quotient.Sub(quotient, big.NewInt(1))
+			remainder.Add(remainder, b)
+		}
+		if op == "div" {
+			return Signed(quotient), nil
+		}
+		return Signed(remainder), nil
+	}
+	return Nothing(), Fail(CodeType, "над %s «%s» не определено", signedName, op)
+}
+
 func wordWidth(name string) uint {
+	if name == signedName {
+		return 0
+	}
 	width, _ := strconv.Atoi(name[1:])
 	return uint(width)
 }
@@ -1081,6 +1186,9 @@ func wordMask(width uint) uint64 {
 func wordSigned(name string) bool { return name[0] == 'i' }
 
 func wordNegative(value Value) bool {
+	if wordIsSigned(value) {
+		return wordBig(value).Sign() < 0
+	}
 	width := wordWidth(value.Str)
 	return wordSigned(value.Str) && value.Bits&(uint64(1)<<(width-1)) != 0
 }
@@ -1093,6 +1201,9 @@ func wordMagnitude(value Value) uint64 {
 }
 
 func wordText(value Value) string {
+	if wordIsSigned(value) {
+		return wordBig(value).String()
+	}
 	if wordNegative(value) {
 		return "-" + strconv.FormatUint(wordMagnitude(value), 10)
 	}
@@ -1144,6 +1255,12 @@ func wordFromDigits(name string, value Value) (Value, error) {
 }
 
 func wordConvert(name string, value Value) (Value, error) {
+	if name == signedName {
+		return signedConvert(value)
+	}
+	if wordIsSigned(value) {
+		return wordFromBig(name, wordBig(value))
+	}
 	switch value.Tag {
 	case TagNumber:
 		return wordFromNumber(name, value.Num)
@@ -1165,6 +1282,12 @@ func wordPair(left, right Value) (Value, Value, error) {
 		pattern, other = left, right
 	}
 	switch {
+	case other.Tag == TagNumber && pattern.Str == signedName:
+		converted, err := signedFromNumber(other.Num)
+		if err != nil {
+			return left, right, err
+		}
+		other = converted
 	case other.Tag == TagNumber:
 		converted, err := wordFromNumber(pattern.Str, other.Num)
 		if err != nil {
@@ -1232,6 +1355,9 @@ func wordArith(op string, left, right Value) (Value, error) {
 	if err != nil {
 		return Nothing(), err
 	}
+	if wordIsSigned(left) {
+		return signedArith(op, left, right)
+	}
 	switch op {
 	case "add":
 		return wordSum(op, left, right, false)
@@ -1261,6 +1387,9 @@ func wordArith(op string, left, right Value) (Value, error) {
 }
 
 func wordOrder(left, right Value) int {
+	if wordIsSigned(left) || wordIsSigned(right) {
+		return wordBig(left).Cmp(wordBig(right))
+	}
 	aNegative, bNegative := wordNegative(left), wordNegative(right)
 	a, b := wordMagnitude(left), wordMagnitude(right)
 	switch {
@@ -1288,17 +1417,17 @@ func wordShiftCount(op string, left, right Value) (uint, error) {
 	if left.Tag != TagWord {
 		return 0, Fail(CodeBuiltinArgs, "«%s»: сдвиг на %s не меньше ширины %s", op, Describe(right), TypeName(left))
 	}
+	if wordIsSigned(left) {
+		return 0, Fail(CodeType, "над %s «%s» не определено", signedName, op)
+	}
 	count := -1.0
 	if right.Tag == TagNumber {
 		count = right.Num
 	}
 	if right.Tag == TagWord {
 		count = float64(wordExactCeiling)
-		if wordMagnitude(right) <= wordExactCeiling {
-			count = float64(wordMagnitude(right))
-			if wordNegative(right) {
-				count = -count
-			}
+		if wordBig(right).CmpAbs(big.NewInt(int64(wordExactCeiling))) <= 0 {
+			count = wordNumber(right)
 		}
 	}
 	if math.IsNaN(count) || math.IsInf(count, 0) || count < 0 || count != math.Floor(count) {
@@ -1337,16 +1466,31 @@ func wordShift(op string, left, right Value) (Value, error) {
 
 func wordEqual(left, right Value) bool {
 	if left.Tag == TagWord && right.Tag == TagWord {
+		if wordIsSigned(left) && wordIsSigned(right) {
+			return wordBig(left).Cmp(wordBig(right)) == 0
+		}
 		return left.Str == right.Str && left.Bits == right.Bits
 	}
 	word, other := left, right
 	if left.Tag != TagWord {
 		word, other = right, left
 	}
-	return other.Tag == TagNumber && wordMagnitude(word) <= wordExactCeiling && wordNumber(word) == other.Num
+	return other.Tag == TagNumber && wordInCeiling(word) && wordNumber(word) == other.Num
+}
+
+// wordInCeiling — модуль слова не выше 2⁵³−1, то есть число его держит точно.
+func wordInCeiling(value Value) bool {
+	if wordIsSigned(value) {
+		return wordBig(value).CmpAbs(new(big.Int).SetUint64(wordExactCeiling)) <= 0
+	}
+	return wordMagnitude(value) <= wordExactCeiling
 }
 
 func wordNumber(value Value) float64 {
+	if wordIsSigned(value) {
+		number, _ := new(big.Float).SetInt(wordBig(value)).Float64()
+		return number
+	}
 	if wordNegative(value) {
 		return -float64(wordMagnitude(value))
 	}
@@ -1354,7 +1498,7 @@ func wordNumber(value Value) float64 {
 }
 
 func wordToNumber(value Value) (Value, error) {
-	if wordMagnitude(value) > wordExactCeiling {
+	if !wordInCeiling(value) {
 		return Nothing(), Fail(CodeOverflow, "%s за потолком точных чисел 9007199254740991", wordText(value))
 	}
 	return Number(wordNumber(value)), nil
@@ -1394,6 +1538,9 @@ func BBitNot(ctx *Ctx, value Value) (Value, error) {
 	if value.Tag != TagWord {
 		return Nothing(), Fail(CodeBuiltinArgs, "«bitNot»: аргумент должен быть словом, получено %s", TypeName(value))
 	}
+	if wordIsSigned(value) {
+		return Nothing(), Fail(CodeType, "над %s «bitNot» не определено", signedName)
+	}
 	return Word(value.Str, ^value.Bits), nil
 }
 
@@ -1412,6 +1559,8 @@ func BI16(ctx *Ctx, value Value) (Value, error) { return wordConvert("i16", valu
 func BI32(ctx *Ctx, value Value) (Value, error) { return wordConvert("i32", value) }
 
 func BI64(ctx *Ctx, value Value) (Value, error) { return wordConvert("i64", value) }
+
+func BSigned(ctx *Ctx, value Value) (Value, error) { return wordConvert(signedName, value) }
 
 // ───────────────────────────── проверки аргументов ─────────────────────────
 

@@ -936,6 +936,10 @@ public final class Flang {
   private static final String CODE_OVERFLOW = "FLANG_OVERFLOW";
 
   private static boolean wordFits(java.math.BigInteger whole, String name) {
+    if (name.equals(Value.SIGNED)) {
+      /* Слово без ширины: верхней границы нет, помещается всё. */
+      return true;
+    }
     int width = Value.wordWidth(name);
     java.math.BigInteger one = java.math.BigInteger.ONE;
     if (name.charAt(0) == 'i') {
@@ -946,6 +950,9 @@ public final class Flang {
   }
 
   private static Value wordOf(String name, java.math.BigInteger whole) {
+    if (name.equals(Value.SIGNED)) {
+      return Value.signed(whole);
+    }
     return Value.word(name, whole.longValue());
   }
 
@@ -1020,6 +1027,20 @@ public final class Flang {
   private static Value wordDivide(String op, Value left, Value right) {
     java.math.BigInteger a = Value.wordInt(left);
     java.math.BigInteger b = Value.wordInt(right);
+    if (Value.isSigned(left)) {
+      if (b.signum() == 0) {
+        throw fail(FlangError.CODE_PROPERTY, Value.SIGNED + ": «" + op + "» на ноль не определено");
+      }
+      /* Деление вниз, как // и % в Python: остаток со знаком делителя.
+         divideAndRemainder режет к нулю — поправка на единицу, когда остаток
+         не ноль и знаки делимого и делителя расходятся. */
+      java.math.BigInteger[] qr = a.divideAndRemainder(b);
+      if (qr[1].signum() != 0 && qr[1].signum() != b.signum()) {
+        qr[0] = qr[0].subtract(java.math.BigInteger.ONE);
+        qr[1] = qr[1].add(b);
+      }
+      return Value.signed(op.equals("mod") ? qr[1] : qr[0]);
+    }
     if (b.signum() == 0) {
       throw fail(CODE_OVERFLOW, a + " «" + op + "» 0: деление на ноль");
     }
@@ -1044,6 +1065,23 @@ public final class Flang {
     Value[] pair = wordPair(left, right);
     Value a = pair[0];
     Value b = pair[1];
+    if (Value.isSigned(a)) {
+      /* У слова без ширины нет битов: обёртка, двойное произведение и
+         битовые операции не определены (проверка типов их не пропускает). */
+      switch (op) {
+        case "add":
+          return Value.signed(Value.wordInt(a).add(Value.wordInt(b)));
+        case "sub":
+          return Value.signed(Value.wordInt(a).subtract(Value.wordInt(b)));
+        case "mul":
+          return Value.signed(Value.wordInt(a).multiply(Value.wordInt(b)));
+        case "div":
+        case "mod":
+          return wordDivide(op, a, b);
+        default:
+          throw fail(FlangError.CODE_TYPE, "над " + a.str + " «" + op + "» не определено");
+      }
+    }
     switch (op) {
       case "add":
         return wordChecked(op, a, b, Value.wordInt(a).add(Value.wordInt(b)));
@@ -1074,6 +1112,9 @@ public final class Flang {
   }
 
   private static int wordShiftCount(String op, Value left, Value right) {
+    if (Value.isSigned(left)) {
+      throw fail(FlangError.CODE_TYPE, "над " + left.str + " «" + op + "» не определено");
+    }
     if (left.tag != Value.TAG_WORD) {
       throw fail(
           FlangError.CODE_BUILTIN_ARGS,
@@ -1177,6 +1218,9 @@ public final class Flang {
           FlangError.CODE_BUILTIN_ARGS,
           "«bitNot»: аргумент должен быть словом, получено " + Value.typeName(value));
     }
+    if (Value.isSigned(value)) {
+      throw fail(FlangError.CODE_TYPE, "над " + value.str + " «bitNot» не определено");
+    }
     return Value.word(value.str, ~value.bits);
   }
 
@@ -1210,6 +1254,11 @@ public final class Flang {
 
   public static Value bI64(Ctx ctx, Value value) {
     return wordConvert("i64", value);
+  }
+
+  /** «точное целое со знаком x»: слово без ширины, верхней границы нет. */
+  public static Value bSigned(Ctx ctx, Value value) {
+    return wordConvert(Value.SIGNED, value);
   }
 
 

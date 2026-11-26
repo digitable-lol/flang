@@ -706,6 +706,14 @@ static void write_text(const char *utf8, size_t bytes) {
 static void write_value(fl_value value) {
   size_t index = 0;
   char number[FL_NUMBER_TEXT_MAX];
+  if (value.tag == FL_WORD && value.as.word.width == 0u) {
+    /* Точное целое со знаком: вид тот же, что у слов, имя — имя типа. */
+    char *decimal = fl_signed_decimal(value);
+    printf("{\"w\":\"" FL_SIGNED_NAME "\",\"v\":\"%s\"}",
+           decimal == NULL ? "0" : decimal);
+    free(decimal);
+    return;
+  }
   switch (value.tag) {
   case FL_NOTHING:
     fputs("null", stdout);
@@ -1668,6 +1676,12 @@ static void cli_io_plain_fields(const fl_field *fields, size_t count,
 static void cli_io_plain(fl_value value, FILE *sink) {
   size_t index = 0;
   char number[FL_NUMBER_TEXT_MAX];
+  if (value.tag == FL_WORD && value.as.word.width == 0u) {
+    char *decimal = fl_signed_decimal(value);
+    fputs(decimal == NULL ? "0" : decimal, sink);
+    free(decimal);
+    return;
+  }
   switch (value.tag) {
   case FL_NOTHING:
     fputs("null", sink);

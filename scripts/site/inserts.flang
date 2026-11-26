@@ -425,8 +425,8 @@
   возвращает строка
   обеспечивает «a code is a quoted name» результат начинается с "'"
   пример «a quoted code in the compiler sources and in its runtime»
-    ожидается "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
-  "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
+    ожидается "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'flang/src/emit/c/flang_*.c'"
+  "'\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'flang/src/emit/c/flang_*.c'"
 
 тотальная функция «Shell line»
   принимает key: строка
@@ -439,7 +439,7 @@
     ожидается «Run line» от "check a.flang"
   пример «the lines that name a code»
     дано key равно "code lines"
-    ожидается "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"
+    ожидается "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'flang/src/emit/c/flang_*.c'"
   пример «the list of the modules of the library»
     дано key равно "library list"
     ожидается "git ls-files -- ':(glob)flang/stdlib/*.flang'"
@@ -465,7 +465,7 @@
     дано rest равно "a"
     ожидается [["file ", "cat -- 'a'"],
       ["run ", («Run line» от "a")],
-      ["code lines", "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'bootstrap/flang_*.c'"],
+      ["code lines", "git grep -a -n -E '\"FLANG_[^\" :]+' -- 'flang/self/*.flang' 'flang/src/emit/c/flang_*.c'"],
       ["library list", "git ls-files -- ':(glob)flang/stdlib/*.flang'"]]
   [["file ", (соединить ["cat -- '", rest, "'"] по "")],
    ["run ", («Run line» от rest)],

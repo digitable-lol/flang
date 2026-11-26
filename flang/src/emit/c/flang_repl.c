@@ -2372,7 +2372,7 @@ static fl_status repl_call_within(const char *name, const fl_value *args, size_t
    * время» задаётся не каждый прогон, а лишняя строка на каждый вызов сломала
    * бы разбор вывода тем, кто читает бинарник трубой.
    */
-  if (!repl_call_quiet && getenv("FLANG_VITKI") != NULL) {
+  if (!repl_call_quiet && getenv("FLANG_TICKS") != NULL) {
     fprintf(stderr, "витки: %s %lu\n", name, (unsigned long)repl_ctx.steps);
   }
   if (status != FL_OK) {

@@ -60,16 +60,16 @@
 | 0029 | [Арифметика под условием (Е-5): остаток целого и дно произведения переигрываются проверяющей программой сличением](0029-arithmetic-under-a-guard-is-replayed-by-matching.md) | принято | да |  |
 | 0030 | [Печатник доказывает КАЖДЫЙ СВОЙ ЗАПУСК, а не себя целиком](0030-the-printer-proves-each-run-not-itself.md) | принято | частично |  |
 | 0031 | [Сертификация — это процесс, а не свойство языка](0031-certification-is-a-process-not-a-property-of-the-language.md) | предложено | — |  |
-| 0032 | [Из четырёх просьб владельца одна — недостающее правило, три — другие логики](0032-one-missing-rule-and-three-other-logics.md) | предложено | частично |  |
-| 0033 | [«Завершится» и «завершится не позже чем за N» — разные теоремы: первая у нас доказана, вторая есть анализом и в запись доказательства не доезжает](0033-termination-is-not-a-bound-on-steps.md) | предложено | частично |  |
-| 0034 | [Поведение при отказе сегодня описывается, а не доказывается: отказ приходит данными, множество отказов процесса закрыто, а утверждения о них высказать нечем](0034-hardware-failure-is-described-not-proved.md) | предложено | частично |  |
+| 0032 | [Из четырёх просьб владельца одна — недостающее правило, три — другие логики](0032-one-missing-rule-and-three-other-logics.md) | предложено | да |  |
+| 0033 | [«Завершится» и «завершится не позже чем за N» — разные теоремы: первая у нас доказана, вторая есть анализом и в запись доказательства не доезжает](0033-termination-is-not-a-bound-on-steps.md) | предложено | да |  |
+| 0034 | [Поведение при отказе сегодня описывается, а не доказывается: отказ приходит данными, множество отказов процесса закрыто, а утверждения о них высказать нечем](0034-hardware-failure-is-described-not-proved.md) | предложено | да |  |
 | 0035 | [Проводник печатает строки потоком, и потому flang-tui в него не едет](0035-the-tutor-streams-lines-so-flang-tui-stays-out.md) | принято | да |  |
 | 0036 | [Точное целое — это новый ВИД значения, а не новое имя типа](0036-an-exact-integer-is-a-new-kind-of-value-not-a-new-name.md) | принято | да |  |
 | 0037 | [Второй порядок в этом языке — конечная конъюнкция над ярлыками функций, и ему не хватает трёх правил, а не новой логики](0037-second-order-is-a-finite-conjunction-over-function-tags.md) | предложено | да |  |
 | 0038 | [Предусловие снимается выводом, который печатается в запись и переигрывается, — и входит в долю доказанного](0038-a-precondition-is-discharged-by-a-printed-derivation.md) | предложено | да |  |
-| 0039 | [Закон категорной поверхности — утверждение о всех значениях носителя; сетка — только поиск контрпримера](0039-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md) | предложено | частично |  |
+| 0039 | [Закон категорной поверхности — утверждение о всех значениях носителя; сетка — только поиск контрпримера](0039-a-law-of-the-category-surface-is-a-statement-about-the-carrier.md) | предложено | да |  |
 | 0040 | [Упрощатель переписывает цель доказанными равенствами, печатает каждый шаг и не добавляет доверия](0040-a-simplifier-rewrites-by-proved-equalities-and-prints-every-step.md) | предложено | да |  |
-| 0041 | [У языка появляется механизированная семантика, а у сверщика — теорема состоятельности относительно неё](0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md) | предложено | частично |  |
+| 0041 | [У языка появляется механизированная семантика, а у сверщика — теорема состоятельности относительно неё](0041-the-checker-is-proved-sound-against-a-mechanised-semantics.md) | предложено | да |  |
 | 0042 | [Двенадцать последних мест доли получают правила, а не исключения из знаменателя; семя перепечатывается одной партией](0042-the-last-twelve-places-get-rules-not-exceptions.md) | принято | да |  |
 | 0043 | [Скрипт носит расширение `.fscript`, программа — `.flang`](0043-a-script-file-carries-the-fscript-extension.md) | принято | частично |  |
 | 0044 | [Логика во времени, эффекты и процессы: 414 мест сосчитаны, три шага получают цену по файлам и одну строку бюджета сверщика](0044-time-effects-and-processes-are-counted-before-they-get-rules.md) | принято | ? |  |
@@ -78,21 +78,21 @@
 | 0047 | [Силлогизму даётся одно слово поверхности, а не четыре](0047-a-syllogism-gets-one-surface-word-not-four.md) | принято | да |  |
 | 0048 | [Ссылка на доказанное утверждение уже есть — и упирается в границу файла](0048-a-lemma-reference-exists-and-stops-at-the-file-boundary.md) | предложено | нет |  |
 | 0049 | [Короткие команды проекта записаны в `.flangrc`, и зовёт их сам двоичный](0049-short-commands-live-in-the-settings-file.md) | принято | да |  |
-| 0050 | [Рассуждение пишется объявленными словами и закрытым набором предложений](0050-a-reasoning-is-written-as-declared-words-and-fixed-sentences.md) | предложено | частично |  |
+| 0050 | [Рассуждение пишется объявленными словами и закрытым набором предложений](0050-a-reasoning-is-written-as-declared-words-and-fixed-sentences.md) | предложено | да |  |
 | 0051 | [Ядро доказательств помнит ответы своих чистых функций внутри одного прогона](0051-the-proof-kernel-remembers-pure-calls-within-one-run.md) | принято | да |  |
 | 0052 | [Блок текста `"""` снимает общий отступ](0052-a-text-block-literal-strips-its-common-indentation.md) | принято | да |  |
 | 0053 | [Длина строки и глубина ветвлений — пределы в `.flangrc`, и меряет их `flang lint`](0053-line-length-and-conditional-depth-are-limits-in-the-settings-file.md) | принято | да |  |
 | 0054 | [Профиль в `.flangrc` выбирает, какие модули библиотеки ввозятся](0054-a-profile-in-the-settings-file-selects-library-modules.md) | принято | да |  |
 | 0055 | [Пресет роли называется в файле настроек проекта, а нужды пакета — в его манифесте](0055-a-role-preset-is-named-in-the-project-settings-not-in-the-package-manifest.md) | предложено | нет |  |
 | 0056 | [Замеры кванторов в ADR-0026 и цены законов в ADR-0032 отстали: шаги 1 и 2 сделаны, а цена законов — не сорок правил, а ввоз в замыкание](0056-the-quantifier-and-law-measurements-of-two-decisions-are-stale.md) | предложено | ? |  |
-| 0057 | [Ход доказательства печатается как рассуждение, которое человек читает](0057-a-derivation-is-printed-as-a-reasoning-a-human-reads.md) | предложено | частично |  |
+| 0057 | [Ход доказательства печатается как рассуждение, которое человек читает](0057-a-derivation-is-printed-as-a-reasoning-a-human-reads.md) | предложено | да |  |
 | 0058 | [Чужой язык входит недоверенным переводчиком, а не разборщиком в языке](0058-a-foreign-language-enters-through-an-untrusted-translator.md) | принято | да |  |
 | 0059 | [Реестр — это ведомость имён, а не склад кода; разрешение версий сдаётся прогоном](0059-the-registry-is-a-ledger-of-names-not-a-store-of-code.md) | заменено | — | [ADR-0214](0214-a-package-is-a-link-with-a-hash-and-there-is-no-registry.md) (в части) |
 | 0060 | [Русская морфология наполняет словарь, а объявление становится уточнением](0060-russian-morphology-fills-the-dictionary-and-the-declaration-becomes-a-correction.md) | принято | да |  |
 | 0061 | [Предел чужому процессу называет ПОРУЧЕНИЕ, а убивает по нему ХОЗЯИН: новый вариант, а не новое поле, и ни одного нового полномочия](0061-killing-a-process-and-bounding-its-resources.md) | предложено | да |  |
 | 0062 | [Точное дробное — пара точных целых, сокращённая при каждом действии; деление над ним определено, остаток над точным целым тоже](0062-an-exact-fraction-is-a-pair-of-exact-integers-reduced-at-the-action.md) | предложено | да |  |
 | 0064 | [У каждого приёма проверяющей программы есть теорема состоятельности в Lean либо строка долга с номером задачи, и это стережёт прибор, а не проза](0064-every-checker-move-has-a-lean-theorem-or-a-named-debt-row.md) | предложено | да |  |
-| 0067 | [Выпуск несёт готовые двоичные для четырёх троек из одного семени](0067-the-release-ships-binaries-for-four-triples-from-one-seed.md) | предложено | частично |  |
+| 0067 | [Выпуск несёт готовые двоичные для четырёх троек из одного семени](0067-the-release-ships-binaries-for-four-triples-from-one-seed.md) | предложено | да |  |
 | 0072 | [Нормальный параллелизм — это пул процессов без общей памяти, параллельный `отобразить` над тотальной функцией и свёртка только по доказанному моноиду](0072-normal-parallelism-is-the-pool-the-pure-map-and-a-proved-monoid.md) | предложено | да |  |
 | 0073 | [Доказанным считается то, что проиграл сверщик; вердикт на слове ядра называется отдельно](0073-a-verdict-counts-as-proved-only-when-the-checker-replays-it.md) | предложено | да |  |
 | 0074 | [Целая часть точного дробного — встроенная форма `целая часть`](0074-the-integer-part-of-an-exact-fraction-is-a-built-in-form.md) | предложено | да |  |
@@ -104,9 +104,9 @@
 | 0081 | [Напечатанный код следует канону своей цели](0081-printed-code-follows-the-canon-of-its-target.md) | предложено | да |  |
 | 0083 | [Цена функции известна до прогона: граница шагов и памяти от размеров входа, переведённая в секунды и байты названной машины](0083-cost-is-known-before-the-run.md) | предложено | да |  |
 | 0084 | [Ядро переписывает цель доказанными равенствами, квантор раскрывается внутри формулы, свидетель ищется среди подтермов цели](0084-the-kernel-rewrites-a-goal-by-proved-equality-and-a-quantifier-opens-inside-a-formula.md) | предложено | да |  |
-| 0085 | [Универсальные конструкции на категорной поверхности — объявленные конусы с законом единственности](0085-universal-constructions-on-the-category-surface-are-declared-cones-with-a-uniqueness-law.md) | предложено | частично |  |
-| 0086 | [\| `yoneda-preorder.flang` \| 261 \|\| `maybe-forgetful-adjunction.flang` \| 493 \| 30 \| 42 \| 3 \| 4 \| 2 (1 + 1) \| 4 (треугольники) \| код 2 \| 42/42 \|\| `mon-free-forgetful.flang` \| 437 \| 26 \| 39 \|# ADR-0086. Сопряжение — это объявленные единица и коединица с треугольными тождествами как законами; представимый функтор — это hom-функтор](0086-an-adjunction-is-a-declared-unit-and-counit-with-the-triangle-identities-as-laws.md) | предложено | частично |  |
-| 0087 | [Моноидальная структура — объявленный бифунктор с единичным объектом, пятиугольник и треугольник — законы о носителе; монада — моноид в эндофункторах](0087-a-monoidal-structure-is-a-declared-bifunctor-with-unit-and-the-pentagon-and-triangle-as-laws.md) | предложено | частично |  |
+| 0085 | [Универсальные конструкции на категорной поверхности — объявленные конусы с законом единственности](0085-universal-constructions-on-the-category-surface-are-declared-cones-with-a-uniqueness-law.md) | предложено | да |  |
+| 0086 | [\| `yoneda-preorder.flang` \| 261 \|\| `maybe-forgetful-adjunction.flang` \| 493 \| 30 \| 42 \| 3 \| 4 \| 2 (1 + 1) \| 4 (треугольники) \| код 2 \| 42/42 \|\| `mon-free-forgetful.flang` \| 437 \| 26 \| 39 \|# ADR-0086. Сопряжение — это объявленные единица и коединица с треугольными тождествами как законами; представимый функтор — это hom-функтор](0086-an-adjunction-is-a-declared-unit-and-counit-with-the-triangle-identities-as-laws.md) | предложено | да |  |
+| 0087 | [Моноидальная структура — объявленный бифунктор с единичным объектом, пятиугольник и треугольник — законы о носителе; монада — моноид в эндофункторах](0087-a-monoidal-structure-is-a-declared-bifunctor-with-unit-and-the-pentagon-and-triangle-as-laws.md) | предложено | да |  |
 | 0088 | [Двоичный судит каждый объявленный закон категорной поверхности или называет поимённо тот, который судить не умеет](0088-the-binary-judges-every-declared-law-of-the-category-surface-or-names-the-one-it-cannot.md) | предложено | да |  |
 | 0090 | [Помощник ввезённой функции связывается в её модуле, а тёзка из другого файла — отказ связывания, не перекрытие](0090-a-helper-of-an-imported-function-binds-in-its-own-module-or-the-link-refuses.md) | предложено | да |  |
 | 0092 | [Доказанное постусловие-равенство переписывает свой вызов, а ведомость называет порядок переписки](0092-a-proved-equality-postcondition-rewrites-its-call-and-the-ledger-names-the-order.md) | предложено | да |  |
@@ -130,10 +130,10 @@
 | 0112 | [Целые фиксированной ширины и битовые операции живут в самом языке](0112-fixed-width-integers-live-in-the-language.md) | предложено | да |  |
 | 0115 | [Код возврата `check --proof` называет то, что доказано](0115-the-exit-code-of-a-proof-check-names-what-was-proved.md) | предложено | да |  |
 | 0118 | [Правило показывают на ревью таблицей поведения и её диффом](0118-a-rule-is-reviewed-by-the-table-of-its-behavior-and-its-diff.md) | предложено | да |  |
-| 0121 | [Закон объявления — утверждение, которое ядро судит обо всех значениях носителя; сетка остаётся поиском контрпримера](0121-a-declared-law-is-a-statement-the-kernel-judges-for-every-value.md) | предложено | частично |  |
-| 0124 | [Печать в C проверяется на каждой программе дважды: по устройству и по контракту; рантайм держится таблицей контрактов](0124-the-c-print-is-checked-per-program-by-structure-and-by-contract.md) | предложено | частично |  |
-| 0125 | [Свойства во времени: «всегда» доказывается инвариантом, «когда-нибудь» — мерой при названной справедливости, конечные модели перебираются целиком](0125-properties-over-time-are-invariants-and-measures-and-finite-models-are-explored.md) | предложено | частично |  |
-| 0126 | [Законы категорий: две работы закрывают свою часть, остаток назван и получает свои этапы](0126-category-laws-close-in-two-works-and-the-remainder-is-named.md) | предложено | частично |  |
+| 0121 | [Закон объявления — утверждение, которое ядро судит обо всех значениях носителя; сетка остаётся поиском контрпримера](0121-a-declared-law-is-a-statement-the-kernel-judges-for-every-value.md) | предложено | да |  |
+| 0124 | [Печать в C проверяется на каждой программе дважды: по устройству и по контракту; рантайм держится таблицей контрактов](0124-the-c-print-is-checked-per-program-by-structure-and-by-contract.md) | предложено | да |  |
+| 0125 | [Свойства во времени: «всегда» доказывается инвариантом, «когда-нибудь» — мерой при названной справедливости, конечные модели перебираются целиком](0125-properties-over-time-are-invariants-and-measures-and-finite-models-are-explored.md) | предложено | да |  |
+| 0126 | [Законы категорий: две работы закрывают свою часть, остаток назван и получает свои этапы](0126-category-laws-close-in-two-works-and-the-remainder-is-named.md) | предложено | да |  |
 | 0127 | [Каждый ход половины в сверщике на C имеет теорему в Lean, и доверенная база растёт на эти ходы](0127-every-half-move-of-the-checker-has-a-lean-theorem.md) | предложено | да |  |
 | 0130 | [Теоремы о всякой категории проверяются как равенства путей](0130-abstract-category-theorems-are-checked-as-path-equalities.md) | предложено | да |  |
 | 0133 | [Ядро разворачивает вызов на выписанном конструкторе: своё поле не сводится дважды, приписанное — звено, вложенный разбор разносится, «любое» даёт посылку](0133-the-kernel-unfolds-a-call-on-a-built-constructor.md) | предложено | да |  |
@@ -180,7 +180,7 @@
 | 0238 | [Класс проверяется по раскрытому тексту, а раскрытию доверяют, как компилятору C](0238-a-class-is-checked-by-its-expanded-text-and-the-expansion-is-trusted-like-the-c-compiler.md) | предложено | да |  |
 | 0240 | [Постусловие — часть вызова: его самовызов обязан убывать](0240-a-postcondition-is-part-of-the-call-and-its-self-call-needs-descent.md) | предложено | да |  |
 | 0242 | [Обещание совместимости: что замораживает 1.0 и как объявляется устаревание](0242-the-compatibility-promise-what-1-0-freezes-and-how-deprecation-is-announced.md) | предложено | нет |  |
-| 0243 | [`flang check` без ключей называет число недоказанного, а ложное считает ошибкой](0243-a-plain-check-counts-what-is-not-proved.md) | предложено | частично |  |
+| 0243 | [`flang check` без ключей называет число недоказанного, а ложное считает ошибкой](0243-a-plain-check-counts-what-is-not-proved.md) | предложено | да |  |
 | 0244 | [Утверждение о функции, чьё завершение не доказано, доказано только при условии её завершения](0244-a-claim-over-a-function-not-known-to-terminate-is-proved-on-condition.md) | предложено | да |  |
 | 0245 | [Встроенная операция, которая может отказать, в тотальной функции — до 0.9.0 предупреждение](0245-a-builtin-that-may-fail-in-a-total-function-warns-until-0-9-0.md) | предложено | нет |  |
 | 0246 | [Сверщик на C опровергает подделку контрпримером и отличает ноль от единицы](0246-the-c-checker-refutes-by-a-witness-and-tells-zero-from-one.md) | предложено | да |  |
@@ -193,6 +193,7 @@
 | 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
 | 0254 | [Сверщик на C проигрывает шаг индукции по списку, переписанный допущением](0254-the-c-checker-replays-a-list-induction-step-rewritten-by-the-hypothesis.md) | предложено | да |  |
 | 0255 | [Ни один естественный язык не главный: файл называет свой язык, словарь один, формулы в записи доказательства пишутся знаками](0255-no-natural-language-is-the-main-one-a-file-names-its-language-and-the-proof-record-uses-signs.md) | принято | нет |  |
+| 0257 | [Счётчик, который растёт к границе, — мера, спуск которой выводит ядро](0257-a-counter-that-grows-toward-a-bound-is-a-measure-the-kernel-proves.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

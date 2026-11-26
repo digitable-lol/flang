@@ -166,5 +166,6 @@ name	family	kind	kernel-rule	anchor	status
 Кол8	Кол	rule	линейная арифметика	proof-kernel.flang:8609 «Произведение линейных форм»	code
 Мер1	Мер	rule	—	totality.flang:4697 «Шаг спуска объявленной меры»	code
 Мер✗	Мер	ban	—	totality.flang:4723 «Аргумент не ниже объявленной меры»	code
+Мер2	Мер	rule	—	totality.flang:5198 «Основание спуска счётчика»	code
 Сл1	Сл	rule	неотрицательность по построению	proof-kernel.flang:8110 «Слова снизу»	code
 Сл2	Сл	rule	ограниченность точным потолком по построению	proof-kernel.flang:8239 «Ограниченное по типу или слову»	code

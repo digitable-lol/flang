@@ -193,6 +193,7 @@
 | 0253 | [Одна команда ведёт статью до отчёта, а отчёт показывает рассуждение целиком](0253-one-command-takes-an-article-to-a-report-that-shows-the-reasoning.md) | предложено | да |  |
 | 0254 | [Сверщик на C проигрывает шаг индукции по списку, переписанный допущением](0254-the-c-checker-replays-a-list-induction-step-rewritten-by-the-hypothesis.md) | предложено | да |  |
 | 0255 | [Ни один естественный язык не главный: файл называет свой язык, словарь один, формулы в записи доказательства пишутся знаками](0255-no-natural-language-is-the-main-one-a-file-names-its-language-and-the-proof-record-uses-signs.md) | принято | нет |  |
+| 0258 | [Целое со знаком без потолка — слово без ширины, а деление над ним округляет вниз](0258-a-signed-integer-without-a-ceiling-is-a-word-without-width.md) | предложено | да |  |
 
 ## Команды старых решений, которых больше нет
 

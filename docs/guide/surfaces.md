@@ -24,6 +24,37 @@ no words at all for `требует`/`обеспечивает`/`убывает`
 (`requires`/`ensures`/`decreases`/`induction on`), and that is a decision, not an
 omission; the reasoning is in a section below.
 
+## One file, one language
+
+Since 0.9.0 a file is written on one surface (ADR-0255). The surface of a file is
+named by a comment line before the first line of the program:
+
+```text
+// surface: en
+module «Prices»
+```
+
+Codes are `ru`, `en`, `eo`, `zh`. Without the line, the surface with most keywords
+in the file wins. Only the words of that surface are keywords: a word of another
+surface is an ordinary name, so a Russian file may call a parameter `result`,
+`type` or `list`. Where the parser expects a keyword and finds a word of another
+surface, the file is refused with `FLANG_FILE_LANGUAGE`, and the message says how
+the word is spelled on the surface of the file:
+
+```text
+FLANG_FILE_LANGUAGE … строка 6, столбец 29: слово «else» пишут на английском, а файл
+написан на русском: в одном файле языки записи не смешиваются, и здесь «else» — просто
+имя. На русском это «иначе»; язык файла можно назвать и первой строкой, например
+«// surface: ru»
+```
+
+The same code refuses a line `// surface:` with an unknown code and a file without
+the line where two surfaces have equally many keywords. A surface that has no word
+for a concept borrows one explicitly, in its own column of the table
+(`«Заимствованные слова»` in `flang/self/lexer.flang`: Esperanto takes `module`,
+`plus` and `minus`, English takes `это`); it does not take a word of another surface in the middle of a
+file.
+
 ## How it works
 
 A surface is not a separate parser but a table in `flang/self/lexer.flang`: a
@@ -128,8 +159,9 @@ It asks `bootstrap/flang tokens` where each keyword stands, takes the word on th
 target surface from the reverse dictionary, and writes the file with only those
 spans replaced; without an output file the text goes to standard output. Paths
 that are not absolute are read from the folder of the plan. The answer names how
-many keywords have no word on the target surface (Esperanto has no `модуль`, for
-example); such a keyword stays as it was written. An inflected Russian form comes
+many keywords have no word on the target surface (Esperanto has no `требует`, for
+example); such a keyword stays as it was written, and since 0.9.0 the file will not
+pass `flang check`: surfaces do not mix in one file. An inflected Russian form comes
 back as the first form of its word: `равно` translated to English and back is
 `равен`, and the program means the same.
 

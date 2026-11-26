@@ -124,6 +124,7 @@ NaN.
 |---|---|---|
 | `FLANG_LEX` | the lexer could not read a token: an unclosed quote, an unexpected character | close the quote, remove the character |
 | `FLANG_PARSE` | the tokens are fine, the construct is not | look at the line and column: usually a missing `иначе` branch, or a keyword used as a name |
+| `FLANG_FILE_LANGUAGE` | a word of another writing language where a keyword is expected; a `// surface:` line names a language that does not exist; without that line, two languages have equally many keywords | write the word in the language of the file (the message names it) or name the language with a `// surface: ru` line at the top |
 
 ```flang refused insert docs/examples/diagnostics/parse.flang
 модуль «Probe»
@@ -592,7 +593,7 @@ flang io план.flang --plan 'Разбор' --no-net --in-dir
 | `FLANG_NEW` | `flang new` did not create the package: the directory exists or the name is not allowed | another name, or `--force` |
 | `FLANG_INTERNAL` | the compiler itself failed | report it: this is a bug in the tool, not in your program |
 | `FLANG_SELF_REPL_UNSUPPORTED` | the shell does not accept this construct, `использует` for example | put the code in a file and run `flang check` |
-| `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `flang facts` got no value for a call | add the value to the facts |
+| `FLANG_FACTCHECK_NO_ANSWER` | `flang facts` got no value for a call | add the value to the facts |
 | `FLANG_FREESTANDING_UNSUPPORTED` | `emit --freestanding`: a function cannot be translated to C without libc — it uses strings, lists, fractional numbers or recursion | rewrite the function over the words `u8`…`u64`, records and sum types; see [C without libc](c-without-libc.html) |
 
 ```text insert output: check --неткого
@@ -622,7 +623,7 @@ with the release it appeared in and a status — stable, new or removed.
 | --- | --- | --- |
 | `FLANG_AMBIGUOUS_NAME` | `parser.flang` | — |
 | `FLANG_APPLY` | `interpret.flang`, `types.flang` | — |
-| `FLANG_BAD_NAME` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BAD_NAME` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_BIFUNCTOR_ARROW_MISMATCH` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_COMPOSITION` | `compiler.flang` | — |
 | `FLANG_BIFUNCTOR_IDENTITY` | `compiler.flang` | — |
@@ -630,7 +631,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_BIFUNCTOR_OBJECT_TWICE` | `compiler.flang` | — |
 | `FLANG_BIN` | `flang_repl.c` | — |
 | `FLANG_BOUND_ON_NAN` | `obligations.flang` | postcondition «{claim}» of function «{function}» is FALSE, and a counterexample is named: {reason} |
-| `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_BUDGET_EXHAUSTED` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_BUILTIN_ARGS` | `builtins.flang`, `failures.flang`, `interpret.flang`, `types.flang` | — |
 | `FLANG_CATEGORY_ARROW_TWICE` | `compiler.flang` | — |
 | `FLANG_CATEGORY_EQUALITY_OUTSIDE` | `compiler.flang` | — |
@@ -646,17 +647,19 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_CATEGORY_TYPE` | `category-paths.flang` | — |
 | `FLANG_CATEGORY_UNKNOWN_ARROW` | `compiler.flang` | — |
 | `FLANG_CHECKER` | `flang_repl.c` | — |
-| `FLANG_CLI` | `flang_repl.c`, `cli.flang`, `repl.flang` | — |
+| `FLANG_CLI` | `cli.flang`, `repl.flang`, `flang_repl.c` | — |
 | `FLANG_COMPOSE_MISMATCH` | `compiler.flang` | — |
-| `FLANG_DUPLICATE_NAME` | `flang_repl.c`, `link.flang`, `sets.flang` | in file {file}: function «{name}» is declared in two modules: {first} and {second} · function «{name}» is declared in two modules: {first} and {second} · in file {file}: type «{name}» is declared in two modules: {first} and {second} · type «{name}» is declared in two modules: {first} and {second} |
+| `FLANG_DUPLICATE_NAME` | `link.flang`, `sets.flang`, `flang_repl.c` | in file {file}: function «{name}» is declared in two modules: {first} and {second} · function «{name}» is declared in two modules: {first} and {second} · in file {file}: type «{name}» is declared in two modules: {first} and {second} · type «{name}» is declared in two modules: {first} and {second} |
 | `FLANG_EMBED_NOT_INJECTIVE` | `sets.flang` | — |
 | `FLANG_EMBED_SHAPE` | `sets.flang` | — |
+| `FLANG_EMPTY_ORDER` | `emit-from-source.flang` | — |
 | `FLANG_EQUALITY_NOT_CONGRUENT` | `setoid.flang` | — |
 | `FLANG_EQUALITY_NOT_REFLEXIVE` | `setoid.flang` | — |
 | `FLANG_EQUALITY_NOT_SYMMETRIC` | `setoid.flang` | — |
 | `FLANG_EQUALITY_NOT_TRANSITIVE` | `setoid.flang` | — |
 | `FLANG_EXAMPLE` | `compiler.flang` | example «{example}» of function «{function}»: the value does not match the expected one: expected {wanted}, got {got} |
-| `FLANG_FACTCHECK_НЕТ_ОТВЕТА` | `factcheck.flang` | — |
+| `FLANG_FACTCHECK_NO_ANSWER` | `factcheck.flang` | — |
+| `FLANG_FILE_LANGUAGE` | `lexer.flang`, `parser.flang` | — |
 | `FLANG_FREESTANDING_UNSUPPORTED` | `c-without-libc.flang` | — |
 | `FLANG_FSPEC_TEMPLATE_DIR` | `flang_repl.c` | — |
 | `FLANG_FUNCTOR_OBJECT_MISSING` | `compiler.flang` | — |
@@ -665,40 +668,40 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_HANDLER_NOT_TOTAL` | `processes.flang` | — |
 | `FLANG_HISTORY` | `flang_repl.c` | — |
 | `FLANG_HOTSWAP_REFUSED` | `hotswap.flang` | — |
-| `FLANG_IMPORT_AMBIGUOUS` | `flang_repl.c`, `link.flang` | — |
-| `FLANG_IMPORT_CYCLE` | `flang_repl.c`, `link.flang` | — |
-| `FLANG_IMPORT_NAME` | `flang_repl.c`, `link.flang` | — |
-| `FLANG_IMPORT_NOT_FOUND` | `flang_repl.c`, `link.flang` | — |
+| `FLANG_IMPORT_AMBIGUOUS` | `link.flang`, `flang_repl.c` | — |
+| `FLANG_IMPORT_CYCLE` | `link.flang`, `flang_repl.c` | — |
+| `FLANG_IMPORT_NAME` | `link.flang`, `flang_repl.c` | — |
+| `FLANG_IMPORT_NOT_FOUND` | `link.flang`, `flang_repl.c` | — |
 | `FLANG_INFINITY` | `types.flang` | — |
 | `FLANG_INITIAL_FAILURE` | `failures.flang`, `processes.flang` | — |
-| `FLANG_INTERNAL` | `flang_repl.c`, `conc.flang`, `lsp.flang` | — |
-| `FLANG_IO` | `flang_cli.c`, `flang_repl.c`, `compiler.flang` | — |
+| `FLANG_INTERNAL` | `conc.flang`, `lsp.flang`, `flang_conc.c`, `flang_repl.c` | — |
+| `FLANG_IO` | `compiler.flang`, `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_DENIED` | `flang_repl.c` | — |
 | `FLANG_IO_ENTROPY` | `flang_repl.c` | — |
 | `FLANG_IO_ENV` | `flang_cli.c`, `flang_repl.c` | — |
 | `FLANG_IO_FAILED` | `flang_cli.c`, `flang_repl.c` | — |
 | `FLANG_IO_LIMIT` | `flang_cli.c`, `flang_repl.c` | — |
 | `FLANG_IO_LIST` | `flang_cli.c`, `flang_repl.c` | — |
-| `FLANG_IO_NET` | `flang_repl.c` | — |
+| `FLANG_IO_NET` | `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_NOT_CHECKED` | `flang_cli.c`, `flang_repl.c` | — |
-| `FLANG_IO_NOT_TEXT` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_NOT_TEXT` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_NOT_WIRED` | `flang_cli.c` | — |
-| `FLANG_IO_NO_HOST` | `conc.flang` | — |
+| `FLANG_IO_NO_HOST` | `conc.flang`, `flang_conc.c` | — |
 | `FLANG_IO_NO_SCREEN` | `flang_cli.c`, `flang_repl.c` | — |
 | `FLANG_IO_NO_TLS` | `flang_repl.c` | — |
-| `FLANG_IO_OCTETS` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_OCTETS` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_ORDER` | `emit-from-source.flang` | — |
-| `FLANG_IO_PATH` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_PATH` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_PLACE` | `flang_repl.c` | — |
-| `FLANG_IO_READ` | `flang_cli.c`, `flang_repl.c` | — |
-| `FLANG_IO_REMOVE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_READ` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
+| `FLANG_IO_REMOVE` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_SPAWN` | `flang_repl.c` | — |
-| `FLANG_IO_TEMPDIR` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_TEMPDIR` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_IO_TIMEOUT` | `flang_repl.c` | — |
 | `FLANG_IO_TLS` | `flang_repl.c` | — |
 | `FLANG_IO_TLS_CERT` | `flang_repl.c` | — |
-| `FLANG_IO_UNKNOWN` | `flang_repl.c` | — |
-| `FLANG_IO_WRITE` | `flang_cli.c`, `flang_repl.c` | — |
+| `FLANG_IO_UNKNOWN` | `flang_conc.c`, `flang_repl.c` | — |
+| `FLANG_IO_WRITE` | `flang_cli.c`, `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_ISO_IDENTITY_MISSING` | `compiler.flang` | — |
 | `FLANG_ISO_MISMATCH` | `compiler.flang` | — |
 | `FLANG_ISO_NOT_INVERSE` | `iso.flang` | — |
@@ -710,9 +713,9 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_LINK_DOWN` | `failures.flang` | — |
 | `FLANG_LINK_FETCH` | `flang_repl.c` | — |
 | `FLANG_LINK_OFFLINE` | `flang_repl.c` | — |
-| `FLANG_LISTEN_ADDRESS` | `flang_repl.c` | — |
+| `FLANG_LISTEN_ADDRESS` | `flang_conc.c`, `flang_repl.c` | — |
 | `FLANG_LOCK` | `flang_repl.c` | — |
-| `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang` | — |
+| `FLANG_MAILBOX_FULL` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_MATCH_NOT_EXHAUSTIVE` | `interpret.flang`, `types.flang` | the match on {subject} does not cover {cases} · a match without cases covers nothing |
 | `FLANG_MATCH_UNREACHABLE` | `types.flang` | — |
 | `FLANG_MEASURE` | `defunc.flang`, `failures.flang` | — |
@@ -736,7 +739,7 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_MONOID_ASSOC` | `monoid.flang` | — |
 | `FLANG_MONOID_IDENTITY` | `monoid.flang` | — |
 | `FLANG_MORPHISM_SHAPE` | `compiler.flang` | — |
-| `FLANG_NAME_TAKEN` | `conc.flang`, `failures.flang` | — |
+| `FLANG_NAME_TAKEN` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_NEW` | `flang_repl.c` | — |
 | `FLANG_NOT_A_NUMBER` | `types.flang` | — |
 | `FLANG_NOT_COMMUTATIVE` | `commutative.flang` | — |
@@ -751,15 +754,15 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_OVERFLOW` | `interpret.flang`, `types.flang` | — |
 | `FLANG_PACKAGE` | `flang_repl.c` | — |
 | `FLANG_PARSE` | `interpret.flang`, `parser.flang` | 'если' has no 'иначе' branch · construct not parsed: unexpected '{word}' — this word is taken by the language and cannot be a name: write the name in guillemets («{word.quoted}») or rename it; and if the word got into the form by mistake, remove it |
-| `FLANG_PECHAT_BEDY` | `emit-from-source.flang` | — |
-| `FLANG_PECHAT_OTKAZ` | `emit-from-source.flang` | — |
 | `FLANG_PLAN` | `io.flang` | — |
 | `FLANG_PLAN_UNSUPPORTED` | `compiler.flang` | — |
 | `FLANG_PRECONDITION` | `emit-c.flang`, `emit-csharp.flang`, `emit-elixir.flang`, `emit-java.flang`, `emit-js.flang`, `emit-python.flang`, `interpret.flang`, `parser.flang` | — |
 | `FLANG_PRECONDITION_CALL` | `proofterm.flang`, `types.flang` | the call of «{callee}» in function «{function}» does not discharge precondition «{precondition}»: {reason} |
-| `FLANG_PROCESS` | `conc.flang`, `processes.flang` | — |
+| `FLANG_PRINT_DIAGNOSTICS` | `emit-from-source.flang` | — |
+| `FLANG_PRINT_REFUSED` | `emit-from-source.flang` | — |
+| `FLANG_PROCESS` | `conc.flang`, `processes.flang`, `flang_conc.c` | — |
 | `FLANG_PROCESS_ACCEPTS` | `conc.flang`, `failures.flang`, `processes.flang` | — |
-| `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang` | — |
+| `FLANG_PROCESS_LIMIT` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_PROOF` | `compiler.flang`, `link.flang` | — |
 | `FLANG_PROOF_AMBIGUOUS` | `obligations.flang` | — |
 | `FLANG_PROOF_CACHE` | `flang_repl.c` | — |
@@ -790,12 +793,13 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_SELF_REPL_UNSUPPORTED` | `repl.flang` | — |
 | `FLANG_STEPS` | `compiler.flang` | — |
 | `FLANG_STEP_LIMIT` | `factcheck.flang` | — |
-| `FLANG_STOPPED` | `conc.flang`, `failures.flang` | — |
+| `FLANG_STOPPED` | `conc.flang`, `failures.flang`, `flang_conc.c` | — |
 | `FLANG_SUGAR_CLASS` | `sugar.flang` | — |
 | `FLANG_SUGAR_HEADER` | `sugar.flang` | — |
 | `FLANG_SUGAR_INTERFACE` | `sugar.flang` | — |
 | `FLANG_SUGAR_LOOP` | `sugar.flang` | — |
 | `FLANG_THREADS` | `flang_runtime.c` | — |
+| `FLANG_TICKS` | `flang_repl.c` | — |
 | `FLANG_TICKS_OUT` | `flang_runtime.c` | — |
 | `FLANG_TIME_OUT` | `flang_runtime.c` | — |
 | `FLANG_TLS_CHAIN` | `flang_repl.c` | — |
@@ -808,21 +812,19 @@ with the release it appeared in and a status — stable, new or removed.
 | `FLANG_TRANSFORM_NOT_NATURAL` | `setoid.flang` | — |
 | `FLANG_TRANSFORM_NOT_TOTAL` | `compiler.flang` | — |
 | `FLANG_TRANSFORM_SHAPE` | `compiler.flang` | — |
-| `FLANG_TYPE` | `flang_cli.c`, `interpret.flang`, `types.flang` | {where} is declared to return {type.declared}, but its body gives {type.body} · {where} is declared twice · {where} has no body · argument «{parameter}» of function «{function}»: expected {type.wanted}, got {type.got} · {side} operand of «{operation}»: expected {type.wanted}, got {type.got} · the condition of «если» must be a flag, not {type} · the branches of «если» have different types: {type.then} and {type.else} · record «{record}» has no field «{field}» · record «{record}» requires field «{field}» ({type}) · field «{field}» is declared twice · function «{function}» takes {count} argument(s) ({parameters}), but is called with {given} · call of function «{function}»: argument «{parameter}»: {value} is outside {type} · {label} of function «{function}» does not give argument «{parameter}» · {label}: {value} is outside {type} · {label} does not match type {type} |
+| `FLANG_TYPE` | `interpret.flang`, `types.flang`, `flang_cli.c` | {where} is declared to return {type.declared}, but its body gives {type.body} · {where} is declared twice · {where} has no body · argument «{parameter}» of function «{function}»: expected {type.wanted}, got {type.got} · {side} operand of «{operation}»: expected {type.wanted}, got {type.got} · the condition of «если» must be a flag, not {type} · the branches of «если» have different types: {type.then} and {type.else} · record «{record}» has no field «{field}» · record «{record}» requires field «{field}» ({type}) · field «{field}» is declared twice · function «{function}» takes {count} argument(s) ({parameters}), but is called with {given} · call of function «{function}»: argument «{parameter}»: {value} is outside {type} · {label} of function «{function}» does not give argument «{parameter}» · {label}: {value} is outside {type} · {label} does not match type {type} |
 | `FLANG_TYPE_ARGS` | `types.flang` | — |
 | `FLANG_TYPE_PARAM` | `types.flang` | — |
 | `FLANG_UNCOVERED_FAILURE` | `failures.flang`, `processes.flang` | — |
 | `FLANG_UNKNOWN` | `flang_cli.c` | — |
-| `FLANG_UNKNOWN_NAME` | `flang_repl.c`, `compiler.flang`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
-| `FLANG_UNKNOWN_PLAN` | `flang_cli.c`, `compiler.flang` | — |
+| `FLANG_UNKNOWN_NAME` | `compiler.flang`, `builtins.flang`, `conc.flang`, `interpret.flang`, `link.flang`, `parser.flang`, `sets.flang`, `types.flang`, `flang_repl.c` | unknown function «{name}» · unknown type «{name}» · unknown record «{name}» · unknown variant «{name}» · unknown variant constructor «{name}» · function «{name}» is not found · the record has no field «{field}» · name «{name}» is not bound · name «{name}» is not bound: a name is introduced by 'принимает', 'пусть' or a 'случай' pattern; and the operations of the language ('плюс', 'минус', 'умножить на', 'делить на', 'остаток от') go BETWEEN values — «3.14 умножить на р», not «умножить 3.14 на р» |
+| `FLANG_UNKNOWN_PLAN` | `compiler.flang`, `flang_cli.c` | — |
 | `FLANG_UNKNOWN_PROCESS` | `processes.flang` | — |
 | `FLANG_UNKNOWN_PROPERTY` | `compiler.flang` | — |
 | `FLANG_UNPROVED` | `compiler.flang` | — |
 | `FLANG_UNPROVEN` | `flang_repl.c` | — |
-| `FLANG_VITKI` | `flang_repl.c` | — |
 | `FLANG_WATCH` | `flang_runtime.c` | — |
 | `FLANG_WATCH_TICK` | `flang_runtime.c` | — |
-| `FLANG_ZAKAZ` | `emit-from-source.flang` | — |
 <!-- end insert -->
 
 Next: [The prover refused: whose mistake is it](proof-refused.html) — how to

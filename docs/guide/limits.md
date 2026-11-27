@@ -209,9 +209,12 @@ Write a decimal number: 255.
 **There is no division on `точное целое` (exact integer).** It has `плюс`,
 `минус`, `умножить на` and `остаток от`. For fields up to 64 bits use `u64`.
 
-**Counting up does not pass the termination check.** A recursive call on
-`н плюс 1` gives the error `FLANG_NOT_TOTAL`: "the recursive call does not
-decrease". Count down over a parameter of type `неотрицательное`
+**Counting up needs a measure.** A recursive call on `н плюс 1` without an
+`убывает …` line gives the error `FLANG_NOT_TOTAL`: "the recursive call does not
+decrease". Write `убывает предел минус н` over two parameters of type
+`неотрицательное`, and the kernel proves the descent
+([Counting up toward a bound](totality.md#counting-up-toward-a-bound)). Over
+`число` the measure is taken on trust. Counting down needs no measure
 (`docs/examples/measure/natural.flang`).
 
 **The compiler does not find a measure with a changing step.** It finds

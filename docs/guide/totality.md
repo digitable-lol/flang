@@ -270,7 +270,7 @@ checked on every call. The last line counts such places over the whole file.
 
 If termination has to be proved completely, write the first or the second way.
 
-## Counting up does not fit
+## Counting up toward a bound
 
 The file `up.flang`:
 
@@ -293,8 +293,35 @@ up.flang: не проверено — замечаний 1
 ```
 
 `«н» add 1` stands for `н плюс 1`. The parameter `предел` (the limit) does not
-count as a bound: it comes into every call unchanged. Count down, or add the
-line `убывает предел минус н`.
+count as a bound by itself: it comes into every call unchanged. Name the
+distance to the limit with the line `убывает предел минус н`, and give both
+parameters the type `неотрицательное`:
+
+```flang
+модуль «Проба»
+
+тотальная функция «Счёт вверх»
+  принимает н: неотрицательное, предел: неотрицательное
+  возвращает неотрицательное
+  убывает предел минус н
+  если н не меньше предел
+    то н
+    иначе «Счёт вверх» от (н плюс 1) и предел
+```
+
+```bash
+$ flang check up.flang --proof --explain
+…
+  «Счёт вверх»  доказано объявленной мерой: убывает «предел» минус «н»; спуск выведен ядром на каждом витке (1) — сторожа нет
+```
+
+The kernel proves the descent itself: the call stands in the branch where
+`н` is less than `предел`, so `предел минус н` gets smaller by one and stays
+non-negative. No check goes into the generated code (ADR-0257).
+
+With the type `число` the same line is taken on trust and checked on every
+call at run time: above 2⁵³ adding one does not change a number, and the call
+might never end. Counting down works with either type.
 
 A string is walked by recursion over the list of its characters: the form
 `разложить … на символы` gives such a list. An example is

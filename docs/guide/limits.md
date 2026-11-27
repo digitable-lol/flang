@@ -214,7 +214,7 @@ Write a decimal number: 255.
 decrease". Write `убывает предел минус н` over two parameters of type
 `неотрицательное`, and the kernel proves the descent
 ([Counting up toward a bound](totality.md#counting-up-toward-a-bound)). Over
-`число` the measure is taken on trust. Counting down needs no measure
+`число` the measure is accepted without a proof. Counting down needs no measure
 (`docs/examples/measure/natural.flang`).
 
 **The compiler does not find a measure with a changing step.** It finds

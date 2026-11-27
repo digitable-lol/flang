@@ -317,10 +317,10 @@ $ flang check up.flang --proof --explain
 
 The kernel proves the descent itself: the call stands in the branch where
 `н` is less than `предел`, so `предел минус н` gets smaller by one and stays
-non-negative. No check goes into the generated code (ADR-0257).
+non-negative. The function needs no check at run time.
 
-With the type `число` the same line is taken on trust and checked on every
-call at run time: above 2⁵³ adding one does not change a number, and the call
+With the type `число` the same line is accepted without a proof and checked
+on every call at run time: above 2⁵³ adding one does not change a number, and the call
 might never end. Counting down works with either type.
 
 A string is walked by recursion over the list of its characters: the form

@@ -213,7 +213,7 @@
 
 тотальная функция «Объявлено, не сделано»
   возвращает список «Отсрочка»
-  пример «Записей двадцать: четыре отвергнутых кода, четырнадцать снятых и два обещанных»
+  пример «Двадцать одна запись: четыре отвергнутых кода, пятнадцать снятых и два обещанных»
     ожидается [
       (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
         "docs/flang/concurrency/DISTRIBUTED.md"] и «почему» равным [
@@ -344,7 +344,14 @@
         "docs/tasks/9925-transliterated-diagnostic-codes-get-english-names.md"] и «почему» равным [
         "имя кода из русских слов латиницей; в 0.9.0 переименован в FLANG_VERDICT_CACHE ",
         "без синонима (ADR-0255, ответ владельца 25 ноября 2026). ADR-0255 и задача 9925 ",
-        "разбирают переименование именно по этому имени"])
+        "разбирают переименование именно по этому имени"]),
+      (запись «Отсрочка» с «код» равным "FLANG_VITKI" и «род» равным "снят" и «где» равным [
+        (соединить ["docs/adr/0255-no-natural-language-is-the-main-one-a-file-names-",
+          "its-language-and-the-proof-record-uses-signs.md"] по ""),
+        "docs/tasks/9925-transliterated-diagnostic-codes-get-english-names.md"] и «почему» равным [
+        "имя переменной среды рантайма из русского слова латиницей; в 0.9.0 переименована в FLANG_TICKS ",
+        "без синонима (ADR-0255, ответ владельца 25 ноября 2026) и ушла из bootstrap/ с печатью 16. ",
+        "ADR-0255 и задача 9925 разбирают переименование именно по этому имени"])
     ]
   [
     (запись «Отсрочка» с «код» равным "FLANG_NODE_DEAD" и «род» равным "отвергнут" и «где» равным [
@@ -476,18 +483,25 @@
       "docs/tasks/9925-transliterated-diagnostic-codes-get-english-names.md"] и «почему» равным [
       "имя кода из русских слов латиницей; в 0.9.0 переименован в FLANG_VERDICT_CACHE ",
       "без синонима (ADR-0255, ответ владельца 25 ноября 2026). ADR-0255 и задача 9925 ",
-      "разбирают переименование именно по этому имени"])
+      "разбирают переименование именно по этому имени"]),
+    (запись «Отсрочка» с «код» равным "FLANG_VITKI" и «род» равным "снят" и «где» равным [
+      (соединить ["docs/adr/0255-no-natural-language-is-the-main-one-a-file-names-",
+        "its-language-and-the-proof-record-uses-signs.md"] по ""),
+      "docs/tasks/9925-transliterated-diagnostic-codes-get-english-names.md"] и «почему» равным [
+      "имя переменной среды рантайма из русского слова латиницей; в 0.9.0 переименована в FLANG_TICKS ",
+      "без синонима (ADR-0255, ответ владельца 25 ноября 2026) и ушла из bootstrap/ с печатью 16. ",
+      "ADR-0255 и задача 9925 разбирают переименование именно по этому имени"])
   ]
 
 тотальная функция «Отсроченные имена»
   возвращает список строки
-  пример «Двадцать имён»
+  пример «Двадцать одно имя»
     ожидается ["FLANG_NODE_DEAD", "FLANG_ZAMER", "FLANG_PROBE_MAX_DEPTH",
       "FLANG_SLOVO_PUSTOTA", "FLANG_IO_UNSUPPORTED", "FLANG_SELF_EVAL_UNSUPPORTED",
       "FLANG_TARGET", "FLANG_INSTALL_BUILD", "FLANG_INSTALL_CONFLICT", "FLANG_INSTALL_FINGERPRINT",
       "FLANG_INSTALL_LEDGER", "FLANG_INSTALL_NEEDS", "FLANG_INSTALL_PROBE", "FLANG_INSTALL_UNPROVED",
       "FLANG_IO_NO_FILES", "FLANG_IO_NO_SPAWN", "FLANG_PECHAT_BEDY", "FLANG_PECHAT_OTKAZ",
-      "FLANG_ZAKAZ", "FLANG_KESH_PRIGOVOROV"]
+      "FLANG_ZAKAZ", "FLANG_KESH_PRIGOVOROV", "FLANG_VITKI"]
   отобразить («Объявлено, не сделано») как отсрочка → (отсрочка.«код»)
 
 тотальная функция «Файл места»

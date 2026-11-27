@@ -1,0 +1,12 @@
+program	surface	code	word	ADR-0258: точное целое со знаком. Слова и коды сняты 27 ноября 2026 двоичным печати 16 (семя b1f4eea92, первое, которое знает тип) обычным `flang check` по каждой программе; floor-division-forged — отрицательный контроль: ожидания подделаны, проверка обязана отвергнуть
+floor-division.flang	check	0	функций 6, из них с доказанным завершением 6
+floor-division.flang	check	0	замечаний нет
+floor-division-forged.flang	check	1	пример «минус семь на два — минус четыре» функции «Частное»: значение не совпало с ожидаемым
+floor-division-forged.flang	check	1	получено "-393530540239137101142"
+floor-division-forged.flang	check	1	пример «остаток от минус семи на два — один» функции «Остаток»: значение не совпало с ожидаемым
+floor-division-forged.flang	check	1	получено "18446744073709551617"
+refusals.flang	check	1	точное целое со знаком и число не смешиваются, нужен перевод
+refusals.flang	check	1	над точное целое со знаком «bitAnd» не определено
+refusals.flang	check	1	получено точное целое со знаком
+zero-divisor.flang	check	1	точное целое со знаком: «div» на ноль не определено
+zero-divisor.flang	check	1	встроенная операция «остаток от» может отказать при работе

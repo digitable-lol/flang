@@ -83,7 +83,7 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 | язык | файлов | строк | долг файлов | долг строк |
 |---|---:|---:|---:|---:|
 | оболочка | 49 | 8 703 | 39 | 3 863 <!-- СНЯТО 2026-11-17 долг файлов/строк оболочки = 39/3863 (the published guard tells a release in preparation from a drift and lost two lines of history) --><!-- СНЯТО 2026-11-17 файлов *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 49 (packaging/prebuilt/publish-tap.sh puts the formula of a published release into the tap) --><!-- СНЯТО 2026-11-17 строк-в *.sh,ярлык,packaging/asdf/bin/download,packaging/asdf/bin/install,packaging/asdf/bin/list-all,.githooks/pre-push,.githooks/commit-msg,.githooks/pre-commit = 8703 (publish-tap.sh is new, install.sh checks provenance on request, the published guard lost two lines) --> |
-| C | 67 | 1 521 037 | 1 | 105 <!-- СНЯТО 2026-11-24 файлов *.c,*.h = 67 (print batch 15: the libc-free generator brings fifteen C files of its probe) --><!-- СНЯТО 2026-11-27 строк-в *.c,*.h = 1521037 (print batch 16) --><!-- СНЯТО 2026-10-04 долг файлов/строк C = 1/107 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.c — судья, который считает десятичную запись точного целого на самой цели, оснастка на чужом языке, а не рантайм цели; долга в C до него не было, снято 2026-10-04) --> |
+| C | 67 | 1 521 715 | 1 | 105 <!-- СНЯТО 2026-11-24 файлов *.c,*.h = 67 (print batch 15: the libc-free generator brings fifteen C files of its probe) --><!-- СНЯТО 2026-11-27 строк-в *.c,*.h = 1521715 (print batch 16, lexer speed fix) --><!-- СНЯТО 2026-10-04 долг файлов/строк C = 1/107 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.c — судья, который считает десятичную запись точного целого на самой цели, оснастка на чужом языке, а не рантайм цели; долга в C до него не было, снято 2026-10-04) --> |
 | C++ | 2 | 527 | 1 | 105 <!-- СНЯТО 2026-10-04 файлов *.cpp,*.cc,*.hpp,*.hh = 2 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.cpp — судья, который считает десятичную запись точного целого на самой цели) --><!-- СНЯТО 2026-10-11 строк-в *.cpp,*.cc,*.hpp,*.hh = 527 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.cpp, 107 строк) --><!-- СНЯТО 2026-10-04 долг файлов/строк C++ = 1/107 (задача 1413: водитель пробы flang/proof/probes/exact-integer-in-targets/drivers/driver.cpp — судья, который считает десятичную запись точного целого на самой цели, оснастка на чужом языке, а не рантайм цели; долга в C++ до него не было, снято 2026-10-04) --> |
 | Python | 41 | 4 220 | 0 | 0 <!-- СНЯТО 2026-11-26 файлов *.py = 41 (python in the playground: the three examples of the tab and two programs refused before — while and a parameter without a type) --><!-- СНЯТО 2026-11-26 строк-в *.py = 4220 (exact signed integer, ADR-0258) --> |
 | HTML | 6 | 412 | 0 | 0 <!-- СНЯТО 2026-10-08 файлов *.html = 6 --><!-- СНЯТО 2026-10-08 строк-в *.html = 412 --> |
@@ -153,10 +153,10 @@ $ bootstrap/flang io scripts/guards/tree-inventory.fscript --max-steps 50000000
 двумя днями раньше — за два дня прибавилось 856 строк, и опись этого не
 заметила, потому что число было набрано рукой и сторожа над ним не было.)
 
-Больше миллиона строк C — это не долг и даже не почти долг: 1 152 241 из
+Больше миллиона строк C — это не долг и даже не почти долг: 1 152 809 из
 них — `bootstrap/compiler_flang.c`, то есть сам компилятор, напечатанный из
 flang в C.
-<!-- СНЯТО 2026-11-27 строк bootstrap/compiler_flang.c = 1152241 (print batch 16) -->
+<!-- СНЯТО 2026-11-27 строк bootstrap/compiler_flang.c = 1152809 (print batch 16, lexer speed fix) -->
 Ровно этот файл и есть доказательство того, что язык себя обслуживает.
 
 ## Не долг: двенадцать доводов, у каждого свой счёт
@@ -168,7 +168,7 @@ flang в C.
 
 | довод | что под ним | файлов | строк |
 |---|---|---:|---:|
-| напечатано самим компилятором | `bootstrap/**` — восемь файлов на C, вывод печати | 8 | 1 447 845 <!-- СНЯТО 2026-10-14 файлов bootstrap/*.c,bootstrap/*.h = 8 (print batch six: bootstrap/tls_client.c and bootstrap/tls_client.h printed by the reprint) --><!-- СНЯТО 2026-11-27 строк-в bootstrap/*.c,bootstrap/*.h = 1447845 (print batch 16) --> |
+| напечатано самим компилятором | `bootstrap/**` — восемь файлов на C, вывод печати | 8 | 1 448 523 <!-- СНЯТО 2026-10-14 файлов bootstrap/*.c,bootstrap/*.h = 8 (print batch six: bootstrap/tls_client.c and bootstrap/tls_client.h printed by the reprint) --><!-- СНЯТО 2026-11-27 строк-в bootstrap/*.c,bootstrap/*.h = 1448523 (print batch 16, lexer speed fix) --> |
 | рантайм цели печати | `flang/src/emit/{c,cpp,python,java,csharp,elixir,go,rust}/**` — уезжает в напечатанную программу дословно | 29 | 69 283 <!-- СНЯТО 2026-09-06 файлов flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 29 --><!-- СНЯТО 2026-11-27 строк-в flang/src/emit/c/*,flang/src/emit/cpp/*,flang/src/emit/python/*,flang/src/emit/java/*,flang/src/emit/csharp/*,flang/src/emit/elixir/*,flang/src/emit/go/*,flang/src/emit/rust/* = 69283 (print batch 16) --> |
 | замеряемый материал | `benchmarks/**` без оболочки и без оснастки на Python (`tasks.py` — набор задач замера, он материал) плюс `flang/concurrency/bench/beam.erl` — это то, с чем сравнивают | 12 | 3 217 |
 | проба рантайма C | `flang/test/oblast/*.c` и `flang/concurrency/bench/sizes.c` — двенадцать проб памяти, их заголовок и размеры записей; на flang они проверяли бы не рантайм, а себя. Гоняет их `scripts/targets/region-in-c-target.flang`, уже написанный на flang | 14 | 674 |

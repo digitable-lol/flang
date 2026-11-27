@@ -322,10 +322,20 @@ struct fl_value {
     } list;
     const fl_record *record;
     const fl_variant *variant;
+    /*
+     * Слово. Ширина 8…64 — слово фиксированной ширины: bits — его биты,
+     * sign — знаковое ли оно, digits не нужен (NULL).
+     * Ширина 0 — «точное целое со знаком», слово без ширины: величина лежит
+     * в digits разрядами по основанию 2^22 (младший первым, старших нулей
+     * нет; у нуля разрядов нет вовсе), bits — сколько их, sign — отрицательно
+     * ли значение (у нуля всегда ложь). Разряды живут в арене контекста, как
+     * строки и списки.
+     */
     struct {
       uint64_t bits;
       unsigned char width;
       bool sign;
+      const double *digits;
     } word;
   } as;
 };
@@ -1081,6 +1091,14 @@ fl_status fl_b_i8(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_i16(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_i32(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
 fl_status fl_b_i64(fl_ctx *ctx, fl_value value, fl_value *out, fl_error *error);
+/* Имя типа слова без ширины — так его зовут проверка типов и диагностики. */
+#define FL_SIGNED_NAME "точное целое со знаком"
+/* «точное целое со знаком x»: перевод в слово без ширины. */
+fl_status fl_b_signed(fl_ctx *ctx, fl_value value, fl_value *out,
+                      fl_error *error);
+/* Десятичная запись точного целого со знаком в куче (malloc; освобождает
+   зовущий) — для печати ответа, где арены нет. NULL — памяти не хватило. */
+char *fl_signed_decimal(fl_value value);
 fl_status fl_b_soderzhit(fl_ctx *ctx, fl_value left, fl_value right,
                          fl_value *out, fl_error *error);
 fl_status fl_b_nachinaetsya_s(fl_ctx *ctx, fl_value text, fl_value prefix,

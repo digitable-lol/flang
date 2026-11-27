@@ -515,7 +515,7 @@ static const char HELP_CHECK[] =
     "  --record <файл>    вместе с --proof: положить САМО доказательство в файл\n"
     "                     строками, которые читает и человек, и сверщик\n"
     "                     (flang/proof/checker.flang). Ключ пишется и кириллицей:\n"
-    "                     --записать\n"
+    "                     --записать; --record-version 2 — версия 2\n"
     "  --step-limit N     ключ САМОГО бинарника (стоит где угодно в строке) —\n"
     "                     поднять предел шагов ПРОВЕРЯЮЩЕГО на этот прогон.\n"
     "                     Умолчание вшито при сборке (scripts/bootstrap-reprint.sh) и\n"
@@ -2383,7 +2383,7 @@ static fl_status repl_call_within(const char *name, const fl_value *args, size_t
    * время» задаётся не каждый прогон, а лишняя строка на каждый вызов сломала
    * бы разбор вывода тем, кто читает бинарник трубой.
    */
-  if (!repl_call_quiet && getenv("FLANG_VITKI") != NULL) {
+  if (!repl_call_quiet && getenv("FLANG_TICKS") != NULL) {
     fprintf(stderr, "витки: %s %lu\n", name, (unsigned long)repl_ctx.steps);
   }
   if (status != FL_OK) {
@@ -11477,6 +11477,505 @@ static void proof_say_brief_verdict(const char *path, const proof_tally *t, int 
  * дерева, но лучше абсолютного: он переносим между клонами с той же
  * раскладкой, а абсолютный не переносим ни между какими.
  */
+/* ── ЗАПИСЬ ДОКАЗАТЕЛЬСТВА ВЕРСИИ 2 ─────────────────────────────────────────
+   `flang check --proof --record файл --record-version 2` кладёт запись второй
+   версии: слова рамки записи, названия правил вывода, короткие имена правил и
+   имена встроенных действий заменены ключами, не зависящими от языка, по таблице
+   ключей записи второй версии (record-version-2-words.tsv среди таблиц
+   доказательств). Копия таблицы ниже; вторая копия — в программе checker; обе с
+   таблицей сличает сторож record-v2:check. Формулы в уголках ⟨…⟩ написаны
+   знаками (= ≤ + ∧ ∀ …) и ключами понятий (result, if, length …). Ключевое слово
+   формулы узнаётся словарём лексера на языке файла: слово другого языка — имя, и
+   оно остаётся именем; имя, совпавшее бы с ключом, пишется в ёлочках. Без ключа
+   запись — первой версии, как прежде; вторая получается переводом готовой первой,
+   и содержание у них одно. */
+typedef struct { const char *kind, *first, *second; } record2_word;
+static const record2_word RECORD2_WORDS[] = {
+  { "word", "строка", "line" }, { "word", "строк", "lineCount" }, { "word", "строки", "lineOf" },
+  { "word", "конец", "theEnd" }, { "word", "вид", "kindIs" }, { "word", "нет", "noIs" },
+  { "word", "да", "yesIs" }, { "word", "ход", "move" }, { "word", "доказано", "proved" },
+  { "word", "вердикт", "verdict" }, { "word", "вердикта", "verdictOf" }, { "word", "по", "via" },
+  { "word", "вывод", "inference" }, { "word", "утверждение", "assertion" },
+  { "word", "утверждения", "claimOf" }, { "word", "утверждений", "claimCount" },
+  { "word", "функции", "ofFunction" }, { "word", "правило", "ruleIs" },
+  { "word", "теорема", "theoremIs" }, { "word", "теоремы", "theoremOf" },
+  { "word", "цель", "goal" }, { "word", "тотальность", "totality" },
+  { "word", "тотальности", "totalityOf" }, { "word", "тотальностей", "totalityCount" },
+  { "word", "тотальна", "isTotal" }, { "word", "самовызов", "selfCall" },
+  { "word", "самовызова", "selfCallOf" }, { "word", "зовёт", "calls" },
+  { "word", "шаг", "proofStep" }, { "word", "шагов", "stepCount" },
+  { "word", "примитив", "primitive" }, { "word", "объявление", "declaration" },
+  { "word", "объявлению", "declarationOf" }, { "word", "из", "outOf" },
+  { "word", "закрыта", "closedBy" }, { "word", "исходник", "sourceFile" },
+  { "word", "запись", "recordIs" }, { "word", "записи", "recordOf" },
+  { "word", "доказательства", "ofProof" }, { "word", "знаков", "charCount" },
+  { "word", "отпечаток", "fingerprint" }, { "word", "отпечаток256", "fingerprint256" },
+  { "word", "ядро", "kernel" }, { "word", "посылка", "premise" },
+  { "word", "вариант", "variantIs" }, { "word", "варианты", "variants" },
+  { "word", "варианта", "variantOf" }, { "word", "для", "for" }, { "word", "всех", "all" },
+  { "word", "развернуть", "unfold" }, { "word", "закрывающий", "closing" },
+  { "word", "закрыть", "close" }, { "word", "дано", "givenIs" },
+  { "word", "следовательно", "hence" }, { "word", "сведение", "reducedBy" },
+  { "word", "тождеством", "byIdentity" }, { "word", "тип", "typeIs" },
+  { "word", "носитель", "carrierIs" }, { "word", "случай", "caseIs" },
+  { "word", "принцип", "principle" }, { "word", "база", "basis" },
+  { "word", "переписать", "rewrite" }, { "word", "сам", "itself" },
+  { "word", "предположению", "hypothesisOf" }, { "word", "предположение", "hypothesis" },
+  { "word", "примеру", "exampleOf" }, { "word", "пример", "exampleIs" },
+  { "word", "выбор", "choice" }, { "word", "формой", "byForm" }, { "word", "законом", "byLaw" },
+  { "word", "закон", "lawIs" }, { "word", "закону", "lawOf" }, { "word", "законов", "lawCount" },
+  { "word", "законы", "lawsOf" }, { "word", "индукция", "inductionIs" },
+  { "word", "встроенный", "builtin" }, { "word", "сумма", "sum" },
+  { "word", "свойству", "propertyOf" }, { "word", "свойство", "propertyIs" },
+  { "word", "истиной", "byTruth" }, { "word", "обязательство", "obligation" },
+  { "word", "вход", "entry" }, { "word", "на", "atPlace" }, { "word", "зовущем", "caller" },
+  { "word", "деление", "division" }, { "word", "допущение", "assumption" },
+  { "word", "дно", "floor" }, { "word", "потолок", "ceiling" }, { "word", "вычислить", "compute" },
+  { "word", "поручение", "order" }, { "word", "соседи", "neighbours" },
+  { "word", "таких", "such" }, { "word", "что", "that" },
+  { "word", "постусловию", "postconditionOf" }, { "word", "таблица", "table" },
+  { "word", "таблиц", "tableCount" }, { "word", "открыта", "openedBy" },
+  { "word", "звеньев", "linkCount" }, { "word", "снятие", "discharge" },
+  { "word", "снятия", "dischargeOf" }, { "word", "столбец", "column" }, { "word", "может", "may" },
+  { "word", "быть", "be" }, { "word", "связка", "connective" },
+  { "word", "промежуточный", "intermediate" }, { "word", "подстановка", "substitution" },
+  { "word", "подстановки", "substitutionOf" }, { "word", "категорная", "categorical" },
+  { "word", "категорной", "categoricalOf" }, { "word", "категории", "categoryOf" },
+  { "word", "факт", "fact" }, { "word", "требованием", "byRequirement" },
+  { "word", "множитель", "factor" }, { "word", "разрешено", "allowed" },
+  { "word", "доказать", "prove" }, { "word", "отрицание", "negation" },
+  { "word", "противоречие", "contradiction" }, { "word", "свидетель", "witness" },
+  { "word", "после", "afterThat" }, { "word", "отвергнуто", "refuted" },
+  { "word", "подставить", "substitute" }, { "word", "пусть", "letIs" },
+  { "word", "левая", "left" }, { "word", "правая", "right" }, { "word", "место", "place" },
+  { "word", "приставка", "prefix" }, { "word", "вперёд", "forward" },
+  { "word", "назад", "backward" }, { "word", "ассоциативность", "associativity" },
+  { "word", "гипотеза", "conjecture" }, { "word", "нейтральный", "neutral" },
+  { "word", "ноль", "zero" }, { "word", "вызов", "call" },
+  { "word", "функториальность", "functoriality" }, { "word", "естественность", "naturality" },
+  { "word", "и", "alongWith" }, { "word", "убывает", "decreasesIs" },
+  { "word", "аргумент", "argument" }, { "word", "виток", "turn" }, { "word", "от", "ofArg" },
+  { "word", "план", "planIs" }, { "word", "плана", "planOf" }, { "word", "поля", "fields" },
+  { "word", "поле", "fieldIs" }, { "word", "замена", "replacement" },
+  { "word", "прогон", "runIs" }, { "word", "часть", "part" }, { "word", "единица", "unit" },
+  { "word", "при", "under" }, { "word", "условии", "condition" },
+  { "word", "псевдоним", "aliasIs" }, { "word", "длина", "lengthIs" },
+  { "word", "произведение", "product" }, { "word", "положительно", "positive" },
+  { "word", "мера", "measure" }, { "word", "не", "notIs" }, { "word", "меньше", "less" },
+  { "word", "сетка", "grid" }, { "word", "минус", "minusSign" }, { "word", "плюс", "plusSign" },
+  { "word", "раскрытие", "expansion" }, { "word", "раскрытия", "expansionOf" },
+  { "rule", "неотрицательность по построению", "nonnegative-by-construction" },
+  { "rule", "ограниченность точным потолком по построению", "bounded-by-exact-ceiling-by-construction" },
+  { "rule", "тождество после переписки допущением", "identity-after-rewriting-by-assumption" },
+  { "rule", "порядок по построению", "order-by-construction" },
+  { "rule", "строгий порядок по построению", "strict-order-by-construction" },
+  { "rule", "порядок соседних по построению", "neighbour-order-by-construction" },
+  { "rule", "вхождение по построению", "membership-by-construction" },
+  { "rule", "цель есть допущение", "goal-is-assumption" },
+  { "rule", "несовместимые допущения", "incompatible-assumptions" },
+  { "rule", "вычисление замкнутой цели", "evaluation-of-closed-goal" },
+  { "rule", "разбор цели по условию", "goal-split-by-condition" },
+  { "rule", "цель-выбор с истинной ветвью", "choice-goal-with-true-branch" },
+  { "rule", "разбор случаев по дизъюнкции в допущении", "cases-by-disjunction-in-assumption" },
+  { "rule", "разбор случаев по внутреннему условию цели", "cases-by-inner-condition-of-goal" },
+  { "rule", "равенство, решённое счётом замкнутых частей", "equality-by-evaluating-closed-parts" },
+  { "rule", "начало по построению", "prefix-by-construction" },
+  { "rule", "все элементы по построению", "all-elements-by-construction" },
+  { "rule", "переписка доказанными равенствами", "rewriting-by-proved-equalities" },
+  { "rule", "кольцо точного целого", "exact-integer-ring" },
+  { "rule", "равенство записей по полям", "record-equality-by-fields" },
+  { "rule", "запись из своих полей", "record-from-its-fields" },
+  { "rule", "равенство себе на точном типе", "self-equality-on-exact-type" },
+  { "rule", "переписка цели выписанными шагами", "goal-rewriting-by-written-steps" },
+  { "rule", "линейная арифметика", "linear-arithmetic" }, { "family", "Разв", "Unfold" },
+  { "family", "ГипО", "HypOrder" }, { "family", "ГипД", "HypFloor" }, { "family", "Выч", "Eval" },
+  { "family", "Тожд", "Ident" }, { "family", "Инд", "Induct" }, { "family", "Кол", "Ring" },
+  { "family", "Лин", "Linear" }, { "family", "Пред", "Natural" }, { "family", "Цел", "Integer" },
+  { "family", "Кон", "Conj" }, { "family", "Вкл", "Incl" }, { "family", "Отр", "Neg" },
+  { "family", "Или", "Disj" }, { "family", "Мер", "Measure" }, { "family", "СС", "Neighbour" },
+  { "family", "Сл", "Words" }, { "family", "Св", "Witness" }, { "family", "Пр", "Contra" },
+  { "family", "Зв", "Link" }, { "family", "Н", "Nonneg" }, { "family", "П", "Bound" },
+  { "family", "О", "Order" }, { "family", "С", "Strict" }, { "family", "Д", "Floor" },
+  { "family", "Р", "Branch" }, { "family", "Т", "Assumed" }, { "family", "В", "Member" },
+  { "family", "Э", "AllElems" }, { "family", "Ч", "Prefix" }, { "family", "М", "Rewrite" },
+  { "family", "К", "Chained" }, { "family", "И", "Inst" }, { "primitive", "плюс", "opAdd" },
+  { "primitive", "минус", "opSub" }, { "primitive", "умножить", "opMul" },
+  { "primitive", "делить", "opDiv" }, { "primitive", "остаток", "opMod" },
+  { "primitive", "длина", "length" }, { "primitive", "соединить", "join" },
+  { "primitive", "подстрока", "substring" }, { "primitive", "содержит", "contains" },
+  { "primitive", "начинается", "startsWith" }, { "primitive", "если", "if" },
+  { "primitive", "разбор", "match" }, { "primitive", "свёртка", "fold" },
+  { "primitive", "отобразить", "map" }, { "primitive", "отфильтровать", "filter" },
+};
+static const char *const RECORD2_SIGNS[][2] = {
+  { "cmpEq", "=" }, { "cmpNeq", "≠" }, { "cmpLt", "<" }, { "cmpLte", "≤" }, { "cmpGt", ">" },
+  { "cmpGte", "≥" }, { "opAdd", "+" }, { "opSub", "−" }, { "opMul", "·" }, { "opDiv", "/" },
+  { "andAlso", "∧" }, { "or", "∨" }, { "not", "¬" }, { "litTrue", "⊤" }, { "litFalse", "⊥" },
+  { "forall", "∀" }, { "exists", "∃" }, { "tExact", "ℕ" }
+};
+
+static bool record2_starts(const char *p, const char *prefix) { return strncmp(p, prefix, strlen(prefix)) == 0; }
+
+static const char *record2_key(const char *kind, const char *first) {
+  size_t i;
+  for (i = 0; i < sizeof(RECORD2_WORDS) / sizeof(*RECORD2_WORDS); i += 1) {
+    if (strcmp(RECORD2_WORDS[i].kind, kind) == 0 && strcmp(RECORD2_WORDS[i].first, first) == 0) {
+      return RECORD2_WORDS[i].second;
+    }
+  }
+  return NULL;
+}
+
+/* Короткое имя правила: семья и хвост из цифр и, может быть, «↑» или «✗»
+   («Разв2» → «Unfold2»). Берётся самая длинная семья. */
+static void record2_rule_name(repl_buf *out, const char *word, size_t bytes) {
+  size_t i;
+  size_t best = 0;
+  const char *family = NULL;
+  for (i = 0; i < sizeof(RECORD2_WORDS) / sizeof(*RECORD2_WORDS); i += 1) {
+    const char *first = RECORD2_WORDS[i].first;
+    size_t length = strlen(first);
+    size_t k = length;
+    if (strcmp(RECORD2_WORDS[i].kind, "family") != 0 || length <= best || length > bytes ||
+        memcmp(word, first, length) != 0) {
+      continue;
+    }
+    while (k < bytes && word[k] >= '0' && word[k] <= '9') {
+      k += 1;
+    }
+    if (k < bytes && !((bytes - k == strlen("↑") && memcmp(word + k, "↑", bytes - k) == 0) ||
+                       (bytes - k == strlen("✗") && memcmp(word + k, "✗", bytes - k) == 0))) {
+      continue;
+    }
+    best = length;
+    family = RECORD2_WORDS[i].second;
+  }
+  if (family == NULL) {
+    buf_add(out, word, bytes);
+  } else {
+    buf_put(out, family);
+    buf_add(out, word + best, bytes - best);
+  }
+}
+
+static bool record2_boundary(const char *p) {
+  return *p == '\0' || *p == ' ' || *p == '\t' || strchr("()[],:\"", *p) != NULL || record2_starts(p, "«") ||
+         record2_starts(p, "⟨") || record2_starts(p, "⟩");
+}
+
+static const char *record2_angle_end(const char *p) {
+  int depth = 0;
+  while (*p != '\0') {
+    if (record2_starts(p, "⟨")) {
+      depth += 1;
+      p += strlen("⟨");
+      continue;
+    }
+    if (record2_starts(p, "⟩")) {
+      depth -= 1;
+      if (depth == 0) {
+        return p;
+      }
+      p += strlen("⟩");
+      continue;
+    }
+    p += 1;
+  }
+  return p;
+}
+
+static const char *record2_literal_end(const char *p) {
+  p += 1;
+  while (*p != '\0' && *p != '"') {
+    if (*p == '\\' && p[1] != '\0') {
+      p += 1;
+    }
+    p += 1;
+  }
+  return *p == '"' ? p + 1 : p;
+}
+
+static bool record2_call_text(const char *name, const fl_value *args, size_t count, char **out) {
+  fl_value result = fl_nothing();
+  const char *utf8 = NULL;
+  size_t bytes = 0;
+  *out = NULL;
+  if (repl_call(name, args, count, &result) != FL_OK || !val_text(result, &utf8, &bytes)) {
+    return false;
+  }
+  *out = (char *)malloc(bytes + 1);
+  if (*out == NULL) {
+    repl_oom();
+  }
+  memcpy(*out, utf8, bytes);
+  (*out)[bytes] = '\0';
+  return true;
+}
+
+/* Понятие фразы на языке файла или NULL. */
+static char *record2_concept(const char *phrase, size_t bytes, const char *language) {
+  fl_value args[2];
+  fl_value result = fl_nothing();
+  char *lower = NULL;
+  char *concept = NULL;
+  args[0] = repl_value_text(phrase, bytes);
+  if (!record2_call_text("Нижний регистр", args, 1, &lower)) {
+    return NULL;
+  }
+  args[0] = repl_value_text(lower, strlen(lower));
+  if (!record2_call_text("Идентификатор фразы", args, 1, &concept) || concept[0] == '\0') {
+    free(lower);
+    free(concept);
+    return NULL;
+  }
+  args[1] = repl_value_say(language);
+  if (repl_call("Фраза языка", args, 2, &result) != FL_OK || result.tag != FL_FLAG || !result.as.flag) {
+    free(lower);
+    free(concept);
+    return NULL;
+  }
+  free(lower);
+  return concept;
+}
+
+static bool record2_is_key(const char *word, size_t bytes) {
+  size_t i;
+  fl_value args[2];
+  char *found = NULL;
+  bool key = false;
+  for (i = 0; i < sizeof(RECORD2_SIGNS) / sizeof(*RECORD2_SIGNS); i += 1) {
+    if (strlen(RECORD2_SIGNS[i][1]) == bytes && memcmp(RECORD2_SIGNS[i][1], word, bytes) == 0) {
+      return true;
+    }
+  }
+  args[0] = repl_value_text(word, bytes);
+  args[1] = repl_value_say("ru");
+  key = record2_call_text("Слово на поверхности", args, 2, &found) && found[0] != '\0';
+  free(found);
+  return key;
+}
+
+static void record2_formula(repl_buf *out, const char *p, const char *end, const char *language) {
+  while (p < end) {
+    const char *q = p;
+    if (record2_starts(p, "«")) {
+      const char *e = strstr(p, "»");
+      q = e != NULL && e < end ? e + strlen("»") : end;
+      buf_add(out, p, (size_t)(q - p));
+      p = q;
+      continue;
+    }
+    if (*p == '"') {
+      q = record2_literal_end(p);
+      q = q > end ? end : q;
+      buf_add(out, p, (size_t)(q - p));
+      p = q;
+      continue;
+    }
+    if (record2_starts(p, "⟨")) {
+      const char *e = record2_angle_end(p);
+      e = e > end ? end : e;
+      buf_put(out, "⟨");
+      record2_formula(out, p + strlen("⟨"), e, language);
+      buf_put(out, "⟩");
+      p = e < end ? e + strlen("⟩") : end;
+      continue;
+    }
+    if (record2_boundary(p)) {
+      buf_add(out, p, 1);
+      p += 1;
+      continue;
+    }
+    {
+      /* До четырёх слов подряд через один пробел: длинная фраза пробуется первой. */
+      const char *ends[4];
+      int words = 0;
+      int take = 0;
+      char *concept = NULL;
+      const char *r = p;
+      while (words < 4) {
+        const char *s = r;
+        while (s < end && !record2_boundary(s)) {
+          s += 1;
+        }
+        if (s == r) {
+          break;
+        }
+        ends[words] = s;
+        words += 1;
+        if (s + 1 < end && *s == ' ' && !record2_boundary(s + 1)) {
+          r = s + 1;
+        } else {
+          break;
+        }
+      }
+      for (take = words; take > 0 && concept == NULL; take -= 1) {
+        concept = record2_concept(p, (size_t)(ends[take - 1] - p), language);
+        if (concept != NULL) {
+          break;
+        }
+      }
+      if (concept != NULL) {
+        const char *sign = NULL;
+        size_t i;
+        for (i = 0; i < sizeof(RECORD2_SIGNS) / sizeof(*RECORD2_SIGNS); i += 1) {
+          if (strcmp(RECORD2_SIGNS[i][0], concept) == 0) {
+            sign = RECORD2_SIGNS[i][1];
+          }
+        }
+        buf_put(out, sign != NULL ? sign : concept);
+        free(concept);
+        p = ends[take - 1];
+        continue;
+      }
+      q = ends[0];
+      if (record2_is_key(p, (size_t)(q - p))) {
+        buf_put(out, "«");
+        buf_add(out, p, (size_t)(q - p));
+        buf_put(out, "»");
+      } else {
+        buf_add(out, p, (size_t)(q - p));
+      }
+      p = q;
+    }
+  }
+}
+
+static void record2_line(repl_buf *out, const char *p, const char *end, const char *language) {
+  const char *previous = "";
+  char *previous_copy = NULL;
+  if ((size_t)(end - p) == strlen("запись доказательства 1") && memcmp(p, "запись доказательства 1", (size_t)(end - p)) == 0) {
+    buf_put(out, "proof record 2");
+    return;
+  }
+  while (p < end) {
+    const char *q = p;
+    if (record2_starts(p, "«")) {
+      const char *e = strstr(p, "»");
+      const char *inside = p + strlen("«");
+      const char *mapped = NULL;
+      char *name = NULL;
+      if (e == NULL || e > end) {
+        buf_add(out, p, (size_t)(end - p));
+        break;
+      }
+      name = (char *)malloc((size_t)(e - inside) + 1);
+      if (name == NULL) {
+        repl_oom();
+      }
+      memcpy(name, inside, (size_t)(e - inside));
+      name[e - inside] = '\0';
+      if (strcmp(previous, "правило") == 0 || strcmp(previous, "сведение") == 0) {
+        mapped = record2_key("rule", name);
+      } else if (strcmp(previous, "примитив") == 0) {
+        mapped = record2_key("primitive", name);
+      }
+      buf_put(out, "«");
+      if (mapped != NULL) {
+        buf_put(out, mapped);
+      } else if (strcmp(previous, "закону") == 0 || strcmp(previous, "закон") == 0) {
+        record2_rule_name(out, name, strlen(name));
+      } else {
+        buf_put(out, name);
+      }
+      buf_put(out, "»");
+      free(name);
+      previous = "";
+      p = e + strlen("»");
+      continue;
+    }
+    if (*p == '"') {
+      q = record2_literal_end(p);
+      q = q > end ? end : q;
+      buf_add(out, p, (size_t)(q - p));
+      previous = "";
+      p = q;
+      continue;
+    }
+    if (record2_starts(p, "⟨")) {
+      const char *e = record2_angle_end(p);
+      e = e > end ? end : e;
+      buf_put(out, "⟨");
+      record2_formula(out, p + strlen("⟨"), e, language);
+      buf_put(out, "⟩");
+      previous = "";
+      p = e < end ? e + strlen("⟩") : end;
+      continue;
+    }
+    if (*p == ' ' || *p == '\t') {
+      buf_add(out, p, 1);
+      p += 1;
+      continue;
+    }
+    if (record2_boundary(p)) {
+      buf_add(out, p, 1);
+      previous = "";
+      p += 1;
+      continue;
+    }
+    while (q < end && !record2_boundary(q)) {
+      q += 1;
+    }
+    free(previous_copy);
+    previous_copy = (char *)malloc((size_t)(q - p) + 1);
+    if (previous_copy == NULL) {
+      repl_oom();
+    }
+    memcpy(previous_copy, p, (size_t)(q - p));
+    previous_copy[q - p] = '\0';
+    {
+      const char *key = record2_key("word", previous_copy);
+      if (key != NULL) {
+        buf_put(out, key);
+      } else {
+        record2_rule_name(out, p, (size_t)(q - p));
+      }
+    }
+    previous = previous_copy;
+    p = q;
+  }
+  free(previous_copy);
+}
+
+/* Запись первой версии `utf8` — во вторую. Блок раскрытия (строки «| …») —
+   текст исходника, он переписывается как есть. */
+static void record2_from_first(repl_buf *out, const char *utf8, size_t bytes, const char *source) {
+  const char *p = utf8;
+  const char *end = utf8 + bytes;
+  char *language = NULL;
+  bool raw = false;
+  fl_value args[1];
+  args[0] = repl_value_say(source);
+  if (!record2_call_text("Язык записи файла", args, 1, &language)) {
+    language = NULL;
+  }
+  buf_reset(out);
+  while (p < end) {
+    const char *line_end = (const char *)memchr(p, '\n', (size_t)(end - p));
+    if (line_end == NULL) {
+      line_end = end;
+    }
+    if (raw) {
+      if ((size_t)(line_end - p) == strlen("конец раскрытия") && memcmp(p, "конец раскрытия", strlen("конец раскрытия")) == 0) {
+        raw = false;
+        buf_put(out, "theEnd expansionOf");
+      } else {
+        buf_add(out, p, (size_t)(line_end - p));
+      }
+    } else {
+      if (record2_starts(p, "раскрытие строк ")) {
+        raw = true;
+      }
+      record2_line(out, p, line_end, language != NULL ? language : "");
+    }
+    if (line_end < end) {
+      buf_put(out, "\n");
+    }
+    p = line_end + 1;
+  }
+  free(language);
+}
+
 static void proof_head_relative(repl_buf *out, const char *utf8, size_t bytes,
                                 const char *base, const char *full) {
   static const char METKA[] = "исходник ";
@@ -11804,7 +12303,7 @@ static int proof_say_independent(const char *path, const char *record, size_t by
 }
 #endif
 
-static int proof_file(const char *path, bool json, const char *record, bool strict) {
+static int proof_file(const char *path, bool json, const char *record, bool strict, int record_version) {
   repl_strings paths;
   repl_strings texts;
   repl_strings queue;
@@ -12110,6 +12609,13 @@ static int proof_file(const char *path, bool json, const char *record, bool stri
           repl_buf golova;
           buf_init(&golova);
           proof_head_relative(&golova, utf8, bytes, base, full);
+          if (record_version == 2) {
+            repl_buf vtoraya;
+            buf_init(&vtoraya);
+            record2_from_first(&vtoraya, golova.data, golova.used, text);
+            buf_free(&golova);
+            golova = vtoraya;
+          }
           if (fwrite(golova.data, 1, golova.used, out) != golova.used) {
             fprintf(stderr, "FLANG_CLI: не записан файл %s\n", record);
             code = 2;
@@ -16964,6 +17470,7 @@ static int check_command(int argc, char **argv) {
   bool json = false;
   bool fast = false;
   bool strict = false;
+  int record_version = 1;
   int index = 0;
   for (index = 2; index < argc; index += 1) {
     if (strcmp(argv[index], "--proof") == 0) {
@@ -16985,6 +17492,13 @@ static int check_command(int argc, char **argv) {
         return 2;
       }
       record = argv[index];
+    } else if (strcmp(argv[index], "--record-version") == 0) {
+      index += 1;
+      if (index >= argc || (strcmp(argv[index], "1") != 0 && strcmp(argv[index], "2") != 0)) {
+        fputs("flang check --record-version: версий записи две — 1 и 2\n", stderr);
+        return 2;
+      }
+      record_version = argv[index][0] - '0';
     } else if (argv[index][0] != '-' && path == NULL) {
       path = argv[index];
     } else {
@@ -17029,7 +17543,11 @@ static int check_command(int argc, char **argv) {
           stderr);
     return 2;
   }
-  return proof ? proof_file(path, json, record, strict) : check_file(path, fast, strict);
+  if (record_version != 1 && record == NULL) {
+    fputs("flang check --record-version осмыслен только рядом с «--record»: без файла записи версии нет\n", stderr);
+    return 2;
+  }
+  return proof ? proof_file(path, json, record, strict, record_version) : check_file(path, fast, strict);
 }
 
 /* ═══════════════════════════════ flang ast ═══════════════════════════════ */

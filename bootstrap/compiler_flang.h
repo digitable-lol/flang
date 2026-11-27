@@ -113,6 +113,21 @@ fl_status compiler_flang_sozdat_golosa_poverhnostey(fl_ctx *ctx,
                                                     fl_value *out,
                                                     fl_error *error);
 
+/* Запись FTS «Запомненная поверхность»: «слово», «поверхность». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_zapomnennaya_poverhnost(fl_ctx *ctx,
+                                                        fl_value slovo,
+                                                        fl_value poverhnost,
+                                                        fl_value *out,
+                                                        fl_error *error);
+
+/* Запись FTS «Голоса с памятью»: «голоса», «память». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_golosa_s_pamyatyu(fl_ctx *ctx, fl_value golosa,
+                                                  fl_value pamyat,
+                                                  fl_value *out,
+                                                  fl_error *error);
+
 /* Запись FTS «Ход перекладки»: «готово», «ряд». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
 fl_status compiler_flang_sozdat_hod_perekladki(fl_ctx *ctx, fl_value gotovo,
@@ -125,6 +140,14 @@ fl_status compiler_flang_sozdat_poisk_pometki(fl_ctx *ctx, fl_value yazyk,
                                               fl_value naydena, fl_value dalshe,
                                               fl_value nomer, fl_value *out,
                                               fl_error *error);
+
+/* Запись FTS «Проверка языка с памятью»: «всё», «проверены». */
+/* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
+fl_status compiler_flang_sozdat_proverka_yazyka_s_pamyatyu(fl_ctx *ctx,
+                                                           fl_value vsyo,
+                                                           fl_value provereny,
+                                                           fl_value *out,
+                                                           fl_error *error);
 
 /* Запись FTS «Ход скобок переноса»: «открытые», «токены». */
 /* Запись flang тотальна: пропущенное поле — это «ничто», а не дырка. */
@@ -10820,6 +10843,31 @@ fl_status compiler_flang_golosa_potoka(fl_ctx *ctx, fl_value tokeny,
                                        fl_value *result, fl_error *error);
 
 /*
+ * Функция flang «Поверхность из памяти».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param pamyat — «память»: список: «Запомненная поверхность»
+ * @param slovo — «слово»: строка
+ * @return значение: строка
+ */
+fl_status compiler_flang_poverhnost_iz_pamyati(fl_ctx *ctx, fl_value pamyat,
+                                               fl_value slovo, fl_value *result,
+                                               fl_error *error);
+
+/*
+ * Функция flang «Голос токена с памятью».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Голоса с памятью»
+ * @param token — «токен»: «Токен»
+ * @return значение: «Голоса с памятью»
+ */
+fl_status compiler_flang_golos_tokena_s_pamyatyu(fl_ctx *ctx, fl_value hod,
+                                                 fl_value token,
+                                                 fl_value *result,
+                                                 fl_error *error);
+
+/*
  * Функция flang «Голос токена».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
@@ -11069,6 +11117,35 @@ fl_status compiler_flang_perelozhit_na_yazyk(fl_ctx *ctx, fl_value tokeny,
 fl_status compiler_flang_vsyo_na_yazyke(fl_ctx *ctx, fl_value tokeny,
                                         fl_value yazyk, fl_value *result,
                                         fl_error *error);
+
+/*
+ * Функция flang «Шаг проверки языка».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Проверка языка с памятью»
+ * @param token — «токен»: «Токен»
+ * @param yazyk — «язык»: строка
+ * @return значение: «Проверка языка с памятью»
+ */
+fl_status compiler_flang_shag_proverki_yazyka(fl_ctx *ctx, fl_value hod,
+                                              fl_value token, fl_value yazyk,
+                                              fl_value *result,
+                                              fl_error *error);
+
+/*
+ * Функция flang «Проверить новое слово языка».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Проверка языка с памятью»
+ * @param fraza — «фраза»: строка
+ * @param yazyk — «язык»: строка
+ * @return значение: «Проверка языка с памятью»
+ */
+fl_status compiler_flang_proverit_novoe_slovo_yazyka(fl_ctx *ctx, fl_value hod,
+                                                     fl_value fraza,
+                                                     fl_value yazyk,
+                                                     fl_value *result,
+                                                     fl_error *error);
 
 /*
  * Функция flang «Токен на языке».
@@ -176867,17 +176944,32 @@ fl_status compiler_flang_golosa_potoka_bez_proverok(fl_ctx *ctx,
                                                     fl_error *error);
 
 /*
- * Функция flang «Голос токена без проверок».
+ * Функция flang «Поверхность из памяти без проверок».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
- * @param golosa — «голоса»: «Голоса поверхностей»
- * @param token — «токен»: «Токен»
- * @return значение: «Голоса поверхностей»
+ * @param pamyat — «память»: список: «Запомненная поверхность»
+ * @param slovo — «слово»: строка
+ * @return значение: строка
  */
-fl_status compiler_flang_golos_tokena_bez_proverok(fl_ctx *ctx, fl_value golosa,
-                                                   fl_value token,
-                                                   fl_value *result,
-                                                   fl_error *error);
+fl_status compiler_flang_poverhnost_iz_pamyati_bez_proverok(fl_ctx *ctx,
+                                                            fl_value pamyat,
+                                                            fl_value slovo,
+                                                            fl_value *result,
+                                                            fl_error *error);
+
+/*
+ * Функция flang «Голос токена с памятью без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Голоса с памятью»
+ * @param token — «токен»: «Токен»
+ * @return значение: «Голоса с памятью»
+ */
+fl_status compiler_flang_golos_tokena_s_pamyatyu_bez_proverok(fl_ctx *ctx,
+                                                              fl_value hod,
+                                                              fl_value token,
+                                                              fl_value *result,
+                                                              fl_error *error);
 
 /*
  * Функция flang «Заимствованные слова без проверок».
@@ -177145,18 +177237,36 @@ fl_status compiler_flang_vsyo_na_yazyke_bez_proverok(fl_ctx *ctx,
                                                      fl_error *error);
 
 /*
- * Функция flang «Токен на языке без проверок».
+ * Функция flang «Шаг проверки языка без проверок».
  *
  * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Проверка языка с памятью»
  * @param token — «токен»: «Токен»
  * @param yazyk — «язык»: строка
- * @return значение
+ * @return значение: «Проверка языка с памятью»
  */
-fl_status compiler_flang_token_na_yazyke_bez_proverok(fl_ctx *ctx,
-                                                      fl_value token,
-                                                      fl_value yazyk,
-                                                      fl_value *result,
-                                                      fl_error *error);
+fl_status compiler_flang_shag_proverki_yazyka_bez_proverok(fl_ctx *ctx,
+                                                           fl_value hod,
+                                                           fl_value token,
+                                                           fl_value yazyk,
+                                                           fl_value *result,
+                                                           fl_error *error);
+
+/*
+ * Функция flang «Проверить новое слово языка без проверок».
+ *
+ * Тотальная: завершение доказано анализом завершаемости (totality.mjs).
+ * @param hod — «ход»: «Проверка языка с памятью»
+ * @param fraza — «фраза»: строка
+ * @param yazyk — «язык»: строка
+ * @return значение: «Проверка языка с памятью»
+ */
+fl_status compiler_flang_proverit_novoe_slovo_yazyka_bez_proverok(fl_ctx *ctx,
+                                                                  fl_value hod,
+                                                                  fl_value fraza,
+                                                                  fl_value yazyk,
+                                                                  fl_value *result,
+                                                                  fl_error *error);
 
 /*
  * Функция flang «Шаг поиска пометки без проверок».

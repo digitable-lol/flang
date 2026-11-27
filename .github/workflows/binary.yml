@@ -2362,6 +2362,23 @@ jobs:
       - name: Check claims over a function not known to terminate
         run: bootstrap/flang io flang/proof/probes/unverified-measure/run.fscript --plan Binary --timeout 900000
 
+      # СЧЁТЧИК, КОТОРЫЙ РАСТЁТ К ГРАНИЦЕ (ADR-0257, правило Мер2). Пять программ
+      # ядро доказывает без сторожа, на «число» и при неверном условии мера идёт
+      # на веру. Строки сняты двоичным печати 16, первым, который знает Мер2.
+      - name: Check the counter measure descent
+        run: bootstrap/flang run-script counter-measure:probe
+
+      # ТОЧНОЕ ЦЕЛОЕ СО ЗНАКОМ (ADR-0258): деление вниз, большие значения за
+      # 2⁶⁴, подделанные ожидания, делитель ноль и отказы смешения и побитовых
+      # действий. Строки сняты двоичным печати 16.
+      - name: Check the exact signed integer
+        run: bootstrap/flang run-script signed-integer:probe
+
+      # ЯЗЫК ФАЙЛА (ADR-0255): слово чужого языка — отказ FLANG_FILE_LANGUAGE,
+      # пометка языка, ничья большинства, запись доказательства второй версии.
+      - name: Check the file language
+        run: bootstrap/flang run-script file-language:probe
+
       # ТАБЛИЦА РАЗРЫВА С LEAN. У каждой строки таблицы в docs/lean-parity.md
       # есть доказанная программа и отвергнутая соседка; проба сверяет код и
       # слово ответа двоичного с `expected.tsv`. До этого шага ярлык

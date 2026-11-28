@@ -28,7 +28,7 @@ Only release 2.0 may break any of these four.
 | Strength of the proof kernel | It only grows. A postcondition proved in 1.0 is proved in every 1.x. |
 | Speed and memory | They change both ways. Noticeable changes are named in the release note. |
 | Generated code | The text printed by `flang emit` changes. The behaviour of the program stays the same. |
-| Experimental parts | Commands and modules marked experimental in the help are not covered by the promise. |
+| Experimental parts | Two things are not covered by the promise: keywords written in Esperanto and Chinese, and the scripts in the `flang/experimental/` directory of the repository (checking an argument in Russian text, checking a set of user stories). The scripts are not part of the installed release. `flang --help` does not mark anything as experimental; this row is the full list. |
 
 The growth of the kernel is checked on every release. An automatic check
 compares the list of proved postconditions with the list of the previous

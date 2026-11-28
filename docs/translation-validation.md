@@ -185,7 +185,7 @@ together with the change that moved them.
 
 ## Forgeries
 
-The same plan breaks the printed C of honest programs, one edit each, and requires the
+The same plan breaks the printed C of correct programs, one edit each, and requires the
 validator to reject every one of them: an operation sign, a branch literal, a precondition
 bound, a recursion step, a text constant, swapped operands, a hidden point (a postcondition check
 that fails at one value no witness takes), a bound inside a sum (a precondition over `m² + n²`), a

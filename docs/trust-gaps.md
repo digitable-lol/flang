@@ -9,8 +9,8 @@ gap that leaves, and which stage closes it. Each gap has its decision in an ADR.
 | link | held by | gap |
 |---|---|---|
 | proof kernel | nothing on its own: its verdict counts only when the checker replays the record (ADR-0073) | — |
-| C checker `flang/proof/checker/checker.c` | verdict comparison with the second checker in Lean over the whole record set | 4 |
-| second checker in Lean `flang/proof/checker/second/` | the theorem "an accepted derivation block is true in the model"; the other blocks are judged by code without a theorem | 4 |
+| C checker `flang/proof/checker/checker.c` | verdict comparison with the second checker in Lean on the records that have a source: 798 of 858, with 13 disagreements, each listed with its reason in `flang/proof/tables/second-checker-disagreements.tsv` | 4 |
+| second checker in Lean `flang/proof/checker/second/` | theorems for 47 of the 52 paths by which it accepts a record (`lean-soundness:check`); the other 5 paths are judged by code without a theorem | 4 |
 | value model `flang/proof/lean/Model.lean` | human reading: integers instead of binary64, rounding given by two properties | 4 |
 | record reading `flang/proof/lean/RecordReader.lean` | verdict comparison | 4 |
 | C print `flang/self/emit-c.flang` | translation protocol and the matcher `flang/translation/matcher.c`, by structure; by meaning, a comparison with the reference for every function (ADR-0163): over the whole domain where it is finite, by equal decision trees where the symbolic walk reads the function, on witnesses otherwise | 1 |

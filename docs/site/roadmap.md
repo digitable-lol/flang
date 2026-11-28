@@ -82,7 +82,7 @@ A proof is about the flang source. The command `flang emit --target c` creates
 C code from it. The condition requires checking every function of that code
 against the formal description of the language in Lean.
 
-- **Done.** On the base set of 55 example files the printed C of 165 functions
+- **Done.** On the base set of 56 example files the printed C of 165 functions
   is checked against the reference, 164 of them for every input.
 - **Missing.** Across all examples in the repository 1332 of 9375 functions
   are proved. `flang emit` does not run this check itself. A fully proved code

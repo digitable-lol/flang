@@ -133,11 +133,12 @@ Two programs, written apart, read the proof record:
 
 | Program | What is proved about it | What else checks it |
 | --- | --- | --- |
-| `checker` in C | no theorems | 833 deliberately corrupted records: none accepted |
-| the second one, in Lean 4 | a theorem for 45 of the 52 paths by which it accepts a record | its answers are compared with `checker` on the same records |
+| `checker` in C | no theorems | 849 deliberately corrupted records: none accepted |
+| the second one, in Lean 4 | a theorem for 47 of the 52 paths by which it accepts a record | its answers are compared with `checker` on the same records |
 
-The seven paths without a theorem include linear arithmetic and the arithmetic
-of exact integers.
+Linear arithmetic and the arithmetic of exact integers are among the 47 paths
+with a theorem. The five paths without one include the category theorems and
+the steps of a theorem written in the source.
 
 There are no theorems about the kernel itself. It rests on the lemmas about the
 steps, on tests, and on a set of corrupted proofs it must reject.
@@ -356,8 +357,8 @@ need them. The last three need Lean 4.
 | --- | --- |
 | about 11 thousand lines of kernel | `flang run-script trust:ceiling` |
 | 93 kinds of steps, a lemma for each | `flang run-script lean-rules:check` |
-| 833 corrupted records, 0 accepted | `flang run-script checker:check` |
-| 45 paths of 52 | `flang run-script lean-soundness:check` |
+| 849 corrupted records, 0 accepted | `flang run-script checker:check` |
+| 47 paths of 52 | `flang run-script lean-soundness:check` |
 | 32, 19 and 9 tasks of 60 | `flang run-script lean-parity:probe` |
 | 30 of 56 | `flang check --proof` on every file of the set `parity/programs` in the proof directory |
 

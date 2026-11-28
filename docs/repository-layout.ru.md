@@ -13,7 +13,7 @@
 
 ```
 bootstrap/      компилятор, напечатанный в C99, и его Makefile: «make -C bootstrap» собирает двоичный
-flang/          язык: self/ (компилятор), core/, stdlib/, experimental/ (опытные модули), proof/, concurrency/, ct/, src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
+flang/          язык: self/ (компилятор), core/, stdlib/, experimental/ (опытные модули), proof/, concurrency/, ct/, foreign/ (чтение C, Python и формул), translation/, sugar/, services/, messages/ (каталог сообщений), src/emit/ (рантаймы целей), scripts/, test/, bin/ (flangtutor) — только код; его контракты лежат в docs/flang/
 docs/examples/  435 программ на flang в 37 наборах: leetcode, rosetta, crypto, db, io, wal, web, library-api и другие
 docs/editors/   языковой сервер, подсветка для Vim и VS Code, заявка в github-linguist
 packaging/      формула Homebrew, плагин asdf, страница flang.1, проверки установки
@@ -40,8 +40,12 @@ docs/tasks/     открытая и закрытая работа дерева, 
 `x25519`, `sha256`, `hmac`, `x509`, `rsa`, `ecdsa`), и движок регулярных выражений.
 [`flang/experimental/`](../flang/experimental) — опытные модули: они **не входят в обещания
 стандартной библиотеки** и могут менять имена функций без предупреждения. Отсюда модуль либо
-переезжает в `flang/stdlib/`, когда имена устоялись, либо уходит из дерева. Сегодня там русская
-морфология для силлогизмов (`ru-morphology.flang`) и живой пример к ней.
+переезжает в `flang/stdlib/`, когда имена устоялись, либо уходит из дерева. Сегодня там четыре вещи:
+русская морфология для силлогизмов (`ru-morphology.flang`) с примером
+(`ru-syllogism-demo.fscript`), проверка рассуждения на узком подконтрольном русском
+(`argument-check.fscript`, образцы в `texts/`), проверка рассуждения в размеченном тексте
+(`argue.fscript`, `argue-crosscheck.fscript`, `argue-article.fscript` и каталог `argue/`) и проверка набора пользовательских историй на
+противоречия (`story-set.flang`, `story-set-check.fscript`).
 [`flang/src/emit/`](../flang/src/emit) держит рантайм каждой цели;
 [`flang/test/`](../flang/test) — проверки на flang, которые обходит двоичный.
 

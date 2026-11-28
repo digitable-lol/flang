@@ -8,8 +8,8 @@ Everything internal is collected here: decisions, tasks, working plans and how
 the compiler is built. Pages for users of the language link to internal
 documents only through this page.
 
-The tree is written in Russian: identifiers, commit messages and most of the
-prose. An English form of the language exists and lexes to the same
+The tree is written in Russian: identifiers and most of the prose. Commit
+messages are English. An English form of the language exists and lexes to the same
 identifiers. A patch written in English is accepted.
 
 ## What is where
@@ -47,23 +47,33 @@ The built binary is what you run from then on:
 bootstrap/flang check docs/examples/rosetta/towers-of-hanoi.flang
 ```
 
-Nothing here runs on Node: the language server ships inside the same binary —
-`flang lsp --stdio` (see [the editor page](editor.html)).
+The compiler does not need Node: the language server ships inside the same
+binary — `flang lsp --stdio` (see [the editor page](editor.html)). Node is needed
+only by the site build and by the `js` target.
 
 ## Run the checks
 
-Three checks run on the built binary and need no Node:
+Two checks run on the built binary and need no Node:
 
 ```bash
 sh flang/test/обход.sh
 sh flang/test/обход-примеров.sh
-sh scripts/bootstrap-reprint.sh --check
 ```
 
 The first walks the tree with the compiler, the second runs the examples of
-every program in the tree, the third compares the printed C against what sits in
-`bootstrap/`: a change in `flang/self/` must produce the byte-identical
-bootstrap file.
+every program in the tree.
+
+A third check compares the printed C against what sits in `bootstrap/`:
+
+```bash
+sh scripts/bootstrap-reprint.sh --bystro   # the inputs of the print only, seconds
+sh scripts/bootstrap-reprint.sh --check    # print again and compare byte for byte
+```
+
+The full `--check` takes hours on one core and tens of gigabytes of memory (the
+numbers are in [`docs/reprint-ledger.tsv`](https://github.com/digitable-lol/flang/blob/main/docs/reprint-ledger.tsv)), so the
+maintainers reprint `bootstrap/` in batches. Your change to `flang/self/` is not
+expected to do it; say in the commit message that it waits for a reprint.
 
 If you touched the site pages, add:
 
@@ -96,13 +106,14 @@ How inserts work: [ADR-0151](../adr/0151-a-page-is-prose-plus-inserts-taken-from
 
 ## Send a change
 
-1. Branch off the trunk: `git switch -c my-change`.
+1. Branch off `dev`: `git switch -c my-change origin/dev`.
 2. Write it. Put examples inside the function — they run with the same
    `flang test` command as everything else.
 3. Run the checks above. A red check is not something to explain away: the
    change is not ready.
-4. Commit message: one line saying what changed and why.
-5. Open a pull request at
+4. Commit message: English, in the form `type(scope): what is now true`; the
+   rules are in [`docs/commit-messages.md`](https://github.com/digitable-lol/flang/blob/main/docs/commit-messages.md).
+5. Open a pull request into `dev` at
    [github.com/digitable-lol/flang](https://github.com/digitable-lol/flang).
 
 For a bug without a fix, open an issue in the same repository. Attach the

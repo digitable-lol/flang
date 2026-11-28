@@ -14,7 +14,7 @@ against the tree on every push.
 
 ```
 bootstrap/      the compiler printed to C99 and its Makefile: «make -C bootstrap» builds the binary
-flang/          the language: self/ (the compiler), core/, stdlib/, experimental/ (experimental modules), proof/, concurrency/, ct/, src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
+flang/          the language: self/ (the compiler), core/, stdlib/, experimental/ (experimental modules), proof/, concurrency/, ct/, foreign/ (reading C, Python and formulas), translation/, sugar/, services/, messages/ (the message catalogue), src/emit/ (target runtimes), scripts/, test/, bin/ (flangtutor) — code only; its contracts are in docs/flang/
 docs/examples/  435 flang programs in 37 sets: leetcode, rosetta, crypto, db, io, wal, web, library-api and others
 docs/editors/   the language server, syntax for Vim and VS Code, a github-linguist submission
 packaging/      the Homebrew formula, the asdf plugin, the flang.1 man page, install checks
@@ -42,8 +42,12 @@ lists, strings, numbers, sets, maps, JSON, UTF-8, dates, two database drivers (`
 [`flang/experimental/`](../flang/experimental) holds the experimental modules: they are **not part
 of the promises of the standard library** and may change the names of their functions without
 warning. From here a module either moves into `flang/stdlib/` once its names have settled, or
-leaves the tree. Today it holds the russian morphology for syllogisms (`ru-morphology.flang`) and
-a live example of it.
+leaves the tree. Today it holds four things: the Russian morphology for syllogisms
+(`ru-morphology.flang`) with its example (`ru-syllogism-demo.fscript`), the check of an
+argument written in a narrow controlled Russian (`argument-check.fscript`, samples in `texts/`),
+the check of an argument in a marked-up text (`argue.fscript`, `argue-crosscheck.fscript`,
+`argue-article.fscript` and the `argue/` directory) and the check of
+a set of user stories for contradictions (`story-set.flang`, `story-set-check.fscript`).
 [`flang/src/emit/`](../flang/src/emit) holds the runtime of each target; [`flang/test/`](../flang/test)
 holds the checks written in flang that the binary walks.
 

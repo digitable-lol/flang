@@ -97,8 +97,9 @@ FLANG_NOT_TOTAL в файле docs/examples/reference/en/word-division.flang, с
 docs/examples/reference/en/word-division.flang: проверено — доказано 0, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 0); замечаний нет
 ```
 
-The check passed with no warnings. A run of the first function with a divisor
-of 0:
+The check passed with one warning: `FLANG_NOT_TOTAL` names the division that
+may stop with an error. The exit code is 0. A run of the first function with a
+divisor of 0:
 
 ```text insert output: run docs/examples/reference/en/word-division.flang --function "Packets in the buffer" --args '{"buffer":4096,"packet":0}'
 $ flang run docs/examples/reference/en/word-division.flang --function "Packets in the buffer" --args '{"buffer":4096,"packet":0}'
@@ -120,7 +121,8 @@ or with a `requires` precondition.
 complain about a postcondition (`обеспечивает`, `ensures`) that is not proved,
 and it returns exit code 0. `flang check --proof` tells: it writes the proof
 report and returns exit code 3 if at least one postcondition is not proved.
-`flang run` does not start such a program unless you pass `--trust`.
+`flang run` does not start such a program and returns code 3 unless you pass
+`--trust`.
 
 ### A whole operating system cannot be written in flang
 
@@ -138,40 +140,50 @@ their postconditions are proved. How such a function is joined with C code:
 
 ### The generated C needs libc and threads
 
-A C program generated from a module with no effects at all refers to 62
+A C program generated from a module with no effects at all refers to 64
 external symbols: `malloc`, `pthread_create`, `fopen`, `fork` and others. The
 number was measured on the example `machine-words.flang`: `flang emit --target c
---no-cli`, then `cc -O2 -c` (gcc 15) and `nm -u`. Such code does not link into
-firmware without an operating system today. A version without libc is in
-progress.
+--no-cli`, then `cc -O2 -c` (gcc 15.2) and `nm -u`, not counting the runtime's own
+symbols. Such code does not link into firmware without an operating system. For
+that there is the `--freestanding` flag: on the same example `flang emit
+--target c --no-cli --freestanding` generates three files that build with
+`-ffreestanding -nostdlib` and refer to no external symbol.
 
 ## How to read the proof report
 
-`flang check --proof` gives every postcondition one of three results. They show
-in the last line of the report:
+`flang check --proof` gives every postcondition one of three results, one line
+per postcondition:
 
 ```text
 $ flang check docs/examples/reference/en/machine-words.flang --proof
-…
-docs/examples/reference/en/machine-words.flang: НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ — утверждений 2: доказано 1, условно 0, сетка 1, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 3
+модуль «Machine words»: функций 7, завершение доказано у 7
+постусловие «at most sixty bytes» функции «Header length in bytes» — проверено только на тестах (примеров 1)
+постусловие «fits in a byte» функции «Byte as a number» — доказано
+итог: постусловий и утверждений 2 — доказано 1, проверено только на тестах 1, не доказано 0
+docs/examples/reference/en/machine-words.flang: доказано не всё — доказано 1, проверено только на тестах 1, не доказано 0, ложно 0 (постусловий и утверждений 2); независимая проверка повторила 0 из 1 — код возврата 3
+подробный отчёт: flang check docs/examples/reference/en/machine-words.flang --proof --explain
 ```
 
 | The report says | What it means |
 | --- | --- |
 | `доказано` (proved) | true for all inputs; a separate program, `checker`, can re-check the proof |
-| `сетка N` (grid of N) | tested only on N examples, like unit tests; nothing is known about other inputs |
-| `объявлено, не доказано` (declared, not proved) | written down, but there is neither a proof nor an example |
+| `проверено только на тестах (примеров N)` (tested only, N examples) | tested only on N examples, like unit tests; nothing is known about other inputs |
+| `не доказано` (not proved) | written down, but there is neither a proof nor an example |
 
 The example has two postconditions: one is proved, one is tested on one
-example. So the line begins with «НЕ ДОКАЗАНО» (not proved), and the exit code
-is 3.
+example. So the last line begins with «доказано не всё» (not everything is
+proved), and the exit code is 3. The detailed report under `--explain` calls the
+second result `сетка` (grid) and the third `объявлено, не доказано` (declared,
+not proved).
 
-Termination of functions with the keyword `тотальная`, types and exhaustive
-`разбор` (pattern matching, `match`) are always proved.
+Types and exhaustive `разбор` (pattern matching, `match`) are always checked.
+Termination of a function with the keyword `тотальная` is proved, except when
+the decrease named by an `убывает` line is accepted without proof; the first
+line of the report counts such functions separately.
 
-The program `checker` does not re-check every proof. The report says in a
-separate line how many proofs it repeated and how many are accepted without a
-re-check.
+The program `checker` does not re-check every proof. How many proofs it
+repeated is said by the words «независимая проверка повторила 0 из 1» (the
+independent check repeated 0 of 1) in the last line.
 
 ## What you cannot prove
 

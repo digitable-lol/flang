@@ -146,7 +146,7 @@ tri.flang: независимо, сверщиком, проиграно 1 из 1
 
 ## Версия 2
 
-С 0.9.0 `flang check --proof --record файл --record-version 2` кладёт ту же
+Команда `flang check --proof --record файл --record-version 2` кладёт ту же
 запись второй версией. Содержание то же; меняются слова:
 
 - первая строка — `proof record 2`;

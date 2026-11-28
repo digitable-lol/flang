@@ -11,17 +11,17 @@
 |---|---|
 | [`DESCRIPTION.md`](DESCRIPTION.md) | описание языка целиком: каждая конструкция с примером, команды, файл настроек, ограничения |
 | [`site/language.ru.md`](site/language.ru.md) | справочник конструкций: как пишется каждая |
-| [`glossary.md`](glossary.md) | все слова языка на четырёх поверхностях записи; печатается из таблицы лексера |
-| [`surfaces.md`](surfaces.md) | четыре поверхности записи: русская, английская, эсперанто, китайская |
+| [`glossary.md`](glossary.md) | все слова языка на четырёх языках записи; генерируется из таблицы лексера |
+| [`surfaces.md`](surfaces.md) | четыре языка записи: русский, английский, эсперанто, китайский |
 | [`number-kinds.md`](number-kinds.md) | виды чисел и законы арифметики, которые ядро доказывает о каждом |
 | [`four-coverages.md`](four-coverages.md) | четыре покрытия доказанности и что каждое значит |
-| [`trust-gaps.md`](trust-gaps.md) · [ru](trust-gaps.ru.md) | чему доверяет flang: четыре дыры между исходником и работающей программой и этапы, которые их закрывают |
+| [`trust-gaps.md`](trust-gaps.md) · [ru](trust-gaps.ru.md) | чему доверяет flang: четыре места между исходником и работающей программой, где проверки нет, и этапы, которые их закрывают |
 | [`reference-semantics.md`](reference-semantics.md) · [ru](reference-semantics.ru.md) | эталонная семантика на Lean: числа двойной точности, ядро языка, теоремы о вычислении |
-| [`translation-validation.md`](translation-validation.md) · [ru](translation-validation.ru.md) | проверка напечатанного C по эталону, функция за функцией |
+| [`translation-validation.md`](translation-validation.md) · [ru](translation-validation.ru.md) | проверка сгенерированного C по эталону, функция за функцией |
 | [`python-to-flang.md`](python-to-flang.md) · [ru](python-to-flang.ru.md) | переводчик Python во flang: что входит в подмножество, что отвергается, как проверяется |
 | [`ru-grammar.md`](ru-grammar.md) | русская морфология для силлогизмов: опытный модуль |
 | [`argument-check.md`](argument-check.md) | проверка рассуждений в тексте по предложениям: что формализовано и что следует |
-| [`story-set-check.md`](story-set-check.md) | проверка каталога пользовательских историй: противоречия, дыры и повторы |
+| [`story-set-check.md`](story-set-check.md) | проверка каталога пользовательских историй: противоречия, пропуски и повторы |
 | [`flang/`](flang) | контракты слоёв: `SPEC.md` языка, ядра доказательств, процессов, ядра вычислителя; [доводы против аксиом в ядре](flang/proof/axioms.md) |
 | [`flang/rationale.md`](flang/rationale.md) | почему так устроено: замеры и отвергнутые пути за решениями, у которых нет своего ADR |
 | [`ct/`](ct/README.md) | контракты категорной записи: правила, множества, законы |
@@ -33,7 +33,7 @@
 | Каталог | О чём |
 |---|---|
 | [`site/`](site) | страницы сайта документации и код его сборки (`bootstrap/flang run-script site:build`) |
-| [`guide/`](guide) | руководства: тотальность, ограничения, настройки, имена, раскладка проекта, круг раскрутки, MCP, цель TypeScript, перевод кода на C в flang, цена функции до прогона, формулы с кванторами и LaTeX, где установленный flang находит библиотеку и рантаймы, текст по Юникоду, утверждения и силлогизмы в оболочке, сахар: цикл, заголовок в одну строку, класс и интерфейс |
+| [`guide/`](guide) | руководства: тотальность, ограничения, настройки, имена, раскладка проекта, круг раскрутки, MCP, цель TypeScript, перевод кода на C в flang, цена функции до запуска, формулы с кванторами и LaTeX, где установленный flang находит библиотеку и рантаймы, текст по Юникоду, утверждения и силлогизмы в оболочке, сахар: цикл, заголовок в одну строку, класс и интерфейс |
 | [`tutor/`](tutor/README.md) | уроки `flangtutor` |
 | [`examples/`](examples/README.md) | программы-примеры: от одной функции до службы на процессах |
 | [`editors/`](editors) | подсветка и языковой сервер для Vim и VS Code |
@@ -48,7 +48,7 @@
 | [`adr/`](adr) | принятые решения: задача, решение, что оно ломает |
 | [`tasks/`](tasks/README.md) | открытые задачи, одна задача — один файл |
 | [`templates/`](templates) | шаблоны задачи и заметки к выпуску |
-| [`release-notes.json`](release-notes.json) | заметки к выпускам; из них печатаются тело релиза и страница выпусков |
+| [`release-notes.json`](release-notes.json) | заметки к выпускам; из них генерируются текст релиза и страница выпусков |
 
 ## Тем, кто развивает язык
 
@@ -73,7 +73,7 @@
 | Файл | Кто читает |
 |---|---|
 | [`tree-inventory.md`](tree-inventory.md) | опись дерева по языкам — `bootstrap/flang run-script inventory:check` |
-| [`ci-inventory.md`](ci-inventory.md) | опись коротких команд, снятая 25 августа 2026 двоичным 0.6.2; нынешнего дерева не описывает ([задача 8356](tasks/8356-the-ci-inventory-describes-a-tree-that-is-gone.md)). Сторож кодов `flang/scripts/code-guard.fscript` ищет в ней имена кодов отказа |
+| [`ci-inventory.md`](ci-inventory.md) | опись работ CI по файлам `.github/workflows/`; итог запусков в ней не записан. Сторож кодов `flang/scripts/code-guard.fscript` ищет в ней имена кодов отказа |
 | [`javascript-inventory.md`](javascript-inventory.md) | опись JavaScript в дереве |
 | [`jargon.json`](jargon.json) | внутренние слова и тексты для читателя — `bootstrap/flang run-script jargon:check`; как писать страницу для посетителя — [`guide/writing-documentation.ru.md`](guide/writing-documentation.ru.md) |
 | [`reprint-ledger.tsv`](reprint-ledger.tsv) | ведомость заходов перепечатки — `scripts/seed/reprint-freshness.fscript` |

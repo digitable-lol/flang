@@ -23,7 +23,7 @@ flang run total.flang --function Итог --args '{"цены": [100, 50], "до�
 
 The first two lines are the usual output: the proved postconditions and the
 result. The third goes to the error stream. «Цена прогона» in it is the cost of
-this run:
+this run; memory and seconds vary a little from run to run:
 
 - steps are the same counter that the key `--max-steps` limits;
 - memory and seconds include the start of the interpreter: parsing and checking
@@ -55,7 +55,8 @@ bootstrap/flang run-script cost docs/examples/proofs/total.flang \
   напечатанный C: шагов ≤ 101
 ```
 
-«Толкователь» in the output is the `flang run` interpreter; «напечатанный C» is
+The command answers with one JSON line; what is shown above is its `result` field with the
+line breaks expanded. «Толкователь» in the output is the `flang run` interpreter; «напечатанный C» is
 the generated C code. For a list of a hundred prices the interpreter takes at
 most 2021 steps. A real run costs no more than the bound and can cost much less.
 

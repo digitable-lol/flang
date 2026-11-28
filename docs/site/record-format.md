@@ -155,7 +155,7 @@ a journal entry).
 
 ## Version 2
 
-Since 0.9.0 `flang check --proof --record file --record-version 2` writes the same
+The command `flang check --proof --record file --record-version 2` writes the same
 record as version 2. The content is the same; the words change:
 
 - the first line is `proof record 2`;

@@ -1,300 +1,251 @@
-# Опись проверок: цель, код возврата, время, причина
+# Перечень проверок CI: файлы работ и их работы
 
-Снято 25 августа 2026 на коммите `a3a18a3f` (ствол `b125519e` плюс взятие
-задачи 0001), двоичным `flang 0.6.2`, собранным из семени этого же дерева
-(`make -C bootstrap`). Это опись, а не починка: ничего по её ходу не чинилось
-нарочно, чтобы список показывал то состояние, которое есть.
+Страница перечисляет, что лежит в `.github/workflows/`: 16 файлов и 88 работ в
+них. Перечень составлен 27 ноября 2026 чтением этих файлов на коммите
+`ef0fecdac`.
 
-Целей в `ярлыки.flang` — 82. Каждая звалась как её зовёт человек:
-`bootstrap/flang run-script <имя>`. Имена целей переписаны кириллицей 25 августа (задача 0030);
-опись снята уже по новым именам.
+Состояние запусков (какая работа сейчас зелёная, какая красная и сколько идёт)
+на эту дату не измеряли. Его показывает GitHub:
 
-## Чем эта опись отличается от «CI зелёный / CI красный»
+```sh
+gh run list --branch dev --limit 20
+gh run list --commit "$(git rev-parse HEAD)"
+```
 
-Красное здесь двух разных пород, и их нельзя складывать:
+Короткие команды, которые зовут работы, записаны в `.flangrc`: 323 строки
+`script.<имя>`. Их список печатает `bootstrap/flang run-script` без имени.
+Результатов запуска каждой команды на этой странице нет: редакция от 25 августа
+2026 приводила их для версии 0.6.2, и к нынешнему дереву они не относятся.
 
-* **красное по делу** — чинится работой над деревом;
-* **красное из-за отставшего семени** — двоичный собран из `bootstrap/`, а
-  `bootstrap/` не перепечатывали. Правка в `flang/self/**` и `flang/core/**`
-  лежит в исходнике и в собранной программе не работает. Такое красное
-  перепечаткой снимается, и работать над ним сейчас нечего.
+## Как читать таблицы
 
-Семя на момент описи отстало на **41 расхождение** (`bootstrap/flang run-script seed:fast`):
-40 файлов плюс строка о том, что печать зовётся иначе — было
-«предел-шагов 1000000000», стало «предел-шагов 4000000000».
+- **работа** — ключ работы в файле; **имя в интерфейсе** — её `name`, под этим
+  именем она видна в запросе на слияние.
+- **где идёт** — значение `runs-on`. `self-hosted, big-memory` — свой раннер с
+  большой памятью; он объявляется переменной репозитория `BIG_MEMORY_RUNNER=yes`.
+- **срок** — `timeout-minutes`; прочерк значит, что срок не задан и действует
+  предел GitHub.
+- **условие** — `needs` и `if` работы дословно. Прочерк значит, что работа идёт
+  при каждом запуске файла.
 
-Двадцать целей из восьмидесяти двух объявлены в `ярлыки.flang` как «Ярлыки о
-доказательствах». Перед ними стоит заслон `scripts/seed/seed-freshness.fscript`: пока
-семя отстало, они **отказываются судить** и отвечают кодом 1, не запуская
-проверки вовсе. Это не поломка, а заслон, поставленный нарочно, — иначе они
-печатали бы зелёное про дерево, которого нет.
+Расписания записаны в формате cron, время UTC.
 
-Поэтому каждая из этих двадцати снималась **дважды**:
+## Что проверяется до CI
 
-* как её увидит человек и CI — с заслоном;
-* с ключом обхода `FLANG_SEED_LAG_KNOWN=1` — чтобы узнать, красна ли она **сама
-  по себе** или только из-за семени.
+Три хука из `.githooks/` включаются командой `git config core.hooksPath .githooks`:
 
-Второй прогон — единственное, что отделяет «чинить руками» от «ждать
-перепечатки», и ради него опись и снималась.
-
-## Числа
-
-| | сколько |
+| хук | что запускает |
 |---|---|
-| целей в `ярлыки.flang` | 82 |
-| зелёных (код 0) | 26 |
-| красных | 48 |
-| — красны ПО ДЕЛУ (чинятся работой над деревом) | 34 |
-| — красны ИЗ-ЗА ОТСТАВШЕГО СЕМЕНИ (снимутся перепечаткой) | 9 |
-| — красны ЗАСЛОНОМ, а сами по себе не установлены (с ключом обрыв) | 5 |
-| не уложились в отведённый срок — состояние не установлено | 7 |
-| не запускались | 1 |
+| `commit-msg` | `.githooks/commit-msg.fscript`, план «Commit message»: правила из [`commit-messages.md`](commit-messages.md) |
+| `pre-commit` | `.githooks/no-growth.fscript` и `.githooks/lint-growth.fscript`, планы «Staged», по файлам в индексе |
+| `pre-push` | `.githooks/pre-push.fscript`: 31 проверка |
 
-Одна цель — `раскрутка` — не запускалась нарочно: это сама перепечатка семени,
-она ПИШЕТ в `bootstrap/`, а задание прямо запрещает трогать `bootstrap/**`. На
-соседней учётной записи в это время шла перепечатка, и второй такой прогон
-машину бы уронил.
+## `binary.yml` — Binary
 
-## Опись поимённо
+Запускается: пуш (кроме правок только в `docs/tasks/**`, `.ai/**`); запрос на слияние; ручной запуск. Работ: 24.
 
-Столбец «код» — что вернул `bootstrap/flang run-script <имя>`. Столбец «с ключом» заполнен только
-у тех двадцати целей, перед которыми стоит заслон свежести семени: это их код
-при `FLANG_SEED_LAG_KNOWN=1`, то есть их настоящее состояние. «обрыв» — прогон
-не уложился в отведённый ему срок и снят; в столбце времени назван сам срок.
-Время — стенные секунды одного прогона, замок ворот в них входит.
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `sborka` | build | ubuntu-latest | — | — |
+| `self-examples` | self-examples | ubuntu-latest | 120 | `startsWith(github.ref, 'refs/tags/') \|\| github.event_name == 'workflow_dispatch'` |
+| `semya` | seed-fingerprint | ubuntu-latest | 30 | — |
+| `povtorimost` | reprint-determinism | ubuntu-latest | 20 | — |
+| `published` | published-check | ubuntu-latest | 5 | — |
+| `rust-node` | rust-node | ubuntu-latest | 30 | — |
+| `imena` | link-collisions | ubuntu-latest | 25 | — |
+| `srashchivanie` | merge-splicing | self-hosted, big-memory | 30 | `vars.BIG_MEMORY_RUNNER == 'yes' && (github.event_name == 'push' \|\| github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/dev' \|\| github.ref == 'refs/heads/main')` |
+| `chekker` | proof-checker | ubuntu-latest | 15 | — |
+| `second-checker` | second-checker | ubuntu-latest | 45 | — |
+| `tables-guard` | tables-guard | ubuntu-latest | 15 | — |
+| `jargon` | jargon | ubuntu-latest | 45 | — |
+| `perevod` | translation-matcher | ubuntu-latest | 20 | — |
+| `falsifier` | falsifier | ubuntu-latest | 30 | — |
+| `storozha` | guards-selftest | ubuntu-latest | 45 | — |
+| `storozha-2` | guards-selftest-2 | ubuntu-latest | 30 | — |
+| `guards-called-again` | guards-called-again | ubuntu-latest | 30 | — |
+| `splicing-on-pull-request` | splicing-on-pull-request | ubuntu-latest | 60 | `github.event_name == 'pull_request'` |
+| `guards-without-a-caller` | guards-without-a-caller | ubuntu-latest | 30 | — |
+| `argue-probes` | argue-probes | ubuntu-latest | 45 | — |
+| `progony` | runs-not-executed | ubuntu-latest | 25 | — |
+| `plan-rules-asked` | plan-rules-asked | ubuntu-latest | 25 | — |
+| `korpus` | corpus-examples | ubuntu-latest | 180 | `github.event_name == 'workflow_dispatch' \|\| startsWith(github.ref, 'refs/tags/')` |
+| `translation-validation` | translation-validation | ubuntu-latest | 90 | — |
 
-| # | цель | код | время | с ключом | причина у красного |
-|---|---|---|---|---|---|
-| 1 | `сборка` | 0 | 1 с |  |  |
-| 2 | `ярлыки` | 0 | 6 с |  |  |
-| 3 | `licenses:check` | 1 | 3 с |  | нет SPDX-заголовка в `flang/scripts/сличить-двух-сводителей.py` — 1 нарушение на 73 файла |
-| 4 | `claims:check` | 1 | 3 с |  | 3 протухших утверждения о недостаче: `flang/cat/SPEC.md:1065`, `flang/self/parser.flang:5908` и `docs/ci-inventory.md:58` — прежняя редакция ЭТОЙ страницы, которая цитировала беду дословно и тем её удваивала. После переписывания страницы переспрошено: **2**, и эта страница в списке больше не числится |
-| 5 | `counts:check` | обрыв | 240 с, переспрос 659 с |  | не уложилась ни в 4 минуты, ни в 11 (обходит дерево; своего срока в строке ярлыка нет) |
-| 6 | `codes:check` | 1 | 6 с |  | ПЕРЕСНЯТО 29 августа: сторож ПОБЕЖАЛ — предел обойдён задачей 9350, до того он не сверял ничего. Нарушений 5 → 2: остались две ПЕРЕМЕННЫЕ СРЕДЫ, принятые за коды отказа (`FLANG_ZAMER`, `FLANG_PROBE_MAX_DEPTH`) |
-| 7 | `codes:forgery` | **0** | 36 с |  | ЗЕЛЁН с 29 августа: «сторож кодов краснеет на подложенном коде и молчит, когда его убрали; страница вернулась знак в знак» |
-| 8 | `emit-promises:check` | 3 | 2 с |  | FLANG_PROPERTY — нарушено собственное свойство сторожа «программа улика: длина постоянной» |
-| 9 | `bad-octet:check` | 3 | 2 с |  | `ярлыки.flang` зовёт bash-скрипт через `sh`; в dash `${BASH_SOURCE[0]}` — «Bad substitution», путь собирается как `//bootstrap/flang` |
-| 10 | `bad-octet:corrupt` | 3 | 1 с |  | то же: bash-скрипт запущен через `sh` |
-| 11 | `kernel-abilities:check` | 1 | 2 с | 1 | СЕМЯ: с ключом «ЯДРО отстало — якоря «прибавление к ГРАНИЦЕ…» в `proof-kernel.flang` нет», разошлось мест 1 |
-| 12 | `kernel-abilities:evidence` | 1 | 2 с | 1 | СЕМЯ: с ключом FLANG_UNKNOWN_NAME — старый двоичный не знает типа «неотрицательное» в `flang/proof/map/abilities.flang` |
-| 13 | `emit-law:check` | 1 | 71 с |  | суд убит сигналом SIG9 на `flang/stdlib/datetime.flang` — вердикта нет |
-| 14 | `names:check` | 1 | 1048 с |  | 870 НОВЫХ нарушений имён; всего 16930 мест долга в 212 файлах из 282 просмотренных |
-| 15 | `memory:check` | 0 | 12 с |  |  |
-| 16 | `binary-rules:check` | 1 | 5 с |  | нарушений 5: две печати без имени поверхности, одна поверхность без улики, две протухшие записи (FLANG_INTERNAL, FLANG_STEP_LIMIT) |
-| 17 | `node:targets` | 1 | 122 с |  | полный узел работает на 7 целях из 8: `elixir` — ответ с узла опоры не поменял состояния «Счётчика» |
-| 18 | `tempdir:check` | 3 | 3 с |  | FLANG_UNKNOWN_PLAN: планов в файле два («Временных каталогов не осталось», «Проба»), а `--plan` в строке ярлыка не назван |
-| 19 | `occupied-names:check` | 1 | 15 с |  | FLANG_ZANYATOE_NECHEM: прогонщик ответил 0 раз на 1 вопрос о цели c — `output/storozh-zanyatogo.json` нет |
-| 20 | `target-words:check` | 1 | 17 с |  | бед 16: подделка занятых слов не печатается ни в c, ни в go, ни в rust, ни в java; модули `System` и `StringBuilder` собираются, хотя имена заняты словом цели |
-| 21 | `kernel-forgeries:check` | 1 | 3 с | 1 | СЕМЯ: с ключом нарушений 44, и 42 из них — «правило … НЕ РАБОТАЕТ»: честные половины правил ядра есть в исходнике и отсутствуют в семени |
-| 22 | `proof-record:check` | 1 | 2 с | обрыв 600 с | с заслоном код 1; с ключом не уложилась в 10 минут — собственное состояние не установлено |
-| 23 | `reduction:check` | 1 | 2 с | обрыв 600 с | с заслоном код 1; с ключом не уложилась в 10 минут — собственное состояние не установлено |
-| 24 | `child-timeout:check` | 0 | 68 с |  |  |
-| 25 | `conc-link:emit` | 0 | 11 с |  |  |
-| 26 | `release:check` | 0 | 4 с |  |  |
-| 27 | `link-collisions:check` | 1 | 5 с |  | столкновений 52 на замыкании из 905 файлов: одно имя объявлено в двух модулях библиотеки («Цифра 16», «Степень», «Ход поиска», «Шаг поиска» и другие) |
-| 28 | `seed:fast` | 1 | 2 с |  | СЕМЯ: расхождений 41 — это и есть его работа, он краснеет ровно об отставшем семени |
-| 29 | `name-collisions:recount` | обрыв | 240 с, переспрос 780 с |  | не уложилась ни в 4 минуты, ни в 13 (её собственная шапка обещает тридцать) |
-| 30 | `name-splicing:check` | 3 | 6 с |  | FLANG_PROPERTY — нарушено собственное свойство сторожа «путь к файлу долга — тридцать семь знаков» |
-| 31 | `search:discriminating` | 1 | 2 с | 0 | СЕМЯ: с ключом ЗЕЛЕНА — красна только заслоном |
-| 32 | `trust:ceiling` | 1 | 2 с | 1 | потолок пробит: ядро решений было 3372 строк, стало 4461 (+1089); достижимо было 5967, стало 7428 (+1461) |
-| 33 | `specs:check` | 1 | 2 с | 1 | СЕМЯ: с ключом FLANG_UNKNOWN_NAME — старый двоичный не знает типа «неотрицательное» |
-| 34 | `specs:forgery` | 1 | 3 с | 1 | СЕМЯ: с ключом расхождений 2 из 14 подложенных, и на чистом дереве «бед в системе спек: 30» — те же FLANG_UNKNOWN_NAME от старого двоичного |
-| 35 | `proofs:report` | 1 | 2 с | обрыв 600 с | с заслоном код 1; с ключом не уложилась в 10 минут — собственное состояние не установлено |
-| 36 | `proofs:summary` | 1 | 2 с | обрыв 600 с | с заслоном код 1; с ключом не уложилась в 10 минут — собственное состояние не установлено |
-| 37 | `word:check` | 1 | 2 с | 1 | нарушений 3: долги ядра закрыты, а записи о них остались в каталоге |
-| 38 | `word:forgery` | 1 | 2 с | 1 | СЕМЯ: не сработала 1 порча из-за того, что ведомость не сложилась — FLANG_UNKNOWN_NAME от старого двоичного |
-| 39 | `proofs:emptiness` | 1 | 2 с | обрыв 600 с | с заслоном код 1; с ключом не уложилась в 10 минут — собственное состояние не установлено |
-| 40 | `emptiness:check` | 1 | 2 с | 1 | 14 файлов библиотеки не названы ни в «Наших», ни в «Отложенных»: aes, automaton, crl, der, ecdsa, math-classics, math-classics-lists, registry, rsa, sqlite, tls, x25519, x509, образцы |
-| 41 | `emptiness:census` | 1 | 2 с | 1 | то же: те же 14 файлов библиотеки не расписаны по спискам |
-| 42 | `emptiness:corrupt` | 1 | 2 с | 1 | краснеет вслед за `emptiness:check` — те же 14 нерасписанных файлов |
-| 43 | `proven:check` | 1 | 2 с | 3 | FLANG_PROPERTY — нарушено собственное свойство сторожа «длина имени файла пола» функции «Файл пола» |
-| 44 | `proven:corrupt` | 1 | 2 с | 1 | краснеет вслед за `proven:check`: то же нарушенное свойство «длина имени файла пола» |
-| 45 | `proofs:count-20` | 1 | 3 с | 0 | СЕМЯ: с ключом ЗЕЛЕНА — красна только заслоном |
-| 46 | `word:occupancy` | 2 | 1 с |  | это не проверка, а измеритель: без довода-слова отвечает подсказкой и кодом 2 |
-| 47 | `word:occupancy:check` | 0 | 79 с |  |  |
-| 48 | `links:check` | 0 | 29 с |  |  |
-| 49 | `zettel-index:build` | 0 | 10 с |  |  |
-| 50 | `install-path:check` | 0 | 3 с |  |  |
-| 51 | `dictionary:coverage` | 0 | 5 с |  |  |
-| 52 | `tab-host:check` | 1 | 33 с |  | хозяин вкладки отстал от словаря: из 20 поручений 4 без ветки (чтение октетов, запись октетов, удаление файла, временный каталог) |
-| 53 | `browser:build` | 0 | 4 с |  |  |
-| 54 | `browser:stand` | обрыв | 100 с |  | это не проверка, а стенд: поднимает сервер на 127.0.0.1:8908 и не завершается — обрыв по построению |
-| 55 | `browser:probe` | 2 | 2 с |  | без `TMPDIR` отказывается начинать. С `TMPDIR=<каталог>` — код 1 за 42 с: Chrome/151 поднялся, но на экране не дождались «набор:» |
-| 56 | `manpage:check` | 0 | 5 с |  |  |
-| 57 | `darwin:check` | 0 | 2 с |  |  |
-| 58 | `homebrew-formula:check` | 1 | 6 с |  | архива `flang-0.6.2-c.tar.gz` нет ни в `output/`, ни рядом — sha256 формулы Homebrew сверить нечем |
-| 59 | `установка:npm` | 1 | 74 с |  | шаг 13: `flang emit primer.flang --target js` из поставленного пакета вернул код 2, а ждали 0 |
-| 60 | `сайт` | 0 | 13 с |  |  |
-| 61 | `site:check` | 0 | 13 с |  |  |
-| 62 | `contrast:check` | 0 | 6 с |  |  |
-| 63 | `словарь` | 0 | 6 с |  |  |
-| 64 | `dictionary:check` | 0 | 7 с |  |  |
-| 65 | `surfaces:run` | 0 | 2 с |  |  |
-| 66 | `surfaces:check` | 0 | 2 с |  |  |
-| 67 | `surfaces:forgery` | 0 | 3 с |  |  |
-| 68 | `числа` | обрыв | 241 с |  | не уложилась в 4 минуты (своего срока в строке ярлыка нет) |
-| 69 | `numbers:check` | обрыв | 240 с |  | не уложилась в 4 минуты (своего срока в строке ярлыка нет) |
-| 70 | `журнал` | 0 | 3 с |  |  |
-| 71 | `changelog:check` | 1 | 2 с |  | правило видимости не знает путей: `.rabdir`, `.reader-pages.txt`, `.sborka.kod`, `.tmpdir`, `docs/ROADMAP.md`, `bootstrap-vysokiy`, `flang/examples`, `tasks`, `ярлык`, `ярлыки.flang` и ещё четыре |
-| 72 | `changelog:page` | 0 | 11 с |  |  |
-| 73 | `changelog:page:check` | 1 | 2 с |  | `changelog.md` не совпадает с печатью из `changelog.json` — страницу правили руками |
-| 74 | `releases:page` | 3 | 16 с |  | FLANG_RECURSION_LIMIT: «Шаг разметки json» исчерпала 10000000 шагов на глубине вызовов 4 |
-| 75 | `releases:page:check` | 3 | 16 с |  | то же: FLANG_RECURSION_LIMIT в «Шаг разметки json» |
-| 76 | `раскрутка` | не гоняли |  |  | ЗАПУСКАТЬ БЫЛО НЕЛЬЗЯ: это сама перепечатка семени, она ПИШЕТ в `bootstrap/`; задание запрещает трогать `bootstrap/**`, и на соседней учётной записи в это время шла перепечатка |
-| 77 | `reprint:check` | обрыв | 301 с |  | не уложилась в 5 минут: печатает точку раскрутки целиком, замер в её же шапке — 18 м 50 с и пик 24,1 ГиБ на одной цели C |
-| 78 | `bootstrap-point:check` | обрыв | 300 с |  | не уложилась в 5 минут: то же самое другим путём — печать двоичным, по шапке 18 минут и 24 ГиБ |
-| 79 | `seed-lines:check` | 0 | 2 с |  |  |
-| 80 | `guards:check` | 0 | 4 с |  |  |
-| 81 | `тесты` | 1 | 208 с |  | 31 проверка прошла, 7 провалено — все семь в стороже жаргона: «ledger» и «ведомост» в `README.md` и `README.ru.md`, «эталон» и «побайтов» в `docs/site/browser-app.ru.md`, «byte-for-byte» в `docs/site/browser-app.md` и далее по страницам сайта |
-| 82 | `tests:remote` | 1 | 1 с |  | не задан `FLANG_REMOTE` — нужна чужая машина с восемью тулчейнами и доступом по ключу |
+## `build-macos.yml` — macOS build
 
-## Красное поимённо по породам
+Запускается: пуш (кроме правок только в `docs/tasks/**`, `.ai/**`); запрос на слияние; ручной запуск. Работ: 1.
 
-**Красны из-за отставшего семени — 9.** Перепечатка (`раскрутка`, задача 0003)
-снимает их без единой правки в дереве:
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `bootstrap` | build-macos | macos-latest | — | — |
 
-`kernel-abilities:check`, `kernel-abilities:evidence`, `kernel-forgeries:check`, `seed:fast`,
-`search:discriminating`, `specs:check`, `specs:forgery`, `word:forgery`,
-`proofs:count-20`.
+## `ci.yml` — CI
 
-Из них две — `search:discriminating` и `proofs:count-20` — с ключом обхода
-**зелены**: они красны ровно заслоном и больше ничем. Остальные семь с ключом
-тоже красны, но текст отказа называет виновником старый двоичный: то якоря
-правила ядра в `proof-kernel.flang` нет, то FLANG_UNKNOWN_NAME на типе
-«неотрицательное», которого семя не знает.
+Запускается: пуш (ветки `main`, `dev`; метки `v*`); запрос на слияние; ручной запуск. Работ: 33.
 
-**Красны заслоном, а сами по себе не установлены — 5.** С ключом обхода каждая
-не уложилась в десять минут:
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `semya` | seed-words | ubuntu-latest | — | — |
+| `proza` | prose-numbers | ubuntu-latest | — | — |
+| `kirillica` | cyrillic-file-names | ubuntu-latest | — | — |
+| `translit` | translit-file-names | ubuntu-latest | — | — |
+| `temporal` | temporal-properties | ubuntu-latest | — | — |
+| `vremyanki` | stray-temporaries | ubuntu-latest | — | — |
+| `nastroyki` | flangrc-places | ubuntu-latest | — | — |
+| `zadachnik` | task-tracker | ubuntu-latest | — | — |
+| `postoyannye` | c99-limits | ubuntu-latest | — | — |
+| `stolknoveniya` | id-collisions | ubuntu-latest | — | `github.ref_type == 'tag' \|\| github.event_name == 'workflow_dispatch'` |
+| `zhargon` | jargon | ubuntu-latest | — | — |
+| `skills` | skills-follow-the-page | ubuntu-latest | — | — |
+| `test` | test | ubuntu-latest | 90 | `github.ref_type == 'tag' \|\| github.event_name == 'workflow_dispatch'` |
+| `licensing` | licensing | ubuntu-latest | — | — |
+| `links` | links | ubuntu-latest | — | — |
+| `pechat` | emit-guard | ubuntu-latest | — | — |
+| `stdlib-check` | stdlib-check | ubuntu-latest | 120 | — |
+| `korpus` | corpus-runner | ubuntu-latest | — | — |
+| `progon` | pretest-check | ubuntu-latest | — | — |
+| `granica` | input-bounds | ubuntu-latest | — | — |
+| `oblast` | c-region | ubuntu-latest | — | — |
+| `pravila-spisok` | rules-list | ubuntu-latest | — | — |
+| `lean-rules-guard` | lean-rules-guard | ubuntu-latest | — | — |
+| `pravila` | rules-check | ubuntu-latest | — | `github.ref_type == 'tag' \|\| github.event_name == 'workflow_dispatch'` |
+| `klyuchi` | cli-keys | ubuntu-latest | — | — |
+| `stale-pages` | stale-pages | ubuntu-latest | — | `github.ref_type == 'tag' \|\| github.event_name == 'workflow_dispatch'` |
+| `neznanye-storozha` | uncalled-guards | ubuntu-latest | — | — |
+| `target-link` | link-across-targets | ubuntu-latest | 20 | — |
+| `seed-verdicts` | seed-verdicts | ubuntu-latest | — | — |
+| `python-in` | python-enters-flang | ubuntu-latest | — | — |
+| `uncalled` | checks-nobody-calls | ubuntu-latest | — | — |
+| `registry-resolution` | registry-resolution | ubuntu-latest | — | — |
+| `link-import` | link-import | ubuntu-latest | — | — |
 
-`proof-record:check`, `reduction:check`, `proofs:report`,
-`proofs:summary`, `proofs:emptiness`.
+## `commit-messages.yml` — Commit messages
 
-**Красны по делу — 34.** Это те, что чинятся работой над деревом. Три из них
-красны не о дереве, и это стоит знать до того, как браться:
+Запускается: запрос на слияние. Работ: 1.
 
-* `word:occupancy` (код 2) — это измеритель, а не проверка: без довода-слова
-  он и обязан отвечать подсказкой;
-* `tests:remote` — нужна чужая машина с восемью тулчейнами и доступом по ключу;
-* `browser:probe` — нужен `TMPDIR` и живой Chrome.
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `lint` | commit-messages | ubuntu-latest | 45 | — |
 
-## Что чинить первым
+## `install-path.yml` — Install path
 
-**`codes:forgery` починен 29 августа 2026 и больше не первый в этом списке.**
-Прежний диагноз — «он единственный красен тем, что НЕ ЗАМЕТИЛ подлога, молчит
-там, где обязан кричать» — оказался неверен, и вот чем.
+Запускается: пуш (метки `v*`; только при правке 12 названных путей); запрос на слияние (только при правке 12 названных путей); расписание `17 4 * * *` (UTC); ручной запуск. Работ: 2.
 
-Сторож кодов не молчал: он не добирался до просмотра ВОВСЕ. Вывод `git grep`
-перерастал предел хозяина в 1 МиБ, и сторож отвечал отказом «смотреть нечем».
-Проверка подлога видела ответ без подложенного имени и читала это как молчание.
-Предел обойдён задачей 9350 — сторож спрашивает имена кодов, а не строки, — и
-первая половина подлога сразу стала проходить.
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `put` | install-path (<ос>) | по матрице | — | — |
+| `brew` | homebrew | macos-latest | — | — |
 
-Вторая половина после этого краснела уже по своей причине, и опять не по вине
-сторожа. Сняв подлог, проверка требует, чтобы имя исчезло из ответа, а ищет его
-простым вхождением по ВСЕМУ ответу. Имя же было названо прозой ЭТОЙ САМОЙ
-СТРАНИЦЫ — в строках, где описан отказ. Сторож честно называл его и на чистом
-дереве, с местом. Круг замкнулся: страница, заведённая описывать красноту
-сторожа, эту красноту и держала.
+## `lean-crosscheck.yml` — Lean crosscheck
 
-Круг разорван: имена, которых сторож не видит по устройству, проза больше не
-называет голым словом. Прогон — код 0.
+Запускается: расписание `17 4 * * *` (UTC); ручной запуск. Работ: 1.
 
-**Что осталось хрупким.** Проверка подлога по-прежнему сверяет голое имя по
-всему ответу: любое будущее упоминание подкладываемого кода в любой странице
-снова сделает её красной, и снова с ложным доводом «сторож смотрит в свою
-память». Чинить надо сверку — сличать имя ВМЕСТЕ С МЕСТОМ подлога; разделитель
-измерен: на чистом дереве путь записки «что мешает 1.0» в ответе сторожа не
-встречается ни разу, с подлогом встречается.
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `lean` | lean-crosscheck | ubuntu-latest | 90 | — |
 
-Дальше по убыванию отдачи:
+## `lean-model-blocks.yml` — Lean model blocks
 
-1. **Три цели красны одной причиной** — `emptiness:check`, `emptiness:census`,
-   `emptiness:corrupt`: четырнадцать файлов библиотеки не расписаны ни в «Наших»,
-   ни в «Отложенных». Одна правка списка снимает три красных. Их было семь на
-   прошлой описи — список отстаёт быстрее, чем его правят.
-2. **Две цели красны одной строкой** — `bad-octet:check` и `bad-octet:corrupt`:
-   `ярлыки.flang` зовёт `sh scripts/guards/bad-octet-guard.sh`, а у скрипта
-   `#!/usr/bin/env bash` и `${BASH_SOURCE[0]}` внутри. `/bin/sh` здесь — dash,
-   и он отвечает «Bad substitution». Правится словом `bash` вместо `sh` в
-   строке ярлыка.
-3. **Четыре цели красны собственным нарушенным свойством**, а не тем, что они
-   стерегут: `emit-promises:check`, `name-splicing:check`, `proven:check` и
-   вслед за ним `proven:corrupt`. FLANG_PROPERTY — это отказ самой программы
-   сторожа, до всякой проверки дерева.
-4. **Семь проверок из `тесты` — жаргон**: все семь об одном, и правится это
-   прозой, а не кодом.
-5. **Семь целей не уложились в срок**, и у пяти из них нет своего `--timeout` в
-   строке ярлыка, хотя их собственные шапки называют минуты: `counts:check`,
-   `name-collisions:recount` (шапка обещает тридцать минут), `числа`,
-   `numbers:check`, а также дорогие `reprint:check` и `bootstrap-point:check`.
-   Пока срока нет, они в CI либо висят, либо режутся чужим сроком.
+Запускается: пуш (ветки `dev`; только при правке 7 названных путей); запрос на слияние (в `dev`; только при правке 7 названных путей); расписание `47 4 * * *` (UTC); ручной запуск. Работ: 1.
 
-## Чем прогон был ограничен, чтобы числа читались правильно
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `blocks` | lean-model-blocks | ubuntu-latest | 60 | — |
 
-* Разом шло **не больше двух** прогонов: на соседней учётной записи шла
-  перепечатка семени, и мешать ей было нельзя.
-* Каждый прогон — через `PAMYAT=45G CHISLO=2 POROG=60G
-  /srv/flang-rabota/vorota/flang-vorota`. Свободной памяти на машине всё время
-  было 350–380 ГиБ, очереди у ворот не возникало: замок брался сразу, и время
-  в таблице — время самой цели.
-* Срок на цель: 4 минуты в основном заходе, 10 минут в переспросе с ключом,
-  5 минут у двух дорогих печатей. Цель, не уложившаяся в него, помечена
-  «обрыв» — это НЕ приговор проверке, это значит, что состояние не установлено.
-  Двум обрывам срок потом добавили — `counts:check` не уложилась и в 11
-  минут, `name-collisions:recount` не уложилась и в 13.
-* Дерево после каждой цели возвращалось к чистому (`git checkout --`), чтобы
-  печатающий ярлык (`сайт`, `числа`, `журнал`, `словарь`, `zettel-index:build`)
-  не зеленил идущую следом сверку своей же печатью.
+## `pages.yml` — Docs site
 
-### Ворота ломают три цели, и это НЕ их беда
+Запускается: пуш (ветки `main`, `dev`; только при правке 40 названных путей); запрос на слияние; ручной запуск. Работ: 4.
 
-Ворота ставят `ulimit -v` (RLIMIT_AS). Для flang это безопасно, для чужой
-оснастки — нет, и в шапке самих ворот так и написано: «Для НИХ такой предел
-ставить нельзя — сборка упадёт на ровном месте». Замерено здесь же:
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `sobrat` | build | ubuntu-latest | — | `github.event_name != 'push' \|\| github.ref == 'refs/heads/main'` |
+| `playground` | playground | ubuntu-latest | — | — |
+| `pack` | pack | ubuntu-latest | — | после `sobrat`, `playground`; `github.event_name != 'pull_request' && (github.event_name != 'push' \|\| github.ref == 'refs/heads/main')` |
+| `opublikovat` | deploy | ubuntu-latest | — | после `pack`; `github.event_name != 'pull_request' && (github.event_name != 'push' \|\| github.ref == 'refs/heads/main')` |
 
-* `node:targets` под воротами — «работает на 6 целях из 8», csharp падает с
-  «Out of memory» от Roslyn; **без ворот — 7 из 8**, и не сходится только elixir;
-* `target-words:check` под воротами — бед 18 (четыре из них — тот же Roslyn);
-  **без ворот — бед 16**;
-* `тесты` под воротами — 28 прошло / 10 провалено, три лишних падения на csharp;
-  **без ворот — 31 / 7**, и все семь в стороже жаргона.
+## `provability.yml` — Provability
 
-В таблице у этих трёх стоят числа **без ворот**: под воротами они мерят предел
-адресного пространства, а не себя.
+Запускается: расписание `23 5 * * *` (UTC); ручной запуск. Работ: 1.
 
-## Рядом с описью: `ярлыки.flang` и то, что гоняет GitHub, — разные списки
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `verdikt` | provability | ubuntu-latest | 45 | — |
 
-Считано по `.github/workflows/*.yml` того же коммита (`binary.yml`,
-`build-macos.yml`, `ci.yml`, `install-path.yml`, `pages.yml`,
-`publish-npm.yml`):
+## `release.yml` — Release
 
-* **Именем `bootstrap/flang run-script <цель>` workflow не зовёт ни одной цели.** Четыре
-  упоминания ярлыков в файлах workflow — это текст в комментариях
-  (`guards:check`, `установка:npm`, `darwin:check`, `homebrew-formula:check`),
-  а не вызов.
-* Зовутся те же файлы напрямую: у **28 целей из 82** файл-исполнитель из строки
-  ярлыка упомянут хоть в одном workflow. У остальных 54 — нет.
-* **Заслон свежести семени в workflow не стоит.** Он живёт в оболочке `ярлык`, а
-  workflow зовёт сторожей напрямую. То есть двадцать целей, которые рукой
-  сегодня отказываются судить, в GitHub судят молча — ответом старого семени.
+Запускается: пуш (метки `v*`); ручной запуск. Работ: 4.
 
-## Что осталось недоснятым и почему
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `release` | release | ubuntu-latest | — | — |
+| `prebuilt` | prebuilt (<ос>-<архитектура>) | по матрице | — | после `release`; `${{ !cancelled() && needs.release.outputs.archive != '' }}` |
+| `packages` | packages | ubuntu-24.04 | — | после `release`, `prebuilt`; `${{ !cancelled() && needs.prebuilt.result == 'success' }}` |
+| `install-parity` | install-parity (<ос>) | по матрице | — | после `packages`; `${{ !cancelled() && needs.packages.result == 'success' }}` |
 
-Недоснятыми остались семь «обрывов» и одна незапускавшаяся цель — каждая
-названа в таблице своей строкой со своим сроком. Срок на всю опись был 150
-минут; растянуть его на дорогие печати (`reprint:check` — 19 минут,
-`bootstrap-point:check` — 18 минут, `установка:npm` — свой срок 40 минут) значило бы
-не снять остальные восемьдесят.
+## `reprint.yml` — Reprint
 
-## Добавлено после описи: сверка установок (`install-parity:check`)
+Запускается: пуш (ветки `dev`; только при правке 6 названных путей); расписание `0 2 * * 0` (UTC); ручной запуск. Работ: 8.
 
-С 15 октября 2026 (задача 1098) `.github/workflows/release.yml` несёт работу
-`install-parity` на двух раннерах — `ubuntu-24.04` и `macos-14`. Она ставит
-выпуск каждым каналом из вложений того же прогона и зовёт
-`bootstrap/flang run-script install-parity:check` — прибор
-`packaging/install-parity.flang`: 60 вызовов, первая установка — эталон,
-остальные сверяются с ней по коду, выводу и потоку ошибок; разошедшийся
-`--version` назван отдельно, «не тот двоичный». Linux: готовый архив,
-`install.sh`, deb, rpm, asdf. macOS: готовый архив, `install.sh`, brew, asdf,
-asdf из архива C. Порог — ноль расхождений; иначе код 1 и отчёт в сообщении.
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `freshness` | freshness | ubuntu-latest | — | — |
+| `c99-limits` | c99-limits | ubuntu-latest | — | — |
+| `id-collisions` | id-collisions | ubuntu-latest | — | — |
+| `wide-determinism` | reprint-determinism-wide | ubuntu-latest | 30 | — |
+| `big-memory-runner` | big-memory-runner | ubuntu-latest | — | — |
+| `runner-watch` | runner-watch | ubuntu-latest | 75 | после `big-memory-runner` |
+| `reprint-check` | reprint-check | self-hosted, big-memory | 1020 | после `c99-limits`, `id-collisions`, `big-memory-runner`; `(github.event_name == 'schedule' \|\| (github.event_name == 'workflow_dispatch' && !inputs.two_prints_only)) && (github.ref == 'refs/heads/dev' \|\| github.ref == 'refs/heads/main')` |
+| `two-prints` | reprint-reproducibility | self-hosted, big-memory | 2100 | после `c99-limits`, `big-memory-runner`; `(github.event_name == 'push' \|\| github.event_name == 'schedule' \|\| github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/dev' \|\| github.ref == 'refs/heads/main')` |
+
+## `slow-guards.yml` — Slow guards
+
+Запускается: запрос на слияние (в `dev`; только при правке `.github/workflows/slow-guards.yml`); расписание `23 3 * * 2` (UTC); ручной запуск. Работ: 1.
+
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `guard` | <проверка> | ubuntu-latest | 90 | — |
+
+## `stdlib-proof.yml` — Stdlib proof
+
+Запускается: расписание `41 6 * * 6` (UTC); ручной запуск. Работ: 1.
+
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `vedomost` | stdlib-proof | ubuntu-latest | 350 | — |
+
+## `target-canons.yml` — Target canons
+
+Запускается: расписание `0 5 * * 1` (UTC); ручной запуск. Работ: 1.
+
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `canons` | printed-code-follows-target-canons | ubuntu-latest | 120 | — |
+
+## `target-twins.yml` — Target twins
+
+Запускается: расписание `0 4 * * 1` (UTC); ручной запуск. Работ: 4.
+
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `planirovshchik` | scheduler-across-targets | ubuntu-latest | 30 | — |
+| `nadzor` | supervisor-across-targets | ubuntu-latest | 60 | — |
+| `uzel` | node-across-targets | ubuntu-latest | 45 | — |
+| `pechat-svyazi` | conc-link-emit | ubuntu-latest | 15 | — |
+
+## `typing-holes-fuzz.yml` — Typing holes search
+
+Запускается: расписание `41 3 * * *`, `41 4 * * 0` (UTC); запрос на слияние (только при правке `scripts/fuzz/**`, `.github/workflows/typing-holes-fuzz.yml`, `flang/proof/tables/typing-holes.tsv`); ручной запуск. Работ: 1.
+
+| работа | имя в интерфейсе | где идёт | срок, мин | условие |
+|---|---|---|---:|---|
+| `fuzz` | typing-holes-fuzz | ubuntu-latest | 90 | — |
+
+## Матрицы
+
+- `slow-guards.yml`, работа `guard` — шесть проверок: `closed-length`,
+  `target-drift`, `tasks`, `docs`, `claims`, `proven`.
+- `install-path.yml`, работа `put` — `ubuntu-latest` и `macos-latest`.
+- `release.yml`, работа `prebuilt` — четыре сборки: linux x86_64
+  (`ubuntu-24.04`), linux aarch64 (`ubuntu-24.04-arm`), macos arm64 (`macos-15`),
+  macos x86_64 (`macos-15-intel`).
+- `release.yml`, работа `install-parity` — linux x86_64 и macos arm64.

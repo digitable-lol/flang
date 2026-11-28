@@ -52,9 +52,9 @@ only the hand-written sources are runtimes.
 | asdf (prebuilt or C archive) | `installs/flang/<v>/bin/flang` | `…/share/flang/stdlib` | `…/share/flang/<t>` |
 | `make install PREFIX=<p>` | `<p>/bin/flang` | `<p>/share/flang/stdlib` | `<p>/share/flang/<t>` |
 
-The C release archive carries the image of `share/flang` in its `runtime/` directory: one
+In the C release archive the contents of `share/flang` are in the `runtime/` directory: one
 subdirectory per target plus `stdlib/`. Every package copies that directory as a whole, so
-the library travels the same road as the runtimes. Releases before 0.7.29 ship no
+the library reaches an install the same way as the runtimes. Releases before 0.7.29 ship no
 `stdlib/`; an install of such a release finds the library only through `FLANG_MODULE_DIR`.
 
 `make install` copies `flang/src/emit/<t>` and `flang/stdlib` of the clone (or `runtime/` of
@@ -66,9 +66,10 @@ pointed at the tree by hand: `FLANG_MODULE_DIR=<clone>/flang/stdlib` and
 ## How it is checked
 
 - `bootstrap/flang run-script install-parity:check` runs the same calls on every install
-  listed in `packaging/install-parity.txt`. Three calls work on a file outside the tree
-  that imports `«Lists»` (`check`, `run`, `emit --target c`); the first install must pass
-  them, so an install without `share/flang/stdlib` is refused by name
+  listed in a settings file. Its path is the first argument; the default is
+  `install-parity.txt`, and the tree has no such file. Three calls work on a file outside the
+  tree that imports `«Lists»` (`check`, `run`, `emit --target c`). The first install must pass
+  them, so an install without `share/flang/stdlib` is refused with a line carrying its name
   (`ОТКАЗ | <install> | …`) even when every install is broken the same way.
 - `scripts/release/release-in-c.fscript` installs the C archive into a prefix and prints
   such a file into C and JavaScript from there.

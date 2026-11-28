@@ -225,7 +225,7 @@ the change.
 
   ```
   $ bootstrap/flang io scripts/guards/translit-file-names-guard.fscript --plan Проверка
-  транслит в именах файлов: латинских имён 1847, с чужими словами 102 — все в ведомости, новых нет
+  транслит в именах файлов: латинских имён 3320, с чужими словами 98 — все в ведомости, новых нет
   ```
 
   The bootstrap print in C takes its file names from the module name, by the same transliteration

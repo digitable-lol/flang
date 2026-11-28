@@ -50,7 +50,7 @@ Russian, Chinese and English:
 
 ```
 $ flang check fspec/spec/01-discount-cap.flang --proof
-  утверждений 3: доказано 3 (из них без теоремы 3), сетка 0, объявлено, не доказано 0
+fspec/spec/01-discount-cap.flang: проверено — доказано 3, проверено только на тестах 0, не доказано 0, ложно 0 (постусловий и утверждений 3); независимая проверка повторила 3 из 3 — код возврата 0
 ```
 
 3 claims, 3 proved. Specs are matched by the pair "function and claim name".
@@ -110,7 +110,7 @@ when it also holds for a stub of the same signature — a body of `0`, `""`,
 
 ```
 $ flang check stub.flang --proof
-stub.flang: ПРОВЕРЕНО САМОСТОЯТЕЛЬНО — утверждений 1: доказано 1, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
+stub.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0, ложно 0 (постусловий и утверждений 1); независимая проверка повторила 1 из 1 — код возврата 0
 ```
 
 The stub passed (1 claim, 1 proved, exit code 0): the claim of the first spec
@@ -176,7 +176,7 @@ translation with the right goal passes.
 ## Checking the check
 
 `forgery.flang` is a set of deliberately broken catalogues. On each one the
-check must find a trouble, and on an honest change it must stay silent.
+check must find a trouble, and on a correct change it must find nothing.
 
 ```sh
 flang run-script specs:forgery
@@ -218,7 +218,7 @@ line, not only on a real cancellation of a rule. The heir itself is proved:
 
 ```
 $ flang check fspec/spec/03-urgency-markup.flang --proof
-  утверждений 1: доказано 1 (из них без теоремы 1, объявленным типом 1), сетка 0, объявлено, не доказано 0
+fspec/spec/03-urgency-markup.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0, ложно 0 (постусловий и утверждений 1); независимая проверка повторила 0 из 1 — код возврата 0
 ```
 
 The set of broken catalogues does not pass at present either:
@@ -257,7 +257,7 @@ itself. The code is the answer of `flang check <file> --proof`:
 | `false-claim-negative-zero.flang` | "reversing a zero payment is zero" — false on minus zero | 3 |
 | `spec-legacy.flang` + `spec-new-feature.flang` | the heir promises the opposite of its predecessor | 0 and 1 |
 | `conflict-cap-legacy.flang` + `conflict-cap-heir.flang` | the new spec demands "at least 50" and calls the earlier one | 0 and 1 |
-| `conflict-rights-legacy.flang` + `conflict-rights-heir.flang` | the new one promises the guest has no read access left | 0 and 3 |
+| `conflict-rights-legacy.flang` + `conflict-rights-heir.flang` | the new one promises the guest has no read access left | 0 and 1 |
 | `silent-drop-legacy.flang` + `silent-drop-heir.flang` | the heir brings in its predecessor with a selection (`только`) and loses one of its rules | 0 and 0 |
 | `superseded-cap-30.flang` + `replacement-cap-45.flang` | a second edition of a rule, with no inheritance | 0 and 0 |
 

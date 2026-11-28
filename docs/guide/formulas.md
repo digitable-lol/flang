@@ -40,7 +40,8 @@ LaTeX: \forall x \in \mathbb{Z},\ \forall y \in \mathbb{Z},\ x + y = y + x
   утверждаем («x» плюс «y») равен («y» плюс «x»)
 
 слово ядра (flang check --proof), код 0:
-  утверждение «формула» — доказано сведением цели с телом функции: …
+утверждение «формула» — доказано
+перевод принят ядром; слово ядра — выше
 ```
 
 Exit code: 0 — the kernel accepted the translation (whether it is proved or
@@ -127,7 +128,7 @@ bootstrap/flang run-script formula:print flang/stdlib/fmath.flang
 `formula:round-trip` walks every `утверждение` in the tree: prints each in both
 notations, reads the printout back, translates it into flang and compares the
 compiler's own parse tree (`flang ast`) with the original — without file positions
-and the name. Converged — the printing is honest; did not fit the notation — the
-reason is named; diverged — the plan is red. The run of 13 October 2026: 129 of 137
+and the name. If the trees match, the printing is correct; if a statement does not fit the notation, the
+reason is named; if they differ, the plan fails. The run of 13 October 2026: 129 of 137
 converged, 8 outside the notation (a variant constructor and `соединить … по …`),
 0 diverged; 19 minutes. Files named after the command limit the walk to them.

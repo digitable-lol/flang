@@ -108,7 +108,7 @@ export const РАЗДЕЛЫ = [
   {
     имя: 'Печать в другие языки', англ: 'Targets',
     страницы: [
-      { адрес: 'emit-walkthrough.html', имя: 'Напечатать программу в C и JavaScript', из: 'docs/guide/emit-walkthrough.ru.md' },
+      { адрес: 'emit-walkthrough.html', имя: 'Сгенерировать программу на C и JavaScript', из: 'docs/guide/emit-walkthrough.ru.md' },
       { адрес: 'typescript-target.html', имя: 'Цель TypeScript', из: 'docs/guide/typescript-target.ru.md' },
       { адрес: 'embedding.html', имя: 'Встроить в чужую программу', из: 'docs/site/embedding.ru.md' },
       { адрес: 'c-without-libc.html', имя: 'Функция для ядра ОС: C без libc', из: 'docs/site/c-without-libc.ru.md' },

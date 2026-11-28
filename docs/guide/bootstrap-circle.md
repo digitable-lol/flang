@@ -6,13 +6,13 @@ This page shows where the `flang` command comes from when the compiler is
 written in flang itself, and how it is checked that the built compiler
 understands the language the same way its sources do. By the end you can rebuild
 the compiler from scratch with nothing but `cc` and `make`, run that check
-yourself and read its answer — and learn what it does not check.
+yourself and read its answer. The end of the page says what it does not check.
 
 ## The problem
 
 The flang compiler is written in flang. To build it you need a flang compiler.
-The circle is closed — and it is broken in exactly one way: the tree carries a
-**committed seed**, the same compiler emitted into C99 in advance.
+The circle is closed. What breaks it is the **committed seed**: the tree carries
+the same compiler emitted into C99 in advance.
 
 ```mermaid The bootstrap circle: three steps and one requirement
 flowchart LR
@@ -24,14 +24,15 @@ flowchart LR
   class F2 glavnoe
 ```
 
-One `make` turns the seed into a working compiler, and nothing else is needed for
-that: no Node, no network, no other flang compiler. The compiler then emits
-itself from the flang sources, a second binary is built from that emission, and
-**the second must equal the first**.
+One `make` turns the seed into a working compiler. Nothing else is needed for
+that: no network, no other flang compiler, no language other than `cc`. The
+compiler then emits itself from the flang sources. A second binary is built from
+that emission, and **the second must equal the first**. What is compared is the
+emitted C files, down to the last byte.
 
 If they match, the built compiler understands the language exactly as the
-sources it was built from do. If they do not, they have diverged — and what
-diverged is shown by file and by byte.
+sources it was built from do. If they do not, the check names the file and the
+byte where they differ.
 
 ## Where the circle stands today
 
@@ -43,8 +44,8 @@ is an ancestor of `HEAD`, and compares the seed's fingerprint with the tree:
 
 ```
 семя отвечает коммиту …, и он предок HEAD:
-  входов в отпечатке 55, пределы совпали, сводов с тех пор …
-  тело семени сошлось с деревом: файлов 7, байт …
+  входов в отпечатке 90, пределы совпали, сводов с тех пор …
+  тело семени сошлось с деревом: файлов 9, байт …
   входы печати с тех пор не двигались: отставание 0 файлов
 ```
 
@@ -60,26 +61,25 @@ make -C bootstrap -j8                    # build the compiler from the seed
 sh scripts/bootstrap-reprint.sh --check  # compare the seed with what the sources emit
 ```
 
-The second command re-emits seven files and compares them with the committed
-ones. A divergence is reported by file, byte and line, not by the word
-"mismatch".
+The second command re-emits the seed files and compares them with the committed
+ones. A divergence is reported by file, byte and line.
 
-The emission limits matter and are not decoration: `--max-steps 8000000000000
---max-depth 20000` (they are typed in `scripts/bootstrap-reprint.sh`, not on this page —
-check against it). Those numbers are stamped into the emitted byte
-(`#define FL_MAX_STEPS`), which means they take part in the equality. Rebuilt
-from memory with different limits, it diverges silently.
+The emission limits are `--max-steps 8000000000000 --max-depth 20000`. They are
+set in `scripts/bootstrap-reprint.sh`; check against it, not against this page.
+Those numbers go into the emitted C (`#define FL_MAX_STEPS`), which means they
+take part in the equality. An emission with different limits gives different
+bytes, and nothing reports it.
 
-Why the limit is that large is stated as a measurement, not as "just in case".
-Emission runs the same checks as `check`, and the most expensive step is the
-kernel's judgement on the compiler itself. Its measured cost is kept in
+The limit is that large by measurement. Emission runs the same checks as
+`check`, and the most expensive step is the proof kernel checking the compiler
+itself. Its measured cost is kept in
 `scripts/bootstrap-reprint.sh` as `MEASURED_COST` — 2 508 501 226 319 steps — and
 the ceiling `MAX_STEPS` is about 3.2 times that. The price of the headroom is named
 in the same place: at 23.16 million steps per second, a non-terminating program
 runs for about 96 hours before it is stopped. The whole breakdown is in the header
 of `scripts/bootstrap-reprint.sh`.
 
-## What this circle does NOT mean
+## What a match does not mean
 
 Two binaries agreeing says: the compiler reads the language the same way the
 compiler that emitted these sources read it. **It does not say the language is
@@ -88,25 +88,23 @@ seed survives the circle unnoticed: the circle compares an implementation with
 itself.
 
 What catches that kind of mistake in the tree are the frozen answer tables
-(`flang/test/fixtures/`, 55 entries — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
-disagreeing with a recorded answer is red. The run stands in CI as the job
-"Подделки ядра отвергнуты" (`bootstrap/flang io
-flang/scripts/kernel-forgeries.fscript`, `.github/workflows/binary.yml`). That
-catches a **regression** — "yesterday it answered this, today it answers that" —
-and nothing beyond. There is one
+(`flang/test/fixtures/`, 56 entries — `ls flang/test/fixtures | wc -l`): today's binary is run against them, and
+disagreeing with a recorded answer is an error. In CI this is the step "Check
+kernel forgeries" of job `storozha` in `.github/workflows/binary.yml`:
+`bootstrap/flang io flang/scripts/kernel-forgeries.fscript --на-веру --plan 'Подделки остаются недоказанными'`.
+That catches only a **regression**: yesterday the compiler answered this, today
+it answers that. There is one
 implementation of the language, and no independent reading of the same rules to
 compare its answers against.
 
-## The seed falls behind the sources silently
+## The seed falls behind the sources without a message
 
 The circle closing does not mean the committed seed matches today's sources. A
-change to the compiler is merged, `bootstrap/` is not re-emitted, and the rule
-sits in `flang/self/*.flang` while the built program DOES NOT RUN IT. Everything
-is green meanwhile: the source parses, the seed builds, and the circle closes on
-whatever the seed contains.
-
-A change to the proof kernel can be lost exactly this way: present in the
-sources, absent from the binary, with every check green.
+change to the compiler is merged and `bootstrap/` is not re-emitted. The rule
+sits in `flang/self/*.flang`, and the built program does not have it. Every check
+passes meanwhile: the source parses, the seed builds, and the circle closes on
+whatever the seed contains. A change to the proof kernel can be lost this way
+too.
 
 Two checks catch it, and they answer different questions.
 
@@ -115,21 +113,19 @@ Two checks catch it, and they answer different questions.
 | `sh scripts/bootstrap-reprint.sh --check` | does the seed match the emission exactly, down to the last byte | a full emission: hours |
 | `sh scripts/bootstrap-reprint.sh --bystro` | are the emission's inputs the same ones | about 2 s |
 
-The expensive one re-emits. The cheap one does not emit at all: it compares the
-contents of the files in the compiler's closure, the 4 runtime files that go into
-the output verbatim (55 inputs together), and the emission limits that end up in
-the emitted byte. You can recount them on
-the spot: `scripts/seed-fingerprint` has one line per file. The fingerprint lives in
-`scripts/seed-fingerprint` and is taken by the emission itself, not by a
-separate command someone has to remember.
+The expensive one re-emits. The cheap one does not emit: it compares the
+contents of the files the compiler is built from, the 4 runtime files that go
+into the output almost verbatim (90 inputs together), and the emission limits.
+Separately it compares the 9 files of the seed itself. You can recount them on
+the spot: `scripts/seed-fingerprint` has one line per file. The emission itself
+writes the fingerprint; there is no separate command for it.
 
 The cheap one runs on every push as job `semya` in
-`.github/workflows/binary.yml`; a mismatch is a refusal, not a warning. The full
-byte-for-byte comparison is called before a release and after merges.
+`.github/workflows/binary.yml`; a mismatch is an error, not a warning. The full
+byte-for-byte comparison is run before a release and after merges.
 
 **What the cheap one does not prove:** that the files are identical down to the
-last byte. It answers the narrower question — "are these the same inputs" — and
-it is cheap enough to ask on every push.
+last byte. It answers the narrower question — "are these the same inputs".
 
 ## What the circle does not check
 
@@ -140,11 +136,11 @@ it is cheap enough to ask on every push.
 `bootstrap/flang io scripts/seed/what-lags-the-seed.fscript --plan Report --timeout 300000`.
 
 **Rebuilding needs the tree, not the seed directory.** Emission reads the C
-runtime sources from disk (`flang/src/emit/c/`), and there are no copies of them
-in `bootstrap/`. The `bootstrap/` directory alone is not enough for the circle.
+runtime sources from disk (`flang/src/emit/c/`). `bootstrap/` holds the result
+of an emission, and that directory alone is not enough for the circle.
 
 ## Where a release comes from
 
 The C in a release archive is emitted from these same sources by this same
 circle. That is why installing from the archive, installing through Homebrew and
-building from a clone give one and the same binary — not "roughly the same one".
+building from a clone build the compiler from the same C.

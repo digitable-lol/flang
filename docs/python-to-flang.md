@@ -194,7 +194,10 @@ is refused with `FLANG_PYTHON_MUTATION строка 4: метод «append» м�
 ## Where Python and flang differ
 
 * **Numbers.** A Python `int` has no limit; a flang `число` is exact up to 2⁵³. Inputs
-  beyond that are outside what the comparison checks.
+  beyond that are outside what the comparison checks. The language has the type
+  `точное целое со знаком` (exact signed integer): an integer with no limit and with
+  division that rounds down. The translator does not use it yet: `int` still becomes
+  `число`.
 * **Division.** `//` rounds down and `%` takes the sign of the divisor, as in Python: the
   translation calls `«Python floor division»` and `«Python remainder»`, because the
   remainder of flang takes the sign of the dividend. Division by zero is a condition the
@@ -210,7 +213,7 @@ is refused with `FLANG_PYTHON_MUTATION строка 4: метод «append» м�
 
 ## When the translation says `тотальная`
 
-flang has two kinds of function: `тотальная функция` always ends (or refuses honestly),
+flang has two kinds of function: `тотальная функция` always ends (with a value or an error),
 `функция` is not promised to. The translator writes `тотальная` only when it can name
 the reason, and `flang check` must agree:
 

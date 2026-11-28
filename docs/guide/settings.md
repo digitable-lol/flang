@@ -22,7 +22,29 @@ script.test = flang test main.flang
 - A line is "key = value"; spaces around the equals sign do not matter.
 - A line starting with "#" and an empty line are skipped.
 - If a key occurs twice, the last one wins.
-- An unknown key is skipped silently.
+- An unknown key is skipped without a message.
+
+The examples below run in the directory `/work` on the file m.flang. It has two functions
+and two postconditions: the first is proved, the second is tested on one example only.
+
+```flang
+модуль «M»
+
+тотальная функция «Удвоить»
+  принимает число: неотрицательное
+  возвращает число
+  обеспечивает «не меньше исходного» результат не меньше число
+  число плюс число
+
+тотальная функция «Сумма»
+  принимает части: список числа
+  возвращает число
+  обеспечивает «сумма не меньше нуля» результат не меньше 0
+  пример «три части»
+    дано части равно [1, 2, 3]
+    ожидается 6
+  свёртка части начиная с 0 как акк и часть → акк плюс часть
+```
 
 ## Keys
 
@@ -38,9 +60,9 @@ script.test = flang test main.flang
 | `lint` | `refuse` `warn` | `refuse` | `flang lint` |
 | `script.<name>` | a command line | none | `flang run-script` |
 
-The key `registry` is gone: since 0.7.34 the package registry and the command `flang install`
-are removed, and a module is attached by a link — [Packages](../site/packages.md). A line
-`registry = …` in an old file is skipped as an unknown key.
+There is no key `registry`: the language has no package registry and no `flang install`
+command, and a module is attached by a link — [Packages](../site/packages.md). A line
+`registry = …` is skipped as an unknown key.
 
 The keys `surface`, `color`, `page`, `version`, `name`, `license`, `repository`, `issues` are
 read by the build tools of the flang repository itself. The `flang` commands ignore them.
@@ -50,16 +72,16 @@ read by the build tools of the flang repository itself. The `flang` commands ign
 ```
 $ flang check m.flang                     # in the file: language = en
 module «M»: functions 2, with termination proved 2; types 0
-m.flang: verified — parsing, types, termination, proof kernel and examples; no problems found
+m.flang: verified — proved 1, only tested 1, not proved 0 (postconditions and statements: 2); no problems found
 ```
 
-A `FLANG_*` code does not depend on the language. Not every diagnostic has an English text:
-those without one arrive in Russian. The other commands always answer in Russian.
+A `FLANG_*` code does not depend on the language. Not every error message has an English text:
+the rest arrive in Russian. Commands other than `flang check` always answer in Russian.
 
 ## What to do with an unproved program
 
-`flang run` and `flang io` compute the verdict before working. A program with an unproved
-promise is not run, and the exit code is `3`:
+Before running, `flang run` and `flang io` check whether everything is proved. A program with
+an unproved postcondition is not run, and the exit code is `3`:
 
 ```
 $ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'
@@ -69,7 +91,10 @@ $ echo $?
 3
 ```
 
-The switch `--trust` decides one run; the key in the file decides all of them:
+`сетка 1` in that line means: one postcondition is tested only. The switch `--на-веру` is the
+same as `--trust`.
+
+The switch `--trust` applies to one run; the key in the file applies to all of them:
 
 ```
 unproven = warn
@@ -83,11 +108,11 @@ $ flang run m.flang --function «Сумма» --args '{"части":[1,2,3]}'
 
 | value | what it does |
 | --- | --- |
-| `refuse` | do not run: the verdict is stated, exit code `3`. The default |
-| `warn` | compute the verdict, say it in one line and run, exit code `0` |
-| `allow` | do not compute the verdict; the same as `--trust` |
+| `refuse` | do not run: print what is unproved, exit code `3`. The default |
+| `warn` | check, print one line about what is unproved and run, exit code `0` |
+| `allow` | do not check; the same as `--trust` |
 
-The command-line switch `--unproven` takes the same words. A bad value is a refusal with exit
+The command-line switch `--unproven` takes the same words. A bad value is an error with exit
 code `2`:
 
 ```
@@ -139,9 +164,9 @@ lint = refuse
 ```
 $ flang lint m.flang
 flang lint: файлов 1; max-line-length 40: 3; max-conditional-depth: без предела; не разобрано 0
-m.flang:5: длина строки 53 > 40 (max-line-length)
-m.flang:13: длина строки 59 > 40 (max-line-length)
-m.flang:17: длина строки 62 > 40 (max-line-length)
+m.flang:6: длина строки 62 > 40 (max-line-length)
+m.flang:12: длина строки 59 > 40 (max-line-length)
+m.flang:16: длина строки 60 > 40 (max-line-length)
 $ echo $?
 1
 ```

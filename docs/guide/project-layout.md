@@ -393,9 +393,9 @@ entry module: `flang emit docs/examples/library-api/lib/api.flang --target js --
 Printing is cancelled if the program does not pass the check: `emit` looks at the
 same things `check` does and names the same remarks.
 
-Today both commands stop on the example with exit 1 and «не проверено — замечаний 8»
-(`test` adds «примеры не запускались — программа не прошла проверку»); the cause and
-the fix are named in section 7.
+Today both commands pass with exit code 0. `check` answers «функций 34, из них с доказанным
+завершением 34; типов 6; файлов вместе с импортами 8» (34 functions, 6 types, 8 files with
+imports), and `test` answers «примеров 70, прошло 70, не прошло 0» (70 examples, 70 passed).
 
 ---
 

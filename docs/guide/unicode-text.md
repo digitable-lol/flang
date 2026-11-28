@@ -6,7 +6,7 @@ A string in flang is a sequence of Unicode code points, and `равен` compare
 spellings of one letter, `é` as the code point U+00E9 and `e` followed by U+0301, are two
 different strings until the program normalizes them. Normalization, graphemes, case folding and
 decoding of bytes come from the library; it is written in flang from the tables of the Unicode
-Character Database, version 17.0.0.
+Character Database, version 17.0.0. The file `text.flang`:
 
 ```flang
 модуль «Unicode text»
@@ -54,12 +54,13 @@ Character Database, version 17.0.0.
 $ flang test text.flang
 text.flang: примеров 191, прошло 191, не прошло 0
 $ flang run text.flang --function '«Из КОИ-8»' --args '{"байты":[237,201,210]}'
-доказано: утверждений 15
+доказано: утверждений 37
 {"вариант":"Раскодировано","текст":"Мир"}
 ```
 
 There are 191 examples, not four: `flang test` also runs the examples of the imported library
-modules.
+modules. The line «доказано: утверждений 37» counts the proved postconditions of the file and
+of those modules.
 
 ## Modules
 
@@ -77,17 +78,17 @@ big-endian without one), `UTF-32LE`, `UTF-32BE`, `UTF-32`, `CP1251` (also `windo
 `KOI8-R` and `Latin-1` (also `ISO-8859-1`).
 
 Bytes that cannot be read give the variant «Отказ раскодирования» with the number of the first
-bad byte and the reason in words; nothing is replaced silently:
+bad byte and the reason in words; bad bytes are not replaced with anything:
 
 ```
 $ flang run text.flang --function '«Из КОИ-8»' --args '{"байты":[300]}'
-доказано: утверждений 15
+доказано: утверждений 37
 {"вариант":"Отказ раскодирования","место":1,"причина":"не байт: число вне 0…255 или дробное"}
 ```
 
 ## Cost
 
-Table lookup is a binary search inside a page of 256 code points, a few dozen evaluator steps.
+Table lookup is a binary search inside a page of 256 code points, a few dozen interpreter steps.
 A text whose code points are all below U+0300 or ordinary Cyrillic letters is already in NFC and
 is returned without a lookup.
 

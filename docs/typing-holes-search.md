@@ -7,7 +7,7 @@ together with a list of calls: arguments inside the declared types and, for ever
 argument outside. Two of three numeric expressions are built for the declared kind (a literal
 or a name of that kind, a choice between two such, «Удвоить», a length), so programs reach the
 oracles more often; the third is built without regard to the kind and probes the edges.
-Since 10 November 2026 it also writes the forms listed under «Forms» below.
+It also writes the forms listed under «Forms» below.
 `scripts/fuzz/search.fscript` runs every program through the oracles below.
 `scripts/fuzz/values.fscript`, over the small reader `scripts/fuzz/json-reader.fscript` that
 keeps number literals as written, reads the JSON the evaluator and the printed programs answer
@@ -62,7 +62,7 @@ A finding is repeated by the same command with its seed and the count 1.
 `scripts/fuzz/known.tsv` names, for a ledger row of `flang/proof/tables/typing-holes.tsv`, the
 oracle and a substring of the finding. A finding that matches is known and does not make the
 campaign red. When the ledger calls the row `закрыта`, the same finding is new again, so a
-closed hole cannot come back silently. A call to a function whose body passes one of the program's
+closed hole cannot come back unnoticed. A call to a function whose body passes one of the program's
 functions to «Применить» carries the mark `~fv` after its type; the known line of row 16 names
 that mark, so a negative value from any other source stays a finding.
 
@@ -83,12 +83,12 @@ from the plan's directory.
 `--plan Batch` runs one batch and writes a line per program to `<directory>/batch-<first>.tsv`.
 `bootstrap/flang run-script typing-holes:selftest -- <directory>` plants for every oracle what
 it must catch; the exit code is 1 when one of them stays silent or the finding comes from another
-oracle. The planted faults do not depend on holes the compiler still has: an honest program is run
+oracle. The planted faults do not depend on holes the compiler still has: a correct program is run
 by a forged evaluator, `sh -c "echo -7"`, which answers -7 to every call (outside the declared
 type, past a false requirement, unlike the printed C program), and the known list and the ledger
 are the case's own files with one planted hole, open or closed. The case `forms-forged` plants a
 function of every form above for the forged evaluator and expects a finding per call; `forms-agree`
-runs the same functions honestly against the printed C program and expects silence; `a-argument`
+runs the same functions with the real evaluator against the printed C program and expects no finding; `a-argument`
 forges a refusal of an argument inside its type. The plan `Batch` takes the forged
 evaluator as its tenth argument, a shell command; without it calls go to `bootstrap/flang run`.
 

@@ -44,7 +44,7 @@ The file `countdown.flang` sums the numbers from 1 to `н`:
 ```
 
 ```bash
-$ flang check countdown.flang --proof
+$ flang check countdown.flang --proof --explain
 …
   «Сумма до»  доказано композицией: рекурсии нет, …
   «Сложение»  доказано объявленной мерой: убывает «осталось»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
@@ -57,11 +57,12 @@ became its parameters. The second report line says that the decrease of the
 expression in the `убывает` line is not proved; it is checked on every step of
 the loop.
 
-On a fractional argument the check fires, with exit code 1:
+The termination of such a loop is not proved, so `flang run` starts it only
+with `--trust`. On a fractional argument the check fires, with exit code 1:
 
 ```bash
-$ flang run countdown.flang --function "Сумма до" --args '{"н": 2.5}'
-доказано: утверждений 0
+$ flang run countdown.flang --function "Сумма до" --args '{"н": 2.5}' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 FLANG_MEASURE: тотальная функция «Сложение»: мера на вызове «Сложение» — «осталось» — перестала быть целой. …
 ```
 
@@ -76,7 +77,8 @@ Each kind of loop is rewritten in its own way:
 
 A branch without `дальше` gives the result of the loop at once: this is the
 early exit. A name declared with `пусть` before the loop enters it through
-`храним`.
+`храним`. A loop's name is unique in the module: two loops with the same name in
+different functions give the error `FLANG_TYPE`.
 
 The ways of proving are covered in
 [How the compiler proves that a function terminates](totality.md).

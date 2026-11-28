@@ -6,8 +6,8 @@
 клоне, и ставить в нём нечего: зависимостей у пакета нет, поэтому команды запускаются сразу после
 `git clone`.
 
-Правка компилятора в `flang/self/` обязана перепечатать точку раскрутки тем же коммитом, иначе
-`bootstrap/` начнёт собирать прошлый компилятор молча:
+Правка компилятора в `flang/self/` перепечатывает `bootstrap/` тем же коммитом. Иначе из
+`bootstrap/` соберётся прежний компилятор, и сообщения об этом не будет:
 
 ```bash
 sh scripts/bootstrap-reprint.sh           # перепечатать bootstrap/ (часы)
@@ -18,11 +18,12 @@ sh scripts/bootstrap-reprint.sh --stroki  # меньше секунды: все 
 Печатает эти байты сам двоичный компилятор (`bootstrap/flang emit … --target c`); если двоичного
 нет, скрипт сначала соберёт его из `bootstrap/`.
 
-Сверка печатает заново и стоит столько же, сколько печать (часы), плюс `make`, если двоичный не собран. Зовите `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не на
-каждое сохранение.
+Сверка печатает заново и идёт столько же, сколько печать (часы), плюс `make`, если двоичный не
+собран. Запускайте `--check` перед слиянием правки в `flang/self/` или `flang/src/emit/c/`, а не
+на каждое сохранение.
 
-Чтобы прогнать правленый исходник компилятора на одной программе до печати, пусть собранный
-двоичный истолкует исходники: `flang/self/bootstrap/check-with-source-compiler.flang` проверяет
+Чтобы до печати проверить правленый исходник компилятора на одной программе, собранный
+двоичный исполняет исходники интерпретатором: `flang/self/bootstrap/check-with-source-compiler.flang` проверяет
 ими один файл и печатает отчёт о доказательствах словами и запись доказательства. `--trust` пропускает проверку доказательств
 по самому компилятору; маленькая программа стоит около десяти минут и 12 ГиБ:
 
@@ -37,18 +38,18 @@ bootstrap/flang run flang/self/bootstrap/check-with-source-compiler.flang \
 `compiler.flang`. С «Печать в C» на первом месте проверяемая программа с `требует` останавливается
 на `FLANG_UNKNOWN_NAME` о «Печать значения».
 
-Команды, на которые язык отвечает:
+Команды компилятора:
 
 ```bash
 # разобрать, проверить типы, доказать тотальность
-flang check docs/examples/leetcode/035-search-insert-position.flang --pretty
+flang check docs/examples/leetcode/035-search-insert-position.flang
 
 # прогнать примеры, объявленные внутри функций
-flang test docs/examples/leetcode/035-search-insert-position.flang --pretty
+flang test docs/examples/leetcode/035-search-insert-position.flang
 
-# то же по КОРПУСУ: каталог или маска вместо файла (только у двоичного).
+# то же по набору файлов: каталог или маска вместо файла.
 # Печатается каждый не прошедший пример и каждый не взятый файл, прошедшие —
-# числом; код возврата 0 — чисто, 1 — упало или файл не взят, 2 — кривой вызов.
+# числом; код возврата 0 — всё прошло, 1 — пример не прошёл или файл не взят, 2 — ошибка в вызове.
 flang test flang/stdlib/
 flang test 'docs/examples/**/*.flang' --json
 
@@ -67,14 +68,14 @@ flang emit docs/examples/leetcode/035-search-insert-position.flang \
 sh flang/test/обход.sh          # проверки обходчика двоичным
 sh flang/test/обход-примеров.sh # все примеры дерева
 sh scripts/bootstrap-reprint.sh --check  # семя против того, что печатают исходники
-bootstrap/flang run-script                                  # список всех проверок дерева с пояснением к каждой
-bootstrap/flang run-script tests                            # весь набор разом
+bootstrap/flang run-script                                  # список коротких команд дерева и что каждая запускает
+bootstrap/flang run-script tests                            # связывание, планировщик и надзор на целях печати
 ```
 
-Отдельная проверка зовётся по имени из этого списка: `bootstrap/flang run-script specs:check`, `bootstrap/flang run-script links:check`,
-`bootstrap/flang run-script site:check`. У каждой свой код возврата: 0 — чисто, ненулевой — назван виновник.
+Отдельная проверка запускается по имени из этого списка: `bootstrap/flang run-script specs:check`,
+`bootstrap/flang run-script links:check`, `bootstrap/flang run-script site:check`. Код возврата 0 —
+ошибок нет; при ненулевом вывод называет, что не прошло.
 
-
-Каждая команда пишет JSON в stdout, диагностику в stderr и возвращает ненулевой код при отказе —
-один и тот же контракт везде, и именно он делает всё это пригодным для CI, редакторов и агентов.
-Единственное исключение — `flang repl`, который разговаривает с человеком.
+Команды печатают итог текстом в stdout, а сообщения об ошибках — в stderr, и возвращают
+ненулевой код при ошибке. JSON вместо текста дают `flang test --json` и `flang check --proof --json`;
+`flang io` и `flang run-script` печатают запись о запуске строкой JSON.

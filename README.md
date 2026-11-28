@@ -6,7 +6,8 @@ flang is a pure functional language with strict static typing. Its keywords are 
 `accepts`, `returns`). A function has its tests and the conditions on its result written next to its
 body. The compiler checks them before anything runs and generates code from the checked program in
 C, C++, Go, Rust, Java, JavaScript, TypeScript, Elixir, Python or C#. The compiler is written in
-flang. Every keyword has a Russian and an English spelling; the compiler's messages are in Russian.
+flang. Every keyword has a Russian and an English spelling. The compiler's messages are in Russian;
+`flang check` also answers in English when `FLANG_LANG=en` is set.
 
 What "formal proof" means here:
 
@@ -78,15 +79,15 @@ The rpm conflicts with Fedora's `flang` package (LLVM Flang): both own `/usr/bin
 
 ### Arch Linux (AUR)
 
-`packaging/aur/` holds the `PKGBUILD` of **flang-package-bin**. It is not published on the AUR yet;
-to build it locally, fill it with the release's `SHA256SUMS` (`sh packaging/prebuilt/manifests.sh`) and run
-`makepkg -si`.
+`packaging/aur/` holds the template `PKGBUILD.in` of **flang-package-bin**. It is not published on
+the AUR yet; to build it locally, fill the template with the release's `SHA256SUMS`
+(`sh packaging/prebuilt/manifests.sh`) and run `makepkg -si`.
 
 ### From source
 
 ```bash
 git clone https://github.com/digitable-lol/flang && cd flang
-make -C bootstrap -j4                  # a few minutes
+make -C bootstrap                      # about 13 minutes on our machine: one large C file
 make -C bootstrap install PREFIX=$HOME/.local
 ```
 
@@ -119,17 +120,17 @@ total function «Twice»
 ```
 
 ```bash
-flang check hello.flang
+FLANG_LANG=en flang check hello.flang
 ```
 
 ```text
-модуль «Hello»: функций 1, из них с доказанным завершением 1; типов 0
-hello.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+module «Hello»: functions 1, with termination proved 1; types 0
+hello.flang: verified — proved 1, only tested 0, not proved 0 (postconditions and statements: 1); no problems found
 ```
 
-Exit code 0. The first line reads "module «Hello»: 1 function, 1 of them proved to terminate; 0
-types". The second lists the checks that passed — syntax, types, termination, proofs, tests — and
-ends with "no errors".
+Exit code 0. The second line counts the postconditions: one is proved, none is only tested, none is
+left unproved. Without `FLANG_LANG=en` the same two lines are in Russian. The other commands answer
+in Russian only.
 
 ```bash
 flang run hello.flang --function Twice --args '{"n": 21}'
@@ -195,9 +196,10 @@ fl_status hello_twice(fl_ctx *ctx, fl_value n, fl_value *result,
 }
 ```
 
-The function has no check of the postcondition: it is proved. `flang emit` checks the program the
-way `flang check` does and writes nothing when there is an error. The output directory holds the
-module, the run-time library, a command-line program and a `Makefile`.
+The function has no check of the postcondition: it is proved. `flang emit` checks syntax, types,
+termination and proofs as `flang check` does and writes nothing when there is an error. It does not
+run the tests; `flang check` and `flang test` do. The output directory holds the module, the
+run-time library, a command-line program and a `Makefile`.
 
 `flang` has fifteen commands, the editor language server among them: `check`, `test`, `run`, `emit`,
 `ast`, `tokens`, `lint`, `facts`, `io`, `lock`, `package`, `new`, `run-script`, `repl` and `lsp`. It
@@ -215,7 +217,7 @@ generates code for `c`, `cpp`, `go`, `rust`, `java`, `js`, `ts`, `elixir`, `pyth
 Work happens in a clone; the only thing to build is the compiler.
 
 ```bash
-make -C bootstrap -j8                    # builds bootstrap/flang
+make -C bootstrap                        # builds bootstrap/flang, about 13 minutes on our machine
 sh flang/test/обход.sh                   # the tests written in flang
 ./bootstrap/flang test flang/stdlib/     # the standard library's tests
 git config core.hooksPath .githooks      # quick checks before git push

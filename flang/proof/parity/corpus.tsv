@@ -6,7 +6,7 @@ nat-plus-associative	nat	omega	auto	-	-
 nat-successor-of-less	nat	omega	auto	-	-
 nat-subtract-self	nat	simp	by-hand	exact-natural	г
 nat-plus-subtract-cancel	nat	omega	auto	-	-
-nat-closed-power	nat	decide	auto	-	-
+nat-closed-power	nat	decide	none	number-measure	г
 nat-double	nat	unfold, omega	by-hand	minus-zero	г
 nat-sum-formula	nat	induction, simp, omega	by-hand	exact-natural	г
 nat-factorial-positive	nat	induction, Nat.mul_pos	auto	-	-

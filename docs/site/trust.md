@@ -299,8 +299,8 @@ That sorting keeps the length of the list, the kernel derived by itself. That
 the result is ordered is true, but the kernel did not derive it. Lean proves
 both facts.
 
-On the same set of 60 tasks flang proves 33 by itself. Another 19 are proved
-after the programmer rewrites the postcondition or adds a theorem. Eight are not
+On the same set of 60 tasks flang proves 32 by itself. Another 19 are proved
+after the programmer rewrites the postcondition or adds a theorem. Nine are not
 proved at all. Lean 4 proves all 60. A detailed comparison:
 [flang for Lean and Dafny users](flang-for-lean-and-dafny-users.html).
 
@@ -358,7 +358,7 @@ need them. The last three need Lean 4.
 | 93 kinds of steps, a lemma for each | `flang run-script lean-rules:check` |
 | 833 corrupted records, 0 accepted | `flang run-script checker:check` |
 | 45 paths of 52 | `flang run-script lean-soundness:check` |
-| 33, 19 and 8 tasks of 60 | `flang run-script lean-parity:probe` |
+| 32, 19 and 9 tasks of 60 | `flang run-script lean-parity:probe` |
 | 30 of 56 | `flang check --proof` on every file of the set `parity/programs` in the proof directory |
 
 ## Next

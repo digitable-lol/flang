@@ -291,8 +291,8 @@ flang check insertion-sort.flang --proof; echo "код $?"
 Что сортировка сохраняет длину списка, ядро вывело само. Что результат
 упорядочен, верно, но ядро этого не вывело. Lean доказывает оба факта.
 
-На том же наборе из 60 задач flang доказывает сам 33. Ещё 19 доказываются
-после того, как программист перепишет постусловие или добавит теорему. Восемь
+На том же наборе из 60 задач flang доказывает сам 32. Ещё 19 доказываются
+после того, как программист перепишет постусловие или добавит теорему. Девять
 не доказываются никак. Lean 4 доказывает все 60. Подробное сравнение —
 [flang для знающих Lean и Dafny](flang-for-lean-and-dafny-users.html).
 
@@ -347,7 +347,7 @@ flang check wrong-largest.flang --proof --strict; echo "код $?"
 | 93 вида шагов, у каждого лемма | `flang run-script lean-rules:check` |
 | 833 испорченные записи, принято 0 | `flang run-script checker:check` |
 | 45 путей из 52 | `flang run-script lean-soundness:check` |
-| 33, 19 и 8 задач из 60 | `flang run-script lean-parity:probe` |
+| 32, 19 и 9 задач из 60 | `flang run-script lean-parity:probe` |
 | 30 из 56 | `flang check --proof` по каждому файлу набора `parity/programs` из каталога доказательств |
 
 ## Дальше

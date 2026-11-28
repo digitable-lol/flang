@@ -36,7 +36,7 @@ compiler. The condition requires a proof that it accepts no false statement.
 
 - **Done.** Every inference rule has a theorem in Lean 4. A separate program,
   `checker`, re-checks proof records without the compiler.
-- **Missing.** The formal model covers 510 of the 603 proofs in the compiler's
+- **Missing.** The formal model covers 511 of the 603 proofs in the compiler's
   own records. There is no theorem about the code of `checker` yet.
 
 ### 4. No known type-checking bugs
@@ -45,11 +45,14 @@ A program that passed `flang check` must not break its declared types. Every
 type-checking bug found is written into a list. Each has a test that notices
 its return.
 
-- **Done.** 46 such bugs were found and 45 are fixed. A program generator looks
-  for new ones every day.
-- **Missing.** One bug is open: two functions whose postconditions call each
-  other pass the termination check. There is no proof that the list is
-  complete.
+- **Done.** 52 such bugs were found and 46 are closed. A program generator
+  looks for new ones every day.
+- **Missing.** Four bugs are fixed but not yet marked closed in the list. Two
+  are open. The first: a function over fixed-width integers (`u8`…`i64`) is
+  declared always terminating and passes `flang check`, although its addition
+  can leave the range of the type. The second: an operation that can fail
+  passes the check when it stands in a precondition or a postcondition. There
+  is no proof that the list is complete.
 
 ### 5. Error codes and the proof record format do not change unnoticed
 
@@ -57,9 +60,10 @@ Your scripts and CI may parse the `FLANG_*` codes and proof records. The
 condition requires that they do not change without notice.
 
 - **Done.** Every code is in a table with a status, and a stable code cannot
-  disappear. The record format has a version number.
-- **Missing.** The text of an error message is not stable. The format version
-  has never changed, so changing it is untested in practice.
+  disappear. The record format has a version number. There are two versions,
+  and `checker` reads both.
+- **Missing.** The text of an error message is not stable. The automatic check
+  of the format watches only the first version.
 
 ### 6. Someone else's module is imported with one line
 
@@ -93,7 +97,7 @@ This is a plan, and it may change.
 
 | Release | Meaning | What goes in |
 |---|---|---|
-| 0.8.0 | gives no wrong answer | the known wrong answers of the checks are fixed; `flang check` names every unproved statement; automatic proofs are checked in CI |
+| 0.8.0 (released) | gives no wrong answer | the known wrong answers of the checks are fixed; `flang check` names every unproved statement; automatic proofs are checked in CI |
 | 0.9.0 | ready to hand to people | documentation, playground, formatter, compatibility rules; the release passes every check |
 | 1.0.0-rc | candidate | conditions 3 and 8 meet their written thresholds; release archives are signed; the syntax is frozen |
 | 1.0.0 | release | only fixes from feedback on the candidate |
@@ -101,7 +105,9 @@ This is a plan, and it may change.
 ## What we decided not to do
 
 - **No closures.** Capturing the environment breaks the termination proof and
-  the direct generation of C, Go and Rust code. Function values exist.
+  the direct generation of C, Go and Rust code. Function values exist. A body
+  written directly inside a built-in form (`отобразить … как х → …`) sees the
+  parameters of its function; it cannot be passed as a value.
 - **No two versions of one library in one program.**
 - **No package registry and no install command.** A module is named by its
   address.

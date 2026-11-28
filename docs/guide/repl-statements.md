@@ -214,8 +214,14 @@ name the word forms.
 3. заключение: Следовательно, Сократ смертен.
 СЛЕДУЕТ: предложение 3 выведено из посылок 1, 2
 ядро: ДОКАЗАНО — утверждений 1: доказано 1, условно 0, сетка 0, объявлено, не доказано 0, отвергнуто 0, нарушено 0; законов на сетке 0, на веру 0 — код возврата 0
+…
 силлогизм: следует (код 0)
 ```
+
+Behind the `…` is a line `граница:` (boundary): only the form of the inference is
+checked, and the kernel does not check whether the premises are true. When the
+conclusion does not follow, the name of the formal fallacy and a link to its card
+are there too.
 
 When the conclusion does not follow, the judge prints a counterexample. The
 translator picks it and the kernel does not check it, and the judge says so:
@@ -235,6 +241,7 @@ translator picks it and the kernel does not check it, and the judge says so:
 НЕ СЛЕДУЕТ: предложение 3 «Следовательно, Сократ — человек.» не выведено из посылок 1, 2
 ядро: FLANG_PROOF_STEP, строка 16 проверенной программы — цель не выведена из допущений теоремы
 пример против, подсказка переводчика, ядром не проверена — «Сократ»: человек — нет, смертен — да
+…
 силлогизм: не следует (код 1)
 ```
 

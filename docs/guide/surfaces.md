@@ -26,7 +26,7 @@ omission; the reasoning is in a section below.
 
 ## One file, one language
 
-Since 0.9.0 a file is written on one surface (ADR-0255). The surface of a file is
+A file is written on one surface (ADR-0255). The surface of a file is
 named by a comment line before the first line of the program:
 
 ```text
@@ -160,7 +160,7 @@ target surface from the reverse dictionary, and writes the file with only those
 spans replaced; without an output file the text goes to standard output. Paths
 that are not absolute are read from the folder of the plan. The answer names how
 many keywords have no word on the target surface (Esperanto has no `требует`, for
-example); such a keyword stays as it was written, and since 0.9.0 the file will not
+example); such a keyword stays as it was written, and the file will not
 pass `flang check`: surfaces do not mix in one file. An inflected Russian form comes
 back as the first form of its word: `равно` translated to English and back is
 `равен`, and the program means the same.
@@ -187,5 +187,5 @@ There is no fifth surface in the tree. Interslavic (a constructed language built
 on common Slavic roots) makes a good worked example: the point of adding it is
 not that people write in it, but to test whether this guide is enough for a
 person who has never opened `lexer.flang`. As with Esperanto and Chinese, it does
-not get the proof vocabulary right away: a silent cell is more honest than an
+not get the proof vocabulary right away: an empty cell is better than an
 invented word.

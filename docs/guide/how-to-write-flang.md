@@ -25,11 +25,11 @@ is written by. All of them are shown on one function. Save it as `price.flang`
 ```bash
 $ flang check price.flang
 модуль «Цены»: функций 1, из них с доказанным завершением 1; типов 0
-price.flang: проверено — разбор, типы, завершаемость, ядро и примеры; замечаний нет
+price.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0 (постусловий и утверждений 1); замечаний нет
 ```
 
-The second line lists the checks that passed: syntax, types, termination,
-proofs and tests. «замечаний нет» means "no errors".
+The second line counts postconditions: one is proved (`доказано 1`).
+«замечаний нет» means "no errors": syntax, types, termination and tests passed.
 
 ## 1. The name says what the function does
 
@@ -69,13 +69,14 @@ types and the `требует` line alone:
 
 ```bash
 $ flang check price.flang --proof
+модуль «Цены»: функций 1, завершение доказано у 1
+постусловие «цена не уходит в минус» функции «Цена после скидки» — доказано
 …
-  постусловие «цена не уходит в минус» функции «Цена после скидки» — доказано по объявленным типам аргументов: цель сведена правилом «неотрицательность по построению» — утверждение обо ВСЕХ входах, а не о написанных; теоремы при нём нет и не нужно
-…
+price.flang: проверено — доказано 1, проверено только на тестах 0, не доказано 0, ложно 0 (постусловий и утверждений 1); независимая проверка повторила 1 из 1 — код возврата 0
 ```
 
-The line says: proved from the declared argument types, for all inputs.
-«теорема» is a proof written by hand; none was needed here.
+`доказано` means proved for all arguments. The last line adds that the
+independent check repeated this proof (`1 из 1`, 1 of 1).
 
 Remove the `требует` line, and `flang check` finds arguments on which the
 postcondition is false. The exit code is 1:
@@ -95,8 +96,9 @@ arguments, and the compiler proves it. The ways, from cheap to costly:
    variant) — proved from the shape of the data;
 3. counting down on a `неотрицательное` parameter by a constant step — proved,
    no run-time check;
-4. an `убывает …` line — a check stays in the program and costs time. Use it
-   when the first three are not enough.
+4. an `убывает …` line — the compiler proves the decrease only in simple cases;
+   otherwise a check stays in the program and takes time. Use it when the first
+   three are not enough.
 
 Details: [How the compiler proves that a function terminates](totality.md).
 

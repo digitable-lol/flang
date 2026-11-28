@@ -54,11 +54,11 @@ Save the program to a file and name the target and the output directory:
 $ flang emit insert.flang --target c --out out-c
 проверок при работе снято 2: постусловие доказано ядром обо всех входах и
 проверено примерами функции — в напечатанный код оно не едет.
-напечатано файлов 6, байт 612850, в out-c
+напечатано файлов 6, байт 634887, в out-c
 …
 $ flang emit insert.flang --target js --out out-js
 …
-напечатано файлов 3, байт 54552, в out-js
+напечатано файлов 3, байт 57659, в out-js
 ```
 
 Before printing, `emit` checks the program: parsing, types, termination and the proof kernel.

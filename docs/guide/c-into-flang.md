@@ -8,7 +8,7 @@ translation of function X has property P". For a verdict about the translation t
 anything about the C itself, the translation is printed back into C and compared with the
 source on a grid of inputs.
 
-## How to call it
+## How to run it
 
 The translator is a tool of the repository; it does not come with an installed `flang`. The
 commands work from the root of a clone where the binary is built in `bootstrap/`:
@@ -46,7 +46,7 @@ It needs `clang` and a `cc` with `-fsanitize=undefined`. Temporary files go unde
    C did on it and what `flang run` said on it about the translation.
 3. **The round trip C → flang → C.** How many grid inputs lie outside the requirements, on
    how many the values agreed, on how many C was stopped by the sanitizer and an obligation
-   named it. A disagreement is a translation error, and the plan turns red.
+   named it. A disagreement is a translation error, and the plan fails.
 4. **A draft specification.** `обеспечивает` lines marked `ВЫВЕДЕНО из перевода` with
    their ground. The tail of a line says what happened to it: proved by the kernel, dropped
    by a counterexample, or ВОПРОС ЧЕЛОВЕКУ — the kernel did not prove it and the grid did not

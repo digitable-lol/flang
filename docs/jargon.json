@@ -572,7 +572,7 @@
     }
   ],
   "долг": {
-    "CONTRIBUTING.md": 5,
+    "CONTRIBUTING.md": 0,
 
     "README.md": 3,
 
@@ -588,21 +588,21 @@
 
     "docs/guide/bootstrap-circle.md": 1,
 
-    "docs/guide/business-requirements.md": 1,
+    "docs/guide/business-requirements.md": 0,
 
-    "docs/guide/business-requirements.ru.md": 1,
+    "docs/guide/business-requirements.ru.md": 0,
 
     "docs/guide/cost.md": 3,
 
     "docs/guide/cost.ru.md": 5,
 
-    "docs/guide/emit-walkthrough.ru.md": 19,
+    "docs/guide/emit-walkthrough.ru.md": 0,
 
     "docs/guide/how-to-write-flang.ru.md": 1,
 
-    "docs/guide/limits.md": 1,
+    "docs/guide/limits.md": 0,
 
-    "docs/guide/limits.ru.md": 7,
+    "docs/guide/limits.ru.md": 1,
 
     "docs/guide/naming.md": 9,
 
@@ -614,17 +614,17 @@
 
     "docs/guide/repl-statements.ru.md": 2,
 
-    "docs/guide/settings.ru.md": 2,
+    "docs/guide/settings.ru.md": 1,
 
-    "docs/guide/single-source.ru.md": 1,
+    "docs/guide/single-source.ru.md": 0,
 
     "docs/guide/surface-sugar.ru.md": 0,
 
     "docs/guide/totality.ru.md": 2,
 
-    "docs/guide/typescript-target.ru.md": 11,
+    "docs/guide/typescript-target.ru.md": 0,
 
-    "docs/guide/unicode-text.ru.md": 2,
+    "docs/guide/unicode-text.ru.md": 0,
 
     "docs/scheduler-benchmark.md": 8,
 
@@ -760,7 +760,7 @@
 
     "docs/site/which-construct.ru.md": 16,
 
-    "docs/surfaces.md": 32,
+    "docs/surfaces.md": 26,
 
     "docs/tutor/01-function.lesson": 0,
 

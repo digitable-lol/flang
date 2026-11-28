@@ -2,34 +2,30 @@
 
 # flang on foreign code: translate, see the mismatches, extract the specification
 
-This page describes one real exercise: a piece of someone else's code was taken, rewritten in
-flang, and a record was made of **what surfaced along the way, what was proved and what
-remained declared**. The numbers come from the `bootstrap/flang` binary at the root of the
-tree. All the files are in the tree, and every run is repeatable.
+This page describes one exercise: a piece of someone else's code was rewritten in flang, and
+a record was made of **what surfaced along the way, what was proved and what remained
+unproved**. The numbers come from the `bootstrap/flang` program at the root of the tree. All
+the files are in the tree, and every run can be repeated.
 
-For a subset of C the translation is done by a machine, and the link between the translation
-and the source is held by printing the translation back into C and comparing it on a grid of
+For a subset of C the translation is done by a program, and the match between the translation
+and the source is checked by printing the translation back into C and comparing it on a set of
 inputs — [C code in flang](c-into-flang.md).
-For a subset of Python the translation is done by a machine too, and the link is held by
+For a subset of Python the translation is done by a program too, and the match is checked by
 comparing the answers of the translation with the answers of Python on a set of inputs —
 [Python in flang](../python-to-flang.md).
 
 ## 1. A correction first: errors are found by the rewriting, not by the check
 
-This is the most common misconception about this kind of work, and it spoils expectations.
+`flang check` checks **only the new code**, written in flang. It does not read the foreign
+source and does not compare it with the translation. It will not find a bug in your Python.
 
-`flang check` looks **only at the new code**, written in flang. It does not care about the
-foreign source: it has not read it, has not compared anything with it and passes no judgement
-on it. There is no such thing as "the check found a bug in your Python", and there will not
-be.
+Mismatches are found earlier. When you write foreign code down with explicit types,
+preconditions and postconditions, **you have to name what the source left implicit.** The
+implicit assumption either cannot be expressed, or it can, and then it is visible that nobody
+ever checked it.
 
-What works is something else. When you re-express foreign code with explicit types,
-requirements on the input and promises about the result, **you have to name what the source
-left implicit.** This is the step where mismatches surface: the implicit assumption either
-cannot be expressed, or it can — and then it becomes visible that nobody ever checked it.
-
-That is why everything below is split into "what surfaced during the rewriting" (section 3)
-and "what the check said" (section 5). The two must not be confused.
+That is why the page describes separately what surfaced during the rewriting (section 3) and
+what the check answered (section 5).
 
 ## 2. What was translated
 
@@ -61,13 +57,14 @@ The result of the translation is
 
 ## 3. What surfaced during the rewriting — six places
 
-Five of them are minor; the sixth is the reason for the whole exercise.
+Five of them are minor; the sixth is the main one.
 
-**1. There are no loops.** `while lo < hi` is rewritten as recursion, and the recursion has
-to prove that it terminates. There is no structural proof here — what decreases is not a list
-but a difference — so the author names the measure: `убывает верх минус низ плюс 1`. The cost
-is stated up front: the check of the measure moves into the generated code, and the report
-counts it in two places.
+**1. The loop is written as recursion.** `while lo < hi` in the translation is a recursive
+function, and its termination has to be justified. What decreases here is not a list but a
+difference, so the author names it: `убывает верх минус низ плюс 1`. The compiler does not
+prove this decrease and checks it at runtime, in two places. Today the language has the form
+`цикл … пока` with an `убывает` line; it is rewritten into the same kind of function
+([What loops and classes are rewritten into](surface-sugar.md)).
 
 **2. There are no default values.** `lo=0`, `hi=None` — the language has no such thing. The
 result is two functions: «Место слева в отрезке» with explicit bounds, and «Место слева»,
@@ -75,28 +72,28 @@ which passes `0` and `длина элементы`. Along the way it became visi
 source does not mean "the bound is unknown" but "the bound is the end of the list", and that
 the signature gave no way to tell these two meanings apart.
 
-**3. There are no exceptions.** `raise ValueError('lo must be non-negative')` is not a
-runtime failure but a **precondition**: `требует «низ неотрицателен» низ не меньше 0`. The
-difference is not cosmetic: an exception is checked on every call and costs time, while a
-precondition is proved by the caller and leaves not a single byte in the generated code.
+**3. There are no exceptions.** `raise ValueError('lo must be non-negative')` becomes a
+**precondition**: `требует «низ неотрицателен» низ не меньше 0`. An exception is checked on
+every call. A precondition is proved on the caller's side during the check; in the emitted C
+only the by-name entry, through which outside values arrive, checks it.
 
 **4. Indexing from the other end.** In Python `a[mid]` counts from zero; in flang
-`элемент N в список` counts from one. It became `элемент (середина плюс 1) в элементы`. This
-is a place where the foreign code and the translation silently diverge if you miss it.
+`элемент N в список` counts from one. It became `элемент (середина плюс 1) в элементы`. If
+you miss it, the translation diverges from the source with no error message.
 
 **5. There is no integer division.** `(lo + hi) // 2` does not translate into a single
-operator; it became `(сумма минус (сумма остаток от 2)) делить на 2`. The well-known integer
-overflow that broke binary search in the Java standard library does not reproduce here: the
-language's numbers are not machine integers. In exchange there is a limit of its own — these
-numbers are IEEE-754, and they are exact up to 2⁵³−1.
+operator; it became `(сумма минус (сумма остаток от 2)) делить на 2`. The integer overflow
+known from binary search in the Java standard library does not occur here: the language's
+numbers are not machine integers. They have a limit of their own: these are IEEE-754 numbers,
+exact up to 2⁵³−1.
 
 **6. The source states that the list is sorted nowhere except the docstring.** This is the
-finding.
+main finding.
 
 `bisect_left` works correctly only on a sorted list. The CPython code checks exactly one
 condition — `lo < 0`. That the list is sorted is neither checked nor declared: it is the words
-`assuming a is sorted` in a docstring, which the machine does not read. Pass an unsorted list
-and the function returns a number, does not complain, and the number is wrong.
+`assuming a is sorted` in a docstring, which the interpreter does not check. On an unsorted
+list the function returns a wrong number without an error.
 
 The translation had to name it:
 
@@ -113,13 +110,13 @@ The translation had to name it:
   …
 ```
 
-The precondition is written, the file passes the check (exit code 0). Then comes section 4,
-which matters more than the finding itself.
+The precondition is written, and the file passes the check (exit code 0). Section 4 shows
+what came of it at call sites.
 
 ## 4. The precondition is written — and is discharged at no call site
 
 [`docs/examples/usage/lvalue-with-call.flang`](../examples/usage/lvalue-with-call.flang)
-calls «Место слева» with a list literal that is plainly sorted:
+calls «Место слева» with a sorted list of literals:
 
 ```flang
 тотальная функция «Куда встанет цена»
@@ -131,8 +128,6 @@ calls «Место слева» with a list literal that is plainly sorted:
   «Место слева» от [100, 500, 900] и цена
 ```
 
-The run:
-
 ```
 $ bootstrap/flang check docs/examples/usage/lvalue-with-call.flang
 FLANG_PRECONDITION_CALL … строка 70, столбец 3: вызов «Место слева» в функции
@@ -140,15 +135,15 @@ FLANG_PRECONDITION_CALL … строка 70, столбец 3: вызов «Ме
 docs/examples/usage/lvalue-with-call.flang: не проверено — замечаний 1
 ```
 
-exit code 1. The same refusal comes on the unsorted list `[900, 100, 500]`. In other words,
-the check **rejects the correct call just as it rejects the wrong one**: the kernel does not
-evaluate `«Неубывающий» от [100, 500, 900]`, it matches assertions syntactically, and a
-precondition written as a call to your own function does not reduce to any of its ten rules.
+Exit code 1. `не снимает` means "does not prove". The same error comes on the unsorted list
+`[900, 100, 500]`. The check **rejects the correct call just as it rejects the wrong one**:
+the kernel does not evaluate `«Неубывающий» от [100, 500, 900]`. It compares statements by
+their form, and a precondition written as a call to your own function fits none of its rules.
 
-The conclusion, worth more than the finding itself: **an implicit requirement can always be
-named, but it can be carried across calls only if it has the form of an inequality or an
-equality over numbers, strings and lists.** A domain predicate is written, stays in the
-report and is checked at runtime, but calls are not checked against it. More on this in
+The conclusion: **an implicit requirement can always be named, but it can be proved at call
+sites only if it is written as an inequality or an equality over numbers, strings and
+lists.** A domain predicate is, today, written down and checked at runtime, but calls are not
+checked against it. More on this in
 [Requirements and specifications](business-requirements.md), section 5.
 
 ## 5. What the check said
@@ -158,42 +153,37 @@ The translation without the preconditions on the index range
 
 ```
 $ bootstrap/flang check docs/examples/usage/lvalue.flang --proof
+модуль «Place on the left»: функций 3, завершение доказано у 2, без доказательства завершения: 1
+постусловие «место не левее низа» функции «Место слева в отрезке» — проверено только на тестах (примеров 1)
+постусловие «место не правее верха» функции «Место слева в отрезке» — проверено только на тестах (примеров 1)
 …
-чем несётся обещание «тотальная»:
-  «Неубывающий»            доказано структурой: аргумент 1 («элементы») на
-                           каждом витке становится частью себя
-  «Место слева в отрезке»  доказано объявленной мерой: убывает «верх» минус
-                           «низ» плюс 1
-  «Место слева»            доказано композицией: рекурсии нет
+docs/examples/usage/lvalue.flang: доказано не всё — доказано 0, проверено только на тестах 2, не доказано 0, ложно 0 (постусловий и утверждений 2); независимая проверка повторила 0 из 0 — код возврата 3
 …
-  постусловие «место не левее низа» функции «Место слева в отрезке» — сетка 1
-  значение (примеры функции) … Это не доказательство — теоремы при утверждении нет
-  постусловие «место не правее верха» функции «Место слева в отрезке» — сетка 1
-  значение (примеры функции) … Это не доказательство — теоремы при утверждении нет
-…
-  утверждений 2: доказано 0, сетка 2, объявлено, не доказано 0
-… НЕ ДОКАЗАНО — ОПОРА НЕ СУДИЛАСЬ … код возврата 3
 ```
 
-With `--строго` the code is the same, **3**, and the words are «НЕ УДАЛОСЬ ДОКАЗАТЬ —
-ОПОРА НЕ СУДИЛАСЬ». `bootstrap/flang test` on the same file: «примеров 7, прошло 7, не прошло
-0», exit code 0.
+With `--explain` the detailed report names the method for each function: «Неубывающий» —
+"доказано структурой" (proved by structure), «Место слева» — "доказано композицией" (by
+composition), «Место слева в отрезке» — "объявленной мерой … спуск ядром не выведен — на
+веру": the decrease is accepted without proof and checked at runtime.
+
+With `--strict` the same command exits with code **1**. The `FLANG_NOT_TOTAL` warning about
+the built-in operation `элемент` ("the index may fall outside the list") becomes an error
+under that flag, and the report is not printed. `bootstrap/flang test` on the same file:
+«примеров 7, прошло 7, не прошло 0», exit code 0.
 
 The outcome in numbers:
 
 | | count |
 |---|---:|
 | functions translated | 3 |
-| termination proved | 3 of 3 (structural 1, declared measure 1, composition 1) |
+| termination proved | 2 of 3 (structural 1, composition 1); for the third the decrease is declared and checked at runtime |
 | postconditions proved for all inputs | **0 of 2** |
-| postconditions left resting on the author's examples | 2 of 2 |
-| checks moved into the generated code | 2 places (measure) |
+| postconditions tested only on the author's examples | 2 of 2 |
+| runtime checks of the decrease | 2 places |
 
-**Zero of two.** Both promises — "the result is not left of the low bound" and "the result is
-not right of the high bound" — are written, readable, checked at runtime and remain unproved.
-Exactly one thing is proved here: that the function **terminates**. That is no small thing —
-for a hand-written binary search this is exactly the bug people look for in foreign code —
-but it must not be passed off as proved correctness.
+Both postconditions — "the result is not left of the low bound" and "the result is not right
+of the high bound" — are written, checked at runtime and remain unproved. The termination of
+the binary search itself is not proved either: it is checked on every recursive call.
 
 ### Trying to strengthen it made things worse
 
@@ -209,16 +199,14 @@ FLANG_PRECONDITION_CALL … строка 47 … не снимает предус
 … не проверено — замечаний 4
 ```
 
-exit code 1, four refusals
+Exit code 1, four errors
 ([`lvalue-with-slice.flang`](../examples/usage/lvalue-with-slice.flang)).
-The kernel does not infer the invariant that binary search maintains on every iteration, and
-the recursive calls cannot discharge the function's own precondition. So the choice is:
-either do not write the preconditions — and then the program stays silent exactly like the
-source — or write them and fail the check. There is no middle ground.
+The kernel does not infer the invariant that binary search maintains on every step, and the
+recursive calls do not prove the function's own precondition. Today the choice is: leave
+these preconditions out, and then the program says no more about them than the source, or
+write them, and then the file fails the check.
 
 ## 6. What did not surface, although it was expected
-
-For honesty's sake: one expectation did not hold.
 
 The `key=None` branch of `bisect_left` takes a **function as a parameter**. The expectation
 was that it would not translate. It does:
@@ -227,41 +215,40 @@ was that it would not translate. It does:
 «функций 4, из них с доказанным завершением 4 … замечаний нет», exit code 0;
 `flang test` — «примеров 8, прошло 8, не прошло 0», exit code 0.
 
-So the common claim "you cannot pass a function in flang" is false and should not be
-repeated. What really does not exist is passing a function where it arrives as data (for
-example, parsed from a settings file).
+A function declared by name can be passed as a parameter. What cannot be done is passing a
+function that arrives as data (for example, parsed from a settings file), or writing an
+anonymous function in place of an argument of your own function.
 
 ## 7. The specification that came out
 
-A side result, but the most valuable one. Before: one runtime check (`lo < 0`) and a phrase in
-the docstring. After: six named items, each machine-readable:
+Before: one runtime check (`lo < 0`) and a phrase in the docstring. After: six named items,
+each written in the code:
 
 | item | how it is written | what happens to it | was it in the source |
 |---|---|---|---|
-| the list is non-decreasing | `требует «список неубывающий»` | not discharged by calls (section 4) | only in the docstring |
-| the low bound is non-negative | `требует «низ неотрицателен»` | recursive calls do not discharge it, code 1 (section 5) | `raise ValueError` at runtime |
+| the list is non-decreasing | `требует «список неубывающий»` | not proved at call sites (section 4) | only in the docstring |
+| the low bound is non-negative | `требует «низ неотрицателен»` | recursive calls do not prove it, code 1 (section 5) | `raise ValueError` at runtime |
 | the high bound is not past the end of the list | `требует «верх не дальше конца списка»` | same, code 1 | nowhere |
 | the low bound is not right of the high bound | `требует «низ не правее верха»` | same, code 1 | nowhere |
-| the result lies between the low and high bounds | two `обеспечивает` | declared, checked at runtime | nowhere |
-| the function terminates on every input | `тотальная` + `убывает` | **proved** | nowhere |
+| the result lies between the low and high bounds | two `обеспечивает` | tested only, checked at runtime | nowhere |
+| the function terminates on every input | `тотальная` + `убывает` | not proved: the decrease is checked at runtime | nowhere |
 
-Read the last two columns together. Of the six items, **one is proved**. But all six are now
-**written in the code**, not in the author's head and not in a docstring — and that is what
-will outlive both the author and any refactoring.
+Of the six items, **none is proved**. All six are now **written in the code**, not only in a
+docstring, and some of them are checked at runtime.
 
 ## 8. What this means for your repository
 
 - It makes sense to translate **pure pieces**: calculations, format parsing, data validation
-  rules. A piece that lives on state and I/O will translate formally but show nothing — the
-  language's logic says nothing about state over time or side effects.
-- Expect the harvest **from the rewriting, not from the run**. The real finding of this
-  exercise is item 6 of section 3, and it was found at the moment the word `требует` had to be
-  written, not when the compiler said something.
-- Count by your own rules, not ours. In this exercise 1 specification item out of 6 is proved.
-  You will get a different number, and the only way to learn it is to run it.
-- Some code will not be expressible at all. Such tasks are tagged in the tree's task list with
-  a separate map, "What the language does not have at all"; ask for the count by running
-  `bootstrap/flang run-script tasks:board`. The full list of what is missing is in
+  rules. Code that mostly changes state and does I/O can be translated, but the check will
+  say nothing about it: the language's logic has no state over time and no side effects.
+- Findings come **from the rewriting, not from the run**. The main finding of this exercise
+  is item 6 of section 3. It was made when the word `требует` had to be written, not from a
+  compiler message.
+- Count on your own code. In this exercise none of the 6 specification items is proved. You
+  will get a different number, and the only way to learn it is to run it.
+- Some code will not be expressible at all. Such tasks in `docs/tasks/` are marked with the
+  line `карта: Чего в языке нет вовсе`; `bootstrap/flang run-script tasks:board` shows their
+  number. The full list is in
   [Known limits](limits.md).
 
 Related: [Requirements and specifications: what flang gives a business](business-requirements.md) ·

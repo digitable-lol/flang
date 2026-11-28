@@ -35,7 +35,7 @@ type carries its declared type.
 
 ```sh
 $ flang emit shapes.flang --target ts --out out-ts
-напечатано файлов 5, байт 57146, в out-ts
+напечатано файлов 5, байт 60253, в out-ts
 …
 $ ls out-ts
 flang_cli.js  flang_runtime.js  package.json  shapes.ts  tsconfig.json

@@ -28,40 +28,42 @@ Here the rule is written once, in a form a domain expert can read
   («за просрочку» плюс «за долгую») плюс «за редкую»
 ```
 
-No braces, no arrows, no semicolons: the surface is indentation-based and word-based, and
-readable names may use guillemets.
+There are no braces, arrows or semicolons: nesting is set by indentation, operations are written
+in words, and names of several words go in guillemets.
 
-Three things sit next to the body of the function and travel with it. The **examples** are not
-tests in a neighbouring file but part of the declaration — `flang test` finds them itself.
-**`обеспечивает`** is a promise about the result on every input, not on the listed ones.
-**`тотальная`** is a marker the compiler answers for — but in two ways, and the difference
-matters. Either it proves termination itself (by composition, by structure, or by exact step over a
-natural), or it makes the author name the measure (`убывает`) and puts a guard in at RUN TIME. The
-second is not a proof: `flang check` exits 0, and a measure that fails to decrease kills the
-program with `FLANG_MEASURE` during the run. Which of the two carries the promise for each function
-is what `flang check --proof` says; the breakdown is in
-["What the `тотальная` marker gives you"](totality.md).
+Three more things are written next to the body of the function. The **examples** are part of the
+declaration, not tests in a neighbouring file: `flang test` finds them itself. **`обеспечивает`**
+is a postcondition: a statement about the result on every input. **`тотальная`** is a word the
+compiler checks. Either it proves termination itself (by composition, by structure, or by an exact
+step over a non-negative integer), or it makes the author name the decreasing expression
+(`убывает`) and then inserts a runtime check. The second is not a proof: `flang check` exits 0,
+`flang check --proof` exits 3, and a run stops with the error `FLANG_MEASURE` if the expression
+did not decrease. `flang check --proof --explain` names the method for each function; details are
+in [How the compiler proves that a function terminates](totality.md).
 
-From that single source you get the implementation, the examples and the checks — in ten
-languages at once. The `обеспечивает` above is not a comment: it becomes a postcondition in the
-emitted code.
+From one source you get the implementation, the examples and the checks in ten languages. The
+`обеспечивает` line becomes a postcondition in the emitted code.
 
 ```bash
 flang emit docs/examples/library-api/lib/fine.flang --target python --out вывод
 ```
 
-produces `вывод/fine.py` — and there is NO postcondition check in it: the kernel proved
-«Штраф ограничен» for all inputs (`flang check docs/examples/library-api/lib/fine.flang --proof`: «доказано сведением цели с
-телом функции», exit 0), and what
-is proven is not printed. The door appears when the kernel is not called — `--no-check`; then
-`вывод/fine.py` contains, verbatim:
+produces `вывод/fine.py`, and there is no postcondition check in it. The kernel proved
+«Штраф ограничен» for all inputs (`flang check docs/examples/library-api/lib/fine.flang --proof
+--explain`: «доказано сведением цели с телом функции», exit 0), and a proved postcondition is
+not emitted. With `--no-check` the kernel is not run, and then `вывод/fine.py` contains:
 
 ```python
     # постусловие «Штраф ограничен»
-    if not rt.post(ctx, rt.lte(ctx, _t5, rt.number(500.0)), "Штраф ограничен", "Рассчитать штраф"):
-        raise rt.fail("FLANG_PROPERTY", "нарушено свойство «Штраф ограничен» функции «Рассчитать штраф»")
+    if not rt.post(
+        ctx, rt.lte(ctx, _t5, rt.number(500.0)), "Штраф ограничен", "Рассчитать штраф"
+    ):
+        raise rt.fail(
+            "FLANG_PROPERTY",
+            "нарушено свойство «Штраф ограничен» функции «Рассчитать штраф»",
+        )
 ```
 
-`FLANG_PROPERTY` is the language's own diagnostic code, and the message is the language's own
-wording. A Python service, a Go service and a C binary printed from this function refuse the same
-input with the same words. That is what "one source of truth" has to mean to be worth anything.
+`FLANG_PROPERTY` is the language's own error code, and the message text is the language's too. A
+Python service, a Go service and a C program emitted from this function answer the same input
+with the same error.

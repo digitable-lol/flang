@@ -6,8 +6,8 @@ There is one compiler, written in flang itself and built into a binary. Working 
 clone and nothing else: the package has no dependencies, so the commands run straight after
 `git clone`.
 
-A change to the compiler in `flang/self/` must reprint the bootstrap point in the same commit, or
-`bootstrap/` starts building the previous compiler silently:
+A change to the compiler in `flang/self/` re-emits `bootstrap/` in the same commit. Otherwise
+`bootstrap/` builds the previous compiler, and nothing reports it:
 
 ```bash
 sh scripts/bootstrap-reprint.sh           # reprint bootstrap/ (hours)
@@ -18,12 +18,12 @@ sh scripts/bootstrap-reprint.sh --stroki  # under a second: every C string liter
 The binary compiler itself does the printing (`bootstrap/flang emit … --target c`); if the binary
 is missing, the script builds it from `bootstrap/` first.
 
-The check re-emits and so costs what the print costs (hours),
-plus a `make` if the binary is not built. Call `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not on
-every save.
+The check re-emits and so takes as long as the emission (hours), plus a `make` if the binary is
+not built. Run `--check` before merging a change under `flang/self/` or `flang/src/emit/c/`, not
+on every save.
 
-To try an edited compiler source on one program before a print, let the built binary interpret the
-sources: `flang/self/bootstrap/check-with-source-compiler.flang` checks one file with them and
+To check an edited compiler source on one program before an emission, the built binary runs the
+sources in its interpreter: `flang/self/bootstrap/check-with-source-compiler.flang` checks one file with them and
 prints the proof report in words and the proof record. `--trust` skips the proof check of the
 compiler itself; a small program takes about ten minutes and 12 GiB:
 
@@ -38,19 +38,19 @@ whoever imports it first, together with that importer's `только` list, so 
 first, as in `compiler.flang`. With «Печать в C» first, a checked program with `требует` stops at
 `FLANG_UNKNOWN_NAME` for «Печать значения».
 
-The commands the language answers to:
+The compiler's commands:
 
 ```bash
 # parse, type-check, prove totality
-flang check docs/examples/leetcode/035-search-insert-position.flang --pretty
+flang check docs/examples/leetcode/035-search-insert-position.flang
 
 # run the examples declared inside the functions
-flang test docs/examples/leetcode/035-search-insert-position.flang --pretty
+flang test docs/examples/leetcode/035-search-insert-position.flang
 
-# the same over a CORPUS: a directory or a glob instead of a file (binary only).
+# the same over a set of files: a directory or a glob instead of a file.
 # Every failing example and every file not taken is named; the passing ones are
-# a count. Exit code 0 — clean, 1 — something failed or a file was not taken,
-# 2 — bad invocation.
+# a count. Exit code 0 — everything passed, 1 — an example failed or a file was not
+# taken, 2 — an error in the invocation.
 flang test flang/stdlib/
 flang test 'docs/examples/**/*.flang' --json
 
@@ -69,13 +69,14 @@ Checks:
 sh flang/test/обход.sh          # the walker's checks, run by the binary
 sh flang/test/обход-примеров.sh # every example in the tree
 sh scripts/bootstrap-reprint.sh --check  # the seed against what the sources emit
-bootstrap/flang run-script                                  # every check in the tree, each with one line of explanation
-bootstrap/flang run-script tests                            # the whole set at once
+bootstrap/flang run-script                                  # the tree's shortcut commands and what each one runs
+bootstrap/flang run-script tests                            # linking, the scheduler and supervision on the emit targets
 ```
 
-A single check is called by its name from that list: `bootstrap/flang run-script specs:check`, `bootstrap/flang run-script links:check`,
-`bootstrap/flang run-script site:check`. Each has its own exit code: 0 — clean, non-zero — the culprit is named.
+A single check is run by its name from that list: `bootstrap/flang run-script specs:check`,
+`bootstrap/flang run-script links:check`, `bootstrap/flang run-script site:check`. Exit code 0 means
+no errors; with a non-zero code the output names what failed.
 
-Every command writes JSON to stdout, diagnostics to stderr, and returns non-zero on failure —
-the same contract everywhere, which is what makes it usable from CI, editors and agents. The one
-exception is `flang repl`, which talks to a human.
+Commands print their result as text to stdout and error messages to stderr, and return non-zero
+on an error. `flang test --json` and `flang check --proof --json` give JSON instead of text;
+`flang io` and `flang run-script` print a record of the run as a JSON line.

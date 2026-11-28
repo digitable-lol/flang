@@ -70,12 +70,13 @@ record. Nothing has to be declared. The file `length.flang`:
 ```
 
 ```bash
-$ flang check length.flang --proof
+$ flang check length.flang --proof --explain
 …
   «Число элементов»  доказано структурой: аргумент 1 («элементы») на каждом витке становится частью себя; цепочка частей конечного дерева обрывается сама, сторожа нет
 …
 ```
 
+The `--explain` flag adds a line about every function to the report.
 «доказано структурой» ("proved by structure") means that `хвост` (the tail) is
 shorter than the list, and the list is finite. The last words of the line say
 that there is no run-time check.
@@ -134,7 +135,7 @@ by a constant, and there is a branch that stops the count. The file
 ```
 
 ```bash
-$ flang check factorial.flang --proof
+$ flang check factorial.flang --proof --explain
 …
   «Произведение до»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 1; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
 …
@@ -198,7 +199,7 @@ call passes it minus a constant. The file `two.flang`:
 ```
 
 ```bash
-$ flang check two.flang --proof
+$ flang check two.flang --proof --explain
 …
   «Через два»  доказано точным шагом: аргумент 1 («н») объявлен натуральным и убывает на 2; дно и потолок даёт тип, внутри потолка шаг точен — сторожа нет
 …
@@ -243,11 +244,14 @@ decrease. It inserts a check on every call into the program. The file
     иначе «Сближение» от (низ плюс 2) и верх
 ```
 
-`flang check closing.flang` answers «замечаний нет» (no errors). The run stops:
+`flang check closing.flang` answers «замечаний нет» (no errors). `flang run`
+without a flag does not start such a function and returns code 3: its
+termination is not proved. With `--trust` the run starts and stops at the
+check:
 
 ```bash
-$ flang run closing.flang --function "Сближение" --args '{"низ": 0, "верх": 5}'
-доказано: утверждений 0
+$ flang run closing.flang --function "Сближение" --args '{"низ": 0, "верх": 5}' --trust
+на веру: доказанность не считалась — запуск по ключу --trust
 FLANG_MEASURE: тотальная функция «Сближение»: мера на вызове «Сближение» — «верх» минус «низ» — ушла ниже нуля. Мера обязана оставаться неотрицательной …
 ```
 
@@ -257,7 +261,7 @@ must stay a non-negative integer, so an error comes at −1. The exit code is 1.
 The report shows how many such checks are left in the program:
 
 ```bash
-$ flang check closing.flang --proof
+$ flang check closing.flang --proof --explain
 …
   «Сближение»  доказано объявленной мерой: убывает «верх» минус «низ»; спуск ядром не выведен — на веру: мера объявлена автором, сторож считает её при работе на каждом витке — 1 место
 …
@@ -266,7 +270,9 @@ $ flang check closing.flang --proof
 ```
 
 Both lines say one thing: the decrease is accepted without a proof and is
-checked on every call. The last line counts such places over the whole file.
+checked on every call. The last line counts such places over the whole file. The
+exit code is 3; without `--explain` the same command prints «без доказательства
+завершения: 1» (without a termination proof: 1).
 
 If termination has to be proved completely, write the first or the second way.
 
